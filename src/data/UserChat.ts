@@ -121,24 +121,18 @@ export async function fetchUserChats<Tkind extends UserChat["kind"]>(
   });
 }
 
-export async function checkUserChatBackgroundRunning<Tkind extends UserChat["kind"]>(
-  userChatId: number,
-  kind: Tkind,
-): Promise<boolean> {
-  // @TODO[AUTH]: 现在读取 UserChat 没有判断权限
-  // return withAuth(async () => {
-  try {
-    // Make sure all fields in UserChat are set to true or false in select
-    const userChat = await prisma.userChat.findUnique({
-      where: { id: userChatId, kind },
-    });
-    if (!userChat) notFound();
-    return !!userChat.backgroundToken;
-  } catch (error) {
-    console.log("Error fetching user chat:", error);
-    throw error;
-  }
-  // });
+export async function clearStudyUserChatBackgroundToken(userChatId: number) {
+  return withAuth(async (user) => {
+    try {
+      await prisma.userChat.update({
+        where: { id: userChatId, userId: user.id, kind: "study" },
+        data: { backgroundToken: null },
+      });
+    } catch (error) {
+      console.log("Error clearing user chat background token:", error);
+      throw error;
+    }
+  });
 }
 
 export async function fetchUserChatById<Tkind extends UserChat["kind"]>(

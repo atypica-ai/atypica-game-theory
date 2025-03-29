@@ -140,8 +140,7 @@ async function chatWithInterviewer({
         ),
       },
       maxSteps: 3,
-      onChunk: (chunk) =>
-        console.log(`[${analystInterviewId}] Interviewer:`, JSON.stringify(chunk)),
+      // onChunk: (chunk) => console.log(`[${analystInterviewId}] Interviewer:`, JSON.stringify(chunk)),
       onStepFinish: async (step) => {
         if (step.usage.totalTokens > 0) {
           await statReport("tokens", step.usage.totalTokens, {
@@ -155,8 +154,8 @@ async function chatWithInterviewer({
         const message = streamStepsToUIMessage(steps);
         resolve(message);
       },
-      onError: (error) => {
-        console.log(error);
+      onError: ({ error }) => {
+        console.log(`InterviewerChat streamText error:`, (error as Error).message);
         reject(error);
       },
       abortSignal,
@@ -187,7 +186,7 @@ async function chatWithPersona({
         [ToolName.xhsSearch]: xhsSearchTool,
       },
       maxSteps: 3,
-      onChunk: (chunk) => console.log(`[${analystInterviewId}] Persona:`, JSON.stringify(chunk)),
+      // onChunk: (chunk) => console.log(`[${analystInterviewId}] Persona:`, JSON.stringify(chunk)),
       onStepFinish: async (step) => {
         if (step.usage.totalTokens > 0) {
           await statReport("tokens", step.usage.totalTokens, {
@@ -201,8 +200,8 @@ async function chatWithPersona({
         const message = streamStepsToUIMessage(steps);
         resolve(message);
       },
-      onError: (error) => {
-        console.log(error);
+      onError: ({ error }) => {
+        console.log(`PersonaAgent streamText error:`, (error as Error).message);
         reject(error);
       },
       abortSignal,
@@ -275,8 +274,8 @@ async function runInterview({
       personaAgent.messages.push({ ...message, role: "assistant" });
       interviewer.messages.push({ ...message, role: "user" });
     } catch (error) {
-      console.log(`Error in Persona Agent: ${error}`);
-      break;
+      console.log(`[${analystInterviewId}] Error in Persona Agent`, (error as Error).message);
+      throw error;
     }
 
     await saveMessages({
@@ -302,8 +301,8 @@ async function runInterview({
         interviewer.terminated = true;
       }
     } catch (error) {
-      console.log(`Error in Interviewer Agent: ${error}`);
-      break;
+      console.log(`[${analystInterviewId}] Error in Interviewer Agent`, (error as Error).message);
+      throw error;
     }
 
     await saveMessages({

@@ -173,11 +173,18 @@
       "placeholder": "提出后续问题或回复"
     },
     "StatusDisplay": {
+      "background": "atypica 正在后台执行中...",
       "thinking": "atypica 正在思考中...",
       "processing": "正在处理您的请求...",
       "complete": "处理完成 ✨",
       "error": "出现错误，请重试",
-      "ready": "atypica 已准备就绪"
+      "ready": "atypica 已准备就绪",
+      "confirmAbortTitle": "停止后台任务？",
+      "confirmAbortDescription": "这将停止当前正在执行的后台任务。结果可能不完整。",
+      "confirmAbort": "停止任务",
+      "aborting": "正在停止...",
+      "cancel": "取消",
+      "continueInstructions": "若要稍后继续，请在对话框中输入\"继续\"。"
     },
     "ToolConsole": {
       "autoFollow": "自动跟随",

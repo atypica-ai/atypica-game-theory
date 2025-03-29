@@ -173,11 +173,18 @@
       "placeholder": "Ask a follow-up question or reply"
     },
     "StatusDisplay": {
+      "background": "atypica is running in the background...",
       "thinking": "atypica is thinking...",
       "processing": "Processing your request...",
       "complete": "Processing complete ✨",
       "error": "An error occurred, please try again",
-      "ready": "atypica is ready"
+      "ready": "atypica is ready",
+      "confirmAbortTitle": "Stop Background Task?",
+      "confirmAbortDescription": "This will stop the current background task. The results may be incomplete.",
+      "confirmAbort": "Stop Task",
+      "aborting": "Stopping...",
+      "cancel": "Cancel",
+      "continueInstructions": "To continue later, type \"continue\" in the chat box."
     },
     "ToolConsole": {
       "autoFollow": "Auto Follow",

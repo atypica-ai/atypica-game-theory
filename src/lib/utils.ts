@@ -1,4 +1,4 @@
-import { generateId, Message, StepResult, ToolSet } from "ai";
+import { generateId, Message, StepResult, ToolInvocation, ToolSet } from "ai";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -61,6 +61,7 @@ export function streamStepsToUIMessage<T extends ToolSet>(
   const parts: Message["parts"] = [];
   const contents = [];
   for (const step of steps) {
+    // 这三步其实是可以合并的
     if (step.stepType === "initial") {
       contents.push(step.text);
       parts.push({ type: "text", text: step.text });
@@ -69,19 +70,31 @@ export function streamStepsToUIMessage<T extends ToolSet>(
       parts.push({ type: "text", text: step.text });
     } else if (step.stepType === "tool-result") {
       contents.push(step.text);
-      parts.push({ type: "text", text: step.text }); // text 要放在前面，规则是这样的，先文本再执行。
-      for (const toolResult of step.toolResults) {
-        parts.push({
-          type: "tool-invocation",
-          toolInvocation: {
-            state: "result",
-            toolName: toolResult.toolName,
-            args: toolResult.args,
-            result: toolResult.result,
-            toolCallId: toolResult.toolCallId,
-          },
-        });
+      parts.push({ type: "text", text: step.text });
+    }
+    // 不管是哪个 step，都有可能有 toolCalls，所以要放在外面。
+    // 另外，text part 要放在 toolCalls part 的前面，规则是这样的，先文本再执行。
+    for (const toolCall of step.toolCalls) {
+      let toolInvocation: ToolInvocation = {
+        state: "call",
+        toolName: toolCall.toolName,
+        args: toolCall.args,
+        toolCallId: toolCall.toolCallId,
+      };
+      const toolResult = step.toolResults.find((r) => r.toolCallId === toolInvocation.toolCallId);
+      if (toolResult) {
+        toolInvocation = {
+          state: "result",
+          toolName: toolResult.toolName,
+          args: toolResult.args,
+          toolCallId: toolCall.toolCallId,
+          result: toolResult.result,
+        };
       }
+      parts.push({
+        type: "tool-invocation",
+        toolInvocation,
+      });
     }
   }
   return {
@@ -97,6 +110,7 @@ export function appendStreamStepToUIMessage<T extends ToolSet>(
 ) {
   const parts: Message["parts"] = message.parts ?? [];
   const contents = [message.content ?? ""];
+  // 这三步其实是可以合并的
   if (step.stepType === "initial") {
     contents.push(step.text);
     parts.push({ type: "text", text: step.text });
@@ -105,19 +119,31 @@ export function appendStreamStepToUIMessage<T extends ToolSet>(
     parts.push({ type: "text", text: step.text });
   } else if (step.stepType === "tool-result") {
     contents.push(step.text);
-    parts.push({ type: "text", text: step.text }); // text 要放在前面，规则是这样的，先文本再执行。
-    for (const toolResult of step.toolResults) {
-      parts.push({
-        type: "tool-invocation",
-        toolInvocation: {
-          state: "result",
-          toolName: toolResult.toolName,
-          args: toolResult.args,
-          result: toolResult.result,
-          toolCallId: toolResult.toolCallId,
-        },
-      });
+    parts.push({ type: "text", text: step.text });
+  }
+  // 不管是哪个 step，都有可能有 toolCalls，所以要放在外面。
+  // 另外，text part 要放在 toolCalls part 的前面，规则是这样的，先文本再执行。
+  for (const toolCall of step.toolCalls) {
+    let toolInvocation: ToolInvocation = {
+      state: "call",
+      toolName: toolCall.toolName,
+      args: toolCall.args,
+      toolCallId: toolCall.toolCallId,
+    };
+    const toolResult = step.toolResults.find((r) => r.toolCallId === toolInvocation.toolCallId);
+    if (toolResult) {
+      toolInvocation = {
+        state: "result",
+        toolName: toolResult.toolName,
+        args: toolResult.args,
+        toolCallId: toolCall.toolCallId,
+        result: toolResult.result,
+      };
     }
+    parts.push({
+      type: "tool-invocation",
+      toolInvocation,
+    });
   }
   message.content = contents.join("\n");
   message.parts = parts;

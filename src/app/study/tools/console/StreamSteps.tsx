@@ -96,7 +96,6 @@ export const StreamSteps = ({
             case "source":
               return <PlainText key={i}>{JSON.stringify(part.source)}</PlainText>;
             case "tool-invocation":
-              console.log(part.toolInvocation.toolCallId, i);
               return <StreamStep key={i} toolInvocation={part.toolInvocation} />;
             default:
               return null;

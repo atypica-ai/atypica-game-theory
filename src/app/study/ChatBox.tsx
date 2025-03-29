@@ -3,8 +3,13 @@ import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useScrollToBottom } from "@/components/use-scroll-to-bottom";
-import { deleteMessageFromUserChat, StudyUserChat, updateUserChat } from "@/data";
-import { cn, fixChatMessages } from "@/lib/utils";
+import {
+  clearStudyUserChatBackgroundToken,
+  deleteMessageFromUserChat,
+  fetchUserChatById,
+  StudyUserChat,
+} from "@/data";
+import { cn } from "@/lib/utils";
 import { Message, useChat } from "@ai-sdk/react";
 import { ArrowRightIcon } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -23,13 +28,17 @@ function popLastUserMessage(messages: Message[]) {
 }
 
 export function ChatBox({
-  studyUserChat,
+  studyUserChat: {
+    id: studyUserChatId,
+    messages: initialMessages,
+    backgroundToken: initialBackgroundToken,
+  },
   readOnly,
 }: {
   studyUserChat: StudyUserChat;
   readOnly: boolean;
 }) {
-  const [studyUserChatId, setStudyUserChatId] = useState<number>(studyUserChat.id);
+  // 这个组件是不支持对话直接切换的，如果切换，需要刷新页面重新加载！);
 
   const {
     messages,
@@ -44,69 +53,57 @@ export function ChatBox({
     append,
     addToolResult,
   } = useChat({
-    // id: `studyUserChat-${studyUserChat.id}`,  // 和 ToolConsole 不再使用 messages 通信，使用 context 通信
-    maxSteps: 30,
+    id: studyUserChatId.toString(),
+    initialMessages: initialMessages,
+    sendExtraMessageFields: true, // send id and createdAt for each message
     api: "/api/chat/study",
-    body: {
-      studyUserChatId,
-    },
-    // onFinish: async (message, { finishReason }) => {
-    //   console.log(message, finishReason);
-    // },
+    maxSteps: 30,
   });
 
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const useChatRef = useRef({ reload, append, stop, setMessages });
 
-  // 监听最新的 messages 并保存，使用 rebounce, 5s 没任何更新则保存
   useEffect(() => {
-    if (messages.length < 2) return; // 有了 studyUserChatId 并且 AI 回复了再保存
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-    timeoutRef.current = setTimeout(async () => {
-      // console.log("Saving chat...", studyUserChatId, messages);
-      // 保存之前先 fix 一下，清除异常的数据
-      await updateUserChat(studyUserChatId, fixChatMessages(messages));
-      timeoutRef.current = null;
-    }, 5000);
-  }, [studyUserChatId, messages]);
-
-  // 监听对话切换
-  useEffect(() => {
-    useChatRef.current.stop();
-    setStudyUserChatId(studyUserChat.id);
-    const { lastUserMessage } = popLastUserMessage(studyUserChat.messages);
-    useChatRef.current.setMessages(studyUserChat.messages);
+    // 如果最初最后一条消息是用户消息，则立即开始聊天
+    const { lastUserMessage } = popLastUserMessage(initialMessages);
     if (lastUserMessage) {
       useChatRef.current.reload();
     }
-    // if (lastUserMessage) {
-    //   useChatRef.current.append({
-    //     role: "user",
-    //     content: lastUserMessage.content,
-    //   });
-    // }
-    return () => {
-      console.log("Cleaning up timeoutRef.current");
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    };
-  }, [studyUserChat]);
+  }, [initialMessages]);
 
   const handleSubmitMessage = useCallback(
     async (event: React.FormEvent<HTMLFormElement>) => {
-      // console.log("handleSubmitMessage", input, studyUserChatId); // 有时候第一次聊天会出现提交2条消息，这里打印debug下
       event.preventDefault();
-      handleSubmit(event, {
-        body: { studyUserChatId },
-      });
+      handleSubmit(event);
     },
-    [handleSubmit, studyUserChatId, input],
+    [handleSubmit],
   );
+
+  const [backgroundToken, setBackgroundToken] = useState<string | null>(initialBackgroundToken);
+  const refreshStudyUserChat = useCallback(async () => {
+    if (!backgroundToken) {
+      return;
+    }
+    const studyUserChat = await fetchUserChatById(studyUserChatId, "study");
+    setBackgroundToken(studyUserChat.backgroundToken);
+    setMessages(studyUserChat.messages);
+  }, [backgroundToken]);
+
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    const poll = async () => {
+      timeoutId = setTimeout(poll, 3000);
+      await refreshStudyUserChat();
+    };
+    poll();
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [refreshStudyUserChat]);
 
   // const inputRef = useRef<HTMLTextAreaElement>(null);
   const [messagesContainerRef, messagesEndRef] = useScrollToBottom<HTMLDivElement>();
-  const inputDisabled = readOnly || status === "streaming" || status === "submitted";
+  const inputDisabled =
+    readOnly || !!backgroundToken || status === "streaming" || status === "submitted";
 
   return (
     <>
@@ -119,12 +116,15 @@ export function ChatBox({
             key={message.id}
             message={message}
             addToolResult={addToolResult}
-            avatar={{ assistant: <HippyGhostAvatar seed={studyUserChat.id} /> }}
+            avatar={{ assistant: <HippyGhostAvatar seed={studyUserChatId} /> }}
             onDelete={
               message.role === "user" && index >= messages.length - 2
                 ? async () => {
+                    // TODO 这里要改一下
+                    // assistant 可能连续出现 2 条，所以最后一条用户消息的index就不一定是 messages.length - 2
+                    // 如果删除，那也就不是一条 user 和一条 assistant，而应该是连续的 assistant 都删除
                     const newMessages = await deleteMessageFromUserChat(
-                      studyUserChat.id,
+                      studyUserChatId,
                       messages,
                       message.id,
                     );
@@ -143,14 +143,15 @@ export function ChatBox({
         <div ref={messagesEndRef} />
       </div>
 
-      {studyUserChatId && (
-        <div className="relative">
-          <StatusDisplay studyUserChatId={studyUserChatId} status={status} messages={messages} />
-          <div className="absolute right-0 top-1/2 -translate-y-1/2">
-            <NerdStats studyUserChatId={studyUserChatId} />
-          </div>
+      <div className="relative">
+        <StatusDisplay
+          status={backgroundToken ? "background" : status}
+          onAbort={() => clearStudyUserChatBackgroundToken(studyUserChatId)}
+        />
+        <div className="absolute right-0 top-1/2 -translate-y-1/2">
+          <NerdStats studyUserChatId={studyUserChatId} />
         </div>
-      )}
+      </div>
 
       <form onSubmit={handleSubmitMessage} className="relative">
         <Textarea
