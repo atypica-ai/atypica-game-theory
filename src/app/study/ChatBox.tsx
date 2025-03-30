@@ -162,15 +162,15 @@ export function ChatBox({
             isLastMessage={index === messages.length - 1}
           ></SingleMessage>
         ))}
-        {error && (
-          <div className="flex justify-center items-center text-red-500 text-sm mt-6">
-            {error.toString()}
-          </div>
-        )}
         <div ref={messagesEndRef} />
       </div>
 
       <div className="relative">
+        {error && (
+          <div className="text-destructive text-xs mx-32 mb-2 line-clamp-1 text-center">
+            {error?.message?.toString() || error.toString()}
+          </div>
+        )}
         <StatusDisplay
           status={uiStatus}
           onUserCancel={async () => {
@@ -178,7 +178,7 @@ export function ChatBox({
             setTimeout(() => window.location.reload(), 100);
           }}
         />
-        <div className="absolute right-0 top-1/2 -translate-y-1/2">
+        <div className="absolute right-0 -bottom-1">
           <NerdStats studyUserChatId={studyUserChatId} />
         </div>
       </div>

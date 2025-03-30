@@ -177,7 +177,7 @@
       "thinking": "atypica is thinking...",
       "processing": "Processing your request...",
       "complete": "Processing complete ✨",
-      "error": "An error occurred, please try again",
+      "error": "An error occurred, please refresh the page and try again",
       "ready": "atypica is ready",
       "confirmAbortTitle": "Stop Background Task?",
       "confirmAbortDescription": "This will stop the current background task. The results may be incomplete.",
@@ -237,7 +237,7 @@
       "thinking": "atypica is thinking...",
       "processing": "Processing your request...",
       "complete": "Processing complete ✨",
-      "error": "An error occurred, please try again",
+      "error": "An error occurred, please refresh the page and try again",
       "ready": "atypica is ready",
       "viewPersonas": "🔍 View personas found in this search"
     }

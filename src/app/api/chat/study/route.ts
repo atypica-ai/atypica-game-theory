@@ -56,6 +56,10 @@ export async function POST(req: Request) {
   const studyUserChatId = parseInt(payload["id"]);
   const initialMessages = payload["messages"] as Message[];
 
+  if (!studyUserChatId || !initialMessages) {
+    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  }
+
   const { abortController, abortSignal, delayedAbortSignal } = createAbortSignals(req.signal);
 
   const streamingMessage: Omit<Message, "role"> & { parts: NonNullable<Message["parts"]> } = {
@@ -85,7 +89,7 @@ export async function POST(req: Request) {
       [ToolName.reasoningThinking]: reasoningThinkingTool({ abortSignal, statReport }),
       [ToolName.requestInteraction]: requestInteractionTool,
     },
-    maxSteps: 3,
+    maxSteps: 30,
     onError: async ({ error }) => {
       // 这里也包括 tool calling 里面直接 throw 的异常
       console.log(`StudyChat [${studyUserChatId}] streamText onError:`, (error as Error).message);

@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Loader2Icon } from "lucide-react";
+import { Loader2Icon, RefreshCcwIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useState } from "react";
 
@@ -127,6 +127,14 @@ export function StatusDisplay({
         </div>
       )}
       <span className="text-xs tracking-wider font-medium">{getStatusMessage(status)}</span>
+      {status === "error" && (
+        <div
+          className="p-1 hover:opacity-70 cursor-pointer"
+          onClick={() => window.location.reload()}
+        >
+          <RefreshCcwIcon className="size-4" />
+        </div>
+      )}
       {/* {(status === "streaming" || status === "background") && (
         <CancelButton onUserCancel={onUserCancel} />
       )} */}
