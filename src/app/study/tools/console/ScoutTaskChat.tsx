@@ -41,7 +41,7 @@ const ScoutTaskChat = ({ toolInvocation }: { toolInvocation: ToolInvocation }) =
     } else {
       console.log(`ScoutTaskChat [${scoutUserChatId}] no updates`);
     }
-  }, [scoutUserChatId, backgroundToken]);
+  }, [scoutUserChatId, backgroundToken, reloadMessages]);
 
   // 添加定时器效果
   useEffect(() => {

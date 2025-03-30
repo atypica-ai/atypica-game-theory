@@ -4,6 +4,7 @@ import { Message, TextStreamPart } from "ai";
 
 export function appendChunkToStreamingMessage(
   streamingMessage: Omit<Message, "role"> & { parts: NonNullable<Message["parts"]> },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   chunk: TextStreamPart<any>,
 ) {
   if (chunk.type === "text-delta") {

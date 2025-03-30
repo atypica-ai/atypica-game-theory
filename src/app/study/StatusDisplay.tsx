@@ -89,7 +89,7 @@ export function CancelButton({
 
 export function StatusDisplay({
   status,
-  onUserCancel,
+  // onUserCancel,
 }: {
   status: "background" | "error" | "submitted" | "streaming" | "ready";
   onUserCancel?: () => void;

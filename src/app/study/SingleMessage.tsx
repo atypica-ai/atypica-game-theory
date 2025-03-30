@@ -47,19 +47,22 @@ const ToolInvocationMessage = ({
     }
   }, [isLastToolPart]);
 
-  const renderToolCallUI = useCallback((toolInvocation: ToolInvocation) => {
-    // 特殊显示的工具调用 UI
-    const { toolName, state } = toolInvocation;
-    if (toolName == ToolName.requestInteraction) {
-      return (
-        <RequestIteractionMessage toolInvocation={toolInvocation} addToolResult={addToolResult} />
-      );
-    }
-    if (state === "result" && toolName == ToolName.generateReport) {
-      return <GenerateReportResultMessage result={toolInvocation.result} />;
-    }
-    return null;
-  }, []);
+  const renderToolCallUI = useCallback(
+    (toolInvocation: ToolInvocation) => {
+      // 特殊显示的工具调用 UI
+      const { toolName, state } = toolInvocation;
+      if (toolName == ToolName.requestInteraction) {
+        return (
+          <RequestIteractionMessage toolInvocation={toolInvocation} addToolResult={addToolResult} />
+        );
+      }
+      if (state === "result" && toolName == ToolName.generateReport) {
+        return <GenerateReportResultMessage result={toolInvocation.result} />;
+      }
+      return null;
+    },
+    [addToolResult],
+  );
 
   return (
     <div>

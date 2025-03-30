@@ -114,7 +114,7 @@ export function ChatBox({
     } else {
       console.log(`StudyUserChat [${studyUserChatId}] no updates`);
     }
-  }, [studyUserChatId, uiStatus, backgroundToken]);
+  }, [studyUserChatId, backgroundToken, reloadMessages]);
 
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;

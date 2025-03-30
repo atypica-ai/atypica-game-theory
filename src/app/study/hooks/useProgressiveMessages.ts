@@ -46,7 +46,7 @@ export function useProgressiveMessages({
     if (isCompleted) {
       return [...messages];
     }
-    
+
     if (enabled && messageIndex < messages.length) {
       return [
         ...messages.slice(0, messageIndex),
@@ -104,15 +104,15 @@ export function useProgressiveMessages({
     return () => {
       if (timer) clearTimeout(timer);
     };
-  }, [enabled, messages, messageIndex, partIndex, fixedWaitTime]);
+  }, [enabled, messages, messageIndex, partIndex, fixedWaitTime, isCompleted]);
 
   const skipToEnd = () => {
     setIsCompleted(true);
   };
 
-  return { 
+  return {
     partialMessages,
     skipToEnd,
-    isCompleted
+    isCompleted,
   };
 }
