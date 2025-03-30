@@ -148,7 +148,7 @@ async function backgroundRun({
         analyst,
         analystInterviewId,
       });
-      console.log(`\n[${analystInterviewId}] Persona:\n${message.content}\n`);
+      console.log(`[${analystInterviewId}] Persona:\n${message.content}\n`);
       personaAgent.messages.push({ ...message, role: "assistant" });
       interviewer.messages.push({ ...message, role: "user" });
     } catch (error) {
@@ -170,7 +170,7 @@ async function backgroundRun({
         analystInterviewId,
         interviewToken,
       });
-      console.log(`\n[${analystInterviewId}] Interviewer:\n${message.content}\n`);
+      console.log(`[${analystInterviewId}] Interviewer:\n${message.content}\n`);
       interviewer.messages.push({ ...message, role: "assistant" });
       personaAgent.messages.push({ ...message, role: "user" });
       if (message.content.includes("本次访谈结束，谢谢您的参与！")) {
@@ -234,14 +234,14 @@ export async function POST(req: Request) {
         const now = Date.now();
         const elapsedSeconds = Math.floor((now - start) / 1000);
         if (elapsedSeconds > 600) {
-          console.log(`\n[${analystInterviewId}] Interview timeout\n`);
+          console.log(`[${analystInterviewId}] Interview timeout`);
           stop = true;
           resolve(null);
         }
         if (stop) {
-          console.log(`\n[${analystInterviewId}] Interview stopped\n`);
+          console.log(`[${analystInterviewId}] Interview stopped`);
         } else {
-          console.log(`\n[${analystInterviewId}] Interview is ongoing, ${elapsedSeconds} seconds`);
+          console.log(`[${analystInterviewId}] Interview is ongoing, ${elapsedSeconds} seconds`);
           setTimeout(() => tick(), 5000);
         }
       };

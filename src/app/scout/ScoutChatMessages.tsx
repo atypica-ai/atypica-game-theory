@@ -45,7 +45,7 @@ export function ScoutChatMessages({
     // append,
     reload,
   } = useChat({
-    maxSteps: 30,
+    maxSteps: 15,
     api: "/api/chat/scout",
     body: {
       scoutUserChatId,

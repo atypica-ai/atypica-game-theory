@@ -297,7 +297,7 @@ async function runInterview({
       abortSignal,
       statReport,
     });
-    // console.log(`\nInterview [${analystInterviewId}] Persona:\n${message.content}\n`);
+    // console.log(`Interview [${analystInterviewId}] Persona:\n${message.content}\n`);
     personaAgent.messages.push({ ...personaReply, role: "assistant" });
     interviewer.messages.push({ ...personaReply, role: "user" });
 
@@ -316,7 +316,7 @@ async function runInterview({
       abortSignal,
       statReport,
     });
-    // console.log(`\nInterview [${analystInterviewId}] Interviewer:\n${message.content}\n`);
+    // console.log(`Interview [${analystInterviewId}] Interviewer:\n${message.content}\n`);
     interviewer.messages.push({ ...interviewerReply, role: "assistant" });
     personaAgent.messages.push({ ...interviewerReply, role: "user" });
     if (interviewerReply.content.includes("本次访谈结束，谢谢您的参与！")) {

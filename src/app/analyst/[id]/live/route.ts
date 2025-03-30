@@ -97,7 +97,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
         content: reportHTMLPrologue(analyst),
       },
     ],
-    maxSteps: 10,
+    maxSteps: 1,
     maxTokens: 100000,
     onFinish: async (result) => {
       await prisma.analyst.update({

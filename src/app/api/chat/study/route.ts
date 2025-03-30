@@ -46,6 +46,7 @@ const createAbortSignals = (requestSignal: AbortSignal) => {
   };
 };
 
+// 参考了 https://sdk.vercel.ai/docs/ai-sdk-ui/chatbot-message-persistence#storing-messages 的设计来实现
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session?.user) {
@@ -89,7 +90,7 @@ export async function POST(req: Request) {
       [ToolName.reasoningThinking]: reasoningThinkingTool({ abortSignal, statReport }),
       [ToolName.requestInteraction]: requestInteractionTool,
     },
-    maxSteps: 30,
+    maxSteps: 15,
     onError: async ({ error }) => {
       // 这里也包括 tool calling 里面直接 throw 的异常
       console.log(`StudyChat [${studyUserChatId}] streamText onError:`, (error as Error).message);

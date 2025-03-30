@@ -1,14 +1,13 @@
 "use client";
-import { useCallback, useMemo, useRef, useState } from "react";
-import { useChat } from "@ai-sdk/react";
 import { ChatMessage } from "@/components/ChatMessage";
-import { useScrollToBottom } from "@/components/use-scroll-to-bottom";
-import { Analyst, Persona, updateAnalystInterview } from "@/data";
 import { Markdown } from "@/components/markdown";
-import { AnalystInterview } from "@/data";
 import { Button } from "@/components/ui/button";
+import { useScrollToBottom } from "@/components/use-scroll-to-bottom";
+import { Analyst, AnalystInterview, Persona, updateAnalystInterview } from "@/data";
 import { interviewerPrologue } from "@/prompt";
+import { useChat } from "@ai-sdk/react";
 import { useTranslations } from "next-intl";
+import { useCallback, useMemo, useRef, useState } from "react";
 // import imageUrl from "./image";
 
 export function Interview({
@@ -21,15 +20,13 @@ export function Interview({
   persona: Persona;
 }) {
   const t = useTranslations("InterviewPage");
-  const [stop, setStop] = useState<"initial" | "talking" | "terminated">(
-    "initial",
-  );
+  const [stop, setStop] = useState<"initial" | "talking" | "terminated">("initial");
 
   const personaAgentRef = useRef<ReturnType<typeof useChat>>(null);
   const interviewerRef = useRef<ReturnType<typeof useChat>>(null);
 
   const interviewer = useChat({
-    maxSteps: 5,
+    maxSteps: 3,
     api: "/api/chat/interviewer",
     body: {
       analyst,
@@ -51,7 +48,7 @@ export function Interview({
   interviewerRef.current = interviewer;
 
   const personaAgent = useChat({
-    maxSteps: 5,
+    maxSteps: 3,
     api: "/api/chat/persona",
     body: {
       persona,
@@ -111,8 +108,7 @@ export function Interview({
     interviewer.stop();
   }, [personaAgent, interviewer]);
 
-  const [messagesContainerRef, messagesEndRef] =
-    useScrollToBottom<HTMLDivElement>();
+  const [messagesContainerRef, messagesEndRef] = useScrollToBottom<HTMLDivElement>();
 
   return (
     <div className="flex flex-row justify-center pb-20 h-dvh bg-white dark:bg-zinc-900">
@@ -134,8 +130,7 @@ export function Interview({
             ></ChatMessage>
           ))}
           {personaAgent.status === "ready" &&
-            (interviewer.status === "streaming" ||
-              interviewer.status === "ready") &&
+            (interviewer.status === "streaming" || interviewer.status === "ready") &&
             interviewer.messages
               .filter((m) => m.role === "assistant")
               .slice(-1)
