@@ -80,7 +80,7 @@ export const scoutTaskChatTool = ({
       }
       let hasError = false;
       try {
-        await startScoutTask({
+        await runScoutTaskChatStream({
           studyUserChatId,
           scoutUserChatId,
           messages,
@@ -88,7 +88,10 @@ export const scoutTaskChatTool = ({
           statReport,
         });
       } catch (error) {
-        console.log(`[${scoutUserChatId}] ScoutTaskChatTool failed:`, (error as Error).message);
+        console.log(
+          `ScoutTaskChat [${scoutUserChatId}] runScoutTaskChatStream failed:`,
+          (error as Error).message,
+        );
         hasError = true;
       }
       const personasResult = await prisma.persona.findMany({
@@ -104,15 +107,16 @@ export const scoutTaskChatTool = ({
       return {
         personas: personas,
         plainText:
-          (hasError ? "Something went wrong but " : "") +
-          `${personas.length} personas found: ` +
-          JSON.stringify(personas),
+          !personas.length && hasError
+            ? "Something went wrong"
+            : (hasError ? "Something went wrong but " : "") +
+              `${personas.length} personas found: ${JSON.stringify(personas)}`,
       };
     },
   });
 
 /**
- * 从数据库读取历史消息并修复一下
+ * 从数据库读取历史消息并删除最后一条 user message
  */
 async function prepareMessagesForLLM(scoutUserChatId: number) {
   const scoutUserChat = await prisma.userChat.findUniqueOrThrow({
@@ -125,23 +129,49 @@ async function prepareMessagesForLLM(scoutUserChatId: number) {
   return messages;
 }
 
-async function runScoutUserChatStream({
-  backgroundToken,
-  // studyUserChatId,
+async function runScoutTaskChatStream({
+  studyUserChatId,
   scoutUserChatId,
   messages: _messages,
   abortSignal,
   statReport,
 }: {
-  backgroundToken: string;
   studyUserChatId: number;
   scoutUserChatId: number;
   messages: Message[];
   abortSignal: AbortSignal;
   statReport: StatReporter;
-}): Promise<ScoutTaskChatResult["personas"]> {
-  let messages = [..._messages];
+}): Promise<void> {
+  const backgroundToken = new Date().valueOf().toString();
+  try {
+    await prisma.userChat.update({
+      where: { id: scoutUserChatId, kind: "scout" },
+      data: { backgroundToken },
+    });
+  } catch (error) {
+    console.log(
+      `ScoutTaskChat [${scoutUserChatId}] Error resetting studyUserChat with token ${backgroundToken}`,
+      error,
+    );
+    throw error;
+  }
 
+  const clearBackgroundToken = async () => {
+    try {
+      // mark as background running end
+      await prisma.userChat.updateMany({
+        where: { id: studyUserChatId, kind: "scout" },
+        data: { backgroundToken: null },
+      });
+    } catch (error) {
+      console.log(
+        `ScoutTaskChat [${scoutUserChatId}] Error clearing background token ${backgroundToken}`,
+        error,
+      );
+    }
+  };
+
+  let messages = [..._messages];
   while (true) {
     const updateLastMessage = ((scoutUserChatId: number, initialMessages: Message[]) => {
       // 这里要保持之前的消息不变，不断更新最后一条消息的 parts，所以要在闭包里暂存 initialMessages
@@ -150,14 +180,22 @@ async function runScoutUserChatStream({
           ...initialMessages,
           { role: "assistant", ...streamingMessage },
         ];
-        await prisma.userChat.update({
-          where: { id: scoutUserChatId, backgroundToken },
-          data: { messages: messages as unknown as InputJsonValue },
-        });
+        try {
+          await prisma.userChat.update({
+            where: { id: scoutUserChatId, backgroundToken },
+            data: { messages: messages as unknown as InputJsonValue },
+          });
+        } catch (error) {
+          console.log(
+            `ScoutTaskChat [${scoutUserChatId}] Error updateLastMessage with token ${backgroundToken}:`,
+            (error as Error).message,
+          );
+          throw error;
+        }
       };
     })(scoutUserChatId, messages);
 
-    await new Promise<Omit<Message, "role">>(async (resolve, reject) => {
+    const streamTextPromise = new Promise<Omit<Message, "role">>((resolve, reject) => {
       const streamingMessage: Omit<Message, "role"> = {
         id: generateId(),
         content: "",
@@ -197,35 +235,38 @@ async function runScoutUserChatStream({
               scoutUserChatId,
             });
           }
-          try {
-            if (streamingMessage.parts?.length && streamingMessage.content.trim()) {
-              await updateLastMessage(streamingMessage);
-            }
-          } catch (error) {
-            console.log(`[${scoutUserChatId}] ScoutTaskChat updateLastMessage error:`);
-            reject(
-              new Error(
-                `Error updating last message with scoutUserChatId ${scoutUserChatId} and token ${backgroundToken}, aborting streamText`,
-              ),
-            );
+          if (streamingMessage.parts?.length && streamingMessage.content.trim()) {
+            await updateLastMessage(streamingMessage);
           }
         },
-        onError: (error) => {
-          console.log(`[${scoutUserChatId}] ScoutTaskChat streamText error:`, error);
+        onError: ({ error }) => {
+          console.log(
+            `ScoutTaskChat [${scoutUserChatId}] runScoutTaskChatStream streamText onError:`,
+            error,
+          );
           reject(error);
         },
         abortSignal,
       });
-      try {
-        await response.consumeStream();
-      } catch (error) {
-        console.log(
-          `[${scoutUserChatId}] ScoutTaskChat consumeStream error:`,
-          (error as Error).message,
-        );
-        reject(error);
-      }
+      // 这里不要 await 而是用 then，否则会出现一系列嵌套的 await new promise 最终导致 abortController.abort() 操作被取消
+      // 可能是 studychat 先断了，await 结束了，后面的 abort 就失败了
+      response.consumeStream().catch((error) => reject(error));
     });
+
+    try {
+      const message = await streamTextPromise;
+      console.log(
+        `ScoutTaskChat [${scoutUserChatId}] message stream complete:`,
+        message.content.substring(0, 20),
+      );
+    } catch (error) {
+      console.log(
+        `ScoutTaskChat [${scoutUserChatId}] message stream error:`,
+        (error as Error).message,
+      );
+      await clearBackgroundToken();
+      throw error;
+    }
 
     const personasResult = await prisma.persona.findMany({
       where: { scoutUserChatId },
@@ -242,85 +283,9 @@ async function runScoutUserChatStream({
         content: `目前总结了${personasResult.length}个personas，还不够5个，请继续`,
       });
       continue;
+    } else {
+      break;
     }
   }
-}
-
-async function startScoutTask({
-  studyUserChatId,
-  scoutUserChatId,
-  messages,
-  abortSignal,
-  statReport,
-}: {
-  studyUserChatId: number;
-  scoutUserChatId: number;
-  messages: Message[];
-  abortSignal: AbortSignal;
-  statReport: StatReporter;
-}) {
-  const backgroundToken = new Date().valueOf().toString();
-
-  try {
-    await prisma.userChat.update({
-      where: { id: scoutUserChatId, kind: "scout" },
-      data: { backgroundToken },
-    });
-  } catch (error) {
-    console.log("Error updating backgroundToken:", error);
-  }
-
-  await new Promise(async (resolve, reject) => {
-    let stop = false;
-    const start = Date.now();
-    const tick = () => {
-      const now = Date.now();
-      const elapsedSeconds = Math.floor((now - start) / 1000);
-      if (elapsedSeconds > 1200) {
-        // 20mins
-        stop = true;
-        reject(new Error(`[${scoutUserChatId}] ScoutTask background run timeout`));
-      }
-      if (stop) {
-        console.log(`\n[${scoutUserChatId}] ScoutTask stopped\n`);
-      } else {
-        console.log(`\n[${scoutUserChatId}] ScoutTask is ongoing, ${elapsedSeconds} seconds`);
-        setTimeout(() => tick(), 5000);
-      }
-    };
-    tick();
-
-    try {
-      await runScoutUserChatStream({
-        backgroundToken,
-        studyUserChatId,
-        scoutUserChatId,
-        messages,
-        abortSignal,
-        statReport,
-      });
-      stop = true;
-      resolve(null);
-    } catch (error) {
-      console.log(
-        `[${scoutUserChatId}] ScoutTaskChat backgroundRun error:`,
-        (error as Error).message,
-      );
-      stop = true;
-      reject(new Error(`[${scoutUserChatId}] ScoutTask background run aborted`));
-    }
-
-    try {
-      // mark as background running end
-      await prisma.userChat.updateMany({
-        where: { id: studyUserChatId, kind: "scout" },
-        data: { backgroundToken: null },
-      });
-    } catch (error) {
-      console.log(
-        `Error clearing background token with scoutUserChatId ${scoutUserChatId} studyUserChatId ${studyUserChatId} and backgroundToken ${backgroundToken}`,
-        error,
-      );
-    }
-  });
+  // while loop end
 }

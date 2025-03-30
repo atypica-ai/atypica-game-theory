@@ -164,6 +164,7 @@ async function chatWithInterviewer({
       abortSignal,
     });
     // 这里不要 await 而是用 then，否则会出现一系列嵌套的 await new promise 最终导致 abortController.abort() 操作被取消
+    // 可能是 studychat 先断了，await 结束了，后面的 abort 就失败了
     response.consumeStream().catch((error) => reject(error));
     // 必须写这个 await for loop，把 stream 消费完，也可以使用 consumeStream 方法
     // for await (const textPart of response.textStream) { console.log(textPart); }
@@ -211,6 +212,7 @@ async function chatWithPersona({
       abortSignal,
     });
     // 这里不要 await 而是用 then，否则会出现一系列嵌套的 await new promise 最终导致 abortController.abort() 操作被取消
+    // 可能是 studychat 先断了，await 结束了，后面的 abort 就失败了
     response.consumeStream().catch((error) => reject(error));
   }).catch((error) => {
     throw error;

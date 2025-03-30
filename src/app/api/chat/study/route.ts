@@ -1,6 +1,5 @@
 import { authOptions } from "@/lib/auth";
 import openai from "@/lib/openai";
-import { prisma } from "@/lib/prisma";
 import { fixChatMessages } from "@/lib/utils";
 import { studySystem } from "@/prompt";
 import {
@@ -15,79 +14,37 @@ import {
   scoutTaskCreateTool,
   ToolName,
 } from "@/tools";
-import { InputJsonValue } from "@prisma/client/runtime/library";
-import { waitUntil } from "@vercel/functions";
-import { generateId, Message, streamText, TextStreamPart } from "ai";
+import { generateId, Message, streamText } from "ai";
 import { getServerSession } from "next-auth/next";
 import { NextResponse } from "next/server";
+import { backgroundChatUntilCancel } from "./background";
+import { appendChunkToStreamingMessage, persistentMessages } from "./messageUtils";
 
-function appendChunkToStreamingMessage(
-  streamingMessage: Omit<Message, "role"> & { parts: NonNullable<Message["parts"]> },
-  chunk: TextStreamPart<any>,
-) {
-  if (chunk.type === "text-delta") {
-    streamingMessage.content += chunk.textDelta;
-    const parts = streamingMessage.parts;
-    const lastPart = parts[parts.length - 1];
-    if (lastPart?.type !== "text") {
-      parts.push({ type: "text", text: chunk.textDelta });
-    } else {
-      lastPart.text += chunk.textDelta;
-    }
-  } else if (chunk.type === "tool-call") {
-    streamingMessage.content += "";
-    streamingMessage.parts.push({
-      type: "tool-invocation",
-      toolInvocation: {
-        state: "call",
-        toolName: chunk.toolName,
-        args: chunk.args,
-        toolCallId: chunk.toolCallId,
-      },
+const createAbortSignals = (requestSignal: AbortSignal) => {
+  // const abortSignal = req.signal;
+  // 请求断了以后不终止，自己创建一个 controller 在 onError 里触发，或者收到用户中断的操作指令时候触发
+  const abortController = new AbortController();
+  requestSignal.addEventListener("abort", () => {
+    console.log(`[241] StudyChat request aborted, do nothing, background working`);
+    // abortController.abort();
+  });
+  const abortSignal = abortController.signal;
+  const delayedAbortSignal = (() => {
+    // 给 StudyChat 的 streamText 用，先等其他的请求都 abort 最后再 abort StudyChat
+    // 否则 StudyChat 提前中断会取消它后续调用的所有 promise，导致他们自己在调用 abortController.abort() 方法时失败
+    const delayedAbortController = new AbortController();
+    abortSignal.addEventListener("abort", () => {
+      setTimeout(() => delayedAbortController.abort(), 1000);
     });
-  } else if (chunk.type === "tool-result") {
-    streamingMessage.content += "";
-    const index = streamingMessage.parts.findIndex(
-      (part) =>
-        part.type === "tool-invocation" && part.toolInvocation.toolCallId === chunk.toolCallId,
-    );
-    if (index !== -1) {
-      streamingMessage.parts[index] = {
-        type: "tool-invocation",
-        toolInvocation: {
-          state: "result",
-          toolName: chunk.toolName,
-          args: chunk.args,
-          toolCallId: chunk.toolCallId,
-          result: chunk.result,
-        },
-      };
-    }
-  }
-  // 其他类型的在 studychat 里遇不到，不用处理
-}
+    return delayedAbortController.signal;
+  })();
 
-const persistentMessages = (() => {
-  let timeout: NodeJS.Timeout | null = null;
-  return async (studyUserChatId: number, messages: Message[]) => {
-    // Clear any existing timeout
-    if (timeout) {
-      clearTimeout(timeout);
-    }
-    // Set new timeout for 10 seconds
-    timeout = setTimeout(async () => {
-      try {
-        await prisma.userChat.update({
-          where: { id: studyUserChatId },
-          data: { messages: messages as unknown as InputJsonValue },
-        });
-        console.log(`[${studyUserChatId}] Messages persisted successfully`);
-      } catch (error) {
-        console.log(`[${studyUserChatId}] Error persisting messages:`, error);
-      }
-    }, 3000); // 10 seconds debounce
+  return {
+    abortController,
+    abortSignal,
+    delayedAbortSignal,
   };
-})();
+};
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
@@ -99,57 +56,7 @@ export async function POST(req: Request) {
   const studyUserChatId = parseInt(payload["id"]);
   const initialMessages = payload["messages"] as Message[];
 
-  // const abortSignal = req.signal;
-  // 请求断了以后不终止，自己创建一个 controller 在 onError 里触发，或者收到用户中断的操作指令时候触发
-  const abortController = new AbortController();
-  req.signal.addEventListener("abort", () => {
-    console.log(`[241] StudyChat request aborted`, req.url, "do nothing, background working");
-    // abortController.abort();
-  });
-  const abortSignal = abortController.signal;
-
-  const backgroundToken = new Date().valueOf().toString();
-  const studyUserChat = await prisma.userChat.update({
-    where: { id: studyUserChatId },
-    data: { backgroundToken },
-  });
-  waitUntil(
-    new Promise((resolve) => {
-      async function checkBackgroundToken() {
-        const userChat = await prisma.userChat.findUniqueOrThrow({
-          where: { id: studyUserChatId },
-          select: { backgroundToken: true },
-        });
-        if (userChat.backgroundToken !== backgroundToken) {
-          console.log(
-            `[${studyUserChatId}] StudyChat background token cleared or changed, aborting background running`,
-          );
-          try {
-            abortController.abort();
-          } catch (error) {
-            console.log(`[${studyUserChatId}] Error during abort:`, error);
-          }
-          resolve(null);
-        } else {
-          setTimeout(() => checkBackgroundToken(), 1000);
-        }
-      }
-      checkBackgroundToken();
-    }),
-  );
-  const clearBackgroundToken = async () => {
-    try {
-      await prisma.userChat.update({
-        where: { id: studyUserChatId, backgroundToken },
-        data: { backgroundToken: null },
-      });
-    } catch (error) {
-      console.log(
-        `[${studyUserChatId}] Failed to clear background token`,
-        (error as Error).message,
-      );
-    }
-  };
+  const { abortController, abortSignal, delayedAbortSignal } = createAbortSignals(req.signal);
 
   const streamingMessage: Omit<Message, "role"> & { parts: NonNullable<Message["parts"]> } = {
     id: generateId(),
@@ -160,7 +67,7 @@ export async function POST(req: Request) {
   const { statReport } = initStatReporter(studyUserChatId);
   let streamStartTime = Date.now();
 
-  const result = streamText({
+  const streamTextResult = streamText({
     // model: openai("o3-mini"),
     model: openai("claude-3-7-sonnet"),
     providerOptions: {
@@ -181,7 +88,7 @@ export async function POST(req: Request) {
     maxSteps: 3,
     onError: async ({ error }) => {
       // 这里也包括 tool calling 里面直接 throw 的异常
-      console.log(`[${studyUserChatId}] StudyChat onError:`, (error as Error).message);
+      console.log(`StudyChat [${studyUserChatId}] streamText onError:`, (error as Error).message);
       // @IMPORTANT 这很重要, 中断所有的 tool calling 里可能还在运行的 streamText
       try {
         abortController.abort();
@@ -198,8 +105,7 @@ export async function POST(req: Request) {
     onStepFinish: async (step) => {
       // 到了这里的 tool calling step 一定是有 result 的，所以得在上面 onChunk 里面获取 call 阶段的 tool
       console.log(
-        `[${studyUserChatId}] StudyChat step`,
-        step.stepType,
+        `StudyChat [${studyUserChatId}] step [${step.stepType}]`,
         step.toolCalls.map((call) => call.toolName),
       );
       if (step.usage.totalTokens > 0) {
@@ -217,44 +123,14 @@ export async function POST(req: Request) {
         statReport("steps", event.steps.length, { reportedBy: "study chat" }),
       ]);
     },
-    abortSignal,
+    abortSignal: delayedAbortSignal,
   });
 
-  waitUntil(
-    new Promise((resolve, reject) => {
-      let stop = false;
-      const start = Date.now();
-      const tick = () => {
-        const now = Date.now();
-        const elapsedSeconds = Math.floor((now - start) / 1000);
-        if (elapsedSeconds > 1800) {
-          // 30 mins
-          console.log(`\n[${studyUserChatId}] StudyChat timeout\n`);
-          stop = true;
-          reject(new Error("StudyChat timeout"));
-        }
-        if (stop) {
-          console.log(`\n[${studyUserChatId}] StudyChat stopped\n`);
-        } else {
-          console.log(`\n[${studyUserChatId}] StudyChat is ongoing, ${elapsedSeconds} seconds`);
-          setTimeout(() => tick(), 5000);
-        }
-      };
-      tick();
-      // consume the stream to ensure it runs to completion & triggers onFinish
-      // even when the client response is aborted:
-      result
-        .consumeStream()
-        .then(() => {
-          stop = true;
-          resolve(null);
-        })
-        .catch((error) => {
-          stop = true;
-          reject(error);
-        });
-    }),
-  );
+  const { clearBackgroundToken } = backgroundChatUntilCancel({
+    streamTextResult,
+    abortController,
+    studyUserChatId,
+  });
 
-  return result.toDataStreamResponse();
+  return streamTextResult.toDataStreamResponse();
 }
