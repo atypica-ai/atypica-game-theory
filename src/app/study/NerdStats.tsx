@@ -104,7 +104,7 @@ export function NerdStats({ studyUserChatId }: NerdStatsProps) {
                     steps
                   </div>
                   <div className="text-foreground/70 py-3 px-6 text-center border-r border-input border-dashed">
-                    personas
+                    agents
                   </div>
                   <div className="text-foreground/70 py-3 px-6 text-center border-r border-input">
                     tokens
@@ -120,7 +120,7 @@ export function NerdStats({ studyUserChatId }: NerdStatsProps) {
                     {getStatValue("steps")}
                   </div>
                   <div className="text-primary py-6 px-6 text-center text-xl font-mono border-r border-input border-dashed">
-                    {getStatValue("personas")}
+                    {getStatValue("personas") + 3 /* personas + expert agents */}
                   </div>
                   <div className="text-primary py-6 px-6 text-center text-xl font-mono border-r border-input">
                     {getStatValue("tokens").toLocaleString()}

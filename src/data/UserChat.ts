@@ -121,15 +121,36 @@ export async function fetchUserChats<Tkind extends UserChat["kind"]>(
   });
 }
 
-export async function clearStudyUserChatBackgroundToken(userChatId: number) {
+export async function clearStudyUserChatBackgroundToken(studyUserChatId: number) {
   return withAuth(async (user) => {
     try {
       await prisma.userChat.update({
-        where: { id: userChatId, userId: user.id, kind: "study" },
+        where: { id: studyUserChatId, userId: user.id, kind: "study" },
         data: { backgroundToken: null },
       });
     } catch (error) {
       console.log("Error clearing user chat background token:", error);
+      throw error;
+    }
+  });
+}
+
+export async function fetchUserChatState<Tkind extends UserChat["kind"]>(
+  studyUserChatId: number,
+  kind: Tkind,
+) {
+  return withAuth(async (user) => {
+    try {
+      const { backgroundToken, updatedAt } = await prisma.userChat.findUniqueOrThrow({
+        where: { id: studyUserChatId, userId: user.id, kind },
+        select: {
+          backgroundToken: true,
+          updatedAt: true,
+        },
+      });
+      return { backgroundToken, updatedAt };
+    } catch (error) {
+      console.log("Error fetching user chat status:", error);
       throw error;
     }
   });

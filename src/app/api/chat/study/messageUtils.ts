@@ -50,22 +50,29 @@ export function appendChunkToStreamingMessage(
 
 export const persistentMessages = (() => {
   let timeout: NodeJS.Timeout | null = null;
-  return async (studyUserChatId: number, messages: Message[]) => {
+  return async (
+    studyUserChatId: number,
+    messages: Message[],
+    { immediate }: { immediate?: boolean } = {},
+  ) => {
     // Clear any existing timeout
     if (timeout) {
       clearTimeout(timeout);
     }
     // Set new timeout for 10 seconds
-    timeout = setTimeout(async () => {
-      try {
-        await prisma.userChat.update({
-          where: { id: studyUserChatId },
-          data: { messages: messages as unknown as InputJsonValue },
-        });
-        console.log(`[${studyUserChatId}] Messages persisted successfully`);
-      } catch (error) {
-        console.log(`[${studyUserChatId}] Error persisting messages:`, error);
-      }
-    }, 3000); // 10 seconds debounce
+    timeout = setTimeout(
+      async () => {
+        try {
+          await prisma.userChat.update({
+            where: { id: studyUserChatId },
+            data: { messages: messages as unknown as InputJsonValue },
+          });
+          console.log(`[${studyUserChatId}] Messages persisted successfully`);
+        } catch (error) {
+          console.log(`[${studyUserChatId}] Error persisting messages:`, error);
+        }
+      },
+      immediate ? 0 : 5000,
+    ); // 5 seconds debounce
   };
 })();

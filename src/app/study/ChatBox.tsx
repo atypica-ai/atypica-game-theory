@@ -7,15 +7,16 @@ import {
   clearStudyUserChatBackgroundToken,
   deleteMessageFromUserChat,
   fetchUserChatById,
+  fetchUserChatState,
   StudyUserChat,
 } from "@/data";
 import { cn } from "@/lib/utils";
 import { Message, useChat } from "@ai-sdk/react";
 import { ArrowRightIcon } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { NerdStats } from "./NerdStats";
 import { SingleMessage } from "./SingleMessage";
-import { StatusDisplay } from "./StatusDisplay";
+import { CancelButton, StatusDisplay } from "./StatusDisplay";
 
 function popLastUserMessage(messages: Message[]) {
   if (messages.length > 0 && messages[messages.length - 1].role === "user") {
@@ -33,10 +34,8 @@ export function ChatBox({
     messages: initialMessages,
     backgroundToken: initialBackgroundToken,
   },
-  readOnly,
 }: {
   studyUserChat: StudyUserChat;
-  readOnly: boolean;
 }) {
   // 这个组件是不支持对话直接切换的，如果切换，需要刷新页面重新加载！);
 
@@ -47,10 +46,8 @@ export function ChatBox({
     handleSubmit,
     input,
     setInput,
-    status,
-    stop,
+    status: useChatStatus,
     reload,
-    append,
     addToolResult,
   } = useChat({
     id: studyUserChatId.toString(),
@@ -60,7 +57,12 @@ export function ChatBox({
     maxSteps: 30,
   });
 
-  const useChatRef = useRef({ reload, append, stop, setMessages });
+  const [backgroundToken, setBackgroundToken] = useState<string | null>(initialBackgroundToken);
+  const uiStatus = useMemo(
+    () => (backgroundToken ? "background" : useChatStatus),
+    [backgroundToken, useChatStatus],
+  );
+  const useChatRef = useRef({ reload, setMessages });
 
   useEffect(() => {
     // 如果最初最后一条消息是用户消息，则立即开始聊天
@@ -70,28 +72,54 @@ export function ChatBox({
     }
   }, [initialMessages]);
 
+  // 不知什么原因有时候会触发两次提交，这样就会导致 backgroundToken 被立即重置从而报错，所以加一个 2s throttle
+  const [lastSubmitTime, setLastSubmitTime] = useState<number>(0);
   const handleSubmitMessage = useCallback(
     async (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault();
+      const now = Date.now();
+      if (now - lastSubmitTime < 2000) {
+        console.log("Throttled form submission");
+        return;
+      }
+      setLastSubmitTime(now);
       handleSubmit(event);
     },
-    [handleSubmit],
+    // handleSubmit 不能用 ref，要监听变化
+    [handleSubmit, lastSubmitTime],
   );
 
-  const [backgroundToken, setBackgroundToken] = useState<string | null>(initialBackgroundToken);
+  const reloadMessages = useCallback(async () => {
+    const { messages } = await fetchUserChatById(studyUserChatId, "study");
+    useChatRef.current.setMessages(messages);
+  }, [studyUserChatId]);
+
+  // const [chatUpdatedAt, setChatUpdatedAt] = useState<Date | null>(null);
+  // 使用 ref，确保 useCallback 里面取到最新值，并且变化了以后不触发 refreshStudyUserChat 和 useEffect 更新
+  const chatUpdatedAt = useRef<number | null>(null);
   const refreshStudyUserChat = useCallback(async () => {
     if (!backgroundToken) {
+      // 在 background 状态时定期刷新
       return;
     }
-    const studyUserChat = await fetchUserChatById(studyUserChatId, "study");
-    setBackgroundToken(studyUserChat.backgroundToken);
-    setMessages(studyUserChat.messages);
-  }, [backgroundToken]);
+    const { backgroundToken: newBackgroundToken, updatedAt } = await fetchUserChatState(
+      studyUserChatId,
+      "study",
+    );
+    if (updatedAt.valueOf() !== chatUpdatedAt.current || newBackgroundToken !== backgroundToken) {
+      chatUpdatedAt.current = updatedAt.valueOf();
+      setBackgroundToken(newBackgroundToken);
+      console.log(`StudyUserChat [${studyUserChatId}] updated at ${updatedAt}, reloading messages`);
+      reloadMessages();
+    } else {
+      console.log(`StudyUserChat [${studyUserChatId}] no updates`);
+    }
+  }, [studyUserChatId, uiStatus, backgroundToken]);
 
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
     const poll = async () => {
-      timeoutId = setTimeout(poll, 3000);
+      timeoutId = setTimeout(poll, 5000);
       await refreshStudyUserChat();
     };
     poll();
@@ -100,10 +128,9 @@ export function ChatBox({
     };
   }, [refreshStudyUserChat]);
 
-  // const inputRef = useRef<HTMLTextAreaElement>(null);
-  const [messagesContainerRef, messagesEndRef] = useScrollToBottom<HTMLDivElement>();
   const inputDisabled =
-    readOnly || !!backgroundToken || status === "streaming" || status === "submitted";
+    uiStatus === "background" || uiStatus === "streaming" || uiStatus === "submitted";
+  const [messagesContainerRef, messagesEndRef] = useScrollToBottom<HTMLDivElement>();
 
   return (
     <>
@@ -145,8 +172,11 @@ export function ChatBox({
 
       <div className="relative">
         <StatusDisplay
-          status={backgroundToken ? "background" : status}
-          onAbort={() => clearStudyUserChatBackgroundToken(studyUserChatId)}
+          status={uiStatus}
+          onUserCancel={async () => {
+            await clearStudyUserChatBackgroundToken(studyUserChatId);
+            setTimeout(() => window.location.reload(), 100);
+          }}
         />
         <div className="absolute right-0 top-1/2 -translate-y-1/2">
           <NerdStats studyUserChatId={studyUserChatId} />
@@ -155,7 +185,6 @@ export function ChatBox({
 
       <form onSubmit={handleSubmitMessage} className="relative">
         <Textarea
-          // ref={inputRef}
           className={cn(
             "block min-h-24 resize-none focus-visible:border-primary/70 transition-colors rounded-lg py-3 px-4",
             inputDisabled ? "opacity-50 cursor-not-allowed" : "",
@@ -178,14 +207,26 @@ export function ChatBox({
             }
           }}
         />
-        <Button
-          type="submit"
-          variant="secondary"
-          disabled={!input.trim()}
-          className="rounded-full size-9 absolute right-4 bottom-4"
-        >
-          <ArrowRightIcon className="h-4 w-4 text-primary" />
-        </Button>
+        <div className="absolute right-4 bottom-4">
+          {uiStatus === "background" || uiStatus === "streaming" ? (
+            <CancelButton
+              className="size-7"
+              onUserCancel={async () => {
+                await clearStudyUserChatBackgroundToken(studyUserChatId);
+                setTimeout(() => window.location.reload(), 100);
+              }}
+            />
+          ) : (
+            <Button
+              type="submit"
+              variant="secondary"
+              disabled={!input.trim()}
+              className="rounded-full size-9"
+            >
+              <ArrowRightIcon className="h-5 w-5 text-primary" />
+            </Button>
+          )}
+        </div>
       </form>
     </>
   );

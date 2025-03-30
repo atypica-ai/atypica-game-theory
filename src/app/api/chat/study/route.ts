@@ -100,7 +100,9 @@ export async function POST(req: Request) {
       // console.log(`[${studyUserChatId}] StudyChat onChunk:`, chunk);
       appendChunkToStreamingMessage(streamingMessage, chunk);
       const messages: Message[] = [...initialMessages, { role: "assistant", ...streamingMessage }];
-      persistentMessages(studyUserChatId, messages);
+      persistentMessages(studyUserChatId, messages, {
+        immediate: chunk.type === "tool-call" || chunk.type === "tool-result",
+      });
     },
     onStepFinish: async (step) => {
       // 到了这里的 tool calling step 一定是有 result 的，所以得在上面 onChunk 里面获取 call 阶段的 tool

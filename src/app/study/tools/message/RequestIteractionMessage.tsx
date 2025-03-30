@@ -40,7 +40,7 @@ export const RequestIteractionMessage: FC<{
                 "cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-700",
               toolInvocation.state === "result" &&
                 toolInvocation.result.answer === option &&
-                "bg-zinc-100 dark:bg-zinc-700",
+                "bg-zinc-100 dark:bg-zinc-700 font-bold",
             )}
           >
             {option}

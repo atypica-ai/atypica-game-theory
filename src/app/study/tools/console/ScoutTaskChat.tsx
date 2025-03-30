@@ -1,27 +1,17 @@
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
-import { fetchUserChatById } from "@/data";
+import { fetchUserChatById, fetchUserChatState } from "@/data";
 import { ToolName } from "@/tools";
 import { Message, ToolInvocation } from "ai";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useStudyContext } from "../../hooks/StudyContext";
 import { consoleStreamWaitTime, useProgressiveMessages } from "../../hooks/useProgressiveMessages";
 import { StreamSteps } from "./StreamSteps";
 
 const ScoutTaskChat = ({ toolInvocation }: { toolInvocation: ToolInvocation }) => {
-  const scoutUserChatId = (toolInvocation.args.scoutUserChatId ||
-    toolInvocation.args.chatId) as number; // 需要兼容老的 tool 参数: chatId
+  const scoutUserChatId = toolInvocation.args.scoutUserChatId as number; // 需要兼容老的 tool 参数: chatId
   const [messages, setMessages] = useState<Message[]>([]);
-  const [backgroundRunning, setBackgroundRunning] = useState(false);
-
-  const fetchUpdate = useCallback(async () => {
-    try {
-      const updated = await fetchUserChatById(scoutUserChatId, "scout");
-      setMessages(updated.messages);
-      setBackgroundRunning(!!updated.backgroundToken);
-    } catch (error) {
-      console.log("Error fetching scoutUserChat:", error);
-    }
-  }, [scoutUserChatId]);
+  const [backgroundToken, setBackgroundToken] = useState<string | null>(null);
+  const backgroundRunning = useMemo(() => !!backgroundToken, [backgroundToken]);
 
   const { replay } = useStudyContext();
   const { partialMessages: messagesDisplay } = useProgressiveMessages({
@@ -30,6 +20,28 @@ const ScoutTaskChat = ({ toolInvocation }: { toolInvocation: ToolInvocation }) =
     enabled: replay,
     fixedDuration: consoleStreamWaitTime(ToolName.scoutTaskChat),
   });
+
+  const reloadMessages = useCallback(async () => {
+    const { messages } = await fetchUserChatById(scoutUserChatId, "scout");
+    setMessages(messages);
+  }, [scoutUserChatId]);
+
+  // 使用 ref，确保 useCallback 里面取到最新值，并且变化了以后不触发 refreshStudyUserChat 和 useEffect 更新
+  const chatUpdatedAt = useRef<number | null>(null);
+  const fetchUpdate = useCallback(async () => {
+    const { backgroundToken: newBackgroundToken, updatedAt } = await fetchUserChatState(
+      scoutUserChatId,
+      "scout",
+    );
+    if (updatedAt.valueOf() !== chatUpdatedAt.current || newBackgroundToken !== backgroundToken) {
+      chatUpdatedAt.current = updatedAt.valueOf();
+      setBackgroundToken(newBackgroundToken);
+      console.log(`ScoutTaskChat [${scoutUserChatId}] updated at ${updatedAt}, reloading messages`);
+      reloadMessages();
+    } else {
+      console.log(`ScoutTaskChat [${scoutUserChatId}] no updates`);
+    }
+  }, [scoutUserChatId, backgroundToken]);
 
   // 添加定时器效果
   useEffect(() => {
@@ -40,7 +52,7 @@ const ScoutTaskChat = ({ toolInvocation }: { toolInvocation: ToolInvocation }) =
     }
     let timeoutId: NodeJS.Timeout;
     const poll = async () => {
-      timeoutId = setTimeout(poll, 2000); // 要放在前面，不然下面 return () 的时候如果 fetchUpdate 还没完成就不会 clearTimeout 了
+      timeoutId = setTimeout(poll, 5000); // 要放在前面，不然下面 return () 的时候如果 fetchUpdate 还没完成就不会 clearTimeout 了
       await fetchUpdate();
     };
     poll();

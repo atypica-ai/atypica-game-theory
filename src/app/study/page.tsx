@@ -41,5 +41,5 @@ export default async function StudyPage({
     forbidden();
   }
 
-  return <StudyPageClient studyUserChat={studyUserChat} readOnly={false} replay={false} />;
+  return <StudyPageClient studyUserChat={studyUserChat} replay={false} />;
 }
