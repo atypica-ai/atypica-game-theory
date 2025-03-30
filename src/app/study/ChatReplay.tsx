@@ -1,12 +1,17 @@
 "use client";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
+import { Button } from "@/components/ui/button";
 import { useScrollToBottom } from "@/components/use-scroll-to-bottom";
 import { StudyUserChat } from "@/data";
 import { useProgressiveMessages } from "./hooks/useProgressiveMessages";
 import { SingleMessage } from "./SingleMessage";
 
 export function ChatReplay({ studyUserChat }: { studyUserChat: StudyUserChat }) {
-  const { partialMessages: messagesDisplay } = useProgressiveMessages({
+  const {
+    partialMessages: messagesDisplay,
+    skipToEnd,
+    isCompleted,
+  } = useProgressiveMessages({
     uniqueId: `studyUserChat-${studyUserChat.id}`,
     messages: studyUserChat.messages,
     enabled: true,
@@ -27,8 +32,16 @@ export function ChatReplay({ studyUserChat }: { studyUserChat: StudyUserChat }) 
             isLastMessage={index === messagesDisplay.length - 1}
           ></SingleMessage>
         ))}
+
         <div ref={messagesEndRef} />
       </div>
+      {!isCompleted && (
+        <div className="flex justify-center">
+          <Button variant="outline" size="sm" onClick={skipToEnd}>
+            Skip to End
+          </Button>
+        </div>
+      )}
     </>
   );
 }

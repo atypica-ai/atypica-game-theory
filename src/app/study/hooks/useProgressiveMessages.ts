@@ -23,6 +23,7 @@ export function useProgressiveMessages({
 }) {
   const [messageIndex, setMessageIndex] = useState(0);
   const [partIndex, setPartIndex] = useState(0);
+  const [isCompleted, setIsCompleted] = useState(false);
 
   const fixedWaitTime = useMemo(() => {
     if (fixedDuration) {
@@ -42,6 +43,10 @@ export function useProgressiveMessages({
   }, [fixedDuration, messages]);
 
   const partialMessages = useMemo(() => {
+    if (isCompleted) {
+      return [...messages];
+    }
+    
     if (enabled && messageIndex < messages.length) {
       return [
         ...messages.slice(0, messageIndex),
@@ -54,7 +59,7 @@ export function useProgressiveMessages({
     } else {
       return [...messages];
     }
-  }, [enabled, messageIndex, partIndex, messages]);
+  }, [enabled, messageIndex, partIndex, messages, isCompleted]);
 
   useEffect(() => {
     setMessageIndex(0);
@@ -63,10 +68,11 @@ export function useProgressiveMessages({
 
   // Progressive loading effect
   useEffect(() => {
-    if (!enabled || !messages.length) {
+    if (!enabled || !messages.length || isCompleted) {
       return;
     }
     if (messageIndex >= messages.length) {
+      setIsCompleted(true);
       return;
     }
     const parts = messages[messageIndex].parts;
@@ -100,5 +106,13 @@ export function useProgressiveMessages({
     };
   }, [enabled, messages, messageIndex, partIndex, fixedWaitTime]);
 
-  return { partialMessages };
+  const skipToEnd = () => {
+    setIsCompleted(true);
+  };
+
+  return { 
+    partialMessages,
+    skipToEnd,
+    isCompleted
+  };
 }
