@@ -48,7 +48,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ toke
               break;
             }
             // Wait for 3 seconds before fetching again
-            await new Promise((resolve) => setTimeout(resolve, 3000));
+            await new Promise((resolve) => setTimeout(resolve, 5000));
           } catch (error) {
             console.error("Error streaming report:", error);
             controller.error(error);

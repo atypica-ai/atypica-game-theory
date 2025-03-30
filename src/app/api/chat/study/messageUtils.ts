@@ -68,9 +68,9 @@ export const persistentMessages = (() => {
             where: { id: studyUserChatId },
             data: { messages: messages as unknown as InputJsonValue },
           });
-          console.log(`[${studyUserChatId}] Messages persisted successfully`);
+          console.log(`StudyUserChat [${studyUserChatId}] Messages persisted successfully`);
         } catch (error) {
-          console.log(`[${studyUserChatId}] Error persisting messages:`, error);
+          console.log(`StudyUserChat [${studyUserChatId}] Error persisting messages:`, error);
         }
       },
       immediate ? 0 : 5000,

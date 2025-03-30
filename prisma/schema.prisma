@@ -74,7 +74,7 @@ model AnalystReport {
   analystId   Int       @db.Int
   analyst     Analyst   @relation(fields: [analystId], references: [id])
   coverSvg    String    @db.Text
-  onePageHtml String    @db.Text
+  onePageHtml String    @db.LongText
   generatedAt DateTime?
 
   createdAt DateTime @default(now())

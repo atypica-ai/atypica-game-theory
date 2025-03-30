@@ -72,14 +72,14 @@ export function backgroundChatUntilCancel<TOOLS extends ToolSet, PARTIAL_OUTPUT>
         const elapsedSeconds = Math.floor((now - start) / 1000);
         if (elapsedSeconds > 1800) {
           // 30 mins
-          console.log(`[${studyUserChatId}] StudyChat timeout`);
+          console.log(`StudyChat [${studyUserChatId}] timeout`);
           stop = true;
           reject(new Error("StudyChat timeout"));
         }
         if (stop) {
-          console.log(`[${studyUserChatId}] StudyChat stopped`);
+          console.log(`StudyChat [${studyUserChatId}] stopped`);
         } else {
-          console.log(`[${studyUserChatId}] StudyChat is ongoing, ${elapsedSeconds} seconds`);
+          console.log(`StudyChat [${studyUserChatId}] is ongoing, ${elapsedSeconds} seconds`);
           setTimeout(() => tick(), 5000);
         }
       };

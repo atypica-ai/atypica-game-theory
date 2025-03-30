@@ -5,7 +5,7 @@ import { generateToken } from "@/lib/utils";
 import { reportHTMLPrologue, reportHTMLSystem } from "@/prompt";
 import { reportCoverPrologue, reportCoverSystem } from "@/prompt/report";
 import { PlainTextToolResult } from "@/tools/utils";
-import { streamText, tool } from "ai";
+import { FinishReason, Message, streamText, tool } from "ai";
 import { z } from "zod";
 import { StatReporter } from "..";
 
@@ -64,31 +64,78 @@ export const generateReportTool = ({
           },
         },
       });
-      await generateReport({
-        analyst,
-        report,
-        instruction,
-        abortSignal,
-        statReport,
-      });
-      // 更新一下 report 的数据
-      report = await prisma.analystReport.findUniqueOrThrow({
-        where: { id: report.id },
-      });
-      await generateCover({
-        analyst,
-        report,
-        instruction,
-        abortSignal,
-        statReport,
-      });
-      return {
-        analystId: analystId,
-        reportId: report.id,
-        plainText: `Report for analyst ${analystId} is generated`,
-      };
+      try {
+        await generateReport({
+          analyst,
+          report,
+          instruction,
+          abortSignal,
+          statReport,
+        });
+        // 更新一下 report 的数据
+        report = await prisma.analystReport.findUniqueOrThrow({
+          where: { id: report.id },
+        });
+        await generateCover({
+          analyst,
+          report,
+          instruction,
+          abortSignal,
+          statReport,
+        });
+        return {
+          analystId: analystId,
+          reportId: report.id,
+          plainText: `Report for analyst ${analystId} is generated`,
+        };
+      } catch (error) {
+        console.debug(error);
+        return {
+          analystId: analystId,
+          reportId: report.id,
+          plainText: `Report for analyst ${analystId} failed to generate`,
+        };
+      }
     },
   });
+
+export const throttleSaveHTML = (() => {
+  let timerId: NodeJS.Timeout | null = null;
+
+  return async (
+    reportId: number,
+    onePageHtml: string,
+    { immediate }: { immediate?: boolean } = {},
+  ) => {
+    if (immediate) {
+      if (timerId) {
+        clearTimeout(timerId);
+        timerId = null;
+      }
+      saveNow();
+      return;
+    }
+
+    if (!timerId) {
+      timerId = setTimeout(() => {
+        timerId = null;
+        saveNow();
+      }, 5000); // 5秒节流
+    }
+
+    async function saveNow() {
+      try {
+        await prisma.analystReport.update({
+          where: { id: reportId },
+          data: { onePageHtml },
+        });
+        console.log(`Report [${reportId}] HTML persisted successfully`);
+      } catch (error) {
+        console.log(`Report [${reportId}] Error persisting HTML:`, error);
+      }
+    }
+  };
+})();
 
 async function generateReport({
   analyst,
@@ -108,45 +155,78 @@ async function generateReport({
   statReport: StatReporter;
 }) {
   let onePageHtml = "";
-  const response = streamText({
-    model: openai("claude-3-7-sonnet"),
-    providerOptions: {
-      openai: { stream_options: { include_usage: true } },
-    },
-    system: reportHTMLSystem(instruction),
-    messages: [{ role: "user", content: reportHTMLPrologue(analyst) }],
-    maxSteps: 10,
-    maxTokens: 100000,
-    onError: (error) => console.log(`[${report.id}] One Page HTML Error:`, error),
-    onChunk: async ({ chunk }) => {
-      // console.log(`[${report.id}] One Page HTML:`, JSON.stringify(chunk));
-      if (chunk.type === "text-delta") {
-        onePageHtml += chunk.textDelta.toString();
-        await prisma.analystReport.update({
-          where: { id: report.id },
-          data: { onePageHtml },
-        });
-      }
-    },
-    onFinish: async (result) => {
-      console.log(`Report one page HTML generated for ${report.id}`);
+  let messages: Omit<Message, "id">[] = [{ role: "user", content: reportHTMLPrologue(analyst) }];
+
+  while (true) {
+    const {
+      finishReason,
+      // content,
+    } = await new Promise<{
+      finishReason: FinishReason;
+      content: string;
+    }>((resolve, reject) => {
+      const response = streamText({
+        model: openai("claude-3-7-sonnet"),
+        providerOptions: {
+          openai: { stream_options: { include_usage: true } },
+        },
+        system: reportHTMLSystem(instruction),
+        messages: messages,
+        maxSteps: 1,
+        maxTokens: 100000,
+        onError: ({ error }) => {
+          console.log(`Report [${report.id}] HTML generation Error:`, error);
+          reject(error);
+        },
+        onChunk: async ({ chunk }) => {
+          console.log(`[${report.id}] One Page HTML:`, JSON.stringify(chunk));
+          if (chunk.type === "text-delta") {
+            onePageHtml += chunk.textDelta.toString();
+            await throttleSaveHTML(report.id, onePageHtml);
+          }
+        },
+        onFinish: async (result) => {
+          resolve({
+            finishReason: result.finishReason,
+            content: result.text,
+          });
+          console.log(`Report [${report.id}] HTML generated, finishReason: ${result.finishReason}`);
+          if (result.usage.totalTokens > 0 && statReport) {
+            await statReport("tokens", result.usage.totalTokens, {
+              reportedBy: "generateReport tool",
+              part: "onePageHtml",
+            });
+          }
+        },
+        abortSignal,
+      });
+
+      response.consumeStream().catch((error) => reject(error));
+    });
+
+    await throttleSaveHTML(report.id, onePageHtml, { immediate: true });
+
+    if (finishReason === "length") {
+      // messages.push({ role: "assistant", content: content });
+      // messages.push({ role: "user", content: "continue" });
+      messages = [
+        { role: "user", content: reportHTMLPrologue(analyst) },
+        { role: "assistant", content: onePageHtml },
+        {
+          role: "user",
+          content:
+            "我看到您的回复因为长度限制被截断了。请继续生成剩余的网页内容，无需重复已经生成的部分，直接接着上文继续完成。",
+        },
+      ];
+      continue;
+    } else {
       await prisma.analystReport.update({
         where: { id: report.id },
-        data: {
-          onePageHtml: result.text,
-          generatedAt: new Date(),
-        },
+        data: { generatedAt: new Date() },
       });
-      if (result.usage.totalTokens > 0 && statReport) {
-        await statReport("tokens", result.usage.totalTokens, {
-          reportedBy: "generateReport tool",
-          part: "onePageHtml",
-        });
-      }
-    },
-    abortSignal,
-  });
-  await response.consumeStream();
+      break;
+    }
+  }
 }
 
 async function generateCover({
@@ -173,7 +253,7 @@ async function generateCover({
     },
     system: reportCoverSystem(instruction),
     messages: [{ role: "user", content: reportCoverPrologue(analyst) }],
-    maxSteps: 3,
+    maxSteps: 1,
     maxTokens: 30000,
     onError: (error) => console.log(`[${report.id}] Cover SVG Error:`, error),
     // onChunk: (chunk) => console.log(`[${report.id}] Cover SVG:`, JSON.stringify(chunk)),
@@ -181,9 +261,7 @@ async function generateCover({
       console.log(`Report cover SVG generated for ${report.id}`);
       await prisma.analystReport.update({
         where: { id: report.id },
-        data: {
-          coverSvg: result.text,
-        },
+        data: { coverSvg: result.text },
       });
       if (result.usage.totalTokens > 0 && statReport) {
         await statReport("tokens", result.usage.totalTokens, {

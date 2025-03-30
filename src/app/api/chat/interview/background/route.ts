@@ -234,14 +234,14 @@ export async function POST(req: Request) {
         const now = Date.now();
         const elapsedSeconds = Math.floor((now - start) / 1000);
         if (elapsedSeconds > 600) {
-          console.log(`[${analystInterviewId}] Interview timeout`);
+          console.log(`Interview [${analystInterviewId}] timeout`);
           stop = true;
           resolve(null);
         }
         if (stop) {
-          console.log(`[${analystInterviewId}] Interview stopped`);
+          console.log(`Interview [${analystInterviewId}] stopped`);
         } else {
-          console.log(`[${analystInterviewId}] Interview is ongoing, ${elapsedSeconds} seconds`);
+          console.log(`Interview [${analystInterviewId}] is ongoing, ${elapsedSeconds} seconds`);
           setTimeout(() => tick(), 5000);
         }
       };

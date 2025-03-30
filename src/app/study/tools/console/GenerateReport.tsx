@@ -8,7 +8,7 @@ import { AnalystReportShareButton } from "../AnalystReportShareButton";
 
 const GenerateReport = ({ toolInvocation }: { toolInvocation: ToolInvocation }) => {
   const t = useTranslations("StudyPage.ToolConsole");
-  const analystId = toolInvocation.args.analystId as number;
+  const [analystId, setAnalystId] = useState<number>(toolInvocation.args.analystId as number);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const [ratio, setRatio] = useState(100);
@@ -64,14 +64,22 @@ const GenerateReport = ({ toolInvocation }: { toolInvocation: ToolInvocation }) 
   }, []);
 
   useEffect(() => {
+    setAnalystId(toolInvocation.args.analystId as number);
     if (toolInvocation.state === "result") {
       const result = toolInvocation.result as GenerateReportResult;
       fetchAnalystReport(result.reportId);
     } else {
       fetchPendingReport();
     }
+    // 需要监听 toolInvocation.toolCallId 变化，不然从一个 report tool call 切换到另一个 report tool call 的时候，右侧 console 不会更新
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [toolInvocation.state, fetchAnalystReport, fetchPendingReport]); // toolInvocation.result
+  }, [
+    toolInvocation.toolCallId,
+    toolInvocation.args.analystId,
+    toolInvocation.state,
+    fetchAnalystReport,
+    fetchPendingReport,
+  ]); // toolInvocation.result
 
   return (
     <div className="h-full relative pb-10">

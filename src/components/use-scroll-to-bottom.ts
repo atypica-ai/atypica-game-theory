@@ -74,7 +74,7 @@ export function useScrollToBottom<T extends HTMLElement>({
       observer.disconnect();
       container.removeEventListener("scroll", handleScroll);
     };
-  }, [disabled]);
+  }, [disabled, threshold]);
 
   return [containerRef, endRef];
 }
