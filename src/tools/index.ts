@@ -4,7 +4,7 @@ import { requestInteractionTool } from "./experts/interaction";
 import { interviewChatTool } from "./experts/interviewChat";
 import { reasoningThinkingTool } from "./experts/reasoning";
 import { generateReportTool } from "./experts/report";
-import { scoutTaskChatTool, scoutTaskCreateTool } from "./experts/scouting";
+import { scoutTaskChatTool, scoutTaskCreateTool } from "./experts/scoutTask";
 import { saveAnalystStudySummaryTool, saveAnalystTool } from "./system/saveAnalyst";
 import { saveInterviewConclusionTool } from "./system/saveInterviewConclusion";
 import { savePersonaTool } from "./system/savePersona";

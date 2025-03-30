@@ -65,7 +65,7 @@ export const interviewChatTool = ({
           prisma.analyst.findUniqueOrThrow({ where: { id: analystId } }),
         ]);
         try {
-          await startInterview({
+          await runInterview({
             analyst,
             persona: {
               ...persona,
@@ -140,7 +140,7 @@ async function chatWithInterviewer({
         ),
       },
       maxSteps: 3,
-      // onChunk: (chunk) => console.log(`[${analystInterviewId}] Interviewer:`, JSON.stringify(chunk)),
+      // onChunk: (chunk) => console.log(`Interview [${analystInterviewId}] Interviewer:`, JSON.stringify(chunk)),
       onStepFinish: async (step) => {
         if (step.usage.totalTokens > 0) {
           await statReport("tokens", step.usage.totalTokens, {
@@ -155,13 +155,17 @@ async function chatWithInterviewer({
         resolve(message);
       },
       onError: ({ error }) => {
-        console.log(`InterviewerChat streamText error:`, (error as Error).message);
+        console.log(
+          `Interview [${analystInterviewId}] chatWithInterviewer streamText onError:`,
+          error,
+        );
         reject(error);
       },
       abortSignal,
     });
-    await response.consumeStream();
-    // 必须写这个 await，把 stream 消费完，也可以使用 consumeStream 方法
+    // 这里不要 await 而是用 then，否则会出现一系列嵌套的 await new promise 最终导致 abortController.abort() 操作被取消
+    response.consumeStream().catch((error) => reject(error));
+    // 必须写这个 await for loop，把 stream 消费完，也可以使用 consumeStream 方法
     // for await (const textPart of response.textStream) { console.log(textPart); }
   });
   return result;
@@ -186,7 +190,7 @@ async function chatWithPersona({
         [ToolName.xhsSearch]: xhsSearchTool,
       },
       maxSteps: 3,
-      // onChunk: (chunk) => console.log(`[${analystInterviewId}] Persona:`, JSON.stringify(chunk)),
+      // onChunk: (chunk) => console.log(`Interview [${analystInterviewId}] Persona:`, JSON.stringify(chunk)),
       onStepFinish: async (step) => {
         if (step.usage.totalTokens > 0) {
           await statReport("tokens", step.usage.totalTokens, {
@@ -201,12 +205,15 @@ async function chatWithPersona({
         resolve(message);
       },
       onError: ({ error }) => {
-        console.log(`PersonaAgent streamText error:`, (error as Error).message);
+        console.log(`Interview [${analystInterviewId}] chatWithPersona streamText onError:`, error);
         reject(error);
       },
       abortSignal,
     });
-    await response.consumeStream();
+    // 这里不要 await 而是用 then，否则会出现一系列嵌套的 await new promise 最终导致 abortController.abort() 操作被取消
+    response.consumeStream().catch((error) => reject(error));
+  }).catch((error) => {
+    throw error;
   });
   return result;
 }
@@ -232,7 +239,7 @@ async function saveMessages({
     });
   } catch (error) {
     console.log(
-      `Error saving messages with interview id ${analystInterviewId} and token ${interviewToken}`,
+      `Interview [${analystInterviewId}] Error saving messages with token ${interviewToken}`,
       error,
     );
   }
@@ -242,10 +249,29 @@ async function runInterview({
   analyst,
   persona,
   analystInterviewId,
-  interviewToken,
   abortSignal,
   statReport,
-}: Omit<ChatProps, "messages">) {
+}: Omit<ChatProps, "messages" | "interviewToken">) {
+  const interviewToken = new Date().valueOf().toString();
+  try {
+    await prisma.analystInterview.update({
+      where: { id: analystInterviewId },
+      data: {
+        personaPrompt: personaAgentSystem(persona),
+        interviewerPrompt: interviewerSystem(analyst),
+        messages: [],
+        conclusion: "",
+        interviewToken,
+      },
+    });
+  } catch (error) {
+    console.log(
+      `Interview [${analystInterviewId}] Error resetting interview with token ${interviewToken}`,
+      error,
+    );
+    throw error;
+  }
+
   const personaAgent: {
     messages: Message[];
   } = {
@@ -261,22 +287,17 @@ async function runInterview({
   };
 
   while (true) {
-    try {
-      const message = await chatWithPersona({
-        messages: personaAgent.messages,
-        persona,
-        analyst,
-        analystInterviewId,
-        abortSignal,
-        statReport,
-      });
-      // console.log(`\n[${analystInterviewId}] Persona:\n${message.content}\n`);
-      personaAgent.messages.push({ ...message, role: "assistant" });
-      interviewer.messages.push({ ...message, role: "user" });
-    } catch (error) {
-      console.log(`[${analystInterviewId}] Error in Persona Agent`, (error as Error).message);
-      throw error;
-    }
+    const personaReply = await chatWithPersona({
+      messages: personaAgent.messages,
+      persona,
+      analyst,
+      analystInterviewId,
+      abortSignal,
+      statReport,
+    });
+    // console.log(`\nInterview [${analystInterviewId}] Persona:\n${message.content}\n`);
+    personaAgent.messages.push({ ...personaReply, role: "assistant" });
+    interviewer.messages.push({ ...personaReply, role: "user" });
 
     await saveMessages({
       messages: personaAgent.messages,
@@ -284,25 +305,20 @@ async function runInterview({
       interviewToken,
     });
 
-    try {
-      const message = await chatWithInterviewer({
-        messages: interviewer.messages,
-        persona,
-        analyst,
-        analystInterviewId,
-        interviewToken,
-        abortSignal,
-        statReport,
-      });
-      // console.log(`\n[${analystInterviewId}] Interviewer:\n${message.content}\n`);
-      interviewer.messages.push({ ...message, role: "assistant" });
-      personaAgent.messages.push({ ...message, role: "user" });
-      if (message.content.includes("本次访谈结束，谢谢您的参与！")) {
-        interviewer.terminated = true;
-      }
-    } catch (error) {
-      console.log(`[${analystInterviewId}] Error in Interviewer Agent`, (error as Error).message);
-      throw error;
+    const interviewerReply = await chatWithInterviewer({
+      messages: interviewer.messages,
+      persona,
+      analyst,
+      analystInterviewId,
+      interviewToken,
+      abortSignal,
+      statReport,
+    });
+    // console.log(`\nInterview [${analystInterviewId}] Interviewer:\n${message.content}\n`);
+    interviewer.messages.push({ ...interviewerReply, role: "assistant" });
+    personaAgent.messages.push({ ...interviewerReply, role: "user" });
+    if (interviewerReply.content.includes("本次访谈结束，谢谢您的参与！")) {
+      interviewer.terminated = true;
     }
 
     await saveMessages({
@@ -315,83 +331,16 @@ async function runInterview({
       break;
     }
   }
-}
 
-async function startInterview({
-  analyst,
-  persona,
-  analystInterviewId,
-  abortSignal,
-  statReport,
-}: {
-  analyst: Analyst;
-  persona: Persona;
-  analystInterviewId: number;
-  abortSignal: AbortSignal;
-  statReport: StatReporter;
-}) {
-  const interviewToken = new Date().valueOf().toString();
   try {
     await prisma.analystInterview.update({
-      where: { id: analystInterviewId },
-      data: {
-        personaPrompt: personaAgentSystem(persona),
-        interviewerPrompt: interviewerSystem(analyst),
-        messages: [],
-        interviewToken,
-      },
+      where: { id: analystInterviewId, interviewToken },
+      data: { interviewToken: null },
     });
   } catch (error) {
-    console.log("Error saving prompts:", error);
+    console.log(
+      `Interview [${analystInterviewId}] Error clearing interview token ${interviewToken}`,
+      error,
+    );
   }
-
-  await new Promise(async (resolve, reject) => {
-    let stop = false;
-    const start = Date.now();
-    const tick = () => {
-      const now = Date.now();
-      const elapsedSeconds = Math.floor((now - start) / 1000);
-      if (elapsedSeconds > 600) {
-        console.log(`\n[${analystInterviewId}] Interview timeout\n`);
-        stop = true;
-        reject(new Error("Interview timeout"));
-      }
-      if (stop) {
-        console.log(`\n[${analystInterviewId}] Interview stopped\n`);
-      } else {
-        console.log(`\n[${analystInterviewId}] Interview is ongoing, ${elapsedSeconds} seconds`);
-        setTimeout(() => tick(), 5000);
-      }
-    };
-    tick();
-
-    try {
-      await runInterview({
-        analyst,
-        persona,
-        analystInterviewId,
-        interviewToken,
-        abortSignal,
-        statReport,
-      });
-      stop = true;
-      resolve(null);
-    } catch (error) {
-      console.log(`[${analystInterviewId}] Interview run error:`, (error as Error).message);
-      stop = true;
-      reject(new Error(`[${analystInterviewId}] Interview run aborted`));
-    }
-
-    try {
-      await prisma.analystInterview.update({
-        where: { id: analystInterviewId, interviewToken },
-        data: { interviewToken: null },
-      });
-    } catch (error) {
-      console.log(
-        `Error clearing interview token with interview id ${analystInterviewId} and token ${interviewToken}`,
-        error,
-      );
-    }
-  });
 }

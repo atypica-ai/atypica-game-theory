@@ -221,7 +221,7 @@ export async function POST(req: Request) {
   });
 
   waitUntil(
-    new Promise(async (resolve, reject) => {
+    new Promise((resolve, reject) => {
       let stop = false;
       const start = Date.now();
       const tick = () => {
@@ -231,7 +231,7 @@ export async function POST(req: Request) {
           // 30 mins
           console.log(`\n[${studyUserChatId}] StudyChat timeout\n`);
           stop = true;
-          resolve(null);
+          reject(new Error("StudyChat timeout"));
         }
         if (stop) {
           console.log(`\n[${studyUserChatId}] StudyChat stopped\n`);
@@ -243,13 +243,16 @@ export async function POST(req: Request) {
       tick();
       // consume the stream to ensure it runs to completion & triggers onFinish
       // even when the client response is aborted:
-      try {
-        await result.consumeStream();
-        stop = true;
-        resolve(null);
-      } catch (error) {
-        reject(error);
-      }
+      result
+        .consumeStream()
+        .then(() => {
+          stop = true;
+          resolve(null);
+        })
+        .catch((error) => {
+          stop = true;
+          reject(error);
+        });
     }),
   );
 
