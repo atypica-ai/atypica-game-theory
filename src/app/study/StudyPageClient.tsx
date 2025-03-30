@@ -121,7 +121,7 @@ export function StudyPageClient({
                 !consoleOpen
                   ? "max-lg:p-0 max-lg:flex-none max-lg:h-0 max-lg:mt-0 max-lg:invisible"
                   : "",
-                "overflow-auto border rounded-lg dark:border-zinc-800 bg-white dark:bg-background",
+                "overflow-y-auto scrollbar-thin border rounded-lg dark:border-zinc-800 bg-white dark:bg-background",
               )}
               ref={messagesContainerRef}
             >

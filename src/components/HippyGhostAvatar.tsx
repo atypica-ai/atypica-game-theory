@@ -25,7 +25,8 @@ const HippyGhostAvatar: FC<
   const tokenId = mapSeedToValue(numericSeed);
   const url = `https://api.hippyghosts.io/~/storage/images/raw/${tokenId}`;
   return (
-    <div className={cn("relative size-8", className)}>
+    // 需要 overflow-hidden 以确保 Image 在 scale 后不会溢出容器
+    <div className={cn("relative size-8 overflow-hidden", className)}>
       <Image
         src={url}
         alt="Hippy Ghost Avatar"

@@ -21,7 +21,7 @@ export function ChatReplay({ studyUserChat }: { studyUserChat: StudyUserChat }) 
     <>
       <div
         ref={messagesContainerRef}
-        className="flex-1 flex flex-col pb-24 w-full items-center overflow-y-scroll"
+        className="flex-1 flex flex-col pb-12 w-full items-center overflow-y-auto scrollbar-thin"
       >
         {messagesDisplay.map((message, index) => (
           <SingleMessage

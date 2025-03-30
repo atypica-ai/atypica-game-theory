@@ -54,7 +54,7 @@ export function ChatBox({
     initialMessages: initialMessages,
     sendExtraMessageFields: true, // send id and createdAt for each message
     api: "/api/chat/study",
-    maxSteps: 30,
+    maxSteps: 15,
   });
 
   const [backgroundToken, setBackgroundToken] = useState<string | null>(initialBackgroundToken);
@@ -136,7 +136,7 @@ export function ChatBox({
     <>
       <div
         ref={messagesContainerRef}
-        className="flex-1 flex flex-col pb-24 w-full items-center overflow-y-scroll"
+        className="flex-1 flex flex-col pb-12 w-full items-center overflow-y-auto scrollbar-thin"
       >
         {messages.map((message, index) => (
           <SingleMessage
