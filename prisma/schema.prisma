@@ -34,11 +34,13 @@ model VerificationCode {
   createdAt DateTime  @default(now())
   expiresAt DateTime?
 }
+
 model InvitationCode {
-  id    Int    @id @default(autoincrement())
-  code  String @unique @db.VarChar(16)
-  usedBy String?
-  
+  id        Int     @id @default(autoincrement())
+  code      String  @unique @db.VarChar(16)
+  usedBy    String?
+  createdBy String?
+
   createdAt DateTime  @default(now())
   usedAt    DateTime?
 }

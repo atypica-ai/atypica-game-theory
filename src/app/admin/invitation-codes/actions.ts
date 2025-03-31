@@ -33,12 +33,20 @@ async function checkAdminAuth() {
   return session;
 }
 
-// List all invitation codes
+// List all invitation codes for the current user
 export async function getInvitationCodes() {
   try {
-    await checkAdminAuth();
+    const session = await checkAdminAuth();
+    const userEmail = session.user?.email;
+    
+    if (!userEmail) {
+      throw new Error("User email not available");
+    }
 
     const invitationCodes = await prisma.invitationCode.findMany({
+      where: {
+        createdBy: userEmail,
+      },
       orderBy: { createdAt: "desc" },
     });
 
@@ -51,14 +59,22 @@ export async function getInvitationCodes() {
 // Create a new invitation code
 export async function createInvitationCode() {
   try {
-    await checkAdminAuth();
+    const session = await checkAdminAuth();
 
     // Generate a new invitation code
     const code = generateInvitationCode();
+    
+    // Get the email of the current user
+    const creatorEmail = session.user?.email;
+    
+    if (!creatorEmail) {
+      throw new Error("User email not available");
+    }
 
     const invitationCode = await prisma.invitationCode.create({
       data: {
         code,
+        createdBy: creatorEmail,
       },
     });
 
@@ -72,10 +88,32 @@ export async function createInvitationCode() {
 // Delete an invitation code
 export async function deleteInvitationCode(id: number) {
   try {
-    await checkAdminAuth();
+    const session = await checkAdminAuth();
+    const userEmail = session.user?.email;
+    
+    if (!userEmail) {
+      throw new Error("User email not available");
+    }
 
     if (!id) {
       throw new Error("Invitation code ID is required");
+    }
+
+    // Check if the code exists, belongs to the user, and is not used
+    const invitationCode = await prisma.invitationCode.findUnique({
+      where: { id },
+    });
+
+    if (!invitationCode) {
+      throw new Error("Invitation code not found");
+    }
+
+    if (invitationCode.createdBy !== userEmail) {
+      throw new Error("You can only delete your own invitation codes");
+    }
+
+    if (invitationCode.usedBy) {
+      throw new Error("Cannot delete an invitation code that has been used");
     }
 
     await prisma.invitationCode.delete({

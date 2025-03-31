@@ -1,6 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { InvitationCode } from "@prisma/client";
+
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -88,7 +89,10 @@ export default function InvitationCodesPage() {
                 Code
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                Created
+                Created At
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                Created By
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                 Status
@@ -104,7 +108,7 @@ export default function InvitationCodesPage() {
           <tbody className="divide-y divide-gray-200 bg-white">
             {codes.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-6 py-4 text-center text-sm text-gray-500">
+                <td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">
                   No invitation codes found
                 </td>
               </tr>
@@ -116,6 +120,9 @@ export default function InvitationCodesPage() {
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
                     {new Date(code.createdAt).toLocaleString()}
+                  </td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
+                    {code.createdBy}
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
                     {code.usedBy ? (
@@ -137,6 +144,16 @@ export default function InvitationCodesPage() {
                         variant="destructive"
                         size="sm"
                         onClick={() => handleDeleteCode(code.id)}
+                      >
+                        Delete
+                      </Button>
+                    )}
+                    {code.usedBy && (
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        disabled
+                        title="Used codes cannot be deleted"
                       >
                         Delete
                       </Button>
