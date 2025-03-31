@@ -11,8 +11,17 @@ export default function SignUpPage() {
   const t = useTranslations("Auth.SignUp");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [invitationCode, setInvitationCode] = useState("");
+  const [showInvitationField, setShowInvitationField] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  // Check if the email requires an invitation code
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newEmail = e.target.value;
+    setEmail(newEmail);
+    setShowInvitationField(!newEmail.endsWith("@tezign.com") && newEmail.includes("@"));
+  };
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,6 +34,7 @@ export default function SignUpPage() {
         body: JSON.stringify({
           email,
           password,
+          invitationCode: showInvitationField ? invitationCode : undefined,
         }),
         headers: {
           "Content-Type": "application/json",
@@ -65,7 +75,7 @@ export default function SignUpPage() {
               placeholder={t("emailPlaceholder")}
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={handleEmailChange}
               required
             />
           </div>
@@ -79,6 +89,19 @@ export default function SignUpPage() {
               required
             />
           </div>
+          {showInvitationField && (
+            <div className="space-y-2">
+              <Input
+                id="invitationCode"
+                placeholder={t("invitationCodePlaceholder")}
+                type="text"
+                value={invitationCode}
+                onChange={(e) => setInvitationCode(e.target.value)}
+                required={showInvitationField}
+              />
+              <p className="text-xs text-gray-500">{t("invitationCodeHelp")}</p>
+            </div>
+          )}
           <Button variant="outline" className="w-full" type="submit" disabled={isLoading}>
             {isLoading ? t("submittingButton") : t("submitButton")}
           </Button>

@@ -5,12 +5,30 @@ import { sendVerificationEmail } from "./email";
 
 export async function POST(req: Request) {
   try {
-    const { email, password } = await req.json();
+    const { email, password, invitationCode } = await req.json();
+    
+    // Check if email is allowed to register
     if (!email.endsWith("@tezign.com")) {
-      return NextResponse.json(
-        { error: "Only tezign.com email addresses are allowed to register" },
-        { status: 403 },
-      );
+      // If not a tezign.com email, require a valid invitation code
+      if (!invitationCode) {
+        return NextResponse.json(
+          { error: "Non-tezign.com email addresses require an invitation code" },
+          { status: 403 },
+        );
+      }
+      
+      // Verify the invitation code
+      const invitation = await prisma.invitationCode.findUnique({
+        where: { code: invitationCode },
+      });
+      
+      if (!invitation) {
+        return NextResponse.json({ error: "Invalid invitation code" }, { status: 403 });
+      }
+      
+      if (invitation.usedBy) {
+        return NextResponse.json({ error: "This invitation code has already been used" }, { status: 403 });
+      }
     }
 
     const exists = await prisma.user.findUnique({
@@ -24,6 +42,17 @@ export async function POST(req: Request) {
     const user = await prisma.user.create({
       data: { email, password: hashedPassword },
     });
+
+    // If an invitation code was used, mark it as used
+    if (invitationCode && !email.endsWith("@tezign.com")) {
+      await prisma.invitationCode.update({
+        where: { code: invitationCode },
+        data: { 
+          usedBy: email,
+          usedAt: new Date()
+        },
+      });
+    }
 
     await sendVerificationEmail(user.email);
 

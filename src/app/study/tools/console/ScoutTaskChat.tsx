@@ -59,7 +59,7 @@ const ScoutTaskChat = ({ toolInvocation }: { toolInvocation: ToolInvocation }) =
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [fetchUpdate, replay]);
+  }, [fetchUpdate, replay, reloadMessages]);
 
   return (
     <div className="space-y-6 w-full">

@@ -106,6 +106,8 @@
       "title": "Sign Up",
       "subtitle": "Create your account",
       "emailPlaceholder": "Your @tezign.com email address",
+      "invitationCodePlaceholder": "Invitation code",
+      "invitationCodeHelp": "Non-tezign.com email addresses require an invitation code",
       "passwordPlaceholder": "Set your password",
       "submitButton": "Sign Up",
       "submittingButton": "Signing up...",

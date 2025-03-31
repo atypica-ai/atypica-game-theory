@@ -34,6 +34,14 @@ model VerificationCode {
   createdAt DateTime  @default(now())
   expiresAt DateTime?
 }
+model InvitationCode {
+  id    Int    @id @default(autoincrement())
+  code  String @unique @db.VarChar(16)
+  usedBy String?
+  
+  createdAt DateTime  @default(now())
+  usedAt    DateTime?
+}
 
 model Persona {
   id              Int       @id @default(autoincrement())
