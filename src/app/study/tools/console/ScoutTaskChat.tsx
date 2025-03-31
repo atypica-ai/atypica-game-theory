@@ -47,7 +47,7 @@ const ScoutTaskChat = ({ toolInvocation }: { toolInvocation: ToolInvocation }) =
   useEffect(() => {
     if (replay) {
       // 如果是 replay 就只取一次
-      fetchUpdate();
+      reloadMessages();
       return;
     }
     let timeoutId: NodeJS.Timeout;
