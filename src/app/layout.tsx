@@ -66,7 +66,12 @@ export default async function RootLayout({
 
   return (
     <html lang={locale} suppressHydrationWarning>
-      <body className={cn("font-IBMPlexMonoRegular", "antialiased")}>
+      <body
+        className={cn(
+          "font-IBMPlexMonoRegular antialiased",
+          "h-dvh pt-5 flex flex-col items-stretch justify-start",
+        )}
+      >
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"

@@ -71,6 +71,7 @@ export function StudyPageClient({
       <div
         className={cn(
           "relative",
+          "flex-1 overflow-y-auto",
           "flex flex-rows items-stretch justify-between w-full h-dvh overflow-hidden",
           "p-6 max-lg:p-3",
         )}

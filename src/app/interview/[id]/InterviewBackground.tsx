@@ -4,6 +4,7 @@ import { PointAlertDialog } from "@/components/PointAlertDialog";
 import { Button } from "@/components/ui/button";
 import { useScrollToBottom } from "@/components/use-scroll-to-bottom";
 import { Analyst, AnalystInterview, fetchAnalystInterviewById, Persona } from "@/data";
+import { cn } from "@/lib/utils";
 import { Message } from "ai";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
@@ -62,7 +63,12 @@ export function InterviewBackground({
   const router = useRouter();
 
   return (
-    <div className="flex flex-col items-center justify-start py-3 sm:py-12 h-dvh w-full max-w-5xl mx-auto">
+    <div
+      className={cn(
+        "flex-1 overflow-y-auto scrollbar-thin",
+        "flex flex-col items-center justify-start p-3 w-full max-w-5xl mx-auto",
+      )}
+    >
       <div className="relative w-full mb-4">
         <div className="absolute left-0 top-1/2 -translate-y-1/2">
           <Button variant="ghost" size="sm" onClick={() => router.back()}>

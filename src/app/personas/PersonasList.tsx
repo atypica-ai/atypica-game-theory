@@ -19,6 +19,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 import { XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
@@ -37,7 +38,7 @@ export default function PersonasList({
   const [selectedPersona, setSelectedPersona] = useState<Persona | null>(null);
 
   return (
-    <div className="py-12 max-w-6xl mx-auto">
+    <div className={cn("flex-1 overflow-y-auto scrollbar-thin", "p-3 max-w-6xl mx-auto")}>
       <div className="w-full flex flex-col space-y-8">
         <div className="relative w-full mb-4 sm:mb-8">
           <div className="absolute left-0 top-1/2 -translate-y-1/2">

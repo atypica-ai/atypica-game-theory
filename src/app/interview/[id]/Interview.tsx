@@ -4,6 +4,7 @@ import { Markdown } from "@/components/markdown";
 import { Button } from "@/components/ui/button";
 import { useScrollToBottom } from "@/components/use-scroll-to-bottom";
 import { Analyst, AnalystInterview, Persona, updateAnalystInterview } from "@/data";
+import { cn } from "@/lib/utils";
 import { interviewerPrologue } from "@/prompt";
 import { useChat } from "@ai-sdk/react";
 import { useTranslations } from "next-intl";
@@ -111,7 +112,12 @@ export function Interview({
   const [messagesContainerRef, messagesEndRef] = useScrollToBottom<HTMLDivElement>();
 
   return (
-    <div className="flex flex-row justify-center pb-20 h-dvh bg-white dark:bg-zinc-900">
+    <div
+      className={cn(
+        "flex-1 overflow-y-auto scrollbar-thin",
+        "flex flex-row justify-center p-3 bg-white dark:bg-zinc-900",
+      )}
+    >
       <div className="text-xs w-[400px] m-10 h-full overflow-y-scroll">
         <Markdown>{analystInterview.conclusion}</Markdown>
       </div>

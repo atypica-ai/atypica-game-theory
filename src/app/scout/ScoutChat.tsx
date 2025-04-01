@@ -1,6 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { ScoutUserChat } from "@/data";
+import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -13,7 +14,12 @@ export function ScoutChat() {
   const [currentChat, setCurrentChat] = useState<ScoutUserChat | null>(null);
 
   return (
-    <div className="flex flex-col items-stretch justify-between gap-4 max-w-5xl mx-auto h-dvh py-6">
+    <div
+      className={cn(
+        "flex-1 overflow-y-auto scrollbar-thin",
+        "flex flex-col items-stretch justify-between gap-4 w-full max-w-5xl mx-auto p-3",
+      )}
+    >
       <div className="relative w-full">
         <div className="absolute left-0 top-1/2 -translate-y-1/2">
           <Button variant="ghost" size="sm" onClick={() => router.back()}>
