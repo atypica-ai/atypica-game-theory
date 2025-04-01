@@ -1,5 +1,5 @@
 "use client";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -16,6 +16,7 @@ import { useTheme } from "next-themes";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import HippyGhostAvatar from "./HippyGhostAvatar";
 
 export default function UserMenu() {
   const { data: session } = useSession();
@@ -80,8 +81,9 @@ export default function UserMenu() {
     <DropdownMenu>
       <DropdownMenuTrigger>
         <Avatar className="size-8 cursor-pointer">
-          <AvatarImage src={""} />
-          <AvatarFallback>{userInitial}</AvatarFallback>
+          {/* <AvatarImage src={""} /> */}
+          {/* <AvatarFallback>{userInitial}</AvatarFallback> */}
+          <HippyGhostAvatar seed={session.user.id} className="size-8" />
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
