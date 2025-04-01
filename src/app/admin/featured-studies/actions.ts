@@ -3,6 +3,53 @@ import { prisma } from "@/lib/prisma";
 import { Analyst } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { checkAdminAuth } from "../utils";
+// Public action for fetching featured studies (no auth check needed)
+
+export async function fetchPublicFeaturedStudies() {
+  try {
+    const featuredStudies = await prisma.featuredStudy.findMany({
+      include: {
+        studyUserChat: {
+          select: {
+            id: true,
+            token: true,
+          },
+        },
+        analyst: {
+          select: {
+            id: true,
+            role: true,
+            topic: true,
+            report: true,
+            studySummary: true,
+            interviews: {
+              select: {
+                id: true,
+                personaId: true,
+                persona: {
+                  select: {
+                    name: true,
+                    tags: true,
+                  },
+                },
+                conclusion: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        displayOrder: "asc",
+      },
+      take: 6,
+    });
+
+    return { success: true, data: featuredStudies };
+  } catch (error) {
+    console.error("Error fetching featured studies:", error);
+    return { success: false, error: "Failed to fetch featured studies" };
+  }
+}
 
 // Get all featured studies
 export async function fetchFeaturedStudies() {

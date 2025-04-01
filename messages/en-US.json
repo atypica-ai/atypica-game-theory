@@ -8,6 +8,12 @@
     },
     "InputSection": {
       "placeholder": "Enter your business challenge to explore."
+    },
+    "FeaturedStudies": {
+      "title": "Featured Research",
+      "description": "Explore our curated selection of research studies",
+      "viewStudy": "View Study",
+      "noFeatured": "No featured studies available"
     }
   },
   "AnalystListPage": {

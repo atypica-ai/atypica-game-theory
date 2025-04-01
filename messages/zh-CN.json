@@ -8,6 +8,12 @@
     },
     "InputSection": {
       "placeholder": "这是一个商业问题研究的智能体框架，你想研究什么问题？"
+    },
+    "FeaturedStudies": {
+      "title": "精选研究",
+      "description": "探索我们精心挑选的研究案例",
+      "viewStudy": "查看研究",
+      "noFeatured": "暂无精选研究"
     }
   },
   "AnalystListPage": {
