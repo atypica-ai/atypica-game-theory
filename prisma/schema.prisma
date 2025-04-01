@@ -73,9 +73,22 @@ model Analyst {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  interviews   AnalystInterview[]
-  userAnalysts UserAnalyst[]
-  reports      AnalystReport[]
+  interviews    AnalystInterview[]
+  userAnalysts  UserAnalyst[]
+  reports       AnalystReport[]
+  featuredStudy FeaturedStudy?
+}
+
+model FeaturedStudy {
+  id              Int      @id @default(autoincrement())
+  analystId       Int      @unique
+  analyst         Analyst  @relation(fields: [analystId], references: [id])
+  studyUserChatId Int      @unique @db.Int
+  studyUserChat   UserChat @relation(fields: [studyUserChatId], references: [id])
+  displayOrder    Int      @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model AnalystReport {
@@ -138,9 +151,10 @@ model UserChat {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  personas   Persona[]
-  analysts   Analyst[] // TODO: only 1 analyst will be assigned, should be like this `analyst Analyst?`
-  statistics ChatStatistics[]
+  personas      Persona[]
+  analyst       Analyst?
+  statistics    ChatStatistics[]
+  FeaturedStudy FeaturedStudy?
 }
 
 model ChatStatistics {
