@@ -41,11 +41,6 @@ export default function PersonasList({
     <div className={cn("flex-1 overflow-y-auto scrollbar-thin", "p-3 max-w-6xl mx-auto")}>
       <div className="w-full flex flex-col space-y-8">
         <div className="relative w-full mb-4 sm:mb-8">
-          <div className="absolute left-0 top-1/2 -translate-y-1/2">
-            <Button variant="ghost" size="sm" onClick={() => router.back()} className="mb-4">
-              ← {t("backButton")}
-            </Button>
-          </div>
           <h1 className="sm:text-lg font-medium px-18 text-center truncate">{t("title")}</h1>
         </div>
 

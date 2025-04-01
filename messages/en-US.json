@@ -17,7 +17,6 @@
     }
   },
   "AnalystListPage": {
-    "backButton": "Back",
     "researchTopics": "Research Topics",
     "createNewTopic": "Create New Topic",
     "createMobile": "New Topic",
@@ -36,7 +35,6 @@
     }
   },
   "AnalystPage": {
-    "backButton": "Back",
     "guide": {
       "title": "Usage Guide",
       "tip1": "Add more interview subjects to gain more comprehensive insights",
@@ -74,7 +72,6 @@
     }
   },
   "PersonasPage": {
-    "backButton": "Back",
     "title": "User Personas",
     "guide": {
       "title": "Tips",
@@ -152,7 +149,6 @@
     }
   },
   "StudyPage": {
-    "home": "Home",
     "research": "Research",
     "ShareReplayButton": {
       "generating": "Generating...",
@@ -215,7 +211,6 @@
     }
   },
   "InterviewPage": {
-    "backButton": "Back",
     "interviewTitle": "{role} interviews {persona}",
     "startInterview": "Start Interview",
     "interviewInProgress": "Interview in progress",
@@ -230,7 +225,6 @@
     "researchConclusion": "Research Conclusion"
   },
   "ScoutPage": {
-    "backButton": "Back",
     "title": "Find Target Users",
     "HistoryDrawer": {
       "title": "Chat History",

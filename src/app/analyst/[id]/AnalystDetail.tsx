@@ -84,11 +84,6 @@ export function AnalystDetail({
   return (
     <div className="flex-1 w-full overflow-y-auto scrollbar-thin mx-auto py-12 max-w-4xl space-y-8">
       <div className="relative w-full">
-        <div className="absolute left-0">
-          <Button variant="ghost" size="sm" onClick={() => router.back()}>
-            ← {t("backButton")}
-          </Button>
-        </div>
         <h1 className="text-center text-xl font-medium mb-4">{analyst.role}</h1>
       </div>
 

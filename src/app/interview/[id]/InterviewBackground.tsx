@@ -7,7 +7,6 @@ import { Analyst, AnalystInterview, fetchAnalystInterviewById, Persona } from "@
 import { cn } from "@/lib/utils";
 import { Message } from "ai";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
 export function InterviewBackground({
@@ -60,8 +59,6 @@ export function InterviewBackground({
 
   const [messagesContainerRef, messagesEndRef] = useScrollToBottom<HTMLDivElement>();
 
-  const router = useRouter();
-
   return (
     <div
       className={cn(
@@ -70,11 +67,6 @@ export function InterviewBackground({
       )}
     >
       <div className="relative w-full mb-4">
-        <div className="absolute left-0 top-1/2 -translate-y-1/2">
-          <Button variant="ghost" size="sm" onClick={() => router.back()}>
-            ← {t("backButton")}
-          </Button>
-        </div>
         <h1 className="sm:text-lg font-medium px-18 text-center truncate">
           {t("interviewTitle", { role: analyst.role, persona: persona.name })}
         </h1>

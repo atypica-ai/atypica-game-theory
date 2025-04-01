@@ -17,7 +17,6 @@
     }
   },
   "AnalystListPage": {
-    "backButton": "返回",
     "researchTopics": "用户调研主题",
     "createNewTopic": "创建新的主题",
     "createMobile": "新主题",
@@ -36,7 +35,6 @@
     }
   },
   "AnalystPage": {
-    "backButton": "返回",
     "guide": {
       "title": "使用指南",
       "tip1": "添加更多访谈对象来获取更全面的见解",
@@ -74,7 +72,6 @@
     }
   },
   "PersonasPage": {
-    "backButton": "返回",
     "title": "用户画像",
     "guide": {
       "title": "小贴士",
@@ -152,7 +149,6 @@
     }
   },
   "StudyPage": {
-    "home": "首页",
     "research": "研究",
     "ShareReplayButton": {
       "generating": "生成中...",
@@ -215,7 +211,6 @@
     }
   },
   "InterviewPage": {
-    "backButton": "返回",
     "interviewTitle": "{role}访谈{persona}",
     "startInterview": "开始访谈",
     "interviewInProgress": "访谈进行中",
@@ -230,7 +225,6 @@
     "researchConclusion": "调研结论"
   },
   "ScoutPage": {
-    "backButton": "返回",
     "title": "寻找目标用户",
     "HistoryDrawer": {
       "title": "历史对话",

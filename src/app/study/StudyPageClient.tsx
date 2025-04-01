@@ -3,9 +3,8 @@ import { Button } from "@/components/ui/button";
 import { useScrollToBottom } from "@/components/use-scroll-to-bottom";
 import { StudyUserChat } from "@/data";
 import { cn } from "@/lib/utils";
-import { ChevronDown, ChevronUp, EyeIcon, EyeOffIcon, HomeIcon } from "lucide-react";
+import { ChevronDown, ChevronUp, EyeIcon, EyeOffIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import Link from "next/link";
 import { useState } from "react";
 import { ChatBox } from "./ChatBox";
 import { ChatReplay } from "./ChatReplay";
@@ -19,13 +18,7 @@ function Header({ studyUserChat }: { studyUserChat: StudyUserChat }) {
   const { replay } = useStudyContext();
   return (
     <div className="relative w-full flex items-center justify-between gap-2">
-      {/* <div className="absolute left-0 top-1/2 -translate-y-1/2"> */}
-      <Button asChild variant="outline" size="sm">
-        <Link href="/">
-          <HomeIcon size={16} /> {t("home")}
-        </Link>
-      </Button>
-      <h1 className="flex-1 sm:text-lg font-medium text-center truncate">
+      <h1 className="flex-1 sm:text-lg font-medium truncate">
         {studyUserChat.title || t("research")}
       </h1>
       {/* <div className="absolute right-0 top-1/2 -translate-y-1/2"> */}
