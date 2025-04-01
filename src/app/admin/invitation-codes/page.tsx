@@ -2,6 +2,17 @@
 import { Button } from "@/components/ui/button";
 import { InvitationCode } from "@prisma/client";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -74,14 +85,14 @@ export default function InvitationCodesPage() {
   }
 
   return (
-    <div className="container mx-auto p-4">
+    <div>
       <h1 className="mb-6 text-2xl font-bold">Invitation Codes</h1>
 
       {error && <div className="mb-4 rounded-lg bg-red-50 p-4 text-red-500">{error}</div>}
 
       <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button onClick={generateCode} disabled={!isAdmin && codes.length >= 5}>
+          <Button variant="outline" onClick={generateCode} disabled={!isAdmin && codes.length >= 5}>
             Generate New Code
           </Button>
           {isAdmin && (
@@ -157,15 +168,32 @@ export default function InvitationCodesPage() {
                     {code.usedBy ? code.usedBy : "-"}
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      disabled={!isAdmin || !!code.usedBy}
-                      title="Only administrators can delete unused codes"
-                      onClick={() => handleDeleteCode(code.id)}
-                    >
-                      Delete
-                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          disabled={!isAdmin || !!code.usedBy}
+                          title="Only administrators can delete unused codes"
+                        >
+                          Delete
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete this code?
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel onClick={() => {}}>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleDeleteCode(code.id)}>
+                            Confirm
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </td>
                 </tr>
               ))

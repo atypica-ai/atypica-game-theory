@@ -1,22 +1,12 @@
 "use server";
-
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import crypto from "crypto";
 import { getServerSession } from "next-auth";
 import { revalidatePath } from "next/cache";
+import { checkAdminAuth, isAdminUser } from "../utils";
 
-// Function to generate a random invitation code
-function generateInvitationCode(length: number = 8): string {
-  return crypto
-    .randomBytes(Math.ceil(length / 2))
-    .toString("hex")
-    .slice(0, length)
-    .toUpperCase();
-}
-
-// Check if the user is authorized as an admin
-async function checkAdminAuth() {
+export async function checkTezignAuth() {
   const session = await getServerSession(authOptions);
 
   // Check if the user is authenticated
@@ -30,18 +20,26 @@ async function checkAdminAuth() {
     throw new Error("Forbidden");
   }
 
+  if (!isAdminUser(session.user.email)) {
+    throw new Error("Forbidden");
+  }
+
   return session;
 }
-// Check if user is a super admin (from env var)
-function isAdminUser(email: string): boolean {
-  const adminUsers = (process.env.ADMIN_USERS || "").split(",").map((email) => email.trim());
-  return adminUsers.includes(email);
+
+// Function to generate a random invitation code
+function generateInvitationCode(length: number = 8): string {
+  return crypto
+    .randomBytes(Math.ceil(length / 2))
+    .toString("hex")
+    .slice(0, length)
+    .toUpperCase();
 }
 
 // List invitation codes based on user role
 export async function getInvitationCodes() {
   try {
-    const session = await checkAdminAuth();
+    const session = await checkTezignAuth();
     const userEmail = session.user?.email;
 
     if (!userEmail) {
@@ -49,7 +47,7 @@ export async function getInvitationCodes() {
     }
 
     // Check if user is admin to determine visibility
-    const isAdmin = isAdminUser(userEmail);
+    const isAdmin = await isAdminUser(userEmail);
 
     const invitationCodes = await prisma.invitationCode.findMany({
       where: isAdmin ? {} : { createdBy: userEmail },
@@ -70,7 +68,7 @@ export async function getInvitationCodes() {
 // Create a new invitation code
 export async function createInvitationCode() {
   try {
-    const session = await checkAdminAuth();
+    const session = await checkTezignAuth();
 
     // Get the email of the current user
     const creatorEmail = session.user?.email;
@@ -131,7 +129,7 @@ export async function deleteInvitationCode(id: number) {
     }
 
     // Determine if the user is an admin
-    const isAdmin = isAdminUser(userEmail);
+    const isAdmin = await isAdminUser(userEmail);
 
     // Check permissions
     if (!isAdmin && invitationCode.createdBy !== userEmail) {
