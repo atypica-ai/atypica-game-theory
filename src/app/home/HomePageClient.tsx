@@ -1,7 +1,5 @@
 "use client";
 import { FeaturedStudies } from "@/components/FeaturedStudies";
-import LanguageToggle from "@/components/LanguageToggle";
-import ThemeToggle from "@/components/ThemeToggle";
 import UserMenu from "@/components/UserMenu";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
@@ -57,8 +55,8 @@ export default function HomePageClient({ anonymous }: { anonymous: boolean }) {
         </div>
       ) : null}
       <div className="fixed right-2 top-2 sm:top-4 sm:right-4 flex items-center justify-end gap-4">
-        <ThemeToggle />
-        <LanguageToggle />
+        {/* <ThemeToggle /> */}
+        {/* <LanguageToggle /> */}
         <UserMenu />
       </div>
     </div>
