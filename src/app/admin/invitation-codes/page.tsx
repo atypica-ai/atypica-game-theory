@@ -13,6 +13,7 @@ export default function InvitationCodesPage() {
   const [codes, setCodes] = useState<InvitationCode[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -32,6 +33,7 @@ export default function InvitationCodesPage() {
       }
 
       setCodes(result.data ?? []);
+      setIsAdmin(result.isAdmin ?? false);
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -77,8 +79,24 @@ export default function InvitationCodesPage() {
 
       {error && <div className="mb-4 rounded-lg bg-red-50 p-4 text-red-500">{error}</div>}
 
-      <div className="mb-6">
-        <Button onClick={generateCode}>Generate New Code</Button>
+      <div className="mb-6 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button onClick={generateCode} disabled={!isAdmin && codes.length >= 5}>
+            Generate New Code
+          </Button>
+          {isAdmin && (
+            <span className="rounded-full bg-purple-100 px-3 py-1 text-xs font-medium text-purple-800">
+              Admin
+            </span>
+          )}
+        </div>
+        <div className="text-sm text-gray-500">
+          {isAdmin ? (
+            <span>Total: {codes.length} codes</span>
+          ) : (
+            <span>{codes.length}/5 codes used</span>
+          )}
+        </div>
       </div>
 
       <div className="overflow-x-auto rounded-lg border">
@@ -139,25 +157,15 @@ export default function InvitationCodesPage() {
                     {code.usedBy ? code.usedBy : "-"}
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {!code.usedBy && (
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleDeleteCode(code.id)}
-                      >
-                        Delete
-                      </Button>
-                    )}
-                    {code.usedBy && (
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        disabled
-                        title="Used codes cannot be deleted"
-                      >
-                        Delete
-                      </Button>
-                    )}
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      disabled={!isAdmin || !!code.usedBy}
+                      title="Only administrators can delete unused codes"
+                      onClick={() => handleDeleteCode(code.id)}
+                    >
+                      Delete
+                    </Button>
                   </td>
                 </tr>
               ))

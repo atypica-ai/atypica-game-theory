@@ -179,7 +179,7 @@ async function generateReport({
           reject(error);
         },
         onChunk: async ({ chunk }) => {
-          console.log(`[${report.id}] One Page HTML:`, JSON.stringify(chunk));
+          // console.log(`[${report.id}] One Page HTML:`, JSON.stringify(chunk));
           if (chunk.type === "text-delta") {
             onePageHtml += chunk.textDelta.toString();
             await throttleSaveHTML(report.id, onePageHtml);
