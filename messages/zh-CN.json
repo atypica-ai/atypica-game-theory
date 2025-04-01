@@ -7,7 +7,7 @@
       "unnamedChat": "未命名对话"
     },
     "InputSection": {
-      "placeholder": "你在想什么"
+      "placeholder": "这是一个商业问题研究的智能体框架，你想研究什么问题？"
     }
   },
   "AnalystListPage": {
