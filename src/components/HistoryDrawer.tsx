@@ -13,10 +13,24 @@ import { HistoryIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
-export function StudyHistoryDrawer() {
+export function StudyHistoryDrawer({
+  open: initialOpen = false,
+  onOpenChange,
+  trigger = true,
+  direction = "left",
+}: {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  trigger?: boolean;
+  direction?: "left" | "right";
+}) {
   const t = useTranslations("HomePage.HistoryDrawer");
   const [chats, setChats] = useState<Omit<UserChat, "messages">[]>([]);
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(initialOpen);
+
+  useEffect(() => {
+    setOpen(initialOpen);
+  }, [initialOpen]);
 
   useEffect(() => {
     const fetchChats = async () => {
@@ -38,15 +52,30 @@ export function StudyHistoryDrawer() {
     // const chat = await fetchUserChatById(studyUserChatId, "scout");
     window.location.replace(`/study?id=${studyUserChatId}`);
     setOpen(false); // Close drawer when a chat is selected
+    if (onOpenChange) {
+      onOpenChange(false);
+    }
   };
 
   return (
-    <Drawer direction="left" open={open} onOpenChange={setOpen} modal={true}>
-      <DrawerTrigger asChild>
-        <Button variant="ghost" className="size-8">
-          <HistoryIcon className="size-4" />
-        </Button>
-      </DrawerTrigger>
+    <Drawer
+      direction={direction}
+      open={open}
+      onOpenChange={(open) => {
+        setOpen(open);
+        if (onOpenChange) {
+          onOpenChange(open);
+        }
+      }}
+      modal={true}
+    >
+      {trigger && (
+        <DrawerTrigger asChild>
+          <Button variant="ghost" className="size-8">
+            <HistoryIcon className="size-4" />
+          </Button>
+        </DrawerTrigger>
+      )}
       <DrawerContent className="w-[280px] mr-0 ml-auto">
         <DrawerHeader>
           <DrawerTitle className="text-center">{t("title")}</DrawerTitle>

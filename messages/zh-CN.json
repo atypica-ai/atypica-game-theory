@@ -137,7 +137,8 @@
       "login": "登录",
       "logout": "退出登录",
       "lightTheme": "浅色主题",
-      "darkTheme": "深色主题"
+      "darkTheme": "深色主题",
+      "history": "历史对话"
     },
     "ChatMessage": {
       "toolExecution": "工具执行参数",

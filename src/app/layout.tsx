@@ -1,18 +1,14 @@
 import { AuthProvider } from "@/components/AuthProvider";
+import GlobalHeader from "@/components/GlobalHeader";
 import Stars from "@/components/Stars";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from "@/components/ui/sonner";
-import UserMenu from "@/components/UserMenu";
 import { cn } from "@/lib/utils";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import type { Metadata, Viewport } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale } from "next-intl/server";
 import "./globals.css";
-
-<div className="flex items-center gap-4">
-  <UserMenu />
-</div>;
 
 export const viewport: Viewport = {
   themeColor: "black",
@@ -50,9 +46,9 @@ export const metadata: Metadata = {
     follow: true,
   },
   icons: {
-    icon: "/_public/atypica.png",
-    shortcut: "/_public/atypica.png",
-    apple: { url: "/_public/atypica.png", sizes: "180x180", type: "image/png" },
+    icon: "/_public/hippyghost-square-dark.jpg",
+    shortcut: "/_public/hippyghost-square-dark.jpg",
+    apple: { url: "/_public/hippyghost-square-dark.jpg", sizes: "180x180", type: "image/png" },
   },
   manifest: "/manifest.json",
 };
@@ -69,7 +65,7 @@ export default async function RootLayout({
       <body
         className={cn(
           "font-IBMPlexMonoRegular antialiased",
-          "h-dvh pt-5 flex flex-col items-stretch justify-start",
+          "h-dvh flex flex-col items-stretch justify-start",
         )}
       >
         <ThemeProvider
@@ -80,7 +76,10 @@ export default async function RootLayout({
         >
           <Stars />
           <NextIntlClientProvider>
-            <AuthProvider>{children}</AuthProvider>
+            <AuthProvider>
+              <GlobalHeader />
+              {children}
+            </AuthProvider>
             <Toaster />
           </NextIntlClientProvider>
         </ThemeProvider>

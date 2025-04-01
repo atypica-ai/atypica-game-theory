@@ -137,7 +137,8 @@
       "login": "Login",
       "logout": "Logout",
       "lightTheme": "Light Theme",
-      "darkTheme": "Dark Theme"
+      "darkTheme": "Dark Theme",
+      "history": "Chat History"
     },
     "ChatMessage": {
       "toolExecution": "Tool Execution Parameters",

@@ -1,4 +1,5 @@
 "use client";
+import { StudyHistoryDrawer } from "@/components/HistoryDrawer";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Cookies from "js-cookie";
-import { GlobeIcon, LogInIcon, LogOutIcon, Moon, Sun, User } from "lucide-react";
+import { GlobeIcon, HistoryIcon, LogInIcon, LogOutIcon, Moon, Sun, User } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
@@ -21,9 +22,10 @@ import HippyGhostAvatar from "./HippyGhostAvatar";
 export default function UserMenu() {
   const { data: session } = useSession();
   const t = useTranslations("Components.UserMenu");
-  const { setTheme, theme } = useTheme();
+  const { setTheme } = useTheme();
   const router = useRouter();
   const [locale, setLocale] = useState<string>("zh-CN");
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     // Read locale from cookie when component mounts
@@ -38,6 +40,26 @@ export default function UserMenu() {
     setLocale(newLocale);
     // Refresh the page to apply changes
     router.refresh();
+  };
+
+  const Menus = () => {
+    return (
+      <>
+        <DropdownMenuItem onClick={() => setTheme("light")}>
+          <Sun className="h-4 w-4 mr-2" />
+          {t("lightTheme")}
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme("dark")}>
+          <Moon className="h-4 w-4 mr-2" />
+          {t("darkTheme")}
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={toggleLocale}>
+          <GlobeIcon className="h-4 w-4 mr-2" />
+          {locale === "zh-CN" ? "English" : "中文"}
+        </DropdownMenuItem>
+      </>
+    );
   };
 
   if (!session?.user) {
@@ -56,61 +78,42 @@ export default function UserMenu() {
             </Link>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => setTheme("light")}>
-            <Sun className="h-4 w-4 mr-2" />
-            {t("lightTheme")}
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setTheme("dark")}>
-            <Moon className="h-4 w-4 mr-2" />
-            {t("darkTheme")}
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={toggleLocale}>
-            <GlobeIcon className="h-4 w-4 mr-2" />
-            {locale === "zh-CN" ? "English" : "中文"}
-          </DropdownMenuItem>
+          <Menus />
         </DropdownMenuContent>
       </DropdownMenu>
     );
+  } else {
+    return (
+      <>
+        <DropdownMenu>
+          <DropdownMenuTrigger>
+            <Avatar className="size-8 cursor-pointer">
+              {/* <AvatarImage src={""} /> */}
+              {/* <AvatarFallback>{session.user.email.charAt(0)}</AvatarFallback> */}
+              <HippyGhostAvatar seed={session.user.id} className="size-8" />
+            </Avatar>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem>
+              <User className="h-4 w-4 mr-2" />
+              <span className="text-xs tracking-tight">{session.user.email}</span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <Menus />
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => setOpen(true)}>
+              <HistoryIcon className="h-4 w-4 mr-2" />
+              {t("history")}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/" })}>
+              <LogOutIcon className="h-4 w-4 mr-2" />
+              {t("logout")}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <StudyHistoryDrawer open={open} onOpenChange={setOpen} trigger={false} direction="right" />
+      </>
+    );
   }
-
-  const userEmail = session.user.email || "";
-  const userInitial = session.user.email?.charAt(0) || "?";
-
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger>
-        <Avatar className="size-8 cursor-pointer">
-          {/* <AvatarImage src={""} /> */}
-          {/* <AvatarFallback>{userInitial}</AvatarFallback> */}
-          <HippyGhostAvatar seed={session.user.id} className="size-8" />
-        </Avatar>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem>
-          <User className="h-4 w-4 mr-2" />
-          <span className="text-xs tracking-tight">{userEmail}</span>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => setTheme("light")}>
-          <Sun className="h-4 w-4 mr-2" />
-          {t("lightTheme")}
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("dark")}>
-          <Moon className="h-4 w-4 mr-2" />
-          {t("darkTheme")}
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={toggleLocale}>
-          <GlobeIcon className="h-4 w-4 mr-2" />
-          {locale === "zh-CN" ? "English" : "中文"}
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/" })}>
-          <LogOutIcon className="h-4 w-4 mr-2" />
-          {t("logout")}
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
 }

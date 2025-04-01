@@ -31,7 +31,7 @@ export function FeaturedStudies() {
 
   if (loading) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-4 max-w-6xl mx-auto">
         <h2 className="text-2xl font-medium text-center">{t("title")}</h2>
         <p className="text-muted-foreground text-center">{t("description")}</p>
         <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -60,7 +60,7 @@ export function FeaturedStudies() {
 
   if (studies.length === 0) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-4 max-w-6xl mx-auto">
         <h2 className="text-2xl font-medium text-center">{t("title")}</h2>
         <p className="text-muted-foreground text-center">{t("noFeatured")}</p>
       </div>
@@ -68,7 +68,7 @@ export function FeaturedStudies() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 max-w-6xl mx-auto">
       <h2 className="text-3xl font-medium text-center">{t("title")}</h2>
       <p className="text-muted-foreground text-center">{t("description")}</p>
       <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
