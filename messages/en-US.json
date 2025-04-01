@@ -180,6 +180,9 @@
     "ChatBox": {
       "placeholder": "Ask a follow-up question or reply"
     },
+    "ChatReplay": {
+      "skipToEnd": "Skip to End"
+    },
     "StatusDisplay": {
       "background": "atypica is running in the background...",
       "thinking": "atypica is thinking...",

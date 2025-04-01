@@ -14,27 +14,39 @@ function generateInvitationCode(length: number = 8): string {
 }
 
 // List invitation codes based on user role
-export async function getInvitationCodes() {
+export async function fetchInvitationCodes(page: number = 1, pageSize: number = 10) {
   const user = await checkTezignAuth();
-
-  // Check if user is admin to determine visibility
   const isAdmin = await isAdminUser(user.email);
 
+  const skip = (page - 1) * pageSize;
+  const where = isAdmin ? undefined : { createdBy: user.email };
+
   const invitationCodes = await prisma.invitationCode.findMany({
-    where: isAdmin ? {} : { createdBy: user.email },
+    where: where,
     orderBy: { createdAt: "desc" },
+    skip,
+    take: pageSize,
   });
+
+  const totalCount = await prisma.invitationCode.count({ where });
 
   // Add isAdmin flag to the response for UI to use
   return {
-    data: invitationCodes,
     isAdmin,
+    data: invitationCodes,
+    pagination: {
+      page,
+      pageSize,
+      totalCount,
+      totalPages: Math.ceil(totalCount / pageSize),
+    },
   };
 }
 
 // Create a new invitation code
 export async function createInvitationCode() {
   const user = await checkTezignAuth();
+  const isAdmin = await isAdminUser(user.email);
 
   // Check if user already has 5 invitation codes
   const existingCodeCount = await prisma.invitationCode.count({
@@ -43,7 +55,7 @@ export async function createInvitationCode() {
     },
   });
 
-  if (existingCodeCount >= 5) {
+  if (!isAdmin && existingCodeCount >= 5) {
     throw new Error("You have reached the maximum limit of 5 invitation codes");
   }
 

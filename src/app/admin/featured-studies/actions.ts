@@ -39,6 +39,12 @@ export async function fetchFeaturedStudies() {
   const featuredStudies = await prisma.featuredStudy.findMany({
     include: {
       analyst: true,
+      studyUserChat: {
+        select: {
+          id: true,
+          token: true,
+        },
+      },
     },
     orderBy: { displayOrder: "asc" },
   });

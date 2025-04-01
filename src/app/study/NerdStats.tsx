@@ -76,7 +76,7 @@ export function NerdStats({ studyUserChatId }: NerdStatsProps) {
         </PopoverTrigger>
 
         <PopoverContent
-          className="w-[40rem] p-0 border-none bg-transparent shadow-none"
+          className="w-[22rem] sm:w-[40rem] p-0 border-none bg-transparent shadow-none"
           align="center"
           onMouseEnter={() => setIsOpen(true)}
           onMouseLeave={() => setIsOpen(false)}
@@ -85,10 +85,10 @@ export function NerdStats({ studyUserChatId }: NerdStatsProps) {
             {isLoading ? (
               <div className="text-sm text-muted-foreground">Loading stats...</div>
             ) : (
-              <div className="bg-zinc-50 dark:bg-zinc-900 rounded-3xl border border-input overflow-hidden">
+              <div className="bg-zinc-50 dark:bg-zinc-900 rounded-xl sm:rounded-3xl border border-input overflow-hidden">
                 {/* Header */}
-                <div className="px-6 py-4 border-b border-input flex items-center">
-                  <div className="text-xl font-mono space-x-2">
+                <div className="px-3 tracking-tighter sm:px-6 sm:tracking-normal py-4 border-b border-input flex items-center">
+                  <div className="text-xs sm:text-xl font-mono space-x-2">
                     <span>💻</span>
                     <span>atypica.LLM</span>
                     <span className="text-foreground/80">&lt;creative reasoning α&gt;</span>
@@ -96,39 +96,37 @@ export function NerdStats({ studyUserChatId }: NerdStatsProps) {
                   </div>
                 </div>
                 {/* Stats Header */}
-                <div className="grid grid-cols-4 border-b border-input border-dashed">
-                  <div className="text-foreground/70 py-3 px-6 text-center border-r border-input border-dashed">
+                <div className="text-xs sm:text-base text-foreground/70  grid grid-cols-4 border-b border-input border-dashed">
+                  <div className="py-3 px-3 sm:px-6 text-center border-r border-input border-dashed">
                     time
                   </div>
-                  <div className="text-foreground/70 py-3 px-6 text-center border-r border-input border-dashed">
+                  <div className="py-3 px-3 sm:px-6 text-center border-r border-input border-dashed">
                     steps
                   </div>
-                  <div className="text-foreground/70 py-3 px-6 text-center border-r border-input border-dashed">
+                  <div className="py-3 px-3 sm:px-6 text-center border-r border-input border-dashed">
                     agents
                   </div>
-                  <div className="text-foreground/70 py-3 px-6 text-center border-r border-input">
-                    tokens
-                  </div>
+                  <div className="py-3 px-3 sm:px-6 text-center border-r border-input">tokens</div>
                 </div>
 
                 {/* Stats Values */}
-                <div className="grid grid-cols-4 bg-zinc-100 dark:bg-[#85CFF6]/5 border-b border-input">
-                  <div className="text-primary py-6 px-6 text-center text-xl font-mono border-r border-input border-dashed">
+                <div className="text-xs  sm:text-xl font-mono text-primary grid grid-cols-4 bg-zinc-100 dark:bg-[#85CFF6]/5 border-b border-input">
+                  <div className="py-3 px-3 sm:py-6 sm:px-6 text-center border-r border-input border-dashed">
                     {formatDuration(getStatValue("duration"))}
                   </div>
-                  <div className="text-primary py-6 px-6 text-center text-xl font-mono border-r border-input border-dashed">
+                  <div className="py-3 px-0 sm:py-6 sm:px-6 text-center border-r border-input border-dashed">
                     {getStatValue("steps")}
                   </div>
-                  <div className="text-primary py-6 px-6 text-center text-xl font-mono border-r border-input border-dashed">
+                  <div className="py-3 px-3 sm:py-6 sm:px-6 text-center border-r border-input border-dashed">
                     {getStatValue("personas") + 3 /* personas + expert agents */}
                   </div>
-                  <div className="text-primary py-6 px-6 text-center text-xl font-mono border-r border-input">
+                  <div className="py-3 px-0 sm:py-6 sm:px-6 tracking-tighter text-center border-r border-input">
                     {getStatValue("tokens").toLocaleString()}
                   </div>
                 </div>
 
                 {/* Footer */}
-                <div className="px-6 py-3 text-zinc-600 dark:text-[#85CFF6] font-medium text-sm">
+                <div className="text-xs sm:text-sm px-3 sm:px-6 py-3 text-zinc-600 dark:text-[#85CFF6] font-medium">
                   BMRLab @ 特赞科技
                 </div>
               </div>

@@ -1,7 +1,4 @@
 "use client";
-import { Button } from "@/components/ui/button";
-import { InvitationCode } from "@prisma/client";
-
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,10 +10,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { Pagination } from "@/components/ui/pagination";
+import { InvitationCode } from "@prisma/client";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { createInvitationCode, deleteInvitationCode, getInvitationCodes } from "./actions";
+import { useCallback, useEffect, useState } from "react";
+import { PaginationInfo } from "../utils";
+import { createInvitationCode, deleteInvitationCode, fetchInvitationCodes } from "./actions";
 
 export default function InvitationCodesPage() {
   const { status } = useSession();
@@ -24,7 +25,39 @@ export default function InvitationCodesPage() {
   const [codes, setCodes] = useState<InvitationCode[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState<PaginationInfo | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+
+  // Initialize page from URL on load
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      const pageParam = url.searchParams.get("page");
+      if (pageParam) {
+        setCurrentPage(parseInt(pageParam, 10));
+      }
+    }
+  }, []);
+  // Update URL when page changes
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    url.searchParams.set("page", currentPage.toString());
+    window.history.pushState({}, "", url.toString());
+  }, [currentPage]);
+
+  const fetchCodes = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const result = await fetchInvitationCodes(currentPage);
+      setCodes(result.data);
+      setPagination(result.pagination);
+      setIsAdmin(result.isAdmin);
+    } catch (error) {
+      setError((error as Error).message);
+    }
+    setIsLoading(false);
+  }, [currentPage]);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -32,19 +65,7 @@ export default function InvitationCodesPage() {
     } else if (status === "authenticated") {
       fetchCodes();
     }
-  }, [status, router]);
-
-  const fetchCodes = async () => {
-    setIsLoading(true);
-    try {
-      const result = await getInvitationCodes();
-      setCodes(result.data);
-      setIsAdmin(result.isAdmin);
-    } catch (error) {
-      setError((error as Error).message);
-    }
-    setIsLoading(false);
-  };
+  }, [status, router, fetchCodes]);
 
   const generateCode = async () => {
     try {
@@ -71,9 +92,7 @@ export default function InvitationCodesPage() {
   return (
     <div>
       <h1 className="mb-6 text-2xl font-bold">Invitation Codes</h1>
-
       {error && <div className="mb-4 rounded-lg bg-red-50 p-4 text-red-500">{error}</div>}
-
       <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button variant="outline" onClick={generateCode} disabled={!isAdmin && codes.length >= 5}>
@@ -93,7 +112,6 @@ export default function InvitationCodesPage() {
           )}
         </div>
       </div>
-
       <div className="overflow-x-auto rounded-lg border">
         <table className="min-w-full divide-y divide">
           <thead>
@@ -181,6 +199,16 @@ export default function InvitationCodesPage() {
           </tbody>
         </table>
       </div>
+
+      {pagination && pagination.totalPages > 1 && (
+        <div className="mt-6 flex justify-center">
+          <Pagination
+            currentPage={pagination.page}
+            totalPages={pagination.totalPages}
+            onPageChange={setCurrentPage}
+          />
+        </div>
+      )}
     </div>
   );
 }

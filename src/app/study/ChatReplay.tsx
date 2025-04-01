@@ -3,10 +3,12 @@ import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Button } from "@/components/ui/button";
 import { useScrollToBottom } from "@/components/use-scroll-to-bottom";
 import { StudyUserChat } from "@/data";
+import { useTranslations } from "next-intl";
 import { useProgressiveMessages } from "./hooks/useProgressiveMessages";
 import { SingleMessage } from "./SingleMessage";
 
 export function ChatReplay({ studyUserChat }: { studyUserChat: StudyUserChat }) {
+  const t = useTranslations("StudyPage.ChatReplay");
   const {
     partialMessages: messagesDisplay,
     skipToEnd,
@@ -38,7 +40,7 @@ export function ChatReplay({ studyUserChat }: { studyUserChat: StudyUserChat }) 
       {!isCompleted && (
         <div className="flex justify-center">
           <Button variant="outline" size="sm" onClick={skipToEnd}>
-            Skip to End
+            {t("skipToEnd")}
           </Button>
         </div>
       )}

@@ -25,6 +25,7 @@ import {
 
 type FeaturedStudyWithAnalyst = FeaturedStudy & {
   analyst: Analyst;
+  studyUserChat: Pick<UserChat, "token">;
 };
 
 type AnalystWithFeature = Analyst & {
@@ -44,6 +45,23 @@ export default function FeaturedStudiesPage() {
   const [error, setError] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
+
+  // Initialize page from URL on load
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      const pageParam = url.searchParams.get("page");
+      if (pageParam) {
+        setCurrentPage(parseInt(pageParam, 10));
+      }
+    }
+  }, []);
+  // Update URL when page changes
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    url.searchParams.set("page", currentPage.toString());
+    window.history.pushState({}, "", url.toString());
+  }, [currentPage]);
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
@@ -67,7 +85,7 @@ export default function FeaturedStudiesPage() {
     } else if (status === "authenticated") {
       fetchData();
     }
-  }, [status, router, currentPage, fetchData]);
+  }, [status, router, fetchData]);
 
   const handleToggleFeatured = async (analyst: Analyst) => {
     try {
@@ -125,7 +143,7 @@ export default function FeaturedStudiesPage() {
                   <tr key={study.id}>
                     <td className="whitespace-nowrap px-6 py-4 text-sm font-medium">
                       <div className="flex items-center gap-2">
-                        <span>{study.displayOrder}</span>
+                        {/* <span>{study.displayOrder}</span> */}
                         <div className="flex flex-col">
                           <button
                             onClick={() => handleMoveOrder(study.id, "up")}
@@ -146,13 +164,21 @@ export default function FeaturedStudiesPage() {
                     </td>
                     <td className="px-6 py-4 text-sm">{study.analyst.topic}</td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm">{study.analyst.role}</td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    <td className="whitespace-nowrap px-6 py-4 text-sm space-x-2">
                       <Button
                         variant="destructive"
                         size="sm"
                         onClick={() => handleToggleFeatured(study.analyst)}
                       >
                         Remove
+                      </Button>
+                      <Button variant="outline" asChild>
+                        <Link
+                          href={`/study/${study.studyUserChat.token}/share?replay=1`}
+                          target="_blank"
+                        >
+                          View Study
+                        </Link>
                       </Button>
                     </td>
                   </tr>
@@ -191,12 +217,12 @@ export default function FeaturedStudiesPage() {
               </CardContent>
               <CardFooter className="gap-2 items-center justify-end">
                 <Button
-                  variant={analyst.featuredStudy ? "secondary" : "secondary"}
+                  variant={analyst.featuredStudy ? "outline" : "outline"}
                   onClick={() => handleToggleFeatured(analyst)}
                 >
                   {analyst.featuredStudy ? "Remove from Featured" : "Add to Featured"}
                 </Button>
-                <Button variant="ghost" asChild>
+                <Button variant="outline" asChild>
                   <Link
                     href={`/study/${analyst.studyUserChat?.token}/share?replay=1`}
                     target="_blank"

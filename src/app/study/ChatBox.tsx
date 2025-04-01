@@ -13,6 +13,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Message, useChat } from "@ai-sdk/react";
 import { ArrowRightIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { NerdStats } from "./NerdStats";
 import { SingleMessage } from "./SingleMessage";
@@ -38,6 +39,7 @@ export function ChatBox({
   studyUserChat: StudyUserChat;
 }) {
   // 这个组件是不支持对话直接切换的，如果切换，需要刷新页面重新加载！);
+  const t = useTranslations("StudyPage.ChatBox");
 
   const {
     messages,
@@ -190,7 +192,7 @@ export function ChatBox({
             inputDisabled ? "opacity-50 cursor-not-allowed" : "",
           )}
           enterKeyHint="enter"
-          placeholder="Ask a follow-up question or reply"
+          placeholder={t("placeholder")}
           value={input}
           disabled={inputDisabled}
           onChange={(event) => {

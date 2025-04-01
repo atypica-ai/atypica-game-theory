@@ -79,11 +79,11 @@ export function FeaturedStudies() {
             className="flex"
             target="_blank"
           >
-            <Card className="overflow-hidden cursor-pointer">
+            <Card className="cursor-pointer">
               <CardHeader>
-                <div className="flex items-center justify-start gap-2">
+                <div className="flex items-center justify-start gap-2 overflow-hidden">
                   <HippyGhostAvatar seed={study.id} className="size-6" />
-                  <div className="text-xs text-muted-foreground">{study.analyst.role}</div>
+                  <div className="text-xs text-muted-foreground truncate">{study.analyst.role}</div>
                 </div>
                 <CardTitle className="line-clamp-1 leading-5">{study.analyst.topic}</CardTitle>
               </CardHeader>

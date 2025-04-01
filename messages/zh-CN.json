@@ -180,6 +180,9 @@
     "ChatBox": {
       "placeholder": "提出后续问题或回复"
     },
+    "ChatReplay": {
+      "skipToEnd": "跳到结尾"
+    },
     "StatusDisplay": {
       "background": "atypica 正在后台执行中...",
       "thinking": "atypica 正在思考中...",

@@ -45,7 +45,7 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
   return (
     <div className="flex items-center space-x-2">
       <Button
-        variant="outline"
+        variant="ghost"
         size="icon"
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
@@ -57,7 +57,7 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
         typeof page === "number" ? (
           <Button
             key={i}
-            variant={currentPage === page ? "outline" : "secondary"}
+            variant={currentPage === page ? "secondary" : "ghost"}
             size="icon"
             onClick={() => onPageChange(page)}
           >
@@ -71,7 +71,7 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
       )}
 
       <Button
-        variant="outline"
+        variant="ghost"
         size="icon"
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
