@@ -1,26 +1,16 @@
 "use client";
 import { fetchPublicFeaturedStudies } from "@/app/admin/featured-studies/actions";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useEffect, useState } from "react";
+import HippyGhostAvatar from "./HippyGhostAvatar";
 
-type FeaturedStudy = NonNullable<
-  Awaited<ReturnType<typeof fetchPublicFeaturedStudies>>["data"]
->[number];
+type FeaturedStudy = Awaited<ReturnType<typeof fetchPublicFeaturedStudies>>["data"][number];
 
 export function FeaturedStudies() {
   const t = useTranslations("HomePage.FeaturedStudies");
-  const router = useRouter();
   const [studies, setStudies] = useState<FeaturedStudy[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -30,25 +20,21 @@ export function FeaturedStudies() {
       setLoading(true);
       try {
         const result = await fetchPublicFeaturedStudies();
-        if (result.success && result.data) {
-          setStudies(result.data);
-        }
+        setStudies(result.data);
       } catch (error) {
-        console.error("Failed to load featured studies:", error);
-      } finally {
-        setLoading(false);
+        setError((error as Error).message);
       }
+      setLoading(false);
     };
-
     loadStudies();
   }, []);
 
   if (loading) {
     return (
       <div className="space-y-4">
-        <h2 className="text-2xl font-bold">{t("title")}</h2>
-        <p className="text-muted-foreground">{t("description")}</p>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <h2 className="text-2xl font-medium text-center">{t("title")}</h2>
+        <p className="text-muted-foreground text-center">{t("description")}</p>
+        <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3].map((i) => (
             <Card key={i} className="overflow-hidden">
               <CardHeader>
@@ -75,47 +61,39 @@ export function FeaturedStudies() {
   if (studies.length === 0) {
     return (
       <div className="space-y-4">
-        <h2 className="text-2xl font-bold">{t("title")}</h2>
-        <p className="text-muted-foreground">{t("noFeatured")}</p>
+        <h2 className="text-2xl font-medium text-center">{t("title")}</h2>
+        <p className="text-muted-foreground text-center">{t("noFeatured")}</p>
       </div>
     );
   }
 
   return (
     <div className="space-y-4">
-      <h2 className="text-2xl font-bold text-center">{t("title")}</h2>
+      <h2 className="text-3xl font-medium text-center">{t("title")}</h2>
       <p className="text-muted-foreground text-center">{t("description")}</p>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {studies.map((study) => (
-          <Card key={study.id} className="overflow-hidden ">
-            <CardHeader>
-              <CardTitle className="line-clamp-2 leading-5">{study.analyst.topic}</CardTitle>
-              <CardDescription>{study.analyst.role}</CardDescription>
-            </CardHeader>
-            <CardContent className="mt-auto">
-              <p className="line-clamp-3 text-sm text-muted-foreground">
-                {study.analyst.studySummary}
-              </p>
-              <div className="mt-2 flex flex-wrap gap-1">
-                {study.analyst.interviews.slice(0, 3).map((interview) => (
-                  <span
-                    key={interview.id}
-                    className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700"
-                  >
-                    {interview.persona.name}
-                  </span>
-                ))}
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button
-                onClick={() => router.push(`/study/${study.studyUserChat.token}/share?replay=1`)}
-                variant="outline"
-              >
-                {t("viewStudy")}
-              </Button>
-            </CardFooter>
-          </Card>
+          <Link
+            key={study.id}
+            href={`/study/${study.studyUserChat.token}/share?replay=1`}
+            className="flex"
+            target="_blank"
+          >
+            <Card className="overflow-hidden cursor-pointer">
+              <CardHeader>
+                <div className="flex items-center justify-start gap-2">
+                  <HippyGhostAvatar seed={study.id} className="size-6" />
+                  <div className="text-xs text-muted-foreground">{study.analyst.role}</div>
+                </div>
+                <CardTitle className="line-clamp-1 leading-5">{study.analyst.topic}</CardTitle>
+              </CardHeader>
+              <CardContent className="mt-auto">
+                <p className="line-clamp-3 text-xs text-muted-foreground">
+                  {study.analyst.studySummary}
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
         ))}
       </div>
     </div>

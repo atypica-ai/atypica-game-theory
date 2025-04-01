@@ -1,9 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import UserMenu from "@/components/UserMenu";
+import { authOptions } from "@/lib/auth";
 import { Database, Home, Key, Star, Users } from "lucide-react";
+import { getServerSession } from "next-auth";
 import Link from "next/link";
 import { ReactNode } from "react";
+import { isAdminUser } from "./utils";
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -16,7 +19,7 @@ interface SidebarItem {
 }
 
 // Define sidebar navigation items
-const sidebarItems: SidebarItem[] = [
+const sidebarItemsAdmin: SidebarItem[] = [
   {
     label: "Dashboard",
     href: "/admin",
@@ -44,18 +47,34 @@ const sidebarItems: SidebarItem[] = [
   },
 ];
 
-export default function AdminLayout({ children }: AdminLayoutProps) {
+const sidebarItems: SidebarItem[] = [
+  {
+    label: "Invitation Codes",
+    href: "/admin/invitation-codes",
+    icon: <Key className="mr-2 h-4 w-4" />,
+  },
+  {
+    label: "View Site",
+    href: "/",
+    icon: <Database className="mr-2 h-4 w-4" />,
+  },
+];
+
+export default async function AdminLayout({ children }: AdminLayoutProps) {
+  const session = await getServerSession(authOptions);
+  const isAdmin = session?.user?.email ? await isAdminUser(session.user.email) : false;
+
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen font-sans">
       {/* Sidebar */}
-      <aside className="w-64 border-r bg-gray-50">
+      <aside className="w-64 border-r">
         <div className="flex h-16 items-center border-b px-6 justify-between">
           <h1 className="text-lg font-bold">Admin Panel</h1>
           <UserMenu />
         </div>
         <nav className="p-4">
           <ul className="space-y-2">
-            {sidebarItems.map((item) => (
+            {(isAdmin ? sidebarItemsAdmin : sidebarItems).map((item) => (
               <li key={item.href}>
                 <Button asChild variant="ghost" className="w-full justify-start">
                   <Link href={item.href}>

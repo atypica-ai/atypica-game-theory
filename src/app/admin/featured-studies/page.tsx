@@ -9,11 +9,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Pagination } from "@/components/ui/pagination";
-import { Analyst, FeaturedStudy, User, UserAnalyst } from "@prisma/client";
+import { Analyst, FeaturedStudy, User, UserAnalyst, UserChat } from "@prisma/client";
 import { ArrowDown, ArrowUp, StarIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { PaginationInfo } from "../utils";
 import {
   fetchAnalysts,
   fetchFeaturedStudies,
@@ -30,13 +32,7 @@ type AnalystWithFeature = Analyst & {
     user: Pick<User, "email">;
   })[];
   featuredStudy: FeaturedStudy | null;
-};
-
-type PaginationInfo = {
-  page: number;
-  pageSize: number;
-  totalCount: number;
-  totalPages: number;
+  studyUserChat: Pick<UserChat, "token"> | null;
 };
 
 export default function FeaturedStudiesPage() {
@@ -49,48 +45,33 @@ export default function FeaturedStudiesPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
 
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const [featuredResult, analystsResult] = await Promise.all([
+        fetchFeaturedStudies(),
+        fetchAnalysts(currentPage),
+      ]);
+      setFeaturedStudies(featuredResult.data);
+      setAnalysts(analystsResult.data);
+      setPagination(analystsResult.pagination);
+    } catch (err) {
+      setError((err as Error).message);
+    }
+    setIsLoading(false);
+  }, [currentPage]);
+
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/auth/signin");
     } else if (status === "authenticated") {
       fetchData();
     }
-  }, [status, router, currentPage]);
-
-  const fetchData = async () => {
-    try {
-      setIsLoading(true);
-      const [featuredResult, analystsResult] = await Promise.all([
-        fetchFeaturedStudies(),
-        fetchAnalysts(currentPage),
-      ]);
-
-      if (!featuredResult.success) {
-        throw new Error(featuredResult.error || "Failed to fetch featured studies");
-      }
-
-      if (!analystsResult.success) {
-        throw new Error(analystsResult.error || "Failed to fetch analysts");
-      }
-
-      setFeaturedStudies(featuredResult.data || []);
-      setAnalysts(analystsResult.data || []);
-      setPagination(analystsResult.pagination || null);
-    } catch (err) {
-      setError((err as Error).message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [status, router, currentPage, fetchData]);
 
   const handleToggleFeatured = async (analyst: Analyst) => {
     try {
-      const result = await toggleFeaturedStatus(analyst);
-
-      if (!result.success) {
-        throw new Error(result.error || "Failed to toggle featured status");
-      }
-
+      await toggleFeaturedStatus(analyst);
       await fetchData();
     } catch (err) {
       setError((err as Error).message);
@@ -99,12 +80,7 @@ export default function FeaturedStudiesPage() {
 
   const handleMoveOrder = async (id: number, direction: "up" | "down") => {
     try {
-      const result = await updateDisplayOrder(id, direction);
-
-      if (!result.success) {
-        throw new Error(result.error || "Failed to update display order");
-      }
-
+      await updateDisplayOrder(id, direction);
       await fetchData();
     } catch (err) {
       setError((err as Error).message);
@@ -127,27 +103,27 @@ export default function FeaturedStudiesPage() {
           <p className="text-gray-500">No featured studies currently selected.</p>
         ) : (
           <div className="overflow-x-auto rounded-lg border">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide">
+              <thead>
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                     Order
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                     Study Topic
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                     Role
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200 bg-white">
+              <tbody className="divide-y divide">
                 {featuredStudies.map((study, index) => (
                   <tr key={study.id}>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
+                    <td className="whitespace-nowrap px-6 py-4 text-sm font-medium">
                       <div className="flex items-center gap-2">
                         <span>{study.displayOrder}</span>
                         <div className="flex flex-col">
@@ -168,10 +144,8 @@ export default function FeaturedStudiesPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">{study.analyst.topic}</td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
-                      {study.analyst.role}
-                    </td>
+                    <td className="px-6 py-4 text-sm">{study.analyst.topic}</td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">{study.analyst.role}</td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
                       <Button
                         variant="destructive"
@@ -207,20 +181,28 @@ export default function FeaturedStudiesPage() {
                 <CardDescription>{analyst.role}</CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-gray-500">
-                  User: {analyst.userAnalysts[0]?.user?.email || "N/A"}
+                <p className="text-sm line-clamp-3 mb-2">{analyst.studySummary}</p>
+                <p className="text-sm text-muted-foreground">
+                  User: {analyst.userAnalysts[0]?.user.email || "N/A"}
                 </p>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-muted-foreground">
                   Created: {new Date(analyst.createdAt).toLocaleDateString()}
                 </p>
               </CardContent>
-              <CardFooter>
+              <CardFooter className="gap-2 items-center justify-end">
                 <Button
-                  variant={analyst.featuredStudy ? "destructive" : "default"}
+                  variant={analyst.featuredStudy ? "secondary" : "secondary"}
                   onClick={() => handleToggleFeatured(analyst)}
-                  className="w-full"
                 >
                   {analyst.featuredStudy ? "Remove from Featured" : "Add to Featured"}
+                </Button>
+                <Button variant="ghost" asChild>
+                  <Link
+                    href={`/study/${analyst.studyUserChat?.token}/share?replay=1`}
+                    target="_blank"
+                  >
+                    View Study
+                  </Link>
                 </Button>
               </CardFooter>
             </Card>

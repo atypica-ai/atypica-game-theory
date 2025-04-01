@@ -35,45 +35,29 @@ export default function InvitationCodesPage() {
   }, [status, router]);
 
   const fetchCodes = async () => {
+    setIsLoading(true);
     try {
-      setIsLoading(true);
       const result = await getInvitationCodes();
-
-      if (!result.success) {
-        throw new Error(result.error || "Failed to fetch invitation codes");
-      }
-
-      setCodes(result.data ?? []);
-      setIsAdmin(result.isAdmin ?? false);
-    } catch (err) {
-      setError((err as Error).message);
-    } finally {
-      setIsLoading(false);
+      setCodes(result.data);
+      setIsAdmin(result.isAdmin);
+    } catch (error) {
+      setError((error as Error).message);
     }
+    setIsLoading(false);
   };
 
   const generateCode = async () => {
     try {
-      const result = await createInvitationCode();
-
-      if (!result.success) {
-        throw new Error(result.error || "Failed to generate invitation code");
-      }
-
+      await createInvitationCode();
       await fetchCodes();
-    } catch (err) {
-      setError((err as Error).message);
+    } catch (error) {
+      setError((error as Error).message);
     }
   };
 
   const handleDeleteCode = async (id: number) => {
     try {
-      const result = await deleteInvitationCode(id);
-
-      if (!result.success) {
-        throw new Error(result.error || "Failed to delete invitation code");
-      }
-
+      await deleteInvitationCode(id);
       await fetchCodes();
     } catch (err) {
       setError((err as Error).message);
@@ -111,60 +95,56 @@ export default function InvitationCodesPage() {
       </div>
 
       <div className="overflow-x-auto rounded-lg border">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+        <table className="min-w-full divide-y divide">
+          <thead>
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                 Code
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                 Created At
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                 Created By
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                 Status
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                 Used By
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                 Actions
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200 bg-white">
+          <tbody className="divide-y divide">
             {codes.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">
+                <td colSpan={6} className="px-6 py-4 text-center text-sm">
                   No invitation codes found
                 </td>
               </tr>
             ) : (
               codes.map((code) => (
                 <tr key={code.id}>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
-                    {code.code}
-                  </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
+                  <td className="whitespace-nowrap px-6 py-4 text-sm font-medium">{code.code}</td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
                     {new Date(code.createdAt).toLocaleString()}
                   </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
-                    {code.createdBy}
-                  </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">{code.createdBy}</td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
                     {code.usedBy ? (
-                      <span className="rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800">
+                      <span className="rounded-full bg-green-100 dark:bg-green-200 px-2 py-1 text-xs font-medium text-green-800">
                         Used
                       </span>
                     ) : (
-                      <span className="rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800">
+                      <span className="rounded-full bg-blue-100 dark:bg-blue-200 px-2 py-1 text-xs font-medium text-blue-800">
                         Available
                       </span>
                     )}
                   </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
                     {code.usedBy ? code.usedBy : "-"}
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm">

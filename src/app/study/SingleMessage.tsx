@@ -165,7 +165,7 @@ export const SingleMessage = ({
                   : contentLength < 100
                     ? "text-base"
                     : "text-sm",
-            "font-medium",
+            "font-medium whitespace-pre-wrap",
           )}
         >
           {content}
