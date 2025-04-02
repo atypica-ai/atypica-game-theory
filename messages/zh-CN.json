@@ -177,12 +177,14 @@
       "copySuccess": "链接已复制到剪贴板"
     },
     "ChatBox": {
-      "placeholder": "提出后续问题或回复"
+      "placeholder": "提出后续问题或回复",
+      "noneOfTheAbove": "以上都不是"
     },
     "ChatReplay": {
       "skipToEnd": "跳到结尾"
     },
     "StatusDisplay": {
+      "waitingForUserAction": "等待您的操作...",
       "background": "atypica 正在后台执行中...",
       "thinking": "atypica 正在思考中...",
       "processing": "正在处理您的请求...",

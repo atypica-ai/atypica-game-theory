@@ -8,7 +8,6 @@ import {
   interviewChatTool,
   reasoningThinkingTool,
   requestInteractionTool,
-  requestPaymentTool,
   saveAnalystStudySummaryTool,
   saveAnalystTool,
   scoutTaskChatTool,
@@ -65,7 +64,7 @@ export async function POST(req: Request) {
       [ToolName.generateReport]: generateReportTool({ abortSignal, statReport }),
       [ToolName.reasoningThinking]: reasoningThinkingTool({ abortSignal, statReport }),
       [ToolName.requestInteraction]: requestInteractionTool,
-      [ToolName.requestPayment]: requestPaymentTool,
+      // [ToolName.requestPayment]: requestPaymentTool,
     },
     maxSteps: 15,
     onError: async ({ error }) => {

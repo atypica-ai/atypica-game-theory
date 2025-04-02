@@ -4,6 +4,8 @@ import { createContext, ReactNode, useContext, useState } from "react";
 
 interface StudyContextType {
   replay: boolean;
+  pendingUserToolInvocation: ToolInvocation | null;
+  setPendingUserToolInvocation: (toolInvocation: ToolInvocation | null) => void;
   lastToolInvocation: ToolInvocation | null;
   setLastToolInvocation: (toolInvocation: ToolInvocation | null) => void;
   viewToolInvocation: ToolInvocation | null;
@@ -14,6 +16,9 @@ interface StudyContextType {
 const StudyContext = createContext<StudyContextType | undefined>(undefined);
 
 export function StudyProvider({ children, replay }: { children: ReactNode; replay: boolean }) {
+  const [pendingUserToolInvocation, setPendingUserToolInvocation] = useState<ToolInvocation | null>(
+    null,
+  );
   const [lastToolInvocation, setLastToolInvocation] = useState<ToolInvocation | null>(null);
   const [viewToolInvocation, setViewToolInvocation] = useState<ToolInvocation | null>(null);
   const unsetViewToolInvocation = () => setViewToolInvocation(null);
@@ -21,6 +26,8 @@ export function StudyProvider({ children, replay }: { children: ReactNode; repla
     <StudyContext.Provider
       value={{
         replay,
+        pendingUserToolInvocation,
+        setPendingUserToolInvocation,
         lastToolInvocation,
         setLastToolInvocation,
         viewToolInvocation,

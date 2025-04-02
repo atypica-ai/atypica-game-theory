@@ -17,6 +17,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { NerdStats } from "./NerdStats";
 import { SingleMessage } from "./SingleMessage";
 import { CancelButton, StatusDisplay } from "./StatusDisplay";
+import { useStudyContext } from "./hooks/StudyContext";
 
 function popLastUserMessage(messages: Message[]) {
   if (messages.length > 0 && messages[messages.length - 1].role === "user") {
@@ -38,6 +39,8 @@ export function ChatBox({
   studyUserChat: StudyUserChat;
 }) {
   // 这个组件是不支持对话直接切换的，如果切换，需要刷新页面重新加载！);
+
+  const { pendingUserToolInvocation } = useStudyContext();
   const t = useTranslations("StudyPage.ChatBox");
 
   const {
@@ -59,10 +62,6 @@ export function ChatBox({
   });
 
   const [backgroundToken, setBackgroundToken] = useState<string | null>(initialBackgroundToken);
-  const uiStatus = useMemo(
-    () => (backgroundToken ? "background" : useChatStatus),
-    [backgroundToken, useChatStatus],
-  );
   const useChatRef = useRef({ reload, setMessages });
 
   // React 在 development 模式下默认会执行两次 useEffect，这是 React 的严格模式的有意设计，帮助发现副作用
@@ -134,8 +133,20 @@ export function ChatBox({
     };
   }, [refreshStudyUserChat]);
 
+  const uiStatus = useMemo(
+    () =>
+      pendingUserToolInvocation
+        ? "waitingForUserAction"
+        : backgroundToken
+          ? "background"
+          : useChatStatus,
+    [pendingUserToolInvocation, backgroundToken, useChatStatus],
+  );
   const inputDisabled =
-    uiStatus === "background" || uiStatus === "streaming" || uiStatus === "submitted";
+    uiStatus === "waitingForUserAction" ||
+    uiStatus === "background" ||
+    uiStatus === "streaming" ||
+    uiStatus === "submitted";
   const [messagesContainerRef, messagesEndRef] = useScrollToBottom<HTMLDivElement>();
 
   return (

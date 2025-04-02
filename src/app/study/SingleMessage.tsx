@@ -1,4 +1,3 @@
-"use client";
 import { Markdown } from "@/components/markdown";
 import ToolArgsTable from "@/components/ToolArgsTable";
 import ToolResultTable from "@/components/ToolResultTable";
@@ -13,6 +12,7 @@ import { PropsWithChildren, ReactNode, useCallback, useEffect, useRef, useState 
 import { useStudyContext } from "./hooks/StudyContext";
 import { GenerateReportResultMessage } from "./tools/message/GenerateReportResultMessage";
 import { RequestIteractionMessage } from "./tools/message/RequestIteractionMessage";
+import { RequestPaymentMessage } from "./tools/message/RequestPaymentMessage";
 
 const ToolInvocationMessage = ({
   toolInvocation,
@@ -47,22 +47,24 @@ const ToolInvocationMessage = ({
     }
   }, [isLastToolPart]);
 
-  const renderToolCallUI = useCallback(
-    (toolInvocation: ToolInvocation) => {
-      // 特殊显示的工具调用 UI
-      const { toolName, state } = toolInvocation;
-      if (toolName == ToolName.requestInteraction) {
-        return (
-          <RequestIteractionMessage toolInvocation={toolInvocation} addToolResult={addToolResult} />
-        );
-      }
-      if (state === "result" && toolName == ToolName.generateReport) {
-        return <GenerateReportResultMessage result={toolInvocation.result} />;
-      }
-      return null;
-    },
-    [addToolResult],
-  );
+  const renderToolCallUI = useCallback(() => {
+    // 特殊显示的工具调用 UI
+    const { toolName, state } = toolInvocation;
+    if (toolName == ToolName.requestInteraction) {
+      return (
+        <RequestIteractionMessage toolInvocation={toolInvocation} addToolResult={addToolResult} />
+      );
+    }
+    if (toolName == ToolName.requestPayment) {
+      return (
+        <RequestPaymentMessage toolInvocation={toolInvocation} addToolResult={addToolResult} />
+      );
+    }
+    if (state === "result" && toolName == ToolName.generateReport) {
+      return <GenerateReportResultMessage result={toolInvocation.result} />;
+    }
+    return null;
+  }, [addToolResult, toolInvocation]);
 
   return (
     <div>
@@ -108,7 +110,7 @@ const ToolInvocationMessage = ({
           )}
         </CollapsibleContent>
       </Collapsible>
-      <div className="my-4">{renderToolCallUI(toolInvocation)}</div>
+      <div className="my-4">{renderToolCallUI()}</div>
     </div>
   );
 };

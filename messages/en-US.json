@@ -177,12 +177,14 @@
       "copySuccess": "Link copied to clipboard"
     },
     "ChatBox": {
-      "placeholder": "Ask a follow-up question or reply"
+      "placeholder": "Ask a follow-up question or reply",
+      "noneOfTheAbove": "None of the above"
     },
     "ChatReplay": {
       "skipToEnd": "Skip to End"
     },
     "StatusDisplay": {
+      "waitingForUserAction": "Waiting for your action...",
       "background": "atypica is running in the background...",
       "thinking": "atypica is thinking...",
       "processing": "Processing your request...",

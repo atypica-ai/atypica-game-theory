@@ -91,13 +91,15 @@ export function StatusDisplay({
   status,
   // onUserCancel,
 }: {
-  status: "background" | "error" | "submitted" | "streaming" | "ready";
+  status: "waitingForUserAction" | "background" | "error" | "submitted" | "streaming" | "ready";
   onUserCancel?: () => void;
 }) {
   const t = useTranslations("StudyPage.StatusDisplay");
 
   const getStatusMessage = (status: string) => {
     switch (status) {
+      case "waitingForUserAction":
+        return t("waitingForUserAction");
       case "background":
         return t("background");
       case "streaming":
