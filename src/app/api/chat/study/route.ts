@@ -8,6 +8,7 @@ import {
   interviewChatTool,
   reasoningThinkingTool,
   requestInteractionTool,
+  requestPaymentTool,
   saveAnalystStudySummaryTool,
   saveAnalystTool,
   scoutTaskChatTool,
@@ -17,34 +18,9 @@ import {
 import { generateId, Message, streamText } from "ai";
 import { getServerSession } from "next-auth/next";
 import { NextResponse } from "next/server";
-import { backgroundChatUntilCancel } from "./background";
+import { createAbortSignals } from "./abortSignal";
+import { backgroundChatUntilCancel, raceForUserChat } from "./background";
 import { appendChunkToStreamingMessage, persistentMessages } from "./messageUtils";
-
-const createAbortSignals = (requestSignal: AbortSignal) => {
-  // const abortSignal = req.signal;
-  // 请求断了以后不终止，自己创建一个 controller 在 onError 里触发，或者收到用户中断的操作指令时候触发
-  const abortController = new AbortController();
-  requestSignal.addEventListener("abort", () => {
-    console.log(`[241] StudyChat request aborted, do nothing, background working`);
-    // abortController.abort();
-  });
-  const abortSignal = abortController.signal;
-  const delayedAbortSignal = (() => {
-    // 给 StudyChat 的 streamText 用，先等其他的请求都 abort 最后再 abort StudyChat
-    // 否则 StudyChat 提前中断会取消它后续调用的所有 promise，导致他们自己在调用 abortController.abort() 方法时失败
-    const delayedAbortController = new AbortController();
-    abortSignal.addEventListener("abort", () => {
-      setTimeout(() => delayedAbortController.abort(), 1000);
-    });
-    return delayedAbortController.signal;
-  })();
-
-  return {
-    abortController,
-    abortSignal,
-    delayedAbortSignal,
-  };
-};
 
 // 参考了 https://sdk.vercel.ai/docs/ai-sdk-ui/chatbot-message-persistence#storing-messages 的设计来实现
 export async function POST(req: Request) {
@@ -56,11 +32,11 @@ export async function POST(req: Request) {
   const payload = await req.json();
   const studyUserChatId = parseInt(payload["id"]);
   const initialMessages = payload["messages"] as Message[];
-
   if (!studyUserChatId || !initialMessages) {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
 
+  const { clearBackgroundToken, backgroundToken } = await raceForUserChat(studyUserChatId);
   const { abortController, abortSignal, delayedAbortSignal } = createAbortSignals(req.signal);
 
   const streamingMessage: Omit<Message, "role"> & { parts: NonNullable<Message["parts"]> } = {
@@ -89,6 +65,7 @@ export async function POST(req: Request) {
       [ToolName.generateReport]: generateReportTool({ abortSignal, statReport }),
       [ToolName.reasoningThinking]: reasoningThinkingTool({ abortSignal, statReport }),
       [ToolName.requestInteraction]: requestInteractionTool,
+      [ToolName.requestPayment]: requestPaymentTool,
     },
     maxSteps: 15,
     onError: async ({ error }) => {
@@ -133,10 +110,11 @@ export async function POST(req: Request) {
     abortSignal: delayedAbortSignal,
   });
 
-  const { clearBackgroundToken } = backgroundChatUntilCancel({
+  backgroundChatUntilCancel({
+    studyUserChatId,
+    backgroundToken,
     streamTextResult,
     abortController,
-    studyUserChatId,
   });
 
   return streamTextResult.toDataStreamResponse();

@@ -2,15 +2,8 @@ import { prisma } from "@/lib/prisma";
 import { waitUntil } from "@vercel/functions";
 import { StreamTextResult, ToolSet } from "ai";
 
-export function backgroundChatUntilCancel<TOOLS extends ToolSet, PARTIAL_OUTPUT>({
-  studyUserChatId,
-  abortController,
-  streamTextResult,
-}: {
-  studyUserChatId: number;
-  abortController: AbortController;
-  streamTextResult: StreamTextResult<TOOLS, PARTIAL_OUTPUT>;
-}) {
+export async function raceForUserChat(studyUserChatId: number) {
+  // race, 争取 userchat 的写入
   const backgroundToken = new Date().valueOf().toString();
 
   const clearBackgroundToken = async () => {
@@ -27,6 +20,26 @@ export function backgroundChatUntilCancel<TOOLS extends ToolSet, PARTIAL_OUTPUT>
     }
   };
 
+  // 如果 backgroundToken 不是 null，抛出异常，阻止继续对话
+  await prisma.userChat.update({
+    where: { id: studyUserChatId, backgroundToken: null },
+    data: { backgroundToken },
+  });
+
+  return { clearBackgroundToken, backgroundToken };
+}
+
+export function backgroundChatUntilCancel<TOOLS extends ToolSet, PARTIAL_OUTPUT>({
+  studyUserChatId,
+  backgroundToken,
+  abortController,
+  streamTextResult,
+}: {
+  studyUserChatId: number;
+  backgroundToken: string;
+  abortController: AbortController;
+  streamTextResult: StreamTextResult<TOOLS, PARTIAL_OUTPUT>;
+}) {
   waitUntil(
     new Promise((resolve) => {
       async function checkBackgroundToken() {
@@ -48,18 +61,7 @@ export function backgroundChatUntilCancel<TOOLS extends ToolSet, PARTIAL_OUTPUT>
           setTimeout(() => checkBackgroundToken(), 1000);
         }
       }
-      prisma.userChat
-        .update({
-          where: { id: studyUserChatId },
-          data: { backgroundToken },
-        })
-        .then(() => {
-          // 更新成功以后开始检查用户取消 backgroundToken
-          checkBackgroundToken();
-        })
-        .catch((error) => {
-          console.log("Error updating background token:", error);
-        });
+      checkBackgroundToken();
     }),
   );
 
@@ -99,7 +101,5 @@ export function backgroundChatUntilCancel<TOOLS extends ToolSet, PARTIAL_OUTPUT>
     }),
   );
 
-  return {
-    clearBackgroundToken,
-  };
+  return {};
 }
