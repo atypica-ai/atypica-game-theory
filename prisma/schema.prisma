@@ -179,11 +179,41 @@ model PaymentRecord {
   status        String    @db.VarChar(32) // pending | succeeded | failed
   paymentMethod String    @db.VarChar(64)
   charge        Json
-  chargeId      String    @unique @db.VarChar(64)
+  chargeId      String    @db.VarChar(64)
   credential    Json
   description   String    @db.VarChar(255)
   paidAt        DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  paymentLines PaymentLine[]
+}
+
+model Product {
+  id          Int    @id @default(autoincrement())
+  name        String @unique @db.VarChar(64)
+  price       Float
+  description String @db.VarChar(255)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  paymentLines PaymentLine[]
+}
+
+model PaymentLine {
+  id              Int           @id @default(autoincrement())
+  paymentRecordId Int
+  paymentRecord   PaymentRecord @relation(fields: [paymentRecordId], references: [id])
+  productId       Int
+  product         Product       @relation(fields: [productId], references: [id])
+  description     String        @db.VarChar(255)
+  quantity        Int
+  price           Float
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([paymentRecordId, productId])
 }

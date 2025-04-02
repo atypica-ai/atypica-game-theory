@@ -1,5 +1,6 @@
 "use client";
-import { createCharge, getPaymentRecords, PaymentRecord } from "@/app/payment/actions";
+import { createCharge, getPaymentRecords } from "@/app/payment/actions";
+import { ProductName } from "@/app/payment/ProductName";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -21,7 +22,8 @@ declare global {
   }
 }
 
-type PaymentMethod = "alipay_pc_direct" | "alipay_wap";
+type PaymentRecord = Awaited<ReturnType<typeof getPaymentRecords>>["data"][number];
+type PaymentMethod = PaymentRecord["paymentMethod"];
 
 export default function PaymentTestPage() {
   const { status } = useSession();
@@ -29,7 +31,6 @@ export default function PaymentTestPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [records, setRecords] = useState<PaymentRecord[]>([]);
-  // const [paymentResponse, setPaymentResponse] = useState<any>(null);
 
   // Fetch payment records on load
   const fetchRecords = useCallback(async () => {
@@ -50,14 +51,12 @@ export default function PaymentTestPage() {
   }, [status, router, fetchRecords]);
 
   // Initiate payment
-  const handlePayment = async (method: PaymentMethod, amount: number) => {
+  const handlePayment = async (method: PaymentMethod, productName: ProductName) => {
     setIsLoading(true);
     setError("");
 
     try {
-      const description = `Test Payment - ${method === "alipay_pc_direct" ? "PC Direct" : "WAP"} - ${amount} CNY`;
-      const { charge } = await createCharge(method, Math.floor(amount * 100), description);
-
+      const { charge } = await createCharge(method, productName);
       // Use Ping++ SDK to handle the payment
       if (window.pingpp) {
         window.pingpp.createPayment(charge, function (result) {
@@ -112,10 +111,16 @@ export default function PaymentTestPage() {
               <CardDescription>Test PC direct payments with Alipay gateway</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-row gap-4">
-              <Button onClick={() => handlePayment("alipay_pc_direct", 0.01)} disabled={isLoading}>
+              <Button
+                onClick={() => handlePayment("alipay_pc_direct", ProductName.TEST_A)}
+                disabled={isLoading}
+              >
                 Pay 0.01 CNY
               </Button>
-              <Button onClick={() => handlePayment("alipay_pc_direct", 0.1)} disabled={isLoading}>
+              <Button
+                onClick={() => handlePayment("alipay_pc_direct", ProductName.TEST_B)}
+                disabled={isLoading}
+              >
                 Pay 0.1 CNY
               </Button>
             </CardContent>
@@ -131,10 +136,16 @@ export default function PaymentTestPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-row gap-4">
-              <Button onClick={() => handlePayment("alipay_wap", 0.01)} disabled={isLoading}>
+              <Button
+                onClick={() => handlePayment("alipay_wap", ProductName.TEST_A)}
+                disabled={isLoading}
+              >
                 Pay 0.01 CNY
               </Button>
-              <Button onClick={() => handlePayment("alipay_wap", 0.1)} disabled={isLoading}>
+              <Button
+                onClick={() => handlePayment("alipay_wap", ProductName.TEST_B)}
+                disabled={isLoading}
+              >
                 Pay 0.1 CNY
               </Button>
             </CardContent>
@@ -150,6 +161,9 @@ export default function PaymentTestPage() {
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                   Order ID
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                  Product
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                   Amount
@@ -177,6 +191,11 @@ export default function PaymentTestPage() {
                   <tr key={record.id}>
                     <td className="whitespace-nowrap px-6 py-4 text-sm font-mono">
                       {record.orderNo}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {record.paymentLines.map((line) => (
+                        <div key={line.id}>{line.description}</div>
+                      ))}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
                       {record.amount.toFixed(2)} CNY

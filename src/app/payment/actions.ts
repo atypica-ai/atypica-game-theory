@@ -2,11 +2,12 @@
 import { checkAdminAuth } from "@/app/admin/utils";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { PaymentRecord as PaymentRecordPrisma } from "@prisma/client";
+import { PaymentLine, PaymentRecord as PaymentRecordPrisma } from "@prisma/client";
 import crypto from "crypto";
 import { getServerSession } from "next-auth";
 import { headers } from "next/headers";
 import { forbidden } from "next/navigation";
+import { ProductName } from "./ProductName";
 
 // Ping++ API configuration
 const PINGPP_API_KEY = process.env.PINGPP_API_KEY!;
@@ -15,15 +16,15 @@ const PINGPP_API_URL = process.env.PINGPP_API_URL!;
 
 export type PaymentRecord = PaymentRecordPrisma & {
   status: "pending" | "succeeded" | "failed";
+  paymentMethod: "alipay_pc_direct" | "alipay_wap";
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   credential: Record<"alipay_pc_direct" | "alipay_wap", any>;
 };
 
 // Create a ping++ charge
 export async function createCharge(
-  type: "alipay_pc_direct" | "alipay_wap",
-  amount: number, // Amount in cents (e.g., 1000 = 10.00 CNY)
-  description: string,
+  channel: "alipay_pc_direct" | "alipay_wap",
+  productName: ProductName,
 ) {
   const session = await getServerSession(authOptions);
   if (!session?.user) {
@@ -34,19 +35,32 @@ export async function createCharge(
 
   // Generate a unique order number
   const orderNo = `atp_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+  const product = await prisma.product.findUniqueOrThrow({
+    where: { name: productName },
+  });
+  const lines = [
+    {
+      productId: product.id,
+      quantity: 1,
+      price: product.price,
+      description: product.description,
+    },
+  ];
+  const amount = lines.reduce((acc, line) => acc + line.price * line.quantity, 0);
+  const description = lines.map((line) => line.description).join(", ");
 
   // Create the charge data
   const chargeData = {
     order_no: orderNo,
     app: { id: PINGPP_APP_ID },
-    channel: type,
-    amount: amount, // Amount in cents (e.g., 1000 = 10.00 CNY)
+    channel: channel,
+    amount: Math.floor(amount * 100), // Amount in cents (e.g., 1000 = 10.00 CNY)
     currency: "cny",
     client_ip: clientIp,
     subject: "atypica.LLM",
     body: description,
     extra:
-      type === "alipay_pc_direct" || "alipay_wap"
+      channel === "alipay_pc_direct" || "alipay_wap"
         ? {
             success_url: `${process.env.PINGPP_NOTIFY_URL_BASE}/payment/success`,
             cancel_url: `${process.env.PINGPP_NOTIFY_URL_BASE}/payment/cancel`,
@@ -75,18 +89,25 @@ export async function createCharge(
   }
 
   // Save the charge record to database
-  await prisma.paymentRecord.create({
+  const paymentRecord = await prisma.paymentRecord.create({
     data: {
       userId: session.user.id,
       orderNo: orderNo,
-      amount: amount / 100, // Convert cents to yuan
+      amount: amount, // Convert cents to yuan
       status: "pending",
-      paymentMethod: type,
+      paymentMethod: channel,
       chargeId: chargeResult.id,
       charge: { ...chargeResult },
       credential: { ...chargeResult.credential },
       description: description,
     },
+  });
+
+  await prisma.paymentLine.createMany({
+    data: lines.map((line) => ({
+      paymentRecordId: paymentRecord.id,
+      ...line,
+    })),
   });
 
   return {
@@ -159,8 +180,11 @@ export async function getPaymentRecords() {
 
   const records = await prisma.paymentRecord.findMany({
     orderBy: { createdAt: "desc" },
+    include: {
+      paymentLines: true,
+    },
     take: 10,
   });
 
-  return { data: records as PaymentRecord[] };
+  return { data: records as (PaymentRecord & { paymentLines: PaymentLine[] })[] };
 }

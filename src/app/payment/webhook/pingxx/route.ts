@@ -1,4 +1,4 @@
-import { handleWebhook } from "@/app/admin/payment-test/actions";
+import { handleWebhook } from "@/app/payment/actions";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
