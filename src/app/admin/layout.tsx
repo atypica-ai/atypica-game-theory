@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import UserMenu from "@/components/UserMenu";
 import { authOptions } from "@/lib/auth";
 import { CreditCard, Database, Home, Key, Star, Users } from "lucide-react";
 import { getServerSession } from "next-auth";
@@ -70,12 +69,12 @@ export default async function AdminLayout({ children }: AdminLayoutProps) {
   const isAdmin = session?.user?.email ? await isAdminUser(session.user.email) : false;
 
   return (
-    <div className="flex min-h-screen font-sans">
+    <div className="flex flex-1 overflow-hidden font-sans">
       {/* Sidebar */}
       <aside className="w-64 border-r">
         <div className="flex h-16 items-center border-b px-6 justify-between">
           <h1 className="text-lg font-bold">Admin Panel</h1>
-          <UserMenu />
+          {/* <UserMenu /> */}
         </div>
         <nav className="p-4">
           <ul className="space-y-2">
@@ -94,10 +93,7 @@ export default async function AdminLayout({ children }: AdminLayoutProps) {
       </aside>
 
       {/* Main content */}
-      <main className="flex-1">
-        <div className="flex h-16 items-center border-b px-6">
-          <h2 className="text-lg font-semibold">Admin Control Panel</h2>
-        </div>
+      <main className="flex-1 overflow-y-auto scrollbar-thin">
         <div className="p-6">
           <Card className="p-6">{children}</Card>
         </div>

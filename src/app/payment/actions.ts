@@ -201,6 +201,11 @@ export async function handlePaymentSuccess({ chargeId }: { chargeId: string }) {
     },
   });
   const userId = paymentRecord.userId;
+  await prisma.userPoints.upsert({
+    where: { userId },
+    create: { userId, balance: 0 },
+    update: {},
+  });
   for (const paymentLine of paymentRecord.paymentLines) {
     if (
       paymentLine.productName === ProductName.POINTS100_A ||

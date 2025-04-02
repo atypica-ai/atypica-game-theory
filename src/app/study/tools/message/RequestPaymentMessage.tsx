@@ -5,7 +5,7 @@ import { RequestPaymentResult } from "@/tools/user/payment";
 import { ToolInvocation } from "ai";
 import { MessageCircleQuestionIcon } from "lucide-react";
 import Script from "next/script";
-import { FC, useCallback, useEffect, useRef } from "react";
+import { FC, useCallback, useEffect } from "react";
 import { useStudyContext } from "../../hooks/StudyContext";
 
 export const RequestPaymentMessage: FC<{
@@ -32,8 +32,6 @@ export const RequestPaymentMessage: FC<{
     }
   }, [pendingUserToolInvocation, setPendingUserToolInvocation, toolInvocation]);
 
-  const checkPollIntervalRef = useRef<NodeJS.Timeout | null>(null);
-
   const checkAndHandleConsume = useCallback(async () => {
     if (toolInvocation.state !== "result") {
       const result = await checkStudyUserChatConsume({ studyUserChatId });
@@ -44,10 +42,6 @@ export const RequestPaymentMessage: FC<{
             plainText: "支付成功，额度充足，请继续调研",
           },
         });
-        if (checkPollIntervalRef.current) {
-          clearInterval(checkPollIntervalRef.current);
-          checkPollIntervalRef.current = null;
-        }
       }
     }
   }, [toolInvocation.state, toolInvocation.toolCallId, studyUserChatId, addToolResult]);

@@ -130,6 +130,9 @@
     }
   },
   "Components": {
+    "GlobalHeader": {
+      "balance": "剩余{count}次调研"
+    },
     "UserMenu": {
       "login": "登录",
       "logout": "退出登录",

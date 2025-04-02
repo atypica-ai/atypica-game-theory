@@ -2,9 +2,8 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-async function main() {
+async function createProducts() {
   console.log("Starting to seed products...");
-
   const products = [
     {
       name: "TEST_A",
@@ -37,19 +36,48 @@ async function main() {
       description: "请 atypica.LLM 一杯小蓝瓶咖啡",
     },
   ];
-
-  // Clear existing products first to avoid duplicates
-  await prisma.product.deleteMany();
-
   // Create products
   for (const product of products) {
-    const createdProduct = await prisma.product.create({
-      data: product,
+    const createdProduct = await prisma.product.upsert({
+      where: { name: product.name },
+      update: product,
+      create: product,
     });
     console.log(`Created product: ${createdProduct.name}`);
   }
-
   console.log("Seeding completed successfully!");
+}
+
+async function initUserPoints() {
+  const users = await prisma.user.findMany();
+  for (const user of users) {
+    const userPoints = await prisma.userPoints.findUnique({
+      where: { userId: user.id },
+    });
+    if (!userPoints) {
+      await prisma.$transaction([
+        prisma.userPoints.create({
+          data: {
+            userId: user.id,
+            balance: 300,
+          },
+        }),
+        prisma.userPointsLog.create({
+          data: {
+            userId: user.id,
+            verb: "signup",
+            points: 300,
+          },
+        }),
+      ]);
+    }
+    console.log(`Initialized points for user: ${user.email}`);
+  }
+}
+
+async function main() {
+  await createProducts();
+  await initUserPoints();
 }
 
 main()

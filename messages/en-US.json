@@ -130,6 +130,9 @@
     }
   },
   "Components": {
+    "GlobalHeader": {
+      "balance": "{count} studies left"
+    },
     "UserMenu": {
       "login": "Login",
       "logout": "Logout",

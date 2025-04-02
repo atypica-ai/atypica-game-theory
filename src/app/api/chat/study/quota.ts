@@ -39,7 +39,7 @@ export async function checkQuota({
           verb: "consume",
           resourceType: "StudyUserChat",
           resourceId: studyUserChatId,
-          points: 100,
+          points: -100,
         },
       }),
       prisma.userPoints.update({

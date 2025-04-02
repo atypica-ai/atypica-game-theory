@@ -6,7 +6,7 @@ import { sendVerificationEmail } from "./email";
 export async function POST(req: Request) {
   try {
     const { email, password, invitationCode } = await req.json();
-    
+
     // Check if email is allowed to register
     if (!email.endsWith("@tezign.com")) {
       // If not a tezign.com email, require a valid invitation code
@@ -16,18 +16,21 @@ export async function POST(req: Request) {
           { status: 403 },
         );
       }
-      
+
       // Verify the invitation code
       const invitation = await prisma.invitationCode.findUnique({
         where: { code: invitationCode },
       });
-      
+
       if (!invitation) {
         return NextResponse.json({ error: "Invalid invitation code" }, { status: 403 });
       }
-      
+
       if (invitation.usedBy) {
-        return NextResponse.json({ error: "This invitation code has already been used" }, { status: 403 });
+        return NextResponse.json(
+          { error: "This invitation code has already been used" },
+          { status: 403 },
+        );
       }
     }
 
@@ -42,14 +45,26 @@ export async function POST(req: Request) {
     const user = await prisma.user.create({
       data: { email, password: hashedPassword },
     });
+    await prisma.$transaction([
+      prisma.userPointsLog.create({
+        data: {
+          userId: user.id,
+          verb: "recharge",
+          points: 300,
+        },
+      }),
+      prisma.userPoints.create({
+        data: { userId: user.id, balance: 300 }, // 注册赠送 300 点
+      }),
+    ]);
 
     // If an invitation code was used, mark it as used
     if (invitationCode && !email.endsWith("@tezign.com")) {
       await prisma.invitationCode.update({
         where: { code: invitationCode },
-        data: { 
+        data: {
           usedBy: email,
-          usedAt: new Date()
+          usedAt: new Date(),
         },
       });
     }
