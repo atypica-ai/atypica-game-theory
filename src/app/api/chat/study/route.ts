@@ -2,12 +2,14 @@ import { authOptions } from "@/lib/auth";
 import openai from "@/lib/openai";
 import { fixChatMessages } from "@/lib/utils";
 import { studySystem } from "@/prompt";
+import { studySystemNoQuota } from "@/prompt/study";
 import {
   generateReportTool,
   initStatReporter,
   interviewChatTool,
   reasoningThinkingTool,
   requestInteractionTool,
+  requestPaymentTool,
   saveAnalystStudySummaryTool,
   saveAnalystTool,
   scoutTaskChatTool,
@@ -20,6 +22,7 @@ import { NextResponse } from "next/server";
 import { createAbortSignals } from "./abortSignal";
 import { backgroundChatUntilCancel, raceForUserChat } from "./background";
 import { appendChunkToStreamingMessage, persistentMessages } from "./messageUtils";
+import { checkQuota } from "./quota";
 
 // 参考了 https://sdk.vercel.ai/docs/ai-sdk-ui/chatbot-message-persistence#storing-messages 的设计来实现
 export async function POST(req: Request) {
@@ -37,6 +40,9 @@ export async function POST(req: Request) {
 
   const { clearBackgroundToken, backgroundToken } = await raceForUserChat(studyUserChatId);
   const { abortController, abortSignal, delayedAbortSignal } = createAbortSignals(req.signal);
+  const { statReport } = initStatReporter(studyUserChatId);
+
+  const hasQuota = await checkQuota({ studyUserChatId, userId });
 
   const streamingMessage: Omit<Message, "role"> & { parts: NonNullable<Message["parts"]> } = {
     id: generateId(),
@@ -44,7 +50,6 @@ export async function POST(req: Request) {
     parts: [],
   };
 
-  const { statReport } = initStatReporter(studyUserChatId);
   let streamStartTime = Date.now();
 
   const streamTextResult = streamText({
@@ -53,7 +58,7 @@ export async function POST(req: Request) {
     providerOptions: {
       openai: { stream_options: { include_usage: true } },
     },
-    system: studySystem(),
+    system: hasQuota ? studySystem() : studySystemNoQuota(),
     messages: fixChatMessages(initialMessages, { removePendingTool: true }), // 传给 LLM 的时候需要修复
     tools: {
       [ToolName.scoutTaskCreate]: scoutTaskCreateTool(userId),
@@ -64,7 +69,7 @@ export async function POST(req: Request) {
       [ToolName.generateReport]: generateReportTool({ abortSignal, statReport }),
       [ToolName.reasoningThinking]: reasoningThinkingTool({ abortSignal, statReport }),
       [ToolName.requestInteraction]: requestInteractionTool,
-      // [ToolName.requestPayment]: requestPaymentTool,
+      [ToolName.requestPayment]: requestPaymentTool,
     },
     maxSteps: 15,
     onError: async ({ error }) => {

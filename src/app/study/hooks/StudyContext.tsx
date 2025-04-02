@@ -3,6 +3,7 @@ import { ToolInvocation } from "ai";
 import { createContext, ReactNode, useContext, useState } from "react";
 
 interface StudyContextType {
+  studyUserChatId: number;
   replay: boolean;
   pendingUserToolInvocation: ToolInvocation | null;
   setPendingUserToolInvocation: (toolInvocation: ToolInvocation | null) => void;
@@ -15,7 +16,15 @@ interface StudyContextType {
 
 const StudyContext = createContext<StudyContextType | undefined>(undefined);
 
-export function StudyProvider({ children, replay }: { children: ReactNode; replay: boolean }) {
+export function StudyProvider({
+  children,
+  studyUserChatId,
+  replay,
+}: {
+  children: ReactNode;
+  studyUserChatId: number;
+  replay: boolean;
+}) {
   const [pendingUserToolInvocation, setPendingUserToolInvocation] = useState<ToolInvocation | null>(
     null,
   );
@@ -25,6 +34,7 @@ export function StudyProvider({ children, replay }: { children: ReactNode; repla
   return (
     <StudyContext.Provider
       value={{
+        studyUserChatId,
         replay,
         pendingUserToolInvocation,
         setPendingUserToolInvocation,

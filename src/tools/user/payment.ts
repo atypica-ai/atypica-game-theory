@@ -3,11 +3,6 @@ import { tool } from "ai";
 import { z } from "zod";
 
 export interface RequestPaymentResult extends PlainTextToolResult {
-  paymentRecord: {
-    orderNo: string;
-    amount: number;
-    description: string;
-  };
   plainText: string;
 }
 

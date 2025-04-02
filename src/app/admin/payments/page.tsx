@@ -59,7 +59,7 @@ export default function PaymentTestPage() {
     setError("");
 
     try {
-      const { charge } = await createCharge(method, productName);
+      const { charge } = await createCharge(method, productName, window.location.href);
       // Use Ping++ SDK to handle the payment
       if (window.pingpp) {
         window.pingpp.createPayment(charge, function (result) {

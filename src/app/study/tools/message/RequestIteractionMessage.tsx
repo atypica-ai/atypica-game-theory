@@ -31,7 +31,7 @@ export const RequestIteractionMessage: FC<{
     if (!pendingUserToolInvocation && toolInvocation.state !== "result") {
       setPendingUserToolInvocation(toolInvocation);
     }
-  }, [pendingUserToolInvocation, toolInvocation]);
+  }, [pendingUserToolInvocation, setPendingUserToolInvocation, toolInvocation]);
 
   return (
     <div className="p-4 bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 rounded-lg">

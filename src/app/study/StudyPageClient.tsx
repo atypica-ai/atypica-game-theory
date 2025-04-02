@@ -60,7 +60,7 @@ export function StudyPageClient({
   const [messagesContainerRef, messagesEndRef] = useScrollToBottom<HTMLDivElement>();
   const [consoleOpen, setConsoleOpen] = useState(false);
   return (
-    <StudyProvider replay={replay}>
+    <StudyProvider studyUserChatId={studyUserChat.id} replay={replay}>
       <div
         className={cn(
           "relative",

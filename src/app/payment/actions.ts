@@ -25,6 +25,7 @@ export type PaymentRecord = PaymentRecordPrisma & {
 export async function createCharge(
   channel: "alipay_pc_direct" | "alipay_wap",
   productName: ProductName,
+  redirectUrl: string,
 ) {
   const session = await getServerSession(authOptions);
   if (!session?.user) {
@@ -41,6 +42,7 @@ export async function createCharge(
   const lines = [
     {
       productId: product.id,
+      productName: product.name,
       quantity: 1,
       price: product.price,
       description: product.description,
@@ -62,8 +64,8 @@ export async function createCharge(
     extra:
       channel === "alipay_pc_direct" || "alipay_wap"
         ? {
-            success_url: `${process.env.PINGPP_NOTIFY_URL_BASE}/payment/success`,
-            cancel_url: `${process.env.PINGPP_NOTIFY_URL_BASE}/payment/cancel`,
+            success_url: `${process.env.PINGPP_NOTIFY_URL_BASE}/payment/success?redirect=${encodeURIComponent(redirectUrl)}`,
+            cancel_url: `${process.env.PINGPP_NOTIFY_URL_BASE}/payment/cancel?redirect=${encodeURIComponent(redirectUrl)}`,
           }
         : {},
   };
@@ -146,13 +148,15 @@ export async function handleWebhook(request: Request) {
     const charge = event.data.object;
 
     // Update payment record in database
-    await prisma.paymentRecord.updateMany({
+    await prisma.paymentRecord.update({
       where: { chargeId: charge.id },
       data: {
         status: "succeeded",
         paidAt: new Date(),
       },
     });
+
+    await handlePaymentSuccess({ chargeId: charge.id });
 
     return { status: 200, body: { received: true } };
   }
@@ -187,4 +191,43 @@ export async function getPaymentRecords() {
   });
 
   return { data: records as (PaymentRecord & { paymentLines: PaymentLine[] })[] };
+}
+
+export async function handlePaymentSuccess({ chargeId }: { chargeId: string }) {
+  const paymentRecord = await prisma.paymentRecord.findUniqueOrThrow({
+    where: { chargeId },
+    include: {
+      paymentLines: true,
+    },
+  });
+  const userId = paymentRecord.userId;
+  for (const paymentLine of paymentRecord.paymentLines) {
+    if (
+      paymentLine.productName === ProductName.POINTS100_A ||
+      paymentLine.productName === ProductName.POINTS100_B ||
+      paymentLine.productName === ProductName.POINTS100_C ||
+      paymentLine.productName === ProductName.POINTS100_D
+    ) {
+      await prisma.$transaction([
+        prisma.userPointsLog.create({
+          data: {
+            userId: userId,
+            verb: "recharge",
+            resourceType: "PaymentRecord",
+            resourceId: paymentRecord.id,
+            points: 100,
+          },
+        }),
+        prisma.userPoints.update({
+          where: { userId },
+          data: {
+            balance: {
+              increment: 100,
+            },
+          },
+        }),
+      ]);
+    }
+  }
+  // end for
 }

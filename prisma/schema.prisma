@@ -187,7 +187,7 @@ model PaymentRecord {
   status        String    @db.VarChar(32) // pending | succeeded | failed
   paymentMethod String    @db.VarChar(64)
   charge        Json
-  chargeId      String    @db.VarChar(64)
+  chargeId      String    @unique @db.VarChar(64)
   credential    Json
   description   String    @db.VarChar(255)
   paidAt        DateTime?
@@ -216,6 +216,7 @@ model PaymentLine {
   paymentRecord   PaymentRecord @relation(fields: [paymentRecordId], references: [id])
   productId       Int
   product         Product       @relation(fields: [productId], references: [id])
+  productName     String        @db.VarChar(64)
   description     String        @db.VarChar(255)
   quantity        Int
   price           Float
@@ -242,7 +243,7 @@ model UserPointsLog {
   user         User    @relation(fields: [userId], references: [id])
   points       Int
   verb         String  @db.VarChar(64) // recharge | consume | daily | etc.
-  resourceType String? @db.VarChar(64) // StudyUserChat | ScoutUserChat | etc.
+  resourceType String? @db.VarChar(64) // StudyUserChat | ScoutUserChat | PaymentRecord | etc.
   resourceId   Int?
 
   createdAt DateTime @default(now())
