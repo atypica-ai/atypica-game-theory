@@ -40,7 +40,7 @@ const sidebarItemsAdmin: SidebarItem[] = [
     icon: <Users className="mr-2 h-4 w-4" />,
   },
   {
-    label: "Payment Test",
+    label: "Payments",
     href: "/admin/payments",
     icon: <CreditCard className="mr-2 h-4 w-4" />,
   },

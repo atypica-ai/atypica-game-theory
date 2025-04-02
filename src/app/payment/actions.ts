@@ -2,7 +2,7 @@
 import { checkAdminAuth } from "@/app/admin/utils";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { PaymentLine, PaymentRecord as PaymentRecordPrisma } from "@prisma/client";
+import { PaymentLine, PaymentRecord as PaymentRecordPrisma, User } from "@prisma/client";
 import crypto from "crypto";
 import { getServerSession } from "next-auth";
 import { headers } from "next/headers";
@@ -35,7 +35,11 @@ export async function createCharge(
   const clientIp = headersList.get("x-forwarded-for") || headersList.get("x-real-ip") || "0.0.0.0";
 
   // Generate a unique order number
-  const orderNo = `atp_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+  const timestamp = Date.now().toString();
+  const randomPart = Math.floor(Math.random() * 1000)
+    .toString()
+    .padStart(3, "0");
+  const orderNo = `ATP${randomPart}${timestamp}`;
   const product = await prisma.product.findUniqueOrThrow({
     where: { name: productName },
   });
@@ -186,11 +190,12 @@ export async function getPaymentRecords() {
     orderBy: { createdAt: "desc" },
     include: {
       paymentLines: true,
+      user: true,
     },
     take: 10,
   });
 
-  return { data: records as (PaymentRecord & { paymentLines: PaymentLine[] })[] };
+  return { data: records as (PaymentRecord & { paymentLines: PaymentLine[]; user: User })[] };
 }
 
 export async function handlePaymentSuccess({ chargeId }: { chargeId: string }) {

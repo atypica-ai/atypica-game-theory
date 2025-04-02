@@ -166,6 +166,9 @@ export default function PaymentTestPage() {
                   Order ID
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                  User
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                   Product
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
@@ -194,6 +197,9 @@ export default function PaymentTestPage() {
                   <tr key={record.id}>
                     <td className="whitespace-nowrap px-6 py-4 text-sm font-mono">
                       {record.orderNo}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm font-mono">
+                      {record.user.email}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
                       {record.paymentLines.map((line) => (

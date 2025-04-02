@@ -6,16 +6,6 @@ export async function fetchUsers(page: number = 1, pageSize: number = 10, search
   await checkAdminAuth();
   const skip = (page - 1) * pageSize;
   // Build the where condition based on search query
-
-  console.log(
-    "fetchUsers called with page:",
-    page,
-    "pageSize:",
-    pageSize,
-    "searchQuery:",
-    searchQuery,
-  );
-
   const where = searchQuery
     ? {
         OR: [
