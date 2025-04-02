@@ -42,7 +42,7 @@ const sidebarItemsAdmin: SidebarItem[] = [
   },
   {
     label: "Payment Test",
-    href: "/admin/payment-test",
+    href: "/admin/payments",
     icon: <CreditCard className="mr-2 h-4 w-4" />,
   },
   {

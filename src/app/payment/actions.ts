@@ -1,8 +1,12 @@
 "use server";
+import { checkAdminAuth } from "@/app/admin/utils";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { PaymentRecord as PaymentRecordPrisma } from "@prisma/client";
 import crypto from "crypto";
-import { checkAdminAuth } from "../utils";
+import { getServerSession } from "next-auth";
+import { headers } from "next/headers";
+import { forbidden } from "next/navigation";
 
 // Ping++ API configuration
 const PINGPP_API_KEY = process.env.PINGPP_API_KEY!;
@@ -21,10 +25,15 @@ export async function createCharge(
   amount: number, // Amount in cents (e.g., 1000 = 10.00 CNY)
   description: string,
 ) {
-  const user = await checkAdminAuth();
+  const session = await getServerSession(authOptions);
+  if (!session?.user) {
+    forbidden();
+  }
+  const headersList = await headers();
+  const clientIp = headersList.get("x-forwarded-for") || headersList.get("x-real-ip") || "0.0.0.0";
 
   // Generate a unique order number
-  const orderNo = `order_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+  const orderNo = `atp_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
 
   // Create the charge data
   const chargeData = {
@@ -33,14 +42,14 @@ export async function createCharge(
     channel: type,
     amount: amount, // Amount in cents (e.g., 1000 = 10.00 CNY)
     currency: "cny",
-    client_ip: "127.0.0.1", // For testing purposes
-    subject: `Test Payment - ${description}`,
-    body: `Test payment for ${description}`,
+    client_ip: clientIp,
+    subject: "atypica.LLM",
+    body: description,
     extra:
       type === "alipay_pc_direct" || "alipay_wap"
         ? {
-            success_url: `${process.env.PINGPP_NOTIFY_URL_BASE}/admin/payment-test/success`,
-            cancel_url: `${process.env.PINGPP_NOTIFY_URL_BASE}/admin/payment-test/cancel`,
+            success_url: `${process.env.PINGPP_NOTIFY_URL_BASE}/payment/success`,
+            cancel_url: `${process.env.PINGPP_NOTIFY_URL_BASE}/payment/cancel`,
           }
         : {},
   };
@@ -68,7 +77,7 @@ export async function createCharge(
   // Save the charge record to database
   await prisma.paymentRecord.create({
     data: {
-      userId: user.id,
+      userId: session.user.id,
       orderNo: orderNo,
       amount: amount / 100, // Convert cents to yuan
       status: "pending",

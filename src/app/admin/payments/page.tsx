@@ -1,4 +1,5 @@
 "use client";
+import { createCharge, getPaymentRecords, PaymentRecord } from "@/app/payment/actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -6,7 +7,6 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Script from "next/script";
 import { useCallback, useEffect, useState } from "react";
-import { createCharge, getPaymentRecords, PaymentRecord } from "./actions";
 
 // Define Ping++ global object type
 declare global {
@@ -55,7 +55,7 @@ export default function PaymentTestPage() {
     setError("");
 
     try {
-      const description = `${method === "alipay_pc_direct" ? "PC Direct" : "WAP"} - ${amount} CNY`;
+      const description = `Test Payment - ${method === "alipay_pc_direct" ? "PC Direct" : "WAP"} - ${amount} CNY`;
       const { charge } = await createCharge(method, Math.floor(amount * 100), description);
 
       // Use Ping++ SDK to handle the payment
@@ -111,19 +111,11 @@ export default function PaymentTestPage() {
               <CardTitle>Alipay PC Direct Payment</CardTitle>
               <CardDescription>Test PC direct payments with Alipay gateway</CardDescription>
             </CardHeader>
-            <CardContent className="flex flex-col gap-4">
-              <Button
-                onClick={() => handlePayment("alipay_pc_direct", 0.01)}
-                disabled={isLoading}
-                className="w-full"
-              >
+            <CardContent className="flex flex-row gap-4">
+              <Button onClick={() => handlePayment("alipay_pc_direct", 0.01)} disabled={isLoading}>
                 Pay 0.01 CNY
               </Button>
-              <Button
-                onClick={() => handlePayment("alipay_pc_direct", 0.1)}
-                disabled={isLoading}
-                className="w-full"
-              >
+              <Button onClick={() => handlePayment("alipay_pc_direct", 0.1)} disabled={isLoading}>
                 Pay 0.1 CNY
               </Button>
             </CardContent>
@@ -138,20 +130,12 @@ export default function PaymentTestPage() {
                 Test WAP payments with Alipay gateway (mobile browser)
               </CardDescription>
             </CardHeader>
-            <CardContent className="flex flex-col gap-4">
-              <Button
-                onClick={() => handlePayment("alipay_wap", 1000)}
-                disabled={isLoading}
-                className="w-full"
-              >
-                Pay 10.00 CNY
+            <CardContent className="flex flex-row gap-4">
+              <Button onClick={() => handlePayment("alipay_wap", 0.01)} disabled={isLoading}>
+                Pay 0.01 CNY
               </Button>
-              <Button
-                onClick={() => handlePayment("alipay_wap", 10000)}
-                disabled={isLoading}
-                className="w-full"
-              >
-                Pay 100.00 CNY
+              <Button onClick={() => handlePayment("alipay_wap", 0.1)} disabled={isLoading}>
+                Pay 0.1 CNY
               </Button>
             </CardContent>
           </Card>
