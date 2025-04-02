@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { RequestInteractionResult } from "@/tools/experts/interaction";
+import { RequestInteractionResult } from "@/tools/user/interaction";
 import { ToolInvocation } from "ai";
 import { MessageCircleQuestionIcon } from "lucide-react";
 import { FC } from "react";

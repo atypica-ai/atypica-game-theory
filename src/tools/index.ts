@@ -1,6 +1,5 @@
 import { prisma } from "@/lib/prisma";
 import { InputJsonValue } from "@prisma/client/runtime/library";
-import { requestInteractionTool } from "./experts/interaction";
 import { interviewChatTool } from "./experts/interviewChat";
 import { reasoningThinkingTool } from "./experts/reasoning";
 import { generateReportTool } from "./experts/report";
@@ -8,6 +7,8 @@ import { scoutTaskChatTool, scoutTaskCreateTool } from "./experts/scoutTask";
 import { saveAnalystStudySummaryTool, saveAnalystTool } from "./system/saveAnalyst";
 import { saveInterviewConclusionTool } from "./system/saveInterviewConclusion";
 import { savePersonaTool } from "./system/savePersona";
+import { requestInteractionTool } from "./user/interaction";
+import { requestPaymentTool } from "./user/payment";
 import { xhsNoteCommentsTool } from "./xhs/noteComments";
 import { xhsSearchTool } from "./xhs/search";
 import { xhsUserNotesTool } from "./xhs/userNotes";
@@ -17,6 +18,7 @@ export enum ToolName {
   generateReport = "generateReport",
   reasoningThinking = "reasoningThinking",
   requestInteraction = "requestInteraction",
+  requestPayment = "requestPayment",
   saveAnalyst = "saveAnalyst",
   saveAnalystStudySummary = "saveAnalystStudySummary",
   saveInterviewConclusion = "saveInterviewConclusion",
@@ -33,6 +35,7 @@ export {
   interviewChatTool,
   reasoningThinkingTool,
   requestInteractionTool,
+  requestPaymentTool,
   saveAnalystStudySummaryTool,
   saveAnalystTool,
   saveInterviewConclusionTool,

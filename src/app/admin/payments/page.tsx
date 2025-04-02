@@ -14,8 +14,11 @@ declare global {
   interface Window {
     pingpp: {
       createPayment: (
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         chargeObj: any,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         callback: (result: { status: string; error?: { msg: string; extra: any } }) => void,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         extra?: any,
       ) => void;
     };

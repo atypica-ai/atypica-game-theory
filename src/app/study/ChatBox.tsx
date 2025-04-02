@@ -1,4 +1,3 @@
-"use client";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -66,7 +65,12 @@ export function ChatBox({
   );
   const useChatRef = useRef({ reload, setMessages });
 
+  // React 在 development 模式下默认会执行两次 useEffect，这是 React 的严格模式的有意设计，帮助发现副作用
+  // 两次请求会触发争夺 backgroundToken 冲突，需要阻止
+  const requestSentRef = useRef(false);
   useEffect(() => {
+    if (requestSentRef.current) return;
+    requestSentRef.current = true;
     // 如果最初最后一条消息是用户消息，则立即开始聊天
     const { lastUserMessage } = popLastUserMessage(initialMessages);
     if (lastUserMessage) {
