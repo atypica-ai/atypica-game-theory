@@ -39,6 +39,12 @@ export default function AdminDashboard() {
             View and manage user accounts
           </p>
         </div>
+        <div className="rounded-lg border bg-card p-4 shadow-sm">
+          <h2 className="mb-2 text-xl font-semibold">Payment Test</h2>
+          <p className="text-sm text-muted-foreground">
+            Test payment integrations with Ping++
+          </p>
+        </div>
       </div>
     </div>
   );

@@ -22,8 +22,9 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  userAnalysts UserAnalyst[]
-  userChats    UserChat[]
+  userAnalysts   UserAnalyst[]
+  userChats      UserChat[]
+  paymentRecords PaymentRecord[]
 }
 
 model VerificationCode {
@@ -164,6 +165,24 @@ model ChatStatistics {
   dimension  String   @db.VarChar(255) // tokens | duration | steps | words | personas | interviews
   value      Int      @default(0)
   extra      Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PaymentRecord {
+  id            Int       @id @default(autoincrement())
+  userId        Int
+  user          User      @relation(fields: [userId], references: [id])
+  orderNo       String    @unique @db.VarChar(64)
+  amount        Float
+  status        String    @db.VarChar(32) // pending | succeeded | failed
+  paymentMethod String    @db.VarChar(64)
+  charge        Json
+  chargeId      String    @unique @db.VarChar(64)
+  credential    Json
+  description   String    @db.VarChar(255)
+  paidAt        DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
