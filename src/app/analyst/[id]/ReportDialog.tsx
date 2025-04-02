@@ -1,5 +1,3 @@
-"use client";
-
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { fetchAnalystById } from "@/data";
@@ -23,8 +21,9 @@ export function ReportDialog({ open, onOpenChange, analystId }: ReportDialogProp
     if (open) {
       const checkReport = async () => {
         try {
-          const analyst = await fetchAnalystById(analystId);
-          setHasReport(!!analyst.report);
+          await fetchAnalystById(analystId);
+          // setHasReport(!!analyst.report); // legacy field
+          setHasReport(false);
         } catch (error) {
           console.log("Error fetching analyst:", error);
         }

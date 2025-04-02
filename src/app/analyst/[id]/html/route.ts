@@ -14,7 +14,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     where: { id: analystId },
   });
 
-  if (!analyst || !analyst.report) {
+  // if (!analyst || !analyst.report) { // legacy field
+  if (!analyst) {
     notFound();
   }
 

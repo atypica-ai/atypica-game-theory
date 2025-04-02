@@ -55,7 +55,7 @@ export async function createAnalyst({
     try {
       const analyst = await prisma.analyst.create({
         // Empty report for new analysts
-        data: { role, topic, report: "", studySummary: "" },
+        data: { role, topic, studySummary: "" },
       });
       // @TODO[AUTH]: 创建 Analyst 依然需要 user 有 Analyst 权限
       await prisma.userAnalyst.create({
@@ -74,7 +74,7 @@ export async function createAnalyst({
 
 export async function updateAnalyst(
   analystId: number,
-  { role, topic, report }: Partial<Pick<Analyst, "role" | "topic" | "report">>,
+  { role, topic }: Partial<Pick<Analyst, "role" | "topic">>,
 ): Promise<Analyst> {
   // @TODO[AUTH]: 读取 Analyst 暂时不需要 user 有 Analyst 权限
   // return withAuth(async () => {
@@ -83,10 +83,9 @@ export async function updateAnalyst(
     //   where: { userId_analystId: { userId: user.id, analystId } },
     // });
     // if (!userAnalyst) forbidden();
-    const data: Partial<Pick<Analyst, "role" | "topic" | "report">> = {};
+    const data: Partial<Pick<Analyst, "role" | "topic">> = {};
     if (typeof role !== "undefined") data.role = role;
     if (typeof topic !== "undefined") data.topic = topic;
-    if (typeof report !== "undefined") data.report = report;
     const analyst = await prisma.analyst.update({
       where: { id: analystId },
       data,

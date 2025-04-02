@@ -73,7 +73,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
   const publicReportUrl = await encryptAnalystReportUrl(analystId);
 
-  if (analyst.report && !regenerate) {
+  // if (analyst.report && !regenerate) { // legacy field
+  if (!regenerate) {
     // redirect(publicReportUrl);
     return new Response(null, {
       status: 308,
@@ -100,10 +101,10 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     maxSteps: 1,
     maxTokens: 100000,
     onFinish: async (result) => {
-      await prisma.analyst.update({
-        where: { id: analystId },
-        data: { report: result.text },
-      });
+      // await prisma.analyst.update({
+      //   where: { id: analystId },
+      //   data: { report: result.text },
+      // });
       if (result.usage.totalTokens > 0 && statReport) {
         const seconds = Math.floor((Date.now() - streamStartTime) / 1000);
         await Promise.all([

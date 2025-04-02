@@ -68,7 +68,6 @@ model Analyst {
   id              Int       @id @default(autoincrement())
   role            String    @db.VarChar(255)
   topic           String    @db.Text
-  report          String    @db.Text
   studySummary    String    @db.Text
   studyUserChatId Int?      @unique @db.Int
   studyUserChat   UserChat? @relation(fields: [studyUserChatId], references: [id])

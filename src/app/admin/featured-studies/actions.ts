@@ -19,7 +19,6 @@ export async function fetchPublicFeaturedStudies() {
           id: true,
           role: true,
           topic: true,
-          report: true,
           studySummary: true,
         },
       },

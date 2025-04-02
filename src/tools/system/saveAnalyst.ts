@@ -33,7 +33,7 @@ export const saveAnalystTool = (userId: number, studyUserChatId: number) =>
       }
       const analyst = await prisma.analyst.upsert({
         where: { studyUserChatId },
-        create: { role, topic, report: "", studySummary: "", studyUserChatId },
+        create: { role, topic, studySummary: "", studyUserChatId },
         update: {},
       });
       await prisma.userAnalyst.upsert({

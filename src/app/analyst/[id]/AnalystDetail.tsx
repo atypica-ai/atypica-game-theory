@@ -1,10 +1,9 @@
 "use client";
 import { PointAlertDialog } from "@/components/PointAlertDialog";
 import { Button } from "@/components/ui/button";
-import { Analyst, AnalystInterview, Persona, updateAnalyst } from "@/data";
-import { PlusIcon, UndoIcon } from "lucide-react";
+import { Analyst, AnalystInterview, Persona } from "@/data";
+import { Link, PlusIcon, UndoIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -40,16 +39,14 @@ export function AnalystDetail({
 
   const generateReport = useCallback(async () => {
     try {
-      await updateAnalyst(analyst.id, {
-        report: "",
-      });
+      // await updateAnalyst(analyst.id, { report: "" });
       router.refresh();
       setIsReportOpen(true);
     } catch (error) {
       toast.error(`${error}`);
       throw error;
     }
-  }, [analyst, router]);
+  }, [router]);
 
   const pointsDialog = useMemo(() => {
     const pendingCount = interviews.filter((i) => !i.conclusion && !i.interviewToken).length;
@@ -96,7 +93,8 @@ export function AnalystDetail({
               {analyst.topic}
             </p>
             <div className="mt-4 flex justify-end flex-wrap gap-4">
-              {analyst.report ? (
+              {/* {analyst.report ? ( */}
+              {false ? (
                 <>
                   <Button asChild variant="default" size="sm">
                     <Link href={`/analyst/${analyst.id}/html`} target="_blank">
