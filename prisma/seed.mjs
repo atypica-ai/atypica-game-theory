@@ -75,9 +75,44 @@ async function initUserPoints() {
   }
 }
 
+async function chargeHistoryChats() {
+  const chats = await prisma.userChat.findMany({
+    where: {
+      kind: "study",
+    },
+    select: {
+      id: true,
+      userId: true,
+    },
+  });
+  for (const chat of chats) {
+    const log = await prisma.userPointsLog.findFirst({
+      where: {
+        // userId: chat.userId,
+        verb: "consume",
+        resourceType: "StudyUserChat",
+        resourceId: chat.id,
+      },
+    });
+    if (!log && chat.userId) {
+      await prisma.userPointsLog.create({
+        data: {
+          userId: chat.userId,
+          verb: "consume",
+          resourceType: "StudyUserChat",
+          resourceId: chat.id,
+          points: 0,
+        },
+      });
+      console.log(`Charge history chat: ${chat.id}`);
+    }
+  }
+}
+
 async function main() {
-  await createProducts();
-  await initUserPoints();
+  // await createProducts();
+  // await initUserPoints();
+  // await chargeHistoryChats(); // 这个不能重复调用，会让新的 chat 也关联一个 points 是 0 的 consume
 }
 
 main()

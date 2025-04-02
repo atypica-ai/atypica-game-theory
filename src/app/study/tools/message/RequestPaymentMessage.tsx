@@ -125,6 +125,6 @@ export const RequestPaymentMessage: FC<{
       />
     </div>
   ) : (
-    <div className="text-sm">🎉 支付成功，您可以继续和 atypica.LLM 对话开始调研！</div>
+    <div className="text-sm">🎉 支付成功，您可以继续和 atypica.LLM 对话开始研究！</div>
   );
 };
