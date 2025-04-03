@@ -41,10 +41,10 @@ export default function GlobalHeader() {
     <header className="h-12 px-4 flex items-center justify-start gap-4 bg-background/80 backdrop-blur-sm border-b border-border">
       <div className="flex items-center">
         <Link href="/" className="block h-4 w-32 relative">
-          <div className="font-EuclidCircularA font-bold text-lg leading-none">atypica.LLM</div>
+          <div className="font-EuclidCircularA font-bold text-lg leading-none">atypica.AI</div>
           {/* <Image
-            src="/_public/atypica.llm.svg"
-            alt="atypica.LLM Logo"
+            src="/_public/atypica.svg"
+            alt="atypica Logo"
             fill
             priority
             className="object-contain hidden dark:block"

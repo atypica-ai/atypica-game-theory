@@ -8,32 +8,32 @@ async function createProducts() {
     {
       name: "TEST_A",
       price: 0.01,
-      description: "atypica.LLM 开发测试",
+      description: "atypica.AI 开发测试",
     },
     {
       name: "TEST_B",
       price: 0.1,
-      description: "atypica.LLM 开发测试",
+      description: "atypica.AI 开发测试",
     },
     {
       name: "POINTS100_A",
       price: 7.5,
-      description: "请 atypica.LLM 一杯挂耳咖啡",
+      description: "请 atypica.AI 一杯挂耳咖啡",
     },
     {
       name: "POINTS100_B",
       price: 15,
-      description: "请 atypica.LLM 一杯 Manner 咖啡",
+      description: "请 atypica.AI 一杯 Manner 咖啡",
     },
     {
       name: "POINTS100_C",
       price: 30,
-      description: "请 atypica.LLM 一杯星巴克咖啡",
+      description: "请 atypica.AI 一杯星巴克咖啡",
     },
     {
       name: "POINTS100_D",
       price: 45,
-      description: "请 atypica.LLM 一杯小蓝瓶咖啡",
+      description: "请 atypica.AI 一杯小蓝瓶咖啡",
     },
   ];
   // Create products

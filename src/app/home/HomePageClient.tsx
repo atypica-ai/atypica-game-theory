@@ -9,26 +9,26 @@ import { InputSection } from "./InputSection";
 export default function HomePageClient({ anonymous }: { anonymous: boolean }) {
   const t = useTranslations();
   return (
-    <div className="flex-1 overflow-y-auto scrollbar-thin py-12 sm:py-24 space-y-12 sm:space-y-24">
+    <div className="flex-1 overflow-y-auto scrollbar-thin py-10 sm:py-18 space-y-12 sm:space-y-24">
       <div className="text-center space-y-6">
         <h1
           className={cn(
-            "mt-20 sm:mt-10 text-5xl sm:text-6xl font-mono font-light leading-tight tracking-wide bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent animate-in fade-in slide-in-from-bottom-4 duration-1000",
+            "mt-16 sm:mt-10 text-5xl sm:text-6xl font-mono font-light leading-tight tracking-wide bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent animate-in fade-in slide-in-from-bottom-4 duration-1000",
             "font-EuclidCircularA font-bold",
             "block dark:hidden",
           )}
         >
-          atypica.LLM
+          atypica.AI
         </h1>
         <div
           className={cn(
-            "relative w-[450px] h-[100px] mt-20 sm:mt-10 max-w-10/12 mx-auto animate-in fade-in slide-in-from-bottom-4 duration-1000",
+            "relative w-[320px] h-[100px] mt-16 sm:mt-10 max-w-10/12 mx-auto animate-in fade-in slide-in-from-bottom-4 duration-1000",
             "hidden dark:block",
           )}
         >
           <Image
-            src="/_public/atypica.llm.svg"
-            alt="atypica.LLM Logo"
+            src="/_public/atypica.svg"
+            alt="atypica Logo"
             fill
             priority
             className="object-contain"

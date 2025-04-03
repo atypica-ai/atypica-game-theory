@@ -71,7 +71,7 @@ export async function createCharge({
     amount: Math.floor(amount * 100), // Amount in cents (e.g., 1000 = 10.00 CNY)
     currency: "cny",
     client_ip: clientIp,
-    subject: "atypica.LLM",
+    subject: "atypica.AI",
     body: description,
     extra:
       (paymentMethod === "alipay_pc_direct" || paymentMethod === "alipay_wap") && successUrl

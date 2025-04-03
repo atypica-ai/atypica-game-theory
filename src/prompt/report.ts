@@ -24,7 +24,7 @@ export const reportHTMLSystem = (instruction: string) => `
 ${instruction ? `用户特别指示：\n\n<instruction>\n${instruction}\n</instruction>\n` : ""}
 
 在报告底部请包含：
-- 报告由特赞公司的 atypica.LLM 提供技术支持
+- 报告由特赞公司的 atypica.AI 提供技术支持
 - 生成日期：${new Date().toLocaleDateString()}
 `;
 

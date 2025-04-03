@@ -30,7 +30,7 @@ export function InputSection() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-xl mx-auto">
       <form onSubmit={handleSubmit} className="relative">
         <Textarea
           value={input}

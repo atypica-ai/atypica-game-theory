@@ -90,7 +90,7 @@ export function NerdStats({ studyUserChatId }: NerdStatsProps) {
                 <div className="px-3 tracking-tighter sm:px-6 sm:tracking-normal py-4 border-b border-input flex items-center">
                   <div className="text-xs sm:text-xl font-mono space-x-2">
                     <span>💻</span>
-                    <span>atypica.LLM</span>
+                    <span>atypica.AI</span>
                     <span className="text-foreground/80">&lt;creative reasoning α&gt;</span>
                     <span>queries</span>
                   </div>

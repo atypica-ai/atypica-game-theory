@@ -7,7 +7,7 @@
       "unnamedChat": "未命名对话"
     },
     "InputSection": {
-      "placeholder": "这是一个商业问题研究的智能体框架，你想研究什么问题？"
+      "placeholder": "提出具体商业研究问题，atypica.AI 会通过 10-20分钟的「长推理」给出一份详尽的商业研究报告。"
     },
     "FeaturedStudies": {
       "title": "精选研究",
