@@ -1,12 +1,13 @@
-import { createCharge } from "@/app/payment/actions";
-import { ProductName } from "@/app/payment/ProductName";
+import { PaymentMethod, ProductName } from "@/app/payment/constants";
+import { useStudyContext } from "@/app/study/hooks/StudyContext";
 import { checkStudyUserChatConsume } from "@/data/UserPoints";
 import { RequestPaymentResult } from "@/tools/user/payment";
 import { ToolInvocation } from "ai";
 import { MessageCircleQuestionIcon } from "lucide-react";
+import { useSession } from "next-auth/react";
 import Script from "next/script";
-import { FC, useCallback, useEffect } from "react";
-import { useStudyContext } from "../../hooks/StudyContext";
+import { QRCodeSVG } from "qrcode.react";
+import { FC, useCallback, useEffect, useState } from "react";
 
 export const RequestPaymentMessage: FC<{
   toolInvocation: ToolInvocation;
@@ -18,8 +19,10 @@ export const RequestPaymentMessage: FC<{
     result: RequestPaymentResult;
   }) => void;
 }> = ({ toolInvocation, addToolResult }) => {
+  const { data: session } = useSession();
   const { studyUserChatId, pendingUserToolInvocation, setPendingUserToolInvocation } =
     useStudyContext();
+
   useEffect(() => {
     if (
       pendingUserToolInvocation?.toolCallId == toolInvocation.toolCallId &&
@@ -61,33 +64,48 @@ export const RequestPaymentMessage: FC<{
     };
   }, [toolInvocation.state, checkAndHandleConsume]);
 
+  const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
+  const createPaymentUrl = useCallback(
+    async ({
+      paymentMethod,
+      productName,
+      userId,
+    }: {
+      paymentMethod: PaymentMethod;
+      productName: ProductName;
+      userId: number;
+    }) => {
+      const url = new URL(`${window.location.origin}/payment/new`);
+      const params = new URLSearchParams();
+      params.append("userId", userId.toString());
+      params.append("paymentMethod", paymentMethod);
+      params.append("productName", productName);
+      params.append("successUrl", encodeURIComponent(window.location.href));
+      url.search = params.toString();
+      setPaymentUrl(url.toString());
+    },
+    [],
+  );
+
   // const [isLoading, setIsLoading] = useState(false);
   // const [error, setError] = useState("");
-
   // Initiate payment
   const handlePayment = async (productName: ProductName) => {
-    // setIsLoading(true);
-    // setError("");
-    try {
-      const { charge } = await createCharge("alipay_pc_direct", productName, window.location.href);
-      if (window.pingpp) {
-        window.pingpp.createPayment(charge, function (result) {
-          if (result.status === "success") {
-          } else if (result.status === "fail") {
-            // setError(result.error?.msg || "Payment failed");
-          } else if (result.status === "cancel") {
-            // setError("Payment was cancelled");
-          }
-          // setIsLoading(false);
-        });
-      } else {
-        // setError("Ping++ SDK not loaded");
-        // setIsLoading(false);
-      }
-    } catch (err) {
-      console.error("Payment error:", err);
-      // setError((err as Error).message);
-      // setIsLoading(false);
+    if (!session?.user) {
+      return;
+    }
+    if (productName === ProductName.POINTS100_A) {
+      await createPaymentUrl({
+        paymentMethod: PaymentMethod.wx_pub,
+        productName,
+        userId: session.user.id,
+      });
+    } else if (productName === ProductName.POINTS100_B) {
+      await createPaymentUrl({
+        paymentMethod: PaymentMethod.alipay_wap,
+        productName,
+        userId: session.user.id,
+      });
     }
   };
 
@@ -123,6 +141,19 @@ export const RequestPaymentMessage: FC<{
         strategy="lazyOnload"
         // onError={() => setError("Failed to load Ping++ SDK")}
       />
+      {/* <div>{paymentUrl}</div> */}
+      {paymentUrl && (
+        <div className="qrcode-container">
+          <QRCodeSVG
+            value={paymentUrl}
+            size={256}
+            bgColor="#FFFFFF"
+            fgColor="#000000"
+            level="H"
+            marginSize={10}
+          />
+        </div>
+      )}
     </div>
   ) : (
     <div className="text-sm">🎉 支付成功，您可以继续和 atypica.LLM 对话开始研究！</div>

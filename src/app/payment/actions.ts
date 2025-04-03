@@ -1,13 +1,10 @@
 "use server";
 import { checkAdminAuth } from "@/app/admin/utils";
-import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { PaymentLine, PaymentRecord as PaymentRecordPrisma, User } from "@prisma/client";
 import crypto from "crypto";
-import { getServerSession } from "next-auth";
 import { headers } from "next/headers";
-import { forbidden } from "next/navigation";
-import { ProductName } from "./ProductName";
+import { ProductName } from "./constants";
 
 // Ping++ API configuration
 const PINGPP_API_KEY = process.env.PINGPP_API_KEY!;
@@ -22,15 +19,26 @@ export type PaymentRecord = PaymentRecordPrisma & {
 };
 
 // Create a ping++ charge
-export async function createCharge(
-  channel: "alipay_pc_direct" | "alipay_wap",
-  productName: ProductName,
-  redirectUrl: string,
-) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) {
-    forbidden();
-  }
+export async function createCharge({
+  userId,
+  paymentMethod,
+  productName,
+  successUrl,
+  openid,
+}: {
+  userId: number;
+  paymentMethod: "alipay_pc_direct" | "alipay_wap" | "wx_pub";
+  productName: ProductName;
+  successUrl?: string;
+  openid?: string;
+}) {
+  // const session = await getServerSession(authOptions);
+  // if (!session?.user) {
+  //   forbidden();
+  // }
+
+  // 支付因为要换手机设备打开，不需要登录
+
   const headersList = await headers();
   const clientIp = headersList.get("x-forwarded-for") || headersList.get("x-real-ip") || "0.0.0.0";
 
@@ -59,19 +67,21 @@ export async function createCharge(
   const chargeData = {
     order_no: orderNo,
     app: { id: PINGPP_APP_ID },
-    channel: channel,
+    channel: paymentMethod,
     amount: Math.floor(amount * 100), // Amount in cents (e.g., 1000 = 10.00 CNY)
     currency: "cny",
     client_ip: clientIp,
     subject: "atypica.LLM",
     body: description,
     extra:
-      channel === "alipay_pc_direct" || "alipay_wap"
+      (paymentMethod === "alipay_pc_direct" || paymentMethod === "alipay_wap") && successUrl
         ? {
-            success_url: `${process.env.PINGPP_NOTIFY_URL_BASE}/payment/success?redirect=${encodeURIComponent(redirectUrl)}`,
-            cancel_url: `${process.env.PINGPP_NOTIFY_URL_BASE}/payment/cancel?redirect=${encodeURIComponent(redirectUrl)}`,
+            success_url: `${process.env.PINGPP_NOTIFY_URL_BASE}/payment/success?redirect=${encodeURIComponent(successUrl)}`,
+            cancel_url: `${process.env.PINGPP_NOTIFY_URL_BASE}/payment/cancel?redirect=${encodeURIComponent(successUrl)}`,
           }
-        : {},
+        : paymentMethod === "wx_pub" && openid
+          ? { open_id: openid } // pingxx 的参数叫 open_id
+          : {},
   };
 
   // Call the Ping++ API to create a charge
@@ -97,11 +107,11 @@ export async function createCharge(
   // Save the charge record to database
   const paymentRecord = await prisma.paymentRecord.create({
     data: {
-      userId: session.user.id,
+      userId: userId,
       orderNo: orderNo,
       amount: amount, // Convert cents to yuan
       status: "pending",
-      paymentMethod: channel,
+      paymentMethod: paymentMethod,
       chargeId: chargeResult.id,
       charge: { ...chargeResult },
       credential: { ...chargeResult.credential },

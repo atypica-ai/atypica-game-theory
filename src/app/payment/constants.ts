@@ -6,3 +6,9 @@ export enum ProductName {
   POINTS100_C = "POINTS100_C", // 星巴克咖啡
   POINTS100_D = "POINTS100_D", // 小蓝瓶咖啡
 }
+
+export enum PaymentMethod {
+  wx_pub = "wx_pub",
+  alipay_wap = "alipay_wap",
+  alipay_pc_direct = "alipay_pc_direct",
+}

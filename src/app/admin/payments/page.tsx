@@ -1,6 +1,6 @@
 "use client";
 import { createCharge, getPaymentRecords } from "@/app/payment/actions";
-import { ProductName } from "@/app/payment/ProductName";
+import { ProductName } from "@/app/payment/constants";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -29,7 +29,7 @@ type PaymentRecord = Awaited<ReturnType<typeof getPaymentRecords>>["data"][numbe
 type PaymentMethod = PaymentRecord["paymentMethod"];
 
 export default function PaymentTestPage() {
-  const { status } = useSession();
+  const { status, data: session } = useSession();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -59,7 +59,15 @@ export default function PaymentTestPage() {
     setError("");
 
     try {
-      const { charge } = await createCharge(method, productName, window.location.href);
+      if (!session?.user) {
+        return;
+      }
+      const { charge } = await createCharge({
+        userId: session.user.id,
+        paymentMethod: method,
+        productName,
+        successUrl: window.location.href,
+      });
       // Use Ping++ SDK to handle the payment
       if (window.pingpp) {
         window.pingpp.createPayment(charge, function (result) {
