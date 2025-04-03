@@ -20,7 +20,9 @@ export default function SignUpPage() {
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newEmail = e.target.value;
     setEmail(newEmail);
-    setShowInvitationField(!newEmail.endsWith("@tezign.com") && newEmail.includes("@"));
+    // setShowInvitationField(!newEmail.endsWith("@tezign.com") && newEmail.includes("@"));
+    // 始终不显示邀请码
+    setShowInvitationField(false);
   };
 
   const onSubmit = async (e: React.FormEvent) => {
