@@ -148,7 +148,7 @@ async function helloAgentRequest(req: Request, payload: any) {
     messages: fixChatMessages(initialMessages, { removePendingTool: true }), // 传给 LLM 的时候需要修复
     tools: {
       // [ToolName.reasoningThinking]: reasoningThinkingTool({ abortSignal: req.signal, statReport }),
-      [ToolName.requestInteraction]: requestInteractionTool,
+      // [ToolName.requestInteraction]: requestInteractionTool,
       [ToolName.thanks]: thanksTool,
     },
     maxSteps: 5,
