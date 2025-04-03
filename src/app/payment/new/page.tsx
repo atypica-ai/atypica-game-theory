@@ -1,13 +1,7 @@
 import { redirect } from "next/navigation";
 import { PaymentMethod, ProductName } from "../constants";
 
-export async function createWeixinLoginUrl({
-  state,
-  successUrl,
-}: {
-  state: string;
-  successUrl: string;
-}) {
+async function createWeixinLoginUrl({ state, successUrl }: { state: string; successUrl: string }) {
   const res = await fetch("https://heidianapi.com/api/clients/wechat-auth-url/", {
     method: "POST",
     headers: {

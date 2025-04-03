@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { PaymentLine, PaymentRecord as PaymentRecordPrisma, User } from "@prisma/client";
 import crypto from "crypto";
 import { headers } from "next/headers";
-import { ProductName } from "./constants";
+import { PaymentMethod, ProductName } from "./constants";
 
 // Ping++ API configuration
 const PINGPP_API_KEY = process.env.PINGPP_API_KEY!;
@@ -13,9 +13,9 @@ const PINGPP_API_URL = process.env.PINGPP_API_URL!;
 
 export type PaymentRecord = PaymentRecordPrisma & {
   status: "pending" | "succeeded" | "failed";
-  paymentMethod: "alipay_pc_direct" | "alipay_wap";
+  paymentMethod: PaymentMethod;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  credential: Record<"alipay_pc_direct" | "alipay_wap", any>;
+  credential: Record<"alipay_pc_direct" | "alipay_wap" | "wx_pub", any>;
 };
 
 // Create a ping++ charge
@@ -27,7 +27,7 @@ export async function createCharge({
   openid,
 }: {
   userId: number;
-  paymentMethod: "alipay_pc_direct" | "alipay_wap" | "wx_pub";
+  paymentMethod: PaymentMethod;
   productName: ProductName;
   successUrl?: string;
   openid?: string;
@@ -74,12 +74,14 @@ export async function createCharge({
     subject: "atypica.AI",
     body: description,
     extra:
-      (paymentMethod === "alipay_pc_direct" || paymentMethod === "alipay_wap") && successUrl
+      (paymentMethod === PaymentMethod.alipay_pc_direct ||
+        paymentMethod === PaymentMethod.alipay_wap) &&
+      successUrl
         ? {
             success_url: `${process.env.PINGPP_NOTIFY_URL_BASE}/payment/success?redirect=${encodeURIComponent(successUrl)}`,
             cancel_url: `${process.env.PINGPP_NOTIFY_URL_BASE}/payment/cancel?redirect=${encodeURIComponent(successUrl)}`,
           }
-        : paymentMethod === "wx_pub" && openid
+        : paymentMethod === PaymentMethod.wx_pub && openid
           ? { open_id: openid } // pingxx 的参数叫 open_id
           : {},
   };

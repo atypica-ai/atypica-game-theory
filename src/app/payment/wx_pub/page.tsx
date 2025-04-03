@@ -2,7 +2,7 @@ import Script from "next/script";
 import { ProductName } from "../constants";
 import PaymentClient from "./PaymentClient";
 
-export async function exchangeOpenIDWithCode({ code }: { code: string }) {
+async function exchangeOpenIDWithCode({ code }: { code: string }) {
   const response = await fetch("https://heidianapi.com/api/clients/wechat-auth-openid/", {
     method: "POST",
     headers: {

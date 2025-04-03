@@ -1,6 +1,6 @@
 "use client";
 import { createCharge, getPaymentRecords } from "@/app/payment/actions";
-import { ProductName } from "@/app/payment/constants";
+import { PaymentMethod, ProductName } from "@/app/payment/constants";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -26,7 +26,6 @@ declare global {
 }
 
 type PaymentRecord = Awaited<ReturnType<typeof getPaymentRecords>>["data"][number];
-type PaymentMethod = PaymentRecord["paymentMethod"];
 
 export default function PaymentTestPage() {
   const { status, data: session } = useSession();
@@ -111,11 +110,11 @@ export default function PaymentTestPage() {
 
       <Tabs defaultValue="alipay_pc_direct" className="mb-6">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="alipay_pc_direct">Alipay PC Direct</TabsTrigger>
-          <TabsTrigger value="alipay_wap">Alipay WAP</TabsTrigger>
+          <TabsTrigger value={PaymentMethod.alipay_pc_direct}>Alipay PC Direct</TabsTrigger>
+          <TabsTrigger value={PaymentMethod.alipay_wap}>Alipay WAP</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="alipay_pc_direct" className="mt-4">
+        <TabsContent value={PaymentMethod.alipay_pc_direct} className="mt-4">
           <Card>
             <CardHeader>
               <CardTitle>Alipay PC Direct Payment</CardTitle>
@@ -123,13 +122,13 @@ export default function PaymentTestPage() {
             </CardHeader>
             <CardContent className="flex flex-row gap-4">
               <Button
-                onClick={() => handlePayment("alipay_pc_direct", ProductName.TEST_A)}
+                onClick={() => handlePayment(PaymentMethod.alipay_pc_direct, ProductName.TEST_A)}
                 disabled={isLoading}
               >
                 Pay 0.01 CNY
               </Button>
               <Button
-                onClick={() => handlePayment("alipay_pc_direct", ProductName.TEST_B)}
+                onClick={() => handlePayment(PaymentMethod.alipay_pc_direct, ProductName.TEST_B)}
                 disabled={isLoading}
               >
                 Pay 0.1 CNY
@@ -138,7 +137,7 @@ export default function PaymentTestPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="alipay_wap" className="mt-4">
+        <TabsContent value={PaymentMethod.alipay_wap} className="mt-4">
           <Card>
             <CardHeader>
               <CardTitle>Alipay WAP Payment</CardTitle>
@@ -148,13 +147,13 @@ export default function PaymentTestPage() {
             </CardHeader>
             <CardContent className="flex flex-row gap-4">
               <Button
-                onClick={() => handlePayment("alipay_wap", ProductName.TEST_A)}
+                onClick={() => handlePayment(PaymentMethod.alipay_wap, ProductName.TEST_A)}
                 disabled={isLoading}
               >
                 Pay 0.01 CNY
               </Button>
               <Button
-                onClick={() => handlePayment("alipay_wap", ProductName.TEST_B)}
+                onClick={() => handlePayment(PaymentMethod.alipay_wap, ProductName.TEST_B)}
                 disabled={isLoading}
               >
                 Pay 0.1 CNY

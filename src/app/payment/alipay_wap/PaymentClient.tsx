@@ -2,7 +2,7 @@
 import { useCallback, useEffect } from "react";
 import { toast } from "sonner";
 import { createCharge } from "../actions";
-import { ProductName } from "../constants";
+import { PaymentMethod, ProductName } from "../constants";
 
 export default function PaymentClient({
   userId,
@@ -16,7 +16,7 @@ export default function PaymentClient({
   const handlePayment = useCallback(async () => {
     const { charge } = await createCharge({
       userId,
-      paymentMethod: "alipay_wap",
+      paymentMethod: PaymentMethod.alipay_wap,
       productName,
       successUrl: successUrl,
     });
@@ -32,11 +32,12 @@ export default function PaymentClient({
         }
       });
     }
-  }, []);
+  }, [productName, successUrl, userId]);
 
   useEffect(() => {
     handlePayment();
-  }, [handlePayment]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return <div></div>;
 }
