@@ -254,5 +254,9 @@
       "ready": "atypica 已准备就绪",
       "viewPersonas": "🔍 查看此次搜索找到的画像"
     }
+  },
+  "PaymentPage": {
+    "successTitle": "支付成功!",
+    "successContent": "您可以在电脑上继续和 atypica.AI 对话开展研究。"
   }
 }

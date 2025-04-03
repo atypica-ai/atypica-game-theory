@@ -1,3 +1,4 @@
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { PaymentMethod, ProductName } from "../constants";
 
@@ -28,8 +29,20 @@ export default async function PingxxPaymentPage(props: {
   }>;
 }) {
   const searchParams = await props.searchParams;
-  const { userId, productName, paymentMethod, successUrl } = searchParams;
+  const { userId, productName, paymentMethod: _paymentMethod, successUrl } = searchParams;
   const state = `${userId}:${productName}`;
+
+  let paymentMethod = _paymentMethod;
+  if (!paymentMethod) {
+    const headersList = await headers();
+    const userAgent = headersList.get("user-agent") || "";
+    if (userAgent.toLowerCase().includes("micromessenger")) {
+      paymentMethod = PaymentMethod.wx_pub;
+    } else {
+      paymentMethod = PaymentMethod.alipay_wap;
+    }
+  }
+
   if (paymentMethod === PaymentMethod.wx_pub) {
     const { url: weixinLoginUrl } = await createWeixinLoginUrl({
       state,

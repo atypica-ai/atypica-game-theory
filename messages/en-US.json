@@ -254,5 +254,9 @@
       "ready": "atypica is ready",
       "viewPersonas": "🔍 View personas found in this search"
     }
+  },
+  "PaymentPage": {
+    "successTitle": "Payment successful!",
+    "successContent": "You can continue your conversation with atypica.AI on your computer to conduct research."
   }
 }

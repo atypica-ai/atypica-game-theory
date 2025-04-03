@@ -21,7 +21,6 @@ export default function PaymentClient({
       openid: openid,
     });
     if (window.pingpp) {
-      toast.error(window.pingpp.toString());
       window.pingpp.createPayment(charge, function (result) {
         if (result.status === "success") {
           toast.error("Payment successful");

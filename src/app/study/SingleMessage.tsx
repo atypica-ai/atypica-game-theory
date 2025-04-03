@@ -184,7 +184,17 @@ export const SingleMessage = ({
     );
   }, [content, onDelete]);
 
+  // const { replay } = useStudyContext();
   const renderParts = (parts: NonNullable<MessageType["parts"]>) => {
+    // if (replay) {
+    //   parts = parts.filter(
+    //     (part) =>
+    //       !(
+    //         part.type === "tool-invocation" &&
+    //         part.toolInvocation.toolName === ToolName.requestPayment
+    //       ) && !(part.type === "text" && part.text.includes("免费研究额度已经用完")),
+    //   );
+    // }
     const lastToolPartIndex = parts.findLastIndex((part) => part.type === "tool-invocation");
     return (
       <div className="flex flex-col gap-4">

@@ -21,10 +21,9 @@ export default function PaymentClient({
       successUrl: successUrl,
     });
     if (window.pingpp) {
-      toast.error(window.pingpp.toString());
       window.pingpp.createPayment(charge, function (result) {
         if (result.status === "success") {
-          toast.error("Payment successful");
+          toast.success("Payment successful");
         } else if (result.status === "fail") {
           toast.error("Payment failed");
         } else if (result.status === "cancel") {

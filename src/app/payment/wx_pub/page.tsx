@@ -33,9 +33,6 @@ export default async function PingxxPaymentPage(props: {
 
   return (
     <div>
-      <div>{code}</div>
-      <div>{state}</div>
-      <div>{openid}</div>
       <PaymentClient userId={userId} productName={productName} openid={openid} />
       <Script
         src="https://global.heidiancdn.com/javascripts/vendor/pingpp-2.2.11.js"

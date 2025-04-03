@@ -1,4 +1,4 @@
-import { PaymentMethod, ProductName } from "@/app/payment/constants";
+import { ProductName } from "@/app/payment/constants";
 import { useStudyContext } from "@/app/study/hooks/StudyContext";
 import { checkStudyUserChatConsume } from "@/data/UserPoints";
 import { RequestPaymentResult } from "@/tools/user/payment";
@@ -64,49 +64,50 @@ export const RequestPaymentMessage: FC<{
     };
   }, [toolInvocation.state, checkAndHandleConsume]);
 
+  const [isMobile, setIsMobile] = useState<boolean>(false);
+  useEffect(() => {
+    const checkMobile = () => {
+      const userAgent = window.navigator.userAgent.toLowerCase();
+      const mobileRegex = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i;
+      setIsMobile(mobileRegex.test(userAgent));
+    };
+    checkMobile();
+  }, []);
   const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
   const createPaymentUrl = useCallback(
-    async ({
-      paymentMethod,
-      productName,
-      userId,
-    }: {
-      paymentMethod: PaymentMethod;
-      productName: ProductName;
-      userId: number;
-    }) => {
+    async ({ productName, userId }: { productName: ProductName; userId: number }) => {
       const url = new URL(`${window.location.origin}/payment/new`);
       const params = new URLSearchParams();
       params.append("userId", userId.toString());
-      params.append("paymentMethod", paymentMethod);
+      // params.append("paymentMethod", paymentMethod);
       params.append("productName", productName);
-      params.append("successUrl", encodeURIComponent(window.location.href));
+      if (isMobile) {
+        params.append("successUrl", encodeURIComponent(window.location.href));
+      } else {
+        // 因为是弹出二维码在手机上扫码支付，手机上显示固定的支付成功地址
+        params.append(
+          "successUrl",
+          encodeURIComponent(`${window.location.origin}/payment/success`),
+        );
+      }
       url.search = params.toString();
-      setPaymentUrl(url.toString());
+      if (isMobile) {
+        window.location.href = url.toString();
+      } else {
+        setPaymentUrl(url.toString());
+      }
     },
-    [],
+    [isMobile],
   );
 
-  // const [isLoading, setIsLoading] = useState(false);
-  // const [error, setError] = useState("");
-  // Initiate payment
   const handlePayment = async (productName: ProductName) => {
     if (!session?.user) {
       return;
     }
-    if (productName === ProductName.POINTS100_A) {
-      await createPaymentUrl({
-        paymentMethod: PaymentMethod.wx_pub,
-        productName,
-        userId: session.user.id,
-      });
-    } else if (productName === ProductName.POINTS100_B) {
-      await createPaymentUrl({
-        paymentMethod: PaymentMethod.alipay_wap,
-        productName,
-        userId: session.user.id,
-      });
-    }
+    await createPaymentUrl({
+      productName,
+      userId: session.user.id,
+    });
   };
 
   const products = [
@@ -144,13 +145,16 @@ export const RequestPaymentMessage: FC<{
       {/* <div>{paymentUrl}</div> */}
       {paymentUrl && (
         <div className="qrcode-container">
+          <div className="my-4 text-xs">
+            <span>请扫描以下二维码完成支付</span>
+          </div>
           <QRCodeSVG
             value={paymentUrl}
-            size={256}
+            size={180}
             bgColor="#FFFFFF"
             fgColor="#000000"
             level="H"
-            marginSize={10}
+            marginSize={0}
           />
         </div>
       )}
