@@ -26,12 +26,19 @@ export default function HomePageClient({ anonymous }: { anonymous: boolean }) {
             "hidden dark:block",
           )}
         >
-          <Image
-            src="/_public/atypica.svg"
+          {/* <Image
+            src="/_public/atypica.ai.black.svg"
             alt="atypica Logo"
             fill
             priority
-            className="object-contain"
+            className="object-contain block dark:hidden"
+          /> */}
+          <Image
+            src="/_public/atypica.ai.green.svg"
+            alt="atypica Logo"
+            fill
+            priority
+            className="object-contain dark:block hidden"
           />
         </div>
         <p
