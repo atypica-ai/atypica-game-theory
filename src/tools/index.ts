@@ -9,6 +9,7 @@ import { saveInterviewConclusionTool } from "./system/saveInterviewConclusion";
 import { savePersonaTool } from "./system/savePersona";
 import { requestInteractionTool } from "./user/interaction";
 import { requestPaymentTool } from "./user/payment";
+import { thanksTool } from "./user/thanks";
 import { xhsNoteCommentsTool } from "./xhs/noteComments";
 import { xhsSearchTool } from "./xhs/search";
 import { xhsUserNotesTool } from "./xhs/userNotes";
@@ -25,6 +26,7 @@ export enum ToolName {
   savePersona = "savePersona",
   scoutTaskChat = "scoutTaskChat",
   scoutTaskCreate = "scoutTaskCreate",
+  thanks = "thanks",
   xhsNoteComments = "xhsNoteComments",
   xhsSearch = "xhsSearch",
   xhsUserNotes = "xhsUserNotes",
@@ -42,6 +44,7 @@ export {
   savePersonaTool,
   scoutTaskChatTool,
   scoutTaskCreateTool,
+  thanksTool,
   xhsNoteCommentsTool,
   xhsSearchTool,
   xhsUserNotesTool,

@@ -34,5 +34,5 @@ export default async function StudyPage({
     redirect(`/study/${token}/share?replay=1`);
   }
   const studyUserChat = await fetchUserChatByToken(token, "study");
-  return <StudyPageClient studyUserChat={studyUserChat} replay={true} />;
+  return <StudyPageClient studyUserChat={studyUserChat} replay={true} isHelloChat={false} />;
 }

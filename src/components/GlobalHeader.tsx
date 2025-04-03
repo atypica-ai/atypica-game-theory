@@ -9,17 +9,14 @@ import UserMenu from "./UserMenu";
 export default function GlobalHeader() {
   const t = useTranslations("Components.GlobalHeader");
   const { data: session } = useSession();
-  const [balance, setBalance] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
+  const [balance, setBalance] = useState<number | null>(null);
 
   const checkBalance = useCallback(async () => {
     if (!session) {
       return;
     }
-    setIsLoading(true);
     const result = await getUserPointsBalance();
     setBalance(result);
-    setIsLoading(false);
   }, [session]);
 
   useEffect(() => {
@@ -52,7 +49,7 @@ export default function GlobalHeader() {
         </Link>
       </div>
       <div className="ml-auto" />
-      {session && !isLoading ? (
+      {balance !== null ? (
         <div className="text-xs">{t("balance", { count: Math.floor(balance / 100) })}</div>
       ) : null}
       <div className="flex items-center gap-4">

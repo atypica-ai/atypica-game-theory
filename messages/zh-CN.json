@@ -138,7 +138,8 @@
       "logout": "退出登录",
       "lightTheme": "浅色主题",
       "darkTheme": "深色主题",
-      "history": "历史对话"
+      "history": "历史对话",
+      "enterprise": "了解企业版"
     },
     "ChatMessage": {
       "toolExecution": "工具执行参数",

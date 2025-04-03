@@ -138,7 +138,8 @@
       "logout": "Logout",
       "lightTheme": "Light Theme",
       "darkTheme": "Dark Theme",
-      "history": "Chat History"
+      "history": "Chat History",
+      "enterprise": "Know DAM better"
     },
     "ChatMessage": {
       "toolExecution": "Tool Execution Parameters",

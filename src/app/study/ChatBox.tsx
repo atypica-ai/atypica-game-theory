@@ -35,8 +35,10 @@ export function ChatBox({
     messages: initialMessages,
     backgroundToken: initialBackgroundToken,
   },
+  isHelloChat,
 }: {
   studyUserChat: StudyUserChat;
+  isHelloChat: boolean;
 }) {
   // 这个组件是不支持对话直接切换的，如果切换，需要刷新页面重新加载！);
 
@@ -59,6 +61,7 @@ export function ChatBox({
     sendExtraMessageFields: true, // send id and createdAt for each message
     api: "/api/chat/study",
     maxSteps: 15,
+    body: isHelloChat ? { hello: "1" } : undefined,
   });
 
   const [backgroundToken, setBackgroundToken] = useState<string | null>(initialBackgroundToken);

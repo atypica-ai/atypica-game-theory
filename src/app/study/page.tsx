@@ -24,9 +24,9 @@ export const dynamic = "force-dynamic";
 export default async function StudyPage({
   searchParams,
 }: {
-  searchParams: Promise<{ id?: string }>;
+  searchParams: Promise<{ id?: string; hello: string }>;
 }) {
-  const { id } = await searchParams;
+  const { id, hello } = await searchParams;
   if (!id) {
     redirect("/");
   }
@@ -41,5 +41,7 @@ export default async function StudyPage({
     forbidden();
   }
 
-  return <StudyPageClient studyUserChat={studyUserChat} replay={false} />;
+  return (
+    <StudyPageClient studyUserChat={studyUserChat} replay={false} isHelloChat={hello === "1"} />
+  );
 }

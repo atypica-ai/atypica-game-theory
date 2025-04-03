@@ -53,9 +53,11 @@ const FollowButton = () => {
 export function StudyPageClient({
   studyUserChat,
   replay,
+  isHelloChat,
 }: {
   studyUserChat: StudyUserChat;
   replay: boolean;
+  isHelloChat: boolean;
 }) {
   const [messagesContainerRef, messagesEndRef] = useScrollToBottom<HTMLDivElement>();
   const [consoleOpen, setConsoleOpen] = useState(false);
@@ -79,7 +81,7 @@ export function StudyPageClient({
           {replay ? (
             <ChatReplay studyUserChat={studyUserChat} />
           ) : (
-            <ChatBox studyUserChat={studyUserChat} />
+            <ChatBox studyUserChat={studyUserChat} isHelloChat={isHelloChat} />
           )}
         </div>
         <div

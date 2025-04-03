@@ -9,14 +9,24 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { createUserChat } from "@/data";
 import Cookies from "js-cookie";
-import { GlobeIcon, HistoryIcon, LogInIcon, LogOutIcon, Moon, Sun, User } from "lucide-react";
+import {
+  GlobeIcon,
+  HistoryIcon,
+  HomeIcon,
+  LogInIcon,
+  LogOutIcon,
+  Moon,
+  Sun,
+  User,
+} from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import HippyGhostAvatar from "./HippyGhostAvatar";
 
 export default function UserMenu() {
@@ -42,6 +52,14 @@ export default function UserMenu() {
     router.refresh();
   };
 
+  const sayHello = useCallback(async () => {
+    const chat = await createUserChat("study", {
+      role: "user",
+      content: "我是企业用户，想了解一下企业版",
+    });
+    window.location.href = `/study/?id=${chat.id}&hello=1`;
+  }, []);
+
   const Menus = () => {
     return (
       <>
@@ -57,6 +75,11 @@ export default function UserMenu() {
         <DropdownMenuItem onClick={toggleLocale}>
           <GlobeIcon className="h-4 w-4 mr-2" />
           {locale === "zh-CN" ? "English" : "中文"}
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={sayHello}>
+          <HomeIcon className="h-4 w-4 mr-2" />
+          {t("enterprise")}
         </DropdownMenuItem>
       </>
     );
@@ -99,12 +122,12 @@ export default function UserMenu() {
               <span className="text-xs tracking-tight">{session.user.email}</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <Menus />
-            <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => setOpen(true)}>
               <HistoryIcon className="h-4 w-4 mr-2" />
               {t("history")}
             </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <Menus />
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/" })}>
               <LogOutIcon className="h-4 w-4 mr-2" />

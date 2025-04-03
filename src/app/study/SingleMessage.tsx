@@ -13,6 +13,7 @@ import { useStudyContext } from "./hooks/StudyContext";
 import { GenerateReportResultMessage } from "./tools/message/GenerateReportResultMessage";
 import { RequestIteractionMessage } from "./tools/message/RequestIteractionMessage";
 import { RequestPaymentMessage } from "./tools/message/RequestPaymentMessage";
+import { ThanksMessage } from "./tools/message/ThanksMessage";
 
 const ToolInvocationMessage = ({
   toolInvocation,
@@ -59,6 +60,9 @@ const ToolInvocationMessage = ({
       return (
         <RequestPaymentMessage toolInvocation={toolInvocation} addToolResult={addToolResult} />
       );
+    }
+    if (toolName == ToolName.thanks) {
+      return <ThanksMessage toolInvocation={toolInvocation} addToolResult={addToolResult} />;
     }
     if (state === "result" && toolName == ToolName.generateReport) {
       return <GenerateReportResultMessage result={toolInvocation.result} />;
