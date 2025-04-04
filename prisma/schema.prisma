@@ -140,15 +140,20 @@ model UserAnalyst {
   @@index([analystId])
 }
 
+enum UserChatKind {
+  scout
+  study
+}
+
 model UserChat {
-  id              Int     @id @default(autoincrement())
-  token           String? @unique @db.VarChar(64)
+  id              Int          @id @default(autoincrement())
+  token           String?      @unique @db.VarChar(64)
   userId          Int
-  user            User    @relation(fields: [userId], references: [id])
-  title           String  @db.VarChar(255)
+  user            User         @relation(fields: [userId], references: [id])
+  title           String       @db.VarChar(255)
   messages        Json
-  kind            String  @db.VarChar(255) // scout | study | analyst | interview
-  backgroundToken String? @db.VarChar(255)
+  kind            UserChatKind
+  backgroundToken String?      @db.VarChar(255)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -159,36 +164,44 @@ model UserChat {
   FeaturedStudy FeaturedStudy?
 }
 
+enum ChatStatisticsDimension {
+  tokens
+  duration
+  steps
+  personas
+  interviews
+}
+
 model ChatStatistics {
-  id         Int      @id @default(autoincrement())
+  id         Int                     @id @default(autoincrement())
   userChatId Int
-  userChat   UserChat @relation(fields: [userChatId], references: [id])
-  dimension  String   @db.VarChar(255) // tokens | duration | steps | words | personas | interviews
-  value      Int      @default(0)
+  userChat   UserChat                @relation(fields: [userChatId], references: [id])
+  dimension  ChatStatisticsDimension
+  value      Int                     @default(0)
   extra      Json?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-// enum PaymentStatus {
-//   pending
-//   succeeded
-//   failed
-// }
+enum PaymentStatus {
+  pending
+  succeeded
+  failed
+}
 
 model PaymentRecord {
-  id            Int       @id @default(autoincrement())
+  id            Int           @id @default(autoincrement())
   userId        Int
-  user          User      @relation(fields: [userId], references: [id])
-  orderNo       String    @unique @db.VarChar(64)
+  user          User          @relation(fields: [userId], references: [id])
+  orderNo       String        @unique @db.VarChar(64)
   amount        Float
-  status        String    @db.VarChar(32) // pending | succeeded | failed
-  paymentMethod String    @db.VarChar(64)
+  status        PaymentStatus
+  paymentMethod String        @db.VarChar(64)
   charge        Json
-  chargeId      String    @unique @db.VarChar(64)
+  chargeId      String        @unique @db.VarChar(64)
   credential    Json
-  description   String    @db.VarChar(255)
+  description   String        @db.VarChar(255)
   paidAt        DateTime?
 
   createdAt DateTime @default(now())
@@ -236,13 +249,27 @@ model UserPoints {
   updatedAt DateTime @updatedAt
 }
 
+enum UserPointsLogVerb {
+  recharge
+  consume
+  daily
+  gift
+  signup
+}
+
+enum UserPointsLogResourceType {
+  StudyUserChat
+  ScoutUserChat
+  PaymentRecord
+}
+
 model UserPointsLog {
-  id           Int     @id @default(autoincrement())
+  id           Int                        @id @default(autoincrement())
   userId       Int
-  user         User    @relation(fields: [userId], references: [id])
+  user         User                       @relation(fields: [userId], references: [id])
   points       Int
-  verb         String  @db.VarChar(64) // recharge | consume | daily | signup | etc.
-  resourceType String? @db.VarChar(64) // StudyUserChat | ScoutUserChat | PaymentRecord | etc.
+  verb         UserPointsLogVerb
+  resourceType UserPointsLogResourceType?
   resourceId   Int?
 
   createdAt DateTime @default(now())
