@@ -7,8 +7,7 @@ import { generateId, Message } from "ai";
 import { forbidden, notFound } from "next/navigation";
 import withAuth from "./withAuth";
 
-export type UserChat = Omit<UserChatPrisma, "messages" | "kind"> & {
-  kind: "scout" | "study" | "analyst" | "interview";
+export type UserChat = Omit<UserChatPrisma, "messages"> & {
   messages: Message[];
 };
 
@@ -36,7 +35,7 @@ export async function updateUserChat(chatId: number, messages: Message[]): Promi
       });
       return {
         ...userChat,
-        kind: userChat.kind as UserChat["kind"],
+        kind: userChat.kind,
         messages: userChat.messages as unknown as Message[],
       };
     } catch (error) {

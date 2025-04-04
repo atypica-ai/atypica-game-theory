@@ -161,7 +161,7 @@ model UserChat {
   personas      Persona[]
   analyst       Analyst?
   statistics    ChatStatistics[]
-  FeaturedStudy FeaturedStudy?
+  featuredStudy FeaturedStudy?
 }
 
 enum ChatStatisticsDimension {
