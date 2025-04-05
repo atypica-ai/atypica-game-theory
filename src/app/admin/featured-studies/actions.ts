@@ -56,11 +56,7 @@ export async function fetchAnalysts(page: number = 1, pageSize: number = 12) {
 
   const skip = (page - 1) * pageSize;
   const where = {
-    studyUserChat: {
-      token: {
-        not: null,
-      },
-    },
+    studyUserChat: {},
   };
 
   // Get all analysts with their featured status

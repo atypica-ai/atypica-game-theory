@@ -1,6 +1,11 @@
 import openai from "@/lib/openai";
 import { prisma } from "@/lib/prisma";
-import { appendStreamStepToUIMessage, fixChatMessages, streamStepsToUIMessage } from "@/lib/utils";
+import {
+  appendStreamStepToUIMessage,
+  fixChatMessages,
+  generateToken,
+  streamStepsToUIMessage,
+} from "@/lib/utils";
 import { scoutSystem } from "@/prompt";
 import { PlainTextToolResult } from "@/tools/utils";
 import { InputJsonValue } from "@prisma/client/runtime/library";
@@ -40,7 +45,13 @@ export const scoutTaskCreateTool = (userId: number) =>
     execute: async ({ description }): Promise<ScoutTaskCreateResult> => {
       const title = description.substring(0, 50);
       const scoutUserChat = await prisma.userChat.create({
-        data: { userId, title, kind: "scout", messages: [] },
+        data: {
+          userId,
+          title,
+          kind: "scout",
+          token: generateToken(),
+          messages: [],
+        },
       });
       return {
         scoutUserChatId: scoutUserChat.id,

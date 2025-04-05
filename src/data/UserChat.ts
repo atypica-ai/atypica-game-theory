@@ -56,12 +56,8 @@ export async function createUserChat<TKind extends UserChat["kind"]>(
           userId: user.id,
           title: message.content.substring(0, 50),
           kind,
-          messages: [
-            {
-              id: generateId(),
-              ...message,
-            },
-          ],
+          token: generateToken(),
+          messages: [{ id: generateId(), ...message }],
         },
       });
       return {
@@ -203,36 +199,6 @@ export async function fetchUserChatByToken<Tkind extends UserChat["kind"]>(
   }
 }
 
-export async function setUserChatToken<Tkind extends UserChat["kind"]>(
-  userChatId: number,
-  kind: Tkind,
-): Promise<
-  Omit<UserChat, "kind"> & {
-    kind: Tkind;
-  }
-> {
-  return withAuth(async () => {
-    try {
-      await prisma.userChat.updateMany({
-        where: { id: userChatId, token: null, kind },
-        data: { token: generateToken() },
-      });
-      const userChat = await prisma.userChat.findUnique({
-        where: { id: userChatId, kind },
-      });
-      if (!userChat) notFound();
-      return {
-        ...userChat,
-        kind: userChat.kind as Tkind,
-        messages: userChat.messages as unknown as Message[],
-      };
-    } catch (error) {
-      console.log("Error setting user chat token:", error);
-      throw error;
-    }
-  });
-}
-
 export async function deleteMessageFromUserChat(
   userChatId: number,
   messages: Message[],
@@ -262,52 +228,6 @@ export async function deleteMessageFromUserChat(
       return newMessages;
     } catch (error) {
       console.log("Error deleting message from user chat:", error);
-      throw error;
-    }
-  });
-}
-
-export async function fetchFeaturedStudyUserChats(): Promise<
-  (Pick<UserChat, "title" | "token" | "kind"> & {
-    readonly replayUrl: string;
-    kind: "study";
-  })[]
-> {
-  return withAuth(async () => {
-    try {
-      const userChats = await prisma.userChat.findMany({
-        where: {
-          token: {
-            not: null,
-          },
-          kind: "study",
-        },
-        orderBy: {
-          createdAt: "desc",
-        },
-        select: {
-          id: false,
-          token: true,
-          userId: false,
-          title: true,
-          kind: true,
-          createdAt: false,
-          updatedAt: false,
-          messages: false,
-        },
-        take: 3,
-      });
-      return userChats
-        .filter((chat) => chat.token)
-        .map((chat) => {
-          return {
-            ...chat,
-            kind: "study",
-            replayUrl: `/study/${chat.token}/share?replay=1`,
-          };
-        });
-    } catch (error) {
-      console.log("Error fetching featured study user chats:", error);
       throw error;
     }
   });
