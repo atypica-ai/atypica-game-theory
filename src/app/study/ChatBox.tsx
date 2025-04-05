@@ -133,7 +133,7 @@ export function ChatBox({ isHelloChat }: { isHelloChat: boolean }) {
     };
   }, [refreshStudyUserChat]);
 
-  const [pointsConsumed, setPointsConsumed] = useState(false);
+  const [pointsConsumed, setPointsConsumed] = useState<boolean | null>(null);
   useEffect(() => {
     checkStudyUserChatConsume({ studyUserChatId }).then((result) => {
       setPointsConsumed(result);
@@ -141,7 +141,8 @@ export function ChatBox({ isHelloChat }: { isHelloChat: boolean }) {
   }, [studyUserChatId]);
 
   const uiStatus = useMemo(
-    () => (backgroundToken ? "background" : !pointsConsumed ? "outOfQuota" : useChatStatus),
+    () =>
+      backgroundToken ? "background" : pointsConsumed === false ? "outOfQuota" : useChatStatus,
     [backgroundToken, pointsConsumed, useChatStatus],
   );
   const inputDisabled =

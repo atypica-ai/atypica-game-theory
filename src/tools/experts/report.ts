@@ -10,6 +10,7 @@ import { z } from "zod";
 import { StatReporter } from "..";
 
 export interface GenerateReportResult extends PlainTextToolResult {
+  reportToken?: string;
   plainText: string;
 }
 
@@ -45,25 +46,23 @@ export const generateReportTool = ({
         where: { analystId },
         orderBy: { createdAt: "desc" },
       });
+      let hint = "";
       if (report?.generatedAt && !regenerate) {
         return {
-          plainText: `Report for analyst ${analystId} is generated`,
+          reportToken: report.token,
+          plainText: `调研主题 ${analystId} 的报告已经存在，如需重新生成请设置 regenerate: true。您可以提供额外的指令来指定报告风格或内容要求。`,
         };
       }
       if (report && !report.generatedAt) {
-        // 复用这个没完成的 report
+        // 复用这个没完成的 report 记录，并覆盖 token
+        hint = `从上次未完成的报告记录（${report.token}）继续生成。`;
         report = await prisma.analystReport.update({
           where: { id: report.id },
-          data: { onePageHtml: "" },
+          data: { onePageHtml: "", token: reportToken, coverSvg: "" },
         });
       } else {
         report = await prisma.analystReport.create({
-          data: {
-            analystId,
-            token: reportToken,
-            coverSvg: "",
-            onePageHtml: "",
-          },
+          data: { analystId, token: reportToken, coverSvg: "", onePageHtml: "" },
         });
       }
       const analyst = await prisma.analyst.findUniqueOrThrow({
@@ -94,12 +93,13 @@ export const generateReportTool = ({
           statReport,
         });
         return {
-          plainText: `Report for analyst ${analystId} is generated`,
+          reportToken: report.token,
+          plainText: `已成功为调研主题 ${analystId} 生成报告。${hint}`,
         };
       } catch (error) {
-        console.debug(error);
+        console.log(error);
         return {
-          plainText: `Report for analyst ${analystId} failed to generate`,
+          plainText: `为调研主题 ${analystId} 生成报告失败：${(error as Error).message}`,
         };
       }
     },

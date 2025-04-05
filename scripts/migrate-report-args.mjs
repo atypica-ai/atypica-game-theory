@@ -59,6 +59,17 @@ async function migrateReportArgs() {
             }
             updated = true;
           }
+          if (
+            toolInvocation.toolName === "generateReport" &&
+            toolInvocation.args.reportToken &&
+            toolInvocation.state === "result" &&
+            !toolInvocation.result.reportToken
+          ) {
+            console.log("old", toolInvocation);
+            toolInvocation.result.reportToken = toolInvocation.args.reportToken;
+            console.log("new", toolInvocation);
+            updated = true;
+          }
           parts.push({ ...part, toolInvocation });
         }
         messages.push({ ...message, parts });

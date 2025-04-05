@@ -15,19 +15,47 @@ import { RequestIteractionMessage } from "./tools/message/RequestIteractionMessa
 import { RequestPaymentMessage } from "./tools/message/RequestPaymentMessage";
 import { ThanksMessage } from "./tools/message/ThanksMessage";
 
+type TAddToolResult = ({
+  toolCallId,
+  result,
+}: {
+  toolCallId: string;
+  result: PlainTextToolResult;
+}) => void;
+
+const SpecialToolDisplay = ({
+  toolInvocation,
+  addToolResult,
+}: {
+  toolInvocation: ToolInvocation;
+  addToolResult: TAddToolResult;
+}) => {
+  // 特殊显示的工具调用 UI
+  const { toolName, state } = toolInvocation;
+  if (toolName == ToolName.requestInteraction) {
+    return (
+      <RequestIteractionMessage toolInvocation={toolInvocation} addToolResult={addToolResult} />
+    );
+  }
+  if (toolName == ToolName.requestPayment) {
+    return <RequestPaymentMessage toolInvocation={toolInvocation} addToolResult={addToolResult} />;
+  }
+  if (toolName == ToolName.thanks) {
+    return <ThanksMessage toolInvocation={toolInvocation} addToolResult={addToolResult} />;
+  }
+  if (state === "result" && toolName == ToolName.generateReport) {
+    return <GenerateReportResultMessage toolInvocation={toolInvocation} />;
+  }
+  return null;
+};
+
 const ToolInvocationMessage = ({
   toolInvocation,
   addToolResult,
   isLastToolPart,
 }: {
   toolInvocation: ToolInvocation;
-  addToolResult: ({
-    toolCallId,
-    result,
-  }: {
-    toolCallId: string;
-    result: PlainTextToolResult;
-  }) => void;
+  addToolResult: TAddToolResult;
   isLastToolPart?: boolean;
 }) => {
   const [open, setOpen] = useState(false);
@@ -47,28 +75,6 @@ const ToolInvocationMessage = ({
       setOpen(false);
     }
   }, [isLastToolPart]);
-
-  const renderToolCallUI = useCallback(() => {
-    // 特殊显示的工具调用 UI
-    const { toolName, state } = toolInvocation;
-    if (toolName == ToolName.requestInteraction) {
-      return (
-        <RequestIteractionMessage toolInvocation={toolInvocation} addToolResult={addToolResult} />
-      );
-    }
-    if (toolName == ToolName.requestPayment) {
-      return (
-        <RequestPaymentMessage toolInvocation={toolInvocation} addToolResult={addToolResult} />
-      );
-    }
-    if (toolName == ToolName.thanks) {
-      return <ThanksMessage toolInvocation={toolInvocation} addToolResult={addToolResult} />;
-    }
-    if (state === "result" && toolName == ToolName.generateReport) {
-      return <GenerateReportResultMessage toolInvocation={toolInvocation} />;
-    }
-    return null;
-  }, [addToolResult, toolInvocation]);
 
   return (
     <div>
@@ -114,7 +120,9 @@ const ToolInvocationMessage = ({
           )}
         </CollapsibleContent>
       </Collapsible>
-      <div className="my-4">{renderToolCallUI()}</div>
+      <div className="my-4">
+        <SpecialToolDisplay toolInvocation={toolInvocation} addToolResult={addToolResult} />
+      </div>
     </div>
   );
 };

@@ -44,19 +44,18 @@ const GenerateReport = ({ toolInvocation }: { toolInvocation: ToolInvocation }) 
 
   const [analystReport, setAnalystReport] = useState<AnalystReport | null>(null);
 
-  const fetchAnalystReport = useCallback(async (reportToken: string) => {
-    try {
-      const report = await fetchAnalystReportByToken(reportToken);
-      setAnalystReport(report);
-    } catch (error) {
-      console.error(error);
-    }
-  }, []);
-
   useEffect(() => {
-    const reportToken = toolInvocation.args.reportToken as string;
-    fetchAnalystReport(reportToken);
-  }, [toolInvocation.args.reportToken, fetchAnalystReport]);
+    let reportToken = toolInvocation.args.reportToken as string;
+    if (toolInvocation.state === "result") {
+      reportToken = toolInvocation.result.reportToken as string;
+    }
+    if (reportToken) {
+      fetchAnalystReportByToken(reportToken)
+        .then((report) => setAnalystReport(report))
+        .catch((error) => console.log(error));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [toolInvocation.args.reportToken, toolInvocation.state]);
 
   return (
     <div className="h-full relative pb-10">

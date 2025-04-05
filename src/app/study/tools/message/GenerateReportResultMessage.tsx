@@ -12,12 +12,17 @@ export const GenerateReportResultMessage: FC<{
   const [report, setReport] = useState<AnalystReport | null>(null);
 
   useEffect(() => {
-    (async () => {
-      const reportToken = toolInvocation.args.reportToken as string;
-      const report = await fetchAnalystReportByToken(reportToken);
-      setReport(report);
-    })();
-  }, [toolInvocation.args.reportToken]);
+    let reportToken = toolInvocation.args.reportToken as string;
+    if (toolInvocation.state === "result") {
+      reportToken = toolInvocation.result.reportToken as string;
+    }
+    if (reportToken) {
+      fetchAnalystReportByToken(reportToken)
+        .then((report) => setReport(report))
+        .catch((error) => console.log(error));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [toolInvocation.args.reportToken, toolInvocation.state]);
 
   if (!report) return null;
 
