@@ -30,19 +30,18 @@ function SignIn() {
     try {
       setIsLoading(true);
       setError("");
-
       const result = await signIn("credentials", {
         email,
         password,
         redirect: false,
       });
-
       if (!result?.error) {
-        router.replace(callbackUrl);
+        // router.replace(callbackUrl);
+        window.location.replace(callbackUrl);
       } else {
         if (result.error === "EMAIL_NOT_VERIFIED") {
           setError(result.error);
-          router.push("/auth/verify?email=" + email);
+          router.push(`/auth/verify?email=${email}&callbackUrl=${encodeURIComponent(callbackUrl)}`);
         } else {
           setError(t("errorMessage"));
         }
@@ -55,8 +54,8 @@ function SignIn() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <div className="mx-auto w-full max-w-xs space-y-6 px-4">
+    <div className="flex-1 flex items-center justify-center">
+      <div className="mx-auto w-full max-w-xs space-y-6 px-4 mb-40">
         <div className="space-y-2 text-center">
           <h1 className="text-3xl font-bold">{t("title")}</h1>
           <p className="text-gray-500">{t("subtitle")}</p>
@@ -89,7 +88,10 @@ function SignIn() {
         </form>
         <div className="text-center text-sm">
           {t("noAccountText")}{" "}
-          <Link href="/auth/signup" className="text-blue-500 hover:underline">
+          <Link
+            href={`/auth/signup?callbackUrl=${encodeURIComponent(callbackUrl)}`}
+            className="text-blue-500 hover:underline"
+          >
             {t("signUpLink")}
           </Link>
         </div>

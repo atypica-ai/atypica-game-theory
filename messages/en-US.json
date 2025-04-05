@@ -115,7 +115,8 @@
       "submitButton": "Sign Up",
       "submittingButton": "Signing up...",
       "haveAccountText": "Already have an account?",
-      "signInLink": "Sign in now"
+      "signInLink": "Sign in now",
+      "userAlreadyExists": "User already exists"
     },
     "Verify": {
       "title": "Verify Your Email",
@@ -125,8 +126,20 @@
       "submittingButton": "Verifying...",
       "noCodeText": "Didn't receive a code?",
       "resendButton": "Resend",
+      "userNotFound": "User not found",
       "successMessage": "Email verified successfully! You can now sign in.",
-      "alreadyVerifiedMessage": "Email already verified"
+      "invalidCode": "Invalid or expired verification code",
+      "codeResent": "Verification code resent. Please check your email.",
+      "alreadyVerifiedMessage": "Email already verified",
+      "emailContent": {
+        "subjectLine": "Your atypica.AI Verification Code",
+        "verificationCodeText": "Your verification code is: {code}",
+        "expirationNote": "This code will expire in 30 minutes.",
+        "ignoreMessage": "If you didn't request this code, please ignore this email.",
+        "emailTitle": "Your Verification Code",
+        "useCodeInstructions": "Please use the following code to verify your email address:",
+        "automatedEmailDisclaimer": "This is an automated email from atypica.AI. Please do not reply to this email."
+      }
     }
   },
   "Components": {

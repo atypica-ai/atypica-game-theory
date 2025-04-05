@@ -31,6 +31,7 @@ export default async function StudyPage({
     redirect("/");
   }
   const studyUserChatId = parseInt(id);
+  // 这里因为是服务端调用 server action，没有 referer，所以无法在登录后跳转回来，需要修复
   const studyUserChat = await fetchUserChatById(studyUserChatId, "study");
 
   const session = await getServerSession(authOptions);

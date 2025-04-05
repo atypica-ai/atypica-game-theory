@@ -80,7 +80,7 @@ export default async function RootLayout({
               <GlobalHeader />
               {children}
             </AuthProvider>
-            <Toaster />
+            <Toaster richColors={true} />
           </NextIntlClientProvider>
         </ThemeProvider>
       </body>

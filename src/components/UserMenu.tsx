@@ -25,7 +25,7 @@ import { signOut, useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import HippyGhostAvatar from "./HippyGhostAvatar";
 
@@ -37,11 +37,17 @@ export default function UserMenu() {
   const [locale, setLocale] = useState<string>("zh-CN");
   const [open, setOpen] = useState(false);
 
+  const searchParams = useSearchParams();
+  const [signinCallbackUrl, setSigninCallbackUrl] = useState<string>("/");
+
   useEffect(() => {
     // Read locale from cookie when component mounts
     const savedLocale = Cookies.get("locale") || "zh-CN";
     setLocale(savedLocale);
-  }, []);
+    // Get path and search parameters without the origin
+    const pathWithParams = window.location.href.replace(window.location.origin, "");
+    setSigninCallbackUrl(searchParams.get("callbackUrl") || pathWithParams || "/");
+  }, [searchParams]);
 
   const toggleLocale = () => {
     const newLocale = locale === "zh-CN" ? "en-US" : "zh-CN";
@@ -95,7 +101,7 @@ export default function UserMenu() {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem asChild>
-            <Link href="/auth/signin">
+            <Link href={`/auth/signin?callbackUrl=${encodeURIComponent(signinCallbackUrl)}`}>
               <LogInIcon className="h-4 w-4 mr-2" />
               {t("login")}
             </Link>

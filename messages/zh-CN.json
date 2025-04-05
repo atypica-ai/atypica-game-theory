@@ -115,7 +115,8 @@
       "submitButton": "注册",
       "submittingButton": "注册中...",
       "haveAccountText": "已有账号？",
-      "signInLink": "立即登录"
+      "signInLink": "立即登录",
+      "userAlreadyExists": "用户已存在"
     },
     "Verify": {
       "title": "验证您的邮箱",
@@ -125,8 +126,20 @@
       "submittingButton": "验证中...",
       "noCodeText": "没有收到验证码？",
       "resendButton": "重新发送",
+      "userNotFound": "没有找到用户",
       "successMessage": "邮箱验证成功！现在可以登录了。",
-      "alreadyVerifiedMessage": "邮箱已验证"
+      "invalidCode": "无效或已过期的验证码",
+      "codeResent": "验证码已重新发送，请检查您的邮箱。",
+      "alreadyVerifiedMessage": "邮箱已验证",
+      "emailContent": {
+        "subjectLine": "您的 atypica.AI 验证码",
+        "verificationCodeText": "您的验证码是：{code}",
+        "expirationNote": "此验证码将在30分钟后过期。",
+        "ignoreMessage": "如果您没有请求此验证码，请忽略此邮件。",
+        "emailTitle": "您的验证码",
+        "useCodeInstructions": "请使用以下验证码验证您的电子邮箱地址：",
+        "automatedEmailDisclaimer": "这是来自 atypica.AI 的自动邮件。请勿回复此邮件。"
+      }
     }
   },
   "Components": {

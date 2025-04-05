@@ -3,12 +3,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { signUp } from "./actions";
 
 export default function SignUpPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const t = useTranslations("Auth.SignUp");
+  const callbackUrl = searchParams.get("callbackUrl") || "/";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [invitationCode, setInvitationCode] = useState("");
@@ -27,44 +30,30 @@ export default function SignUpPage() {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
     try {
-      setIsLoading(true);
       setError("");
-
-      const res = await fetch("/api/auth/signup", {
-        method: "POST",
-        body: JSON.stringify({
-          email,
-          password,
-          invitationCode: showInvitationField ? invitationCode : undefined,
-        }),
-        headers: {
-          "Content-Type": "application/json",
-        },
+      await signUp({
+        email,
+        password,
+        invitationCode: showInvitationField ? invitationCode : undefined,
       });
-
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Something went wrong");
-      }
-
       // Sign in automatically after successful registration
       // await signIn("credentials", {
       //   email,
       //   password,
       //   callbackUrl: "/",
       // });
-      router.push("/auth/verify?email=" + email);
+      router.push(`/auth/verify?email=${email}&callbackUrl=${encodeURIComponent(callbackUrl)}`);
     } catch (error) {
       setError((error as Error).message);
-    } finally {
-      setIsLoading(false);
     }
+    setIsLoading(false);
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <div className="mx-auto w-full max-w-xs space-y-6 px-4">
+    <div className="flex-1 flex items-center justify-center">
+      <div className="mx-auto w-full max-w-xs space-y-6 px-4 mb-40">
         <div className="space-y-2 text-center">
           <h1 className="text-3xl font-bold">{t("title")}</h1>
           <p className="text-gray-500">{t("subtitle")}</p>
@@ -110,7 +99,10 @@ export default function SignUpPage() {
         </form>
         <div className="text-center text-sm">
           {t("haveAccountText")}{" "}
-          <Link href="/auth/signin" className="text-blue-500 hover:underline">
+          <Link
+            href={`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`}
+            className="text-blue-500 hover:underline"
+          >
             {t("signInLink")}
           </Link>
         </div>
