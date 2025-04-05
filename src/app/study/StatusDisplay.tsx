@@ -168,7 +168,10 @@ export function StatusDisplay({
       {status === "background" && elapsedTime > 0 && (
         <div className="text-xs">({formatDuration(elapsedTime)})</div>
       )}
-      {(status === "streaming" || "background" || "waitingForUserAction" || "submitted") && (
+      {(status === "streaming" ||
+        status === "background" ||
+        status === "waitingForUserAction" ||
+        status === "submitted") && (
         <div className="flex gap-1">
           <span className="animate-bounce">·</span>
           <span className="animate-bounce [animation-delay:0.2s]">·</span>
