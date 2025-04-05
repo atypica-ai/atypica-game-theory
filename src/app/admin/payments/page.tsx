@@ -46,7 +46,7 @@ export default function PaymentTestPage() {
 
   useEffect(() => {
     if (status === "unauthenticated") {
-      router.push("/auth/signin");
+      router.push("/auth/signin?callbackUrl=/admin/payments");
     } else if (status === "authenticated") {
       fetchRecords();
     }

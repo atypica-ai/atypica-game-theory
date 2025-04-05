@@ -81,7 +81,7 @@ export default function FeaturedStudiesPage() {
 
   useEffect(() => {
     if (status === "unauthenticated") {
-      router.push("/auth/signin");
+      router.push("/auth/signin?callbackUrl=/admin/featured-studies");
     } else if (status === "authenticated") {
       fetchData();
     }

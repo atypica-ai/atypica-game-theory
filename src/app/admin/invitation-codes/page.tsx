@@ -61,7 +61,7 @@ export default function InvitationCodesPage() {
 
   useEffect(() => {
     if (status === "unauthenticated") {
-      router.push("/auth/signin");
+      router.push("/auth/signin?callbackUrl=/admin/invitation-codes");
     } else if (status === "authenticated") {
       fetchCodes();
     }

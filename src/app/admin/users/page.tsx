@@ -1,18 +1,19 @@
 "use client";
 import { Pagination } from "@/components/ui/pagination";
-import { User } from "@prisma/client";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { PaginationInfo } from "../utils";
 import { fetchUsers } from "./actions";
 
+type Users = Awaited<ReturnType<typeof fetchUsers>>["data"];
+
 export default function UsersPage() {
   const { status } = useSession();
   const router = useRouter();
 
   const [isLoading, setIsLoading] = useState(true);
-  const [users, setUsers] = useState<Pick<User, "id" | "email" | "createdAt">[]>([]);
+  const [users, setUsers] = useState<Users>([]);
   const [error, setError] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -49,13 +50,12 @@ export default function UsersPage() {
 
   useEffect(() => {
     if (status === "unauthenticated") {
-      router.push("/auth/signin");
+      router.push("/auth/signin?callbackUrl=/admin/users");
     } else if (status === "authenticated") {
       fetchData();
       setIsLoading(false);
     }
-    // currentPage 变化以后要重新触发 fetchData
-  }, [status, router, currentPage, fetchData]);
+  }, [status, router, fetchData]);
 
   if (status === "loading" || isLoading) {
     return <div>Loading...</div>;
@@ -76,6 +76,9 @@ export default function UsersPage() {
                 Email
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                Points (100 points per study)
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                 Created At
               </th>
             </tr>
@@ -85,6 +88,7 @@ export default function UsersPage() {
               <tr key={user.id.toString()}>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">{user.id}</td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">{user.email}</td>
+                <td className="whitespace-nowrap px-6 py-4 text-sm">{user.points?.balance ?? 0}</td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                   {user.createdAt.toLocaleDateString()}
                 </td>

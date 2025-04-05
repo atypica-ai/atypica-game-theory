@@ -9,7 +9,7 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (status === "unauthenticated") {
-      router.push("/auth/signin");
+      router.push("/auth/signin?callbackUrl=/admin");
     }
   }, [status, router]);
 
@@ -35,15 +35,11 @@ export default function AdminDashboard() {
         </div>
         <div className="rounded-lg border bg-card p-4 shadow-sm">
           <h2 className="mb-2 text-xl font-semibold">Users</h2>
-          <p className="text-sm text-muted-foreground">
-            View and manage user accounts
-          </p>
+          <p className="text-sm text-muted-foreground">View and manage user accounts</p>
         </div>
         <div className="rounded-lg border bg-card p-4 shadow-sm">
           <h2 className="mb-2 text-xl font-semibold">Payment Test</h2>
-          <p className="text-sm text-muted-foreground">
-            Test payment integrations with Ping++
-          </p>
+          <p className="text-sm text-muted-foreground">Test payment integrations with Ping++</p>
         </div>
       </div>
     </div>

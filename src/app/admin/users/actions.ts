@@ -25,6 +25,11 @@ export async function fetchUsers(page: number = 1, pageSize: number = 10, search
         id: true,
         email: true,
         createdAt: true,
+        points: {
+          select: {
+            balance: true,
+          },
+        },
       },
     }),
     prisma.user.count({ where }),
