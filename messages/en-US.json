@@ -195,8 +195,8 @@
       "skipToEnd": "Skip to End"
     },
     "StatusDisplay": {
-      "waitingForUserAction": "Waiting for your action",
       "background": "atypica is running in the background",
+      "outOfQuota": "You have reached your quota",
       "thinking": "atypica is thinking",
       "processing": "Processing your request",
       "complete": "Processing complete ✨",

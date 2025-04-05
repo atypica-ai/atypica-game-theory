@@ -13,7 +13,6 @@ import {
   saveAnalystStudySummaryTool,
   saveAnalystTool,
   scoutTaskChatTool,
-  scoutTaskCreateTool,
   thanksTool,
   ToolName,
 } from "@/tools";
@@ -57,8 +56,7 @@ async function studyAgentRequest(req: Request, payload: any, userId: number) {
     system: hasQuota ? studySystem() : studySystemNoQuota(),
     messages: fixChatMessages(initialMessages, { removePendingTool: true }), // 传给 LLM 的时候需要修复
     tools: {
-      [ToolName.scoutTaskCreate]: scoutTaskCreateTool(userId),
-      [ToolName.scoutTaskChat]: scoutTaskChatTool({ studyUserChatId, abortSignal, statReport }),
+      [ToolName.scoutTaskChat]: scoutTaskChatTool({ userId, abortSignal, statReport }),
       [ToolName.saveAnalystStudySummary]: saveAnalystStudySummaryTool(),
       [ToolName.saveAnalyst]: saveAnalystTool(userId, studyUserChatId),
       [ToolName.interviewChat]: interviewChatTool({ abortSignal, statReport }),

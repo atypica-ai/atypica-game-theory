@@ -151,6 +151,27 @@ export async function fetchUserChatState<Tkind extends UserChat["kind"]>(
   });
 }
 
+export async function fetchUserChatStateByToken<Tkind extends UserChat["kind"]>(
+  studyUserChatToken: string,
+  kind: Tkind,
+) {
+  return withAuth(async (user) => {
+    try {
+      const { backgroundToken, updatedAt } = await prisma.userChat.findUniqueOrThrow({
+        where: { token: studyUserChatToken, userId: user.id, kind },
+        select: {
+          backgroundToken: true,
+          updatedAt: true,
+        },
+      });
+      return { backgroundToken, updatedAt };
+    } catch (error) {
+      console.log("Error fetching user chat status:", error);
+      throw error;
+    }
+  });
+}
+
 export async function fetchUserChatById<Tkind extends UserChat["kind"]>(
   userChatId: number,
   kind: Tkind,

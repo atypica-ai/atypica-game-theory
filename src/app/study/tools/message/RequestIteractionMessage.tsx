@@ -3,8 +3,7 @@ import { RequestInteractionResult } from "@/tools/user/interaction";
 import { ToolInvocation } from "ai";
 import { MessageCircleQuestionIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { FC, useEffect } from "react";
-import { useStudyContext } from "../../hooks/StudyContext";
+import { FC, useCallback } from "react";
 
 export const RequestIteractionMessage: FC<{
   toolInvocation: ToolInvocation;
@@ -20,18 +19,17 @@ export const RequestIteractionMessage: FC<{
   const question = toolInvocation.args.question as string;
   const options = toolInvocation.args.options as string[];
 
-  const { pendingUserToolInvocation, setPendingUserToolInvocation } = useStudyContext();
-  useEffect(() => {
-    if (
-      pendingUserToolInvocation?.toolCallId == toolInvocation.toolCallId &&
-      toolInvocation.state === "result"
-    ) {
-      setPendingUserToolInvocation(null);
-    }
-    if (!pendingUserToolInvocation && toolInvocation.state !== "result") {
-      setPendingUserToolInvocation(toolInvocation);
-    }
-  }, [pendingUserToolInvocation, setPendingUserToolInvocation, toolInvocation]);
+  const onSelectAnswer = useCallback(
+    (option: string) => {
+      if (toolInvocation.state !== "result") {
+        addToolResult({
+          toolCallId: toolInvocation.toolCallId,
+          result: { answer: option, plainText: option },
+        });
+      }
+    },
+    [toolInvocation, addToolResult],
+  );
 
   return (
     <div className="p-4 bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 rounded-lg">
@@ -43,14 +41,7 @@ export const RequestIteractionMessage: FC<{
         {[...options, t("noneOfTheAbove")].map((option, index) => (
           <div
             key={index}
-            onClick={() =>
-              toolInvocation.state !== "result"
-                ? addToolResult({
-                    toolCallId: toolInvocation.toolCallId,
-                    result: { answer: option, plainText: option },
-                  })
-                : null
-            }
+            onClick={() => onSelectAnswer(option)}
             className={cn(
               "text-xs p-2 rounded-md border border-zinc-200 dark:border-zinc-700",
               toolInvocation.state !== "result" &&

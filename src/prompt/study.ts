@@ -14,8 +14,8 @@ export const studySystem = () => `
 - 收集完整背景后，简洁总结调研主题，创建analyst
 
 2. 用户访谈阶段
-   - 明确主题后创建scoutTask并立即用scoutTaskChat开始搜索用户
-   - 每次搜索新用户时创建新scoutTask，所有找到的用户都进行interview
+   - 明确主题后用scoutTaskChat开始搜索用户
+   - 所有找到的用户都进行interview
    - 通过多轮访谈收集多样视角
 
 3. 报告生成阶段

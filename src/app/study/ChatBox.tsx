@@ -9,6 +9,7 @@ import {
   fetchUserChatState,
   StudyUserChat,
 } from "@/data";
+import { checkStudyUserChatConsume } from "@/data/UserPoints";
 import { cn } from "@/lib/utils";
 import { Message, useChat } from "@ai-sdk/react";
 import { ArrowRightIcon } from "lucide-react";
@@ -17,7 +18,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { NerdStats } from "./NerdStats";
 import { SingleMessage } from "./SingleMessage";
 import { CancelButton, StatusDisplay } from "./StatusDisplay";
-import { useStudyContext } from "./hooks/StudyContext";
 
 function popLastUserMessage(messages: Message[]) {
   if (messages.length > 0 && messages[messages.length - 1].role === "user") {
@@ -41,8 +41,6 @@ export function ChatBox({
   isHelloChat: boolean;
 }) {
   // 这个组件是不支持对话直接切换的，如果切换，需要刷新页面重新加载！);
-
-  const { pendingUserToolInvocation } = useStudyContext();
   const t = useTranslations("StudyPage.ChatBox");
 
   const {
@@ -97,11 +95,6 @@ export function ChatBox({
     [handleSubmit, lastSubmitTime],
   );
 
-  const reloadMessages = useCallback(async () => {
-    const { messages } = await fetchUserChatById(studyUserChatId, "study");
-    useChatRef.current.setMessages(messages);
-  }, [studyUserChatId]);
-
   // const [chatUpdatedAt, setChatUpdatedAt] = useState<Date | null>(null);
   // 使用 ref，确保 useCallback 里面取到最新值，并且变化了以后不触发 refreshStudyUserChat 和 useEffect 更新
   const chatUpdatedAt = useRef<number | null>(null);
@@ -115,14 +108,6 @@ export function ChatBox({
       studyUserChatId,
       "study",
     );
-    if (updatedAt.valueOf() !== chatUpdatedAt.current || newBackgroundToken !== backgroundToken) {
-      chatUpdatedAt.current = updatedAt.valueOf();
-      setBackgroundToken(newBackgroundToken);
-      console.log(`StudyUserChat [${studyUserChatId}] updated at ${updatedAt}, reloading messages`);
-      reloadMessages();
-    } else {
-      console.log(`StudyUserChat [${studyUserChatId}] no updates`);
-    }
     if (newBackgroundToken && chatUpdatedAt.current) {
       // 因为一些原因，backgroundToken 还在，但实际已经 30 分钟没更新 chat 了，则提示用户取消
       const elapsedMillis = Date.now() - chatUpdatedAt.current;
@@ -130,7 +115,17 @@ export function ChatBox({
         setMaybeEvicted(true);
       }
     }
-  }, [studyUserChatId, backgroundToken, reloadMessages]);
+    if (updatedAt.valueOf() !== chatUpdatedAt.current || newBackgroundToken !== backgroundToken) {
+      chatUpdatedAt.current = updatedAt.valueOf();
+      setBackgroundToken(newBackgroundToken);
+      console.log(`StudyUserChat [${studyUserChatId}] updated at ${updatedAt}, reloading messages`);
+      fetchUserChatById(studyUserChatId, "study").then(({ messages }) => {
+        useChatRef.current.setMessages(messages);
+      });
+    } else {
+      console.log(`StudyUserChat [${studyUserChatId}] no updates`);
+    }
+  }, [studyUserChatId, backgroundToken]);
 
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
@@ -144,17 +139,19 @@ export function ChatBox({
     };
   }, [refreshStudyUserChat]);
 
+  const [pointsConsumed, setPointsConsumed] = useState(false);
+  useEffect(() => {
+    checkStudyUserChatConsume({ studyUserChatId }).then((result) => {
+      setPointsConsumed(result);
+    });
+  }, [studyUserChatId]);
+
   const uiStatus = useMemo(
-    () =>
-      pendingUserToolInvocation
-        ? "waitingForUserAction"
-        : backgroundToken
-          ? "background"
-          : useChatStatus,
-    [pendingUserToolInvocation, backgroundToken, useChatStatus],
+    () => (backgroundToken ? "background" : !pointsConsumed ? "outOfQuota" : useChatStatus),
+    [backgroundToken, pointsConsumed, useChatStatus],
   );
   const inputDisabled =
-    uiStatus === "waitingForUserAction" ||
+    !pointsConsumed ||
     uiStatus === "background" ||
     uiStatus === "streaming" ||
     uiStatus === "submitted";

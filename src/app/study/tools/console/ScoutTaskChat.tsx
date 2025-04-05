@@ -1,5 +1,5 @@
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
-import { fetchUserChatById, fetchUserChatState } from "@/data";
+import { fetchUserChatByToken, fetchUserChatStateByToken } from "@/data";
 import { ToolName } from "@/tools";
 import { Message, ToolInvocation } from "ai";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -8,7 +8,7 @@ import { consoleStreamWaitTime, useProgressiveMessages } from "../../hooks/usePr
 import { StreamSteps } from "./StreamSteps";
 
 const ScoutTaskChat = ({ toolInvocation }: { toolInvocation: ToolInvocation }) => {
-  const scoutUserChatId = toolInvocation.args.scoutUserChatId as number;
+  const scoutUserChatToken = toolInvocation.args.scoutUserChatToken as string;
   const [messages, setMessages] = useState<Message[]>([]);
   const [backgroundToken, setBackgroundToken] = useState<string | null>(null);
   const backgroundRunning = useMemo(() => !!backgroundToken, [backgroundToken]);
@@ -22,26 +22,28 @@ const ScoutTaskChat = ({ toolInvocation }: { toolInvocation: ToolInvocation }) =
   });
 
   const reloadMessages = useCallback(async () => {
-    const { messages } = await fetchUserChatById(scoutUserChatId, "scout");
+    const { messages } = await fetchUserChatByToken(scoutUserChatToken, "scout");
     setMessages(messages);
-  }, [scoutUserChatId]);
+  }, [scoutUserChatToken]);
 
   // 使用 ref，确保 useCallback 里面取到最新值，并且变化了以后不触发 refreshStudyUserChat 和 useEffect 更新
   const chatUpdatedAt = useRef<number | null>(null);
   const fetchUpdate = useCallback(async () => {
-    const { backgroundToken: newBackgroundToken, updatedAt } = await fetchUserChatState(
-      scoutUserChatId,
+    const { backgroundToken: newBackgroundToken, updatedAt } = await fetchUserChatStateByToken(
+      scoutUserChatToken,
       "scout",
     );
     if (updatedAt.valueOf() !== chatUpdatedAt.current || newBackgroundToken !== backgroundToken) {
       chatUpdatedAt.current = updatedAt.valueOf();
       setBackgroundToken(newBackgroundToken);
-      console.log(`ScoutTaskChat [${scoutUserChatId}] updated at ${updatedAt}, reloading messages`);
+      console.log(
+        `ScoutTaskChat [${scoutUserChatToken}] updated at ${updatedAt}, reloading messages`,
+      );
       reloadMessages();
     } else {
-      console.log(`ScoutTaskChat [${scoutUserChatId}] no updates`);
+      console.log(`ScoutTaskChat [${scoutUserChatToken}] no updates`);
     }
-  }, [scoutUserChatId, backgroundToken, reloadMessages]);
+  }, [scoutUserChatToken, backgroundToken, reloadMessages]);
 
   // 添加定时器效果
   useEffect(() => {
@@ -67,7 +69,7 @@ const ScoutTaskChat = ({ toolInvocation }: { toolInvocation: ToolInvocation }) =
         <StreamSteps
           key={`message-${message.id}`}
           avatar={{
-            assistant: <HippyGhostAvatar seed={scoutUserChatId} />,
+            assistant: <HippyGhostAvatar seed={scoutUserChatToken} />,
           }}
           role={message.role}
           content={message.content}

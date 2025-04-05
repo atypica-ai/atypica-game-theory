@@ -195,8 +195,8 @@
       "skipToEnd": "跳到结尾"
     },
     "StatusDisplay": {
-      "waitingForUserAction": "等待您的操作",
       "background": "atypica 正在后台执行中",
+      "outOfQuota": "研究额度已经用完",
       "thinking": "atypica 正在思考中",
       "processing": "正在处理您的请求",
       "complete": "处理完成 ✨",

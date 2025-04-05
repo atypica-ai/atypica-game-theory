@@ -20,6 +20,7 @@ import { reasoningThinkingTool } from "./reasoning";
 
 export interface ScoutTaskCreateResult extends PlainTextToolResult {
   scoutUserChatId: number;
+  scoutUserChatToken: string;
   title: string;
   plainText: string;
 }
@@ -55,6 +56,7 @@ export const scoutTaskCreateTool = (userId: number) =>
       });
       return {
         scoutUserChatId: scoutUserChat.id,
+        scoutUserChatToken: scoutUserChat.token,
         title: scoutUserChat.title,
         plainText: JSON.stringify({
           scoutUserChatId: scoutUserChat.id,
@@ -65,24 +67,39 @@ export const scoutTaskCreateTool = (userId: number) =>
   });
 
 export const scoutTaskChatTool = ({
-  studyUserChatId,
+  userId,
   abortSignal,
   statReport,
 }: {
-  studyUserChatId: number;
+  userId: number;
   abortSignal: AbortSignal;
   statReport: StatReporter;
 }) =>
   tool({
     description: "开始执行用户画像搜索任务",
     parameters: z.object({
-      scoutUserChatId: z.number().describe("用户画像搜索任务 (scoutTask) 的 id"),
+      scoutUserChatToken: z
+        .string()
+        .optional()
+        .describe("用户画像搜索任务 (scoutTask) 的 token，用于创建任务，不需要提供，会自动生成")
+        .default(() => generateToken()),
       description: z.string().describe('用户画像搜索需求描述，用"帮我寻找"开头'),
     }),
     experimental_toToolResultContent: (result: PlainTextToolResult) => {
       return [{ type: "text", text: result.plainText }];
     },
-    execute: async ({ scoutUserChatId, description }) => {
+    execute: async ({ scoutUserChatToken, description }) => {
+      const title = description.substring(0, 50);
+      const scoutUserChat = await prisma.userChat.create({
+        data: {
+          userId,
+          title,
+          kind: "scout",
+          token: scoutUserChatToken,
+          messages: [],
+        },
+      });
+      const scoutUserChatId = scoutUserChat.id;
       const messages = await prepareMessagesForLLM(scoutUserChatId);
       if (messages.length) {
         messages.push({ id: generateId(), role: "user", content: "继续" });
@@ -92,7 +109,6 @@ export const scoutTaskChatTool = ({
       let hasError = false;
       try {
         await runScoutTaskChatStream({
-          studyUserChatId,
           scoutUserChatId,
           messages,
           abortSignal,
@@ -140,13 +156,11 @@ async function prepareMessagesForLLM(scoutUserChatId: number) {
 }
 
 async function runScoutTaskChatStream({
-  studyUserChatId,
   scoutUserChatId,
   messages: _messages,
   abortSignal,
   statReport,
 }: {
-  studyUserChatId: number;
   scoutUserChatId: number;
   messages: Message[];
   abortSignal: AbortSignal;
@@ -170,7 +184,7 @@ async function runScoutTaskChatStream({
     try {
       // mark as background running end
       await prisma.userChat.updateMany({
-        where: { id: studyUserChatId, kind: "scout" },
+        where: { id: scoutUserChatId, kind: "scout" },
         data: { backgroundToken: null },
       });
     } catch (error) {

@@ -20,34 +20,7 @@ export const RequestPaymentMessage: FC<{
   }) => void;
 }> = ({ toolInvocation, addToolResult }) => {
   const { data: session } = useSession();
-  const { studyUserChatId, pendingUserToolInvocation, setPendingUserToolInvocation } =
-    useStudyContext();
-
-  useEffect(() => {
-    if (
-      pendingUserToolInvocation?.toolCallId == toolInvocation.toolCallId &&
-      toolInvocation.state === "result"
-    ) {
-      setPendingUserToolInvocation(null);
-    }
-    if (!pendingUserToolInvocation && toolInvocation.state !== "result") {
-      setPendingUserToolInvocation(toolInvocation);
-    }
-  }, [pendingUserToolInvocation, setPendingUserToolInvocation, toolInvocation]);
-
-  const checkAndHandleConsume = useCallback(async () => {
-    if (toolInvocation.state !== "result") {
-      const result = await checkStudyUserChatConsume({ studyUserChatId });
-      if (result) {
-        addToolResult({
-          toolCallId: toolInvocation.toolCallId,
-          result: {
-            plainText: "支付成功，额度充足，请继续调研",
-          },
-        });
-      }
-    }
-  }, [toolInvocation.state, toolInvocation.toolCallId, studyUserChatId, addToolResult]);
+  const { studyUserChatId } = useStudyContext();
 
   useEffect(() => {
     if (toolInvocation.state === "result") {
@@ -56,13 +29,22 @@ export const RequestPaymentMessage: FC<{
     let timeoutId: NodeJS.Timeout;
     const poll = async () => {
       timeoutId = setTimeout(poll, 1000);
-      await checkAndHandleConsume();
+      const result = await checkStudyUserChatConsume({ studyUserChatId });
+      if (result) {
+        clearTimeout(timeoutId); // 一旦检测到成功了，就可以停下
+        addToolResult({
+          toolCallId: toolInvocation.toolCallId,
+          result: {
+            plainText: "支付成功，额度充足，请继续调研",
+          },
+        });
+      }
     };
     poll();
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [toolInvocation.state, checkAndHandleConsume]);
+  }, [toolInvocation.state, toolInvocation.toolCallId, studyUserChatId, addToolResult]);
 
   const [isMobile, setIsMobile] = useState<boolean>(false);
   useEffect(() => {

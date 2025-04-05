@@ -111,7 +111,7 @@ export function StatusDisplay({
   backgroundToken,
   // onUserCancel,
 }: {
-  status: "waitingForUserAction" | "background" | "error" | "submitted" | "streaming" | "ready";
+  status: "background" | "outOfQuota" | "error" | "submitted" | "streaming" | "ready";
   backgroundToken: string | null;
   onUserCancel?: () => void;
 }) {
@@ -141,10 +141,10 @@ export function StatusDisplay({
 
   const getStatusMessage = (status: string) => {
     switch (status) {
-      case "waitingForUserAction":
-        return t("waitingForUserAction");
       case "background":
         return t("background");
+      case "outOfQuota":
+        return t("outOfQuota");
       case "streaming":
         return t("thinking");
       case "submitted":
@@ -168,10 +168,7 @@ export function StatusDisplay({
       {status === "background" && elapsedTime > 0 && (
         <div className="text-xs">({formatDuration(elapsedTime)})</div>
       )}
-      {(status === "streaming" ||
-        status === "background" ||
-        status === "waitingForUserAction" ||
-        status === "submitted") && (
+      {(status === "streaming" || status === "background" || status === "submitted") && (
         <div className="flex gap-1">
           <span className="animate-bounce">·</span>
           <span className="animate-bounce [animation-delay:0.2s]">·</span>
