@@ -56,9 +56,9 @@ const StreamStep = ({ toolInvocation }: { toolInvocation: ToolInvocation }) => {
   return (
     <div className={cn("text-xs whitespace-pre-wrap font-mono")}>
       <div className="ml-1 my-2 font-bold">exec {toolInvocation.toolName}</div>
-      <div className="ml-1 mt-1 mb-1 text-primary font-bold dark:font-normal">&gt;_ args</div>
+      <div className="ml-1 mt-1 mb-1 text-primary not-dark:font-bold">&gt;_ args</div>
       <ToolArgsTable toolInvocation={toolInvocation} />
-      <div className="ml-1 mt-2 mb-2 text-primary font-bold dark:font-normal">&gt;_ result</div>
+      <div className="ml-1 mt-2 mb-2 text-primary not-dark:font-bold">&gt;_ result</div>
       {toolInvocation.state === "result" ? (
         <ToolResultDisplay toolInvocation={toolInvocation} />
       ) : (

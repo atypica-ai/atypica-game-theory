@@ -26,7 +26,7 @@ export function ExpandableText({ text }: { text: string }) {
 
 export default function ToolArgsTable({ toolInvocation }: { toolInvocation: ToolInvocation }) {
   return (
-    <table className="text-left text-muted-foreground">
+    <table className="text-left not-dark:text-muted-foreground">
       <tbody>
         {Object.entries(toolInvocation.args).map(([key, value]) => (
           <tr key={key}>

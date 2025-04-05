@@ -282,10 +282,8 @@ async function runInterview({
 
   const interviewer: {
     messages: Message[];
-    terminated: boolean;
   } = {
     messages: [],
-    terminated: false,
   };
 
   while (true) {
@@ -319,9 +317,6 @@ async function runInterview({
     // console.log(`Interview [${analystInterviewId}] Interviewer:\n${message.content}\n`);
     interviewer.messages.push({ ...interviewerReply, role: "assistant" });
     personaAgent.messages.push({ ...interviewerReply, role: "user" });
-    if (interviewerReply.content.includes("本次访谈结束，谢谢您的参与！")) {
-      interviewer.terminated = true;
-    }
 
     await saveMessages({
       messages: personaAgent.messages,
@@ -329,7 +324,13 @@ async function runInterview({
       interviewToken,
     });
 
-    if (interviewer.terminated) {
+    const _updated = await prisma.analystInterview.findUnique({
+      where: { id: analystInterviewId },
+    });
+    // if (interviewerReply.content.includes("本次访谈结束")) {
+    // 不匹配 “谢谢您的参与！”，因为会出现人设是个双人组合，AI 就会回复“谢谢你们的参与”。。。
+    // 其实检查一下 conclusion 就行了
+    if (_updated?.conclusion) {
       break;
     }
   }

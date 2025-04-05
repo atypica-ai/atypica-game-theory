@@ -106,16 +106,14 @@ const ToolInvocationMessage = ({
           </div>
         </CollapsibleTrigger>
         <CollapsibleContent className="pl-4">
-          <div className="ml-1 mt-1 mb-1 text-primary font-bold dark:font-normal">&gt;_ args</div>
+          <div className="ml-1 mt-1 mb-1 text-primary not-dark:font-bold">&gt;_ args</div>
           <ToolArgsTable toolInvocation={toolInvocation} />
-          <div className="ml-1 mt-2 mb-1 text-primary font-bold dark:font-normal">&gt;_ result</div>
+          <div className="ml-1 mt-2 mb-1 text-primary not-dark:font-bold">&gt;_ result</div>
           {toolInvocation.state === "result" ? (
             <>
               <ToolResultTable toolInvocation={toolInvocation} />
-              <div className="ml-1 mt-2 mb-1 text-primary font-bold dark:font-normal">
-                &gt;_ message
-              </div>
-              <div className="text-xs p-1">
+              <div className="ml-1 mt-2 mb-1 text-primary not-dark:font-bold">&gt;_ message</div>
+              <div className="text-xs p-1 not-dark:text-muted-foreground">
                 <ExpandableText text={toolInvocation.result.plainText} />
               </div>
             </>

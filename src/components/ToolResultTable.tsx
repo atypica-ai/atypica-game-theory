@@ -7,7 +7,7 @@ export default function ToolResultTable({
   toolInvocation: ToolInvocation & { state: "result" };
 }) {
   return (
-    <table className="text-left">
+    <table className="text-left not-dark:text-muted-foreground">
       <tbody>
         {Object.entries(toolInvocation.result)
           .filter(([key]) => key !== "plainText")
