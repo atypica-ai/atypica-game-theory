@@ -2,11 +2,11 @@
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { createUserChat } from "@/data";
-import { debounce } from "@/lib/utils";
 import { ArrowRightIcon, RotateCwIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { useDebouncedCallback } from "use-debounce";
 
 export function InputSection() {
   const t = useTranslations("HomePage.InputSection");
@@ -14,13 +14,10 @@ export function InputSection() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  // Safely initialize from localStorage after component mounts
-  const debouncedSaveToLocalStorage = useCallback(
-    debounce((value: string) => {
-      localStorage.setItem("studyInputCache", value);
-    }, 300),
-    [],
-  );
+  // Create a properly memoized debounced function
+  const debouncedSaveToLocalStorage = useDebouncedCallback((value: string) => {
+    localStorage.setItem("studyInputCache", value);
+  }, 300);
 
   useEffect(() => {
     const savedInput = localStorage.getItem("studyInputCache");

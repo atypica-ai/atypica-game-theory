@@ -73,12 +73,12 @@ export function ChatBox({
   useEffect(() => {
     if (requestSentRef.current) return;
     requestSentRef.current = true;
-    // 如果最初最后一条消息是用户消息，则立即开始聊天
+    // 如果最初最后一条消息是用户消息，则立即开始聊天，但如果 backgroundToken 不为空，不要发起聊天
     const { lastUserMessage } = popLastUserMessage(initialMessages);
-    if (lastUserMessage) {
+    if (lastUserMessage && !backgroundToken) {
       useChatRef.current.reload();
     }
-  }, [initialMessages]);
+  }, [initialMessages, backgroundToken]);
 
   // 不知什么原因有时候会触发两次提交，这样就会导致 backgroundToken 被立即重置从而报错，所以加一个 2s throttle
   const [lastSubmitTime, setLastSubmitTime] = useState<number>(0);
@@ -105,6 +105,7 @@ export function ChatBox({
   // const [chatUpdatedAt, setChatUpdatedAt] = useState<Date | null>(null);
   // 使用 ref，确保 useCallback 里面取到最新值，并且变化了以后不触发 refreshStudyUserChat 和 useEffect 更新
   const chatUpdatedAt = useRef<number | null>(null);
+  const [maybeEvicted, setMaybeEvicted] = useState(false);
   const refreshStudyUserChat = useCallback(async () => {
     if (!backgroundToken) {
       // 在 background 状态时定期刷新
@@ -121,6 +122,13 @@ export function ChatBox({
       reloadMessages();
     } else {
       console.log(`StudyUserChat [${studyUserChatId}] no updates`);
+    }
+    if (newBackgroundToken && chatUpdatedAt.current) {
+      // 因为一些原因，backgroundToken 还在，但实际已经 30 分钟没更新 chat 了，则提示用户取消
+      const elapsedMillis = Date.now() - chatUpdatedAt.current;
+      if (elapsedMillis > 1000 * 60 * 30) {
+        setMaybeEvicted(true);
+      }
     }
   }, [studyUserChatId, backgroundToken, reloadMessages]);
 
@@ -193,6 +201,7 @@ export function ChatBox({
         )}
         <StatusDisplay
           status={uiStatus}
+          backgroundToken={backgroundToken}
           onUserCancel={async () => {
             await clearStudyUserChatBackgroundToken(studyUserChatId);
             setTimeout(() => window.location.reload(), 100);
@@ -231,6 +240,7 @@ export function ChatBox({
           {uiStatus === "background" || uiStatus === "streaming" ? (
             <CancelButton
               className="size-7"
+              showEvictionWarning={maybeEvicted}
               onUserCancel={async () => {
                 await clearStudyUserChatBackgroundToken(studyUserChatId);
                 setTimeout(() => window.location.reload(), 100);

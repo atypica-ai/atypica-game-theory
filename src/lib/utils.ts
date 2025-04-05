@@ -158,12 +158,11 @@ export const generateToken = (length = 16) =>
     .join("");
 
 // Debounce function
-export function debounce<T extends (...args: any[]) => any>(
+export function debounce<T extends (...args: Parameters<T>) => ReturnType<T>>(
   func: T,
   delay: number,
 ): (...args: Parameters<T>) => void {
   let timer: NodeJS.Timeout | null = null;
-
   return (...args: Parameters<T>) => {
     if (timer) clearTimeout(timer);
     timer = setTimeout(() => {
@@ -171,3 +170,11 @@ export function debounce<T extends (...args: any[]) => any>(
     }, delay);
   };
 }
+
+// Format duration in milliseconds to human-readable format
+export const formatDuration = (seconds: number) => {
+  if (seconds < 60) return `${seconds}s`;
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  return `${minutes}m ${remainingSeconds}s`;
+};

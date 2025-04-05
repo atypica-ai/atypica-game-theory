@@ -201,10 +201,10 @@
       "skipToEnd": "Skip to End"
     },
     "StatusDisplay": {
-      "waitingForUserAction": "Waiting for your action...",
-      "background": "atypica is running in the background...",
-      "thinking": "atypica is thinking...",
-      "processing": "Processing your request...",
+      "waitingForUserAction": "Waiting for your action",
+      "background": "atypica is running in the background",
+      "thinking": "atypica is thinking",
+      "processing": "Processing your request",
       "complete": "Processing complete ✨",
       "error": "An error occurred, please refresh the page and try again",
       "ready": "atypica is ready",
@@ -213,7 +213,9 @@
       "confirmAbort": "Stop Task",
       "aborting": "Stopping...",
       "cancel": "Cancel",
-      "continueInstructions": "To continue later, type \"continue\" in the chat box."
+      "continueInstructions": "To continue later, type \"continue\" in the chat box.",
+      "evictionWarningTitle": "No updates detected",
+      "evictionWarningMessage": "The background task may have stalled. Consider canceling and restarting by typing \"continue\"."
     },
     "ToolConsole": {
       "autoFollow": "Auto Follow",

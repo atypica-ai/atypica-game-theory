@@ -201,10 +201,10 @@
       "skipToEnd": "跳到结尾"
     },
     "StatusDisplay": {
-      "waitingForUserAction": "等待您的操作...",
-      "background": "atypica 正在后台执行中...",
-      "thinking": "atypica 正在思考中...",
-      "processing": "正在处理您的请求...",
+      "waitingForUserAction": "等待您的操作",
+      "background": "atypica 正在后台执行中",
+      "thinking": "atypica 正在思考中",
+      "processing": "正在处理您的请求",
       "complete": "处理完成 ✨",
       "error": "出现错误，请刷新页面后重试",
       "ready": "atypica 已准备就绪",
@@ -213,7 +213,9 @@
       "confirmAbort": "停止任务",
       "aborting": "正在停止...",
       "cancel": "取消",
-      "continueInstructions": "若要稍后继续，请在对话框中输入\"继续\"。"
+      "continueInstructions": "若要稍后继续，请在对话框中输入\"继续\"。",
+      "evictionWarningTitle": "检测到长时间无更新",
+      "evictionWarningMessage": "后台任务可能已停滞。建议取消并在输入框中输入\"继续\"重新启动。"
     },
     "ToolConsole": {
       "autoFollow": "自动跟随",

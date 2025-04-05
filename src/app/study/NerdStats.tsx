@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { fetchStatsByStudyUserChatId } from "@/data/ChatStatistics";
+import { formatDuration } from "@/lib/utils";
 import { InfoIcon } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
@@ -49,14 +50,6 @@ export function NerdStats({ studyUserChatId }: NerdStatsProps) {
   const getStatValue = (dimension: string) => {
     const stat = stats.find((s) => s.dimension === dimension);
     return stat?.total ?? 0;
-  };
-
-  // Format duration in milliseconds to human-readable format
-  const formatDuration = (seconds: number) => {
-    if (seconds < 60) return `${seconds}s`;
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}m ${remainingSeconds}s`;
   };
 
   return (
