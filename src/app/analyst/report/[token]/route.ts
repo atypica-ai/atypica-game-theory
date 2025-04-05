@@ -1,5 +1,5 @@
-import { fetchAnalystReportByToken } from "@/data";
 import { prisma } from "@/lib/prisma";
+import { fetchAnalystReportByToken } from "../../actions";
 import { decryptAnalystId } from "../encrypt";
 
 export async function GET(request: Request, { params }: { params: Promise<{ token: string }> }) {

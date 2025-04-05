@@ -1,4 +1,4 @@
-import { Persona } from "@/data";
+import { Persona } from "@prisma/client";
 
 export const personaAgentSystem = (persona: Persona) => `
 ${persona.prompt}

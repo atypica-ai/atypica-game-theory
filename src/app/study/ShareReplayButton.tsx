@@ -10,7 +10,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { StudyUserChat } from "@/data";
+import { StudyUserChat } from "@/data/UserChat";
 import { ClipboardCopyIcon, RotateCcwIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";

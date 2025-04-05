@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { createUserChat } from "@/data";
+import { createUserChat } from "@/data/UserChat";
 import Cookies from "js-cookie";
 import {
   GlobeIcon,

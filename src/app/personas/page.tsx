@@ -1,5 +1,6 @@
-import { fetchPersonas, fetchUserChatById } from "@/data";
+import { fetchUserChatById } from "@/data/UserChat";
 import PersonasList from "./PersonasList";
+import { fetchPersonas } from "./actions";
 
 // 关闭 SSG，否则 build 环境会读取数据库
 export const dynamic = "force-dynamic";

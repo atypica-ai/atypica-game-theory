@@ -1,7 +1,8 @@
 "use client";
+import { fetchAnalystInterviews } from "@/app/interview/actions";
 import { PointAlertDialog } from "@/components/PointAlertDialog";
 import { Button } from "@/components/ui/button";
-import { Analyst, AnalystInterview, Persona } from "@/data";
+import { Analyst } from "@prisma/client";
 import { Link, PlusIcon, UndoIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
@@ -11,12 +12,14 @@ import { InterviewCard } from "./InterviewCard";
 import { ReportDialog } from "./ReportDialog";
 import { SelectPersonaDialog } from "./SelectPersonaDialog";
 
+type AnalystInterview = Awaited<ReturnType<typeof fetchAnalystInterviews>>[number];
+
 export function AnalystDetail({
   analyst,
   interviews,
 }: {
   analyst: Analyst;
-  interviews: (AnalystInterview & { persona: Persona })[];
+  interviews: AnalystInterview[];
 }) {
   const t = useTranslations("AnalystPage");
   const router = useRouter();

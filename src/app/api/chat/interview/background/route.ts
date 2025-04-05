@@ -1,4 +1,3 @@
-import { Analyst, Persona } from "@/data";
 import openai from "@/lib/openai";
 import { prisma } from "@/lib/prisma";
 import { streamStepsToUIMessage } from "@/lib/utils";
@@ -9,6 +8,7 @@ import {
   ToolName,
   xhsSearchTool,
 } from "@/tools";
+import { Analyst, Persona } from "@prisma/client";
 import { InputJsonValue } from "@prisma/client/runtime/library";
 import { waitUntil } from "@vercel/functions";
 import { generateId, Message, streamText } from "ai";

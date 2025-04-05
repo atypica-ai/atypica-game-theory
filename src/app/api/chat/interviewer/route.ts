@@ -1,8 +1,8 @@
-import { Analyst } from "@/data";
 import openai from "@/lib/openai";
 import { prisma } from "@/lib/prisma";
 import { interviewerSystem } from "@/prompt";
 import { reasoningThinkingTool, saveInterviewConclusionTool, ToolName } from "@/tools";
+import { Analyst } from "@prisma/client";
 import { streamText } from "ai";
 
 export async function POST(req: Request) {

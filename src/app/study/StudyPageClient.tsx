@@ -1,7 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { useScrollToBottom } from "@/components/use-scroll-to-bottom";
-import { StudyUserChat } from "@/data";
+import { StudyUserChat } from "@/data/UserChat";
 import { cn } from "@/lib/utils";
 import { ChevronDown, ChevronUp, EyeIcon, EyeOffIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -13,20 +13,16 @@ import { NerdStats } from "./NerdStats";
 import { ShareReplayButton } from "./ShareReplayButton";
 import { ToolConsole } from "./ToolConsole";
 
-function Header({ studyUserChat }: { studyUserChat: StudyUserChat }) {
+function Header() {
   const t = useTranslations("StudyPage");
-  const { replay } = useStudyContext();
+  const { studyUserChat, replay } = useStudyContext();
   return (
     <div className="relative w-full flex items-center justify-between gap-2">
       <h1 className="flex-1 sm:text-lg font-medium truncate">
         {studyUserChat.title || t("research")}
       </h1>
       {/* <div className="absolute right-0 top-1/2 -translate-y-1/2"> */}
-      {!replay ? (
-        <ShareReplayButton studyUserChat={studyUserChat} />
-      ) : (
-        <NerdStats studyUserChatId={studyUserChat.id} />
-      )}
+      {!replay ? <ShareReplayButton studyUserChat={studyUserChat} /> : <NerdStats />}
     </div>
   );
 }
@@ -62,7 +58,7 @@ export function StudyPageClient({
   const [messagesContainerRef, messagesEndRef] = useScrollToBottom<HTMLDivElement>();
   const [consoleOpen, setConsoleOpen] = useState(false);
   return (
-    <StudyProvider studyUserChatId={studyUserChat.id} replay={replay}>
+    <StudyProvider studyUserChat={studyUserChat} replay={replay}>
       <div
         className={cn(
           "relative",
@@ -77,12 +73,8 @@ export function StudyPageClient({
             "w-1/2 max-lg:w-full max-lg:mb-14",
           )}
         >
-          <Header studyUserChat={studyUserChat} />
-          {replay ? (
-            <ChatReplay studyUserChat={studyUserChat} />
-          ) : (
-            <ChatBox studyUserChat={studyUserChat} isHelloChat={isHelloChat} />
-          )}
+          <Header />
+          {replay ? <ChatReplay /> : <ChatBox isHelloChat={isHelloChat} />}
         </div>
         <div
           className={cn(

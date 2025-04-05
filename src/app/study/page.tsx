@@ -1,48 +1,39 @@
-import { fetchUserChatById } from "@/data";
 import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
-import { forbidden, redirect } from "next/navigation";
-import { Metadata } from "next/types";
-import { StudyPageClient } from "./StudyPageClient";
-
-export async function generateMetadata({
-  searchParams,
-}: {
-  searchParams: Promise<{ id?: string }>;
-}): Promise<Metadata> {
-  const id = (await searchParams).id;
-  if (!id) {
-    return {};
-  }
-  const studyUserChatId = parseInt(id);
-  const studyUserChat = await fetchUserChatById(studyUserChatId, "study");
-  return studyUserChat.title ? { title: studyUserChat.title } : {};
-}
+import { forbidden, notFound, redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
 export default async function StudyPage({
   searchParams,
 }: {
-  searchParams: Promise<{ id?: string; hello: string }>;
+  searchParams: Promise<{ id: string; hello: string }>;
 }) {
   const { id, hello } = await searchParams;
+
   if (!id) {
     redirect("/");
   }
   const studyUserChatId = parseInt(id);
-  // 这里因为是服务端调用 server action，没有 referer，所以无法在登录后跳转回来，需要修复
-  const studyUserChat = await fetchUserChatById(studyUserChatId, "study");
+
+  const studyUserChat = await prisma.userChat.findUnique({
+    where: { id: studyUserChatId, kind: "study" },
+  });
+
+  if (!studyUserChat) {
+    notFound();
+  }
 
   const session = await getServerSession(authOptions);
   if (!session?.user) {
-    redirect("/auth/signin?callbackUrl=/study");
+    const callbackUrl = `/study?id=${studyUserChatId}` + (hello ? "&hello=1" : "");
+    redirect(`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`);
   }
+
   if (studyUserChat.userId !== session.user.id) {
     forbidden();
   }
 
-  return (
-    <StudyPageClient studyUserChat={studyUserChat} replay={false} isHelloChat={hello === "1"} />
-  );
+  redirect(`/study/${studyUserChat.token}` + (hello ? "?hello=1" : ""));
 }

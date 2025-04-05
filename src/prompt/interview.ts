@@ -1,4 +1,4 @@
-import { Analyst } from "@/data";
+import { Analyst } from "@prisma/client";
 
 export const interviewerSystem = (analyst: Analyst) => `
 你是${analyst.role}，正在进行关于以下主题的用户访谈：

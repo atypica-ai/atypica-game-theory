@@ -130,94 +130,28 @@ export async function clearStudyUserChatBackgroundToken(studyUserChatId: number)
   });
 }
 
-export async function fetchUserChatState<Tkind extends UserChat["kind"]>(
-  studyUserChatId: number,
-  kind: Tkind,
-) {
-  return withAuth(async (user) => {
-    try {
-      const { backgroundToken, updatedAt } = await prisma.userChat.findUniqueOrThrow({
-        where: { id: studyUserChatId, userId: user.id, kind },
-        select: {
-          backgroundToken: true,
-          updatedAt: true,
-        },
-      });
-      return { backgroundToken, updatedAt };
-    } catch (error) {
-      console.log("Error fetching user chat status:", error);
-      throw error;
-    }
-  });
-}
-
-export async function fetchUserChatStateByToken<Tkind extends UserChat["kind"]>(
-  studyUserChatToken: string,
-  kind: Tkind,
-) {
-  return withAuth(async (user) => {
-    try {
-      const { backgroundToken, updatedAt } = await prisma.userChat.findUniqueOrThrow({
-        where: { token: studyUserChatToken, userId: user.id, kind },
-        select: {
-          backgroundToken: true,
-          updatedAt: true,
-        },
-      });
-      return { backgroundToken, updatedAt };
-    } catch (error) {
-      console.log("Error fetching user chat status:", error);
-      throw error;
-    }
-  });
-}
-
 export async function fetchUserChatById<Tkind extends UserChat["kind"]>(
   userChatId: number,
   kind: Tkind,
 ): Promise<Omit<UserChat, "kind"> & { kind: Tkind }> {
-  // @TODO[AUTH]: 现在读取 UserChat 没有判断权限
-  // return withAuth(async () => {
-  try {
-    // Make sure all fields in UserChat are set to true or false in select
-    const userChat = await prisma.userChat.findUnique({
-      where: { id: userChatId, kind },
-    });
-    if (!userChat) notFound();
-    return {
-      ...userChat,
-      kind: userChat.kind as Tkind,
-      messages: userChat.messages as unknown as Message[],
-    };
-  } catch (error) {
-    console.log("Error fetching user chat:", error);
-    throw error;
-  }
-  // });
-}
-
-export async function fetchUserChatByToken<Tkind extends UserChat["kind"]>(
-  token: string,
-  kind: Tkind,
-): Promise<
-  Omit<UserChat, "kind"> & {
-    kind: Tkind;
-  }
-> {
-  try {
-    const userChat = await prisma.userChat.findUnique({
-      where: { token, kind },
-    });
-    if (!userChat) notFound();
-    return {
-      ...userChat,
-      kind: userChat.kind as Tkind,
-      messages: userChat.messages as unknown as Message[],
-    };
-  } catch (error) {
-    console.log("Error fetching user chat:", error);
-    throw error;
-  }
+  return withAuth(async (user) => {
+    try {
+      // Make sure all fields in UserChat are set to true or false in select
+      const userChat = await prisma.userChat.findUnique({
+        where: { id: userChatId, kind },
+      });
+      if (!userChat) notFound();
+      if (userChat.userId != user.id) forbidden();
+      return {
+        ...userChat,
+        kind: userChat.kind as Tkind,
+        messages: userChat.messages as unknown as Message[],
+      };
+    } catch (error) {
+      console.log("Error fetching user chat:", error);
+      throw error;
+    }
+  });
 }
 
 export async function deleteMessageFromUserChat(

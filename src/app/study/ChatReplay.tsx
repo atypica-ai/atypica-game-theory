@@ -1,12 +1,13 @@
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Button } from "@/components/ui/button";
 import { useScrollToBottom } from "@/components/use-scroll-to-bottom";
-import { StudyUserChat } from "@/data";
 import { useTranslations } from "next-intl";
+import { useStudyContext } from "./hooks/StudyContext";
 import { useProgressiveMessages } from "./hooks/useProgressiveMessages";
 import { SingleMessage } from "./SingleMessage";
 
-export function ChatReplay({ studyUserChat }: { studyUserChat: StudyUserChat }) {
+export function ChatReplay() {
+  const { studyUserChat } = useStudyContext();
   const t = useTranslations("StudyPage.ChatReplay");
   const {
     partialMessages: messagesDisplay,
@@ -31,7 +32,7 @@ export function ChatReplay({ studyUserChat }: { studyUserChat: StudyUserChat }) 
               key={message.id}
               addToolResult={() => {}}
               message={message}
-              avatar={{ assistant: <HippyGhostAvatar seed={studyUserChat.id} /> }}
+              avatar={{ assistant: <HippyGhostAvatar seed={studyUserChat.token} /> }}
               isLastMessage={index === messagesDisplay.length - 1}
             ></SingleMessage>
           ))}

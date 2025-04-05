@@ -1,9 +1,10 @@
 "use client";
+import { StudyUserChat } from "@/data/UserChat";
 import { ToolInvocation } from "ai";
 import { createContext, ReactNode, useContext, useState } from "react";
 
 interface StudyContextType {
-  studyUserChatId: number;
+  studyUserChat: StudyUserChat;
   replay: boolean;
   lastToolInvocation: ToolInvocation | null;
   setLastToolInvocation: (toolInvocation: ToolInvocation | null) => void;
@@ -16,11 +17,11 @@ const StudyContext = createContext<StudyContextType | undefined>(undefined);
 
 export function StudyProvider({
   children,
-  studyUserChatId,
+  studyUserChat,
   replay,
 }: {
   children: ReactNode;
-  studyUserChatId: number;
+  studyUserChat: StudyUserChat;
   replay: boolean;
 }) {
   const [lastToolInvocation, setLastToolInvocation] = useState<ToolInvocation | null>(null);
@@ -29,7 +30,7 @@ export function StudyProvider({
   return (
     <StudyContext.Provider
       value={{
-        studyUserChatId,
+        studyUserChat,
         replay,
         lastToolInvocation,
         setLastToolInvocation,

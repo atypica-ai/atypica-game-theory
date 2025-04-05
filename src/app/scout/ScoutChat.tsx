@@ -1,5 +1,5 @@
 "use client";
-import { ScoutUserChat } from "@/data";
+import { ScoutUserChat } from "@/data/UserChat";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import { useState } from "react";

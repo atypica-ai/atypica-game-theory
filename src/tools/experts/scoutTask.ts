@@ -183,8 +183,8 @@ async function runScoutTaskChatStream({
   const clearBackgroundToken = async () => {
     try {
       // mark as background running end
-      await prisma.userChat.updateMany({
-        where: { id: scoutUserChatId, kind: "scout" },
+      await prisma.userChat.update({
+        where: { id: scoutUserChatId, backgroundToken },
         data: { backgroundToken: null },
       });
     } catch (error) {
@@ -312,4 +312,7 @@ async function runScoutTaskChatStream({
     }
   }
   // while loop end
+  //
+  // 完全结束以后，清理 backgroundToken
+  await clearBackgroundToken();
 }

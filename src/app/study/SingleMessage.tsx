@@ -65,7 +65,7 @@ const ToolInvocationMessage = ({
       return <ThanksMessage toolInvocation={toolInvocation} addToolResult={addToolResult} />;
     }
     if (state === "result" && toolName == ToolName.generateReport) {
-      return <GenerateReportResultMessage result={toolInvocation.result} />;
+      return <GenerateReportResultMessage toolInvocation={toolInvocation} />;
     }
     return null;
   }, [addToolResult, toolInvocation]);

@@ -1,38 +1,33 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { fetchStatsByStudyUserChatId } from "@/data/ChatStatistics";
 import { formatDuration } from "@/lib/utils";
 import { InfoIcon } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-
-interface NerdStatsProps {
-  studyUserChatId: number;
-}
+import { fetchStatsByStudyUserChatToken } from "./actions";
+import { useStudyContext } from "./hooks/StudyContext";
 
 type Stat = {
   dimension: string;
   total: number | null;
 };
 
-export function NerdStats({ studyUserChatId }: NerdStatsProps) {
+export function NerdStats() {
   const [isOpen, setIsOpen] = useState(false);
   const [stats, setStats] = useState<Stat[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { studyUserChat } = useStudyContext();
 
   const loadStats = useCallback(async () => {
-    if (studyUserChatId) {
-      setIsLoading(true);
-      try {
-        const data = await fetchStatsByStudyUserChatId(studyUserChatId);
-        setStats(data);
-      } catch (error) {
-        console.error("Failed to fetch chat statistics:", error);
-      } finally {
-        setIsLoading(false);
-      }
+    setIsLoading(true);
+    try {
+      const data = await fetchStatsByStudyUserChatToken(studyUserChat.token);
+      setStats(data);
+    } catch (error) {
+      console.error("Failed to fetch chat statistics:", error);
     }
-  }, [studyUserChatId]);
+    setIsLoading(false);
+  }, [studyUserChat.token]);
 
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;

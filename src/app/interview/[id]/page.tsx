@@ -1,17 +1,14 @@
+import { fetchAnalystById } from "@/app/analyst/actions";
+import { fetchAnalystInterviewById } from "@/app/interview/actions";
+import { fetchPersonaById } from "@/app/personas/actions";
+import { authOptions } from "@/lib/auth";
 import { getServerSession } from "next-auth/next";
 import { redirect } from "next/navigation";
-import { authOptions } from "@/lib/auth";
-import { fetchAnalystInterviewById, fetchPersonaById } from "@/data";
 import { InterviewBackground } from "./InterviewBackground";
-import { fetchAnalystById } from "@/data";
 
 export const dynamic = "force-dynamic";
 
-export default async function InterviewPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function InterviewPage({ params }: { params: Promise<{ id: string }> }) {
   const id = parseInt((await params).id);
 
   const session = await getServerSession(authOptions);
@@ -24,10 +21,6 @@ export default async function InterviewPage({
   const analyst = await fetchAnalystById(analystInterview.analystId);
 
   return (
-    <InterviewBackground
-      analystInterview={analystInterview}
-      analyst={analyst}
-      persona={persona}
-    />
+    <InterviewBackground analystInterview={analystInterview} analyst={analyst} persona={persona} />
   );
 }

@@ -1,8 +1,8 @@
-import { Persona } from "@/data";
 import openai from "@/lib/openai";
 import { prisma } from "@/lib/prisma";
 import { personaAgentSystem } from "@/prompt";
 import { ToolName, xhsSearchTool } from "@/tools";
+import { Persona } from "@prisma/client";
 import { Message, streamText } from "ai";
 
 export async function POST(req: Request) {

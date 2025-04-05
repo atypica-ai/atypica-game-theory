@@ -1,9 +1,9 @@
-import { Analyst, Persona } from "@/data";
 import openai from "@/lib/openai";
 import { prisma } from "@/lib/prisma";
 import { streamStepsToUIMessage } from "@/lib/utils";
 import { interviewerPrologue, interviewerSystem, personaAgentSystem } from "@/prompt";
 import { PlainTextToolResult } from "@/tools/utils";
+import { Analyst, Persona } from "@prisma/client";
 import { InputJsonValue } from "@prisma/client/runtime/library";
 import { generateId, Message, streamText, tool } from "ai";
 import { z } from "zod";

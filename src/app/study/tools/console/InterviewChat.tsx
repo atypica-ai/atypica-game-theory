@@ -1,24 +1,26 @@
+import { fetchPersonaById } from "@/app/personas/actions";
+import {
+  fetchAnalystByStudyUserChatToken,
+  fetchInterviewOfStudyUserChatByPersonaId,
+} from "@/app/study/actions";
+import { useStudyContext } from "@/app/study/hooks/StudyContext";
+import {
+  consoleStreamWaitTime,
+  useProgressiveMessages,
+} from "@/app/study/hooks/useProgressiveMessages";
+import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useScrollToBottom } from "@/components/use-scroll-to-bottom";
-
-import HippyGhostAvatar from "@/components/HippyGhostAvatar";
-import {
-  Analyst,
-  fetchAnalystById,
-  fetchInterviewByAnalystAndPersona,
-  fetchPersonaById,
-  Persona,
-} from "@/data";
 import { ToolName } from "@/tools";
+import { Analyst, Persona } from "@prisma/client";
 import { Message, ToolInvocation } from "ai";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
-import { useStudyContext } from "../../hooks/StudyContext";
-import { consoleStreamWaitTime, useProgressiveMessages } from "../../hooks/useProgressiveMessages";
 import { StreamSteps } from "./StreamSteps";
 
 const InterviewChat = ({ toolInvocation }: { toolInvocation: ToolInvocation }) => {
   const t = useTranslations("StudyPage.ToolConsole");
+  const { studyUserChat } = useStudyContext();
   const analystId = toolInvocation.args.analystId as number;
   const personasArg = toolInvocation.args.personas as { id: number; name: string }[];
 
@@ -26,13 +28,16 @@ const InterviewChat = ({ toolInvocation }: { toolInvocation: ToolInvocation }) =
   useEffect(() => {
     (async () => {
       try {
-        const analyst = await fetchAnalystById(analystId);
+        const analyst = await fetchAnalystByStudyUserChatToken({
+          studyUserChatToken: studyUserChat.token,
+          analystId,
+        });
         setAnalyst(analyst);
       } catch (error) {
         console.log("Error fetching analyst:", error);
       }
     })();
-  }, [analystId]);
+  }, [analystId, studyUserChat.token]);
 
   if (!analyst || !personasArg.length) {
     return <div className="font-mono text-sm">Loading...</div>;
@@ -99,6 +104,7 @@ const SingleInterviewChat = ({
   toolInvocation: ToolInvocation;
 }) => {
   const t = useTranslations("StudyPage.ToolConsole");
+  const { studyUserChat } = useStudyContext();
 
   const [interviewId, setInterviewId] = useState<number | null>(null);
   const [interviewToken, setInterviewToken] = useState<string | null>(null);
@@ -109,7 +115,11 @@ const SingleInterviewChat = ({
   const fetchUpdate = useCallback(async () => {
     try {
       const [interview, persona] = await Promise.all([
-        await fetchInterviewByAnalystAndPersona({ analystId: analyst.id, personaId }),
+        await fetchInterviewOfStudyUserChatByPersonaId({
+          studyUserChatToken: studyUserChat.token,
+          analystId: analyst.id,
+          personaId,
+        }),
         await fetchPersonaById(personaId),
       ]);
       setMessages(interview.messages);
@@ -120,7 +130,7 @@ const SingleInterviewChat = ({
     } catch (error) {
       console.log("Error fetching interview:", error);
     }
-  }, [analyst.id, personaId]);
+  }, [studyUserChat.token, analyst.id, personaId]);
 
   const { replay } = useStudyContext();
   const { partialMessages: messagesDisplay } = useProgressiveMessages({

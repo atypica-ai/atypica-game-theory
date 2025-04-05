@@ -1,25 +1,16 @@
 "use server";
+import withAuth from "@/data/withAuth";
 import { prisma } from "@/lib/prisma";
-import { AnalystInterview as AnalystInterviewPrisma } from "@prisma/client";
 import { InputJsonValue } from "@prisma/client/runtime/library";
 import { Message } from "ai";
 import { forbidden, notFound } from "next/navigation";
-import { Persona } from "./Persona";
-import withAuth from "./withAuth";
 
-export type AnalystInterview = Omit<AnalystInterviewPrisma, "messages"> & {
-  messages: Message[];
-};
-
-export async function fetchAnalystInterviews(
-  analystId: number,
-): Promise<(AnalystInterview & { persona: Persona })[]> {
-  return withAuth(async () => {
-    // @TODO[AUTH]: 读取 AnalystInterview 暂时不需要 user 有 Analyst 权限
-    // const userAnalyst = await prisma.userAnalyst.findUnique({
-    //   where: { userId_analystId: { userId: user.id, analystId } },
-    // });
-    // if (!userAnalyst) forbidden();
+export async function fetchAnalystInterviews(analystId: number) {
+  return withAuth(async (user) => {
+    const userAnalyst = await prisma.userAnalyst.findUnique({
+      where: { userId_analystId: { userId: user.id, analystId } },
+    });
+    if (!userAnalyst) forbidden();
     const interviews = await prisma.analystInterview.findMany({
       where: { analystId },
       include: {
@@ -49,48 +40,46 @@ export async function fetchInterviewByAnalystAndPersona({
 }: {
   analystId: number;
   personaId: number;
-}): Promise<AnalystInterview> {
-  // @TODO[AUTH]: 读取 AnalystInterview 暂时不需要 user 有 Analyst 权限
-  // return withAuth(async () => {
-  try {
-    const interview = await prisma.analystInterview.findUniqueOrThrow({
-      where: {
-        analystId_personaId: { analystId, personaId },
-      },
-    });
-    if (!interview) notFound();
-    // const userAnalyst = await prisma.userAnalyst.findUnique({
-    //   where: {
-    //     userId_analystId: { userId: user.id, analystId: interview.analystId },
-    //   },
-    // });
-    // if (!userAnalyst) forbidden();
-    const { messages } = interview;
-    return {
-      ...interview,
-      messages: messages as unknown as Message[],
-    };
-  } catch (error) {
-    console.log("Error fetching analyst interview", error);
-    throw error;
-  }
-  // });
+}) {
+  return withAuth(async (user) => {
+    try {
+      const interview = await prisma.analystInterview.findUniqueOrThrow({
+        where: {
+          analystId_personaId: { analystId, personaId },
+        },
+      });
+      if (!interview) notFound();
+      const userAnalyst = await prisma.userAnalyst.findUnique({
+        where: {
+          userId_analystId: { userId: user.id, analystId: interview.analystId },
+        },
+      });
+      if (!userAnalyst) forbidden();
+      const { messages } = interview;
+      return {
+        ...interview,
+        messages: messages as unknown as Message[],
+      };
+    } catch (error) {
+      console.log("Error fetching analyst interview", error);
+      throw error;
+    }
+  });
 }
 
-export async function fetchAnalystInterviewById(interviewId: number): Promise<AnalystInterview> {
-  return withAuth(async () => {
+export async function fetchAnalystInterviewById(interviewId: number) {
+  return withAuth(async (user) => {
     try {
       const interview = await prisma.analystInterview.findUnique({
         where: { id: interviewId },
       });
       if (!interview) notFound();
-      // @TODO[AUTH]: 读取 AnalystInterview 暂时不需要 user 有 Analyst 权限
-      // const userAnalyst = await prisma.userAnalyst.findUnique({
-      //   where: {
-      //     userId_analystId: { userId: user.id, analystId: interview.analystId },
-      //   },
-      // });
-      // if (!userAnalyst) forbidden();
+      const userAnalyst = await prisma.userAnalyst.findUnique({
+        where: {
+          userId_analystId: { userId: user.id, analystId: interview.analystId },
+        },
+      });
+      if (!userAnalyst) forbidden();
       const { messages } = interview;
       return {
         ...interview,
@@ -109,10 +98,9 @@ export async function upsertAnalystInterview({
 }: {
   analystId: number;
   personaId: number;
-}): Promise<AnalystInterview> {
+}) {
   return withAuth(async (user) => {
     try {
-      // @TODO[AUTH]: 创建 AnalystInterview 依然需要 user 有 Analyst 权限
       const userAnalyst = await prisma.userAnalyst.findUnique({
         where: { userId_analystId: { userId: user.id, analystId } },
       });
@@ -154,7 +142,7 @@ export async function updateAnalystInterview(
     messages: Message[];
     conclusion: string;
   }>,
-): Promise<AnalystInterview> {
+) {
   try {
     const updatedInterview = await prisma.analystInterview.update({
       where: { id: analystInterviewId },

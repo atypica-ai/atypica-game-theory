@@ -1,10 +1,13 @@
+import { fetchUserChatByToken, fetchUserChatStateByToken } from "@/app/study/actions";
+import { useStudyContext } from "@/app/study/hooks/StudyContext";
+import {
+  consoleStreamWaitTime,
+  useProgressiveMessages,
+} from "@/app/study/hooks/useProgressiveMessages";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
-import { fetchUserChatByToken, fetchUserChatStateByToken } from "@/data";
 import { ToolName } from "@/tools";
 import { Message, ToolInvocation } from "ai";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useStudyContext } from "../../hooks/StudyContext";
-import { consoleStreamWaitTime, useProgressiveMessages } from "../../hooks/useProgressiveMessages";
 import { StreamSteps } from "./StreamSteps";
 
 const ScoutTaskChat = ({ toolInvocation }: { toolInvocation: ToolInvocation }) => {

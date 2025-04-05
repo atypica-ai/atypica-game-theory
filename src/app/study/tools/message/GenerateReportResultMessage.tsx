@@ -1,21 +1,23 @@
-import { AnalystReport, fetchAnalystReportById } from "@/data";
-import { GenerateReportResult } from "@/tools/experts/report";
+import { fetchAnalystReportByToken } from "@/app/study/actions";
+import { AnalystReport } from "@prisma/client";
+import { ToolInvocation } from "ai";
 import { useTranslations } from "next-intl";
 import { FC, useEffect, useState } from "react";
 import { AnalystReportShareButton } from "../AnalystReportShareButton";
 
 export const GenerateReportResultMessage: FC<{
-  result: GenerateReportResult;
-}> = ({ result: { reportId } }) => {
+  toolInvocation: ToolInvocation;
+}> = ({ toolInvocation }) => {
   const t = useTranslations("StudyPage.ToolMessage");
   const [report, setReport] = useState<AnalystReport | null>(null);
 
   useEffect(() => {
     (async () => {
-      const report = await fetchAnalystReportById(reportId);
+      const reportToken = toolInvocation.args.reportToken as string;
+      const report = await fetchAnalystReportByToken(reportToken);
       setReport(report);
     })();
-  }, [reportId]);
+  }, [toolInvocation.args.reportToken]);
 
   if (!report) return null;
 

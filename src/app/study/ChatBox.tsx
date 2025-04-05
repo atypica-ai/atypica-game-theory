@@ -2,13 +2,7 @@ import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useScrollToBottom } from "@/components/use-scroll-to-bottom";
-import {
-  clearStudyUserChatBackgroundToken,
-  deleteMessageFromUserChat,
-  fetchUserChatById,
-  fetchUserChatState,
-  StudyUserChat,
-} from "@/data";
+import { clearStudyUserChatBackgroundToken, deleteMessageFromUserChat } from "@/data/UserChat";
 import { checkStudyUserChatConsume } from "@/data/UserPoints";
 import { cn } from "@/lib/utils";
 import { Message, useChat } from "@ai-sdk/react";
@@ -18,6 +12,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { NerdStats } from "./NerdStats";
 import { SingleMessage } from "./SingleMessage";
 import { CancelButton, StatusDisplay } from "./StatusDisplay";
+import { fetchUserChatByToken, fetchUserChatStateByToken } from "./actions";
+import { useStudyContext } from "./hooks/StudyContext";
 
 function popLastUserMessage(messages: Message[]) {
   if (messages.length > 0 && messages[messages.length - 1].role === "user") {
@@ -29,19 +25,17 @@ function popLastUserMessage(messages: Message[]) {
   }
 }
 
-export function ChatBox({
-  studyUserChat: {
-    id: studyUserChatId,
-    messages: initialMessages,
-    backgroundToken: initialBackgroundToken,
-  },
-  isHelloChat,
-}: {
-  studyUserChat: StudyUserChat;
-  isHelloChat: boolean;
-}) {
+export function ChatBox({ isHelloChat }: { isHelloChat: boolean }) {
   // 这个组件是不支持对话直接切换的，如果切换，需要刷新页面重新加载！);
   const t = useTranslations("StudyPage.ChatBox");
+  const {
+    studyUserChat: {
+      id: studyUserChatId,
+      token: studyUserChatToken,
+      messages: initialMessages,
+      backgroundToken: initialBackgroundToken,
+    },
+  } = useStudyContext();
 
   const {
     messages,
@@ -104,8 +98,8 @@ export function ChatBox({
       // 在 background 状态时定期刷新
       return;
     }
-    const { backgroundToken: newBackgroundToken, updatedAt } = await fetchUserChatState(
-      studyUserChatId,
+    const { backgroundToken: newBackgroundToken, updatedAt } = await fetchUserChatStateByToken(
+      studyUserChatToken,
       "study",
     );
     if (newBackgroundToken && chatUpdatedAt.current) {
@@ -119,13 +113,13 @@ export function ChatBox({
       chatUpdatedAt.current = updatedAt.valueOf();
       setBackgroundToken(newBackgroundToken);
       console.log(`StudyUserChat [${studyUserChatId}] updated at ${updatedAt}, reloading messages`);
-      fetchUserChatById(studyUserChatId, "study").then(({ messages }) => {
+      fetchUserChatByToken(studyUserChatToken, "study").then(({ messages }) => {
         useChatRef.current.setMessages(messages);
       });
     } else {
       console.log(`StudyUserChat [${studyUserChatId}] no updates`);
     }
-  }, [studyUserChatId, backgroundToken]);
+  }, [studyUserChatId, studyUserChatToken, backgroundToken]);
 
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
@@ -168,7 +162,7 @@ export function ChatBox({
             key={message.id}
             message={message}
             addToolResult={addToolResult}
-            avatar={{ assistant: <HippyGhostAvatar seed={studyUserChatId} /> }}
+            avatar={{ assistant: <HippyGhostAvatar seed={studyUserChatToken} /> }}
             onDelete={
               message.role === "user" && index >= messages.length - 2
                 ? async () => {
@@ -205,7 +199,7 @@ export function ChatBox({
           }}
         />
         <div className="absolute right-0 -bottom-1">
-          <NerdStats studyUserChatId={studyUserChatId} />
+          <NerdStats />
         </div>
       </div>
 

@@ -1,4 +1,4 @@
-import { Analyst } from "@/data";
+import { Analyst } from "@prisma/client";
 
 export const reportHTMLSystem = (instruction: string) => `
 你是一位创意十足的研究报告设计专家。请基于用户访谈生成一份引人入胜的HTML研究报告。

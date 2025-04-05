@@ -3,11 +3,14 @@ import { ChatMessage } from "@/components/ChatMessage";
 import { PointAlertDialog } from "@/components/PointAlertDialog";
 import { Button } from "@/components/ui/button";
 import { useScrollToBottom } from "@/components/use-scroll-to-bottom";
-import { Analyst, AnalystInterview, fetchAnalystInterviewById, Persona } from "@/data";
 import { cn } from "@/lib/utils";
+import { Analyst, Persona } from "@prisma/client";
 import { Message } from "ai";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
+import { fetchAnalystInterviewById } from "../actions";
+
+type AnalystInterview = Awaited<ReturnType<typeof fetchAnalystInterviewById>>;
 
 export function InterviewBackground({
   analystInterview: _analystInterview,

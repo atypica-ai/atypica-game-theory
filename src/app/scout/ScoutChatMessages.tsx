@@ -1,7 +1,7 @@
 "use client";
 import { ChatMessage } from "@/components/ChatMessage";
 import { useScrollToBottom } from "@/components/use-scroll-to-bottom";
-import { createUserChat, ScoutUserChat, updateUserChat } from "@/data";
+import { createUserChat, ScoutUserChat, updateUserChat } from "@/data/UserChat";
 import { fixChatMessages } from "@/lib/utils";
 import { Message, useChat } from "@ai-sdk/react";
 import { useTranslations } from "next-intl";

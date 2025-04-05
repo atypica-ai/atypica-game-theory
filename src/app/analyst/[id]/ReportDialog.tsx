@@ -1,10 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { fetchAnalystById } from "@/data";
 import { CircleCheckBig, LoaderCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { fetchAnalystById } from "../actions";
 
 interface ReportDialogProps {
   open: boolean;

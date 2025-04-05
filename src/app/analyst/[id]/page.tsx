@@ -1,17 +1,13 @@
-import { getServerSession } from "next-auth/next";
-import { redirect } from "next/navigation";
+import { fetchAnalystInterviews } from "@/app/interview/actions";
 import { authOptions } from "@/lib/auth";
+import { getServerSession } from "next-auth/next";
+import { notFound, redirect } from "next/navigation";
+import { fetchAnalystById } from "../actions";
 import { AnalystDetail } from "./AnalystDetail";
-import { fetchAnalystById, fetchAnalystInterviews } from "@/data";
-import { notFound } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
-export default async function AnalystPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function AnalystPage({ params }: { params: Promise<{ id: string }> }) {
   const analystId = parseInt((await params).id);
 
   const session = await getServerSession(authOptions);

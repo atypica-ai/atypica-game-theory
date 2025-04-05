@@ -1,8 +1,8 @@
+import { authOptions } from "@/lib/auth";
 import { getServerSession } from "next-auth/next";
 import { redirect } from "next/navigation";
-import { authOptions } from "@/lib/auth";
 import { AnalystsList } from "./AnalystsList";
-import { fetchAnalysts } from "@/data";
+import { fetchAnalysts } from "./actions";
 
 export const dynamic = "force-dynamic";
 

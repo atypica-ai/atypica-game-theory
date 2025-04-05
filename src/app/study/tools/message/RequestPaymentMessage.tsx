@@ -20,7 +20,9 @@ export const RequestPaymentMessage: FC<{
   }) => void;
 }> = ({ toolInvocation, addToolResult }) => {
   const { data: session } = useSession();
-  const { studyUserChatId } = useStudyContext();
+  const {
+    studyUserChat: { id: studyUserChatId },
+  } = useStudyContext();
 
   useEffect(() => {
     if (toolInvocation.state === "result") {

@@ -1,17 +1,12 @@
 "use server";
 import { prisma } from "@/lib/prisma";
-import { Persona as PersonaPrisma } from "@prisma/client";
 import { notFound } from "next/navigation";
 // import withAuth from "./withAuth";
-
-export type Persona = Omit<PersonaPrisma, "tags"> & {
-  tags: string[];
-};
 
 export async function fetchPersonas({
   scoutUserChatId,
   take = 30,
-}: { scoutUserChatId?: number; take?: number } = {}): Promise<Persona[]> {
+}: { scoutUserChatId?: number; take?: number } = {}) {
   try {
     const personas = await prisma.persona.findMany({
       where: scoutUserChatId ? { scoutUserChatId } : undefined,
@@ -32,7 +27,7 @@ export async function fetchPersonas({
   }
 }
 
-export async function fetchPersonaById(personaId: number): Promise<Persona> {
+export async function fetchPersonaById(personaId: number) {
   try {
     const persona = await prisma.persona.findUnique({
       where: { id: personaId },

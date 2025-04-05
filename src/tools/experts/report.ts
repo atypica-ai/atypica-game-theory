@@ -1,17 +1,15 @@
-import { Analyst, AnalystReport } from "@/data";
 import openai from "@/lib/openai";
 import { prisma } from "@/lib/prisma";
 import { generateToken } from "@/lib/utils";
 import { reportHTMLPrologue, reportHTMLSystem } from "@/prompt";
 import { reportCoverPrologue, reportCoverSystem } from "@/prompt/report";
 import { PlainTextToolResult } from "@/tools/utils";
+import { Analyst, AnalystReport } from "@prisma/client";
 import { FinishReason, Message, streamText, tool } from "ai";
 import { z } from "zod";
 import { StatReporter } from "..";
 
 export interface GenerateReportResult extends PlainTextToolResult {
-  analystId: number;
-  reportId: number;
   plainText: string;
 }
 
@@ -28,19 +26,27 @@ export const generateReportTool = ({
       analystId: z.number().describe("调研主题的 ID"),
       instruction: z.string().describe("用户指令，包括额外的报告内容和样式等").default(""),
       regenerate: z.boolean().describe("重新生成报告").default(false),
+      reportToken: z
+        .string()
+        .optional()
+        .describe("报告的 token，用于创建记录，不需要提供，会自动生成")
+        .default(() => generateToken()),
     }),
     experimental_toToolResultContent: (result: PlainTextToolResult) => {
       return [{ type: "text", text: result.plainText }];
     },
-    execute: async ({ analystId, instruction, regenerate }): Promise<GenerateReportResult> => {
+    execute: async ({
+      analystId,
+      instruction,
+      regenerate,
+      reportToken,
+    }): Promise<GenerateReportResult> => {
       let report = await prisma.analystReport.findFirst({
         where: { analystId },
         orderBy: { createdAt: "desc" },
       });
       if (report?.generatedAt && !regenerate) {
         return {
-          analystId: analystId,
-          reportId: report.id,
           plainText: `Report for analyst ${analystId} is generated`,
         };
       }
@@ -51,9 +57,13 @@ export const generateReportTool = ({
           data: { onePageHtml: "" },
         });
       } else {
-        const token = generateToken();
         report = await prisma.analystReport.create({
-          data: { analystId, token, coverSvg: "", onePageHtml: "" },
+          data: {
+            analystId,
+            token: reportToken,
+            coverSvg: "",
+            onePageHtml: "",
+          },
         });
       }
       const analyst = await prisma.analyst.findUniqueOrThrow({
@@ -84,15 +94,11 @@ export const generateReportTool = ({
           statReport,
         });
         return {
-          analystId: analystId,
-          reportId: report.id,
           plainText: `Report for analyst ${analystId} is generated`,
         };
       } catch (error) {
         console.debug(error);
         return {
-          analystId: analystId,
-          reportId: report.id,
           plainText: `Report for analyst ${analystId} failed to generate`,
         };
       }

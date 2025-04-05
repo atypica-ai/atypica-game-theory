@@ -1,7 +1,7 @@
 import { StudyPageClient } from "@/app/study/StudyPageClient";
-import { fetchUserChatByToken } from "@/data";
 import { notFound, redirect } from "next/navigation";
 import { Metadata } from "next/types";
+import { fetchUserChatByToken } from "../../actions";
 
 export async function generateMetadata({
   params,

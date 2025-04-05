@@ -1,14 +1,12 @@
+import { fetchAnalystInterviews } from "@/app/interview/actions";
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { AnalystInterview, Persona } from "@/data";
 import { CircleCheckBig, LoaderCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 
-interface InterviewCardProps {
-  interview: AnalystInterview & { persona: Persona };
-}
+type AnalystInterview = Awaited<ReturnType<typeof fetchAnalystInterviews>>[number];
 
-export function InterviewCard({ interview }: InterviewCardProps) {
+export function InterviewCard({ interview }: { interview: AnalystInterview }) {
   const t = useTranslations("AnalystPage.InterviewCard");
 
   return (
@@ -16,7 +14,7 @@ export function InterviewCard({ interview }: InterviewCardProps) {
       <CardHeader>
         <CardTitle className="line-clamp-1">{interview.persona.name}</CardTitle>
         <CardDescription className="mt-2 line-clamp-1">
-          {interview.persona.tags.join(", ")}
+          {(interview.persona.tags as string[]).join(", ")}
         </CardDescription>
       </CardHeader>
       <CardFooter className="justify-between">
