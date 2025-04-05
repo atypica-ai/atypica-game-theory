@@ -163,6 +163,10 @@
       "pointConsumption": "此操作将消耗 {points} 点积分，是否继续？",
       "cancel": "取消",
       "confirm": "确认"
+    },
+    "ExpandableText": {
+      "showMore": "显示更多",
+      "showLess": "显示更少"
     }
   },
   "StudyPage": {

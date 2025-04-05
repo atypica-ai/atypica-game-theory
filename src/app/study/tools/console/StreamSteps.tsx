@@ -1,7 +1,7 @@
 "use client";
 // 给 chat 类型的 tool call 用的组件，比如 scout chat 和 interview chat
 import { Markdown } from "@/components/markdown";
-import ToolArgsTable from "@/components/ToolArgsTable";
+import ToolArgsTable, { ExpandableText } from "@/components/ToolArgsTable";
 import {
   XHSNoteCommentsResultMessage,
   XHSSearchResultMessage,
@@ -42,12 +42,12 @@ const StreamStep = ({ toolInvocation }: { toolInvocation: ToolInvocation }) => {
         return (
           <pre
             className={cn(
-              "text-xs font-mono whitespace-pre-wrap p-4",
+              "text-xs font-mono p-4",
               "text-zinc-800 bg-zinc-100 dark:text-zinc-200 dark:bg-zinc-800",
               "border border-zinc-200 dark:border-zinc-700 rounded-lg",
             )}
           >
-            {toolInvocation.result.plainText ?? "-"}
+            <ExpandableText text={toolInvocation.result.plainText ?? "-"} />
           </pre>
         );
     }
@@ -56,9 +56,9 @@ const StreamStep = ({ toolInvocation }: { toolInvocation: ToolInvocation }) => {
   return (
     <div className={cn("text-xs whitespace-pre-wrap font-mono")}>
       <div className="ml-1 my-2 font-bold">exec {toolInvocation.toolName}</div>
-      <div className="ml-1 mt-1 mb-1 text-primary">&gt;_ args</div>
+      <div className="ml-1 mt-1 mb-1 text-primary font-bold dark:font-normal">&gt;_ args</div>
       <ToolArgsTable toolInvocation={toolInvocation} />
-      <div className="ml-1 mt-2 mb-2 text-primary">&gt;_ result</div>
+      <div className="ml-1 mt-2 mb-2 text-primary font-bold dark:font-normal">&gt;_ result</div>
       {toolInvocation.state === "result" ? (
         <ToolResultDisplay toolInvocation={toolInvocation} />
       ) : (

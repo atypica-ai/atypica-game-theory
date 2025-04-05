@@ -126,7 +126,7 @@ async function chatWithInterviewer({
 }: ChatProps) {
   const result = await new Promise<Omit<Message, "role">>(async (resolve, reject) => {
     const response = streamText({
-      model: openai("gpt-4o"),
+      model: openai("claude-3-7-sonnet"), // 不能用 gpt-4o，指令遵循的比较差，会结束不了
       providerOptions: {
         openai: { stream_options: { include_usage: true } },
       },
@@ -181,7 +181,7 @@ async function chatWithPersona({
 }: Omit<ChatProps, "interviewToken">) {
   const result = await new Promise<Omit<Message, "role">>(async (resolve, reject) => {
     const response = streamText({
-      model: openai("gpt-4o-mini"),
+      model: openai("gpt-4o"),
       providerOptions: {
         openai: { stream_options: { include_usage: true } },
       },

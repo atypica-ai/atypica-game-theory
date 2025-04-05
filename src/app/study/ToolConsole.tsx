@@ -1,4 +1,4 @@
-import ToolArgsTable from "@/components/ToolArgsTable";
+import ToolArgsTable, { ExpandableText } from "@/components/ToolArgsTable";
 import { cn } from "@/lib/utils";
 import { ToolName } from "@/tools";
 import { ToolInvocation } from "ai";
@@ -14,11 +14,13 @@ const FallbackToolDisplay = ({ toolInvocation }: { toolInvocation: ToolInvocatio
   return (
     <div className={cn("text-xs whitespace-pre-wrap p-2 font-mono")}>
       <div className="ml-1 my-2 font-bold">exec {toolInvocation.toolName}</div>
-      <div className="ml-1 mt-1 mb-1 text-primary">&gt;_ args</div>
+      <div className="ml-1 mt-1 mb-1 text-primary font-bold dark:font-normal">&gt;_ args</div>
       <ToolArgsTable toolInvocation={toolInvocation} />
-      <div className="ml-1 mt-2 mb-2 text-primary">&gt;_ result</div>
+      <div className="ml-1 mt-2 mb-2 text-primary font-bold dark:font-normal">&gt;_ result</div>
       {toolInvocation.state === "result" ? (
-        <div className="text-xs whitespace-pre-wrap p-1">{toolInvocation.result.plainText}</div>
+        <div className="text-xs p-1">
+          <ExpandableText text={toolInvocation.result.plainText} />
+        </div>
       ) : (
         <div className="p-1">
           <LoaderIcon className="animate-spin" size={16} />

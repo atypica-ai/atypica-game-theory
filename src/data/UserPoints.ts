@@ -1,6 +1,6 @@
 "use server";
 import { prisma } from "@/lib/prisma";
-import withAuth from "./withAuth";
+import withAuth from "@/lib/withAuth";
 
 export async function getUserPointsBalance(): Promise<number> {
   return withAuth(async ({ id: userId }) => {

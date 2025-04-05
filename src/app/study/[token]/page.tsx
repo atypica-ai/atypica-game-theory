@@ -38,7 +38,8 @@ export default async function StudyPage({
 
   const session = await getServerSession(authOptions);
   if (!session?.user) {
-    redirect("/auth/signin?callbackUrl=/study");
+    const callbackUrl = `/study/${studyUserChatToken}` + (hello ? `?hello=1` : "");
+    redirect(`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`);
   }
 
   if (studyUserChat.userId !== session.user.id) {

@@ -1,11 +1,11 @@
 "use server";
 import { prisma } from "@/lib/prisma";
 import { generateToken } from "@/lib/utils";
+import withAuth from "@/lib/withAuth";
 import { UserChat as UserChatPrisma } from "@prisma/client";
 import { InputJsonValue } from "@prisma/client/runtime/library";
 import { generateId, Message } from "ai";
 import { forbidden, notFound } from "next/navigation";
-import withAuth from "./withAuth";
 
 export type UserChat = Omit<UserChatPrisma, "messages"> & {
   messages: Message[];

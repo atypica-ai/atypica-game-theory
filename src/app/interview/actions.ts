@@ -1,6 +1,6 @@
 "use server";
-import withAuth from "@/data/withAuth";
 import { prisma } from "@/lib/prisma";
+import withAuth from "@/lib/withAuth";
 import { InputJsonValue } from "@prisma/client/runtime/library";
 import { Message } from "ai";
 import { forbidden, notFound } from "next/navigation";

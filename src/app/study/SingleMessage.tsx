@@ -1,5 +1,5 @@
 import { Markdown } from "@/components/markdown";
-import ToolArgsTable from "@/components/ToolArgsTable";
+import ToolArgsTable, { ExpandableText } from "@/components/ToolArgsTable";
 import ToolResultTable from "@/components/ToolResultTable";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
@@ -13,6 +13,7 @@ import { useStudyContext } from "./hooks/StudyContext";
 import { GenerateReportResultMessage } from "./tools/message/GenerateReportResultMessage";
 import { RequestIteractionMessage } from "./tools/message/RequestIteractionMessage";
 import { RequestPaymentMessage } from "./tools/message/RequestPaymentMessage";
+import { ScoutTaskResultMessage } from "./tools/message/ScoutTaskResultMessage";
 import { ThanksMessage } from "./tools/message/ThanksMessage";
 
 type TAddToolResult = ({
@@ -45,6 +46,9 @@ const SpecialToolDisplay = ({
   }
   if (state === "result" && toolName == ToolName.generateReport) {
     return <GenerateReportResultMessage toolInvocation={toolInvocation} />;
+  }
+  if (state === "result" && toolName == ToolName.scoutTaskChat) {
+    return <ScoutTaskResultMessage toolInvocation={toolInvocation} />;
   }
   return null;
 };
@@ -102,15 +106,17 @@ const ToolInvocationMessage = ({
           </div>
         </CollapsibleTrigger>
         <CollapsibleContent className="pl-4">
-          <div className="ml-1 mt-1 mb-1 text-primary">&gt;_ args</div>
+          <div className="ml-1 mt-1 mb-1 text-primary font-bold dark:font-normal">&gt;_ args</div>
           <ToolArgsTable toolInvocation={toolInvocation} />
-          <div className="ml-1 mt-2 mb-1 text-primary w-full">&gt;_ result</div>
+          <div className="ml-1 mt-2 mb-1 text-primary font-bold dark:font-normal">&gt;_ result</div>
           {toolInvocation.state === "result" ? (
             <>
               <ToolResultTable toolInvocation={toolInvocation} />
-              <div className="ml-1 mt-2 mb-1 text-primary w-full">&gt;_ message</div>
-              <div className="text-xs whitespace-pre-wrap p-1">
-                {toolInvocation.result.plainText}
+              <div className="ml-1 mt-2 mb-1 text-primary font-bold dark:font-normal">
+                &gt;_ message
+              </div>
+              <div className="text-xs p-1">
+                <ExpandableText text={toolInvocation.result.plainText} />
               </div>
             </>
           ) : (

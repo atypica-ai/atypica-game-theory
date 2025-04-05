@@ -11,7 +11,6 @@ export default async function StudyPage({
   searchParams: Promise<{ id: string; hello: string }>;
 }) {
   const { id, hello } = await searchParams;
-
   if (!id) {
     redirect("/");
   }
