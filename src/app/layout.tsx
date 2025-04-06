@@ -1,5 +1,4 @@
 import { AuthProvider } from "@/components/AuthProvider";
-import GlobalHeader from "@/components/GlobalHeader";
 import Stars from "@/components/Stars";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from "@/components/ui/sonner";
@@ -59,13 +58,12 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const locale = await getLocale();
-
   return (
     <html lang={locale} suppressHydrationWarning>
       <body
         className={cn(
           "font-IBMPlexMonoRegular antialiased",
-          "h-dvh flex flex-col items-stretch justify-start",
+          // "h-dvh flex flex-col items-stretch justify-start",
         )}
       >
         <AuthProvider>
@@ -77,7 +75,7 @@ export default async function RootLayout({
           >
             <Stars />
             <NextIntlClientProvider>
-              <GlobalHeader />
+              {/* <GlobalHeader /> */}
               {children}
               <Toaster richColors={true} />
             </NextIntlClientProvider>

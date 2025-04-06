@@ -1,4 +1,4 @@
-import { fetchPersonaById } from "@/app/personas/actions";
+import { fetchPersonaById } from "@/app/(legacy)/personas/actions";
 import {
   fetchAnalystByStudyUserChatToken,
   fetchInterviewOfStudyUserChatByPersonaId,

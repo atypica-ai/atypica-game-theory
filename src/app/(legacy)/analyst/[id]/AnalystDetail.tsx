@@ -1,5 +1,5 @@
 "use client";
-import { fetchAnalystInterviews } from "@/app/interview/actions";
+import { fetchAnalystInterviews } from "@/app/(legacy)/interview/actions";
 import { PointAlertDialog } from "@/components/PointAlertDialog";
 import { Button } from "@/components/ui/button";
 import { Analyst } from "@prisma/client";

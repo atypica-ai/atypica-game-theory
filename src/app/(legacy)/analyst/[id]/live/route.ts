@@ -1,4 +1,4 @@
-import { encryptAnalystReportUrl } from "@/app/analyst/report/encrypt";
+import { encryptAnalystReportUrl } from "@/app/(legacy)/analyst/report/encrypt";
 import { authOptions } from "@/lib/auth";
 import openai from "@/lib/openai";
 import { prisma } from "@/lib/prisma";

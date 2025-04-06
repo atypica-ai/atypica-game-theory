@@ -1,6 +1,6 @@
-import { fetchAnalystById } from "@/app/analyst/actions";
-import { fetchAnalystInterviewById } from "@/app/interview/actions";
-import { fetchPersonaById } from "@/app/personas/actions";
+import { fetchAnalystById } from "@/app/(legacy)/analyst/actions";
+import { fetchAnalystInterviewById } from "@/app/(legacy)/interview/actions";
+import { fetchPersonaById } from "@/app/(legacy)/personas/actions";
 import { authOptions } from "@/lib/auth";
 import { getServerSession } from "next-auth/next";
 import { redirect } from "next/navigation";

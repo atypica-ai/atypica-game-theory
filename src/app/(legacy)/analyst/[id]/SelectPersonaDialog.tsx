@@ -1,5 +1,5 @@
-import { upsertAnalystInterview } from "@/app/interview/actions";
-import { fetchPersonas } from "@/app/personas/actions";
+import { upsertAnalystInterview } from "@/app/(legacy)/interview/actions";
+import { fetchPersonas } from "@/app/(legacy)/personas/actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -84,7 +84,7 @@ export function SelectPersonaDialog({
                     {persona.prompt}
                   </CardContent>
                   <CardFooter className="text-xs line-clamp-1 text-muted-foreground">
-                    {(persona.tags as string[]).join(", ")}
+                    {(persona.tags as string[])?.join(", ")}
                   </CardFooter>
                 </Card>
               ))}

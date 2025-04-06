@@ -1,4 +1,4 @@
-import { fetchAnalystInterviews } from "@/app/interview/actions";
+import { fetchAnalystInterviews } from "@/app/(legacy)/interview/actions";
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { CircleCheckBig, LoaderCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -14,7 +14,7 @@ export function InterviewCard({ interview }: { interview: AnalystInterview }) {
       <CardHeader>
         <CardTitle className="line-clamp-1">{interview.persona.name}</CardTitle>
         <CardDescription className="mt-2 line-clamp-1">
-          {(interview.persona.tags as string[]).join(", ")}
+          {(interview.persona.tags as string[])?.join(", ")}
         </CardDescription>
       </CardHeader>
       <CardFooter className="justify-between">

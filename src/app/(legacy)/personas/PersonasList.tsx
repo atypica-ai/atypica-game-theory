@@ -108,7 +108,7 @@ export default function PersonasList({
               </CardContent>
               <CardFooter>
                 <div className="flex flex-wrap gap-1.5">
-                  {(persona.tags as string[]).map((tag, index) => (
+                  {(persona.tags as string[])?.map((tag, index) => (
                     <Badge key={index} variant="outline" className="text-xs">
                       {tag}
                     </Badge>
@@ -132,7 +132,7 @@ export default function PersonasList({
             </div>
             <DialogFooter>
               <div className="flex flex-wrap gap-2">
-                {(selectedPersona?.tags as string[]).map((tag, index) => (
+                {(selectedPersona?.tags as string[])?.map((tag, index) => (
                   <Badge key={index} variant="outline">
                     {tag}
                   </Badge>

@@ -1,4 +1,4 @@
-import { encryptAnalystReportUrl } from "@/app/analyst/report/encrypt";
+import { encryptAnalystReportUrl } from "@/app/(legacy)/analyst/report/encrypt";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 

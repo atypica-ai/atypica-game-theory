@@ -1,4 +1,4 @@
-import { fetchAnalystInterviews } from "@/app/interview/actions";
+import { fetchAnalystInterviews } from "@/app/(legacy)/interview/actions";
 import { authOptions } from "@/lib/auth";
 import { getServerSession } from "next-auth/next";
 import { notFound, redirect } from "next/navigation";
