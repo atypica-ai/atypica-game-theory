@@ -54,7 +54,7 @@ export const saveAnalystTool = (userId: number, studyUserChatId: number) =>
     },
   });
 
-export interface SaveAnalystStudySummaryTool extends PlainTextToolResult {
+export interface SaveAnalystStudySummaryToolResult extends PlainTextToolResult {
   analystId: number;
   studySummary: string;
   plainText: string;
@@ -70,7 +70,7 @@ export const saveAnalystStudySummaryTool = () =>
     experimental_toToolResultContent: (result: PlainTextToolResult) => {
       return [{ type: "text", text: result.plainText }];
     },
-    execute: async ({ analystId, studySummary }): Promise<SaveAnalystStudySummaryTool> => {
+    execute: async ({ analystId, studySummary }): Promise<SaveAnalystStudySummaryToolResult> => {
       const analyst = await prisma.analyst.update({
         where: { id: analystId },
         data: { studySummary },

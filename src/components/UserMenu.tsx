@@ -95,8 +95,12 @@ export default function UserMenu() {
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon">
-            <User className="h-5 w-5" />
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-8 rounded-full bg-zinc-100 dark:bg-zinc-700"
+          >
+            <User className="size-6" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">

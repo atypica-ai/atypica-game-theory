@@ -1,12 +1,13 @@
 "use client";
+import GlobalHeader from "@/components/GlobalHeader";
 import { Button } from "@/components/ui/button";
 import { useScrollToBottom } from "@/components/use-scroll-to-bottom";
+import UserPointsBalance from "@/components/UserPointsBalance";
 import { StudyUserChat } from "@/data/UserChat";
-import { trackPage } from "@/lib/Analytics/segment";
 import { cn } from "@/lib/utils";
 import { ChevronDown, ChevronUp, EyeIcon, EyeOffIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ChatBox } from "./ChatBox";
 import { ChatReplay } from "./ChatReplay";
 import { StudyProvider, useStudyContext } from "./hooks/StudyContext";
@@ -14,6 +15,7 @@ import { NerdStats } from "./NerdStats";
 import { ShareReplayButton } from "./ShareReplayButton";
 import { ToolConsole } from "./ToolConsole";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function Header() {
   const t = useTranslations("StudyPage");
   const { studyUserChat, replay } = useStudyContext();
@@ -56,43 +58,49 @@ export function StudyPageClient({
   replay: boolean;
   isHelloChat: boolean;
 }) {
-  useEffect(() => {
-    trackPage();
-  }, []);
-
+  // useEffect(() => {
+  //   trackPage();
+  // }, []);
   const [messagesContainerRef, messagesEndRef] = useScrollToBottom<HTMLDivElement>();
   const [consoleOpen, setConsoleOpen] = useState(false);
   return (
     <StudyProvider studyUserChat={studyUserChat} replay={replay}>
-      <div
-        className={cn(
-          "relative",
-          "flex-1 overflow-y-auto",
-          "flex flex-rows items-stretch justify-between w-full h-dvh overflow-hidden",
-          "p-6 max-lg:p-3",
-        )}
-      >
-        <div
+      <main className="relative flex-1 flex flex-rows w-dvw h-dvh overflow-hidden">
+        {/* Left panel, the chat box */}
+        <section className="h-full w-1/2 max-lg:w-full max-lg:pb-16 flex flex-col items-stretch justify-start">
+          <GlobalHeader className="border-border/50">
+            {!replay ? (
+              <>
+                <ShareReplayButton studyUserChat={studyUserChat} />
+                <UserPointsBalance />
+              </>
+            ) : (
+              <NerdStats />
+            )}
+          </GlobalHeader>
+          <div
+            className={cn(
+              "flex-1 overflow-y-auto scrollbar-thin flex flex-col items-stretch justify-start gap-4",
+              "pb-4 pl-4 max-lg:p-3",
+            )}
+          >
+            {/* <Header /> */}
+            {replay ? <ChatReplay /> : <ChatBox isHelloChat={isHelloChat} />}
+          </div>
+        </section>
+        {/* Right panel, the console */}
+        <section
           className={cn(
-            "flex flex-col items-stretch justify-between gap-4",
-            "w-1/2 max-lg:w-full max-lg:mb-14",
-          )}
-        >
-          <Header />
-          {replay ? <ChatReplay /> : <ChatBox isHelloChat={isHelloChat} />}
-        </div>
-        <div
-          className={cn(
-            "flex flex-col items-stretch justify-between gap-4",
-            "w-1/2 max-lg:w-full max-lg:absolute max-lg:left-0 max-lg:right-0 max-lg:bottom-0",
-            consoleOpen ? "max-lg:h-full max-lg:top-0" : "",
+            "h-full w-1/2 max-lg:w-full max-lg:absolute max-lg:left-0 max-lg:right-0 max-lg:bottom-0",
+            "flex flex-col items-stretch justify-between gap-4 p-4 max-lg:p-3",
+            consoleOpen ? "max-lg:h-full max-lg:top-0" : "max-lg:h-auto",
           )}
         >
           <div
             className={cn(
               "relative p-4 flex-1 overflow-hidden flex flex-col items-stretch justify-start",
               "border rounded-lg bg-zinc-100 dark:bg-zinc-900 shadow-[0_0_10px_0] shadow-primary/30 dark:shadow-primary/80",
-              "ml-10 max-lg:ml-0",
+              consoleOpen ? "max-lg:p-3" : "max-lg:p-2",
             )}
           >
             <div
@@ -102,7 +110,12 @@ export function StudyPageClient({
               {consoleOpen ? <ChevronDown className="size-4" /> : <ChevronUp className="size-4" />}
             </div>
             <div className="w-full flex flex-row items-center justify-start gap-4">
-              <div className="ml-1 text-lg font-medium font-mono leading-tight">
+              <div
+                className={cn(
+                  "ml-1 text-lg font-medium font-mono leading-tight",
+                  consoleOpen ? "max-lg:text-base" : "max-lg:text-sm",
+                )}
+              >
                 atypica.AI Console
               </div>
               <div className="ml-auto"></div>
@@ -122,8 +135,8 @@ export function StudyPageClient({
               <div ref={messagesEndRef} />
             </div>
           </div>
-        </div>
-      </div>
+        </section>
+      </main>
     </StudyProvider>
   );
 }

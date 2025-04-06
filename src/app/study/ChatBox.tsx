@@ -207,7 +207,7 @@ export function ChatBox({ isHelloChat }: { isHelloChat: boolean }) {
       <form onSubmit={handleSubmitMessage} className="relative">
         <Textarea
           className={cn(
-            "block min-h-24 resize-none focus-visible:border-primary/70 transition-colors rounded-lg py-3 px-4",
+            "block min-h-24 max-lg:min-h-20 text-sm placeholder:text-sm resize-none focus-visible:border-primary/70 transition-colors rounded-lg py-3 px-4",
             inputDisabled ? "opacity-50 cursor-not-allowed" : "",
           )}
           enterKeyHint="enter"

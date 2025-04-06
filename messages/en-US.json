@@ -143,7 +143,7 @@
     }
   },
   "Components": {
-    "GlobalHeader": {
+    "UserPointsBalance": {
       "balance": "{count} studies left"
     },
     "UserMenu": {

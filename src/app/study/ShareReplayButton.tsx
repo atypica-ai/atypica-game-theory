@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { StudyUserChat } from "@/data/UserChat";
-import { ClipboardCopyIcon, RotateCcwIcon } from "lucide-react";
+import { ClipboardCopyIcon, ShareIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -35,8 +35,8 @@ export function ShareReplayButton({ studyUserChat }: { studyUserChat: StudyUserC
       }}
     >
       <AlertDialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          <RotateCcwIcon size={16} /> {t("shareReplay")}
+        <Button variant="outline" size="sm" className="h-7 text-xs rounded-full shadow-none">
+          <ShareIcon className="size-3" /> {t("shareReplay")}
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
@@ -51,7 +51,7 @@ export function ShareReplayButton({ studyUserChat }: { studyUserChat: StudyUserC
               {shareUrl}
             </div>
             <Button size="sm" variant="outline" onClick={handleCopyUrl} className="shrink-0">
-              <ClipboardCopyIcon size={16} className="mr-1" />
+              <ClipboardCopyIcon className="size-4 mr-1" />
               {t("copyButton")}
             </Button>
           </div>
