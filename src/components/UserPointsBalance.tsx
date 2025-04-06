@@ -9,7 +9,7 @@ import { useCallback, useEffect, useState } from "react";
 export default function UserPointsBalance() {
   const t = useTranslations("Components.UserPointsBalance");
 
-  const { data: session } = useSession();
+  const { status, data: session } = useSession();
   const [balance, setBalance] = useState<number | null>(null);
 
   const checkBalance = useCallback(async () => {
@@ -35,7 +35,7 @@ export default function UserPointsBalance() {
     };
   }, [session, checkBalance]);
 
-  return (
+  return status === "authenticated" ? (
     <div
       className="relative flex items-center gap-1.5 h-7 py-1.5 rounded-full border border-border min-w-[60px] justify-center group"
       title={balance !== null ? t("balance", { count: Math.floor(balance / 100) }) : ""}
@@ -56,5 +56,5 @@ export default function UserPointsBalance() {
         {balance !== null ? t("balance", { count: Math.floor(balance / 100) }) : "loading..."}
       </div>
     </div>
-  );
+  ) : null;
 }
