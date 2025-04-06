@@ -1,9 +1,9 @@
 "use client";
-import { FeaturedStudies } from "@/components/FeaturedStudies";
 import { StudyHistoryDrawer } from "@/components/HistoryDrawer";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
+import { FeaturedStudies } from "./FeaturedStudies";
 import { InputSection } from "./InputSection";
 
 export default function HomePageClient({ anonymous }: { anonymous: boolean }) {

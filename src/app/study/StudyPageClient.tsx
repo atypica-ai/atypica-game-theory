@@ -10,9 +10,9 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { ChatBox } from "./ChatBox";
 import { ChatReplay } from "./ChatReplay";
+import { NerdStats } from "./components/NerdStats";
+import { ShareReplayButton } from "./components/ShareReplayButton";
 import { StudyProvider, useStudyContext } from "./hooks/StudyContext";
-import { NerdStats } from "./NerdStats";
-import { ShareReplayButton } from "./ShareReplayButton";
 import { ToolConsole } from "./ToolConsole";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

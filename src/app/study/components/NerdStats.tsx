@@ -1,11 +1,11 @@
 "use client";
+import { fetchStatsByStudyUserChatToken } from "@/app/study/actions";
+import { useStudyContext } from "@/app/study/hooks/StudyContext";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { formatDuration } from "@/lib/utils";
 import { InfoIcon } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import { fetchStatsByStudyUserChatToken } from "./actions";
-import { useStudyContext } from "./hooks/StudyContext";
 
 type Stat = {
   dimension: string;

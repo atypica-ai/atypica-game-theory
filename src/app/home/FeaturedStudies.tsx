@@ -1,11 +1,11 @@
 "use client";
 import { fetchPublicFeaturedStudies } from "@/app/admin/featured-studies/actions";
+import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import HippyGhostAvatar from "./HippyGhostAvatar";
 
 type FeaturedStudy = Awaited<ReturnType<typeof fetchPublicFeaturedStudies>>["data"][number];
 

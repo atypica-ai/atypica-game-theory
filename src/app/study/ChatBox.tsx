@@ -9,11 +9,11 @@ import { Message, useChat } from "@ai-sdk/react";
 import { ArrowRightIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { NerdStats } from "./NerdStats";
-import { SingleMessage } from "./SingleMessage";
-import { CancelButton, StatusDisplay } from "./StatusDisplay";
 import { fetchUserChatByToken, fetchUserChatStateByToken } from "./actions";
+import { NerdStats } from "./components/NerdStats";
+import { CancelButton, StatusDisplay } from "./components/StatusDisplay";
 import { useStudyContext } from "./hooks/StudyContext";
+import { SingleMessage } from "./SingleMessage";
 
 function popLastUserMessage(messages: Message[]) {
   if (messages.length > 0 && messages[messages.length - 1].role === "user") {
