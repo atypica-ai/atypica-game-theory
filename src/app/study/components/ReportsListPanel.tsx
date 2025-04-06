@@ -61,7 +61,7 @@ export default function ReportsListPanel() {
           <div className="p-3 grid grid-cols-2 gap-3 max-h-[400px] overflow-y-auto scrollbar-thin">
             {reports.map((report) => (
               <AnalystReportShareButton
-                publicReportUrl={`/analyst/report/${report.token}`}
+                publicReportUrl={`/artifacts/report/${report.token}/share`}
                 key={report.id}
               >
                 <div>

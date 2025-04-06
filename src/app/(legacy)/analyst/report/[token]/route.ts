@@ -1,5 +1,4 @@
 import { prisma } from "@/lib/prisma";
-import { fetchAnalystReportByToken } from "../../actions";
 import { decryptAnalystId } from "../encrypt";
 
 export async function GET(request: Request, { params }: { params: Promise<{ token: string }> }) {
@@ -15,11 +14,11 @@ export async function GET(request: Request, { params }: { params: Promise<{ toke
         where: { analystId },
         orderBy: { createdAt: "asc" },
       });
-      // redirect(`/analyst/report/${report.token}`);
+      // redirect(`/artifacts/report/${report.token}/share`);
       return new Response(null, {
         status: 308,
         headers: {
-          Location: `/analyst/report/${report.token}`,
+          Location: `/artifacts/report/${report.token}/share`,
         },
       });
     } catch (error) {
@@ -30,47 +29,12 @@ export async function GET(request: Request, { params }: { params: Promise<{ toke
     }
   }
 
-  // Handle live streaming mode
-  if (isLive) {
-    const encoder = new TextEncoder();
-    const stream = new ReadableStream({
-      async start(controller) {
-        let start = 0;
-        while (true) {
-          try {
-            const analystReport = await fetchAnalystReportByToken(token);
-            const chunk = analystReport.onePageHtml.substring(start);
-            controller.enqueue(encoder.encode(chunk));
-            start = analystReport.onePageHtml.length;
-            // If report is complete (has a generatedAt timestamp), end the stream
-            if (analystReport.generatedAt) {
-              controller.close();
-              break;
-            }
-            // Wait for 3 seconds before fetching again
-            await new Promise((resolve) => setTimeout(resolve, 5000));
-          } catch (error) {
-            console.error("Error streaming report:", error);
-            controller.error(error);
-            break;
-          }
-        }
-      },
-    });
-    return new Response(stream, {
-      headers: {
-        "Content-Type": "text/html; charset=utf-8",
-        "Transfer-Encoding": "chunked",
-        "Cache-Control": "no-cache",
-      },
-    });
-  }
-
-  // Regular non-streaming response
-  const analystReport = await fetchAnalystReportByToken(token);
-  return new Response(analystReport.onePageHtml, {
+  return new Response(null, {
+    status: 308,
     headers: {
-      "Content-Type": "text/html; charset=utf-8",
+      Location: isLive
+        ? `/artifacts/report/${token}/raw?live=1`
+        : `/artifacts/report/${token}/share`,
     },
   });
 }

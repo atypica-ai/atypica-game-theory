@@ -63,7 +63,7 @@ const GenerateReport = ({ toolInvocation }: { toolInvocation: ToolInvocation }) 
       <div className="h-full" ref={containerRef}>
         {analystReport && (
           <iframe
-            src={`/analyst/report/${analystReport.token}?live=1`}
+            src={`/artifacts/report/${analystReport.token}/raw?live=1`}
             className={cn("w-[1200px]")}
             style={{
               transform: `scale(${ratio / 100})`,
@@ -84,7 +84,7 @@ const GenerateReport = ({ toolInvocation }: { toolInvocation: ToolInvocation }) 
         //       {t("shareReport")}
         //     </Link>
         //   </Button> */}
-        //   <AnalystReportShareButton publicReportUrl={`/analyst/report/${analystReport.token}`} />
+        //   <AnalystReportShareButton publicReportUrl={`/artifacts/report/${analystReport.token}`}/share />
         // </div>
       )}
     </div>

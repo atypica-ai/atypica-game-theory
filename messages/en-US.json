@@ -276,5 +276,15 @@
   "PaymentPage": {
     "successTitle": "Payment successful!",
     "successContent": "You can continue your conversation with atypica.AI on your computer to conduct research."
+  },
+  "Artifacts": {
+    "ReportSharePage": {
+      "title": "Research Report",
+      "attribution": "Report from research \"{topic}\", powered by atypica.AI",
+      "viewReplay": "View Study Replay",
+      "shareReport": "Share Report",
+      "copyLink": "Copy Link",
+      "linkCopied": "Link copied!"
+    }
   }
 }

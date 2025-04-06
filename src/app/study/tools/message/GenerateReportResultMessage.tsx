@@ -31,11 +31,11 @@ export const GenerateReportResultMessage: FC<{
       <div className="text-sm mt-4 mb-2">{t("reportGenerated")}</div>
       {/* <Link
         className="block mb-4 w-[360px] h-[180px] [&>svg]:w-[360px] [&>svg]:h-[180px] cursor-pointer border border-input/50 rounded-md overflow-hidden"
-        href={`/analyst/report/${report.token}`}
+        href={`/artifacts/report/${report.token}/share`}
         target="_blank"
         dangerouslySetInnerHTML={{ __html: report.coverSvg }}
       ></Link> */}
-      <AnalystReportShareButton publicReportUrl={`/analyst/report/${report.token}`}>
+      <AnalystReportShareButton publicReportUrl={`/artifacts/report/${report.token}/share`}>
         <div
           className="block mb-4 w-[360px] h-[180px] [&>svg]:w-[360px] [&>svg]:h-[180px] cursor-pointer border border-input/50 rounded-md overflow-hidden"
           dangerouslySetInnerHTML={{ __html: report.coverSvg }}
