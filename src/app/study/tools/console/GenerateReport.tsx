@@ -4,7 +4,6 @@ import { AnalystReport } from "@prisma/client";
 import { ToolInvocation } from "ai";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { AnalystReportShareButton } from "../AnalystReportShareButton";
 
 const GenerateReport = ({ toolInvocation }: { toolInvocation: ToolInvocation }) => {
   const t = useTranslations("StudyPage.ToolConsole");
@@ -42,7 +41,9 @@ const GenerateReport = ({ toolInvocation }: { toolInvocation: ToolInvocation }) 
     };
   }, [updateDimensions]);
 
-  const [analystReport, setAnalystReport] = useState<AnalystReport | null>(null);
+  const [analystReport, setAnalystReport] = useState<Omit<AnalystReport, "onePageHtml"> | null>(
+    null,
+  );
 
   useEffect(() => {
     let reportToken = toolInvocation.args.reportToken as string;
@@ -58,7 +59,7 @@ const GenerateReport = ({ toolInvocation }: { toolInvocation: ToolInvocation }) 
   }, [toolInvocation.args.reportToken, toolInvocation.state]);
 
   return (
-    <div className="h-full relative pb-10">
+    <div className={cn("h-full relative", !analystReport?.generatedAt ? "pb-10" : "")}>
       <div className="h-full" ref={containerRef}>
         {analystReport && (
           <iframe
@@ -72,20 +73,19 @@ const GenerateReport = ({ toolInvocation }: { toolInvocation: ToolInvocation }) 
           />
         )}
       </div>
-      {analystReport?.generatedAt ? (
-        <div className="absolute right-0 bottom-0">
-          {/* <Button asChild variant="ghost" size="sm">
-            <Link href={publicReportUrl} target="_blank">
-              {t("shareReport")}
-            </Link>
-          </Button> */}
-          <AnalystReportShareButton publicReportUrl={`/analyst/report/${analystReport.token}`} />
-        </div>
-      ) : (
+      {!analystReport?.generatedAt && (
         <div className="flex mt-4 gap-px items-center justify-start text-zinc-500 dark:text-zinc-300 text-xs font-mono">
           <span className="animate-bounce">✨ </span>
           <span className="ml-2">{t("reportBeingGenerated")} </span>
         </div>
+        // <div className="absolute right-0 bottom-0">
+        //   {/* <Button asChild variant="ghost" size="sm">
+        //     <Link href={publicReportUrl} target="_blank">
+        //       {t("shareReport")}
+        //     </Link>
+        //   </Button> */}
+        //   <AnalystReportShareButton publicReportUrl={`/analyst/report/${analystReport.token}`} />
+        // </div>
       )}
     </div>
   );

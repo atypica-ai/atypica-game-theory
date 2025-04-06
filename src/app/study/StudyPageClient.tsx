@@ -11,6 +11,7 @@ import { useState } from "react";
 import { ChatBox } from "./ChatBox";
 import { ChatReplay } from "./ChatReplay";
 import { NerdStats } from "./components/NerdStats";
+import ReportsListPanel from "./components/ReportsListPanel";
 import { ShareReplayButton } from "./components/ShareReplayButton";
 import { StudyProvider, useStudyContext } from "./hooks/StudyContext";
 import { ToolConsole } from "./ToolConsole";
@@ -71,11 +72,15 @@ export function StudyPageClient({
           <GlobalHeader className="border-border/50">
             {!replay ? (
               <>
+                <ReportsListPanel />
                 <ShareReplayButton studyUserChat={studyUserChat} />
                 <UserPointsBalance />
               </>
             ) : (
-              <NerdStats />
+              <>
+                <ReportsListPanel />
+                <NerdStats />
+              </>
             )}
           </GlobalHeader>
           <div

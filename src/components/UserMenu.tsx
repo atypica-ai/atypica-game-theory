@@ -100,7 +100,7 @@ export default function UserMenu() {
             size="icon"
             className="size-8 rounded-full bg-zinc-100 dark:bg-zinc-700"
           >
-            <User className="size-6" />
+            <User className="size-5" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
@@ -119,7 +119,7 @@ export default function UserMenu() {
     return (
       <>
         <DropdownMenu>
-          <DropdownMenuTrigger>
+          <DropdownMenuTrigger asChild>
             <Avatar className="size-8 cursor-pointer">
               {/* <AvatarImage src={""} /> */}
               {/* <AvatarFallback>{session.user.email.charAt(0)}</AvatarFallback> */}

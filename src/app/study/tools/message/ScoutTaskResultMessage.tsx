@@ -25,7 +25,10 @@ export const ScoutTaskResultMessage: FC<{
       <h3 className="text-sm font-medium">Personas</h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-3">
         {personas.map((persona) => (
-          <div key={persona.id} className="flex items-start gap-3 rounded-lg border p-3">
+          <div
+            key={persona.id}
+            className="flex items-start gap-3 rounded-lg border border-zinc-100 dark:border-zinc-700/50 p-3 bg-zinc-50 dark:bg-zinc-800"
+          >
             <HippyGhostAvatar seed={persona.id} className="mt-0.5" />
             <div className="flex-1">
               <div className="font-medium text-sm">{persona.name}</div>

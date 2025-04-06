@@ -139,21 +139,44 @@ export async function fetchInterviewOfStudyUserChatByPersonaId({
 export async function fetchAnalystReportByToken(token: string) {
   const report = await prisma.analystReport.findUnique({
     where: { token },
+    select: {
+      id: true,
+      token: true,
+      analystId: true,
+      analyst: true,
+      coverSvg: true,
+      generatedAt: true,
+      createdAt: true,
+      updatedAt: true,
+    },
   });
   if (!report) notFound();
   return report;
 }
 
-// export async function fetchPendingReportByAnalystId(analystId: number) {
-//   const report = await prisma.analystReport.findFirst({
-//     where: {
-//       analystId,
-//       generatedAt: null,
-//     },
-//     orderBy: {
-//       createdAt: "desc",
-//     },
-//   });
-//   if (!report) notFound();
-//   return report;
-// }
+export async function fetchAnalystReportsOfStudyUserChat({
+  studyUserChatToken,
+}: {
+  studyUserChatToken: string;
+}) {
+  const studyUserChat = await prisma.userChat.findUnique({
+    where: { token: studyUserChatToken, kind: "study" },
+    include: { analyst: { select: { id: true } } },
+  });
+  if (!studyUserChat?.analyst) notFound();
+  const reports = await prisma.analystReport.findMany({
+    where: { analystId: studyUserChat.analyst.id },
+    select: {
+      id: true,
+      token: true,
+      analystId: true,
+      analyst: true,
+      coverSvg: true,
+      generatedAt: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+    orderBy: { createdAt: "desc" },
+  });
+  return reports;
+}

@@ -9,7 +9,7 @@ export const GenerateReportResultMessage: FC<{
   toolInvocation: ToolInvocation;
 }> = ({ toolInvocation }) => {
   const t = useTranslations("StudyPage.ToolMessage");
-  const [report, setReport] = useState<AnalystReport | null>(null);
+  const [report, setReport] = useState<Omit<AnalystReport, "onePageHtml"> | null>(null);
 
   useEffect(() => {
     let reportToken = toolInvocation.args.reportToken as string;

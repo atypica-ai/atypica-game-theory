@@ -146,6 +146,10 @@
     "UserPointsBalance": {
       "balance": "剩余{count}次研究"
     },
+    "ReportsListPanel": {
+      "title": "本次研究的报告",
+      "noReportsYet": "暂无报告"
+    },
     "UserMenu": {
       "login": "登录",
       "logout": "退出登录",

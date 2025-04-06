@@ -146,6 +146,10 @@
     "UserPointsBalance": {
       "balance": "{count} studies left"
     },
+    "ReportsListPanel": {
+      "title": "Reports for this study",
+      "noReportsYet": "No reports yet"
+    },
     "UserMenu": {
       "login": "Login",
       "logout": "Logout",
