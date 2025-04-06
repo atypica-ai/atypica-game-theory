@@ -136,6 +136,13 @@ npx prisma migrate deploy  # 执行数据库迁移
 pnpm dev
 ```
 
+5. 使用生产模式运行
+
+```bash
+docker buildx build --platform linux/amd64 . -t atypica-llm-app -f Dockerfile
+docker run -p 3000:3000 --env-file ./.env atypica-llm-app
+```
+
 ## 特色与优势
 
 - **全流程自动化**：从研究设计到报告生成的端到端自动化

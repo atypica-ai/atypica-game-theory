@@ -3,8 +3,8 @@ import GlobalHeader from "@/components/GlobalHeader";
 import Stars from "@/components/Stars";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from "@/components/ui/sonner";
+import Analytics from "@/lib/Analytics";
 import { cn } from "@/lib/utils";
-import { GoogleAnalytics } from "@next/third-parties/google";
 import type { Metadata, Viewport } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale } from "next-intl/server";
@@ -68,23 +68,23 @@ export default async function RootLayout({
           "h-dvh flex flex-col items-stretch justify-start",
         )}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem={false}
-          disableTransitionOnChange
-        >
-          <Stars />
-          <NextIntlClientProvider>
-            <AuthProvider>
+        <AuthProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="dark"
+            enableSystem={false}
+            disableTransitionOnChange
+          >
+            <Stars />
+            <NextIntlClientProvider>
               <GlobalHeader />
               {children}
-            </AuthProvider>
-            <Toaster richColors={true} />
-          </NextIntlClientProvider>
-        </ThemeProvider>
+              <Toaster richColors={true} />
+            </NextIntlClientProvider>
+          </ThemeProvider>
+          <Analytics />
+        </AuthProvider>
       </body>
-      {process.env.NODE_ENV === "production" && <GoogleAnalytics gaId="G-EJTF0VJKQP" />}
     </html>
   );
 }
