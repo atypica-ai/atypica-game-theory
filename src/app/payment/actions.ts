@@ -78,8 +78,8 @@ export async function createCharge({
         paymentMethod === PaymentMethod.alipay_wap) &&
       successUrl
         ? {
-            success_url: `${process.env.PINGPP_NOTIFY_URL_BASE}/payment/success?redirect=${encodeURIComponent(successUrl)}`,
-            cancel_url: `${process.env.PINGPP_NOTIFY_URL_BASE}/payment/cancel?redirect=${encodeURIComponent(successUrl)}`,
+            success_url: `${process.env.SITE_DEPLOY_ORIGIN}/payment/success?redirect=${encodeURIComponent(successUrl)}`,
+            cancel_url: `${process.env.SITE_DEPLOY_ORIGIN}/payment/cancel?redirect=${encodeURIComponent(successUrl)}`,
           }
         : paymentMethod === PaymentMethod.wx_pub && openid
           ? { open_id: openid } // pingxx 的参数叫 open_id

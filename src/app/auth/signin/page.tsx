@@ -82,6 +82,14 @@ function SignIn() {
               required
             />
           </div>
+          <div className="text-right">
+            <Link
+              href={`/auth/forgot-password?callbackUrl=${encodeURIComponent(callbackUrl)}`}
+              className="text-sm text-blue-500 hover:underline"
+            >
+              {t("forgotPassword")}
+            </Link>
+          </div>
           <Button variant="outline" className="w-full" type="submit" disabled={isLoading}>
             {isLoading ? t("submittingButton") : t("submitButton")}
           </Button>

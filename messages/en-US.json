@@ -99,6 +99,7 @@
       "subtitle": "Enter your login details",
       "emailPlaceholder": "Your email address",
       "passwordPlaceholder": "Your password",
+      "forgotPassword": "Forgot password?",
       "submitButton": "Sign In",
       "submittingButton": "Signing in...",
       "errorMessage": "Invalid email or password",
@@ -140,6 +141,39 @@
         "useCodeInstructions": "Please use the following code to verify your email address:",
         "automatedEmailDisclaimer": "This is an automated email from atypica.AI. Please do not reply to this email."
       }
+    },
+    "ForgotPassword": {
+      "title": "Forgot Password",
+      "description": "Enter your email address and we'll send you a link to reset your password.",
+      "emailPlaceholder": "Your email address",
+      "submitButton": "Send Reset Link",
+      "submittingButton": "Sending...",
+      "successMessage": "If your email is registered with us, you will receive password reset instructions shortly.",
+      "backToSignIn": "Back to Sign In",
+      "userNotFound": "No account found with this email address",
+      "resetEmailSent": "Password reset email sent. Please check your inbox.",
+      "emailContent": {
+        "subjectLine": "Your atypica.AI Password Reset Link",
+        "resetLinkText": "Click here to reset your password",
+        "expirationNote": "This link will expire in 30 minutes.",
+        "ignoreMessage": "If you didn't request this password reset, please ignore this email.",
+        "emailTitle": "Password Reset Request",
+        "resetInstructions": "We received a request to reset your password. Click the button below to create a new password:",
+        "resetButtonText": "Reset Password",
+        "automatedEmailDisclaimer": "This is an automated email from atypica.AI. Please do not reply to this email."
+      }
+    },
+    "ResetPassword": {
+      "title": "Reset Password",
+      "description": "Please enter a new password for your account.",
+      "passwordPlaceholder": "New password",
+      "confirmPasswordPlaceholder": "Confirm new password",
+      "submitButton": "Reset Password",
+      "submittingButton": "Resetting...",
+      "successMessage": "Password reset successful! You can now sign in with your new password.",
+      "passwordMismatch": "Passwords do not match",
+      "invalidOrExpiredToken": "Invalid or expired reset token",
+      "backToSignIn": "Back to Sign In"
     }
   },
   "Components": {

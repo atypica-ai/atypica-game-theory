@@ -13,7 +13,7 @@ async function createWeixinLoginUrl({ state, successUrl }: { state: string; succ
       appid: "wx442ec54730781c2d",
       state: state,
       success_url: successUrl,
-      redirect_uri: `${process.env.PINGPP_NOTIFY_URL_BASE}/payment/wx_pub/`,
+      redirect_uri: `${process.env.SITE_DEPLOY_ORIGIN}/payment/wx_pub/`,
     }),
   });
   const data = await res.json();
