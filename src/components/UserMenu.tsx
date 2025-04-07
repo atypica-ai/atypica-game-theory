@@ -59,10 +59,14 @@ export default function UserMenu() {
   };
 
   const sayHello = useCallback(async () => {
-    const chat = await createUserChat("study", {
+    const result = await createUserChat("study", {
       role: "user",
       content: "我是企业用户，想了解一下企业版",
     });
+    if (!result.success) {
+      throw result;
+    }
+    const chat = result.data;
     window.location.href = `/study/?id=${chat.id}&hello=1`;
   }, []);
 

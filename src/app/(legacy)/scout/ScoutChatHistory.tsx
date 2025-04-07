@@ -1,4 +1,3 @@
-"use client";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
@@ -23,11 +22,11 @@ export function ScoutChatHistory({
 
   useEffect(() => {
     const fetchChats = async () => {
-      try {
-        const chats = await fetchUserChats("scout");
-        setChats(chats);
-      } catch (error) {
-        console.error("Failed to fetch active chats:", error);
+      const result = await fetchUserChats("scout");
+      if (result.success) {
+        setChats(result.data);
+      } else {
+        console.error(result.message);
       }
     };
     fetchChats();
@@ -41,8 +40,12 @@ export function ScoutChatHistory({
     if (!scoutUserChatId) {
       onSelectChat(null);
     } else {
-      const scoutUserChat = await fetchUserChatById(scoutUserChatId, "scout");
-      onSelectChat(scoutUserChat);
+      const result = await fetchUserChatById(scoutUserChatId, "scout");
+      if (result.success) {
+        onSelectChat(result.data);
+      } else {
+        console.error(result.message);
+      }
     }
     setOpen(false); // Close drawer when a chat is selected
   };

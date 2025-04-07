@@ -1,9 +1,19 @@
 "use server";
 import { prisma } from "@/lib/prisma";
+import { ServerActionResult } from "@/lib/serverAction";
+import { User } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { checkAdminAuth } from "../utils";
 
-export async function fetchUsers(page: number = 1, pageSize: number = 10, searchQuery?: string) {
+export async function fetchUsers(
+  page: number = 1,
+  pageSize: number = 10,
+  searchQuery?: string,
+): Promise<
+  ServerActionResult<
+    (Pick<User, "id" | "email" | "createdAt"> & { points: { balance: number } | null })[]
+  >
+> {
   await checkAdminAuth();
   const skip = (page - 1) * pageSize;
   // Build the where condition based on search query
@@ -37,6 +47,7 @@ export async function fetchUsers(page: number = 1, pageSize: number = 10, search
   ]);
 
   return {
+    success: true,
     data: users,
     pagination: {
       page,
@@ -47,11 +58,17 @@ export async function fetchUsers(page: number = 1, pageSize: number = 10, search
   };
 }
 
-export async function addPointsToUser(userId: number, points: number) {
+export async function addPointsToUser(
+  userId: number,
+  points: number,
+): Promise<ServerActionResult<void>> {
   await checkAdminAuth();
 
   if (points <= 0) {
-    throw new Error("Points must be a positive number");
+    return {
+      success: false,
+      message: "Points must be a positive number",
+    };
   }
 
   const user = await prisma.user.findUnique({
@@ -60,7 +77,10 @@ export async function addPointsToUser(userId: number, points: number) {
   });
 
   if (!user) {
-    throw new Error("User not found");
+    return {
+      success: false,
+      message: "User not found",
+    };
   }
 
   await prisma.$transaction(async (tx) => {
@@ -93,4 +113,9 @@ export async function addPointsToUser(userId: number, points: number) {
   });
 
   revalidatePath("/admin/users");
+
+  return {
+    success: true,
+    data: undefined,
+  };
 }

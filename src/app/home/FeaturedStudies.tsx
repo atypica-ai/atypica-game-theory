@@ -3,11 +3,12 @@ import { fetchPublicFeaturedStudies } from "@/app/admin/featured-studies/actions
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ExtractServerActionData } from "@/lib/serverAction";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-type FeaturedStudy = Awaited<ReturnType<typeof fetchPublicFeaturedStudies>>["data"][number];
+type FeaturedStudy = ExtractServerActionData<typeof fetchPublicFeaturedStudies>[number];
 
 export function FeaturedStudies() {
   const t = useTranslations("HomePage.FeaturedStudies");
@@ -18,11 +19,11 @@ export function FeaturedStudies() {
   useEffect(() => {
     const loadStudies = async () => {
       setLoading(true);
-      try {
-        const result = await fetchPublicFeaturedStudies();
+      const result = await fetchPublicFeaturedStudies();
+      if (result.success) {
         setStudies(result.data);
-      } catch (error) {
-        setError((error as Error).message);
+      } else {
+        setError(result.message);
       }
       setLoading(false);
     };

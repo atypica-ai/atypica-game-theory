@@ -3,6 +3,7 @@ import { ChatMessage } from "@/components/ChatMessage";
 import { Markdown } from "@/components/markdown";
 import { Button } from "@/components/ui/button";
 import { useScrollToBottom } from "@/components/use-scroll-to-bottom";
+import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn } from "@/lib/utils";
 import { interviewerPrologue } from "@/prompt";
 import { useChat } from "@ai-sdk/react";
@@ -12,7 +13,7 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import { fetchAnalystInterviewById, updateAnalystInterview } from "../actions";
 // import imageUrl from "./image";
 
-type AnalystInterview = Awaited<ReturnType<typeof fetchAnalystInterviewById>>;
+type AnalystInterview = ExtractServerActionData<typeof fetchAnalystInterviewById>;
 
 export function Interview({
   analystInterview,

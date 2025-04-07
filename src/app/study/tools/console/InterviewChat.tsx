@@ -28,11 +28,14 @@ const InterviewChat = ({ toolInvocation }: { toolInvocation: ToolInvocation }) =
   useEffect(() => {
     (async () => {
       try {
-        const analyst = await fetchAnalystByStudyUserChatToken({
+        const result = await fetchAnalystByStudyUserChatToken({
           studyUserChatToken: studyUserChat.token,
           analystId,
         });
-        setAnalyst(analyst);
+        if (!result.success) {
+          throw result;
+        }
+        setAnalyst(result.data);
       } catch (error) {
         console.log("Error fetching analyst:", error);
       }
@@ -114,7 +117,7 @@ const SingleInterviewChat = ({
 
   const fetchUpdate = useCallback(async () => {
     try {
-      const [interview, persona] = await Promise.all([
+      const [interviewResult, personaResult] = await Promise.all([
         await fetchInterviewOfStudyUserChatByPersonaId({
           studyUserChatToken: studyUserChat.token,
           analystId: analyst.id,
@@ -122,13 +125,19 @@ const SingleInterviewChat = ({
         }),
         await fetchPersonaById(personaId),
       ]);
-      setMessages(interview.messages);
-      setPersona(persona);
-      setInterviewToken(interview.interviewToken);
-      setInterviewId(interview.id);
-      setConclusion(interview.conclusion);
+      if (!interviewResult.success) {
+        throw interviewResult;
+      }
+      if (!personaResult.success) {
+        throw interviewResult;
+      }
+      setMessages(interviewResult.data.messages);
+      setPersona(personaResult.data);
+      setInterviewToken(interviewResult.data.interviewToken);
+      setInterviewId(interviewResult.data.id);
+      setConclusion(interviewResult.data.conclusion);
     } catch (error) {
-      console.log("Error fetching interview:", error);
+      console.log("Error fetching interview:", (error as Error).message);
     }
   }, [studyUserChat.token, analyst.id, personaId]);
 

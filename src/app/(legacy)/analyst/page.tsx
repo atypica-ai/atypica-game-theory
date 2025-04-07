@@ -1,4 +1,5 @@
 import { authOptions } from "@/lib/auth";
+import { throwServerActionError } from "@/lib/serverAction";
 import { getServerSession } from "next-auth/next";
 import { redirect } from "next/navigation";
 import { AnalystsList } from "./AnalystsList";
@@ -13,6 +14,9 @@ export default async function AnalystsPage() {
     redirect("/auth/signin?callbackUrl=/analyst");
   }
 
-  const analysts = await fetchAnalysts();
-  return <AnalystsList analysts={analysts} />;
+  const analystsResult = await fetchAnalysts();
+  if (!analystsResult.success) {
+    throwServerActionError(analystsResult);
+  }
+  return <AnalystsList analysts={analystsResult.data} />;
 }

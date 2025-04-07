@@ -18,8 +18,9 @@ export default function ReportsListPanel() {
 
   useEffect(() => {
     fetchAnalystReportsOfStudyUserChat({ studyUserChatToken: studyUserChat.token })
-      .then((reports) => {
-        setReports(reports);
+      .then((result) => {
+        if (!result.success) throw result;
+        setReports(result.data);
       })
       .catch((error) => {
         console.error(error);

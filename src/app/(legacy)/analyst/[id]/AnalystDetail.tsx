@@ -2,6 +2,7 @@
 import { fetchAnalystInterviews } from "@/app/(legacy)/interview/actions";
 import { PointAlertDialog } from "@/components/PointAlertDialog";
 import { Button } from "@/components/ui/button";
+import { ExtractServerActionData } from "@/lib/serverAction";
 import { Analyst } from "@prisma/client";
 import { Link, PlusIcon, UndoIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -12,7 +13,7 @@ import { InterviewCard } from "./InterviewCard";
 import { ReportDialog } from "./ReportDialog";
 import { SelectPersonaDialog } from "./SelectPersonaDialog";
 
-type AnalystInterview = Awaited<ReturnType<typeof fetchAnalystInterviews>>[number];
+type AnalystInterview = ExtractServerActionData<typeof fetchAnalystInterviews>[number];
 
 export function AnalystDetail({
   analyst,

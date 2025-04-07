@@ -9,7 +9,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Pagination } from "@/components/ui/pagination";
-import { Analyst, FeaturedStudy, User, UserAnalyst, UserChat } from "@prisma/client";
+import { ExtractServerActionData } from "@/lib/serverAction";
+import { Analyst } from "@prisma/client";
 import { ArrowDown, ArrowUp, StarIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
@@ -23,18 +24,8 @@ import {
   updateDisplayOrder,
 } from "./actions";
 
-type FeaturedStudyWithAnalyst = FeaturedStudy & {
-  analyst: Analyst;
-  studyUserChat: Pick<UserChat, "token">;
-};
-
-type AnalystWithFeature = Analyst & {
-  userAnalysts: (UserAnalyst & {
-    user: Pick<User, "email">;
-  })[];
-  featuredStudy: FeaturedStudy | null;
-  studyUserChat: Pick<UserChat, "token"> | null;
-};
+type AnalystWithFeature = ExtractServerActionData<typeof fetchAnalysts>[number];
+type FeaturedStudyWithAnalyst = ExtractServerActionData<typeof fetchFeaturedStudies>[number];
 
 export default function FeaturedStudiesPage() {
   const { status } = useSession();
@@ -65,16 +56,20 @@ export default function FeaturedStudiesPage() {
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
-    try {
-      const [featuredResult, analystsResult] = await Promise.all([
-        fetchFeaturedStudies(),
-        fetchAnalysts(currentPage),
-      ]);
+    const [featuredResult, analystsResult] = await Promise.all([
+      fetchFeaturedStudies(),
+      fetchAnalysts(currentPage),
+    ]);
+    if (!featuredResult.success) {
+      setError(featuredResult.message);
+    } else {
       setFeaturedStudies(featuredResult.data);
+    }
+    if (!analystsResult.success) {
+      setError(analystsResult.message);
+    } else {
       setAnalysts(analystsResult.data);
-      setPagination(analystsResult.pagination);
-    } catch (err) {
-      setError((err as Error).message);
+      if (analystsResult.pagination) setPagination(analystsResult.pagination);
     }
     setIsLoading(false);
   }, [currentPage]);
@@ -88,20 +83,20 @@ export default function FeaturedStudiesPage() {
   }, [status, router, fetchData]);
 
   const handleToggleFeatured = async (analyst: Analyst) => {
-    try {
-      await toggleFeaturedStatus(analyst);
+    const result = await toggleFeaturedStatus(analyst);
+    if (!result.success) {
+      setError(result.message);
+    } else {
       await fetchData();
-    } catch (err) {
-      setError((err as Error).message);
     }
   };
 
   const handleMoveOrder = async (id: number, direction: "up" | "down") => {
-    try {
-      await updateDisplayOrder(id, direction);
+    const result = await updateDisplayOrder(id, direction);
+    if (!result.success) {
+      setError(result.message);
+    } else {
       await fetchData();
-    } catch (err) {
-      setError((err as Error).message);
     }
   };
 

@@ -33,11 +33,14 @@ export default function SignUpPage() {
     setIsLoading(true);
     try {
       setError("");
-      await signUp({
+      const result = await signUp({
         email,
         password,
         invitationCode: showInvitationField ? invitationCode : undefined,
       });
+      if (!result.success) {
+        throw result;
+      }
       // Sign in automatically after successful registration
       // await signIn("credentials", {
       //   email,

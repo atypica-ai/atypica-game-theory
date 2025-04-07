@@ -28,14 +28,17 @@ export function AnalystsList({ analysts: initialAnalysts }: { analysts: Analyst[
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const newAnalyst = await createAnalyst({ role, topic });
-      setAnalysts([newAnalyst, ...analysts]);
+      const result = await createAnalyst({ role, topic });
+      if (!result.success) {
+        throw result;
+      }
+      setAnalysts([result.data, ...analysts]);
       setIsOpen(false);
       setRole("");
       setTopic("");
       router.refresh();
     } catch (error) {
-      console.log("Error creating analyst:", error);
+      console.error("Error creating analyst:", (error as Error).message);
     }
   };
 

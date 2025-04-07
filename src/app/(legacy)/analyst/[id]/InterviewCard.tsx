@@ -1,10 +1,11 @@
 import { fetchAnalystInterviews } from "@/app/(legacy)/interview/actions";
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { ExtractServerActionData } from "@/lib/serverAction";
 import { CircleCheckBig, LoaderCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 
-type AnalystInterview = Awaited<ReturnType<typeof fetchAnalystInterviews>>[number];
+type AnalystInterview = ExtractServerActionData<typeof fetchAnalystInterviews>[number];
 
 export function InterviewCard({ interview }: { interview: AnalystInterview }) {
   const t = useTranslations("AnalystPage.InterviewCard");

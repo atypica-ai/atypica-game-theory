@@ -98,10 +98,12 @@ export function ChatBox({ isHelloChat }: { isHelloChat: boolean }) {
       // 在 background 状态时定期刷新
       return;
     }
-    const { backgroundToken: newBackgroundToken, updatedAt } = await fetchUserChatStateByToken(
-      studyUserChatToken,
-      "study",
-    );
+    const result = await fetchUserChatStateByToken(studyUserChatToken, "study");
+    if (!result.success) {
+      console.error(result.message);
+      return;
+    }
+    const { backgroundToken: newBackgroundToken, updatedAt } = result.data;
     if (newBackgroundToken && chatUpdatedAt.current) {
       // 因为一些原因，backgroundToken 还在，但实际已经 30 分钟没更新 chat 了，则提示用户取消
       const elapsedMillis = Date.now() - chatUpdatedAt.current;
@@ -113,8 +115,12 @@ export function ChatBox({ isHelloChat }: { isHelloChat: boolean }) {
       chatUpdatedAt.current = updatedAt.valueOf();
       setBackgroundToken(newBackgroundToken);
       console.log(`StudyUserChat [${studyUserChatId}] updated at ${updatedAt}, reloading messages`);
-      fetchUserChatByToken(studyUserChatToken, "study").then(({ messages }) => {
-        useChatRef.current.setMessages(messages);
+      fetchUserChatByToken(studyUserChatToken, "study").then((result) => {
+        if (result.success) {
+          useChatRef.current.setMessages(result.data.messages);
+        } else {
+          console.error(result.message);
+        }
       });
     } else {
       console.log(`StudyUserChat [${studyUserChatId}] no updates`);
@@ -136,7 +142,11 @@ export function ChatBox({ isHelloChat }: { isHelloChat: boolean }) {
   const [pointsConsumed, setPointsConsumed] = useState<boolean | null>(null);
   useEffect(() => {
     checkStudyUserChatConsume({ studyUserChatId }).then((result) => {
-      setPointsConsumed(result);
+      if (result.success) {
+        setPointsConsumed(result.data);
+      } else {
+        console.error(result.message);
+      }
     });
   }, [studyUserChatId]);
 
@@ -170,12 +180,16 @@ export function ChatBox({ isHelloChat }: { isHelloChat: boolean }) {
                     // TODO 这里要改一下
                     // assistant 可能连续出现 2 条，所以最后一条用户消息的index就不一定是 messages.length - 2
                     // 如果删除，那也就不是一条 user 和一条 assistant，而应该是连续的 assistant 都删除
-                    const newMessages = await deleteMessageFromUserChat(
+                    const result = await deleteMessageFromUserChat(
                       studyUserChatId,
                       messages,
                       message.id,
                     );
-                    setMessages(newMessages);
+                    if (result.success) {
+                      setMessages(result.data);
+                    } else {
+                      console.error(result.message);
+                    }
                   }
                 : undefined
             }

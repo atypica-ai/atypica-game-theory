@@ -48,14 +48,16 @@ export default function InvitationCodesPage() {
 
   const fetchCodes = useCallback(async () => {
     setIsLoading(true);
-    try {
-      const result = await fetchInvitationCodes(currentPage);
+    const result = await fetchInvitationCodes(currentPage);
+
+    if (!result.success) {
+      setError(result.message);
+    } else {
       setCodes(result.data);
-      setPagination(result.pagination);
-      setIsAdmin(result.isAdmin);
-    } catch (error) {
-      setError((error as Error).message);
+      if (result.pagination) setPagination(result.pagination);
+      setIsAdmin(result.isAdmin ?? false);
     }
+
     setIsLoading(false);
   }, [currentPage]);
 
@@ -68,20 +70,20 @@ export default function InvitationCodesPage() {
   }, [status, router, fetchCodes]);
 
   const generateCode = async () => {
-    try {
-      await createInvitationCode();
+    const result = await createInvitationCode();
+    if (!result.success) {
+      setError(result.message);
+    } else {
       await fetchCodes();
-    } catch (error) {
-      setError((error as Error).message);
     }
   };
 
   const handleDeleteCode = async (id: number) => {
-    try {
-      await deleteInvitationCode(id);
+    const result = await deleteInvitationCode(id);
+    if (!result.success) {
+      setError(result.message);
+    } else {
       await fetchCodes();
-    } catch (err) {
-      setError((err as Error).message);
     }
   };
 

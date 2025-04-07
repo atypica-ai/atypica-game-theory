@@ -25,17 +25,23 @@ const ScoutTaskChat = ({ toolInvocation }: { toolInvocation: ToolInvocation }) =
   });
 
   const reloadMessages = useCallback(async () => {
-    const { messages } = await fetchUserChatByToken(scoutUserChatToken, "scout");
-    setMessages(messages);
+    const result = await fetchUserChatByToken(scoutUserChatToken, "scout");
+    if (result.success) {
+      setMessages(result.data.messages);
+    } else {
+      console.error(result.message);
+    }
   }, [scoutUserChatToken]);
 
   // 使用 ref，确保 useCallback 里面取到最新值，并且变化了以后不触发 refreshStudyUserChat 和 useEffect 更新
   const chatUpdatedAt = useRef<number | null>(null);
   const fetchUpdate = useCallback(async () => {
-    const { backgroundToken: newBackgroundToken, updatedAt } = await fetchUserChatStateByToken(
-      scoutUserChatToken,
-      "scout",
-    );
+    const result = await fetchUserChatStateByToken(scoutUserChatToken, "scout");
+    if (!result.success) {
+      console.error(result.message);
+      return;
+    }
+    const { backgroundToken: newBackgroundToken, updatedAt } = result.data;
     if (updatedAt.valueOf() !== chatUpdatedAt.current || newBackgroundToken !== backgroundToken) {
       chatUpdatedAt.current = updatedAt.valueOf();
       setBackgroundToken(newBackgroundToken);

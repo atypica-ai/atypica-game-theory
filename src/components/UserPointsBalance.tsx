@@ -17,7 +17,9 @@ export default function UserPointsBalance() {
       return;
     }
     const result = await getUserPointsBalance();
-    setBalance(result);
+    if (result.success) {
+      setBalance(result.data);
+    }
   }, [session]);
 
   useEffect(() => {

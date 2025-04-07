@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Pagination } from "@/components/ui/pagination";
+import { ExtractServerActionData } from "@/lib/serverAction";
 import { Search } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -18,7 +19,7 @@ import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { PaginationInfo } from "../utils";
 import { addPointsToUser, fetchUsers } from "./actions";
 
-type User = Awaited<ReturnType<typeof fetchUsers>>["data"][number];
+type User = ExtractServerActionData<typeof fetchUsers>[number];
 
 export default function UsersPage() {
   const { status } = useSession();
@@ -65,12 +66,12 @@ export default function UsersPage() {
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
-    try {
-      const result = await fetchUsers(currentPage, 10, searchQuery);
+    const result = await fetchUsers(currentPage, 10, searchQuery);
+    if (!result.success) {
+      setError(result.message);
+    } else {
       setUsers(result.data);
-      setPagination(result.pagination);
-    } catch (err) {
-      setError((err as Error).message);
+      if (result.pagination) setPagination(result.pagination);
     }
     setIsLoading(false);
   }, [currentPage, searchQuery]);

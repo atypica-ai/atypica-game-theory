@@ -18,7 +18,10 @@ export const GenerateReportResultMessage: FC<{
     }
     if (reportToken) {
       fetchAnalystReportByToken(reportToken)
-        .then((report) => setReport(report))
+        .then((result) => {
+          if (!result.success) throw result;
+          setReport(result.data);
+        })
         .catch((error) => console.log(error));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

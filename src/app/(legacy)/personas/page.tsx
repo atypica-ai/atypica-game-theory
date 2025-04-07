@@ -1,4 +1,5 @@
 import { fetchUserChatById } from "@/data/UserChat";
+import { throwServerActionError } from "@/lib/serverAction";
 import PersonasList from "./PersonasList";
 import { fetchPersonas } from "./actions";
 
@@ -17,11 +18,20 @@ export default async function PersonasPage({
   const userChatParam = (await searchParams)?.scoutUserChat;
   if (userChatParam) {
     const scoutUserChatId = parseInt(userChatParam);
-    const scoutUserChat = await fetchUserChatById(scoutUserChatId, "scout");
-    const personas = await fetchPersonas({ scoutUserChatId });
-    return <PersonasList personas={personas} scoutUserChat={scoutUserChat} />;
+    const scoutUserChatResult = await fetchUserChatById(scoutUserChatId, "scout");
+    const personasResult = await fetchPersonas({ scoutUserChatId });
+    if (!scoutUserChatResult.success) {
+      throwServerActionError(scoutUserChatResult);
+    }
+    if (!personasResult.success) {
+      throwServerActionError(personasResult);
+    }
+    return <PersonasList personas={personasResult.data} scoutUserChat={scoutUserChatResult.data} />;
   } else {
-    const personas = await fetchPersonas();
-    return <PersonasList personas={personas} />;
+    const personasResult = await fetchPersonas();
+    if (!personasResult.success) {
+      throwServerActionError(personasResult);
+    }
+    return <PersonasList personas={personasResult.data} />;
   }
 }

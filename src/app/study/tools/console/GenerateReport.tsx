@@ -52,7 +52,10 @@ const GenerateReport = ({ toolInvocation }: { toolInvocation: ToolInvocation }) 
     }
     if (reportToken) {
       fetchAnalystReportByToken(reportToken)
-        .then((report) => setAnalystReport(report))
+        .then((result) => {
+          if (!result.success) throw result;
+          setAnalystReport(result.data);
+        })
         .catch((error) => console.log(error));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

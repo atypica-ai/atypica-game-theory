@@ -1,5 +1,6 @@
 "use server";
 import { prisma } from "@/lib/prisma";
+import { ServerActionResult } from "@/lib/serverAction";
 import { hash } from "bcryptjs";
 import { getTranslations } from "next-intl/server";
 import { sendVerificationEmail } from "../verify/actions";
@@ -12,7 +13,7 @@ export async function signUp({
   email: string;
   password: string;
   invitationCode?: string;
-}) {
+}): Promise<ServerActionResult<{ id: number; email: string }>> {
   const t = await getTranslations("Auth.SignUp");
   // 开放注册
   // if (!email.endsWith("@tezign.com")) {
@@ -41,8 +42,12 @@ export async function signUp({
   const exists = await prisma.user.findUnique({
     where: { email },
   });
+
   if (exists) {
-    throw new Error(t("userAlreadyExists"));
+    return {
+      success: false,
+      message: t("userAlreadyExists"),
+    };
   }
 
   const hashedPassword = await hash(password, 10);
@@ -75,4 +80,12 @@ export async function signUp({
   }
 
   await sendVerificationEmail(user.email);
+
+  return {
+    success: true,
+    data: {
+      id: user.id,
+      email: user.email,
+    },
+  };
 }

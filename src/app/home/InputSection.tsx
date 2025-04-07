@@ -31,15 +31,19 @@ export function InputSection() {
     if (!input.trim()) return;
     setIsLoading(true);
     try {
-      const chat = await createUserChat("study", {
+      const result = await createUserChat("study", {
         role: "user",
         content: input,
       });
+      if (!result.success) {
+        throw result;
+      }
+      const chat = result.data;
       // Clear input cache after successfully creating chat
       localStorage.removeItem("studyInputCache");
       router.push(`/study/?id=${chat.id}`);
     } catch (error) {
-      console.error("Error saving input:", error);
+      console.error("Error saving input:", (error as Error).message);
     }
     setIsLoading(false);
   };

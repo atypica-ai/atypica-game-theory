@@ -21,8 +21,11 @@ export function NerdStats() {
   const loadStats = useCallback(async () => {
     setIsLoading(true);
     try {
-      const data = await fetchStatsByStudyUserChatToken(studyUserChat.token);
-      setStats(data);
+      const result = await fetchStatsByStudyUserChatToken(studyUserChat.token);
+      if (!result.success) {
+        throw result;
+      }
+      setStats(result.data);
     } catch (error) {
       console.error("Failed to fetch chat statistics:", error);
     }

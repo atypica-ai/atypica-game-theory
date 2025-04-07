@@ -30,8 +30,9 @@ export function SelectPersonaDialog({
     if (open) {
       setLoading(true);
       fetchPersonas()
-        .then((personas) => {
-          setPersonas(personas);
+        .then((result) => {
+          if (!result.success) throw result;
+          setPersonas(result.data);
           setSelectedIds([]);
         })
         .finally(() => setLoading(false));

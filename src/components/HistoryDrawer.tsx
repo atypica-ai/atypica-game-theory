@@ -35,10 +35,13 @@ export function StudyHistoryDrawer({
   useEffect(() => {
     const fetchChats = async () => {
       try {
-        const chats = await fetchUserChats("study");
-        setChats(chats);
+        const result = await fetchUserChats("study");
+        if (!result.success) {
+          throw result;
+        }
+        setChats(result.data);
       } catch (error) {
-        console.error("Failed to fetch active chats:", error);
+        console.error("Failed to fetch active chats:", (error as Error).message);
       }
     };
     fetchChats();

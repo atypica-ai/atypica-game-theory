@@ -2,6 +2,7 @@ import { fetchAnalystById } from "@/app/(legacy)/analyst/actions";
 import { fetchAnalystInterviewById } from "@/app/(legacy)/interview/actions";
 import { fetchPersonaById } from "@/app/(legacy)/personas/actions";
 import { authOptions } from "@/lib/auth";
+import { throwServerActionError } from "@/lib/serverAction";
 import { getServerSession } from "next-auth/next";
 import { redirect } from "next/navigation";
 import { InterviewBackground } from "./InterviewBackground";
@@ -16,11 +17,26 @@ export default async function InterviewPage({ params }: { params: Promise<{ id: 
     redirect(`/auth/signin?callbackUrl=/interview/${id}`);
   }
 
-  const analystInterview = await fetchAnalystInterviewById(id);
-  const persona = await fetchPersonaById(analystInterview.personaId);
-  const analyst = await fetchAnalystById(analystInterview.analystId);
+  const analystInterviewResult = await fetchAnalystInterviewById(id);
+  if (!analystInterviewResult.success) {
+    throwServerActionError(analystInterviewResult);
+  }
+  const analystInterview = analystInterviewResult.data;
+
+  const personaResult = await fetchPersonaById(analystInterview.personaId);
+  if (!personaResult.success) {
+    throwServerActionError(personaResult);
+  }
+  const analystResult = await fetchAnalystById(analystInterview.analystId);
+  if (!analystResult.success) {
+    throwServerActionError(analystResult);
+  }
 
   return (
-    <InterviewBackground analystInterview={analystInterview} analyst={analyst} persona={persona} />
+    <InterviewBackground
+      analystInterview={analystInterview}
+      analyst={analystResult.data}
+      persona={personaResult.data}
+    />
   );
 }

@@ -1,11 +1,21 @@
 "use server";
+import { UserChat } from "@/app/study/actions";
+import { StudyUserChat } from "@/data/UserChat";
 import { prisma } from "@/lib/prisma";
-import { Analyst } from "@prisma/client";
+import { ServerActionResult } from "@/lib/serverAction";
+import { Analyst, FeaturedStudy, User, UserAnalyst } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { checkAdminAuth } from "../utils";
 // Public action for fetching featured studies (no auth check needed)
 
-export async function fetchPublicFeaturedStudies() {
+export async function fetchPublicFeaturedStudies(): Promise<
+  ServerActionResult<
+    (FeaturedStudy & {
+      analyst: Pick<Analyst, "id" | "role" | "topic" | "studySummary">;
+      studyUserChat: Pick<StudyUserChat, "id" | "token">;
+    })[]
+  >
+> {
   const featuredStudies = await prisma.featuredStudy.findMany({
     include: {
       studyUserChat: {
@@ -29,11 +39,18 @@ export async function fetchPublicFeaturedStudies() {
     take: 6,
   });
 
-  return { data: featuredStudies };
+  return {
+    success: true,
+    data: featuredStudies,
+  };
 }
 
 // Get all featured studies
-export async function fetchFeaturedStudies() {
+export async function fetchFeaturedStudies(): Promise<
+  ServerActionResult<
+    (FeaturedStudy & { analyst: Analyst; studyUserChat: Pick<StudyUserChat, "id" | "token"> })[]
+  >
+> {
   await checkAdminAuth();
   const featuredStudies = await prisma.featuredStudy.findMany({
     include: {
@@ -47,11 +64,27 @@ export async function fetchFeaturedStudies() {
     },
     orderBy: { displayOrder: "asc" },
   });
-  return { data: featuredStudies };
+  return {
+    success: true,
+    data: featuredStudies,
+  };
 }
 
 // Get all analysts with their featured status
-export async function fetchAnalysts(page: number = 1, pageSize: number = 12) {
+export async function fetchAnalysts(
+  page: number = 1,
+  pageSize: number = 12,
+): Promise<
+  ServerActionResult<
+    (Analyst & {
+      userAnalysts: (UserAnalyst & {
+        user: Pick<User, "email">;
+      })[];
+      featuredStudy: FeaturedStudy | null;
+      studyUserChat: Pick<UserChat, "token"> | null;
+    })[]
+  >
+> {
   await checkAdminAuth();
 
   const skip = (page - 1) * pageSize;
@@ -87,6 +120,7 @@ export async function fetchAnalysts(page: number = 1, pageSize: number = 12) {
   const totalCount = await prisma.analyst.count({ where });
 
   return {
+    success: true,
     data: analysts,
     pagination: {
       page,
@@ -98,7 +132,7 @@ export async function fetchAnalysts(page: number = 1, pageSize: number = 12) {
 }
 
 // Toggle featured status for a study
-export async function toggleFeaturedStatus(analyst: Analyst) {
+export async function toggleFeaturedStatus(analyst: Analyst): Promise<ServerActionResult<void>> {
   await checkAdminAuth();
 
   // Check if the analyst is already featured
@@ -128,23 +162,37 @@ export async function toggleFeaturedStatus(analyst: Analyst) {
       },
     });
   } else {
-    throw new Error("Study user chat ID is required");
+    return {
+      success: false,
+      message: "Study user chat ID is required",
+    };
   }
 
   revalidatePath("/admin/featured-studies");
+  return {
+    success: true,
+    data: undefined,
+  };
 }
 
 // Remove a study from featured list
-export async function removeFeaturedStudy(id: number) {
+export async function removeFeaturedStudy(id: number): Promise<ServerActionResult<void>> {
   await checkAdminAuth();
   await prisma.featuredStudy.delete({
     where: { id },
   });
   revalidatePath("/admin/featured-studies");
+  return {
+    success: true,
+    data: undefined,
+  };
 }
 
 // Update display order
-export async function updateDisplayOrder(id: number, direction: "up" | "down") {
+export async function updateDisplayOrder(
+  id: number,
+  direction: "up" | "down",
+): Promise<ServerActionResult<void>> {
   await checkAdminAuth();
 
   // Get the current featured study
@@ -153,7 +201,10 @@ export async function updateDisplayOrder(id: number, direction: "up" | "down") {
   });
 
   if (!currentStudy) {
-    throw new Error("Featured study not found");
+    return {
+      success: false,
+      message: "Featured study not found",
+    };
   }
 
   // Find adjacent study
@@ -169,7 +220,7 @@ export async function updateDisplayOrder(id: number, direction: "up" | "down") {
 
   if (!adjacentStudy) {
     // No study to swap with, already at the extreme
-    return { success: true };
+    return { success: true, data: undefined };
   }
 
   // Swap display orders
@@ -185,4 +236,8 @@ export async function updateDisplayOrder(id: number, direction: "up" | "down") {
   ]);
 
   revalidatePath("/admin/featured-studies");
+  return {
+    success: true,
+    data: undefined,
+  };
 }

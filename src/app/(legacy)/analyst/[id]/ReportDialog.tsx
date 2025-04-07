@@ -21,11 +21,14 @@ export function ReportDialog({ open, onOpenChange, analystId }: ReportDialogProp
     if (open) {
       const checkReport = async () => {
         try {
-          await fetchAnalystById(analystId);
-          // setHasReport(!!analyst.report); // legacy field
+          const result = await fetchAnalystById(analystId);
+          if (!result.success) {
+            throw result;
+          }
+          // setHasReport(!!result.data.report); // legacy field
           setHasReport(false);
         } catch (error) {
-          console.log("Error fetching analyst:", error);
+          console.log("Error fetching analyst:", (error as Error).message);
         }
       };
       const intervalId = setInterval(checkReport, 5000);

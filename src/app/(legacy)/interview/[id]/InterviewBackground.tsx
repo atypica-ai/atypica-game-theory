@@ -3,6 +3,7 @@ import { ChatMessage } from "@/components/ChatMessage";
 import { PointAlertDialog } from "@/components/PointAlertDialog";
 import { Button } from "@/components/ui/button";
 import { useScrollToBottom } from "@/components/use-scroll-to-bottom";
+import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn } from "@/lib/utils";
 import { Analyst, Persona } from "@prisma/client";
 import { Message } from "ai";
@@ -10,7 +11,7 @@ import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { fetchAnalystInterviewById } from "../actions";
 
-type AnalystInterview = Awaited<ReturnType<typeof fetchAnalystInterviewById>>;
+type AnalystInterview = ExtractServerActionData<typeof fetchAnalystInterviewById>;
 
 export function InterviewBackground({
   analystInterview: _analystInterview,
@@ -27,11 +28,14 @@ export function InterviewBackground({
 
   const fetchUpdate = useCallback(async () => {
     try {
-      const updated = await fetchAnalystInterviewById(interview.id);
-      setMessages(updated.messages);
-      setInterview(updated);
+      const result = await fetchAnalystInterviewById(interview.id);
+      if (!result.success) {
+        throw result;
+      }
+      setMessages(result.data.messages);
+      setInterview(result.data);
     } catch (error) {
-      console.log("Error fetching analystInterview:", error);
+      console.log("Error fetching analystInterview:", (error as Error).message);
     }
   }, [interview.id]);
 

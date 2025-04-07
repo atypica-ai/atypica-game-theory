@@ -1,4 +1,5 @@
 import { StudyPageClient } from "@/app/study/StudyPageClient";
+import { throwServerActionError } from "@/lib/serverAction";
 import { notFound, redirect } from "next/navigation";
 import { Metadata } from "next/types";
 import { fetchUserChatByToken } from "../../actions";
@@ -12,8 +13,12 @@ export async function generateMetadata({
   if (!token) {
     return {};
   }
-  const studyUserChat = await fetchUserChatByToken(token, "study");
-  return studyUserChat.title ? { title: studyUserChat.title } : {};
+  const result = await fetchUserChatByToken(token, "study");
+  if (result.success && result.data.title) {
+    const studyUserChat = result.data;
+    return { title: studyUserChat.title };
+  }
+  return {};
 }
 
 export const dynamic = "force-dynamic";
@@ -33,6 +38,11 @@ export default async function StudyPage({
   if (replay !== "1") {
     redirect(`/study/${token}/share?replay=1`);
   }
-  const studyUserChat = await fetchUserChatByToken(token, "study");
-  return <StudyPageClient studyUserChat={studyUserChat} replay={true} isHelloChat={false} />;
+  const result = await fetchUserChatByToken(token, "study");
+  if (result.success) {
+    const studyUserChat = result.data;
+    return <StudyPageClient studyUserChat={studyUserChat} replay={true} isHelloChat={false} />;
+  } else {
+    throwServerActionError(result);
+  }
 }

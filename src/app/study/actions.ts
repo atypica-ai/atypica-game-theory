@@ -1,8 +1,13 @@
 "use server";
 import { prisma } from "@/lib/prisma";
-import { UserChat as UserChatPrisma } from "@prisma/client";
+import { ServerActionResult } from "@/lib/serverAction";
+import {
+  Analyst,
+  AnalystInterview,
+  AnalystReport,
+  UserChat as UserChatPrisma,
+} from "@prisma/client";
 import { Message } from "ai";
-import { notFound } from "next/navigation";
 
 export type UserChat = Omit<UserChatPrisma, "messages"> & {
   messages: Message[];
@@ -12,46 +17,60 @@ export async function fetchUserChatByToken<Tkind extends UserChat["kind"]>(
   token: string,
   kind: Tkind,
 ): Promise<
-  Omit<UserChat, "kind"> & {
-    kind: Tkind;
-  }
+  ServerActionResult<
+    Omit<UserChat, "kind"> & {
+      kind: Tkind;
+    }
+  >
 > {
-  try {
-    const userChat = await prisma.userChat.findUnique({
-      where: { token, kind },
-    });
-    if (!userChat) notFound();
+  const userChat = await prisma.userChat.findUnique({
+    where: { token, kind },
+  });
+  if (!userChat) {
     return {
+      success: false,
+      code: "not_found",
+      message: "UserChat not found",
+    };
+  }
+  return {
+    success: true,
+    data: {
       ...userChat,
       kind: userChat.kind as Tkind,
       messages: userChat.messages as unknown as Message[],
-    };
-  } catch (error) {
-    console.log("Error fetching user chat:", error);
-    throw error;
-  }
+    },
+  };
 }
 
 export async function fetchUserChatStateByToken<Tkind extends UserChat["kind"]>(
   studyUserChatToken: string,
   kind: Tkind,
-) {
-  try {
-    const { backgroundToken, updatedAt } = await prisma.userChat.findUniqueOrThrow({
-      where: { token: studyUserChatToken, kind },
-      select: {
-        backgroundToken: true,
-        updatedAt: true,
-      },
-    });
-    return { backgroundToken, updatedAt };
-  } catch (error) {
-    console.log("Error fetching user chat status:", error);
-    throw error;
+): Promise<ServerActionResult<{ backgroundToken: string | null; updatedAt: Date }>> {
+  const userChat = await prisma.userChat.findUnique({
+    where: { token: studyUserChatToken, kind },
+    select: {
+      backgroundToken: true,
+      updatedAt: true,
+    },
+  });
+  if (!userChat) {
+    return {
+      success: false,
+      code: "not_found",
+      message: "User chat not found",
+    };
   }
+  const { backgroundToken, updatedAt } = userChat;
+  return {
+    success: true,
+    data: { backgroundToken, updatedAt },
+  };
 }
 
-export async function fetchStatsByStudyUserChatToken(studyUserChatToken: string) {
+export async function fetchStatsByStudyUserChatToken(
+  studyUserChatToken: string,
+): Promise<ServerActionResult<Array<{ dimension: string; total: number | null }>>> {
   const result = await prisma.chatStatistics.groupBy({
     by: ["dimension"],
     where: {
@@ -63,11 +82,13 @@ export async function fetchStatsByStudyUserChatToken(studyUserChatToken: string)
       value: true,
     },
   });
-
-  return result.map((item) => ({
-    dimension: item.dimension,
-    total: item._sum.value,
-  }));
+  return {
+    success: true,
+    data: result.map((item) => ({
+      dimension: item.dimension,
+      total: item._sum.value,
+    })),
+  };
 }
 
 export async function fetchAnalystByStudyUserChatToken({
@@ -76,23 +97,30 @@ export async function fetchAnalystByStudyUserChatToken({
 }: {
   studyUserChatToken: string;
   analystId: number;
-}) {
-  try {
-    const studyUserChat = await prisma.userChat.findUnique({
-      where: { token: studyUserChatToken, kind: "study" },
-      include: {
-        analyst: true,
-      },
-    });
-    if (!studyUserChat?.analyst) notFound();
-    if (studyUserChat.analyst.id !== analystId) {
-      throw new Error("Something went wrong, analyst ID mismatch");
-    }
-    return { ...studyUserChat.analyst };
-  } catch (error) {
-    console.log("Error fetching analyst:", error);
-    throw error;
+}): Promise<ServerActionResult<Analyst>> {
+  const studyUserChat = await prisma.userChat.findUnique({
+    where: { token: studyUserChatToken, kind: "study" },
+    include: {
+      analyst: true,
+    },
+  });
+  if (!studyUserChat?.analyst) {
+    return {
+      success: false,
+      code: "not_found",
+      message: "Analyst not found",
+    };
   }
+  if (studyUserChat.analyst.id !== analystId) {
+    return {
+      success: false,
+      message: "Something went wrong, analyst ID mismatch",
+    };
+  }
+  return {
+    success: true,
+    data: { ...studyUserChat.analyst },
+  };
 }
 
 export async function fetchInterviewOfStudyUserChatByPersonaId({
@@ -103,40 +131,62 @@ export async function fetchInterviewOfStudyUserChatByPersonaId({
   studyUserChatToken: string;
   analystId: number;
   personaId: number;
-}) {
-  try {
-    const studyUserChat = await prisma.userChat.findUnique({
-      where: { token: studyUserChatToken, kind: "study" },
-      include: {
-        analyst: {
-          select: { id: true },
-        },
+}): Promise<ServerActionResult<Omit<AnalystInterview, "messages"> & { messages: Message[] }>> {
+  const studyUserChat = await prisma.userChat.findUnique({
+    where: { token: studyUserChatToken, kind: "study" },
+    include: {
+      analyst: {
+        select: { id: true },
       },
-    });
-    if (!studyUserChat?.analyst) notFound();
-    if (studyUserChat.analyst.id !== analystId) {
-      throw new Error("Something went wrong, analyst ID mismatch");
-    }
-    const interview = await prisma.analystInterview.findUniqueOrThrow({
-      where: {
-        analystId_personaId: {
-          analystId: studyUserChat.analyst.id,
-          personaId,
-        },
-      },
-    });
-    if (!interview) notFound();
+    },
+  });
+  if (!studyUserChat?.analyst) {
     return {
+      success: false,
+      code: "not_found",
+      message: "User chat not found",
+    };
+  }
+  if (studyUserChat.analyst.id !== analystId) {
+    return {
+      success: false,
+      message: "Something went wrong, analyst ID mismatch",
+    };
+  }
+  const interview = await prisma.analystInterview.findUniqueOrThrow({
+    where: {
+      analystId_personaId: {
+        analystId: studyUserChat.analyst.id,
+        personaId,
+      },
+    },
+  });
+  if (!interview) {
+    return {
+      success: false,
+      code: "not_found",
+      message: "AnalystInterview not found",
+    };
+  }
+  return {
+    success: true,
+    data: {
       ...interview,
       messages: interview.messages as unknown as Message[],
-    };
-  } catch (error) {
-    console.log("Error fetching interview of study user chat:", error);
-    throw error;
-  }
+    },
+  };
 }
 
-export async function fetchAnalystReportByToken(token: string) {
+export async function fetchAnalystReportByToken(
+  token: string,
+): Promise<
+  ServerActionResult<
+    Pick<
+      AnalystReport,
+      "id" | "token" | "analystId" | "coverSvg" | "generatedAt" | "createdAt" | "updatedAt"
+    > & { analyst: Analyst }
+  >
+> {
   const report = await prisma.analystReport.findUnique({
     where: { token },
     select: {
@@ -150,20 +200,42 @@ export async function fetchAnalystReportByToken(token: string) {
       updatedAt: true,
     },
   });
-  if (!report) notFound();
-  return report;
+  if (!report) {
+    return {
+      success: false,
+      code: "not_found",
+      message: "AnalystReport not found",
+    };
+  }
+  return {
+    success: true,
+    data: report,
+  };
 }
 
 export async function fetchAnalystReportsOfStudyUserChat({
   studyUserChatToken,
 }: {
   studyUserChatToken: string;
-}) {
+}): Promise<
+  ServerActionResult<
+    (Pick<
+      AnalystReport,
+      "id" | "token" | "analystId" | "coverSvg" | "generatedAt" | "createdAt" | "updatedAt"
+    > & { analyst: Analyst })[]
+  >
+> {
   const studyUserChat = await prisma.userChat.findUnique({
     where: { token: studyUserChatToken, kind: "study" },
     include: { analyst: { select: { id: true } } },
   });
-  if (!studyUserChat?.analyst) notFound();
+  if (!studyUserChat?.analyst) {
+    return {
+      success: false,
+      code: "not_found",
+      message: "No analyst found on userChat",
+    };
+  }
   const reports = await prisma.analystReport.findMany({
     where: { analystId: studyUserChat.analyst.id },
     select: {
@@ -178,5 +250,8 @@ export async function fetchAnalystReportsOfStudyUserChat({
     },
     orderBy: { createdAt: "desc" },
   });
-  return reports;
+  return {
+    success: true,
+    data: reports,
+  };
 }

@@ -108,10 +108,15 @@ export function ScoutChatMessages({
       event.preventDefault();
       if (!input) return;
       if (!scoutUserChatId) {
-        const scoutUserChat = await createUserChat("scout", {
+        const result = await createUserChat("scout", {
           role: "user",
           content: input,
         });
+        if (!result.success) {
+          console.error(result.message);
+          return;
+        }
+        const scoutUserChat = result.data;
         setScoutUserChatId(scoutUserChat.id);
         // 这里设置了，在调用 handleSubmit 的时候还没有更新 useChat 的 body，所以 setChatId 以后，还要在 handleSubmit 里直接提交
         handleSubmit(event, {

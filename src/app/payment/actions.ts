@@ -1,6 +1,7 @@
 "use server";
 import { checkAdminAuth } from "@/app/admin/utils";
 import { prisma } from "@/lib/prisma";
+import { ServerActionResult } from "@/lib/serverAction";
 import { PaymentLine, PaymentRecord as PaymentRecordPrisma, User } from "@prisma/client";
 import crypto from "crypto";
 import { headers } from "next/headers";
@@ -12,7 +13,6 @@ const PINGPP_APP_ID = process.env.PINGPP_APP_ID!;
 const PINGPP_API_URL = process.env.PINGPP_API_URL!;
 
 export type PaymentRecord = PaymentRecordPrisma & {
-  status: "pending" | "succeeded" | "failed";
   paymentMethod: PaymentMethod;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   credential: Record<"alipay_pc_direct" | "alipay_wap" | "wx_pub", any>;
@@ -195,7 +195,14 @@ export async function handleWebhook(request: Request) {
 }
 
 // Get payment records for display
-export async function getPaymentRecords() {
+export async function getPaymentRecords(): Promise<
+  ServerActionResult<
+    (PaymentRecord & {
+      user: User;
+      paymentLines: PaymentLine[];
+    })[]
+  >
+> {
   await checkAdminAuth();
 
   const records = await prisma.paymentRecord.findMany({
@@ -207,7 +214,13 @@ export async function getPaymentRecords() {
     take: 10,
   });
 
-  return { data: records as (PaymentRecord & { paymentLines: PaymentLine[]; user: User })[] };
+  return {
+    success: true,
+    data: records as (PaymentRecord & {
+      user: User;
+      paymentLines: PaymentLine[];
+    })[],
+  };
 }
 
 export async function handlePaymentSuccess({ chargeId }: { chargeId: string }) {

@@ -1,7 +1,8 @@
 import { fetchAnalystInterviews } from "@/app/(legacy)/interview/actions";
 import { authOptions } from "@/lib/auth";
+import { throwServerActionError } from "@/lib/serverAction";
 import { getServerSession } from "next-auth/next";
-import { notFound, redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import { fetchAnalystById } from "../actions";
 import { AnalystDetail } from "./AnalystDetail";
 
@@ -15,12 +16,17 @@ export default async function AnalystPage({ params }: { params: Promise<{ id: st
     redirect(`/auth/signin?callbackUrl=/analyst/${analystId}`);
   }
 
-  const analyst = await fetchAnalystById(analystId);
-  if (!analyst) {
-    notFound();
+  const analystResult = await fetchAnalystById(analystId);
+  if (!analystResult.success) {
+    throwServerActionError(analystResult);
   }
+  const analyst = analystResult.data;
 
-  const interviews = await fetchAnalystInterviews(analystId);
+  const interviewsResult = await fetchAnalystInterviews(analystId);
+  if (!interviewsResult.success) {
+    throwServerActionError(interviewsResult);
+  }
+  const interviews = interviewsResult.data;
 
   return <AnalystDetail analyst={analyst} interviews={interviews} />;
 }

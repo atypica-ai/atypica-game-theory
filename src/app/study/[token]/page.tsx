@@ -1,5 +1,6 @@
 import { StudyPageClient } from "@/app/study/StudyPageClient";
 import { authOptions } from "@/lib/auth";
+import { throwServerActionError } from "@/lib/serverAction";
 import { getServerSession } from "next-auth/next";
 import { forbidden, notFound, redirect } from "next/navigation";
 import { Metadata } from "next/types";
@@ -10,12 +11,16 @@ export async function generateMetadata({
 }: {
   params: Promise<{ token: string }>;
 }): Promise<Metadata> {
-  const studyUserChatToken = (await params).token;
-  if (!studyUserChatToken) {
+  const token = (await params).token;
+  if (!token) {
     return {};
   }
-  const studyUserChat = await fetchUserChatByToken(studyUserChatToken, "study");
-  return studyUserChat.title ? { title: studyUserChat.title } : {};
+  const result = await fetchUserChatByToken(token, "study");
+  if (result.success && result.data.title) {
+    const studyUserChat = result.data;
+    return { title: studyUserChat.title };
+  }
+  return {};
 }
 
 export const dynamic = "force-dynamic";
@@ -34,7 +39,11 @@ export default async function StudyPage({
     notFound();
   }
 
-  const studyUserChat = await fetchUserChatByToken(studyUserChatToken, "study");
+  const result = await fetchUserChatByToken(studyUserChatToken, "study");
+  if (!result.success) {
+    throwServerActionError(result);
+  }
+  const studyUserChat = result.data;
 
   const session = await getServerSession(authOptions);
   if (!session?.user) {

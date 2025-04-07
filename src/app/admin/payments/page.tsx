@@ -4,6 +4,7 @@ import { PaymentMethod, ProductName } from "@/app/payment/constants";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ExtractServerActionData } from "@/lib/serverAction";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Script from "next/script";
@@ -25,7 +26,7 @@ declare global {
   }
 }
 
-type PaymentRecord = Awaited<ReturnType<typeof getPaymentRecords>>["data"][number];
+type PaymentRecord = ExtractServerActionData<typeof getPaymentRecords>[number];
 
 export default function PaymentTestPage() {
   const { status, data: session } = useSession();
@@ -36,11 +37,11 @@ export default function PaymentTestPage() {
 
   // Fetch payment records on load
   const fetchRecords = useCallback(async () => {
-    try {
-      const result = await getPaymentRecords();
+    const result = await getPaymentRecords();
+    if (!result.success) {
+      setError(result.message);
+    } else {
       setRecords(result.data);
-    } catch (err) {
-      setError((err as Error).message);
     }
   }, []);
 
