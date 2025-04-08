@@ -1,14 +1,19 @@
 "use client";
-import { createCharge, getPaymentRecords } from "@/app/payment/actions";
+import { createCharge } from "@/app/payment/actions";
 import { PaymentMethod, ProductName } from "@/app/payment/constants";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Pagination } from "@/components/ui/pagination";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ExtractServerActionData } from "@/lib/serverAction";
+import { SearchIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Script from "next/script";
-import { useCallback, useEffect, useState } from "react";
+import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
+import { PaginationInfo } from "../utils";
+import { getPaymentRecords } from "./actions";
 
 // Define Ping++ global object type
 declare global {
@@ -34,16 +39,50 @@ export default function PaymentTestPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [records, setRecords] = useState<PaymentRecord[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState<PaginationInfo | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Initialize page from URL on load
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      const pageParam = url.searchParams.get("page");
+      const searchParam = url.searchParams.get("search");
+      if (pageParam) {
+        setCurrentPage(parseInt(pageParam, 10));
+      }
+      if (searchParam) {
+        setSearchQuery(searchParam);
+      }
+    }
+  }, []);
+
+  // Update URL when page or search changes
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    url.searchParams.set("page", currentPage.toString());
+    if (searchQuery) {
+      url.searchParams.set("search", searchQuery);
+    } else {
+      url.searchParams.delete("search");
+    }
+    window.history.pushState({}, "", url.toString());
+  }, [currentPage, searchQuery]);
 
   // Fetch payment records on load
   const fetchRecords = useCallback(async () => {
-    const result = await getPaymentRecords();
+    setIsLoading(true);
+    const result = await getPaymentRecords(currentPage, searchQuery);
     if (!result.success) {
       setError(result.message);
     } else {
       setRecords(result.data);
+      if (result.pagination) setPagination(result.pagination);
     }
-  }, []);
+    setIsLoading(false);
+  }, [currentPage, searchQuery]);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -52,6 +91,12 @@ export default function PaymentTestPage() {
       fetchRecords();
     }
   }, [status, router, fetchRecords]);
+
+  const handleSearch = useCallback((e: FormEvent) => {
+    e.preventDefault();
+    setCurrentPage(1); // Reset to first page on new search
+    setSearchQuery(inputRef.current?.value ?? "");
+  }, []);
 
   // Initiate payment
   const handlePayment = async (method: PaymentMethod, productName: ProductName) => {
@@ -166,6 +211,36 @@ export default function PaymentTestPage() {
 
       <div className="mt-8">
         <h2 className="mb-4 text-xl font-semibold">Recent Payment Records</h2>
+
+        <div className="mb-6">
+          <form onSubmit={handleSearch} className="flex gap-2">
+            <div className="relative flex-1">
+              <SearchIcon className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                defaultValue={searchQuery}
+                ref={inputRef}
+                placeholder="Search by order number or email..."
+                className="pl-8"
+              />
+            </div>
+            <Button type="submit">Search</Button>
+            {searchQuery && (
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => {
+                  if (inputRef.current) {
+                    inputRef.current.value = "";
+                  }
+                  setSearchQuery("");
+                  setCurrentPage(1);
+                }}
+              >
+                Clear
+              </Button>
+            )}
+          </form>
+        </div>
         <div className="overflow-x-auto rounded-lg border">
           <table className="min-w-full divide-y divide">
             <thead>
@@ -240,6 +315,15 @@ export default function PaymentTestPage() {
             </tbody>
           </table>
         </div>
+        {pagination && pagination.totalPages > 1 && (
+          <div className="mt-6 flex justify-center">
+            <Pagination
+              currentPage={pagination.page}
+              totalPages={pagination.totalPages}
+              onPageChange={setCurrentPage}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

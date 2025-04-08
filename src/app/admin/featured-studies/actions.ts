@@ -73,6 +73,7 @@ export async function fetchFeaturedStudies(): Promise<
 // Get all analysts with their featured status
 export async function fetchAnalysts(
   page: number = 1,
+  emailSearch?: string,
   pageSize: number = 12,
 ): Promise<
   ServerActionResult<
@@ -88,9 +89,15 @@ export async function fetchAnalysts(
   await checkAdminAuth();
 
   const skip = (page - 1) * pageSize;
-  const where = {
-    studyUserChat: {},
-  };
+  const where = emailSearch
+    ? {
+        userAnalysts: {
+          some: {
+            user: { email: { contains: emailSearch } },
+          },
+        },
+      }
+    : undefined;
 
   // Get all analysts with their featured status
   const analysts = await prisma.analyst.findMany({

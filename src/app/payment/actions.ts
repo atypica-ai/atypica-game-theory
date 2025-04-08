@@ -1,8 +1,6 @@
 "use server";
-import { checkAdminAuth } from "@/app/admin/utils";
 import { prisma } from "@/lib/prisma";
-import { ServerActionResult } from "@/lib/serverAction";
-import { PaymentLine, PaymentRecord as PaymentRecordPrisma, User } from "@prisma/client";
+import { PaymentRecord as PaymentRecordPrisma } from "@prisma/client";
 import crypto from "crypto";
 import { headers } from "next/headers";
 import { PaymentMethod, ProductName } from "./constants";
@@ -192,35 +190,6 @@ export async function handleWebhook(request: Request) {
   }
 
   return { status: 200, body: { received: true } };
-}
-
-// Get payment records for display
-export async function getPaymentRecords(): Promise<
-  ServerActionResult<
-    (PaymentRecord & {
-      user: User;
-      paymentLines: PaymentLine[];
-    })[]
-  >
-> {
-  await checkAdminAuth();
-
-  const records = await prisma.paymentRecord.findMany({
-    orderBy: { createdAt: "desc" },
-    include: {
-      paymentLines: true,
-      user: true,
-    },
-    take: 10,
-  });
-
-  return {
-    success: true,
-    data: records as (PaymentRecord & {
-      user: User;
-      paymentLines: PaymentLine[];
-    })[],
-  };
 }
 
 export async function handlePaymentSuccess({ chargeId }: { chargeId: string }) {
