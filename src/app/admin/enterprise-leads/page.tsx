@@ -177,18 +177,18 @@ export default function EnterpriseLeadsPage() {
             const contactInfo = extractContactInfo(messages);
             return (
               <Card key={lead.id} className="overflow-hidden py-0 gap-1">
-                <CardHeader className="py-3 px-4 bg-gray-50 flex flex-row justify-between items-center">
-                  <div>
-                    <span className="font-medium text-gray-700">{lead.user.email}</span>
-                    <span className="text-xs text-gray-500 ml-2">{formatDate(lead.createdAt)}</span>
+                <CardHeader className="py-3 px-3 md:px-4 bg-gray-50 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                  <div className="overflow-hidden">
+                    <span className="font-medium text-gray-700 block sm:inline text-sm sm:text-base truncate">{lead.user.email}</span>
+                    <span className="text-xs text-gray-500 sm:ml-2 block sm:inline">{formatDate(lead.createdAt)}</span>
                   </div>
-                  <Button variant="outline" size="sm" asChild>
+                  <Button variant="outline" size="sm" className="w-full sm:w-auto" asChild>
                     <Link href={`/study/${lead.token}/share?replay=1`} target="_blank">
                       查看完整对话
                     </Link>
                   </Button>
                 </CardHeader>
-                <CardContent className="p-4">
+                <CardContent className="p-3 md:p-4">
                   {/* Contact Information */}
                   {(contactInfo.emails.length > 0 ||
                     contactInfo.phones.length > 0 ||
@@ -197,7 +197,7 @@ export default function EnterpriseLeadsPage() {
                       <h3 className="text-sm font-medium text-blue-800">联系方式:</h3>
                       <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-sm">
                         {contactInfo.emails.map((email) => (
-                          <span key={email} className="text-blue-700">
+                          <span key={email} className="text-blue-700 break-all">
                             📧 {email}
                           </span>
                         ))}

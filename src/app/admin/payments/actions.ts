@@ -29,7 +29,8 @@ export async function getPaymentRecords(
   const skip = (page - 1) * pageSize;
 
   // Build the where condition based on search query and status filter
-  let where: any = {};
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const where: any = {};
 
   // Add search query filters if provided
   if (searchQuery) {
