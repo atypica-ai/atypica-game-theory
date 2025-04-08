@@ -187,7 +187,7 @@ export async function getProductsForPayment(): Promise<
   ServerActionResult<{ name: ProductName; desc: string; price: number; currency: string }[]>
 > {
   const headersList = await headers();
-  if (headersList.get("ali-ip-country") === "CN") {
+  if ((headersList.get("ali-ip-country") ?? "CN") === "CN") {
     return {
       success: true,
       data: [

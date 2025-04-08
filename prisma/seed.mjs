@@ -60,28 +60,28 @@ async function createProducts() {
       price: 1,
       currency: "USD",
       description: "Buy atypica.AI a cup of drip coffee",
-      extra: { price_id: "price_1RBTWCGU0jUFYcrN9O7s7KJc" },
+      extra: { price_id: "price_1RBgK5GU0jUFYcrN61vdZ8mG" },
     },
     {
       name: "POINTS100_B_GLOBAL",
       price: 2,
       currency: "USD",
       description: "Buy atypica.AI a Manner Coffee",
-      extra: { price_id: "price_1RBTWCGU0jUFYcrNt9sxHrmk" },
+      extra: { price_id: "price_1RBgKKGU0jUFYcrNh2V99KRJ" },
     },
     {
       name: "POINTS100_C_GLOBAL",
       price: 4,
       currency: "USD",
       description: "Buy atypica.AI a Starbucks Coffee",
-      extra: { price_id: "price_1RBTWCGU0jUFYcrNI7HVIibv" },
+      extra: { price_id: "price_1RBgKYGU0jUFYcrNUO7spIAr" },
     },
     {
       name: "POINTS100_D_GLOBAL",
       price: 6,
       currency: "USD",
       description: "Buy atypica.AI a Blue Bottle Coffee",
-      extra: { price_id: "price_1RBTWCGU0jUFYcrNreiHXh7e" },
+      extra: { price_id: "price_1RBgKiGU0jUFYcrNLKj9lyeB" },
     },
   ];
   // Create products

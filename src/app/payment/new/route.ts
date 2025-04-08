@@ -1,6 +1,5 @@
 import { getRequestOrigin } from "@/lib/headers";
 import { headers } from "next/headers";
-import { redirect } from "next/navigation";
 import { PaymentMethod, ProductName } from "../constants";
 
 async function createWeixinLoginUrl({
@@ -45,16 +44,13 @@ async function createAlipayLoginUrl({
   };
 }
 
-export default async function PingxxPaymentPage(props: {
-  searchParams: Promise<{
-    userId: number;
-    productName: ProductName;
-    paymentMethod?: PaymentMethod;
-    successUrl: string;
-  }>;
-}) {
-  const searchParams = await props.searchParams;
-  const { userId, productName, paymentMethod: _paymentMethod, successUrl } = searchParams;
+export async function GET(req: Request) {
+  const url = new URL(req.url);
+  const searchParams = Object.fromEntries(url.searchParams.entries());
+  const userId = parseInt(searchParams.userId);
+  const productName = searchParams.productName as ProductName;
+  const _paymentMethod = searchParams.paymentMethod as PaymentMethod;
+  const successUrl = searchParams.successUrl as string;
 
   let paymentMethod = _paymentMethod;
   if (!paymentMethod) {
@@ -73,7 +69,11 @@ export default async function PingxxPaymentPage(props: {
       productName,
       successUrl,
     });
-    redirect(weixinLoginUrl);
+    return new Response(null, {
+      status: 308,
+      headers: { Location: weixinLoginUrl },
+    });
+    // redirect(weixinLoginUrl);
   }
   if (paymentMethod === PaymentMethod.alipay_wap) {
     const { url: alipayLoginUrl } = await createAlipayLoginUrl({
@@ -81,7 +81,10 @@ export default async function PingxxPaymentPage(props: {
       productName,
       successUrl,
     });
-    redirect(alipayLoginUrl);
+    return new Response(null, {
+      status: 308,
+      headers: { Location: alipayLoginUrl },
+    });
+    // redirect(alipayLoginUrl);
   }
-  return <div></div>;
 }
