@@ -15,6 +15,7 @@ export type PaymentRecord = PaymentRecordPrisma & {
 export async function getPaymentRecords(
   page: number = 1,
   searchQuery?: string,
+  showAllStatuses: boolean = false,
   pageSize: number = 10,
 ): Promise<
   ServerActionResult<
@@ -27,15 +28,21 @@ export async function getPaymentRecords(
   await checkAdminAuth();
   const skip = (page - 1) * pageSize;
 
-  // Build the where condition based on search query
-  const where = searchQuery
-    ? {
-        OR: [
-          { orderNo: { contains: searchQuery } },
-          { user: { email: { contains: searchQuery } } },
-        ],
-      }
-    : {};
+  // Build the where condition based on search query and status filter
+  let where: any = {};
+
+  // Add search query filters if provided
+  if (searchQuery) {
+    where.OR = [
+      { orderNo: { contains: searchQuery } },
+      { user: { email: { contains: searchQuery } } },
+    ];
+  }
+
+  // Add status filter if not showing all statuses
+  if (!showAllStatuses) {
+    where.status = "succeeded";
+  }
 
   const [records, totalCount] = await Promise.all([
     prisma.paymentRecord.findMany({

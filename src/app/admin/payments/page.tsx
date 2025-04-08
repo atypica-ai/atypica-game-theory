@@ -42,6 +42,7 @@ export default function PaymentTestPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showAllStatuses, setShowAllStatuses] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Initialize page from URL on load
@@ -50,16 +51,20 @@ export default function PaymentTestPage() {
       const url = new URL(window.location.href);
       const pageParam = url.searchParams.get("page");
       const searchParam = url.searchParams.get("search");
+      const statusParam = url.searchParams.get("showAll");
       if (pageParam) {
         setCurrentPage(parseInt(pageParam, 10));
       }
       if (searchParam) {
         setSearchQuery(searchParam);
       }
+      if (statusParam === "true") {
+        setShowAllStatuses(true);
+      }
     }
   }, []);
 
-  // Update URL when page or search changes
+  // Update URL when page, search or status filter changes
   useEffect(() => {
     const url = new URL(window.location.href);
     url.searchParams.set("page", currentPage.toString());
@@ -68,13 +73,18 @@ export default function PaymentTestPage() {
     } else {
       url.searchParams.delete("search");
     }
+    if (showAllStatuses) {
+      url.searchParams.set("showAll", "true");
+    } else {
+      url.searchParams.delete("showAll");
+    }
     window.history.pushState({}, "", url.toString());
-  }, [currentPage, searchQuery]);
+  }, [currentPage, searchQuery, showAllStatuses]);
 
   // Fetch payment records on load
   const fetchRecords = useCallback(async () => {
     setIsLoading(true);
-    const result = await getPaymentRecords(currentPage, searchQuery);
+    const result = await getPaymentRecords(currentPage, searchQuery, showAllStatuses);
     if (!result.success) {
       setError(result.message);
     } else {
@@ -82,7 +92,7 @@ export default function PaymentTestPage() {
       if (result.pagination) setPagination(result.pagination);
     }
     setIsLoading(false);
-  }, [currentPage, searchQuery]);
+  }, [currentPage, searchQuery, showAllStatuses]);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -275,6 +285,21 @@ export default function PaymentTestPage() {
               </Button>
             )}
           </form>
+          <div className="mt-2 flex items-center">
+            <input
+              type="checkbox"
+              id="showAllStatuses"
+              checked={showAllStatuses}
+              onChange={() => {
+                setShowAllStatuses(!showAllStatuses);
+                setCurrentPage(1); // Reset page when filter changes
+              }}
+              className="mr-2 h-4 w-4"
+            />
+            <label htmlFor="showAllStatuses" className="text-sm text-muted-foreground">
+              Show all payment statuses (including pending and failed)
+            </label>
+          </div>
         </div>
         <div className="overflow-x-auto rounded-lg border">
           <table className="min-w-full divide-y divide">
