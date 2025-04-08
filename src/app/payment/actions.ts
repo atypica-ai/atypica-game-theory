@@ -1,7 +1,8 @@
 "use server";
+import { getRequestClientIp, getRequestOrigin } from "@/lib/headers";
 import { prisma } from "@/lib/prisma";
+import { ServerActionResult } from "@/lib/serverAction";
 import { PaymentRecord as PaymentRecordPrisma } from "@prisma/client";
-import crypto from "crypto";
 import { headers } from "next/headers";
 import { PaymentMethod, ProductName } from "./constants";
 
@@ -34,11 +35,8 @@ export async function createCharge({
   // if (!session?.user) {
   //   forbidden();
   // }
-
   // 支付因为要换手机设备打开，不需要登录
-
-  const headersList = await headers();
-  const clientIp = headersList.get("x-forwarded-for") || headersList.get("x-real-ip") || "0.0.0.0";
+  const clientIp = await getRequestClientIp();
 
   // Generate a unique order number
   const timestamp = Date.now().toString();
@@ -49,17 +47,22 @@ export async function createCharge({
   const product = await prisma.product.findUniqueOrThrow({
     where: { name: productName },
   });
+  if (product.currency !== "CNY") {
+    throw new Error("Only CNY currency is supported");
+  }
   const lines = [
     {
       productId: product.id,
       productName: product.name,
       quantity: 1,
       price: product.price,
+      currency: product.currency,
       description: product.description,
     },
   ];
   const amount = lines.reduce((acc, line) => acc + line.price * line.quantity, 0);
   const description = lines.map((line) => line.description).join(", ");
+  const siteOrigin = await getRequestOrigin();
 
   // Create the charge data
   const chargeData = {
@@ -76,8 +79,8 @@ export async function createCharge({
         paymentMethod === PaymentMethod.alipay_wap) &&
       successUrl
         ? {
-            success_url: `${process.env.SITE_DEPLOY_ORIGIN}/payment/success?redirect=${encodeURIComponent(successUrl)}`,
-            cancel_url: `${process.env.SITE_DEPLOY_ORIGIN}/payment/cancel?redirect=${encodeURIComponent(successUrl)}`,
+            success_url: `${siteOrigin}/payment/success?redirect=${encodeURIComponent(successUrl)}`,
+            cancel_url: `${siteOrigin}/payment/cancel?redirect=${encodeURIComponent(successUrl)}`,
           }
         : paymentMethod === PaymentMethod.wx_pub && openid
           ? { open_id: openid } // pingxx 的参数叫 open_id
@@ -110,6 +113,7 @@ export async function createCharge({
       userId: userId,
       orderNo: orderNo,
       amount: amount, // Convert cents to yuan
+      currency: product.currency,
       status: "pending",
       paymentMethod: paymentMethod,
       chargeId: chargeResult.id,
@@ -131,67 +135,6 @@ export async function createCharge({
   };
 }
 
-// Verify a Ping++ webhook
-export async function verifyWebhook(signature: string, rawBody: string) {
-  const pingppPublicKey = process.env.PINGPP_WEBHOOK_PUBLIC_KEY || "";
-  try {
-    const verifier = crypto.createVerify("RSA-SHA256");
-    verifier.update(rawBody, "utf8");
-    return verifier.verify(pingppPublicKey, signature, "base64");
-  } catch (error) {
-    console.error("Webhook verification error:", error);
-    return false;
-  }
-}
-
-// Handle webhook from Ping++
-export async function handleWebhook(request: Request) {
-  const rawBody = await request.text();
-  const signature = request.headers.get("x-pingplusplus-signature") || "";
-
-  // Verify the webhook signature
-  const isValid = await verifyWebhook(signature, rawBody);
-  if (!isValid) {
-    return { status: 400, body: { error: "Invalid signature" } };
-  }
-
-  const event = JSON.parse(rawBody);
-
-  // Handle successful payment
-  if (event.type === "charge.succeeded") {
-    const charge = event.data.object;
-
-    // Update payment record in database
-    await prisma.paymentRecord.update({
-      where: { chargeId: charge.id },
-      data: {
-        status: "succeeded",
-        paidAt: new Date(),
-      },
-    });
-
-    await handlePaymentSuccess({ chargeId: charge.id });
-
-    return { status: 200, body: { received: true } };
-  }
-
-  // Handle failed payment
-  if (event.type === "charge.failed") {
-    const charge = event.data.object;
-
-    await prisma.paymentRecord.updateMany({
-      where: { chargeId: charge.id },
-      data: {
-        status: "failed",
-      },
-    });
-
-    return { status: 200, body: { received: true } };
-  }
-
-  return { status: 200, body: { received: true } };
-}
-
 export async function handlePaymentSuccess({ chargeId }: { chargeId: string }) {
   const paymentRecord = await prisma.paymentRecord.findUniqueOrThrow({
     where: { chargeId },
@@ -210,7 +153,11 @@ export async function handlePaymentSuccess({ chargeId }: { chargeId: string }) {
       paymentLine.productName === ProductName.POINTS100_A ||
       paymentLine.productName === ProductName.POINTS100_B ||
       paymentLine.productName === ProductName.POINTS100_C ||
-      paymentLine.productName === ProductName.POINTS100_D
+      paymentLine.productName === ProductName.POINTS100_D ||
+      paymentLine.productName === ProductName.POINTS100_A_GLOBAL ||
+      paymentLine.productName === ProductName.POINTS100_B_GLOBAL ||
+      paymentLine.productName === ProductName.POINTS100_C_GLOBAL ||
+      paymentLine.productName === ProductName.POINTS100_D_GLOBAL
     ) {
       await prisma.$transaction([
         prisma.userPointsLog.create({
@@ -234,4 +181,51 @@ export async function handlePaymentSuccess({ chargeId }: { chargeId: string }) {
     }
   }
   // end for
+}
+
+export async function getProductsForPayment(): Promise<
+  ServerActionResult<{ name: ProductName; desc: string; price: number; currency: string }[]>
+> {
+  const headersList = await headers();
+  if (headersList.get("ali-ip-country") === "CN") {
+    return {
+      success: true,
+      data: [
+        { name: ProductName.POINTS100_A, desc: "挂耳咖啡", price: 7.5, currency: "CNY" },
+        { name: ProductName.POINTS100_B, desc: "Manner咖啡", price: 15, currency: "CNY" },
+        { name: ProductName.POINTS100_C, desc: "星巴克咖啡", price: 30, currency: "CNY" },
+        { name: ProductName.POINTS100_D, desc: "小蓝瓶咖啡", price: 45, currency: "CNY" },
+      ],
+    };
+  } else {
+    return {
+      success: true,
+      data: [
+        {
+          name: ProductName.POINTS100_A_GLOBAL,
+          desc: "A cup of drip coffee",
+          price: 1,
+          currency: "USD",
+        },
+        {
+          name: ProductName.POINTS100_B_GLOBAL,
+          desc: "A Manner Coffee",
+          price: 2,
+          currency: "USD",
+        },
+        {
+          name: ProductName.POINTS100_C_GLOBAL,
+          desc: "A Starbucks Coffee",
+          price: 4,
+          currency: "USD",
+        },
+        {
+          name: ProductName.POINTS100_D_GLOBAL,
+          desc: "A Blue Bottle Coffee",
+          price: 6,
+          currency: "USD",
+        },
+      ],
+    };
+  }
 }

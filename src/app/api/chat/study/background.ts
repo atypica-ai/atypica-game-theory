@@ -65,6 +65,8 @@ export function backgroundChatUntilCancel<TOOLS extends ToolSet, PARTIAL_OUTPUT>
     }),
   );
 
+  // 还有个方法，after，在这里可能更好
+  // https://nextjs.org/docs/app/api-reference/functions/after#alternatives
   waitUntil(
     new Promise((resolve, reject) => {
       let stop = false;

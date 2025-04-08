@@ -1,17 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getRequestClientIp, getRequestOrigin } from "./lib/headers";
 
 export const config = {
   matcher: ["/((?!api|_next/static|_next/image|_public|favicon.ico|sitemap.xml|robots.txt).*)"],
 };
 
-function handlePingRequest(req: NextRequest) {
+async function handlePingRequest(req: NextRequest) {
   const path = req.nextUrl.pathname;
-  const region = process.env.DEPLOY_REGION;
+  const clientIp = await getRequestClientIp();
+  const requestOrigin = await getRequestOrigin();
   const headers = Object.fromEntries(req.headers);
-  return new NextResponse(JSON.stringify({ path, region, headers }), {
-    status: 200,
-    headers: { "Content-Type": "application/json" },
-  });
+  return new NextResponse(
+    JSON.stringify({
+      path,
+      clientIp,
+      requestOrigin,
+      headers,
+    }),
+    {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    },
+  );
 }
 
 function handleLocale(req: NextRequest) {
@@ -27,7 +37,7 @@ function handleLocale(req: NextRequest) {
 
 export async function middleware(req: NextRequest) {
   if (req.nextUrl.pathname.endsWith(".ping")) {
-    return handlePingRequest(req);
+    return await handlePingRequest(req);
   }
 
   const response = handleLocale(req);

@@ -190,16 +190,22 @@ enum PaymentStatus {
   failed
 }
 
+enum Currency {
+  CNY
+  USD
+}
+
 model PaymentRecord {
   id            Int           @id @default(autoincrement())
   userId        Int
   user          User          @relation(fields: [userId], references: [id])
   orderNo       String        @unique @db.VarChar(64)
   amount        Float
+  currency      Currency      @default(CNY)
   status        PaymentStatus
   paymentMethod String        @db.VarChar(64)
   charge        Json
-  chargeId      String        @unique @db.VarChar(64)
+  chargeId      String        @unique @db.VarChar(255)
   credential    Json
   description   String        @db.VarChar(255)
   paidAt        DateTime?
@@ -211,10 +217,12 @@ model PaymentRecord {
 }
 
 model Product {
-  id          Int    @id @default(autoincrement())
-  name        String @unique @db.VarChar(64)
+  id          Int      @id @default(autoincrement())
+  name        String   @unique @db.VarChar(64)
   price       Float
-  description String @db.VarChar(255)
+  description String   @db.VarChar(255)
+  currency    Currency @default(CNY)
+  extra       Json?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -232,6 +240,7 @@ model PaymentLine {
   description     String        @db.VarChar(255)
   quantity        Int
   price           Float
+  currency        Currency      @default(CNY)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

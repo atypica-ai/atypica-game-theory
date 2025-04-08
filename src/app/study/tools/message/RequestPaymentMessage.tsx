@@ -1,6 +1,8 @@
+import { getProductsForPayment } from "@/app/payment/actions";
 import { ProductName } from "@/app/payment/constants";
 import { useStudyContext } from "@/app/study/hooks/StudyContext";
 import { checkStudyUserChatConsume } from "@/data/UserPoints";
+import { ExtractServerActionData } from "@/lib/serverAction";
 import { RequestPaymentResult } from "@/tools/user/payment";
 import { ToolInvocation } from "ai";
 import { MessageCircleQuestionIcon } from "lucide-react";
@@ -8,6 +10,8 @@ import { useSession } from "next-auth/react";
 import Script from "next/script";
 import { QRCodeSVG } from "qrcode.react";
 import { FC, useCallback, useEffect, useState } from "react";
+
+type ProductForPayment = ExtractServerActionData<typeof getProductsForPayment>[number];
 
 export const RequestPaymentMessage: FC<{
   toolInvocation: ToolInvocation;
@@ -32,7 +36,10 @@ export const RequestPaymentMessage: FC<{
     const poll = async () => {
       timeoutId = setTimeout(poll, 1000);
       const result = await checkStudyUserChatConsume({ studyUserChatId });
-      if (result) {
+      if (!result.success) {
+        throw new Error(result.message);
+      }
+      if (result.data) {
         clearTimeout(timeoutId); // 一旦检测到成功了，就可以停下
         addToolResult({
           toolCallId: toolInvocation.toolCallId,
@@ -57,8 +64,9 @@ export const RequestPaymentMessage: FC<{
     };
     checkMobile();
   }, []);
+
   const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
-  const createPaymentUrl = useCallback(
+  const createPingxxPaymentUrl = useCallback(
     async ({ productName, userId }: { productName: ProductName; userId: number }) => {
       const url = new URL(`${window.location.origin}/payment/new`);
       const params = new URLSearchParams();
@@ -84,22 +92,54 @@ export const RequestPaymentMessage: FC<{
     [isMobile],
   );
 
-  const handlePayment = async (productName: ProductName) => {
+  const submitForStripePayment = useCallback(
+    ({ productName, userId }: { productName: ProductName; userId: number }) => {
+      const form = document.createElement("form");
+      form.action = "/payment/stripe";
+      form.method = "POST";
+      const formData = [
+        { name: "userId", value: userId.toString() },
+        { name: "productName", value: productName },
+        { name: "successUrl", value: window.location.href },
+      ];
+      for (const item of formData) {
+        const input = document.createElement("input");
+        input.name = item.name;
+        input.value = item.value;
+        form.appendChild(input);
+      }
+      document.body.appendChild(form);
+      form.submit();
+      document.body.removeChild(form);
+    },
+    [],
+  );
+
+  const handlePayment = async (item: ProductForPayment) => {
     if (!session?.user) {
       return;
     }
-    await createPaymentUrl({
-      productName,
-      userId: session.user.id,
-    });
+    if (item.currency === "CNY") {
+      await createPingxxPaymentUrl({
+        productName: item.name,
+        userId: session.user.id,
+      });
+    } else if (item.currency === "USD") {
+      submitForStripePayment({
+        productName: item.name,
+        userId: session.user.id,
+      });
+    }
   };
 
-  const products = [
-    { name: ProductName.POINTS100_A, desc: "挂耳咖啡", price: 7.5 },
-    { name: ProductName.POINTS100_B, desc: "Manner咖啡", price: 15 },
-    { name: ProductName.POINTS100_C, desc: "星巴克咖啡", price: 30 },
-    { name: ProductName.POINTS100_D, desc: "小蓝瓶咖啡", price: 45 },
-  ];
+  const [products, setProducts] = useState<ProductForPayment[]>([]);
+  useEffect(() => {
+    getProductsForPayment().then((result) => {
+      if (result.success) {
+        setProducts(result.data);
+      }
+    });
+  }, []);
 
   return toolInvocation.state !== "result" ? (
     <div className="p-4 bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 rounded-lg">
@@ -112,11 +152,14 @@ export const RequestPaymentMessage: FC<{
           <div
             key={index}
             className="p-2 rounded-md border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-700 cursor-pointer"
-            onClick={() => handlePayment(item.name)}
+            onClick={() => handlePayment(item)}
           >
-            <div className="text-xs flex items-center justify-between max-w-27">
+            <div className="text-xs flex items-center justify-between">
               <span>{item.desc}</span>
-              <span>{item.price}元</span>
+              <span className="ml-auto">
+                {item.currency === "CNY" ? "¥" : item.currency === "USD" ? "$" : item.currency}
+              </span>
+              <span>{item.price}</span>
             </div>
           </div>
         ))}

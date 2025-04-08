@@ -1,8 +1,19 @@
+import { getRequestOrigin } from "@/lib/headers";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { PaymentMethod, ProductName } from "../constants";
 
-async function createWeixinLoginUrl({ state, successUrl }: { state: string; successUrl: string }) {
+async function createWeixinLoginUrl({
+  userId,
+  productName,
+  successUrl,
+}: {
+  userId: number;
+  productName: ProductName;
+  successUrl: string;
+}) {
+  const siteOrigin = await getRequestOrigin();
+  const state = `${userId}:${productName}`;
   const res = await fetch("https://heidianapi.com/api/clients/wechat-auth-url/", {
     method: "POST",
     headers: {
@@ -13,11 +24,25 @@ async function createWeixinLoginUrl({ state, successUrl }: { state: string; succ
       appid: "wx442ec54730781c2d",
       state: state,
       success_url: successUrl,
-      redirect_uri: `${process.env.SITE_DEPLOY_ORIGIN}/payment/wx_pub/`,
+      redirect_uri: `${siteOrigin}/payment/wx_pub/`,
     }),
   });
   const data = await res.json();
   return { url: data.url };
+}
+
+async function createAlipayLoginUrl({
+  userId,
+  productName,
+  successUrl,
+}: {
+  userId: number;
+  productName: ProductName;
+  successUrl: string;
+}) {
+  return {
+    url: `/payment/alipay_wap/?userId=${userId}&productName=${productName}&successUrl=${successUrl}`,
+  };
 }
 
 export default async function PingxxPaymentPage(props: {
@@ -30,7 +55,6 @@ export default async function PingxxPaymentPage(props: {
 }) {
   const searchParams = await props.searchParams;
   const { userId, productName, paymentMethod: _paymentMethod, successUrl } = searchParams;
-  const state = `${userId}:${productName}`;
 
   let paymentMethod = _paymentMethod;
   if (!paymentMethod) {
@@ -45,15 +69,19 @@ export default async function PingxxPaymentPage(props: {
 
   if (paymentMethod === PaymentMethod.wx_pub) {
     const { url: weixinLoginUrl } = await createWeixinLoginUrl({
-      state,
+      userId,
+      productName,
       successUrl,
     });
     redirect(weixinLoginUrl);
   }
   if (paymentMethod === PaymentMethod.alipay_wap) {
-    redirect(
-      `/payment/alipay_wap/?userId=${userId}&productName=${productName}&successUrl=${successUrl}`,
-    );
+    const { url: alipayLoginUrl } = await createAlipayLoginUrl({
+      userId,
+      productName,
+      successUrl,
+    });
+    redirect(alipayLoginUrl);
   }
   return <div></div>;
 }

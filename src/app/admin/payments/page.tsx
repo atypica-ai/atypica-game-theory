@@ -155,9 +155,10 @@ export default function PaymentTestPage() {
       {error && <div className="mb-4 rounded-lg bg-red-50 p-4 text-red-500">{error}</div>}
 
       <Tabs defaultValue="alipay_pc_direct" className="mb-6">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value={PaymentMethod.alipay_pc_direct}>Alipay PC Direct</TabsTrigger>
           <TabsTrigger value={PaymentMethod.alipay_wap}>Alipay WAP</TabsTrigger>
+          <TabsTrigger value={PaymentMethod.stripe}>Stripe Payment</TabsTrigger>
         </TabsList>
 
         <TabsContent value={PaymentMethod.alipay_pc_direct} className="mt-4">
@@ -204,6 +205,40 @@ export default function PaymentTestPage() {
               >
                 Pay 0.1 CNY
               </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value={PaymentMethod.stripe} className="mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Stripe Payment</CardTitle>
+              <CardDescription>Test WAP payments with Stripe</CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-row gap-4">
+              <form action="/payment/stripe" method="POST">
+                <input type="hidden" name="userId" value={session?.user?.id} />
+                <input type="hidden" name="productName" value={ProductName.TEST_A_GLOBAL} />
+                <input
+                  type="hidden"
+                  name="successUrl"
+                  value={typeof window !== "undefined" ? window.location.href : ""}
+                />
+                <Button type="submit" role="link">
+                  Checkout 1 USD
+                </Button>
+              </form>
+              <form action="/payment/stripe" method="POST">
+                <input type="hidden" name="userId" value={session?.user?.id} />
+                <input type="hidden" name="productName" value={ProductName.TEST_B_GLOBAL} />
+                <input
+                  type="hidden"
+                  name="successUrl"
+                  value={typeof window !== "undefined" ? window.location.href : ""}
+                />
+                <Button type="submit" role="link">
+                  Checkout 2 USD
+                </Button>
+              </form>
             </CardContent>
           </Card>
         </TabsContent>
@@ -290,7 +325,7 @@ export default function PaymentTestPage() {
                       ))}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
-                      {record.amount.toFixed(2)} CNY
+                      {record.amount.toFixed(2)} {record.currency}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm">{record.paymentMethod}</td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm">

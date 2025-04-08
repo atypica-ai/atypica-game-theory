@@ -231,9 +231,8 @@ export async function fetchAnalystReportsOfStudyUserChat({
   });
   if (!studyUserChat?.analyst) {
     return {
-      success: false,
-      code: "not_found",
-      message: "No analyst found on userChat",
+      success: true,
+      data: [],
     };
   }
   const reports = await prisma.analystReport.findMany({

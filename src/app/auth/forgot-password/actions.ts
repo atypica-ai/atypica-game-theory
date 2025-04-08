@@ -1,5 +1,6 @@
 "use server";
 import { encryptText } from "@/lib/cipher";
+import { getRequestOrigin } from "@/lib/headers";
 import { prisma } from "@/lib/prisma";
 import { ServerActionResult } from "@/lib/serverAction";
 import { getTranslations } from "next-intl/server";
@@ -35,7 +36,8 @@ export const sendPasswordResetEmail = async (
     const resetToken = encryptText(payload);
 
     // Create reset URL
-    const resetUrl = `${process.env.SITE_DEPLOY_ORIGIN}/auth/reset-password?token=${resetToken}`;
+    const siteOrigin = await getRequestOrigin();
+    const resetUrl = `${siteOrigin}/auth/reset-password?token=${resetToken}`;
 
     // Send email
     const transporter = nodemailer.createTransport({
