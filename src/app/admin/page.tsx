@@ -41,6 +41,10 @@ export default function AdminDashboard() {
           <h2 className="mb-2 text-xl font-semibold">Payment Test</h2>
           <p className="text-sm text-muted-foreground">Test payment integrations with Ping++</p>
         </div>
+        <div className="rounded-lg border bg-card p-4 shadow-sm">
+          <h2 className="mb-2 text-xl font-semibold">Enterprise Leads</h2>
+          <p className="text-sm text-muted-foreground">View and manage enterprise leads</p>
+        </div>
       </div>
     </div>
   );

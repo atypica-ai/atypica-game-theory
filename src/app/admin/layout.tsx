@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import UserMenu from "@/components/UserMenu";
 import { authOptions } from "@/lib/auth";
-import { CreditCard, Database, Home, Key, Star, Users } from "lucide-react";
+import { CreditCard, Database, Home, Key, MessageCircle, Star, Users } from "lucide-react";
 import { getServerSession } from "next-auth";
 import Link from "next/link";
 import { ReactNode } from "react";
@@ -44,6 +44,11 @@ const sidebarItemsAdmin: SidebarItem[] = [
     label: "Payments",
     href: "/admin/payments",
     icon: <CreditCard className="mr-2 h-4 w-4" />,
+  },
+  {
+    label: "Enterprise Leads",
+    href: "/admin/enterprise-leads",
+    icon: <MessageCircle className="mr-2 h-4 w-4" />,
   },
   {
     label: "View Site",
