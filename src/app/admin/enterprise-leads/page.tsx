@@ -88,10 +88,10 @@ export default function EnterpriseLeadsPage() {
       <div className="space-y-2 mt-2">
         {userMessages.map((message, index) => (
           <div key={`user-${index}`} className="flex items-start gap-2 text-sm">
-            <div className="h-5 w-5 mt-0.5 flex-shrink-0 rounded-full bg-gray-200 flex items-center justify-center">
-              <UserIcon size={12} />
+            <div className="h-5 w-5 mt-0.5 flex-shrink-0 rounded-full bg-muted flex items-center justify-center">
+              <UserIcon size={12} className="text-muted-foreground" />
             </div>
-            <p className="text-gray-700">{message.content}</p>
+            <p className="text-foreground">{message.content}</p>
           </div>
         ))}
       </div>
@@ -100,27 +100,27 @@ export default function EnterpriseLeadsPage() {
 
   const renderFullConversation = (messages: Message[]) => {
     return (
-      <div className="space-y-2 max-h-96 overflow-y-auto border rounded-md p-3 mt-2 bg-gray-50">
+      <div className="space-y-2 max-h-96 overflow-y-auto border rounded-md p-3 mt-2 bg-muted/30">
         {messages.map((message, index) => (
           <div
             key={message.id || index}
             className={`flex items-start gap-2 ${message.role === "system" ? "opacity-75" : ""}`}
           >
             {message.role === "assistant" ? (
-              <div className="h-5 w-5 mt-0.5 flex-shrink-0 rounded-full bg-blue-100 flex items-center justify-center">
-                <MessageCircle size={12} className="text-blue-600" />
+              <div className="h-5 w-5 mt-0.5 flex-shrink-0 rounded-full bg-primary/20 flex items-center justify-center">
+                <MessageCircle size={12} className="text-primary" />
               </div>
             ) : message.role === "user" ? (
-              <div className="h-5 w-5 mt-0.5 flex-shrink-0 rounded-full bg-gray-200 flex items-center justify-center">
-                <UserIcon size={12} />
+              <div className="h-5 w-5 mt-0.5 flex-shrink-0 rounded-full bg-muted flex items-center justify-center">
+                <UserIcon size={12} className="text-muted-foreground" />
               </div>
             ) : (
-              <div className="h-5 w-5 mt-0.5 flex-shrink-0 rounded-full bg-yellow-100 flex items-center justify-center">
-                <span className="text-[10px] text-yellow-800">SYS</span>
+              <div className="h-5 w-5 mt-0.5 flex-shrink-0 rounded-full bg-warning/20 flex items-center justify-center">
+                <span className="text-[10px] text-warning-foreground">SYS</span>
               </div>
             )}
             <p
-              className={`text-sm ${message.role === "assistant" ? "text-blue-800" : message.role === "user" ? "text-gray-900" : "text-yellow-800 italic"}`}
+              className={`text-sm ${message.role === "assistant" ? "text-primary" : message.role === "user" ? "text-foreground" : "text-warning-foreground italic"}`}
             >
               {message.content}
             </p>
@@ -164,12 +164,12 @@ export default function EnterpriseLeadsPage() {
   return (
     <div>
       <h1 className="mb-6 text-2xl font-bold">企业版咨询记录</h1>
-      {error && <div className="mb-4 rounded-lg bg-red-50 p-4 text-red-500">{error}</div>}
+      {error && <div className="mb-4 rounded-lg bg-destructive/10 p-4 text-destructive">{error}</div>}
 
       <div className="space-y-4">
         {leads.length === 0 ? (
           <div className="text-center py-10">
-            <p className="text-gray-500 text-lg">暂无企业用户咨询记录</p>
+            <p className="text-muted-foreground text-lg">暂无企业用户咨询记录</p>
           </div>
         ) : (
           leads.map((lead) => {
@@ -177,10 +177,10 @@ export default function EnterpriseLeadsPage() {
             const contactInfo = extractContactInfo(messages);
             return (
               <Card key={lead.id} className="overflow-hidden py-0 gap-1">
-                <CardHeader className="py-3 px-3 md:px-4 bg-gray-50 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                <CardHeader className="py-3 px-3 md:px-4 bg-muted/50 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
                   <div className="overflow-hidden">
-                    <span className="font-medium text-gray-700 block sm:inline text-sm sm:text-base truncate">{lead.user.email}</span>
-                    <span className="text-xs text-gray-500 sm:ml-2 block sm:inline">{formatDate(lead.createdAt)}</span>
+                    <span className="font-medium text-foreground block sm:inline text-sm sm:text-base truncate">{lead.user.email}</span>
+                    <span className="text-xs text-muted-foreground sm:ml-2 block sm:inline">{formatDate(lead.createdAt)}</span>
                   </div>
                   <Button variant="outline" size="sm" className="w-full sm:w-auto" asChild>
                     <Link href={`/study/${lead.token}/share?replay=1`} target="_blank">
@@ -193,21 +193,21 @@ export default function EnterpriseLeadsPage() {
                   {(contactInfo.emails.length > 0 ||
                     contactInfo.phones.length > 0 ||
                     contactInfo.wechatIds.length > 0) && (
-                    <div className="mb-3 p-2 bg-blue-50 rounded-md border border-blue-100">
-                      <h3 className="text-sm font-medium text-blue-800">联系方式:</h3>
+                    <div className="mb-3 p-2 bg-accent/20 rounded-md border">
+                      <h3 className="text-sm font-medium text-accent-foreground">联系方式:</h3>
                       <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-sm">
                         {contactInfo.emails.map((email) => (
-                          <span key={email} className="text-blue-700 break-all">
+                          <span key={email} className="text-primary break-all">
                             📧 {email}
                           </span>
                         ))}
                         {contactInfo.phones.map((phone) => (
-                          <span key={phone} className="text-blue-700">
+                          <span key={phone} className="text-primary">
                             📱 {phone}
                           </span>
                         ))}
                         {contactInfo.wechatIds.map((id) => (
-                          <span key={id} className="text-blue-700">
+                          <span key={id} className="text-primary">
                             💬 {id}
                           </span>
                         ))}
