@@ -53,7 +53,7 @@ function parseXHSNoteComments(data: {
   };
 }
 
-async function xhsNoteComments({ noteid }: { noteid: string }) {
+async function dyPostComments({ noteid }: { noteid: string }) {
   for (let i = 0; i < 3; i++) {
     try {
       const params = {
@@ -84,7 +84,7 @@ async function xhsNoteComments({ noteid }: { noteid: string }) {
   };
 }
 
-export const xhsNoteCommentsTool = tool({
+export const dyPostCommentsTool = tool({
   description: "获取小红书特定帖子的评论，用于获取对特定品牌或者主题关注的用户，以及他们的反馈",
   parameters: z.object({
     noteid: z.string().describe("The note ID to fetch comments from"),
@@ -93,7 +93,7 @@ export const xhsNoteCommentsTool = tool({
     return [{ type: "text", text: result.plainText }];
   },
   execute: async ({ noteid }) => {
-    const result = await xhsNoteComments({ noteid });
+    const result = await dyPostComments({ noteid });
     return result;
   },
 });

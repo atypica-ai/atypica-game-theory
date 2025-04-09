@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { InputJsonValue } from "@prisma/client/runtime/library";
+import { dySearchTool } from "./dy/search";
 import { interviewChatTool } from "./experts/interviewChat";
 import { reasoningThinkingTool } from "./experts/reasoning";
 import { generateReportTool } from "./experts/report";
@@ -30,9 +31,11 @@ export enum ToolName {
   xhsNoteComments = "xhsNoteComments",
   xhsSearch = "xhsSearch",
   xhsUserNotes = "xhsUserNotes",
+  dySearch = "dySearch",
 }
 
 export {
+  dySearchTool,
   generateReportTool,
   interviewChatTool,
   reasoningThinkingTool,

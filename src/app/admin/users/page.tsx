@@ -39,6 +39,7 @@ export default function UsersPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [adminOnly, setAdminOnly] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Initialize page from URL on load
@@ -47,30 +48,43 @@ export default function UsersPage() {
       const url = new URL(window.location.href);
       const pageParam = url.searchParams.get("page");
       const searchParam = url.searchParams.get("search");
+      const adminParam = url.searchParams.get("adminOnly");
+
       if (pageParam) {
         setCurrentPage(parseInt(pageParam, 10));
       }
       if (searchParam) {
         setSearchQuery(searchParam);
       }
+      if (adminParam === "true") {
+        setAdminOnly(true);
+      }
     }
   }, []);
 
-  // Update URL when page or search changes
+  // Update URL when page, search, or admin filter changes
   useEffect(() => {
     const url = new URL(window.location.href);
     url.searchParams.set("page", currentPage.toString());
+
     if (searchQuery) {
       url.searchParams.set("search", searchQuery);
     } else {
       url.searchParams.delete("search");
     }
+
+    if (adminOnly) {
+      url.searchParams.set("adminOnly", "true");
+    } else {
+      url.searchParams.delete("adminOnly");
+    }
+
     window.history.pushState({}, "", url.toString());
-  }, [currentPage, searchQuery]);
+  }, [currentPage, searchQuery, adminOnly]);
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
-    const result = await fetchUsers(currentPage, 10, searchQuery);
+    const result = await fetchUsers(currentPage, 10, searchQuery, adminOnly);
     if (!result.success) {
       setError(result.message);
     } else {
@@ -78,7 +92,7 @@ export default function UsersPage() {
       if (result.pagination) setPagination(result.pagination);
     }
     setIsLoading(false);
-  }, [currentPage, searchQuery]);
+  }, [currentPage, searchQuery, adminOnly]);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -162,6 +176,22 @@ export default function UsersPage() {
             </Button>
           )}
         </form>
+
+        <div className="mt-4 flex items-center space-x-2">
+          <input
+            type="checkbox"
+            id="adminOnly"
+            checked={adminOnly}
+            onChange={(e) => {
+              setAdminOnly(e.target.checked);
+              setCurrentPage(1); // Reset to first page when toggling filter
+            }}
+            className="h-4 w-4 rounded border-gray-300"
+          />
+          <label htmlFor="adminOnly" className="text-sm font-medium">
+            Show admin users only
+          </label>
+        </div>
       </div>
 
       <div className="mb-4 overflow-x-auto rounded-lg border">
@@ -178,10 +208,10 @@ export default function UsersPage() {
                 Points (100 points per study)
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                Admin Role
+                Created At
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                Created At
+                Admin Role
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                 Actions

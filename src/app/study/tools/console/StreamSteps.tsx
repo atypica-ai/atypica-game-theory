@@ -3,6 +3,7 @@
 import { Markdown } from "@/components/markdown";
 import ToolArgsTable, { ExpandableText } from "@/components/ToolArgsTable";
 import {
+  DYSearchResultMessage,
   XHSNoteCommentsResultMessage,
   XHSSearchResultMessage,
   XHSUserNotesResultMessage,
@@ -32,6 +33,8 @@ const StreamStep = ({ toolInvocation }: { toolInvocation: ToolInvocation }) => {
     switch (toolInvocation.toolName) {
       case ToolName.xhsSearch:
         return <XHSSearchResultMessage result={toolInvocation.result} />;
+      case ToolName.dySearch:
+        return <DYSearchResultMessage result={toolInvocation.result} />;
       case ToolName.xhsUserNotes:
         return <XHSUserNotesResultMessage result={toolInvocation.result} />;
       case ToolName.xhsNoteComments:

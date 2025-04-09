@@ -6,18 +6,10 @@ const nextConfig: NextConfig = {
   devIndicators: false,
   images: {
     remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "**.xhscdn.com",
-      },
-      {
-        protocol: "http",
-        hostname: "**.xhscdn.com",
-      },
-      {
-        protocol: "https",
-        hostname: "api.hippyghosts.io",
-      },
+      { protocol: "https", hostname: "**.xhscdn.com" },
+      { protocol: "http", hostname: "**.xhscdn.com" },
+      { protocol: "https", hostname: "**.douyinpic.com" },
+      { protocol: "https", hostname: "api.hippyghosts.io" },
     ],
   },
   experimental: {

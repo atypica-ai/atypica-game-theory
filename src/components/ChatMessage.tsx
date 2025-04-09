@@ -1,5 +1,6 @@
 "use client";
 import {
+  DYSearchResultMessage,
   ReasoningThinkingResultMessage,
   SaveAnalystToolResultMessage,
   XHSNoteCommentsResultMessage,
@@ -24,6 +25,8 @@ const ToolInvocationMessage = ({ toolInvocation }: { toolInvocation: ToolInvocat
     switch (toolName) {
       case ToolName.xhsSearch:
         return <XHSSearchResultMessage result={result} />;
+      case ToolName.dySearch:
+        return <DYSearchResultMessage result={result} />;
       case ToolName.xhsUserNotes:
         return <XHSUserNotesResultMessage result={result} />;
       case ToolName.xhsNoteComments:

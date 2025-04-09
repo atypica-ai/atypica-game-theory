@@ -23,7 +23,7 @@ export async function generateMetadata({
 
 export const dynamic = "force-dynamic";
 
-export default async function StudyPage({
+export default async function StudySharePage({
   params,
   searchParams,
 }: {

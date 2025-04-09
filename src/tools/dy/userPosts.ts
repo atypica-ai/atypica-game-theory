@@ -2,12 +2,12 @@ import { PlainTextToolResult } from "@/tools/utils";
 import { tool } from "ai";
 import { z } from "zod";
 
-interface XHSNote {
+interface XHSUserNote {
   id: string;
   title: string;
   desc: string;
   type: string;
-  liked_count: number;
+  nice_count: number;
   collected_count: number;
   comments_count: number;
   user: {
@@ -23,32 +23,26 @@ interface XHSNote {
   }[];
 }
 
-export interface XHSSearchResult extends PlainTextToolResult {
-  notes: XHSNote[];
-  // total: number;
+export interface XHSUserNotesResult extends PlainTextToolResult {
+  notes: XHSUserNote[];
   plainText: string;
 }
 
-function parseXHSSearchResult(data: {
+function parseXHSUserNotes(data: {
   data: {
-    items: {
-      model_type: string;
-      note: XHSNote;
-    }[];
+    notes: XHSUserNote[];
   };
-}): XHSSearchResult {
-  const notes: XHSNote[] = [];
-  // 过滤并取前十条
-  const topNotes = (data?.data?.items ?? [])
-    .filter((item) => item.model_type === "note")
-    .slice(0, 10);
-  topNotes.forEach(({ note }) => {
+}): XHSUserNotesResult {
+  const notes: XHSUserNote[] = [];
+  // 只取前十条
+  const topUserNotes = (data?.data?.notes ?? []).slice(0, 10);
+  topUserNotes.forEach((note) => {
     notes.push({
       id: note.id,
       title: note.title,
       desc: note.desc,
       type: note.type,
-      liked_count: note.liked_count,
+      nice_count: note.nice_count,
       collected_count: note.collected_count,
       comments_count: note.comments_count,
       user: {
@@ -64,10 +58,10 @@ function parseXHSSearchResult(data: {
       })),
     });
   });
-  // 这个方法返回的结果会发给 LLM 用来生成回复，只需要把 LLM 能够使用的文本给它就行，节省很多 tokens
+  //
   const plainText = JSON.stringify(
     notes.map((note) => ({
-      noteid: note.id,
+      nodeid: note.id,
       userid: note.user.userid,
       nickname: note.user.nickname,
       title: note.title,
@@ -81,51 +75,47 @@ function parseXHSSearchResult(data: {
   };
 }
 
-async function xhsSearch({ keyword }: { keyword: string }) {
+async function dyUserPosts({ userid }: { userid: string }) {
   for (let i = 0; i < 3; i++) {
     try {
       const params = {
         token: process.env.SOCIAL_API_TOKEN!,
-        keyword,
-        page: "1",
-        sort: "general",
-        noteType: "_0",
+        userId: userid,
       };
       const queryString = new URLSearchParams(params).toString();
       const response = await fetch(
-        `${process.env.SOCIAL_API_BASE_URL}/xiaohongshu/search-note/v2?${queryString}`,
+        `${process.env.SOCIAL_API_BASE_URL}/xiaohongshu/get-user-note-list/v1?${queryString}`,
       );
       const data = await response.json();
       console.log("Response text:", JSON.stringify(data).slice(0, 100));
       if (data.code === 0) {
-        const result = parseXHSSearchResult(data);
+        const result = parseXHSUserNotes(data);
         return result;
       } else {
-        console.log("Failed to fetch XHS feed, retrying...", i + 1);
+        console.log("Failed to fetch XHS user notes, retrying...", i + 1);
         await new Promise((resolve) => setTimeout(resolve, 3000));
         continue;
       }
     } catch (error) {
-      console.log("Error fetching XHS feed:", error);
+      console.log("Error fetching XHS user posts:", error);
     }
   }
   return {
     notes: [],
-    plainText: "Failed to fetch XHS feed after 3 retries",
+    plainText: "Failed to fetch XHS user notes after 3 retries",
   };
 }
 
-export const xhsSearchTool = tool({
-  description: "在小红书上搜索笔记，可以搜索特定的主题，也可以搜索一个品牌",
+export const dyUserPostsTool = tool({
+  description: "获取小红书特定用户的帖子，用于分析用户的特征和喜好",
   parameters: z.object({
-    keyword: z.string().describe("Search keywords"),
+    userid: z.string().describe("The user ID to fetch notes from"),
   }),
-  // 这个方法返回的结果会发给 LLM 用来生成回复，只需要把 LLM 能够使用的文本给它就行，节省很多 tokens
   experimental_toToolResultContent: (result: PlainTextToolResult) => {
     return [{ type: "text", text: result.plainText }];
   },
-  execute: async ({ keyword }) => {
-    const result = await xhsSearch({ keyword });
+  execute: async ({ userid }) => {
+    const result = await dyUserPosts({ userid });
     return result;
   },
 });

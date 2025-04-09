@@ -79,12 +79,12 @@ async function xhsUserNotes({ userid }: { userid: string }) {
   for (let i = 0; i < 3; i++) {
     try {
       const params = {
-        token: process.env.XHS_API_TOKEN!,
+        token: process.env.SOCIAL_API_TOKEN!,
         userId: userid,
       };
       const queryString = new URLSearchParams(params).toString();
       const response = await fetch(
-        `${process.env.XHS_API_BASE_URL}/get-user-note-list/v1?${queryString}`,
+        `${process.env.SOCIAL_API_BASE_URL}/xiaohongshu/get-user-note-list/v1?${queryString}`,
       );
       const data = await response.json();
       console.log("Response text:", JSON.stringify(data).slice(0, 100));

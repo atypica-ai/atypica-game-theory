@@ -9,6 +9,7 @@ export async function fetchUsers(
   page: number = 1,
   pageSize: number = 10,
   searchQuery?: string,
+  adminOnly?: boolean,
 ): Promise<
   ServerActionResult<
     (Pick<User, "id" | "email" | "createdAt"> & {
@@ -19,15 +20,23 @@ export async function fetchUsers(
 > {
   await checkAdminAuth([AdminPermission.MANAGE_USERS]);
   const skip = (page - 1) * pageSize;
-  // Build the where condition based on search query
-  const where = searchQuery
-    ? {
-        OR: [
-          { email: { contains: searchQuery } },
-          // { name: { contains: searchQuery } },
-        ],
-      }
-    : {};
+
+  // Build the where condition based on search query and admin filter
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const where: any = {};
+
+  // Add search condition if provided
+  if (searchQuery) {
+    where.OR = [
+      { email: { contains: searchQuery } },
+      // { name: { contains: searchQuery } },
+    ];
+  }
+
+  // Add admin filter if requested
+  if (adminOnly) {
+    where.adminUser = { isNot: null };
+  }
 
   const [users, totalCount] = await Promise.all([
     prisma.user.findMany({

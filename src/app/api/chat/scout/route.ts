@@ -2,6 +2,7 @@ import openai from "@/lib/openai";
 import { fixChatMessages } from "@/lib/utils";
 import { scoutSystem } from "@/prompt";
 import {
+  dySearchTool,
   reasoningThinkingTool,
   savePersonaTool,
   ToolName,
@@ -33,6 +34,7 @@ export async function POST(req: Request) {
       [ToolName.xhsSearch]: xhsSearchTool,
       [ToolName.xhsUserNotes]: xhsUserNotesTool,
       [ToolName.xhsNoteComments]: xhsNoteCommentsTool,
+      [ToolName.dySearch]: dySearchTool,
       [ToolName.savePersona]: savePersonaTool({ scoutUserChatId }),
     },
     onError: async (error) => {
