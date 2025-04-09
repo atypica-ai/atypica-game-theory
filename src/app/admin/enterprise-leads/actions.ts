@@ -1,6 +1,6 @@
 "use server";
 
-import { checkAdminAuth } from "@/app/admin/utils";
+import { AdminPermission, checkAdminAuth } from "@/app/admin/utils";
 import { prisma } from "@/lib/prisma";
 import { ServerActionResult } from "@/lib/serverAction";
 import { User, UserChat } from "@prisma/client";
@@ -10,7 +10,7 @@ export async function fetchEnterpriseLeads(
   page: number = 1,
   pageSize: number = 10,
 ): Promise<ServerActionResult<(UserChat & { user: Pick<User, "id" | "email"> })[]>> {
-  await checkAdminAuth();
+  await checkAdminAuth([AdminPermission.VIEW_ENTERPRISE_LEADS]);
 
   const skip = (page - 1) * pageSize;
 

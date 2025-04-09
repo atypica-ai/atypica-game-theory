@@ -1,5 +1,5 @@
 "use server";
-import { checkAdminAuth } from "@/app/admin/utils";
+import { AdminPermission, checkAdminAuth } from "@/app/admin/utils";
 import { PaymentMethod } from "@/app/payment/constants";
 import { prisma } from "@/lib/prisma";
 import { ServerActionResult } from "@/lib/serverAction";
@@ -25,7 +25,7 @@ export async function getPaymentRecords(
     })[]
   >
 > {
-  await checkAdminAuth();
+  await checkAdminAuth([AdminPermission.MANAGE_PAYMENTS]);
   const skip = (page - 1) * pageSize;
 
   // Build the where condition based on search query and status filter

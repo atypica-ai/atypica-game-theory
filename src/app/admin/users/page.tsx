@@ -12,12 +12,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Pagination } from "@/components/ui/pagination";
 import { ExtractServerActionData } from "@/lib/serverAction";
+import { AdminRole } from "@prisma/client";
 import { SearchIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
-import { PaginationInfo } from "../utils";
-import { addPointsToUser, fetchUsers } from "./actions";
+import { AdminPermission, PaginationInfo } from "../utils";
+import { addPointsToUser, fetchUsers, updateAdminStatus } from "./actions";
 
 type User = ExtractServerActionData<typeof fetchUsers>[number];
 
@@ -32,6 +33,9 @@ export default function UsersPage() {
   const [pointsToAdd, setPointsToAdd] = useState<number | null>(100);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isAdminDialogOpen, setIsAdminDialogOpen] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<AdminRole>("REGULAR_ADMIN");
+  const [selectedPermissions, setSelectedPermissions] = useState<AdminPermission[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -109,6 +113,17 @@ export default function UsersPage() {
     setPointsToAdd(100);
     setIsDialogOpen(true);
   };
+  const openAdminDialog = (user: User) => {
+    setSelectedUser(user);
+    if (user.adminUser) {
+      setSelectedRole(user.adminUser.role);
+      setSelectedPermissions(user.adminUser.permissions);
+    } else {
+      setSelectedRole("REGULAR_ADMIN");
+      setSelectedPermissions([]);
+    }
+    setIsAdminDialogOpen(true);
+  };
 
   if (status === "loading" || isLoading) {
     return <div>Loading...</div>;
@@ -163,6 +178,9 @@ export default function UsersPage() {
                 Points (100 points per study)
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                Admin Role
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                 Created At
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
@@ -189,9 +207,30 @@ export default function UsersPage() {
                     {new Date(user.createdAt).toLocaleDateString()}
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    <Button variant="outline" size="sm" onClick={() => openPointsDialog(user)}>
-                      Add Points
-                    </Button>
+                    {user.adminUser ? (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        {user.adminUser.role}
+                      </span>
+                    ) : null}
+                  </td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm" onClick={() => openPointsDialog(user)}>
+                        Add Points
+                      </Button>
+                      {/* Only show manage admin button for non-admin users */}
+                      {!user.adminUser && (
+                        <Button variant="secondary" size="sm" onClick={() => openAdminDialog(user)}>
+                          Make Admin
+                        </Button>
+                      )}
+                      {/* Show edit permissions button for existing admin users */}
+                      {user.adminUser && (
+                        <Button variant="secondary" size="sm" onClick={() => openAdminDialog(user)}>
+                          Edit Permissions
+                        </Button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))
@@ -246,6 +285,97 @@ export default function UsersPage() {
               disabled={isSubmitting || !pointsToAdd || pointsToAdd <= 0}
             >
               {isSubmitting ? "Adding..." : "Add Points"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isAdminDialogOpen} onOpenChange={setIsAdminDialogOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Manage Admin Permissions</DialogTitle>
+            <DialogDescription>
+              {selectedUser?.adminUser ? "Edit admin permissions" : "Grant admin privileges"}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="role" className="text-right">
+                Role
+              </Label>
+              <select
+                id="role"
+                value={selectedRole}
+                onChange={(e) => setSelectedRole(e.target.value as AdminRole)}
+                className="col-span-3 h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors"
+              >
+                <option value="REGULAR_ADMIN">Regular Admin</option>
+                <option value="SUPER_ADMIN">Super Admin</option>
+              </select>
+            </div>
+
+            <div className="grid grid-cols-4 items-start gap-4">
+              <Label className="text-right pt-2">Permissions</Label>
+              <div className="col-span-3 space-y-2">
+                {[
+                  AdminPermission.MANAGE_STUDIES,
+                  AdminPermission.MANAGE_USERS,
+                  AdminPermission.MANAGE_PAYMENTS,
+                  AdminPermission.MANAGE_INVITATION_CODES,
+                  AdminPermission.VIEW_ENTERPRISE_LEADS,
+                ].map((permission) => (
+                  <div className="flex items-center space-x-2" key={permission}>
+                    <input
+                      type="checkbox"
+                      id={`perm-${permission}`}
+                      checked={selectedPermissions.includes(permission)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedPermissions([...selectedPermissions, permission]);
+                        } else {
+                          setSelectedPermissions(
+                            selectedPermissions.filter((p) => p !== permission),
+                          );
+                        }
+                      }}
+                      className="h-4 w-4 rounded border-gray-300"
+                    />
+                    <label htmlFor={`perm-${permission}`} className="text-sm font-medium">
+                      {permission.replace("_", " ")}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            {selectedUser?.adminUser && (
+              <Button
+                variant="destructive"
+                onClick={async () => {
+                  if (!selectedUser) return;
+                  await updateAdminStatus(selectedUser.id, false);
+                  setIsAdminDialogOpen(false);
+                  fetchData();
+                }}
+              >
+                Remove Admin Access
+              </Button>
+            )}
+            <Button variant="outline" onClick={() => setIsAdminDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={async () => {
+                if (!selectedUser) return;
+                await updateAdminStatus(selectedUser.id, true, selectedRole, selectedPermissions);
+                setIsAdminDialogOpen(false);
+                fetchData();
+              }}
+            >
+              Save Changes
             </Button>
           </DialogFooter>
         </DialogContent>

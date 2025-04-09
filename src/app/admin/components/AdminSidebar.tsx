@@ -2,8 +2,11 @@
 
 import { Button } from "@/components/ui/button";
 import UserMenu from "@/components/UserMenu";
+import { AdminRole } from "@prisma/client";
 import { CreditCard, Database, Home, Key, MessageCircle, Star, Users, X } from "lucide-react";
 import Link from "next/link";
+import { useMemo } from "react";
+import { AdminPermission } from "../utils";
 
 interface SidebarItem {
   label: string;
@@ -12,60 +15,68 @@ interface SidebarItem {
 }
 
 interface AdminSidebarProps {
-  isAdmin: boolean;
+  adminRole?: AdminRole;
+  permissions?: AdminPermission[];
 }
 
-export default function AdminSidebar({ isAdmin }: AdminSidebarProps) {
-  const sidebarItemsAdmin: SidebarItem[] = [
-    {
-      label: "Dashboard",
-      href: "/admin",
-      icon: <Home className="mr-2 h-4 w-4" />,
-    },
-    {
-      label: "Featured Studies",
-      href: "/admin/featured-studies",
-      icon: <Star className="mr-2 h-4 w-4" />,
-    },
-    {
-      label: "Invitation Codes",
-      href: "/admin/invitation-codes",
-      icon: <Key className="mr-2 h-4 w-4" />,
-    },
-    {
-      label: "Users",
-      href: "/admin/users",
-      icon: <Users className="mr-2 h-4 w-4" />,
-    },
-    {
-      label: "Payments",
-      href: "/admin/payments",
-      icon: <CreditCard className="mr-2 h-4 w-4" />,
-    },
-    {
-      label: "Enterprise Leads",
-      href: "/admin/enterprise-leads",
-      icon: <MessageCircle className="mr-2 h-4 w-4" />,
-    },
-    {
-      label: "View Site",
-      href: "/",
-      icon: <Database className="mr-2 h-4 w-4" />,
-    },
-  ];
+export default function AdminSidebar({ adminRole, permissions = [] }: AdminSidebarProps) {
+  // Define all available sidebar items with their required permissions
+  const allSidebarItems = useMemo<(SidebarItem & { permission?: AdminPermission })[]>(
+    () => [
+      {
+        label: "Dashboard",
+        href: "/admin",
+        icon: <Home className="mr-2 h-4 w-4" />,
+        // Dashboard accessible to all admins
+      },
+      {
+        label: "Featured Studies",
+        href: "/admin/featured-studies",
+        icon: <Star className="mr-2 h-4 w-4" />,
+        permission: AdminPermission.MANAGE_STUDIES,
+      },
+      {
+        label: "Invitation Codes",
+        href: "/admin/invitation-codes",
+        icon: <Key className="mr-2 h-4 w-4" />,
+      },
+      {
+        label: "Users",
+        href: "/admin/users",
+        icon: <Users className="mr-2 h-4 w-4" />,
+        permission: AdminPermission.MANAGE_USERS,
+      },
+      {
+        label: "Payments",
+        href: "/admin/payments",
+        icon: <CreditCard className="mr-2 h-4 w-4" />,
+        permission: AdminPermission.MANAGE_PAYMENTS,
+      },
+      {
+        label: "Enterprise Leads",
+        href: "/admin/enterprise-leads",
+        icon: <MessageCircle className="mr-2 h-4 w-4" />,
+        permission: AdminPermission.VIEW_ENTERPRISE_LEADS,
+      },
+      {
+        label: "View Site",
+        href: "/",
+        icon: <Database className="mr-2 h-4 w-4" />,
+        // View site accessible to all
+      },
+    ],
+    [],
+  );
 
-  const sidebarItems: SidebarItem[] = [
-    {
-      label: "Invitation Codes",
-      href: "/admin/invitation-codes",
-      icon: <Key className="mr-2 h-4 w-4" />,
-    },
-    {
-      label: "View Site",
-      href: "/",
-      icon: <Database className="mr-2 h-4 w-4" />,
-    },
-  ];
+  // Filter items based on permissions
+  const sidebarItems = useMemo(
+    () =>
+      allSidebarItems.filter(
+        (item) =>
+          adminRole === "SUPER_ADMIN" || !item.permission || permissions.includes(item.permission),
+      ),
+    [adminRole, permissions, allSidebarItems],
+  );
 
   const closeSidebar = () => {
     const sidebar = document.getElementById("admin-sidebar");
@@ -98,7 +109,7 @@ export default function AdminSidebar({ isAdmin }: AdminSidebarProps) {
         </div>
         <nav className="p-4">
           <ul className="space-y-2">
-            {(isAdmin ? sidebarItemsAdmin : sidebarItems).map((item) => (
+            {sidebarItems.map((item) => (
               <li key={item.href}>
                 <Button asChild variant="ghost" className="w-full justify-start">
                   <Link

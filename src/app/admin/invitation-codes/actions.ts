@@ -4,7 +4,7 @@ import { ServerActionResult } from "@/lib/serverAction";
 import { InvitationCode } from "@prisma/client";
 import crypto from "crypto";
 import { revalidatePath } from "next/cache";
-import { checkAdminAuth, checkTezignAuth, isAdminUser } from "../utils";
+import { AdminPermission, checkTezignAuth, hasPermission } from "../utils";
 
 // Function to generate a random invitation code
 function generateInvitationCode(length: number = 8): string {
@@ -21,7 +21,7 @@ export async function fetchInvitationCodes(
   pageSize: number = 10,
 ): Promise<ServerActionResult<InvitationCode[]> & { isAdmin?: boolean }> {
   const user = await checkTezignAuth();
-  const isAdmin = await isAdminUser(user.email);
+  const isAdmin = await hasPermission(user.email, AdminPermission.MANAGE_INVITATION_CODES);
 
   const skip = (page - 1) * pageSize;
   const where = isAdmin ? undefined : { createdBy: user.email };
@@ -52,7 +52,8 @@ export async function fetchInvitationCodes(
 // Create a new invitation code
 export async function createInvitationCode(): Promise<ServerActionResult<InvitationCode>> {
   const user = await checkTezignAuth();
-  const isAdmin = await isAdminUser(user.email);
+  // Check if user has MANAGE_INVITATION_CODES permission
+  const isAdmin = await hasPermission(user.email, AdminPermission.MANAGE_INVITATION_CODES);
 
   // Check if user already has 5 invitation codes
   const existingCodeCount = await prisma.invitationCode.count({
@@ -88,51 +89,44 @@ export async function createInvitationCode(): Promise<ServerActionResult<Invitat
 
 // Delete an invitation code
 export async function deleteInvitationCode(id: number): Promise<ServerActionResult<void>> {
-  try {
-    const user = await checkAdminAuth();
+  const user = await checkTezignAuth();
 
-    // Check if the code exists
-    const invitationCode = await prisma.invitationCode.findUnique({
-      where: { id },
-    });
+  // Check if the code exists
+  const invitationCode = await prisma.invitationCode.findUnique({
+    where: { id },
+  });
 
-    if (!invitationCode) {
-      return {
-        success: false,
-        message: "Invitation code not found",
-      };
-    }
-
-    const isAdmin = await isAdminUser(user.email);
-
-    if (!isAdmin && invitationCode.createdBy !== user.email) {
-      return {
-        success: false,
-        message: "You can only delete your own invitation codes",
-      };
-    }
-
-    if (!isAdmin || invitationCode.usedBy) {
-      return {
-        success: false,
-        message: "Only administrators can delete unused invitation codes",
-      };
-    }
-
-    await prisma.invitationCode.delete({
-      where: { id },
-    });
-
-    revalidatePath("/admin/invitation-codes");
-
-    return {
-      success: true,
-      data: undefined,
-    };
-  } catch (error) {
+  if (!invitationCode) {
     return {
       success: false,
-      message: (error as Error).message || "Failed to delete invitation code",
+      message: "Invitation code not found",
     };
   }
+
+  const isAdmin = await hasPermission(user.email, AdminPermission.MANAGE_INVITATION_CODES);
+
+  if (!isAdmin && invitationCode.createdBy !== user.email) {
+    return {
+      success: false,
+      message: "You can only delete your own invitation codes",
+    };
+  }
+
+  if (!isAdmin || invitationCode.usedBy) {
+    return {
+      success: false,
+      message: "Only administrators can delete unused invitation codes",
+    };
+  }
+
+  await prisma.invitationCode.delete({
+    where: { id },
+  });
+
+  revalidatePath("/admin/invitation-codes");
+
+  return {
+    success: true,
+    data: undefined,
+  };
 }

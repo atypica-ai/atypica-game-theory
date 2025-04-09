@@ -1,9 +1,9 @@
 "use server";
 import { prisma } from "@/lib/prisma";
 import { ServerActionResult } from "@/lib/serverAction";
-import { User } from "@prisma/client";
+import { AdminRole, User } from "@prisma/client";
 import { revalidatePath } from "next/cache";
-import { checkAdminAuth } from "../utils";
+import { AdminPermission, checkAdminAuth } from "../utils";
 
 export async function fetchUsers(
   page: number = 1,
@@ -11,10 +11,13 @@ export async function fetchUsers(
   searchQuery?: string,
 ): Promise<
   ServerActionResult<
-    (Pick<User, "id" | "email" | "createdAt"> & { points: { balance: number } | null })[]
+    (Pick<User, "id" | "email" | "createdAt"> & {
+      points: { balance: number } | null;
+      adminUser: { role: AdminRole; permissions: AdminPermission[] } | null;
+    })[]
   >
 > {
-  await checkAdminAuth();
+  await checkAdminAuth([AdminPermission.MANAGE_USERS]);
   const skip = (page - 1) * pageSize;
   // Build the where condition based on search query
   const where = searchQuery
@@ -41,6 +44,12 @@ export async function fetchUsers(
             balance: true,
           },
         },
+        adminUser: {
+          select: {
+            role: true,
+            permissions: true,
+          },
+        },
       },
     }),
     prisma.user.count({ where }),
@@ -48,7 +57,15 @@ export async function fetchUsers(
 
   return {
     success: true,
-    data: users,
+    data: users.map((user) => ({
+      ...user,
+      adminUser: user.adminUser
+        ? {
+            ...user.adminUser,
+            permissions: user.adminUser.permissions as AdminPermission[],
+          }
+        : null,
+    })),
     pagination: {
       page,
       pageSize,
@@ -62,7 +79,7 @@ export async function addPointsToUser(
   userId: number,
   points: number,
 ): Promise<ServerActionResult<void>> {
-  await checkAdminAuth();
+  await checkAdminAuth([AdminPermission.MANAGE_USERS]);
 
   if (points <= 0) {
     return {
@@ -111,6 +128,51 @@ export async function addPointsToUser(
       },
     });
   });
+
+  revalidatePath("/admin/users");
+
+  return {
+    success: true,
+    data: undefined,
+  };
+}
+
+export async function updateAdminStatus(
+  userId: number,
+  isAdmin: boolean,
+  role?: AdminRole,
+  permissions?: AdminPermission[],
+): Promise<ServerActionResult<void>> {
+  // Only super admins can manage other admins
+  await checkAdminAuth("SUPER_ADMIN");
+
+  // Update or create admin status
+  if (isAdmin) {
+    if (!role || !permissions) {
+      throw new Error("Role and permissions are required");
+    }
+    await prisma.adminUser.upsert({
+      where: { userId },
+      update: {
+        role: role,
+        permissions: permissions,
+      },
+      create: {
+        userId,
+        role: role,
+        permissions: permissions,
+      },
+    });
+  } else {
+    // Remove admin status
+    await prisma.adminUser
+      .delete({
+        where: { userId },
+      })
+      .catch(() => {
+        // Ignore if not found
+      });
+  }
 
   revalidatePath("/admin/users");
 

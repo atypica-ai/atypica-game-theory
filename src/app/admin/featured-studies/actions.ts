@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { ServerActionResult } from "@/lib/serverAction";
 import { Analyst, FeaturedStudy, User, UserAnalyst } from "@prisma/client";
 import { revalidatePath } from "next/cache";
-import { checkAdminAuth } from "../utils";
+import { AdminPermission, checkAdminAuth } from "../utils";
 // Public action for fetching featured studies (no auth check needed)
 
 export async function fetchPublicFeaturedStudies(): Promise<
@@ -51,7 +51,7 @@ export async function fetchFeaturedStudies(): Promise<
     (FeaturedStudy & { analyst: Analyst; studyUserChat: Pick<StudyUserChat, "id" | "token"> })[]
   >
 > {
-  await checkAdminAuth();
+  await checkAdminAuth([AdminPermission.MANAGE_STUDIES]);
   const featuredStudies = await prisma.featuredStudy.findMany({
     include: {
       analyst: true,
@@ -86,7 +86,7 @@ export async function fetchAnalysts(
     })[]
   >
 > {
-  await checkAdminAuth();
+  await checkAdminAuth([AdminPermission.MANAGE_STUDIES]);
 
   const skip = (page - 1) * pageSize;
   const where = emailSearch
@@ -140,7 +140,7 @@ export async function fetchAnalysts(
 
 // Toggle featured status for a study
 export async function toggleFeaturedStatus(analyst: Analyst): Promise<ServerActionResult<void>> {
-  await checkAdminAuth();
+  await checkAdminAuth([AdminPermission.MANAGE_STUDIES]);
 
   // Check if the analyst is already featured
   const existingFeatured = await prisma.featuredStudy.findFirst({
@@ -184,7 +184,7 @@ export async function toggleFeaturedStatus(analyst: Analyst): Promise<ServerActi
 
 // Remove a study from featured list
 export async function removeFeaturedStudy(id: number): Promise<ServerActionResult<void>> {
-  await checkAdminAuth();
+  await checkAdminAuth([AdminPermission.MANAGE_STUDIES]);
   await prisma.featuredStudy.delete({
     where: { id },
   });
@@ -200,7 +200,7 @@ export async function updateDisplayOrder(
   id: number,
   direction: "up" | "down",
 ): Promise<ServerActionResult<void>> {
-  await checkAdminAuth();
+  await checkAdminAuth([AdminPermission.MANAGE_STUDIES]);
 
   // Get the current featured study
   const currentStudy = await prisma.featuredStudy.findUnique({
