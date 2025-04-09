@@ -11,7 +11,7 @@ import { PlainTextToolResult } from "@/tools/utils";
 import { InputJsonValue } from "@prisma/client/runtime/library";
 import { generateId, Message, streamText, tool } from "ai";
 import { z } from "zod";
-import { StatReporter, ToolName } from "..";
+import { dySearchTool, StatReporter, ToolName } from "..";
 import { savePersonaTool } from "../system/savePersona";
 import { xhsNoteCommentsTool } from "../xhs/noteComments";
 import { xhsSearchTool } from "../xhs/search";
@@ -239,6 +239,7 @@ async function runScoutTaskChatStream({
           [ToolName.xhsSearch]: xhsSearchTool,
           [ToolName.xhsUserNotes]: xhsUserNotesTool,
           [ToolName.xhsNoteComments]: xhsNoteCommentsTool,
+          [ToolName.dySearch]: dySearchTool,
           [ToolName.savePersona]: savePersonaTool({ scoutUserChatId, statReport }),
         },
         maxSteps: 15,
