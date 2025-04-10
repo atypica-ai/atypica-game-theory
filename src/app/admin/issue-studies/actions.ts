@@ -3,7 +3,7 @@ import { studyAgentRequest } from "@/app/api/chat/study/studyAgentRequest";
 import { prisma } from "@/lib/prisma";
 import { ServerActionResult } from "@/lib/serverAction";
 import { User, UserChat } from "@prisma/client";
-import { Message } from "ai";
+import { generateId, Message } from "ai";
 import { revalidatePath } from "next/cache";
 import { checkAdminAuth } from "../utils";
 
@@ -13,7 +13,7 @@ export async function fetchIssueStudies(
   pageSize: number = 10,
 ): Promise<
   ServerActionResult<
-    (UserChat & {
+    (Omit<UserChat, "messages"> & {
       user: Pick<User, "id" | "email">;
     })[]
   >
@@ -31,7 +31,15 @@ export async function fetchIssueStudies(
         not: null,
       },
     },
-    include: {
+    select: {
+      id: true,
+      token: true,
+      userId: true,
+      title: true,
+      kind: true,
+      backgroundToken: true,
+      createdAt: true,
+      updatedAt: true,
       user: {
         select: {
           id: true,
@@ -89,7 +97,17 @@ export async function retryStudy(studyUserChatId: number): Promise<ServerActionR
     }
 
     // Get the current messages
-    const messages = study.messages as unknown as Message[];
+    let messages = study.messages as unknown as Message[];
+    if (messages[messages.length - 1]?.role !== "user") {
+      messages = [
+        ...messages,
+        {
+          id: generateId(),
+          role: "user",
+          content: "Please continue the study",
+        },
+      ];
+    }
 
     // Clear the backgroundToken to allow a new study to start
     await prisma.userChat.update({
