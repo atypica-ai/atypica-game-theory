@@ -17,7 +17,6 @@ interface XHSNote {
   };
   images_list: {
     url: string;
-    url_size_large: string;
     width: number;
     height: number;
   }[];
@@ -58,7 +57,6 @@ function parseXHSSearchResult(data: {
       },
       images_list: note.images_list.map((image) => ({
         url: image.url,
-        url_size_large: image.url_size_large,
         width: image.width,
         height: image.height,
       })),
@@ -85,7 +83,7 @@ async function xhsSearch({ keyword }: { keyword: string }) {
   for (let i = 0; i < 3; i++) {
     try {
       const params = {
-        token: process.env.SOCIAL_API_TOKEN!,
+        token: process.env.SX_API_TOKEN!,
         keyword,
         page: "1",
         sort: "general",
@@ -93,7 +91,7 @@ async function xhsSearch({ keyword }: { keyword: string }) {
       };
       const queryString = new URLSearchParams(params).toString();
       const response = await fetch(
-        `${process.env.SOCIAL_API_BASE_URL}/xiaohongshu/search-note/v2?${queryString}`,
+        `${process.env.SX_API_BASE_URL}/xiaohongshu/search-note/v2?${queryString}`,
       );
       const data = await response.json();
       console.log("Response text:", JSON.stringify(data).slice(0, 100));

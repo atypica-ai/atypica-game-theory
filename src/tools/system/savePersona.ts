@@ -25,20 +25,25 @@ export const savePersonaTool = ({
       name: z.string().describe("名字，不要包含姓氏，使用网名"),
       source: z.string().describe("数据来源"),
       tags: z.array(z.string()).describe("相关标签"),
-      // userids: z.array(z.string()).describe("该人设典型的用户 ID 列表"),
+      userids: z.array(z.string()).describe("该人设典型的用户 ID 列表"),
       personaPrompt: z.string().describe("生成的 persona prompt 内容"),
     }),
     experimental_toToolResultContent: (result: PlainTextToolResult) => {
       return [{ type: "text", text: result.plainText }];
     },
-    execute: async ({ name, source, tags, personaPrompt }): Promise<SavePersonaToolResult> => {
+    execute: async ({
+      name,
+      source,
+      tags,
+      userids,
+      personaPrompt,
+    }): Promise<SavePersonaToolResult> => {
       const persona = await prisma.persona.create({
         data: {
           name,
           source,
           tags,
-          // samples: userids.map((id) => `https://www.xiaohongshu.com/user/profile/${id}`),
-          samples: [],
+          samples: userids,
           prompt: personaPrompt,
           scoutUserChatId,
         },

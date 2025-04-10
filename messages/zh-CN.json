@@ -192,10 +192,6 @@
       "history": "历史对话",
       "enterprise": "了解企业版"
     },
-    "ChatMessage": {
-      "toolExecution": "工具执行参数",
-      "executionResult": "执行结果"
-    },
     "PointAlertDialog": {
       "confirmOperation": "确认操作",
       "pointConsumption": "此操作将消耗 {points} 点积分，是否继续？",

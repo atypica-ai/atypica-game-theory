@@ -11,7 +11,6 @@ interface XHSComment {
     images: string;
   };
   like_count: number;
-  liked: boolean;
   sub_comment_count: number;
 }
 
@@ -36,7 +35,6 @@ function parseXHSNoteComments(data: {
         images: comment.user.images,
       },
       like_count: comment.like_count,
-      liked: comment.liked,
       sub_comment_count: comment.sub_comment_count,
     };
   });
@@ -45,6 +43,8 @@ function parseXHSNoteComments(data: {
       userid: comment.user.userid,
       nickname: comment.user.nickname,
       content: comment.content,
+      like_count: comment.like_count,
+      sub_comment_count: comment.sub_comment_count,
     })),
   );
   return {
@@ -57,12 +57,12 @@ async function xhsNoteComments({ noteid }: { noteid: string }) {
   for (let i = 0; i < 3; i++) {
     try {
       const params = {
-        token: process.env.SOCIAL_API_TOKEN!,
+        token: process.env.SX_API_TOKEN!,
         noteId: noteid,
       };
       const queryString = new URLSearchParams(params).toString();
       const response = await fetch(
-        `${process.env.SOCIAL_API_BASE_URL}/xiaohongshu/get-note-comment/v2?${queryString}`,
+        `${process.env.SX_API_BASE_URL}/xiaohongshu/get-note-comment/v2?${queryString}`,
       );
       const data = await response.json();
       console.log("Response text:", JSON.stringify(data).slice(0, 100));

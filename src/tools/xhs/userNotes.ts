@@ -17,7 +17,6 @@ interface XHSUserNote {
   };
   images_list: {
     url: string;
-    url_size_large: string;
     width: number;
     height: number;
   }[];
@@ -52,7 +51,6 @@ function parseXHSUserNotes(data: {
       },
       images_list: note.images_list.map((image) => ({
         url: image.url,
-        url_size_large: image.url_size_large,
         width: image.width,
         height: image.height,
       })),
@@ -79,12 +77,12 @@ async function xhsUserNotes({ userid }: { userid: string }) {
   for (let i = 0; i < 3; i++) {
     try {
       const params = {
-        token: process.env.SOCIAL_API_TOKEN!,
+        token: process.env.SX_API_TOKEN!,
         userId: userid,
       };
       const queryString = new URLSearchParams(params).toString();
       const response = await fetch(
-        `${process.env.SOCIAL_API_BASE_URL}/xiaohongshu/get-user-note-list/v1?${queryString}`,
+        `${process.env.SX_API_BASE_URL}/xiaohongshu/get-user-note-list/v1?${queryString}`,
       );
       const data = await response.json();
       console.log("Response text:", JSON.stringify(data).slice(0, 100));
@@ -97,7 +95,7 @@ async function xhsUserNotes({ userid }: { userid: string }) {
         continue;
       }
     } catch (error) {
-      console.log("Error fetching XHS user posts:", error);
+      console.log("Error fetching XHS user notes:", error);
     }
   }
   return {

@@ -1,63 +1,67 @@
 "use client";
+
+import { cn } from "@/lib/utils";
+import { ToolName } from "@/tools";
 import {
+  DYPostCommentsResultMessage,
   DYSearchResultMessage,
-  ReasoningThinkingResultMessage,
-  SaveAnalystToolResultMessage,
+  DYUserPostsResultMessage,
+} from "@/tools/dy/ToolMessage";
+import { ReasoningThinkingResultMessage } from "@/tools/experts/ToolMessage";
+import { SaveAnalystToolResultMessage } from "@/tools/system/ToolMessage";
+import {
   XHSNoteCommentsResultMessage,
   XHSSearchResultMessage,
   XHSUserNotesResultMessage,
-} from "@/components/ToolMessage";
-import { cn } from "@/lib/utils";
-import { ToolName } from "@/tools";
+} from "@/tools/xhs/ToolMessage";
 import { Message as MessageType, ToolInvocation } from "ai";
 import { motion } from "framer-motion";
-import { BotIcon, CpuIcon, UserIcon } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { BotIcon, CpuIcon, LoaderIcon, UserIcon } from "lucide-react";
 import { PropsWithChildren, ReactNode } from "react";
 import { Markdown } from "./markdown";
 import ToolArgsTable from "./ToolArgsTable";
 
 const ToolInvocationMessage = ({ toolInvocation }: { toolInvocation: ToolInvocation }) => {
-  const t = useTranslations("Components.ChatMessage");
-
   const renderResult = (toolInvocation: ToolInvocation & { state: "result" }) => {
-    const { toolName, result } = toolInvocation;
-    switch (toolName) {
+    switch (toolInvocation.toolName) {
       case ToolName.xhsSearch:
-        return <XHSSearchResultMessage result={result} />;
-      case ToolName.dySearch:
-        return <DYSearchResultMessage result={result} />;
+        return <XHSSearchResultMessage result={toolInvocation.result} />;
       case ToolName.xhsUserNotes:
-        return <XHSUserNotesResultMessage result={result} />;
+        return <XHSUserNotesResultMessage result={toolInvocation.result} />;
       case ToolName.xhsNoteComments:
-        return <XHSNoteCommentsResultMessage result={result} />;
+        return <XHSNoteCommentsResultMessage result={toolInvocation.result} />;
+      case ToolName.dySearch:
+        return <DYSearchResultMessage result={toolInvocation.result} />;
+      case ToolName.dyUserPosts:
+        return <DYUserPostsResultMessage result={toolInvocation.result} />;
+      case ToolName.dyPostComments:
+        return <DYPostCommentsResultMessage result={toolInvocation.result} />;
       case ToolName.reasoningThinking:
-        return <ReasoningThinkingResultMessage result={result} />;
+        return <ReasoningThinkingResultMessage result={toolInvocation.result} />;
       case ToolName.saveAnalyst:
-        return <SaveAnalystToolResultMessage result={result} />;
+        return <SaveAnalystToolResultMessage result={toolInvocation.result} />;
       default:
         return (
           <pre className="text-xs whitespace-pre-wrap p-4 text-muted-foreground bg-gray-50 border border-gray-100 rounded-lg font-mono">
-            {result.plainText ?? "-"}
+            {toolInvocation.result.plainText ?? "-"}
           </pre>
         );
     }
   };
 
   return (
-    <div>
-      <pre className="text-xs whitespace-pre-wrap bg-gray-50 border border-gray-100 rounded-lg p-2 font-mono">
-        <div className="ml-2 mt-1 font-bold">
-          {toolInvocation.toolName} {t("toolExecution")}
-        </div>
-        <ToolArgsTable toolInvocation={toolInvocation} />
-      </pre>
+    <div className={cn("text-xs whitespace-pre-wrap font-mono")}>
+      <div className="ml-1 my-2 font-bold">exec {toolInvocation.toolName}</div>
+      <div className="ml-1 mt-1 mb-1 text-primary not-dark:font-bold">&gt;_ args</div>
+      <ToolArgsTable toolInvocation={toolInvocation} />
+      <div className="ml-1 mt-2 mb-2 text-primary not-dark:font-bold">&gt;_ result</div>
       {toolInvocation.state === "result" ? (
-        <>
-          <div className="text-sm text-zinc-800 my-4">{t("executionResult")}</div>
-          {renderResult(toolInvocation)}
-        </>
-      ) : null}
+        renderResult(toolInvocation)
+      ) : (
+        <div className="p-1">
+          <LoaderIcon className="animate-spin" size={16} />
+        </div>
+      )}
     </div>
   );
 };

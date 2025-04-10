@@ -1,15 +1,9 @@
-import { Markdown } from "@/components/markdown";
 import { cn } from "@/lib/utils";
-import { DYSearchResult } from "@/tools/dy/search";
-import { ReasoningThinkingResult } from "@/tools/experts/reasoning";
-import { SaveAnalystToolResult } from "@/tools/system/saveAnalyst";
-import { XHSNoteCommentsResult } from "@/tools/xhs/noteComments";
-import { XHSSearchResult } from "@/tools/xhs/search";
-import { XHSUserNotesResult } from "@/tools/xhs/userNotes";
 import Image from "next/image";
-import Link from "next/link";
 import { FC } from "react";
-// import { ImageCarousel } from "./ImageCarousel";
+import { XHSNoteCommentsResult } from "./noteComments";
+import { XHSSearchResult } from "./search";
+import { XHSUserNotesResult } from "./userNotes";
 
 export const XHSSearchResultMessage: FC<{ result: XHSSearchResult }> = ({ result }) => {
   return (
@@ -22,7 +16,6 @@ export const XHSSearchResultMessage: FC<{ result: XHSSearchResult }> = ({ result
       {/* 只挑选 5 条展示 */}
       {(result.notes ?? []).slice(0, 5).map((note) => (
         <div key={note.id} className="flex flex-col items-center w-[120px]">
-          {/* <ImageCarousel images={note.images_list} /> */}
           <div className="relative w-[120px] h-[120px] rounded-lg overflow-hidden">
             <Image
               src={note.images_list[0]?.url}
@@ -49,48 +42,6 @@ export const XHSSearchResultMessage: FC<{ result: XHSSearchResult }> = ({ result
             <p className="text-foreground/80 text-xs mt-1 line-clamp-2">{note.desc}</p>
             {/* <div>{note.id}</div> */}
             {/* <div className="text-foreground/80 text-xs mt-1">评论数：{note.comments_count}</div> */}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-};
-
-export const DYSearchResultMessage: FC<{ result: DYSearchResult }> = ({ result }) => {
-  return (
-    <div
-      className={cn(
-        "flex flex-row gap-3 w-full overflow-x-scroll p-3 rounded-md",
-        "bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800",
-      )}
-    >
-      {/* 只挑选 5 条展示 */}
-      {(result.posts ?? []).slice(0, 5).map((post) => (
-        <div key={post.id} className="flex flex-col items-center w-[120px]">
-          {/* <ImageCarousel images={post.images_list} /> */}
-          <div className="relative w-[120px] h-[120px] rounded-lg overflow-hidden">
-            <Image
-              src={post.images_list[0]?.url}
-              alt="Note image"
-              fill
-              sizes="100%"
-              className="object-cover"
-            />
-          </div>
-          <div className="p-1">
-            <div className="flex items-center gap-1 mb-1">
-              <div className="relative w-4 h-4">
-                <Image
-                  src={post.user.images}
-                  alt="User Avatar"
-                  sizes="100%"
-                  fill
-                  className="object-cover rounded-full"
-                />
-              </div>
-              <div className="text-xs text-foreground/80 line-clamp-1">{post.user.nickname}</div>
-            </div>
-            <p className="text-foreground/80 text-xs mt-1 line-clamp-2">{post.desc}</p>
           </div>
         </div>
       ))}
@@ -163,31 +114,6 @@ export const XHSNoteCommentsResultMessage: FC<{
           </div>
         </div>
       ))}
-    </div>
-  );
-};
-
-export const ReasoningThinkingResultMessage: FC<{
-  result: ReasoningThinkingResult;
-}> = ({ result: { reasoning, text } }) => {
-  return (
-    <div className="p-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 rounded-lg text-xs">
-      <div className="text-foreground/80 mb-3">{reasoning}</div>
-      <Markdown>{text}</Markdown>
-    </div>
-  );
-};
-
-export const SaveAnalystToolResultMessage: FC<{
-  result: SaveAnalystToolResult;
-}> = ({ result: { analystId } }) => {
-  return (
-    <div className="p-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 rounded-lg text-xs">
-      🎉 保存成功！
-      <Link href={`/analyst/${analystId}`} target="_blank" className="text-blue-500">
-        点击查看研究主题
-      </Link>
-      <span className="ml-4 text-muted-foreground">这个功能还在开发中...</span>
     </div>
   );
 };

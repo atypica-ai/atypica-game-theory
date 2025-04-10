@@ -97,14 +97,16 @@ export const RequestInteractionMessage: FC<{
           </div>
         ))}
         {toolInvocation.state !== "result" ? (
-          <Button
-            variant="outline"
-            size="sm"
-            className="px-6 text-xs bg-transparent border border-zinc-200 dark:border-zinc-700"
-            onClick={() => confirmAnswer()}
-          >
-            {pendingAnswer.length === 0 ? t("noneOfTheAbove") : t("confirm")}
-          </Button>
+          <div className="w-full flex flex-row justify-end">
+            <Button
+              variant="default"
+              size="sm"
+              className="px-6 text-xs"
+              onClick={() => confirmAnswer()}
+            >
+              {pendingAnswer.length === 0 ? t("noneOfTheAbove") : t("confirm")}
+            </Button>
+          </div>
         ) : isActiveOption("NONE_OF_THE_ABOVE") ? (
           // 以上都不是的选项结果只在用户确实这么选择的时候才显示
           <div

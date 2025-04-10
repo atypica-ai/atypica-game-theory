@@ -1,6 +1,6 @@
 import { ToolInvocation } from "ai";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 export function ExpandableText({ text }: { text: string }) {
   const t = useTranslations("Components.ExpandableText");
@@ -25,10 +25,29 @@ export function ExpandableText({ text }: { text: string }) {
 }
 
 export default function ToolArgsTable({ toolInvocation }: { toolInvocation: ToolInvocation }) {
+  const mask = (value: string) => {
+    const keep = value.length >= 6 ? 2 : 1;
+    const partialMaskedValue = value.substring(0, keep) + "***" + value.slice(-keep);
+    return partialMaskedValue;
+  };
+  const maskedArgs = useMemo<[string, unknown][]>(() => {
+    return Object.entries(toolInvocation.args).map(([key, value]) => {
+      if (/(id|ids)$/.test(key)) {
+        if (Array.isArray(value)) {
+          const val = value.map((v) => mask(`${v}`));
+          return [key, val];
+        } else {
+          const val = mask(`${value}`);
+          return [key, val];
+        }
+      }
+      return [key, value];
+    });
+  }, [toolInvocation.args]);
   return (
     <table className="text-left not-dark:text-muted-foreground">
       <tbody>
-        {Object.entries(toolInvocation.args).map(([key, value]) => (
+        {maskedArgs.map(([key, value]) => (
           <tr key={key}>
             <td className="p-1 align-top">{key}:</td>
             <td className="p-1">

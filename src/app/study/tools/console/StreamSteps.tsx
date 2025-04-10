@@ -2,14 +2,15 @@
 // 给 chat 类型的 tool call 用的组件，比如 scout chat 和 interview chat
 import { Markdown } from "@/components/markdown";
 import ToolArgsTable, { ExpandableText } from "@/components/ToolArgsTable";
+
+import { cn } from "@/lib/utils";
+import { ToolName } from "@/tools";
+import { DYPostCommentsResultMessage, DYSearchResultMessage } from "@/tools/dy/ToolMessage";
 import {
-  DYSearchResultMessage,
   XHSNoteCommentsResultMessage,
   XHSSearchResultMessage,
   XHSUserNotesResultMessage,
-} from "@/components/ToolMessage";
-import { cn } from "@/lib/utils";
-import { ToolName } from "@/tools";
+} from "@/tools/xhs/ToolMessage";
 import { Message as MessageType, ToolInvocation } from "ai";
 import { motion } from "framer-motion";
 import { BotIcon, CpuIcon, LoaderIcon, UserIcon } from "lucide-react";
@@ -33,12 +34,16 @@ const StreamStep = ({ toolInvocation }: { toolInvocation: ToolInvocation }) => {
     switch (toolInvocation.toolName) {
       case ToolName.xhsSearch:
         return <XHSSearchResultMessage result={toolInvocation.result} />;
-      case ToolName.dySearch:
-        return <DYSearchResultMessage result={toolInvocation.result} />;
       case ToolName.xhsUserNotes:
         return <XHSUserNotesResultMessage result={toolInvocation.result} />;
       case ToolName.xhsNoteComments:
         return <XHSNoteCommentsResultMessage result={toolInvocation.result} />;
+      case ToolName.dySearch:
+        return <DYSearchResultMessage result={toolInvocation.result} />;
+      case ToolName.dyUserPosts:
+        return <DYUserPostsResultMessage result={toolInvocation.result} />;
+      case ToolName.dyPostComments:
+        return <DYPostCommentsResultMessage result={toolInvocation.result} />;
       case ToolName.reasoningThinking:
         return <ReasoningThinking toolInvocation={toolInvocation} />;
       default:

@@ -192,10 +192,6 @@
       "history": "Chat History",
       "enterprise": "Know DAM better"
     },
-    "ChatMessage": {
-      "toolExecution": "Tool Execution Parameters",
-      "executionResult": "Execution Result"
-    },
     "PointAlertDialog": {
       "confirmOperation": "Confirm Operation",
       "pointConsumption": "This operation will consume {points} points, do you want to continue?",

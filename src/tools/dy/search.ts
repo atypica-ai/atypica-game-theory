@@ -1,6 +1,7 @@
 import { PlainTextToolResult } from "@/tools/utils";
 import { tool } from "ai";
 import { z } from "zod";
+import { tryFindValidImage } from "./utils";
 
 interface DYPost {
   id: string;
@@ -11,11 +12,11 @@ interface DYPost {
   user: {
     nickname: string;
     userid: string;
+    secret_userid: string;
     images: string;
   };
   images_list: {
     url: string;
-    url_size_large: string;
     width: number;
     height: number;
   }[];
@@ -27,22 +28,19 @@ export interface DYSearchResult extends PlainTextToolResult {
   plainText: string;
 }
 
-function parseDYSearchResult(data: {
+function parseDYSearchResult(result: {
   data: {
-    business_data: {
-      data_id: string;
-      type: number;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      data: { aweme_info: any };
-    }[];
-  };
+    type: number;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    aweme_info: any;
+  }[];
 }): DYSearchResult {
   const posts: DYPost[] = [];
   // 过滤并取前十条
-  const topPosts = (data?.data?.business_data ?? [])
+  const topPosts = (result?.data ?? [])
     .filter((item) => item.type === 1) // 有 aweme_info
     .slice(0, 10);
-  topPosts.forEach(({ data: { aweme_info } }) => {
+  topPosts.forEach(({ aweme_info }) => {
     posts.push({
       id: aweme_info.aweme_id,
       desc: aweme_info.desc,
@@ -52,14 +50,16 @@ function parseDYSearchResult(data: {
       user: {
         nickname: aweme_info.author.nickname,
         userid: aweme_info.author.uid,
-        images: aweme_info.author.avatar_medium.url_list[0],
+        secret_userid: aweme_info.author.sec_uid,
+        images: tryFindValidImage(aweme_info.author.avatar_medium.url_list),
       },
-      images_list: aweme_info.video.cover.url_list.map((url: string) => ({
-        url: url,
-        url_size_large: url,
-        width: aweme_info.video.cover.width,
-        height: aweme_info.video.cover.height,
-      })),
+      images_list: [
+        {
+          url: tryFindValidImage(aweme_info.video.cover.url_list),
+          width: aweme_info.video.cover.width,
+          height: aweme_info.video.cover.height,
+        },
+      ],
     });
   });
   // 这个方法返回的结果会发给 LLM 用来生成回复，只需要把 LLM 能够使用的文本给它就行，节省很多 tokens
@@ -67,6 +67,7 @@ function parseDYSearchResult(data: {
     posts.map((post) => ({
       postid: post.id,
       userid: post.user.userid,
+      secret_userid: post.user.secret_userid,
       nickname: post.user.nickname,
       desc: post.desc,
       comments_count: post.comments_count,
@@ -81,22 +82,17 @@ function parseDYSearchResult(data: {
 async function dySearch({ keyword }: { keyword: string }) {
   for (let i = 0; i < 3; i++) {
     try {
-      const params = {
-        token: process.env.SOCIAL_API_TOKEN!,
-        keyword,
-        page: "1",
-        sortType: "_0",
-        publishTime: "_0",
-        duration: "_0",
-      };
+      const headers = { Authorization: `Bearer ${process.env.BY_API_TOKEN!}` };
+      const params = { keyword };
       const queryString = new URLSearchParams(params).toString();
       const response = await fetch(
-        `${process.env.SOCIAL_API_BASE_URL}/douyin/search-video/v4?${queryString}`,
+        `${process.env.BY_API_BASE_URL}/douyin/video/search/raw?${queryString}`,
+        { headers },
       );
-      const data = await response.json();
-      console.log("Response text:", JSON.stringify(data).slice(0, 100));
-      if (data.code === 0) {
-        const result = parseDYSearchResult(data);
+      const res = await response.json();
+      console.log("Response text:", JSON.stringify(res).slice(0, 100));
+      if (res.code === 0) {
+        const result = parseDYSearchResult(res.result);
         return result;
       } else {
         console.log("Failed to fetch DY feed, retrying...", i + 1);

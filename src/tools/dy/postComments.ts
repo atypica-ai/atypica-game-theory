@@ -1,50 +1,53 @@
 import { PlainTextToolResult } from "@/tools/utils";
 import { tool } from "ai";
 import { z } from "zod";
+import { tryFindValidImage } from "./utils";
 
-interface XHSComment {
+interface DYComment {
   id: string;
   content: string;
   user: {
     userid: string;
+    secret_userid: string;
     nickname: string;
     images: string;
   };
   like_count: number;
-  liked: boolean;
   sub_comment_count: number;
 }
 
-export interface XHSNoteCommentsResult extends PlainTextToolResult {
-  comments: XHSComment[];
+export interface DYPostCommentsResult extends PlainTextToolResult {
+  comments: DYComment[];
 }
 
-function parseXHSNoteComments(data: {
-  data: {
-    comments: XHSComment[];
-  };
-}): XHSNoteCommentsResult {
+function parseXHSNoteComments(result: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  comments: any[];
+}): DYPostCommentsResult {
   // 只取前十条
-  const topComments = (data?.data?.comments ?? []).slice(0, 10);
+  const topComments = (result?.comments ?? []).slice(0, 10);
   const comments = topComments.map((comment) => {
     return {
-      id: comment.id,
-      content: comment.content,
+      id: comment.cid,
+      content: comment.text,
       user: {
-        userid: comment.user.userid,
+        userid: comment.user.uid,
+        secret_userid: comment.user.sec_uid,
         nickname: comment.user.nickname,
-        images: comment.user.images,
+        images: tryFindValidImage(comment.user.avatar_thumb.url_list),
       },
-      like_count: comment.like_count,
-      liked: comment.liked,
-      sub_comment_count: comment.sub_comment_count,
+      like_count: comment.digg_count,
+      sub_comment_count: comment.reply_comment_total,
     };
   });
   const plainText = JSON.stringify(
     comments.map((comment) => ({
       userid: comment.user.userid,
+      secret_userid: comment.user.secret_userid,
       nickname: comment.user.nickname,
       content: comment.content,
+      like_count: comment.like_count,
+      sub_comment_count: comment.sub_comment_count,
     })),
   );
   return {
@@ -53,47 +56,46 @@ function parseXHSNoteComments(data: {
   };
 }
 
-async function dyPostComments({ noteid }: { noteid: string }) {
+async function dyPostComments({ postid }: { postid: string }) {
   for (let i = 0; i < 3; i++) {
     try {
-      const params = {
-        token: process.env.SOCIAL_API_TOKEN!,
-        noteId: noteid,
-      };
+      const headers = { Authorization: `Bearer ${process.env.BY_API_TOKEN!}` };
+      const params = { aweme_id: postid };
       const queryString = new URLSearchParams(params).toString();
       const response = await fetch(
-        `${process.env.SOCIAL_API_BASE_URL}/xiaohongshu/get-note-comment/v2?${queryString}`,
+        `${process.env.BY_API_BASE_URL}/douyin/comment/raw?${queryString}`,
+        { headers },
       );
-      const data = await response.json();
-      console.log("Response text:", JSON.stringify(data).slice(0, 100));
-      if (data.code === 0) {
-        const result = parseXHSNoteComments(data);
+      const res = await response.json();
+      console.log("Response text:", JSON.stringify(res).slice(0, 100));
+      if (res.code === 0) {
+        const result = parseXHSNoteComments(res.result);
         return result;
       } else {
-        console.log("Failed to fetch XHS note comments, retrying...", i + 1);
+        console.log("Failed to fetch DY post comments, retrying...", i + 1);
         await new Promise((resolve) => setTimeout(resolve, 3000));
         continue;
       }
     } catch (error) {
-      console.log("Error fetching XHS note comments:", error);
+      console.log("Error fetching DY post comments:", error);
     }
   }
   return {
     comments: [],
-    plainText: "Failed to fetch XHS note comments after 3 attempts",
+    plainText: "Failed to fetch DY post comments after 3 attempts",
   };
 }
 
 export const dyPostCommentsTool = tool({
-  description: "获取小红书特定帖子的评论，用于获取对特定品牌或者主题关注的用户，以及他们的反馈",
+  description: "获取抖音特定帖子的评论，用于获取对特定品牌或者主题关注的用户，以及他们的反馈",
   parameters: z.object({
-    noteid: z.string().describe("The note ID to fetch comments from"),
+    postid: z.string().describe("The post ID to fetch comments from"),
   }),
   experimental_toToolResultContent: (result: PlainTextToolResult) => {
     return [{ type: "text", text: result.plainText }];
   },
-  execute: async ({ noteid }) => {
-    const result = await dyPostComments({ noteid });
+  execute: async ({ postid }) => {
+    const result = await dyPostComments({ postid });
     return result;
   },
 });

@@ -2,13 +2,11 @@ import openai from "@/lib/openai";
 import { fixChatMessages } from "@/lib/utils";
 import { scoutSystem } from "@/prompt";
 import {
+  dyPostCommentsTool,
   dySearchTool,
-  reasoningThinkingTool,
+  dyUserPostsTool,
   savePersonaTool,
   ToolName,
-  xhsNoteCommentsTool,
-  xhsSearchTool,
-  xhsUserNotesTool,
 } from "@/tools";
 import { Message, streamText } from "ai";
 
@@ -30,11 +28,13 @@ export async function POST(req: Request) {
     }),
     messages: fixChatMessages(messages, { removePendingTool: true }), // 传给 LLM 的时候需要修复
     tools: {
-      [ToolName.reasoningThinking]: reasoningThinkingTool(),
-      [ToolName.xhsSearch]: xhsSearchTool,
-      [ToolName.xhsUserNotes]: xhsUserNotesTool,
-      [ToolName.xhsNoteComments]: xhsNoteCommentsTool,
+      // [ToolName.reasoningThinking]: reasoningThinkingTool(),
+      // [ToolName.xhsSearch]: xhsSearchTool,
+      // [ToolName.xhsUserNotes]: xhsUserNotesTool,
+      // [ToolName.xhsNoteComments]: xhsNoteCommentsTool,
       [ToolName.dySearch]: dySearchTool,
+      [ToolName.dyPostComments]: dyPostCommentsTool,
+      [ToolName.dyUserPosts]: dyUserPostsTool,
       [ToolName.savePersona]: savePersonaTool({ scoutUserChatId }),
     },
     onError: async (error) => {
