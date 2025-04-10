@@ -1,8 +1,8 @@
-export const createAbortSignals = (requestSignal: AbortSignal) => {
+export const createAbortSignals = (requestSignal: AbortSignal | null) => {
   // const abortSignal = req.signal;
   // 请求断了以后不终止，自己创建一个 controller 在 onError 里触发，或者收到用户中断的操作指令时候触发
   const abortController = new AbortController();
-  requestSignal.addEventListener("abort", () => {
+  requestSignal?.addEventListener("abort", () => {
     console.log(`[241] StudyChat request aborted, do nothing, background working`);
     // abortController.abort();
   });
