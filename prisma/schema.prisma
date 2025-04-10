@@ -131,9 +131,7 @@ model AnalystInterview {
   persona             Persona   @relation(fields: [personaId], references: [id])
   personaPrompt       String    @db.Text
   interviewerPrompt   String    @db.Text
-  messages            Json // deprecated
   conclusion          String    @db.Text
-  interviewToken      String?   @db.VarChar(64) // deprecated
   interviewUserChatId Int?      @unique @db.Int
   interviewUserChat   UserChat? @relation(fields: [interviewUserChatId], references: [id])
 
@@ -172,7 +170,6 @@ model UserChat {
   userId          Int
   user            User         @relation(fields: [userId], references: [id])
   title           String       @db.VarChar(255)
-  messages        Json // deprecated
   kind            UserChatKind
   backgroundToken String?      @db.VarChar(255)
 
