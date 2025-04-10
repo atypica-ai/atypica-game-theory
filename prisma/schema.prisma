@@ -124,16 +124,18 @@ model AnalystReport {
 }
 
 model AnalystInterview {
-  id                Int     @id @default(autoincrement())
-  analystId         Int     @db.Int
-  analyst           Analyst @relation(fields: [analystId], references: [id])
-  personaId         Int     @db.Int
-  persona           Persona @relation(fields: [personaId], references: [id])
-  personaPrompt     String  @db.Text
-  interviewerPrompt String  @db.Text
-  messages          Json
-  conclusion        String  @db.Text
-  interviewToken    String? @db.VarChar(64)
+  id                  Int       @id @default(autoincrement())
+  analystId           Int       @db.Int
+  analyst             Analyst   @relation(fields: [analystId], references: [id])
+  personaId           Int       @db.Int
+  persona             Persona   @relation(fields: [personaId], references: [id])
+  personaPrompt       String    @db.Text
+  interviewerPrompt   String    @db.Text
+  messages            Json // deprecated
+  conclusion          String    @db.Text
+  interviewToken      String?   @db.VarChar(64) // deprecated
+  interviewUserChatId Int?      @unique @db.Int
+  interviewUserChat   UserChat? @relation(fields: [interviewUserChatId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -160,6 +162,8 @@ model UserAnalyst {
 enum UserChatKind {
   scout
   study
+  interview
+  misc
 }
 
 model UserChat {
@@ -168,17 +172,42 @@ model UserChat {
   userId          Int
   user            User         @relation(fields: [userId], references: [id])
   title           String       @db.VarChar(255)
-  messages        Json
+  messages        Json // deprecated
   kind            UserChatKind
   backgroundToken String?      @db.VarChar(255)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  personas      Persona[]
-  analyst       Analyst?
-  statistics    ChatStatistics[]
-  featuredStudy FeaturedStudy?
+  personas         Persona[]
+  analyst          Analyst?
+  statistics       ChatStatistics[]
+  featuredStudy    FeaturedStudy?
+  ChatMessage      ChatMessage[]
+  AnalystInterview AnalystInterview?
+}
+
+enum MessageRole {
+  system
+  user
+  assistant
+  data
+}
+
+model ChatMessage {
+  id         Int         @id @default(autoincrement())
+  messageId  String      @unique @db.VarChar(64)
+  userChatId Int
+  userChat   UserChat    @relation(fields: [userChatId], references: [id])
+  role       MessageRole
+  content    String      @db.Text
+  parts      Json
+  extra      Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userChatId, id]) // 通过自增 ID 排序
 }
 
 enum ChatStatisticsDimension {

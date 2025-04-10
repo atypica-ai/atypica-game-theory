@@ -187,6 +187,7 @@ export async function getProductsForPayment(): Promise<
   ServerActionResult<{ name: ProductName; desc: string; price: number; currency: string }[]>
 > {
   const headersList = await headers();
+  // TODO: 现在不用阿里云的边缘加速了，没法设置 http 请求超时时间，只能直连 k8s 的 nlb，这样就得自己判断 ip 归属地了
   if ((headersList.get("ali-ip-country") ?? "CN") === "CN") {
     return {
       success: true,
