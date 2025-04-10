@@ -3,9 +3,11 @@ import { prisma } from "@/lib/prisma";
 export async function checkQuota({
   studyUserChatId,
   userId,
+  cost,
 }: {
   studyUserChatId: number;
   userId: number;
+  cost: number;
 }) {
   const log = await prisma.userPointsLog.findFirst({
     where: {
@@ -31,7 +33,7 @@ export async function checkQuota({
 
   const balance = user.points?.balance ?? 0;
 
-  if (balance >= 100) {
+  if (balance >= cost) {
     await prisma.$transaction([
       prisma.userPointsLog.create({
         data: {
@@ -39,14 +41,14 @@ export async function checkQuota({
           verb: "consume",
           resourceType: "StudyUserChat",
           resourceId: studyUserChatId,
-          points: -100,
+          points: -cost,
         },
       }),
       prisma.userPoints.update({
         where: { userId },
         data: {
           balance: {
-            decrement: 100,
+            decrement: cost,
           },
         },
       }),

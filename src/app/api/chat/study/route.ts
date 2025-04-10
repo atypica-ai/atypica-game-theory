@@ -37,7 +37,7 @@ async function studyAgentRequest(req: Request, payload: any, userId: number) {
   const { abortController, abortSignal, delayedAbortSignal } = createAbortSignals(req.signal);
   const { statReport } = initStatReporter(studyUserChatId);
 
-  const hasQuota = await checkQuota({ studyUserChatId, userId });
+  const hasQuota = await checkQuota({ studyUserChatId, userId, cost: 100 });
 
   const streamingMessage: Omit<Message, "role"> & { parts: NonNullable<Message["parts"]> } = {
     id: generateId(),
@@ -119,7 +119,7 @@ async function studyAgentRequest(req: Request, payload: any, userId: number) {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function helloAgentRequest(req: Request, payload: any) {
+async function helloAgentRequest(req: Request, payload: any, userId: number) {
   const studyUserChatId = parseInt(payload["id"]);
   const initialMessages = payload["messages"] as Message[];
   if (!studyUserChatId || !initialMessages) {
@@ -127,6 +127,9 @@ async function helloAgentRequest(req: Request, payload: any) {
   }
 
   const { statReport } = initStatReporter(studyUserChatId);
+
+  // 扣除 0 积分
+  await checkQuota({ studyUserChatId, userId, cost: 0 });
 
   const streamingMessage: Omit<Message, "role"> & { parts: NonNullable<Message["parts"]> } = {
     id: generateId(),
@@ -186,7 +189,7 @@ export async function POST(req: Request) {
   const payload = await req.json();
   const hello = payload["hello"] === "1";
   if (hello) {
-    return await helloAgentRequest(req, payload);
+    return await helloAgentRequest(req, payload, session.user.id);
   } else {
     return await studyAgentRequest(req, payload, session.user.id);
   }
