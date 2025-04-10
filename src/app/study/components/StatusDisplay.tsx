@@ -111,7 +111,14 @@ export function StatusDisplay({
   backgroundToken,
   // onUserCancel,
 }: {
-  status: "background" | "outOfQuota" | "error" | "submitted" | "streaming" | "ready";
+  status:
+    | "background"
+    | "streaming"
+    | "submitted"
+    | "outOfQuota"
+    | "waitForUser"
+    | "error"
+    | "ready";
   backgroundToken: string | null;
   onUserCancel?: () => void;
 }) {
@@ -143,14 +150,14 @@ export function StatusDisplay({
     switch (status) {
       case "background":
         return t("background");
-      case "outOfQuota":
-        return t("outOfQuota");
       case "streaming":
         return t("thinking");
       case "submitted":
         return t("processing");
-      case "complete":
-        return t("complete");
+      case "outOfQuota":
+        return t("outOfQuota");
+      case "waitForUser":
+        return t("waitForUser");
       case "error":
         return t("error");
       case "ready":

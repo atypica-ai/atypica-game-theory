@@ -150,16 +150,39 @@ export function ChatBox({ isHelloChat }: { isHelloChat: boolean }) {
     });
   }, [studyUserChatId]);
 
+  const waitForUser = useMemo(() => {
+    const lastMessage = messages[messages.length - 1];
+    if (lastMessage?.parts) {
+      const lastPart = lastMessage.parts[lastMessage.parts.length - 1];
+      if (lastPart.type === "tool-invocation" && lastPart.toolInvocation.state !== "result") {
+        return true;
+      }
+    }
+    return false;
+  }, [messages]);
+
   const uiStatus = useMemo(
     () =>
-      backgroundToken ? "background" : pointsConsumed === false ? "outOfQuota" : useChatStatus,
+      backgroundToken
+        ? "background"
+        : useChatStatus === "streaming"
+          ? "streaming"
+          : useChatStatus === "submitted"
+            ? "submitted"
+            : pointsConsumed === false
+              ? "outOfQuota"
+              : waitForUser
+                ? "waitForUser"
+                : useChatStatus,
+    // waitForUser 是对 useChatStatus 的补充，如果已经是 background, streaming 和 submitted 状态，则忽略 waitForUser
     [backgroundToken, pointsConsumed, useChatStatus],
   );
   const inputDisabled =
-    !pointsConsumed ||
     uiStatus === "background" ||
     uiStatus === "streaming" ||
-    uiStatus === "submitted";
+    uiStatus === "submitted" ||
+    uiStatus === "outOfQuota" ||
+    uiStatus === "waitForUser";
   const [messagesContainerRef, messagesEndRef] = useScrollToBottom<HTMLDivElement>();
 
   return (

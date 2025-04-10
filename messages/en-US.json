@@ -241,6 +241,7 @@
     "StatusDisplay": {
       "background": "atypica is running in the background",
       "outOfQuota": "You have reached your quota",
+      "waitForUser": "Wait for your interaction",
       "thinking": "atypica is thinking",
       "processing": "Processing your request",
       "complete": "Processing complete ✨",
