@@ -5,8 +5,12 @@ import {
   dyPostCommentsTool,
   dySearchTool,
   dyUserPostsTool,
+  reasoningThinkingTool,
   savePersonaTool,
   ToolName,
+  xhsNoteCommentsTool,
+  xhsSearchTool,
+  xhsUserNotesTool,
 } from "@/tools";
 import { Message, streamText } from "ai";
 
@@ -28,10 +32,10 @@ export async function POST(req: Request) {
     }),
     messages: fixChatMessages(messages, { removePendingTool: true }), // 传给 LLM 的时候需要修复
     tools: {
-      // [ToolName.reasoningThinking]: reasoningThinkingTool(),
-      // [ToolName.xhsSearch]: xhsSearchTool,
-      // [ToolName.xhsUserNotes]: xhsUserNotesTool,
-      // [ToolName.xhsNoteComments]: xhsNoteCommentsTool,
+      [ToolName.reasoningThinking]: reasoningThinkingTool(),
+      [ToolName.xhsSearch]: xhsSearchTool,
+      [ToolName.xhsUserNotes]: xhsUserNotesTool,
+      [ToolName.xhsNoteComments]: xhsNoteCommentsTool,
       [ToolName.dySearch]: dySearchTool,
       [ToolName.dyPostComments]: dyPostCommentsTool,
       [ToolName.dyUserPosts]: dyUserPostsTool,

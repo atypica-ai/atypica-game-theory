@@ -5,7 +5,11 @@ import ToolArgsTable, { ExpandableText } from "@/components/ToolArgsTable";
 
 import { cn } from "@/lib/utils";
 import { ToolName } from "@/tools";
-import { DYPostCommentsResultMessage, DYSearchResultMessage } from "@/tools/dy/ToolMessage";
+import {
+  DYPostCommentsResultMessage,
+  DYSearchResultMessage,
+  DYUserPostsResultMessage,
+} from "@/tools/dy/ToolMessage";
 import {
   XHSNoteCommentsResultMessage,
   XHSSearchResultMessage,

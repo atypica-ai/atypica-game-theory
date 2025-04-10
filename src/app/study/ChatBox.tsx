@@ -175,7 +175,7 @@ export function ChatBox({ isHelloChat }: { isHelloChat: boolean }) {
                 ? "waitForUser"
                 : useChatStatus,
     // waitForUser 是对 useChatStatus 的补充，如果已经是 background, streaming 和 submitted 状态，则忽略 waitForUser
-    [backgroundToken, pointsConsumed, useChatStatus],
+    [backgroundToken, pointsConsumed, useChatStatus, waitForUser],
   );
   const inputDisabled =
     uiStatus === "background" ||
