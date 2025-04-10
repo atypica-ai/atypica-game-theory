@@ -1,5 +1,6 @@
+import { fetchUserChatById } from "@/data/UserChat";
 import { authOptions } from "@/lib/auth";
-import { Message } from "ai";
+import { appendClientMessage } from "ai";
 import { getServerSession } from "next-auth/next";
 import { NextResponse } from "next/server";
 import { helloAgentRequest } from "./helloAgentRequest";
@@ -13,10 +14,22 @@ export async function POST(req: Request) {
   const userId = session.user.id;
   const payload = await req.json();
   const studyUserChatId = parseInt(payload["id"]);
-  const initialMessages = payload["messages"] as Message[];
-  if (!studyUserChatId || !initialMessages) {
+  const newUserMessage = payload["message"];
+  if (!studyUserChatId || !newUserMessage) {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
+
+  // fetchUserChatById 这里会检查权限
+  const result = await fetchUserChatById(studyUserChatId, "study");
+  if (!result.success) {
+    return NextResponse.json({ error: result.message }, { status: 400 });
+  }
+  const studyUserChat = result.data;
+  const initialMessages = appendClientMessage({
+    messages: studyUserChat.messages,
+    message: newUserMessage,
+  });
+
   const reqSignal = req.signal;
   const hello = payload["hello"] === "1";
   if (hello) {

@@ -8,7 +8,13 @@ export interface SaveAnalystToolResult extends PlainTextToolResult {
   plainText: string;
 }
 
-export const saveAnalystTool = (userId: number, studyUserChatId: number) =>
+export const saveAnalystTool = ({
+  userId,
+  studyUserChatId,
+}: {
+  userId: number;
+  studyUserChatId: number;
+}) =>
   tool({
     description: "保存调研主题",
     parameters: z.object({

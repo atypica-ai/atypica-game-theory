@@ -1,5 +1,5 @@
+import { appendChunkToStreamingMessage, fixChatMessages } from "@/lib/messageUtils";
 import openai from "@/lib/openai";
-import { fixChatMessages } from "@/lib/utils";
 import { studySystem } from "@/prompt";
 import { studySystemNoQuota } from "@/prompt/study";
 import {
@@ -14,10 +14,10 @@ import {
   scoutTaskChatTool,
   ToolName,
 } from "@/tools";
-import { generateId, Message, streamText } from "ai";
+import { generateId, Message, streamText, TextStreamPart } from "ai";
 import { createAbortSignals } from "./abortSignal";
 import { backgroundChatUntilCancel, raceForUserChat } from "./background";
-import { appendChunkToStreamingMessage, persistentMessages } from "./messageUtils";
+import { debouncePersistentMessage } from "./persistent";
 import { checkQuota } from "./quota";
 
 // 参考了 https://sdk.vercel.ai/docs/ai-sdk-ui/chatbot-message-persistence#storing-messages 的设计来实现
@@ -45,7 +45,16 @@ export async function studyAgentRequest({
   };
 
   let streamStartTime = Date.now();
-
+  const tools = {
+    [ToolName.scoutTaskChat]: scoutTaskChatTool({ userId, abortSignal, statReport }),
+    [ToolName.saveAnalystStudySummary]: saveAnalystStudySummaryTool(),
+    [ToolName.saveAnalyst]: saveAnalystTool({ userId, studyUserChatId }),
+    [ToolName.interviewChat]: interviewChatTool({ userId, abortSignal, statReport }),
+    [ToolName.generateReport]: generateReportTool({ abortSignal, statReport }),
+    [ToolName.reasoningThinking]: reasoningThinkingTool({ abortSignal, statReport }),
+    [ToolName.requestInteraction]: requestInteractionTool,
+    [ToolName.requestPayment]: requestPaymentTool,
+  };
   const streamTextResult = streamText({
     // model: openai("o3-mini"),
     model: openai("claude-3-7-sonnet"),
@@ -54,16 +63,7 @@ export async function studyAgentRequest({
     },
     system: hasQuota ? studySystem() : studySystemNoQuota(),
     messages: fixChatMessages(initialMessages, { removePendingTool: true }), // 传给 LLM 的时候需要修复
-    tools: {
-      [ToolName.scoutTaskChat]: scoutTaskChatTool({ userId, abortSignal, statReport }),
-      [ToolName.saveAnalystStudySummary]: saveAnalystStudySummaryTool(),
-      [ToolName.saveAnalyst]: saveAnalystTool(userId, studyUserChatId),
-      [ToolName.interviewChat]: interviewChatTool({ abortSignal, statReport }),
-      [ToolName.generateReport]: generateReportTool({ abortSignal, statReport }),
-      [ToolName.reasoningThinking]: reasoningThinkingTool({ abortSignal, statReport }),
-      [ToolName.requestInteraction]: requestInteractionTool,
-      [ToolName.requestPayment]: requestPaymentTool,
-    },
+    tools,
     maxSteps: 15,
     onError: async ({ error }) => {
       // 这里也包括 tool calling 里面直接 throw 的异常
@@ -75,13 +75,15 @@ export async function studyAgentRequest({
         console.log(`[${studyUserChatId}] Error during abort:`, error);
       }
     },
-    onChunk: async ({ chunk }) => {
+    onChunk: async ({ chunk }: { chunk: TextStreamPart<typeof tools> }) => {
       // console.log(`[${studyUserChatId}] StudyChat onChunk:`, chunk);
+      chunk.type;
       appendChunkToStreamingMessage(streamingMessage, chunk);
-      const messages: Message[] = [...initialMessages, { role: "assistant", ...streamingMessage }];
-      persistentMessages(studyUserChatId, messages, {
-        immediate: chunk.type === "tool-call" || chunk.type === "tool-result",
-      });
+      await debouncePersistentMessage(
+        studyUserChatId,
+        { ...streamingMessage, role: "assistant" },
+        { immediate: chunk.type === "tool-call" || chunk.type === "tool-result" },
+      );
     },
     onStepFinish: async (step) => {
       // 到了这里的 tool calling step 一定是有 result 的，所以得在上面 onChunk 里面获取 call 阶段的 tool

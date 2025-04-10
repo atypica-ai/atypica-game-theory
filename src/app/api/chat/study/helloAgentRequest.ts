@@ -1,9 +1,9 @@
+import { appendChunkToStreamingMessage, fixChatMessages } from "@/lib/messageUtils";
 import openai from "@/lib/openai";
-import { fixChatMessages } from "@/lib/utils";
 import { studySystemEnterpriseSale } from "@/prompt/study";
 import { initStatReporter, thanksTool, ToolName } from "@/tools";
-import { generateId, Message, streamText } from "ai";
-import { appendChunkToStreamingMessage, persistentMessages } from "./messageUtils";
+import { generateId, Message, streamText, TextStreamPart } from "ai";
+import { debouncePersistentMessage } from "./persistent";
 import { checkQuota } from "./quota";
 
 export async function helloAgentRequest({
@@ -29,7 +29,11 @@ export async function helloAgentRequest({
   };
 
   let streamStartTime = Date.now();
-
+  const tools = {
+    // [ToolName.reasoningThinking]: reasoningThinkingTool({ abortSignal: req.signal, statReport }),
+    // [ToolName.requestInteraction]: requestInteractionTool,
+    [ToolName.thanks]: thanksTool,
+  };
   const streamTextResult = streamText({
     // model: openai("o3-mini"),
     model: openai("claude-3-7-sonnet"),
@@ -38,18 +42,15 @@ export async function helloAgentRequest({
     },
     system: studySystemEnterpriseSale(),
     messages: fixChatMessages(initialMessages, { removePendingTool: true }), // 传给 LLM 的时候需要修复
-    tools: {
-      // [ToolName.reasoningThinking]: reasoningThinkingTool({ abortSignal: req.signal, statReport }),
-      // [ToolName.requestInteraction]: requestInteractionTool,
-      [ToolName.thanks]: thanksTool,
-    },
+    tools,
     maxSteps: 5,
-    onChunk: async ({ chunk }) => {
+    onChunk: async ({ chunk }: { chunk: TextStreamPart<typeof tools> }) => {
       appendChunkToStreamingMessage(streamingMessage, chunk);
-      const messages: Message[] = [...initialMessages, { role: "assistant", ...streamingMessage }];
-      persistentMessages(studyUserChatId, messages, {
-        immediate: chunk.type === "tool-call", // || chunk.type === "tool-result",
-      });
+      await debouncePersistentMessage(
+        studyUserChatId,
+        { role: "assistant", ...streamingMessage },
+        { immediate: chunk.type === "tool-call" }, // || chunk.type === "tool-result",
+      );
     },
     onStepFinish: async (step) => {
       if (step.usage.totalTokens > 0) {

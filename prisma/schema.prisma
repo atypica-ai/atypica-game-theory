@@ -178,10 +178,10 @@ model UserChat {
 
   personas         Persona[]
   analyst          Analyst?
-  statistics       ChatStatistics[]
+  analystInterview AnalystInterview?
   featuredStudy    FeaturedStudy?
-  ChatMessage      ChatMessage[]
-  AnalystInterview AnalystInterview?
+  statistics       ChatStatistics[]
+  messages         ChatMessage[]
 }
 
 enum MessageRole {

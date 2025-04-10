@@ -2,9 +2,10 @@ import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useScrollToBottom } from "@/components/use-scroll-to-bottom";
-import { clearStudyUserChatBackgroundToken, deleteMessageFromUserChat } from "@/data/UserChat";
+import { clearStudyUserChatBackgroundToken } from "@/data/UserChat";
 import { checkStudyUserChatConsume } from "@/data/UserPoints";
 import { cn } from "@/lib/utils";
+import { ToolName } from "@/tools";
 import { Message, useChat } from "@ai-sdk/react";
 import { ArrowRightIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -54,6 +55,10 @@ export function ChatBox({ isHelloChat }: { isHelloChat: boolean }) {
     api: "/api/chat/study",
     maxSteps: 15,
     body: isHelloChat ? { hello: "1" } : undefined,
+    // see https://sdk.vercel.ai/docs/ai-sdk-ui/chatbot-message-persistence#sending-only-the-last-message
+    experimental_prepareRequestBody({ messages, id, requestBody }) {
+      return { message: messages[messages.length - 1], id, ...requestBody };
+    },
   });
 
   const [backgroundToken, setBackgroundToken] = useState<string | null>(initialBackgroundToken);
@@ -154,7 +159,13 @@ export function ChatBox({ isHelloChat }: { isHelloChat: boolean }) {
     const lastMessage = messages[messages.length - 1];
     if (lastMessage?.parts) {
       const lastPart = lastMessage.parts[lastMessage.parts.length - 1];
-      if (lastPart.type === "tool-invocation" && lastPart.toolInvocation.state !== "result") {
+      if (
+        lastPart.type === "tool-invocation" &&
+        lastPart.toolInvocation.state !== "result" &&
+        [ToolName.thanks, ToolName.requestInteraction].includes(
+          lastPart.toolInvocation.toolName as ToolName,
+        )
+      ) {
         return true;
       }
     }
@@ -197,25 +208,22 @@ export function ChatBox({ isHelloChat }: { isHelloChat: boolean }) {
             message={message}
             addToolResult={addToolResult}
             avatar={{ assistant: <HippyGhostAvatar seed={studyUserChatToken} /> }}
-            onDelete={
-              message.role === "user" && index >= messages.length - 2
-                ? async () => {
-                    // TODO 这里要改一下
-                    // assistant 可能连续出现 2 条，所以最后一条用户消息的index就不一定是 messages.length - 2
-                    // 如果删除，那也就不是一条 user 和一条 assistant，而应该是连续的 assistant 都删除
-                    const result = await deleteMessageFromUserChat(
-                      studyUserChatId,
-                      messages,
-                      message.id,
-                    );
-                    if (result.success) {
-                      setMessages(result.data);
-                    } else {
-                      console.error(result.message);
-                    }
-                  }
-                : undefined
-            }
+            // TODO: 目前先禁用这个功能
+            // onDelete={
+            //   message.role === "user" && index >= messages.length - 2
+            //     ? async () => {
+            //         // TODO 这里要改一下
+            //         // assistant 可能连续出现 2 条，所以最后一条用户消息的index就不一定是 messages.length - 2
+            //         // 如果删除，那也就不是一条 user 和一条 assistant，而应该是连续的 assistant 都删除
+            //         const result = await deleteMessageFromUserChat(studyUserChatId, message.id);
+            //         if (result.success) {
+            //           setMessages(result.data);
+            //         } else {
+            //           console.error(result.message);
+            //         }
+            //       }
+            //     : undefined
+            // }
             isLastMessage={index === messages.length - 1}
           ></SingleMessage>
         ))}

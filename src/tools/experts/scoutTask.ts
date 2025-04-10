@@ -1,14 +1,15 @@
+import {
+  appendStepToStreamingMessage,
+  convertDBMessageToAIMessage,
+  convertStepsToAIMessage,
+  fixChatMessages,
+  persistentAIMessageToDB,
+} from "@/lib/messageUtils";
 import openai from "@/lib/openai";
 import { prisma } from "@/lib/prisma";
-import {
-  appendStreamStepToUIMessage,
-  fixChatMessages,
-  generateToken,
-  streamStepsToUIMessage,
-} from "@/lib/utils";
+import { generateToken } from "@/lib/utils";
 import { scoutSystem } from "@/prompt";
 import { PlainTextToolResult } from "@/tools/utils";
-import { InputJsonValue } from "@prisma/client/runtime/library";
 import { generateId, Message, streamText, tool } from "ai";
 import { z } from "zod";
 import { dyPostCommentsTool, dySearchTool, dyUserPostsTool, StatReporter, ToolName } from "..";
@@ -51,7 +52,6 @@ export const scoutTaskCreateTool = (userId: number) =>
           title,
           kind: "scout",
           token: generateToken(),
-          messages: [],
         },
       });
       return {
@@ -96,7 +96,6 @@ export const scoutTaskChatTool = ({
           title,
           kind: "scout",
           token: scoutUserChatToken,
-          messages: [],
         },
       });
       const scoutUserChatId = scoutUserChat.id;
@@ -147,8 +146,11 @@ export const scoutTaskChatTool = ({
 async function prepareMessagesForLLM(scoutUserChatId: number) {
   const scoutUserChat = await prisma.userChat.findUniqueOrThrow({
     where: { id: scoutUserChatId, kind: "scout" },
+    include: {
+      messages: { orderBy: { id: "asc" } },
+    },
   });
-  let messages = scoutUserChat.messages as unknown as Message[];
+  let messages = scoutUserChat.messages.map(convertDBMessageToAIMessage);
   if (messages.length > 1 && messages[messages.length - 1].role === "user") {
     messages = messages.slice(0, -1);
   }
@@ -197,28 +199,6 @@ async function runScoutTaskChatStream({
 
   let messages = [..._messages];
   while (true) {
-    const updateLastMessage = ((scoutUserChatId: number, initialMessages: Message[]) => {
-      // 这里要保持之前的消息不变，不断更新最后一条消息的 parts，所以要在闭包里暂存 initialMessages
-      return async (streamingMessage: Omit<Message, "role">) => {
-        const messages: Message[] = [
-          ...initialMessages,
-          { role: "assistant", ...streamingMessage },
-        ];
-        try {
-          await prisma.userChat.update({
-            where: { id: scoutUserChatId, backgroundToken },
-            data: { messages: messages as unknown as InputJsonValue },
-          });
-        } catch (error) {
-          console.log(
-            `ScoutTaskChat [${scoutUserChatId}] Error updateLastMessage with token ${backgroundToken}:`,
-            (error as Error).message,
-          );
-          throw error;
-        }
-      };
-    })(scoutUserChatId, messages);
-
     const streamTextPromise = new Promise<Omit<Message, "role">>((resolve, reject) => {
       const streamingMessage: Omit<Message, "role"> = {
         id: generateId(),
@@ -247,7 +227,7 @@ async function runScoutTaskChatStream({
         maxSteps: 15,
         // onChunk: (chunk) => console.log(`[${scoutUserChatId}] ScoutTaskChat:`, JSON.stringify(chunk).substring(0, 100)),
         onFinish: async ({ steps }) => {
-          const message = streamStepsToUIMessage(steps);
+          const message = convertStepsToAIMessage(steps);
           resolve(message);
           await statReport("steps", steps.length, {
             reportedBy: "scoutTaskChat tool",
@@ -255,7 +235,7 @@ async function runScoutTaskChatStream({
           });
         },
         onStepFinish: async (step) => {
-          appendStreamStepToUIMessage(streamingMessage, step);
+          appendStepToStreamingMessage(streamingMessage, step);
           if (step.usage.totalTokens > 0) {
             await statReport("tokens", step.usage.totalTokens, {
               reportedBy: "scoutTaskChat tool",
@@ -263,7 +243,10 @@ async function runScoutTaskChatStream({
             });
           }
           if (streamingMessage.parts?.length && streamingMessage.content.trim()) {
-            await updateLastMessage(streamingMessage);
+            await persistentAIMessageToDB(scoutUserChatId, {
+              role: "assistant",
+              ...streamingMessage,
+            });
           }
         },
         onError: ({ error }) => {

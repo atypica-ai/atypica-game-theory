@@ -32,23 +32,26 @@ export const RequestInteractionMessage: FC<{
     });
   }, []);
 
-  const confirmAnswer = useCallback(() => {
-    if (toolInvocation.state !== "result") {
-      addToolResult({
-        toolCallId: toolInvocation.toolCallId,
-        result:
-          pendingAnswer.length > 0
-            ? {
-                answer: pendingAnswer,
-                plainText: JSON.stringify(pendingAnswer),
-              }
-            : {
-                answer: [],
-                plainText: t("noneOfTheAbove"),
-              },
-      });
-    }
-  }, [toolInvocation.state, toolInvocation.toolCallId, addToolResult, pendingAnswer, t]);
+  const confirmAnswer = useCallback(
+    (pendingAnswer: string[]) => {
+      if (toolInvocation.state !== "result") {
+        addToolResult({
+          toolCallId: toolInvocation.toolCallId,
+          result:
+            pendingAnswer.length > 0
+              ? {
+                  answer: pendingAnswer,
+                  plainText: JSON.stringify(pendingAnswer),
+                }
+              : {
+                  answer: [],
+                  plainText: t("noneOfTheAbove"),
+                },
+        });
+      }
+    },
+    [toolInvocation.state, toolInvocation.toolCallId, addToolResult, t],
+  );
 
   const isActiveOption = useCallback(
     (option: string) => {
@@ -97,15 +100,27 @@ export const RequestInteractionMessage: FC<{
           </div>
         ))}
         {toolInvocation.state !== "result" ? (
-          <div className="w-full flex flex-row justify-end">
+          <div className="w-full flex flex-row justify-end gap-2">
             <Button
-              variant="default"
+              variant="outline"
               size="sm"
               className="px-6 text-xs"
-              onClick={() => confirmAnswer()}
+              onClick={() => {
+                confirmAnswer([]);
+              }}
             >
-              {pendingAnswer.length === 0 ? t("noneOfTheAbove") : t("confirm")}
+              {t("noneOfTheAbove")}
             </Button>
+            {pendingAnswer.length > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="px-6 text-xs"
+                onClick={() => confirmAnswer(pendingAnswer)}
+              >
+                {t("confirm")}
+              </Button>
+            )}
           </div>
         ) : isActiveOption("NONE_OF_THE_ABOVE") ? (
           // 以上都不是的选项结果只在用户确实这么选择的时候才显示

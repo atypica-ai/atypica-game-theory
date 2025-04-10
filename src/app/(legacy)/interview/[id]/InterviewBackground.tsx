@@ -24,16 +24,20 @@ export function InterviewBackground({
 }) {
   const t = useTranslations("InterviewPage");
   const [interview, setInterview] = useState<AnalystInterview>(_analystInterview);
-  const [messages, setMessages] = useState<Message[]>(_analystInterview.messages);
+  const [messages, setMessages] = useState<Message[]>(
+    _analystInterview.interviewUserChat?.messages ?? [],
+  );
 
   const fetchUpdate = useCallback(async () => {
     try {
+      // TODO: 可以优化，messages 只需要请求最新的1到2条就行，不需要每次重新取全部
       const result = await fetchAnalystInterviewById(interview.id);
       if (!result.success) {
         throw result;
       }
-      setMessages(result.data.messages);
-      setInterview(result.data);
+      const updated = result.data;
+      setMessages(updated.interviewUserChat?.messages ?? []);
+      setInterview(updated);
     } catch (error) {
       console.log("Error fetching analystInterview:", (error as Error).message);
     }
@@ -56,9 +60,8 @@ export function InterviewBackground({
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        analyst,
-        persona,
-        analystInterviewId: interview.id,
+        analystId: analyst.id,
+        personaId: persona.id,
       }),
     });
     await fetchUpdate();
@@ -92,7 +95,7 @@ export function InterviewBackground({
               parts={message.parts}
             ></ChatMessage>
           ))}
-          {interview.interviewToken && messages.length === 0 ? (
+          {interview.interviewUserChat?.backgroundToken && messages.length === 0 ? (
             <ChatMessage
               key="message-start"
               nickname="系统"
@@ -100,7 +103,7 @@ export function InterviewBackground({
               content="访谈启动中 .."
             ></ChatMessage>
           ) : null}
-          {!interview.interviewToken && interview.conclusion ? (
+          {!interview.interviewUserChat?.backgroundToken && interview.conclusion ? (
             <ChatMessage
               key="message-conclusion"
               nickname={t("researchConclusion")}
@@ -112,13 +115,13 @@ export function InterviewBackground({
         </div>
 
         <div className="flex justify-center items-center">
-          {!interview.interviewToken && !interview.conclusion ? (
+          {!interview.interviewUserChat?.backgroundToken && !interview.conclusion ? (
             <PointAlertDialog points={5} onConfirm={startBackgroundChat}>
               <Button size="sm" className="px-10">
                 {t("startInterview")}
               </Button>
             </PointAlertDialog>
-          ) : interview.interviewToken ? (
+          ) : interview.interviewUserChat?.backgroundToken ? (
             <div className="flex flex-col items-center gap-2">
               <div className="text-sm text-gray-500">{t("interviewInProgress")}</div>
             </div>

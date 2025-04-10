@@ -1,9 +1,9 @@
+import { convertStepsToAIMessage } from "@/lib/messageUtils";
 import openai from "@/lib/openai";
 import { prisma } from "@/lib/prisma";
-import { streamStepsToUIMessage } from "@/lib/utils";
+import { generateToken } from "@/lib/utils";
 import { interviewerPrologue, interviewerSystem, personaAgentSystem } from "@/prompt";
 import { PlainTextToolResult } from "@/tools/utils";
-import { Analyst, Persona } from "@prisma/client";
 import { InputJsonValue } from "@prisma/client/runtime/library";
 import { generateId, Message, streamText, tool } from "ai";
 import { z } from "zod";
@@ -24,9 +24,11 @@ export interface InterviewChatResult extends PlainTextToolResult {
 }
 
 export const interviewChatTool = ({
+  userId,
   abortSignal,
   statReport,
 }: {
+  userId: number;
   abortSignal: AbortSignal;
   statReport: StatReporter;
 }) =>
@@ -48,35 +50,21 @@ export const interviewChatTool = ({
     },
     execute: async ({ analystId, personas }): Promise<InterviewChatResult> => {
       const single = async ({ id: personaId, name: personaName }: { id: number; name: string }) => {
-        const [interview, persona, analyst] = await Promise.all([
-          prisma.analystInterview.upsert({
-            where: { analystId_personaId: { analystId, personaId } },
-            update: {},
-            create: {
-              analystId,
-              personaId,
-              personaPrompt: "",
-              interviewerPrompt: "",
-              messages: [],
-              conclusion: "",
-            },
-          }),
-          prisma.persona.findUniqueOrThrow({ where: { id: personaId } }),
-          prisma.analyst.findUniqueOrThrow({ where: { id: analystId } }),
-        ]);
         try {
+          const { analystInterviewId, interviewUserChatId, prompt } = await prepareDBForInterview({
+            userId,
+            personaId,
+            analystId,
+          });
           await runInterview({
-            analyst,
-            persona: {
-              ...persona,
-              tags: persona.tags as string[],
-            },
-            analystInterviewId: interview.id,
+            analystInterviewId,
+            interviewUserChatId,
+            prompt,
             abortSignal,
             statReport,
           });
           const updatedInterview = await prisma.analystInterview.findUniqueOrThrow({
-            where: { id: interview.id },
+            where: { id: analystInterviewId },
           });
           return {
             analystId,
@@ -106,38 +94,98 @@ export const interviewChatTool = ({
     },
   });
 
+export async function prepareDBForInterview({
+  userId,
+  personaId,
+  analystId,
+}: {
+  userId: number;
+  personaId: number;
+  analystId: number;
+}) {
+  const [persona, analyst] = await Promise.all([
+    prisma.persona.findUniqueOrThrow({ where: { id: personaId } }),
+    prisma.analyst.findUniqueOrThrow({ where: { id: analystId } }),
+  ]);
+  const personaPrompt = personaAgentSystem(persona);
+  const interviewerPrompt = interviewerSystem(analyst);
+  const interviewerProloguePrompt = interviewerPrologue(analyst);
+  const conclusion = ""; // conclusion 被用于判断是否结束，开始前一定要清空
+  // 确认 analyst 属于用户
+  await prisma.userAnalyst.findUniqueOrThrow({
+    where: { userId_analystId: { userId, analystId } },
+  });
+  const interview = await prisma.analystInterview.upsert({
+    where: {
+      analystId_personaId: { analystId, personaId },
+    },
+    update: { personaPrompt, interviewerPrompt, conclusion },
+    create: { analystId, personaId, personaPrompt, interviewerPrompt, conclusion },
+  });
+  let interviewUserChatId = interview.interviewUserChatId;
+  if (!interviewUserChatId) {
+    const interviewUserChat = await prisma.userChat.create({
+      data: {
+        userId,
+        token: generateToken(),
+        title: analyst.topic.substring(0, 50),
+        kind: "interview",
+      },
+    });
+    interviewUserChatId = interviewUserChat.id;
+    await prisma.analystInterview.update({
+      where: { id: interview.id },
+      data: { interviewUserChatId },
+    });
+  } else {
+    // 否则需要先清空现在的聊天记录
+    await prisma.chatMessage.deleteMany({
+      where: { userChatId: interviewUserChatId },
+    });
+  }
+  return {
+    analystInterviewId: interview.id,
+    interviewUserChatId,
+    prompt: {
+      personaPrompt,
+      interviewerPrompt,
+      interviewerProloguePrompt,
+    },
+  };
+}
+
 type ChatProps = {
   messages: Message[];
-  persona: Persona;
-  analyst: Analyst;
   analystInterviewId: number;
-  interviewToken: string;
+  interviewUserChatId: number;
+  backgroundToken: string;
+  prompt: {
+    personaPrompt: string;
+    interviewerPrompt: string;
+    interviewerProloguePrompt: string;
+  };
   abortSignal: AbortSignal;
   statReport: StatReporter;
 };
 
 async function chatWithInterviewer({
   messages,
-  analyst,
   analystInterviewId,
-  interviewToken,
+  prompt,
   abortSignal,
   statReport,
-}: ChatProps) {
+}: Pick<ChatProps, "messages" | "analystInterviewId" | "prompt" | "abortSignal" | "statReport">) {
   const result = await new Promise<Omit<Message, "role">>(async (resolve, reject) => {
     const response = streamText({
       model: openai("claude-3-7-sonnet"), // 不能用 gpt-4o，指令遵循的比较差，会结束不了
       providerOptions: {
         openai: { stream_options: { include_usage: true } },
       },
-      system: interviewerSystem(analyst),
+      system: prompt.interviewerPrompt,
       messages,
       tools: {
         [ToolName.reasoningThinking]: reasoningThinkingTool({ abortSignal, statReport }),
-        [ToolName.saveInterviewConclusion]: saveInterviewConclusionTool(
-          analystInterviewId,
-          interviewToken,
-        ),
+        [ToolName.saveInterviewConclusion]: saveInterviewConclusionTool(analystInterviewId),
       },
       maxSteps: 3,
       // onChunk: (chunk) => console.log(`Interview [${analystInterviewId}] Interviewer:`, JSON.stringify(chunk)),
@@ -151,7 +199,7 @@ async function chatWithInterviewer({
         }
       },
       onFinish: async ({ steps }) => {
-        const message = streamStepsToUIMessage(steps);
+        const message = convertStepsToAIMessage(steps);
         resolve(message);
       },
       onError: ({ error }) => {
@@ -174,18 +222,18 @@ async function chatWithInterviewer({
 
 async function chatWithPersona({
   messages,
-  persona,
   analystInterviewId,
+  prompt,
   abortSignal,
   statReport,
-}: Omit<ChatProps, "interviewToken">) {
+}: Pick<ChatProps, "messages" | "analystInterviewId" | "prompt" | "abortSignal" | "statReport">) {
   const result = await new Promise<Omit<Message, "role">>(async (resolve, reject) => {
     const response = streamText({
       model: openai("gpt-4o"),
       providerOptions: {
         openai: { stream_options: { include_usage: true } },
       },
-      system: personaAgentSystem(persona),
+      system: prompt.personaPrompt,
       messages,
       tools: {
         [ToolName.xhsSearch]: xhsSearchTool,
@@ -202,7 +250,7 @@ async function chatWithPersona({
         }
       },
       onFinish: ({ steps }) => {
-        const message = streamStepsToUIMessage(steps);
+        const message = convertStepsToAIMessage(steps);
         resolve(message);
       },
       onError: ({ error }) => {
@@ -220,64 +268,60 @@ async function chatWithPersona({
   return result;
 }
 
-async function saveMessages({
-  messages,
+async function saveMessage({
+  message,
   analystInterviewId,
-  interviewToken,
+  interviewUserChatId,
+  backgroundToken,
 }: {
-  messages: Message[];
+  message: Message;
   analystInterviewId: number;
-  interviewToken: string;
+  interviewUserChatId: number;
+  backgroundToken: string;
 }) {
   try {
-    await prisma.analystInterview.update({
-      where: {
-        id: analystInterviewId,
-        interviewToken,
-      },
-      data: {
-        messages: messages as unknown as InputJsonValue,
-      },
-    });
+    const { id: messageId, role, content, parts: _parts } = message;
+    const parts = _parts?.length ? _parts : [{ type: "text", text: content }];
+    await prisma.$transaction([
+      // 先确保 backgroundToken 是当前的
+      prisma.userChat.findUniqueOrThrow({
+        where: { id: interviewUserChatId, kind: "interview", backgroundToken },
+      }),
+      prisma.chatMessage.create({
+        data: {
+          userChatId: interviewUserChatId,
+          messageId,
+          role,
+          content,
+          parts: parts as InputJsonValue,
+        },
+      }),
+    ]);
   } catch (error) {
     console.log(
-      `Interview [${analystInterviewId}] Error saving messages with token ${interviewToken}`,
+      `Interview [${analystInterviewId}] Error saving messages with token ${backgroundToken}`,
       error,
     );
   }
 }
 
-async function runInterview({
-  analyst,
-  persona,
+export async function runInterview({
   analystInterviewId,
+  interviewUserChatId,
+  prompt,
   abortSignal,
   statReport,
-}: Omit<ChatProps, "messages" | "interviewToken">) {
-  const interviewToken = new Date().valueOf().toString();
-  try {
-    await prisma.analystInterview.update({
-      where: { id: analystInterviewId },
-      data: {
-        personaPrompt: personaAgentSystem(persona),
-        interviewerPrompt: interviewerSystem(analyst),
-        messages: [],
-        conclusion: "",
-        interviewToken,
-      },
-    });
-  } catch (error) {
-    console.log(
-      `Interview [${analystInterviewId}] Error resetting interview with token ${interviewToken}`,
-      error,
-    );
-    throw error;
-  }
+}: Omit<ChatProps, "messages" | "backgroundToken">) {
+  const backgroundToken = new Date().valueOf().toString();
+  await prisma.userChat.update({
+    where: { id: interviewUserChatId, kind: "interview" },
+    data: { backgroundToken },
+  });
 
   const personaAgent: {
     messages: Message[];
   } = {
-    messages: [{ id: generateId(), role: "user", content: interviewerPrologue(analyst) }],
+    messages: [{ id: generateId(), role: "user", content: prompt.interviewerProloguePrompt }],
   };
 
   const interviewer: {
@@ -289,9 +333,8 @@ async function runInterview({
   while (true) {
     const personaReply = await chatWithPersona({
       messages: personaAgent.messages,
-      persona,
-      analyst,
       analystInterviewId,
+      prompt,
       abortSignal,
       statReport,
     });
@@ -299,18 +342,17 @@ async function runInterview({
     personaAgent.messages.push({ ...personaReply, role: "assistant" });
     interviewer.messages.push({ ...personaReply, role: "user" });
 
-    await saveMessages({
-      messages: personaAgent.messages,
+    await saveMessage({
+      message: { ...personaReply, role: "assistant" },
       analystInterviewId,
-      interviewToken,
+      interviewUserChatId,
+      backgroundToken,
     });
 
     const interviewerReply = await chatWithInterviewer({
       messages: interviewer.messages,
-      persona,
-      analyst,
       analystInterviewId,
-      interviewToken,
+      prompt,
       abortSignal,
       statReport,
     });
@@ -318,10 +360,11 @@ async function runInterview({
     interviewer.messages.push({ ...interviewerReply, role: "assistant" });
     personaAgent.messages.push({ ...interviewerReply, role: "user" });
 
-    await saveMessages({
-      messages: personaAgent.messages,
+    await saveMessage({
+      message: { ...interviewerReply, role: "user" },
       analystInterviewId,
-      interviewToken,
+      interviewUserChatId,
+      backgroundToken,
     });
 
     const _updated = await prisma.analystInterview.findUnique({
@@ -336,13 +379,13 @@ async function runInterview({
   }
 
   try {
-    await prisma.analystInterview.update({
-      where: { id: analystInterviewId, interviewToken },
-      data: { interviewToken: null },
+    await prisma.userChat.update({
+      where: { id: interviewUserChatId, kind: "interview", backgroundToken },
+      data: { backgroundToken: null },
     });
   } catch (error) {
     console.log(
-      `Interview [${analystInterviewId}] Error clearing interview token ${interviewToken}`,
+      `Interview [${analystInterviewId}] Error clearing interview token ${backgroundToken} for interviewUserChat ${interviewUserChatId}`,
       error,
     );
   }

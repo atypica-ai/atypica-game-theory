@@ -19,7 +19,7 @@ export function InterviewCard({ interview }: { interview: AnalystInterview }) {
         </CardDescription>
       </CardHeader>
       <CardFooter className="justify-between">
-        {interview.interviewToken ? (
+        {interview.interviewUserChat?.backgroundToken ? (
           <div className="flex items-center justify-start gap-2 text-sm">
             <LoaderCircle className="animate-spin text-orange-300 size-4" />
             {t("interviewing")}

@@ -1,4 +1,5 @@
 "use server";
+import { convertDBMessageToAIMessage } from "@/lib/messageUtils";
 import { prisma } from "@/lib/prisma";
 import { ServerActionResult } from "@/lib/serverAction";
 import {
@@ -20,11 +21,15 @@ export async function fetchUserChatByToken<Tkind extends UserChat["kind"]>(
   ServerActionResult<
     Omit<UserChat, "kind"> & {
       kind: Tkind;
+      messages: Message[];
     }
   >
 > {
   const userChat = await prisma.userChat.findUnique({
     where: { token, kind },
+    include: {
+      messages: { orderBy: { id: "asc" } },
+    },
   });
   if (!userChat) {
     return {
@@ -38,7 +43,7 @@ export async function fetchUserChatByToken<Tkind extends UserChat["kind"]>(
     data: {
       ...userChat,
       kind: userChat.kind as Tkind,
-      messages: userChat.messages as unknown as Message[],
+      messages: userChat.messages.map(convertDBMessageToAIMessage),
     },
   };
 }

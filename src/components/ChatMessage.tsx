@@ -42,7 +42,13 @@ const ToolInvocationMessage = ({ toolInvocation }: { toolInvocation: ToolInvocat
         return <SaveAnalystToolResultMessage result={toolInvocation.result} />;
       default:
         return (
-          <pre className="text-xs whitespace-pre-wrap p-4 text-muted-foreground bg-gray-50 border border-gray-100 rounded-lg font-mono">
+          <pre
+            className={cn(
+              "text-xs font-mono p-4",
+              "text-zinc-800 bg-zinc-100 dark:text-zinc-200 dark:bg-zinc-800",
+              "border border-zinc-200 dark:border-zinc-700 rounded-lg",
+            )}
+          >
             {toolInvocation.result.plainText ?? "-"}
           </pre>
         );
@@ -68,7 +74,7 @@ const ToolInvocationMessage = ({ toolInvocation }: { toolInvocation: ToolInvocat
 
 const PlainText = ({ children }: PropsWithChildren) => {
   return (
-    <div className="text-sm text-zinc-800 flex flex-col gap-4">
+    <div className="text-sm flex flex-col gap-4">
       <Markdown>{children as string}</Markdown>
     </div>
   );
@@ -88,11 +94,11 @@ export const ChatMessage = (message: {
       className={cn(
         "flex flex-row gap-4 px-4 w-full first-of-type:mt-10 py-4",
         role === "user"
-          ? "bg-blue-50/50 border-r-4 border-blue-200 flex-row-reverse"
+          ? "bg-blue-50/50 dark:bg-zinc-800 border-r-4 border-blue-200 flex-row-reverse"
           : role === "assistant"
-            ? "bg-gray-50/50 border-l-4 border-gray-200"
+            ? "bg-gray-50/50 dark:bg-zinc-800 border-l-4 border-gray-200"
             : role === "system"
-              ? "bg-green-50/50 border-l-4 border-green-200"
+              ? "bg-green-50/50 dark:bg-zinc-800 border-l-4 border-green-200"
               : "",
         environment === "console" ? "flex-col border-l-0 border-r-0" : "",
       )}
@@ -103,11 +109,11 @@ export const ChatMessage = (message: {
         className={cn(
           "size-[24px] flex flex-col justify-center items-center flex-shrink-0",
           role === "user"
-            ? "text-blue-500"
+            ? "text-blue-500 dark:text-zinc-200"
             : role === "assistant"
-              ? "text-gray-500"
+              ? "text-gray-500 dark:text-zinc-200"
               : role === "system"
-                ? "text-green-500"
+                ? "text-green-500 dark:text-zinc-200"
                 : "",
         )}
       >
@@ -122,7 +128,9 @@ export const ChatMessage = (message: {
 
       <div className="flex flex-col gap-6 flex-1 overflow-hidden">
         {nickname && (
-          <div className="leading-[24px] text-zinc-800 text-sm font-medium">{nickname}</div>
+          <div className="leading-[24px] text-zinc-800 dark:text-zinc-200 text-sm font-medium">
+            {nickname}
+          </div>
         )}
         {parts ? (
           <div className="flex flex-col gap-4">

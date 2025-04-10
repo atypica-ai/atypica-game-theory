@@ -53,12 +53,16 @@ export function AnalystDetail({
   }, [router]);
 
   const pointsDialog = useMemo(() => {
-    const pendingCount = interviews.filter((i) => !i.conclusion && !i.interviewToken).length;
+    const pendingCount = interviews.filter(
+      (i) => !i.conclusion && !i.interviewUserChat?.backgroundToken,
+    ).length;
     return (
       <PointAlertDialog
         points={pendingCount * 5}
         onConfirm={async () => {
-          const pending = interviews.filter((i) => !i.conclusion && !i.interviewToken);
+          const pending = interviews.filter(
+            (i) => !i.conclusion && !i.interviewUserChat?.backgroundToken,
+          );
           for (const interview of pending) {
             await fetch("/api/chat/interview/background", {
               method: "POST",
@@ -66,9 +70,8 @@ export function AnalystDetail({
                 "Content-Type": "application/json",
               },
               body: JSON.stringify({
-                analyst,
-                persona: interview.persona,
-                analystInterviewId: interview.id,
+                analystId: analyst.id,
+                personaId: interview.persona.id,
               }),
             });
           }
