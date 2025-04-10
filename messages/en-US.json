@@ -231,7 +231,9 @@
     },
     "ChatBox": {
       "placeholder": "Ask a follow-up question or reply",
-      "noneOfTheAbove": "None of the above"
+      "noneOfTheAbove": "None of the above",
+      "multiSelectHint": "Select 1 or more options",
+      "confirm": "Confirm"
     },
     "ChatReplay": {
       "skipToEnd": "Skip to End"

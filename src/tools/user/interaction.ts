@@ -3,7 +3,7 @@ import { tool } from "ai";
 import { z } from "zod";
 
 export interface RequestInteractionResult extends PlainTextToolResult {
-  answer: string;
+  answer: string | string[];
   plainText: string;
 }
 

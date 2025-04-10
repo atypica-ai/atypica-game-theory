@@ -11,7 +11,7 @@ import { BotIcon, ChevronRight, EyeIcon, LoaderIcon, XIcon } from "lucide-react"
 import { PropsWithChildren, ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { useStudyContext } from "./hooks/StudyContext";
 import { GenerateReportResultMessage } from "./tools/message/GenerateReportResultMessage";
-import { RequestIteractionMessage } from "./tools/message/RequestIteractionMessage";
+import { RequestInteractionMessage } from "./tools/message/RequestInteractionMessage";
 import { RequestPaymentMessage } from "./tools/message/RequestPaymentMessage";
 import { ScoutTaskResultMessage } from "./tools/message/ScoutTaskResultMessage";
 import { ThanksMessage } from "./tools/message/ThanksMessage";
@@ -35,7 +35,7 @@ const SpecialToolDisplay = ({
   const { toolName, state } = toolInvocation;
   if (toolName == ToolName.requestInteraction) {
     return (
-      <RequestIteractionMessage toolInvocation={toolInvocation} addToolResult={addToolResult} />
+      <RequestInteractionMessage toolInvocation={toolInvocation} addToolResult={addToolResult} />
     );
   }
   if (toolName == ToolName.requestPayment) {
