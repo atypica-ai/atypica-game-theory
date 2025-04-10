@@ -51,8 +51,9 @@ export function StudyHistoryDrawer({
     return () => clearInterval(interval);
   }, []);
 
-  const handleSelectChat = (studyUserChatToken: string) => {
-    window.location.replace(`/study/${studyUserChatToken}`);
+  const handleSelectChat = (studyUserChat: Omit<UserChat, "messages">) => {
+    const isHello = studyUserChat.title === "我是企业用户，想了解一下企业版";
+    window.location.replace(`/study/${studyUserChat.token}` + (isHello ? "?hello=1" : ""));
     setOpen(false); // Close drawer when a chat is selected
     if (onOpenChange) {
       onOpenChange(false);
@@ -86,7 +87,7 @@ export function StudyHistoryDrawer({
           {chats.map((chat) => (
             <div
               key={chat.id}
-              onClick={() => handleSelectChat(chat.token)}
+              onClick={() => handleSelectChat(chat)}
               className={cn(
                 "px-3 py-2 text-sm truncate rounded-md cursor-pointer",
                 "text-zinc-500 dark:text-zinc-300 hover:bg-zinc-100 hover:dark:bg-zinc-800 transition-colors",
