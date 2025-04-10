@@ -59,6 +59,15 @@ export default function IssueStudiesPage() {
   }, [status, router, fetchData]);
 
   const handleRetry = async (study: IssueStudy) => {
+    // Add confirmation dialog with warning
+    const confirmRetry = window.confirm(
+      "Warning: If you're not sure what this feature does, please do not continue. " +
+        "This action will retry processing the study and may have unexpected consequences. " +
+        "Do you want to continue?",
+    );
+
+    if (!confirmRetry) return;
+
     setProcessingIds((prev) => new Set(prev).add(study.id));
     setError("");
     try {
@@ -110,7 +119,7 @@ export default function IssueStudiesPage() {
       <h1 className="mb-6 text-2xl font-bold">Issue Studies Management</h1>
       <p className="mb-6 text-muted-foreground">
         This page shows studies that are currently in progress. Studies running for more than 30
-        minutes may be stuck.
+        minutes may be stuck. An investigation is required.
       </p>
 
       {error && (
@@ -167,7 +176,11 @@ export default function IssueStudiesPage() {
                 </div>
                 <div className="flex justify-end gap-2">
                   <Button variant="outline" size="sm" asChild>
-                    <a href={`/study/${study.token}`} target="_blank" rel="noopener noreferrer">
+                    <a
+                      href={`/study/${study.token}/share`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
                       View Study
                     </a>
                   </Button>

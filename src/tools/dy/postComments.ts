@@ -73,7 +73,9 @@ async function dyPostComments({ postid }: { postid: string }) {
         return result;
       } else {
         console.log("Failed to fetch DY post comments, retrying...", i + 1);
-        await new Promise((resolve) => setTimeout(resolve, 3000));
+        // 2005 错误是 超过所允许的访问间隔
+        const seconds = res.code === 2005 ? Math.floor(Math.random() * 20) + 10 : 3;
+        await new Promise((resolve) => setTimeout(resolve, seconds * 1000));
         continue;
       }
     } catch (error) {
