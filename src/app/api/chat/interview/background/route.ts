@@ -28,7 +28,8 @@ export async function POST(req: Request) {
       const tick = () => {
         const now = Date.now();
         const elapsedSeconds = Math.floor((now - start) / 1000);
-        if (elapsedSeconds > 600) {
+        if (elapsedSeconds > 1200) {
+          // 20 mins
           console.log(`Interview [${analystInterviewId}] timeout`);
           stop = true;
           reject(new Error("interview timeout"));

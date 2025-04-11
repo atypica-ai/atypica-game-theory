@@ -136,7 +136,17 @@ export async function fetchInterviewOfStudyUserChatByPersonaId({
   studyUserChatToken: string;
   analystId: number;
   personaId: number;
-}): Promise<ServerActionResult<Omit<AnalystInterview, "messages"> & { messages: Message[] }>> {
+}): Promise<
+  ServerActionResult<
+    AnalystInterview & {
+      interviewUserChat: {
+        token: string;
+        backgroundToken: string | null;
+        messages: Message[];
+      } | null;
+    }
+  >
+> {
   const studyUserChat = await prisma.userChat.findUnique({
     where: { token: studyUserChatToken, kind: "study" },
     include: {
@@ -158,11 +168,20 @@ export async function fetchInterviewOfStudyUserChatByPersonaId({
       message: "Something went wrong, analyst ID mismatch",
     };
   }
-  const interview = await prisma.analystInterview.findUniqueOrThrow({
+  const interview = await prisma.analystInterview.findUnique({
     where: {
       analystId_personaId: {
         analystId: studyUserChat.analyst.id,
         personaId,
+      },
+    },
+    include: {
+      interviewUserChat: {
+        select: {
+          token: true,
+          backgroundToken: true,
+          messages: { orderBy: { id: "asc" } },
+        },
       },
     },
   });
@@ -177,7 +196,12 @@ export async function fetchInterviewOfStudyUserChatByPersonaId({
     success: true,
     data: {
       ...interview,
-      messages: interview.messages as unknown as Message[],
+      interviewUserChat: interview.interviewUserChat
+        ? {
+            ...interview.interviewUserChat,
+            messages: interview.interviewUserChat.messages.map(convertDBMessageToAIMessage),
+          }
+        : null,
     },
   };
 }

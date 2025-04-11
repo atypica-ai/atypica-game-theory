@@ -59,7 +59,6 @@ export function ScoutChatMessages({
   });
 
   // const inputRef = useRef<HTMLTextAreaElement>(null);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const useChatRef = useRef({ reload, stop, setMessages });
 
   // 监听对话切换
@@ -84,11 +83,6 @@ export function ScoutChatMessages({
       setMessages([]);
       setScoutUserChatId(null);
     }
-    return () => {
-      // 上一个定时保存 messages 的 clearTimeout 要写在这里，不能写在上一个 useEffect 里，否则 messages 更新就会导致 clearTimeout
-      console.log("Cleaning up timeoutRef.current");
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    };
     // 只能监听 scoutUserChat, 其他的不要监听，不然就死循环了！
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scoutUserChat]);

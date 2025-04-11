@@ -110,7 +110,7 @@ const SingleInterviewChat = ({
   const { studyUserChat } = useStudyContext();
 
   const [interviewId, setInterviewId] = useState<number | null>(null);
-  const [interviewToken, setInterviewToken] = useState<string | null>(null);
+  const [backgroundToken, setBackgroundToken] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [conclusion, setConclusion] = useState<string | null>(null);
   const [persona, setPersona] = useState<Persona>();
@@ -131,9 +131,9 @@ const SingleInterviewChat = ({
       if (!personaResult.success) {
         throw interviewResult;
       }
-      setMessages(interviewResult.data.messages);
+      setMessages(interviewResult.data.interviewUserChat?.messages || []);
       setPersona(personaResult.data);
-      setInterviewToken(interviewResult.data.interviewToken);
+      setBackgroundToken(interviewResult.data.interviewUserChat?.backgroundToken ?? null);
       setInterviewId(interviewResult.data.id);
       setConclusion(interviewResult.data.conclusion);
     } catch (error) {
@@ -185,7 +185,7 @@ const SingleInterviewChat = ({
           parts={message.parts}
         ></StreamSteps>
       ))}
-      {interviewToken && messagesDisplay.length === 0 ? (
+      {backgroundToken && messagesDisplay.length === 0 ? (
         <StreamSteps
           key="message-start"
           nickname="System"
@@ -193,7 +193,7 @@ const SingleInterviewChat = ({
           content="Interview starting.."
         ></StreamSteps>
       ) : null}
-      {!interviewToken && conclusion && (!replay || messagesDisplay.length === messages.length) ? (
+      {!backgroundToken && conclusion && (!replay || messagesDisplay.length === messages.length) ? (
         <StreamSteps
           key="message-conclusion"
           nickname={t("researchConclusion")}

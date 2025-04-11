@@ -65,7 +65,7 @@ export function InterviewBackground({
       }),
     });
     await fetchUpdate();
-  }, [fetchUpdate, analyst, persona, interview.id]);
+  }, [fetchUpdate, analyst, persona]);
 
   const [messagesContainerRef, messagesEndRef] = useScrollToBottom<HTMLDivElement>();
 

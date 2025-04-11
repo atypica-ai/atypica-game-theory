@@ -10,7 +10,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { ClipboardCopyIcon, RotateCcwIcon } from "lucide-react";
+import { ClipboardCopyIcon, EyeIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
@@ -41,7 +41,7 @@ export function AnalystReportShareButton({
       <AlertDialogTrigger asChild>
         {children || (
           <Button variant="ghost" size="sm">
-            <RotateCcwIcon size={16} /> {t("viewReport")}
+            <EyeIcon size={16} /> {t("viewReport")}
           </Button>
         )}
       </AlertDialogTrigger>
