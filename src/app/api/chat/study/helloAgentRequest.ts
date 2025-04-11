@@ -1,19 +1,24 @@
-import { appendChunkToStreamingMessage, fixChatMessages } from "@/lib/messageUtils";
+import { appendChunkToStreamingMessage } from "@/lib/messageUtils";
 import openai from "@/lib/openai";
 import { studySystemEnterpriseSale } from "@/prompt/study";
 import { initStatReporter, thanksTool, ToolName } from "@/tools";
-import { generateId, Message, streamText, TextStreamPart } from "ai";
+import { CoreMessage, Message, streamText, TextStreamPart } from "ai";
 import { debouncePersistentMessage } from "./persistent";
 import { checkQuota } from "./quota";
 
 export async function helloAgentRequest({
   studyUserChatId,
-  initialMessages,
+  coreMessages,
+  streamingMessage,
   userId,
   reqSignal,
 }: {
   studyUserChatId: number;
-  initialMessages: Message[];
+  coreMessages: CoreMessage[];
+  streamingMessage: Omit<Message, "role"> & {
+    parts: NonNullable<Message["parts"]>;
+    role: "assistant";
+  };
   userId: number;
   reqSignal: AbortSignal;
 }) {
@@ -21,12 +26,6 @@ export async function helloAgentRequest({
 
   // 扣除 0 积分
   await checkQuota({ studyUserChatId, userId, cost: 0 });
-
-  const streamingMessage: Omit<Message, "role"> & { parts: NonNullable<Message["parts"]> } = {
-    id: generateId(),
-    content: "",
-    parts: [],
-  };
 
   let streamStartTime = Date.now();
   const tools = {
@@ -41,16 +40,14 @@ export async function helloAgentRequest({
       openai: { stream_options: { include_usage: true } },
     },
     system: studySystemEnterpriseSale(),
-    messages: fixChatMessages(initialMessages, { removePendingTool: true }), // 传给 LLM 的时候需要修复
+    messages: coreMessages, // 传给 LLM 的时候需要修复
     tools,
     maxSteps: 5,
     onChunk: async ({ chunk }: { chunk: TextStreamPart<typeof tools> }) => {
       appendChunkToStreamingMessage(streamingMessage, chunk);
-      await debouncePersistentMessage(
-        studyUserChatId,
-        { role: "assistant", ...streamingMessage },
-        { immediate: chunk.type === "tool-call" }, // || chunk.type === "tool-result",
-      );
+      await debouncePersistentMessage(studyUserChatId, streamingMessage, {
+        immediate: chunk.type === "tool-call", // || chunk.type === "tool-result",
+      });
     },
     onStepFinish: async (step) => {
       if (step.usage.totalTokens > 0) {

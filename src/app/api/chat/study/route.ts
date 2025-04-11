@@ -1,6 +1,7 @@
-import { fetchUserChatById } from "@/data/UserChat";
 import { authOptions } from "@/lib/auth";
-import { appendClientMessage } from "ai";
+import { prepareNewMessageForStreaming } from "@/lib/messageUtils";
+import { prisma } from "@/lib/prisma";
+import { Message } from "ai";
 import { getServerSession } from "next-auth/next";
 import { NextResponse } from "next/server";
 import { helloAgentRequest } from "./helloAgentRequest";
@@ -14,27 +15,42 @@ export async function POST(req: Request) {
   const userId = session.user.id;
   const payload = await req.json();
   const studyUserChatId = parseInt(payload["id"]);
-  const newUserMessage = payload["message"];
-  if (!studyUserChatId || !newUserMessage) {
+  const newMessage = payload["message"] as Message;
+  if (!studyUserChatId || !newMessage) {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
 
-  // fetchUserChatById 这里会检查权限
-  const result = await fetchUserChatById(studyUserChatId, "study");
-  if (!result.success) {
-    return NextResponse.json({ error: result.message }, { status: 400 });
-  }
-  const studyUserChat = result.data;
-  const initialMessages = appendClientMessage({
-    messages: studyUserChat.messages,
-    message: newUserMessage,
+  // 找到有效的 userChat，并确保有权限
+  const userChat = await prisma.userChat.findUnique({
+    where: { id: studyUserChatId, kind: "study" },
   });
+  if (!userChat) {
+    return NextResponse.json({ error: "UserChat not found" }, { status: 404 });
+  }
+  if (userChat.userId != userId) {
+    return NextResponse.json(
+      { error: "UserChat does not belong to the current user" },
+      { status: 403 },
+    );
+  }
+
+  const { coreMessages, streamingMessage } = await prepareNewMessageForStreaming(
+    studyUserChatId,
+    newMessage,
+  );
 
   const reqSignal = req.signal;
+  const params = {
+    studyUserChatId,
+    coreMessages,
+    streamingMessage,
+    userId,
+    reqSignal,
+  };
   const hello = payload["hello"] === "1";
   if (hello) {
-    return await helloAgentRequest({ studyUserChatId, initialMessages, userId, reqSignal });
+    return await helloAgentRequest(params);
   } else {
-    return await studyAgentRequest({ studyUserChatId, initialMessages, userId, reqSignal });
+    return await studyAgentRequest(params);
   }
 }

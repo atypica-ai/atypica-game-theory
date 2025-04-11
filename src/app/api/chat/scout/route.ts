@@ -1,10 +1,11 @@
-import { fetchUserChatById } from "@/data/UserChat";
+import { authOptions } from "@/lib/auth";
 import {
   appendStepToStreamingMessage,
-  fixChatMessages,
   persistentAIMessageToDB,
+  prepareNewMessageForStreaming,
 } from "@/lib/messageUtils";
 import openai from "@/lib/openai";
+import { prisma } from "@/lib/prisma";
 import { scoutSystem } from "@/prompt";
 import {
   dyPostCommentsTool,
@@ -17,29 +18,42 @@ import {
   xhsSearchTool,
   xhsUserNotesTool,
 } from "@/tools";
-import { appendClientMessage, generateId, Message, streamText } from "ai";
+import { Message, streamText } from "ai";
+import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
-  const payloadAwaited = await req.json();
-  const scoutUserChatId = parseInt(payloadAwaited["scoutUserChatId"]);
-  const newUserMessage = payloadAwaited["message"] as Message;
-  const autoChat =
-    typeof payloadAwaited["autoChat"] === "boolean" ? payloadAwaited["autoChat"] : false;
-  if (!scoutUserChatId || !newUserMessage) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  const userId = session.user.id;
+  const payload = await req.json();
+  const scoutUserChatId = parseInt(payload["scoutUserChatId"]);
+  const newMessage = payload["message"] as Message;
+  const autoChat = typeof payload["autoChat"] === "boolean" ? payload["autoChat"] : false;
+  if (!scoutUserChatId || !newMessage) {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
 
-  // fetchUserChatById 这里会检查权限
-  const result = await fetchUserChatById(scoutUserChatId, "scout");
-  if (!result.success) {
-    return NextResponse.json({ error: result.message }, { status: 400 });
-  }
-  const scoutUserChat = result.data;
-  const initialMessages = appendClientMessage({
-    messages: scoutUserChat.messages,
-    message: newUserMessage,
+  // 找到有效的 userChat，并确保有权限
+  const userChat = await prisma.userChat.findUnique({
+    where: { id: scoutUserChatId, kind: "scout" },
   });
+  if (!userChat) {
+    return NextResponse.json({ error: "UserChat not found" }, { status: 404 });
+  }
+  if (userChat.userId != userId) {
+    return NextResponse.json(
+      { error: "UserChat does not belong to the current user" },
+      { status: 403 },
+    );
+  }
+
+  const { coreMessages, streamingMessage } = await prepareNewMessageForStreaming(
+    scoutUserChatId,
+    newMessage,
+  );
 
   const tools = {
     [ToolName.reasoningThinking]: reasoningThinkingTool(),
@@ -51,11 +65,6 @@ export async function POST(req: Request) {
     [ToolName.dyUserPosts]: dyUserPostsTool,
     [ToolName.savePersona]: savePersonaTool({ scoutUserChatId }),
   };
-  const streamingMessage: Omit<Message, "role"> = {
-    id: generateId(),
-    content: "",
-    parts: [],
-  };
   const response = streamText({
     // model: openai("o3-mini"),
     model: openai("claude-3-7-sonnet"),
@@ -65,16 +74,13 @@ export async function POST(req: Request) {
     system: scoutSystem({
       doNotStopUntilScouted: autoChat,
     }),
-    messages: fixChatMessages(initialMessages, { removePendingTool: true }), // 传给 LLM 的时候需要修复
+    messages: coreMessages,
     tools,
     maxSteps: 15, // 每次请求只发送单条消息的情况，只能在后端设置 maxSteps，在后端不断 continue
     onStepFinish: async (step) => {
       appendStepToStreamingMessage(streamingMessage, step);
       if (streamingMessage.parts?.length && streamingMessage.content.trim()) {
-        await persistentAIMessageToDB(scoutUserChatId, {
-          role: "assistant",
-          ...streamingMessage,
-        });
+        await persistentAIMessageToDB(scoutUserChatId, streamingMessage);
       }
     },
     onError: async (error) => {

@@ -1,7 +1,15 @@
 import { prisma } from "@/lib/prisma";
 import { ChatMessage } from "@prisma/client";
 import { InputJsonValue } from "@prisma/client/runtime/library";
-import { generateId, Message, StepResult, TextStreamPart, ToolInvocation, ToolSet } from "ai";
+import {
+  convertToCoreMessages,
+  generateId,
+  Message,
+  StepResult,
+  TextStreamPart,
+  ToolInvocation,
+  ToolSet,
+} from "ai";
 
 export function fixChatMessages(
   messages: Message[],
@@ -224,4 +232,50 @@ export function convertDBMessageToAIMessage({
   const parts = _parts as Message["parts"];
   const message: Message = { id, role, content, parts, createdAt };
   return message;
+}
+
+/*
+ * 接收客户端发送的消息，可能是 user 或者 assistant 的
+ * 保存到数据库，取出完整的消息列表
+ * 转换成 streamText 的格式
+ */
+export async function prepareNewMessageForStreaming(userChatId: number, newMessage: Message) {
+  // 首先要把新提交的消息保存
+  // 如果是 user message，会新建一条，
+  // 如果是 assistant message，一般是 addToolResult 的结果，这时候 messageId 已存在，则更新 tool 的交互结果
+  await persistentAIMessageToDB(userChatId, newMessage);
+  // persist 了以后，取一下最新的消息列表，包含了最新的 new message, user 或者 assistant 的
+  const messages = await prisma.chatMessage.findMany({
+    where: { userChatId },
+    orderBy: { id: "asc" },
+  });
+  const aiMessages = fixChatMessages(messages.map(convertDBMessageToAIMessage), {
+    removePendingTool: true,
+  }); // 传给 LLM 的时候需要修复
+  let streamingMessage: Omit<Message, "role"> & {
+    parts: NonNullable<Message["parts"]>;
+    role: "assistant";
+  } = {
+    id: generateId(),
+    content: "",
+    parts: [],
+    role: "assistant",
+  };
+  if (aiMessages[aiMessages.length - 1]?.role === "assistant") {
+    const lastMessage = aiMessages[aiMessages.length - 1];
+    streamingMessage = {
+      ...lastMessage,
+      parts: lastMessage.parts ?? [],
+      role: "assistant",
+    };
+  }
+  // convertToCoreMessages 会把 role 全都是 assistant 并且包含 toolInvocation 的 part 转成
+  // 一个 role: assistant 的 tool calling 内容 + 一个 role: tool 的 toll result 内容
+  // 这样 LLM 才能理解，否则直接把 aiMessages 给 LLM 它会认为 tool 没执行 ...
+  // 不知道之前没有一条条保存信息的时候，vercel ai sdk 是哪个阶段处理的，现在一定要人工转一次
+  const coreMessages = convertToCoreMessages(aiMessages);
+  return {
+    coreMessages,
+    streamingMessage,
+  };
 }
