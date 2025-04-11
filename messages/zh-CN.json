@@ -252,6 +252,11 @@
       "evictionWarningTitle": "检测到长时间无更新",
       "evictionWarningMessage": "后台任务可能已停滞。建议取消并在输入框中输入\"继续\"重新启动。"
     },
+    "RequestPaymentMessage": {
+      "outOfQuotaHint": "免费研究额度已经用完，不如请一杯咖啡再做一份研究？",
+      "scanQrCode": "请扫描以下二维码完成支付",
+      "paymentSuccess": "🎉 支付成功，atypica.AI 的研究即将开始！"
+    },
     "ToolConsole": {
       "autoFollow": "自动跟随",
       "manualSelect": "手动选择",

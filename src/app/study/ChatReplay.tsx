@@ -25,17 +25,15 @@ export function ChatReplay() {
         ref={messagesContainerRef}
         className="flex-1 flex flex-col pb-12 w-full items-center overflow-y-auto scrollbar-thin"
       >
-        {messagesDisplay
-          .filter((message) => !message.content.includes("免费研究额度已经用完"))
-          .map((message, index) => (
-            <SingleMessage
-              key={message.id}
-              addToolResult={() => {}}
-              message={message}
-              avatar={{ assistant: <HippyGhostAvatar seed={studyUserChat.token} /> }}
-              isLastMessage={index === messagesDisplay.length - 1}
-            ></SingleMessage>
-          ))}
+        {messagesDisplay.map((message, index) => (
+          <SingleMessage
+            key={message.id}
+            addToolResult={() => {}}
+            message={message}
+            avatar={{ assistant: <HippyGhostAvatar seed={studyUserChat.token} /> }}
+            isLastMessage={index === messagesDisplay.length - 1}
+          ></SingleMessage>
+        ))}
         <div ref={messagesEndRef} />
       </div>
       {!isCompleted && (

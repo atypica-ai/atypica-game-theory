@@ -108,7 +108,7 @@ export function ChatBox({ isHelloChat }: { isHelloChat: boolean }) {
       console.error(result.message);
       return;
     }
-    const { backgroundToken: newBackgroundToken, updatedAt } = result.data;
+    const { backgroundToken: newBackgroundToken, chatMessageUpdatedAt } = result.data;
     if (newBackgroundToken && chatUpdatedAt.current) {
       // 因为一些原因，backgroundToken 还在，但实际已经 30 分钟没更新 chat 了，则提示用户取消
       const elapsedMillis = Date.now() - chatUpdatedAt.current;
@@ -116,10 +116,15 @@ export function ChatBox({ isHelloChat }: { isHelloChat: boolean }) {
         setMaybeEvicted(true);
       }
     }
-    if (updatedAt.valueOf() !== chatUpdatedAt.current || newBackgroundToken !== backgroundToken) {
-      chatUpdatedAt.current = updatedAt.valueOf();
+    if (
+      chatMessageUpdatedAt.valueOf() !== chatUpdatedAt.current ||
+      newBackgroundToken !== backgroundToken
+    ) {
+      chatUpdatedAt.current = chatMessageUpdatedAt.valueOf();
       setBackgroundToken(newBackgroundToken);
-      console.log(`StudyUserChat [${studyUserChatId}] updated at ${updatedAt}, reloading messages`);
+      console.log(
+        `StudyUserChat [${studyUserChatId}] updated at ${chatMessageUpdatedAt}, reloading messages`,
+      );
       fetchUserChatByToken(studyUserChatToken, "study").then((result) => {
         if (result.success) {
           useChatRef.current.setMessages(result.data.messages);

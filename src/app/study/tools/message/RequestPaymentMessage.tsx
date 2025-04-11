@@ -7,6 +7,7 @@ import { RequestPaymentResult } from "@/tools/user/payment";
 import { ToolInvocation } from "ai";
 import { MessageCircleQuestionIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import Script from "next/script";
 import { QRCodeSVG } from "qrcode.react";
 import { FC, useCallback, useEffect, useState } from "react";
@@ -22,11 +23,16 @@ export const RequestPaymentMessage: FC<{
     toolCallId: string;
     result: RequestPaymentResult;
   }) => void;
-}> = ({ toolInvocation, addToolResult }) => {
+}> = ({
+  toolInvocation,
+  // addToolResult
+}) => {
+  const t = useTranslations("StudyPage.RequestPaymentMessage");
   const { data: session } = useSession();
   const {
     studyUserChat: { id: studyUserChatId },
   } = useStudyContext();
+  const [paymentSuccess, setPaymentSuccess] = useState(false); // toolInvocation.state === "result"
 
   useEffect(() => {
     if (toolInvocation.state === "result") {
@@ -40,20 +46,24 @@ export const RequestPaymentMessage: FC<{
         throw new Error(result.message);
       }
       if (result.data) {
-        clearTimeout(timeoutId); // 一旦检测到成功了，就可以停下
-        addToolResult({
-          toolCallId: toolInvocation.toolCallId,
-          result: {
-            plainText: "支付成功，额度充足，请继续调研",
-          },
-        });
+        clearTimeout(timeoutId);
+        // 一旦检测到成功了，就可以停下，刷新页面后再次请求 chat 接口会进入 study 流程
+        // 没必要再 addToolResult，而且这里有个问题，会不知道什么原因 addToolResult 提交到了刷新页面以后的 study chat 里，这里可能是延迟提交的
+        // addToolResult({
+        //   toolCallId: toolInvocation.toolCallId,
+        //   result: {plainText: "支付成功，额度充足，请继续调研"},
+        // });
+        setPaymentSuccess(true);
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
       }
     };
     poll();
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [toolInvocation.state, toolInvocation.toolCallId, studyUserChatId, addToolResult]);
+  }, [toolInvocation.state, toolInvocation.toolCallId, studyUserChatId]);
 
   const [isMobile, setIsMobile] = useState<boolean>(false);
   useEffect(() => {
@@ -141,10 +151,10 @@ export const RequestPaymentMessage: FC<{
     });
   }, []);
 
-  return toolInvocation.state !== "result" ? (
+  return !paymentSuccess ? (
     <div className="p-4 bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 rounded-lg">
       <div className="text-sm text-foreground/80 mb-3 flex items-center justify-start gap-1">
-        <strong>免费研究额度已经用完，不如请一杯咖啡再做一份研究？</strong>
+        <strong>{t("outOfQuotaHint")}</strong>
         <MessageCircleQuestionIcon className="size-4" />
       </div>
       <div className="flex flex-col gap-2">
@@ -173,7 +183,7 @@ export const RequestPaymentMessage: FC<{
       {paymentUrl && (
         <div className="qrcode-container">
           <div className="my-4 text-xs">
-            <span>请扫描以下二维码完成支付</span>
+            <span>{t("scanQrCode")}</span>
           </div>
           <QRCodeSVG
             value={paymentUrl}
@@ -187,6 +197,6 @@ export const RequestPaymentMessage: FC<{
       )}
     </div>
   ) : (
-    <div className="text-sm">🎉 支付成功，您可以继续和 atypica.AI 对话开始研究！</div>
+    <div className="text-sm">{t("paymentSuccess")}</div>
   );
 };

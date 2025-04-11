@@ -4,7 +4,6 @@ import { studySystemEnterpriseSale } from "@/prompt/study";
 import { initStatReporter, thanksTool, ToolName } from "@/tools";
 import { CoreMessage, Message, streamText, TextStreamPart } from "ai";
 import { debouncePersistentMessage } from "./persistent";
-import { checkQuota } from "./quota";
 
 export async function helloAgentRequest({
   studyUserChatId,
@@ -23,9 +22,6 @@ export async function helloAgentRequest({
   reqSignal: AbortSignal;
 }) {
   const { statReport } = initStatReporter(studyUserChatId);
-
-  // 扣除 0 积分
-  await checkQuota({ studyUserChatId, userId, cost: 0 });
 
   let streamStartTime = Date.now();
   const tools = {

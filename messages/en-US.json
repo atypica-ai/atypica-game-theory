@@ -252,6 +252,11 @@
       "evictionWarningTitle": "No updates detected",
       "evictionWarningMessage": "The background task may have stalled. Consider canceling and restarting by typing \"continue\"."
     },
+    "RequestPaymentMessage": {
+      "outOfQuotaHint": "You've used up your free research quota. How about buying me a coffee for another research?",
+      "scanQrCode": "Please scan the QR code below to complete payment",
+      "paymentSuccess": "🎉 Payment successful, atypica.AI research is about to begin!"
+    },
     "ToolConsole": {
       "autoFollow": "Auto Follow",
       "manualSelect": "Manual Select",

@@ -51,12 +51,16 @@ export async function fetchUserChatByToken<Tkind extends UserChat["kind"]>(
 export async function fetchUserChatStateByToken<Tkind extends UserChat["kind"]>(
   studyUserChatToken: string,
   kind: Tkind,
-): Promise<ServerActionResult<{ backgroundToken: string | null; updatedAt: Date }>> {
+): Promise<ServerActionResult<{ backgroundToken: string | null; chatMessageUpdatedAt: Date }>> {
   const userChat = await prisma.userChat.findUnique({
     where: { token: studyUserChatToken, kind },
     select: {
       backgroundToken: true,
       updatedAt: true,
+      messages: {
+        orderBy: { id: "desc" },
+        take: 1,
+      },
     },
   });
   if (!userChat) {
@@ -66,10 +70,11 @@ export async function fetchUserChatStateByToken<Tkind extends UserChat["kind"]>(
       message: "User chat not found",
     };
   }
-  const { backgroundToken, updatedAt } = userChat;
+  const { backgroundToken, updatedAt, messages } = userChat;
+  const chatMessageUpdatedAt = messages[0]?.updatedAt ?? updatedAt;
   return {
     success: true,
-    data: { backgroundToken, updatedAt },
+    data: { backgroundToken, chatMessageUpdatedAt },
   };
 }
 

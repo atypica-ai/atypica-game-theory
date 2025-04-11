@@ -41,12 +41,15 @@ const ScoutTaskChat = ({ toolInvocation }: { toolInvocation: ToolInvocation }) =
       console.error(result.message);
       return;
     }
-    const { backgroundToken: newBackgroundToken, updatedAt } = result.data;
-    if (updatedAt.valueOf() !== chatUpdatedAt.current || newBackgroundToken !== backgroundToken) {
-      chatUpdatedAt.current = updatedAt.valueOf();
+    const { backgroundToken: newBackgroundToken, chatMessageUpdatedAt } = result.data;
+    if (
+      chatMessageUpdatedAt.valueOf() !== chatUpdatedAt.current ||
+      newBackgroundToken !== backgroundToken
+    ) {
+      chatUpdatedAt.current = chatMessageUpdatedAt.valueOf();
       setBackgroundToken(newBackgroundToken);
       console.log(
-        `ScoutTaskChat [${scoutUserChatToken}] updated at ${updatedAt}, reloading messages`,
+        `ScoutTaskChat [${scoutUserChatToken}] updated at ${chatMessageUpdatedAt}, reloading messages`,
       );
       reloadMessages();
     } else {

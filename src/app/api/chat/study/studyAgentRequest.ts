@@ -1,14 +1,12 @@
 import { appendChunkToStreamingMessage } from "@/lib/messageUtils";
 import openai from "@/lib/openai";
 import { studySystem } from "@/prompt";
-import { studySystemNoQuota } from "@/prompt/study";
 import {
   generateReportTool,
   initStatReporter,
   interviewChatTool,
   reasoningThinkingTool,
   requestInteractionTool,
-  requestPaymentTool,
   saveAnalystStudySummaryTool,
   saveAnalystTool,
   scoutTaskChatTool,
@@ -18,7 +16,6 @@ import { CoreMessage, Message, streamText, TextStreamPart } from "ai";
 import { createAbortSignals } from "./abortSignal";
 import { backgroundChatUntilCancel, raceForUserChat } from "./background";
 import { debouncePersistentMessage } from "./persistent";
-import { checkQuota } from "./quota";
 
 // 参考了 https://sdk.vercel.ai/docs/ai-sdk-ui/chatbot-message-persistence#storing-messages 的设计来实现
 export async function studyAgentRequest({
@@ -41,8 +38,6 @@ export async function studyAgentRequest({
   const { abortController, abortSignal, delayedAbortSignal } = createAbortSignals(reqSignal);
   const { statReport } = initStatReporter(studyUserChatId);
 
-  const hasQuota = await checkQuota({ studyUserChatId, userId, cost: 100 });
-
   let streamStartTime = Date.now();
   const tools = {
     [ToolName.scoutTaskChat]: scoutTaskChatTool({ userId, abortSignal, statReport }),
@@ -52,7 +47,6 @@ export async function studyAgentRequest({
     [ToolName.generateReport]: generateReportTool({ abortSignal, statReport }),
     [ToolName.reasoningThinking]: reasoningThinkingTool({ abortSignal, statReport }),
     [ToolName.requestInteraction]: requestInteractionTool,
-    [ToolName.requestPayment]: requestPaymentTool,
   };
   const streamTextResult = streamText({
     // model: openai("o3-mini"),
@@ -60,7 +54,7 @@ export async function studyAgentRequest({
     providerOptions: {
       openai: { stream_options: { include_usage: true } },
     },
-    system: hasQuota ? studySystem() : studySystemNoQuota(),
+    system: studySystem(),
     messages: coreMessages,
     tools,
     maxSteps: 15,
@@ -82,7 +76,6 @@ export async function studyAgentRequest({
       });
     },
     onStepFinish: async (step) => {
-      console.log("onStepFinish", step.response.messages[0].id);
       // 到了这里的 tool calling step 一定是有 result 的，所以得在上面 onChunk 里面获取 call 阶段的 tool
       console.log(
         `StudyChat [${studyUserChatId}] step [${step.stepType}]`,
