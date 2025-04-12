@@ -19,6 +19,7 @@ async function migrateInterviewChatMessages() {
       orderBy: { id: "asc" },
     });
     console.log(`${analystInterviews.length} interview user chats`);
+    let promises = [];
     for (const { id: interviewId } of analystInterviews) {
       const interview = await prisma.analystInterview.findUnique({
         where: { id: interviewId },
@@ -38,66 +39,76 @@ async function migrateInterviewChatMessages() {
         console.log("interview", interview.id, "skipped");
         continue;
       }
-      console.log("interview", interview.id, "migrating");
-      // 需要创建一个 userChat, messages 是 []
-      const userChat = await prisma.userChat.create({
-        data: {
-          userId: interview.analyst.userAnalysts[0].userId,
-          token: generateToken(),
-          title: interview.analyst.topic.substring(0, 50),
-          messages: [],
-          kind: "interview",
-          createdAt: interview.createdAt,
-          updatedAt: interview.updatedAt,
-        },
-      });
-      await prisma.analystInterview.update({
-        where: { id: interview.id },
-        data: { interviewUserChatId: userChat.id },
-      });
-      let lastCreatedAt = interview.createdAt;
-      const records = [];
-      for (const message of interview.messages) {
-        let { id: messageId, role, content, parts, createdAt, ...extra } = message;
-        if (!messageId) {
-          messageId = generateId();
-        }
-        if (!createdAt) {
-          createdAt = lastCreatedAt;
-        } else {
-          createdAt = new Date(createdAt);
-          lastCreatedAt = createdAt;
-        }
-        if (!parts) {
-          parts = [];
-        }
-        console.log(
-          createdAt,
-          messageId,
-          role,
-          "content:",
-          content?.length,
-          "parts:",
-          parts?.length,
-          "extra:",
-          JSON.stringify(extra).length,
-        );
-        records.push({
-          messageId,
-          userChatId: userChat.id,
-          role,
-          content,
-          parts,
-          extra,
-          createdAt,
-          updatedAt: createdAt,
+      const promise = (async (interview) => {
+        console.log("interview", interview.id, "migrating");
+        // 需要创建一个 userChat, messages 是 []
+        const userChat = await prisma.userChat.create({
+          data: {
+            userId: interview.analyst.userAnalysts[0].userId,
+            token: generateToken(),
+            title: interview.analyst.topic.substring(0, 50),
+            messages: [],
+            kind: "interview",
+            createdAt: interview.createdAt,
+            updatedAt: interview.updatedAt,
+          },
         });
+        await prisma.analystInterview.update({
+          where: { id: interview.id },
+          data: { interviewUserChatId: userChat.id },
+        });
+        let lastCreatedAt = interview.createdAt;
+        const records = [];
+        for (const message of interview.messages) {
+          let { id: messageId, role, content, parts, createdAt, ...extra } = message;
+          if (!messageId) {
+            messageId = generateId();
+          }
+          if (!createdAt) {
+            createdAt = lastCreatedAt;
+          } else {
+            createdAt = new Date(createdAt);
+            lastCreatedAt = createdAt;
+          }
+          if (!parts) {
+            parts = [];
+          }
+          console.log(
+            createdAt,
+            messageId,
+            role,
+            "content:",
+            content?.length,
+            "parts:",
+            parts?.length,
+            "extra:",
+            JSON.stringify(extra).length,
+          );
+          records.push({
+            messageId,
+            userChatId: userChat.id,
+            role,
+            content,
+            parts,
+            extra,
+            createdAt,
+            updatedAt: createdAt,
+          });
+        }
+        await prisma.chatMessage.createMany({ data: records });
+        await prisma.analystInterview.update({
+          where: { id: interview.id },
+          data: { messages: [] },
+        });
+      })(interview);
+      promises.push(promise);
+      if (promises.length >= 20) {
+        await Promise.all(promises);
+        promises = [];
       }
-      await prisma.chatMessage.createMany({ data: records });
-      await prisma.analystInterview.update({
-        where: { id: interview.id },
-        data: { messages: [] },
-      });
+    }
+    if (promises.length > 0) {
+      await Promise.all(promises);
     }
   } catch (error) {
     console.log("Error migrating messages:", error);
@@ -112,6 +123,7 @@ async function migrateUserChatMessages() {
       select: { id: true },
       orderBy: { id: "asc" },
     });
+    let promises = [];
     for (const { id: chatId } of userChats) {
       const userChat = await prisma.userChat.findUnique({
         where: { id: chatId },
@@ -121,54 +133,64 @@ async function migrateUserChatMessages() {
         console.log("userchat", userChat.id, "skipped");
         continue;
       }
-      console.log("userchat", userChat.id, "migrating");
-      let lastCreatedAt = userChat.createdAt;
-      const records = [];
-      for (const message of userChat.messages) {
-        let { id: messageId, role, content: _content, parts, createdAt, ...extra } = message;
-        if (!messageId) {
-          messageId = generateId();
+      const promise = (async (userChat) => {
+        console.log("userchat", userChat.id, "migrating");
+        let lastCreatedAt = userChat.createdAt;
+        const records = [];
+        for (const message of userChat.messages) {
+          let { id: messageId, role, content: _content, parts, createdAt, ...extra } = message;
+          if (!messageId) {
+            messageId = generateId();
+          }
+          if (!createdAt) {
+            createdAt = lastCreatedAt;
+          } else {
+            createdAt = new Date(createdAt);
+            lastCreatedAt = createdAt;
+          }
+          if (!parts) {
+            parts = [];
+          }
+          let content = _content;
+          if (userChat.id === 558) {
+            content = content.substring(0, 5000); // 这个消息有问题，太长了
+          }
+          console.log(
+            createdAt,
+            messageId,
+            role,
+            "content:",
+            content?.length,
+            "parts:",
+            parts?.length,
+            "extra:",
+            JSON.stringify(extra).length,
+          );
+          records.push({
+            messageId,
+            userChatId: userChat.id,
+            role,
+            content,
+            parts,
+            extra,
+            createdAt,
+            updatedAt: createdAt,
+          });
         }
-        if (!createdAt) {
-          createdAt = lastCreatedAt;
-        } else {
-          createdAt = new Date(createdAt);
-          lastCreatedAt = createdAt;
-        }
-        if (!parts) {
-          parts = [];
-        }
-        let content = _content;
-        if (userChat.id === 558) {
-          content = content.substring(0, 5000); // 这个消息有问题，太长了
-        }
-        console.log(
-          createdAt,
-          messageId,
-          role,
-          "content:",
-          content?.length,
-          "parts:",
-          parts?.length,
-          "extra:",
-          JSON.stringify(extra).length,
-        );
-        records.push({
-          messageId,
-          userChatId: userChat.id,
-          role,
-          content,
-          parts,
-          extra,
-          createdAt,
-          updatedAt: createdAt,
+        await prisma.chatMessage.createMany({ data: records });
+        await prisma.userChat.update({
+          where: { id: userChat.id },
+          data: { messages: [] },
         });
+      })(userChat);
+      promises.push(promise);
+      if (promises.length >= 20) {
+        await Promise.all(promises);
+        promises = [];
       }
-      await prisma.chatMessage.createMany({ data: records });
-      await prisma.userChat.update({
-        where: { id: userChat.id },
-        data: { messages: [] },
-      });
+    }
+    if (promises.length > 0) {
+      await Promise.all(promises);
     }
   } catch (error) {
     console.log("Error migrating messages:", error);
@@ -185,13 +207,25 @@ async function fixEmptyParts() {
       },
     });
     console.log(`${chatMessages.length} chat messages`);
+    let promises = [];
     for (const { id, content } of chatMessages) {
-      await prisma.chatMessage.update({
-        where: { id },
-        data: {
-          parts: [{ type: "text", text: content }],
-        },
-      });
+      const promise = (async ({ id, content }) => {
+        console.log(id);
+        await prisma.chatMessage.update({
+          where: { id },
+          data: {
+            parts: [{ type: "text", text: content }],
+          },
+        });
+      })({ id, content });
+      promises.push(promise);
+      if (promises.length >= 50) {
+        await Promise.all(promises);
+        promises = [];
+      }
+    }
+    if (promises.length > 0) {
+      await Promise.all(promises);
     }
   } catch (error) {
     console.log("Error fix empty parts:", error);
