@@ -331,14 +331,10 @@ model UserPointsLog {
   @@index([userId, verb, resourceType, resourceId])
 }
 
-model MaintenanceSchedule {
-  id                 Int      @id @default(autoincrement())
-  isActive           Boolean  @default(false)
-  startTime          DateTime
-  endTime            DateTime
-  notificationTime   DateTime
-  affectedAreas      String   @db.Text
-  maintenanceMessage String   @db.Text
+model SystemConfig {
+  id    Int    @id @default(autoincrement())
+  key   String @unique @db.VarChar(255)
+  value Json
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

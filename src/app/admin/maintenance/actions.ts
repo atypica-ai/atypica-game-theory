@@ -1,36 +1,59 @@
 "use server";
 import { prisma } from "@/lib/prisma";
 import { ServerActionResult } from "@/lib/serverAction";
-import { MaintenanceSchedule } from "@prisma/client";
+import { InputJsonValue } from "@prisma/client/runtime/library";
 import { revalidatePath } from "next/cache";
 import { checkAdminAuth } from "../utils";
 
-// Get current maintenance schedule
-export async function getCurrentMaintenanceSchedule(): Promise<
-  ServerActionResult<MaintenanceSchedule | null>
-> {
-  await checkAdminAuth("SUPER_ADMIN");
-
-  const schedule = await prisma.maintenanceSchedule.findFirst({
-    orderBy: { updatedAt: "desc" },
-  });
-
-  return {
-    success: true,
-    data: schedule,
-  };
-}
-
-// Create or update maintenance schedule
-export async function upsertMaintenanceSchedule(data: {
+// Type definitions for maintenance config
+export interface MaintenanceConfig {
   isActive: boolean;
   startTime: Date;
   endTime: Date;
   notificationTime: Date;
   affectedAreas: string;
   maintenanceMessage: string;
-}): Promise<ServerActionResult<MaintenanceSchedule>> {
-  const user = await checkAdminAuth("SUPER_ADMIN");
+}
+
+// System config key for maintenance settings
+const MAINTENANCE_CONFIG_KEY = "maintenance_settings";
+
+// Get current maintenance schedule from system config
+export async function getCurrentMaintenanceSchedule(): Promise<
+  ServerActionResult<MaintenanceConfig | null>
+> {
+  await checkAdminAuth("SUPER_ADMIN");
+
+  const config = await prisma.systemConfig.findUnique({
+    where: { key: MAINTENANCE_CONFIG_KEY },
+  });
+
+  if (!config) {
+    return {
+      success: true,
+      data: null,
+    };
+  }
+
+  const maintenanceConfig = config.value as unknown as MaintenanceConfig;
+
+  // Parse date strings back to Date objects
+  return {
+    success: true,
+    data: {
+      ...maintenanceConfig,
+      startTime: new Date(maintenanceConfig.startTime),
+      endTime: new Date(maintenanceConfig.endTime),
+      notificationTime: new Date(maintenanceConfig.notificationTime),
+    },
+  };
+}
+
+// Create or update maintenance schedule in system config
+export async function upsertMaintenanceSchedule(
+  data: MaintenanceConfig,
+): Promise<ServerActionResult<MaintenanceConfig>> {
+  await checkAdminAuth("SUPER_ADMIN");
 
   // Validate inputs
   if (data.startTime >= data.endTime) {
@@ -47,29 +70,24 @@ export async function upsertMaintenanceSchedule(data: {
     };
   }
 
-  const currentSchedule = await prisma.maintenanceSchedule.findFirst({
-    orderBy: { updatedAt: "desc" },
+  // Upsert the maintenance config
+  await prisma.systemConfig.upsert({
+    where: { key: MAINTENANCE_CONFIG_KEY },
+    update: {
+      value: data as unknown as InputJsonValue,
+      updatedAt: new Date(),
+    },
+    create: {
+      key: MAINTENANCE_CONFIG_KEY,
+      value: data as unknown as InputJsonValue,
+    },
   });
-
-  let result;
-  if (currentSchedule) {
-    // Update existing schedule
-    result = await prisma.maintenanceSchedule.update({
-      where: { id: currentSchedule.id },
-      data,
-    });
-  } else {
-    // Create new schedule
-    result = await prisma.maintenanceSchedule.create({
-      data,
-    });
-  }
 
   revalidatePath("/admin/maintenance");
 
   return {
     success: true,
-    data: result,
+    data: data,
   };
 }
 
@@ -85,15 +103,12 @@ export async function checkMaintenanceStatus(): Promise<{
 }> {
   const now = new Date();
 
-  // Find active maintenance schedule
-  const schedule = await prisma.maintenanceSchedule.findFirst({
-    where: {
-      isActive: true,
-    },
-    orderBy: { updatedAt: "desc" },
+  // Get maintenance config
+  const configRecord = await prisma.systemConfig.findUnique({
+    where: { key: MAINTENANCE_CONFIG_KEY },
   });
 
-  if (!schedule) {
+  if (!configRecord) {
     return {
       isInMaintenance: false,
       showNotification: false,
@@ -101,19 +116,33 @@ export async function checkMaintenanceStatus(): Promise<{
     };
   }
 
+  const config = configRecord.value as unknown as MaintenanceConfig;
+
+  if (!config.isActive) {
+    return {
+      isInMaintenance: false,
+      showNotification: false,
+      maintenanceData: null,
+    };
+  }
+
+  const startTime = new Date(config.startTime);
+  const endTime = new Date(config.endTime);
+  const notificationTime = new Date(config.notificationTime);
+
   // Check if current time is within maintenance window
-  const isInMaintenance = now >= schedule.startTime && now <= schedule.endTime;
+  const isInMaintenance = now >= startTime && now <= endTime;
 
   // Check if notification should be shown (after notification time but before maintenance ends)
-  const showNotification = now >= schedule.notificationTime && now <= schedule.endTime;
+  const showNotification = now >= notificationTime && now <= endTime;
 
   return {
     isInMaintenance,
     showNotification,
     maintenanceData: {
-      startTime: schedule.startTime,
-      endTime: schedule.endTime,
-      message: schedule.maintenanceMessage,
+      startTime: startTime,
+      endTime: endTime,
+      message: config.maintenanceMessage,
     },
   };
 }

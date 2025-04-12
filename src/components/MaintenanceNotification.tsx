@@ -64,10 +64,12 @@ export function MaintenanceNotification() {
         <AlertCircleIcon className="h-5 w-5 flex-shrink-0" />
         <p className="text-sm">
           <span className="font-medium">{t("scheduledMaintenance")} </span>
-          {t("maintenancePeriod", {
-            startTime: formatDate(maintenanceInfo.maintenanceData?.startTime!),
-            endTime: formatDate(maintenanceInfo.maintenanceData?.endTime!),
-          })}
+          {maintenanceInfo.maintenanceData
+            ? t("maintenancePeriod", {
+                startTime: formatDate(maintenanceInfo.maintenanceData.startTime),
+                endTime: formatDate(maintenanceInfo.maintenanceData.endTime),
+              })
+            : ""}
         </p>
         <Button
           size="sm"

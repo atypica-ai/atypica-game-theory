@@ -9,7 +9,6 @@ export async function helloAgentRequest({
   studyUserChatId,
   coreMessages,
   streamingMessage,
-  userId,
   reqSignal,
 }: {
   studyUserChatId: number;

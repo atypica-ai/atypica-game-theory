@@ -29,6 +29,23 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { getCurrentMaintenanceSchedule, upsertMaintenanceSchedule } from "./actions";
 
+// Date utilities for timezone handling
+const formatDateForInput = (date: Date): string => {
+  // Format date in local timezone for datetime-local input
+  const pad = (num: number) => String(num).padStart(2, "0");
+  const yyyy = date.getFullYear();
+  const MM = pad(date.getMonth() + 1);
+  const dd = pad(date.getDate());
+  const hh = pad(date.getHours());
+  const mm = pad(date.getMinutes());
+  return `${yyyy}-${MM}-${dd}T${hh}:${mm}`;
+};
+
+const parseLocalDateTime = (dateString: string): Date => {
+  // Parse the local datetime string to a Date object
+  return new Date(dateString);
+};
+
 // Create schema for form validation
 const maintenanceFormSchema = z.object({
   isActive: z.boolean(),
@@ -57,9 +74,9 @@ export default function MaintenancePage() {
     resolver: zodResolver(maintenanceFormSchema),
     defaultValues: {
       isActive: false,
-      startTime: new Date(Date.now() + 3600000).toISOString().slice(0, 16), // Default to 1 hour from now
-      endTime: new Date(Date.now() + 7200000).toISOString().slice(0, 16), // Default to 2 hours from now
-      notificationTime: new Date(Date.now()).toISOString().slice(0, 16), // Default to now
+      startTime: formatDateForInput(new Date(Date.now() + 3600000)), // Default to 1 hour from now
+      endTime: formatDateForInput(new Date(Date.now() + 7200000)), // Default to 2 hours from now
+      notificationTime: formatDateForInput(new Date(Date.now())), // Default to now
       affectedAreas: "All system features",
       maintenanceMessage: "We're performing scheduled maintenance. Please check back soon.",
     },
@@ -78,9 +95,9 @@ export default function MaintenancePage() {
             const schedule = result.data;
             form.reset({
               isActive: schedule.isActive,
-              startTime: new Date(schedule.startTime).toISOString().slice(0, 16),
-              endTime: new Date(schedule.endTime).toISOString().slice(0, 16),
-              notificationTime: new Date(schedule.notificationTime).toISOString().slice(0, 16),
+              startTime: formatDateForInput(new Date(schedule.startTime)),
+              endTime: formatDateForInput(new Date(schedule.endTime)),
+              notificationTime: formatDateForInput(new Date(schedule.notificationTime)),
               affectedAreas: schedule.affectedAreas,
               maintenanceMessage: schedule.maintenanceMessage,
             });
@@ -101,9 +118,9 @@ export default function MaintenancePage() {
     try {
       const result = await upsertMaintenanceSchedule({
         isActive: data.isActive,
-        startTime: new Date(data.startTime),
-        endTime: new Date(data.endTime),
-        notificationTime: new Date(data.notificationTime),
+        startTime: parseLocalDateTime(data.startTime),
+        endTime: parseLocalDateTime(data.endTime),
+        notificationTime: parseLocalDateTime(data.notificationTime),
         affectedAreas: data.affectedAreas,
         maintenanceMessage: data.maintenanceMessage,
       });
@@ -289,7 +306,7 @@ export default function MaintenancePage() {
       <Card>
         <CardHeader>
           <CardTitle>Preview</CardTitle>
-          <CardDescription>Here's how the maintenance page will look to users</CardDescription>
+          <CardDescription>Here&apos;s how the maintenance page will look to users</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="border rounded-md p-4 flex flex-col items-center justify-center min-h-[300px] bg-background">
@@ -315,10 +332,18 @@ export default function MaintenancePage() {
                 <p className="text-muted-foreground">{form.watch("maintenanceMessage")}</p>
                 <div className="mt-6 text-sm">
                   <p className="text-muted-foreground">
-                    From: {new Date(form.watch("startTime")).toLocaleString()}
+                    From:{" "}
+                    {parseLocalDateTime(form.watch("startTime")).toLocaleString(undefined, {
+                      dateStyle: "full",
+                      timeStyle: "short",
+                    })}
                   </p>
                   <p className="text-muted-foreground">
-                    To: {new Date(form.watch("endTime")).toLocaleString()}
+                    To:{" "}
+                    {parseLocalDateTime(form.watch("endTime")).toLocaleString(undefined, {
+                      dateStyle: "full",
+                      timeStyle: "short",
+                    })}
                   </p>
                 </div>
               </div>
