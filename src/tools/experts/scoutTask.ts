@@ -10,7 +10,7 @@ import { prisma } from "@/lib/prisma";
 import { generateToken } from "@/lib/utils";
 import { scoutSystem } from "@/prompt";
 import { PlainTextToolResult } from "@/tools/utils";
-import { generateId, Message, streamText, tool } from "ai";
+import { convertToCoreMessages, generateId, Message, streamText, tool } from "ai";
 import { z } from "zod";
 import { dyPostCommentsTool, dySearchTool, dyUserPostsTool, StatReporter, ToolName } from "..";
 import { savePersonaTool } from "../system/savePersona";
@@ -107,17 +107,16 @@ export const scoutTaskChatTool = ({
         },
       });
       const scoutUserChatId = scoutUserChat.id;
-      const messages = await prepareMessagesForLLM(scoutUserChatId);
-      if (messages.length) {
-        messages.push({ id: generateId(), role: "user", content: "继续" });
-      } else {
-        messages.push({ id: generateId(), role: "user", content: description });
-      }
+      // 插入一条新的消息
+      await persistentAIMessageToDB(scoutUserChatId, {
+        id: generateId(),
+        role: "user",
+        content: description,
+      });
       let hasError = false;
       try {
         await runScoutTaskChatStream({
           scoutUserChatId,
-          messages,
           abortSignal,
           statReport,
         });
@@ -148,31 +147,12 @@ export const scoutTaskChatTool = ({
     },
   });
 
-/**
- * 从数据库读取历史消息并删除最后一条 user message
- */
-async function prepareMessagesForLLM(scoutUserChatId: number) {
-  const scoutUserChat = await prisma.userChat.findUniqueOrThrow({
-    where: { id: scoutUserChatId, kind: "scout" },
-    include: {
-      messages: { orderBy: { id: "asc" } },
-    },
-  });
-  let messages = scoutUserChat.messages.map(convertDBMessageToAIMessage);
-  if (messages.length > 1 && messages[messages.length - 1].role === "user") {
-    messages = messages.slice(0, -1);
-  }
-  return messages;
-}
-
 async function runScoutTaskChatStream({
   scoutUserChatId,
-  messages: _messages,
   abortSignal,
   statReport,
 }: {
   scoutUserChatId: number;
-  messages: Message[];
   abortSignal: AbortSignal;
   statReport: StatReporter;
 }): Promise<void> {
@@ -205,11 +185,19 @@ async function runScoutTaskChatStream({
     }
   };
 
-  let messages = [..._messages];
   while (true) {
+    const messagesInDB = await prisma.chatMessage.findMany({
+      where: { userChatId: scoutUserChatId },
+      orderBy: { id: "asc" },
+    });
+    const aiMessages = fixChatMessages(messagesInDB.map(convertDBMessageToAIMessage), {
+      removePendingTool: true,
+    }); // 传给 LLM 的时候需要修复
+    const coreMessages = convertToCoreMessages(aiMessages);
     const streamTextPromise = new Promise<Omit<Message, "role">>((resolve, reject) => {
-      const streamingMessage: Omit<Message, "role"> = {
+      const streamingMessage: Omit<Message, "parts"> & { parts: NonNullable<Message["parts"]> } = {
         id: generateId(),
+        role: "assistant",
         content: "",
         parts: [],
       };
@@ -221,7 +209,7 @@ async function runScoutTaskChatStream({
         system: scoutSystem({
           doNotStopUntilScouted: false, // 不需要，下面自己会处理 continue
         }),
-        messages: fixChatMessages(messages, { removePendingTool: true }), // 传给 LLM 的时候需要修复
+        messages: coreMessages,
         tools: {
           [ToolName.reasoningThinking]: reasoningThinkingTool({ abortSignal, statReport }),
           [ToolName.xhsSearch]: xhsSearchTool,
@@ -251,10 +239,7 @@ async function runScoutTaskChatStream({
             });
           }
           if (streamingMessage.parts?.length && streamingMessage.content.trim()) {
-            await persistentAIMessageToDB(scoutUserChatId, {
-              role: "assistant",
-              ...streamingMessage,
-            });
+            await persistentAIMessageToDB(scoutUserChatId, streamingMessage);
           }
         },
         onError: ({ error }) => {
@@ -293,9 +278,8 @@ async function runScoutTaskChatStream({
     });
 
     if (personasResult.length < 5) {
-      // 开始一轮新的搜索
-      messages = await prepareMessagesForLLM(scoutUserChatId);
-      messages.push({
+      // 开始一轮新的搜索，插入一条新消息，下一次循环开始的时候会从数据库里读取新的 messages 记录
+      await persistentAIMessageToDB(scoutUserChatId, {
         id: generateId(),
         role: "user",
         content: `目前总结了${personasResult.length}个personas，还不够5个，请继续`,

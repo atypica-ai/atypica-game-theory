@@ -201,7 +201,10 @@ export function appendChunkToStreamingMessage<T extends ToolSet>(
 }
 
 export const persistentAIMessageToDB = async (userChatId: number, message: Message) => {
-  const { id: messageId, role, content, parts, createdAt, ...extra } = message;
+  const { id: messageId, role, content, parts: _parts, createdAt, ...extra } = message;
+  const parts: NonNullable<Message["parts"]> = _parts?.length
+    ? _parts
+    : [{ type: "text", text: content }];
   await prisma.chatMessage.upsert({
     where: { userChatId, messageId },
     create: {
@@ -209,14 +212,14 @@ export const persistentAIMessageToDB = async (userChatId: number, message: Messa
       messageId,
       role,
       content,
-      parts: (parts ?? []) as InputJsonValue,
+      parts: parts as InputJsonValue,
       extra: extra as InputJsonValue,
       createdAt,
     },
     update: {
       role,
       content,
-      parts: (parts ?? []) as InputJsonValue,
+      parts: parts as InputJsonValue,
       extra: extra as InputJsonValue,
     },
   });
