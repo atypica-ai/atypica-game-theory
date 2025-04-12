@@ -30,7 +30,7 @@ export const generateReportTool = ({
       reportToken: z
         .string()
         .optional()
-        .describe("报告的 token，用于创建记录，不需要提供，会自动生成")
+        .describe("报告的 token，用于创建记录，你不需要提供，系统会自动生成")
         .default(() => generateToken()),
     }),
     experimental_toToolResultContent: (result: PlainTextToolResult) => {
@@ -42,6 +42,11 @@ export const generateReportTool = ({
       regenerate,
       reportToken,
     }): Promise<GenerateReportResult> => {
+      if (await prisma.analystReport.findUnique({ where: { token: reportToken } })) {
+        return {
+          plainText: `为调研主题 ${analystId} 生成报告失败：你提供的 reportToken ${reportToken} 已经存在，无法使用，请重试。你可以忽略提供这个字段，系统会自动生成 token。`,
+        };
+      }
       let report = await prisma.analystReport.findFirst({
         where: { analystId },
         orderBy: { createdAt: "desc" },
