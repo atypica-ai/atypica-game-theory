@@ -324,5 +324,15 @@
       "copyLink": "Copy Link",
       "linkCopied": "Link copied!"
     }
+  },
+  "Maintenance": {
+    "scheduledMaintenance": "Scheduled maintenance:",
+    "maintenancePeriod": "The system will be undergoing maintenance from {startTime} to {endTime}. Please plan accordingly.",
+    "dismiss": "Dismiss",
+    "title": "System Maintenance",
+    "description": "We are currently performing scheduled maintenance to improve our services.",
+    "start": "Start:",
+    "expectedCompletion": "Expected completion:",
+    "tryAgain": "Try again"
   }
 }

@@ -324,5 +324,15 @@
       "copyLink": "复制链接",
       "linkCopied": "链接已复制！"
     }
+  },
+  "Maintenance": {
+    "scheduledMaintenance": "计划维护：",
+    "maintenancePeriod": "系统将在 {startTime} 至 {endTime} 期间进行维护。请提前做好安排。",
+    "dismiss": "关闭",
+    "title": "系统维护中",
+    "description": "我们正在进行计划维护以提升服务质量。",
+    "start": "开始时间：",
+    "expectedCompletion": "预计完成时间：",
+    "tryAgain": "重试"
   }
 }
