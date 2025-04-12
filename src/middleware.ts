@@ -58,9 +58,8 @@ async function handleMaintenanceMode(req: NextRequest) {
   // Check if we need to refresh the cache
   if (currentTime - maintenanceCache.lastChecked > MAINTENANCE_CACHE_DURATION) {
     try {
-      const baseUrl = `${req.nextUrl.protocol}//${req.nextUrl.host}`;
-      console.log(baseUrl);
-      const maintenanceResponse = await fetch(`${baseUrl}/api/system/maintenance-status`);
+      const origin = await getRequestOrigin();
+      const maintenanceResponse = await fetch(`${origin}/api/system/maintenance-status`);
       if (maintenanceResponse.ok) {
         const maintenanceData = await maintenanceResponse.json();
         maintenanceCache = {
