@@ -5,6 +5,7 @@ import { ToolInvocation } from "ai";
 import { MessageCircleQuestionIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { FC, useCallback, useState } from "react";
+import { useStudyContext } from "../../hooks/StudyContext";
 
 export const RequestInteractionMessage: FC<{
   toolInvocation: ToolInvocation;
@@ -19,6 +20,7 @@ export const RequestInteractionMessage: FC<{
   const t = useTranslations("StudyPage.ChatBox");
   const question = toolInvocation.args.question as string;
   const options = toolInvocation.args.options as string[];
+  const { replay } = useStudyContext();
 
   // 用户操作中的 answer，不是 tool result 里面的 answer
   const [pendingAnswer, setPendingAnswer] = useState<string[]>([]);
@@ -84,22 +86,46 @@ export const RequestInteractionMessage: FC<{
         </div>
         <MessageCircleQuestionIcon className="size-4" />
       </div>
-      <div className="flex flex-col items-start gap-2">
-        {[...options].map((option, index) => (
-          <div
-            key={index}
-            onClick={() => toggleAnswer(option)}
-            className={cn(
-              "w-full text-xs p-2 rounded-md border border-zinc-200 dark:border-zinc-700",
-              toolInvocation.state !== "result" &&
+      {toolInvocation.state === "result" || replay ? (
+        <div className="flex flex-col items-start gap-2">
+          {[...options].map((option, index) => (
+            <div
+              key={index}
+              className={cn(
+                "w-full text-xs p-2 rounded-md border border-zinc-200 dark:border-zinc-700",
+                isActiveOption(option) && "bg-zinc-100 dark:bg-zinc-700 font-bold",
+              )}
+            >
+              {option}
+            </div>
+          ))}
+          {isActiveOption("NONE_OF_THE_ABOVE") && (
+            // 以上都不是的选项结果只在用户确实这么选择的时候才显示
+            <div
+              className={cn(
+                "w-full text-xs p-2 rounded-md border border-zinc-200 dark:border-zinc-700",
+                "bg-zinc-100 dark:bg-zinc-700 font-bold",
+              )}
+            >
+              {t("noneOfTheAbove")}
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="flex flex-col items-start gap-2">
+          {[...options].map((option, index) => (
+            <div
+              key={index}
+              onClick={() => toggleAnswer(option)}
+              className={cn(
+                "w-full text-xs p-2 rounded-md border border-zinc-200 dark:border-zinc-700",
                 "cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-700",
-              isActiveOption(option) && "bg-zinc-100 dark:bg-zinc-700 font-bold",
-            )}
-          >
-            {option}
-          </div>
-        ))}
-        {toolInvocation.state !== "result" ? (
+                isActiveOption(option) && "bg-zinc-100 dark:bg-zinc-700 font-bold",
+              )}
+            >
+              {option}
+            </div>
+          ))}
           <div className="w-full flex flex-row justify-end gap-2">
             <Button
               variant="outline"
@@ -122,18 +148,8 @@ export const RequestInteractionMessage: FC<{
               </Button>
             )}
           </div>
-        ) : isActiveOption("NONE_OF_THE_ABOVE") ? (
-          // 以上都不是的选项结果只在用户确实这么选择的时候才显示
-          <div
-            className={cn(
-              "w-full text-xs p-2 rounded-md border border-zinc-200 dark:border-zinc-700",
-              "bg-zinc-100 dark:bg-zinc-700 font-bold",
-            )}
-          >
-            {t("noneOfTheAbove")}
-          </div>
-        ) : null}
-      </div>
+        </div>
+      )}
     </div>
   );
 };
