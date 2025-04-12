@@ -330,3 +330,16 @@ model UserPointsLog {
   @@index([userId, verb])
   @@index([userId, verb, resourceType, resourceId])
 }
+
+model MaintenanceSchedule {
+  id                 Int      @id @default(autoincrement())
+  isActive           Boolean  @default(false)
+  startTime          DateTime
+  endTime            DateTime
+  notificationTime   DateTime
+  affectedAreas      String   @db.Text
+  maintenanceMessage String   @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
