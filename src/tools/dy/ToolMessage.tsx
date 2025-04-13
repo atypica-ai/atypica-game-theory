@@ -1,11 +1,16 @@
 import { cn } from "@/lib/utils";
+import { ToolInvocation } from "ai";
 import Image from "next/image";
 import { FC } from "react";
 import { DYPostCommentsResult } from "./postComments";
 import { DYSearchResult } from "./search";
 import { DYUserPostsResult } from "./userPosts";
 
-export const DYSearchResultMessage: FC<{ result: DYSearchResult }> = ({ result }) => {
+export const DYSearchResultMessage: FC<{
+  toolInvocation: Omit<Extract<ToolInvocation, { state: "result" }>, "result"> & {
+    result: DYSearchResult;
+  };
+}> = ({ toolInvocation: { result } }) => {
   return (
     <div
       className={cn(
@@ -46,7 +51,11 @@ export const DYSearchResultMessage: FC<{ result: DYSearchResult }> = ({ result }
   );
 };
 
-export const DYUserPostsResultMessage: FC<{ result: DYUserPostsResult }> = ({ result }) => {
+export const DYUserPostsResultMessage: FC<{
+  toolInvocation: Omit<Extract<ToolInvocation, { state: "result" }>, "result"> & {
+    result: DYUserPostsResult;
+  };
+}> = ({ toolInvocation: { result } }) => {
   return (
     <div
       className={cn(
@@ -88,8 +97,10 @@ export const DYUserPostsResultMessage: FC<{ result: DYUserPostsResult }> = ({ re
 };
 
 export const DYPostCommentsResultMessage: FC<{
-  result: DYPostCommentsResult;
-}> = ({ result }) => {
+  toolInvocation: Omit<Extract<ToolInvocation, { state: "result" }>, "result"> & {
+    result: DYPostCommentsResult;
+  };
+}> = ({ toolInvocation: { result } }) => {
   return (
     <div className="p-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-md">
       {/* 只挑选 10 条展示 */}

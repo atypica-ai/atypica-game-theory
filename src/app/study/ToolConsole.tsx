@@ -1,4 +1,4 @@
-import ToolArgsTable, { ExpandableText } from "@/components/ToolArgsTable";
+import ToolArgsTable, { ExpandableText } from "@/components/chat/ToolArgsTable";
 import { cn } from "@/lib/utils";
 import { ToolName } from "@/tools";
 import { ToolInvocation } from "ai";

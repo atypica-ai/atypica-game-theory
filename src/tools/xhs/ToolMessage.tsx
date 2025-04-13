@@ -1,11 +1,16 @@
 import { cn } from "@/lib/utils";
+import { ToolInvocation } from "ai";
 import Image from "next/image";
 import { FC } from "react";
 import { XHSNoteCommentsResult } from "./noteComments";
 import { XHSSearchResult } from "./search";
 import { XHSUserNotesResult } from "./userNotes";
 
-export const XHSSearchResultMessage: FC<{ result: XHSSearchResult }> = ({ result }) => {
+export const XHSSearchResultMessage: FC<{
+  toolInvocation: Omit<Extract<ToolInvocation, { state: "result" }>, "result"> & {
+    result: XHSSearchResult;
+  };
+}> = ({ toolInvocation: { result } }) => {
   return (
     <div
       className={cn(
@@ -49,7 +54,11 @@ export const XHSSearchResultMessage: FC<{ result: XHSSearchResult }> = ({ result
   );
 };
 
-export const XHSUserNotesResultMessage: FC<{ result: XHSUserNotesResult }> = ({ result }) => {
+export const XHSUserNotesResultMessage: FC<{
+  toolInvocation: Omit<Extract<ToolInvocation, { state: "result" }>, "result"> & {
+    result: XHSUserNotesResult;
+  };
+}> = ({ toolInvocation: { result } }) => {
   return (
     <div
       className={cn(
@@ -92,8 +101,10 @@ export const XHSUserNotesResultMessage: FC<{ result: XHSUserNotesResult }> = ({ 
 };
 
 export const XHSNoteCommentsResultMessage: FC<{
-  result: XHSNoteCommentsResult;
-}> = ({ result }) => {
+  toolInvocation: Omit<Extract<ToolInvocation, { state: "result" }>, "result"> & {
+    result: XHSNoteCommentsResult;
+  };
+}> = ({ toolInvocation: { result } }) => {
   return (
     <div className="p-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-md">
       {/* 只挑选 10 条展示 */}

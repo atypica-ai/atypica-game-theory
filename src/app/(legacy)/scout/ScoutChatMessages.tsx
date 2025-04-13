@@ -1,12 +1,12 @@
 "use client";
-import { ChatMessage } from "@/components/ChatMessage";
+import { ChatMessage } from "@/components/chat/ChatMessage";
+import { StatusDisplay } from "@/components/chat/StatusDisplay";
 import { useScrollToBottom } from "@/components/use-scroll-to-bottom";
 import { createUserChat, ScoutUserChat } from "@/data/UserChat";
 import { Message, useChat } from "@ai-sdk/react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { StatusDisplay } from "./StatusDisplay";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 function popLastUserMessage(messages: Message[]) {
   if (messages.length > 0 && messages[messages.length - 1].role === "user") {
@@ -30,6 +30,13 @@ export function ScoutChatMessages({
 
   // https://github.com/vercel/ai/blob/50555848a54e6bace3e22d175db58c04f04ea5a4/packages/react/src/use-chat.ts#L230
   // useChat 会监听 credentials,headers,body, 的变化，但是其他的不监听
+  const chatRequestBody = useMemo(
+    () => ({
+      scoutUserChatId,
+      autoChat: environment === "console",
+    }),
+    [scoutUserChatId, environment],
+  );
   const {
     messages,
     setMessages,
@@ -44,13 +51,13 @@ export function ScoutChatMessages({
   } = useChat({
     // maxSteps: 15,  // 每次请求只发送单条消息的情况，只能在后端设置 maxSteps，在后端不断 continue
     api: "/api/chat/scout",
-    body: {
-      scoutUserChatId,
-      autoChat: environment === "console",
-    },
+    body: chatRequestBody,
     // see https://sdk.vercel.ai/docs/ai-sdk-ui/chatbot-message-persistence#sending-only-the-last-message
     experimental_prepareRequestBody({ messages, id, requestBody }) {
-      return { message: messages[messages.length - 1], id, ...requestBody };
+      // requestBody 这个字段不靠谱，虽然上面配置了 body，首次提交的时候这里的 requestBody 却是空的
+      // 只好专门修复下
+      const body = { ...chatRequestBody, ...requestBody };
+      return { message: messages[messages.length - 1], id, ...body };
     },
     // onResponse: (response) => {
     //   // onResponse 和 onFinish 也被 hook 保存状态了，所以他俩都监听不到 scoutUserChatId 的变化，这个方法里没法正确使用 scoutUserChatId，
@@ -104,16 +111,38 @@ export function ScoutChatMessages({
         setScoutUserChatId(scoutUserChat.id);
         // 这里设置了，在调用 handleSubmit 的时候还没有更新 useChat 的 body，所以 setChatId 以后，还要在 handleSubmit 里直接提交
         handleSubmit(event, {
-          body: { scoutUserChatId: scoutUserChat.id },
+          body: { ...chatRequestBody, scoutUserChatId: scoutUserChat.id },
         });
       } else {
         handleSubmit(event, {
-          body: { scoutUserChatId },
+          body: { ...chatRequestBody, scoutUserChatId },
         });
       }
     },
     [handleSubmit, scoutUserChatId, input],
   );
+
+  const personasScouted = useMemo(() => {
+    if (status !== "ready") {
+      return false;
+    }
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const message = messages[i];
+      if (message.role === "assistant" && message.parts) {
+        for (let j = message.parts.length - 1; j >= 0; j--) {
+          const part = message.parts[j];
+          if (
+            part.type === "tool-invocation" &&
+            part.toolInvocation.toolName === "savePersona" &&
+            part.toolInvocation.state === "result"
+          ) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  }, [status, messages]);
 
   const [messagesContainerRef, messagesEndRef] = useScrollToBottom<HTMLDivElement>();
 
@@ -162,9 +191,16 @@ export function ScoutChatMessages({
         <div ref={messagesEndRef} />
       </div>
 
-      {scoutUserChatId && (
-        <StatusDisplay scoutUserChatId={scoutUserChatId} status={status} messages={messages} />
+      {personasScouted && (
+        <Link
+          href={`/personas?scoutUserChat=${scoutUserChatId}`}
+          target="_blank"
+          className="text-blue-500 hover:underline mx-auto text-xs"
+        >
+          🔍 {t("viewPersonas")}
+        </Link>
       )}
+      {scoutUserChatId && <StatusDisplay userChatId={scoutUserChatId} status={status} />}
 
       {environment === "chat" && (
         <form onSubmit={handleSubmitMessage}>

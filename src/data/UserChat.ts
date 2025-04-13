@@ -8,23 +8,23 @@ import { UserChat as UserChatPrisma } from "@prisma/client";
 import { InputJsonValue } from "@prisma/client/runtime/library";
 import { generateId, Message } from "ai";
 
-export type UserChat = Omit<UserChatPrisma, "messages"> & {
+export type UserChatWithMessages = Omit<UserChatPrisma, "messages"> & {
   // readonly field from ChatMessage table
   messages: Message[];
 };
 
-export type ScoutUserChat = Omit<UserChat, "kind"> & {
+export type ScoutUserChat = Omit<UserChatWithMessages, "kind"> & {
   kind: "scout";
 };
 
-export type StudyUserChat = Omit<UserChat, "kind"> & {
+export type StudyUserChat = Omit<UserChatWithMessages, "kind"> & {
   kind: "study";
 };
 
-export async function createUserChat<TKind extends UserChat["kind"]>(
+export async function createUserChat<TKind extends UserChatWithMessages["kind"]>(
   kind: TKind,
   { role, content }: { role: "user" | "assistant"; content: string },
-): Promise<ServerActionResult<Omit<UserChat, "kind"> & { kind: TKind }>> {
+): Promise<ServerActionResult<Omit<UserChatWithMessages, "kind"> & { kind: TKind }>> {
   return withAuth(async (user) => {
     const message: Message = {
       id: generateId(),
@@ -60,12 +60,12 @@ export async function createUserChat<TKind extends UserChat["kind"]>(
   });
 }
 
-export async function fetchUserChats<Tkind extends UserChat["kind"]>(
+export async function fetchUserChats<Tkind extends UserChatWithMessages["kind"]>(
   kind: Tkind,
   { take = 30 }: { take?: number } = {},
 ): Promise<
   ServerActionResult<
-    (Omit<UserChat, "kind" | "messages"> & {
+    (Omit<UserChatWithMessages, "kind" | "messages"> & {
       kind: Tkind;
     })[]
   >
@@ -103,12 +103,12 @@ export async function clearStudyUserChatBackgroundToken(
   });
 }
 
-export async function fetchUserChatById<Tkind extends UserChat["kind"]>(
+export async function fetchUserChatById<Tkind extends UserChatWithMessages["kind"]>(
   userChatId: number,
   kind: Tkind,
 ): Promise<
   ServerActionResult<
-    Omit<UserChat, "kind"> & {
+    Omit<UserChatWithMessages, "kind"> & {
       kind: Tkind;
       messages: Message[];
     }

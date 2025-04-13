@@ -17,4 +17,7 @@ export const thanksTool = tool({
   experimental_toToolResultContent: (result: PlainTextToolResult) => {
     return [{ type: "text", text: result.plainText }];
   },
+  execute: async () => {
+    return { plainText: "Saved" };
+  },
 });

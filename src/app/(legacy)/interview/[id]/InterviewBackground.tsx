@@ -1,5 +1,5 @@
 "use client";
-import { ChatMessage } from "@/components/ChatMessage";
+import { ChatMessage } from "@/components/chat/ChatMessage";
 import { PointAlertDialog } from "@/components/PointAlertDialog";
 import { Button } from "@/components/ui/button";
 import { useScrollToBottom } from "@/components/use-scroll-to-bottom";

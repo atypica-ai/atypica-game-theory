@@ -1,8 +1,7 @@
 "use client";
 // 给 chat 类型的 tool call 用的组件，比如 scout chat 和 interview chat
+import ToolArgsTable, { ExpandableText } from "@/components/chat/ToolArgsTable";
 import { Markdown } from "@/components/markdown";
-import ToolArgsTable, { ExpandableText } from "@/components/ToolArgsTable";
-
 import { cn } from "@/lib/utils";
 import { ToolName } from "@/tools";
 import {
@@ -37,17 +36,17 @@ const StreamStep = ({ toolInvocation }: { toolInvocation: ToolInvocation }) => {
   }) => {
     switch (toolInvocation.toolName) {
       case ToolName.xhsSearch:
-        return <XHSSearchResultMessage result={toolInvocation.result} />;
+        return <XHSSearchResultMessage toolInvocation={toolInvocation} />;
       case ToolName.xhsUserNotes:
-        return <XHSUserNotesResultMessage result={toolInvocation.result} />;
+        return <XHSUserNotesResultMessage toolInvocation={toolInvocation} />;
       case ToolName.xhsNoteComments:
-        return <XHSNoteCommentsResultMessage result={toolInvocation.result} />;
+        return <XHSNoteCommentsResultMessage toolInvocation={toolInvocation} />;
       case ToolName.dySearch:
-        return <DYSearchResultMessage result={toolInvocation.result} />;
+        return <DYSearchResultMessage toolInvocation={toolInvocation} />;
       case ToolName.dyUserPosts:
-        return <DYUserPostsResultMessage result={toolInvocation.result} />;
+        return <DYUserPostsResultMessage toolInvocation={toolInvocation} />;
       case ToolName.dyPostComments:
-        return <DYPostCommentsResultMessage result={toolInvocation.result} />;
+        return <DYPostCommentsResultMessage toolInvocation={toolInvocation} />;
       case ToolName.reasoningThinking:
         return <ReasoningThinking toolInvocation={toolInvocation} />;
       default:

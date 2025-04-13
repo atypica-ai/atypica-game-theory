@@ -1,9 +1,10 @@
+import ToolArgsTable, { ExpandableText } from "@/components/chat/ToolArgsTable";
+import ToolResultTable from "@/components/chat/ToolResultTable";
 import { Markdown } from "@/components/markdown";
-import ToolArgsTable, { ExpandableText } from "@/components/ToolArgsTable";
-import ToolResultTable from "@/components/ToolResultTable";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 import { ToolName } from "@/tools";
+import { ThanksMessage } from "@/tools/user/ToolMessage";
 import { PlainTextToolResult } from "@/tools/utils";
 import { Message, Message as MessageType, ToolInvocation } from "ai";
 import { motion } from "framer-motion";
@@ -14,7 +15,6 @@ import { GenerateReportResultMessage } from "./tools/message/GenerateReportResul
 import { RequestInteractionMessage } from "./tools/message/RequestInteractionMessage";
 import { RequestPaymentMessage } from "./tools/message/RequestPaymentMessage";
 import { ScoutTaskResultMessage } from "./tools/message/ScoutTaskResultMessage";
-import { ThanksMessage } from "./tools/message/ThanksMessage";
 
 type TAddToolResult = ({
   toolCallId,
@@ -42,7 +42,7 @@ const SpecialToolDisplay = ({
     return <RequestPaymentMessage toolInvocation={toolInvocation} addToolResult={addToolResult} />;
   }
   if (toolName == ToolName.thanks) {
-    return <ThanksMessage toolInvocation={toolInvocation} addToolResult={addToolResult} />;
+    return <ThanksMessage toolInvocation={toolInvocation} />;
   }
   if (state === "result" && toolName == ToolName.generateReport) {
     return <GenerateReportResultMessage toolInvocation={toolInvocation} />;
@@ -81,7 +81,7 @@ const ToolInvocationMessage = ({
   }, [isLastToolPart]);
 
   return (
-    <div>
+    <>
       <Collapsible
         className={cn(
           "text-xs whitespace-pre-wrap rounded-lg p-2 font-mono",
@@ -124,19 +124,17 @@ const ToolInvocationMessage = ({
           )}
         </CollapsibleContent>
       </Collapsible>
-      <div className="my-4">
-        <SpecialToolDisplay toolInvocation={toolInvocation} addToolResult={addToolResult} />
-      </div>
-    </div>
+      <SpecialToolDisplay toolInvocation={toolInvocation} addToolResult={addToolResult} />
+    </>
   );
 };
 
 const PlainText = ({ children }: PropsWithChildren) => {
-  return (
-    <div className="text-sm flex flex-col gap-4">
+  return children ? (
+    <div className="text-sm">
       <Markdown>{children as string}</Markdown>
     </div>
-  );
+  ) : null;
 };
 
 export const SingleMessage = ({

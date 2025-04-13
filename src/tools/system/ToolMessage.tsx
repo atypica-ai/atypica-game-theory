@@ -1,10 +1,17 @@
 import { SaveAnalystToolResult } from "@/tools/system/saveAnalyst";
+import { ToolInvocation } from "ai";
 import Link from "next/link";
 import { FC } from "react";
 
 export const SaveAnalystToolResultMessage: FC<{
-  result: SaveAnalystToolResult;
-}> = ({ result: { analystId } }) => {
+  toolInvocation: Omit<Extract<ToolInvocation, { state: "result" }>, "result"> & {
+    result: SaveAnalystToolResult;
+  };
+}> = ({
+  toolInvocation: {
+    result: { analystId },
+  },
+}) => {
   return (
     <div className="p-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 rounded-lg text-xs">
       🎉 保存成功！

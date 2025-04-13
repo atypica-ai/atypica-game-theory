@@ -1,5 +1,5 @@
 "use client";
-import { UserChat } from "@/data/UserChat";
+import { UserChatWithMessages } from "@/data/UserChat";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -32,7 +32,7 @@ export default function PersonasList({
   scoutUserChat,
 }: {
   personas: Persona[];
-  scoutUserChat?: UserChat;
+  scoutUserChat?: UserChatWithMessages;
 }) {
   const t = useTranslations("PersonasPage");
   const router = useRouter();
