@@ -13,9 +13,11 @@ import { useEffect, useRef } from "react";
 export function AgentChatPage({
   userChat,
   useChatAPI,
+  readOnly,
 }: {
   userChat: UserChatWithMessages;
-  useChatAPI: string;
+  useChatAPI?: string;
+  readOnly?: boolean;
 }) {
   const { data: session } = useSession();
   const initialMessages = userChat.messages;
@@ -32,10 +34,10 @@ export function AgentChatPage({
   useEffect(() => {
     if (requestSentRef.current) return;
     requestSentRef.current = true;
-    if (initialMessages[initialMessages.length - 1]?.role === "user") {
+    if (initialMessages[initialMessages.length - 1]?.role === "user" && !readOnly) {
       reload();
     }
-  }, [initialMessages, reload]);
+  }, [initialMessages, reload, readOnly]);
 
   const [messagesContainerRef, messagesEndRef] = useScrollToBottom<HTMLDivElement>();
   const inputDisabled = status === "streaming" || status === "submitted";
@@ -78,33 +80,34 @@ export function AgentChatPage({
         <div ref={messagesEndRef} />
       </div>
 
-      <StatusDisplay status={status} />
-
-      <form onSubmit={handleSubmit}>
-        <Textarea
-          className={cn(
-            "block min-h-24 max-lg:min-h-20 text-sm placeholder:text-sm resize-none focus-visible:border-primary/70 transition-colors rounded-lg py-3 px-4",
-            inputDisabled ? "opacity-50 cursor-not-allowed" : "",
-          )}
-          enterKeyHint="enter"
-          rows={3}
-          value={input}
-          disabled={inputDisabled}
-          onChange={(event) => {
-            setInput(event.target.value);
-          }}
-          onKeyDown={(e) => {
-            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-            if (!isMobile && e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
-              e.preventDefault();
-              if (input.trim()) {
-                const form = e.currentTarget.form;
-                if (form) form.requestSubmit();
+      {!readOnly && <StatusDisplay status={status} />}
+      {!readOnly && (
+        <form onSubmit={handleSubmit}>
+          <Textarea
+            className={cn(
+              "block min-h-24 max-lg:min-h-20 text-sm placeholder:text-sm resize-none focus-visible:border-primary/70 transition-colors rounded-lg py-3 px-4",
+              inputDisabled ? "opacity-50 cursor-not-allowed" : "",
+            )}
+            enterKeyHint="enter"
+            rows={3}
+            value={input}
+            disabled={inputDisabled}
+            onChange={(event) => {
+              setInput(event.target.value);
+            }}
+            onKeyDown={(e) => {
+              const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+              if (!isMobile && e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
+                e.preventDefault();
+                if (input.trim()) {
+                  const form = e.currentTarget.form;
+                  if (form) form.requestSubmit();
+                }
               }
-            }
-          }}
-        />
-      </form>
+            }}
+          />
+        </form>
+      )}
     </div>
   );
 }

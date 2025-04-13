@@ -55,8 +55,7 @@
     "InterviewCard": {
       "interviewing": "Interviewing",
       "concluded": "Concluded",
-      "viewSummary": "View Summary",
-      "startInterview": "Start Interview"
+      "viewInterview": "View Interview"
     },
     "SelectPersonaDialog": {
       "title": "Select Interview Subjects",
@@ -271,26 +270,11 @@
       "reportGenerated": "Report is generated, click to view"
     }
   },
-  "InterviewPage": {
-    "interviewTitle": "{role} interviews {persona}",
-    "startInterview": "Start Interview",
-    "interviewInProgress": "Interview in progress",
-    "interviewCompleted": "Interview completed",
-    "startChat": "Start Chat",
-    "restartChat": "Restart Chat",
-    "endChat": "End Chat",
-    "chatEnded": "Chat ended",
-    "user": "User",
-    "brand": "Brand",
-    "brandPreparingQuestion": "Brand preparing question",
-    "researchConclusion": "Research Conclusion"
-  },
   "ScoutPage": {
     "title": "Find Target Users",
     "viewPersonas": "View personas found in this search",
     "HistoryDrawer": {
       "title": "Chat History",
-      "newChat": "New Chat",
       "unnamedChat": "Unnamed Chat"
     },
     "hints": {

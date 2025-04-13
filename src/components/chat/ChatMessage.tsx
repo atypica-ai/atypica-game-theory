@@ -8,7 +8,10 @@ import {
   DYUserPostsResultMessage,
 } from "@/tools/dy/ToolMessage";
 import { ReasoningThinkingResultMessage } from "@/tools/experts/ToolMessage";
-import { SaveAnalystToolResultMessage } from "@/tools/system/ToolMessage";
+import {
+  SaveAnalystToolResultMessage,
+  SaveInterviewConclusionMessage,
+} from "@/tools/system/ToolMessage";
 import { ThanksMessage } from "@/tools/user/ToolMessage";
 import {
   XHSNoteCommentsResultMessage,
@@ -24,6 +27,12 @@ import ToolResultTable from "./ToolResultTable";
 
 // const renderResult = (toolInvocation: ToolInvocation & { state: "result" }) => {
 const SpecialToolDisplay = ({ toolInvocation }: { toolInvocation: ToolInvocation }) => {
+  switch (toolInvocation.toolName) {
+    case ToolName.saveInterviewConclusion:
+      return <SaveInterviewConclusionMessage toolInvocation={toolInvocation} />;
+    case ToolName.thanks:
+      return <ThanksMessage toolInvocation={toolInvocation} />;
+  }
   if (toolInvocation.state !== "result") {
     return null;
   }
@@ -44,8 +53,6 @@ const SpecialToolDisplay = ({ toolInvocation }: { toolInvocation: ToolInvocation
       return <ReasoningThinkingResultMessage toolInvocation={toolInvocation} />;
     case ToolName.saveAnalyst:
       return <SaveAnalystToolResultMessage toolInvocation={toolInvocation} />;
-    case ToolName.thanks:
-      return <ThanksMessage toolInvocation={toolInvocation} />;
     default:
       return (
         <pre

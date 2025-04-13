@@ -6,16 +6,13 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { fetchUserChatById, fetchUserChats, ScoutUserChat } from "@/data/UserChat";
+import { fetchUserChats, ScoutUserChat } from "@/data/UserChat";
 import { HistoryIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
-export function ScoutChatHistory({
-  onSelectChat,
-}: {
-  onSelectChat: (chat: ScoutUserChat | null) => void;
-}) {
+export function ScoutChatHistory() {
   const t = useTranslations("ScoutPage.HistoryDrawer");
   const [chats, setChats] = useState<Omit<ScoutUserChat, "messages">[]>([]);
   const [open, setOpen] = useState(false);
@@ -36,20 +33,6 @@ export function ScoutChatHistory({
     return () => clearInterval(interval);
   }, []);
 
-  const handleSelectChat = async (scoutUserChatId: number | null) => {
-    if (!scoutUserChatId) {
-      onSelectChat(null);
-    } else {
-      const result = await fetchUserChatById(scoutUserChatId, "scout");
-      if (result.success) {
-        onSelectChat(result.data);
-      } else {
-        console.error(result.message);
-      }
-    }
-    setOpen(false); // Close drawer when a chat is selected
-  };
-
   return (
     <Drawer direction="right" open={open} onOpenChange={setOpen} modal={true}>
       <DrawerTrigger asChild>
@@ -61,21 +44,15 @@ export function ScoutChatHistory({
         <DrawerHeader>
           <DrawerTitle className="text-center">{t("title")}</DrawerTitle>
         </DrawerHeader>
-        <div className="p-4 space-y-2">
-          <div
-            className="px-3 py-2 text-sm text-zinc-500 hover:bg-zinc-100 rounded cursor-pointer"
-            onClick={() => handleSelectChat(null)}
-          >
-            {t("newChat")}
-          </div>
+        <div className="p-4 space-y-2 overflow-y-auto scrollbar-thin">
           {chats.map((chat) => (
-            <div
+            <Link
               key={chat.id}
-              onClick={() => handleSelectChat(chat.id)}
-              className="px-3 py-2 text-sm truncate text-zinc-500 hover:bg-zinc-100 rounded cursor-pointer"
+              href={`/agents/scout/${chat.id}`}
+              className="block px-3 py-2 text-sm truncate text-zinc-500 hover:bg-zinc-100 rounded cursor-pointer"
             >
               {chat.title || t("unnamedChat")}
-            </div>
+            </Link>
           ))}
         </div>
       </DrawerContent>

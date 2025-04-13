@@ -1,3 +1,4 @@
+import { ChatMessage } from "@/components/chat/ChatMessage";
 import { SaveAnalystToolResult } from "@/tools/system/saveAnalyst";
 import { ToolInvocation } from "ai";
 import Link from "next/link";
@@ -20,5 +21,17 @@ export const SaveAnalystToolResultMessage: FC<{
       </Link>
       <span className="ml-4 text-muted-foreground">这个功能还在开发中...</span>
     </div>
+  );
+};
+
+export const SaveInterviewConclusionMessage: FC<{
+  toolInvocation: ToolInvocation;
+}> = ({ toolInvocation }) => {
+  return (
+    <ChatMessage
+      nickname="Conclusion"
+      role="system"
+      content={toolInvocation.args.conclusion}
+    ></ChatMessage>
   );
 };

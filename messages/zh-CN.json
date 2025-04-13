@@ -55,8 +55,7 @@
     "InterviewCard": {
       "interviewing": "正在访谈",
       "concluded": "已总结",
-      "viewSummary": "查看总结",
-      "startInterview": "去访谈"
+      "viewInterview": "查看访谈"
     },
     "SelectPersonaDialog": {
       "title": "选择访谈对象",
@@ -271,26 +270,11 @@
       "reportGenerated": "报告已生成，点击查看"
     }
   },
-  "InterviewPage": {
-    "interviewTitle": "{role}访谈{persona}",
-    "startInterview": "开始访谈",
-    "interviewInProgress": "访谈进行中",
-    "interviewCompleted": "访谈已结束",
-    "startChat": "开始会话",
-    "restartChat": "重新开始会话",
-    "endChat": "结束会话",
-    "chatEnded": "会话结束",
-    "user": "用户",
-    "brand": "品牌",
-    "brandPreparingQuestion": "品牌正在准备问题",
-    "researchConclusion": "研究结论"
-  },
   "ScoutPage": {
     "title": "寻找目标用户",
     "viewPersonas": "查看此次搜索找到的画像",
     "HistoryDrawer": {
       "title": "历史对话",
-      "newChat": "新对话",
       "unnamedChat": "未命名对话"
     },
     "hints": {

@@ -15,6 +15,7 @@ export async function fetchAnalystInterviews(analystId: number): Promise<
     (AnalystInterview & {
       persona: PersonaWithTags;
       interviewUserChat: {
+        id: number;
         token: string;
         backgroundToken: string | null;
       } | null;
@@ -42,6 +43,7 @@ export async function fetchAnalystInterviews(analystId: number): Promise<
         persona: true,
         interviewUserChat: {
           select: {
+            id: true,
             token: true,
             backgroundToken: true,
           },

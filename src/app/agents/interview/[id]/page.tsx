@@ -6,10 +6,10 @@ import { AgentChatPage } from "../../AgentChatPage";
 
 export const dynamic = "force-dynamic";
 
-export default async function HelloAgentPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function InterviewAgentPage({ params }: { params: Promise<{ id: string }> }) {
   const userChatId = parseInt((await params).id);
 
-  const result = await fetchUserChatById(userChatId, "misc");
+  const result = await fetchUserChatById(userChatId, "interview");
   if (!result.success) {
     notFound();
   }
@@ -17,7 +17,7 @@ export default async function HelloAgentPage({ params }: { params: Promise<{ id:
 
   const session = await getServerSession(authOptions);
   if (!session?.user) {
-    const callbackUrl = `/agents/hello/${userChatId}`;
+    const callbackUrl = `/agents/interview/${userChatId}`;
     redirect(`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`);
   }
 
@@ -25,5 +25,5 @@ export default async function HelloAgentPage({ params }: { params: Promise<{ id:
     forbidden();
   }
 
-  return <AgentChatPage userChat={userChat} useChatAPI="/api/chat/hello" />;
+  return <AgentChatPage userChat={userChat} readOnly={true} />;
 }

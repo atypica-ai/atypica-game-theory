@@ -33,10 +33,10 @@ export function InterviewCard({ interview }: { interview: AnalystInterview }) {
           <div></div>
         )}
         <Link
-          href={`/interview/${interview.id}`}
+          href={`/agents/interview/${interview.interviewUserChat?.id}`}
           className="text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
-          {interview.conclusion ? t("viewSummary") : t("startInterview")} →
+          {t("viewInterview")} →
         </Link>
       </CardFooter>
     </Card>

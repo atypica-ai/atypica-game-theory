@@ -29,9 +29,9 @@ export async function POST(req: Request) {
   }
   const userId = session.user.id;
   const payload = await req.json();
-  const scoutUserChatId = parseInt(payload["scoutUserChatId"]);
+  const scoutUserChatId = parseInt(payload["id"]);
   const newMessage = payload["message"] as Message;
-  const autoChat = typeof payload["autoChat"] === "boolean" ? payload["autoChat"] : false;
+  // const autoChat = typeof payload["autoChat"] === "boolean" ? payload["autoChat"] : false;
   if (!scoutUserChatId || !newMessage) {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
@@ -72,7 +72,8 @@ export async function POST(req: Request) {
       openai: { stream_options: { include_usage: true } },
     },
     system: scoutSystem({
-      doNotStopUntilScouted: autoChat,
+      doNotStopUntilScouted: false,
+      // doNotStopUntilScouted: autoChat,
     }),
     messages: coreMessages,
     tools,
