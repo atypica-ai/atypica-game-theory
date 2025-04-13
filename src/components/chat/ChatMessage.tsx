@@ -109,7 +109,7 @@ export const ChatMessage = (message: {
   return (
     <motion.div
       className={cn(
-        "flex flex-row items-start justify-start gap-2 p-4 w-full first-of-type:mt-10 rounded-sm",
+        "flex flex-row items-start justify-start gap-2 p-4 w-full first-of-type:mt-2 rounded-sm",
         role === "user" ? "bg-zinc-100/70 dark:bg-zinc-800" : "",
         environment === "console" ? "flex-col" : "",
       )}

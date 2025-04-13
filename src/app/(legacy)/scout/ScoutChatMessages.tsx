@@ -119,7 +119,7 @@ export function ScoutChatMessages({
         });
       }
     },
-    [handleSubmit, scoutUserChatId, input],
+    [handleSubmit, scoutUserChatId, input, chatRequestBody],
   );
 
   const personasScouted = useMemo(() => {
@@ -200,7 +200,7 @@ export function ScoutChatMessages({
           🔍 {t("viewPersonas")}
         </Link>
       )}
-      {scoutUserChatId && <StatusDisplay userChatId={scoutUserChatId} status={status} />}
+      {scoutUserChatId && <StatusDisplay status={status} />}
 
       {environment === "chat" && (
         <form onSubmit={handleSubmitMessage}>

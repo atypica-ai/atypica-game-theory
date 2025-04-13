@@ -1,13 +1,7 @@
 "use client";
 import { useTranslations } from "next-intl";
 
-export function StatusDisplay({
-  userChatId: userChatId,
-  status,
-}: {
-  userChatId: number;
-  status: string;
-}) {
+export function StatusDisplay({ status }: { status: string }) {
   const t = useTranslations("ScoutPage.status");
 
   const getStatusMessage = (status: string) => {

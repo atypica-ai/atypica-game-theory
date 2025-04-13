@@ -38,7 +38,7 @@ export function ChatBox() {
     },
   } = useStudyContext();
 
-  const chatRequestBody = {}; // 现在用不到了，之前用于区分是不是 hello chat
+  const chatRequestBody = useMemo(() => ({}), []); // 现在用不到了，之前用于区分是不是 hello chat
   const {
     messages,
     setMessages,

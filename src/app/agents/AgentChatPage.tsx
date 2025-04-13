@@ -35,7 +35,7 @@ export function AgentChatPage({
     if (initialMessages[initialMessages.length - 1]?.role === "user") {
       reload();
     }
-  }, [initialMessages]);
+  }, [initialMessages, reload]);
 
   const [messagesContainerRef, messagesEndRef] = useScrollToBottom<HTMLDivElement>();
   const inputDisabled = status === "streaming" || status === "submitted";
@@ -47,7 +47,7 @@ export function AgentChatPage({
         "flex flex-col items-stretch justify-between gap-4 w-full max-w-5xl mx-auto p-3",
       )}
     >
-      <div className="relative w-full">
+      <div className="relative w-full mt-4">
         <h1 className="sm:text-lg font-medium text-center truncate">{userChat.title}</h1>
       </div>
 
@@ -78,7 +78,7 @@ export function AgentChatPage({
         <div ref={messagesEndRef} />
       </div>
 
-      <StatusDisplay userChatId={userChat.id} status={status} />
+      <StatusDisplay status={status} />
 
       <form onSubmit={handleSubmit}>
         <Textarea
