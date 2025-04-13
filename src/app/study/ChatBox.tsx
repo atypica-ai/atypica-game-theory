@@ -38,6 +38,7 @@ export function ChatBox({ isHelloChat }: { isHelloChat: boolean }) {
     },
   } = useStudyContext();
 
+  const chatRequestBody = useMemo(() => (isHelloChat ? { hello: "1" } : undefined), [isHelloChat]);
   const {
     messages,
     setMessages,
@@ -54,10 +55,13 @@ export function ChatBox({ isHelloChat }: { isHelloChat: boolean }) {
     sendExtraMessageFields: true, // send id and createdAt for each message
     api: "/api/chat/study",
     maxSteps: 15,
-    body: isHelloChat ? { hello: "1" } : undefined,
+    body: chatRequestBody,
     // see https://sdk.vercel.ai/docs/ai-sdk-ui/chatbot-message-persistence#sending-only-the-last-message
     experimental_prepareRequestBody({ messages, id, requestBody }) {
-      return { message: messages[messages.length - 1], id, ...requestBody };
+      // requestBody 这个字段不靠谱，虽然上面配置了 body，首次提交的时候这里的 requestBody 却是空的
+      // 只好专门修复下
+      const body = { ...chatRequestBody, ...requestBody };
+      return { message: messages[messages.length - 1], id, ...body };
     },
   });
 
@@ -88,10 +92,12 @@ export function ChatBox({ isHelloChat }: { isHelloChat: boolean }) {
         return;
       }
       setLastSubmitTime(now);
-      handleSubmit(event);
+      handleSubmit(event, {
+        body: chatRequestBody,
+      });
     },
     // handleSubmit 不能用 ref，要监听变化
-    [handleSubmit, lastSubmitTime],
+    [handleSubmit, lastSubmitTime, chatRequestBody],
   );
 
   // const [chatUpdatedAt, setChatUpdatedAt] = useState<Date | null>(null);
