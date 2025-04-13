@@ -38,24 +38,32 @@ export function fixChatMessages(
     return { ...message, parts };
   });
 
-  if (
-    fixed.length > 1 &&
-    fixed[fixed.length - 2].role === "user" &&
-    fixed[fixed.length - 1].role === "user"
-  ) {
-    // 如果最后 2 条都是 user，一定是之前聊了一半挂了，丢掉最后一条
-    fixed = fixed.slice(0, -1);
-  }
+  // 删除所有空的消息，llm 会报错
+  fixed = fixed.filter((message) => {
+    if (!message.parts?.length && !message.content.trim()) {
+      return false;
+    }
+    return true;
+  });
 
-  if (
-    fixed.length > 1 &&
-    fixed[fixed.length - 1].role === "assistant" &&
-    !fixed[fixed.length - 1].parts?.length &&
-    !fixed[fixed.length - 1].content.trim()
-  ) {
-    // Bedrock 不支持最后一条空的 assistant 消息
-    fixed = fixed.slice(0, -1);
-  }
+  // if (
+  //   fixed.length > 1 &&
+  //   fixed[fixed.length - 2].role === "user" &&
+  //   fixed[fixed.length - 1].role === "user"
+  // ) {
+  //   // 如果最后 2 条都是 user，一定是之前聊了一半挂了，丢掉最后一条
+  //   fixed = fixed.slice(0, -1);
+  // }
+
+  // if (
+  //   fixed.length > 1 &&
+  //   fixed[fixed.length - 1].role === "assistant" &&
+  //   !fixed[fixed.length - 1].parts?.length &&
+  //   !fixed[fixed.length - 1].content.trim()
+  // ) {
+  //   // Bedrock 不支持最后一条空的 assistant 消息
+  //   fixed = fixed.slice(0, -1);
+  // }
 
   return fixed;
 }
@@ -205,6 +213,27 @@ export const persistentAIMessageToDB = async (userChatId: number, message: Messa
   const parts: NonNullable<Message["parts"]> = _parts?.length
     ? _parts
     : [{ type: "text", text: content }];
+  if (role === "user") {
+    // 如果最后一条消息是 user，则覆盖
+    const lastUserMessage = await prisma.chatMessage.findFirst({
+      where: { userChatId },
+      orderBy: { id: "desc" },
+    });
+    if (lastUserMessage?.role === "user") {
+      await prisma.chatMessage.update({
+        where: { id: lastUserMessage.id },
+        data: {
+          messageId,
+          content,
+          parts: parts as InputJsonValue,
+          extra: extra as InputJsonValue,
+          createdAt,
+        },
+      });
+      // 结束，不再继续
+      return;
+    }
+  }
   await prisma.chatMessage.upsert({
     where: { userChatId, messageId },
     create: {
