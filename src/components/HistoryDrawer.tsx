@@ -7,7 +7,7 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { fetchUserChats, UserChat } from "@/data/UserChat";
+import { fetchUserChats, UserChatWithMessages } from "@/data/UserChat";
 import { cn } from "@/lib/utils";
 import { HistoryIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -25,7 +25,7 @@ export function StudyHistoryDrawer({
   direction?: "left" | "right";
 }) {
   const t = useTranslations("HomePage.HistoryDrawer");
-  const [chats, setChats] = useState<Omit<UserChat, "messages">[]>([]);
+  const [chats, setChats] = useState<Omit<UserChatWithMessages, "messages">[]>([]);
   const [open, setOpen] = useState(initialOpen);
 
   useEffect(() => {
@@ -51,9 +51,8 @@ export function StudyHistoryDrawer({
     return () => clearInterval(interval);
   }, []);
 
-  const handleSelectChat = (studyUserChat: Omit<UserChat, "messages">) => {
-    const isHello = studyUserChat.title === "我是企业用户，想了解一下企业版";
-    window.location.replace(`/study/${studyUserChat.token}` + (isHello ? "?hello=1" : ""));
+  const handleSelectChat = (studyUserChat: Omit<UserChatWithMessages, "messages">) => {
+    window.location.replace(`/study/${studyUserChat.token}`);
     setOpen(false); // Close drawer when a chat is selected
     if (onOpenChange) {
       onOpenChange(false);

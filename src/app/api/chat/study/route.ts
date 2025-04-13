@@ -4,7 +4,6 @@ import { prisma } from "@/lib/prisma";
 import { Message } from "ai";
 import { getServerSession } from "next-auth/next";
 import { NextResponse } from "next/server";
-import { helloAgentRequest } from "./helloAgentRequest";
 import { noQuotaAgentRequest } from "./noQuotaAgentRequest";
 import { checkQuota } from "./quota";
 import { studyAgentRequest } from "./studyAgentRequest";
@@ -49,11 +48,8 @@ export async function POST(req: Request) {
     userId,
     reqSignal,
   };
-  const isHello = payload["hello"] === "1";
-  const hasQuota = await checkQuota({ studyUserChatId, userId, cost: isHello ? 0 : 100 });
-  if (isHello) {
-    return await helloAgentRequest(params);
-  } else if (!hasQuota) {
+  const hasQuota = await checkQuota({ studyUserChatId, userId, cost: 100 });
+  if (!hasQuota) {
     return await noQuotaAgentRequest(params);
   } else {
     return await studyAgentRequest(params);

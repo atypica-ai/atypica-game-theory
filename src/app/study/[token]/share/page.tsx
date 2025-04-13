@@ -41,7 +41,7 @@ export default async function StudySharePage({
   const result = await fetchUserChatByToken(token, "study");
   if (result.success) {
     const studyUserChat = result.data;
-    return <StudyPageClient studyUserChat={studyUserChat} replay={true} isHelloChat={false} />;
+    return <StudyPageClient studyUserChat={studyUserChat} replay={true} />;
   } else {
     throwServerActionError(result);
   }

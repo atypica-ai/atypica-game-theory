@@ -8,9 +8,9 @@ export const dynamic = "force-dynamic";
 export default async function StudyPage({
   searchParams,
 }: {
-  searchParams: Promise<{ id: string; hello: string }>;
+  searchParams: Promise<{ id: string }>;
 }) {
-  const { id, hello } = await searchParams;
+  const { id } = await searchParams;
   if (!id) {
     redirect("/");
   }
@@ -26,7 +26,7 @@ export default async function StudyPage({
 
   const session = await getServerSession(authOptions);
   if (!session?.user) {
-    const callbackUrl = `/study?id=${studyUserChatId}` + (hello ? "&hello=1" : "");
+    const callbackUrl = `/study?id=${studyUserChatId}`;
     redirect(`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`);
   }
 
@@ -34,5 +34,5 @@ export default async function StudyPage({
     forbidden();
   }
 
-  redirect(`/study/${studyUserChat.token}` + (hello ? "?hello=1" : ""));
+  redirect(`/study/${studyUserChat.token}`);
 }

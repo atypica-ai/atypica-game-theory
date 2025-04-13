@@ -53,11 +53,9 @@ const FollowButton = () => {
 export function StudyPageClient({
   studyUserChat,
   replay,
-  isHelloChat,
 }: {
   studyUserChat: StudyUserChat;
   replay: boolean;
-  isHelloChat: boolean;
 }) {
   // useEffect(() => {
   //   trackPage();
@@ -90,7 +88,7 @@ export function StudyPageClient({
             )}
           >
             {/* <Header /> */}
-            {replay ? <ChatReplay /> : <ChatBox isHelloChat={isHelloChat} />}
+            {replay ? <ChatReplay /> : <ChatBox />}
           </div>
         </section>
         {/* Right panel, the console */}

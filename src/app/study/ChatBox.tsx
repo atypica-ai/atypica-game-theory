@@ -26,7 +26,7 @@ function popLastUserMessage(messages: Message[]) {
   }
 }
 
-export function ChatBox({ isHelloChat }: { isHelloChat: boolean }) {
+export function ChatBox() {
   // 这个组件是不支持对话直接切换的，如果切换，需要刷新页面重新加载！);
   const t = useTranslations("StudyPage.ChatBox");
   const {
@@ -38,7 +38,7 @@ export function ChatBox({ isHelloChat }: { isHelloChat: boolean }) {
     },
   } = useStudyContext();
 
-  const chatRequestBody = useMemo(() => (isHelloChat ? { hello: "1" } : undefined), [isHelloChat]);
+  const chatRequestBody = {}; // 现在用不到了，之前用于区分是不是 hello chat
   const {
     messages,
     setMessages,

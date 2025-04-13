@@ -25,14 +25,7 @@ export async function generateMetadata({
 
 export const dynamic = "force-dynamic";
 
-export default async function StudyPage({
-  params,
-  searchParams,
-}: {
-  params: Promise<{ token: string }>;
-  searchParams: Promise<{ hello: string }>;
-}) {
-  const { hello } = await searchParams;
+export default async function StudyPage({ params }: { params: Promise<{ token: string }> }) {
   const { token: studyUserChatToken } = await params;
   if (!studyUserChatToken) {
     // redirect("/");
@@ -47,7 +40,7 @@ export default async function StudyPage({
 
   const session = await getServerSession(authOptions);
   if (!session?.user) {
-    const callbackUrl = `/study/${studyUserChatToken}` + (hello ? `?hello=1` : "");
+    const callbackUrl = `/study/${studyUserChatToken}`;
     redirect(`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`);
   }
 
@@ -55,7 +48,5 @@ export default async function StudyPage({
     forbidden();
   }
 
-  return (
-    <StudyPageClient studyUserChat={studyUserChat} replay={false} isHelloChat={hello === "1"} />
-  );
+  return <StudyPageClient studyUserChat={studyUserChat} replay={false} />;
 }
