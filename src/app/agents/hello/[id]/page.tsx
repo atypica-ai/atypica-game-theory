@@ -25,5 +25,12 @@ export default async function HelloAgentPage({ params }: { params: Promise<{ id:
     forbidden();
   }
 
-  return <AgentChatPage userChat={userChat} useChatAPI="/api/chat/hello" />;
+  return (
+    <AgentChatPage
+      chatId={userChat.id.toString()}
+      chatTitle={userChat.title}
+      initialMessages={userChat.messages}
+      useChatAPI="/api/chat/hello"
+    />
+  );
 }

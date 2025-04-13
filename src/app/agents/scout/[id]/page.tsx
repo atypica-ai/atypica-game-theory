@@ -25,5 +25,12 @@ export default async function ScoutAgentPage({ params }: { params: Promise<{ id:
     forbidden();
   }
 
-  return <AgentChatPage userChat={userChat} useChatAPI="/api/chat/scout" />;
+  return (
+    <AgentChatPage
+      chatId={userChat.id.toString()}
+      chatTitle={userChat.title}
+      initialMessages={userChat.messages}
+      useChatAPI="/api/chat/scout"
+    />
+  );
 }

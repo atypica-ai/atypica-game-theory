@@ -44,7 +44,6 @@ export async function POST(req: Request) {
   );
 
   const streamTextResult = streamText({
-    // model: openai("o3-mini"),
     model: openai("claude-3-7-sonnet"),
     providerOptions: {
       openai: { stream_options: { include_usage: true } },

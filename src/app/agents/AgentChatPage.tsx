@@ -4,30 +4,36 @@ import { StatusDisplay } from "@/components/chat/StatusDisplay";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Textarea } from "@/components/ui/textarea";
 import { useScrollToBottom } from "@/components/use-scroll-to-bottom";
-import { UserChatWithMessages } from "@/data/UserChat";
 import { cn } from "@/lib/utils";
-import { useChat } from "@ai-sdk/react";
+import { Message, useChat } from "@ai-sdk/react";
 import { useSession } from "next-auth/react";
 import { useEffect, useRef } from "react";
 
 export function AgentChatPage({
-  userChat,
+  chatId,
+  chatTitle,
   useChatAPI,
   readOnly,
+  initialMessages = [],
+  persistMessages = true,
 }: {
-  userChat: UserChatWithMessages;
+  chatId?: string; // 不一定是 UserChat 的 id
+  chatTitle?: string;
   useChatAPI?: string;
   readOnly?: boolean;
+  initialMessages?: Message[];
+  persistMessages?: boolean;
 }) {
   const { data: session } = useSession();
-  const initialMessages = userChat.messages;
   const { messages, error, handleSubmit, input, setInput, status, reload } = useChat({
     api: useChatAPI,
-    id: userChat.id.toString(),
+    id: chatId,
     initialMessages,
-    experimental_prepareRequestBody({ messages, id }) {
-      return { message: messages[messages.length - 1], id };
-    },
+    experimental_prepareRequestBody: persistMessages
+      ? ({ messages, id }) => {
+          return { message: messages[messages.length - 1], id };
+        }
+      : undefined,
   });
 
   const requestSentRef = useRef(false);
@@ -50,7 +56,7 @@ export function AgentChatPage({
       )}
     >
       <div className="relative w-full mt-4">
-        <h1 className="sm:text-lg font-medium text-center truncate">{userChat.title}</h1>
+        <h1 className="sm:text-lg font-medium text-center truncate">{chatTitle}</h1>
       </div>
 
       <div
@@ -66,7 +72,7 @@ export function AgentChatPage({
               user: session?.user ? (
                 <HippyGhostAvatar className="size-8" seed={session.user.id} />
               ) : undefined,
-              assistant: <HippyGhostAvatar className="size-8" seed={userChat.id} />,
+              assistant: <HippyGhostAvatar className="size-8" seed={chatId} />,
             }}
             content={message.content}
             parts={message.parts}

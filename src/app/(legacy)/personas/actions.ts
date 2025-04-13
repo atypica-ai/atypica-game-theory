@@ -6,17 +6,26 @@ import { Persona } from "@prisma/client";
 
 export async function fetchPersonas({
   scoutUserChatId,
-  take = 30,
-}: { scoutUserChatId?: number; take?: number } = {}): Promise<
+  page = 1,
+  pageSize = 12,
+}: { scoutUserChatId?: number; page?: number; pageSize?: number } = {}): Promise<
   ServerActionResult<(Omit<Persona, "tags"> & { tags: string[] })[]>
 > {
-  const personas = await prisma.persona.findMany({
-    where: scoutUserChatId ? { scoutUserChatId } : undefined,
-    orderBy: {
-      createdAt: "desc",
-    },
-    take,
-  });
+  const skip = (page - 1) * pageSize;
+  const where = scoutUserChatId ? { scoutUserChatId } : undefined;
+
+  const [personas, totalCount] = await Promise.all([
+    prisma.persona.findMany({
+      where,
+      orderBy: {
+        createdAt: "desc",
+      },
+      skip,
+      take: pageSize,
+    }),
+    prisma.persona.count({ where }),
+  ]);
+
   return {
     success: true,
     data: personas.map((persona) => {
@@ -25,6 +34,12 @@ export async function fetchPersonas({
         tags: persona.tags as string[],
       };
     }),
+    pagination: {
+      page,
+      pageSize,
+      totalCount,
+      totalPages: Math.ceil(totalCount / pageSize),
+    },
   };
 }
 

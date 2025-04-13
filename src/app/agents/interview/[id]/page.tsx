@@ -25,5 +25,12 @@ export default async function InterviewAgentPage({ params }: { params: Promise<{
     forbidden();
   }
 
-  return <AgentChatPage userChat={userChat} readOnly={true} />;
+  return (
+    <AgentChatPage
+      chatId={userChat.id.toString()}
+      chatTitle={userChat.title}
+      initialMessages={userChat.messages}
+      readOnly={true}
+    />
+  );
 }

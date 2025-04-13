@@ -13,25 +13,42 @@ export const dynamic = "force-dynamic";
 export default async function PersonasPage({
   searchParams,
 }: {
-  searchParams: Promise<{ scoutUserChat?: string }>;
+  searchParams: Promise<{ scoutUserChat?: string; page?: string }>;
 }) {
   const userChatParam = (await searchParams)?.scoutUserChat;
+  // Extract page from search params
+  const pageParam = (await searchParams)?.page;
+  const page = pageParam ? parseInt(pageParam) : 1;
   if (userChatParam) {
     const scoutUserChatId = parseInt(userChatParam);
     const scoutUserChatResult = await fetchUserChatById(scoutUserChatId, "scout");
-    const personasResult = await fetchPersonas({ scoutUserChatId });
+    const personasResult = await fetchPersonas({
+      scoutUserChatId,
+      page,
+    });
     if (!scoutUserChatResult.success) {
       throwServerActionError(scoutUserChatResult);
     }
     if (!personasResult.success) {
       throwServerActionError(personasResult);
     }
-    return <PersonasList personas={personasResult.data} scoutUserChat={scoutUserChatResult.data} />;
+    return (
+      <PersonasList
+        initialPersonas={personasResult.data}
+        paginationInfo={personasResult.pagination}
+        scoutUserChat={scoutUserChatResult.data}
+      />
+    );
   } else {
-    const personasResult = await fetchPersonas();
+    const personasResult = await fetchPersonas({ page });
     if (!personasResult.success) {
       throwServerActionError(personasResult);
     }
-    return <PersonasList personas={personasResult.data} />;
+    return (
+      <PersonasList
+        initialPersonas={personasResult.data}
+        paginationInfo={personasResult.pagination}
+      />
+    );
   }
 }
