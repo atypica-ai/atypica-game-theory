@@ -1,5 +1,4 @@
 "use server";
-
 import { AdminPermission, checkAdminAuth } from "@/app/admin/utils";
 import { convertDBMessageToAIMessage } from "@/lib/messageUtils";
 import { prisma } from "@/lib/prisma";
@@ -28,7 +27,7 @@ export async function fetchEnterpriseLeads(
       title: {
         contains: "企业用户",
       },
-      kind: "study",
+      kind: "misc",
     },
     include: {
       user: {
@@ -53,7 +52,7 @@ export async function fetchEnterpriseLeads(
       title: {
         contains: "企业用户",
       },
-      kind: "study",
+      kind: "misc",
     },
   });
 

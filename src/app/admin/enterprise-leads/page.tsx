@@ -1,19 +1,19 @@
 "use client";
 
+import { ChatMessage } from "@/components/chat/ChatMessage";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Pagination } from "@/components/ui/pagination";
 import { ExtractServerActionData } from "@/lib/serverAction";
-import { MessageCircle, User as UserIcon } from "lucide-react";
+import { ToolName } from "@/tools";
+import { Message } from "ai";
 import { useSession } from "next-auth/react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { PaginationInfo } from "../utils";
 import { fetchEnterpriseLeads } from "./actions";
 
 type EnterpriseLead = ExtractServerActionData<typeof fetchEnterpriseLeads>[number];
-type Message = { id: string; role: "user" | "assistant" | "system"; content: string };
 
 export default function EnterpriseLeadsPage() {
   const { status } = useSession();
@@ -82,79 +82,44 @@ export default function EnterpriseLeadsPage() {
     });
   };
 
-  const renderAllUserMessages = (messages: Message[]) => {
-    const userMessages = messages.filter((msg) => msg.role === "user");
-    return (
-      <div className="space-y-2 mt-2">
-        {userMessages.map((message, index) => (
-          <div key={`user-${index}`} className="flex items-start gap-2 text-sm">
-            <div className="h-5 w-5 mt-0.5 flex-shrink-0 rounded-full bg-muted flex items-center justify-center">
-              <UserIcon size={12} className="text-muted-foreground" />
-            </div>
-            <p className="text-foreground">{message.content}</p>
-          </div>
-        ))}
-      </div>
-    );
-  };
-
   const renderFullConversation = (messages: Message[]) => {
     return (
       <div className="space-y-2 max-h-96 overflow-y-auto border rounded-md p-3 mt-2 bg-muted/30">
-        {messages.map((message, index) => (
-          <div
-            key={message.id || index}
-            className={`flex items-start gap-2 ${message.role === "system" ? "opacity-75" : ""}`}
-          >
-            {message.role === "assistant" ? (
-              <div className="h-5 w-5 mt-0.5 flex-shrink-0 rounded-full bg-primary/20 flex items-center justify-center">
-                <MessageCircle size={12} className="text-primary" />
-              </div>
-            ) : message.role === "user" ? (
-              <div className="h-5 w-5 mt-0.5 flex-shrink-0 rounded-full bg-muted flex items-center justify-center">
-                <UserIcon size={12} className="text-muted-foreground" />
-              </div>
-            ) : (
-              <div className="h-5 w-5 mt-0.5 flex-shrink-0 rounded-full bg-warning/20 flex items-center justify-center">
-                <span className="text-[10px] text-warning-foreground">SYS</span>
-              </div>
-            )}
-            <p
-              className={`text-sm ${message.role === "assistant" ? "text-primary" : message.role === "user" ? "text-foreground" : "text-warning-foreground italic"}`}
-            >
-              {message.content}
-            </p>
-          </div>
+        {messages.map((message) => (
+          <ChatMessage
+            key={message.id}
+            role={message.role}
+            nickname={message.role}
+            content={message.content}
+            parts={message.parts}
+          ></ChatMessage>
         ))}
       </div>
     );
   };
 
   const extractContactInfo = (messages: Message[]) => {
-    // Extract email and phone
-    const userMessages = messages.filter((msg) => msg.role === "user").map((msg) => msg.content);
-    const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
-    const phoneRegex = /(?:(?:\+|00)86)?1[3-9]\d{9}/g;
-    const wechatRegex = /(?:微信|WeChat|wechat)[:：]?\s*([a-zA-Z0-9_-]{5,})/gi;
-    // Collect all matches
-    const emails: string[] = [];
-    const phones: string[] = [];
-    const wechatIds: string[] = [];
-    userMessages.forEach((msg) => {
-      const foundEmails = msg.match(emailRegex);
-      if (foundEmails) emails.push(...foundEmails);
-      const foundPhones = msg.match(phoneRegex);
-      if (foundPhones) phones.push(...foundPhones);
-      const wechatMatches = [...msg.matchAll(wechatRegex)];
-      wechatMatches.forEach((match) => {
-        if (match[1]) wechatIds.push(match[1]);
-      });
-    });
-    return {
-      emails: [...new Set(emails)],
-      phones: [...new Set(phones)],
-      wechatIds: [...new Set(wechatIds)],
-    };
+    let contactInfo:
+      | {
+          name: string;
+          company: string;
+          title: string;
+          contact: string;
+        }
+      | undefined;
+
+    // Look for thanks tool information in message parts
+    for (const message of messages) {
+      if (message.parts) {
+        for (const part of message.parts) {
+          if (part.type === "tool-invocation" && part.toolInvocation.toolName === ToolName.thanks) {
+            contactInfo = part.toolInvocation.args;
+          }
+        }
+      }
+    }
+
+    return contactInfo;
   };
 
   if (status === "loading" || isLoading) {
@@ -164,7 +129,9 @@ export default function EnterpriseLeadsPage() {
   return (
     <div>
       <h1 className="mb-6 text-2xl font-bold">企业版咨询记录</h1>
-      {error && <div className="mb-4 rounded-lg bg-destructive/10 p-4 text-destructive">{error}</div>}
+      {error && (
+        <div className="mb-4 rounded-lg bg-destructive/10 p-4 text-destructive">{error}</div>
+      )}
 
       <div className="space-y-4">
         {leads.length === 0 ? (
@@ -179,43 +146,43 @@ export default function EnterpriseLeadsPage() {
               <Card key={lead.id} className="overflow-hidden py-0 gap-1">
                 <CardHeader className="py-3 px-3 md:px-4 bg-muted/50 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
                   <div className="overflow-hidden">
-                    <span className="font-medium text-foreground block sm:inline text-sm sm:text-base truncate">{lead.user.email}</span>
-                    <span className="text-xs text-muted-foreground sm:ml-2 block sm:inline">{formatDate(lead.createdAt)}</span>
+                    <span className="font-medium text-foreground block sm:inline text-sm sm:text-base truncate">
+                      {lead.user.email}
+                    </span>
+                    <span className="text-xs text-muted-foreground sm:ml-2 block sm:inline">
+                      {formatDate(lead.createdAt)}
+                    </span>
                   </div>
-                  <Button variant="outline" size="sm" className="w-full sm:w-auto" asChild>
-                    <Link href={`/study/${lead.token}/share?replay=1`} target="_blank">
-                      查看完整对话
-                    </Link>
-                  </Button>
                 </CardHeader>
                 <CardContent className="p-3 md:p-4">
                   {/* Contact Information */}
-                  {(contactInfo.emails.length > 0 ||
-                    contactInfo.phones.length > 0 ||
-                    contactInfo.wechatIds.length > 0) && (
+                  {contactInfo ? (
                     <div className="mb-3 p-2 bg-accent/20 rounded-md border">
                       <h3 className="text-sm font-medium text-accent-foreground">联系方式:</h3>
                       <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-sm">
-                        {contactInfo.emails.map((email) => (
-                          <span key={email} className="text-primary break-all">
-                            📧 {email}
+                        {contactInfo.name && (
+                          <span className="text-primary">👤 姓名: {contactInfo.name}</span>
+                        )}
+                        {contactInfo.company && (
+                          <span className="text-primary break-all">
+                            🏢 企业: {contactInfo.company}
                           </span>
-                        ))}
-                        {contactInfo.phones.map((phone) => (
-                          <span key={phone} className="text-primary">
-                            📱 {phone}
+                        )}
+                        {contactInfo.title && (
+                          <span className="text-primary">📋 职位: {contactInfo.title}</span>
+                        )}
+                        {contactInfo.contact && (
+                          <span className="text-primary break-all">
+                            📞 联系方式: {contactInfo.contact}
                           </span>
-                        ))}
-                        {contactInfo.wechatIds.map((id) => (
-                          <span key={id} className="text-primary">
-                            💬 {id}
-                          </span>
-                        ))}
+                        )}
                       </div>
                     </div>
+                  ) : (
+                    <div className="text-xs mb-3 p-2 bg-accent/20 rounded-md border">
+                      AI 没有总结出来联系信息，但展开完整对话可能可以找到更多信息
+                    </div>
                   )}
-                  {/* User messages */}
-                  {renderAllUserMessages(messages)}
                   {/* Toggle full conversation */}
                   <Button
                     variant="ghost"
