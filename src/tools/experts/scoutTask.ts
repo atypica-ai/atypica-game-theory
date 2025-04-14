@@ -1,5 +1,5 @@
 import {
-  appendStepToStreamingMessage,
+  appendChunkToStreamingMessage,
   convertDBMessageToAIMessage,
   convertStepsToAIMessage,
   fixChatMessages,
@@ -10,7 +10,7 @@ import { prisma } from "@/lib/prisma";
 import { generateToken } from "@/lib/utils";
 import { scoutSystem } from "@/prompt";
 import { PlainTextToolResult } from "@/tools/utils";
-import { convertToCoreMessages, generateId, Message, streamText, tool } from "ai";
+import { convertToCoreMessages, generateId, Message, streamText, TextStreamPart, tool } from "ai";
 import { z } from "zod";
 import { dyPostCommentsTool, dySearchTool, dyUserPostsTool, StatReporter, ToolName } from "..";
 import { savePersonaTool } from "../system/savePersona";
@@ -18,6 +18,36 @@ import { xhsNoteCommentsTool } from "../xhs/noteComments";
 import { xhsSearchTool } from "../xhs/search";
 import { xhsUserNotesTool } from "../xhs/userNotes";
 import { reasoningThinkingTool } from "./reasoning";
+
+const debouncePersistentMessage = (() => {
+  let timeout: NodeJS.Timeout | null = null;
+  return async (
+    scoutUserChatId: number,
+    message: Message,
+    { immediate }: { immediate?: boolean } = {},
+  ) => {
+    // Clear any existing timeout
+    if (timeout) {
+      clearTimeout(timeout);
+    }
+    timeout = setTimeout(
+      async () => {
+        try {
+          await persistentAIMessageToDB(scoutUserChatId, message);
+          console.log(
+            `ScoutUserChat [${scoutUserChatId}] Message ${message.id} persisted successfully`,
+          );
+        } catch (error) {
+          console.log(
+            `ScoutUserChat [${scoutUserChatId}] Error persisting message ${message.id}:`,
+            error,
+          );
+        }
+      },
+      immediate ? 0 : 5000,
+    ); // 5 second debounce
+  };
+})();
 
 export interface ScoutTaskCreateResult extends PlainTextToolResult {
   scoutUserChatId: number;
@@ -164,7 +194,7 @@ async function runScoutTaskChatStream({
     });
   } catch (error) {
     console.log(
-      `ScoutTaskChat [${scoutUserChatId}] Error resetting studyUserChat with token ${backgroundToken}`,
+      `ScoutTaskChat [${scoutUserChatId}] Error resetting scoutyUserChat with token ${backgroundToken}`,
       error,
     );
     throw error;
@@ -183,6 +213,17 @@ async function runScoutTaskChatStream({
         error,
       );
     }
+  };
+
+  const tools = {
+    [ToolName.reasoningThinking]: reasoningThinkingTool({ abortSignal, statReport }),
+    [ToolName.xhsSearch]: xhsSearchTool,
+    [ToolName.xhsUserNotes]: xhsUserNotesTool,
+    [ToolName.xhsNoteComments]: xhsNoteCommentsTool,
+    [ToolName.dySearch]: dySearchTool,
+    [ToolName.dyPostComments]: dyPostCommentsTool,
+    [ToolName.dyUserPosts]: dyUserPostsTool,
+    [ToolName.savePersona]: savePersonaTool({ scoutUserChatId, statReport }),
   };
 
   while (true) {
@@ -210,16 +251,7 @@ async function runScoutTaskChatStream({
           doNotStopUntilScouted: false, // 不需要，下面自己会处理 continue
         }),
         messages: coreMessages,
-        tools: {
-          [ToolName.reasoningThinking]: reasoningThinkingTool({ abortSignal, statReport }),
-          [ToolName.xhsSearch]: xhsSearchTool,
-          [ToolName.xhsUserNotes]: xhsUserNotesTool,
-          [ToolName.xhsNoteComments]: xhsNoteCommentsTool,
-          [ToolName.dySearch]: dySearchTool,
-          [ToolName.dyPostComments]: dyPostCommentsTool,
-          [ToolName.dyUserPosts]: dyUserPostsTool,
-          [ToolName.savePersona]: savePersonaTool({ scoutUserChatId, statReport }),
-        },
+        tools,
         maxSteps: 15,
         // onChunk: (chunk) => console.log(`[${scoutUserChatId}] ScoutTaskChat:`, JSON.stringify(chunk).substring(0, 100)),
         onFinish: async ({ steps }) => {
@@ -230,17 +262,28 @@ async function runScoutTaskChatStream({
             scoutUserChatId,
           });
         },
+        onChunk: async ({ chunk }: { chunk: TextStreamPart<typeof tools> }) => {
+          // console.log(`[${scoutUserChatId}] StudyChat onChunk:`, chunk);
+          appendChunkToStreamingMessage(streamingMessage, chunk);
+          await debouncePersistentMessage(scoutUserChatId, streamingMessage, {
+            immediate: chunk.type === "tool-call" || chunk.type === "tool-result",
+          });
+        },
         onStepFinish: async (step) => {
-          appendStepToStreamingMessage(streamingMessage, step);
+          console.log(
+            `ScoutTaskChat [${scoutUserChatId}] step [${step.stepType}]`,
+            step.toolCalls.map((call) => call.toolName),
+          );
           if (step.usage.totalTokens > 0) {
             await statReport("tokens", step.usage.totalTokens, {
               reportedBy: "scoutTaskChat tool",
               scoutUserChatId,
             });
           }
-          if (streamingMessage.parts?.length && streamingMessage.content.trim()) {
-            await persistentAIMessageToDB(scoutUserChatId, streamingMessage);
-          }
+          // appendStepToStreamingMessage(streamingMessage, step);
+          // if (streamingMessage.parts?.length && streamingMessage.content.trim()) {
+          //   await persistentAIMessageToDB(scoutUserChatId, streamingMessage);
+          // }
         },
         onError: ({ error }) => {
           console.log(
