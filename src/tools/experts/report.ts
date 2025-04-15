@@ -168,7 +168,9 @@ async function generateReport({
   statReport: StatReporter;
 }) {
   let onePageHtml = "";
-  let messages: Omit<Message, "id">[] = [{ role: "user", content: reportHTMLPrologue(analyst) }];
+  let messages: Omit<Message, "id">[] = [
+    { role: "user", content: reportHTMLPrologue(analyst, instruction) },
+  ];
 
   while (true) {
     const {
@@ -183,7 +185,7 @@ async function generateReport({
         providerOptions: {
           openai: { stream_options: { include_usage: true } },
         },
-        system: reportHTMLSystem(instruction),
+        system: reportHTMLSystem(),
         messages: messages,
         maxSteps: 1,
         maxTokens: 100000,
@@ -223,7 +225,7 @@ async function generateReport({
       // messages.push({ role: "assistant", content: content });
       // messages.push({ role: "user", content: "continue" });
       messages = [
-        { role: "user", content: reportHTMLPrologue(analyst) },
+        { role: "user", content: reportHTMLPrologue(analyst, instruction) },
         { role: "assistant", content: onePageHtml },
         {
           role: "user",
@@ -264,8 +266,8 @@ async function generateCover({
     providerOptions: {
       openai: { stream_options: { include_usage: true } },
     },
-    system: reportCoverSystem(instruction),
-    messages: [{ role: "user", content: reportCoverPrologue(analyst) }],
+    system: reportCoverSystem(),
+    messages: [{ role: "user", content: reportCoverPrologue(analyst, instruction) }],
     maxSteps: 1,
     maxTokens: 30000,
     onError: (error) => console.log(`[${report.id}] Cover SVG Error:`, error),

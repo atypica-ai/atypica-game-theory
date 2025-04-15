@@ -91,11 +91,11 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     providerOptions: {
       openai: { stream_options: { include_usage: true } },
     },
-    system: reportHTMLSystem(""),
+    system: reportHTMLSystem(),
     messages: [
       {
         role: "user",
-        content: reportHTMLPrologue(analyst),
+        content: reportHTMLPrologue(analyst, ""),
       },
     ],
     maxSteps: 1,

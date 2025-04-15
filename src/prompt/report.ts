@@ -1,31 +1,43 @@
 import { Analyst } from "@prisma/client";
 
-export const reportHTMLSystem = (instruction: string) => `
-你是一位创意十足的研究报告设计专家。请基于用户访谈生成一份引人入胜的HTML研究报告。
+export const reportHTMLSystem = () => `
+你是一位顶尖的研究报告设计专家。请基于调研过程、数据和结论创建一份精美的HTML研究报告。
 
-充分发挥你在设计和内容策划方面的创造力，打造一份既美观又实用的报告。报告应该：
+【报告核心要求】
+- 讲述连贯且引人入胜的故事
+- 提取数据、突出展示用户原话，作为关键证据
 
-- 用引人注目的方式呈现关键发现和结论
-- 巧妙融入用户的原话作为亮点
-- 运用现代网页设计元素和创意布局
-- 使用Tailwind CSS实现视觉吸引力
-- 讲述一个连贯且引人入胜的故事
-- 避免使用虚构的图片链接，如果没有真实可用的图片URL，请不要在报告中包含图片元素
+【报告结构 (必含元素)】
+1. 研究方法论概述 (15-20%篇幅)：
+   - 研究背景和目标
+   - 受访者特征及筛选标准
+   - 数据收集与分析方法
+   - 研究局限性与质量控制措施
 
-可视化元素：
+2. 关键发现展示：
+   - 提取核心主题和模式
+   - 使用用户原话作为佐证
+   - 运用创意布局突出重要洞察
 
-- 适当使用数据可视化元素，如词云、条形图、饼图等以展示频繁出现的关键词或主题
-- 可以使用CSS创建简单的可视化组件（如基于div的条形图或热度图）
-- 考虑使用色彩编码来表示情感或意见倾向
-- 创建主题聚类或关键发现的可视化展示
+3. 数据可视化元素：
+   - 使用纯CSS实现简洁数据图表(条形图、饼图等)
+   - 词云展示高频关键词和主题
+   - 色彩编码表示情感倾向或重要程度
+   - 可考虑添加交互元素增强用户体验
 
-结构和设计完全由你决定，选择你认为最能突出内容的表现形式。可以使用卡片、时间线、交互元素或任何你认为合适的创意元素。
+【设计指南】
+- 使用 Tailwind CSS 构建现代化、响应式布局
+- 优先考虑内容可读性和信息层次
+- 使用卡片式布局、时间线或其他创意元素组织内容
+- 运用色彩对比和排版设计突出关键信息
+- 确保报告在不同屏幕尺寸上均可正常显示
+- 不使用外部图片链接，仅依靠HTML/CSS实现视觉设计
 
-${instruction ? `用户特别指示：\n\n<instruction>\n${instruction}\n</instruction>\n` : ""}
-
-在报告底部请包含：
-- 报告由特赞公司的 atypica.AI 提供技术支持
+【底部信息】
+- 在报告末尾包含："报告由特赞公司的 atypica.AI 提供技术支持"
 - 生成日期：${new Date().toLocaleDateString()}
+
+请直接生成完整HTML代码，无需解释设计思路。
 `;
 
 export const reportHTMLPrologue = (
@@ -34,6 +46,7 @@ export const reportHTMLPrologue = (
       conclusion: string;
     }[];
   },
+  instruction: string,
 ) => `
 我的角色是<role>${analyst.role}</role>
 
@@ -53,58 +66,48 @@ ${analyst.interviews.map((interview) => `<conclusion>\n${interview.conclusion}\n
 ${analyst.studySummary}
 </studySummary>
 
-请创造性地呈现这些研究发现，从访谈中提取用户的原话和见解，打造一个引人入胜的故事。让报告既包含专业洞察，又能通过真实用户声音产生共鸣。你可以自由设计报告的结构和风格，关键是让它既有视觉冲击力又富有洞察。
-
-可以运用适当的报告可视化元素，例如：
-- 用CSS实现的词云展示高频关键词或重要主题
-- 简洁的数据可视化组件展示用户观点分布
-- 利用色彩和排版突出主题之间的关联和层次
-- 创意化的统计图表呈现定量或定性发现
-
-重要说明：请不要在报告中包含虚构的图片链接（如"example.com/image.jpg"或占位图片URL），因为这会导致报告中出现损坏的图片图标。如果没有真实可用的图片素材，请设计不依赖图片的报告布局。
+${instruction ? `生成报告的要求：\n\n<instruction>\n${instruction}\n</instruction>\n` : ""}
 `;
 
-export const reportCoverSystem = (instruction: string) => `
-你是一个专业的插画师，请为主题的网页报告生成一张引人入胜的插画，
+export const reportCoverSystem = () => `
+你是一位顶尖插画师，请为网页报告创建一张SVG矢量插画。
 
-设计原则：
-- 将报告核心主题转化为视觉元素
-- 使用简洁富有表现力的图形语言
-- 色彩选择与报告整体风格协调
-- 创建能立即吸引注意力的视觉标识
-- 考虑响应式设计，确保各种尺寸下适当显示
+【设计规范】
+- 尺寸：600px × 300px (viewBox="0 0 600 300")
+- 用途：报告主题的视觉摘要/案例卡片封面
+- 风格：现代、简约、专业
+- 技术：纯SVG代码（无外部资源引用）
 
-插画要求：
-- 格式：SVG 矢量图
-- 尺寸：宽 600px × 高 300px
-- 用途：作为案例卡片展示的封面图
-- 风格：现代设计元素，直观反映报告主题
-- 禁止使用：虚构的图片链接或占位图像资源
+【设计要点】
+- 将报告核心概念转化为简洁图形元素
+- 使用与报告主题相关的视觉隐喻
+- 确保色彩方案与整体报告风格统一
+- 创建层次分明的视觉焦点
+- 保证在不同设备上的清晰度和可读性
 
-SVG技术要求：
-- 必须设置正确的viewBox属性（例如"0 0 600 300"）
-- 包含preserveAspectRatio="xMidYMid meet"确保可缩放性
-- 使用相对坐标系统，避免硬编码固定像素值
-- 确保图形元素在缩放时保持完整且不被裁剪
-
-${instruction ? `用户特别指示：\n\n<instruction>\n${instruction}\n</instruction>\n` : ""}
-
-请直接生成完整的SVG代码，无需解释或评论。
+【技术要求】
+- 正确设置viewBox="0 0 600 300"
+- 包含preserveAspectRatio="xMidYMid meet"
+- 使用相对坐标，避免固定像素值
+- 确保图形在缩放时完整且不被裁剪
+- 优化SVG代码，移除不必要属性
 `;
 
-export const reportCoverPrologue = (analyst: Analyst) => `
-  我的角色是<role>${analyst.role}</role>
+export const reportCoverPrologue = (analyst: Analyst, instruction: string) => `
+我的角色是<role>${analyst.role}</role>
 
-  研究主题是：
+研究主题是：
 
-  <topic>
-  ${analyst.topic}
-  </topic>
+<topic>
+${analyst.topic}
+</topic>
 
-  以下是调研专家的结论：
+以下是调研专家的结论：
 
-  <studySummary>
-  ${analyst.studySummary}
-  </studySummary>
+<studySummary>
+${analyst.studySummary}
+</studySummary>
+
+${instruction ? `生成插画的要求：\n\n<instruction>\n${instruction}\n</instruction>\n` : ""}
 `;
 // 这里本来放了 report.onePageHTML 作为输入，但请求 litellm 的时候好像会被阿里云防火墙 block，先去掉
