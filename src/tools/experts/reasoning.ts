@@ -1,4 +1,5 @@
 import { openai } from "@/lib/llm";
+import { fixMalformedUnicodeString } from "@/lib/utils";
 import { PlainTextToolResult } from "@/tools/utils";
 import { streamText, tool } from "ai";
 import { z } from "zod";
@@ -79,8 +80,11 @@ export const reasoningThinkingTool = ({
     description:
       "针对特定话题或问题提供专家分析和逐步思考过程，问问题的时候要把当前对话内容的总结也发给专家，以帮助专家更好地理解问题。",
     parameters: z.object({
-      background: z.string().describe("问题的背景，你当前的发现和思考"),
-      question: z.string().describe("问题或需要分析的主题"),
+      background: z
+        .string()
+        .describe("问题的背景，你当前的发现和思考")
+        .transform(fixMalformedUnicodeString),
+      question: z.string().describe("问题或需要分析的主题").transform(fixMalformedUnicodeString),
     }),
     experimental_toToolResultContent: (result: PlainTextToolResult) => {
       return [{ type: "text", text: result.plainText }];

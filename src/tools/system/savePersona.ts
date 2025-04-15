@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { fixMalformedUnicodeString } from "@/lib/utils";
 import { tool } from "ai";
 import { z } from "zod";
 import { StatReporter } from "..";
@@ -22,11 +23,20 @@ export const savePersonaTool = ({
   tool({
     description: "将生成的完整 persona prompt 保存到数据库（确保 prompt 信息完整）",
     parameters: z.object({
-      name: z.string().describe("名字，不要包含姓氏，使用网名"),
-      source: z.string().describe("数据来源"),
-      tags: z.array(z.string()).describe("相关标签"),
+      name: z
+        .string()
+        .describe("名字，不要包含姓氏，使用网名")
+        .transform(fixMalformedUnicodeString),
+      source: z.string().describe("数据来源").transform(fixMalformedUnicodeString),
+      tags: z
+        .array(z.string())
+        .describe("相关标签")
+        .transform((tags) => tags.map((tag) => fixMalformedUnicodeString(tag))),
       userids: z.array(z.string()).describe("该人设典型的用户 ID 列表"),
-      personaPrompt: z.string().describe("生成的 persona prompt 内容"),
+      personaPrompt: z
+        .string()
+        .describe("生成的 persona prompt 内容")
+        .transform(fixMalformedUnicodeString),
     }),
     experimental_toToolResultContent: (result: PlainTextToolResult) => {
       return [{ type: "text", text: result.plainText }];

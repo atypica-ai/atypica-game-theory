@@ -114,19 +114,21 @@ export const scoutTaskChatTool = ({
         .describe(
           "用户画像搜索任务 (scoutTask) 的 token，用于创建任务，你不需要提供，系统会自动生成",
         )
-        .default(() => generateToken()),
+        // .default(() => generateToken())
+        // 始终生成一个新的 token，并且这个会直接覆盖 message 里面 toolInvocation.args 上的参数
+        .transform(() => generateToken()),
       description: z.string().describe('用户画像搜索需求描述，用"帮我寻找"开头'),
     }),
     experimental_toToolResultContent: (result: PlainTextToolResult) => {
       return [{ type: "text", text: result.plainText }];
     },
     execute: async ({ scoutUserChatToken, description }) => {
-      if (await prisma.userChat.findUnique({ where: { token: scoutUserChatToken } })) {
-        return {
-          personas: [],
-          plainText: `你提供的 scoutUserChatToken ${scoutUserChatToken} 已经存在，无法使用，请重试。你可以忽略提供这个字段，系统会自动生成 token。`,
-        };
-      }
+      // if (await prisma.userChat.findUnique({ where: { token: scoutUserChatToken } })) {
+      //   return {
+      //     personas: [],
+      //     plainText: `你提供的 scoutUserChatToken ${scoutUserChatToken} 已经存在，无法使用，请重试。你可以忽略提供这个字段，系统会自动生成 token。`,
+      //   };
+      // }
       const title = description.substring(0, 50);
       const scoutUserChat = await prisma.userChat.create({
         data: {
