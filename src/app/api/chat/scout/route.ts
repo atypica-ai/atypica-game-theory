@@ -6,7 +6,7 @@ import {
   prepareNewMessageForStreaming,
 } from "@/lib/messageUtils";
 import { prisma } from "@/lib/prisma";
-import { scoutSystem } from "@/prompt";
+import { scoutSystemVerbose } from "@/prompt/scout";
 import {
   dyPostCommentsTool,
   dySearchTool,
@@ -66,11 +66,19 @@ export async function POST(req: Request) {
     [ToolName.savePersona]: savePersonaTool({ scoutUserChatId }),
   };
   const response = streamText({
+    // model: openai("gpt-4o", {
+    //   parallelToolCalls: true,
+    // }),
     model: openai("claude-3-7-sonnet"),
+    // model: bedrock("claude-3-7-sonnet"),
     providerOptions: {
-      openai: { stream_options: { include_usage: true } },
+      openai: {
+        stream_options: { include_usage: true },
+        // IMPORTANT: litellm 不支持这个 bedrock 的参数输入，但是在 litellm model 配置里设置了，它会发给 bedrock api
+        // anthropic_beta: ["token-efficient-tools-2025-02-19"],
+      },
     },
-    system: scoutSystem({
+    system: scoutSystemVerbose({
       doNotStopUntilScouted: false,
       // doNotStopUntilScouted: autoChat,
     }),

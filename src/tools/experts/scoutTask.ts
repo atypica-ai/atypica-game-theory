@@ -244,6 +244,9 @@ async function runScoutTaskChatStream({
       };
       const response = streamText({
         model: openai("claude-3-7-sonnet"),
+        // model: openai("gpt-4o", {
+        //   parallelToolCalls: true,
+        // }),
         providerOptions: {
           openai: { stream_options: { include_usage: true } },
         },

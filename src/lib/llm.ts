@@ -25,6 +25,8 @@ export const bedrock = (model: "claude-3-7-sonnet" = "claude-3-7-sonnet") => {
       additionalModelRequestFields: {
         // https://docs.anthropic.com/en/docs/build-with-claude/tool-use/overview#disabling-parallel-tool-use
         // https://docs.anthropic.com/en/docs/build-with-claude/tool-use/token-efficient-tool-use
+        // https://community.aws/content/2trguomubYb8f3JNzCeBgNvassc/claude-token-efficient-tool-use-on-amazon-bedrock
+        // bedrock 和 anthropic 的接口格式不同
         anthropic_beta: ["token-efficient-tools-2025-02-19"],
       },
     });

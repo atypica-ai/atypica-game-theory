@@ -20,7 +20,7 @@ export const savePersonaTool = ({
   statReport?: StatReporter;
 }) =>
   tool({
-    description: "将生成的 persona prompt 保存到数据库",
+    description: "将生成的完整 persona prompt 保存到数据库（确保 prompt 信息完整）",
     parameters: z.object({
       name: z.string().describe("名字，不要包含姓氏，使用网名"),
       source: z.string().describe("数据来源"),

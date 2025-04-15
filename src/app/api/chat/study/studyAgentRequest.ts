@@ -1,3 +1,4 @@
+import { openai } from "@/lib/llm";
 import { appendChunkToStreamingMessage } from "@/lib/messageUtils";
 import { studySystem } from "@/prompt";
 import {
