@@ -1,6 +1,5 @@
 "use client";
 // 给 chat 类型的 tool call 用的组件，比如 scout chat 和 interview chat
-import { ExpandableText } from "@/components/chat/ToolArgsTable";
 import { ToolInvocationMessage } from "@/components/chat/ToolInvocationMessage";
 import { Markdown } from "@/components/markdown";
 import { cn } from "@/lib/utils";
@@ -52,17 +51,7 @@ const StreamStep = ({ toolInvocation }: { toolInvocation: ToolInvocation }) => {
       case ToolName.dyPostComments:
         return <DYPostCommentsResultMessage toolInvocation={toolInvocation} />;
       default:
-        return (
-          <pre
-            className={cn(
-              "text-xs font-mono p-4",
-              "text-zinc-800 bg-zinc-100 dark:text-zinc-200 dark:bg-zinc-800",
-              "border border-zinc-200 dark:border-zinc-700 rounded-lg",
-            )}
-          >
-            <ExpandableText text={toolInvocation.result.plainText ?? "-"} />
-          </pre>
-        );
+        return null;
     }
   };
 

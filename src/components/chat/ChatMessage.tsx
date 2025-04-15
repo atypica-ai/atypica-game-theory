@@ -24,37 +24,44 @@ import { BotIcon, CpuIcon, UserIcon } from "lucide-react";
 import { PropsWithChildren, ReactNode } from "react";
 import { ToolInvocationMessage } from "./ToolInvocationMessage";
 
-// const renderResult = (toolInvocation: ToolInvocation & { state: "result" }) => {
-const SpecialToolDisplay = ({ toolInvocation }: { toolInvocation: ToolInvocation }) => {
-  switch (toolInvocation.toolName) {
-    case ToolName.saveInterviewConclusion:
-      return <SaveInterviewConclusionMessage toolInvocation={toolInvocation} />;
-    case ToolName.thanks:
-      return <ThanksMessage toolInvocation={toolInvocation} />;
-  }
-  if (toolInvocation.state !== "result") {
-    return null;
-  }
-  switch (toolInvocation.toolName) {
-    case ToolName.xhsSearch:
-      return <XHSSearchResultMessage toolInvocation={toolInvocation} />;
-    case ToolName.xhsUserNotes:
-      return <XHSUserNotesResultMessage toolInvocation={toolInvocation} />;
-    case ToolName.xhsNoteComments:
-      return <XHSNoteCommentsResultMessage toolInvocation={toolInvocation} />;
-    case ToolName.dySearch:
-      return <DYSearchResultMessage toolInvocation={toolInvocation} />;
-    case ToolName.dyUserPosts:
-      return <DYUserPostsResultMessage toolInvocation={toolInvocation} />;
-    case ToolName.dyPostComments:
-      return <DYPostCommentsResultMessage toolInvocation={toolInvocation} />;
-    case ToolName.reasoningThinking:
-      return <ReasoningThinkingResultMessage toolInvocation={toolInvocation} />;
-    case ToolName.saveAnalyst:
-      return <SaveAnalystToolResultMessage toolInvocation={toolInvocation} />;
-    default:
+const MessageStep = ({ toolInvocation }: { toolInvocation: ToolInvocation }) => {
+  const SpecialToolDisplay = ({ toolInvocation }: { toolInvocation: ToolInvocation }) => {
+    switch (toolInvocation.toolName) {
+      case ToolName.saveInterviewConclusion:
+        return <SaveInterviewConclusionMessage toolInvocation={toolInvocation} />;
+      case ToolName.thanks:
+        return <ThanksMessage toolInvocation={toolInvocation} />;
+    }
+    if (toolInvocation.state !== "result") {
       return null;
-  }
+    }
+    switch (toolInvocation.toolName) {
+      case ToolName.xhsSearch:
+        return <XHSSearchResultMessage toolInvocation={toolInvocation} />;
+      case ToolName.xhsUserNotes:
+        return <XHSUserNotesResultMessage toolInvocation={toolInvocation} />;
+      case ToolName.xhsNoteComments:
+        return <XHSNoteCommentsResultMessage toolInvocation={toolInvocation} />;
+      case ToolName.dySearch:
+        return <DYSearchResultMessage toolInvocation={toolInvocation} />;
+      case ToolName.dyUserPosts:
+        return <DYUserPostsResultMessage toolInvocation={toolInvocation} />;
+      case ToolName.dyPostComments:
+        return <DYPostCommentsResultMessage toolInvocation={toolInvocation} />;
+      case ToolName.reasoningThinking:
+        return <ReasoningThinkingResultMessage toolInvocation={toolInvocation} />;
+      case ToolName.saveAnalyst:
+        return <SaveAnalystToolResultMessage toolInvocation={toolInvocation} />;
+      default:
+        return null;
+    }
+  };
+  return (
+    <>
+      <ToolInvocationMessage toolInvocation={toolInvocation} />
+      <SpecialToolDisplay toolInvocation={toolInvocation} />
+    </>
+  );
 };
 
 const PlainText = ({ children }: PropsWithChildren) => {
@@ -112,12 +119,7 @@ export const ChatMessage = (message: {
               case "source":
                 return <PlainText key={i}>{JSON.stringify(part.source)}</PlainText>;
               case "tool-invocation":
-                return (
-                  <>
-                    <ToolInvocationMessage toolInvocation={part.toolInvocation} />
-                    <SpecialToolDisplay toolInvocation={part.toolInvocation} />
-                  </>
-                );
+                return <MessageStep key={i} toolInvocation={part.toolInvocation} />;
               default:
                 return null;
             }

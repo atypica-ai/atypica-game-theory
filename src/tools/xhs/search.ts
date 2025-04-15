@@ -56,7 +56,8 @@ function parseXHSSearchResult(data: {
         userid: note.user.userid,
         images: note.user.images,
       },
-      images_list: note.images_list.map((image) => ({
+      // 只保留一个图就行了
+      images_list: note.images_list.slice(0, 1).map((image) => ({
         url: image.url,
         width: image.width,
         height: image.height,
