@@ -1,3 +1,4 @@
+import { openai } from "@/lib/llm";
 import {
   appendChunkToStreamingMessage,
   convertDBMessageToAIMessage,
@@ -5,7 +6,6 @@ import {
   fixChatMessages,
   persistentAIMessageToDB,
 } from "@/lib/messageUtils";
-import openai from "@/lib/openai";
 import { prisma } from "@/lib/prisma";
 import { generateToken } from "@/lib/utils";
 import { scoutSystem } from "@/prompt";

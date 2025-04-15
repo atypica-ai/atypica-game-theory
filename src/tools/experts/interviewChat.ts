@@ -1,5 +1,5 @@
+import { openai } from "@/lib/llm";
 import { convertStepsToAIMessage } from "@/lib/messageUtils";
-import openai from "@/lib/openai";
 import { prisma } from "@/lib/prisma";
 import { generateToken } from "@/lib/utils";
 import { interviewerPrologue, interviewerSystem, personaAgentSystem } from "@/prompt";

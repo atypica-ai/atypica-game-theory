@@ -1,4 +1,4 @@
-import openai from "@/lib/openai";
+import { openai } from "@/lib/llm";
 import { studySystemNoQuota } from "@/prompt/study";
 import { requestInteractionTool, requestPaymentTool, ToolName } from "@/tools";
 import { CoreMessage, Message, streamText } from "ai";

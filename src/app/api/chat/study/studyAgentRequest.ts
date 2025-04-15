@@ -1,5 +1,4 @@
 import { appendChunkToStreamingMessage } from "@/lib/messageUtils";
-import openai from "@/lib/openai";
 import { studySystem } from "@/prompt";
 import {
   generateReportTool,

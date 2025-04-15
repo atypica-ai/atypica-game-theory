@@ -1,6 +1,6 @@
 import { fetchPersonaById } from "@/app/(legacy)/personas/actions";
 import { authOptions } from "@/lib/auth";
-import openai from "@/lib/openai";
+import { openai } from "@/lib/llm";
 import { personaAgentSystem } from "@/prompt";
 import { dySearchTool, reasoningThinkingTool, ToolName, xhsSearchTool } from "@/tools";
 import { Message, streamText } from "ai";

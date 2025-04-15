@@ -1,4 +1,4 @@
-import openai from "@/lib/openai";
+import { openai } from "@/lib/llm";
 import { PlainTextToolResult } from "@/tools/utils";
 import { streamText, tool } from "ai";
 import { z } from "zod";

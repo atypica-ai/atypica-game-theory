@@ -1,10 +1,10 @@
 import { authOptions } from "@/lib/auth";
+import { openai } from "@/lib/llm";
 import {
   appendStepToStreamingMessage,
   persistentAIMessageToDB,
   prepareNewMessageForStreaming,
 } from "@/lib/messageUtils";
-import openai from "@/lib/openai";
 import { prisma } from "@/lib/prisma";
 import { scoutSystem } from "@/prompt";
 import {

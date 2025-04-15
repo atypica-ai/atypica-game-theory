@@ -1,6 +1,6 @@
 import { encryptAnalystReportUrl } from "@/app/(legacy)/analyst/report/encrypt";
 import { authOptions } from "@/lib/auth";
-import openai from "@/lib/openai";
+import { openai } from "@/lib/llm";
 import { prisma } from "@/lib/prisma";
 import { reportHTMLPrologue, reportHTMLSystem } from "@/prompt";
 import { initStatReporter } from "@/tools";

@@ -1,4 +1,4 @@
-import openai from "@/lib/openai";
+import { openai } from "@/lib/llm";
 import { prisma } from "@/lib/prisma";
 import { generateToken } from "@/lib/utils";
 import { reportHTMLPrologue, reportHTMLSystem } from "@/prompt";
