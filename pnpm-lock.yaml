@@ -8,15 +8,18 @@ importers:
 
   .:
     dependencies:
+      '@ai-sdk/amazon-bedrock':
+        specifier: ^2.2.8
+        version: 2.2.8(zod@3.24.2)
       '@ai-sdk/deepseek':
         specifier: ^0.1.13
         version: 0.1.14(zod@3.24.2)
       '@ai-sdk/openai':
-        specifier: ^1.2.1
-        version: 1.2.3(zod@3.24.2)
+        specifier: ^1.3.12
+        version: 1.3.12(zod@3.24.2)
       '@ai-sdk/react':
-        specifier: ^1.1.21
-        version: 1.1.22(react@19.0.0)(zod@3.24.2)
+        specifier: ^1.2.9
+        version: 1.2.9(react@19.0.0)(zod@3.24.2)
       '@hookform/resolvers':
         specifier: ^5.0.1
         version: 5.0.1(react-hook-form@7.55.0(react@19.0.0))
@@ -72,8 +75,8 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       ai:
-        specifier: ^4.1.54
-        version: 4.1.57(react@19.0.0)(zod@3.24.2)
+        specifier: ^4.3.6
+        version: 4.3.6(react@19.0.0)(zod@3.24.2)
       bcryptjs:
         specifier: ^3.0.2
         version: 3.0.2
@@ -198,6 +201,12 @@ importers:
 
 packages:
 
+  '@ai-sdk/amazon-bedrock@2.2.8':
+    resolution: {integrity: sha512-VEdiQ2hnxaWiqcaM1FTOxX64qkrWanwsl4taMUJe2ePdfqNZdeeoHrJbvQbkr90t6EWMyc/m2MKjjmlVs4rY5Q==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.0.0
+
   '@ai-sdk/deepseek@0.1.14':
     resolution: {integrity: sha512-4dqudeebADal0/MLIcoa0uoGYeGsd3fKc8bXWN4NWKpIpS9lh/Apqb8t2hqaoPjSU1sy/rSwQpJIO7N/6vx/jg==}
     engines: {node: '>=18'}
@@ -210,8 +219,8 @@ packages:
     peerDependencies:
       zod: ^3.0.0
 
-  '@ai-sdk/openai@1.2.3':
-    resolution: {integrity: sha512-iIJKMjKYZN3XWVECDassufz3X7rq/b5BQ6Uhnp03i06T8E4QwCamwtLitJXtrqQ+OxL33Ugn3EIZKGaSBo/+qw==}
+  '@ai-sdk/openai@1.3.12':
+    resolution: {integrity: sha512-ueAP69p8a/ZR2ns+pmlr9h/nyV2/DAwzfnPUGZiLpXbxWnLXd2g3a7l38CuEhBydH/nOfDb/byMgpS8+bnJHTg==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.0.0
@@ -225,34 +234,50 @@ packages:
       zod:
         optional: true
 
+  '@ai-sdk/provider-utils@2.2.7':
+    resolution: {integrity: sha512-kM0xS3GWg3aMChh9zfeM+80vEZfXzR3JEUBdycZLtbRZ2TRT8xOj3WodGHPb06sUK5yD7pAXC/P7ctsi2fvUGQ==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.23.8
+
   '@ai-sdk/provider@1.0.10':
     resolution: {integrity: sha512-pco8Zl9U0xwXI+nCLc0woMtxbvjU8hRmGTseAUiPHFLYAAL8trRPCukg69IDeinOvIeo1SmXxAIdWWPZOLb4Cg==}
     engines: {node: '>=18'}
 
-  '@ai-sdk/react@1.1.22':
-    resolution: {integrity: sha512-+ZlmJBu9NH59wvAtuh+xXEJ2MEfisBpVbYwN347+VlJJ3LfHVH9Rp1d58jVwBsfJvDUMn5UMuHZIXIdQhJIBTg==}
+  '@ai-sdk/provider@1.1.3':
+    resolution: {integrity: sha512-qZMxYJ0qqX/RfnuIaab+zp8UAeJn/ygXXAffR5I4N0n1IrvA6qBsjc8hXLmBiMV2zoXlifkacF7sEFnYnjBcqg==}
+    engines: {node: '>=18'}
+
+  '@ai-sdk/react@1.2.9':
+    resolution: {integrity: sha512-/VYm8xifyngaqFDLXACk/1czDRCefNCdALUyp+kIX6DUIYUWTM93ISoZ+qJ8+3E+FiJAKBQz61o8lIIl+vYtzg==}
     engines: {node: '>=18'}
     peerDependencies:
       react: ^18 || ^19 || ^19.0.0-rc
-      zod: ^3.0.0
+      zod: ^3.23.8
     peerDependenciesMeta:
-      react:
-        optional: true
       zod:
         optional: true
 
-  '@ai-sdk/ui-utils@1.1.18':
-    resolution: {integrity: sha512-PCDXKKKHqA8Oqm5LsXl3Byxmit0r0Gg3nMPI3bdEriDIExoQikULX2T6/IS5u1qNeoC3UK5F2acpCyl5Q+aIuQ==}
+  '@ai-sdk/ui-utils@1.2.8':
+    resolution: {integrity: sha512-nls/IJCY+ks3Uj6G/agNhXqQeLVqhNfoJbuNgCny+nX2veY5ADB91EcZUqVeQ/ionul2SeUswPY6Q/DxteY29Q==}
     engines: {node: '>=18'}
     peerDependencies:
-      zod: ^3.0.0
-    peerDependenciesMeta:
-      zod:
-        optional: true
+      zod: ^3.23.8
 
   '@alloc/quick-lru@5.2.0':
     resolution: {integrity: sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw==}
     engines: {node: '>=10'}
+
+  '@aws-crypto/crc32@5.2.0':
+    resolution: {integrity: sha512-nLbCWqQNgUiwwtFsen1AdzAtvuLRsQS8rYgMuxCrdKf9kOssamGLuPwyTY9wyYblNr9+1XM8v6zoDTPPSIeANg==}
+    engines: {node: '>=16.0.0'}
+
+  '@aws-crypto/util@5.2.0':
+    resolution: {integrity: sha512-4RkU9EsI6ZpBve5fseQlGNUWKMa1RLPQ1dnjnQoe07ldfIzcsGb5hC5W0Dm7u423KWzawlrpbjXBrXCEv9zazQ==}
+
+  '@aws-sdk/types@3.775.0':
+    resolution: {integrity: sha512-ZoGKwa4C9fC9Av6bdfqcW6Ix5ot05F/S4VxWR2nHuMv7hzfmAjTOcUiWT7UR4hM/U0whf84VhDtXN/DWAk52KA==}
+    engines: {node: '>=18.0.0'}
 
   '@babel/runtime@7.26.10':
     resolution: {integrity: sha512-2WJMeRQPHKSPemqk/awGrAiuFfzBmOIPXKizAsVhWH9YJqLZ0H+HS4c8loHGgW6utJ3E/ejXQUsiGaQy2NZ9Fw==}
@@ -1263,6 +1288,42 @@ packages:
   '@segment/isodate@1.0.3':
     resolution: {integrity: sha512-BtanDuvJqnACFkeeYje7pWULVv8RgZaqKHWwGFnL/g/TH/CcZjkIVTfGDp/MAxmilYHUkrX70SqwnYSTNEaN7A==}
 
+  '@smithy/eventstream-codec@4.0.2':
+    resolution: {integrity: sha512-p+f2kLSK7ZrXVfskU/f5dzksKTewZk8pJLPvER3aFHPt76C2MxD9vNatSfLzzQSQB4FNO96RK4PSXfhD1TTeMQ==}
+    engines: {node: '>=18.0.0'}
+
+  '@smithy/is-array-buffer@2.2.0':
+    resolution: {integrity: sha512-GGP3O9QFD24uGeAXYUjwSTXARoqpZykHadOmA8G5vfJPK0/DC67qa//0qvqrJzL1xc8WQWX7/yc7fwudjPHPhA==}
+    engines: {node: '>=14.0.0'}
+
+  '@smithy/is-array-buffer@4.0.0':
+    resolution: {integrity: sha512-saYhF8ZZNoJDTvJBEWgeBccCg+yvp1CX+ed12yORU3NilJScfc6gfch2oVb4QgxZrGUx3/ZJlb+c/dJbyupxlw==}
+    engines: {node: '>=18.0.0'}
+
+  '@smithy/types@4.2.0':
+    resolution: {integrity: sha512-7eMk09zQKCO+E/ivsjQv+fDlOupcFUCSC/L2YUPgwhvowVGWbPQHjEFcmjt7QQ4ra5lyowS92SV53Zc6XD4+fg==}
+    engines: {node: '>=18.0.0'}
+
+  '@smithy/util-buffer-from@2.2.0':
+    resolution: {integrity: sha512-IJdWBbTcMQ6DA0gdNhh/BwrLkDR+ADW5Kr1aZmd4k3DIF6ezMV4R2NIAmT08wQJ3yUK82thHWmC/TnK/wpMMIA==}
+    engines: {node: '>=14.0.0'}
+
+  '@smithy/util-buffer-from@4.0.0':
+    resolution: {integrity: sha512-9TOQ7781sZvddgO8nxueKi3+yGvkY35kotA0Y6BWRajAv8jjmigQ1sBwz0UX47pQMYXJPahSKEKYFgt+rXdcug==}
+    engines: {node: '>=18.0.0'}
+
+  '@smithy/util-hex-encoding@4.0.0':
+    resolution: {integrity: sha512-Yk5mLhHtfIgW2W2WQZWSg5kuMZCVbvhFmC7rV4IO2QqnZdbEFPmQnCcGMAX2z/8Qj3B9hYYNjZOhWym+RwhePw==}
+    engines: {node: '>=18.0.0'}
+
+  '@smithy/util-utf8@2.3.0':
+    resolution: {integrity: sha512-R8Rdn8Hy72KKcebgLiv8jQcQkXoLMOGGv5uI1/k0l+snqkOzQ1R0ChUBCxWMlBsFMekWjq0wRudIweFs7sKT5A==}
+    engines: {node: '>=14.0.0'}
+
+  '@smithy/util-utf8@4.0.0':
+    resolution: {integrity: sha512-b+zebfKCfRdgNJDknHCob3O7FpeYQN6ZG6YLExMcasDHsCXlsXCEuiPZeLnJLpwa5dvPetGlnGCiMHuLwGvFow==}
+    engines: {node: '>=18.0.0'}
+
   '@standard-schema/utils@0.3.0':
     resolution: {integrity: sha512-e7Mew686owMaPJVNNLs55PUvgz371nKgwsc4vxE49zsODpJEnxgxRo2y/OKrqueavXgZNMDVj3DdHFlaSAeU8g==}
 
@@ -1474,16 +1535,14 @@ packages:
     engines: {node: '>=0.4.0'}
     hasBin: true
 
-  ai@4.1.57:
-    resolution: {integrity: sha512-pKp88SnJHRYNtwt4pZ/BPhkMExyt6TEFp/MEa86X3zxJUo8R9Ieq3/4136nPkDswv5wUKbhFCt52BDUNYnV8kg==}
+  ai@4.3.6:
+    resolution: {integrity: sha512-cRL/9zFfPRRfVUOk+ll5FHy08FVc692voFzXWJ2YPD9KS+mkjDPp72QT9Etr0ZD/mdlJZHYq4ZHIts7nRpdD6A==}
     engines: {node: '>=18'}
     peerDependencies:
       react: ^18 || ^19 || ^19.0.0-rc
-      zod: ^3.0.0
+      zod: ^3.23.8
     peerDependenciesMeta:
       react:
-        optional: true
-      zod:
         optional: true
 
   ajv@6.12.6:
@@ -1546,6 +1605,9 @@ packages:
   available-typed-arrays@1.0.7:
     resolution: {integrity: sha512-wvUjBtSGN7+7SjNpq/9M2Tg350UZD3q62IFZLbRAR1bSMlCo1ZaeW+BJ+D090e4hIIZLBcTDWe4Mh4jvUDajzQ==}
     engines: {node: '>= 0.4'}
+
+  aws4fetch@1.0.20:
+    resolution: {integrity: sha512-/djoAN709iY65ETD6LKCtyyEI04XIBP5xVvfmNxsEP0uJB5tyaGBztSryRr4HqMStr9R06PisQE7m9zDTXKu6g==}
 
   axe-core@4.10.3:
     resolution: {integrity: sha512-Xm7bpRXnDSX2YE2YFfBk2FnF0ep6tmG7xPh8iHee8MIcrgq762Nkce856dYtJYLkuIoYZvGfTs/PbZhideTcEg==}
@@ -3273,6 +3335,15 @@ packages:
 
 snapshots:
 
+  '@ai-sdk/amazon-bedrock@2.2.8(zod@3.24.2)':
+    dependencies:
+      '@ai-sdk/provider': 1.1.3
+      '@ai-sdk/provider-utils': 2.2.7(zod@3.24.2)
+      '@smithy/eventstream-codec': 4.0.2
+      '@smithy/util-utf8': 4.0.0
+      aws4fetch: 1.0.20
+      zod: 3.24.2
+
   '@ai-sdk/deepseek@0.1.14(zod@3.24.2)':
     dependencies:
       '@ai-sdk/openai-compatible': 0.1.14(zod@3.24.2)
@@ -3286,10 +3357,10 @@ snapshots:
       '@ai-sdk/provider-utils': 2.1.12(zod@3.24.2)
       zod: 3.24.2
 
-  '@ai-sdk/openai@1.2.3(zod@3.24.2)':
+  '@ai-sdk/openai@1.3.12(zod@3.24.2)':
     dependencies:
-      '@ai-sdk/provider': 1.0.10
-      '@ai-sdk/provider-utils': 2.1.12(zod@3.24.2)
+      '@ai-sdk/provider': 1.1.3
+      '@ai-sdk/provider-utils': 2.2.7(zod@3.24.2)
       zod: 3.24.2
 
   '@ai-sdk/provider-utils@2.1.12(zod@3.24.2)':
@@ -3301,29 +3372,56 @@ snapshots:
     optionalDependencies:
       zod: 3.24.2
 
+  '@ai-sdk/provider-utils@2.2.7(zod@3.24.2)':
+    dependencies:
+      '@ai-sdk/provider': 1.1.3
+      nanoid: 3.3.11
+      secure-json-parse: 2.7.0
+      zod: 3.24.2
+
   '@ai-sdk/provider@1.0.10':
     dependencies:
       json-schema: 0.4.0
 
-  '@ai-sdk/react@1.1.22(react@19.0.0)(zod@3.24.2)':
+  '@ai-sdk/provider@1.1.3':
     dependencies:
-      '@ai-sdk/provider-utils': 2.1.12(zod@3.24.2)
-      '@ai-sdk/ui-utils': 1.1.18(zod@3.24.2)
+      json-schema: 0.4.0
+
+  '@ai-sdk/react@1.2.9(react@19.0.0)(zod@3.24.2)':
+    dependencies:
+      '@ai-sdk/provider-utils': 2.2.7(zod@3.24.2)
+      '@ai-sdk/ui-utils': 1.2.8(zod@3.24.2)
+      react: 19.0.0
       swr: 2.3.3(react@19.0.0)
       throttleit: 2.1.0
     optionalDependencies:
-      react: 19.0.0
       zod: 3.24.2
 
-  '@ai-sdk/ui-utils@1.1.18(zod@3.24.2)':
+  '@ai-sdk/ui-utils@1.2.8(zod@3.24.2)':
     dependencies:
-      '@ai-sdk/provider': 1.0.10
-      '@ai-sdk/provider-utils': 2.1.12(zod@3.24.2)
-      zod-to-json-schema: 3.24.3(zod@3.24.2)
-    optionalDependencies:
+      '@ai-sdk/provider': 1.1.3
+      '@ai-sdk/provider-utils': 2.2.7(zod@3.24.2)
       zod: 3.24.2
+      zod-to-json-schema: 3.24.3(zod@3.24.2)
 
   '@alloc/quick-lru@5.2.0': {}
+
+  '@aws-crypto/crc32@5.2.0':
+    dependencies:
+      '@aws-crypto/util': 5.2.0
+      '@aws-sdk/types': 3.775.0
+      tslib: 2.8.1
+
+  '@aws-crypto/util@5.2.0':
+    dependencies:
+      '@aws-sdk/types': 3.775.0
+      '@smithy/util-utf8': 2.3.0
+      tslib: 2.8.1
+
+  '@aws-sdk/types@3.775.0':
+    dependencies:
+      '@smithy/types': 4.2.0
+      tslib: 2.8.1
 
   '@babel/runtime@7.26.10':
     dependencies:
@@ -4222,6 +4320,49 @@ snapshots:
 
   '@segment/isodate@1.0.3': {}
 
+  '@smithy/eventstream-codec@4.0.2':
+    dependencies:
+      '@aws-crypto/crc32': 5.2.0
+      '@smithy/types': 4.2.0
+      '@smithy/util-hex-encoding': 4.0.0
+      tslib: 2.8.1
+
+  '@smithy/is-array-buffer@2.2.0':
+    dependencies:
+      tslib: 2.8.1
+
+  '@smithy/is-array-buffer@4.0.0':
+    dependencies:
+      tslib: 2.8.1
+
+  '@smithy/types@4.2.0':
+    dependencies:
+      tslib: 2.8.1
+
+  '@smithy/util-buffer-from@2.2.0':
+    dependencies:
+      '@smithy/is-array-buffer': 2.2.0
+      tslib: 2.8.1
+
+  '@smithy/util-buffer-from@4.0.0':
+    dependencies:
+      '@smithy/is-array-buffer': 4.0.0
+      tslib: 2.8.1
+
+  '@smithy/util-hex-encoding@4.0.0':
+    dependencies:
+      tslib: 2.8.1
+
+  '@smithy/util-utf8@2.3.0':
+    dependencies:
+      '@smithy/util-buffer-from': 2.2.0
+      tslib: 2.8.1
+
+  '@smithy/util-utf8@4.0.0':
+    dependencies:
+      '@smithy/util-buffer-from': 4.0.0
+      tslib: 2.8.1
+
   '@standard-schema/utils@0.3.0': {}
 
   '@stripe/stripe-js@7.0.0': {}
@@ -4431,18 +4572,17 @@ snapshots:
 
   acorn@8.14.1: {}
 
-  ai@4.1.57(react@19.0.0)(zod@3.24.2):
+  ai@4.3.6(react@19.0.0)(zod@3.24.2):
     dependencies:
-      '@ai-sdk/provider': 1.0.10
-      '@ai-sdk/provider-utils': 2.1.12(zod@3.24.2)
-      '@ai-sdk/react': 1.1.22(react@19.0.0)(zod@3.24.2)
-      '@ai-sdk/ui-utils': 1.1.18(zod@3.24.2)
+      '@ai-sdk/provider': 1.1.3
+      '@ai-sdk/provider-utils': 2.2.7(zod@3.24.2)
+      '@ai-sdk/react': 1.2.9(react@19.0.0)(zod@3.24.2)
+      '@ai-sdk/ui-utils': 1.2.8(zod@3.24.2)
       '@opentelemetry/api': 1.9.0
-      eventsource-parser: 3.0.0
       jsondiffpatch: 0.6.0
+      zod: 3.24.2
     optionalDependencies:
       react: 19.0.0
-      zod: 3.24.2
 
   ajv@6.12.6:
     dependencies:
@@ -4534,6 +4674,8 @@ snapshots:
   available-typed-arrays@1.0.7:
     dependencies:
       possible-typed-array-names: 1.1.0
+
+  aws4fetch@1.0.20: {}
 
   axe-core@4.10.3: {}
 
