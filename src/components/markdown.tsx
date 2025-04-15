@@ -27,23 +27,23 @@ const NonMemoizedMarkdown = ({ children }: { children: string }) => {
     },
     ol: ({ node, children, ...props }: any) => {
       return (
-        <ol className="list-decimal ml-7" {...props}>
+        <ol className="list-decimal ml-7 mb-2" {...props}>
           {children}
         </ol>
       );
     },
-    li: ({ node, children, ...props }: any) => {
-      return (
-        <li className="py-1" {...props}>
-          {children}
-        </li>
-      );
-    },
     ul: ({ node, children, ...props }: any) => {
       return (
-        <ul className="list-disc ml-4" {...props}>
+        <ul className="list-disc ml-4 mb-2" {...props}>
           {children}
         </ul>
+      );
+    },
+    li: ({ node, children, ...props }: any) => {
+      return (
+        <li className="mb-1" {...props}>
+          {children}
+        </li>
       );
     },
     strong: ({ node, children, ...props }: any) => {
@@ -55,28 +55,28 @@ const NonMemoizedMarkdown = ({ children }: { children: string }) => {
     },
     p: ({ node, children, ...props }: any) => {
       return (
-        <p className="whitespace-pre-wrap" {...props}>
+        <p className="whitespace-pre-wrap mb-2" {...props}>
           {children}
         </p>
       );
     },
     h1: ({ node, children, ...props }: any) => {
       return (
-        <h1 className="text-[1.25em] mt-2 mb-1 font-bold" {...props}>
+        <h1 className="text-[1.25em] mt-3 mb-2 font-bold" {...props}>
           {children}
         </h1>
       );
     },
     h2: ({ node, children, ...props }: any) => {
       return (
-        <h2 className="text-[1.2em] mt-2 mb-1 font-bold" {...props}>
+        <h2 className="text-[1.2em] mt-3 mb-2 font-bold" {...props}>
           {children}
         </h2>
       );
     },
     h3: ({ node, children, ...props }: any) => {
       return (
-        <h3 className="text-[1.1em] mt-2 mb-1 font-bold" {...props}>
+        <h3 className="text-[1.1em] mt-3 mb-2 font-bold" {...props}>
           {children}
         </h3>
       );

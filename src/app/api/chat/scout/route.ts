@@ -69,7 +69,7 @@ export async function POST(req: Request) {
     // model: openai("gpt-4o", {
     //   parallelToolCalls: true,
     // }),
-    model: openai("claude-3-7-sonnet"),
+    model: openai("claude-3-7-sonnet-beta"),
     // model: bedrock("claude-3-7-sonnet"),
     providerOptions: {
       openai: {

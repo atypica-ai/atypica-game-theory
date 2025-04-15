@@ -8,7 +8,7 @@ import {
 } from "@/lib/messageUtils";
 import { prisma } from "@/lib/prisma";
 import { generateToken } from "@/lib/utils";
-import { scoutSystem } from "@/prompt";
+import { scoutSystemVerbose } from "@/prompt/scout";
 import { PlainTextToolResult } from "@/tools/utils";
 import { convertToCoreMessages, generateId, Message, streamText, TextStreamPart, tool } from "ai";
 import { z } from "zod";
@@ -245,14 +245,14 @@ async function runScoutTaskChatStream({
         parts: [],
       };
       const response = streamText({
-        model: openai("claude-3-7-sonnet"),
+        model: openai("claude-3-7-sonnet-beta"),
         // model: openai("gpt-4o", {
         //   parallelToolCalls: true,
         // }),
         providerOptions: {
           openai: { stream_options: { include_usage: true } },
         },
-        system: scoutSystem({
+        system: scoutSystemVerbose({
           doNotStopUntilScouted: false, // 不需要，下面自己会处理 continue
         }),
         messages: coreMessages,
