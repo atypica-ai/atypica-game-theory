@@ -20,10 +20,9 @@ import {
 } from "@/tools/xhs/ToolMessage";
 import { Message as MessageType, ToolInvocation } from "ai";
 import { motion } from "framer-motion";
-import { BotIcon, CpuIcon, LoaderIcon, UserIcon } from "lucide-react";
+import { BotIcon, CpuIcon, UserIcon } from "lucide-react";
 import { PropsWithChildren, ReactNode } from "react";
-import ToolArgsTable, { ExpandableText } from "./ToolArgsTable";
-import ToolResultTable from "./ToolResultTable";
+import { ToolInvocationMessage } from "./ToolInvocationMessage";
 
 // const renderResult = (toolInvocation: ToolInvocation & { state: "result" }) => {
 const SpecialToolDisplay = ({ toolInvocation }: { toolInvocation: ToolInvocation }) => {
@@ -54,45 +53,8 @@ const SpecialToolDisplay = ({ toolInvocation }: { toolInvocation: ToolInvocation
     case ToolName.saveAnalyst:
       return <SaveAnalystToolResultMessage toolInvocation={toolInvocation} />;
     default:
-      return (
-        <pre
-          className={cn(
-            "text-xs font-mono p-4",
-            "text-zinc-800 bg-zinc-100 dark:text-zinc-200 dark:bg-zinc-800",
-            "border border-zinc-200 dark:border-zinc-700 rounded-lg",
-          )}
-        >
-          {toolInvocation.result.plainText ?? "-"}
-        </pre>
-      );
+      return null;
   }
-};
-
-const ToolInvocationMessage = ({ toolInvocation }: { toolInvocation: ToolInvocation }) => {
-  return (
-    <>
-      <div className={cn("text-xs whitespace-pre-wrap font-mono")}>
-        <div className="ml-1 my-2 font-bold">exec {toolInvocation.toolName}</div>
-        <div className="ml-1 mt-1 mb-1 text-primary not-dark:font-bold">&gt;_ args</div>
-        <ToolArgsTable toolInvocation={toolInvocation} />
-        <div className="ml-1 mt-2 mb-2 text-primary not-dark:font-bold">&gt;_ result</div>
-        {toolInvocation.state === "result" ? (
-          <>
-            <ToolResultTable toolInvocation={toolInvocation} />
-            <div className="ml-1 mt-2 mb-1 text-primary not-dark:font-bold">&gt;_ message</div>
-            <div className="text-xs p-1 not-dark:text-muted-foreground">
-              <ExpandableText text={toolInvocation.result.plainText} />
-            </div>
-          </>
-        ) : (
-          <div className="p-1">
-            <LoaderIcon className="animate-spin" size={16} />
-          </div>
-        )}
-      </div>
-      <SpecialToolDisplay toolInvocation={toolInvocation} />
-    </>
-  );
 };
 
 const PlainText = ({ children }: PropsWithChildren) => {
@@ -150,7 +112,12 @@ export const ChatMessage = (message: {
               case "source":
                 return <PlainText key={i}>{JSON.stringify(part.source)}</PlainText>;
               case "tool-invocation":
-                return <ToolInvocationMessage key={i} toolInvocation={part.toolInvocation} />;
+                return (
+                  <>
+                    <ToolInvocationMessage toolInvocation={part.toolInvocation} />
+                    <SpecialToolDisplay toolInvocation={part.toolInvocation} />
+                  </>
+                );
               default:
                 return null;
             }

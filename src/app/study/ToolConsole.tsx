@@ -1,34 +1,11 @@
-import ToolArgsTable, { ExpandableText } from "@/components/chat/ToolArgsTable";
-import { cn } from "@/lib/utils";
+import { ToolInvocationMessage } from "@/components/chat/ToolInvocationMessage";
 import { ToolName } from "@/tools";
-import { ToolInvocation } from "ai";
-import { LoaderIcon } from "lucide-react";
 import { useMemo } from "react";
 import { useStudyContext } from "./hooks/StudyContext";
 import GenerateReport from "./tools/console/GenerateReport";
 import InterviewChat from "./tools/console/InterviewChat";
 import ReasoningThinking from "./tools/console/ReasoningThinking";
 import ScoutTaskChat from "./tools/console/ScoutTaskChat";
-
-const FallbackToolDisplay = ({ toolInvocation }: { toolInvocation: ToolInvocation }) => {
-  return (
-    <div className={cn("text-xs whitespace-pre-wrap p-2 font-mono")}>
-      <div className="ml-1 my-2 font-bold">exec {toolInvocation.toolName}</div>
-      <div className="ml-1 mt-1 mb-1 text-primary not-dark:font-bold">&gt;_ args</div>
-      <ToolArgsTable toolInvocation={toolInvocation} />
-      <div className="ml-1 mt-2 mb-2 text-primary not-dark:font-bold">&gt;_ result</div>
-      {toolInvocation.state === "result" ? (
-        <div className="text-xs p-1 not-dark:text-muted-foreground">
-          <ExpandableText text={toolInvocation.result.plainText} />
-        </div>
-      ) : (
-        <div className="p-1">
-          <LoaderIcon className="animate-spin" size={16} />
-        </div>
-      )}
-    </div>
-  );
-};
 
 export function ToolConsole() {
   const { viewToolInvocation, lastToolInvocation } = useStudyContext();
@@ -47,6 +24,6 @@ export function ToolConsole() {
     case ToolName.generateReport:
       return <GenerateReport toolInvocation={activeTool} />;
     default:
-      return activeTool ? <FallbackToolDisplay toolInvocation={activeTool} /> : null;
+      return activeTool ? <ToolInvocationMessage toolInvocation={activeTool} /> : null;
   }
 }

@@ -8,7 +8,7 @@ import {
 } from "@/lib/messageUtils";
 import { prisma } from "@/lib/prisma";
 import { generateToken } from "@/lib/utils";
-import { scoutSystemVerbose } from "@/prompt/scout";
+import { scoutSystemVerbose } from "@/prompt";
 import { PlainTextToolResult } from "@/tools/utils";
 import { convertToCoreMessages, generateId, Message, streamText, TextStreamPart, tool } from "ai";
 import { z } from "zod";

@@ -32,25 +32,29 @@ const SpecialToolDisplay = ({
   addToolResult: TAddToolResult;
 }) => {
   // 特殊显示的工具调用 UI
-  const { toolName, state } = toolInvocation;
-  if (toolName == ToolName.requestInteraction) {
-    return (
-      <RequestInteractionMessage toolInvocation={toolInvocation} addToolResult={addToolResult} />
-    );
+  switch (toolInvocation.toolName) {
+    case ToolName.requestInteraction:
+      return (
+        <RequestInteractionMessage toolInvocation={toolInvocation} addToolResult={addToolResult} />
+      );
+    case ToolName.requestPayment:
+      return (
+        <RequestPaymentMessage toolInvocation={toolInvocation} addToolResult={addToolResult} />
+      );
+    case ToolName.thanks:
+      return <ThanksMessage toolInvocation={toolInvocation} />;
   }
-  if (toolName == ToolName.requestPayment) {
-    return <RequestPaymentMessage toolInvocation={toolInvocation} addToolResult={addToolResult} />;
+  if (toolInvocation.state !== "result") {
+    return null;
   }
-  if (toolName == ToolName.thanks) {
-    return <ThanksMessage toolInvocation={toolInvocation} />;
+  switch (toolInvocation.toolName) {
+    case ToolName.generateReport:
+      return <GenerateReportResultMessage toolInvocation={toolInvocation} />;
+    case ToolName.scoutTaskChat:
+      return <ScoutTaskResultMessage toolInvocation={toolInvocation} />;
+    default:
+      return null;
   }
-  if (state === "result" && toolName == ToolName.generateReport) {
-    return <GenerateReportResultMessage toolInvocation={toolInvocation} />;
-  }
-  if (state === "result" && toolName == ToolName.scoutTaskChat) {
-    return <ScoutTaskResultMessage toolInvocation={toolInvocation} />;
-  }
-  return null;
 };
 
 const ToolInvocationMessage = ({
@@ -84,7 +88,7 @@ const ToolInvocationMessage = ({
     <>
       <Collapsible
         className={cn(
-          "text-xs whitespace-pre-wrap rounded-lg p-2 font-mono",
+          "text-xs font-mono rounded-lg p-2",
           "bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700/50",
         )}
         open={open}

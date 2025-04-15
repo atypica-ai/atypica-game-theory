@@ -6,7 +6,7 @@ import {
   prepareNewMessageForStreaming,
 } from "@/lib/messageUtils";
 import { prisma } from "@/lib/prisma";
-import { scoutSystemVerbose } from "@/prompt/scout";
+import { scoutSystemVerbose } from "@/prompt";
 import {
   dyPostCommentsTool,
   dySearchTool,

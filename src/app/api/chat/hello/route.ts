@@ -6,7 +6,7 @@ import {
   prepareNewMessageForStreaming,
 } from "@/lib/messageUtils";
 import { prisma } from "@/lib/prisma";
-import { helloSystem } from "@/prompt/hello";
+import { helloSystem } from "@/prompt";
 import { thanksTool, ToolName } from "@/tools";
 import { Message, streamText } from "ai";
 import { getServerSession } from "next-auth/next";

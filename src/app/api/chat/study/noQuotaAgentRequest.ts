@@ -1,5 +1,5 @@
 import { openai } from "@/lib/llm";
-import { studySystemNoQuota } from "@/prompt/study";
+import { studySystemNoQuota } from "@/prompt";
 import { requestInteractionTool, requestPaymentTool, ToolName } from "@/tools";
 import { CoreMessage, Message, streamText } from "ai";
 

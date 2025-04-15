@@ -62,7 +62,6 @@ export function fixMalformedUnicodeString(str: string) {
   if (!/(\\u|u)[0-9a-f]{4}.*(\\u|u)[0-9a-f]{4}/i.test(str)) {
     return str;
   } else {
-    // eslint-disable-next-line no-unused-vars
     return str.replace(/(\\u|u)([0-9a-f]{4})/gi, (match, _u, hex) => {
       // 将十六进制转换为对应的Unicode字符
       return String.fromCharCode(parseInt(hex, 16));

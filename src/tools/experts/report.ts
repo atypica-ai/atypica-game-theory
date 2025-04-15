@@ -1,8 +1,12 @@
 import { openai } from "@/lib/llm";
 import { prisma } from "@/lib/prisma";
 import { generateToken } from "@/lib/utils";
-import { reportHTMLPrologue, reportHTMLSystem } from "@/prompt";
-import { reportCoverPrologue, reportCoverSystem } from "@/prompt/report";
+import {
+  reportCoverPrologue,
+  reportCoverSystem,
+  reportHTMLPrologue,
+  reportHTMLSystem,
+} from "@/prompt";
 import { PlainTextToolResult } from "@/tools/utils";
 import { Analyst, AnalystReport } from "@prisma/client";
 import { FinishReason, Message, streamText, tool } from "ai";

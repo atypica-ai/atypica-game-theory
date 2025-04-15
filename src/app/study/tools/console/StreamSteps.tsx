@@ -1,6 +1,7 @@
 "use client";
 // 给 chat 类型的 tool call 用的组件，比如 scout chat 和 interview chat
-import ToolArgsTable, { ExpandableText } from "@/components/chat/ToolArgsTable";
+import { ExpandableText } from "@/components/chat/ToolArgsTable";
+import { ToolInvocationMessage } from "@/components/chat/ToolInvocationMessage";
 import { Markdown } from "@/components/markdown";
 import { cn } from "@/lib/utils";
 import { ToolName } from "@/tools";
@@ -16,7 +17,7 @@ import {
 } from "@/tools/xhs/ToolMessage";
 import { Message as MessageType, ToolInvocation } from "ai";
 import { motion } from "framer-motion";
-import { BotIcon, CpuIcon, LoaderIcon, UserIcon } from "lucide-react";
+import { BotIcon, CpuIcon, UserIcon } from "lucide-react";
 import { PropsWithChildren, ReactNode, useCallback } from "react";
 import ReasoningThinking from "./ReasoningThinking";
 
@@ -29,11 +30,14 @@ const PlainText = ({ children }: PropsWithChildren) => {
 };
 
 const StreamStep = ({ toolInvocation }: { toolInvocation: ToolInvocation }) => {
-  const ToolResultDisplay = ({
-    toolInvocation,
-  }: {
-    toolInvocation: ToolInvocation & { state: "result" };
-  }) => {
+  const ToolResultDisplay = ({ toolInvocation }: { toolInvocation: ToolInvocation }) => {
+    switch (toolInvocation.toolName) {
+      case ToolName.reasoningThinking:
+        return <ReasoningThinking toolInvocation={toolInvocation} />;
+    }
+    if (toolInvocation.state !== "result") {
+      return null;
+    }
     switch (toolInvocation.toolName) {
       case ToolName.xhsSearch:
         return <XHSSearchResultMessage toolInvocation={toolInvocation} />;
@@ -47,8 +51,6 @@ const StreamStep = ({ toolInvocation }: { toolInvocation: ToolInvocation }) => {
         return <DYUserPostsResultMessage toolInvocation={toolInvocation} />;
       case ToolName.dyPostComments:
         return <DYPostCommentsResultMessage toolInvocation={toolInvocation} />;
-      case ToolName.reasoningThinking:
-        return <ReasoningThinking toolInvocation={toolInvocation} />;
       default:
         return (
           <pre
@@ -65,19 +67,10 @@ const StreamStep = ({ toolInvocation }: { toolInvocation: ToolInvocation }) => {
   };
 
   return (
-    <div className={cn("text-xs whitespace-pre-wrap font-mono")}>
-      <div className="ml-1 my-2 font-bold">exec {toolInvocation.toolName}</div>
-      <div className="ml-1 mt-1 mb-1 text-primary not-dark:font-bold">&gt;_ args</div>
-      <ToolArgsTable toolInvocation={toolInvocation} />
-      <div className="ml-1 mt-2 mb-2 text-primary not-dark:font-bold">&gt;_ result</div>
-      {toolInvocation.state === "result" ? (
-        <ToolResultDisplay toolInvocation={toolInvocation} />
-      ) : (
-        <div className="p-1">
-          <LoaderIcon className="animate-spin" size={16} />
-        </div>
-      )}
-    </div>
+    <>
+      <ToolInvocationMessage toolInvocation={toolInvocation} />
+      <ToolResultDisplay toolInvocation={toolInvocation} />
+    </>
   );
 };
 
