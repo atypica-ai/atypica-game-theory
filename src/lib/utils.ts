@@ -57,7 +57,7 @@ export const formatDistanceToNow = (date: Date) => {
  * token-efficient-tools-2025-02-19 beta 版本的 claude 3.7
  * 输出的中文有时候是 uxxxxuxxxx 的形式，需要额外修复一下
  */
-export function fixMalformedUnicodeString(str: string) {
+export function fixMalformedUnicodeString(str?: string) {
   str = str ?? "";
   if (!/(\\u|u)[0-9a-f]{4}.*(\\u|u)[0-9a-f]{4}/i.test(str)) {
     return str;

@@ -45,18 +45,11 @@ export const savePersonaTool = ({
       name,
       source,
       tags,
-      userids,
-      personaPrompt,
+      userids: samples,
+      personaPrompt: prompt,
     }): Promise<SavePersonaToolResult> => {
       const persona = await prisma.persona.create({
-        data: {
-          name,
-          source,
-          tags,
-          samples: userids,
-          prompt: personaPrompt,
-          scoutUserChatId,
-        },
+        data: { name, source, tags, samples, prompt, scoutUserChatId },
       });
       const result = {
         personaId: persona.id,

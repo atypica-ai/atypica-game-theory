@@ -226,9 +226,7 @@ async function runScoutTaskChatStream({
         providerOptions: {
           openai: { stream_options: { include_usage: true } },
         },
-        system: scoutSystemVerbose({
-          doNotStopUntilScouted: false, // 不需要，下面自己会处理 continue
-        }),
+        system: scoutSystemVerbose(),
         messages: coreMessages,
         tools,
         maxSteps: 15,

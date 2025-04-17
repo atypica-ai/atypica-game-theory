@@ -1,8 +1,15 @@
 import { Persona } from "@prisma/client";
 
 export const personaAgentSystem = (persona: Persona) => `
-${persona.prompt}
+${persona.prompt ?? ""}
 
+你的标签
+
+<tags>
+${((persona.tags ?? []) as string[]).join(", ")}
+</tags>
+
+<task>
 你正在参与一次消费者访谈。请完全融入角色，以真实的身份回答问题。
 
 核心要点：
@@ -28,4 +35,5 @@ ${persona.prompt}
 - 是否愿意再次购买或推荐给他人
 
 请在访谈中展现出一个真实、立体、有个性的消费者形象。
+</task>
 `;

@@ -34,7 +34,6 @@ export async function POST(req: Request) {
   const payload = await req.json();
   const scoutUserChatId = parseInt(payload["id"]);
   const newMessage = payload["message"] as Message;
-  // const autoChat = typeof payload["autoChat"] === "boolean" ? payload["autoChat"] : false;
   if (!scoutUserChatId || !newMessage) {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
@@ -84,10 +83,7 @@ export async function POST(req: Request) {
         // anthropic_beta: ["token-efficient-tools-2025-02-19"],
       },
     },
-    system: scoutSystemVerbose({
-      doNotStopUntilScouted: false,
-      // doNotStopUntilScouted: autoChat,
-    }),
+    system: scoutSystemVerbose(),
     messages: coreMessages,
     tools,
     maxSteps: 15, // 每次请求只发送单条消息的情况，只能在后端设置 maxSteps，在后端不断 continue
