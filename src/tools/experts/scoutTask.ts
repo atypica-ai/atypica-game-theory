@@ -49,13 +49,6 @@ const debouncePersistentMessage = (() => {
   };
 })();
 
-export interface ScoutTaskCreateResult extends PlainTextToolResult {
-  scoutUserChatId: number;
-  scoutUserChatToken: string;
-  title: string;
-  plainText: string;
-}
-
 export interface ScoutTaskChatResult extends PlainTextToolResult {
   personas: {
     id: number;
@@ -64,37 +57,6 @@ export interface ScoutTaskChatResult extends PlainTextToolResult {
   }[];
   plainText: string;
 }
-
-export const scoutTaskCreateTool = (userId: number) =>
-  tool({
-    description: "创建一个用户画像搜索任务",
-    parameters: z.object({
-      description: z.string().describe('用户画像搜索需求描述，用"帮我寻找"开头'),
-    }),
-    experimental_toToolResultContent: (result: PlainTextToolResult) => {
-      return [{ type: "text", text: result.plainText }];
-    },
-    execute: async ({ description }): Promise<ScoutTaskCreateResult> => {
-      const title = description.substring(0, 50);
-      const scoutUserChat = await prisma.userChat.create({
-        data: {
-          userId,
-          title,
-          kind: "scout",
-          token: generateToken(),
-        },
-      });
-      return {
-        scoutUserChatId: scoutUserChat.id,
-        scoutUserChatToken: scoutUserChat.token,
-        title: scoutUserChat.title,
-        plainText: JSON.stringify({
-          scoutUserChatId: scoutUserChat.id,
-          title: scoutUserChat.title,
-        }),
-      };
-    },
-  });
 
 export const scoutTaskChatTool = ({
   userId,
@@ -342,3 +304,41 @@ async function runScoutTaskChatStream({
   // 完全结束以后，清理 backgroundToken
   await clearBackgroundToken();
 }
+
+// export interface ScoutTaskCreateResult extends PlainTextToolResult {
+//   scoutUserChatId: number;
+//   scoutUserChatToken: string;
+//   title: string;
+//   plainText: string;
+// }
+
+// export const scoutTaskCreateTool = (userId: number) =>
+//   tool({
+//     description: "创建一个用户画像搜索任务",
+//     parameters: z.object({
+//       description: z.string().describe('用户画像搜索需求描述，用"帮我寻找"开头'),
+//     }),
+//     experimental_toToolResultContent: (result: PlainTextToolResult) => {
+//       return [{ type: "text", text: result.plainText }];
+//     },
+//     execute: async ({ description }): Promise<ScoutTaskCreateResult> => {
+//       const title = description.substring(0, 50);
+//       const scoutUserChat = await prisma.userChat.create({
+//         data: {
+//           userId,
+//           title,
+//           kind: "scout",
+//           token: generateToken(),
+//         },
+//       });
+//       return {
+//         scoutUserChatId: scoutUserChat.id,
+//         scoutUserChatToken: scoutUserChat.token,
+//         title: scoutUserChat.title,
+//         plainText: JSON.stringify({
+//           scoutUserChatId: scoutUserChat.id,
+//           title: scoutUserChat.title,
+//         }),
+//       };
+//     },
+//   });

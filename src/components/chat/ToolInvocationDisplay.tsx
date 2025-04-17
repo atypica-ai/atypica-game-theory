@@ -1,14 +1,19 @@
 import { ToolName } from "@/tools";
 import {
-  DYPostCommentsResultMessage,
-  DYSearchResultMessage,
-  DYUserPostsResultMessage,
-} from "@/tools/dy/ToolMessage";
-import {
   GenerateReportResultMessage,
   ReasoningThinkingResultMessage,
   ScoutTaskResultMessage,
 } from "@/tools/experts/ToolMessage";
+import {
+  DYPostCommentsResultMessage,
+  DYSearchResultMessage,
+  DYUserPostsResultMessage,
+} from "@/tools/social/dy/ToolMessage";
+import {
+  XHSNoteCommentsResultMessage,
+  XHSSearchResultMessage,
+  XHSUserNotesResultMessage,
+} from "@/tools/social/xhs/ToolMessage";
 import { SaveAnalystToolResultMessage } from "@/tools/system/ToolMessage";
 import {
   RequestInteractionMessage,
@@ -16,11 +21,6 @@ import {
   ThanksMessage,
 } from "@/tools/user/ToolMessage";
 import { PlainTextToolResult } from "@/tools/utils";
-import {
-  XHSNoteCommentsResultMessage,
-  XHSSearchResultMessage,
-  XHSUserNotesResultMessage,
-} from "@/tools/xhs/ToolMessage";
 import { ToolInvocation } from "ai";
 
 export type TAddToolResult = ({
