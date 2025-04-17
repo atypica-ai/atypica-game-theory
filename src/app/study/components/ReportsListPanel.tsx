@@ -8,7 +8,7 @@ import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { fetchAnalystReportsOfStudyUserChat } from "../actions";
 import { useStudyContext } from "../hooks/StudyContext";
-import { AnalystReportShareButton } from "../tools/AnalystReportShareButton";
+import { AnalystReportShareButton } from "./AnalystReportShareButton";
 
 export default function ReportsListPanel() {
   const t = useTranslations("Components.ReportsListPanel");

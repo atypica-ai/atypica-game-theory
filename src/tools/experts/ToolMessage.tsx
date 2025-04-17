@@ -1,5 +1,5 @@
 import { fetchAnalystReportByToken } from "@/app/study/actions";
-import { AnalystReportShareButton } from "@/app/study/tools/AnalystReportShareButton";
+import { AnalystReportShareButton } from "@/app/study/components/AnalystReportShareButton";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Markdown } from "@/components/markdown";
 import { Badge } from "@/components/ui/badge";

@@ -4,9 +4,9 @@ import { AnalystReport } from "@prisma/client";
 import { ToolInvocation } from "ai";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { AnalystReportShareButton } from "../AnalystReportShareButton";
+import { AnalystReportShareButton } from "../components/AnalystReportShareButton";
 
-const GenerateReport = ({ toolInvocation }: { toolInvocation: ToolInvocation }) => {
+const GenerateReportConsole = ({ toolInvocation }: { toolInvocation: ToolInvocation }) => {
   const t = useTranslations("StudyPage.ToolConsole");
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -98,4 +98,4 @@ const GenerateReport = ({ toolInvocation }: { toolInvocation: ToolInvocation }) 
   );
 };
 
-export default GenerateReport;
+export default GenerateReportConsole;
