@@ -52,12 +52,12 @@ function parseXHSSearchResult(data: {
       collected_count: note.collected_count,
       comments_count: note.comments_count,
       user: {
-        nickname: note.user.nickname,
-        userid: note.user.userid,
-        images: note.user.images,
+        nickname: note.user?.nickname,
+        userid: note.user?.userid,
+        images: note.user?.images,
       },
       // 只保留一个图就行了
-      images_list: note.images_list.slice(0, 1).map((image) => ({
+      images_list: note.images_list?.slice(0, 1).map((image) => ({
         url: image.url,
         width: image.width,
         height: image.height,

@@ -36,16 +36,16 @@ function parseTikTokUserPosts(result: {
     posts.push({
       id: aweme_info.aweme_id,
       desc: aweme_info.desc,
-      liked_count: aweme_info.statistics.digg_count,
-      collected_count: aweme_info.statistics.collect_count,
-      comments_count: aweme_info.statistics.comment_count,
+      liked_count: aweme_info.statistics?.digg_count,
+      collected_count: aweme_info.statistics?.collect_count,
+      comments_count: aweme_info.statistics?.comment_count,
       user: {
-        nickname: aweme_info.author.nickname,
-        userid: aweme_info.author.uid,
-        secret_userid: aweme_info.author.sec_uid,
-        image: tryFindValidImage(aweme_info.author.avatar_medium.url_list),
+        nickname: aweme_info.author?.nickname,
+        userid: aweme_info.author?.uid,
+        secret_userid: aweme_info.author?.sec_uid,
+        image: tryFindValidImage(aweme_info.author?.avatar_medium?.url_list),
       },
-      images_list: [{ url: tryFindValidImage(aweme_info.video.cover.url_list) }],
+      images_list: [{ url: tryFindValidImage(aweme_info.video?.cover?.url_list) }],
     });
   });
   const plainText = JSON.stringify(

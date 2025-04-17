@@ -30,9 +30,9 @@ function parseXHSNoteComments(data: {
       id: comment.id,
       content: comment.content,
       user: {
-        userid: comment.user.userid,
-        nickname: comment.user.nickname,
-        images: comment.user.images,
+        userid: comment.user?.userid,
+        nickname: comment.user?.nickname,
+        images: comment.user?.images,
       },
       like_count: comment.like_count,
       sub_comment_count: comment.sub_comment_count,

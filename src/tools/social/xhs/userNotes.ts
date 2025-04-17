@@ -46,12 +46,12 @@ function parseXHSUserNotes(data: {
       collected_count: note.collected_count,
       comments_count: note.comments_count,
       user: {
-        nickname: note.user.nickname,
-        userid: note.user.userid,
-        images: note.user.images,
+        nickname: note.user?.nickname,
+        userid: note.user?.userid,
+        images: note.user?.images,
       },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      images_list: note.images_list.map((image: any) => ({
+      images_list: note.images_list?.map((image: any) => ({
         url: image.url,
         width: image.width,
         height: image.height,
