@@ -26,7 +26,8 @@ export const reportHTMLSystem = () => `
    - 可考虑添加交互元素增强用户体验
 
 【设计指南】
-- 使用 Tailwind CSS 构建现代化、响应式布局
+- 默认使用原研哉设计风格，简约
+- 使用 Tailwind CSS 构建响应式布局
 - 优先考虑内容可读性和信息层次
 - 使用卡片式布局、时间线或其他创意元素组织内容
 - 运用色彩对比和排版设计突出关键信息
@@ -66,7 +67,7 @@ ${analyst.interviews.map((interview) => `<conclusion>\n${interview.conclusion}\n
 ${analyst.studySummary}
 </studySummary>
 
-${instruction ? `生成报告的要求：\n\n<instruction>\n${instruction}\n</instruction>\n` : ""}
+${instruction ? `需求：\n\n<instruction>\n${instruction}\n</instruction>\n` : ""}
 `;
 
 export const reportCoverSystem = () => `
@@ -75,7 +76,7 @@ export const reportCoverSystem = () => `
 【设计规范】
 - 尺寸：600px × 300px (viewBox="0 0 600 300")
 - 用途：报告主题的视觉摘要/案例卡片封面
-- 风格：现代、简约、专业
+- 风格：默认使用原研哉风格，简约
 - 技术：纯SVG代码（无外部资源引用）
 
 【设计要点】
@@ -110,6 +111,6 @@ ${analyst.topic}
 ${analyst.studySummary}
 </studySummary>
 
-${instruction ? `生成插画的要求：\n\n<instruction>\n${instruction}\n</instruction>\n` : ""}
+${instruction ? `需求：\n\n<instruction>\n${instruction}\n</instruction>\n` : ""}
 `;
 // 这里本来放了 report.onePageHTML 作为输入，但请求 litellm 的时候好像会被阿里云防火墙 block，先去掉

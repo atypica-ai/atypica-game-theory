@@ -211,12 +211,13 @@ export function ChatBox() {
     <>
       <div
         ref={messagesContainerRef}
-        className="flex-1 flex flex-col pb-12 w-full items-center overflow-y-auto scrollbar-thin"
+        className="flex-1 flex flex-col pb-12 gap-4 w-full items-center overflow-y-auto scrollbar-thin"
       >
         {messages.map((message, index) => (
           <SingleMessage
             key={message.id}
             message={message}
+            nickname={message.role === "assistant" ? "atypica.AI" : undefined}
             addToolResult={addToolResult}
             avatar={{ assistant: <HippyGhostAvatar seed={studyUserChatToken} /> }}
             // TODO: 目前先禁用这个功能

@@ -70,9 +70,13 @@ const InterviewChat = ({ toolInvocation }: { toolInvocation: ToolInvocation }) =
               <span className="ml-2">{t("interviewing", { count: personasArg.length })} </span>
             </div>
           )}
-          <TabsList className="ml-auto">
+          <TabsList className="ml-auto flex-1 overflow-x-scroll">
             {personasArg.map(({ id, name }, index) => (
-              <TabsTrigger key={id} value={(index + 1).toString()}>
+              <TabsTrigger
+                key={id}
+                value={(index + 1).toString()}
+                style={{ width: `${100 / personasArg.length}%` }}
+              >
                 <HippyGhostAvatar seed={id} className="size-4" />
                 <div className="max-w-24 truncate">{name}</div>
               </TabsTrigger>

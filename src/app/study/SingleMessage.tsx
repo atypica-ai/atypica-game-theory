@@ -206,9 +206,9 @@ export const SingleMessage = ({
         transition={{ duration: 0.4, ease: "easeOut" }}
       >
         {avatar?.assistant || <BotIcon className="size-6" />}
-        <div className="flex flex-col gap-6 flex-1 overflow-hidden">
+        <div className="flex-1 overflow-hidden">
           {nickname && (
-            <div className="leading-[24px] text-zinc-800 text-sm font-medium">{nickname}</div>
+            <div className="leading-[32px] text-zinc-800 text-sm font-medium">{nickname}</div>
           )}
           {parts ? renderParts(parts) : <PlainText>{content}</PlainText>}
         </div>

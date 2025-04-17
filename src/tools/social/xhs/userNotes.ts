@@ -7,7 +7,7 @@ interface XHSUserNote {
   title: string;
   desc: string;
   type: string;
-  nice_count: number;
+  liked_count: number;
   collected_count: number;
   comments_count: number;
   user: {
@@ -29,7 +29,8 @@ export interface XHSUserNotesResult extends PlainTextToolResult {
 
 function parseXHSUserNotes(data: {
   data: {
-    notes: XHSUserNote[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    notes: any[];
   };
 }): XHSUserNotesResult {
   const notes: XHSUserNote[] = [];
@@ -41,7 +42,7 @@ function parseXHSUserNotes(data: {
       title: note.title,
       desc: note.desc,
       type: note.type,
-      nice_count: note.nice_count,
+      liked_count: note.likes,
       collected_count: note.collected_count,
       comments_count: note.comments_count,
       user: {
@@ -49,14 +50,14 @@ function parseXHSUserNotes(data: {
         userid: note.user.userid,
         images: note.user.images,
       },
-      images_list: note.images_list.map((image) => ({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      images_list: note.images_list.map((image: any) => ({
         url: image.url,
         width: image.width,
         height: image.height,
       })),
     });
   });
-  //
   const plainText = JSON.stringify(
     notes.map((note) => ({
       nodeid: note.id,

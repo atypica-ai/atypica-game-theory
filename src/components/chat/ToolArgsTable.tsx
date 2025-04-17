@@ -10,7 +10,7 @@ export function ExpandableText({ text }: { text: string }) {
   const displayText = expanded || !isLong ? text : text.substring(0, 200) + "...";
 
   return (
-    <div className="whitespace-pre-wrap">
+    <div className="whitespace-pre-wrap break-all">
       {displayText}
       {isLong && (
         <button
