@@ -1,65 +1,19 @@
 "use client";
-// 给 chat 类型的 tool call 用的组件，比如 scout chat 和 interview chat
+import { ToolInvocationDisplay } from "@/components/chat/ToolInvocationDisplay";
 import { ToolInvocationMessage } from "@/components/chat/ToolInvocationMessage";
+// 给 chat 类型的 tool call 用的组件，比如 scout chat 和 interview chat
 import { Markdown } from "@/components/markdown";
 import { cn } from "@/lib/utils";
-import { ToolName } from "@/tools";
-import {
-  DYPostCommentsResultMessage,
-  DYSearchResultMessage,
-  DYUserPostsResultMessage,
-} from "@/tools/dy/ToolMessage";
-import {
-  XHSNoteCommentsResultMessage,
-  XHSSearchResultMessage,
-  XHSUserNotesResultMessage,
-} from "@/tools/xhs/ToolMessage";
-import { Message as MessageType, ToolInvocation } from "ai";
+import { Message as MessageType } from "ai";
 import { motion } from "framer-motion";
 import { BotIcon, CpuIcon, UserIcon } from "lucide-react";
-import { PropsWithChildren, ReactNode, useCallback } from "react";
-import ReasoningThinking from "./ReasoningThinking";
+import React, { PropsWithChildren, ReactNode, useCallback } from "react";
 
 const PlainText = ({ children }: PropsWithChildren) => {
   return (
     <div className="text-sm flex flex-col gap-4">
       <Markdown>{children as string}</Markdown>
     </div>
-  );
-};
-
-const StreamStep = ({ toolInvocation }: { toolInvocation: ToolInvocation }) => {
-  const ToolResultDisplay = ({ toolInvocation }: { toolInvocation: ToolInvocation }) => {
-    switch (toolInvocation.toolName) {
-      case ToolName.reasoningThinking:
-        return <ReasoningThinking toolInvocation={toolInvocation} />;
-    }
-    if (toolInvocation.state !== "result") {
-      return null;
-    }
-    switch (toolInvocation.toolName) {
-      case ToolName.xhsSearch:
-        return <XHSSearchResultMessage toolInvocation={toolInvocation} />;
-      case ToolName.xhsUserNotes:
-        return <XHSUserNotesResultMessage toolInvocation={toolInvocation} />;
-      case ToolName.xhsNoteComments:
-        return <XHSNoteCommentsResultMessage toolInvocation={toolInvocation} />;
-      case ToolName.dySearch:
-        return <DYSearchResultMessage toolInvocation={toolInvocation} />;
-      case ToolName.dyUserPosts:
-        return <DYUserPostsResultMessage toolInvocation={toolInvocation} />;
-      case ToolName.dyPostComments:
-        return <DYPostCommentsResultMessage toolInvocation={toolInvocation} />;
-      default:
-        return null;
-    }
-  };
-
-  return (
-    <>
-      <ToolInvocationMessage toolInvocation={toolInvocation} />
-      <ToolResultDisplay toolInvocation={toolInvocation} />
-    </>
   );
 };
 
@@ -89,7 +43,12 @@ export const StreamSteps = ({
             case "source":
               return <PlainText key={i}>{JSON.stringify(part.source)}</PlainText>;
             case "tool-invocation":
-              return <StreamStep key={i} toolInvocation={part.toolInvocation} />;
+              return (
+                <React.Fragment key={i}>
+                  <ToolInvocationMessage toolInvocation={part.toolInvocation} />
+                  <ToolInvocationDisplay toolInvocation={part.toolInvocation} />
+                </React.Fragment>
+              );
             default:
               return null;
           }

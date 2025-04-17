@@ -1,61 +1,15 @@
 import ToolArgsTable, { ExpandableText } from "@/components/chat/ToolArgsTable";
+import { TAddToolResult, ToolInvocationDisplay } from "@/components/chat/ToolInvocationDisplay";
 import ToolResultTable from "@/components/chat/ToolResultTable";
 import { Markdown } from "@/components/markdown";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
-import { ToolName } from "@/tools";
-import { ThanksMessage } from "@/tools/user/ToolMessage";
 import { PlainTextToolResult } from "@/tools/utils";
 import { Message, Message as MessageType, ToolInvocation } from "ai";
 import { motion } from "framer-motion";
 import { BotIcon, ChevronRight, EyeIcon, LoaderIcon, XIcon } from "lucide-react";
 import { PropsWithChildren, ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { useStudyContext } from "./hooks/StudyContext";
-import { GenerateReportResultMessage } from "./tools/message/GenerateReportResultMessage";
-import { RequestInteractionMessage } from "./tools/message/RequestInteractionMessage";
-import { RequestPaymentMessage } from "./tools/message/RequestPaymentMessage";
-import { ScoutTaskResultMessage } from "./tools/message/ScoutTaskResultMessage";
-
-type TAddToolResult = ({
-  toolCallId,
-  result,
-}: {
-  toolCallId: string;
-  result: PlainTextToolResult;
-}) => void;
-
-const SpecialToolDisplay = ({
-  toolInvocation,
-  addToolResult,
-}: {
-  toolInvocation: ToolInvocation;
-  addToolResult: TAddToolResult;
-}) => {
-  // 特殊显示的工具调用 UI
-  switch (toolInvocation.toolName) {
-    case ToolName.requestInteraction:
-      return (
-        <RequestInteractionMessage toolInvocation={toolInvocation} addToolResult={addToolResult} />
-      );
-    case ToolName.requestPayment:
-      return (
-        <RequestPaymentMessage toolInvocation={toolInvocation} addToolResult={addToolResult} />
-      );
-    case ToolName.thanks:
-      return <ThanksMessage toolInvocation={toolInvocation} />;
-  }
-  if (toolInvocation.state !== "result") {
-    return null;
-  }
-  switch (toolInvocation.toolName) {
-    case ToolName.generateReport:
-      return <GenerateReportResultMessage toolInvocation={toolInvocation} />;
-    case ToolName.scoutTaskChat:
-      return <ScoutTaskResultMessage toolInvocation={toolInvocation} />;
-    default:
-      return null;
-  }
-};
 
 const ToolInvocationMessage = ({
   toolInvocation,
@@ -128,7 +82,7 @@ const ToolInvocationMessage = ({
           )}
         </CollapsibleContent>
       </Collapsible>
-      <SpecialToolDisplay toolInvocation={toolInvocation} addToolResult={addToolResult} />
+      <ToolInvocationDisplay toolInvocation={toolInvocation} addToolResult={addToolResult} />
     </>
   );
 };

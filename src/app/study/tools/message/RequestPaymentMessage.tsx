@@ -16,7 +16,7 @@ type ProductForPayment = ExtractServerActionData<typeof getProductsForPayment>[n
 
 export const RequestPaymentMessage: FC<{
   toolInvocation: ToolInvocation;
-  addToolResult: ({
+  addToolResult?: ({
     toolCallId,
     result,
   }: {

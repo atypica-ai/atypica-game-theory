@@ -9,7 +9,7 @@ import { useStudyContext } from "../../hooks/StudyContext";
 
 export const RequestInteractionMessage: FC<{
   toolInvocation: ToolInvocation;
-  addToolResult: ({
+  addToolResult?: ({
     toolCallId,
     result,
   }: {
@@ -36,7 +36,7 @@ export const RequestInteractionMessage: FC<{
 
   const confirmAnswer = useCallback(
     (pendingAnswer: string[]) => {
-      if (toolInvocation.state !== "result") {
+      if (toolInvocation.state !== "result" && addToolResult) {
         addToolResult({
           toolCallId: toolInvocation.toolCallId,
           result:

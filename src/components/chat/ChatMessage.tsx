@@ -1,68 +1,12 @@
 "use client";
 import { Markdown } from "@/components/markdown";
 import { cn } from "@/lib/utils";
-import { ToolName } from "@/tools";
-import {
-  DYPostCommentsResultMessage,
-  DYSearchResultMessage,
-  DYUserPostsResultMessage,
-} from "@/tools/dy/ToolMessage";
-import { ReasoningThinkingResultMessage } from "@/tools/experts/ToolMessage";
-import {
-  SaveAnalystToolResultMessage,
-  SaveInterviewConclusionMessage,
-} from "@/tools/system/ToolMessage";
-import { ThanksMessage } from "@/tools/user/ToolMessage";
-import {
-  XHSNoteCommentsResultMessage,
-  XHSSearchResultMessage,
-  XHSUserNotesResultMessage,
-} from "@/tools/xhs/ToolMessage";
-import { Message as MessageType, ToolInvocation } from "ai";
+import { Message as MessageType } from "ai";
 import { motion } from "framer-motion";
 import { BotIcon, CpuIcon, UserIcon } from "lucide-react";
-import { PropsWithChildren, ReactNode } from "react";
+import React, { PropsWithChildren, ReactNode } from "react";
+import { ToolInvocationDisplay } from "./ToolInvocationDisplay";
 import { ToolInvocationMessage } from "./ToolInvocationMessage";
-
-const MessageStep = ({ toolInvocation }: { toolInvocation: ToolInvocation }) => {
-  const SpecialToolDisplay = ({ toolInvocation }: { toolInvocation: ToolInvocation }) => {
-    switch (toolInvocation.toolName) {
-      case ToolName.saveInterviewConclusion:
-        return <SaveInterviewConclusionMessage toolInvocation={toolInvocation} />;
-      case ToolName.thanks:
-        return <ThanksMessage toolInvocation={toolInvocation} />;
-    }
-    if (toolInvocation.state !== "result") {
-      return null;
-    }
-    switch (toolInvocation.toolName) {
-      case ToolName.xhsSearch:
-        return <XHSSearchResultMessage toolInvocation={toolInvocation} />;
-      case ToolName.xhsUserNotes:
-        return <XHSUserNotesResultMessage toolInvocation={toolInvocation} />;
-      case ToolName.xhsNoteComments:
-        return <XHSNoteCommentsResultMessage toolInvocation={toolInvocation} />;
-      case ToolName.dySearch:
-        return <DYSearchResultMessage toolInvocation={toolInvocation} />;
-      case ToolName.dyUserPosts:
-        return <DYUserPostsResultMessage toolInvocation={toolInvocation} />;
-      case ToolName.dyPostComments:
-        return <DYPostCommentsResultMessage toolInvocation={toolInvocation} />;
-      case ToolName.reasoningThinking:
-        return <ReasoningThinkingResultMessage toolInvocation={toolInvocation} />;
-      case ToolName.saveAnalyst:
-        return <SaveAnalystToolResultMessage toolInvocation={toolInvocation} />;
-      default:
-        return null;
-    }
-  };
-  return (
-    <>
-      <ToolInvocationMessage toolInvocation={toolInvocation} />
-      <SpecialToolDisplay toolInvocation={toolInvocation} />
-    </>
-  );
-};
 
 const PlainText = ({ children }: PropsWithChildren) => {
   return children ? (
@@ -119,7 +63,13 @@ export const ChatMessage = (message: {
               case "source":
                 return <PlainText key={i}>{JSON.stringify(part.source)}</PlainText>;
               case "tool-invocation":
-                return <MessageStep key={i} toolInvocation={part.toolInvocation} />;
+                return (
+                  <React.Fragment key={i}>
+                    <ToolInvocationMessage toolInvocation={part.toolInvocation} />
+                    <ToolInvocationDisplay toolInvocation={part.toolInvocation} />
+                  </React.Fragment>
+                );
+
               default:
                 return null;
             }
