@@ -1,16 +1,20 @@
-import { GenerateReportResultMessage } from "@/app/study/tools/message/GenerateReportResultMessage";
-import { RequestInteractionMessage } from "@/app/study/tools/message/RequestInteractionMessage";
-import { RequestPaymentMessage } from "@/app/study/tools/message/RequestPaymentMessage";
-import { ScoutTaskResultMessage } from "@/app/study/tools/message/ScoutTaskResultMessage";
 import { ToolName } from "@/tools";
 import {
   DYPostCommentsResultMessage,
   DYSearchResultMessage,
   DYUserPostsResultMessage,
 } from "@/tools/dy/ToolMessage";
-import { ReasoningThinkingResultMessage } from "@/tools/experts/ToolMessage";
+import {
+  GenerateReportResultMessage,
+  ReasoningThinkingResultMessage,
+  ScoutTaskResultMessage,
+} from "@/tools/experts/ToolMessage";
 import { SaveAnalystToolResultMessage } from "@/tools/system/ToolMessage";
-import { ThanksMessage } from "@/tools/user/ToolMessage";
+import {
+  RequestInteractionMessage,
+  RequestPaymentMessage,
+  ThanksMessage,
+} from "@/tools/user/ToolMessage";
 import { PlainTextToolResult } from "@/tools/utils";
 import {
   XHSNoteCommentsResultMessage,
