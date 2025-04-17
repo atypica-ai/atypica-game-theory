@@ -7,11 +7,11 @@ import {
   reportHTMLPrologue,
   reportHTMLSystem,
 } from "@/prompt";
+import { StatReporter } from "@/tools";
 import { PlainTextToolResult } from "@/tools/utils";
 import { Analyst, AnalystReport } from "@prisma/client";
 import { FinishReason, Message, streamText, tool } from "ai";
 import { z } from "zod";
-import { StatReporter } from "..";
 
 export interface GenerateReportResult extends PlainTextToolResult {
   reportToken?: string;

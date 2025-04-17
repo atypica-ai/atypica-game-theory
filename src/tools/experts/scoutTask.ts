@@ -9,15 +9,24 @@ import {
 import { prisma } from "@/lib/prisma";
 import { generateToken } from "@/lib/utils";
 import { scoutSystemVerbose } from "@/prompt";
+import {
+  dyPostCommentsTool,
+  dySearchTool,
+  dyUserPostsTool,
+  reasoningThinkingTool,
+  savePersonaTool,
+  StatReporter,
+  tiktokPostCommentsTool,
+  tiktokSearchTool,
+  tiktokUserPostsTool,
+  ToolName,
+  xhsNoteCommentsTool,
+  xhsSearchTool,
+  xhsUserNotesTool,
+} from "@/tools";
 import { PlainTextToolResult } from "@/tools/utils";
 import { convertToCoreMessages, generateId, Message, streamText, TextStreamPart, tool } from "ai";
 import { z } from "zod";
-import { dyPostCommentsTool, dySearchTool, dyUserPostsTool, StatReporter, ToolName } from "..";
-import { savePersonaTool } from "../system/savePersona";
-import { xhsNoteCommentsTool } from "../xhs/noteComments";
-import { xhsSearchTool } from "../xhs/search";
-import { xhsUserNotesTool } from "../xhs/userNotes";
-import { reasoningThinkingTool } from "./reasoning";
 
 const debouncePersistentMessage = (() => {
   let timeout: NodeJS.Timeout | null = null;
@@ -187,6 +196,9 @@ async function runScoutTaskChatStream({
     [ToolName.dySearch]: dySearchTool,
     [ToolName.dyPostComments]: dyPostCommentsTool,
     [ToolName.dyUserPosts]: dyUserPostsTool,
+    [ToolName.tiktokSearch]: tiktokSearchTool,
+    [ToolName.tiktokPostComments]: tiktokPostCommentsTool,
+    [ToolName.tiktokUserPosts]: tiktokUserPostsTool,
     [ToolName.savePersona]: savePersonaTool({ scoutUserChatId, statReport }),
   };
 

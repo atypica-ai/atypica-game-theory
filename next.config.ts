@@ -9,8 +9,9 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "**.xhscdn.com" },
       { protocol: "http", hostname: "**.xhscdn.com" },
       { protocol: "https", hostname: "**.douyinpic.com" },
-      { protocol: "https", hostname: "api.hippyghosts.io" },
-      { protocol: "https", hostname: "*.qlogo.cn" },
+      { protocol: "https", hostname: "**.tiktokcdn*.com" },
+      { protocol: "https", hostname: "**.hippyghosts.io" },
+      { protocol: "https", hostname: "**.qlogo.cn" },
     ],
   },
   experimental: {

@@ -18,8 +18,8 @@ export const DYSearchResultMessage: FC<{
         "bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800",
       )}
     >
-      {/* 只挑选 5 条展示 */}
-      {(result.posts ?? []).slice(0, 5).map((post) => (
+      {/* 只挑选 10 条展示 */}
+      {(result.posts ?? []).slice(0, 10).map((post) => (
         <div key={post.id} className="flex flex-col items-center w-[120px]">
           <div className="relative w-[120px] h-[120px] rounded-lg overflow-hidden">
             <Image
@@ -30,7 +30,7 @@ export const DYSearchResultMessage: FC<{
               className="object-cover"
             />
           </div>
-          <div className="p-1">
+          <div className="p-1 w-full">
             <div className="flex items-center gap-1 mb-1">
               <div className="relative w-4 h-4">
                 <Image
@@ -63,8 +63,8 @@ export const DYUserPostsResultMessage: FC<{
         "bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800",
       )}
     >
-      {/* 只挑选 5 条展示 */}
-      {(result.posts ?? []).slice(0, 5).map((post) => (
+      {/* 只挑选 10 条展示 */}
+      {(result.posts ?? []).slice(0, 10).map((post) => (
         <div key={post.id} className="flex flex-col items-center w-[120px]">
           <div className="relative w-[120px] h-[120px] rounded-lg overflow-hidden">
             <Image
@@ -75,7 +75,7 @@ export const DYUserPostsResultMessage: FC<{
               className="object-cover"
             />
           </div>
-          <div className="p-1">
+          <div className="p-1 w-full">
             <div className="flex items-center gap-1 mb-1">
               <div className="relative w-4 h-4">
                 <Image

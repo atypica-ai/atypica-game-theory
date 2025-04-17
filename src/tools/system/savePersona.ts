@@ -1,8 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { fixMalformedUnicodeString } from "@/lib/utils";
+import { StatReporter } from "@/tools";
 import { tool } from "ai";
 import { z } from "zod";
-import { StatReporter } from "..";
 import { PlainTextToolResult } from "../utils";
 
 export interface SavePersonaToolResult extends PlainTextToolResult {

@@ -3,13 +3,11 @@ import { convertStepsToAIMessage } from "@/lib/messageUtils";
 import { prisma } from "@/lib/prisma";
 import { generateToken } from "@/lib/utils";
 import { interviewerPrologue, interviewerSystem, personaAgentSystem } from "@/prompt";
+import { saveInterviewConclusionTool, StatReporter, ToolName, xhsSearchTool } from "@/tools/";
 import { PlainTextToolResult } from "@/tools/utils";
 import { InputJsonValue } from "@prisma/client/runtime/library";
 import { generateId, Message, streamText, tool } from "ai";
 import { z } from "zod";
-import { StatReporter, ToolName } from "..";
-import { saveInterviewConclusionTool } from "../system/saveInterviewConclusion";
-import { xhsSearchTool } from "../xhs/search";
 import { reasoningThinkingTool } from "./reasoning";
 
 export interface InterviewChatResult extends PlainTextToolResult {

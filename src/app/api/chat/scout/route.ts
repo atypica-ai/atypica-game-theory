@@ -13,6 +13,9 @@ import {
   dyUserPostsTool,
   reasoningThinkingTool,
   savePersonaTool,
+  tiktokPostCommentsTool,
+  tiktokSearchTool,
+  tiktokUserPostsTool,
   ToolName,
   xhsNoteCommentsTool,
   xhsSearchTool,
@@ -63,6 +66,9 @@ export async function POST(req: Request) {
     [ToolName.dySearch]: dySearchTool,
     [ToolName.dyPostComments]: dyPostCommentsTool,
     [ToolName.dyUserPosts]: dyUserPostsTool,
+    [ToolName.tiktokSearch]: tiktokSearchTool,
+    [ToolName.tiktokPostComments]: tiktokPostCommentsTool,
+    [ToolName.tiktokUserPosts]: tiktokUserPostsTool,
     [ToolName.savePersona]: savePersonaTool({ scoutUserChatId }),
   };
   const response = streamText({

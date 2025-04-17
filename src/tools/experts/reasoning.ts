@@ -1,9 +1,9 @@
 import { openai } from "@/lib/llm";
 import { fixMalformedUnicodeString } from "@/lib/utils";
+import { StatReporter } from "@/tools";
 import { PlainTextToolResult } from "@/tools/utils";
 import { streamText, tool } from "ai";
 import { z } from "zod";
-import { StatReporter } from "..";
 
 export interface ReasoningThinkingResult extends PlainTextToolResult {
   reasoning: string;
