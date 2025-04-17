@@ -1,15 +1,12 @@
 import { PlainTextToolResult } from "@/tools/utils";
 import { tool } from "ai";
 import { z } from "zod";
+import { SocialUser } from "../types";
 
 interface XHSComment {
   id: string;
   content: string;
-  user: {
-    userid: string;
-    nickname: string;
-    images: string;
-  };
+  user: SocialUser;
   like_count: number;
   sub_comment_count: number;
 }
@@ -20,7 +17,8 @@ export interface XHSNoteCommentsResult extends PlainTextToolResult {
 
 function parseXHSNoteComments(data: {
   data: {
-    comments: XHSComment[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    comments: any[];
   };
 }): XHSNoteCommentsResult {
   // 只取前十条
@@ -32,7 +30,7 @@ function parseXHSNoteComments(data: {
       user: {
         userid: comment.user?.userid,
         nickname: comment.user?.nickname,
-        images: comment.user?.images,
+        image: comment.user?.images,
       },
       like_count: comment.like_count,
       sub_comment_count: comment.sub_comment_count,

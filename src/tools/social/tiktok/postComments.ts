@@ -1,16 +1,14 @@
 import { PlainTextToolResult } from "@/tools/utils";
 import { tool } from "ai";
 import { z } from "zod";
+import { SocialUser } from "../types";
 import { tryFindValidImage } from "./utils";
 
 interface TikTokComment {
   id: string;
   content: string;
-  user: {
-    userid: string;
+  user: SocialUser & {
     secret_userid: string;
-    nickname: string;
-    image: string;
   };
   like_count: number;
   sub_comment_count: number;

@@ -1,6 +1,7 @@
 import { PlainTextToolResult } from "@/tools/utils";
 import { tool } from "ai";
 import { z } from "zod";
+import { SocialUser } from "../types";
 import { tryFindValidImage } from "./utils";
 
 interface DYUserPost {
@@ -9,11 +10,8 @@ interface DYUserPost {
   liked_count: number;
   collected_count: number;
   comments_count: number;
-  user: {
-    nickname: string;
-    userid: string;
+  user: SocialUser & {
     secret_userid: string;
-    images: string;
   };
   images_list: {
     url: string;
@@ -43,7 +41,7 @@ function parseDYUserPosts(result: {
         nickname: aweme_info.author?.nickname,
         userid: aweme_info.author?.uid,
         secret_userid: aweme_info.author?.sec_uid,
-        images: tryFindValidImage(aweme_info.author?.avatar_medium?.url_list),
+        image: tryFindValidImage(aweme_info.author?.avatar_medium?.url_list),
       },
       images_list: [{ url: tryFindValidImage(aweme_info.video?.cover?.url_list) }],
     });

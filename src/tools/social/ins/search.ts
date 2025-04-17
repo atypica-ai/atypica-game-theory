@@ -2,6 +2,7 @@ import { fixMalformedUnicodeString } from "@/lib/utils";
 import { PlainTextToolResult } from "@/tools/utils";
 import { tool } from "ai";
 import { z } from "zod";
+import { SocialUser } from "../types";
 
 interface InsPost {
   id: string;
@@ -9,11 +10,7 @@ interface InsPost {
   desc: string;
   liked_count: number;
   comments_count: number;
-  user: {
-    nickname: string;
-    userid: string;
-    image: string;
-  };
+  user: SocialUser;
   images_list: {
     url: string;
   }[];

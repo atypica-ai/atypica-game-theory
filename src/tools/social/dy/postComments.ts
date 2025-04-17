@@ -1,16 +1,14 @@
 import { PlainTextToolResult } from "@/tools/utils";
 import { tool } from "ai";
 import { z } from "zod";
+import { SocialUser } from "../types";
 import { tryFindValidImage } from "./utils";
 
 interface DYComment {
   id: string;
   content: string;
-  user: {
-    userid: string;
+  user: SocialUser & {
     secret_userid: string;
-    nickname: string;
-    images: string;
   };
   like_count: number;
   sub_comment_count: number;
@@ -34,7 +32,7 @@ function parseXHSNoteComments(result: {
         userid: comment.user?.uid,
         secret_userid: comment.user?.sec_uid,
         nickname: comment.user?.nickname,
-        images: tryFindValidImage(comment.user?.avatar_thumb?.url_list),
+        image: tryFindValidImage(comment.user?.avatar_thumb?.url_list),
       },
       like_count: comment.digg_count,
       sub_comment_count: comment.reply_comment_total,

@@ -34,7 +34,7 @@ export const XHSSearchResultMessage: FC<{
             <div className="flex items-center gap-1 mb-1">
               <div className="relative w-4 h-4">
                 <Image
-                  src={note.user.images}
+                  src={note.user.image}
                   alt="User Avatar"
                   sizes="100%"
                   fill
@@ -82,7 +82,7 @@ export const XHSUserNotesResultMessage: FC<{
             <div className="flex items-center gap-1 mb-1">
               <div className="relative w-4 h-4">
                 <Image
-                  src={note.user.images}
+                  src={note.user.image}
                   alt="User Avatar"
                   sizes="100%"
                   fill
@@ -112,7 +112,7 @@ export const XHSNoteCommentsResultMessage: FC<{
         <div key={comment.id} className="flex items-start justify-start gap-3 mb-2">
           <div className="relative mt-2 w-6 h-6 rounded-full overflow-hidden">
             <Image
-              src={comment.user.images}
+              src={comment.user.image}
               alt="User Avatar"
               className="object-cover"
               sizes="100%"

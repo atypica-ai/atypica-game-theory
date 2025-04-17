@@ -1,6 +1,7 @@
 import { PlainTextToolResult } from "@/tools/utils";
 import { tool } from "ai";
 import { z } from "zod";
+import { SocialUser } from "../types";
 
 interface XHSUserNote {
   id: string;
@@ -10,11 +11,7 @@ interface XHSUserNote {
   liked_count: number;
   collected_count: number;
   comments_count: number;
-  user: {
-    nickname: string;
-    userid: string;
-    images: string;
-  };
+  user: SocialUser;
   images_list: {
     url: string;
     width: number;
@@ -48,10 +45,10 @@ function parseXHSUserNotes(data: {
       user: {
         nickname: note.user?.nickname,
         userid: note.user?.userid,
-        images: note.user?.images,
+        image: note.user?.images,
       },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      images_list: note.images_list?.map((image: any) => ({
+      images_list: note.images_list?.slice(0, 1).map((image: any) => ({
         url: image.url,
         width: image.width,
         height: image.height,

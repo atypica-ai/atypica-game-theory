@@ -1,15 +1,12 @@
 import { PlainTextToolResult } from "@/tools/utils";
 import { tool } from "ai";
 import { z } from "zod";
+import { SocialUser } from "../types";
 
 interface InsComment {
   id: string;
   content: string;
-  user: {
-    userid: string;
-    nickname: string;
-    image: string;
-  };
+  user: SocialUser;
   like_count: number;
   sub_comment_count: number;
 }

@@ -1,6 +1,7 @@
 import { PlainTextToolResult } from "@/tools/utils";
 import { tool } from "ai";
 import { z } from "zod";
+import { SocialUser } from "../types";
 import { tryFindValidImage } from "./utils";
 
 interface TikTokUserPost {
@@ -9,11 +10,8 @@ interface TikTokUserPost {
   liked_count: number;
   collected_count: number;
   comments_count: number;
-  user: {
-    nickname: string;
-    userid: string;
+  user: SocialUser & {
     secret_userid: string;
-    image: string;
   };
   images_list: {
     url: string;

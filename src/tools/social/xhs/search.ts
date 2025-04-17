@@ -2,6 +2,7 @@ import { fixMalformedUnicodeString } from "@/lib/utils";
 import { PlainTextToolResult } from "@/tools/utils";
 import { tool } from "ai";
 import { z } from "zod";
+import { SocialUser } from "../types";
 
 interface XHSNote {
   id: string;
@@ -11,11 +12,7 @@ interface XHSNote {
   liked_count: number;
   collected_count: number;
   comments_count: number;
-  user: {
-    nickname: string;
-    userid: string;
-    images: string;
-  };
+  user: SocialUser;
   images_list: {
     url: string;
     width: number;
@@ -33,7 +30,8 @@ function parseXHSSearchResult(data: {
   data: {
     items: {
       model_type: string;
-      note: XHSNote;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      note: any;
     }[];
   };
 }): XHSSearchResult {
@@ -54,10 +52,10 @@ function parseXHSSearchResult(data: {
       user: {
         nickname: note.user?.nickname,
         userid: note.user?.userid,
-        images: note.user?.images,
+        image: note.user?.images,
       },
-      // 只保留一个图就行了
-      images_list: note.images_list?.slice(0, 1).map((image) => ({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      images_list: note.images_list?.slice(0, 1).map((image: any) => ({
         url: image.url,
         width: image.width,
         height: image.height,
