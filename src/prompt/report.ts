@@ -91,6 +91,8 @@ export const reportCoverSystem = () => `
 - 使用相对坐标，避免固定像素值
 - 确保图形在缩放时完整且不被裁剪
 - 优化SVG代码，移除不必要属性
+
+请直接生成完整SVG代码，无需解释设计思路。
 `;
 
 export const reportCoverPrologue = (analyst: Analyst, instruction: string) => `
