@@ -208,6 +208,7 @@ async function runScoutTaskChatStream({
     [ToolName.savePersona]: savePersonaTool({ scoutUserChatId, statReport }),
   };
 
+  // let round = 0;
   while (true) {
     const messagesInDB = await prisma.chatMessage.findMany({
       where: { userChatId: scoutUserChatId },
@@ -225,10 +226,16 @@ async function runScoutTaskChatStream({
         parts: [],
       };
       const response = streamText({
-        // model: openai("claude-3-7-sonnet-beta"),
         model: openai("gpt-4o", {
           parallelToolCalls: true,
         }),
+        // round < 2
+        //   ? openai("claude-3-7-sonnet-beta")
+        //   : round < 4
+        //     ? openai("gpt-4o", {
+        //         parallelToolCalls: true,
+        //       })
+        //     : openai("deepseek-v3"),
         providerOptions: {
           openai: { stream_options: { include_usage: true } },
         },
@@ -308,8 +315,9 @@ async function runScoutTaskChatStream({
       await persistentAIMessageToDB(scoutUserChatId, {
         id: generateId(),
         role: "user",
-        content: `目前总结了${personasResult.length}个personas，还不够5个，请继续`,
+        content: `目前总结了${personasResult.length}个personas，还不够5个，请批量保存人设后再考虑是否继续`,
       });
+      // round++;
       continue;
     } else {
       break;

@@ -11,6 +11,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { StreamSteps } from "./StreamSteps";
 
 const ScoutTaskChat = ({ toolInvocation }: { toolInvocation: ToolInvocation }) => {
+  const { studyUserChat } = useStudyContext();
   const scoutUserChatToken = toolInvocation.args.scoutUserChatToken as string;
   const [messages, setMessages] = useState<Message[]>([]);
   const [backgroundToken, setBackgroundToken] = useState<string | null>(null);
@@ -82,6 +83,7 @@ const ScoutTaskChat = ({ toolInvocation }: { toolInvocation: ToolInvocation }) =
           key={`message-${message.id}`}
           avatar={{
             assistant: <HippyGhostAvatar seed={scoutUserChatToken} />,
+            user: <HippyGhostAvatar seed={studyUserChat.token} />,
           }}
           role={message.role}
           content={message.content}

@@ -9,7 +9,9 @@ export const SaveAnalystToolResultMessage: FC<{
   };
 }> = ({
   toolInvocation: {
-    result: { analystId },
+    result: {
+      // analystId
+    },
   },
 }) => {
   return (
