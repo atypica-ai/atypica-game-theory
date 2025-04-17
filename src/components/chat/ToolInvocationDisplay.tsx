@@ -10,6 +10,11 @@ import {
   DYUserPostsResultMessage,
 } from "@/tools/social/dy/ToolMessage";
 import {
+  InsPostCommentsResultMessage,
+  InsSearchResultMessage,
+  InsUserPostsResultMessage,
+} from "@/tools/social/ins/ToolMessage";
+import {
   TikTokPostCommentsResultMessage,
   TikTokSearchResultMessage,
   TikTokUserPostsResultMessage,
@@ -90,6 +95,12 @@ export const ToolInvocationDisplay = ({
       return <TikTokUserPostsResultMessage toolInvocation={toolInvocation} />;
     case ToolName.tiktokPostComments:
       return <TikTokPostCommentsResultMessage toolInvocation={toolInvocation} />;
+    case ToolName.insSearch:
+      return <InsSearchResultMessage toolInvocation={toolInvocation} />;
+    case ToolName.insUserPosts:
+      return <InsUserPostsResultMessage toolInvocation={toolInvocation} />;
+    case ToolName.insPostComments:
+      return <InsPostCommentsResultMessage toolInvocation={toolInvocation} />;
 
     default:
       return null;

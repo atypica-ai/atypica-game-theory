@@ -10,7 +10,7 @@ interface TikTokComment {
     userid: string;
     secret_userid: string;
     nickname: string;
-    images: string;
+    image: string;
   };
   like_count: number;
   sub_comment_count: number;
@@ -34,7 +34,7 @@ function parseXHSNoteComments(result: {
         userid: comment.user.uid,
         secret_userid: comment.user.sec_uid,
         nickname: comment.user.nickname,
-        images: tryFindValidImage(comment.user.avatar_thumb.url_list),
+        image: tryFindValidImage(comment.user.avatar_thumb.url_list),
       },
       like_count: comment.digg_count,
       sub_comment_count: comment.reply_comment_total,
@@ -67,9 +67,9 @@ async function tiktokPostComments({ postid }: { postid: string }) {
         { headers },
       );
       const res = await response.json();
-      console.log("Response text:", JSON.stringify(res).slice(0, 100));
+      console.log("tiktokPostComments response:", JSON.stringify(res).slice(0, 100));
       if (res.code === 200) {
-        const result = parseXHSNoteComments(res.result);
+        const result = parseXHSNoteComments(res.data);
         return result;
       } else {
         console.log("Failed to fetch TikTok post comments, retrying...", i + 1);

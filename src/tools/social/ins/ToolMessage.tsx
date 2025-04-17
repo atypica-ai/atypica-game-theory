@@ -2,13 +2,13 @@ import { cn } from "@/lib/utils";
 import { ToolInvocation } from "ai";
 import Image from "next/image";
 import { FC } from "react";
-import { TikTokPostCommentsResult } from "./postComments";
-import { TikTokSearchResult } from "./search";
-import { TikTokUserPostsResult } from "./userPosts";
+import { InsPostCommentsResult } from "./postComments";
+import { InsSearchResult } from "./search";
+import { InsUserPostsResult } from "./userPosts";
 
-export const TikTokSearchResultMessage: FC<{
+export const InsSearchResultMessage: FC<{
   toolInvocation: Omit<Extract<ToolInvocation, { state: "result" }>, "result"> & {
-    result: TikTokSearchResult;
+    result: InsSearchResult;
   };
 }> = ({ toolInvocation: { result } }) => {
   return (
@@ -51,9 +51,9 @@ export const TikTokSearchResultMessage: FC<{
   );
 };
 
-export const TikTokUserPostsResultMessage: FC<{
+export const InsUserPostsResultMessage: FC<{
   toolInvocation: Omit<Extract<ToolInvocation, { state: "result" }>, "result"> & {
-    result: TikTokUserPostsResult;
+    result: InsUserPostsResult;
   };
 }> = ({ toolInvocation: { result } }) => {
   return (
@@ -96,9 +96,9 @@ export const TikTokUserPostsResultMessage: FC<{
   );
 };
 
-export const TikTokPostCommentsResultMessage: FC<{
+export const InsPostCommentsResultMessage: FC<{
   toolInvocation: Omit<Extract<ToolInvocation, { state: "result" }>, "result"> & {
-    result: TikTokPostCommentsResult;
+    result: InsPostCommentsResult;
   };
 }> = ({ toolInvocation: { result } }) => {
   return (

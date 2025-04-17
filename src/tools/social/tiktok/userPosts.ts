@@ -13,12 +13,10 @@ interface TikTokUserPost {
     nickname: string;
     userid: string;
     secret_userid: string;
-    images: string;
+    image: string;
   };
   images_list: {
     url: string;
-    width: number;
-    height: number;
   }[];
 }
 
@@ -45,18 +43,11 @@ function parseTikTokUserPosts(result: {
         nickname: aweme_info.author.nickname,
         userid: aweme_info.author.uid,
         secret_userid: aweme_info.author.sec_uid,
-        images: tryFindValidImage(aweme_info.author.avatar_medium.url_list),
+        image: tryFindValidImage(aweme_info.author.avatar_medium.url_list),
       },
-      images_list: [
-        {
-          url: tryFindValidImage(aweme_info.video.cover.url_list),
-          width: aweme_info.video.cover.width,
-          height: aweme_info.video.cover.height,
-        },
-      ],
+      images_list: [{ url: tryFindValidImage(aweme_info.video.cover.url_list) }],
     });
   });
-  //
   const plainText = JSON.stringify(
     posts.map((post) => ({
       postid: post.id,
@@ -84,9 +75,9 @@ async function tiktokUserPosts({ secret_userid }: { secret_userid: string }) {
         { headers },
       );
       const res = await response.json();
-      console.log("Response text:", JSON.stringify(res).slice(0, 100));
+      console.log("tiktokUserPosts response:", JSON.stringify(res).slice(0, 100));
       if (res.code === 200) {
-        const result = parseTikTokUserPosts(res.result);
+        const result = parseTikTokUserPosts(res.data);
         return result;
       } else {
         console.log("Failed to fetch TikTok user posts, retrying...", i + 1);

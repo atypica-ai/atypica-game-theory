@@ -7,6 +7,9 @@ import { scoutTaskChatTool } from "./experts/scoutTask";
 import { dyPostCommentsTool } from "./social/dy/postComments";
 import { dySearchTool } from "./social/dy/search";
 import { dyUserPostsTool } from "./social/dy/userPosts";
+import { insPostCommentsTool } from "./social/ins/postComments";
+import { insSearchTool } from "./social/ins/search";
+import { insUserPostsTool } from "./social/ins/userPosts";
 import { tiktokPostCommentsTool } from "./social/tiktok/postComments";
 import { tiktokSearchTool } from "./social/tiktok/search";
 import { tiktokUserPostsTool } from "./social/tiktok/userPosts";
@@ -44,6 +47,9 @@ export enum ToolName {
   tiktokSearch = "tiktokSearch",
   tiktokPostComments = "tiktokPostComments",
   tiktokUserPosts = "tiktokUserPosts",
+  insSearch = "insSearch",
+  insUserPosts = "insUserPosts",
+  insPostComments = "insPostComments",
 }
 
 export {
@@ -51,6 +57,9 @@ export {
   dySearchTool,
   dyUserPostsTool,
   generateReportTool,
+  insPostCommentsTool,
+  insSearchTool,
+  insUserPostsTool,
   interviewChatTool,
   reasoningThinkingTool,
   requestInteractionTool,
