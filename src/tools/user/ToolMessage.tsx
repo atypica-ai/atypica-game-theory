@@ -2,7 +2,7 @@ import { getProductsForPayment } from "@/app/payment/actions";
 import { ProductName } from "@/app/payment/constants";
 import { useStudyContext } from "@/app/study/hooks/StudyContext";
 import { Button } from "@/components/ui/button";
-import { checkStudyUserChatConsume } from "@/data/UserPoints";
+import { checkStudyUserChatConsume } from "@/data/UserTokens";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn } from "@/lib/utils";
 import { RequestInteractionResult } from "@/tools/user/interaction";

@@ -55,15 +55,15 @@ export async function signUp({
     data: { email, password: hashedPassword },
   });
   await prisma.$transaction([
-    prisma.userPointsLog.create({
+    prisma.userTokensLog.create({
       data: {
         userId: user.id,
         verb: "signup",
-        points: 300,
+        value: 2_000_000,
       },
     }),
-    prisma.userPoints.create({
-      data: { userId: user.id, balance: 300 }, // 注册赠送 300 点
+    prisma.userTokens.create({
+      data: { userId: user.id, balance: 2_000_000 }, // 注册赠送 2_000_000 tokens
     }),
   ]);
 

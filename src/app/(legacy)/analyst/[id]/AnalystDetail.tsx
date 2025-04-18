@@ -1,6 +1,6 @@
 "use client";
 import { fetchAnalystInterviews } from "@/app/(legacy)/interview/actions";
-import { PointAlertDialog } from "@/components/PointAlertDialog";
+import { TokenAlertDialog } from "@/components/TokenAlertDialog";
 import { Button } from "@/components/ui/button";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { Analyst } from "@prisma/client";
@@ -52,13 +52,13 @@ export function AnalystDetail({
     }
   }, [router]);
 
-  const pointsDialog = useMemo(() => {
+  const tokensDialog = useMemo(() => {
     const pendingCount = interviews.filter(
       (i) => !i.conclusion && !i.interviewUserChat?.backgroundToken,
     ).length;
     return (
-      <PointAlertDialog
-        points={pendingCount * 5}
+      <TokenAlertDialog
+        value={pendingCount * 5}
         onConfirm={async () => {
           const pending = interviews.filter(
             (i) => !i.conclusion && !i.interviewUserChat?.backgroundToken,
@@ -81,7 +81,7 @@ export function AnalystDetail({
         <Button variant="default" size="sm" disabled={pendingCount === 0}>
           {t("interviewSection.startAllInterviews")} ({pendingCount})
         </Button>
-      </PointAlertDialog>
+      </TokenAlertDialog>
     );
   }, [analyst, interviews, router, t]);
 
@@ -109,18 +109,18 @@ export function AnalystDetail({
                     </Link>
                   </Button>
 
-                  <PointAlertDialog points={100} onConfirm={generateReport}>
+                  <TokenAlertDialog value={100} onConfirm={generateReport}>
                     <Button variant="outline" size="sm">
                       <UndoIcon /> {t("topicCard.regenerateReport")}
                     </Button>
-                  </PointAlertDialog>
+                  </TokenAlertDialog>
                 </>
               ) : (
-                <PointAlertDialog points={100} onConfirm={generateReport}>
+                <TokenAlertDialog value={100} onConfirm={generateReport}>
                   <Button variant="default" size="sm">
                     {t("topicCard.generateReport")}
                   </Button>
-                </PointAlertDialog>
+                </TokenAlertDialog>
               )}
             </div>
           </div>
@@ -140,7 +140,7 @@ export function AnalystDetail({
         <h2 className="text-lg font-medium m-0">{t("interviewSection.title")}</h2>
         <div className="ml-auto" />
         <div className="flex items-center justify-end flex-wrap gap-4">
-          {pointsDialog}
+          {tokensDialog}
           <Button variant="outline" size="sm" onClick={addPersona}>
             <PlusIcon /> {t("interviewSection.addInterviewSubject")}
           </Button>

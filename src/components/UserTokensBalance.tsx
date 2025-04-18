@@ -1,13 +1,13 @@
 "use client";
-import { getUserPointsBalance } from "@/data/UserPoints";
+import { getUserTokensBalance } from "@/data/UserTokens";
 import { cn } from "@/lib/utils";
 import { CoinsIcon, LoaderIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 
-export default function UserPointsBalance() {
-  const t = useTranslations("Components.UserPointsBalance");
+export default function UserTokensBalance() {
+  const t = useTranslations("Components.UserTokensBalance");
 
   const { status, data: session } = useSession();
   const [balance, setBalance] = useState<number | null>(null);
@@ -16,7 +16,7 @@ export default function UserPointsBalance() {
     if (!session) {
       return;
     }
-    const result = await getUserPointsBalance();
+    const result = await getUserTokensBalance();
     if (result.success) {
       setBalance(result.data);
     }
@@ -40,7 +40,7 @@ export default function UserPointsBalance() {
   return status === "authenticated" ? (
     <div
       className="relative flex items-center gap-1.5 h-7 py-1.5 rounded-full border border-border min-w-[60px] justify-center group"
-      title={balance !== null ? t("balance", { count: Math.floor(balance / 100) }) : ""}
+      title={balance !== null ? t("balance", { count: Math.floor(balance) }) : ""}
     >
       <CoinsIcon className="h-3.5 w-3.5 text-amber-500" />
       {balance === null ? (

@@ -143,37 +143,31 @@ export async function handlePaymentSuccess({ chargeId }: { chargeId: string }) {
     },
   });
   const userId = paymentRecord.userId;
-  await prisma.userPoints.upsert({
+  await prisma.userTokens.upsert({
     where: { userId },
     create: { userId, balance: 0 },
     update: {},
   });
   for (const paymentLine of paymentRecord.paymentLines) {
     if (
-      paymentLine.productName === ProductName.POINTS100_A ||
-      paymentLine.productName === ProductName.POINTS100_B ||
-      paymentLine.productName === ProductName.POINTS100_C ||
-      paymentLine.productName === ProductName.POINTS100_D ||
-      paymentLine.productName === ProductName.POINTS100_A_GLOBAL ||
-      paymentLine.productName === ProductName.POINTS100_B_GLOBAL ||
-      paymentLine.productName === ProductName.POINTS100_C_GLOBAL ||
-      paymentLine.productName === ProductName.POINTS100_D_GLOBAL
+      paymentLine.productName === ProductName.TOKENS1M ||
+      paymentLine.productName === ProductName.TOKENS1M_GLOBAL
     ) {
       await prisma.$transaction([
-        prisma.userPointsLog.create({
+        prisma.userTokensLog.create({
           data: {
             userId: userId,
             verb: "recharge",
             resourceType: "PaymentRecord",
             resourceId: paymentRecord.id,
-            points: 100,
+            value: 1_000_000,
           },
         }),
-        prisma.userPoints.update({
+        prisma.userTokens.update({
           where: { userId },
           data: {
             balance: {
-              increment: 100,
+              increment: 1_000_000,
             },
           },
         }),
@@ -192,10 +186,11 @@ export async function getProductsForPayment(): Promise<
     return {
       success: true,
       data: [
-        { name: ProductName.POINTS100_A, desc: "挂耳咖啡", price: 7.5, currency: "CNY" },
-        { name: ProductName.POINTS100_B, desc: "Manner咖啡", price: 15, currency: "CNY" },
-        { name: ProductName.POINTS100_C, desc: "星巴克咖啡", price: 30, currency: "CNY" },
-        { name: ProductName.POINTS100_D, desc: "小蓝瓶咖啡", price: 45, currency: "CNY" },
+        { name: ProductName.TOKENS1M, desc: "1,000,000 Token", price: 100, currency: "CNY" },
+        // { name: ProductName.POINTS100_A, desc: "挂耳咖啡", price: 7.5, currency: "CNY" },
+        // { name: ProductName.POINTS100_B, desc: "Manner咖啡", price: 15, currency: "CNY" },
+        // { name: ProductName.POINTS100_C, desc: "星巴克咖啡", price: 30, currency: "CNY" },
+        // { name: ProductName.POINTS100_D, desc: "小蓝瓶咖啡", price: 45, currency: "CNY" },
       ],
     };
   } else {
@@ -203,29 +198,15 @@ export async function getProductsForPayment(): Promise<
       success: true,
       data: [
         {
-          name: ProductName.POINTS100_A_GLOBAL,
-          desc: "A cup of drip coffee",
-          price: 1,
+          name: ProductName.TOKENS1M_GLOBAL,
+          desc: "1,000,000 tokens",
+          price: 14,
           currency: "USD",
         },
-        {
-          name: ProductName.POINTS100_B_GLOBAL,
-          desc: "A Manner Coffee",
-          price: 2,
-          currency: "USD",
-        },
-        {
-          name: ProductName.POINTS100_C_GLOBAL,
-          desc: "A Starbucks Coffee",
-          price: 4,
-          currency: "USD",
-        },
-        {
-          name: ProductName.POINTS100_D_GLOBAL,
-          desc: "A Blue Bottle Coffee",
-          price: 6,
-          currency: "USD",
-        },
+        // {name: ProductName.POINTS100_A_GLOBAL, desc: "A cup of drip coffee", price: 1, currency: "USD" },
+        // {name: ProductName.POINTS100_B_GLOBAL, desc: "A Manner Coffee", price: 2, currency: "USD" },
+        // {name: ProductName.POINTS100_C_GLOBAL, desc: "A Starbucks Coffee", price: 4, currency: "USD" },
+        // {name: ProductName.POINTS100_D_GLOBAL, desc: "A Blue Bottle Coffee", price: 6, currency: "USD" },
       ],
     };
   }

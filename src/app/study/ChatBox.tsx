@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useScrollToBottom } from "@/components/use-scroll-to-bottom";
 import { clearStudyUserChatBackgroundToken } from "@/data/UserChat";
-import { checkStudyUserChatConsume } from "@/data/UserPoints";
+import { checkStudyUserChatConsume } from "@/data/UserTokens";
 import { cn } from "@/lib/utils";
 import { ToolName } from "@/tools";
 import { Message, useChat } from "@ai-sdk/react";

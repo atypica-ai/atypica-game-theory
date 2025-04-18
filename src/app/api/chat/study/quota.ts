@@ -9,7 +9,7 @@ export async function checkQuota({
   userId: number;
   cost: number;
 }) {
-  const log = await prisma.userPointsLog.findFirst({
+  const log = await prisma.userTokensLog.findFirst({
     where: {
       userId: userId,
       verb: "consume",
@@ -27,24 +27,24 @@ export async function checkQuota({
       id: userId,
     },
     include: {
-      points: true,
+      tokens: true,
     },
   });
 
-  const balance = user.points?.balance ?? 0;
+  const balance = user.tokens?.balance ?? 0;
 
   if (balance >= cost) {
     await prisma.$transaction([
-      prisma.userPointsLog.create({
+      prisma.userTokensLog.create({
         data: {
           userId: userId,
           verb: "consume",
           resourceType: "StudyUserChat",
           resourceId: studyUserChatId,
-          points: -cost,
+          value: -cost,
         },
       }),
-      prisma.userPoints.update({
+      prisma.userTokens.update({
         where: { userId },
         data: {
           balance: {

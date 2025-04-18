@@ -176,8 +176,8 @@
     }
   },
   "Components": {
-    "UserPointsBalance": {
-      "balance": "剩余{count}次研究"
+    "UserTokensBalance": {
+      "balance": "{count}个Token可用"
     },
     "ReportsListPanel": {
       "title": "本次研究的报告",
@@ -191,9 +191,9 @@
       "history": "历史对话",
       "enterprise": "了解企业版"
     },
-    "PointAlertDialog": {
+    "TokenAlertDialog": {
       "confirmOperation": "确认操作",
-      "pointConsumption": "此操作将消耗 {points} 点积分，是否继续？",
+      "tokenConsumption": "此操作将消耗 {value} 个 Token，是否继续？",
       "cancel": "取消",
       "confirm": "确认"
     },
@@ -252,7 +252,8 @@
       "evictionWarningMessage": "后台任务可能已停滞。建议取消并在输入框中输入\"继续\"重新启动。"
     },
     "RequestPaymentMessage": {
-      "outOfQuotaHint": "免费研究额度已经用完，不如请一杯咖啡再做一份研究？",
+      "outOfQuotaHintCoffee": "免费研究额度已经用完，不如请一杯咖啡再做一份研究？",
+      "outOfQuotaHint": "免费研究额度已经用完，您可以购买研究Token以继续。",
       "scanQrCode": "请扫描以下二维码完成支付",
       "paymentSuccess": "🎉 支付成功，atypica.AI 的研究即将开始！"
     },

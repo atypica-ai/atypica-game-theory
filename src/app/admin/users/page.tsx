@@ -18,7 +18,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { AdminPermission, PaginationInfo } from "../utils";
-import { addPointsToUser, fetchUsers, updateAdminStatus } from "./actions";
+import { addTokensToUser, fetchUsers, updateAdminStatus } from "./actions";
 
 type User = ExtractServerActionData<typeof fetchUsers>[number];
 
@@ -30,7 +30,7 @@ export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [error, setError] = useState("");
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [pointsToAdd, setPointsToAdd] = useState<number | null>(100);
+  const [tokensToAdd, setTokensToAdd] = useState<number | null>(1_000_000);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAdminDialogOpen, setIsAdminDialogOpen] = useState(false);
@@ -108,12 +108,12 @@ export default function UsersPage() {
     setSearchQuery(inputRef.current?.value ?? "");
   }, []);
 
-  const handleAddPoints = async () => {
-    if (!selectedUser || !pointsToAdd) return;
+  const handleAddTokens = async () => {
+    if (!selectedUser || !tokensToAdd) return;
     setIsSubmitting(true);
     setError("");
     try {
-      await addPointsToUser(selectedUser.id, pointsToAdd);
+      await addTokensToUser(selectedUser.id, tokensToAdd);
       setIsDialogOpen(false);
       fetchData(); // Refresh the list
     } catch (err) {
@@ -122,9 +122,9 @@ export default function UsersPage() {
     setIsSubmitting(false);
   };
 
-  const openPointsDialog = (user: User) => {
+  const openTokensDialog = (user: User) => {
     setSelectedUser(user);
-    setPointsToAdd(100);
+    setTokensToAdd(1_000_000);
     setIsDialogOpen(true);
   };
   const openAdminDialog = (user: User) => {
@@ -205,7 +205,7 @@ export default function UsersPage() {
                 Email
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                Points (100 points per study)
+                Tokens
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                 Created At
@@ -231,7 +231,7 @@ export default function UsersPage() {
                   <td className="whitespace-nowrap px-6 py-4 text-sm">{user.id}</td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm">{user.email}</td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {user.points?.balance ?? 0}
+                    {user.tokens?.balance ?? 0}
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm">
                     {new Date(user.createdAt).toLocaleDateString()}
@@ -245,8 +245,8 @@ export default function UsersPage() {
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm">
                     <div className="flex gap-2">
-                      <Button variant="outline" size="sm" onClick={() => openPointsDialog(user)}>
-                        Add Points
+                      <Button variant="outline" size="sm" onClick={() => openTokensDialog(user)}>
+                        Add Tokens
                       </Button>
                       {/* Only show manage admin button for non-admin users */}
                       {!user.adminUser && (
@@ -282,25 +282,25 @@ export default function UsersPage() {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add Points</DialogTitle>
-            <DialogDescription>Add bonus points to {selectedUser?.email}</DialogDescription>
+            <DialogTitle>Add Tokens</DialogTitle>
+            <DialogDescription>Add bonus tokens to {selectedUser?.email}</DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label className="text-right">Balance</Label>
-              <div className="col-span-3 text-sm">{selectedUser?.points?.balance ?? 0} points</div>
+              <div className="col-span-3 text-sm">{selectedUser?.tokens?.balance ?? 0} tokens</div>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="points" className="text-right">
-                Points
+              <Label htmlFor="admin-add-tokens-input" className="text-right">
+                Tokens
               </Label>
               <Input
-                id="points"
+                id="admin-add-tokens-input"
                 type="number"
                 min="1"
-                value={pointsToAdd ?? ""}
-                onChange={(e) => setPointsToAdd(e.target.value ? parseInt(e.target.value) : null)}
+                value={tokensToAdd ?? ""}
+                onChange={(e) => setTokensToAdd(e.target.value ? parseInt(e.target.value) : null)}
                 className="col-span-3"
               />
             </div>
@@ -311,10 +311,10 @@ export default function UsersPage() {
               Cancel
             </Button>
             <Button
-              onClick={handleAddPoints}
-              disabled={isSubmitting || !pointsToAdd || pointsToAdd <= 0}
+              onClick={handleAddTokens}
+              disabled={isSubmitting || !tokensToAdd || tokensToAdd <= 0}
             >
-              {isSubmitting ? "Adding..." : "Add Points"}
+              {isSubmitting ? "Adding..." : "Add Tokens"}
             </Button>
           </DialogFooter>
         </DialogContent>

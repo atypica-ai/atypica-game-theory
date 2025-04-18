@@ -48,7 +48,7 @@ export async function POST(req: Request) {
     userId,
     reqSignal,
   };
-  const hasQuota = await checkQuota({ studyUserChatId, userId, cost: 100 });
+  const hasQuota = await checkQuota({ studyUserChatId, userId, cost: 1_000_000 });
   if (!hasQuota) {
     return await noQuotaAgentRequest(params);
   } else {

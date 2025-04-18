@@ -13,7 +13,7 @@ export async function fetchUsers(
 ): Promise<
   ServerActionResult<
     (Pick<User, "id" | "email" | "createdAt"> & {
-      points: { balance: number } | null;
+      tokens: { balance: number } | null;
       adminUser: { role: AdminRole; permissions: AdminPermission[] } | null;
     })[]
   >
@@ -48,7 +48,7 @@ export async function fetchUsers(
         id: true,
         email: true,
         createdAt: true,
-        points: {
+        tokens: {
           select: {
             balance: true,
           },
@@ -84,22 +84,22 @@ export async function fetchUsers(
   };
 }
 
-export async function addPointsToUser(
+export async function addTokensToUser(
   userId: number,
-  points: number,
+  tokens: number,
 ): Promise<ServerActionResult<void>> {
   await checkAdminAuth([AdminPermission.MANAGE_USERS]);
 
-  if (points <= 0) {
+  if (tokens <= 0) {
     return {
       success: false,
-      message: "Points must be a positive number",
+      message: "Tokens must be a positive number",
     };
   }
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    include: { points: true },
+    include: { tokens: true },
   });
 
   if (!user) {
@@ -110,30 +110,30 @@ export async function addPointsToUser(
   }
 
   await prisma.$transaction(async (tx) => {
-    // Create user points if they don't exist
-    if (!user.points) {
-      await tx.userPoints.create({
+    // Create user tokens if they don't exist
+    if (!user.tokens) {
+      await tx.userTokens.create({
         data: {
           userId: user.id,
-          balance: points,
+          balance: tokens,
         },
       });
     } else {
-      // Update existing points
-      await tx.userPoints.update({
+      // Update existing tokens
+      await tx.userTokens.update({
         where: { userId: user.id },
         data: {
-          balance: { increment: points },
+          balance: { increment: tokens },
         },
       });
     }
 
     // Create a log entry
-    await tx.userPointsLog.create({
+    await tx.userTokensLog.create({
       data: {
         userId: user.id,
-        points: points,
-        verb: "gift", // Using "gift" as the verb for admin-added points
+        value: tokens,
+        verb: "gift", // Using "gift" as the verb for admin-added tokens
       },
     });
   });

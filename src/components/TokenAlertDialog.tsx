@@ -12,15 +12,15 @@ import {
 import { useTranslations } from "next-intl";
 import { ReactNode } from "react";
 
-interface PointAlertDialogProps {
-  points: number;
+interface TokenAlertDialogProps {
+  value: number;
   children: ReactNode;
   onConfirm: () => void;
   onCancel?: () => void;
 }
 
-export function PointAlertDialog({ points, children, onConfirm, onCancel }: PointAlertDialogProps) {
-  const t = useTranslations("Components.PointAlertDialog");
+export function TokenAlertDialog({ value, children, onConfirm, onCancel }: TokenAlertDialogProps) {
+  const t = useTranslations("Components.TokenAlertDialog");
 
   return (
     <AlertDialog>
@@ -28,7 +28,7 @@ export function PointAlertDialog({ points, children, onConfirm, onCancel }: Poin
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{t("confirmOperation")}</AlertDialogTitle>
-          <AlertDialogDescription>{t("pointConsumption", { points })}</AlertDialogDescription>
+          <AlertDialogDescription>{t("tokenConsumption", { value })}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel onClick={onCancel}>{t("cancel")}</AlertDialogCancel>

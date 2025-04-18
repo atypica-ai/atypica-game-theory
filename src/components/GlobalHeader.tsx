@@ -2,7 +2,7 @@
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import UserMenu from "./UserMenu";
-import UserPointsBalance from "./UserPointsBalance";
+import UserTokensBalance from "./UserTokensBalance";
 
 export default function GlobalHeader({
   className,
@@ -32,7 +32,7 @@ export default function GlobalHeader({
       </div>
       <div className="ml-auto" />
       {/* additional menus */}
-      {children ? children : <UserPointsBalance />}
+      {children ? children : <UserTokensBalance />}
 
       <div>
         <UserMenu />

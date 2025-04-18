@@ -176,8 +176,8 @@
     }
   },
   "Components": {
-    "UserPointsBalance": {
-      "balance": "{count} studies left"
+    "UserTokensBalance": {
+      "balance": "{count} available tokens"
     },
     "ReportsListPanel": {
       "title": "Reports for this study",
@@ -191,9 +191,9 @@
       "history": "Chat History",
       "enterprise": "Know DAM better"
     },
-    "PointAlertDialog": {
+    "TokenAlertDialog": {
       "confirmOperation": "Confirm Operation",
-      "pointConsumption": "This operation will consume {points} points, do you want to continue?",
+      "tokenConsumption": "This operation will consume {value} tokens, do you want to continue?",
       "cancel": "Cancel",
       "confirm": "Confirm"
     },
@@ -252,7 +252,8 @@
       "evictionWarningMessage": "The background task may have stalled. Consider canceling and restarting by typing \"continue\"."
     },
     "RequestPaymentMessage": {
-      "outOfQuotaHint": "You've used up your free research quota. How about buying me a coffee for another research?",
+      "outOfQuotaHintCoffee": "You've used up your free research quota. How about buying me a coffee for another research?",
+      "outOfQuotaHint": "You've used up your free research tokens. You can purchase more tokens to continue.",
       "scanQrCode": "Please scan the QR code below to complete payment",
       "paymentSuccess": "🎉 Payment successful, atypica.AI research is about to begin!"
     },

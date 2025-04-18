@@ -42,6 +42,12 @@ async function createProducts() {
       description: "请 atypica.AI 一杯小蓝瓶咖啡",
     },
     {
+      name: "TOKENS1M",
+      price: 100,
+      currency: "CNY",
+      description: "100 万 Tokens",
+    },
+    {
       name: "TEST_A_GLOBAL",
       price: 1,
       currency: "USD",
@@ -82,6 +88,13 @@ async function createProducts() {
       currency: "USD",
       description: "Buy atypica.AI a Blue Bottle Coffee",
       extra: { price_id: "price_1RBgKiGU0jUFYcrNLKj9lyeB" },
+    },
+    {
+      name: "TOKENS1M_GLOBAL",
+      price: 14,
+      currency: "CNY",
+      description: "1M tokens",
+      extra: { price_id: "price_1RFNxFGU0jUFYcrNgjrI3a7K" },
     },
   ];
   // Create products
