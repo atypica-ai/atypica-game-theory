@@ -25,8 +25,8 @@ model User {
   userAnalysts   UserAnalyst[]
   userChats      UserChat[]
   paymentRecords PaymentRecord[]
-  points         UserPoints?
-  pointsLogs     UserPointsLog[]
+  tokens         UserTokens?
+  tokensLogs     UserTokensLog[]
   adminUser      AdminUser?
 }
 
@@ -291,7 +291,7 @@ model PaymentLine {
   @@unique([paymentRecordId, productId])
 }
 
-model UserPoints {
+model UserTokens {
   id      Int  @id @default(autoincrement())
   userId  Int  @unique
   user    User @relation(fields: [userId], references: [id])
@@ -301,7 +301,7 @@ model UserPoints {
   updatedAt DateTime @updatedAt
 }
 
-enum UserPointsLogVerb {
+enum UserTokensLogVerb {
   recharge
   consume
   daily
@@ -309,19 +309,19 @@ enum UserPointsLogVerb {
   signup
 }
 
-enum UserPointsLogResourceType {
+enum UserTokensLogResourceType {
   StudyUserChat
   ScoutUserChat
   PaymentRecord
 }
 
-model UserPointsLog {
+model UserTokensLog {
   id           Int                        @id @default(autoincrement())
   userId       Int
   user         User                       @relation(fields: [userId], references: [id])
-  points       Int
-  verb         UserPointsLogVerb
-  resourceType UserPointsLogResourceType?
+  value        Int
+  verb         UserTokensLogVerb
+  resourceType UserTokensLogResourceType?
   resourceId   Int?
 
   createdAt DateTime @default(now())
