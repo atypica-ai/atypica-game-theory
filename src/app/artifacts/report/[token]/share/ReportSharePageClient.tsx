@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ExternalLink, Share2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 export default function ReportSharePageClient({
@@ -33,6 +33,14 @@ export default function ReportSharePageClient({
 
   const handleIframeLoad = useCallback(() => {
     setIsLoading(false);
+  }, []);
+
+  // 3s 以后强制取消 loading
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setIsLoading(false);
+    }, 3000);
+    return () => clearTimeout(timeout);
   }, []);
 
   return (
