@@ -40,6 +40,8 @@ export function backgroundChatUntilCancel<TOOLS extends ToolSet, PARTIAL_OUTPUT>
   abortController: AbortController;
   streamTextResult: StreamTextResult<TOOLS, PARTIAL_OUTPUT>;
 }) {
+  let stop = false;
+
   waitUntil(
     new Promise((resolve) => {
       async function checkBackgroundToken() {
@@ -47,14 +49,16 @@ export function backgroundChatUntilCancel<TOOLS extends ToolSet, PARTIAL_OUTPUT>
           where: { id: studyUserChatId },
           select: { backgroundToken: true },
         });
-        if (userChat?.backgroundToken !== backgroundToken) {
+        if (stop) {
+          console.log(`StudyChat [${studyUserChatId}] stopped, quit checkBackgroundToken`);
+        } else if (userChat?.backgroundToken !== backgroundToken) {
           console.log(
             `[${studyUserChatId}] StudyChat background token cleared or changed, aborting background running`,
           );
           try {
             abortController.abort();
           } catch (error) {
-            console.log(`[${studyUserChatId}] Error during abort:`, error);
+            console.log(`StudyChat [${studyUserChatId}] Error during abort:`, error);
           }
           resolve(null);
         } else {
@@ -69,7 +73,6 @@ export function backgroundChatUntilCancel<TOOLS extends ToolSet, PARTIAL_OUTPUT>
   // https://nextjs.org/docs/app/api-reference/functions/after#alternatives
   waitUntil(
     new Promise((resolve, reject) => {
-      let stop = false;
       const start = Date.now();
       const tick = () => {
         const now = Date.now();

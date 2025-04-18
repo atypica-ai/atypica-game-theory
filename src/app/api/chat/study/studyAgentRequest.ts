@@ -15,7 +15,7 @@ import {
 import { CoreMessage, Message, streamText, TextStreamPart } from "ai";
 import { createAbortSignals } from "./abortSignal";
 import { backgroundChatUntilCancel, raceForUserChat } from "./background";
-import { debouncePersistentMessage } from "./persistent";
+import { createDebouncePersistentMessage } from "./persistent";
 
 // 参考了 https://sdk.vercel.ai/docs/ai-sdk-ui/chatbot-message-persistence#storing-messages 的设计来实现
 export async function studyAgentRequest({
@@ -37,7 +37,7 @@ export async function studyAgentRequest({
   const { clearBackgroundToken, backgroundToken } = await raceForUserChat(studyUserChatId);
   const { abortController, abortSignal, delayedAbortSignal } = createAbortSignals(reqSignal);
   const { statReport } = initStatReporter(studyUserChatId);
-
+  const debouncePersistentMessage = createDebouncePersistentMessage(5000); // 5000 debounce
   let streamStartTime = Date.now();
   const tools = {
     [ToolName.scoutTaskChat]: scoutTaskChatTool({ userId, abortSignal, statReport }),
@@ -72,7 +72,9 @@ export async function studyAgentRequest({
       // console.log(`[${studyUserChatId}] StudyChat onChunk:`, chunk);
       appendChunkToStreamingMessage(streamingMessage, chunk);
       await debouncePersistentMessage(studyUserChatId, streamingMessage, {
-        immediate: chunk.type === "tool-call" || chunk.type === "tool-result",
+        immediate: chunk.type !== "text-delta",
+        // 只在 text-delta 类型的时候才 debounce，靠谱点。see https://github.com/bmrlab/atypica-llm-app/issues/40
+        // immediate: chunk.type === "tool-call" || chunk.type === "tool-result",
       });
     },
     onStepFinish: async (step) => {

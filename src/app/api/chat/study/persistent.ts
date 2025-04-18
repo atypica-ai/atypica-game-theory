@@ -1,7 +1,7 @@
 import { persistentAIMessageToDB } from "@/lib/messageUtils";
 import { Message } from "ai";
 
-export const debouncePersistentMessage = (() => {
+export const createDebouncePersistentMessage = (mills: number) => {
   let timeout: NodeJS.Timeout | null = null;
   return async (
     studyUserChatId: number,
@@ -27,7 +27,7 @@ export const debouncePersistentMessage = (() => {
           );
         }
       },
-      immediate ? 0 : 5000,
-    ); // 5 seconds debounce
+      immediate ? 0 : mills,
+    );
   };
-})();
+};

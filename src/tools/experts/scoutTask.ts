@@ -31,7 +31,7 @@ import { PlainTextToolResult } from "@/tools/utils";
 import { convertToCoreMessages, generateId, Message, streamText, TextStreamPart, tool } from "ai";
 import { z } from "zod";
 
-const debouncePersistentMessage = (() => {
+const createDebouncePersistentMessage = (mills: number) => {
   let timeout: NodeJS.Timeout | null = null;
   return async (
     scoutUserChatId: number,
@@ -56,10 +56,10 @@ const debouncePersistentMessage = (() => {
           );
         }
       },
-      immediate ? 0 : 5000,
-    ); // 5 second debounce
+      immediate ? 0 : mills,
+    );
   };
-})();
+};
 
 export interface ScoutTaskChatResult extends PlainTextToolResult {
   personas: {
@@ -225,6 +225,7 @@ async function runScoutTaskChatStream({
         content: "",
         parts: [],
       };
+      const debouncePersistentMessage = createDebouncePersistentMessage(5000); // 5000 debounce
       const response = streamText({
         model: openai("gpt-4o", {
           parallelToolCalls: true,
@@ -256,7 +257,9 @@ async function runScoutTaskChatStream({
           // console.log(`[${scoutUserChatId}] StudyChat onChunk:`, chunk);
           appendChunkToStreamingMessage(streamingMessage, chunk);
           await debouncePersistentMessage(scoutUserChatId, streamingMessage, {
-            immediate: chunk.type === "tool-call" || chunk.type === "tool-result",
+            immediate: chunk.type !== "text-delta",
+            // 只在 text-delta 类型的时候才 debounce，靠谱点。see https://github.com/bmrlab/atypica-llm-app/issues/40
+            // immediate: chunk.type === "tool-call" || chunk.type === "tool-result",
           });
         },
         onStepFinish: async (step) => {
