@@ -32,6 +32,7 @@ import {
   toggleFeaturedStatus,
   updateCategory,
   updateDisplayOrder,
+  updatePositionDirect,
 } from "./actions";
 
 type AnalystWithFeature = ExtractServerActionData<typeof fetchAnalysts>[number];
@@ -135,6 +136,14 @@ export default function FeaturedStudiesPage() {
       await fetchData();
     }
   };
+  const handlePositionChange = async (id: number, newPosition: number) => {
+    const result = await updatePositionDirect(id, newPosition);
+    if (!result.success) {
+      setError(result.message);
+    } else {
+      await fetchData();
+    }
+  };
 
   if (status === "loading" || isLoading) {
     return <div className="container mt-8">Loading...</div>;
@@ -156,7 +165,7 @@ export default function FeaturedStudiesPage() {
               <thead>
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                    Order
+                    Position
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                     Study Topic
@@ -177,7 +186,26 @@ export default function FeaturedStudiesPage() {
                   <tr key={study.id}>
                     <td className="whitespace-nowrap px-4 py-2 text-xs font-medium">
                       <div className="flex items-center gap-2">
-                        {/* <span>{study.displayOrder}</span> */}
+                        <div className="w-18">
+                          <Input
+                            type="number"
+                            min="1"
+                            max={featuredStudies.length}
+                            defaultValue={study.displayOrder}
+                            className="h-7 text-xs w-full"
+                            onBlur={(e) => {
+                              const newPos = parseInt(e.target.value, 10);
+                              if (!isNaN(newPos) && newPos !== study.displayOrder) {
+                                handlePositionChange(study.id, newPos);
+                              }
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.currentTarget.blur();
+                              }
+                            }}
+                          />
+                        </div>
                         <div className="flex flex-col">
                           <button
                             onClick={() => handleMoveOrder(study.id, "up")}

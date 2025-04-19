@@ -290,3 +290,90 @@ export async function updateCategory(
     data: undefined,
   };
 }
+
+export async function updatePositionDirect(
+  id: number,
+  newPosition: number,
+): Promise<ServerActionResult<void>> {
+  await checkAdminAuth([AdminPermission.MANAGE_STUDIES]);
+
+  // Ensure newPosition is a positive integer
+  const position = Math.max(1, Math.floor(newPosition));
+
+  // Get the current study
+  const currentStudy = await prisma.featuredStudy.findUnique({
+    where: { id },
+  });
+
+  if (!currentStudy) {
+    return {
+      success: false,
+      message: "Featured study not found",
+    };
+  }
+
+  // Get all featured studies
+  const allStudies = await prisma.featuredStudy.findMany({
+    orderBy: { displayOrder: "asc" },
+  });
+
+  // If position is beyond the end, set it to the last position
+  const maxPosition = allStudies.length;
+  const targetPosition = Math.min(position, maxPosition);
+
+  // If the current position is the same as the target, no need to update
+  if (currentStudy.displayOrder === targetPosition) {
+    return { success: true, data: undefined };
+  }
+
+  // Update all affected studies in a transaction
+  if (currentStudy.displayOrder > targetPosition) {
+    // Moving up: increment studies between target and current
+    await prisma.$transaction([
+      // Move studies between target and current position down by 1
+      prisma.featuredStudy.updateMany({
+        where: {
+          displayOrder: {
+            gte: targetPosition,
+            lt: currentStudy.displayOrder,
+          },
+        },
+        data: {
+          displayOrder: { increment: 1 },
+        },
+      }),
+      // Set the current study to the target position
+      prisma.featuredStudy.update({
+        where: { id },
+        data: { displayOrder: targetPosition },
+      }),
+    ]);
+  } else {
+    // Moving down: decrement studies between current and target
+    await prisma.$transaction([
+      // Move studies between current position and target down by 1
+      prisma.featuredStudy.updateMany({
+        where: {
+          displayOrder: {
+            gt: currentStudy.displayOrder,
+            lte: targetPosition,
+          },
+        },
+        data: {
+          displayOrder: { decrement: 1 },
+        },
+      }),
+      // Set the current study to the target position
+      prisma.featuredStudy.update({
+        where: { id },
+        data: { displayOrder: targetPosition },
+      }),
+    ]);
+  }
+
+  revalidatePath("/admin/featured-studies");
+  return {
+    success: true,
+    data: undefined,
+  };
+}

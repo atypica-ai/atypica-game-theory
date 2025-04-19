@@ -23,7 +23,7 @@ export function ChatReplay() {
     <>
       <div
         ref={messagesContainerRef}
-        className="flex-1 flex flex-col pb-12 w-full items-center overflow-y-auto scrollbar-thin"
+        className="flex-1 flex flex-col pb-12 gap-4 w-full items-center overflow-y-auto scrollbar-thin"
       >
         {messagesDisplay.map((message, index) => (
           <SingleMessage
