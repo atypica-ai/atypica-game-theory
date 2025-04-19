@@ -1,23 +1,37 @@
-import { checkMaintenanceStatus } from "@/app/admin/maintenance/actions";
+"use client";
 import { Button } from "@/components/ui/button";
 import { WrenchIcon } from "lucide-react";
-import { getTranslations } from "next-intl/server";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { checkMaintenanceStatus } from "../admin/maintenance/actions";
 
-export default async function MaintenancePage() {
-  const { maintenanceData } = await checkMaintenanceStatus();
-  const t = await getTranslations("Maintenance");
+type TMaintenanceStatus = NonNullable<
+  Awaited<ReturnType<typeof checkMaintenanceStatus>>
+>["maintenanceData"];
 
-  if (!maintenanceData) {
-    // If there's no maintenance scheduled, redirect to home
-    return <div className="text-center py-10">Redirecting to homepage...</div>;
-  }
+export default function MaintenancePage() {
+  // const { maintenanceData } = await checkMaintenanceStatus();
+  const [maintenanceData, setMaintenanceData] = useState<TMaintenanceStatus | null>(null);
+  // const t = await getTranslations("Maintenance");
+  const t = useTranslations("Maintenance");
 
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleString();
   };
 
-  return (
+  // 在前端取，前端渲染，以获得正确的时区
+  useEffect(() => {
+    checkMaintenanceStatus().then(({ maintenanceData }) => {
+      setMaintenanceData(maintenanceData);
+    });
+  }, []);
+
+  // if (!maintenanceData) {
+  //   return <div className="text-center py-10">Redirecting to homepage...</div>;
+  // }
+
+  return maintenanceData ? (
     <div className="flex h-screen flex-col items-center justify-center bg-background p-5 max-w-md mx-auto text-center">
       <div className="bg-primary/10 dark:bg-primary/20 p-4 rounded-full mb-8">
         <WrenchIcon className="h-16 w-16 text-primary" />
@@ -36,5 +50,5 @@ export default async function MaintenancePage() {
         <Link href="/">{t("tryAgain")}</Link>
       </Button>
     </div>
-  );
+  ) : null;
 }
