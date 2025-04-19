@@ -56,8 +56,8 @@ export function MaintenanceNotification() {
   return (
     <div
       className={cn(
-        "fixed top-0 left-0 right-0 z-50 bg-amber-100 dark:bg-amber-900/60 text-amber-950 dark:text-amber-100",
-        "p-3 text-center shadow-md flex items-center justify-center",
+        "bg-amber-100/60 dark:bg-amber-800/60 text-amber-950 dark:text-amber-100",
+        "p-3 text-center flex items-center justify-center",
       )}
     >
       <div className="flex items-center gap-2 max-w-4xl mx-auto">

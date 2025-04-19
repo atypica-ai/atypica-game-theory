@@ -1,5 +1,4 @@
 import { AuthProvider } from "@/components/AuthProvider";
-import { MaintenanceNotification } from "@/components/MaintenanceNotification";
 import Stars from "@/components/Stars";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from "@/components/ui/sonner";
@@ -78,7 +77,6 @@ export default async function RootLayout({
             <NextIntlClientProvider>
               {/* <GlobalHeader /> */}
               {children}
-              <MaintenanceNotification />
               <Toaster richColors={true} />
             </NextIntlClientProvider>
           </ThemeProvider>
