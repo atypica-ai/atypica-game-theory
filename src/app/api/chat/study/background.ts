@@ -30,30 +30,34 @@ export async function raceForUserChat(studyUserChatId: number) {
 }
 
 export function backgroundChatUntilCancel<TOOLS extends ToolSet, PARTIAL_OUTPUT>({
+  userId,
   studyUserChatId,
   backgroundToken,
   abortController,
   streamTextResult,
+  clearBackgroundToken,
 }: {
+  userId: number;
   studyUserChatId: number;
   backgroundToken: string;
   abortController: AbortController;
   streamTextResult: StreamTextResult<TOOLS, PARTIAL_OUTPUT>;
+  clearBackgroundToken: () => Promise<void>;
 }) {
   let stop = false;
 
   waitUntil(
     new Promise((resolve) => {
       async function checkBackgroundToken() {
-        const userChat = await prisma.userChat.findUnique({
+        const userChat = await prisma.userChat.findUniqueOrThrow({
           where: { id: studyUserChatId },
           select: { backgroundToken: true },
         });
         if (stop) {
           console.log(`StudyChat [${studyUserChatId}] stopped, quit checkBackgroundToken`);
-        } else if (userChat?.backgroundToken !== backgroundToken) {
+        } else if (userChat.backgroundToken !== backgroundToken) {
           console.log(
-            `[${studyUserChatId}] StudyChat background token cleared or changed, aborting background running`,
+            `StudyChat [${studyUserChatId}] background token cleared or changed, aborting background running`,
           );
           try {
             abortController.abort();
@@ -103,6 +107,35 @@ export function backgroundChatUntilCancel<TOOLS extends ToolSet, PARTIAL_OUTPUT>
           stop = true;
           reject(error);
         });
+    }),
+  );
+
+  waitUntil(
+    new Promise((resolve) => {
+      async function checkUserTokensBalance() {
+        const userTokens = await prisma.userTokens.findUniqueOrThrow({
+          where: { userId },
+        });
+        if (stop) {
+          console.log(`StudyChat [${studyUserChatId}] stopped, quit checkUserTokensBalance`);
+        } else if (userTokens.balance <= 0) {
+          console.log(
+            `StudyChat [${studyUserChatId}] user is out of balance, aborting background running`,
+          );
+          //
+          try {
+            abortController.abort(); // stop streamText
+            clearBackgroundToken(); // stop checkBackgroundToken
+            stop = true; // stop tick
+          } catch (error) {
+            console.log(`StudyChat [${studyUserChatId}] Error during abort:`, error);
+          }
+          resolve(null);
+        } else {
+          setTimeout(() => checkUserTokensBalance(), 1000);
+        }
+      }
+      checkUserTokensBalance();
     }),
   );
 

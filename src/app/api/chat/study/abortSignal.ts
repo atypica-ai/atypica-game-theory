@@ -7,15 +7,14 @@ export const createAbortSignals = (requestSignal: AbortSignal | null) => {
     // abortController.abort();
   });
   const abortSignal = abortController.signal;
-  const delayedAbortSignal = (() => {
-    // 给 StudyChat 的 streamText 用，先等其他的请求都 abort 最后再 abort StudyChat
-    // 否则 StudyChat 提前中断会取消它后续调用的所有 promise，导致他们自己在调用 abortController.abort() 方法时失败
-    const delayedAbortController = new AbortController();
-    abortSignal.addEventListener("abort", () => {
-      setTimeout(() => delayedAbortController.abort(), 1000);
-    });
-    return delayedAbortController.signal;
-  })();
+
+  // 给 StudyChat 的 streamText 用，先等其他的请求都 abort 最后再 abort StudyChat
+  // 否则 StudyChat 提前中断会取消它后续调用的所有 promise，导致他们自己在调用 abortController.abort() 方法时失败
+  const delayedAbortController = new AbortController();
+  abortSignal.addEventListener("abort", () => {
+    setTimeout(() => delayedAbortController.abort(), 1000);
+  });
+  const delayedAbortSignal = delayedAbortController.signal;
 
   return {
     abortController,

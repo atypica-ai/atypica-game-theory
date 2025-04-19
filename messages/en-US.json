@@ -177,7 +177,7 @@
   },
   "Components": {
     "UserTokensBalance": {
-      "balance": "{count} available tokens"
+      "balance": "{balance} available tokens"
     },
     "ReportsListPanel": {
       "title": "Reports for this study",
@@ -242,6 +242,7 @@
       "complete": "Processing complete ✨",
       "error": "An error occurred, please refresh the page and try again",
       "ready": "atypica is ready",
+      "addMoreTokens": "Add more tokens",
       "confirmAbortTitle": "Stop Background Task?",
       "confirmAbortDescription": "This will stop the current background task. The results may be incomplete.",
       "confirmAbort": "Stop Task",

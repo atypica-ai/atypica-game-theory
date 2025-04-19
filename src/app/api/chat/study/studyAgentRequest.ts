@@ -36,7 +36,7 @@ export async function studyAgentRequest({
 }) {
   const { clearBackgroundToken, backgroundToken } = await raceForUserChat(studyUserChatId);
   const { abortController, abortSignal, delayedAbortSignal } = createAbortSignals(reqSignal);
-  const { statReport } = initStatReporter(studyUserChatId);
+  const { statReport } = initStatReporter({ userId, studyUserChatId });
   const debouncePersistentMessage = createDebouncePersistentMessage(5000); // 5000 debounce
   let streamStartTime = Date.now();
   const tools = {
@@ -102,10 +102,12 @@ export async function studyAgentRequest({
   });
 
   backgroundChatUntilCancel({
+    userId,
     studyUserChatId,
     backgroundToken,
     streamTextResult,
     abortController,
+    clearBackgroundToken,
   });
 
   return streamTextResult.toDataStreamResponse();

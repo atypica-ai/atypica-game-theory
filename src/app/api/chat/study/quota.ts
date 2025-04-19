@@ -1,5 +1,8 @@
 import { prisma } from "@/lib/prisma";
 
+/*
+ * Deprecated
+ */
 export async function checkQuota({
   studyUserChatId,
   userId,

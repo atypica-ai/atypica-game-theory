@@ -85,7 +85,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   }
 
   const streamStartTime = Date.now();
-  const { statReport } = analyst.studyUserChatId ? initStatReporter(analyst.studyUserChatId) : {};
+  const { statReport } = analyst.studyUserChatId
+    ? initStatReporter({ userId: session.user.id, studyUserChatId: analyst.studyUserChatId })
+    : {};
   const result = streamText({
     model: openai("claude-3-7-sonnet"),
     providerOptions: {

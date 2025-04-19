@@ -16,6 +16,9 @@ export async function getUserTokensBalance(): Promise<ServerActionResult<number>
   });
 }
 
+/*
+ * Deprecated
+ */
 export async function checkStudyUserChatConsume({
   studyUserChatId,
 }: {

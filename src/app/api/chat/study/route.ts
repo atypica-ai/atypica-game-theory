@@ -5,7 +5,6 @@ import { Message } from "ai";
 import { getServerSession } from "next-auth/next";
 import { NextResponse } from "next/server";
 import { noQuotaAgentRequest } from "./noQuotaAgentRequest";
-import { checkQuota } from "./quota";
 import { studyAgentRequest } from "./studyAgentRequest";
 
 export async function POST(req: Request) {
@@ -48,8 +47,11 @@ export async function POST(req: Request) {
     userId,
     reqSignal,
   };
-  const hasQuota = await checkQuota({ studyUserChatId, userId, cost: 1_000_000 });
-  if (!hasQuota) {
+  // const hasQuota = await checkQuota({ studyUserChatId, userId, cost: 500_000 });
+  const { balance } = await prisma.userTokens.findUniqueOrThrow({
+    where: { userId: userId },
+  });
+  if (balance <= 0) {
     return await noQuotaAgentRequest(params);
   } else {
     return await studyAgentRequest(params);

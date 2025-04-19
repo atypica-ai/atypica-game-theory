@@ -2,7 +2,7 @@ import { getProductsForPayment } from "@/app/payment/actions";
 import { ProductName } from "@/app/payment/constants";
 import { useStudyContext } from "@/app/study/hooks/StudyContext";
 import { Button } from "@/components/ui/button";
-import { checkStudyUserChatConsume } from "@/data/UserTokens";
+import { getUserTokensBalance } from "@/data/UserTokens";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn } from "@/lib/utils";
 import { RequestInteractionResult } from "@/tools/user/interaction";
@@ -70,11 +70,12 @@ export const RequestPaymentMessage: FC<{
     let timeoutId: NodeJS.Timeout;
     const poll = async () => {
       timeoutId = setTimeout(poll, 1000);
-      const result = await checkStudyUserChatConsume({ studyUserChatId });
+      const result = await getUserTokensBalance();
       if (!result.success) {
         throw new Error(result.message);
       }
-      if (result.data) {
+      const balance = result.data;
+      if (balance > 0) {
         clearTimeout(timeoutId);
         // 一旦检测到成功了，就可以停下，刷新页面后再次请求 chat 接口会进入 study 流程
         // 没必要再 addToolResult，而且这里有个问题，会不知道什么原因 addToolResult 提交到了刷新页面以后的 study chat 里，这里可能是延迟提交的

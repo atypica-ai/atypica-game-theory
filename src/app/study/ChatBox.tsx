@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useScrollToBottom } from "@/components/use-scroll-to-bottom";
 import { clearStudyUserChatBackgroundToken } from "@/data/UserChat";
-import { checkStudyUserChatConsume } from "@/data/UserTokens";
+import { getUserTokensBalance } from "@/data/UserTokens";
 import { cn } from "@/lib/utils";
 import { ToolName } from "@/tools";
 import { Message, useChat } from "@ai-sdk/react";
@@ -49,6 +49,7 @@ export function ChatBox() {
     status: useChatStatus,
     reload,
     addToolResult,
+    append,
   } = useChat({
     id: studyUserChatId.toString(),
     initialMessages: initialMessages,
@@ -155,11 +156,11 @@ export function ChatBox() {
     };
   }, [refreshStudyUserChat]);
 
-  const [pointsConsumed, setPointsConsumed] = useState<boolean | null>(null);
+  const [userTokensBalance, setUserTokensBalance] = useState<number | null>(null);
   useEffect(() => {
-    checkStudyUserChatConsume({ studyUserChatId }).then((result) => {
+    getUserTokensBalance().then((result) => {
       if (result.success) {
-        setPointsConsumed(result.data);
+        setUserTokensBalance(result.data);
       } else {
         console.error(result.message);
       }
@@ -191,13 +192,13 @@ export function ChatBox() {
           ? "streaming"
           : useChatStatus === "submitted"
             ? "submitted"
-            : pointsConsumed === false
+            : userTokensBalance !== null && userTokensBalance <= 0
               ? "outOfQuota"
               : waitForUser
                 ? "waitForUser"
                 : useChatStatus,
     // waitForUser 是对 useChatStatus 的补充，如果已经是 background, streaming 和 submitted 状态，则忽略 waitForUser
-    [backgroundToken, pointsConsumed, useChatStatus, waitForUser],
+    [backgroundToken, userTokensBalance, useChatStatus, waitForUser],
   );
   const inputDisabled =
     uiStatus === "background" ||
@@ -254,6 +255,9 @@ export function ChatBox() {
           onUserCancel={async () => {
             await clearStudyUserChatBackgroundToken(studyUserChatId);
             setTimeout(() => window.location.reload(), 100);
+          }}
+          appendMessage={(message: string) => {
+            append({ role: "user", content: message });
           }}
         />
         <div className="absolute right-0 -bottom-1">

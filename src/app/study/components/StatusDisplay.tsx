@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { cn, formatDuration } from "@/lib/utils";
-import { Loader2Icon, RefreshCcwIcon } from "lucide-react";
+import { CoinsIcon, Loader2Icon, RefreshCcwIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 
@@ -109,6 +109,7 @@ export function CancelButton({
 export function StatusDisplay({
   status,
   backgroundToken,
+  appendMessage,
   // onUserCancel,
 }: {
   status:
@@ -121,6 +122,7 @@ export function StatusDisplay({
     | "ready";
   backgroundToken: string | null;
   onUserCancel?: () => void;
+  appendMessage?: (message: string) => void;
 }) {
   const t = useTranslations("StudyPage.StatusDisplay");
   const [elapsedTime, setElapsedTime] = useState<number>(0);
@@ -172,6 +174,21 @@ export function StatusDisplay({
   return (
     <div className="flex flex-wrap gap-2 justify-center items-center text-primary">
       <div className="text-xs tracking-wider font-medium">{getStatusMessage(status)}</div>
+      {status === "outOfQuota" && (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-xs h-7"
+          onClick={() => {
+            if (appendMessage) {
+              appendMessage(t("addMoreTokens"));
+            }
+          }}
+        >
+          <CoinsIcon className="h-3.5 w-3.5 text-amber-500" />
+          {t("addMoreTokens")}
+        </Button>
+      )}
       {status === "background" && elapsedTime > 0 && (
         <div className="text-xs">({formatDuration(elapsedTime)})</div>
       )}

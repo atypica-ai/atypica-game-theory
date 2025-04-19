@@ -22,7 +22,7 @@ async function migrateTokens() {
           } else if (log.verb === "consume") {
             value = -500_000; // 历史每次消耗按照 50W tokens 计算
           } else if (log.verb === "signup") {
-            value = 2_000_000; // 注册赠送 200W tokens
+            value = 2_000_000; // 历史注册赠送 200W tokens
           } else if (log.verb === "gift") {
             if (log.value <= 10000) {
               value = (log.value / 100) * 500_000; // 每赠送一点 = 50W tokens

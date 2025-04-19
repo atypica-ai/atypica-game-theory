@@ -177,7 +177,7 @@
   },
   "Components": {
     "UserTokensBalance": {
-      "balance": "{count}个Token可用"
+      "balance": "{balance} 个 Token 可用"
     },
     "ReportsListPanel": {
       "title": "本次研究的报告",
@@ -242,6 +242,7 @@
       "complete": "处理完成 ✨",
       "error": "出现错误，请刷新页面后重试",
       "ready": "atypica 已准备就绪",
+      "addMoreTokens": "购买更多 Token",
       "confirmAbortTitle": "停止后台任务？",
       "confirmAbortDescription": "这将停止当前正在执行的后台任务。结果可能不完整。",
       "confirmAbort": "停止任务",

@@ -84,7 +84,13 @@ export type StatReporter = (
   extra?: unknown,
 ) => Promise<void>;
 
-export const initStatReporter = (studyUserChatId: number): { statReport: StatReporter } => {
+export const initStatReporter = ({
+  userId,
+  studyUserChatId,
+}: {
+  userId: number;
+  studyUserChatId: number;
+}): { statReport: StatReporter } => {
   const statReport: StatReporter = async (dimension, value, extra) => {
     await prisma.chatStatistics.create({
       data: {
@@ -94,6 +100,37 @@ export const initStatReporter = (studyUserChatId: number): { statReport: StatRep
         extra: extra as InputJsonValue,
       },
     });
+    if (dimension === "tokens") {
+      try {
+        await prisma.$transaction([
+          prisma.userTokensLog.create({
+            data: {
+              userId: userId,
+              verb: "consume",
+              resourceType: "StudyUserChat",
+              resourceId: studyUserChatId,
+              value: -value,
+            },
+          }),
+          prisma.userTokens.update({
+            where: { userId },
+            data: {
+              balance: {
+                decrement: value,
+              },
+            },
+          }),
+        ]);
+        console.log(
+          `User tokens consumed successfully: userId=${userId}, studyUserChatId=${studyUserChatId}, value=${value}`,
+        );
+      } catch (error) {
+        console.error(
+          `Failed to consume user tokens: userId=${userId}, studyUserChatId=${studyUserChatId}, value=${value}`,
+          error,
+        );
+      }
+    }
   };
   return { statReport };
 };

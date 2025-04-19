@@ -171,7 +171,7 @@ async function chargeHistoryChats() {
 }
 
 async function main() {
-  // await createProducts();
+  await createProducts();
   // await initUserPoints();
   // await chargeHistoryChats(); // 这个不能重复调用，会让新的 chat 也关联一个 points 是 0 的 consume
 }
