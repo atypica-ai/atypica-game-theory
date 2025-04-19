@@ -1,4 +1,5 @@
 "use server";
+import { FeaturedStudyCategory } from "@/app/featured-studies/data";
 import { UserChat } from "@/app/study/actions";
 import { StudyUserChat } from "@/data/UserChat";
 import { prisma } from "@/lib/prisma";
@@ -8,15 +9,25 @@ import { revalidatePath } from "next/cache";
 import { AdminPermission, checkAdminAuth } from "../utils";
 // Public action for fetching featured studies (no auth check needed)
 
-export async function fetchPublicFeaturedStudies(): Promise<
+export async function fetchPublicFeaturedStudies({
+  category,
+  limit,
+}: {
+  category?: string;
+  limit?: number;
+}): Promise<
   ServerActionResult<
     (FeaturedStudy & {
       analyst: Pick<Analyst, "id" | "role" | "topic" | "studySummary">;
       studyUserChat: Pick<StudyUserChat, "id" | "token">;
+      category: FeaturedStudyCategory | null;
     })[]
   >
 > {
+  const where = category && category !== "all" ? { category: category } : undefined;
+
   const featuredStudies = await prisma.featuredStudy.findMany({
+    where,
     include: {
       studyUserChat: {
         select: {
@@ -36,12 +47,15 @@ export async function fetchPublicFeaturedStudies(): Promise<
     orderBy: {
       displayOrder: "asc",
     },
-    take: 6,
+    take: limit,
   });
 
   return {
     success: true,
-    data: featuredStudies,
+    data: featuredStudies.map((study) => ({
+      ...study,
+      category: study.category as FeaturedStudyCategory | null,
+    })),
   };
 }
 
@@ -195,7 +209,6 @@ export async function removeFeaturedStudy(id: number): Promise<ServerActionResul
   };
 }
 
-// Update display order
 export async function updateDisplayOrder(
   id: number,
   direction: "up" | "down",
@@ -243,6 +256,30 @@ export async function updateDisplayOrder(
   ]);
 
   revalidatePath("/admin/featured-studies");
+  return {
+    success: true,
+    data: undefined,
+  };
+}
+
+export async function updateCategory(
+  id: number,
+  category: FeaturedStudyCategory,
+): Promise<ServerActionResult<void>> {
+  await checkAdminAuth([AdminPermission.MANAGE_STUDIES]);
+
+  // Sanitize the category string
+  const sanitizedCategory = category.trim() || "general";
+
+  await prisma.featuredStudy.update({
+    where: { id },
+    data: { category: sanitizedCategory },
+  });
+
+  revalidatePath("/admin/featured-studies");
+  revalidatePath("/featured-studies");
+  revalidatePath("/"); // Revalidate home page as well
+
   return {
     success: true,
     data: undefined,

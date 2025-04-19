@@ -13,8 +13,22 @@
       "title": "Featured Research",
       "description": "Explore our curated selection of research studies",
       "viewStudy": "View Study",
+      "viewMore": "View More Studies",
       "noFeatured": "No featured studies available"
     }
+  },
+  "FeaturedStudiesPage": {
+    "title": "Featured Studies",
+    "description": "Browse our collection of market research and analysis",
+    "categories": {
+      "all": "All Studies",
+      "testing": "Testing",
+      "planning": "Planning",
+      "insights": "Insights",
+      "cocreation": "Co-creation"
+    },
+    "noStudies": "No studies found in this category.",
+    "viewStudy": "View Study"
   },
   "AnalystListPage": {
     "researchTopics": "Research Topics",

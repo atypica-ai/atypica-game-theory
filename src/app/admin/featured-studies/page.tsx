@@ -1,4 +1,5 @@
 "use client";
+import { FeaturedStudyCategory } from "@/app/featured-studies/data";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -10,6 +11,13 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Pagination } from "@/components/ui/pagination";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { Analyst } from "@prisma/client";
 import { ArrowDown, ArrowUp, SearchIcon, StarIcon } from "lucide-react";
@@ -22,6 +30,7 @@ import {
   fetchAnalysts,
   fetchFeaturedStudies,
   toggleFeaturedStatus,
+  updateCategory,
   updateDisplayOrder,
 } from "./actions";
 
@@ -118,6 +127,15 @@ export default function FeaturedStudiesPage() {
     }
   };
 
+  const handleCategoryChange = async (id: number, category: string) => {
+    const result = await updateCategory(id, category as FeaturedStudyCategory);
+    if (!result.success) {
+      setError(result.message);
+    } else {
+      await fetchData();
+    }
+  };
+
   if (status === "loading" || isLoading) {
     return <div className="container mt-8">Loading...</div>;
   }
@@ -129,11 +147,11 @@ export default function FeaturedStudiesPage() {
       {error && <div className="mb-4 rounded-lg bg-red-50 p-4 text-red-500">{error}</div>}
 
       <div className="mb-8">
-        <h2 className="mb-4 text-xl font-semibold">Current Featured Studies</h2>
+        <h2 className="mb-4 text-xl font-semibold">Featured Studies</h2>
         {featuredStudies.length === 0 ? (
           <p className="text-gray-500">No featured studies currently selected.</p>
         ) : (
-          <div className="overflow-x-auto rounded-lg border">
+          <div className="max-h-[400px] overflow-y-auto overflow-x-auto rounded-lg border">
             <table className="min-w-full divide-y divide">
               <thead>
                 <tr>
@@ -147,6 +165,9 @@ export default function FeaturedStudiesPage() {
                     Role
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                    Category
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
@@ -154,7 +175,7 @@ export default function FeaturedStudiesPage() {
               <tbody className="divide-y divide">
                 {featuredStudies.map((study, index) => (
                   <tr key={study.id}>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm font-medium">
+                    <td className="whitespace-nowrap px-4 py-2 text-xs font-medium">
                       <div className="flex items-center gap-2">
                         {/* <span>{study.displayOrder}</span> */}
                         <div className="flex flex-col">
@@ -163,29 +184,47 @@ export default function FeaturedStudiesPage() {
                             disabled={index === 0}
                             className="disabled:opacity-30"
                           >
-                            <ArrowUp size={16} />
+                            <ArrowUp className="size-3" />
                           </button>
                           <button
                             onClick={() => handleMoveOrder(study.id, "down")}
                             disabled={index === featuredStudies.length - 1}
                             className="disabled:opacity-30"
                           >
-                            <ArrowDown size={16} />
+                            <ArrowDown className="size-3" />
                           </button>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm">{study.analyst.topic}</td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm">{study.analyst.role}</td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm space-x-2">
+                    <td className="px-4 py-2 text-xs">{study.analyst.topic}</td>
+                    <td className="whitespace-nowrap px-4 py-2 text-xs">{study.analyst.role}</td>
+                    <td className="whitespace-nowrap px-4 py-2 text-xs">
+                      <Select
+                        defaultValue={study.category || "GENERAL"}
+                        onValueChange={(value) => handleCategoryChange(study.id, value)}
+                      >
+                        <SelectTrigger size="sm" className="w-36 text-xs">
+                          <SelectValue placeholder="Select category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Object.values(FeaturedStudyCategory).map((category) => (
+                            <SelectItem key={category} value={category} className="text-xs">
+                              {category.charAt(0) + category.slice(1).toLowerCase()}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-2 text-xs space-x-2">
                       <Button
                         variant="destructive"
                         size="sm"
+                        className="text-xs"
                         onClick={() => handleToggleFeatured(study.analyst)}
                       >
                         Remove
                       </Button>
-                      <Button variant="outline" asChild>
+                      <Button variant="outline" size="sm" className="text-xs" asChild>
                         <Link
                           href={`/study/${study.studyUserChat.token}/share?replay=1`}
                           target="_blank"

@@ -13,8 +13,22 @@
       "title": "精选研究",
       "description": "探索我们精心挑选的研究案例",
       "viewStudy": "查看研究",
+      "viewMore": "查看更多研究",
       "noFeatured": "暂无精选研究"
     }
+  },
+  "FeaturedStudiesPage": {
+    "title": "精选研究",
+    "description": "浏览我们的市场研究和分析集合",
+    "categories": {
+      "all": "全部研究",
+      "testing": "测试",
+      "planning": "规划",
+      "insights": "洞察",
+      "cocreation": "共创"
+    },
+    "noStudies": "该类别下暂无研究。",
+    "viewStudy": "查看研究"
   },
   "AnalystListPage": {
     "researchTopics": "用户研究主题",

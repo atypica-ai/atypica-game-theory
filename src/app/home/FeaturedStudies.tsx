@@ -1,6 +1,7 @@
 "use client";
 import { fetchPublicFeaturedStudies } from "@/app/admin/featured-studies/actions";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ExtractServerActionData } from "@/lib/serverAction";
@@ -19,7 +20,7 @@ export function FeaturedStudies() {
   useEffect(() => {
     const loadStudies = async () => {
       setLoading(true);
-      const result = await fetchPublicFeaturedStudies();
+      const result = await fetchPublicFeaturedStudies({ limit: 6 });
       if (result.success) {
         setStudies(result.data);
       } else {
@@ -80,7 +81,7 @@ export function FeaturedStudies() {
             className="flex"
             target="_blank"
           >
-            <Card className="cursor-pointer">
+            <Card className="cursor-pointer w-full">
               <CardHeader>
                 <div className="flex items-center justify-start gap-2 overflow-hidden">
                   <HippyGhostAvatar seed={study.id} className="size-6" />
@@ -96,6 +97,11 @@ export function FeaturedStudies() {
             </Card>
           </Link>
         ))}
+      </div>
+      <div className="mt-8 flex justify-center">
+        <Button variant="outline" asChild>
+          <Link href="/featured-studies">{t("viewMore")}</Link>
+        </Button>
       </div>
     </div>
   );
