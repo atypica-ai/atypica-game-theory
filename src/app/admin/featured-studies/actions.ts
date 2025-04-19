@@ -87,7 +87,7 @@ export async function fetchFeaturedStudies(): Promise<
 // Get all analysts with their featured status
 export async function fetchAnalysts(
   page: number = 1,
-  emailSearch?: string,
+  search?: string,
   pageSize: number = 12,
 ): Promise<
   ServerActionResult<
@@ -103,13 +103,18 @@ export async function fetchAnalysts(
   await checkAdminAuth([AdminPermission.MANAGE_STUDIES]);
 
   const skip = (page - 1) * pageSize;
-  const where = emailSearch
+  const where = search
     ? {
-        userAnalysts: {
-          some: {
-            user: { email: { contains: emailSearch } },
+        OR: [
+          { topic: { contains: search } },
+          {
+            userAnalysts: {
+              some: {
+                user: { email: { contains: search } },
+              },
+            },
           },
-        },
+        ],
       }
     : undefined;
 

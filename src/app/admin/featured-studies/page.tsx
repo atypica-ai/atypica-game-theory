@@ -46,7 +46,7 @@ export default function FeaturedStudiesPage() {
   const [error, setError] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
-  const [emailSearch, setEmailSearch] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Initialize page from URL on load
@@ -59,7 +59,7 @@ export default function FeaturedStudiesPage() {
         setCurrentPage(parseInt(pageParam, 10));
       }
       if (searchParam) {
-        setEmailSearch(searchParam);
+        setSearchQuery(searchParam);
       }
     }
   }, []);
@@ -67,25 +67,25 @@ export default function FeaturedStudiesPage() {
   useEffect(() => {
     const url = new URL(window.location.href);
     url.searchParams.set("page", currentPage.toString());
-    if (emailSearch) {
-      url.searchParams.set("search", emailSearch);
+    if (searchQuery) {
+      url.searchParams.set("search", searchQuery);
     } else {
       url.searchParams.delete("search");
     }
     window.history.pushState({}, "", url.toString());
-  }, [currentPage, emailSearch]);
+  }, [currentPage, searchQuery]);
 
   const handleSearch = useCallback((e: FormEvent) => {
     e.preventDefault();
     setCurrentPage(1); // Reset to first page on new search
-    setEmailSearch(inputRef.current?.value ?? "");
+    setSearchQuery(inputRef.current?.value ?? "");
   }, []);
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     const [featuredResult, analystsResult] = await Promise.all([
       fetchFeaturedStudies(),
-      fetchAnalysts(currentPage, emailSearch),
+      fetchAnalysts(currentPage, searchQuery),
     ]);
     if (!featuredResult.success) {
       setError(featuredResult.message);
@@ -99,7 +99,7 @@ export default function FeaturedStudiesPage() {
       if (analystsResult.pagination) setPagination(analystsResult.pagination);
     }
     setIsLoading(false);
-  }, [currentPage, emailSearch]);
+  }, [currentPage, searchQuery]);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -246,21 +246,21 @@ export default function FeaturedStudiesPage() {
           <SearchIcon className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             type="text"
-            defaultValue={emailSearch}
+            defaultValue={searchQuery}
             ref={inputRef}
-            placeholder="Search by email address..."
+            placeholder="Search by email or topic..."
             className="pl-8"
           />
         </div>
         <Button type="submit">Search</Button>
-        {emailSearch && (
+        {searchQuery && (
           <Button
             variant="outline"
             onClick={() => {
               if (inputRef.current) {
                 inputRef.current.value = "";
               }
-              setEmailSearch("");
+              setSearchQuery("");
               setCurrentPage(1);
             }}
           >
@@ -271,17 +271,15 @@ export default function FeaturedStudiesPage() {
 
       <div className="mb-4">
         <h2 className="mb-4 text-xl font-semibold">All Studies</h2>
-        {emailSearch && (
+        {searchQuery && (
           <div className="mb-4 text-sm text-muted-foreground">
-            Filtering by email: <span className="font-medium">{emailSearch}</span>
+            Filtering by email or topic: <span className="font-medium">{searchQuery}</span>
           </div>
         )}
         {analysts.length === 0 ? (
           <div className="text-center py-8">
             <p className="text-lg font-semibold text-gray-500">
-              {emailSearch
-                ? `No studies found for email containing "${emailSearch}"`
-                : "No studies found"}
+              {searchQuery ? `No studies found for query "${searchQuery}"` : "No studies found"}
             </p>
           </div>
         ) : (
@@ -293,7 +291,7 @@ export default function FeaturedStudiesPage() {
               >
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between w-full overflow-hidden">
-                    <span className="truncate">{analyst.topic}</span>
+                    <div className="truncate leading-normal">{analyst.topic}</div>
                     {analyst.featuredStudy && (
                       <StarIcon className="h-5 w-5 fill-yellow-400 text-yellow-400" />
                     )}
