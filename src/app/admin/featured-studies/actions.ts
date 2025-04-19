@@ -1,5 +1,5 @@
 "use server";
-import { FeaturedStudyCategory } from "@/app/featured-studies/data";
+import { FeaturedStudyCategory } from "@/app/(public)/featured-studies/data";
 import { UserChat } from "@/app/study/actions";
 import { StudyUserChat } from "@/data/UserChat";
 import { prisma } from "@/lib/prisma";

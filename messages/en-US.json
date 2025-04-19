@@ -1,5 +1,64 @@
 {
   "tagline": "Modeling the Subjective World",
+  "PricingPage": {
+    "title": "Pricing Plans",
+    "subtitle": "Choose the plan that works best for you",
+    "monthly": "Monthly",
+    "freeTitle": "Free",
+    "freeSubtitle": "Perfect for first-time users",
+    "freePrice": "$0",
+    "freeTokens": "1M free tokens",
+    "basicTitle": "Basic",
+    "basicSubtitle": "For occasional business analysis needs",
+    "basicPrice": "$16",
+    "basicPerTokens": "1M tokens",
+    "basicPurchaseTokens": "Purchase tokens as needed",
+    "proTitle": "Pro",
+    "proSubtitle": "For regular in-depth business analysis",
+    "proPrice": "$20",
+    "proPerMonth": "month",
+    "proMonthlyTokens": "3M tokens monthly",
+    "enterpriseTitle": "Enterprise",
+    "enterpriseSubtitle": "Coming mid-May",
+    "getStarted": "Get Started Free",
+    "chooseBasic": "Buy Tokens",
+    "upgradeToPro": "Upgrade to Pro",
+    "contactSales": "Contact Sales",
+    "averageStudyToken": "average study uses 400K tokens; complex queries consume more",
+    "features": {
+      "socialPlatforms": {
+        "single": "Access to single social media platform for research data",
+        "multiple": "Access to multiple social media platforms (currently includes: TikTok, Instagram, Rednote, Douyin)"
+      },
+      "personas": {
+        "limited": "Generate up to 10 personas for market research",
+        "unlimited": "Unlimited custom personas for targeted research"
+      },
+      "analysisModel": {
+        "standard": "Standard analysis model",
+        "enhanced": "Enhanced report reasoning model",
+        "superior": "Superior report reasoning model"
+      },
+      "reports": {
+        "followUp": "Follow-up queries on generated reports",
+        "deepDive": "Deep-dive capabilities into report topics"
+      },
+      "tokens": {
+        "discount": "20% discount on additional token purchases"
+      },
+      "enterprise": {
+        "AdvancedAnalysisTools": "Advanced Analysis Tools",
+        "DataIntegration": "Data Integration",
+        "SecurityAndCollaboration": "Security and Collaboration"
+      },
+      "multiModal": "Multi-modal input analysis and insights (text, images, video)",
+      "customReports": "Customized enterprise report structures",
+      "enterpriseData": "Integration with proprietary enterprise data",
+      "customPersonas": "Custom enterprise personas",
+      "collaboration": "Team collaboration features (share, collaborate)",
+      "security": "Data security controls (specified visibility, expiration dates)"
+    }
+  },
   "HomePage": {
     "title": "Home",
     "HistoryDrawer": {
@@ -203,7 +262,7 @@
       "lightTheme": "Light Theme",
       "darkTheme": "Dark Theme",
       "history": "Chat History",
-      "enterprise": "Know DAM better"
+      "pricing": "Pricing"
     },
     "TokenAlertDialog": {
       "confirmOperation": "Confirm Operation",

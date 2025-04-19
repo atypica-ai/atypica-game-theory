@@ -9,12 +9,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { createUserChat } from "@/data/UserChat";
 import Cookies from "js-cookie";
 import {
+  CreditCardIcon,
   GlobeIcon,
   HistoryIcon,
-  HomeIcon,
   LogInIcon,
   LogOutIcon,
   Moon,
@@ -26,7 +25,7 @@ import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import HippyGhostAvatar from "./HippyGhostAvatar";
 
 export default function UserMenu() {
@@ -58,18 +57,6 @@ export default function UserMenu() {
     router.refresh();
   };
 
-  const sayHello = useCallback(async () => {
-    const result = await createUserChat("misc", {
-      role: "user",
-      content: "我是企业用户，想了解一下企业版",
-    });
-    if (!result.success) {
-      throw result;
-    }
-    const chat = result.data;
-    window.location.href = `/agents/hello/${chat.id}`;
-  }, []);
-
   const Menus = () => {
     return (
       <>
@@ -87,9 +74,11 @@ export default function UserMenu() {
           {locale === "zh-CN" ? "English" : "中文"}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={sayHello}>
-          <HomeIcon className="h-4 w-4 mr-2" />
-          {t("enterprise")}
+        <DropdownMenuItem asChild>
+          <Link href="/pricing">
+            <CreditCardIcon className="h-4 w-4 mr-2" />
+            {t("pricing")}
+          </Link>
         </DropdownMenuItem>
       </>
     );

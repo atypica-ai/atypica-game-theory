@@ -1,5 +1,5 @@
 "use client";
-import { FeaturedStudyCategory } from "@/app/featured-studies/data";
+import { FeaturedStudyCategory } from "@/app/(public)/featured-studies/data";
 import { Button } from "@/components/ui/button";
 import {
   Card,
