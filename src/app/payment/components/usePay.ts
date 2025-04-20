@@ -144,7 +144,7 @@ export function usePay() {
         });
       }
     },
-    [submitForStripePayment, createPingxxPaymentUrl],
+    [submitForStripePayment, createPingxxPaymentUrl, session?.user],
   );
 
   const clearPaymentLink = useCallback(() => {

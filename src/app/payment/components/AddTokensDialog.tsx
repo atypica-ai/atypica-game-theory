@@ -42,7 +42,6 @@ export const AddTokensDialog = ({ open, onOpenChange, onSuccess }: AddTokensDial
 
   // Poll for payment success
   useEffect(() => {
-    console.log(open, paymentScanQR, paymentSuccess);
     if (!open || !paymentScanQR || paymentSuccess) return;
     let timeoutId: NodeJS.Timeout;
     const pollInterval = 2000; // 2 seconds

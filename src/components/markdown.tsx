@@ -54,10 +54,11 @@ const NonMemoizedMarkdown = ({ children }: { children: string }) => {
       );
     },
     p: ({ node, children, ...props }: any) => {
+      // 很多元素不能放在 p 下面，markdown 的格式不可控，这里索性用 div
       return (
-        <p className="whitespace-pre-wrap mb-2" {...props}>
+        <div className="whitespace-pre-wrap mb-2" {...props}>
           {children}
-        </p>
+        </div>
       );
     },
     h1: ({ node, children, ...props }: any) => {

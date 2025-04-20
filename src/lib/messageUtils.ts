@@ -11,28 +11,36 @@ import {
   ToolSet,
 } from "ai";
 
-export function fixChatMessages(
-  messages: Message[],
-  options: {
-    removePendingTool?: boolean;
-  } = {},
-) {
+export function fixChatMessages(messages: Message[]) {
   let fixed = messages.map((message) => {
     if (!message.parts) {
       return message;
     }
-    const parts = message.parts.filter((part) => {
+    const parts = message.parts.map((part) => {
       if (part.type === "tool-invocation") {
-        // 如果不是 result，一定是执行了一半挂了，丢弃
-        if (options.removePendingTool) {
-          return part.toolInvocation.state === "result";
+        // 如果不是 result，一定是执行了一半挂了，要告诉大模型
+        if (part.toolInvocation.state !== "result") {
+          return {
+            ...part,
+            toolInvocation: {
+              ...part.toolInvocation,
+              state: "result",
+              result: {
+                error: "Tool execution interrupted due to unknown reasons",
+                plainText: "Tool execution interrupted due to unknown reasons",
+              },
+            } as ToolInvocation,
+          };
         } else {
-          return true;
+          return part;
         }
       } else if (part.type === "text") {
-        return part.text.trim();
+        return {
+          ...part,
+          text: part.text.trim(),
+        };
       } else {
-        return true;
+        return part;
       }
     });
     return { ...message, parts };
@@ -281,9 +289,7 @@ export async function prepareNewMessageForStreaming(userChatId: number, newMessa
     where: { userChatId },
     orderBy: { id: "asc" },
   });
-  const aiMessages = fixChatMessages(messages.map(convertDBMessageToAIMessage), {
-    removePendingTool: true,
-  }); // 传给 LLM 的时候需要修复
+  const aiMessages = fixChatMessages(messages.map(convertDBMessageToAIMessage)); // 传给 LLM 的时候需要修复
   let streamingMessage: Omit<Message, "role"> & {
     parts: NonNullable<Message["parts"]>;
     role: "assistant";

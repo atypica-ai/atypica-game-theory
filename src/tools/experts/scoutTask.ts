@@ -82,7 +82,7 @@ export const scoutTaskChatTool = ({
         .describe(
           "用户画像搜索任务 (scoutTask) 的 token，用于创建任务，你不需要提供，系统会自动生成",
         )
-        // .default(() => generateToken())
+        // .default(() => generateToken()),
         // 始终生成一个新的 token，并且这个会直接覆盖 message 里面 toolInvocation.args 上的参数
         .transform(() => generateToken()),
       description: z.string().describe('用户画像搜索需求描述，用"帮我寻找"开头'),
@@ -202,15 +202,13 @@ async function runScoutTaskChatStream({
     [ToolName.savePersona]: savePersonaTool({ scoutUserChatId, statReport }),
   };
 
-  // let round = 0;
+  let round = 0;
   while (true) {
     const messagesInDB = await prisma.chatMessage.findMany({
       where: { userChatId: scoutUserChatId },
       orderBy: { id: "asc" },
     });
-    const aiMessages = fixChatMessages(messagesInDB.map(convertDBMessageToAIMessage), {
-      removePendingTool: true,
-    }); // 传给 LLM 的时候需要修复
+    const aiMessages = fixChatMessages(messagesInDB.map(convertDBMessageToAIMessage)); // 传给 LLM 的时候需要修复
     const coreMessages = convertToCoreMessages(aiMessages);
     const streamTextPromise = new Promise<Omit<Message, "role">>((resolve, reject) => {
       const streamingMessage: Omit<Message, "parts"> & { parts: NonNullable<Message["parts"]> } = {
@@ -221,16 +219,18 @@ async function runScoutTaskChatStream({
       };
       const debouncePersistentMessage = createDebouncePersistentMessage(5000); // 5000 debounce
       const response = streamText({
-        model: openai("gpt-4o", {
-          parallelToolCalls: true,
-        }),
-        // round < 2
-        //   ? openai("claude-3-7-sonnet-beta")
-        //   : round < 4
-        //     ? openai("gpt-4o", {
-        //         parallelToolCalls: true,
-        //       })
-        //     : openai("deepseek-v3"),
+        // model: openai("claude-3-7-sonnet-beta")  // 这个模型不大好用，savePersona 总是返回一半输入
+        model:
+          // openai("gpt-4o", {
+          //   parallelToolCalls: true,
+          // }),
+          round < 1
+            ? openai("claude-3-7-sonnet")
+            : round < 2
+              ? openai("gpt-4o", {
+                  parallelToolCalls: true,
+                })
+              : openai("deepseek-v3"),
         providerOptions: {
           openai: { stream_options: { include_usage: true } },
         },
@@ -314,7 +314,7 @@ async function runScoutTaskChatStream({
         role: "user",
         content: `目前总结了${personasResult.length}个personas，还不够5个，请批量保存人设后再考虑是否继续`,
       });
-      // round++;
+      round++;
       continue;
     } else {
       break;

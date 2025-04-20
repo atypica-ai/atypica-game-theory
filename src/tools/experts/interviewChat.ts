@@ -58,8 +58,7 @@ export const interviewChatTool = ({
               analystId,
               personaId,
               personaName,
-              conclusion: interview.conclusion,
-              result: `已经对 ${personaName} 进行了访谈，无需重复进行`,
+              result: `对 ${personaName} 的访谈之前已经完成，无需重复进行`,
             };
           }
           const { analystInterviewId, interviewUserChatId, prompt } = await prepareDBForInterview({
