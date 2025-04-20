@@ -1,5 +1,6 @@
 "use client";
 import { AddTokensDialog } from "@/app/payment/components/AddTokensDialog";
+import { SubscriptionDialog } from "@/app/payment/components/SubscriptionDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -12,6 +13,7 @@ import { sayHelloToSales } from "./enterprise";
 export default function PricingPageClient() {
   const t = useTranslations("PricingPage");
   const [isTokensDialogOpen, setIsTokensDialogOpen] = useState(false);
+  const [isSubscriptionDialogOpen, setIsSubscriptionDialogOpen] = useState(false);
 
   return (
     <div className={cn("flex-1 overflow-y-auto scrollbar-thin", "px-4 py-16")}>
@@ -94,7 +96,9 @@ export default function PricingPageClient() {
           </CardHeader>
           <CardContent className="flex-grow space-y-4">
             <div className="mb-6">
-              <Button className="w-full">{t("upgradeToPro")}</Button>
+              <Button className="w-full" onClick={() => setIsSubscriptionDialogOpen(true)}>
+                {t("upgradeToPro")}
+              </Button>
             </div>
             <FeatureItem text={t("features.socialPlatforms.multiple")} />
             <FeatureItem text={t("features.personas.unlimited")} />
@@ -139,6 +143,10 @@ export default function PricingPageClient() {
       </div>
 
       <AddTokensDialog open={isTokensDialogOpen} onOpenChange={setIsTokensDialogOpen} />
+      <SubscriptionDialog
+        open={isSubscriptionDialogOpen}
+        onOpenChange={setIsSubscriptionDialogOpen}
+      />
     </div>
   );
 }

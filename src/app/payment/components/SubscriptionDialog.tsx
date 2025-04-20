@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-import { CoinsIcon, GiftIcon, LoaderCircle } from "lucide-react";
+import { CalendarIcon, CoinsIcon, LoaderCircle, StarIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Script from "next/script";
@@ -19,14 +19,14 @@ import { useEffect, useState } from "react";
 import { retrieveLatestPaid } from "../actions";
 import { usePay } from "./usePay";
 
-interface AddTokensDialogProps {
+interface SubscriptionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
 }
 
-export const AddTokensDialog = ({ open, onOpenChange, onSuccess }: AddTokensDialogProps) => {
-  const t = useTranslations("Components.AddTokensDialog");
+export const SubscriptionDialog = ({ open, onOpenChange, onSuccess }: SubscriptionDialogProps) => {
+  const t = useTranslations("Components.SubscriptionDialog");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(PaymentMethod.wx_pub);
   const [error, setError] = useState<string | null>(null);
   const [paymentSuccess, setPaymentSuccess] = useState<boolean>(false);
@@ -92,18 +92,22 @@ export const AddTokensDialog = ({ open, onOpenChange, onSuccess }: AddTokensDial
               <div className="p-4 border rounded-lg mb-4 bg-secondary/30">
                 <div className="flex justify-between items-center">
                   <div>
-                    <div className="font-semibold">{t("tokenPackage")}</div>
-                    <div className="mt-1 text-xs text-muted-foreground flex items-center gap-1">
-                      <CoinsIcon className="size-3" />
-                      <span>{t("oneMillionTokens")}</span>
+                    <div className="font-semibold flex items-center gap-2">
+                      <StarIcon className="size-4 text-primary" />
+                      {t("proSubscription")}
+                    </div>
+                    <div className="mt-2 text-xs text-muted-foreground flex items-center gap-1">
+                      <CalendarIcon className="size-3" />
+                      <span>{t("monthlySubscription")}</span>
                     </div>
                     <div className="mt-1 text-xs text-muted-foreground flex items-center gap-1">
-                      <GiftIcon className="size-3" />
-                      <span>{t("oneMillionTokensBonus")}</span>
+                      <CoinsIcon className="size-3" />
+                      <span>{t("proMonthlyTokens")}</span>
                     </div>
                   </div>
                   <div className="text-xl font-bold">
-                    {paymentMethod === PaymentMethod.stripe ? "$16" : "¥100"}
+                    {paymentMethod === PaymentMethod.stripe ? "$20" : "¥129"}
+                    <span className="text-sm font-normal">/{t("month")}</span>
                   </div>
                 </div>
               </div>
@@ -192,7 +196,7 @@ export const AddTokensDialog = ({ open, onOpenChange, onSuccess }: AddTokensDial
                   onClick={() =>
                     handlePayment({
                       paymentMethod,
-                      productName: ProductName.TOKENS1M,
+                      productName: ProductName.PRO1MONTH,
                     })
                   }
                   disabled={paymentLoading}
@@ -206,7 +210,7 @@ export const AddTokensDialog = ({ open, onOpenChange, onSuccess }: AddTokensDial
                       {t("processing")}
                     </>
                   ) : (
-                    t("pay")
+                    t("subscribe")
                   )}
                 </Button>
               </DialogFooter>

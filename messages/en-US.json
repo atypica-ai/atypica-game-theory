@@ -400,6 +400,24 @@
       "wechatPay": "WeChat Pay",
       "creditCard": "Credit Card",
       "redirectToStripe": "You'll be redirected to our secure payment page"
+    },
+    "SubscriptionDialog": {
+      "title": "Subscribe to Pro Plan",
+      "description": "Subscribe to our Pro plan for enhanced research capabilities.",
+      "subscribe": "Subscribe Now",
+      "cancel": "Cancel",
+      "paymentSuccess": "Subscription Successful!",
+      "refreshing": "Your account is being updated...",
+      "proSubscription": "Pro Subscription",
+      "monthlySubscription": "Monthly subscription plan",
+      "month": "month",
+      "proMonthlyTokens": "3M tokens monthly (valid for 30 days)",
+      "scanQrCode": "Scan the QR code with your payment app",
+      "processing": "Processing...",
+      "alipay": "Alipay",
+      "wechatPay": "WeChat Pay",
+      "creditCard": "Credit Card",
+      "redirectToStripe": "You'll be redirected to our secure payment page"
     }
   },
   "Maintenance": {

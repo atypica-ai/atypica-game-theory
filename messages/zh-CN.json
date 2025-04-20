@@ -343,8 +343,7 @@
       },
       "tokens": {
         "basicGift": "每次充值100万Token赠送100万Token（限时福利）",
-        "proGift": "每次充值100万Token赠送100万Token",
-        "proDiscount": "额外Token购买8折优惠"
+        "proGift": "每次充值100万Token赠送100万Token"
       },
       "enterprise": {
         "AdvancedAnalysisTools": "调用工具能力",
@@ -395,6 +394,24 @@
       "tokenPackage": "Token套餐",
       "oneMillionTokens": "100万Token",
       "oneMillionTokensBonus": "额外赠送100万Token（限时福利）",
+      "scanQrCode": "请使用支付应用扫描二维码",
+      "processing": "处理中...",
+      "alipay": "支付宝",
+      "wechatPay": "微信支付",
+      "creditCard": "信用卡",
+      "redirectToStripe": "您将被重定向至安全支付页面"
+    },
+    "SubscriptionDialog": {
+      "title": "订阅Pro版",
+      "description": "订阅我们的Pro版以获得增强的研究能力。",
+      "subscribe": "立即订阅",
+      "cancel": "取消",
+      "paymentSuccess": "订阅成功！",
+      "refreshing": "正在更新您的账户...",
+      "proSubscription": "Pro版订阅",
+      "monthlySubscription": "月度订阅计划",
+      "month": "月",
+      "proMonthlyTokens": "每月300万Token（有效期30天）",
       "scanQrCode": "请使用支付应用扫描二维码",
       "processing": "处理中...",
       "alipay": "支付宝",
