@@ -32,15 +32,22 @@ export const AddTokensDialog = ({ open, onOpenChange, onSuccess }: AddTokensDial
   const [error, setError] = useState<string | null>(null);
   const [paymentSuccess, setPaymentSuccess] = useState<boolean>(false);
 
-  const { handlePayment, paymentScanQR, loading: paymentLoading, error: paymentError } = usePay();
+  const {
+    createPaymentLink,
+    clearPaymentLink,
+    paymentScanQR,
+    loading: paymentLoading,
+    error: paymentError,
+  } = usePay();
 
   // Poll for payment success
   useEffect(() => {
+    console.log(open, paymentScanQR, paymentSuccess);
     if (!open || !paymentScanQR || paymentSuccess) return;
     let timeoutId: NodeJS.Timeout;
     const pollInterval = 2000; // 2 seconds
     let pollCount = 0;
-    const maxPolls = 60; // Stop polling after 2 minutes (60 * 2 seconds)
+    const maxPolls = 300; // Stop polling after 10 minutes (300 * 2 seconds)
     const poll = async () => {
       try {
         const latestPaymentRecord = await retrieveLatestPaid(paymentScanQR.createdAt);
@@ -144,6 +151,10 @@ export const AddTokensDialog = ({ open, onOpenChange, onSuccess }: AddTokensDial
                       key={method}
                       value={method}
                       disabled={paymentLoading || method === PaymentMethod.stripe}
+                      onClick={() => {
+                        // 切换 tab 需要清空带支付的二维码
+                        clearPaymentLink();
+                      }}
                     >
                       <div className="size-5 mr-1 rounded-lg overflow-hidden relative">
                         <Image src={icon} alt={method} fill className="object-contain h-5 mr-2" />
@@ -219,7 +230,7 @@ export const AddTokensDialog = ({ open, onOpenChange, onSuccess }: AddTokensDial
                 <Button
                   type="button"
                   onClick={() =>
-                    handlePayment({
+                    createPaymentLink({
                       paymentMethod,
                       productName: ProductName.TOKENS1M,
                     })

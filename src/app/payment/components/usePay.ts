@@ -117,37 +117,47 @@ export function usePay() {
   );
 
   // Handle payment initiation
-  const handlePayment = async ({
-    paymentMethod,
-    productName,
-  }: {
-    paymentMethod: PaymentMethod;
-    productName: ProductName;
-  }) => {
-    if (!session?.user) {
-      setError("You must be logged in to make a purchase");
-      return;
+  const createPaymentLink = useCallback(
+    async ({
+      paymentMethod,
+      productName,
+    }: {
+      paymentMethod: PaymentMethod;
+      productName: ProductName;
+    }) => {
+      if (!session?.user) {
+        setError("You must be logged in to make a purchase");
+        return;
+      }
+      if (paymentMethod === PaymentMethod.stripe) {
+        submitForStripePayment({
+          productName,
+          currency: Currency.USD,
+          userId: session.user.id,
+        });
+      } else {
+        await createPingxxPaymentUrl({
+          productName,
+          currency: Currency.CNY,
+          userId: session.user.id,
+          method: paymentMethod,
+        });
+      }
+    },
+    [submitForStripePayment, createPingxxPaymentUrl],
+  );
+
+  const clearPaymentLink = useCallback(() => {
+    if (paymentScanQR) {
+      setPaymentScanQR(null);
     }
-    if (paymentMethod === PaymentMethod.stripe) {
-      submitForStripePayment({
-        productName,
-        currency: Currency.USD,
-        userId: session.user.id,
-      });
-    } else {
-      await createPingxxPaymentUrl({
-        productName,
-        currency: Currency.CNY,
-        userId: session.user.id,
-        method: paymentMethod,
-      });
-    }
-  };
+  }, [paymentScanQR]);
 
   return {
     createPingxxPaymentUrl,
     submitForStripePayment,
-    handlePayment,
+    createPaymentLink,
+    clearPaymentLink,
     paymentScanQR,
     loading,
     error,

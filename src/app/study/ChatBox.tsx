@@ -143,20 +143,8 @@ export function ChatBox() {
     }
   }, [studyUserChatId, studyUserChatToken, backgroundToken]);
 
-  useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
-    const poll = async () => {
-      timeoutId = setTimeout(poll, 5000);
-      await refreshStudyUserChat();
-    };
-    poll();
-    return () => {
-      if (timeoutId) clearTimeout(timeoutId);
-    };
-  }, [refreshStudyUserChat]);
-
   const [userTokensBalance, setUserTokensBalance] = useState<number | null>(null);
-  useEffect(() => {
+  const updateUserBalance = useCallback(() => {
     getUserTokensBalance().then((result) => {
       if (result.success) {
         setUserTokensBalance(result.data);
@@ -164,7 +152,20 @@ export function ChatBox() {
         console.error(result.message);
       }
     });
-  }, [studyUserChatId]);
+  }, []);
+
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    const poll = async () => {
+      timeoutId = setTimeout(poll, 5000);
+      updateUserBalance();
+      await refreshStudyUserChat();
+    };
+    poll();
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [refreshStudyUserChat, updateUserBalance]);
 
   const waitForUser = useMemo(() => {
     const lastMessage = messages[messages.length - 1];
