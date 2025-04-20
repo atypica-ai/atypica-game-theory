@@ -342,7 +342,7 @@
         "deepDive": "Deep-dive capabilities into report topics"
       },
       "tokens": {
-        "basicGift": "Get 1M bonus tokens with each 1M token purchase (limited time)",
+        "basicGift": "Get 1M bonus tokens with each 1M token purchase (Limited Time Offer)",
         "proGift": "Get 1M bonus tokens with each 1M token purchase"
       },
       "enterprise": {
@@ -392,7 +392,8 @@
       "paymentSuccess": "Payment Successful!",
       "refreshing": "Your account is being updated...",
       "tokenPackage": "Token Package",
-      "oneMillionTokens": "1 Million Tokens",
+      "oneMillionTokens": "1M Tokens",
+      "oneMillionTokensBonus": "Extra 1M Tokens (Limited Time Offer)",
       "scanQrCode": "Scan the QR code with your payment app",
       "processing": "Processing...",
       "alipay": "Alipay",

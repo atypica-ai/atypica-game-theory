@@ -28,6 +28,7 @@ model User {
   tokens         UserTokens?
   tokensLogs     UserTokensLog[]
   adminUser      AdminUser?
+  subscription   UserSubscription?
 }
 
 enum AdminRole {
@@ -294,6 +295,23 @@ model PaymentLine {
   @@unique([paymentRecordId, productId])
 }
 
+enum SubscriptionPlan {
+  pro
+}
+
+model UserSubscription {
+  id       Int              @id @default(autoincrement())
+  userId   Int              @unique
+  user     User             @relation(fields: [userId], references: [id])
+  plan     SubscriptionPlan
+  startsAt DateTime         @default(now())
+  endsAt   DateTime?
+  extra    Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model UserTokens {
   id      Int  @id @default(autoincrement())
   userId  Int  @unique
@@ -307,7 +325,7 @@ model UserTokens {
 enum UserTokensLogVerb {
   recharge
   consume
-  daily
+  subscription
   gift
   signup
 }

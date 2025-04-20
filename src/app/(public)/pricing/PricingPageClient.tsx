@@ -94,9 +94,7 @@ export default function PricingPageClient() {
           </CardHeader>
           <CardContent className="flex-grow space-y-4">
             <div className="mb-6">
-              <Button className="w-full" disabled>
-                {t("upgradeToPro")}
-              </Button>
+              <Button className="w-full">{t("upgradeToPro")}</Button>
             </div>
             <FeatureItem text={t("features.socialPlatforms.multiple")} />
             <FeatureItem text={t("features.personas.unlimited")} />

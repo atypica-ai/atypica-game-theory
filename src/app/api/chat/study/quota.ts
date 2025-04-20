@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { UserTokensLogResourceType, UserTokensLogVerb } from "@prisma/client";
 
 /*
  * Deprecated
@@ -12,11 +13,13 @@ export async function checkQuota({
   userId: number;
   cost: number;
 }) {
+  throw new Error("Deprecated");
+
   const log = await prisma.userTokensLog.findFirst({
     where: {
       userId: userId,
-      verb: "consume",
-      resourceType: "StudyUserChat",
+      verb: UserTokensLogVerb.consume,
+      resourceType: UserTokensLogResourceType.StudyUserChat,
       resourceId: studyUserChatId,
     },
   });

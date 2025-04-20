@@ -8,6 +8,7 @@ export enum ProductName {
   // POINTS100_C = "POINTS100_C", // 星巴克咖啡
   // POINTS100_D = "POINTS100_D", // 小蓝瓶咖啡
   TOKENS1M = "TOKENS1M",
+  PRO1MONTH = "PRO1MONTH",
 }
 
 export enum PaymentMethod {

@@ -123,6 +123,7 @@ async function createProducts() {
       price: 20,
       currency: "USD",
       description: "atypica.AI Pro membership for 1 month",
+      extra: { price_id: "" }, // TODO 需要配置一个按月支付的 product
     },
   ];
   // Create products

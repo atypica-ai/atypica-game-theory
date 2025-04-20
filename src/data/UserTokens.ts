@@ -2,6 +2,7 @@
 import { prisma } from "@/lib/prisma";
 import { ServerActionResult } from "@/lib/serverAction";
 import withAuth from "@/lib/withAuth";
+import { UserTokensLogResourceType, UserTokensLogVerb } from "@prisma/client";
 
 export async function getUserTokensBalance(): Promise<ServerActionResult<number>> {
   return withAuth(async ({ id: userId }) => {
@@ -24,12 +25,14 @@ export async function checkStudyUserChatConsume({
 }: {
   studyUserChatId: number;
 }): Promise<ServerActionResult<boolean>> {
+  throw new Error("Deprecated");
+
   return withAuth(async ({ id: userId }) => {
     const log = await prisma.userTokensLog.findFirst({
       where: {
         userId: userId,
-        verb: "consume",
-        resourceType: "StudyUserChat",
+        verb: UserTokensLogVerb.consume,
+        resourceType: UserTokensLogResourceType.StudyUserChat,
         resourceId: studyUserChatId,
       },
     });

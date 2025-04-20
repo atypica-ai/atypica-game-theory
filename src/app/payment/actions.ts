@@ -1,7 +1,13 @@
 "use server";
 import { getRequestClientIp, getRequestOrigin } from "@/lib/headers";
 import { prisma } from "@/lib/prisma";
-import { Currency, PaymentRecord as PaymentRecordPrisma } from "@prisma/client";
+import {
+  Currency,
+  PaymentRecord as PaymentRecordPrisma,
+  SubscriptionPlan,
+  UserTokensLogResourceType,
+  UserTokensLogVerb,
+} from "@prisma/client";
 import { PaymentMethod, ProductName } from "./data";
 
 // Ping++ API configuration
@@ -173,8 +179,8 @@ export async function handlePaymentSuccess({ chargeId }: { chargeId: string }) {
         prisma.userTokensLog.create({
           data: {
             userId: userId,
-            verb: "recharge",
-            resourceType: "PaymentRecord",
+            verb: UserTokensLogVerb.recharge,
+            resourceType: UserTokensLogResourceType.PaymentRecord,
             resourceId: paymentRecord.id,
             value: rechargeAmount,
           },
@@ -182,8 +188,8 @@ export async function handlePaymentSuccess({ chargeId }: { chargeId: string }) {
         prisma.userTokensLog.create({
           data: {
             userId: userId,
-            verb: "gift",
-            resourceType: "PaymentRecord",
+            verb: UserTokensLogVerb.gift,
+            resourceType: UserTokensLogResourceType.PaymentRecord,
             resourceId: paymentRecord.id,
             value: giftAmount,
           },
@@ -194,6 +200,38 @@ export async function handlePaymentSuccess({ chargeId }: { chargeId: string }) {
             balance: {
               increment: rechargeAmount + giftAmount,
             },
+          },
+        }),
+      ]);
+    } else if (paymentLine.productName === ProductName.PRO1MONTH) {
+      const rechargeAmount = 3_000_000;
+      const planStartsAt = new Date();
+      const planEndsAt = new Date(planStartsAt.getTime() + 30 * 24 * 60 * 60 * 1000);
+      await prisma.$transaction([
+        prisma.userTokensLog.create({
+          data: {
+            userId: userId,
+            verb: UserTokensLogVerb.subscription,
+            resourceType: UserTokensLogResourceType.PaymentRecord,
+            resourceId: paymentRecord.id,
+            value: rechargeAmount,
+          },
+        }),
+        prisma.userTokens.update({
+          where: { userId },
+          data: {
+            balance: {
+              increment: rechargeAmount,
+            },
+          },
+        }),
+        prisma.userSubscription.create({
+          data: {
+            userId,
+            plan: SubscriptionPlan.pro,
+            startsAt: planStartsAt,
+            endsAt: planEndsAt,
+            extra: { paymentRecordId: paymentRecord.id },
           },
         }),
       ]);

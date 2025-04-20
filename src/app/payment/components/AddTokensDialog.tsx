@@ -16,7 +16,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { Currency } from "@prisma/client";
-import { LoaderCircle } from "lucide-react";
+import { CoinsIcon, GiftIcon, LoaderCircle } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
@@ -224,7 +224,14 @@ export const AddTokensDialog = ({ open, onOpenChange, onSuccess }: AddTokensDial
                 <div className="flex justify-between items-center">
                   <div>
                     <div className="font-semibold">{t("tokenPackage")}</div>
-                    <div className="text-sm text-muted-foreground">{t("oneMillionTokens")}</div>
+                    <div className="mt-1 text-xs text-muted-foreground flex items-center gap-1">
+                      <CoinsIcon className="size-3" />
+                      <span>{t("oneMillionTokens")}</span>
+                    </div>
+                    <div className="mt-1 text-xs text-muted-foreground flex items-center gap-1">
+                      <GiftIcon className="size-3" />
+                      <span>{t("oneMillionTokensBonus")}</span>
+                    </div>
                   </div>
                   <div className="text-xl font-bold">
                     {paymentMethod === PaymentMethod.stripe ? "$16" : "¥100"}
@@ -242,7 +249,11 @@ export const AddTokensDialog = ({ open, onOpenChange, onSuccess }: AddTokensDial
                     [PaymentMethod.wx_pub, "/_public/icon-wechat.png", t("wechatPay")],
                     [PaymentMethod.stripe, "/_public/icon-stripe.png", t("creditCard")],
                   ].map(([method, icon, title]) => (
-                    <TabsTrigger key={method} value={method} disabled={loading}>
+                    <TabsTrigger
+                      key={method}
+                      value={method}
+                      disabled={loading || method === PaymentMethod.stripe}
+                    >
                       <div className="size-5 mr-1 rounded-lg overflow-hidden relative">
                         <Image src={icon} alt={method} fill className="object-contain h-5 mr-2" />
                       </div>

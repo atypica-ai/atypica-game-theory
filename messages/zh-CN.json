@@ -342,7 +342,7 @@
         "deepDive": "可以进行报告主题下钻"
       },
       "tokens": {
-        "basicGift": "每次充值100万Token赠送100万Token（限时）",
+        "basicGift": "每次充值100万Token赠送100万Token（限时福利）",
         "proGift": "每次充值100万Token赠送100万Token",
         "proDiscount": "额外Token购买8折优惠"
       },
@@ -394,6 +394,7 @@
       "refreshing": "正在更新您的账户...",
       "tokenPackage": "Token套餐",
       "oneMillionTokens": "100万Token",
+      "oneMillionTokensBonus": "额外赠送100万Token（限时福利）",
       "scanQrCode": "请使用支付应用扫描二维码",
       "processing": "处理中...",
       "alipay": "支付宝",
