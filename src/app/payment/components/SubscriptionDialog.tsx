@@ -155,7 +155,7 @@ export const SubscriptionDialog = ({ open, onOpenChange, onSuccess }: Subscripti
                 </TabsTrigger>
                 <TabsTrigger
                   value="stripe"
-                  disabled={loading || true}
+                  disabled={loading}
                   onClick={() => clearPaymentLink()} // 切换 tab 需要清空带支付的二维码
                 >
                   <div className="size-5 mr-1 rounded-lg overflow-hidden relative">

@@ -137,7 +137,7 @@ export const AddTokensDialog = ({ open, onOpenChange, onSuccess }: AddTokensDial
                   <div className="size-5 mr-1 rounded-lg overflow-hidden relative">
                     <Image
                       src="/_public/icon-alipay.png"
-                      alt="stripe"
+                      alt="alipay"
                       fill
                       className="object-contain h-5 mr-2"
                     />
@@ -146,7 +146,7 @@ export const AddTokensDialog = ({ open, onOpenChange, onSuccess }: AddTokensDial
                   <div className="ml-2 size-5 mr-1 rounded-lg overflow-hidden relative">
                     <Image
                       src="/_public/icon-wechat.png"
-                      alt="stripe"
+                      alt="wechat pay"
                       fill
                       className="object-contain h-5 mr-2"
                     />
@@ -155,7 +155,7 @@ export const AddTokensDialog = ({ open, onOpenChange, onSuccess }: AddTokensDial
                 </TabsTrigger>
                 <TabsTrigger
                   value="stripe"
-                  disabled={loading || true}
+                  disabled={loading}
                   onClick={() => clearPaymentLink()} // 切换 tab 需要清空带支付的二维码
                 >
                   <div className="size-5 mr-1 rounded-lg overflow-hidden relative">

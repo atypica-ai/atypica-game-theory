@@ -16,17 +16,24 @@ export async function fetchUserTokens() {
   return userTokens;
 }
 
+// 返回最后一个 subscription
 export async function fetchUserSubscription() {
   const session = await getServerSession(authOptions);
   if (!session?.user) {
     return null;
   }
-
   const userId = session.user.id;
-  const subscription = await prisma.userSubscription.findUnique({
-    where: { userId },
+  const subscription = await prisma.userSubscription.findFirst({
+    where: {
+      userId,
+      endsAt: {
+        gt: new Date(),
+      },
+    },
+    orderBy: {
+      endsAt: "desc",
+    },
   });
-
   return subscription;
 }
 

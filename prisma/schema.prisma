@@ -28,7 +28,7 @@ model User {
   tokens         UserTokens?
   tokensLogs     UserTokensLog[]
   adminUser      AdminUser?
-  subscription   UserSubscription?
+  subscriptions  UserSubscription[]
 }
 
 enum AdminRole {
@@ -301,11 +301,11 @@ enum SubscriptionPlan {
 
 model UserSubscription {
   id       Int              @id @default(autoincrement())
-  userId   Int              @unique
+  userId   Int
   user     User             @relation(fields: [userId], references: [id])
   plan     SubscriptionPlan
-  startsAt DateTime         @default(now())
-  endsAt   DateTime?
+  startsAt DateTime
+  endsAt   DateTime
   extra    Json?
 
   createdAt DateTime @default(now())

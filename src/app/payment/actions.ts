@@ -205,8 +205,15 @@ export async function handlePaymentSuccess({ chargeId }: { chargeId: string }) {
       ]);
     } else if (paymentLine.productName === ProductName.PRO1MONTH) {
       const rechargeAmount = 3_000_000;
-      const planStartsAt = new Date();
-      const planEndsAt = new Date(planStartsAt.getTime() + 30 * 24 * 60 * 60 * 1000);
+      let planStartsAt = new Date();
+      const existingSubscription = await prisma.userSubscription.findFirst({
+        where: { userId },
+        orderBy: { endsAt: "desc" },
+      });
+      if (existingSubscription?.endsAt) {
+        planStartsAt = existingSubscription.endsAt;
+      }
+      const planEndsAt = new Date(planStartsAt.getTime() + 30 * 24 * 60 * 60 * 1000); // 有效期 31 天
       await prisma.$transaction([
         prisma.userTokensLog.create({
           data: {

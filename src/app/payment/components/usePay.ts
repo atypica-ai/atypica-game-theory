@@ -76,7 +76,9 @@ export function usePay() {
           userId: userId,
           productName,
           currency,
-          successUrl: window.location.href,
+          successUrl: /^\/pricing/.test(window.location.pathname)
+            ? `${window.location.origin}/account`
+            : window.location.href,
         };
         const form = document.createElement("form");
         form.action = "/payment/stripe";

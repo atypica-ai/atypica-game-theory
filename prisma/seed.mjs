@@ -5,42 +5,12 @@ const prisma = new PrismaClient();
 async function createProducts() {
   console.log("Starting to seed products...");
   const products = [
-    {
-      name: "TEST_A",
-      price: 0.01,
-      currency: "CNY",
-      description: "atypica.AI 开发测试",
-    },
-    {
-      name: "TEST_B",
-      price: 0.1,
-      currency: "CNY",
-      description: "atypica.AI 开发测试",
-    },
-    {
-      name: "POINTS100_A",
-      price: 7.5,
-      currency: "CNY",
-      description: "请 atypica.AI 一杯挂耳咖啡",
-    },
-    {
-      name: "POINTS100_B",
-      price: 15,
-      currency: "CNY",
-      description: "请 atypica.AI 一杯 Manner 咖啡",
-    },
-    {
-      name: "POINTS100_C",
-      price: 30,
-      currency: "CNY",
-      description: "请 atypica.AI 一杯星巴克咖啡",
-    },
-    {
-      name: "POINTS100_D",
-      price: 45,
-      currency: "CNY",
-      description: "请 atypica.AI 一杯小蓝瓶咖啡",
-    },
+    // { name: "TEST_A", price: 0.01, currency: "CNY", description: "atypica.AI 开发测试" },
+    // { name: "TEST_B", price: 0.1, currency: "CNY", description: "atypica.AI 开发测试" },
+    // { name: "POINTS100_A", price: 7.5, currency: "CNY", description: "请 atypica.AI 一杯挂耳咖啡" },
+    // { name: "POINTS100_B", price: 15, currency: "CNY", description: "请 atypica.AI 一杯 Manner 咖啡" },
+    // { name: "POINTS100_C", price: 30, currency: "CNY", description: "请 atypica.AI 一杯星巴克咖啡" },
+    // { name: "POINTS100_D", price: 45, currency: "CNY", description: "请 atypica.AI 一杯小蓝瓶咖啡" },
     {
       name: "TOKENS1M",
       price: 100,
@@ -53,48 +23,12 @@ async function createProducts() {
       currency: "CNY",
       description: "atypica.AI Pro 会员 1 个月",
     },
-    {
-      name: "TEST_A",
-      price: 1,
-      currency: "USD",
-      description: "atypica.AI 开发测试",
-      extra: { price_id: "price_1RBTWCGU0jUFYcrN9O7s7KJc" },
-    },
-    {
-      name: "TEST_B",
-      price: 2,
-      currency: "USD",
-      description: "atypica.AI 开发测试",
-      extra: { price_id: "price_1RBTWCGU0jUFYcrNt9sxHrmk" },
-    },
-    {
-      name: "POINTS100_A",
-      price: 1,
-      currency: "USD",
-      description: "Buy atypica.AI a cup of drip coffee",
-      extra: { price_id: "price_1RBgK5GU0jUFYcrN61vdZ8mG" },
-    },
-    {
-      name: "POINTS100_B",
-      price: 2,
-      currency: "USD",
-      description: "Buy atypica.AI a Manner Coffee",
-      extra: { price_id: "price_1RBgKKGU0jUFYcrNh2V99KRJ" },
-    },
-    {
-      name: "POINTS100_C",
-      price: 4,
-      currency: "USD",
-      description: "Buy atypica.AI a Starbucks Coffee",
-      extra: { price_id: "price_1RBgKYGU0jUFYcrNUO7spIAr" },
-    },
-    {
-      name: "POINTS100_D",
-      price: 6,
-      currency: "USD",
-      description: "Buy atypica.AI a Blue Bottle Coffee",
-      extra: { price_id: "price_1RBgKiGU0jUFYcrNLKj9lyeB" },
-    },
+    // { name: "TEST_A", price: 1, currency: "USD", description: "atypica.AI 开发测试", extra: { price_id: "price_1RBTWCGU0jUFYcrN9O7s7KJc" } },
+    // { name: "TEST_B", price: 2, currency: "USD", description: "atypica.AI 开发测试", extra: { price_id: "price_1RBTWCGU0jUFYcrNt9sxHrmk" } },
+    // { name: "POINTS100_A", price: 1, currency: "USD", description: "Buy atypica.AI a cup of drip coffee", extra: { price_id: "price_1RBgK5GU0jUFYcrN61vdZ8mG" } },
+    // { name: "POINTS100_B", price: 2, currency: "USD", description: "Buy atypica.AI a Manner Coffee", extra: { price_id: "price_1RBgKKGU0jUFYcrNh2V99KRJ" } },
+    // { name: "POINTS100_C", price: 4, currency: "USD", description: "Buy atypica.AI a Starbucks Coffee", extra: { price_id: "price_1RBgKYGU0jUFYcrNUO7spIAr" } },
+    // { name: "POINTS100_D", price: 6, currency: "USD", description: "Buy atypica.AI a Blue Bottle Coffee", extra: { price_id: "price_1RBgKiGU0jUFYcrNLKj9lyeB" } },
     {
       name: "TOKENS1M",
       price: 16,
@@ -107,7 +41,7 @@ async function createProducts() {
       price: 20,
       currency: "USD",
       description: "atypica.AI Pro membership for 1 month",
-      extra: { price_id: "" }, // TODO 需要配置一个按月支付的 product
+      extra: { price_id: "price_1RG1ZkGU0jUFYcrNLp3ykPOm" },
     },
   ];
   // Create products
