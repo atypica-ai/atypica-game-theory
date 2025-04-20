@@ -1,4 +1,5 @@
 "use client";
+import { AddTokensDialog } from "@/app/payment/components/AddTokensDialog";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -109,8 +110,6 @@ export function CancelButton({
 export function StatusDisplay({
   status,
   backgroundToken,
-  appendMessage,
-  // onUserCancel,
 }: {
   status:
     | "background"
@@ -121,11 +120,10 @@ export function StatusDisplay({
     | "error"
     | "ready";
   backgroundToken: string | null;
-  onUserCancel?: () => void;
-  appendMessage?: (message: string) => void;
 }) {
   const t = useTranslations("StudyPage.StatusDisplay");
   const [elapsedTime, setElapsedTime] = useState<number>(0);
+  const [isTokensDialogOpen, setIsTokensDialogOpen] = useState(false);
 
   // Update elapsed time when in background status
   useEffect(() => {
@@ -179,11 +177,7 @@ export function StatusDisplay({
           variant="ghost"
           size="sm"
           className="text-xs h-7"
-          onClick={() => {
-            if (appendMessage) {
-              appendMessage(t("addMoreTokens"));
-            }
-          }}
+          onClick={() => setIsTokensDialogOpen(true)}
         >
           <CoinsIcon className="h-3.5 w-3.5 text-amber-500" />
           {t("addMoreTokens")}
@@ -207,9 +201,7 @@ export function StatusDisplay({
           <RefreshCcwIcon className="size-4" />
         </div>
       )}
-      {/* {(status === "streaming" || status === "background") && (
-        <CancelButton onUserCancel={onUserCancel} />
-      )} */}
+      <AddTokensDialog open={isTokensDialogOpen} onOpenChange={setIsTokensDialogOpen} />
     </div>
   );
 }

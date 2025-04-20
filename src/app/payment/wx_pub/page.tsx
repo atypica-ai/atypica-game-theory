@@ -1,5 +1,6 @@
+import { Currency } from "@prisma/client";
 import Script from "next/script";
-import { ProductName } from "../constants";
+import { ProductName } from "../data";
 import PaymentClient from "./PaymentClient";
 
 async function exchangeOpenIDWithCode({ code }: { code: string }) {
@@ -30,10 +31,16 @@ export default async function PingxxPaymentPage(props: {
   const splits = state.split(":");
   const userId = parseInt(splits[0]);
   const productName = splits[1] as ProductName;
+  const currency = splits[2] as Currency;
 
   return (
     <div>
-      <PaymentClient userId={userId} productName={productName} openid={openid} />
+      <PaymentClient
+        userId={userId}
+        productName={productName}
+        currency={currency}
+        openid={openid}
+      />
       <Script
         src="https://global.heidiancdn.com/javascripts/vendor/pingpp-2.2.11.js"
         strategy="beforeInteractive"

@@ -245,7 +245,7 @@ model PaymentRecord {
   user          User          @relation(fields: [userId], references: [id])
   orderNo       String        @unique @db.VarChar(64)
   amount        Float
-  currency      Currency      @default(CNY)
+  currency      Currency
   status        PaymentStatus
   paymentMethod String        @db.VarChar(64)
   charge        Json
@@ -262,16 +262,18 @@ model PaymentRecord {
 
 model Product {
   id          Int      @id @default(autoincrement())
-  name        String   @unique @db.VarChar(64)
+  name        String   @db.VarChar(64)
   price       Float
   description String   @db.VarChar(255)
-  currency    Currency @default(CNY)
+  currency    Currency
   extra       Json?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   paymentLines PaymentLine[]
+
+  @@unique([name, currency])
 }
 
 model PaymentLine {

@@ -1,64 +1,5 @@
 {
   "tagline": "为「主观世界」建模",
-  "PricingPage": {
-    "title": "价格方案",
-    "subtitle": "选择最适合您的方案",
-    "monthly": "每月",
-    "freeTitle": "免费版",
-    "freeSubtitle": "欢迎试用Atypica",
-    "freePrice": "0元",
-    "freeTokens": "100万免费token",
-    "basicTitle": "体验版",
-    "basicSubtitle": "不定期进行基础商业分析",
-    "basicPrice": "50元",
-    "basicPerTokens": "50万Token",
-    "basicPurchaseTokens": "按需购买Token",
-    "proTitle": "Pro版",
-    "proSubtitle": "经常进行深度商业分析",
-    "proPrice": "129元",
-    "proPerMonth": "月",
-    "proMonthlyTokens": "每月300万Token",
-    "enterpriseTitle": "企业版",
-    "enterpriseSubtitle": "5月中旬上线",
-    "getStarted": "免费开始使用",
-    "chooseBasic": "购买Token",
-    "upgradeToPro": "升级到Pro版",
-    "contactSales": "联系销售",
-    "averageStudyToken": "每次研究平均40万个Token，复杂问题或者追问会消耗更多",
-    "features": {
-      "socialPlatforms": {
-        "single": "覆盖单个社交媒体平台作为调研数据源",
-        "multiple": "覆盖多个社交媒体平台作为调研数据源（现在包括：小红书、抖音、Tiktok、Ins）"
-      },
-      "personas": {
-        "limited": "生成不超过10个Persona进行调研",
-        "unlimited": "可指定Persona个数进行调研"
-      },
-      "analysisModel": {
-        "standard": "通用分析模型",
-        "enhanced": "更强的报告推理模型",
-        "superior": "强大的报告推理模型"
-      },
-      "reports": {
-        "followUp": "可以进行报告追问",
-        "deepDive": "可以进行报告主题下钻"
-      },
-      "tokens": {
-        "discount": "额外Token购买8折优惠"
-      },
-      "enterprise": {
-        "AdvancedAnalysisTools": "调用工具能力",
-        "DataIntegration": "调用数据能力",
-        "SecurityAndCollaboration": "权限安全管理"
-      },
-      "multiModal": "支持多模态输入分析、洞察（文字、图片、视频）",
-      "customReports": "定制企业报告结构",
-      "enterpriseData": "接入企业私有数据",
-      "customPersonas": "定制企业私有Persona",
-      "collaboration": "团队协作功能（分享、协作）",
-      "security": "数据安全功能（指定可见、有效期）"
-    }
-  },
   "HomePage": {
     "title": "首页",
     "HistoryDrawer": {
@@ -248,33 +189,6 @@
       "backToSignIn": "返回登录"
     }
   },
-  "Components": {
-    "UserTokensBalance": {
-      "balance": "{balance} 个 Token 可用"
-    },
-    "ReportsListPanel": {
-      "title": "本次研究的报告",
-      "noReportsYet": "暂无报告"
-    },
-    "UserMenu": {
-      "login": "登录",
-      "logout": "退出登录",
-      "lightTheme": "浅色主题",
-      "darkTheme": "深色主题",
-      "history": "历史对话",
-      "pricing": "价格方案"
-    },
-    "TokenAlertDialog": {
-      "confirmOperation": "确认操作",
-      "tokenConsumption": "此操作将消耗 {value} 个 Token，是否继续？",
-      "cancel": "取消",
-      "confirm": "确认"
-    },
-    "ExpandableText": {
-      "showMore": "显示更多",
-      "showLess": "显示更少"
-    }
-  },
   "StudyPage": {
     "research": "研究",
     "ShareReplayButton": {
@@ -328,7 +242,7 @@
     "RequestPaymentMessage": {
       "outOfQuotaHintCoffee": "免费研究额度已经用完，不如请一杯咖啡再做一份研究？",
       "outOfQuotaHint": "免费研究额度已经用完，您可以购买研究Token以继续。",
-      "scanQrCode": "请扫描以下二维码完成支付",
+      "addMoreTokens": "购买更多 Token",
       "paymentSuccess": "🎉 支付成功，atypica.AI 的研究即将开始！"
     },
     "ToolConsole": {
@@ -382,6 +296,110 @@
       "shareReport": "分享报告",
       "copyLink": "复制链接",
       "linkCopied": "链接已复制！"
+    }
+  },
+  "PricingPage": {
+    "title": "价格方案",
+    "subtitle": "选择最适合您的方案",
+    "monthly": "每月",
+    "freeTitle": "免费版",
+    "freeSubtitle": "欢迎试用Atypica",
+    "freePrice": "0元",
+    "freeTokens": "100万免费token",
+    "basicTitle": "体验版",
+    "basicSubtitle": "不定期进行基础商业分析",
+    "basicPrice": "100元",
+    "basicPerTokens": "100万Token",
+    "basicPurchaseTokens": "按需充值Token",
+    "proTitle": "Pro版",
+    "proSubtitle": "经常进行深度商业分析",
+    "proPrice": "129元",
+    "proPerMonth": "月",
+    "proMonthlyTokens": "每月300万Token（有效期30天）",
+    "enterpriseTitle": "企业版",
+    "enterpriseSubtitle": "5月中旬上线",
+    "getStarted": "免费开始使用",
+    "chooseBasic": "购买Token",
+    "upgradeToPro": "升级到Pro版",
+    "contactSales": "联系销售",
+    "averageStudyToken": "每次研究平均40万个Token，复杂问题或者追问会消耗更多",
+    "features": {
+      "socialPlatforms": {
+        "single": "覆盖单个社交媒体平台作为调研数据源",
+        "multiple": "覆盖多个社交媒体平台作为调研数据源（现在包括：小红书、抖音、Tiktok、Ins）"
+      },
+      "personas": {
+        "limited": "生成不超过10个Persona进行调研",
+        "unlimited": "可指定Persona个数进行调研"
+      },
+      "analysisModel": {
+        "standard": "通用分析模型",
+        "enhanced": "更强的报告推理模型",
+        "superior": "强大的报告推理模型"
+      },
+      "reports": {
+        "followUp": "可以进行报告追问",
+        "deepDive": "可以进行报告主题下钻"
+      },
+      "tokens": {
+        "basicGift": "每次充值100万Token赠送100万Token（限时）",
+        "proGift": "每次充值100万Token赠送100万Token",
+        "proDiscount": "额外Token购买8折优惠"
+      },
+      "enterprise": {
+        "AdvancedAnalysisTools": "调用工具能力",
+        "DataIntegration": "调用数据能力",
+        "SecurityAndCollaboration": "权限安全管理"
+      },
+      "multiModal": "支持多模态输入分析、洞察（文字、图片、视频）",
+      "customReports": "定制企业报告结构",
+      "enterpriseData": "接入企业私有数据",
+      "customPersonas": "定制企业私有Persona",
+      "collaboration": "团队协作功能（分享、协作）",
+      "security": "数据安全功能（指定可见、有效期）"
+    }
+  },
+  "Components": {
+    "UserTokensBalance": {
+      "balance": "{balance} 个 Token 可用"
+    },
+    "ReportsListPanel": {
+      "title": "本次研究的报告",
+      "noReportsYet": "暂无报告"
+    },
+    "UserMenu": {
+      "login": "登录",
+      "logout": "退出登录",
+      "lightTheme": "浅色主题",
+      "darkTheme": "深色主题",
+      "history": "历史对话",
+      "pricing": "价格方案"
+    },
+    "TokenAlertDialog": {
+      "confirmOperation": "确认操作",
+      "tokenConsumption": "此操作将消耗 {value} 个 Token，是否继续？",
+      "cancel": "取消",
+      "confirm": "确认"
+    },
+    "ExpandableText": {
+      "showMore": "显示更多",
+      "showLess": "显示更少"
+    },
+    "AddTokensDialog": {
+      "title": "购买Tokens",
+      "description": "购买tokens以继续使用atypica.AI研究功能。",
+      "pay": "立即支付",
+      "cancel": "取消",
+      "paymentSuccess": "支付成功！",
+      "refreshing": "正在更新您的账户...",
+      "tokenPackage": "Token套餐",
+      "oneMillionTokens": "100万Token",
+      "scanQrCode": "请使用支付应用扫描二维码",
+      "processing": "处理中...",
+      "alipay": "支付宝",
+      "wechatPay": "微信支付",
+      "creditCard": "信用卡",
+      "redirectToStripe": "您将被重定向至安全支付页面"
     }
   },
   "Maintenance": {

@@ -1,21 +1,22 @@
 import { getRequestOrigin } from "@/lib/headers";
 import { prisma } from "@/lib/prisma";
+import { Currency } from "@prisma/client";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
-import { PaymentMethod, ProductName } from "../constants";
+import { PaymentMethod, ProductName, StripeNewPaymentParams } from "../data";
 
 // Create a fake charge for stripe
 async function createStripeFakeCharge({
   userId,
   productName,
+  currency,
   successUrl,
-}: {
-  userId: number;
-  productName: ProductName;
-  successUrl?: string;
-}) {
+}: StripeNewPaymentParams) {
   // const clientIp = await getRequestClientIp();
   const paymentMethod: PaymentMethod = PaymentMethod.stripe;
+  if (currency !== Currency.USD) {
+    throw new Error("Only USD currency is supported");
+  }
 
   // Generate a unique order number
   const timestamp = Date.now().toString();
@@ -24,11 +25,11 @@ async function createStripeFakeCharge({
     .padStart(3, "0");
   const orderNo = `ATP${randomPart}${timestamp}`;
   const product = await prisma.product.findUniqueOrThrow({
-    where: { name: productName },
+    where: {
+      name_currency: { name: productName, currency: currency },
+    },
   });
-  if (product.currency !== "USD") {
-    throw new Error("Only USD currency is supported");
-  }
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const priceId = (product.extra as any)?.price_id ?? null;
   if (!priceId) {
@@ -93,10 +94,13 @@ async function createStripeFakeCharge({
 export async function POST(req: Request) {
   try {
     const formData = await req.formData();
-    const userId = parseInt(formData.get("userId") as string);
-    const productName = formData.get("productName") as string as ProductName;
-    const successUrl = formData.get("successUrl") as string;
-    const { session } = await createStripeFakeCharge({ userId, productName, successUrl });
+    const params: StripeNewPaymentParams = {
+      userId: parseInt(formData.get("userId") as string),
+      productName: formData.get("productName") as string as ProductName,
+      currency: formData.get("currency") as string as Currency,
+      successUrl: formData.get("successUrl") as string,
+    };
+    const { session } = await createStripeFakeCharge(params);
     return NextResponse.redirect(session.url, 303);
   } catch (error) {
     return NextResponse.json(

@@ -1,14 +1,17 @@
 "use client";
+import { AddTokensDialog } from "@/app/payment/components/AddTokensDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { CheckIcon } from "lucide-react";
+import { CheckIcon, GiftIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
+import { useState } from "react";
 import { sayHelloToSales } from "./enterprise";
 
 export default function PricingPageClient() {
   const t = useTranslations("PricingPage");
+  const [isTokensDialogOpen, setIsTokensDialogOpen] = useState(false);
 
   return (
     <div className={cn("flex-1 overflow-y-auto scrollbar-thin", "px-4 py-16")}>
@@ -56,13 +59,17 @@ export default function PricingPageClient() {
           </CardHeader>
           <CardContent className="flex-grow space-y-4">
             <div className="mb-6">
-              <Button className="w-full" asChild>
-                <Link href="/auth/signup">{t("chooseBasic")}</Link>
+              <Button className="w-full" onClick={() => setIsTokensDialogOpen(true)}>
+                {t("chooseBasic")}
               </Button>
             </div>
             <FeatureItem text={t("features.socialPlatforms.multiple")} />
             <FeatureItem text={t("features.personas.limited")} />
             <FeatureItem text={t("features.reports.followUp")} />
+            <div className="flex items-start text-sm">
+              <GiftIcon className="size-4 text-primary mr-2 mt-0.5" />
+              <span className="flex-1">{t("features.tokens.basicGift")}</span>
+            </div>
           </CardContent>
         </Card>
 
@@ -87,15 +94,18 @@ export default function PricingPageClient() {
           </CardHeader>
           <CardContent className="flex-grow space-y-4">
             <div className="mb-6">
-              <Button className="w-full" asChild>
-                <Link href="/auth/signup">{t("upgradeToPro")}</Link>
+              <Button className="w-full" disabled>
+                {t("upgradeToPro")}
               </Button>
             </div>
             <FeatureItem text={t("features.socialPlatforms.multiple")} />
             <FeatureItem text={t("features.personas.unlimited")} />
             <FeatureItem text={t("features.reports.followUp")} />
             <FeatureItem text={t("features.analysisModel.enhanced")} />
-            <FeatureItem text={t("features.tokens.discount")} />
+            <div className="flex items-start text-sm">
+              <GiftIcon className="size-4 text-primary mr-2 mt-0.5" />
+              <span className="flex-1">{t("features.tokens.proGift")}</span>
+            </div>
           </CardContent>
         </Card>
 
@@ -129,6 +139,8 @@ export default function PricingPageClient() {
           </CardContent>
         </Card>
       </div>
+
+      <AddTokensDialog open={isTokensDialogOpen} onOpenChange={setIsTokensDialogOpen} />
     </div>
   );
 }
@@ -136,7 +148,7 @@ export default function PricingPageClient() {
 function FeatureItem({ text }: { text: string }) {
   return (
     <div className="flex items-start text-sm">
-      <CheckIcon className="size-3 text-primary mr-2 mt-0.5" />
+      <CheckIcon className="size-4 text-primary mr-2 mt-0.5" />
       <span className="flex-1">{text}</span>
     </div>
   );

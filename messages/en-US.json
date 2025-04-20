@@ -1,64 +1,5 @@
 {
   "tagline": "Modeling the Subjective World",
-  "PricingPage": {
-    "title": "Pricing Plans",
-    "subtitle": "Choose the plan that works best for you",
-    "monthly": "Monthly",
-    "freeTitle": "Free",
-    "freeSubtitle": "Perfect for first-time users",
-    "freePrice": "$0",
-    "freeTokens": "1M free tokens",
-    "basicTitle": "Basic",
-    "basicSubtitle": "For occasional business analysis needs",
-    "basicPrice": "$16",
-    "basicPerTokens": "1M tokens",
-    "basicPurchaseTokens": "Purchase tokens as needed",
-    "proTitle": "Pro",
-    "proSubtitle": "For regular in-depth business analysis",
-    "proPrice": "$20",
-    "proPerMonth": "month",
-    "proMonthlyTokens": "3M tokens monthly",
-    "enterpriseTitle": "Enterprise",
-    "enterpriseSubtitle": "Coming mid-May",
-    "getStarted": "Get Started Free",
-    "chooseBasic": "Buy Tokens",
-    "upgradeToPro": "Upgrade to Pro",
-    "contactSales": "Contact Sales",
-    "averageStudyToken": "average study uses 400K tokens; complex queries consume more",
-    "features": {
-      "socialPlatforms": {
-        "single": "Access to single social media platform for research data",
-        "multiple": "Access to multiple social media platforms (currently includes: TikTok, Instagram, Rednote, Douyin)"
-      },
-      "personas": {
-        "limited": "Generate up to 10 personas for market research",
-        "unlimited": "Unlimited custom personas for targeted research"
-      },
-      "analysisModel": {
-        "standard": "Standard analysis model",
-        "enhanced": "Enhanced report reasoning model",
-        "superior": "Superior report reasoning model"
-      },
-      "reports": {
-        "followUp": "Follow-up queries on generated reports",
-        "deepDive": "Deep-dive capabilities into report topics"
-      },
-      "tokens": {
-        "discount": "20% discount on additional token purchases"
-      },
-      "enterprise": {
-        "AdvancedAnalysisTools": "Advanced Analysis Tools",
-        "DataIntegration": "Data Integration",
-        "SecurityAndCollaboration": "Security and Collaboration"
-      },
-      "multiModal": "Multi-modal input analysis and insights (text, images, video)",
-      "customReports": "Customized enterprise report structures",
-      "enterpriseData": "Integration with proprietary enterprise data",
-      "customPersonas": "Custom enterprise personas",
-      "collaboration": "Team collaboration features (share, collaborate)",
-      "security": "Data security controls (specified visibility, expiration dates)"
-    }
-  },
   "HomePage": {
     "title": "Home",
     "HistoryDrawer": {
@@ -248,33 +189,6 @@
       "backToSignIn": "Back to Sign In"
     }
   },
-  "Components": {
-    "UserTokensBalance": {
-      "balance": "{balance} available tokens"
-    },
-    "ReportsListPanel": {
-      "title": "Reports for this study",
-      "noReportsYet": "No reports yet"
-    },
-    "UserMenu": {
-      "login": "Login",
-      "logout": "Logout",
-      "lightTheme": "Light Theme",
-      "darkTheme": "Dark Theme",
-      "history": "Chat History",
-      "pricing": "Pricing"
-    },
-    "TokenAlertDialog": {
-      "confirmOperation": "Confirm Operation",
-      "tokenConsumption": "This operation will consume {value} tokens, do you want to continue?",
-      "cancel": "Cancel",
-      "confirm": "Confirm"
-    },
-    "ExpandableText": {
-      "showMore": "Show More",
-      "showLess": "Show Less"
-    }
-  },
   "StudyPage": {
     "research": "Research",
     "ShareReplayButton": {
@@ -328,7 +242,7 @@
     "RequestPaymentMessage": {
       "outOfQuotaHintCoffee": "You've used up your free research quota. How about buying me a coffee for another research?",
       "outOfQuotaHint": "You've used up your free research tokens. You can purchase more tokens to continue.",
-      "scanQrCode": "Please scan the QR code below to complete payment",
+      "addMoreTokens": "Add more tokens",
       "paymentSuccess": "🎉 Payment successful, atypica.AI research is about to begin!"
     },
     "ToolConsole": {
@@ -382,6 +296,109 @@
       "shareReport": "Share Report",
       "copyLink": "Copy Link",
       "linkCopied": "Link copied!"
+    }
+  },
+  "PricingPage": {
+    "title": "Pricing Plans",
+    "subtitle": "Choose the plan that works best for you",
+    "monthly": "Monthly",
+    "freeTitle": "Free",
+    "freeSubtitle": "Perfect for first-time users",
+    "freePrice": "$0",
+    "freeTokens": "1M free tokens",
+    "basicTitle": "Basic",
+    "basicSubtitle": "For occasional business analysis needs",
+    "basicPrice": "$16",
+    "basicPerTokens": "1M tokens",
+    "basicPurchaseTokens": "Pay-as-you-go tokens",
+    "proTitle": "Pro",
+    "proSubtitle": "For regular in-depth business analysis",
+    "proPrice": "$20",
+    "proPerMonth": "month",
+    "proMonthlyTokens": "3M tokens monthly (valid for 30 days)",
+    "enterpriseTitle": "Enterprise",
+    "enterpriseSubtitle": "Coming mid-May",
+    "getStarted": "Get Started Free",
+    "chooseBasic": "Buy Tokens",
+    "upgradeToPro": "Upgrade to Pro",
+    "contactSales": "Contact Sales",
+    "averageStudyToken": "average study uses 400K tokens; complex queries consume more",
+    "features": {
+      "socialPlatforms": {
+        "single": "Access to single social media platform for research data",
+        "multiple": "Access to multiple social media platforms (currently includes: TikTok, Instagram, Rednote, Douyin)"
+      },
+      "personas": {
+        "limited": "Generate up to 10 personas for market research",
+        "unlimited": "Unlimited custom personas for targeted research"
+      },
+      "analysisModel": {
+        "standard": "Standard analysis model",
+        "enhanced": "Enhanced report reasoning model",
+        "superior": "Superior report reasoning model"
+      },
+      "reports": {
+        "followUp": "Follow-up queries on generated reports",
+        "deepDive": "Deep-dive capabilities into report topics"
+      },
+      "tokens": {
+        "basicGift": "Get 1M bonus tokens with each 1M token purchase (limited time)",
+        "proGift": "Get 1M bonus tokens with each 1M token purchase"
+      },
+      "enterprise": {
+        "AdvancedAnalysisTools": "Advanced Analysis Tools",
+        "DataIntegration": "Data Integration",
+        "SecurityAndCollaboration": "Security and Collaboration"
+      },
+      "multiModal": "Multi-modal input analysis and insights (text, images, video)",
+      "customReports": "Customized enterprise report structures",
+      "enterpriseData": "Integration with proprietary enterprise data",
+      "customPersonas": "Custom enterprise personas",
+      "collaboration": "Team collaboration features (share, collaborate)",
+      "security": "Data security controls (specified visibility, expiration dates)"
+    }
+  },
+  "Components": {
+    "UserTokensBalance": {
+      "balance": "{balance} available tokens"
+    },
+    "ReportsListPanel": {
+      "title": "Reports for this study",
+      "noReportsYet": "No reports yet"
+    },
+    "UserMenu": {
+      "login": "Login",
+      "logout": "Logout",
+      "lightTheme": "Light Theme",
+      "darkTheme": "Dark Theme",
+      "history": "Chat History",
+      "pricing": "Pricing"
+    },
+    "TokenAlertDialog": {
+      "confirmOperation": "Confirm Operation",
+      "tokenConsumption": "This operation will consume {value} tokens, do you want to continue?",
+      "cancel": "Cancel",
+      "confirm": "Confirm"
+    },
+    "ExpandableText": {
+      "showMore": "Show More",
+      "showLess": "Show Less"
+    },
+    "AddTokensDialog": {
+      "title": "Purchase Tokens",
+      "description": "Purchase tokens to continue using atypica.AI research capabilities.",
+      "pay": "Pay Now",
+      "cancel": "Cancel",
+      "paymentSuccess": "Payment Successful!",
+      "refreshing": "Your account is being updated...",
+      "tokenPackage": "Token Package",
+      "oneMillionTokens": "1 Million Tokens",
+      "scanQrCode": "Scan the QR code with your payment app",
+      "processing": "Processing...",
+      "alipay": "Alipay",
+      "wechatPay": "WeChat Pay",
+      "creditCard": "Credit Card",
+      "redirectToStripe": "You'll be redirected to our secure payment page"
     }
   },
   "Maintenance": {

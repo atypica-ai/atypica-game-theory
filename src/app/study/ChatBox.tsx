@@ -49,7 +49,6 @@ export function ChatBox() {
     status: useChatStatus,
     reload,
     addToolResult,
-    append,
   } = useChat({
     id: studyUserChatId.toString(),
     initialMessages: initialMessages,
@@ -249,17 +248,7 @@ export function ChatBox() {
             {error?.message?.toString() || error.toString()}
           </div>
         )}
-        <StatusDisplay
-          status={uiStatus}
-          backgroundToken={backgroundToken}
-          onUserCancel={async () => {
-            await clearStudyUserChatBackgroundToken(studyUserChatId);
-            setTimeout(() => window.location.reload(), 100);
-          }}
-          appendMessage={(message: string) => {
-            append({ role: "user", content: message });
-          }}
-        />
+        <StatusDisplay status={uiStatus} backgroundToken={backgroundToken} />
         <div className="absolute right-0 -bottom-1">
           <NerdStats />
         </div>

@@ -1,12 +1,13 @@
 "use client";
 import { createCharge } from "@/app/payment/actions";
-import { PaymentMethod, ProductName } from "@/app/payment/constants";
+import { PaymentMethod, ProductName } from "@/app/payment/data";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Pagination } from "@/components/ui/pagination";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ExtractServerActionData } from "@/lib/serverAction";
+import { Currency } from "@prisma/client";
 import { SearchIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -109,7 +110,11 @@ export default function PaymentTestPage() {
   }, []);
 
   // Initiate payment
-  const handlePayment = async (method: PaymentMethod, productName: ProductName) => {
+  const handlePayment = async (
+    method: PaymentMethod,
+    productName: ProductName,
+    currency: Currency,
+  ) => {
     setIsLoading(true);
     setError("");
 
@@ -121,6 +126,7 @@ export default function PaymentTestPage() {
         userId: session.user.id,
         paymentMethod: method,
         productName,
+        currency,
         successUrl: window.location.href,
       });
       // Use Ping++ SDK to handle the payment
@@ -179,13 +185,17 @@ export default function PaymentTestPage() {
             </CardHeader>
             <CardContent className="flex flex-row gap-4">
               <Button
-                onClick={() => handlePayment(PaymentMethod.alipay_pc_direct, ProductName.TEST_A)}
+                onClick={() =>
+                  handlePayment(PaymentMethod.alipay_pc_direct, ProductName.TEST_A, Currency.CNY)
+                }
                 disabled={isLoading}
               >
                 Pay 0.01 CNY
               </Button>
               <Button
-                onClick={() => handlePayment(PaymentMethod.alipay_pc_direct, ProductName.TEST_B)}
+                onClick={() =>
+                  handlePayment(PaymentMethod.alipay_pc_direct, ProductName.TEST_B, Currency.CNY)
+                }
                 disabled={isLoading}
               >
                 Pay 0.1 CNY
@@ -204,13 +214,17 @@ export default function PaymentTestPage() {
             </CardHeader>
             <CardContent className="flex flex-row gap-4">
               <Button
-                onClick={() => handlePayment(PaymentMethod.alipay_wap, ProductName.TEST_A)}
+                onClick={() =>
+                  handlePayment(PaymentMethod.alipay_wap, ProductName.TEST_A, Currency.CNY)
+                }
                 disabled={isLoading}
               >
                 Pay 0.01 CNY
               </Button>
               <Button
-                onClick={() => handlePayment(PaymentMethod.alipay_wap, ProductName.TEST_B)}
+                onClick={() =>
+                  handlePayment(PaymentMethod.alipay_wap, ProductName.TEST_B, Currency.CNY)
+                }
                 disabled={isLoading}
               >
                 Pay 0.1 CNY
@@ -227,7 +241,8 @@ export default function PaymentTestPage() {
             <CardContent className="flex flex-row gap-4">
               <form action="/payment/stripe" method="POST">
                 <input type="hidden" name="userId" value={session?.user?.id} />
-                <input type="hidden" name="productName" value={ProductName.TEST_A_GLOBAL} />
+                <input type="hidden" name="productName" value={ProductName.TEST_A} />
+                <input type="hidden" name="currency" value={Currency.USD} />
                 <input
                   type="hidden"
                   name="successUrl"
@@ -239,7 +254,8 @@ export default function PaymentTestPage() {
               </form>
               <form action="/payment/stripe" method="POST">
                 <input type="hidden" name="userId" value={session?.user?.id} />
-                <input type="hidden" name="productName" value={ProductName.TEST_B_GLOBAL} />
+                <input type="hidden" name="productName" value={ProductName.TEST_B} />
+                <input type="hidden" name="currency" value={Currency.USD} />
                 <input
                   type="hidden"
                   name="successUrl"

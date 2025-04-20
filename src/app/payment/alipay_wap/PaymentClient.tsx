@@ -1,16 +1,19 @@
 "use client";
+import { Currency } from "@prisma/client";
 import { useCallback, useEffect } from "react";
 import { toast } from "sonner";
 import { createCharge } from "../actions";
-import { PaymentMethod, ProductName } from "../constants";
+import { PaymentMethod, ProductName } from "../data";
 
 export default function PaymentClient({
   userId,
   productName,
+  currency,
   successUrl,
 }: {
   userId: number;
   productName: ProductName;
+  currency: Currency;
   successUrl: string;
 }) {
   const handlePayment = useCallback(async () => {
@@ -18,6 +21,7 @@ export default function PaymentClient({
       userId,
       paymentMethod: PaymentMethod.alipay_wap,
       productName,
+      currency,
       successUrl: successUrl,
     });
     if (window.pingpp) {
@@ -31,7 +35,7 @@ export default function PaymentClient({
         }
       });
     }
-  }, [productName, successUrl, userId]);
+  }, [productName, successUrl, currency, userId]);
 
   useEffect(() => {
     handlePayment();

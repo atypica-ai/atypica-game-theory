@@ -1,10 +1,8 @@
 "use server";
 import { getRequestClientIp, getRequestOrigin } from "@/lib/headers";
 import { prisma } from "@/lib/prisma";
-import { ServerActionResult } from "@/lib/serverAction";
-import { PaymentRecord as PaymentRecordPrisma } from "@prisma/client";
-import { headers } from "next/headers";
-import { PaymentMethod, ProductName } from "./constants";
+import { Currency, PaymentRecord as PaymentRecordPrisma } from "@prisma/client";
+import { PaymentMethod, ProductName } from "./data";
 
 // Ping++ API configuration
 const PINGPP_API_KEY = process.env.PINGPP_API_KEY!;
@@ -22,15 +20,20 @@ export async function createCharge({
   userId,
   paymentMethod,
   productName,
+  currency,
   successUrl,
   openid,
 }: {
   userId: number;
   paymentMethod: PaymentMethod;
   productName: ProductName;
+  currency: Currency;
   successUrl?: string;
   openid?: string;
 }) {
+  if (currency !== "CNY") {
+    throw new Error("Only CNY currency is supported");
+  }
   // const session = await getServerSession(authOptions);
   // if (!session?.user) {
   //   forbidden();
@@ -45,11 +48,13 @@ export async function createCharge({
     .padStart(3, "0");
   const orderNo = `ATP${randomPart}${timestamp}`;
   const product = await prisma.product.findUniqueOrThrow({
-    where: { name: productName },
+    where: {
+      name_currency: {
+        name: productName,
+        currency: currency,
+      },
+    },
   });
-  if (product.currency !== "CNY") {
-    throw new Error("Only CNY currency is supported");
-  }
   const lines = [
     {
       productId: product.id,
@@ -135,6 +140,18 @@ export async function createCharge({
   };
 }
 
+export async function retrieveLatestPaid(createdAtFrom: Date) {
+  return await prisma.paymentRecord.findFirst({
+    where: {
+      createdAt: {
+        gte: createdAtFrom,
+      },
+      status: "succeeded",
+    },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
 export async function handlePaymentSuccess({ chargeId }: { chargeId: string }) {
   const paymentRecord = await prisma.paymentRecord.findUniqueOrThrow({
     where: { chargeId },
@@ -149,10 +166,9 @@ export async function handlePaymentSuccess({ chargeId }: { chargeId: string }) {
     update: {},
   });
   for (const paymentLine of paymentRecord.paymentLines) {
-    if (
-      paymentLine.productName === ProductName.TOKENS1M ||
-      paymentLine.productName === ProductName.TOKENS1M_GLOBAL
-    ) {
+    if (paymentLine.productName === ProductName.TOKENS1M) {
+      const rechargeAmount = 1_000_000;
+      const giftAmount = 1_000_000;
       await prisma.$transaction([
         prisma.userTokensLog.create({
           data: {
@@ -160,14 +176,23 @@ export async function handlePaymentSuccess({ chargeId }: { chargeId: string }) {
             verb: "recharge",
             resourceType: "PaymentRecord",
             resourceId: paymentRecord.id,
-            value: 1_000_000,
+            value: rechargeAmount,
+          },
+        }),
+        prisma.userTokensLog.create({
+          data: {
+            userId: userId,
+            verb: "gift",
+            resourceType: "PaymentRecord",
+            resourceId: paymentRecord.id,
+            value: giftAmount,
           },
         }),
         prisma.userTokens.update({
           where: { userId },
           data: {
             balance: {
-              increment: 1_000_000,
+              increment: rechargeAmount + giftAmount,
             },
           },
         }),
@@ -175,39 +200,4 @@ export async function handlePaymentSuccess({ chargeId }: { chargeId: string }) {
     }
   }
   // end for
-}
-
-export async function getProductsForPayment(): Promise<
-  ServerActionResult<{ name: ProductName; desc: string; price: number; currency: string }[]>
-> {
-  const headersList = await headers();
-  // TODO: 现在不用阿里云的边缘加速了，没法设置 http 请求超时时间，只能直连 k8s 的 nlb，这样就得自己判断 ip 归属地了
-  if ((headersList.get("ali-ip-country") ?? "CN") === "CN") {
-    return {
-      success: true,
-      data: [
-        { name: ProductName.TOKENS1M, desc: "1,000,000 Token", price: 100, currency: "CNY" },
-        // { name: ProductName.POINTS100_A, desc: "挂耳咖啡", price: 7.5, currency: "CNY" },
-        // { name: ProductName.POINTS100_B, desc: "Manner咖啡", price: 15, currency: "CNY" },
-        // { name: ProductName.POINTS100_C, desc: "星巴克咖啡", price: 30, currency: "CNY" },
-        // { name: ProductName.POINTS100_D, desc: "小蓝瓶咖啡", price: 45, currency: "CNY" },
-      ],
-    };
-  } else {
-    return {
-      success: true,
-      data: [
-        {
-          name: ProductName.TOKENS1M_GLOBAL,
-          desc: "1,000,000 tokens",
-          price: 14,
-          currency: "USD",
-        },
-        // {name: ProductName.POINTS100_A_GLOBAL, desc: "A cup of drip coffee", price: 1, currency: "USD" },
-        // {name: ProductName.POINTS100_B_GLOBAL, desc: "A Manner Coffee", price: 2, currency: "USD" },
-        // {name: ProductName.POINTS100_C_GLOBAL, desc: "A Starbucks Coffee", price: 4, currency: "USD" },
-        // {name: ProductName.POINTS100_D_GLOBAL, desc: "A Blue Bottle Coffee", price: 6, currency: "USD" },
-      ],
-    };
-  }
 }

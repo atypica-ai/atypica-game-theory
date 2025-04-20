@@ -1,18 +1,12 @@
-import { getProductsForPayment } from "@/app/payment/actions";
-import { ProductName } from "@/app/payment/constants";
+import { AddTokensDialog } from "@/app/payment/components/AddTokensDialog";
 import { useStudyContext } from "@/app/study/hooks/StudyContext";
+import { Button } from "@/components/ui/button";
 import { getUserTokensBalance } from "@/data/UserTokens";
-import { ExtractServerActionData } from "@/lib/serverAction";
 import { RequestPaymentResult } from "@/tools/user/payment";
 import { ToolInvocation } from "ai";
-import { MessageCircleQuestionIcon } from "lucide-react";
-import { useSession } from "next-auth/react";
+import { CoinsIcon, MessageCircleQuestionIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import Script from "next/script";
-import { QRCodeSVG } from "qrcode.react";
-import { FC, useCallback, useEffect, useState } from "react";
-
-type ProductForPayment = ExtractServerActionData<typeof getProductsForPayment>[number];
+import { FC, useEffect, useState } from "react";
 
 export const RequestPaymentMessage: FC<{
   toolInvocation: ToolInvocation;
@@ -28,7 +22,7 @@ export const RequestPaymentMessage: FC<{
   // addToolResult
 }) => {
   const t = useTranslations("StudyPage.RequestPaymentMessage");
-  const { data: session } = useSession();
+  const [isTokensDialogOpen, setIsTokensDialogOpen] = useState(false);
   const {
     studyUserChat: { id: studyUserChatId },
   } = useStudyContext();
@@ -66,136 +60,22 @@ export const RequestPaymentMessage: FC<{
     };
   }, [toolInvocation.state, toolInvocation.toolCallId, studyUserChatId]);
 
-  const [isMobile, setIsMobile] = useState<boolean>(false);
-  useEffect(() => {
-    const checkMobile = () => {
-      const userAgent = window.navigator.userAgent.toLowerCase();
-      const mobileRegex = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i;
-      setIsMobile(mobileRegex.test(userAgent));
-    };
-    checkMobile();
-  }, []);
-
-  const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
-  const createPingxxPaymentUrl = useCallback(
-    async ({ productName, userId }: { productName: ProductName; userId: number }) => {
-      const url = new URL(`${window.location.origin}/payment/new`);
-      const params = new URLSearchParams();
-      params.append("userId", userId.toString());
-      // params.append("paymentMethod", paymentMethod);
-      params.append("productName", productName);
-      if (isMobile) {
-        params.append("successUrl", encodeURIComponent(window.location.href));
-      } else {
-        // 因为是弹出二维码在手机上扫码支付，手机上显示固定的支付成功地址
-        params.append(
-          "successUrl",
-          encodeURIComponent(`${window.location.origin}/payment/success`),
-        );
-      }
-      url.search = params.toString();
-      if (isMobile) {
-        window.location.href = url.toString();
-      } else {
-        setPaymentUrl(url.toString());
-      }
-    },
-    [isMobile],
-  );
-
-  const submitForStripePayment = useCallback(
-    ({ productName, userId }: { productName: ProductName; userId: number }) => {
-      const form = document.createElement("form");
-      form.action = "/payment/stripe";
-      form.method = "POST";
-      const formData = [
-        { name: "userId", value: userId.toString() },
-        { name: "productName", value: productName },
-        { name: "successUrl", value: window.location.href },
-      ];
-      for (const item of formData) {
-        const input = document.createElement("input");
-        input.name = item.name;
-        input.value = item.value;
-        form.appendChild(input);
-      }
-      document.body.appendChild(form);
-      form.submit();
-      document.body.removeChild(form);
-    },
-    [],
-  );
-
-  const handlePayment = async (item: ProductForPayment) => {
-    if (!session?.user) {
-      return;
-    }
-    if (item.currency === "CNY") {
-      await createPingxxPaymentUrl({
-        productName: item.name,
-        userId: session.user.id,
-      });
-    } else if (item.currency === "USD") {
-      submitForStripePayment({
-        productName: item.name,
-        userId: session.user.id,
-      });
-    }
-  };
-
-  const [products, setProducts] = useState<ProductForPayment[]>([]);
-  useEffect(() => {
-    getProductsForPayment().then((result) => {
-      if (result.success) {
-        setProducts(result.data);
-      }
-    });
-  }, []);
-
   return !paymentSuccess ? (
     <div className="p-4 bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 rounded-lg">
       <div className="text-sm text-foreground/80 mb-3 flex items-center justify-start gap-1">
         <strong>{t("outOfQuotaHint")}</strong>
         <MessageCircleQuestionIcon className="size-4" />
       </div>
-      <div className="flex flex-col gap-2">
-        {products.map((item, index) => (
-          <div
-            key={index}
-            className="p-2 rounded-md border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-700 cursor-pointer"
-            onClick={() => handlePayment(item)}
-          >
-            <div className="text-xs flex items-center justify-between">
-              <span>{item.desc}</span>
-              <span className="ml-auto">
-                {item.currency === "CNY" ? "¥" : item.currency === "USD" ? "$" : item.currency}
-              </span>
-              <span>{item.price}</span>
-            </div>
-          </div>
-        ))}
-      </div>
-      <Script
-        src="https://global.heidiancdn.com/javascripts/vendor/pingpp-2.2.11.js"
-        strategy="lazyOnload"
-        // onError={() => setError("Failed to load Ping++ SDK")}
-      />
-      {/* <div>{paymentUrl}</div> */}
-      {paymentUrl && (
-        <div className="qrcode-container">
-          <div className="my-4 text-xs">
-            <span>{t("scanQrCode")}</span>
-          </div>
-          <QRCodeSVG
-            value={paymentUrl}
-            size={180}
-            bgColor="#FFFFFF"
-            fgColor="#000000"
-            level="H"
-            marginSize={0}
-          />
-        </div>
-      )}
+      <Button
+        variant="ghost"
+        size="sm"
+        className="text-xs h-7"
+        onClick={() => setIsTokensDialogOpen(true)}
+      >
+        <CoinsIcon className="h-3.5 w-3.5 text-amber-500" />
+        {t("addMoreTokens")}
+      </Button>
+      <AddTokensDialog open={isTokensDialogOpen} onOpenChange={setIsTokensDialogOpen} />
     </div>
   ) : (
     <div className="text-sm">{t("paymentSuccess")}</div>
