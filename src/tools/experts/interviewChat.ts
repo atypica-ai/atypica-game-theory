@@ -49,6 +49,19 @@ export const interviewChatTool = ({
     execute: async ({ analystId, personas }): Promise<InterviewChatResult> => {
       const single = async ({ id: personaId, name: personaName }: { id: number; name: string }) => {
         try {
+          const interview = await prisma.analystInterview.findUnique({
+            where: { analystId_personaId: { analystId, personaId } },
+          });
+          // 不重复访谈
+          if (interview?.conclusion) {
+            return {
+              analystId,
+              personaId,
+              personaName,
+              conclusion: interview.conclusion,
+              result: `已经对 ${personaName} 进行了访谈，无需重复进行`,
+            };
+          }
           const { analystInterviewId, interviewUserChatId, prompt } = await prepareDBForInterview({
             userId,
             personaId,
