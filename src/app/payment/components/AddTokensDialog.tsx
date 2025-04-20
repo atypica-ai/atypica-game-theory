@@ -11,7 +11,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { CoinsIcon, CreditCardIcon, GiftIcon, LoaderCircle } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
 import Script from "next/script";
@@ -27,6 +27,7 @@ interface AddTokensDialogProps {
 }
 
 export const AddTokensDialog = ({ open, onOpenChange, onSuccess }: AddTokensDialogProps) => {
+  const locale = useLocale();
   const t = useTranslations("Components.AddTokensDialog");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(PaymentMethod.wx_pub);
   const [error, setError] = useState<string | null>(null);
@@ -127,7 +128,9 @@ export const AddTokensDialog = ({ open, onOpenChange, onSuccess }: AddTokensDial
                     </div>
                     <div className="mt-1 text-xs text-muted-foreground flex items-center gap-1">
                       <GiftIcon className="size-3" />
-                      <span>{t("oneMillionTokensBonus")}</span>
+                      <span className={cn(locale === "en-US" && "tracking-tight")}>
+                        {t("oneMillionTokensBonus")}
+                      </span>
                     </div>
                   </div>
                   <div className="text-xl font-bold">

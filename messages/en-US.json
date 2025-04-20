@@ -308,14 +308,14 @@
     "freeTokens": "1M free tokens",
     "basicTitle": "Basic",
     "basicSubtitle": "For occasional business analysis needs",
-    "basicPrice": "$16",
-    "basicPerTokens": "1M tokens",
-    "basicPurchaseTokens": "Pay-as-you-go tokens",
+    "oneMillionTokensPrice": "$16",
+    "oneMillionTokens": "1M tokens",
+    "payAsYouGoTokens": "Pay-as-you-go tokens",
     "proTitle": "Pro",
     "proSubtitle": "For regular in-depth business analysis",
     "proPrice": "$20",
-    "proPerMonth": "month",
-    "proMonthlyTokens": "3M tokens monthly (valid for 30 days)",
+    "month": "month",
+    "proMonthlyTokens": "3M tokens (30-day validity)",
     "enterpriseTitle": "Enterprise",
     "enterpriseSubtitle": "Coming mid-May",
     "getStarted": "Get Started Free",
@@ -342,8 +342,8 @@
         "deepDive": "Deep-dive capabilities into report topics"
       },
       "tokens": {
-        "basicGift": "Get 1M bonus tokens with each 1M token purchase (Limited Time Offer)",
-        "proGift": "Get 1M bonus tokens with each 1M token purchase"
+        "basicGift": "Limited Offer: +1M bonus tokens per purchase",
+        "proGift": "Limited Offer: +1M bonus tokens per purchase"
       },
       "enterprise": {
         "AdvancedAnalysisTools": "Advanced Analysis Tools",
@@ -396,7 +396,7 @@
       "paymentSuccess": "Payment Successful!",
       "tokenPackage": "Basic Plan",
       "oneMillionTokens": "1M Tokens",
-      "oneMillionTokensBonus": "Extra 1M Tokens (Limited Time Offer)",
+      "oneMillionTokensBonus": "Limited Offer: +1M bonus tokens per purchase",
       "scanQrCode": "Scan the QR code with your payment app",
       "processing": "Processing...",
       "alipay": "Alipay",
@@ -416,7 +416,7 @@
       "proSubscription": "Pro Plan",
       "monthlySubscription": "Monthly subscription plan",
       "month": "month",
-      "proMonthlyTokens": "3M tokens monthly (valid for 30 days)",
+      "proMonthlyTokens": "3M tokens (30-day validity)",
       "scanQrCode": "Scan the QR code with your payment app",
       "processing": "Processing...",
       "alipay": "Alipay",

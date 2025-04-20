@@ -11,7 +11,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { CalendarIcon, CoinsIcon, CreditCardIcon, LoaderCircle, StarIcon } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
 import Script from "next/script";
@@ -27,6 +27,7 @@ interface SubscriptionDialogProps {
 }
 
 export const SubscriptionDialog = ({ open, onOpenChange, onSuccess }: SubscriptionDialogProps) => {
+  const locale = useLocale();
   const t = useTranslations("Components.SubscriptionDialog");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(PaymentMethod.wx_pub);
   const [error, setError] = useState<string | null>(null);
@@ -53,10 +54,6 @@ export const SubscriptionDialog = ({ open, onOpenChange, onSuccess }: Subscripti
         if (latestPaymentRecord) {
           setPaymentSuccess(true);
           if (onSuccess) onSuccess();
-          // setTimeout(() => {
-          //   onOpenChange(false);
-          //   window.location.reload();
-          // }, 2000);
           return;
         }
       } catch (err) {
@@ -72,7 +69,7 @@ export const SubscriptionDialog = ({ open, onOpenChange, onSuccess }: Subscripti
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [open, paymentScanQR, paymentSuccess, onSuccess, onOpenChange]);
+  }, [open, paymentScanQR, paymentSuccess, onSuccess]);
 
   return (
     <>
@@ -130,7 +127,9 @@ export const SubscriptionDialog = ({ open, onOpenChange, onSuccess }: Subscripti
                     </div>
                     <div className="mt-1 text-xs text-muted-foreground flex items-center gap-1">
                       <CoinsIcon className="size-3" />
-                      <span>{t("proMonthlyTokens")}</span>
+                      <span className={cn(locale === "en-US" && "tracking-tight")}>
+                        {t("proMonthlyTokens")}
+                      </span>
                     </div>
                   </div>
                   <div className="text-xl font-bold">

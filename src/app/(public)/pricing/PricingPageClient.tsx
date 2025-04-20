@@ -5,12 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { CheckIcon, GiftIcon } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useState } from "react";
 import { sayHelloToSales } from "./enterprise";
 
 export default function PricingPageClient() {
+  const locale = useLocale();
   const t = useTranslations("PricingPage");
   const [isTokensDialogOpen, setIsTokensDialogOpen] = useState(false);
   const [isSubscriptionDialogOpen, setIsSubscriptionDialogOpen] = useState(false);
@@ -22,13 +23,13 @@ export default function PricingPageClient() {
         <p className="text-xl text-muted-foreground">{t("subtitle")}</p>
       </div>
 
-      <div className="md:py-24 max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
+      <div className="md:py-24 max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
         {/* Free Plan */}
         <Card className="flex flex-col border-muted/40">
           <CardHeader>
             <CardTitle className="text-2xl">{t("freeTitle")}</CardTitle>
             <CardDescription className="h-12">{t("freeSubtitle")}</CardDescription>
-            <div className="mt-4 h-30">
+            <div className="mt-4 h-40">
               <div className="text-3xl font-bold">{t("freePrice")}</div>
               <div className="mt-1">{t("freeTokens")}</div>
             </div>
@@ -50,12 +51,22 @@ export default function PricingPageClient() {
           <CardHeader>
             <CardTitle className="text-2xl">{t("basicTitle")}</CardTitle>
             <CardDescription className="h-12">{t("basicSubtitle")}</CardDescription>
-            <div className="mt-4 h-30">
+            <div className="mt-4 h-40">
               <div>
-                <span className="text-3xl font-bold">{t("basicPrice")}</span>
-                <span className="text-lg">/{t("basicPerTokens")}</span>
+                <span className="text-3xl font-bold">{t("oneMillionTokensPrice")}</span>
+                <span className="text-lg">/{t("oneMillionTokens")}</span>
               </div>
-              <div className="mt-1">{t("basicPurchaseTokens")}</div>
+              <div className={cn("mt-1", locale === "en-US" && "tracking-tighter")}>
+                {t("payAsYouGoTokens")}
+              </div>
+              <div className="mt-2 flex items-start text-sm">
+                <GiftIcon className="size-4 text-primary mr-2 mt-0.5" />
+                <span
+                  className={cn("flex-1 font-semibold", locale === "en-US" && "tracking-tight")}
+                >
+                  {t("features.tokens.basicGift")}
+                </span>
+              </div>
               <div className="mt-2 text-muted-foreground text-xs">{t("averageStudyToken")}</div>
             </div>
           </CardHeader>
@@ -65,13 +76,12 @@ export default function PricingPageClient() {
                 {t("chooseBasic")}
               </Button>
             </div>
-            <FeatureItem text={t("features.socialPlatforms.multiple")} />
+            <FeatureItem
+              text={t("features.socialPlatforms.multiple")}
+              className={cn(locale === "en-US" && "tracking-tighter")}
+            />
             <FeatureItem text={t("features.personas.limited")} />
             <FeatureItem text={t("features.reports.followUp")} />
-            <div className="flex items-start text-sm">
-              <GiftIcon className="size-4 text-primary mr-2 mt-0.5" />
-              <span className="flex-1">{t("features.tokens.basicGift")}</span>
-            </div>
           </CardContent>
         </Card>
 
@@ -85,12 +95,22 @@ export default function PricingPageClient() {
           <CardHeader>
             <CardTitle className="text-2xl">{t("proTitle")}</CardTitle>
             <CardDescription className="h-12">{t("proSubtitle")}</CardDescription>
-            <div className="mt-4 h-30">
+            <div className="mt-4 h-40">
               <div>
                 <span className="text-3xl font-bold">{t("proPrice")}</span>
-                <span className="text-lg">/{t("proPerMonth")}</span>
+                <span className="text-lg">/{t("month")}</span>
               </div>
-              <div className="mt-1">{t("proMonthlyTokens")}</div>
+              <div className={cn("mt-1", locale === "en-US" && "tracking-tighter")}>
+                {t("proMonthlyTokens")}
+              </div>
+              <div className="mt-2 flex items-start text-sm">
+                <GiftIcon className="size-4 text-primary mr-2 mt-0.5" />
+                <span
+                  className={cn("flex-1 font-semibold", locale === "en-US" && "tracking-tight")}
+                >
+                  {t("features.tokens.proGift")}
+                </span>
+              </div>
               <div className="mt-2 text-muted-foreground text-xs">{t("averageStudyToken")}</div>
             </div>
           </CardHeader>
@@ -100,14 +120,13 @@ export default function PricingPageClient() {
                 {t("upgradeToPro")}
               </Button>
             </div>
-            <FeatureItem text={t("features.socialPlatforms.multiple")} />
+            <FeatureItem
+              text={t("features.socialPlatforms.multiple")}
+              className={cn(locale === "en-US" && "tracking-tighter")}
+            />
             <FeatureItem text={t("features.personas.unlimited")} />
             <FeatureItem text={t("features.reports.followUp")} />
             <FeatureItem text={t("features.analysisModel.enhanced")} />
-            <div className="flex items-start text-sm">
-              <GiftIcon className="size-4 text-primary mr-2 mt-0.5" />
-              <span className="flex-1">{t("features.tokens.proGift")}</span>
-            </div>
           </CardContent>
         </Card>
 
@@ -130,7 +149,10 @@ export default function PricingPageClient() {
             <FeatureItem text={t("features.reports.followUp")} />
             <FeatureItem text={t("features.reports.deepDive")} />
             <h3 className="font-medium mb-3 mt-6">{t("features.enterprise.DataIntegration")}:</h3>
-            <FeatureItem text={t("features.socialPlatforms.multiple")} />
+            <FeatureItem
+              text={t("features.socialPlatforms.multiple")}
+              className={cn(locale === "en-US" && "tracking-tighter")}
+            />
             <FeatureItem text={t("features.enterpriseData")} />
             <FeatureItem text={t("features.customPersonas")} />
             <h3 className="font-medium mb-3 mt-6">
@@ -151,9 +173,9 @@ export default function PricingPageClient() {
   );
 }
 
-function FeatureItem({ text }: { text: string }) {
+function FeatureItem({ text, className }: { text: string; className?: string }) {
   return (
-    <div className="flex items-start text-sm">
+    <div className={cn("flex items-start text-sm", className)}>
       <CheckIcon className="size-4 text-primary mr-2 mt-0.5" />
       <span className="flex-1">{text}</span>
     </div>

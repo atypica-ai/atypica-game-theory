@@ -97,7 +97,7 @@ export default function FeaturedStudiesClient() {
             </CardContent>
             <CardFooter>
               <Button variant="outline" asChild className="w-full text-xs md:text-sm">
-                <Link href={`/study/${study.studyUserChat.token}/share?replay=1`}>
+                <Link href={`/study/${study.studyUserChat.token}/share?replay=1`} target="_blank">
                   {t("viewStudy")}
                 </Link>
               </Button>
@@ -109,32 +109,55 @@ export default function FeaturedStudiesClient() {
   };
 
   return (
-    <div
-      className={cn(
-        "flex-1 overflow-hidden",
-        " py-4 md:py-6 px-4 md:px-6 flex flex-col items-center gap-4 md:gap-6 max-w-screen-2xl mx-auto",
-      )}
-    >
-      <h1 className="text-2xl md:text-3xl font-bold text-center">{t("title")}</h1>
-      <p className="text-muted-foreground mt-1 text-center text-sm md:text-base max-w-lg">
-        {t("description")}
-      </p>
+    <div className={cn("flex-1 overflow-y-auto scrollbar-thin", "py-4 md:py-6 px-4 md:px-6")}>
+      <div className=" flex flex-col items-center gap-4 md:gap-6 max-w-screen-2xl mx-auto">
+        <h1 className="text-2xl md:text-3xl font-bold text-center">{t("title")}</h1>
+        <p className="text-muted-foreground mt-1 text-center text-sm md:text-base max-w-lg">
+          {t("description")}
+        </p>
 
-      {/* Desktop view: Tabs */}
-      <Tabs
-        defaultValue="all"
-        value={activeCategory}
-        onValueChange={setActiveCategory}
-        className="mt-6 items-center hidden md:flex w-full"
-      >
-        <TabsList className="mb-6">
-          {categories.map((category) => (
-            <TabsTrigger key={category} value={category} className="capitalize">
-              {getCategoryLabel(category)}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-        <TabsContent value={activeCategory}>
+        {/* Desktop view: Tabs */}
+        <Tabs
+          defaultValue="all"
+          value={activeCategory}
+          onValueChange={setActiveCategory}
+          className="mt-6 items-center hidden md:flex w-full"
+        >
+          <TabsList className="mb-6">
+            {categories.map((category) => (
+              <TabsTrigger key={category} value={category} className="capitalize">
+                {getCategoryLabel(category)}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+          <TabsContent value={activeCategory}>
+            {isLoading ? (
+              <div className="flex justify-center">
+                <Loader2Icon className="size-8 animate-spin" />
+              </div>
+            ) : (
+              renderStudyGrid(filteredStudies)
+            )}
+          </TabsContent>
+        </Tabs>
+
+        {/* Mobile view: Dropdown select */}
+        <div className="md:hidden w-full max-w-xs mt-6">
+          <select
+            value={activeCategory}
+            onChange={(e) => setActiveCategory(e.target.value)}
+            className="w-full p-2 border rounded-md bg-background"
+          >
+            {categories.map((category) => (
+              <option key={category} value={category} className="capitalize">
+                {getCategoryLabel(category)}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Mobile view: Content area */}
+        <div className="md:hidden w-full mt-4">
           {isLoading ? (
             <div className="flex justify-center">
               <Loader2Icon className="size-8 animate-spin" />
@@ -142,33 +165,7 @@ export default function FeaturedStudiesClient() {
           ) : (
             renderStudyGrid(filteredStudies)
           )}
-        </TabsContent>
-      </Tabs>
-
-      {/* Mobile view: Dropdown select */}
-      <div className="md:hidden w-full max-w-xs mt-6">
-        <select
-          value={activeCategory}
-          onChange={(e) => setActiveCategory(e.target.value)}
-          className="w-full p-2 border rounded-md bg-background"
-        >
-          {categories.map((category) => (
-            <option key={category} value={category} className="capitalize">
-              {getCategoryLabel(category)}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* Mobile view: Content area */}
-      <div className="md:hidden w-full mt-4">
-        {isLoading ? (
-          <div className="flex justify-center">
-            <Loader2Icon className="size-8 animate-spin" />
-          </div>
-        ) : (
-          renderStudyGrid(filteredStudies)
-        )}
+        </div>
       </div>
     </div>
   );

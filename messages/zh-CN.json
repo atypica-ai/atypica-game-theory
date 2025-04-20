@@ -299,22 +299,22 @@
     }
   },
   "PricingPage": {
-    "title": "价格方案",
+    "title": "定价",
     "subtitle": "选择最适合您的方案",
     "monthly": "每月",
     "freeTitle": "免费版",
     "freeSubtitle": "欢迎试用Atypica",
     "freePrice": "0元",
-    "freeTokens": "100万免费token",
+    "freeTokens": "100万免费Token",
     "basicTitle": "体验版",
     "basicSubtitle": "不定期进行基础商业分析",
-    "basicPrice": "100元",
-    "basicPerTokens": "100万Token",
-    "basicPurchaseTokens": "按需充值Token",
+    "oneMillionTokensPrice": "100元",
+    "oneMillionTokens": "100万Token",
+    "payAsYouGoTokens": "按需充值Token",
     "proTitle": "Pro版",
     "proSubtitle": "经常进行深度商业分析",
     "proPrice": "129元",
-    "proPerMonth": "月",
+    "month": "月",
     "proMonthlyTokens": "每月300万Token（有效期30天）",
     "enterpriseTitle": "企业版",
     "enterpriseSubtitle": "5月中旬上线",
@@ -326,7 +326,7 @@
     "features": {
       "socialPlatforms": {
         "single": "覆盖单个社交媒体平台作为调研数据源",
-        "multiple": "覆盖多个社交媒体平台作为调研数据源（现在包括：小红书、抖音、Tiktok、Ins）"
+        "multiple": "覆盖多个社交媒体平台作为调研数据源（现在包括：小红书、抖音、Tiktok、Instagram）"
       },
       "personas": {
         "limited": "生成不超过10个Persona进行调研",
@@ -342,8 +342,8 @@
         "deepDive": "可以进行报告主题下钻"
       },
       "tokens": {
-        "basicGift": "每次充值100万Token赠送100万Token（限时福利）",
-        "proGift": "每次充值100万Token赠送100万Token"
+        "basicGift": "限时优惠：充值100万再送100万",
+        "proGift": "限时优惠：充值100万再送100万"
       },
       "enterprise": {
         "AdvancedAnalysisTools": "调用工具能力",
@@ -373,7 +373,7 @@
       "lightTheme": "浅色主题",
       "darkTheme": "深色主题",
       "history": "历史研究",
-      "pricing": "价格方案"
+      "pricing": "定价"
     },
     "TokenAlertDialog": {
       "confirmOperation": "确认操作",
@@ -388,7 +388,7 @@
     "AddTokensDialog": {
       "title": "购买Token",
       "description": "购买Token以继续使用atypica.AI研究功能。",
-      "viewPricing": "查看价格方案",
+      "viewPricing": "查看定价",
       "pay": "立即支付",
       "cancel": "取消",
       "refreshPage": "刷新页面",
@@ -396,7 +396,7 @@
       "paymentSuccess": "支付成功！",
       "tokenPackage": "体验版",
       "oneMillionTokens": "100万Token",
-      "oneMillionTokensBonus": "额外赠送100万Token（限时福利）",
+      "oneMillionTokensBonus": "限时优惠：充值100万再送100万",
       "scanQrCode": "请使用支付应用扫描二维码",
       "processing": "处理中...",
       "alipay": "支付宝",
@@ -407,7 +407,7 @@
     "SubscriptionDialog": {
       "title": "订阅个人Pro版",
       "description": "订阅我们的Pro版以获得增强的研究能力。",
-      "viewPricing": "查看价格方案",
+      "viewPricing": "查看定价",
       "subscribe": "立即订阅",
       "cancel": "取消",
       "refreshPage": "刷新页面",
