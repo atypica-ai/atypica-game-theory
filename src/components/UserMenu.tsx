@@ -60,13 +60,11 @@ export default function UserMenu() {
   const Menus = () => {
     return (
       <>
-        <DropdownMenuItem onClick={() => setTheme("light")}>
-          <Sun className="h-4 w-4 mr-2" />
-          {t("lightTheme")}
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("dark")}>
-          <Moon className="h-4 w-4 mr-2" />
-          {t("darkTheme")}
+        <DropdownMenuItem asChild>
+          <Link href="/pricing">
+            <CreditCardIcon className="h-4 w-4 mr-2" />
+            {t("pricing")}
+          </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={toggleLocale}>
@@ -74,11 +72,13 @@ export default function UserMenu() {
           {locale === "zh-CN" ? "English" : "中文"}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link href="/pricing">
-            <CreditCardIcon className="h-4 w-4 mr-2" />
-            {t("pricing")}
-          </Link>
+        <DropdownMenuItem onClick={() => setTheme("light")}>
+          <Sun className="h-4 w-4 mr-2" />
+          {t("lightTheme")}
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme("dark")}>
+          <Moon className="h-4 w-4 mr-2" />
+          {t("darkTheme")}
         </DropdownMenuItem>
       </>
     );
@@ -96,7 +96,7 @@ export default function UserMenu() {
             <User className="size-5" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
+        <DropdownMenuContent align="end" className="min-w-36">
           <DropdownMenuItem asChild>
             <Link href={`/auth/signin?callbackUrl=${encodeURIComponent(signinCallbackUrl)}`}>
               <LogInIcon className="h-4 w-4 mr-2" />
@@ -119,11 +119,12 @@ export default function UserMenu() {
               <HippyGhostAvatar seed={session.user.id} className="size-8" />
             </Avatar>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent align="end" className="min-w-36">
             <DropdownMenuItem asChild>
               <Link href="/account">
                 <User className="h-4 w-4 mr-2" />
-                <span className="text-xs tracking-tight">{session.user.email}</span>
+                <span>{t("viewAccount")}</span>
+                {/* <span className="ml-2 text-xs tracking-tight">{session.user.email}</span> */}
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />

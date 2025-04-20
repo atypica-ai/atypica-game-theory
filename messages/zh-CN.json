@@ -369,9 +369,10 @@
     "UserMenu": {
       "login": "登录",
       "logout": "退出登录",
+      "viewAccount": "查看账户",
       "lightTheme": "浅色主题",
       "darkTheme": "深色主题",
-      "history": "历史对话",
+      "history": "历史研究",
       "pricing": "价格方案"
     },
     "TokenAlertDialog": {
@@ -385,15 +386,15 @@
       "showLess": "显示更少"
     },
     "AddTokensDialog": {
-      "title": "购买Tokens",
-      "description": "购买tokens以继续使用atypica.AI研究功能。",
+      "title": "购买Token",
+      "description": "购买Token以继续使用atypica.AI研究功能。",
       "viewPricing": "查看价格方案",
       "pay": "立即支付",
       "cancel": "取消",
       "refreshPage": "刷新页面",
       "goToAccount": "查看账户",
       "paymentSuccess": "支付成功！",
-      "tokenPackage": "Token套餐",
+      "tokenPackage": "体验版",
       "oneMillionTokens": "100万Token",
       "oneMillionTokensBonus": "额外赠送100万Token（限时福利）",
       "scanQrCode": "请使用支付应用扫描二维码",
@@ -449,9 +450,9 @@
       "notSubscribed": "未订阅"
     },
     "tokensSection": {
-      "title": "Tokens",
+      "title": "Token",
       "balance": "余额",
-      "purchase": "购买Tokens"
+      "purchase": "购买Token"
     },
     "historySection": {
       "title": "交易记录",

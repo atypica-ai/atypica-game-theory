@@ -369,9 +369,10 @@
     "UserMenu": {
       "login": "Login",
       "logout": "Logout",
+      "viewAccount": "View Account",
       "lightTheme": "Light Theme",
       "darkTheme": "Dark Theme",
-      "history": "Chat History",
+      "history": "Study History",
       "pricing": "Pricing"
     },
     "TokenAlertDialog": {
@@ -393,7 +394,7 @@
       "refreshPage": "Refresh Page",
       "goToAccount": "View Account",
       "paymentSuccess": "Payment Successful!",
-      "tokenPackage": "Token Package",
+      "tokenPackage": "Basic Plan",
       "oneMillionTokens": "1M Tokens",
       "oneMillionTokensBonus": "Extra 1M Tokens (Limited Time Offer)",
       "scanQrCode": "Scan the QR code with your payment app",

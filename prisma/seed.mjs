@@ -6,63 +6,54 @@ async function createProducts() {
   console.log("Starting to seed products...");
   const products = [
     {
-      oldName: "TEST_A",
       name: "TEST_A",
       price: 0.01,
       currency: "CNY",
       description: "atypica.AI 开发测试",
     },
     {
-      oldName: "TEST_B",
       name: "TEST_B",
       price: 0.1,
       currency: "CNY",
       description: "atypica.AI 开发测试",
     },
     {
-      oldName: "POINTS100_A",
       name: "POINTS100_A",
       price: 7.5,
       currency: "CNY",
       description: "请 atypica.AI 一杯挂耳咖啡",
     },
     {
-      oldName: "POINTS100_B",
       name: "POINTS100_B",
       price: 15,
       currency: "CNY",
       description: "请 atypica.AI 一杯 Manner 咖啡",
     },
     {
-      oldName: "POINTS100_C",
       name: "POINTS100_C",
       price: 30,
       currency: "CNY",
       description: "请 atypica.AI 一杯星巴克咖啡",
     },
     {
-      oldName: "POINTS100_D",
       name: "POINTS100_D",
       price: 45,
       currency: "CNY",
       description: "请 atypica.AI 一杯小蓝瓶咖啡",
     },
     {
-      oldName: "TOKENS1M",
       name: "TOKENS1M",
       price: 100,
       currency: "CNY",
       description: "atypica.AI 充值 100 万 Tokens",
     },
     {
-      oldName: "PRO1MONTH",
       name: "PRO1MONTH",
       price: 129,
       currency: "CNY",
       description: "atypica.AI Pro 会员 1 个月",
     },
     {
-      oldName: "TEST_A_GLOBAL",
       name: "TEST_A",
       price: 1,
       currency: "USD",
@@ -70,7 +61,6 @@ async function createProducts() {
       extra: { price_id: "price_1RBTWCGU0jUFYcrN9O7s7KJc" },
     },
     {
-      oldName: "TEST_B_GLOBAL",
       name: "TEST_B",
       price: 2,
       currency: "USD",
@@ -78,7 +68,6 @@ async function createProducts() {
       extra: { price_id: "price_1RBTWCGU0jUFYcrNt9sxHrmk" },
     },
     {
-      oldName: "POINTS100_A_GLOBAL",
       name: "POINTS100_A",
       price: 1,
       currency: "USD",
@@ -86,7 +75,6 @@ async function createProducts() {
       extra: { price_id: "price_1RBgK5GU0jUFYcrN61vdZ8mG" },
     },
     {
-      oldName: "POINTS100_B_GLOBAL",
       name: "POINTS100_B",
       price: 2,
       currency: "USD",
@@ -94,7 +82,6 @@ async function createProducts() {
       extra: { price_id: "price_1RBgKKGU0jUFYcrNh2V99KRJ" },
     },
     {
-      oldName: "POINTS100_C_GLOBAL",
       name: "POINTS100_C",
       price: 4,
       currency: "USD",
@@ -102,7 +89,6 @@ async function createProducts() {
       extra: { price_id: "price_1RBgKYGU0jUFYcrNUO7spIAr" },
     },
     {
-      oldName: "POINTS100_D_GLOBAL",
       name: "POINTS100_D",
       price: 6,
       currency: "USD",
@@ -110,7 +96,6 @@ async function createProducts() {
       extra: { price_id: "price_1RBgKiGU0jUFYcrNLKj9lyeB" },
     },
     {
-      oldName: "TOKENS1M_GLOBAL",
       name: "TOKENS1M",
       price: 16,
       currency: "USD",
@@ -118,7 +103,6 @@ async function createProducts() {
       extra: { price_id: "price_1RFNxFGU0jUFYcrNgjrI3a7K" },
     },
     {
-      oldName: "PRO1MONTH",
       name: "PRO1MONTH",
       price: 20,
       currency: "USD",
@@ -127,12 +111,12 @@ async function createProducts() {
     },
   ];
   // Create products
-  for (const { oldName, name, price, currency, description, extra } of products) {
+  for (const { name, price, currency, description, extra } of products) {
     try {
       const createdProduct = await prisma.product.upsert({
         where: {
           name_currency: {
-            name: oldName,
+            name: name,
             currency: currency,
           },
         },
