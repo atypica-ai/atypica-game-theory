@@ -25,7 +25,7 @@ export default function PricingPageClient() {
 
       <div className="md:py-24 max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
         {/* Free Plan */}
-        <Card className="flex flex-col border-muted/40">
+        <Card className="flex flex-col not-dark:border-muted/40">
           <CardHeader>
             <CardTitle className="text-2xl">{t("freeTitle")}</CardTitle>
             <CardDescription className="h-12">{t("freeSubtitle")}</CardDescription>
@@ -47,7 +47,7 @@ export default function PricingPageClient() {
         </Card>
 
         {/* Basic Plan */}
-        <Card className="flex flex-col border-muted/40">
+        <Card className="flex flex-col not-dark:border-muted/40">
           <CardHeader>
             <CardTitle className="text-2xl">{t("basicTitle")}</CardTitle>
             <CardDescription className="h-12">{t("basicSubtitle")}</CardDescription>
@@ -131,7 +131,7 @@ export default function PricingPageClient() {
         </Card>
 
         {/* Enterprise Plan */}
-        <Card className="flex flex-col border-muted/40">
+        <Card className="flex flex-col not-dark:border-muted/40">
           <CardHeader>
             <CardTitle className="text-2xl">{t("enterpriseTitle")}</CardTitle>
             <CardDescription>{t("enterpriseSubtitle")}</CardDescription>

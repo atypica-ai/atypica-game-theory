@@ -1,6 +1,6 @@
 import { Currency } from "@prisma/client";
 import Script from "next/script";
-import { ProductName } from "../data";
+import { PingxxNewPaymentParams, ProductName } from "../data";
 import PaymentClient from "./PaymentClient";
 
 export default async function PingxxPaymentPage(props: {
@@ -12,19 +12,16 @@ export default async function PingxxPaymentPage(props: {
   }>;
 }) {
   const searchParams = await props.searchParams;
-  const userId = parseInt(searchParams.userId);
-  const productName = searchParams.productName as ProductName;
-  const currency = searchParams.currency as Currency;
-  const successUrl = searchParams.successUrl;
+  const params: PingxxNewPaymentParams = {
+    userId: parseInt(searchParams.userId),
+    productName: searchParams.productName as ProductName,
+    currency: searchParams.currency as Currency,
+    successUrl: searchParams.successUrl,
+  };
 
   return (
     <div>
-      <PaymentClient
-        userId={userId}
-        productName={productName}
-        currency={currency}
-        successUrl={successUrl}
-      />
+      <PaymentClient {...params} />
       <Script
         src="https://global.heidiancdn.com/javascripts/vendor/pingpp-2.2.11.js"
         strategy="beforeInteractive"

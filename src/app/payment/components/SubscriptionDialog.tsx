@@ -14,7 +14,6 @@ import { CalendarIcon, CoinsIcon, CreditCardIcon, LoaderCircle, StarIcon } from 
 import { useLocale, useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
-import Script from "next/script";
 import { QRCodeSVG } from "qrcode.react";
 import { useEffect, useState } from "react";
 import { retrieveLatestPaid } from "../actions";
@@ -30,16 +29,9 @@ export const SubscriptionDialog = ({ open, onOpenChange, onSuccess }: Subscripti
   const locale = useLocale();
   const t = useTranslations("Components.SubscriptionDialog");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(PaymentMethod.wx_pub);
-  const [error, setError] = useState<string | null>(null);
   const [paymentSuccess, setPaymentSuccess] = useState<boolean>(false);
 
-  const {
-    createPaymentLink,
-    clearPaymentLink,
-    paymentScanQR,
-    loading: paymentLoading,
-    error: paymentError,
-  } = usePay();
+  const { createPaymentLink, clearPaymentLink, paymentScanQR, loading, error } = usePay();
 
   // Poll for payment success
   useEffect(() => {
@@ -72,190 +64,196 @@ export const SubscriptionDialog = ({ open, onOpenChange, onSuccess }: Subscripti
   }, [open, paymentScanQR, paymentSuccess, onSuccess]);
 
   return (
-    <>
-      <Script
-        src="https://global.heidiancdn.com/javascripts/vendor/pingpp-2.2.11.js"
-        strategy="lazyOnload"
-        onError={() => setError("Failed to load payment SDK")}
-      />
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent
+        className="sm:max-w-lg"
+        onEscapeKeyDown={(e) => e.preventDefault()}
+        onPointerDownOutside={(e) => e.preventDefault()}
+        onInteractOutside={(e) => e.preventDefault()}
+      >
+        <DialogHeader>
+          <DialogTitle>{t("title")}</DialogTitle>
+          <DialogDescription>{t("description")}</DialogDescription>
+        </DialogHeader>
 
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent
-          className="sm:max-w-lg"
-          onEscapeKeyDown={(e) => e.preventDefault()}
-          onPointerDownOutside={(e) => e.preventDefault()}
-          onInteractOutside={(e) => e.preventDefault()}
-        >
-          <DialogHeader>
-            <DialogTitle>{t("title")}</DialogTitle>
-            <DialogDescription>{t("description")}</DialogDescription>
-          </DialogHeader>
-
-          {paymentSuccess ? (
-            <>
-              <div className="text-green-500 font-semibold text-xl text-center my-6">
-                {t("paymentSuccess")}
-              </div>
-              <DialogFooter>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => {
-                    onOpenChange(false);
-                    window.location.reload();
-                  }}
-                >
-                  {t("refreshPage")}
-                </Button>
-                <Button type="button" disabled={paymentLoading} asChild>
-                  <Link href="/account">{t("goToAccount")}</Link>
-                </Button>
-              </DialogFooter>
-            </>
-          ) : (
-            <>
-              <div className="p-4 border rounded-lg mb-4 bg-secondary/30">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <div className="font-semibold flex items-center gap-2">
-                      <StarIcon className="size-4 text-primary" />
-                      {t("proSubscription")}
-                    </div>
-                    <div className="mt-2 text-xs text-muted-foreground flex items-center gap-1">
-                      <CalendarIcon className="size-3" />
-                      <span>{t("monthlySubscription")}</span>
-                    </div>
-                    <div className="mt-1 text-xs text-muted-foreground flex items-center gap-1">
-                      <CoinsIcon className="size-3" />
-                      <span className={cn(locale === "en-US" && "tracking-tight")}>
-                        {t("proMonthlyTokens")}
-                      </span>
-                    </div>
+        {paymentSuccess ? (
+          <>
+            <div className="text-green-500 font-semibold text-xl text-center my-6">
+              {t("paymentSuccess")}
+            </div>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => {
+                  onOpenChange(false);
+                  window.location.reload();
+                }}
+              >
+                {t("refreshPage")}
+              </Button>
+              <Button type="button" disabled={loading} asChild>
+                <Link href="/account">{t("goToAccount")}</Link>
+              </Button>
+            </DialogFooter>
+          </>
+        ) : (
+          <>
+            <div className="p-4 border rounded-lg mb-4 bg-secondary/30">
+              <div className="flex justify-between items-center">
+                <div>
+                  <div className="font-semibold flex items-center gap-2">
+                    <StarIcon className="size-4 text-primary" />
+                    {t("proSubscription")}
                   </div>
-                  <div className="text-xl font-bold">
-                    {paymentMethod === PaymentMethod.stripe ? "$20" : "¥129"}
-                    <span className="text-sm font-normal">/{t("month")}</span>
+                  <div className="mt-2 text-xs text-muted-foreground flex items-center gap-1">
+                    <CalendarIcon className="size-3" />
+                    <span className="flex-1">{t("monthlySubscription")}</span>
+                  </div>
+                  <div className="mt-1 text-xs text-muted-foreground flex items-center gap-1">
+                    <CoinsIcon className="size-3" />
+                    <span className={cn("flex-1", locale === "en-US" && "tracking-tight")}>
+                      {t("proMonthlyTokens")}
+                    </span>
                   </div>
                 </div>
+                <div className="text-xl font-bold">
+                  {paymentMethod === PaymentMethod.stripe ? "$20" : "¥129"}
+                  <span className="text-sm font-normal">/{t("month")}</span>
+                </div>
               </div>
+            </div>
 
-              <Tabs
-                defaultValue={PaymentMethod.wx_pub}
-                onValueChange={(value) => setPaymentMethod(value as PaymentMethod)}
-              >
-                <TabsList className="grid grid-cols-3 mb-4">
-                  {[
-                    [PaymentMethod.alipay_wap, "/_public/icon-alipay.png", t("alipay")],
-                    [PaymentMethod.wx_pub, "/_public/icon-wechat.png", t("wechatPay")],
-                    [PaymentMethod.stripe, "/_public/icon-stripe.png", t("creditCard")],
-                  ].map(([method, icon, title]) => (
-                    <TabsTrigger
-                      key={method}
-                      value={method}
-                      disabled={paymentLoading || method === PaymentMethod.stripe}
-                      onClick={() => {
-                        // 切换 tab 需要清空带支付的二维码
-                        clearPaymentLink();
-                      }}
-                    >
-                      <div className="size-5 mr-1 rounded-lg overflow-hidden relative">
-                        <Image src={icon} alt={method} fill className="object-contain h-5 mr-2" />
-                      </div>
-                      {title}
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
-
-                <TabsContent value={PaymentMethod.alipay_wap} className="flex justify-center">
-                  {paymentScanQR && !paymentLoading ? (
-                    <div className="flex flex-col items-center">
-                      <div className="text-sm mb-2 text-center">{t("scanQrCode")}</div>
-                      <div className="p-2 bg-white rounded-lg">
-                        <QRCodeSVG
-                          value={paymentScanQR.url}
-                          size={200}
-                          bgColor="#FFFFFF"
-                          fgColor="#000000"
-                          level="H"
-                          marginSize={0}
-                        />
-                      </div>
-                    </div>
-                  ) : null}
-                </TabsContent>
-
-                <TabsContent value={PaymentMethod.wx_pub} className="flex justify-center">
-                  {paymentScanQR && !paymentLoading ? (
-                    <div className="flex flex-col items-center">
-                      <div className="text-sm mb-2 text-center">{t("scanQrCode")}</div>
-                      <div className="p-2 bg-white rounded-lg">
-                        <QRCodeSVG
-                          value={paymentScanQR.url}
-                          size={200}
-                          bgColor="#FFFFFF"
-                          fgColor="#000000"
-                          level="H"
-                          marginSize={0}
-                        />
-                      </div>
-                    </div>
-                  ) : null}
-                </TabsContent>
-
-                <TabsContent value={PaymentMethod.stripe} className="flex justify-center">
-                  <div className="text-center text-sm text-muted-foreground">
-                    {t("redirectToStripe")}
+            <Tabs
+              defaultValue={PaymentMethod.wx_pub}
+              onValueChange={(value) => setPaymentMethod(value as PaymentMethod)}
+            >
+              <TabsList className="grid grid-cols-2 mb-4">
+                <TabsTrigger
+                  value="alipay_wap/wx_pub"
+                  disabled={loading}
+                  onClick={() => clearPaymentLink()} // 切换 tab 需要清空带支付的二维码
+                >
+                  <div className="size-5 mr-1 rounded-lg overflow-hidden relative">
+                    <Image
+                      src="/_public/icon-alipay.png"
+                      alt="alipay"
+                      fill
+                      className="object-contain h-5 mr-2"
+                    />
                   </div>
-                </TabsContent>
-              </Tabs>
+                  <span className="not-sm:hidden">{t("alipay")}</span>
+                  <div className="ml-2 size-5 mr-1 rounded-lg overflow-hidden relative">
+                    <Image
+                      src="/_public/icon-wechat.png"
+                      alt="wechat pay"
+                      fill
+                      className="object-contain h-5 mr-2"
+                    />
+                  </div>
+                  <span className="not-sm:hidden">{t("wechatPay")}</span>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="stripe"
+                  disabled={loading || true}
+                  onClick={() => clearPaymentLink()} // 切换 tab 需要清空带支付的二维码
+                >
+                  <div className="size-5 mr-1 rounded-lg overflow-hidden relative">
+                    <Image
+                      src="/_public/icon-stripe.png"
+                      alt="stripe"
+                      fill
+                      className="object-contain h-5 mr-2"
+                    />
+                  </div>
+                  <span className="not-sm:hidden">{t("creditCard")}</span>
+                </TabsTrigger>
+              </TabsList>
 
-              {(error || paymentError) && (
-                <div className="text-red-500 text-sm text-center mb-4">{error || paymentError}</div>
-              )}
+              <TabsContent value={PaymentMethod.alipay_wap} className="flex justify-center">
+                {paymentScanQR && !loading ? (
+                  <div className="flex flex-col items-center">
+                    <div className="text-sm mb-2 text-center">{t("scanQrCode")}</div>
+                    <div className="p-2 bg-white rounded-lg">
+                      <QRCodeSVG
+                        value={paymentScanQR.url}
+                        size={200}
+                        bgColor="#FFFFFF"
+                        fgColor="#000000"
+                        level="H"
+                        marginSize={0}
+                      />
+                    </div>
+                  </div>
+                ) : null}
+              </TabsContent>
 
-              <DialogFooter>
-                <Link
-                  href="/pricing"
-                  className="text-sm text-primary hover:underline flex items-center gap-2 mr-auto"
-                >
-                  <CreditCardIcon className="size-5" />
-                  {t("viewPricing")}
-                </Link>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => onOpenChange(false)}
-                  disabled={paymentLoading}
-                >
-                  {t("cancel")}
-                </Button>
-                <Button
-                  type="button"
-                  onClick={() =>
-                    createPaymentLink({
-                      paymentMethod,
-                      productName: ProductName.PRO1MONTH,
-                    })
-                  }
-                  disabled={paymentLoading}
-                  className={cn(
-                    paymentScanQR && paymentMethod !== PaymentMethod.stripe ? "hidden" : "",
-                  )}
-                >
-                  {paymentLoading ? (
-                    <>
-                      <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
-                      {t("processing")}
-                    </>
-                  ) : (
-                    t("subscribe")
-                  )}
-                </Button>
-              </DialogFooter>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
-    </>
+              <TabsContent value={PaymentMethod.wx_pub} className="flex justify-center">
+                {paymentScanQR && !loading ? (
+                  <div className="flex flex-col items-center">
+                    <div className="text-sm mb-2 text-center">{t("scanQrCode")}</div>
+                    <div className="p-2 bg-white rounded-lg">
+                      <QRCodeSVG
+                        value={paymentScanQR.url}
+                        size={200}
+                        bgColor="#FFFFFF"
+                        fgColor="#000000"
+                        level="H"
+                        marginSize={0}
+                      />
+                    </div>
+                  </div>
+                ) : null}
+              </TabsContent>
+
+              <TabsContent value={PaymentMethod.stripe} className="flex justify-center">
+                <div className="text-center text-sm text-muted-foreground">
+                  {t("redirectToStripe")}
+                </div>
+              </TabsContent>
+            </Tabs>
+
+            {error && <div className="text-red-500 text-sm text-center mb-4">{error}</div>}
+
+            <DialogFooter className="flex-row justify-end items-center">
+              <Link href="/pricing" className="text-sm flex items-center gap-2 mr-auto">
+                <CreditCardIcon className="size-5" />
+                {t("viewPricing")}
+              </Link>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => onOpenChange(false)}
+                disabled={loading}
+              >
+                {t("cancel")}
+              </Button>
+              <Button
+                type="button"
+                onClick={() =>
+                  createPaymentLink({
+                    paymentMethod,
+                    productName: ProductName.PRO1MONTH,
+                  })
+                }
+                disabled={loading}
+                className={cn(
+                  paymentScanQR && paymentMethod !== PaymentMethod.stripe ? "hidden" : "",
+                )}
+              >
+                {loading ? (
+                  <>
+                    <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                    {t("processing")}
+                  </>
+                ) : (
+                  t("subscribe")
+                )}
+              </Button>
+            </DialogFooter>
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 };

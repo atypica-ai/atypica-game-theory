@@ -31,26 +31,21 @@ export function usePay() {
       productName,
       currency,
       userId,
-      method,
-    }: {
-      productName: ProductName;
-      currency: Currency;
-      userId: number;
-      method: PaymentMethod;
-    }) => {
+      // paymentMethod, // 扫码自动判断渠道，不需要传
+    }: Omit<PingxxNewPaymentParams, "successUrl">) => {
       try {
         setLoading(true);
         setError(null);
         setPaymentScanQR(null);
-        const url = new URL(`${window.location.origin}/payment/new`);
+        const url = new URL(`${window.location.origin}/payment/auto-redirect`);
         const params: PingxxNewPaymentParams = {
-          userId: userId,
-          paymentMethod: method,
-          productName: productName,
-          currency: currency,
+          userId,
+          // paymentMethod,
+          productName,
+          currency,
           successUrl: isMobile
-            ? encodeURIComponent(`${window.location.origin}/payment/success`) // 因为是弹出二维码在手机上扫码支付，手机上显示固定的支付成功地址
-            : encodeURIComponent(window.location.href),
+            ? encodeURIComponent(window.location.href) // 手机端支付，付款以后跳转回当前页面
+            : encodeURIComponent(`${window.location.origin}/payment/success`), // PC 端支付，手机扫码，付款以后显示固定的支付成功地址
         };
         const searchParams = new URLSearchParams();
         Object.entries(params).forEach(([key, value]) => {
@@ -74,15 +69,7 @@ export function usePay() {
 
   // Stripe payment
   const submitForStripePayment = useCallback(
-    ({
-      productName,
-      currency,
-      userId,
-    }: {
-      productName: ProductName;
-      currency: Currency;
-      userId: number;
-    }) => {
+    ({ productName, currency, userId }: Omit<StripeNewPaymentParams, "successUrl">) => {
       try {
         setLoading(true);
         const params: StripeNewPaymentParams = {
@@ -140,7 +127,7 @@ export function usePay() {
           productName,
           currency: Currency.CNY,
           userId: session.user.id,
-          method: paymentMethod,
+          // paymentMethod,
         });
       }
     },

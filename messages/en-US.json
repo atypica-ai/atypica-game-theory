@@ -388,7 +388,7 @@
     "AddTokensDialog": {
       "title": "Purchase Tokens",
       "description": "Purchase tokens to continue using atypica.AI research capabilities.",
-      "viewPricing": "View pricing plans",
+      "viewPricing": "View pricing",
       "pay": "Pay Now",
       "cancel": "Cancel",
       "refreshPage": "Refresh Page",
@@ -407,7 +407,7 @@
     "SubscriptionDialog": {
       "title": "Subscribe to Pro Plan",
       "description": "Subscribe to our Pro plan for enhanced research capabilities.",
-      "viewPricing": "View pricing plans",
+      "viewPricing": "View pricing",
       "subscribe": "Subscribe Now",
       "cancel": "Cancel",
       "refreshPage": "Refresh Page",

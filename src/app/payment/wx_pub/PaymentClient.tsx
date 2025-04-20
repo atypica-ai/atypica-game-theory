@@ -1,19 +1,15 @@
 "use client";
-import { Currency } from "@prisma/client";
 import { useCallback, useEffect } from "react";
 import { toast } from "sonner";
 import { createCharge } from "../actions";
-import { PaymentMethod, ProductName } from "../data";
+import { PaymentMethod, PingxxNewPaymentParams } from "../data";
 
 export default function PaymentClient({
   userId,
   productName,
   currency,
   openid,
-}: {
-  userId: number;
-  productName: ProductName;
-  currency: Currency;
+}: Omit<PingxxNewPaymentParams, "successUrl"> & {
   openid: string;
 }) {
   const handlePayment = useCallback(async () => {
