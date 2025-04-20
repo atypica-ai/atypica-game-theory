@@ -4,9 +4,11 @@ import { cn } from "@/lib/utils";
 import { CoinsIcon, LoaderIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
 export default function UserTokensBalance() {
+  const router = useRouter();
   const t = useTranslations("Components.UserTokensBalance");
 
   const { status, data: session } = useSession();
@@ -46,7 +48,9 @@ export default function UserTokensBalance() {
       {balance === null ? (
         <LoaderIcon className="h-3.5 w-3.5 text-muted-foreground animate-spin" />
       ) : (
-        <div className="text-xs font-medium">{balance.toLocaleString()}</div>
+        <div className="text-xs font-medium cursor-default" onClick={() => router.push("/account")}>
+          {balance.toLocaleString()}
+        </div>
       )}
       <div
         className={cn(

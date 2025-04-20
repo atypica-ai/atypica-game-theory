@@ -69,7 +69,7 @@ export default function UserMenu() {
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={toggleLocale}>
           <GlobeIcon className="h-4 w-4 mr-2" />
-          {locale === "zh-CN" ? "English" : "中文"}
+          {locale === "zh-CN" ? "中文" : "English"}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => setTheme("light")}>
