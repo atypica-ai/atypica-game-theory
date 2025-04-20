@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { CalendarIcon, CoinsIcon, LoaderCircle, StarIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
+import Link from "next/link";
 import Script from "next/script";
 import { QRCodeSVG } from "qrcode.react";
 import { useEffect, useState } from "react";
@@ -46,10 +47,10 @@ export const SubscriptionDialog = ({ open, onOpenChange, onSuccess }: Subscripti
         if (latestPaymentRecord) {
           setPaymentSuccess(true);
           if (onSuccess) onSuccess();
-          setTimeout(() => {
-            onOpenChange(false);
-            window.location.reload();
-          }, 2000);
+          // setTimeout(() => {
+          //   onOpenChange(false);
+          //   window.location.reload();
+          // }, 2000);
           return;
         }
       } catch (err) {
@@ -76,17 +77,38 @@ export const SubscriptionDialog = ({ open, onOpenChange, onSuccess }: Subscripti
       />
 
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent
+          className="sm:max-w-lg"
+          onEscapeKeyDown={(e) => e.preventDefault()}
+          onPointerDownOutside={(e) => e.preventDefault()}
+          onInteractOutside={(e) => e.preventDefault()}
+        >
           <DialogHeader>
             <DialogTitle>{t("title")}</DialogTitle>
             <DialogDescription>{t("description")}</DialogDescription>
           </DialogHeader>
 
           {paymentSuccess ? (
-            <div className="flex flex-col items-center justify-center py-6">
-              <div className="text-green-500 font-semibold text-xl mb-2">{t("paymentSuccess")}</div>
-              <div className="text-sm text-muted-foreground">{t("refreshing")}</div>
-            </div>
+            <>
+              <div className="text-green-500 font-semibold text-xl text-center my-6">
+                {t("paymentSuccess")}
+              </div>
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => {
+                    onOpenChange(false);
+                    window.location.reload();
+                  }}
+                >
+                  {t("refreshPage")}
+                </Button>
+                <Button type="button" disabled={paymentLoading} asChild>
+                  <Link href="/account">{t("goToAccount")}</Link>
+                </Button>
+              </DialogFooter>
+            </>
           ) : (
             <>
               <div className="p-4 border rounded-lg mb-4 bg-secondary/30">
