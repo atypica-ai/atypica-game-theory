@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-import { CalendarIcon, CoinsIcon, LoaderCircle, StarIcon } from "lucide-react";
+import { CalendarIcon, CoinsIcon, CreditCardIcon, LoaderCircle, StarIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
@@ -205,6 +205,13 @@ export const SubscriptionDialog = ({ open, onOpenChange, onSuccess }: Subscripti
               )}
 
               <DialogFooter>
+                <Link
+                  href="/pricing"
+                  className="text-sm text-primary hover:underline flex items-center gap-2 mr-auto"
+                >
+                  <CreditCardIcon className="size-5" />
+                  {t("viewPricing")}
+                </Link>
                 <Button
                   type="button"
                   variant="ghost"

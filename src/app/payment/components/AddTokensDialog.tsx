@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-import { CoinsIcon, GiftIcon, LoaderCircle } from "lucide-react";
+import { CoinsIcon, CreditCardIcon, GiftIcon, LoaderCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
@@ -201,6 +201,13 @@ export const AddTokensDialog = ({ open, onOpenChange, onSuccess }: AddTokensDial
               )}
 
               <DialogFooter>
+                <Link
+                  href="/pricing"
+                  className="text-sm text-primary hover:underline flex items-center gap-2 mr-auto"
+                >
+                  <CreditCardIcon className="size-5" />
+                  {t("viewPricing")}
+                </Link>
                 <Button
                   type="button"
                   variant="ghost"

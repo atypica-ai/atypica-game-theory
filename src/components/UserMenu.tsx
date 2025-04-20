@@ -120,9 +120,11 @@ export default function UserMenu() {
             </Avatar>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem>
-              <User className="h-4 w-4 mr-2" />
-              <span className="text-xs tracking-tight">{session.user.email}</span>
+            <DropdownMenuItem asChild>
+              <Link href="/account">
+                <User className="h-4 w-4 mr-2" />
+                <span className="text-xs tracking-tight">{session.user.email}</span>
+              </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => setOpen(true)}>

@@ -360,7 +360,7 @@
   },
   "Components": {
     "UserTokensBalance": {
-      "balance": "{balance} 个 Token 可用"
+      "balance": "{balance}个Token可用"
     },
     "ReportsListPanel": {
       "title": "本次研究的报告",
@@ -387,6 +387,7 @@
     "AddTokensDialog": {
       "title": "购买Tokens",
       "description": "购买tokens以继续使用atypica.AI研究功能。",
+      "viewPricing": "查看价格方案",
       "pay": "立即支付",
       "cancel": "取消",
       "refreshPage": "刷新页面",
@@ -403,14 +404,15 @@
       "redirectToStripe": "您将被重定向至安全支付页面"
     },
     "SubscriptionDialog": {
-      "title": "订阅Pro版",
+      "title": "订阅个人Pro版",
       "description": "订阅我们的Pro版以获得增强的研究能力。",
+      "viewPricing": "查看价格方案",
       "subscribe": "立即订阅",
       "cancel": "取消",
       "refreshPage": "刷新页面",
       "goToAccount": "查看账户",
       "paymentSuccess": "订阅成功！",
-      "proSubscription": "Pro版订阅",
+      "proSubscription": "个人Pro版",
       "monthlySubscription": "月度订阅计划",
       "month": "月",
       "proMonthlyTokens": "每月300万Token（有效期30天）",
@@ -431,5 +433,40 @@
     "start": "开始时间：",
     "expectedCompletion": "预计完成时间：",
     "tryAgain": "重试"
+  },
+  "AccountPage": {
+    "title": "账户中心",
+    "subscriptionSection": {
+      "title": "订阅信息",
+      "currentPlan": "当前方案",
+      "expires": "到期时间",
+      "neverExpires": "永久有效",
+      "upgrade": "升级",
+      "renewalDate": "下次续费",
+      "status": "状态",
+      "active": "有效",
+      "proPlan": "个人Pro版",
+      "notSubscribed": "未订阅"
+    },
+    "tokensSection": {
+      "title": "Tokens",
+      "balance": "余额",
+      "purchase": "购买Tokens"
+    },
+    "historySection": {
+      "title": "交易记录",
+      "type": "类型",
+      "amount": "数量",
+      "date": "日期",
+      "noRecords": "暂无交易记录",
+      "loadMore": "加载更多",
+      "verbs": {
+        "recharge": "充值",
+        "consume": "atypica.AI 研究消耗",
+        "subscription": "订阅会员",
+        "gift": "atypica.AI 赠送",
+        "signup": "注册赠送"
+      }
+    }
   }
 }

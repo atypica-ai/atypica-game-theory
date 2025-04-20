@@ -387,6 +387,7 @@
     "AddTokensDialog": {
       "title": "Purchase Tokens",
       "description": "Purchase tokens to continue using atypica.AI research capabilities.",
+      "viewPricing": "View pricing plans",
       "pay": "Pay Now",
       "cancel": "Cancel",
       "refreshPage": "Refresh Page",
@@ -405,12 +406,13 @@
     "SubscriptionDialog": {
       "title": "Subscribe to Pro Plan",
       "description": "Subscribe to our Pro plan for enhanced research capabilities.",
+      "viewPricing": "View pricing plans",
       "subscribe": "Subscribe Now",
       "cancel": "Cancel",
       "refreshPage": "Refresh Page",
       "goToAccount": "View Account",
       "paymentSuccess": "Subscription Successful!",
-      "proSubscription": "Pro Subscription",
+      "proSubscription": "Pro Plan",
       "monthlySubscription": "Monthly subscription plan",
       "month": "month",
       "proMonthlyTokens": "3M tokens monthly (valid for 30 days)",
@@ -431,5 +433,40 @@
     "start": "Start:",
     "expectedCompletion": "Expected completion:",
     "tryAgain": "Try again"
+  },
+  "AccountPage": {
+    "title": "Account",
+    "subscriptionSection": {
+      "title": "Subscription",
+      "currentPlan": "Current Plan",
+      "expires": "Expires",
+      "neverExpires": "Never Expires",
+      "upgrade": "Upgrade",
+      "renewalDate": "Next Renewal",
+      "status": "Status",
+      "active": "Active",
+      "proPlan": "Pro Plan",
+      "notSubscribed": "Not Subscribed"
+    },
+    "tokensSection": {
+      "title": "Tokens",
+      "balance": "Balance",
+      "purchase": "Purchase Tokens"
+    },
+    "historySection": {
+      "title": "Transaction History",
+      "type": "Type",
+      "amount": "Amount",
+      "date": "Date",
+      "noRecords": "No transaction records",
+      "loadMore": "Load More",
+      "verbs": {
+        "recharge": "Recharge",
+        "consume": "atypica.AI study consumption",
+        "subscription": "Subscription",
+        "gift": "Gift from atypica.AI",
+        "signup": "Signup Bonus"
+      }
+    }
   }
 }

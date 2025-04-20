@@ -46,7 +46,7 @@ export default function UserTokensBalance() {
       {balance === null ? (
         <LoaderIcon className="h-3.5 w-3.5 text-muted-foreground animate-spin" />
       ) : (
-        <div className="text-xs font-medium">{balance}</div>
+        <div className="text-xs font-medium">{balance.toLocaleString()}</div>
       )}
       <div
         className={cn(
@@ -55,7 +55,7 @@ export default function UserTokensBalance() {
           "shadow-md pointer-events-none",
         )}
       >
-        {balance !== null ? t("balance", { balance }) : "loading..."}
+        {balance !== null ? t("balance", { balance: balance.toLocaleString() }) : "loading..."}
       </div>
     </div>
   ) : null;
