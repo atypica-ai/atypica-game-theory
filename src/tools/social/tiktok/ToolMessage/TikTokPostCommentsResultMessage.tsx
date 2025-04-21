@@ -1,3 +1,4 @@
+import proxiedImageLoader from "@/lib/proxiedImageLoader";
 import { ToolInvocation } from "ai";
 import Image from "next/image";
 import { FC } from "react";
@@ -15,6 +16,7 @@ export const TikTokPostCommentsResultMessage: FC<{
         <div key={comment.id} className="flex items-start justify-start gap-3 mb-2">
           <div className="relative mt-2 w-6 h-6 rounded-full overflow-hidden">
             <Image
+              loader={proxiedImageLoader}
               src={comment.user.image}
               alt="User Avatar"
               className="object-cover"

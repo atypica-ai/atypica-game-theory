@@ -1,3 +1,4 @@
+import proxiedImageLoader from "@/lib/proxiedImageLoader";
 import { cn } from "@/lib/utils";
 import { ToolInvocation } from "ai";
 import Image from "next/image";
@@ -21,6 +22,7 @@ export const InsUserPostsResultMessage: FC<{
         <div key={post.id} className="flex flex-col items-center w-[120px]">
           <div className="relative w-[120px] h-[120px] rounded-lg overflow-hidden">
             <Image
+              loader={proxiedImageLoader}
               src={post.images_list[0]?.url}
               alt="Note image"
               fill
@@ -32,6 +34,7 @@ export const InsUserPostsResultMessage: FC<{
             <div className="flex items-center gap-1 mb-1">
               <div className="relative w-4 h-4">
                 <Image
+                  loader={proxiedImageLoader}
                   src={post.user.image}
                   alt="User Avatar"
                   sizes="100%"

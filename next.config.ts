@@ -15,6 +15,8 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "**.hippyghosts.io" },
       { protocol: "https", hostname: "**.qlogo.cn" },
     ],
+    // loader: "custom",
+    // loaderFile: "./lib/imageLoader",
   },
   experimental: {
     // see https://nextjs.org/docs/app/api-reference/functions/forbidden

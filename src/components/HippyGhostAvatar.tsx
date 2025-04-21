@@ -1,3 +1,4 @@
+import proxiedImageLoader from "@/lib/proxiedImageLoader";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { FC, HTMLAttributes } from "react";
@@ -33,6 +34,7 @@ const HippyGhostAvatar: FC<
       )}
     >
       <Image
+        loader={proxiedImageLoader}
         src={url}
         alt="Hippy Ghost Avatar"
         fill
