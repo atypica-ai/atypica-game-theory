@@ -59,7 +59,7 @@ export const StreamSteps = ({
 
   return (
     <motion.div
-      className={cn("flex flex-col w-full")}
+      className={cn("flex flex-col w-full overflow-hidden")} // 需要 overflow-hidden 以防止很长的内容溢出
       initial={{ y: 15, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.4, ease: "easeOut" }}

@@ -149,11 +149,12 @@ export const scoutTaskChatTool = ({
       }));
       return {
         personas: personas,
-        plainText:
-          !personas.length && hasError
+        // 如果有 personas，就算 hasError 也忽略，不要告诉 llm，不然容易给 llm 造成困扰以为找到的 personas 有问题
+        plainText: personas.length
+          ? `${personas.length} personas found: ${JSON.stringify(personas)}`
+          : hasError
             ? "Something went wrong"
-            : (hasError ? "Something went wrong but " : "") +
-              `${personas.length} personas found: ${JSON.stringify(personas)}`,
+            : "No personas found",
       };
     },
   });

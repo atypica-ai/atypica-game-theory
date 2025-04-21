@@ -201,7 +201,7 @@ export const SingleMessage = ({
   } else if (role === "assistant") {
     return (
       <motion.div
-        className={cn("sm:flex sm:flex-row sm:gap-2 w-full")}
+        className={cn("sm:flex sm:flex-row sm:gap-2 w-full overflow-hidden")} // 需要 overflow-hidden 以防止很长的内容溢出
         initial={{ y: 15, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.4, ease: "easeOut" }}

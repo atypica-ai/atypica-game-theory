@@ -13,17 +13,12 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Missing URL parameter" }, { status: 400 });
   }
   try {
-    // Get proxy URL from environment variables
-
     const imageResponse = await fetch(url, {
-      // Explicitly set the proxy agent if available
       agent: proxyUrl ? new HttpsProxyAgent(proxyUrl) : undefined,
     });
-
     if (!imageResponse.ok) {
       return NextResponse.json({ error: "Failed to fetch image" }, { status: 502 });
     }
-
     const imageData = await imageResponse.arrayBuffer();
     return new NextResponse(imageData, {
       headers: {
