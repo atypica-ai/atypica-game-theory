@@ -36,7 +36,8 @@ export function ShareReplayButton({ studyUserChat }: { studyUserChat: StudyUserC
     >
       <AlertDialogTrigger asChild>
         <Button variant="outline" size="sm" className="h-7 text-xs rounded-full shadow-none">
-          <ShareIcon className="size-3" /> {t("shareReplay")}
+          <ShareIcon className="size-3" />
+          <span className="max-sm:hidden">{t("shareReplay")}</span>
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>

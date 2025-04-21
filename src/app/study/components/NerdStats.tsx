@@ -65,10 +65,10 @@ export function NerdStats() {
             Nerd Stats
           </Button>
         </PopoverTrigger>
-
         <PopoverContent
           className="w-[22rem] sm:w-[40rem] p-0 border-none bg-transparent shadow-none"
           align="center"
+          sideOffset={0}
           onMouseEnter={() => setIsOpen(true)}
           onMouseLeave={() => setIsOpen(false)}
         >

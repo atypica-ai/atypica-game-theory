@@ -1,15 +1,31 @@
 "use client";
 import { getUserTokensBalance } from "@/data/UserTokens";
-import { cn } from "@/lib/utils";
 import { CoinsIcon, LoaderIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+
+function formatBalance(balance: number) {
+  if (balance === 0) return "0";
+  const absBalance = Math.abs(balance);
+  if (absBalance >= 1000000) {
+    return `${(balance / 1000000).toLocaleString(undefined, { maximumFractionDigits: 2 })}M`;
+  } else if (absBalance >= 100000) {
+    return `${(balance / 1000).toLocaleString(undefined, { maximumFractionDigits: 0 })}k`;
+  } else if (absBalance >= 10000) {
+    return `${(balance / 1000).toLocaleString(undefined, { maximumFractionDigits: 1 })}k`;
+  } else {
+    return balance.toLocaleString();
+  }
+}
 
 export default function UserTokensBalance() {
-  const router = useRouter();
+  const [isOpen, setIsOpen] = useState(false);
   const t = useTranslations("Components.UserTokensBalance");
+  const router = useRouter();
 
   const { status, data: session } = useSession();
   const [balance, setBalance] = useState<number | null>(null);
@@ -40,27 +56,39 @@ export default function UserTokensBalance() {
   }, [session, checkBalance]);
 
   return status === "authenticated" ? (
-    <div
-      className="relative flex items-center gap-1.5 h-7 py-1.5 px-2 rounded-full border border-border min-w-[60px] justify-center group"
-      title={balance !== null ? t("balance", { balance }) : ""}
-    >
-      <CoinsIcon className="h-3.5 w-3.5 text-amber-500" />
-      {balance === null ? (
-        <LoaderIcon className="h-3.5 w-3.5 text-muted-foreground animate-spin" />
-      ) : (
-        <div className="text-xs font-medium cursor-default" onClick={() => router.push("/account")}>
-          {balance.toLocaleString()}
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <PopoverTrigger asChild>
+        <div
+          className="relative flex items-center gap-1.5 h-7 py-1.5 px-2 rounded-full border border-border min-w-[60px] justify-center"
+          onMouseEnter={() => setIsOpen(true)}
+          onMouseLeave={() => setIsOpen(false)}
+        >
+          <CoinsIcon className="h-3.5 w-3.5 text-amber-500" />
+          {balance === null ? (
+            <LoaderIcon className="h-3.5 w-3.5 text-muted-foreground animate-spin" />
+          ) : (
+            <div className="text-xs font-medium cursor-default">{formatBalance(balance)}</div>
+          )}
         </div>
-      )}
-      <div
-        className={cn(
-          "absolute opacity-0 group-hover:opacity-100 transition-opacity duration-200",
-          "bg-popover text-popover-foreground px-3 py-2 rounded-md text-xs font-mono -bottom-9 whitespace-nowrap",
-          "shadow-md pointer-events-none",
-        )}
+      </PopoverTrigger>
+      <PopoverContent
+        className="w-fit p-3 relative"
+        onMouseEnter={() => setIsOpen(true)}
+        onMouseLeave={() => setIsOpen(false)}
       >
-        {balance !== null ? t("balance", { balance: balance.toLocaleString() }) : "loading..."}
-      </div>
-    </div>
+        <div className="absolute -z-10 -top-2 -right-2 -bottom-2 -left-2">
+          {/*将空隙遮住，防止鼠标移动到 trigger 和 content 空隙触发 onMouseLeave*/}
+        </div>
+        <div className="flex flex-col gap-2">
+          <div className="text-xs">
+            {balance !== null ? t("balance", { balance: balance.toLocaleString() }) : "loading..."}
+          </div>
+          <div className="text-xs text-primary hover:underline cursor-pointer flex items-center gap-1.5 font-medium">
+            <CoinsIcon className="h-3 w-3" />
+            <Link href="/account">{t("viewHistory")}</Link>
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
   ) : null;
 }

@@ -200,13 +200,13 @@ export const SingleMessage = ({
   } else if (role === "assistant") {
     return (
       <motion.div
-        className={cn("flex flex-row gap-2 w-full")}
+        className={cn("sm:flex sm:flex-row sm:gap-2 w-full")}
         initial={{ y: 15, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.4, ease: "easeOut" }}
       >
-        {avatar?.assistant || <BotIcon className="size-6" />}
-        <div className="flex-1 overflow-hidden">
+        <div className="mb-4">{avatar?.assistant || <BotIcon className="size-6" />}</div>
+        <div className="sm:flex-1 overflow-hidden">
           {nickname && (
             <div className="leading-[32px] text-zinc-800 text-sm font-medium">{nickname}</div>
           )}

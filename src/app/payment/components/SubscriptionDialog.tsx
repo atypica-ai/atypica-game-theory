@@ -142,7 +142,7 @@ export const SubscriptionDialog = ({ open, onOpenChange, onSuccess }: Subscripti
                       className="object-contain h-5 mr-2"
                     />
                   </div>
-                  <span className="not-sm:hidden">{t("alipay")}</span>
+                  <span className="max-sm:hidden">{t("alipay")}</span>
                   <div className="ml-2 size-5 mr-1 rounded-lg overflow-hidden relative">
                     <Image
                       src="/_public/icon-wechat.png"
@@ -151,7 +151,7 @@ export const SubscriptionDialog = ({ open, onOpenChange, onSuccess }: Subscripti
                       className="object-contain h-5 mr-2"
                     />
                   </div>
-                  <span className="not-sm:hidden">{t("wechatPay")}</span>
+                  <span className="max-sm:hidden">{t("wechatPay")}</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="stripe"
@@ -166,7 +166,7 @@ export const SubscriptionDialog = ({ open, onOpenChange, onSuccess }: Subscripti
                       className="object-contain h-5 mr-2"
                     />
                   </div>
-                  <span className="not-sm:hidden">{t("creditCard")}</span>
+                  <span className="max-sm:hidden">{t("creditCard")}</span>
                 </TabsTrigger>
               </TabsList>
 

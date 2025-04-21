@@ -292,7 +292,7 @@
     "ReportSharePage": {
       "title": "研究报告",
       "attribution": "报告来自研究“{topic}”，由 atypica.AI 提供支持",
-      "viewReplay": "查看研究回放",
+      "viewReplay": "研究回放",
       "shareReport": "分享报告",
       "copyLink": "复制链接",
       "linkCopied": "链接已复制！"
@@ -359,7 +359,8 @@
   },
   "Components": {
     "UserTokensBalance": {
-      "balance": "{balance}个Token可用"
+      "balance": "{balance}个Token可用",
+      "viewHistory": "查看Token历史"
     },
     "ReportsListPanel": {
       "title": "本次研究的报告",

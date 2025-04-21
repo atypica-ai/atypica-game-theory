@@ -292,7 +292,7 @@
     "ReportSharePage": {
       "title": "Research Report",
       "attribution": "Report from research \"{topic}\", powered by atypica.AI",
-      "viewReplay": "View Study Replay",
+      "viewReplay": "Replay Study",
       "shareReport": "Share Report",
       "copyLink": "Copy Link",
       "linkCopied": "Link copied!"
@@ -359,7 +359,8 @@
   },
   "Components": {
     "UserTokensBalance": {
-      "balance": "{balance} available tokens"
+      "balance": "{balance} available tokens",
+      "viewHistory": "View token history"
     },
     "ReportsListPanel": {
       "title": "Reports for this study",

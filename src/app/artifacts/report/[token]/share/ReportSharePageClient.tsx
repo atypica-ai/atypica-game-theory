@@ -1,8 +1,9 @@
 "use client";
 import GlobalHeader from "@/components/GlobalHeader";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Share2 } from "lucide-react";
+import { Play, Share2 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -46,22 +47,17 @@ export default function ReportSharePageClient({
   return (
     <div className="h-dvh flex flex-col items-stretch justify-start bg-muted/20">
       <GlobalHeader>
-        <div className="flex items-center gap-3">
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 gap-1"
-              onClick={() => window.open(studyReplayUrl, "_blank")}
-            >
-              <ExternalLink size={14} />
-              <span className="hidden sm:inline">{t("viewReplay")}</span>
-            </Button>
-            <Button variant="outline" size="sm" className="h-8 gap-1" onClick={copyShareLink}>
-              <Share2 size={14} />
-              <span className="hidden sm:inline">{t("copyLink")}</span>
-            </Button>
-          </div>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" className="h-8 gap-1" asChild>
+            <Link href={studyReplayUrl}>
+              <Play size={14} />
+              <span className="max-sm:text-xs max-sm:tracking-tighter">{t("viewReplay")}</span>
+            </Link>
+          </Button>
+          <Button variant="outline" size="sm" className="h-8 gap-1" onClick={copyShareLink}>
+            <Share2 size={14} />
+            <span className="hidden sm:inline">{t("copyLink")}</span>
+          </Button>
         </div>
       </GlobalHeader>
 
