@@ -16,6 +16,7 @@ import {
   HistoryIcon,
   LogInIcon,
   LogOutIcon,
+  MailIcon,
   Moon,
   Sun,
   User,
@@ -120,14 +121,17 @@ export default function UserMenu() {
             </Avatar>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="min-w-36">
+            <DropdownMenuItem>
+              <MailIcon className="h-4 w-4 mr-2" />
+              <span className="text-xs tracking-tight">{session.user.email}</span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
               <Link href="/account">
                 <User className="h-4 w-4 mr-2" />
                 <span>{t("viewAccount")}</span>
-                {/* <span className="ml-2 text-xs tracking-tight">{session.user.email}</span> */}
               </Link>
             </DropdownMenuItem>
-            <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => setOpen(true)}>
               <HistoryIcon className="h-4 w-4 mr-2" />
               {t("history")}

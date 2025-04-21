@@ -27,6 +27,21 @@ export function debounce<T extends (...args: Parameters<T>) => ReturnType<T>>(
   };
 }
 
+// Format tokens number/balance in human-readable format
+export function formatTokensNumber(balance: number) {
+  if (balance === 0) return "0";
+  const absBalance = Math.abs(balance);
+  if (absBalance >= 1000000) {
+    return `${(balance / 1000000).toLocaleString(undefined, { maximumFractionDigits: 2 })}M`;
+  } else if (absBalance >= 100000) {
+    return `${(balance / 1000).toLocaleString(undefined, { maximumFractionDigits: 0 })}k`;
+  } else if (absBalance >= 10000) {
+    return `${(balance / 1000).toLocaleString(undefined, { maximumFractionDigits: 1 })}k`;
+  } else {
+    return balance.toLocaleString();
+  }
+}
+
 // Format duration in milliseconds to human-readable format
 export const formatDuration = (seconds: number) => {
   if (seconds < 60) return `${seconds}s`;

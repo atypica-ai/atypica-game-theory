@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Pagination } from "@/components/ui/pagination";
 import { ExtractServerActionData } from "@/lib/serverAction";
+import { formatTokensNumber } from "@/lib/utils";
 import { AdminRole } from "@prisma/client";
 import { SearchIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -31,6 +32,7 @@ export default function UsersPage() {
   const [error, setError] = useState("");
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [tokensToAdd, setTokensToAdd] = useState<number | null>(1_000_000);
+
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAdminDialogOpen, setIsAdminDialogOpen] = useState(false);
@@ -204,17 +206,17 @@ export default function UsersPage() {
               <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                 Email
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+              <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider">
                 Tokens
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                Actions
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                 Created At
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                 Admin Role
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                Actions
               </th>
             </tr>
           </thead>
@@ -230,18 +232,11 @@ export default function UsersPage() {
                 <tr key={user.id.toString()}>
                   <td className="whitespace-nowrap px-6 py-4 text-sm">{user.id}</td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm">{user.email}</td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {user.tokens?.balance ?? 0}
-                  </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {new Date(user.createdAt).toLocaleDateString()}
-                  </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {user.adminUser ? (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        {user.adminUser.role}
-                      </span>
-                    ) : null}
+                  <td className="whitespace-nowrap px-6 py-4 text-sm text-right">
+                    {formatTokensNumber(user.tokens?.balance ?? 0)} <br />
+                    <span className="text-xs text-muted-foreground">
+                      {(user.tokens?.balance ?? 0).toLocaleString()}
+                    </span>
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm">
                     <div className="flex gap-2">
@@ -261,6 +256,16 @@ export default function UsersPage() {
                         </Button>
                       )}
                     </div>
+                  </td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {new Date(user.createdAt).toLocaleDateString()}
+                  </td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {user.adminUser ? (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        {user.adminUser.role}
+                      </span>
+                    ) : null}
                   </td>
                 </tr>
               ))
@@ -289,20 +294,41 @@ export default function UsersPage() {
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label className="text-right">Balance</Label>
-              <div className="col-span-3 text-sm">{selectedUser?.tokens?.balance ?? 0} tokens</div>
+              <div className="col-span-3 text-sm">
+                {(selectedUser?.tokens?.balance ?? 0).toLocaleString()} tokens
+              </div>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="admin-add-tokens-input" className="text-right">
                 Tokens
               </Label>
-              <Input
-                id="admin-add-tokens-input"
-                type="number"
-                min="1"
-                value={tokensToAdd ?? ""}
-                onChange={(e) => setTokensToAdd(e.target.value ? parseInt(e.target.value) : null)}
-                className="col-span-3"
-              />
+              <div className="col-span-3 space-y-1">
+                <Input
+                  id="admin-add-tokens-input"
+                  type="number"
+                  min="1"
+                  value={tokensToAdd ?? ""}
+                  onChange={(e) => setTokensToAdd(e.target.value ? parseInt(e.target.value) : null)}
+                  className="font-mono"
+                />
+                <div className="text-xs text-muted-foreground">
+                  {tokensToAdd ? `${formatTokensNumber(tokensToAdd)} tokens will be added` : ""}
+                </div>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              {[100000, 500000, 1000000, 2000000, 5000000, 10000000].map((amount) => (
+                <Button
+                  key={amount}
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setTokensToAdd(amount)}
+                  className="text-xs h-7"
+                >
+                  {formatTokensNumber(amount)}
+                </Button>
+              ))}
             </div>
           </div>
 

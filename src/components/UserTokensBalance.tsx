@@ -1,31 +1,16 @@
 "use client";
 import { getUserTokensBalance } from "@/data/UserTokens";
+import { formatTokensNumber } from "@/lib/utils";
 import { CoinsIcon, LoaderIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
-
-function formatBalance(balance: number) {
-  if (balance === 0) return "0";
-  const absBalance = Math.abs(balance);
-  if (absBalance >= 1000000) {
-    return `${(balance / 1000000).toLocaleString(undefined, { maximumFractionDigits: 2 })}M`;
-  } else if (absBalance >= 100000) {
-    return `${(balance / 1000).toLocaleString(undefined, { maximumFractionDigits: 0 })}k`;
-  } else if (absBalance >= 10000) {
-    return `${(balance / 1000).toLocaleString(undefined, { maximumFractionDigits: 1 })}k`;
-  } else {
-    return balance.toLocaleString();
-  }
-}
 
 export default function UserTokensBalance() {
   const [isOpen, setIsOpen] = useState(false);
   const t = useTranslations("Components.UserTokensBalance");
-  const router = useRouter();
 
   const { status, data: session } = useSession();
   const [balance, setBalance] = useState<number | null>(null);
@@ -67,7 +52,7 @@ export default function UserTokensBalance() {
           {balance === null ? (
             <LoaderIcon className="h-3.5 w-3.5 text-muted-foreground animate-spin" />
           ) : (
-            <div className="text-xs font-medium cursor-default">{formatBalance(balance)}</div>
+            <div className="text-xs font-medium cursor-default">{formatTokensNumber(balance)}</div>
           )}
         </div>
       </PopoverTrigger>
