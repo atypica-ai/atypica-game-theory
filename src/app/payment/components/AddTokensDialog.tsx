@@ -46,10 +46,6 @@ export const AddTokensDialog = ({ open, onOpenChange, onSuccess }: AddTokensDial
         if (latestPaymentRecord) {
           setPaymentSuccess(true);
           if (onSuccess) onSuccess();
-          // setTimeout(() => {
-          //   onOpenChange(false);
-          //   window.location.reload();
-          // }, 2000);
           return;
         }
       } catch (err) {
@@ -65,7 +61,7 @@ export const AddTokensDialog = ({ open, onOpenChange, onSuccess }: AddTokensDial
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [open, paymentScanQR, paymentSuccess, onSuccess, onOpenChange]);
+  }, [open, paymentScanQR, paymentSuccess, onSuccess]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

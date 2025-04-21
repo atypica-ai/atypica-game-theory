@@ -170,7 +170,7 @@ export const SubscriptionDialog = ({ open, onOpenChange, onSuccess }: Subscripti
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value={PaymentMethod.alipay_wap} className="flex justify-center">
+              <TabsContent value="alipay_wap/wx_pub" className="flex justify-center">
                 {paymentScanQR && !loading ? (
                   <div className="flex flex-col items-center">
                     <div className="text-sm mb-2 text-center">{t("scanQrCode")}</div>
@@ -188,25 +188,7 @@ export const SubscriptionDialog = ({ open, onOpenChange, onSuccess }: Subscripti
                 ) : null}
               </TabsContent>
 
-              <TabsContent value={PaymentMethod.wx_pub} className="flex justify-center">
-                {paymentScanQR && !loading ? (
-                  <div className="flex flex-col items-center">
-                    <div className="text-sm mb-2 text-center">{t("scanQrCode")}</div>
-                    <div className="p-2 bg-white rounded-lg">
-                      <QRCodeSVG
-                        value={paymentScanQR.url}
-                        size={200}
-                        bgColor="#FFFFFF"
-                        fgColor="#000000"
-                        level="H"
-                        marginSize={0}
-                      />
-                    </div>
-                  </div>
-                ) : null}
-              </TabsContent>
-
-              <TabsContent value={PaymentMethod.stripe} className="flex justify-center">
+              <TabsContent value="stripe" className="flex justify-center">
                 <div className="text-center text-sm text-muted-foreground">
                   {t("redirectToStripe")}
                 </div>
