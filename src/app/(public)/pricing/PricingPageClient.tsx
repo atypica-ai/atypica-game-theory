@@ -3,8 +3,9 @@ import { AddTokensDialog } from "@/app/payment/components/AddTokensDialog";
 import { SubscriptionDialog } from "@/app/payment/components/SubscriptionDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { CheckIcon, GiftIcon } from "lucide-react";
+import { CheckIcon, GiftIcon, InfoIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useState } from "react";
@@ -18,20 +19,23 @@ export default function PricingPageClient() {
 
   return (
     <div className={cn("flex-1 overflow-y-auto scrollbar-thin", "px-4 py-16")}>
-      <div className="text-center mb-16">
+      <div className="text-center mb-8">
         <h1 className="text-4xl md:text-5xl font-bold mb-4">{t("title")}</h1>
         <p className="text-xl text-muted-foreground">{t("subtitle")}</p>
       </div>
 
-      <div className="md:py-24 max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+      <div className="py-8 md:pt-12 max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
         {/* Free Plan */}
         <Card className="flex flex-col not-dark:border-muted/40">
           <CardHeader>
             <CardTitle className="text-2xl">{t("freeTitle")}</CardTitle>
             <CardDescription className="h-12">{t("freeSubtitle")}</CardDescription>
-            <div className="mt-4 h-40">
+            <div className="mt-4 h-30">
               <div className="text-3xl font-bold">{t("freePrice")}</div>
-              <div className="mt-1">{t("freeTokens")}</div>
+              <div className="mt-1 flex items-center gap-1">
+                {t("freeTokens")}
+                <TokenUsageTooltip />
+              </div>
             </div>
           </CardHeader>
           <CardContent className="flex-grow space-y-4">
@@ -51,13 +55,19 @@ export default function PricingPageClient() {
           <CardHeader>
             <CardTitle className="text-2xl">{t("basicTitle")}</CardTitle>
             <CardDescription className="h-12">{t("basicSubtitle")}</CardDescription>
-            <div className="mt-4 h-40">
+            <div className="mt-4 h-30">
               <div>
                 <span className="text-3xl font-bold">{t("oneMillionTokensPrice")}</span>
                 <span className="text-lg">/{t("oneMillionTokens")}</span>
               </div>
-              <div className={cn("mt-1", locale === "en-US" && "tracking-tighter")}>
+              <div
+                className={cn(
+                  "mt-1 flex items-center gap-1",
+                  locale === "en-US" && "tracking-tighter",
+                )}
+              >
                 {t("payAsYouGoTokens")}
+                <TokenUsageTooltip />
               </div>
               <div className="mt-2 flex items-start text-sm">
                 <GiftIcon className="size-4 text-primary mr-2 mt-0.5" />
@@ -67,7 +77,6 @@ export default function PricingPageClient() {
                   {t("features.tokens.basicGift")}
                 </span>
               </div>
-              <div className="mt-2 text-muted-foreground text-xs">{t("averageStudyToken")}</div>
             </div>
           </CardHeader>
           <CardContent className="flex-grow space-y-4">
@@ -95,7 +104,7 @@ export default function PricingPageClient() {
           <CardHeader>
             <CardTitle className="text-2xl">{t("proTitle")}</CardTitle>
             <CardDescription className="h-12">{t("proSubtitle")}</CardDescription>
-            <div className="mt-4 h-40">
+            <div className="mt-4 h-30">
               <div>
                 <span className="text-3xl font-bold">{t("proPrice")}</span>
                 <span className="text-lg">/{t("month")}</span>
@@ -103,15 +112,6 @@ export default function PricingPageClient() {
               <div className={cn("mt-1", locale === "en-US" && "tracking-tighter")}>
                 {t("proMonthlyTokens")}
               </div>
-              <div className="mt-2 flex items-start text-sm">
-                <GiftIcon className="size-4 text-primary mr-2 mt-0.5" />
-                <span
-                  className={cn("flex-1 font-semibold", locale === "en-US" && "tracking-tight")}
-                >
-                  {t("features.tokens.proGift")}
-                </span>
-              </div>
-              <div className="mt-2 text-muted-foreground text-xs">{t("averageStudyToken")}</div>
             </div>
           </CardHeader>
           <CardContent className="flex-grow space-y-4">
@@ -164,12 +164,33 @@ export default function PricingPageClient() {
         </Card>
       </div>
 
+      <div className="max-w-7xl mx-auto bg-muted/50 rounded-lg p-4 flex items-center gap-3 border border-border/50">
+        <InfoIcon className="size-5 text-primary flex-shrink-0" />
+        <p className="text-sm text-foreground/80">{t("averageStudyToken")}</p>
+      </div>
+
       <AddTokensDialog open={isTokensDialogOpen} onOpenChange={setIsTokensDialogOpen} />
       <SubscriptionDialog
         open={isSubscriptionDialogOpen}
         onOpenChange={setIsSubscriptionDialogOpen}
       />
     </div>
+  );
+}
+
+function TokenUsageTooltip() {
+  const t = useTranslations("PricingPage");
+  return (
+    <TooltipProvider>
+      <Tooltip delayDuration={300}>
+        <TooltipTrigger asChild>
+          <InfoIcon className="size-3.5 text-muted-foreground cursor-help" />
+        </TooltipTrigger>
+        <TooltipContent className="max-w-80 p-4">
+          <p>{t("averageStudyToken")}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
 

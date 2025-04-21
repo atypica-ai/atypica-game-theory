@@ -6,13 +6,19 @@ import {
   prepareNewMessageForStreaming,
 } from "@/lib/messageUtils";
 import { prisma } from "@/lib/prisma";
-import { scoutSystemVerbose } from "@/prompt";
+import { scoutSystem } from "@/prompt";
 import {
   dyPostCommentsTool,
   dySearchTool,
   dyUserPostsTool,
+  insPostCommentsTool,
+  insSearchTool,
+  insUserPostsTool,
   reasoningThinkingTool,
   savePersonaTool,
+  tiktokPostCommentsTool,
+  tiktokSearchTool,
+  tiktokUserPostsTool,
   ToolName,
   xhsNoteCommentsTool,
   xhsSearchTool,
@@ -62,18 +68,19 @@ export async function POST(req: Request) {
     [ToolName.dySearch]: dySearchTool,
     [ToolName.dyPostComments]: dyPostCommentsTool,
     [ToolName.dyUserPosts]: dyUserPostsTool,
-    // [ToolName.tiktokSearch]: tiktokSearchTool,
-    // [ToolName.tiktokPostComments]: tiktokPostCommentsTool,
-    // [ToolName.tiktokUserPosts]: tiktokUserPostsTool,
-    // [ToolName.insSearch]: insSearchTool,
-    // [ToolName.insUserPosts]: insUserPostsTool,
-    // [ToolName.insPostComments]: insPostCommentsTool,
+    [ToolName.tiktokSearch]: tiktokSearchTool,
+    [ToolName.tiktokPostComments]: tiktokPostCommentsTool,
+    [ToolName.tiktokUserPosts]: tiktokUserPostsTool,
+    [ToolName.insSearch]: insSearchTool,
+    [ToolName.insUserPosts]: insUserPostsTool,
+    [ToolName.insPostComments]: insPostCommentsTool,
     [ToolName.savePersona]: savePersonaTool({ scoutUserChatId }),
   };
   const response = streamText({
-    model: openai("gpt-4o", {
-      parallelToolCalls: true,
-    }),
+    model: openai("gemini-2.5-flash"),
+    // model: openai("gpt-4o", {
+    //   parallelToolCalls: true,
+    // }),
     // model: openai("claude-3-7-sonnet-beta"),
     // model: bedrock("claude-3-7-sonnet"),
     providerOptions: {
@@ -83,7 +90,7 @@ export async function POST(req: Request) {
         // anthropic_beta: ["token-efficient-tools-2025-02-19"],
       },
     },
-    system: scoutSystemVerbose(),
+    system: scoutSystem(),
     messages: coreMessages,
     tools,
     maxSteps: 15, // 每次请求只发送单条消息的情况，只能在后端设置 maxSteps，在后端不断 continue

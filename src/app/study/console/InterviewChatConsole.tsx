@@ -78,7 +78,7 @@ const InterviewChat = ({ toolInvocation }: { toolInvocation: ToolInvocation }) =
                 style={{ width: `${100 / personasArg.length}%` }}
               >
                 <HippyGhostAvatar seed={id} className="size-4" />
-                <div className="max-w-24 truncate">{name}</div>
+                <div className="max-w-24 truncate flex-1">{name}</div>
               </TabsTrigger>
             ))}
           </TabsList>

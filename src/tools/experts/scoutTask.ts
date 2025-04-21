@@ -8,14 +8,20 @@ import {
 } from "@/lib/messageUtils";
 import { prisma } from "@/lib/prisma";
 import { generateToken } from "@/lib/utils";
-import { scoutSystemVerbose } from "@/prompt";
+import { scoutSystem } from "@/prompt";
 import {
   dyPostCommentsTool,
   dySearchTool,
   dyUserPostsTool,
+  insPostCommentsTool,
+  insSearchTool,
+  insUserPostsTool,
   reasoningThinkingTool,
   savePersonaTool,
   StatReporter,
+  tiktokPostCommentsTool,
+  tiktokSearchTool,
+  tiktokUserPostsTool,
   ToolName,
   xhsNoteCommentsTool,
   xhsSearchTool,
@@ -24,6 +30,11 @@ import {
 import { PlainTextToolResult } from "@/tools/utils";
 import { convertToCoreMessages, generateId, Message, streamText, TextStreamPart, tool } from "ai";
 import { z } from "zod";
+
+const REDUCE_TOKENS = {
+  model: "gemini-2.5-flash",
+  ratio: 8,
+};
 
 const createDebouncePersistentMessage = (mills: number) => {
   let timeout: NodeJS.Timeout | null = null;
@@ -193,16 +204,16 @@ async function runScoutTaskChatStream({
     [ToolName.dySearch]: dySearchTool,
     [ToolName.dyPostComments]: dyPostCommentsTool,
     [ToolName.dyUserPosts]: dyUserPostsTool,
-    // [ToolName.tiktokSearch]: tiktokSearchTool,
-    // [ToolName.tiktokPostComments]: tiktokPostCommentsTool,
-    // [ToolName.tiktokUserPosts]: tiktokUserPostsTool,
-    // [ToolName.insSearch]: insSearchTool,
-    // [ToolName.insUserPosts]: insUserPostsTool,
-    // [ToolName.insPostComments]: insPostCommentsTool,
+    [ToolName.tiktokSearch]: tiktokSearchTool,
+    [ToolName.tiktokPostComments]: tiktokPostCommentsTool,
+    [ToolName.tiktokUserPosts]: tiktokUserPostsTool,
+    [ToolName.insSearch]: insSearchTool,
+    [ToolName.insUserPosts]: insUserPostsTool,
+    [ToolName.insPostComments]: insPostCommentsTool,
     [ToolName.savePersona]: savePersonaTool({ scoutUserChatId, statReport }),
   };
 
-  let round = 0;
+  // let round = 0;
   while (true) {
     const messagesInDB = await prisma.chatMessage.findMany({
       where: { userChatId: scoutUserChatId },
@@ -219,22 +230,22 @@ async function runScoutTaskChatStream({
       };
       const debouncePersistentMessage = createDebouncePersistentMessage(5000); // 5000 debounce
       const response = streamText({
+        model: REDUCE_TOKENS ? openai(REDUCE_TOKENS.model) : openai("claude-3-7-sonnet"),
+        //   round < 1
+        //     ? openai("claude-3-7-sonnet")
+        //     : round < 2
+        //       ? openai("gpt-4o", {
+        //           parallelToolCalls: true,
+        //         })
+        //       : openai("deepseek-v3"),
+        // model: openai("gpt-4o", {
+        //   parallelToolCalls: true,
+        // }),
         // model: openai("claude-3-7-sonnet-beta")  // 这个模型不大好用，savePersona 总是返回一半输入
-        model:
-          // openai("gpt-4o", {
-          //   parallelToolCalls: true,
-          // }),
-          round < 1
-            ? openai("claude-3-7-sonnet")
-            : round < 2
-              ? openai("gpt-4o", {
-                  parallelToolCalls: true,
-                })
-              : openai("deepseek-v3"),
         providerOptions: {
           openai: { stream_options: { include_usage: true } },
         },
-        system: scoutSystemVerbose(),
+        system: scoutSystem(),
         messages: coreMessages,
         tools,
         maxSteps: 15,
@@ -262,10 +273,17 @@ async function runScoutTaskChatStream({
             step.toolCalls.map((call) => call.toolName),
           );
           if (step.usage.totalTokens > 0) {
-            await statReport("tokens", step.usage.totalTokens, {
+            let tokens = step.usage.totalTokens;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const extra: any = {
               reportedBy: "scoutTaskChat tool",
               scoutUserChatId,
-            });
+            };
+            if (REDUCE_TOKENS) {
+              extra["reduceTokens"] = { originalTokens: tokens, ...REDUCE_TOKENS };
+              tokens = Math.ceil(tokens / REDUCE_TOKENS.ratio);
+            }
+            await statReport("tokens", tokens, extra);
           }
           // appendStepToStreamingMessage(streamingMessage, step);
           // if (streamingMessage.parts?.length && streamingMessage.content.trim()) {
@@ -314,7 +332,7 @@ async function runScoutTaskChatStream({
         role: "user",
         content: `目前总结了${personasResult.length}个personas，还不够5个，请批量保存人设后再考虑是否继续`,
       });
-      round++;
+      // round++;
       continue;
     } else {
       break;

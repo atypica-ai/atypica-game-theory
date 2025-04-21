@@ -342,8 +342,7 @@
         "deepDive": "可以进行报告主题下钻"
       },
       "tokens": {
-        "basicGift": "限时优惠：充值100万再送100万",
-        "proGift": "限时优惠：充值100万再送100万"
+        "basicGift": "限时优惠：充值100万再送100万"
       },
       "enterprise": {
         "AdvancedAnalysisTools": "调用工具能力",

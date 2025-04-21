@@ -322,7 +322,7 @@
     "chooseBasic": "Buy Tokens",
     "upgradeToPro": "Upgrade to Pro",
     "contactSales": "Contact Sales",
-    "averageStudyToken": "average study uses 400K tokens; complex queries consume more",
+    "averageStudyToken": "An average study typically consumes around 400K tokens; more complex and detailed queries will require additional token usage.",
     "features": {
       "socialPlatforms": {
         "single": "Access to single social media platform for research data",
@@ -342,8 +342,7 @@
         "deepDive": "Deep-dive capabilities into report topics"
       },
       "tokens": {
-        "basicGift": "Limited Offer: +1M bonus tokens per purchase",
-        "proGift": "Limited Offer: +1M bonus tokens per purchase"
+        "basicGift": "Limited Offer: +1M bonus tokens per purchase"
       },
       "enterprise": {
         "AdvancedAnalysisTools": "Advanced Analysis Tools",
