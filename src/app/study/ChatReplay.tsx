@@ -1,6 +1,7 @@
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Button } from "@/components/ui/button";
 import { useScrollToBottom } from "@/components/use-scroll-to-bottom";
+import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import { useStudyContext } from "./hooks/StudyContext";
 import { useProgressiveMessages } from "./hooks/useProgressiveMessages";
@@ -23,7 +24,10 @@ export function ChatReplay() {
     <>
       <div
         ref={messagesContainerRef}
-        className="flex-1 flex flex-col pb-12 gap-4 w-full items-center overflow-y-auto scrollbar-thin"
+        className={cn(
+          "flex-1 flex flex-col pb-12 gap-4 w-full items-center overflow-y-auto scrollbar-thin",
+          "p-4",
+        )}
       >
         {messagesDisplay.map((message, index) => (
           <SingleMessage
@@ -37,7 +41,8 @@ export function ChatReplay() {
         <div ref={messagesEndRef} />
       </div>
       {!isCompleted && (
-        <div className="flex justify-center">
+        // StudyPageClient 的 left panel 容器是 relative 的
+        <div className="flex justify-center absolute bottom-4 left-1/2 -translate-x-1/2">
           <Button variant="outline" size="sm" onClick={skipToEnd}>
             {t("skipToEnd")}
           </Button>

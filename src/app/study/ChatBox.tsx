@@ -212,7 +212,10 @@ export function ChatBox() {
     <>
       <div
         ref={messagesContainerRef}
-        className="flex-1 flex flex-col pb-12 gap-4 w-full items-center overflow-y-auto scrollbar-thin"
+        className={cn(
+          "flex-1 flex flex-col pb-12 gap-4 w-full items-center overflow-y-auto scrollbar-thin",
+          "p-4",
+        )}
       >
         {messages.map((message, index) => (
           <SingleMessage
@@ -243,7 +246,7 @@ export function ChatBox() {
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="relative">
+      <div className="relative mx-4">
         {error && (
           <div className="text-destructive text-xs mx-32 mb-2 line-clamp-1 text-center">
             {error?.message?.toString() || error.toString()}
@@ -255,7 +258,7 @@ export function ChatBox() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmitMessage} className="relative">
+      <form onSubmit={handleSubmitMessage} className="relative mx-4">
         <Textarea
           className={cn(
             "block min-h-24 max-lg:min-h-20 text-sm placeholder:text-sm resize-none focus-visible:border-primary/70 transition-colors rounded-lg py-3 px-4",

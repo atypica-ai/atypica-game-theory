@@ -21,7 +21,7 @@ const ToolInvocationMessage = ({
   isLastToolPart?: boolean;
 }) => {
   const [open, setOpen] = useState(false);
-  const { setViewToolInvocation, setLastToolInvocation } = useStudyContext();
+  const { setViewToolInvocation, setLastToolInvocation, setConsoleOpen } = useStudyContext();
 
   useEffect(() => {
     if (isLastToolPart) {
@@ -58,6 +58,7 @@ const ToolInvocationMessage = ({
             onClick={(e) => {
               e.stopPropagation();
               setViewToolInvocation(toolInvocation);
+              setConsoleOpen(true);
             }}
           >
             <EyeIcon className="size-3.5" />

@@ -6,6 +6,8 @@ import { createContext, ReactNode, useContext, useState } from "react";
 interface StudyContextType {
   studyUserChat: StudyUserChat;
   replay: boolean;
+  consoleOpen: boolean;
+  setConsoleOpen: (open: boolean) => void;
   lastToolInvocation: ToolInvocation | null;
   setLastToolInvocation: (toolInvocation: ToolInvocation | null) => void;
   viewToolInvocation: ToolInvocation | null;
@@ -24,6 +26,7 @@ export function StudyProvider({
   studyUserChat: StudyUserChat;
   replay: boolean;
 }) {
+  const [consoleOpen, setConsoleOpen] = useState(false);
   const [lastToolInvocation, setLastToolInvocation] = useState<ToolInvocation | null>(null);
   const [viewToolInvocation, setViewToolInvocation] = useState<ToolInvocation | null>(null);
   const unsetViewToolInvocation = () => setViewToolInvocation(null);
@@ -32,6 +35,8 @@ export function StudyProvider({
       value={{
         studyUserChat,
         replay,
+        consoleOpen,
+        setConsoleOpen,
         lastToolInvocation,
         setLastToolInvocation,
         viewToolInvocation,
