@@ -79,7 +79,8 @@ function parseXHSSearchResult(data: {
   };
 }
 
-async function xhsSearch({ keyword }: { keyword: string }) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+async function xhsSearchSX({ keyword }: { keyword: string }) {
   for (let i = 0; i < 3; i++) {
     try {
       const params = {
@@ -101,6 +102,36 @@ async function xhsSearch({ keyword }: { keyword: string }) {
       } else {
         console.log("Failed to fetch XHS feed, retrying...", i + 1);
         await new Promise((resolve) => setTimeout(resolve, 3000));
+        continue;
+      }
+    } catch (error) {
+      console.log("Error fetching XHS feed:", error);
+    }
+  }
+  return {
+    notes: [],
+    plainText: "Failed to fetch XHS feed after 3 retries",
+  };
+}
+
+async function xhsSearch({ keyword }: { keyword: string }) {
+  for (let i = 0; i < 3; i++) {
+    try {
+      const headers = { Authorization: `Bearer ${process.env.TIKHUB_API_TOKEN!}` };
+      const params = { keyword, page: "1", sort: "general", noteType: "_0" };
+      const queryString = new URLSearchParams(params).toString();
+      const response = await fetch(
+        `${process.env.TIKHUB_API_BASE_URL}/xiaohongshu/web/search_notes?${queryString}`,
+        { headers },
+      );
+      const res = await response.json();
+      console.log("xhsSearch response:", JSON.stringify(res).slice(0, 100));
+      if (res.code === 200) {
+        const result = parseXHSSearchResult(res.data);
+        return result;
+      } else {
+        console.log("Failed to fetch XHS feed, retrying...", i + 1);
+        await new Promise((resolve) => setTimeout(resolve, 3 * 1000));
         continue;
       }
     } catch (error) {
