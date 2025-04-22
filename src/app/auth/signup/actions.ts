@@ -1,4 +1,5 @@
 "use server";
+import { authClientInfo } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ServerActionResult } from "@/lib/serverAction";
 import { hash } from "bcryptjs";
@@ -50,9 +51,14 @@ export async function signUp({
     };
   }
 
+  const lastLogin = await authClientInfo();
   const hashedPassword = await hash(password, 10);
   const user = await prisma.user.create({
-    data: { email, password: hashedPassword },
+    data: {
+      email,
+      password: hashedPassword,
+      lastLogin,
+    },
   });
   await prisma.$transaction([
     prisma.userTokensLog.create({

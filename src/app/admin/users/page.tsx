@@ -18,6 +18,7 @@ import { SearchIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
+import { ConfirmDialog } from "../components/ConfirmDialog";
 import { AdminPermission, PaginationInfo } from "../utils";
 import {
   addTokensToUser,
@@ -42,8 +43,6 @@ export default function UsersPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAdminDialogOpen, setIsAdminDialogOpen] = useState(false);
-  const [isVerifyDialogOpen, setIsVerifyDialogOpen] = useState(false);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedRole, setSelectedRole] = useState<AdminRole>("REGULAR_ADMIN");
   const [selectedPermissions, setSelectedPermissions] = useState<AdminPermission[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -149,16 +148,6 @@ export default function UsersPage() {
     setIsAdminDialogOpen(true);
   };
 
-  const openVerifyDialog = (user: User) => {
-    setSelectedUser(user);
-    setIsVerifyDialogOpen(true);
-  };
-
-  const openDeleteDialog = (user: User) => {
-    setSelectedUser(user);
-    setIsDeleteDialogOpen(true);
-  };
-
   if (status === "loading" || isLoading) {
     return <div>Loading...</div>;
   }
@@ -235,6 +224,9 @@ export default function UsersPage() {
                 Verified
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                Last Login
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                 Admin Role
               </th>
               <th className="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider">
@@ -245,7 +237,7 @@ export default function UsersPage() {
           <tbody className="divide-y divide">
             {users.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-6 py-4 text-center text-sm">
+                <td colSpan={8} className="px-6 py-4 text-center text-sm">
                   No users found
                 </td>
               </tr>
@@ -285,18 +277,31 @@ export default function UsersPage() {
                           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
                             Not Verified
                           </span>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-6 w-6"
-                            onClick={() => openVerifyDialog(user)}
-                            title="Verify Email"
+                          <ConfirmDialog
+                            title="Verify User Email"
+                            description={`Are you sure you want to mark ${user.email} as verified?`}
+                            onConfirm={async () => {
+                              await verifyUserEmail(user.id);
+                              fetchData();
+                            }}
                           >
-                            ✓
-                          </Button>
+                            <Button variant="outline" size="icon" className="size-7">
+                              ✓
+                            </Button>
+                          </ConfirmDialog>
                         </>
                       )}
                     </div>
+                  </td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {user.lastLogin ? (
+                      <>
+                        <div>{new Date(user.lastLogin.timestamp).toLocaleDateString()}</div>
+                        <div>{user.lastLogin.clientIp}</div>
+                      </>
+                    ) : (
+                      <span className="text-muted-foreground">-</span>
+                    )}
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm">
                     <div className="flex items-center gap-2">
@@ -308,7 +313,7 @@ export default function UsersPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            className="h-6"
+                            className="h-7"
                             onClick={() => openAdminDialog(user)}
                           >
                             Edit
@@ -327,15 +332,21 @@ export default function UsersPage() {
                     </div>
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-center">
-                    <Button
-                      variant="destructive"
-                      size="icon"
-                      className="h-6 w-6"
-                      onClick={() => openDeleteDialog(user)}
-                      title="Delete User"
+                    <ConfirmDialog
+                      title="Delete User Account"
+                      description={`Are you sure you want to permanently delete the account for ${user.email}? This will remove all user data including tokens, payments, and subscription information.`}
+                      onConfirm={async () => {
+                        const result = await deleteUserAccount(user.id);
+                        if (!result.success) {
+                          setError(result.message || "Failed to delete user");
+                        }
+                        fetchData();
+                      }}
                     >
-                      ×
-                    </Button>
+                      <Button variant="destructive" size="icon" className="size-7">
+                        ×
+                      </Button>
+                    </ConfirmDialog>
                   </td>
                 </tr>
               ))
@@ -502,68 +513,6 @@ export default function UsersPage() {
               }}
             >
               Save Changes
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      {/* Email verification confirmation dialog */}
-      <Dialog open={isVerifyDialogOpen} onOpenChange={setIsVerifyDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Verify User Email</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to mark {selectedUser?.email} as verified?
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsVerifyDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              onClick={async () => {
-                if (!selectedUser) return;
-                await verifyUserEmail(selectedUser.id);
-                setIsVerifyDialogOpen(false);
-                fetchData();
-              }}
-            >
-              Verify Email
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Delete user confirmation dialog */}
-      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Delete User Account</DialogTitle>
-          </DialogHeader>
-          <div className="text-red-500 font-bold">Warning: This action cannot be undone.</div>
-          <div className="mt-2">
-            Are you sure you want to permanently delete the account for {selectedUser?.email}?
-          </div>
-          <div className="mt-2">
-            This will remove all user data including tokens, payments, and subscription information.
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={async () => {
-                if (!selectedUser) return;
-                const result = await deleteUserAccount(selectedUser.id);
-                setIsDeleteDialogOpen(false);
-
-                if (!result.success) {
-                  setError(result.message || "Failed to delete user");
-                }
-                fetchData();
-              }}
-            >
-              Delete Account
             </Button>
           </DialogFooter>
         </DialogContent>

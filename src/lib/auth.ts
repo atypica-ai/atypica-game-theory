@@ -3,6 +3,17 @@ import { prisma } from "@/lib/prisma";
 import { compare } from "bcryptjs";
 import { type NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import { getRequestClientIp, getRequestUserAgent } from "./headers";
+
+export const authClientInfo = async () => {
+  const lastLogin = {
+    timestamp: Date.now(),
+    clientIp: await getRequestClientIp(),
+    userAgent: await getRequestUserAgent(),
+  };
+
+  return lastLogin;
+};
 
 export const authOptions: NextAuthOptions = {
   pages: {

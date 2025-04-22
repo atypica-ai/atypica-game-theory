@@ -1,4 +1,5 @@
 "use server";
+import { authClientInfo } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ServerActionResult } from "@/lib/serverAction";
 import { AdminRole, User } from "@prisma/client";
@@ -12,9 +13,10 @@ export async function fetchUsers(
   adminOnly?: boolean,
 ): Promise<
   ServerActionResult<
-    (Pick<User, "id" | "email" | "createdAt" | "emailVerified"> & {
+    (Pick<User, "id" | "name" | "email" | "createdAt" | "emailVerified"> & {
       tokens: { balance: number } | null;
       adminUser: { role: AdminRole; permissions: AdminPermission[] } | null;
+      lastLogin: Awaited<ReturnType<typeof authClientInfo>> | null;
     })[]
   >
 > {
@@ -46,9 +48,11 @@ export async function fetchUsers(
       take: pageSize,
       select: {
         id: true,
+        name: true,
         email: true,
         createdAt: true,
         emailVerified: true,
+        lastLogin: true,
         tokens: {
           select: {
             balance: true,
@@ -74,6 +78,9 @@ export async function fetchUsers(
             ...user.adminUser,
             permissions: user.adminUser.permissions as AdminPermission[],
           }
+        : null,
+      lastLogin: user.lastLogin
+        ? (user.lastLogin as Awaited<ReturnType<typeof authClientInfo>>)
         : null,
     })),
     pagination: {

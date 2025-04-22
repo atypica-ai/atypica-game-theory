@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE `User` ADD COLUMN `lastLogin` JSON NULL,
+    ADD COLUMN `name` VARCHAR(64) NOT NULL DEFAULT '';

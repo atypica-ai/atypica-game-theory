@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
+import { recordLastLogin } from "./actions";
 
 export default function SignInPage() {
   return (
@@ -36,6 +37,7 @@ function SignIn() {
         redirect: false,
       });
       if (!result?.error) {
+        await recordLastLogin();
         // router.replace(callbackUrl);
         window.location.replace(callbackUrl);
       } else {

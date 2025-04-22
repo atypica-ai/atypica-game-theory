@@ -1,3 +1,4 @@
+"use server";
 import { headers } from "next/headers";
 
 export async function getRequestOrigin(): Promise<string> {
@@ -23,4 +24,9 @@ export async function getRequestClientIp(): Promise<string> {
     return forwardedIp.split(",")[0].trim();
   }
   return realIp as string;
+}
+
+export async function getRequestUserAgent(): Promise<string | null> {
+  const headersList = await headers();
+  return headersList.get("user-agent") || null;
 }
