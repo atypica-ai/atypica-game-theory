@@ -3,6 +3,7 @@ import Stars from "@/components/Stars";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from "@/components/ui/sonner";
 import Analytics from "@/lib/Analytics";
+import { deployRegion } from "@/lib/deployRegion";
 import { cn } from "@/lib/utils";
 import type { Metadata, Viewport } from "next";
 import { NextIntlClientProvider } from "next-intl";
@@ -59,7 +60,7 @@ export default async function RootLayout({
 }>) {
   const locale = await getLocale();
   return (
-    <html lang={locale} suppressHydrationWarning>
+    <html lang={locale} data-deploy-region={deployRegion()} suppressHydrationWarning>
       <body
         className={cn(
           "font-IBMPlexMonoRegular antialiased",

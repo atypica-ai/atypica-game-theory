@@ -1,4 +1,4 @@
-import { PaymentMethod, ProductName } from "@/app/payment/data";
+import { ProductName } from "@/app/payment/data";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -9,6 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useDeployRegion } from "@/lib/deployRegion";
 import { cn } from "@/lib/utils";
 import { CoinsIcon, CreditCardIcon, GiftIcon, LoaderCircle } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
@@ -17,7 +18,7 @@ import Link from "next/link";
 import { QRCodeSVG } from "qrcode.react";
 import { useEffect, useState } from "react";
 import { retrieveLatestPaid } from "../actions";
-import { usePay } from "./usePay";
+import { PaymentProvider, usePay } from "./usePay";
 
 interface AddTokensDialogProps {
   open: boolean;
@@ -27,8 +28,11 @@ interface AddTokensDialogProps {
 
 export const AddTokensDialog = ({ open, onOpenChange, onSuccess }: AddTokensDialogProps) => {
   const locale = useLocale();
+  const deployRegion = useDeployRegion();
   const t = useTranslations("Components.AddTokensDialog");
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(PaymentMethod.wx_pub);
+  const [paymentProvider, setPaymentProvider] = useState<PaymentProvider>(
+    deployRegion === "mainland" ? PaymentProvider.Pingxx : PaymentProvider.Stripe,
+  );
   const [paymentSuccess, setPaymentSuccess] = useState<boolean>(false);
 
   const { createPaymentLink, clearPaymentLink, paymentScanQR, loading, error } = usePay();
@@ -115,19 +119,21 @@ export const AddTokensDialog = ({ open, onOpenChange, onSuccess }: AddTokensDial
                   </div>
                 </div>
                 <div className="text-xl font-bold">
-                  {paymentMethod === PaymentMethod.stripe ? "$16" : "¥100"}
+                  {paymentProvider === PaymentProvider.Pingxx ? "¥100" : "$16"}
                 </div>
               </div>
             </div>
 
             <Tabs
-              defaultValue={PaymentMethod.wx_pub}
-              onValueChange={(value) => setPaymentMethod(value as PaymentMethod)}
+              defaultValue={
+                deployRegion === "mainland" ? PaymentProvider.Pingxx : PaymentProvider.Stripe
+              }
+              onValueChange={(value) => setPaymentProvider(value as PaymentProvider)}
             >
               <TabsList className="grid grid-cols-2 mb-4">
                 <TabsTrigger
-                  value="alipay_wap/wx_pub"
-                  disabled={loading}
+                  value={PaymentProvider.Pingxx}
+                  disabled={loading || deployRegion === "global"}
                   onClick={() => clearPaymentLink()} // 切换 tab 需要清空带支付的二维码
                 >
                   <div className="size-5 mr-1 rounded-lg overflow-hidden relative">
@@ -150,8 +156,8 @@ export const AddTokensDialog = ({ open, onOpenChange, onSuccess }: AddTokensDial
                   <span className="max-sm:hidden">{t("wechatPay")}</span>
                 </TabsTrigger>
                 <TabsTrigger
-                  value="stripe"
-                  disabled={loading}
+                  value={PaymentProvider.Stripe}
+                  disabled={loading || deployRegion === "mainland"}
                   onClick={() => clearPaymentLink()} // 切换 tab 需要清空带支付的二维码
                 >
                   <div className="size-5 mr-1 rounded-lg overflow-hidden relative">
@@ -166,7 +172,7 @@ export const AddTokensDialog = ({ open, onOpenChange, onSuccess }: AddTokensDial
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="alipay_wap/wx_pub" className="flex justify-center">
+              <TabsContent value={PaymentProvider.Pingxx} className="flex justify-center">
                 {paymentScanQR && !loading ? (
                   <div className="flex flex-col items-center">
                     <div className="text-sm mb-2 text-center">{t("scanQrCode")}</div>
@@ -184,7 +190,7 @@ export const AddTokensDialog = ({ open, onOpenChange, onSuccess }: AddTokensDial
                 ) : null}
               </TabsContent>
 
-              <TabsContent value="stripe" className="flex justify-center">
+              <TabsContent value={PaymentProvider.Stripe} className="flex justify-center">
                 <div className="text-center text-sm text-muted-foreground">
                   {t("redirectToStripe")}
                 </div>
@@ -210,13 +216,13 @@ export const AddTokensDialog = ({ open, onOpenChange, onSuccess }: AddTokensDial
                 type="button"
                 onClick={() =>
                   createPaymentLink({
-                    paymentMethod,
+                    paymentProvider: paymentProvider,
                     productName: ProductName.TOKENS1M,
                   })
                 }
                 disabled={loading}
                 className={cn(
-                  paymentScanQR && paymentMethod !== PaymentMethod.stripe ? "hidden" : "",
+                  paymentScanQR && paymentProvider === PaymentProvider.Pingxx ? "hidden" : "",
                 )}
               >
                 {loading ? (

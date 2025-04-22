@@ -32,7 +32,7 @@ export const savePersonaTool = ({
         .array(z.string())
         .describe("相关标签")
         .transform((tags) => tags.map((tag) => fixMalformedUnicodeString(tag))),
-      userids: z.array(z.string()).describe("该人设典型的用户 ID 列表"),
+      userids: z.array(z.string()).optional().describe("该人设典型的用户 ID 列表").default([]),
       personaPrompt: z
         .string()
         .describe("生成的 persona prompt 内容")

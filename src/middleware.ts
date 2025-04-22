@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { deployRegion } from "./lib/deployRegion";
 import { getRequestClientIp, getRequestOrigin } from "./lib/headers";
 
 export const config = {
@@ -30,7 +31,8 @@ async function handlePingRequest(req: NextRequest) {
 function handleLocale(req: NextRequest) {
   // Get the locale from cookies
   const localeCookie = req.cookies.get("locale");
-  const locale = localeCookie?.value || "zh-CN";
+  const defaultLocale = deployRegion() === "global" ? "en-US" : "zh-CN";
+  const locale = localeCookie?.value || defaultLocale;
   // Create a response object from the request
   const response = NextResponse.next();
   // Set the locale in a header to be accessible in server components

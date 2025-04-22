@@ -1,12 +1,12 @@
 import { Currency } from "@prisma/client";
 import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useState } from "react";
-import {
-  PaymentMethod,
-  PingxxNewPaymentParams,
-  ProductName,
-  StripeNewPaymentParams,
-} from "../data";
+import { PingxxNewPaymentParams, ProductName, StripeNewPaymentParams } from "../data";
+
+export enum PaymentProvider {
+  Stripe = "Stripe",
+  Pingxx = "Pingxx",
+}
 
 export function usePay() {
   const { data: session } = useSession();
@@ -108,17 +108,17 @@ export function usePay() {
   // Handle payment initiation
   const createPaymentLink = useCallback(
     async ({
-      paymentMethod,
+      paymentProvider,
       productName,
     }: {
-      paymentMethod: PaymentMethod;
+      paymentProvider: PaymentProvider;
       productName: ProductName;
     }) => {
       if (!session?.user) {
         setError("You must be logged in to make a purchase");
         return;
       }
-      if (paymentMethod === PaymentMethod.stripe) {
+      if (paymentProvider === PaymentProvider.Stripe) {
         submitForStripePayment({
           productName,
           currency: Currency.USD,
@@ -129,7 +129,6 @@ export function usePay() {
           productName,
           currency: Currency.CNY,
           userId: session.user.id,
-          // paymentMethod,
         });
       }
     },

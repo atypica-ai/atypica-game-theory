@@ -69,3 +69,5 @@ jobs:
           export KUBECONFIG=$HOME/.kube/config
           kubectl config use-context muse-aws-cn-prod
           kubectl set image deployment/atypica-llm-app atypica-llm-app=musecr.azurecr.cn/bmrlab/atypica-llm-app:${{ env.VERSION }} --namespace bmrlab
+          kubectl config use-context muse-aws-us-prod
+          kubectl set image deployment/atypica-llm-app atypica-llm-app=musecr.azurecr.cn/bmrlab/atypica-llm-app:${{ env.VERSION }} --namespace bmrlab

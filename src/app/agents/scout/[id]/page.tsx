@@ -1,3 +1,4 @@
+import { checkTezignAuth } from "@/app/admin/utils";
 import { fetchUserChatById } from "@/data/UserChat";
 import { authOptions } from "@/lib/auth";
 import { getServerSession } from "next-auth/next";
@@ -7,6 +8,7 @@ import { AgentChatPage } from "../../AgentChatPage";
 export const dynamic = "force-dynamic";
 
 export default async function ScoutAgentPage({ params }: { params: Promise<{ id: string }> }) {
+  await checkTezignAuth(); // 内部人员可以和 acout agent 聊天
   const userChatId = parseInt((await params).id);
 
   const result = await fetchUserChatById(userChatId, "scout");
