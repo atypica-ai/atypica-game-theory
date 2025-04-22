@@ -12,7 +12,7 @@ export async function fetchUsers(
   adminOnly?: boolean,
 ): Promise<
   ServerActionResult<
-    (Pick<User, "id" | "email" | "createdAt"> & {
+    (Pick<User, "id" | "email" | "createdAt" | "emailVerified"> & {
       tokens: { balance: number } | null;
       adminUser: { role: AdminRole; permissions: AdminPermission[] } | null;
     })[]
@@ -48,6 +48,7 @@ export async function fetchUsers(
         id: true,
         email: true,
         createdAt: true,
+        emailVerified: true,
         tokens: {
           select: {
             balance: true,
@@ -144,6 +145,94 @@ export async function addTokensToUser(
     success: true,
     data: undefined,
   };
+}
+export async function verifyUserEmail(userId: number): Promise<ServerActionResult<void>> {
+  await checkAdminAuth([AdminPermission.MANAGE_USERS]);
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+
+  if (!user) {
+    return {
+      success: false,
+      message: "User not found",
+    };
+  }
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: {
+      emailVerified: new Date(),
+    },
+  });
+
+  revalidatePath("/admin/users");
+
+  return {
+    success: true,
+    data: undefined,
+  };
+}
+
+export async function deleteUserAccount(userId: number): Promise<ServerActionResult<void>> {
+  await checkAdminAuth([AdminPermission.MANAGE_USERS]);
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    include: {
+      userAnalysts: true,
+      userChats: true,
+      paymentRecords: true,
+      tokens: true,
+      tokensLogs: true,
+      subscriptions: true,
+    },
+  });
+
+  if (!user) {
+    return {
+      success: false,
+      message: "User not found",
+    };
+  }
+
+  if (
+    user.userAnalysts.length > 0 ||
+    user.userChats.length > 0 ||
+    user.paymentRecords.length > 0 ||
+    user.tokensLogs.length > 1 ||
+    user.subscriptions.length > 0
+  ) {
+    console.log(user);
+    return {
+      success: false,
+      message: "User has associated data that prevents deletion.",
+    };
+  }
+
+  try {
+    await prisma.userTokens.delete({
+      where: { userId },
+    });
+    await prisma.userTokensLog.deleteMany({
+      where: { userId },
+    });
+    await prisma.user.delete({
+      where: { id: userId },
+    });
+    revalidatePath("/admin/users");
+    return {
+      success: true,
+      data: undefined,
+    };
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    return {
+      success: false,
+      message: "Failed to delete user. The user may have associated data that prevents deletion.",
+    };
+  }
 }
 
 export async function updateAdminStatus(
