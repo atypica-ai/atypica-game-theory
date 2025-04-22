@@ -33,7 +33,7 @@ import { z } from "zod";
 
 const REDUCE_TOKENS = {
   model: "gemini-2.5-flash",
-  ratio: 8,
+  ratio: 5,
 };
 
 const createDebouncePersistentMessage = (mills: number) => {
