@@ -4,7 +4,7 @@ import { HttpsProxyAgent } from "https-proxy-agent";
 import { NextResponse } from "next/server";
 import fetch from "node-fetch";
 
-const proxyUrl = process.env.IMAGE_LOADER_HTTPS_PROXY;
+const proxyUrl = process.env.FETCH_HTTPS_PROXY;
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
