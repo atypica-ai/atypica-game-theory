@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useDeployRegion } from "@/lib/deployRegion";
+import { getDeployRegion } from "@/lib/deployRegion";
 import { cn } from "@/lib/utils";
 import { CoinsIcon, CreditCardIcon, GiftIcon, LoaderCircle } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
@@ -28,7 +28,7 @@ interface AddTokensDialogProps {
 
 export const AddTokensDialog = ({ open, onOpenChange, onSuccess }: AddTokensDialogProps) => {
   const locale = useLocale();
-  const deployRegion = useDeployRegion();
+  const deployRegion = getDeployRegion();
   const t = useTranslations("Components.AddTokensDialog");
   const [paymentProvider, setPaymentProvider] = useState<PaymentProvider>(
     deployRegion === "mainland" ? PaymentProvider.Pingxx : PaymentProvider.Stripe,
