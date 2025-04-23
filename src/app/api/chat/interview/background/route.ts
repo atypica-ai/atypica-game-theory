@@ -19,6 +19,7 @@ export async function POST(req: Request) {
     userId,
     personaId,
     analystId,
+    language: "中英皆可",
   });
 
   waitUntil(

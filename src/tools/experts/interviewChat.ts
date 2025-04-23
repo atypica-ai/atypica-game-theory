@@ -1,3 +1,4 @@
+import { getDeployRegion } from "@/lib/deployRegion";
 import { llm, providerOptions } from "@/lib/llm";
 import { convertStepsToAIMessage } from "@/lib/messageUtils";
 import { prisma } from "@/lib/prisma";
@@ -42,11 +43,16 @@ export const interviewChatTool = ({
           }),
         )
         .describe("调研对象的列表，最多5人"),
+      language: z
+        .string()
+        .optional()
+        .describe("访谈使用的语言")
+        .default(() => (getDeployRegion() === "mainland" ? "简体中文" : "English")),
     }),
     experimental_toToolResultContent: (result: PlainTextToolResult) => {
       return [{ type: "text", text: result.plainText }];
     },
-    execute: async ({ analystId, personas }): Promise<InterviewChatResult> => {
+    execute: async ({ analystId, personas, language }): Promise<InterviewChatResult> => {
       const single = async ({ id: personaId, name: personaName }: { id: number; name: string }) => {
         try {
           const interview = await prisma.analystInterview.findUnique({
@@ -65,6 +71,7 @@ export const interviewChatTool = ({
             userId,
             personaId,
             analystId,
+            language,
           });
           await runInterview({
             analystInterviewId,
@@ -108,18 +115,20 @@ export async function prepareDBForInterview({
   userId,
   personaId,
   analystId,
+  language,
 }: {
   userId: number;
   personaId: number;
   analystId: number;
+  language: string;
 }) {
   const [persona, analyst] = await Promise.all([
     prisma.persona.findUniqueOrThrow({ where: { id: personaId } }),
     prisma.analyst.findUniqueOrThrow({ where: { id: analystId } }),
   ]);
-  const personaPrompt = personaAgentSystem(persona);
-  const interviewerPrompt = interviewerSystem(analyst);
-  const interviewerProloguePrompt = interviewerPrologue(analyst);
+  const personaPrompt = personaAgentSystem(persona, language);
+  const interviewerPrompt = interviewerSystem(analyst, language);
+  const interviewerProloguePrompt = interviewerPrologue(analyst, language);
   const conclusion = ""; // conclusion 被用于判断是否结束，开始前一定要清空
   // 确认 analyst 属于用户
   await prisma.userAnalyst.findUniqueOrThrow({

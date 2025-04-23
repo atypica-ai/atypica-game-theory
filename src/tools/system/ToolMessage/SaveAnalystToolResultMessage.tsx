@@ -15,7 +15,7 @@ export const SaveAnalystToolResultMessage: FC<{
 }) => {
   return (
     <div className="p-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 rounded-lg text-xs">
-      🎉 保存成功！
+      🎉 Saved！
       {/* <Link href={`/analyst/${analystId}`} target="_blank" className="text-blue-500">
         点击查看研究主题
       </Link>

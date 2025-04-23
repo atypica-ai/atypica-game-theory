@@ -99,7 +99,7 @@ export const scoutTaskChatTool = ({
         // .default(() => generateToken()),
         // 始终生成一个新的 token，并且这个会直接覆盖 message 里面 toolInvocation.args 上的参数
         .transform(() => generateToken()),
-      description: z.string().describe('用户画像搜索需求描述，用"帮我寻找"开头'),
+      description: z.string().describe('用户画像搜索需求描述，可以用"帮我寻找"或类似英文短语开头'),
     }),
     experimental_toToolResultContent: (result: PlainTextToolResult) => {
       return [{ type: "text", text: result.plainText }];
