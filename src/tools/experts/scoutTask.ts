@@ -1,4 +1,4 @@
-import { openai } from "@/lib/llm";
+import { llm, LLMModelName, providerOptions } from "@/lib/llm";
 import {
   appendChunkToStreamingMessage,
   convertDBMessageToAIMessage,
@@ -31,7 +31,10 @@ import { PlainTextToolResult } from "@/tools/utils";
 import { convertToCoreMessages, generateId, Message, streamText, TextStreamPart, tool } from "ai";
 import { z } from "zod";
 
-const REDUCE_TOKENS = {
+const REDUCE_TOKENS: {
+  model: LLMModelName;
+  ratio: number;
+} = {
   model: "gemini-2.5-flash",
   ratio: 5,
 };
@@ -231,21 +234,19 @@ async function runScoutTaskChatStream({
       };
       const debouncePersistentMessage = createDebouncePersistentMessage(5000); // 5000 debounce
       const response = streamText({
-        model: REDUCE_TOKENS ? openai(REDUCE_TOKENS.model) : openai("claude-3-7-sonnet"),
+        model: REDUCE_TOKENS ? llm(REDUCE_TOKENS.model) : llm("claude-3-7-sonnet"),
         //   round < 1
-        //     ? openai("claude-3-7-sonnet")
+        //     ? llm("claude-3-7-sonnet")
         //     : round < 2
-        //       ? openai("gpt-4o", {
+        //       ? llm("gpt-4o", {
         //           parallelToolCalls: true,
         //         })
-        //       : openai("deepseek-v3"),
-        // model: openai("gpt-4o", {
+        //       : llm("deepseek-v3"),
+        // model: llm("gpt-4o", {
         //   parallelToolCalls: true,
         // }),
-        // model: openai("claude-3-7-sonnet-beta")  // 这个模型不大好用，savePersona 总是返回一半输入
-        providerOptions: {
-          openai: { stream_options: { include_usage: true } },
-        },
+        // model: llm("claude-3-7-sonnet-beta")  // 这个模型不大好用，savePersona 总是返回一半输入
+        providerOptions: providerOptions,
         system: scoutSystem(),
         messages: coreMessages,
         tools,
@@ -272,6 +273,7 @@ async function runScoutTaskChatStream({
           console.log(
             `ScoutTaskChat [${scoutUserChatId}] step [${step.stepType}]`,
             step.toolCalls.map((call) => call.toolName),
+            step.usage,
           );
           if (step.usage.totalTokens > 0) {
             let tokens = step.usage.totalTokens;

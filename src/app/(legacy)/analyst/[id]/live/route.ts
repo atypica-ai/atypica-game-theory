@@ -1,6 +1,6 @@
 import { encryptAnalystReportUrl } from "@/app/(legacy)/analyst/report/encrypt";
 import { authOptions } from "@/lib/auth";
-import { openai } from "@/lib/llm";
+import { llm, providerOptions } from "@/lib/llm";
 import { prisma } from "@/lib/prisma";
 import { reportHTMLPrologue, reportHTMLSystem } from "@/prompt";
 import { initStatReporter } from "@/tools";
@@ -89,10 +89,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     ? initStatReporter({ userId: session.user.id, studyUserChatId: analyst.studyUserChatId })
     : {};
   const result = streamText({
-    model: openai("claude-3-7-sonnet"),
-    providerOptions: {
-      openai: { stream_options: { include_usage: true } },
-    },
+    model: llm("claude-3-7-sonnet"),
+    providerOptions: providerOptions,
     system: reportHTMLSystem(),
     messages: [
       {

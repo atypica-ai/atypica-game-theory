@@ -1,5 +1,5 @@
 import { authOptions } from "@/lib/auth";
-import { openai } from "@/lib/llm";
+import { llm, providerOptions } from "@/lib/llm";
 import {
   appendStepToStreamingMessage,
   persistentAIMessageToDB,
@@ -44,10 +44,8 @@ export async function POST(req: Request) {
   );
 
   const streamTextResult = streamText({
-    model: openai("claude-3-7-sonnet"),
-    providerOptions: {
-      openai: { stream_options: { include_usage: true } },
-    },
+    model: llm("claude-3-7-sonnet"),
+    providerOptions: providerOptions,
     system: helloSystem(),
     messages: coreMessages,
     tools: {

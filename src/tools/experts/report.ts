@@ -1,4 +1,4 @@
-import { openai } from "@/lib/llm";
+import { llm, providerOptions } from "@/lib/llm";
 import { prisma } from "@/lib/prisma";
 import { generateToken } from "@/lib/utils";
 import {
@@ -185,10 +185,8 @@ async function generateReport({
       content: string;
     }>((resolve, reject) => {
       const response = streamText({
-        model: openai("claude-3-7-sonnet"),
-        providerOptions: {
-          openai: { stream_options: { include_usage: true } },
-        },
+        model: llm("claude-3-7-sonnet"),
+        providerOptions: providerOptions,
         system: reportHTMLSystem(),
         messages: messages,
         maxSteps: 1,
@@ -209,7 +207,10 @@ async function generateReport({
             finishReason: result.finishReason,
             content: result.text,
           });
-          console.log(`Report [${report.id}] HTML generated, finishReason: ${result.finishReason}`);
+          console.log(
+            `Report [${report.id}] HTML generated, finishReason: ${result.finishReason}`,
+            result.usage,
+          );
           if (result.usage.totalTokens > 0 && statReport) {
             await statReport("tokens", result.usage.totalTokens, {
               reportedBy: "generateReport tool",
@@ -266,10 +267,8 @@ async function generateCover({
   statReport: StatReporter;
 }) {
   const response = streamText({
-    model: openai("claude-3-7-sonnet"),
-    providerOptions: {
-      openai: { stream_options: { include_usage: true } },
-    },
+    model: llm("claude-3-7-sonnet"),
+    providerOptions: providerOptions,
     system: reportCoverSystem(),
     messages: [{ role: "user", content: reportCoverPrologue(analyst, instruction) }],
     maxSteps: 1,

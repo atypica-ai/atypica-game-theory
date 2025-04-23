@@ -1,4 +1,4 @@
-import { openai } from "@/lib/llm";
+import { llm, providerOptions } from "@/lib/llm";
 import { convertStepsToAIMessage } from "@/lib/messageUtils";
 import { prisma } from "@/lib/prisma";
 import { generateToken } from "@/lib/utils";
@@ -187,10 +187,8 @@ async function chatWithInterviewer({
 }: Pick<ChatProps, "messages" | "analystInterviewId" | "prompt" | "abortSignal" | "statReport">) {
   const result = await new Promise<Omit<Message, "role">>(async (resolve, reject) => {
     const response = streamText({
-      model: openai("claude-3-7-sonnet"), // 不能用 gpt-4o，指令遵循的比较差，会结束不了
-      providerOptions: {
-        openai: { stream_options: { include_usage: true } },
-      },
+      model: llm("claude-3-7-sonnet"), // 不能用 gpt-4o，指令遵循的比较差，会结束不了
+      providerOptions: providerOptions,
       system: prompt.interviewerPrompt,
       messages,
       tools: {
@@ -200,6 +198,11 @@ async function chatWithInterviewer({
       maxSteps: 3,
       // onChunk: (chunk) => console.log(`Interview [${analystInterviewId}] Interviewer:`, JSON.stringify(chunk)),
       onStepFinish: async (step) => {
+        console.log(
+          `Interview [${analystInterviewId}] chatWithInterviewer step [${step.stepType}]`,
+          step.toolCalls.map((call) => call.toolName),
+          step.usage,
+        );
         if (step.usage.totalTokens > 0) {
           await statReport("tokens", step.usage.totalTokens, {
             reportedBy: "interview tool",
@@ -239,10 +242,8 @@ async function chatWithPersona({
 }: Pick<ChatProps, "messages" | "analystInterviewId" | "prompt" | "abortSignal" | "statReport">) {
   const result = await new Promise<Omit<Message, "role">>(async (resolve, reject) => {
     const response = streamText({
-      model: openai("gpt-4o"),
-      providerOptions: {
-        openai: { stream_options: { include_usage: true } },
-      },
+      model: llm("gpt-4o"),
+      providerOptions: providerOptions,
       system: prompt.personaPrompt,
       messages,
       tools: {
@@ -251,6 +252,11 @@ async function chatWithPersona({
       maxSteps: 3,
       // onChunk: (chunk) => console.log(`Interview [${analystInterviewId}] Persona:`, JSON.stringify(chunk)),
       onStepFinish: async (step) => {
+        console.log(
+          `Interview [${analystInterviewId}] chatWithPersona step [${step.stepType}]`,
+          step.toolCalls.map((call) => call.toolName),
+          step.usage,
+        );
         if (step.usage.totalTokens > 0) {
           await statReport("tokens", step.usage.totalTokens, {
             reportedBy: "interview tool",

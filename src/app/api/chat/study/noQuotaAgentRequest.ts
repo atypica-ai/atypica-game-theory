@@ -1,4 +1,4 @@
-import { openai } from "@/lib/llm";
+import { llm, providerOptions } from "@/lib/llm";
 import { studySystemNoQuota } from "@/prompt";
 import { requestPaymentTool, ToolName } from "@/tools";
 import { CoreMessage, Message, streamText } from "ai";
@@ -20,11 +20,9 @@ export async function noQuotaAgentRequest({
   reqSignal: AbortSignal;
 }) {
   const streamTextResult = streamText({
-    // model: openai("o3-mini"),
-    model: openai("claude-3-7-sonnet"),
-    providerOptions: {
-      openai: { stream_options: { include_usage: true } },
-    },
+    // model: llm("o3-mini"),
+    model: llm("claude-3-7-sonnet"),
+    providerOptions: providerOptions,
     system: studySystemNoQuota(),
     messages: coreMessages,
     tools: {

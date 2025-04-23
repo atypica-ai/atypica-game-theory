@@ -1,6 +1,6 @@
 import { fetchPersonaById } from "@/app/(legacy)/personas/actions";
 import { authOptions } from "@/lib/auth";
-import { openai } from "@/lib/llm";
+import { llm, providerOptions } from "@/lib/llm";
 import { personaAgentSystem } from "@/prompt";
 import { dySearchTool, reasoningThinkingTool, ToolName, xhsSearchTool } from "@/tools";
 import { Message, streamText } from "ai";
@@ -29,10 +29,8 @@ export async function POST(req: Request) {
   const persona = result.data;
 
   const streamTextResult = streamText({
-    model: openai("claude-3-7-sonnet"),
-    providerOptions: {
-      openai: { stream_options: { include_usage: true } },
-    },
+    model: llm("claude-3-7-sonnet"),
+    providerOptions: providerOptions,
     tools: {
       [ToolName.xhsSearch]: xhsSearchTool,
       [ToolName.dySearch]: dySearchTool,

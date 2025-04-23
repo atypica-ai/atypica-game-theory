@@ -1,4 +1,4 @@
-import { openai } from "@/lib/llm";
+import { llm, providerOptions } from "@/lib/llm";
 import { appendChunkToStreamingMessage } from "@/lib/messageUtils";
 import { studySystem } from "@/prompt";
 import {
@@ -49,11 +49,8 @@ export async function studyAgentRequest({
     [ToolName.requestInteraction]: requestInteractionTool,
   };
   const streamTextResult = streamText({
-    // model: openai("o3-mini"),
-    model: openai("claude-3-7-sonnet"),
-    providerOptions: {
-      openai: { stream_options: { include_usage: true } },
-    },
+    model: llm("claude-3-7-sonnet"),
+    providerOptions: providerOptions,
     system: studySystem(),
     messages: coreMessages,
     tools,
@@ -82,6 +79,7 @@ export async function studyAgentRequest({
       console.log(
         `StudyChat [${studyUserChatId}] step [${step.stepType}]`,
         step.toolCalls.map((call) => call.toolName),
+        step.usage,
       );
       if (step.usage.totalTokens > 0) {
         await Promise.all([

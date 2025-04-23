@@ -1,5 +1,5 @@
 import { authOptions } from "@/lib/auth";
-import { openai } from "@/lib/llm";
+import { llm, providerOptions } from "@/lib/llm";
 import {
   appendStepToStreamingMessage,
   persistentAIMessageToDB,
@@ -77,19 +77,12 @@ export async function POST(req: Request) {
     [ToolName.savePersona]: savePersonaTool({ scoutUserChatId }),
   };
   const response = streamText({
-    model: openai("gemini-2.5-flash"),
-    // model: openai("gpt-4o", {
+    model: llm("gemini-2.5-flash"),
+    // model: llm("gpt-4o", {
     //   parallelToolCalls: true,
     // }),
-    // model: openai("claude-3-7-sonnet-beta"),
-    // model: bedrock("claude-3-7-sonnet"),
-    providerOptions: {
-      openai: {
-        stream_options: { include_usage: true },
-        // IMPORTANT: litellm 不支持这个 bedrock 的参数输入，但是在 litellm model 配置里设置了，它会发给 bedrock api
-        // anthropic_beta: ["token-efficient-tools-2025-02-19"],
-      },
-    },
+    // model: llm("claude-3-7-sonnet-beta"),
+    providerOptions: providerOptions,
     system: scoutSystem(),
     messages: coreMessages,
     tools,

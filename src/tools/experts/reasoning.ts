@@ -1,4 +1,4 @@
-import { openai } from "@/lib/llm";
+import { llm, providerOptions } from "@/lib/llm";
 import { fixMalformedUnicodeString } from "@/lib/utils";
 import { StatReporter } from "@/tools";
 import { PlainTextToolResult } from "@/tools/utils";
@@ -32,11 +32,9 @@ ${question}
   try {
     return new Promise(async (resolve, reject) => {
       const response = streamText({
-        // model: deepseek("Pro/deepseek-ai/DeepSeek-R1"),
-        model: openai("gpt-4o"),
-        providerOptions: {
-          openai: { stream_options: { include_usage: true } },
-        },
+        // model: llm("deepseek-r1"),
+        model: llm("gpt-4o"),
+        providerOptions: providerOptions,
         system: "你是一个专业的顾问，需要逐步仔细思考这个问题。用较少的文字回复，不要超过300字。",
         messages: [{ role: "user", content: prompt }],
         // maxTokens: 500,
