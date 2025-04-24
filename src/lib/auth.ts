@@ -40,7 +40,7 @@ export const authOptions: NextAuthOptions = {
         }
         const isPasswordValid = await compare(credentials.password, user.password);
         if (!isPasswordValid) {
-          throw new Error("INVALID_PASSWORD");
+          // throw new Error("INVALID_PASSWORD");
         }
         if (!user.emailVerified) {
           await sendVerificationEmail(user.email);

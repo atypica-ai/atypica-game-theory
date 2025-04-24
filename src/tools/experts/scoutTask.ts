@@ -1,9 +1,10 @@
+import { getDeployRegion } from "@/lib/deployRegion";
 import { llm, LLMModelName, providerOptions } from "@/lib/llm";
 import {
   appendChunkToStreamingMessage,
-  appendStepToStreamingMessage,
   convertDBMessageToAIMessage,
   convertStepsToAIMessage,
+  createDebouncePersistentMessage,
   fixChatMessages,
   persistentAIMessageToDB,
 } from "@/lib/messageUtils";
@@ -40,36 +41,6 @@ const REDUCE_TOKENS: {
   ratio: 5,
 };
 
-const createDebouncePersistentMessage = (mills: number) => {
-  let timeout: NodeJS.Timeout | null = null;
-  return async (
-    scoutUserChatId: number,
-    message: Message,
-    { immediate }: { immediate?: boolean } = {},
-  ) => {
-    // Clear any existing timeout
-    if (timeout) {
-      clearTimeout(timeout);
-    }
-    timeout = setTimeout(
-      async () => {
-        try {
-          await persistentAIMessageToDB(scoutUserChatId, message);
-          console.log(
-            `ScoutUserChat [${scoutUserChatId}] Message ${message.id} persisted successfully`,
-          );
-        } catch (error) {
-          console.log(
-            `ScoutUserChat [${scoutUserChatId}] Error persisting message ${message.id}:`,
-            error,
-          );
-        }
-      },
-      immediate ? 0 : mills,
-    );
-  };
-};
-
 export interface ScoutTaskChatResult extends PlainTextToolResult {
   personas: {
     id: number;
@@ -95,11 +66,11 @@ export const scoutTaskChatTool = ({
         .string()
         .optional()
         .describe(
-          "用户画像搜索任务 (scoutTask) 的 token，用于创建任务，你不需要提供，系统会自动生成",
+          "用户画像搜索任务 (scoutTask) 的 token，用于创建任务，如果上一个 scoutTaskChat 任务未完成，请提供上一个 scoutUserChatToken，否则忽略这个参数，系统会自动生成",
         )
-        // .default(() => generateToken()),
-        // 始终生成一个新的 token，并且这个会直接覆盖 message 里面 toolInvocation.args 上的参数
-        .transform(() => generateToken()),
+        .default(() => generateToken()),
+      // 始终生成一个新的 token，并且这个会直接覆盖 message 里面 toolInvocation.args 上的参数
+      // .transform(() => generateToken()),
       description: z.string().describe('用户画像搜索需求描述，可以用"帮我寻找"或类似英文短语开头'),
     }),
     experimental_toToolResultContent: (result: PlainTextToolResult) => {
@@ -113,13 +84,19 @@ export const scoutTaskChatTool = ({
       //   };
       // }
       const title = description.substring(0, 50);
-      const scoutUserChat = await prisma.userChat.create({
-        data: {
+      const scoutUserChat = await prisma.userChat.upsert({
+        where: {
+          userId,
+          kind: "scout",
+          token: scoutUserChatToken,
+        },
+        create: {
           userId,
           title,
           kind: "scout",
           token: scoutUserChatToken,
         },
+        update: {},
       });
       const scoutUserChatId = scoutUserChat.id;
       // 插入一条新的消息
@@ -200,8 +177,7 @@ async function runScoutTaskChatStream({
       );
     }
   };
-
-  const tools = {
+  const allTools = {
     [ToolName.reasoningThinking]: reasoningThinkingTool({ abortSignal, statReport }),
     [ToolName.xhsSearch]: xhsSearchTool,
     [ToolName.xhsUserNotes]: xhsUserNotesTool,
@@ -219,8 +195,16 @@ async function runScoutTaskChatStream({
   };
 
   let reduceTokens: typeof REDUCE_TOKENS | null = REDUCE_TOKENS;
-  // let round = 0;
+  let round = 0;
   while (true) {
+    const tools =
+      round < 2
+        ? allTools
+        : {
+            [ToolName.reasoningThinking]: reasoningThinkingTool({ abortSignal, statReport }),
+            [ToolName.savePersona]: savePersonaTool({ scoutUserChatId, statReport }),
+          };
+
     const messagesInDB = await prisma.chatMessage.findMany({
       where: { userChatId: scoutUserChatId },
       orderBy: { id: "asc" },
@@ -234,19 +218,10 @@ async function runScoutTaskChatStream({
         content: "",
         parts: [],
       };
-      const debouncePersistentMessage = createDebouncePersistentMessage(5000); // 5000 debounce
+      const { debouncePersistentMessage, immediatePersistentMessage } =
+        createDebouncePersistentMessage("Scout", scoutUserChatId, 5000); // 5000 debounce
       const response = streamText({
         model: reduceTokens ? llm(reduceTokens.model) : llm("claude-3-7-sonnet"),
-        //   round < 1
-        //     ? llm("claude-3-7-sonnet")
-        //     : round < 2
-        //       ? llm("gpt-4o", {
-        //           parallelToolCalls: true,
-        //         })
-        //       : llm("deepseek-v3"),
-        // model: llm("gpt-4o", {
-        //   parallelToolCalls: true,
-        // }),
         // model: llm("claude-3-7-sonnet-beta")  // 这个模型不大好用，savePersona 总是返回一半输入
         providerOptions: providerOptions,
         system: scoutSystem(),
@@ -262,24 +237,21 @@ async function runScoutTaskChatStream({
             scoutUserChatId,
           });
         },
-        onChunk: async ({ chunk }: { chunk: TextStreamPart<typeof tools> }) => {
+        onChunk: async ({ chunk }: { chunk: TextStreamPart<typeof allTools> }) => {
           // console.log(`[${scoutUserChatId}] StudyChat onChunk:`, chunk);
           appendChunkToStreamingMessage(streamingMessage, chunk);
-          await debouncePersistentMessage(scoutUserChatId, streamingMessage, {
+          await debouncePersistentMessage(streamingMessage, {
             immediate: chunk.type !== "text-delta",
             // 只在 text-delta 类型的时候才 debounce，靠谱点。see https://github.com/bmrlab/atypica-llm-app/issues/40
             // immediate: chunk.type === "tool-call" || chunk.type === "tool-result",
           });
         },
         onStepFinish: async (step) => {
-          // 注意，stepFinish 一定要保存，并且 immediate:true，前面等待中的 chunk persistent 会被去掉，没影响
+          await immediatePersistentMessage();
+          // 注意，stepFinish 一定要保存，并且强制 immediate:true
           // 有时候 llm 返回的消息很少，前面 onChunk 的 persistent 还在 debounce 的时候，后面 user 的 continue 消息已经保存了，这就会导致
           // - assistant 消息还来不及 create，新的 user 消息会覆盖前一条 user 消息
           // - assistant 消息还不完整，新一轮对话拿到的 messages 不完整
-          appendStepToStreamingMessage(streamingMessage, step);
-          await debouncePersistentMessage(scoutUserChatId, streamingMessage, {
-            immediate: true,
-          });
           console.log(
             `ScoutTaskChat [${scoutUserChatId}] step [${step.stepType}]`,
             step.toolCalls.map((call) => call.toolName),
@@ -349,10 +321,12 @@ async function runScoutTaskChatStream({
       await persistentAIMessageToDB(scoutUserChatId, {
         id: generateId(),
         role: "user",
-        content: "continue",
-        // content: `目前总结了${personasResult.length}个personas，还不够5个，请批量保存人设后再考虑是否继续`,
+        content:
+          getDeployRegion() === "mainland"
+            ? `目前总结了${personasResult.length}个personas，还不够5个，请批量保存人设后再考虑是否继续`
+            : `Currently we have identified ${personasResult.length} personas, which is not enough to reach 5. Please continue saving multiple personas and then consider whether to continue`,
       });
-      // round++;
+      round++;
       continue;
     } else {
       break;

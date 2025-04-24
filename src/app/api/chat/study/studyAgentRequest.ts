@@ -1,5 +1,5 @@
 import { llm, providerOptions } from "@/lib/llm";
-import { appendChunkToStreamingMessage, appendStepToStreamingMessage } from "@/lib/messageUtils";
+import { appendChunkToStreamingMessage, createDebouncePersistentMessage } from "@/lib/messageUtils";
 import { studySystem } from "@/prompt";
 import {
   generateReportTool,
@@ -15,7 +15,6 @@ import {
 import { CoreMessage, Message, streamText, TextStreamPart } from "ai";
 import { createAbortSignals } from "./abortSignal";
 import { backgroundChatUntilCancel, raceForUserChat } from "./background";
-import { createDebouncePersistentMessage } from "./persistent";
 
 // 参考了 https://sdk.vercel.ai/docs/ai-sdk-ui/chatbot-message-persistence#storing-messages 的设计来实现
 export async function studyAgentRequest({
@@ -37,7 +36,11 @@ export async function studyAgentRequest({
   const { clearBackgroundToken, backgroundToken } = await raceForUserChat(studyUserChatId);
   const { abortController, abortSignal, delayedAbortSignal } = createAbortSignals(reqSignal);
   const { statReport } = initStatReporter({ userId, studyUserChatId });
-  const debouncePersistentMessage = createDebouncePersistentMessage(5000); // 5000 debounce
+  const { debouncePersistentMessage, immediatePersistentMessage } = createDebouncePersistentMessage(
+    "Study",
+    studyUserChatId,
+    5000,
+  ); // 5000 debounce
   let streamStartTime = Date.now();
   const tools = {
     [ToolName.scoutTaskChat]: scoutTaskChatTool({ userId, abortSignal, statReport }),
@@ -68,21 +71,18 @@ export async function studyAgentRequest({
     onChunk: async ({ chunk }: { chunk: TextStreamPart<typeof tools> }) => {
       // console.log(`[${studyUserChatId}] StudyChat onChunk:`, chunk);
       appendChunkToStreamingMessage(streamingMessage, chunk);
-      await debouncePersistentMessage(studyUserChatId, streamingMessage, {
+      await debouncePersistentMessage(streamingMessage, {
         immediate: chunk.type !== "text-delta",
         // 只在 text-delta 类型的时候才 debounce，靠谱点。see https://github.com/bmrlab/atypica-llm-app/issues/40
         // immediate: chunk.type === "tool-call" || chunk.type === "tool-result",
       });
     },
     onStepFinish: async (step) => {
+      await immediatePersistentMessage();
       // 注意，stepFinish 一定要保存，并且 immediate:true，前面等待中的 chunk persistent 会被去掉，没影响
       // 有时候 llm 返回的消息很少，前面 onChunk 的 persistent 还在 debounce 的时候，后面 user 的 continue 消息已经保存了，这就会导致
       // - assistant 消息还来不及 create，新的 user 消息会覆盖前一条 user 消息
       // - assistant 消息还不完整，新一轮对话拿到的 messages 不完整
-      appendStepToStreamingMessage(streamingMessage, step);
-      await debouncePersistentMessage(studyUserChatId, streamingMessage, {
-        immediate: true,
-      });
       // 到了这里的 tool calling step 一定是有 result 的，所以得在上面 onChunk 里面获取 call 阶段的 tool
       console.log(
         `StudyChat [${studyUserChatId}] step [${step.stepType}]`,

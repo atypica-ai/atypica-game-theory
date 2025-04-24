@@ -260,6 +260,45 @@ export const persistentAIMessageToDB = async (userChatId: number, message: Messa
   });
 };
 
+export const createDebouncePersistentMessage = (
+  kind: "Scout" | "Study",
+  userChatId: number,
+  mills: number,
+) => {
+  let timeout: NodeJS.Timeout | null = null;
+  let func: () => Promise<void>;
+  const debouncePersistentMessage = async (
+    message: Message,
+    { immediate }: { immediate?: boolean } = {},
+  ) => {
+    if (timeout) {
+      clearTimeout(timeout);
+    }
+    func = async () => {
+      try {
+        await persistentAIMessageToDB(userChatId, message);
+        console.log(`${kind}UserChat [${userChatId}] Message ${message.id} persisted successfully`);
+      } catch (error) {
+        console.log(
+          `${kind}UserChat [${userChatId}] Error persisting message ${message.id}:`,
+          error,
+        );
+      }
+    };
+    timeout = setTimeout(func, immediate ? 0 : mills);
+  };
+  const immediatePersistentMessage = async () => {
+    if (timeout) {
+      clearTimeout(timeout);
+    }
+    await func();
+  };
+  return {
+    debouncePersistentMessage,
+    immediatePersistentMessage,
+  };
+};
+
 export function convertDBMessageToAIMessage({
   messageId: id,
   role,
