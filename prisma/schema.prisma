@@ -9,8 +9,9 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
+  provider          = "postgresql"
+  url               = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
 model User {
@@ -18,11 +19,11 @@ model User {
   name          String    @default("") @db.VarChar(64)
   email         String    @unique
   password      String
-  emailVerified DateTime?
+  emailVerified DateTime? @db.Timestamptz(6)
   lastLogin     Json?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
   userAnalysts   UserAnalyst[]
   userChats      UserChat[]
@@ -45,8 +46,8 @@ model AdminUser {
   role        AdminRole @default(REGULAR_ADMIN)
   permissions Json
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
 }
 
 model VerificationCode {
@@ -55,7 +56,7 @@ model VerificationCode {
   code  String @db.VarChar(16)
 
   createdAt DateTime  @default(now())
-  expiresAt DateTime?
+  expiresAt DateTime? @db.Timestamptz(6)
 }
 
 model InvitationCode {
@@ -65,7 +66,7 @@ model InvitationCode {
   createdBy String?
 
   createdAt DateTime  @default(now())
-  usedAt    DateTime?
+  usedAt    DateTime? @db.Timestamptz(6)
 }
 
 model Persona {
@@ -75,11 +76,11 @@ model Persona {
   tags            Json // 存储标签数组
   samples         Json // 存储小红书用户主页链接作为参考样本
   prompt          String    @db.Text
-  scoutUserChatId Int?      @db.Int
+  scoutUserChatId Int?      @db.Integer
   scoutUserChat   UserChat? @relation(fields: [scoutUserChatId], references: [id])
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
   interviews AnalystInterview[]
 }
@@ -89,11 +90,11 @@ model Analyst {
   role            String    @db.VarChar(255)
   topic           String    @db.Text
   studySummary    String    @db.Text
-  studyUserChatId Int?      @unique @db.Int
+  studyUserChatId Int?      @unique @db.Integer
   studyUserChat   UserChat? @relation(fields: [studyUserChatId], references: [id])
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
   interviews    AnalystInterview[]
   userAnalysts  UserAnalyst[]
@@ -105,42 +106,42 @@ model FeaturedStudy {
   id              Int      @id @default(autoincrement())
   analystId       Int      @unique
   analyst         Analyst  @relation(fields: [analystId], references: [id])
-  studyUserChatId Int      @unique @db.Int
+  studyUserChatId Int      @unique @db.Integer
   studyUserChat   UserChat @relation(fields: [studyUserChatId], references: [id])
   displayOrder    Int      @default(0)
   category        String?  @db.VarChar(64)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
 }
 
 model AnalystReport {
   id          Int       @id @default(autoincrement())
   token       String    @unique @db.VarChar(64)
-  analystId   Int       @db.Int
+  analystId   Int       @db.Integer
   analyst     Analyst   @relation(fields: [analystId], references: [id])
   coverSvg    String    @db.Text
-  onePageHtml String    @db.LongText
-  generatedAt DateTime?
+  onePageHtml String    @db.Text
+  generatedAt DateTime? @db.Timestamptz(6)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
 }
 
 model AnalystInterview {
   id                  Int       @id @default(autoincrement())
-  analystId           Int       @db.Int
+  analystId           Int       @db.Integer
   analyst             Analyst   @relation(fields: [analystId], references: [id])
-  personaId           Int       @db.Int
+  personaId           Int       @db.Integer
   persona             Persona   @relation(fields: [personaId], references: [id])
   personaPrompt       String    @db.Text
   interviewerPrompt   String    @db.Text
   conclusion          String    @db.Text
-  interviewUserChatId Int?      @unique @db.Int
+  interviewUserChatId Int?      @unique @db.Integer
   interviewUserChat   UserChat? @relation(fields: [interviewUserChatId], references: [id])
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
   @@unique([analystId, personaId])
 }
@@ -153,8 +154,8 @@ model UserAnalyst {
   analyst   Analyst @relation(fields: [analystId], references: [id])
   role      String  @default("admin") @db.VarChar(255)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
   @@unique([userId, analystId])
   @@index([userId])
@@ -177,8 +178,8 @@ model UserChat {
   kind            UserChatKind
   backgroundToken String?      @db.VarChar(255)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
   personas         Persona[]
   analyst          Analyst?
@@ -205,8 +206,8 @@ model ChatMessage {
   parts      Json
   extra      Json?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
   @@index([userChatId, id]) // 通过自增 ID 排序
 }
@@ -227,8 +228,8 @@ model ChatStatistics {
   value      Int                     @default(0)
   extra      Json?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
 }
 
 enum PaymentStatus {
@@ -255,10 +256,10 @@ model PaymentRecord {
   chargeId      String        @unique @db.VarChar(255)
   credential    Json
   description   String        @db.VarChar(255)
-  paidAt        DateTime?
+  paidAt        DateTime?     @db.Timestamptz(6)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
   paymentLines PaymentLine[]
 }
@@ -271,8 +272,8 @@ model Product {
   currency    Currency
   extra       Json?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
   paymentLines PaymentLine[]
 
@@ -291,8 +292,8 @@ model PaymentLine {
   price           Float
   currency        Currency      @default(CNY)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
   @@unique([paymentRecordId, productId])
 }
@@ -306,12 +307,12 @@ model UserSubscription {
   userId   Int
   user     User             @relation(fields: [userId], references: [id])
   plan     SubscriptionPlan
-  startsAt DateTime
-  endsAt   DateTime
+  startsAt DateTime         @db.Timestamptz(6)
+  endsAt   DateTime         @db.Timestamptz(6)
   extra    Json?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
 }
 
 model UserTokens {
@@ -320,8 +321,8 @@ model UserTokens {
   user    User @relation(fields: [userId], references: [id])
   balance Int  @default(0)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
 }
 
 enum UserTokensLogVerb {
@@ -347,8 +348,8 @@ model UserTokensLog {
   resourceType UserTokensLogResourceType?
   resourceId   Int?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
   @@index([userId, verb])
   @@index([userId, verb, resourceType, resourceId])
@@ -359,6 +360,6 @@ model SystemConfig {
   key   String @unique @db.VarChar(255)
   value Json
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
 }
