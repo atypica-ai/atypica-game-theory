@@ -4,9 +4,8 @@ import PricingPageClient from "./PricingPageClient";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("PricingPage");
-
   return {
-    title: `${t("title")} | atypica.AI`,
+    title: `${t("title")}`,
     description: t("subtitle"),
   };
 }

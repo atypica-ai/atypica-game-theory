@@ -1,4 +1,5 @@
 import { StudyPageClient } from "@/app/study/StudyPageClient";
+import { generatePageMetadata } from "@/lib/metadata";
 import { throwServerActionError } from "@/lib/serverAction";
 import { notFound, redirect } from "next/navigation";
 import { Metadata } from "next/types";
@@ -21,7 +22,7 @@ export async function generateMetadata({
   }
   const studyUserChat = result.data;
   const title = "💬 " + studyUserChat.title;
-  return { title };
+  return generatePageMetadata({ title });
 }
 
 export default async function StudySharePage({

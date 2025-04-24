@@ -1,3 +1,4 @@
+import { generatePageMetadata } from "@/lib/metadata";
 import { prisma } from "@/lib/prisma";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -32,7 +33,7 @@ export async function generateMetadata({
     /[\n\r]/g,
     " ",
   );
-  return { title, description };
+  return generatePageMetadata({ title, description });
 }
 
 export default async function ReportSharePage({ params }: { params: Promise<{ token: string }> }) {
