@@ -333,7 +333,8 @@ async function runScoutTaskChatStream({
       await persistentAIMessageToDB(scoutUserChatId, {
         id: generateId(),
         role: "user",
-        content: `目前总结了${personasResult.length}个personas，还不够5个，请批量保存人设后再考虑是否继续`,
+        content: "continue",
+        // content: `目前总结了${personasResult.length}个personas，还不够5个，请批量保存人设后再考虑是否继续`,
       });
       // round++;
       continue;
