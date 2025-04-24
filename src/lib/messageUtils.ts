@@ -16,32 +16,30 @@ export function fixChatMessages(messages: Message[]) {
     if (!message.parts) {
       return message;
     }
-    const parts = message.parts.map((part) => {
-      if (part.type === "tool-invocation") {
-        // 如果不是 result，一定是执行了一半挂了，要告诉大模型
-        if (part.toolInvocation.state !== "result") {
-          return {
-            ...part,
-            toolInvocation: {
-              ...part.toolInvocation,
-              state: "result",
-              result: {
-                error: "Tool execution interrupted due to unknown reasons",
-                plainText: "Tool execution interrupted due to unknown reasons",
-              },
-            } as ToolInvocation,
-          };
-        } else {
-          return part;
-        }
-      } else if (part.type === "text") {
-        return {
-          ...part,
-          text: part.text.trim(),
-        };
-      } else {
+    // 给 pending 的 tool 都标记下
+    let parts = message.parts.map((part) => {
+      if (part.type !== "tool-invocation" || part.toolInvocation.state == "result") {
         return part;
       }
+      // 如果不是 result，一定是执行了一半挂了，要告诉大模型
+      return {
+        ...part,
+        toolInvocation: {
+          ...part.toolInvocation,
+          state: "result",
+          result: {
+            error: "Tool execution interrupted due to unknown reasons",
+            plainText: "Tool execution interrupted due to unknown reasons",
+          },
+        } as ToolInvocation,
+      };
+    });
+    // 去除空的 text part
+    parts = parts.filter((part) => {
+      if (part.type === "text" && !part.text.trim()) {
+        return false;
+      }
+      return true;
     });
     return { ...message, parts };
   });
