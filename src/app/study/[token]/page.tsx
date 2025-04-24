@@ -1,10 +1,13 @@
 import { StudyPageClient } from "@/app/study/StudyPageClient";
 import { authOptions } from "@/lib/auth";
+import { generatePageMetadata } from "@/lib/metadata";
 import { throwServerActionError } from "@/lib/serverAction";
 import { getServerSession } from "next-auth/next";
 import { forbidden, notFound, redirect } from "next/navigation";
 import { Metadata } from "next/types";
 import { fetchUserChatByToken } from "../actions";
+
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
@@ -16,14 +19,14 @@ export async function generateMetadata({
     return {};
   }
   const result = await fetchUserChatByToken(token, "study");
-  if (result.success && result.data.title) {
-    const studyUserChat = result.data;
-    return { title: studyUserChat.title };
+  if (!result.success || !result.data.title) {
+    return {};
   }
-  return {};
+  const studyUserChat = result.data;
+  return generatePageMetadata({
+    title: studyUserChat.title,
+  });
 }
-
-export const dynamic = "force-dynamic";
 
 export default async function StudyPage({ params }: { params: Promise<{ token: string }> }) {
   const { token: studyUserChatToken } = await params;
