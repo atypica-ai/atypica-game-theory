@@ -218,6 +218,7 @@ async function runScoutTaskChatStream({
     [ToolName.savePersona]: savePersonaTool({ scoutUserChatId, statReport }),
   };
 
+  let reduceTokens: typeof REDUCE_TOKENS | null = REDUCE_TOKENS;
   // let round = 0;
   while (true) {
     const messagesInDB = await prisma.chatMessage.findMany({
@@ -235,7 +236,7 @@ async function runScoutTaskChatStream({
       };
       const debouncePersistentMessage = createDebouncePersistentMessage(5000); // 5000 debounce
       const response = streamText({
-        model: REDUCE_TOKENS ? llm(REDUCE_TOKENS.model) : llm("claude-3-7-sonnet"),
+        model: reduceTokens ? llm(reduceTokens.model) : llm("claude-3-7-sonnet"),
         //   round < 1
         //     ? llm("claude-3-7-sonnet")
         //     : round < 2
@@ -291,9 +292,9 @@ async function runScoutTaskChatStream({
               reportedBy: "scoutTaskChat tool",
               scoutUserChatId,
             };
-            if (REDUCE_TOKENS) {
-              extra["reduceTokens"] = { originalTokens: tokens, ...REDUCE_TOKENS };
-              tokens = Math.ceil(tokens / REDUCE_TOKENS.ratio);
+            if (reduceTokens) {
+              extra["reduceTokens"] = { originalTokens: tokens, ...reduceTokens };
+              tokens = Math.ceil(tokens / reduceTokens.ratio);
             }
             await statReport("tokens", tokens, extra);
           }
@@ -323,12 +324,18 @@ async function runScoutTaskChatStream({
         message.content.substring(0, 20),
       );
     } catch (error) {
-      console.log(
-        `ScoutTaskChat [${scoutUserChatId}] message stream error:`,
-        (error as Error).message,
-      );
-      await clearBackgroundToken();
-      throw error;
+      const errMsg = (error as Error).message;
+      console.log(`ScoutTaskChat [${scoutUserChatId}] message stream error:`, errMsg);
+      if (errMsg.includes("RESOURCE_EXHAUSTED")) {
+        // 如果遇到了用量限制，不报错，换个模型
+        console.log(
+          `ScoutTaskChat [${scoutUserChatId}] RESOURCE_EXHAUSTED, fallback to llm without reduceTokens`,
+        );
+        reduceTokens = null;
+      } else {
+        await clearBackgroundToken();
+        throw error;
+      }
     }
 
     const personasResult = await prisma.persona.findMany({
