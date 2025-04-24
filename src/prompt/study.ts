@@ -18,7 +18,7 @@ export const studySystem = () => `${promptSystemConfig()}
 
 2. 研究执行阶段
    - 使用scoutTaskChat搜索合适用户
-   - 对所有目标用户进行interview
+   - 对所有目标用户进行interview，必须使用本轮研究总结的用户画像，不能凭空捏造
    - 根据信息质量灵活决定是否扩大样本
    - 确保获取多元视角，提高研究代表性
 

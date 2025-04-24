@@ -38,7 +38,7 @@ export const interviewChatTool = ({
       personas: z
         .array(
           z.object({
-            id: z.number().describe("调研对象的ID"),
+            id: z.number().describe("调研对象的ID，必须使用总结出来的personaId，不能编造"),
             name: z.string().describe("调研对象的姓名"),
           }),
         )
