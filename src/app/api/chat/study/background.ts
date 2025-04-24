@@ -1,8 +1,10 @@
+import { rootLogger } from "@/lib/logging";
 import { prisma } from "@/lib/prisma";
 import { waitUntil } from "@vercel/functions";
 import { StreamTextResult, ToolSet } from "ai";
 
 export async function raceForUserChat(studyUserChatId: number) {
+  const logger = rootLogger.child({ agent: "Study", studyUserChatId });
   // race, 争取 userchat 的写入
   const backgroundToken = new Date().valueOf().toString();
 
@@ -13,10 +15,7 @@ export async function raceForUserChat(studyUserChatId: number) {
         data: { backgroundToken: null },
       });
     } catch (error) {
-      console.log(
-        `[${studyUserChatId}] Failed to clear background token`,
-        (error as Error).message,
-      );
+      logger.error(`Failed to clear background token ${(error as Error).message}`);
     }
   };
 
@@ -44,6 +43,7 @@ export function backgroundChatUntilCancel<TOOLS extends ToolSet, PARTIAL_OUTPUT>
   streamTextResult: StreamTextResult<TOOLS, PARTIAL_OUTPUT>;
   clearBackgroundToken: () => Promise<void>;
 }) {
+  const logger = rootLogger.child({ agent: "Study", studyUserChatId });
   let stop = false;
 
   waitUntil(
@@ -54,15 +54,13 @@ export function backgroundChatUntilCancel<TOOLS extends ToolSet, PARTIAL_OUTPUT>
           select: { backgroundToken: true },
         });
         if (stop) {
-          console.log(`StudyChat [${studyUserChatId}] stopped, quit checkBackgroundToken`);
+          logger.info(`stopped, quit checkBackgroundToken`);
         } else if (userChat.backgroundToken !== backgroundToken) {
-          console.log(
-            `StudyChat [${studyUserChatId}] background token cleared or changed, aborting background running`,
-          );
+          logger.warn(`background token cleared or changed, aborting background running`);
           try {
             abortController.abort();
           } catch (error) {
-            console.log(`StudyChat [${studyUserChatId}] Error during abort:`, error);
+            logger.error(`Error during abort: ${(error as Error).message}`);
           }
           resolve(null);
         } else {
@@ -83,14 +81,14 @@ export function backgroundChatUntilCancel<TOOLS extends ToolSet, PARTIAL_OUTPUT>
         const elapsedSeconds = Math.floor((now - start) / 1000);
         if (elapsedSeconds > 3600) {
           // 60 mins
-          console.log(`StudyChat [${studyUserChatId}] timeout`);
+          logger.warn(`timeout`);
           stop = true;
           reject(new Error("StudyChat timeout"));
         }
         if (stop) {
-          console.log(`StudyChat [${studyUserChatId}] stopped`);
+          logger.info(`stopped`);
         } else {
-          console.log(`StudyChat [${studyUserChatId}] is ongoing, ${elapsedSeconds} seconds`);
+          logger.info(`ongoing, ${elapsedSeconds} seconds`);
           setTimeout(() => tick(), 5000);
         }
       };
@@ -117,18 +115,15 @@ export function backgroundChatUntilCancel<TOOLS extends ToolSet, PARTIAL_OUTPUT>
           where: { userId },
         });
         if (stop) {
-          console.log(`StudyChat [${studyUserChatId}] stopped, quit checkUserTokensBalance`);
+          logger.info(`stopped, quit checkUserTokensBalance`);
         } else if (userTokens.balance <= 0) {
-          console.log(
-            `StudyChat [${studyUserChatId}] user is out of balance, aborting background running`,
-          );
-          //
+          logger.warn(`user is out of balance, aborting background running`);
           try {
             abortController.abort(); // stop streamText
             clearBackgroundToken(); // stop checkBackgroundToken
             stop = true; // stop tick
           } catch (error) {
-            console.log(`StudyChat [${studyUserChatId}] Error during abort:`, error);
+            logger.error(`Error during abort: ${(error as Error).message}`);
           }
           resolve(null);
         } else {

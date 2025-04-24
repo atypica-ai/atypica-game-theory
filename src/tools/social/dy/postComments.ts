@@ -1,8 +1,13 @@
+import { rootLogger } from "@/lib/logging";
 import { PlainTextToolResult } from "@/tools/utils";
 import { tool } from "ai";
 import { z } from "zod";
 import { SocialUser } from "../types";
 import { tryFindValidImage } from "./utils";
+
+const toolLog = rootLogger.child({
+  tool: "dyPostComments",
+});
 
 interface DYComment {
   id: string;
@@ -65,19 +70,19 @@ async function dyPostComments({ postid }: { postid: string }) {
         { headers },
       );
       const res = await response.json();
-      console.log("Response text:", JSON.stringify(res).slice(0, 100));
+      toolLog.info(`Response text: ${JSON.stringify(res).slice(0, 100)}`);
       if (res.code === 0) {
         const result = parseXHSNoteComments(res.result);
         return result;
       } else {
-        console.log("Failed to fetch DY post comments, retrying...", i + 1);
+        toolLog.warn(`Failed to fetch DY post comments, retrying... ${i + 1}`);
         // 2005 错误是 超过所允许的访问间隔
         const seconds = res.code === 2005 ? Math.floor(Math.random() * 20) + 10 : 3;
         await new Promise((resolve) => setTimeout(resolve, seconds * 1000));
         continue;
       }
     } catch (error) {
-      console.log("Error fetching DY post comments:", error);
+      toolLog.error(`Error fetching DY post comments: ${(error as Error).message}`);
     }
   }
   return {

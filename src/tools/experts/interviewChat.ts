@@ -8,6 +8,7 @@ import { saveInterviewConclusionTool, StatReporter, ToolName, xhsSearchTool } fr
 import { PlainTextToolResult } from "@/tools/utils";
 import { InputJsonValue } from "@prisma/client/runtime/library";
 import { generateId, Message, streamText, tool } from "ai";
+import { Logger } from "pino";
 import { z } from "zod";
 import { reasoningThinkingTool } from "./reasoning";
 
@@ -26,10 +27,12 @@ export const interviewChatTool = ({
   userId,
   abortSignal,
   statReport,
+  studyLog,
 }: {
   userId: number;
   abortSignal: AbortSignal;
   statReport: StatReporter;
+  studyLog: Logger;
 }) =>
   tool({
     description: "针对一个调研主题的一系列用户进行访谈，每次最多5人",
@@ -73,12 +76,14 @@ export const interviewChatTool = ({
             analystId,
             language,
           });
+          const interviewLog = studyLog.child({ interviewUserChatId, analystInterviewId });
           await runInterview({
             analystInterviewId,
             interviewUserChatId,
             prompt,
             abortSignal,
             statReport,
+            interviewLog,
           });
           const updatedInterview = await prisma.analystInterview.findUniqueOrThrow({
             where: { id: analystInterviewId },
@@ -185,6 +190,7 @@ type ChatProps = {
   };
   abortSignal: AbortSignal;
   statReport: StatReporter;
+  interviewLog: Logger;
 };
 
 async function chatWithInterviewer({
@@ -193,7 +199,11 @@ async function chatWithInterviewer({
   prompt,
   abortSignal,
   statReport,
-}: Pick<ChatProps, "messages" | "analystInterviewId" | "prompt" | "abortSignal" | "statReport">) {
+  interviewLog,
+}: Pick<
+  ChatProps,
+  "messages" | "analystInterviewId" | "prompt" | "abortSignal" | "statReport" | "interviewLog"
+>) {
   const result = await new Promise<Omit<Message, "role">>(async (resolve, reject) => {
     const response = streamText({
       model: llm("claude-3-7-sonnet"), // 不能用 gpt-4o，指令遵循的比较差，会结束不了
@@ -205,13 +215,13 @@ async function chatWithInterviewer({
         [ToolName.saveInterviewConclusion]: saveInterviewConclusionTool(analystInterviewId),
       },
       maxSteps: 3,
-      // onChunk: (chunk) => console.log(`Interview [${analystInterviewId}] Interviewer:`, JSON.stringify(chunk)),
       onStepFinish: async (step) => {
-        console.log(
-          `Interview [${analystInterviewId}] chatWithInterviewer step [${step.stepType}]`,
-          step.toolCalls.map((call) => call.toolName),
-          step.usage,
-        );
+        interviewLog.info({
+          msg: "chatWithInterviewer step finished",
+          stepType: step.stepType,
+          toolCalls: step.toolCalls.map((call) => call.toolName),
+          usage: step.usage,
+        });
         if (step.usage.totalTokens > 0) {
           await statReport("tokens", step.usage.totalTokens, {
             reportedBy: "interview tool",
@@ -225,10 +235,7 @@ async function chatWithInterviewer({
         resolve(message);
       },
       onError: ({ error }) => {
-        console.log(
-          `Interview [${analystInterviewId}] chatWithInterviewer streamText onError:`,
-          error,
-        );
+        interviewLog.error(`chatWithInterviewer streamText onError: ${(error as Error).message}`);
         reject(error);
       },
       abortSignal,
@@ -248,7 +255,11 @@ async function chatWithPersona({
   prompt,
   abortSignal,
   statReport,
-}: Pick<ChatProps, "messages" | "analystInterviewId" | "prompt" | "abortSignal" | "statReport">) {
+  interviewLog,
+}: Pick<
+  ChatProps,
+  "messages" | "analystInterviewId" | "prompt" | "abortSignal" | "statReport" | "interviewLog"
+>) {
   const result = await new Promise<Omit<Message, "role">>(async (resolve, reject) => {
     const response = streamText({
       model: llm("gpt-4o"),
@@ -259,13 +270,13 @@ async function chatWithPersona({
         [ToolName.xhsSearch]: xhsSearchTool,
       },
       maxSteps: 3,
-      // onChunk: (chunk) => console.log(`Interview [${analystInterviewId}] Persona:`, JSON.stringify(chunk)),
       onStepFinish: async (step) => {
-        console.log(
-          `Interview [${analystInterviewId}] chatWithPersona step [${step.stepType}]`,
-          step.toolCalls.map((call) => call.toolName),
-          step.usage,
-        );
+        interviewLog.info({
+          msg: "chatWithPersona step finished",
+          stepType: step.stepType,
+          toolCalls: step.toolCalls.map((call) => call.toolName),
+          usage: step.usage,
+        });
         if (step.usage.totalTokens > 0) {
           await statReport("tokens", step.usage.totalTokens, {
             reportedBy: "interview tool",
@@ -279,7 +290,7 @@ async function chatWithPersona({
         resolve(message);
       },
       onError: ({ error }) => {
-        console.log(`Interview [${analystInterviewId}] chatWithPersona streamText onError:`, error);
+        interviewLog.error(`chatWithPersona streamText onError: ${(error as Error).message}`);
         reject(error);
       },
       abortSignal,
@@ -295,14 +306,16 @@ async function chatWithPersona({
 
 async function saveMessage({
   message,
-  analystInterviewId,
+  // analystInterviewId,
   interviewUserChatId,
   backgroundToken,
+  interviewLog,
 }: {
   message: Message;
   analystInterviewId: number;
   interviewUserChatId: number;
   backgroundToken: string;
+  interviewLog: Logger;
 }) {
   try {
     const { id: messageId, role, content, parts: _parts } = message;
@@ -323,9 +336,8 @@ async function saveMessage({
       }),
     ]);
   } catch (error) {
-    console.log(
-      `Interview [${analystInterviewId}] Error saving messages with token ${backgroundToken}`,
-      error,
+    interviewLog.error(
+      `Error saving messages with token ${backgroundToken}: ${(error as Error).message}`,
     );
   }
 }
@@ -336,6 +348,7 @@ export async function runInterview({
   prompt,
   abortSignal,
   statReport,
+  interviewLog,
 }: Omit<ChatProps, "messages" | "backgroundToken">) {
   const backgroundToken = new Date().valueOf().toString();
   await prisma.userChat.update({
@@ -362,8 +375,9 @@ export async function runInterview({
       prompt,
       abortSignal,
       statReport,
+      interviewLog,
     });
-    // console.log(`Interview [${analystInterviewId}] Persona:\n${message.content}\n`);
+    // interviewLog.info(`Persona:\n${message.content}\n`);
     personaAgent.messages.push({ ...personaReply, role: "assistant" });
     interviewer.messages.push({ ...personaReply, role: "user" });
 
@@ -372,6 +386,7 @@ export async function runInterview({
       analystInterviewId,
       interviewUserChatId,
       backgroundToken,
+      interviewLog,
     });
 
     const interviewerReply = await chatWithInterviewer({
@@ -380,8 +395,9 @@ export async function runInterview({
       prompt,
       abortSignal,
       statReport,
+      interviewLog,
     });
-    // console.log(`Interview [${analystInterviewId}] Interviewer:\n${message.content}\n`);
+    // interviewLog.info(`Interviewer:\n${message.content}\n`);
     interviewer.messages.push({ ...interviewerReply, role: "assistant" });
     personaAgent.messages.push({ ...interviewerReply, role: "user" });
 
@@ -390,6 +406,7 @@ export async function runInterview({
       analystInterviewId,
       interviewUserChatId,
       backgroundToken,
+      interviewLog,
     });
 
     const _updated = await prisma.analystInterview.findUnique({
@@ -409,9 +426,8 @@ export async function runInterview({
       data: { backgroundToken: null },
     });
   } catch (error) {
-    console.log(
-      `Interview [${analystInterviewId}] Error clearing interview token ${backgroundToken} for interviewUserChat ${interviewUserChatId}`,
-      error,
+    interviewLog.error(
+      `Error clearing interview token ${backgroundToken}: ${(error as Error).message}`,
     );
   }
 }

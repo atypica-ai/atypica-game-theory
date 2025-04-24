@@ -211,7 +211,6 @@ export async function deleteUserAccount(userId: number): Promise<ServerActionRes
     user.tokensLogs.length > 1 ||
     user.subscriptions.length > 0
   ) {
-    console.log(user);
     return {
       success: false,
       message: "User has associated data that prevents deletion.",

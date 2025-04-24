@@ -1,8 +1,13 @@
+import { rootLogger } from "@/lib/logging";
 import { fixMalformedUnicodeString } from "@/lib/utils";
 import { PlainTextToolResult } from "@/tools/utils";
 import { tool } from "ai";
 import { z } from "zod";
 import { SocialUser } from "../types";
+
+const toolLog = rootLogger.child({
+  tool: "insSearch",
+});
 
 interface InsPost {
   id: string;
@@ -74,17 +79,17 @@ async function insSearch({ keyword }: { keyword: string }) {
         { headers },
       );
       const res = await response.json();
-      console.log("insSearch response:", JSON.stringify(res).slice(0, 100));
+      toolLog.info(`Response text: ${JSON.stringify(res).slice(0, 100)}`);
       if (res.code === 200) {
         const result = parseinsSearchResult(res.data);
         return result;
       } else {
-        console.log("Failed to fetch ins feed, retrying...", i + 1);
+        toolLog.warn(`Failed to fetch Instagram feed, retrying... ${i + 1}`);
         await new Promise((resolve) => setTimeout(resolve, 3 * 1000));
         continue;
       }
     } catch (error) {
-      console.log("Error fetching ins feed:", error);
+      toolLog.error(`Error fetching Instagram feed: ${(error as Error).message}`);
     }
   }
   return {

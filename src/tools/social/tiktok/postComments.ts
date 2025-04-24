@@ -1,8 +1,13 @@
+import { rootLogger } from "@/lib/logging";
 import { PlainTextToolResult } from "@/tools/utils";
 import { tool } from "ai";
 import { z } from "zod";
 import { SocialUser } from "../types";
 import { tryFindValidImage } from "./utils";
+
+const toolLog = rootLogger.child({
+  tool: "tiktokPostComments",
+});
 
 interface TikTokComment {
   id: string;
@@ -65,18 +70,18 @@ async function tiktokPostComments({ postid }: { postid: string }) {
         { headers },
       );
       const res = await response.json();
-      console.log("tiktokPostComments response:", JSON.stringify(res).slice(0, 100));
+      toolLog.info(`Response text: ${JSON.stringify(res).slice(0, 100)}`);
       if (res.code === 200) {
         const result = parseXHSNoteComments(res.data);
         return result;
       } else {
-        console.log("Failed to fetch TikTok post comments, retrying...", i + 1);
+        toolLog.warn(`Failed to fetch TikTok post comments, retrying... ${i + 1}`);
         // 2005 错误是 超过所允许的访问间隔
         await new Promise((resolve) => setTimeout(resolve, 3 * 1000));
         continue;
       }
     } catch (error) {
-      console.log("Error fetching TikTok post comments:", error);
+      toolLog.error(`Error fetching TikTok post comments: ${(error as Error).message}`);
     }
   }
   return {

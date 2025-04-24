@@ -1,8 +1,13 @@
+import { rootLogger } from "@/lib/logging";
 import { fixMalformedUnicodeString } from "@/lib/utils";
 import { PlainTextToolResult } from "@/tools/utils";
 import { tool } from "ai";
 import { z } from "zod";
 import { SocialUser } from "../types";
+
+const toolLog = rootLogger.child({
+  tool: "xhsSearch",
+});
 
 interface XHSNote {
   id: string;
@@ -95,17 +100,17 @@ async function xhsSearchSX({ keyword }: { keyword: string }) {
         `${process.env.SX_API_BASE_URL}/xiaohongshu/search-note/v2?${queryString}`,
       );
       const data = await response.json();
-      console.log("Response text:", JSON.stringify(data).slice(0, 100));
+      toolLog.info(`Response text: ${JSON.stringify(data).slice(0, 100)}`);
       if (data.code === 0) {
         const result = parseXHSSearchResult(data);
         return result;
       } else {
-        console.log("Failed to fetch XHS feed, retrying...", i + 1);
+        toolLog.warn(`Failed to fetch XHS feed, retrying... ${i + 1}`);
         await new Promise((resolve) => setTimeout(resolve, 3000));
         continue;
       }
     } catch (error) {
-      console.log("Error fetching XHS feed:", error);
+      toolLog.error(`Error fetching XHS feed: ${(error as Error).message}`);
     }
   }
   return {
@@ -125,7 +130,7 @@ async function xhsSearch({ keyword }: { keyword: string }) {
         { headers },
       );
       const res = await response.json();
-      console.log("xhsSearch response:", JSON.stringify(res).slice(0, 100));
+      toolLog.info(`Response text: ${JSON.stringify(res).slice(0, 100)}`);
       if (res.code === 200) {
         const result = parseXHSSearchResult(res.data);
         return result;

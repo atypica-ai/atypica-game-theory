@@ -1,9 +1,14 @@
+import { rootLogger } from "@/lib/logging";
 import { fixMalformedUnicodeString } from "@/lib/utils";
 import { PlainTextToolResult } from "@/tools/utils";
 import { tool } from "ai";
 import { z } from "zod";
 import { SocialUser } from "../types";
 import { tryFindValidImage } from "./utils";
+
+const toolLog = rootLogger.child({
+  tool: "dySearch",
+});
 
 interface DYPost {
   id: string;
@@ -81,19 +86,19 @@ async function dySearch({ keyword }: { keyword: string }) {
         { headers },
       );
       const res = await response.json();
-      console.log("Response text:", JSON.stringify(res).slice(0, 100));
+      toolLog.info(`Response text: ${JSON.stringify(res).slice(0, 100)}`);
       if (res.code === 0) {
         const result = parseDYSearchResult(res.result);
         return result;
       } else {
-        console.log("Failed to fetch DY feed, retrying...", i + 1);
+        toolLog.warn(`Failed to fetch DY feed, retrying... ${i + 1}`);
         // 2005 错误是 超过所允许的访问间隔
         const seconds = res.code === 2005 ? Math.floor(Math.random() * 20) + 10 : 3;
         await new Promise((resolve) => setTimeout(resolve, seconds * 1000));
         continue;
       }
     } catch (error) {
-      console.log("Error fetching DY feed:", error);
+      toolLog.error(`Error fetching DY feed: ${(error as Error).message}`);
     }
   }
   return {

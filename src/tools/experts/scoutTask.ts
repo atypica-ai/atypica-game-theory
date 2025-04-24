@@ -31,6 +31,7 @@ import {
 } from "@/tools";
 import { PlainTextToolResult } from "@/tools/utils";
 import { convertToCoreMessages, generateId, Message, streamText, TextStreamPart, tool } from "ai";
+import { Logger } from "pino";
 import { z } from "zod";
 
 const REDUCE_TOKENS: {
@@ -54,10 +55,12 @@ export const scoutTaskChatTool = ({
   userId,
   abortSignal,
   statReport,
+  studyLog,
 }: {
   userId: number;
   abortSignal: AbortSignal;
   statReport: StatReporter;
+  studyLog: Logger;
 }) =>
   tool({
     description: "开始执行用户画像搜索任务",
@@ -99,6 +102,7 @@ export const scoutTaskChatTool = ({
         update: {},
       });
       const scoutUserChatId = scoutUserChat.id;
+      const scoutLog = studyLog.child({ scoutUserChatId, scoutUserChatToken });
       // 插入一条新的消息
       await persistentAIMessageToDB(scoutUserChatId, {
         id: generateId(),
@@ -111,12 +115,10 @@ export const scoutTaskChatTool = ({
           scoutUserChatId,
           abortSignal,
           statReport,
+          scoutLog,
         });
       } catch (error) {
-        console.log(
-          `ScoutTaskChat [${scoutUserChatId}] runScoutTaskChatStream failed:`,
-          (error as Error).message,
-        );
+        scoutLog.error(`runScoutTaskChatStream failed: ${(error as Error).message}`);
         hasError = true;
       }
       const personasResult = await prisma.persona.findMany({
@@ -144,10 +146,12 @@ async function runScoutTaskChatStream({
   scoutUserChatId,
   abortSignal,
   statReport,
+  scoutLog,
 }: {
   scoutUserChatId: number;
   abortSignal: AbortSignal;
   statReport: StatReporter;
+  scoutLog: Logger;
 }): Promise<void> {
   const backgroundToken = new Date().valueOf().toString();
   try {
@@ -156,9 +160,8 @@ async function runScoutTaskChatStream({
       data: { backgroundToken },
     });
   } catch (error) {
-    console.log(
-      `ScoutTaskChat [${scoutUserChatId}] Error resetting scoutyUserChat with token ${backgroundToken}`,
-      error,
+    scoutLog.error(
+      `Error setting background token ${backgroundToken}: ${(error as Error).message}`,
     );
     throw error;
   }
@@ -171,9 +174,8 @@ async function runScoutTaskChatStream({
         data: { backgroundToken: null },
       });
     } catch (error) {
-      console.log(
-        `ScoutTaskChat [${scoutUserChatId}] Error clearing background token ${backgroundToken}`,
-        error,
+      scoutLog.error(
+        `Error clearing background token ${backgroundToken}: ${(error as Error).message}`,
       );
     }
   };
@@ -219,7 +221,7 @@ async function runScoutTaskChatStream({
         parts: [],
       };
       const { debouncePersistentMessage, immediatePersistentMessage } =
-        createDebouncePersistentMessage("Scout", scoutUserChatId, 5000); // 5000 debounce
+        createDebouncePersistentMessage(scoutUserChatId, 5000, scoutLog); // 5000 debounce
       const response = streamText({
         model: reduceTokens ? llm(reduceTokens.model) : llm("claude-3-7-sonnet"),
         // model: llm("claude-3-7-sonnet-beta")  // 这个模型不大好用，savePersona 总是返回一半输入
@@ -228,7 +230,6 @@ async function runScoutTaskChatStream({
         messages: coreMessages,
         tools,
         maxSteps: 15,
-        // onChunk: (chunk) => console.log(`[${scoutUserChatId}] ScoutTaskChat:`, JSON.stringify(chunk).substring(0, 100)),
         onFinish: async ({ steps }) => {
           const message = convertStepsToAIMessage(steps);
           resolve(message);
@@ -238,7 +239,6 @@ async function runScoutTaskChatStream({
           });
         },
         onChunk: async ({ chunk }: { chunk: TextStreamPart<typeof allTools> }) => {
-          // console.log(`[${scoutUserChatId}] StudyChat onChunk:`, chunk);
           appendChunkToStreamingMessage(streamingMessage, chunk);
           await debouncePersistentMessage(streamingMessage, {
             immediate: chunk.type !== "text-delta",
@@ -252,11 +252,12 @@ async function runScoutTaskChatStream({
           // 有时候 llm 返回的消息很少，前面 onChunk 的 persistent 还在 debounce 的时候，后面 user 的 continue 消息已经保存了，这就会导致
           // - assistant 消息还来不及 create，新的 user 消息会覆盖前一条 user 消息
           // - assistant 消息还不完整，新一轮对话拿到的 messages 不完整
-          console.log(
-            `ScoutTaskChat [${scoutUserChatId}] step [${step.stepType}]`,
-            step.toolCalls.map((call) => call.toolName),
-            step.usage,
-          );
+          scoutLog.info({
+            msg: "Step finished",
+            stepType: step.stepType,
+            toolCalls: step.toolCalls.map((call) => call.toolName),
+            usage: step.usage,
+          });
           if (step.usage.totalTokens > 0) {
             let tokens = step.usage.totalTokens;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -276,10 +277,7 @@ async function runScoutTaskChatStream({
           // }
         },
         onError: ({ error }) => {
-          console.log(
-            `ScoutTaskChat [${scoutUserChatId}] runScoutTaskChatStream streamText onError:`,
-            error,
-          );
+          scoutLog.error(`runScoutTaskChatStream streamText onError: ${(error as Error).message}`);
           reject(error);
         },
         abortSignal,
@@ -291,18 +289,13 @@ async function runScoutTaskChatStream({
 
     try {
       const message = await streamTextPromise;
-      console.log(
-        `ScoutTaskChat [${scoutUserChatId}] message stream complete:`,
-        message.content.substring(0, 20),
-      );
+      scoutLog.info(`message stream complete: ${message.content.substring(0, 20)}`);
     } catch (error) {
       const errMsg = (error as Error).message;
-      console.log(`ScoutTaskChat [${scoutUserChatId}] message stream error:`, errMsg);
+      scoutLog.error(`message stream error: ${errMsg}`);
       if (errMsg.includes("RESOURCE_EXHAUSTED")) {
         // 如果遇到了用量限制，不报错，换个模型
-        console.log(
-          `ScoutTaskChat [${scoutUserChatId}] RESOURCE_EXHAUSTED, fallback to llm without reduceTokens`,
-        );
+        scoutLog.error(`RESOURCE_EXHAUSTED, fallback to llm without reduceTokens`);
         reduceTokens = null;
       } else {
         await clearBackgroundToken();

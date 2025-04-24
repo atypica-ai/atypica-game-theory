@@ -1,4 +1,5 @@
 import { authOptions } from "@/lib/auth";
+import { rootLogger } from "@/lib/logging";
 import { prepareDBForInterview, runInterview } from "@/tools/experts/interviewChat";
 import { waitUntil } from "@vercel/functions";
 import { getServerSession } from "next-auth";
@@ -50,6 +51,7 @@ export async function POST(req: Request) {
         prompt,
         abortSignal: req.signal,
         statReport: async () => {},
+        interviewLog: rootLogger.child({ interviewUserChatId, analystInterviewId }),
       })
         .then(() => {
           stop = true;

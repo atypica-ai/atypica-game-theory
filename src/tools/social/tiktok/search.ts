@@ -1,9 +1,14 @@
+import { rootLogger } from "@/lib/logging";
 import { fixMalformedUnicodeString } from "@/lib/utils";
 import { PlainTextToolResult } from "@/tools/utils";
 import { tool } from "ai";
 import { z } from "zod";
 import { SocialUser } from "../types";
 import { tryFindValidImage } from "./utils";
+
+const toolLog = rootLogger.child({
+  tool: "tiktokSearch",
+});
 
 interface TikTokPost {
   id: string;
@@ -81,17 +86,17 @@ async function tiktokSearch({ keyword }: { keyword: string }) {
         { headers },
       );
       const res = await response.json();
-      console.log("tiktokSearch response:", JSON.stringify(res).slice(0, 100));
+      toolLog.info(`Response text: ${JSON.stringify(res).slice(0, 100)}`);
       if (res.code === 200) {
         const result = parseTikTokSearchResult(res.data);
         return result;
       } else {
-        console.log("Failed to fetch TikTok feed, retrying...", i + 1);
+        toolLog.warn(`Failed to fetch TikTok feed, retrying... ${i + 1}`);
         await new Promise((resolve) => setTimeout(resolve, 3 * 1000));
         continue;
       }
     } catch (error) {
-      console.log("Error fetching TikTok feed:", error);
+      toolLog.error(`Error fetching TikTok feed: ${(error as Error).message}`);
     }
   }
   return {

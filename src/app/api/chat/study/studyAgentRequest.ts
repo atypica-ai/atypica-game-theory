@@ -13,6 +13,7 @@ import {
   ToolName,
 } from "@/tools";
 import { CoreMessage, Message, streamText, TextStreamPart } from "ai";
+import { Logger } from "pino";
 import { createAbortSignals } from "./abortSignal";
 import { backgroundChatUntilCancel, raceForUserChat } from "./background";
 
@@ -23,6 +24,7 @@ export async function studyAgentRequest({
   streamingMessage,
   userId,
   reqSignal,
+  studyLog,
 }: {
   studyUserChatId: number;
   coreMessages: CoreMessage[];
@@ -32,22 +34,23 @@ export async function studyAgentRequest({
   };
   userId: number;
   reqSignal: AbortSignal | null;
+  studyLog: Logger;
 }) {
   const { clearBackgroundToken, backgroundToken } = await raceForUserChat(studyUserChatId);
   const { abortController, abortSignal, delayedAbortSignal } = createAbortSignals(reqSignal);
   const { statReport } = initStatReporter({ userId, studyUserChatId });
   const { debouncePersistentMessage, immediatePersistentMessage } = createDebouncePersistentMessage(
-    "Study",
     studyUserChatId,
     5000,
+    studyLog,
   ); // 5000 debounce
   let streamStartTime = Date.now();
   const tools = {
-    [ToolName.scoutTaskChat]: scoutTaskChatTool({ userId, abortSignal, statReport }),
+    [ToolName.scoutTaskChat]: scoutTaskChatTool({ userId, abortSignal, statReport, studyLog }),
     [ToolName.saveAnalystStudySummary]: saveAnalystStudySummaryTool(),
     [ToolName.saveAnalyst]: saveAnalystTool({ userId, studyUserChatId }),
-    [ToolName.interviewChat]: interviewChatTool({ userId, abortSignal, statReport }),
-    [ToolName.generateReport]: generateReportTool({ abortSignal, statReport }),
+    [ToolName.interviewChat]: interviewChatTool({ userId, abortSignal, statReport, studyLog }),
+    [ToolName.generateReport]: generateReportTool({ abortSignal, statReport, studyLog }),
     [ToolName.reasoningThinking]: reasoningThinkingTool({ abortSignal, statReport }),
     [ToolName.requestInteraction]: requestInteractionTool,
   };
@@ -60,16 +63,15 @@ export async function studyAgentRequest({
     maxSteps: 15,
     onError: async ({ error }) => {
       // 这里也包括 tool calling 里面直接 throw 的异常
-      console.log(`StudyChat [${studyUserChatId}] streamText onError:`, (error as Error).message);
+      studyLog.error(`streamText onError: ${(error as Error).message}`);
       // @IMPORTANT 这很重要, 中断所有的 tool calling 里可能还在运行的 streamText
       try {
         abortController.abort();
       } catch (error) {
-        console.log(`[${studyUserChatId}] Error during abort:`, error);
+        studyLog.error(`Error during abort: ${(error as Error).message}`);
       }
     },
     onChunk: async ({ chunk }: { chunk: TextStreamPart<typeof tools> }) => {
-      // console.log(`[${studyUserChatId}] StudyChat onChunk:`, chunk);
       appendChunkToStreamingMessage(streamingMessage, chunk);
       await debouncePersistentMessage(streamingMessage, {
         immediate: chunk.type !== "text-delta",
@@ -84,11 +86,12 @@ export async function studyAgentRequest({
       // - assistant 消息还来不及 create，新的 user 消息会覆盖前一条 user 消息
       // - assistant 消息还不完整，新一轮对话拿到的 messages 不完整
       // 到了这里的 tool calling step 一定是有 result 的，所以得在上面 onChunk 里面获取 call 阶段的 tool
-      console.log(
-        `StudyChat [${studyUserChatId}] step [${step.stepType}]`,
-        step.toolCalls.map((call) => call.toolName),
-        step.usage,
-      );
+      studyLog.info({
+        msg: "Step finished",
+        stepType: step.stepType,
+        toolCalls: step.toolCalls.map((call) => call.toolName),
+        usage: step.usage,
+      });
       if (step.usage.totalTokens > 0) {
         await Promise.all([
           statReport("tokens", step.usage.totalTokens, { reportedBy: "study chat" }),

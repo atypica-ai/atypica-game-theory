@@ -1,4 +1,5 @@
 import { authOptions } from "@/lib/auth";
+import { rootLogger } from "@/lib/logging";
 import { prepareNewMessageForStreaming } from "@/lib/messageUtils";
 import { prisma } from "@/lib/prisma";
 import { Message } from "ai";
@@ -34,6 +35,8 @@ export async function POST(req: Request) {
     );
   }
 
+  const studyLog = rootLogger.child({ studyUserChatId, studyUserChatToken: userChat.token });
+
   const { coreMessages, streamingMessage } = await prepareNewMessageForStreaming(
     studyUserChatId,
     newMessage,
@@ -46,6 +49,7 @@ export async function POST(req: Request) {
     streamingMessage,
     userId,
     reqSignal,
+    studyLog,
   };
   // const hasQuota = await checkQuota({ studyUserChatId, userId, cost: 500_000 });
   const { balance } = await prisma.userTokens.findUniqueOrThrow({

@@ -1,5 +1,6 @@
 "use server";
 import { studyAgentRequest } from "@/app/api/chat/study/studyAgentRequest";
+import { rootLogger } from "@/lib/logging";
 import { prepareNewMessageForStreaming } from "@/lib/messageUtils";
 import { prisma } from "@/lib/prisma";
 import { ServerActionResult } from "@/lib/serverAction";
@@ -92,14 +93,14 @@ export async function retryStudy(studyUserChatId: number): Promise<ServerActionR
 
   try {
     // Get the study details
-    const study = await prisma.userChat.findUnique({
+    const studyUserChat = await prisma.userChat.findUnique({
       where: { id: studyUserChatId },
       include: {
         user: true,
       },
     });
 
-    if (!study) {
+    if (!studyUserChat) {
       return {
         success: false,
         message: "Study not found",
@@ -126,8 +127,9 @@ export async function retryStudy(studyUserChatId: number): Promise<ServerActionR
       studyUserChatId,
       coreMessages,
       streamingMessage,
-      userId: study.userId,
+      userId: studyUserChat.userId,
       reqSignal: null,
+      studyLog: rootLogger.child({ studyUserChatId, studyUserChatToken: studyUserChat.token }),
     });
 
     revalidatePath("/admin/issue-studies");

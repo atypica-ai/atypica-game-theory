@@ -11,6 +11,7 @@ import { StatReporter } from "@/tools";
 import { PlainTextToolResult } from "@/tools/utils";
 import { Analyst, AnalystReport } from "@prisma/client";
 import { FinishReason, Message, streamText, tool } from "ai";
+import { Logger } from "pino";
 import { z } from "zod";
 
 export interface GenerateReportResult extends PlainTextToolResult {
@@ -21,9 +22,11 @@ export interface GenerateReportResult extends PlainTextToolResult {
 export const generateReportTool = ({
   abortSignal,
   statReport,
+  studyLog,
 }: {
   abortSignal: AbortSignal;
   statReport: StatReporter;
+  studyLog: Logger;
 }) =>
   tool({
     description: "为调研主题生成报告",
@@ -53,6 +56,7 @@ export const generateReportTool = ({
       //     plainText: `为调研主题 ${analystId} 生成报告失败：你提供的 reportToken ${reportToken} 已经存在，无法使用，请重试。你可以忽略提供这个字段，系统会自动生成 token。`,
       //   };
       // }
+      const reportLog = studyLog.child({ analystId, reportToken });
       let report = await prisma.analystReport.findFirst({
         where: { analystId },
         orderBy: { createdAt: "desc" },
@@ -91,6 +95,7 @@ export const generateReportTool = ({
           instruction,
           abortSignal,
           statReport,
+          reportLog,
         });
         // 更新一下 report 的数据
         report = await prisma.analystReport.findUniqueOrThrow({
@@ -102,13 +107,14 @@ export const generateReportTool = ({
           instruction,
           abortSignal,
           statReport,
+          reportLog,
         });
         return {
           reportToken: report.token,
           plainText: `已成功为调研主题 ${analystId} 生成报告。${hint}`,
         };
       } catch (error) {
-        console.log(error);
+        reportLog.error(`Error generating report for analyst ${analystId}: ${error}`);
         return {
           plainText: `为调研主题 ${analystId} 生成报告失败：${(error as Error).message}`,
         };
@@ -116,50 +122,13 @@ export const generateReportTool = ({
     },
   });
 
-export const throttleSaveHTML = (() => {
-  let timerId: NodeJS.Timeout | null = null;
-
-  return async (
-    reportId: number,
-    onePageHtml: string,
-    { immediate }: { immediate?: boolean } = {},
-  ) => {
-    if (immediate) {
-      if (timerId) {
-        clearTimeout(timerId);
-        timerId = null;
-      }
-      saveNow();
-      return;
-    }
-
-    if (!timerId) {
-      timerId = setTimeout(() => {
-        timerId = null;
-        saveNow();
-      }, 5000); // 5秒节流
-    }
-
-    async function saveNow() {
-      try {
-        await prisma.analystReport.update({
-          where: { id: reportId },
-          data: { onePageHtml },
-        });
-        console.log(`Report [${reportId}] HTML persisted successfully`);
-      } catch (error) {
-        console.log(`Report [${reportId}] Error persisting HTML:`, error);
-      }
-    }
-  };
-})();
-
 async function generateReport({
   analyst,
   report,
   instruction,
   abortSignal,
   statReport,
+  reportLog,
 }: {
   analyst: Analyst & {
     interviews: {
@@ -170,11 +139,50 @@ async function generateReport({
   instruction: string;
   abortSignal: AbortSignal;
   statReport: StatReporter;
+  reportLog: Logger;
 }) {
   let onePageHtml = "";
   let messages: Omit<Message, "id">[] = [
     { role: "user", content: reportHTMLPrologue(analyst, instruction) },
   ];
+
+  const throttleSaveHTML = (() => {
+    let timerId: NodeJS.Timeout | null = null;
+
+    return async (
+      reportId: number,
+      onePageHtml: string,
+      { immediate }: { immediate?: boolean } = {},
+    ) => {
+      if (immediate) {
+        if (timerId) {
+          clearTimeout(timerId);
+          timerId = null;
+        }
+        saveNow();
+        return;
+      }
+
+      if (!timerId) {
+        timerId = setTimeout(() => {
+          timerId = null;
+          saveNow();
+        }, 5000); // 5秒节流
+      }
+
+      async function saveNow() {
+        try {
+          await prisma.analystReport.update({
+            where: { id: reportId },
+            data: { onePageHtml },
+          });
+          reportLog.info("HTML persisted successfully");
+        } catch (error) {
+          reportLog.error(`Error persisting HTML: ${(error as Error).message}`);
+        }
+      }
+    };
+  })();
 
   while (true) {
     const {
@@ -192,11 +200,10 @@ async function generateReport({
         maxSteps: 1,
         maxTokens: 100000,
         onError: ({ error }) => {
-          console.log(`Report [${report.id}] HTML generation Error:`, error);
+          reportLog.error(`HTML generation Error: ${(error as Error).message}`);
           reject(error);
         },
         onChunk: async ({ chunk }) => {
-          // console.log(`[${report.id}] One Page HTML:`, JSON.stringify(chunk));
           if (chunk.type === "text-delta") {
             onePageHtml += chunk.textDelta.toString();
             await throttleSaveHTML(report.id, onePageHtml);
@@ -207,10 +214,11 @@ async function generateReport({
             finishReason: result.finishReason,
             content: result.text,
           });
-          console.log(
-            `Report [${report.id}] HTML generated, finishReason: ${result.finishReason}`,
-            result.usage,
-          );
+          reportLog.info({
+            msg: "HTML generated",
+            finishReason: result.finishReason,
+            usage: result.usage,
+          });
           if (result.usage.totalTokens > 0 && statReport) {
             await statReport("tokens", result.usage.totalTokens, {
               reportedBy: "generateReport tool",
@@ -255,6 +263,7 @@ async function generateCover({
   instruction,
   abortSignal,
   statReport,
+  reportLog,
 }: {
   analyst: Analyst & {
     interviews: {
@@ -265,6 +274,7 @@ async function generateCover({
   instruction: string;
   abortSignal: AbortSignal;
   statReport: StatReporter;
+  reportLog: Logger;
 }) {
   const response = streamText({
     model: llm("claude-3-7-sonnet"),
@@ -273,10 +283,9 @@ async function generateCover({
     messages: [{ role: "user", content: reportCoverPrologue(analyst, instruction) }],
     maxSteps: 1,
     maxTokens: 30000,
-    onError: (error) => console.log(`[${report.id}] Cover SVG Error:`, error),
-    // onChunk: (chunk) => console.log(`[${report.id}] Cover SVG:`, JSON.stringify(chunk)),
+    onError: ({ error }) => reportLog.error(`Cover SVG error: ${(error as Error).message}`),
     onFinish: async (result) => {
-      console.log(`Report cover SVG generated for ${report.id}`);
+      reportLog.info("Report cover SVG generated");
       await prisma.analystReport.update({
         where: { id: report.id },
         data: { coverSvg: result.text },

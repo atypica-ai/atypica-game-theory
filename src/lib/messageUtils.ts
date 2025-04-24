@@ -10,6 +10,7 @@ import {
   ToolInvocation,
   ToolSet,
 } from "ai";
+import { Logger } from "pino";
 
 export function fixChatMessages(messages: Message[]) {
   let fixed = messages.map((message) => {
@@ -261,9 +262,9 @@ export const persistentAIMessageToDB = async (userChatId: number, message: Messa
 };
 
 export const createDebouncePersistentMessage = (
-  kind: "Scout" | "Study",
   userChatId: number,
   mills: number,
+  logger: Logger,
 ) => {
   let timeout: NodeJS.Timeout | null = null;
   let func: () => Promise<void>;
@@ -277,12 +278,9 @@ export const createDebouncePersistentMessage = (
     func = async () => {
       try {
         await persistentAIMessageToDB(userChatId, message);
-        console.log(`${kind}UserChat [${userChatId}] Message ${message.id} persisted successfully`);
+        logger.info(`Message ${message.id} persisted successfully`);
       } catch (error) {
-        console.log(
-          `${kind}UserChat [${userChatId}] Error persisting message ${message.id}:`,
-          error,
-        );
+        logger.info(`Error persisting message ${message.id}: ${(error as Error).message}`);
       }
     };
     timeout = setTimeout(func, immediate ? 0 : mills);

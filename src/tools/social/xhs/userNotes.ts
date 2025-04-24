@@ -1,7 +1,12 @@
+import { rootLogger } from "@/lib/logging";
 import { PlainTextToolResult } from "@/tools/utils";
 import { tool } from "ai";
 import { z } from "zod";
 import { SocialUser } from "../types";
+
+const toolLog = rootLogger.child({
+  tool: "xhsUserNotes",
+});
 
 interface XHSUserNote {
   id: string;
@@ -83,17 +88,17 @@ async function xhsUserNotes({ userid }: { userid: string }) {
         `${process.env.SX_API_BASE_URL}/xiaohongshu/get-user-note-list/v1?${queryString}`,
       );
       const data = await response.json();
-      console.log("Response text:", JSON.stringify(data).slice(0, 100));
+      toolLog.info(`Response text: ${JSON.stringify(data).slice(0, 100)}`);
       if (data.code === 0) {
         const result = parseXHSUserNotes(data);
         return result;
       } else {
-        console.log("Failed to fetch XHS user notes, retrying...", i + 1);
+        toolLog.warn(`Failed to fetch XHS user notes, retrying... ${i + 1}`);
         await new Promise((resolve) => setTimeout(resolve, 3000));
         continue;
       }
     } catch (error) {
-      console.log("Error fetching XHS user notes:", error);
+      toolLog.error(`Error fetching XHS user notes: ${(error as Error).message}`);
     }
   }
   return {
