@@ -3,7 +3,7 @@ import { studyAgentRequest } from "@/app/api/chat/study/studyAgentRequest";
 import { prepareNewMessageForStreaming } from "@/lib/messageUtils";
 import { prisma } from "@/lib/prisma";
 import { ServerActionResult } from "@/lib/serverAction";
-import { User, UserChat } from "@prisma/client";
+import { PaymentRecord, User, UserChat, UserTokens } from "@prisma/client";
 import { generateId } from "ai";
 import { revalidatePath } from "next/cache";
 import { checkAdminAuth } from "../utils";
@@ -15,7 +15,10 @@ export async function fetchIssueStudies(
 ): Promise<
   ServerActionResult<
     (Omit<UserChat, "messages"> & {
-      user: Pick<User, "id" | "email">;
+      user: Pick<User, "id" | "email"> & {
+        tokens: UserTokens | null;
+        paymentRecords: PaymentRecord[];
+      };
     })[]
   >
 > {
@@ -45,6 +48,12 @@ export async function fetchIssueStudies(
         select: {
           id: true,
           email: true,
+          tokens: true,
+          paymentRecords: {
+            where: {
+              status: "succeeded",
+            },
+          },
         },
       },
     },

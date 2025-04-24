@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Pagination } from "@/components/ui/pagination";
 import { ExtractServerActionData } from "@/lib/serverAction";
+import { formatTokensNumber } from "@/lib/utils";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -163,6 +164,12 @@ export default function IssueStudiesPage() {
                     </div>
                     <div className="text-sm text-muted-foreground mt-1">
                       <span className="inline-block mr-4">User: {study.user.email}</span>
+                      <span className="inline-block mr-4">
+                        Token Balance: {formatTokensNumber(study.user.tokens?.balance ?? 0)}
+                      </span>
+                      <span className="inline-block mr-4">
+                        Paid: {study.user.paymentRecords.length}
+                      </span>
                       <span className="inline-block mr-4">ID: {study.id}</span>
                       <span className="inline-block">Token: {study.token}</span>
                     </div>
