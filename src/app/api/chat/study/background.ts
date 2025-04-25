@@ -4,7 +4,7 @@ import { waitUntil } from "@vercel/functions";
 import { StreamTextResult, ToolSet } from "ai";
 
 export async function raceForUserChat(studyUserChatId: number) {
-  const logger = rootLogger.child({ agent: "Study", studyUserChatId });
+  const logger = rootLogger.child({ studyUserChatId });
   // race, 争取 userchat 的写入
   const backgroundToken = new Date().valueOf().toString();
 
@@ -43,7 +43,7 @@ export function backgroundChatUntilCancel<TOOLS extends ToolSet, PARTIAL_OUTPUT>
   streamTextResult: StreamTextResult<TOOLS, PARTIAL_OUTPUT>;
   clearBackgroundToken: () => Promise<void>;
 }) {
-  const logger = rootLogger.child({ agent: "Study", studyUserChatId });
+  const logger = rootLogger.child({ studyUserChatId });
   let stop = false;
 
   waitUntil(

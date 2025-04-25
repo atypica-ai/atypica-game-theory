@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { UserTokensLogResourceType, UserTokensLogVerb } from "@prisma/client";
 import { InputJsonValue } from "@prisma/client/runtime/library";
+import { Logger } from "pino";
 import { interviewChatTool } from "./experts/interviewChat";
 import { reasoningThinkingTool } from "./experts/reasoning";
 import { generateReportTool } from "./experts/report";
@@ -88,9 +89,11 @@ export type StatReporter = (
 export const initStatReporter = ({
   userId,
   studyUserChatId,
+  studyLog,
 }: {
   userId: number;
   studyUserChatId: number;
+  studyLog: Logger;
 }): { statReport: StatReporter } => {
   const statReport: StatReporter = async (dimension, value, extra) => {
     await prisma.chatStatistics.create({
@@ -122,14 +125,13 @@ export const initStatReporter = ({
             },
           }),
         ]);
-        console.log(
-          `User tokens consumed successfully: userId=${userId}, studyUserChatId=${studyUserChatId}, value=${value}`,
-        );
+        studyLog.info({ msg: "User tokens consumed successfully", userId, tokens: value });
       } catch (error) {
-        console.error(
-          `Failed to consume user tokens: userId=${userId}, studyUserChatId=${studyUserChatId}, value=${value}`,
-          error,
-        );
+        studyLog.error({
+          msg: `Failed to consume user tokens: ${(error as Error).message}`,
+          userId,
+          tokens: value,
+        });
       }
     }
   };

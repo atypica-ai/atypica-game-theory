@@ -1,6 +1,6 @@
 import { getDeployRegion } from "@/lib/deployRegion";
 import { llm, providerOptions } from "@/lib/llm";
-import { convertStepsToAIMessage } from "@/lib/messageUtils";
+import { convertStepsToAIMessage, fixChatMessages } from "@/lib/messageUtils";
 import { prisma } from "@/lib/prisma";
 import { generateToken } from "@/lib/utils";
 import { interviewerPrologue, interviewerSystem, personaAgentSystem } from "@/prompt";
@@ -209,7 +209,7 @@ async function chatWithInterviewer({
       model: llm("claude-3-7-sonnet"), // 不能用 gpt-4o，指令遵循的比较差，会结束不了
       providerOptions: providerOptions,
       system: prompt.interviewerPrompt,
-      messages,
+      messages: fixChatMessages(messages), // 有时候在 tool 调用以后会有空文本回复，还是 fix 下靠谱
       tools: {
         [ToolName.reasoningThinking]: reasoningThinkingTool({ abortSignal, statReport }),
         [ToolName.saveInterviewConclusion]: saveInterviewConclusionTool(analystInterviewId),
@@ -265,7 +265,7 @@ async function chatWithPersona({
       model: llm("gpt-4o"),
       providerOptions: providerOptions,
       system: prompt.personaPrompt,
-      messages,
+      messages: fixChatMessages(messages), // 有时候在 tool 调用以后会有空文本回复，还是 fix 下靠谱
       tools: {
         [ToolName.xhsSearch]: xhsSearchTool,
       },

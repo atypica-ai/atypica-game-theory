@@ -1,6 +1,7 @@
 import { encryptAnalystReportUrl } from "@/app/(legacy)/analyst/report/encrypt";
 import { authOptions } from "@/lib/auth";
 import { llm, providerOptions } from "@/lib/llm";
+import { rootLogger } from "@/lib/logging";
 import { prisma } from "@/lib/prisma";
 import { reportHTMLPrologue, reportHTMLSystem } from "@/prompt";
 import { initStatReporter } from "@/tools";
@@ -84,9 +85,14 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     });
   }
 
+  const studyLog = rootLogger.child({ studyUserChatId: analyst.studyUserChatId });
   const streamStartTime = Date.now();
   const { statReport } = analyst.studyUserChatId
-    ? initStatReporter({ userId: session.user.id, studyUserChatId: analyst.studyUserChatId })
+    ? initStatReporter({
+        userId: session.user.id,
+        studyUserChatId: analyst.studyUserChatId,
+        studyLog,
+      })
     : {};
   const result = streamText({
     model: llm("claude-3-7-sonnet"),
@@ -108,8 +114,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       if (result.usage.totalTokens > 0 && statReport) {
         const seconds = Math.floor((Date.now() - streamStartTime) / 1000);
         await Promise.all([
-          statReport("tokens", result.usage.totalTokens, { reportedBy: "live report" }),
-          statReport("duration", seconds, { reportedBy: "live report" }),
+          statReport("tokens", result.usage.totalTokens, { reportedBy: "legacy live report" }),
+          statReport("duration", seconds, { reportedBy: "legacy live report" }),
         ]);
       }
     },

@@ -38,7 +38,7 @@ export async function studyAgentRequest({
 }) {
   const { clearBackgroundToken, backgroundToken } = await raceForUserChat(studyUserChatId);
   const { abortController, abortSignal, delayedAbortSignal } = createAbortSignals(reqSignal);
-  const { statReport } = initStatReporter({ userId, studyUserChatId });
+  const { statReport } = initStatReporter({ userId, studyUserChatId, studyLog });
   const { debouncePersistentMessage, immediatePersistentMessage } = createDebouncePersistentMessage(
     studyUserChatId,
     5000,
