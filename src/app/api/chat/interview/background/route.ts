@@ -20,6 +20,7 @@ export async function POST(req: Request) {
     userId,
     personaId,
     analystId,
+    instruction: "",
     language: "中英皆可",
   });
 

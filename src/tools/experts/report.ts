@@ -198,7 +198,7 @@ async function generateReport({
         system: reportHTMLSystem(),
         messages: messages,
         maxSteps: 1,
-        maxTokens: 100000,
+        maxTokens: 30000,
         onError: ({ error }) => {
           reportLog.error(`HTML generation Error: ${(error as Error).message}`);
           reject(error);

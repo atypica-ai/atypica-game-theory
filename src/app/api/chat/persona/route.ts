@@ -37,7 +37,7 @@ export async function POST(req: Request) {
       [ToolName.reasoningThinking]: reasoningThinkingTool(),
     },
     maxSteps: 3,
-    system: personaAgentSystem(persona, "中英皆可"),
+    system: personaAgentSystem({ persona, language: "中英皆可" }),
     messages: messages,
     abortSignal: req.signal,
   });
