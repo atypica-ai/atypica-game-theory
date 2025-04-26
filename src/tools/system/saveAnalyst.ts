@@ -19,7 +19,7 @@ export const saveAnalystTool = ({
     description: "保存调研主题",
     parameters: z.object({
       role: z.string().describe("调研者的角色"),
-      topic: z.string().describe("调研主题"),
+      topic: z.string().describe("调研主题的描述，应当完整，确保后续研究有明确方向"),
     }),
     experimental_toToolResultContent: (result: PlainTextToolResult) => {
       return [{ type: "text", text: result.plainText }];

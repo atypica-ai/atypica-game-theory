@@ -209,7 +209,9 @@ export const SingleMessage = ({
         <div className="mb-4">{avatar?.assistant || <BotIcon className="size-6" />}</div>
         <div className="sm:flex-1 overflow-hidden">
           {nickname && (
-            <div className="leading-[32px] text-zinc-800 text-sm font-medium">{nickname}</div>
+            <div className="leading-[32px] text-zinc-800 dark:text-zinc-200 text-sm font-medium">
+              {nickname}
+            </div>
           )}
           {parts ? renderParts(parts) : <PlainText>{content}</PlainText>}
         </div>
