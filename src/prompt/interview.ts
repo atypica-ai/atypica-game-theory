@@ -1,11 +1,24 @@
 import { Analyst } from "@prisma/client";
 
-export const interviewerSystem = (analyst: Analyst, language: string) => `
+export const interviewerSystem = ({
+  analyst,
+  instruction,
+  language,
+}: {
+  analyst: Analyst;
+  instruction: string;
+  language: string;
+}) => `
 你是${analyst.role}，正在进行关于以下主题的用户访谈：
 
 <topic>
 ${analyst.topic}
 </topic>
+
+本次访谈的要求：
+<instruction>
+${instruction}
+</instruction>
 
 作为一位出色的访谈专家，你应该：
 - 创造轻松自然的对话氛围，让用户愿意分享真实想法
@@ -33,7 +46,13 @@ ${analyst.topic}
 请发挥你的创造力，让这次访谈既专业又充满趣味性，既能收集到有价值的信息，也能让用户感到愉快。
 `;
 
-export const interviewerPrologue = (analyst: Analyst, language: string) => `
+export const interviewerPrologue = ({
+  analyst,
+  language,
+}: {
+  analyst: Analyst;
+  language: string;
+}) => `
 你好！我是${analyst.role}，今天我们将聊聊
 
 <topic>

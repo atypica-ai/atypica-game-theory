@@ -1,6 +1,12 @@
 import { Persona } from "@prisma/client";
 
-export const personaAgentSystem = (persona: Persona, language: string) => `
+export const personaAgentSystem = ({
+  persona,
+  language,
+}: {
+  persona: Persona;
+  language: string;
+}) => `
 ${persona.prompt ?? ""}
 
 你的标签是：
