@@ -1,3 +1,4 @@
+import { getDeployRegion } from "@/lib/deployRegion";
 import {
   InvalidToolArgumentsError,
   NoSuchToolError,
@@ -12,7 +13,11 @@ export const handleToolCallError: ToolCallRepairFunction<ToolSet> = async <T ext
 ) => {
   let plainText = `Failed to call tool ${toolCall.toolName} with args ${JSON.stringify(toolCall.args)}: ${error.message}`;
   if (NoSuchToolError.isInstance(error)) {
-    plainText = `目前无法使用 ${toolCall.toolName} 工具，请确保使用目前提供给你的工具: ${Object.keys(tools).join(", ")}`;
+    const availableTools = Object.keys(tools).filter((toolName) => toolName !== "toolCallError");
+    plainText =
+      getDeployRegion() === "mainland"
+        ? `目前无法使用 ${toolCall.toolName} 工具，请确保使用目前提供给你的工具: ${availableTools.join(", ")}`
+        : `Failed to call tool ${toolCall.toolName}, please make sure you are using the tools provided to you: ${availableTools.join(", ")}`;
   } else if (InvalidToolArgumentsError.isInstance(error)) {
     plainText = `Invalid arguments for tool ${toolCall.toolName}: ${JSON.stringify(toolCall.args)}`;
   }
@@ -32,3 +37,19 @@ export const toolCallError = tool({
     return { plainText };
   },
 });
+
+// export function toolCallLimited<T extends Tool>({
+//   plainText,
+//   limitedTool,
+// }: {
+//   plainText: string;
+//   limitedTool: T;
+// }) {
+//   return tool({
+//     description: "用于提示工具调用调用达到上限",
+//     parameters: limitedTool.parameters,
+//     execute: async ({}) => {
+//       return { plainText };
+//     },
+//   }) as T;
+// }

@@ -1,4 +1,3 @@
-import { getDeployRegion } from "@/lib/deployRegion";
 import { llm, LLMModelName, providerOptions } from "@/lib/llm";
 import {
   appendChunkToStreamingMessage,
@@ -32,16 +31,27 @@ import {
   xhsUserNotesTool,
 } from "@/tools";
 import { PlainTextToolResult } from "@/tools/utils";
-import { convertToCoreMessages, generateId, Message, streamText, TextStreamPart, tool } from "ai";
+import {
+  convertToCoreMessages,
+  generateId,
+  Message,
+  streamText,
+  TextStreamPart,
+  tool,
+  ToolChoice,
+} from "ai";
 import { Logger } from "pino";
 import { z } from "zod";
 
+const MAX_STEPS_EACH_ROUND = 15; // streamText 默认 15 步
+const LIMIT_SOCIAL_TOOLS_USE = 20; // 最多使用 20 次 social 搜索
+const PERSONAS_REQUIRED = 5; // 至少需要 5 个画像
 const REDUCE_TOKENS: {
   model: LLMModelName;
   ratio: number;
 } = {
   model: "gemini-2.5-flash",
-  ratio: 5,
+  ratio: 8,
 };
 
 export interface ScoutTaskChatResult extends PlainTextToolResult {
@@ -181,7 +191,7 @@ async function runScoutTaskChatStream({
       );
     }
   };
-  const allTools = {
+  const tools = {
     [ToolName.reasoningThinking]: reasoningThinkingTool({ abortSignal, statReport }),
     [ToolName.xhsSearch]: xhsSearchTool,
     [ToolName.xhsUserNotes]: xhsUserNotesTool,
@@ -196,25 +206,35 @@ async function runScoutTaskChatStream({
     [ToolName.insUserPosts]: insUserPostsTool,
     [ToolName.insPostComments]: insPostCommentsTool,
     [ToolName.savePersona]: savePersonaTool({ scoutUserChatId, statReport }),
+    [ToolName.toolCallError]: toolCallError,
   };
 
   let reduceTokens: typeof REDUCE_TOKENS | null = REDUCE_TOKENS;
-  let round = 0;
+  let toolChoice: ToolChoice<typeof tools> = "auto";
+  let maxSteps = MAX_STEPS_EACH_ROUND;
   while (true) {
-    const tools =
-      round < 2
-        ? allTools
-        : {
-            [ToolName.reasoningThinking]: reasoningThinkingTool({ abortSignal, statReport }),
-            [ToolName.savePersona]: savePersonaTool({ scoutUserChatId, statReport }),
-            [ToolName.toolCallError]: toolCallError,
-          };
-
     const messagesInDB = await prisma.chatMessage.findMany({
       where: { userChatId: scoutUserChatId },
       orderBy: { id: "asc" },
     });
     const aiMessages = fixChatMessages(messagesInDB.map(convertDBMessageToAIMessage)); // 传给 LLM 的时候需要修复
+    const socialToolCallCounts = aiMessages.reduce((count, message) => {
+      const socialToolCalls = (message.parts ?? []).filter(
+        (part) =>
+          part.type === "tool-invocation" &&
+          part.toolInvocation.state === "result" &&
+          /^(xhs|dy|tiktok|ins)/.test(part.toolInvocation.toolName),
+      );
+      return count + socialToolCalls.length;
+    }, 0);
+    if (socialToolCallCounts > LIMIT_SOCIAL_TOOLS_USE) {
+      // 最多搜索 LIMIT_SOCIAL_TOOLS_USE 次，超出以后不再搜索，直接保存
+      toolChoice = {
+        type: "tool",
+        toolName: ToolName.savePersona,
+      };
+      maxSteps = MAX_STEPS_EACH_ROUND; // maxSteps 只需要够 savePersona 用就行
+    }
     const coreMessages = convertToCoreMessages(aiMessages);
     const streamTextPromise = new Promise<Omit<Message, "role">>((resolve, reject) => {
       const streamingMessage: Omit<Message, "parts"> & { parts: NonNullable<Message["parts"]> } = {
@@ -232,8 +252,9 @@ async function runScoutTaskChatStream({
         system: scoutSystem(),
         messages: coreMessages,
         tools,
-        maxSteps: 15,
+        toolChoice: toolChoice,
         experimental_repairToolCall: handleToolCallError,
+        maxSteps: maxSteps,
         onFinish: async ({ steps }) => {
           const message = convertStepsToAIMessage(steps);
           resolve(message);
@@ -242,7 +263,7 @@ async function runScoutTaskChatStream({
             scoutUserChatId,
           });
         },
-        onChunk: async ({ chunk }: { chunk: TextStreamPart<typeof allTools> }) => {
+        onChunk: async ({ chunk }: { chunk: TextStreamPart<typeof tools> }) => {
           appendChunkToStreamingMessage(streamingMessage, chunk);
           await debouncePersistentMessage(streamingMessage, {
             immediate: chunk.type !== "text-delta",
@@ -307,23 +328,17 @@ async function runScoutTaskChatStream({
       }
     }
 
-    const personasResult = await prisma.persona.findMany({
-      where: { scoutUserChatId },
-      orderBy: { createdAt: "desc" },
-      select: { id: true },
-    });
-
-    if (personasResult.length < 5) {
+    const personasCount = await prisma.persona.count({ where: { scoutUserChatId } });
+    if (personasCount < PERSONAS_REQUIRED) {
       // 开始一轮新的搜索，插入一条新消息，下一次循环开始的时候会从数据库里读取新的 messages 记录
       await persistentAIMessageToDB(scoutUserChatId, {
         id: generateId(),
         role: "user",
-        content:
-          getDeployRegion() === "mainland"
-            ? `目前总结了${personasResult.length}个personas，还不够5个，请批量保存人设后再考虑是否继续`
-            : `Currently we have identified ${personasResult.length} personas, which is not enough to reach 5. Please continue saving multiple personas and then consider whether to continue`,
+        content: "continue",
+        // getDeployRegion() === "mainland"
+        //   ? `目前总结了${personasResult.length}个personas，还不够5个，请批量保存人设后再考虑是否继续`
+        //   : `Currently we have identified ${personasResult.length} personas, which is not enough to reach 5. Please continue saving multiple personas and then consider whether to continue`,
       });
-      round++;
       continue;
     } else {
       break;

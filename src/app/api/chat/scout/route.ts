@@ -20,12 +20,13 @@ import {
   tiktokPostCommentsTool,
   tiktokSearchTool,
   tiktokUserPostsTool,
+  toolCallError,
   ToolName,
   xhsNoteCommentsTool,
   xhsSearchTool,
   xhsUserNotesTool,
 } from "@/tools";
-import { Message, streamText } from "ai";
+import { Message, streamText, ToolChoice } from "ai";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
@@ -61,7 +62,7 @@ export async function POST(req: Request) {
     newMessage,
   );
 
-  const allTools = {
+  const tools = {
     [ToolName.reasoningThinking]: reasoningThinkingTool(),
     [ToolName.xhsSearch]: xhsSearchTool,
     [ToolName.xhsUserNotes]: xhsUserNotesTool,
@@ -76,15 +77,19 @@ export async function POST(req: Request) {
     [ToolName.insUserPosts]: insUserPostsTool,
     [ToolName.insPostComments]: insPostCommentsTool,
     [ToolName.savePersona]: savePersonaTool({ scoutUserChatId }),
+    [ToolName.toolCallError]: toolCallError,
   };
-  const tools = allTools;
-  // coreMessages.length < 2
-  //   ? allTools
-  //   : {
-  //       [ToolName.reasoningThinking]: reasoningThinkingTool(),
-  //       [ToolName.savePersona]: savePersonaTool({ scoutUserChatId }),
-  //       [ToolName.toolCallError]: toolCallError,
-  //     };
+  let toolChoice: ToolChoice<typeof tools> = "auto";
+  let maxSteps = 15;
+  if (coreMessages.length > 2) {
+    // toolChoice = {
+    //   type: "tool",
+    //   toolName: ToolName.savePersona,
+    // };
+    // maxSteps = 1;
+    toolChoice = "auto";
+    maxSteps = 5;
+  }
   const response = streamText({
     model: llm("gemini-2.5-flash"),
     // model: llm("gpt-4o", {
@@ -95,8 +100,9 @@ export async function POST(req: Request) {
     system: scoutSystem(),
     messages: coreMessages,
     tools,
+    toolChoice: toolChoice,
     experimental_repairToolCall: handleToolCallError,
-    maxSteps: 15, // 每次请求只发送单条消息的情况，只能在后端设置 maxSteps，在后端不断 continue
+    maxSteps: maxSteps, // 每次请求只发送单条消息的情况，只能在后端设置 maxSteps，在后端不断 continue
     onStepFinish: async (step) => {
       appendStepToStreamingMessage(streamingMessage, step);
       if (streamingMessage.parts?.length && streamingMessage.content.trim()) {

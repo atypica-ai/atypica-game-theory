@@ -107,14 +107,12 @@ export async function retryStudy(studyUserChatId: number): Promise<ServerActionR
       };
     }
 
-    const { coreMessages, streamingMessage } = await prepareNewMessageForStreaming(
-      studyUserChatId,
-      {
+    const { coreMessages, streamingMessage, toolUseCount, tokensConsumed } =
+      await prepareNewMessageForStreaming(studyUserChatId, {
         id: generateId(),
         role: "user",
         content: "Please continue the study",
-      },
-    );
+      });
 
     // Clear the backgroundToken to allow a new study to start
     await prisma.userChat.update({
@@ -127,6 +125,8 @@ export async function retryStudy(studyUserChatId: number): Promise<ServerActionR
       studyUserChatId,
       coreMessages,
       streamingMessage,
+      toolUseCount,
+      tokensConsumed,
       userId: studyUserChat.userId,
       reqSignal: null,
       studyLog: rootLogger.child({ studyUserChatId, studyUserChatToken: studyUserChat.token }),

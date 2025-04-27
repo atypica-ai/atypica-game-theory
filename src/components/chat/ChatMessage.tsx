@@ -46,7 +46,7 @@ export const ChatMessage = (message: {
               : null}
       </div>
 
-      <div className={cn("flex flex-col gap-4 overflow-hidden px-1")}>
+      <div className={cn("flex-1 overflow-hidden flex flex-col gap-4 px-1")}>
         {nickname && (
           <div className="leading-[24px] text-zinc-800 dark:text-zinc-200 text-sm font-medium">
             {nickname}

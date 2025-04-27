@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { ToolName } from "@/tools";
 import { ChatMessage } from "@prisma/client";
 import { InputJsonValue } from "@prisma/client/runtime/library";
 import {
@@ -325,6 +326,26 @@ export async function prepareNewMessageForStreaming(userChatId: number, newMessa
     orderBy: { id: "asc" },
   });
   const aiMessages = fixChatMessages(messages.map(convertDBMessageToAIMessage)); // 传给 LLM 的时候需要修复
+  const toolUseCount = aiMessages.reduce(
+    (_count, message) => {
+      const count = { ..._count };
+      (message.parts ?? []).forEach((part) => {
+        if (part.type === "tool-invocation" && part.toolInvocation.state === "result") {
+          const toolName = part.toolInvocation.toolName as ToolName;
+          count[toolName] = (count[toolName] || 0) + 1;
+        }
+      });
+      return count;
+    },
+    {} as Partial<Record<ToolName, number>>,
+  );
+  const tokensConsumed =
+    (
+      await prisma.chatStatistics.aggregate({
+        where: { userChatId, dimension: "tokens" },
+        _sum: { value: true },
+      })
+    )._sum.value ?? 0;
   let streamingMessage: Omit<Message, "role"> & {
     parts: NonNullable<Message["parts"]>;
     role: "assistant";
@@ -350,5 +371,7 @@ export async function prepareNewMessageForStreaming(userChatId: number, newMessa
   return {
     coreMessages,
     streamingMessage,
+    toolUseCount,
+    tokensConsumed,
   };
 }

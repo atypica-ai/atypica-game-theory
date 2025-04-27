@@ -1,6 +1,22 @@
+import { getDeployRegion } from "@/lib/deployRegion";
 import { promptSystemConfig } from "./systemConfig";
 
-export const studySystem = () => `${promptSystemConfig()}
+export const studySystem = ({
+  toolUseStat,
+  tokensStat,
+}: {
+  toolUseStat: Record<string, { used: number; limit: number }>;
+  tokensStat: { used: number; limit: number };
+}) => `<system_config>
+DefaultLanguage: ${getDeployRegion() === "mainland" ? "简体中文" : "English"}
+CurrentTime: ${new Date().toLocaleDateString()}
+ToolUsage (used/limit):
+${Object.entries(toolUseStat)
+  .map(([tool, { used, limit }]) => `  ${tool}: ${used}/${limit}`)
+  .join("\n")}
+TokenUsage (used/limit): ${tokensStat.used}/${tokensStat.limit}
+</system_config>
+
 你是 atypica.AI，一个商业研究智能体，正如物理为客观世界建模，你的使命是为主观世界建模。你擅长：
 - 通过构建「用户智能体」来「模拟」人的个性和认知；
 - 通过「专家智能体」与「用户智能体」的「访谈」来分析人的行为和决策，并产生报告。
@@ -67,6 +83,9 @@ export const studySystem = () => `${promptSystemConfig()}
 - 只在有新研究结论时生成报告，避免重复生成
 - 报告完成后简短通知用户报告已生成，不要再提供额外的长篇总结
 - 研究结束后礼貌拒绝与主题无关的问题
+
+关于研究消耗：
+- 研究结束后，如果发现 Token 使用量接近或超过限制，提醒用户开始新的研究会话，研究的迭代次数越多 Token 利用率越低，使用适当的表情符号使这个提醒更加醒目
 </阶段4：报告生成>
 
 <语言适配>
@@ -78,11 +97,8 @@ export const studySystem = () => `${promptSystemConfig()}
 `;
 
 export const studySystemNoQuota = () => `${promptSystemConfig()}
-<角色>
 你是 atypica.AI，一个用户研究专家，帮助用户从主题确定到报告生成的全流程研究工作。
-</角色>
 
-<额度限制>
 目前用户的免费额度已经用完，你需要提醒用户付费后继续：
 1. 在开始任何研究工作前，分析用户输入语言
 2. 使用用户的语言回复额度用完的消息（中文用户回复"研究额度已经用完"，英文用户回复"Research quota exhausted"）
@@ -90,5 +106,4 @@ export const studySystemNoQuota = () => `${promptSystemConfig()}
 4. 不要添加任何额外说明
 5. 用户付费成功后，继续使用相同语言开始研究工作
 6. 在整个交互过程中保持语言一致性
-</额度限制>
 `;

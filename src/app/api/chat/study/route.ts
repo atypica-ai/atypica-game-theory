@@ -37,15 +37,15 @@ export async function POST(req: Request) {
 
   const studyLog = rootLogger.child({ studyUserChatId, studyUserChatToken: userChat.token });
 
-  const { coreMessages, streamingMessage } = await prepareNewMessageForStreaming(
-    studyUserChatId,
-    newMessage,
-  );
+  const { coreMessages, streamingMessage, toolUseCount, tokensConsumed } =
+    await prepareNewMessageForStreaming(studyUserChatId, newMessage);
 
   const reqSignal = req.signal;
   const params = {
     studyUserChatId,
     coreMessages,
+    toolUseCount,
+    tokensConsumed,
     streamingMessage,
     userId,
     reqSignal,
