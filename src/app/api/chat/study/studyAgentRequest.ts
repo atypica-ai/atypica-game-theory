@@ -72,10 +72,10 @@ export async function studyAgentRequest({
   let toolChoice: ToolChoice<typeof allTools> = "auto";
   let maxSteps = MAX_STEPS_EACH_ROUND;
   let maxTokens: number | undefined;
-  if (toolUseCount[ToolName.scoutTaskChat] ?? 0 >= TOOL_USE_LIMIT[ToolName.scoutTaskChat]) {
+  if ((toolUseCount[ToolName.scoutTaskChat] ?? 0) >= TOOL_USE_LIMIT[ToolName.scoutTaskChat]) {
     delete tools[ToolName.scoutTaskChat];
   }
-  if (toolUseCount[ToolName.generateReport] ?? 0 >= TOOL_USE_LIMIT[ToolName.generateReport]) {
+  if ((toolUseCount[ToolName.generateReport] ?? 0) >= TOOL_USE_LIMIT[ToolName.generateReport]) {
     delete tools[ToolName.generateReport];
   }
   if (tokensConsumed >= TOKENS_COMSUME_LIMIT) {

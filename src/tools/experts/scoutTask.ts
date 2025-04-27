@@ -43,7 +43,8 @@ import {
 import { Logger } from "pino";
 import { z } from "zod";
 
-const MAX_STEPS_EACH_ROUND = 15; // streamText 默认 15 步
+const TOKENS_COMSUME_LIMIT = 500_000; // 限制 50w token 消耗量
+const MAX_STEPS_EACH_ROUND = 10; // streamText 默认 10 步
 const LIMIT_SOCIAL_TOOLS_USE = 20; // 最多使用 20 次 social 搜索
 const PERSONAS_REQUIRED = 5; // 至少需要 5 个画像
 const REDUCE_TOKENS: {
@@ -212,14 +213,14 @@ async function runScoutTaskChatStream({
   let reduceTokens: typeof REDUCE_TOKENS | null = REDUCE_TOKENS;
   let toolChoice: ToolChoice<typeof tools> = "auto";
   let maxSteps = MAX_STEPS_EACH_ROUND;
+  let tokensConsumed = 0;
   while (true) {
     const messagesInDB = await prisma.chatMessage.findMany({
       where: { userChatId: scoutUserChatId },
       orderBy: { id: "asc" },
     });
-    const aiMessages = fixChatMessages(messagesInDB.map(convertDBMessageToAIMessage)); // 传给 LLM 的时候需要修复
-    const socialToolCallCounts = aiMessages.reduce((count, message) => {
-      const socialToolCalls = (message.parts ?? []).filter(
+    const socialToolCallCounts = messagesInDB.reduce((count, message) => {
+      const socialToolCalls = ((message.parts ?? []) as NonNullable<Message["parts"]>).filter(
         (part) =>
           part.type === "tool-invocation" &&
           part.toolInvocation.state === "result" &&
@@ -227,13 +228,17 @@ async function runScoutTaskChatStream({
       );
       return count + socialToolCalls.length;
     }, 0);
-    if (socialToolCallCounts > LIMIT_SOCIAL_TOOLS_USE) {
-      // 最多搜索 LIMIT_SOCIAL_TOOLS_USE 次，超出以后不再搜索，直接保存
+    const aiMessages = fixChatMessages(messagesInDB.map(convertDBMessageToAIMessage)); // 传给 LLM 的时候需要修复
+    if (
+      socialToolCallCounts > LIMIT_SOCIAL_TOOLS_USE ||
+      tokensConsumed > TOKENS_COMSUME_LIMIT * 0.5
+    ) {
+      // 最多搜索 LIMIT_SOCIAL_TOOLS_USE 次，超出以后不再搜索，或者 tokens 消耗达到限制的一半，也一样，直接保存
       toolChoice = {
         type: "tool",
         toolName: ToolName.savePersona,
       };
-      maxSteps = MAX_STEPS_EACH_ROUND; // maxSteps 只需要够 savePersona 用就行
+      maxSteps = PERSONAS_REQUIRED; // maxSteps 只需要够 savePersona 用就行
     }
     const coreMessages = convertToCoreMessages(aiMessages);
     const streamTextPromise = new Promise<Omit<Message, "role">>((resolve, reject) => {
@@ -294,6 +299,7 @@ async function runScoutTaskChatStream({
               extra["reduceTokens"] = { originalTokens: tokens, ...reduceTokens };
               tokens = Math.ceil(tokens / reduceTokens.ratio);
             }
+            tokensConsumed += tokens;
             await statReport("tokens", tokens, extra);
           }
           // appendStepToStreamingMessage(streamingMessage, step);
@@ -328,17 +334,24 @@ async function runScoutTaskChatStream({
       }
     }
 
+    if (tokensConsumed > TOKENS_COMSUME_LIMIT) {
+      // 达到了离谱的 token 消耗，无条件退出
+      scoutLog.error(`tokensConsumed ${tokensConsumed} exceeds limit ${TOKENS_COMSUME_LIMIT}`);
+      break;
+    }
     const personasCount = await prisma.persona.count({ where: { scoutUserChatId } });
     if (personasCount < PERSONAS_REQUIRED) {
       // 开始一轮新的搜索，插入一条新消息，下一次循环开始的时候会从数据库里读取新的 messages 记录
-      await persistentAIMessageToDB(scoutUserChatId, {
-        id: generateId(),
-        role: "user",
-        content: "continue",
-        // getDeployRegion() === "mainland"
-        //   ? `目前总结了${personasResult.length}个personas，还不够5个，请批量保存人设后再考虑是否继续`
-        //   : `Currently we have identified ${personasResult.length} personas, which is not enough to reach 5. Please continue saving multiple personas and then consider whether to continue`,
-      });
+      // await persistentAIMessageToDB(scoutUserChatId, {
+      //   id: generateId(),
+      //   role: "user",
+      //   content: "continue",
+      //   // getDeployRegion() === "mainland"
+      //   //   ? `目前总结了${personasResult.length}个personas，还不够5个，请批量保存人设后再考虑是否继续`
+      //   //   : `Currently we have identified ${personasResult.length} personas, which is not enough to reach 5. Please continue saving multiple personas and then consider whether to continue`,
+      // });
+      // ----------------------------------------
+      // 其实不需要一条 continue 消息，直接让 llm 接着上一条 assistant 消息生成就行了。
       continue;
     } else {
       break;

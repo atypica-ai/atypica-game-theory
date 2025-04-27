@@ -89,11 +89,11 @@ const InterviewChat = ({ toolInvocation }: { toolInvocation: ToolInvocation }) =
           <div className="rounded-md bg-background border size-10 flex items-center justify-center">
             📝
           </div>
-          <div className="flex-1">
+          <div className="flex-1 max-h-24 overflow-y-scroll scrollbar-thin">
             <div className="text-sm font-medium mb-2">{t("researchTopic")}</div>
-            <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
+            <div className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
               {analyst.topic}
-            </p>
+            </div>
           </div>
         </div>
       </div>

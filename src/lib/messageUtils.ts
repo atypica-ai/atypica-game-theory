@@ -325,11 +325,11 @@ export async function prepareNewMessageForStreaming(userChatId: number, newMessa
     where: { userChatId },
     orderBy: { id: "asc" },
   });
-  const aiMessages = fixChatMessages(messages.map(convertDBMessageToAIMessage)); // 传给 LLM 的时候需要修复
-  const toolUseCount = aiMessages.reduce(
+  // 使用 fix 之前的统计数据，因为 fix 会把没完成的 tool calls 变成完成
+  const toolUseCount = messages.reduce(
     (_count, message) => {
       const count = { ..._count };
-      (message.parts ?? []).forEach((part) => {
+      ((message.parts ?? []) as NonNullable<Message["parts"]>).forEach((part) => {
         if (part.type === "tool-invocation" && part.toolInvocation.state === "result") {
           const toolName = part.toolInvocation.toolName as ToolName;
           count[toolName] = (count[toolName] || 0) + 1;
@@ -339,6 +339,7 @@ export async function prepareNewMessageForStreaming(userChatId: number, newMessa
     },
     {} as Partial<Record<ToolName, number>>,
   );
+  const aiMessages = fixChatMessages(messages.map(convertDBMessageToAIMessage)); // 传给 LLM 的时候需要修复
   const tokensConsumed =
     (
       await prisma.chatStatistics.aggregate({
