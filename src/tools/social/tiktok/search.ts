@@ -96,7 +96,7 @@ async function tiktokSearch({ keyword }: { keyword: string }) {
         continue;
       }
     } catch (error) {
-      toolLog.error(`Error fetching TikTok feed: ${(error as Error).message}`);
+      toolLog.warn(`Error fetching TikTok feed: ${(error as Error).message}`);
     }
   }
   return {

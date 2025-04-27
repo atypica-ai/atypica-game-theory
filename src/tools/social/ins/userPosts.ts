@@ -88,7 +88,7 @@ async function insUserPosts({ userid }: { userid: string }) {
         continue;
       }
     } catch (error) {
-      toolLog.error(`Error fetching Instagram user posts: ${(error as Error).message}`);
+      toolLog.warn(`Error fetching Instagram user posts: ${(error as Error).message}`);
     }
   }
   return {

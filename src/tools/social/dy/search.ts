@@ -98,7 +98,7 @@ async function dySearch({ keyword }: { keyword: string }) {
         continue;
       }
     } catch (error) {
-      toolLog.error(`Error fetching DY feed: ${(error as Error).message}`);
+      toolLog.warn(`Error fetching DY feed: ${(error as Error).message}`);
     }
   }
   return {

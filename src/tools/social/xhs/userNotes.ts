@@ -98,7 +98,7 @@ async function xhsUserNotes({ userid }: { userid: string }) {
         continue;
       }
     } catch (error) {
-      toolLog.error(`Error fetching XHS user notes: ${(error as Error).message}`);
+      toolLog.warn(`Error fetching XHS user notes: ${(error as Error).message}`);
     }
   }
   return {

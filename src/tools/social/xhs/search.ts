@@ -110,7 +110,7 @@ async function xhsSearchSX({ keyword }: { keyword: string }) {
         continue;
       }
     } catch (error) {
-      toolLog.error(`Error fetching XHS feed: ${(error as Error).message}`);
+      toolLog.warn(`Error fetching XHS feed: ${(error as Error).message}`);
     }
   }
   return {

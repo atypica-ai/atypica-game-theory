@@ -79,7 +79,7 @@ async function insPostComments({ postcode }: { postcode: string }) {
         continue;
       }
     } catch (error) {
-      toolLog.error(`Error fetching Instagram post comments: ${(error as Error).message}`);
+      toolLog.warn(`Error fetching Instagram post comments: ${(error as Error).message}`);
     }
   }
   return {

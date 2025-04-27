@@ -32,7 +32,7 @@ export const savePersonaTool = ({
         .array(z.string())
         .describe("相关标签")
         .transform((tags) => tags.map((tag) => fixMalformedUnicodeString(tag))),
-      userids: z.array(z.string()).optional().describe("该人设典型的用户 ID 列表").default([]),
+      // userids: z.array(z.string()).optional().describe("该人设典型的用户 ID 列表").default([]),
       personaPrompt: z
         .string()
         .describe("生成的 persona prompt 内容")
@@ -45,9 +45,10 @@ export const savePersonaTool = ({
       name,
       source,
       tags,
-      userids: samples,
+      // userids: samples,
       personaPrompt: prompt,
     }): Promise<SavePersonaToolResult> => {
+      const samples = [] as string[];
       const persona = await prisma.persona.create({
         data: { name, source, tags, samples, prompt, scoutUserChatId },
       });

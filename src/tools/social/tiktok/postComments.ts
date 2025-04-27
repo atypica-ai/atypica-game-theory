@@ -81,7 +81,7 @@ async function tiktokPostComments({ postid }: { postid: string }) {
         continue;
       }
     } catch (error) {
-      toolLog.error(`Error fetching TikTok post comments: ${(error as Error).message}`);
+      toolLog.warn(`Error fetching TikTok post comments: ${(error as Error).message}`);
     }
   }
   return {

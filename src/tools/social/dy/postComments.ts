@@ -82,7 +82,7 @@ async function dyPostComments({ postid }: { postid: string }) {
         continue;
       }
     } catch (error) {
-      toolLog.error(`Error fetching DY post comments: ${(error as Error).message}`);
+      toolLog.warn(`Error fetching DY post comments: ${(error as Error).message}`);
     }
   }
   return {

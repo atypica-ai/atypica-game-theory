@@ -91,7 +91,7 @@ async function dyUserPosts({ secret_userid }: { secret_userid: string }) {
         continue;
       }
     } catch (error) {
-      toolLog.error(`Error fetching DY user posts: ${(error as Error).message}`);
+      toolLog.warn(`Error fetching DY user posts: ${(error as Error).message}`);
     }
   }
   return {

@@ -89,7 +89,7 @@ async function tiktokUserPosts({ secret_userid }: { secret_userid: string }) {
         continue;
       }
     } catch (error) {
-      toolLog.error(`Error fetching TikTok user posts: ${(error as Error).message}`);
+      toolLog.warn(`Error fetching TikTok user posts: ${(error as Error).message}`);
     }
   }
   return {
