@@ -20,7 +20,6 @@ import {
   tiktokPostCommentsTool,
   tiktokSearchTool,
   tiktokUserPostsTool,
-  toolCallError,
   ToolName,
   xhsNoteCommentsTool,
   xhsSearchTool,
@@ -78,14 +77,14 @@ export async function POST(req: Request) {
     [ToolName.insPostComments]: insPostCommentsTool,
     [ToolName.savePersona]: savePersonaTool({ scoutUserChatId }),
   };
-  const tools =
-    coreMessages.length < 2
-      ? allTools
-      : {
-          [ToolName.reasoningThinking]: reasoningThinkingTool(),
-          [ToolName.savePersona]: savePersonaTool({ scoutUserChatId }),
-          [ToolName.toolCallError]: toolCallError,
-        };
+  const tools = allTools;
+  // coreMessages.length < 2
+  //   ? allTools
+  //   : {
+  //       [ToolName.reasoningThinking]: reasoningThinkingTool(),
+  //       [ToolName.savePersona]: savePersonaTool({ scoutUserChatId }),
+  //       [ToolName.toolCallError]: toolCallError,
+  //     };
   const response = streamText({
     model: llm("gemini-2.5-flash"),
     // model: llm("gpt-4o", {
