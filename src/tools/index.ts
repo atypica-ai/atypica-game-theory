@@ -2,28 +2,31 @@ import { prisma } from "@/lib/prisma";
 import { UserTokensLogResourceType, UserTokensLogVerb } from "@prisma/client";
 import { InputJsonValue } from "@prisma/client/runtime/library";
 import { Logger } from "pino";
-import { interviewChatTool } from "./experts/interviewChat";
-import { reasoningThinkingTool } from "./experts/reasoning";
-import { generateReportTool } from "./experts/report";
-import { scoutTaskChatTool } from "./experts/scoutTask";
-import { dyPostCommentsTool } from "./social/dy/postComments";
-import { dySearchTool } from "./social/dy/search";
-import { dyUserPostsTool } from "./social/dy/userPosts";
-import { insPostCommentsTool } from "./social/ins/postComments";
-import { insSearchTool } from "./social/ins/search";
-import { insUserPostsTool } from "./social/ins/userPosts";
-import { tiktokPostCommentsTool } from "./social/tiktok/postComments";
-import { tiktokSearchTool } from "./social/tiktok/search";
-import { tiktokUserPostsTool } from "./social/tiktok/userPosts";
-import { xhsNoteCommentsTool } from "./social/xhs/noteComments";
-import { xhsSearchTool } from "./social/xhs/search";
-import { xhsUserNotesTool } from "./social/xhs/userNotes";
-import { saveAnalystStudySummaryTool, saveAnalystTool } from "./system/saveAnalyst";
-import { saveInterviewConclusionTool } from "./system/saveInterviewConclusion";
-import { savePersonaTool } from "./system/savePersona";
-import { requestInteractionTool } from "./user/interaction";
-import { requestPaymentTool } from "./user/payment";
-import { thanksTool } from "./user/thanks";
+
+export { interviewChatTool } from "./experts/interviewChat";
+export { reasoningThinkingTool } from "./experts/reasoning";
+export { generateReportTool } from "./experts/report";
+export { scoutTaskChatTool } from "./experts/scoutTask";
+export { dyPostCommentsTool } from "./social/dy/postComments";
+export { dySearchTool } from "./social/dy/search";
+export { dyUserPostsTool } from "./social/dy/userPosts";
+export { insPostCommentsTool } from "./social/ins/postComments";
+export { insSearchTool } from "./social/ins/search";
+export { insUserPostsTool } from "./social/ins/userPosts";
+export { tiktokPostCommentsTool } from "./social/tiktok/postComments";
+export { tiktokSearchTool } from "./social/tiktok/search";
+export { tiktokUserPostsTool } from "./social/tiktok/userPosts";
+export { xhsNoteCommentsTool } from "./social/xhs/noteComments";
+export { xhsSearchTool } from "./social/xhs/search";
+export { xhsUserNotesTool } from "./social/xhs/userNotes";
+export { saveAnalystStudySummaryTool, saveAnalystTool } from "./system/saveAnalyst";
+export { saveInterviewConclusionTool } from "./system/saveInterviewConclusion";
+export { savePersonaTool } from "./system/savePersona";
+export { requestInteractionTool } from "./user/interaction";
+export { requestPaymentTool } from "./user/payment";
+export { thanksTool } from "./user/thanks";
+
+export { handleToolCallError, toolCallError } from "./error";
 
 export enum ToolName {
   interviewChat = "interviewChat",
@@ -52,33 +55,9 @@ export enum ToolName {
   insSearch = "insSearch",
   insUserPosts = "insUserPosts",
   insPostComments = "insPostComments",
-}
 
-export {
-  dyPostCommentsTool,
-  dySearchTool,
-  dyUserPostsTool,
-  generateReportTool,
-  insPostCommentsTool,
-  insSearchTool,
-  insUserPostsTool,
-  interviewChatTool,
-  reasoningThinkingTool,
-  requestInteractionTool,
-  requestPaymentTool,
-  saveAnalystStudySummaryTool,
-  saveAnalystTool,
-  saveInterviewConclusionTool,
-  savePersonaTool,
-  scoutTaskChatTool,
-  thanksTool,
-  tiktokPostCommentsTool,
-  tiktokSearchTool,
-  tiktokUserPostsTool,
-  xhsNoteCommentsTool,
-  xhsSearchTool,
-  xhsUserNotesTool,
-};
+  toolCallError = "toolCallError",
+}
 
 export type StatReporter = (
   dimension: "tokens" | "duration" | "steps" | "personas",

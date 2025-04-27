@@ -11,6 +11,7 @@ import {
   dyPostCommentsTool,
   dySearchTool,
   dyUserPostsTool,
+  handleToolCallError,
   insPostCommentsTool,
   insSearchTool,
   insUserPostsTool,
@@ -19,6 +20,7 @@ import {
   tiktokPostCommentsTool,
   tiktokSearchTool,
   tiktokUserPostsTool,
+  toolCallError,
   ToolName,
   xhsNoteCommentsTool,
   xhsSearchTool,
@@ -60,7 +62,7 @@ export async function POST(req: Request) {
     newMessage,
   );
 
-  const tools = {
+  const allTools = {
     [ToolName.reasoningThinking]: reasoningThinkingTool(),
     [ToolName.xhsSearch]: xhsSearchTool,
     [ToolName.xhsUserNotes]: xhsUserNotesTool,
@@ -76,6 +78,14 @@ export async function POST(req: Request) {
     [ToolName.insPostComments]: insPostCommentsTool,
     [ToolName.savePersona]: savePersonaTool({ scoutUserChatId }),
   };
+  const tools =
+    coreMessages.length < 2
+      ? allTools
+      : {
+          [ToolName.reasoningThinking]: reasoningThinkingTool(),
+          [ToolName.savePersona]: savePersonaTool({ scoutUserChatId }),
+          [ToolName.toolCallError]: toolCallError,
+        };
   const response = streamText({
     model: llm("gemini-2.5-flash"),
     // model: llm("gpt-4o", {
@@ -86,6 +96,7 @@ export async function POST(req: Request) {
     system: scoutSystem(),
     messages: coreMessages,
     tools,
+    experimental_repairToolCall: handleToolCallError,
     maxSteps: 15, // 每次请求只发送单条消息的情况，只能在后端设置 maxSteps，在后端不断 continue
     onStepFinish: async (step) => {
       appendStepToStreamingMessage(streamingMessage, step);

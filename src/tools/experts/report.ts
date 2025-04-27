@@ -282,7 +282,7 @@ async function generateCover({
     system: reportCoverSystem(),
     messages: [{ role: "user", content: reportCoverPrologue(analyst, instruction) }],
     maxSteps: 1,
-    maxTokens: 30000,
+    maxTokens: 10000,
     onError: ({ error }) => reportLog.error(`Cover SVG error: ${(error as Error).message}`),
     onFinish: async (result) => {
       reportLog.info("Report cover SVG generated");

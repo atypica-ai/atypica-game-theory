@@ -15,6 +15,7 @@ import {
   dyPostCommentsTool,
   dySearchTool,
   dyUserPostsTool,
+  handleToolCallError,
   insPostCommentsTool,
   insSearchTool,
   insUserPostsTool,
@@ -24,6 +25,7 @@ import {
   tiktokPostCommentsTool,
   tiktokSearchTool,
   tiktokUserPostsTool,
+  toolCallError,
   ToolName,
   xhsNoteCommentsTool,
   xhsSearchTool,
@@ -205,6 +207,7 @@ async function runScoutTaskChatStream({
         : {
             [ToolName.reasoningThinking]: reasoningThinkingTool({ abortSignal, statReport }),
             [ToolName.savePersona]: savePersonaTool({ scoutUserChatId, statReport }),
+            [ToolName.toolCallError]: toolCallError,
           };
 
     const messagesInDB = await prisma.chatMessage.findMany({
@@ -230,6 +233,7 @@ async function runScoutTaskChatStream({
         messages: coreMessages,
         tools,
         maxSteps: 15,
+        experimental_repairToolCall: handleToolCallError,
         onFinish: async ({ steps }) => {
           const message = convertStepsToAIMessage(steps);
           resolve(message);
