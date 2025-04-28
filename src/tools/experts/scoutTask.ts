@@ -122,7 +122,7 @@ export const scoutTaskChatTool = ({
         role: "user",
         content: description,
       });
-      let hasError = false;
+      // let hasError = false;
       try {
         await runScoutTaskChatStream({
           scoutUserChatId,
@@ -132,7 +132,11 @@ export const scoutTaskChatTool = ({
         });
       } catch (error) {
         scoutLog.error(`runScoutTaskChatStream failed: ${(error as Error).message}`);
-        hasError = true;
+        throw error;
+        // hasError = true;
+        // 出错的保持没有 result 的状态，抛出错误让 study 停止，
+        // - study 不会因为错误而过度消耗，进而需要人为介入
+        // - toolUseCount 不统计没有 result 的 tool
       }
       const personasResult = await prisma.persona.findMany({
         where: { scoutUserChatId },
@@ -143,14 +147,19 @@ export const scoutTaskChatTool = ({
         name: persona.name,
         tags: persona.tags as string[],
       }));
+      if (personas.length === 0) {
+        scoutLog.error("No personas found");
+        throw new Error("No personas found");
+      }
       return {
         personas: personas,
+        plainText: `${personas.length} personas found: ${JSON.stringify(personas)}`,
         // 如果有 personas，就算 hasError 也忽略，不要告诉 llm，不然容易给 llm 造成困扰以为找到的 personas 有问题
-        plainText: personas.length
-          ? `${personas.length} personas found: ${JSON.stringify(personas)}`
-          : hasError
-            ? "Something went wrong"
-            : "No personas found",
+        // plainText: personas.length
+        //   ? `${personas.length} personas found: ${JSON.stringify(personas)}`
+        //   : hasError
+        //     ? "Something went wrong"
+        //     : "No personas found",
       };
     },
   });

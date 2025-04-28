@@ -101,6 +101,14 @@ export const generateReportTool = ({
         report = await prisma.analystReport.findUniqueOrThrow({
           where: { id: report.id },
         });
+      } catch (error) {
+        reportLog.error(`Error generating report for analyst ${analystId}: ${error}`);
+        throw error;
+        // return {
+        //   plainText: `为调研主题 ${analystId} 生成报告失败：${(error as Error).message}`,
+        // };
+      }
+      try {
         await generateCover({
           analyst,
           report,
@@ -109,16 +117,14 @@ export const generateReportTool = ({
           statReport,
           reportLog,
         });
-        return {
-          reportToken: report.token,
-          plainText: `已成功为调研主题 ${analystId} 生成报告。${hint}`,
-        };
       } catch (error) {
-        reportLog.error(`Error generating report for analyst ${analystId}: ${error}`);
-        return {
-          plainText: `为调研主题 ${analystId} 生成报告失败：${(error as Error).message}`,
-        };
+        // cover 生成失败就算了
+        reportLog.error(`Error generating cover for analyst ${analystId}: ${error}`);
       }
+      return {
+        reportToken: report.token,
+        plainText: `已成功为调研主题 ${analystId} 生成报告。${hint}`,
+      };
     },
   });
 
