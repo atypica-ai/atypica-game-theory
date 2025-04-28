@@ -270,7 +270,10 @@ export async function fetchAnalystReportsOfStudyUserChat({
     };
   }
   const reports = await prisma.analystReport.findMany({
-    where: { analystId: studyUserChat.analyst.id },
+    where: {
+      analystId: studyUserChat.analyst.id,
+      generatedAt: { not: null },
+    },
     select: {
       id: true,
       token: true,

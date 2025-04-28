@@ -22,7 +22,7 @@ import { backgroundChatUntilCancel, raceForUserChat } from "./background";
 const MAX_STEPS_EACH_ROUND = 15; // streamText 默认 15 步
 const TOOL_USE_LIMIT = {
   [ToolName.scoutTaskChat]: 2,
-  [ToolName.generateReport]: 2,
+  [ToolName.generateReport]: 3,
 };
 const TOKENS_COMSUME_LIMIT = 1_000_000;
 
