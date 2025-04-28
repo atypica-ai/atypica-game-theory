@@ -98,6 +98,7 @@ export async function POST(req: Request) {
     // model: llm("claude-3-7-sonnet-beta"),
     providerOptions: providerOptions,
     system: scoutSystem(),
+    temperature: 0.5,
     messages: coreMessages,
     tools,
     toolChoice: toolChoice,

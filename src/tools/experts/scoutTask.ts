@@ -43,7 +43,7 @@ import {
 import { Logger } from "pino";
 import { z } from "zod";
 
-const TOKENS_COMSUME_LIMIT = 500_000; // 限制 50w token 消耗量
+const TOKENS_COMSUME_LIMIT = 300_000; // 限制 30w token 消耗量，根据统计，差不多
 const MAX_STEPS_EACH_ROUND = 10; // streamText 默认 10 步
 const LIMIT_SOCIAL_TOOLS_USE = 20; // 最多使用 20 次 social 搜索
 const PERSONAS_REQUIRED = 5; // 至少需要 5 个画像
@@ -255,6 +255,7 @@ async function runScoutTaskChatStream({
         // model: llm("claude-3-7-sonnet-beta")  // 这个模型不大好用，savePersona 总是返回一半输入
         providerOptions: providerOptions,
         system: scoutSystem(),
+        temperature: 0.5,
         messages: coreMessages,
         tools,
         toolChoice: toolChoice,
