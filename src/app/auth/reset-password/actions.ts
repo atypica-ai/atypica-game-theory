@@ -34,9 +34,11 @@ export const resetPassword = async ({
       };
     }
 
+    const email = payload.email.toLowerCase();
+
     // Check if user exists
     const user = await prisma.user.findUnique({
-      where: { email: payload.email },
+      where: { email },
     });
 
     if (!user) {
@@ -50,7 +52,7 @@ export const resetPassword = async ({
     // Update the user's password
     const hashedPassword = await hash(password, 10);
     await prisma.user.update({
-      where: { email: payload.email },
+      where: { email },
       data: { password: hashedPassword },
     });
 

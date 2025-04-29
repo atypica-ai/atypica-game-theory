@@ -7,14 +7,15 @@ import { getTranslations } from "next-intl/server";
 import nodemailer from "nodemailer";
 
 export const sendPasswordResetEmail = async (
-  userEmail: string,
+  email: string,
 ): Promise<ServerActionResult<boolean>> => {
   try {
     const t = await getTranslations("Auth.ForgotPassword");
+    email = email.toLowerCase();
 
     // Check if user exists
     const user = await prisma.user.findUnique({
-      where: { email: userEmail },
+      where: { email },
     });
 
     if (!user) {
@@ -28,7 +29,7 @@ export const sendPasswordResetEmail = async (
     // Create reset token payload with email and expiry
     const expiresAt = new Date(Date.now() + 1000 * 60 * 30); // 30 minutes from now
     const payload = JSON.stringify({
-      email: userEmail,
+      email,
       expiresAt: expiresAt.toISOString(),
     });
 
@@ -52,7 +53,7 @@ export const sendPasswordResetEmail = async (
 
     const mailOptions = {
       from: process.env.EMAIL_DEFAULT_FROM,
-      to: userEmail,
+      to: email,
       subject: t("emailContent.subjectLine"),
       text: `${t("emailContent.resetInstructions")}\n\n${resetUrl}\n\n${t("emailContent.expirationNote")}\n\n${t("emailContent.ignoreMessage")}`,
       html: `

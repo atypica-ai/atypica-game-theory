@@ -52,6 +52,8 @@ export async function verifyCode({ email, code }: { email: string; code: string 
   if (!email || !code) {
     throw new Error("Email and verification code are required");
   }
+  email = email.toLowerCase();
+
   // Find the user
   const user = await prisma.user.findUnique({
     where: { email },
@@ -95,6 +97,7 @@ export async function resendVerificationCode(email: string) {
   if (!email) {
     throw new Error("Email is required");
   }
+  email = email.toLowerCase();
   const user = await prisma.user.findUnique({
     where: { email },
   });

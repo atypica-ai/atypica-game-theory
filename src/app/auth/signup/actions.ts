@@ -16,6 +16,9 @@ export async function signUp({
   invitationCode?: string;
 }): Promise<ServerActionResult<{ id: number; email: string }>> {
   const t = await getTranslations("Auth.SignUp");
+
+  email = email.toLowerCase();
+
   // 开放注册
   // if (!email.endsWith("@tezign.com")) {
   //   // If not a tezign.com email, require a valid invitation code
