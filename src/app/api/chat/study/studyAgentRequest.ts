@@ -74,9 +74,11 @@ export async function studyAgentRequest({
   let maxTokens: number | undefined;
   if ((toolUseCount[ToolName.scoutTaskChat] ?? 0) >= TOOL_USE_LIMIT[ToolName.scoutTaskChat]) {
     delete tools[ToolName.scoutTaskChat];
+    maxSteps = 10;
   }
   if ((toolUseCount[ToolName.generateReport] ?? 0) >= TOOL_USE_LIMIT[ToolName.generateReport]) {
     delete tools[ToolName.generateReport];
+    maxSteps = 2;
   }
   if (tokensConsumed >= TOKENS_COMSUME_LIMIT) {
     // 超出 tokens 限制以后，无法使用工具，每次回复不超过 1000 tokens
