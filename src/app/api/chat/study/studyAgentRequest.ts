@@ -22,9 +22,9 @@ import { backgroundChatUntilCancel, raceForUserChat } from "./background";
 const MAX_STEPS_EACH_ROUND = 15; // streamText 默认 15 步
 const TOOL_USE_LIMIT = {
   [ToolName.scoutTaskChat]: 2,
-  [ToolName.generateReport]: 3,
+  [ToolName.generateReport]: 2,
 };
-const TOKENS_COMSUME_LIMIT = 1_000_000;
+const TOKENS_COMSUME_LIMIT = 1_500_000;
 
 // 参考了 https://sdk.vercel.ai/docs/ai-sdk-ui/chatbot-message-persistence#storing-messages 的设计来实现
 export async function studyAgentRequest({
@@ -87,9 +87,11 @@ export async function studyAgentRequest({
     };
     maxTokens = 1000;
     maxSteps = 1;
+    studyLog.error(`tokensConsumed ${tokensConsumed} exceeds limit ${TOKENS_COMSUME_LIMIT}`);
   }
   const system = studySystem({
-    tokensStat: { used: tokensConsumed, limit: TOKENS_COMSUME_LIMIT },
+    // 限制是 1.5M，告诉模型限制是 0.9M
+    tokensStat: { used: tokensConsumed, limit: TOKENS_COMSUME_LIMIT * 0.6 },
     toolUseStat: {
       [ToolName.scoutTaskChat]: {
         used: toolUseCount[ToolName.scoutTaskChat] ?? 0,
