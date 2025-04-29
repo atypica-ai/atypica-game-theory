@@ -1,5 +1,6 @@
 "use server";
 import { prisma } from "@/lib/prisma";
+import { ServerActionResult } from "@/lib/serverAction";
 import { getTranslations } from "next-intl/server";
 import nodemailer from "nodemailer";
 
@@ -47,7 +48,13 @@ export const sendVerificationEmail = async (userEmail: string) => {
   await transporter.sendMail(mailOptions);
 };
 
-export async function verifyCode({ email, code }: { email: string; code: string }) {
+export async function verifyCode({
+  email,
+  code,
+}: {
+  email: string;
+  code: string;
+}): Promise<ServerActionResult<null>> {
   const t = await getTranslations("Auth.Verify");
   if (!email || !code) {
     throw new Error("Email and verification code are required");
@@ -59,10 +66,16 @@ export async function verifyCode({ email, code }: { email: string; code: string 
     where: { email },
   });
   if (!user) {
-    throw new Error(t("userNotFound"));
+    return {
+      success: false,
+      message: t("userNotFound"),
+    };
   }
   if (user.emailVerified) {
-    throw new Error(t("alreadyVerifiedMessage"));
+    return {
+      success: false,
+      message: t("alreadyVerifiedMessage"),
+    };
   }
 
   // Find the verification code
@@ -77,7 +90,10 @@ export async function verifyCode({ email, code }: { email: string; code: string 
   });
 
   if (!verificationCodeRecord) {
-    throw new Error(t("invalidCode"));
+    return {
+      success: false,
+      message: t("invalidCode"),
+    };
   }
 
   // Mark the user's email as verified
@@ -90,19 +106,34 @@ export async function verifyCode({ email, code }: { email: string; code: string 
   await prisma.verificationCode.deleteMany({
     where: { email },
   });
+
+  return {
+    success: true,
+    data: null,
+  };
 }
 
-export async function resendVerificationCode(email: string) {
+export async function resendVerificationCode(email: string): Promise<ServerActionResult<null>> {
   const t = await getTranslations("Auth.Verify");
   if (!email) {
-    throw new Error("Email is required");
+    return {
+      success: false,
+      message: "Email is required",
+    };
   }
   email = email.toLowerCase();
   const user = await prisma.user.findUnique({
     where: { email },
   });
   if (!user) {
-    throw new Error(t("userNotFound"));
+    return {
+      success: false,
+      message: t("userNotFound"),
+    };
   }
   await sendVerificationEmail(email);
+  return {
+    success: true,
+    data: null,
+  };
 }

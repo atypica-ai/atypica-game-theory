@@ -22,7 +22,10 @@ export default function VerifyPage() {
     setIsLoading(true);
     try {
       setError("");
-      await verifyCode({ email, code: verificationCode });
+      const result = await verifyCode({ email, code: verificationCode });
+      if (!result.success) {
+        throw new Error(result.message);
+      }
       toast.success(t("successMessage"));
       router.push(`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`);
     } catch (error) {
@@ -35,7 +38,10 @@ export default function VerifyPage() {
     setIsLoading(true);
     try {
       setError("");
-      await resendVerificationCode(email);
+      const result = await resendVerificationCode(email);
+      if (!result.success) {
+        throw new Error(result.message);
+      }
       toast.success(t("codeResent"));
     } catch (error) {
       setError((error as Error).message);
