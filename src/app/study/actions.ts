@@ -58,6 +58,7 @@ export async function fetchUserChatStateByToken<Tkind extends UserChat["kind"]>(
       backgroundToken: true,
       updatedAt: true,
       messages: {
+        select: { id: true, updatedAt: true },
         orderBy: { id: "desc" },
         take: 1,
       },

@@ -2,8 +2,9 @@ import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useScrollToBottom } from "@/components/use-scroll-to-bottom";
+import { UserTokensBalanceStore } from "@/components/UserTokensBalance";
 import { clearStudyUserChatBackgroundToken } from "@/data/UserChat";
-import { getUserTokensBalance } from "@/data/UserTokens";
+import { useDocumentVisibility } from "@/lib/useDocumentVisibility";
 import { cn } from "@/lib/utils";
 import { ToolName } from "@/tools";
 import { Message, useChat } from "@ai-sdk/react";
@@ -128,9 +129,7 @@ export function ChatBox() {
     ) {
       chatUpdatedAt.current = chatMessageUpdatedAt.valueOf();
       setBackgroundToken(newBackgroundToken);
-      console.log(
-        `StudyUserChat [${studyUserChatId}] updated at ${chatMessageUpdatedAt}, reloading messages`,
-      );
+      // console.log(`StudyUserChat [${studyUserChatId}] updated at ${chatMessageUpdatedAt}, reloading messages`);
       fetchUserChatByToken(studyUserChatToken, "study").then((result) => {
         if (result.success) {
           useChatRef.current.setMessages(result.data.messages);
@@ -139,33 +138,28 @@ export function ChatBox() {
         }
       });
     } else {
-      console.log(`StudyUserChat [${studyUserChatId}] no updates`);
+      // console.log(`StudyUserChat [${studyUserChatId}] no updates`);
     }
-  }, [studyUserChatId, studyUserChatToken, backgroundToken]);
+  }, [studyUserChatToken, backgroundToken]);
 
-  const [userTokensBalance, setUserTokensBalance] = useState<number | null>(null);
-  const updateUserBalance = useCallback(() => {
-    getUserTokensBalance().then((result) => {
-      if (result.success) {
-        setUserTokensBalance(result.data);
-      } else {
-        console.error(result.message);
-      }
-    });
-  }, []);
+  const { balance: userTokensBalance } = UserTokensBalanceStore();
 
+  const { isDocumentVisible } = useDocumentVisibility();
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
     const poll = async () => {
-      timeoutId = setTimeout(poll, 5000);
-      updateUserBalance();
+      if (!isDocumentVisible) {
+        timeoutId = setTimeout(poll, 10000);
+        return;
+      }
+      timeoutId = setTimeout(poll, 5000); // 要放在前面，不然下面 return () 的时候如果 refreshStudyUserChat 还没完成就不会 clearTimeout 了
       await refreshStudyUserChat();
     };
     poll();
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [refreshStudyUserChat, updateUserBalance]);
+  }, [refreshStudyUserChat, isDocumentVisible]);
 
   const waitForUser = useMemo(() => {
     const lastMessage = messages[messages.length - 1];

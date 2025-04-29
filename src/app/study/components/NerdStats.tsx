@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { formatDuration } from "@/lib/utils";
 import { InfoIcon } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 type Stat = {
   dimension: string;
@@ -16,33 +16,28 @@ export function NerdStats() {
   const [isOpen, setIsOpen] = useState(false);
   const [stats, setStats] = useState<Stat[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [lastFetchTime, setLastFetchTime] = useState<number | null>(null);
   const { studyUserChat } = useStudyContext();
 
-  const loadStats = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const result = await fetchStatsByStudyUserChatToken(studyUserChat.token);
-      if (!result.success) {
-        throw result;
-      }
-      setStats(result.data);
-    } catch (error) {
-      console.error("Failed to fetch chat statistics:", error);
-    }
-    setIsLoading(false);
-  }, [studyUserChat.token]);
-
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
-    const poll = async () => {
-      timeoutId = setTimeout(poll, 10000);
-      await loadStats();
-    };
-    poll();
-    return () => {
-      if (timeoutId) clearTimeout(timeoutId);
-    };
-  }, [loadStats]);
+    if (!isOpen) return;
+    if (lastFetchTime && Date.now() - lastFetchTime < 5000) return; // 5 seconds cooldown
+    setIsLoading(true);
+    fetchStatsByStudyUserChatToken(studyUserChat.token)
+      .then((result) => {
+        if (!result.success) {
+          throw result;
+        }
+        setStats(result.data);
+        setLastFetchTime(Date.now());
+      })
+      .catch((error) => {
+        console.error("Failed to fetch chat statistics:", error);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, [studyUserChat.token, isOpen, lastFetchTime]);
 
   // Helper function to get stat value by dimension
   const getStatValue = (dimension: string) => {

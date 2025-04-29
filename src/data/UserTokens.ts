@@ -6,13 +6,12 @@ import { UserTokensLogResourceType, UserTokensLogVerb } from "@prisma/client";
 
 export async function getUserTokensBalance(): Promise<ServerActionResult<number>> {
   return withAuth(async ({ id: userId }) => {
-    const user = await prisma.user.findUniqueOrThrow({
-      where: { id: userId },
-      select: { tokens: true },
+    const userTokens = await prisma.userTokens.findUniqueOrThrow({
+      where: { userId },
     });
     return {
       success: true,
-      data: user.tokens?.balance ?? 0,
+      data: userTokens.balance,
     };
   });
 }

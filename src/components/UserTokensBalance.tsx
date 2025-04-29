@@ -1,44 +1,57 @@
 "use client";
 import { getUserTokensBalance } from "@/data/UserTokens";
+import { useDocumentVisibility } from "@/lib/useDocumentVisibility";
 import { formatTokensNumber } from "@/lib/utils";
 import { CoinsIcon, LoaderIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { create } from "zustand";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+
+export const UserTokensBalanceStore = create<{
+  balance: number | null;
+  setBalance: (balance: number) => void;
+  getBalance: () => number | null;
+}>((set, get) => ({
+  balance: null,
+  setBalance: (balance: number) => {
+    set({ balance });
+  },
+  getBalance: () => {
+    return get().balance;
+  },
+}));
 
 export default function UserTokensBalance() {
   const [isOpen, setIsOpen] = useState(false);
   const t = useTranslations("Components.UserTokensBalance");
-
   const { status, data: session } = useSession();
-  const [balance, setBalance] = useState<number | null>(null);
+  const { setBalance, balance } = UserTokensBalanceStore();
 
-  const checkBalance = useCallback(async () => {
-    if (!session) {
-      return;
-    }
-    const result = await getUserTokensBalance();
-    if (result.success) {
-      setBalance(result.data);
-    }
-  }, [session]);
-
+  const { isDocumentVisible } = useDocumentVisibility();
   useEffect(() => {
-    if (!session) {
+    if (!session || !isDocumentVisible) {
       return;
     }
     let timeoutId: NodeJS.Timeout;
     const poll = async () => {
-      timeoutId = setTimeout(poll, 5000);
-      await checkBalance();
+      if (!isDocumentVisible) {
+        timeoutId = setTimeout(poll, 10000);
+        return;
+      }
+      timeoutId = setTimeout(poll, 5000); // 要放在前面，不然下面 return () 的时候如果 getUserTokensBalance 还没完成就不会 clearTimeout 了
+      const result = await getUserTokensBalance();
+      if (result.success) {
+        setBalance(result.data);
+      }
     };
-    poll();
+    poll(); // 如果 visible 从 false 变成 true，这里会立即执行，没问题
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [session, checkBalance]);
+  }, [session, setBalance, isDocumentVisible]);
 
   return status === "authenticated" ? (
     <Popover open={isOpen} onOpenChange={setIsOpen}>

@@ -5,6 +5,7 @@ import {
   useProgressiveMessages,
 } from "@/app/study/hooks/useProgressiveMessages";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
+import { useDocumentVisibility } from "@/lib/useDocumentVisibility";
 import { ToolName } from "@/tools";
 import { Message, ToolInvocation } from "ai";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -36,7 +37,7 @@ const ScoutTaskChat = ({ toolInvocation }: { toolInvocation: ToolInvocation }) =
 
   // 使用 ref，确保 useCallback 里面取到最新值，并且变化了以后不触发 refreshStudyUserChat 和 useEffect 更新
   const chatUpdatedAt = useRef<number | null>(null);
-  const fetchUpdate = useCallback(async () => {
+  const refreshScoutUserChat = useCallback(async () => {
     const result = await fetchUserChatStateByToken(scoutUserChatToken, "scout");
     if (!result.success) {
       console.error(result.message);
@@ -49,16 +50,14 @@ const ScoutTaskChat = ({ toolInvocation }: { toolInvocation: ToolInvocation }) =
     ) {
       chatUpdatedAt.current = chatMessageUpdatedAt.valueOf();
       setBackgroundToken(newBackgroundToken);
-      console.log(
-        `ScoutTaskChat [${scoutUserChatToken}] updated at ${chatMessageUpdatedAt}, reloading messages`,
-      );
+      // console.log(`ScoutTaskChat [${scoutUserChatToken}] updated at ${chatMessageUpdatedAt}, reloading messages`);
       reloadMessages();
     } else {
-      console.log(`ScoutTaskChat [${scoutUserChatToken}] no updates`);
+      // console.log(`ScoutTaskChat [${scoutUserChatToken}] no updates`);
     }
   }, [scoutUserChatToken, backgroundToken, reloadMessages]);
 
-  // 添加定时器效果
+  const { isDocumentVisible } = useDocumentVisibility();
   useEffect(() => {
     if (replay) {
       // 如果是 replay 就只取一次
@@ -67,14 +66,18 @@ const ScoutTaskChat = ({ toolInvocation }: { toolInvocation: ToolInvocation }) =
     }
     let timeoutId: NodeJS.Timeout;
     const poll = async () => {
-      timeoutId = setTimeout(poll, 5000); // 要放在前面，不然下面 return () 的时候如果 fetchUpdate 还没完成就不会 clearTimeout 了
-      await fetchUpdate();
+      if (window.document.hidden) {
+        timeoutId = setTimeout(poll, 2000);
+        return;
+      }
+      timeoutId = setTimeout(poll, 1000); // 要放在前面，不然下面 return () 的时候如果 refreshScoutUserChat 还没完成就不会 clearTimeout 了
+      await refreshScoutUserChat();
     };
     poll();
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [fetchUpdate, replay, reloadMessages]);
+  }, [refreshScoutUserChat, replay, reloadMessages, isDocumentVisible]);
 
   return (
     <div className="space-y-6 w-full">
