@@ -2,12 +2,19 @@ import { PrismaClient } from "@prisma/client";
 
 // export const prisma = new PrismaClient();
 
-const globalForPrisma = global as unknown as { prisma: PrismaClient };
+const globalForPrisma = global as unknown as {
+  prisma: PrismaClient | undefined;
+};
 
+// 创建 PrismaClient 实例或使用已有实例
 export const prisma =
   globalForPrisma.prisma ||
   new PrismaClient({
-    log: ["error", "warn"],
+    log:
+      process.env.NODE_ENV === "development"
+        ? ["query", "info", "warn", "error"]
+        : ["warn", "error"],
   });
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+// 在所有环境中都保存到全局对象，只是开发环境会频繁热重载
+globalForPrisma.prisma = prisma;
