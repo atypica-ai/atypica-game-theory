@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { ServerActionResult } from "@/lib/serverAction";
 import { generateToken } from "@/lib/utils";
 import withAuth from "@/lib/withAuth";
-import { UserChat as UserChatPrisma } from "@prisma/client";
+import { type UserChatKind, UserChat as UserChatPrisma } from "@prisma/client";
 import { InputJsonValue } from "@prisma/client/runtime/library";
 import { generateId, Message } from "ai";
 
@@ -60,7 +60,7 @@ export async function createUserChat<TKind extends UserChatWithMessages["kind"]>
   });
 }
 
-export async function fetchUserChats<Tkind extends UserChatWithMessages["kind"]>(
+export async function fetchUserChats<Tkind extends UserChatKind>(
   kind: Tkind,
   { take = 30 }: { take?: number } = {},
 ): Promise<

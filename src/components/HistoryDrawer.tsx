@@ -33,23 +33,18 @@ export function StudyHistoryDrawer({
   }, [initialOpen]);
 
   useEffect(() => {
-    const fetchChats = async () => {
-      try {
-        const result = await fetchUserChats("study");
+    if (!open) return;
+    fetchUserChats("study")
+      .then((result) => {
         if (!result.success) {
           throw result;
         }
         setChats(result.data);
-      } catch (error) {
+      })
+      .catch((error) => {
         console.error("Failed to fetch active chats:", (error as Error).message);
-      }
-    };
-    fetchChats();
-    const interval = setInterval(() => {
-      fetchChats();
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
+      });
+  }, [open]);
 
   const handleSelectChat = (studyUserChat: Omit<UserChatWithMessages, "messages">) => {
     window.location.replace(`/study/${studyUserChat.token}`);
