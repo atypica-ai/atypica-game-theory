@@ -4,7 +4,7 @@ import { convertStepsToAIMessage, fixChatMessages } from "@/lib/messageUtils";
 import { prisma } from "@/lib/prisma";
 import { generateToken } from "@/lib/utils";
 import { interviewerPrologue, interviewerSystem, personaAgentSystem } from "@/prompt";
-import { saveInterviewConclusionTool, StatReporter, ToolName, xhsSearchTool } from "@/tools/";
+import { dySearchTool, saveInterviewConclusionTool, StatReporter, ToolName } from "@/tools/";
 import { PlainTextToolResult } from "@/tools/utils";
 import { InputJsonValue } from "@prisma/client/runtime/library";
 import { generateId, Message, streamText, tool } from "ai";
@@ -223,7 +223,18 @@ async function chatWithInterviewer({
         [ToolName.reasoningThinking]: reasoningThinkingTool({ abortSignal, statReport }),
         [ToolName.saveInterviewConclusion]: saveInterviewConclusionTool(analystInterviewId),
       },
-      maxSteps: 3,
+      ...(messages.length < 15
+        ? {
+            toolChoice: "auto",
+            maxSteps: 3,
+          }
+        : {
+            toolChoice: {
+              type: "tool",
+              toolName: ToolName.saveInterviewConclusion,
+            },
+            maxSteps: 1,
+          }),
       onStepFinish: async (step) => {
         interviewLog.info({
           msg: "chatWithInterviewer step finished",
@@ -276,7 +287,9 @@ async function chatWithPersona({
       system: prompt.personaPrompt,
       messages: fixChatMessages(messages), // 有时候在 tool 调用以后会有空文本回复，还是 fix 下靠谱
       tools: {
-        [ToolName.xhsSearch]: xhsSearchTool,
+        [ToolName.dySearch]: dySearchTool,
+        // [ToolName.tiktokSearch]: tiktokSearchTool,
+        // [ToolName.insSearch]: insSearchTool,
       },
       maxSteps: 3,
       onStepFinish: async (step) => {
