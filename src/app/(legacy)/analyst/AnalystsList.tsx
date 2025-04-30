@@ -43,8 +43,8 @@ export function AnalystsList({ analysts: initialAnalysts }: { analysts: Analyst[
   };
 
   return (
-    <div className="flex-1 overflow-y-auto scrollbar-thin p-3 mx-auto max-w-4xl w-full flex flex-col space-y-8">
-      <div className="relative w-full mb-4 sm:mb-8">
+    <div className="flex-1 overflow-y-auto scrollbar-thin p-3 w-full flex flex-col space-y-8">
+      <div className="relative w-full mb-4 sm:mb-8 mx-auto max-w-4xl">
         <h1 className="sm:text-lg font-medium px-18 text-center truncate">{t("researchTopics")}</h1>
         <div className="absolute right-0 top-1/2 -translate-y-1/2">
           <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -92,7 +92,7 @@ export function AnalystsList({ analysts: initialAnalysts }: { analysts: Analyst[
         </div>
       </div>
 
-      <div className="mb-4">
+      <div className="mb-4 mx-auto max-w-4xl w-full">
         <div className="bg-muted/50 rounded-lg p-6">
           <h3 className="font-medium mb-2">💡 {t("guide.title")}</h3>
           <ul className="list-disc ml-4 space-y-1 text-sm text-muted-foreground">
@@ -102,7 +102,7 @@ export function AnalystsList({ analysts: initialAnalysts }: { analysts: Analyst[
         </div>
       </div>
 
-      <div className="grid gap-4">
+      <div className="grid gap-4 mx-auto max-w-4xl w-full">
         {analysts.map((analyst) => (
           <Card
             key={analyst.id}

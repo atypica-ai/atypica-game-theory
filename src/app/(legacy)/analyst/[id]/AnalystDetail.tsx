@@ -86,12 +86,12 @@ export function AnalystDetail({
   }, [analyst, interviews, router, t]);
 
   return (
-    <div className="flex-1 w-full overflow-y-auto scrollbar-thin mx-auto py-12 max-w-4xl space-y-8">
+    <div className="flex-1 w-full overflow-y-auto scrollbar-thin py-12 space-y-8">
       <div className="relative w-full">
         <h1 className="text-center text-xl font-medium mb-4">{analyst.role}</h1>
       </div>
 
-      <div className="bg-accent/40 rounded-lg p-6 border">
+      <div className="bg-accent/40 rounded-lg p-6 border mx-auto max-w-4xl">
         <div className="flex items-start gap-3">
           <div className="mt-1 rounded-md bg-background p-2 border">📝</div>
           <div className="flex-1">
@@ -127,7 +127,7 @@ export function AnalystDetail({
         </div>
       </div>
 
-      <div className="mb-8 bg-muted/50 rounded-lg p-4 text-sm text-muted-foreground">
+      <div className="mb-8 bg-muted/50 rounded-lg p-4 text-sm text-muted-foreground  mx-auto max-w-4xl">
         <p>💡 {t("guide.title")}</p>
         <ul className="list-disc ml-4 mt-1 space-y-1">
           <li>{t("guide.tip1")}</li>
@@ -136,7 +136,7 @@ export function AnalystDetail({
         </ul>
       </div>
 
-      <div className="flex items-end justify-start flex-wrap gap-4 mb-4">
+      <div className="flex items-end justify-start flex-wrap gap-4 mb-4 mx-auto max-w-4xl">
         <h2 className="text-lg font-medium m-0">{t("interviewSection.title")}</h2>
         <div className="ml-auto" />
         <div className="flex items-center justify-end flex-wrap gap-4">
@@ -147,7 +147,7 @@ export function AnalystDetail({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mx-auto max-w-4xl">
         {interviews.map((interview) => (
           <InterviewCard key={interview.id} interview={interview} />
         ))}

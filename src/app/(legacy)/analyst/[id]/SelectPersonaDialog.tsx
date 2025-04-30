@@ -3,6 +3,7 @@ import { fetchPersonas } from "@/app/(legacy)/personas/actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Pagination } from "@/components/ui/pagination";
 import { Persona } from "@prisma/client";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
@@ -25,19 +26,29 @@ export function SelectPersonaDialog({
   const [loading, setLoading] = useState(true);
   const [personas, setPersonas] = useState<Persona[]>([]);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
+
+  const loadPersonas = async (page: number) => {
+    setLoading(true);
+    try {
+      const result = await fetchPersonas({ page });
+      if (!result.success) throw result;
+      setPersonas(result.data);
+      if (result.pagination) {
+        setTotalPages(result.pagination.totalPages);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (open) {
-      setLoading(true);
-      fetchPersonas()
-        .then((result) => {
-          if (!result.success) throw result;
-          setPersonas(result.data);
-          setSelectedIds([]);
-        })
-        .finally(() => setLoading(false));
+      setSelectedIds([]);
+      loadPersonas(currentPage);
     }
-  }, [open]);
+  }, [open, currentPage]);
 
   const handleSubmit = async () => {
     try {
@@ -57,13 +68,18 @@ export function SelectPersonaDialog({
         <DialogHeader>
           <DialogTitle>{t("title")}</DialogTitle>
         </DialogHeader>
-        {loading ? (
+        {loading && currentPage === 1 ? (
           <div className="flex justify-center items-center h-40">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-4 gap-4 mt-4 max-h-[60vh] overflow-y-auto">
+            <div className="grid grid-cols-4 gap-4 mt-4 max-h-[60vh] overflow-y-auto relative">
+              {loading && currentPage > 1 && (
+                <div className="absolute inset-0 bg-background/80 flex justify-center items-center z-10">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
+                </div>
+              )}
               {personas.map((persona) => (
                 <Card
                   key={persona.id}
@@ -90,13 +106,22 @@ export function SelectPersonaDialog({
                 </Card>
               ))}
             </div>
-            <div className="flex justify-end space-x-2 mt-4">
-              <Button variant="outline" onClick={() => onOpenChange(false)}>
-                {t("cancel")}
-              </Button>
-              <Button onClick={handleSubmit} disabled={selectedIds.length === 0}>
-                {t("confirm")} ({selectedIds.length})
-              </Button>
+            <div className="flex justify-between items-center mt-4">
+              {totalPages > 1 && (
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={(page) => setCurrentPage(page)}
+                />
+              )}
+              <div className="flex space-x-2">
+                <Button variant="outline" onClick={() => onOpenChange(false)}>
+                  {t("cancel")}
+                </Button>
+                <Button onClick={handleSubmit} disabled={selectedIds.length === 0}>
+                  {t("confirm")} ({selectedIds.length})
+                </Button>
+              </div>
             </div>
           </>
         )}
