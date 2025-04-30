@@ -1,5 +1,6 @@
 import { llm, providerOptions } from "@/lib/llm";
 import { appendChunkToStreamingMessage, createDebouncePersistentMessage } from "@/lib/messageUtils";
+import { prisma } from "@/lib/prisma";
 import { studySystem } from "@/prompt";
 import {
   generateReportTool,
@@ -32,7 +33,6 @@ export async function studyAgentRequest({
   coreMessages,
   streamingMessage,
   toolUseCount,
-  tokensConsumed,
   userId,
   reqSignal,
   studyLog,
@@ -44,7 +44,6 @@ export async function studyAgentRequest({
     role: "assistant";
   };
   toolUseCount: Partial<Record<ToolName, number>>;
-  tokensConsumed: number;
   userId: number;
   reqSignal: AbortSignal | null;
   studyLog: Logger;
@@ -57,6 +56,13 @@ export async function studyAgentRequest({
     5000,
     studyLog,
   ); // 5000 debounce
+  const tokensConsumed =
+    (
+      await prisma.chatStatistics.aggregate({
+        where: { userChatId: studyUserChatId, dimension: "tokens" },
+        _sum: { value: true },
+      })
+    )._sum.value ?? 0;
   let streamStartTime = Date.now();
   const allTools = {
     [ToolName.scoutTaskChat]: scoutTaskChatTool({ userId, abortSignal, statReport, studyLog }),

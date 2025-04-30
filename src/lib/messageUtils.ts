@@ -340,13 +340,6 @@ export async function prepareNewMessageForStreaming(userChatId: number, newMessa
     {} as Partial<Record<ToolName, number>>,
   );
   const aiMessages = fixChatMessages(messages.map(convertDBMessageToAIMessage)); // 传给 LLM 的时候需要修复
-  const tokensConsumed =
-    (
-      await prisma.chatStatistics.aggregate({
-        where: { userChatId, dimension: "tokens" },
-        _sum: { value: true },
-      })
-    )._sum.value ?? 0;
   let streamingMessage: Omit<Message, "role"> & {
     parts: NonNullable<Message["parts"]>;
     role: "assistant";
@@ -373,6 +366,5 @@ export async function prepareNewMessageForStreaming(userChatId: number, newMessa
     coreMessages,
     streamingMessage,
     toolUseCount,
-    tokensConsumed,
   };
 }
