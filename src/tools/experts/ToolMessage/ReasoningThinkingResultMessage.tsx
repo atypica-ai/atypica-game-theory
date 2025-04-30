@@ -13,7 +13,7 @@ export const ReasoningThinkingResultMessage: FC<{
     <div className="p-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 rounded-lg text-xs">
       <div className="mt-2 mb-6 font-medium flex flex-rows items-start justify-start gap-2">
         <HippyGhostAvatar seed={toolInvocation.toolCallId.substring(1)} className="size-6" />
-        <div>{toolInvocation.args.question}</div>
+        <div className="flex-1 overflow-hidden">{toolInvocation.args.question}</div>
       </div>
       <div className="flex flex-rows items-start justify-start gap-2">
         <HippyGhostAvatar seed={toolInvocation.toolCallId} className="size-6" />

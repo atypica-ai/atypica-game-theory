@@ -17,7 +17,7 @@ const ReasoningThinking: FC<{
     >
       <div className="mt-2 mb-6 font-medium flex flex-rows items-start justify-start gap-2">
         <HippyGhostAvatar seed={toolInvocation.toolCallId.substring(1)} className="size-6" />
-        <div>
+        <div className="flex-1 overflow-hidden">
           {t("deepThinking")}: {toolInvocation.args.question}
         </div>
       </div>
