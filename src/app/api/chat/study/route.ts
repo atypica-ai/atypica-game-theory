@@ -1,6 +1,6 @@
 import { authOptions } from "@/lib/auth";
 import { rootLogger } from "@/lib/logging";
-import { prepareNewMessageForStreaming } from "@/lib/messageUtils";
+import { persistentAIMessageToDB, prepareMessagesForStreaming } from "@/lib/messageUtils";
 import { prisma } from "@/lib/prisma";
 import { Message } from "ai";
 import { getServerSession } from "next-auth/next";
@@ -37,10 +37,12 @@ export async function POST(req: Request) {
 
   const studyLog = rootLogger.child({ studyUserChatId, studyUserChatToken: userChat.token });
 
-  const { coreMessages, streamingMessage, toolUseCount } = await prepareNewMessageForStreaming(
-    studyUserChatId,
-    newMessage,
-  );
+  // 首先要把新提交的消息保存
+  // 如果是 user message，会新建一条，
+  // 如果是 assistant message，一般是 addToolResult 的结果，这时候 messageId 已存在，则更新 tool 的交互结果
+  await persistentAIMessageToDB(studyUserChatId, newMessage);
+  const { coreMessages, streamingMessage, toolUseCount } =
+    await prepareMessagesForStreaming(studyUserChatId);
 
   const reqSignal = req.signal;
   const params = {

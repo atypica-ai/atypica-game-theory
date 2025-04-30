@@ -3,7 +3,7 @@ import { llm, providerOptions } from "@/lib/llm";
 import {
   appendStepToStreamingMessage,
   persistentAIMessageToDB,
-  prepareNewMessageForStreaming,
+  prepareMessagesForStreaming,
 } from "@/lib/messageUtils";
 import { prisma } from "@/lib/prisma";
 import { helloSystem } from "@/prompt";
@@ -38,10 +38,8 @@ export async function POST(req: Request) {
     );
   }
 
-  const { coreMessages, streamingMessage } = await prepareNewMessageForStreaming(
-    userChatId,
-    newMessage,
-  );
+  await persistentAIMessageToDB(userChatId, newMessage);
+  const { coreMessages, streamingMessage } = await prepareMessagesForStreaming(userChatId);
 
   const streamTextResult = streamText({
     model: llm("claude-3-7-sonnet"),

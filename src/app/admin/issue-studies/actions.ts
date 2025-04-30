@@ -1,7 +1,7 @@
 "use server";
 import { studyAgentRequest } from "@/app/api/chat/study/studyAgentRequest";
 import { rootLogger } from "@/lib/logging";
-import { prepareNewMessageForStreaming } from "@/lib/messageUtils";
+import { persistentAIMessageToDB, prepareMessagesForStreaming } from "@/lib/messageUtils";
 import { prisma } from "@/lib/prisma";
 import { ServerActionResult } from "@/lib/serverAction";
 import { PaymentRecord, User, UserChat, UserTokens } from "@prisma/client";
@@ -107,14 +107,13 @@ export async function retryStudy(studyUserChatId: number): Promise<ServerActionR
       };
     }
 
-    const { coreMessages, streamingMessage, toolUseCount } = await prepareNewMessageForStreaming(
-      studyUserChatId,
-      {
-        id: generateId(),
-        role: "user",
-        content: "Please continue the study",
-      },
-    );
+    await persistentAIMessageToDB(studyUserChatId, {
+      id: generateId(),
+      role: "user",
+      content: "Please continue the study",
+    });
+    const { coreMessages, streamingMessage, toolUseCount } =
+      await prepareMessagesForStreaming(studyUserChatId);
 
     // Clear the backgroundToken to allow a new study to start
     await prisma.userChat.update({

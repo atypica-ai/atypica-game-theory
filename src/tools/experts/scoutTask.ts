@@ -1,11 +1,10 @@
 import { llm, LLMModelName, providerOptions } from "@/lib/llm";
 import {
   appendChunkToStreamingMessage,
-  convertDBMessageToAIMessage,
   convertStepsToAIMessage,
   createDebouncePersistentMessage,
-  fixChatMessages,
   persistentAIMessageToDB,
+  prepareMessagesForStreaming,
 } from "@/lib/messageUtils";
 import { prisma } from "@/lib/prisma";
 import { generateToken } from "@/lib/utils";
@@ -31,15 +30,7 @@ import {
   xhsUserNotesTool,
 } from "@/tools";
 import { PlainTextToolResult } from "@/tools/utils";
-import {
-  convertToCoreMessages,
-  generateId,
-  Message,
-  streamText,
-  TextStreamPart,
-  tool,
-  ToolChoice,
-} from "ai";
+import { generateId, Message, streamText, TextStreamPart, tool, ToolChoice } from "ai";
 import { Logger } from "pino";
 import { z } from "zod";
 
@@ -201,6 +192,7 @@ async function runScoutTaskChatStream({
       );
     }
   };
+
   const tools = {
     [ToolName.reasoningThinking]: reasoningThinkingTool({ abortSignal, statReport }),
     [ToolName.xhsSearch]: xhsSearchTool,
@@ -224,20 +216,15 @@ async function runScoutTaskChatStream({
   let maxSteps = MAX_STEPS_EACH_ROUND;
   let tokensConsumed = 0;
   while (true) {
-    const messagesInDB = await prisma.chatMessage.findMany({
-      where: { userChatId: scoutUserChatId },
-      orderBy: { id: "asc" },
-    });
-    const socialToolCallCounts = messagesInDB.reduce((count, message) => {
-      const socialToolCalls = ((message.parts ?? []) as NonNullable<Message["parts"]>).filter(
-        (part) =>
-          part.type === "tool-invocation" &&
-          part.toolInvocation.state === "result" &&
-          /^(xhs|dy|tiktok|ins)/.test(part.toolInvocation.toolName),
-      );
-      return count + socialToolCalls.length;
+    const { coreMessages, streamingMessage, toolUseCount } =
+      await prepareMessagesForStreaming(scoutUserChatId);
+    const socialToolCallCounts = (Object.keys(tools) as ToolName[]).reduce((count, toolName) => {
+      if (/^(xhs|dy|tiktok|ins)/.test(toolName)) {
+        return count + (toolUseCount[toolName] ?? 0);
+      } else {
+        return count;
+      }
     }, 0);
-    const aiMessages = fixChatMessages(messagesInDB.map(convertDBMessageToAIMessage)); // 传给 LLM 的时候需要修复
     if (
       socialToolCallCounts > LIMIT_SOCIAL_TOOLS_USE ||
       tokensConsumed > TOKENS_COMSUME_LIMIT * 0.5
@@ -249,14 +236,7 @@ async function runScoutTaskChatStream({
       };
       maxSteps = PERSONAS_REQUIRED; // maxSteps 只需要够 savePersona 用就行
     }
-    const coreMessages = convertToCoreMessages(aiMessages);
     const streamTextPromise = new Promise<Omit<Message, "role">>((resolve, reject) => {
-      const streamingMessage: Omit<Message, "parts"> & { parts: NonNullable<Message["parts"]> } = {
-        id: generateId(),
-        role: "assistant",
-        content: "",
-        parts: [],
-      };
       const { debouncePersistentMessage, immediatePersistentMessage } =
         createDebouncePersistentMessage(scoutUserChatId, 5000, scoutLog); // 5000 debounce
       const response = streamText({

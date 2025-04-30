@@ -315,11 +315,7 @@ export function convertDBMessageToAIMessage({
  * 保存到数据库，取出完整的消息列表
  * 转换成 streamText 的格式
  */
-export async function prepareNewMessageForStreaming(userChatId: number, newMessage: Message) {
-  // 首先要把新提交的消息保存
-  // 如果是 user message，会新建一条，
-  // 如果是 assistant message，一般是 addToolResult 的结果，这时候 messageId 已存在，则更新 tool 的交互结果
-  await persistentAIMessageToDB(userChatId, newMessage);
+export async function prepareMessagesForStreaming(userChatId: number) {
   // persist 了以后，取一下最新的消息列表，包含了最新的 new message, user 或者 assistant 的
   const messages = await prisma.chatMessage.findMany({
     where: { userChatId },

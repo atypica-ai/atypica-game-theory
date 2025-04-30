@@ -3,7 +3,7 @@ import { llm, providerOptions } from "@/lib/llm";
 import {
   appendStepToStreamingMessage,
   persistentAIMessageToDB,
-  prepareNewMessageForStreaming,
+  prepareMessagesForStreaming,
 } from "@/lib/messageUtils";
 import { prisma } from "@/lib/prisma";
 import { scoutSystem } from "@/prompt";
@@ -57,10 +57,8 @@ export async function POST(req: Request) {
     );
   }
 
-  const { coreMessages, streamingMessage } = await prepareNewMessageForStreaming(
-    scoutUserChatId,
-    newMessage,
-  );
+  await persistentAIMessageToDB(scoutUserChatId, newMessage);
+  const { coreMessages, streamingMessage } = await prepareMessagesForStreaming(scoutUserChatId);
 
   const tools = {
     [ToolName.reasoningThinking]: reasoningThinkingTool(),
