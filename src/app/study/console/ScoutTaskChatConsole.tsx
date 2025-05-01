@@ -11,7 +11,7 @@ import { Message, ToolInvocation } from "ai";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { StreamSteps } from "./StreamSteps";
 
-const ScoutTaskChat = ({ toolInvocation }: { toolInvocation: ToolInvocation }) => {
+export const ScoutTaskChatConsole = ({ toolInvocation }: { toolInvocation: ToolInvocation }) => {
   const { studyUserChat } = useStudyContext();
   const scoutUserChatToken = toolInvocation.args.scoutUserChatToken as string;
   const [messages, setMessages] = useState<Message[]>([]);
@@ -105,5 +105,3 @@ const ScoutTaskChat = ({ toolInvocation }: { toolInvocation: ToolInvocation }) =
     </div>
   );
 };
-
-export default ScoutTaskChat;

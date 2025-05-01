@@ -4,7 +4,7 @@ import { ScoutTaskChatResult } from "@/tools/experts/scoutTask";
 import { ToolInvocation } from "ai";
 import { FC, useMemo } from "react";
 
-export const ScoutTaskResultMessage: FC<{
+export const ScoutTaskChatResultMessage: FC<{
   toolInvocation: ToolInvocation;
 }> = ({ toolInvocation }) => {
   const taskResult = useMemo(() => {

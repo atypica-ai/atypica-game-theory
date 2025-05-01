@@ -2,7 +2,7 @@ import { ToolName } from "@/tools";
 import {
   GenerateReportResultMessage,
   ReasoningThinkingResultMessage,
-  ScoutTaskResultMessage,
+  ScoutTaskChatResultMessage,
 } from "@/tools/experts/ToolMessage";
 import {
   DYPostCommentsResultMessage,
@@ -72,7 +72,7 @@ export const ToolInvocationDisplay = ({
     case ToolName.generateReport:
       return <GenerateReportResultMessage toolInvocation={toolInvocation} />;
     case ToolName.scoutTaskChat:
-      return <ScoutTaskResultMessage toolInvocation={toolInvocation} />;
+      return <ScoutTaskChatResultMessage toolInvocation={toolInvocation} />;
 
     case ToolName.saveAnalyst:
       return <SaveAnalystToolResultMessage toolInvocation={toolInvocation} />;

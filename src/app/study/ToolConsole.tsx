@@ -1,10 +1,10 @@
 import { ToolInvocationMessage } from "@/components/chat/ToolInvocationMessage";
 import { ToolName } from "@/tools";
 import { useMemo } from "react";
-import GenerateReportConsole from "./console/GenerateReportConsole";
-import InterviewChatConsole from "./console/InterviewChatConsole";
-import ReasoningThinkingConsole from "./console/ReasoningThinkingConsole";
-import ScoutTaskChatConsole from "./console/ScoutTaskChatConsole";
+import { GenerateReportConsole } from "./console/GenerateReportConsole";
+import { InterviewChatConsole } from "./console/InterviewChatConsole";
+import { ReasoningThinkingConsole } from "./console/ReasoningThinkingConsole";
+import { ScoutTaskChatConsole } from "./console/ScoutTaskChatConsole";
 import { useStudyContext } from "./hooks/StudyContext";
 
 export function ToolConsole() {

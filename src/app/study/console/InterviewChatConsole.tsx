@@ -18,7 +18,7 @@ import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { StreamSteps } from "./StreamSteps";
 
-const InterviewChat = ({ toolInvocation }: { toolInvocation: ToolInvocation }) => {
+export const InterviewChatConsole = ({ toolInvocation }: { toolInvocation: ToolInvocation }) => {
   const t = useTranslations("StudyPage.ToolConsole");
   const { studyUserChat } = useStudyContext();
   const analystId = toolInvocation.args.analystId as number;
@@ -209,5 +209,3 @@ const SingleInterviewChat = ({
     </div>
   );
 };
-
-export default InterviewChat;

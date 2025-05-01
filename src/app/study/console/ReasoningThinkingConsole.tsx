@@ -5,7 +5,7 @@ import { ToolInvocation } from "ai";
 import { useTranslations } from "next-intl";
 import { FC } from "react";
 
-const ReasoningThinking: FC<{
+export const ReasoningThinkingConsole: FC<{
   toolInvocation: ToolInvocation;
 }> = ({ toolInvocation }) => {
   const t = useTranslations("StudyPage.ToolConsole");
@@ -33,5 +33,3 @@ const ReasoningThinking: FC<{
     </div>
   );
 };
-
-export default ReasoningThinking;

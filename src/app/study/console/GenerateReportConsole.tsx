@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AnalystReportShareButton } from "../components/AnalystReportShareButton";
 
-const GenerateReportConsole = ({ toolInvocation }: { toolInvocation: ToolInvocation }) => {
+export const GenerateReportConsole = ({ toolInvocation }: { toolInvocation: ToolInvocation }) => {
   const t = useTranslations("StudyPage.ToolConsole");
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -97,5 +97,3 @@ const GenerateReportConsole = ({ toolInvocation }: { toolInvocation: ToolInvocat
     </div>
   );
 };
-
-export default GenerateReportConsole;
