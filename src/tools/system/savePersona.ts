@@ -22,7 +22,22 @@ export const savePersonaTool = ({
 }) =>
   tool({
     description: "将生成的完整用户画像保存到数据库（确保 personaPrompt 信息完整）",
-    parameters: personaBuildSchema(),
+    parameters: z.object({
+      name: z
+        .string()
+        .describe("名字，不要包含姓氏，使用网名")
+        .transform(fixMalformedUnicodeString),
+      source: z.string().describe("数据来源").transform(fixMalformedUnicodeString),
+      tags: z
+        .array(z.string())
+        .describe("用户标签")
+        .transform((tags) => tags.map((tag) => fixMalformedUnicodeString(tag))),
+      // userids: z.array(z.string()).optional().describe("该人设典型的用户 ID 列表").default([]),
+      personaPrompt: z
+        .string()
+        .describe("用户画像（persona）的系统提示词")
+        .transform(fixMalformedUnicodeString),
+    }),
     experimental_toToolResultContent: (result: PlainTextToolResult) => {
       return [{ type: "text", text: result.plainText }];
     },
@@ -59,15 +74,8 @@ export const savePersonaTool = ({
 
 export const personaBuildSchema = () =>
   z.object({
-    name: z.string().describe("名字，不要包含姓氏，使用网名").transform(fixMalformedUnicodeString),
-    source: z.string().describe("数据来源").transform(fixMalformedUnicodeString),
-    tags: z
-      .array(z.string())
-      .describe("用户标签")
-      .transform((tags) => tags.map((tag) => fixMalformedUnicodeString(tag))),
-    // userids: z.array(z.string()).optional().describe("该人设典型的用户 ID 列表").default([]),
-    personaPrompt: z
-      .string()
-      .describe("用户画像（persona）的系统提示词")
-      .transform(fixMalformedUnicodeString),
+    name: z.string().describe("名字，不要包含姓氏，使用网名"),
+    source: z.string().describe("数据来源"),
+    tags: z.array(z.string()).describe("用户标签，3-5个特征标签"),
+    personaPrompt: z.string().describe("模拟用户画像的智能体的系统提示词，不少于500字"),
   });

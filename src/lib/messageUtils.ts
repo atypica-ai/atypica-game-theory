@@ -321,7 +321,7 @@ export function convertDBMessageToAIMessage({
  */
 export async function prepareMessagesForStreaming(userChatId: number) {
   // persist 了以后，取一下最新的消息列表，包含了最新的 new message, user 或者 assistant 的
-  const messages = await prisma.chatMessage.findMany({
+  let messages = await prisma.chatMessage.findMany({
     where: { userChatId },
     orderBy: { id: "asc" },
   });

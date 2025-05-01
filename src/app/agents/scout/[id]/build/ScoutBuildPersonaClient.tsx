@@ -56,14 +56,12 @@ export function ScoutBuildPersonaClient({
         {/* <pre className="whitespace-pre-wrap text-xs">{JSON.stringify(object)}</pre> */}
         {Object.entries(object ?? {}).map(([key, persona]) => (
           <div key={key}>
-            <div className="whitespace-pre-wrap text-sm font-bold">
-              {key}: {persona?.name}
-            </div>
-            <div className="whitespace-pre-wrap text-xs">source: {persona?.source}</div>
-            <div className="whitespace-pre-wrap text-xs">tags: {persona?.tags?.join(", ")}</div>
-            <div className="whitespace-pre-wrap text-xs">
-              personaPrompt: {persona?.personaPrompt}
-            </div>
+            <div className="whitespace-pre-wrap text-sm font-bold">#{key}</div>
+            {Object.entries(persona ?? {}).map(([field, value]) => (
+              <div className="whitespace-pre-wrap text-xs" key={field}>
+                {field}: {value}
+              </div>
+            ))}
           </div>
         ))}
         <div ref={messagesEndRef} />
