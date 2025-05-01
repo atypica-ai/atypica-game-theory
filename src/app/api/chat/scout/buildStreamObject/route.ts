@@ -2,7 +2,6 @@ import { authOptions } from "@/lib/auth";
 import { rootLogger } from "@/lib/logging";
 import { prisma } from "@/lib/prisma";
 import { runBuildPersona } from "@/tools/experts/buildPersona";
-import { createDataStreamResponse } from "ai";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
@@ -32,21 +31,12 @@ export async function POST(req: Request) {
     );
   }
 
-  const scoutLog = rootLogger.child({ scoutUserChatId: scoutUserChatId });
-  return createDataStreamResponse({
-    execute: async (dataStream) => {
-      await runBuildPersona({
-        scoutUserChatId,
-        statReport: async () => {},
-        abortSignal: req.signal,
-        studyLog: scoutLog,
-        streamWriter: dataStream,
-      });
-    },
-    onError: (error) => {
-      const errorMsg = error instanceof Error ? error.message : String(error);
-      scoutLog.error(errorMsg);
-      return errorMsg;
-    },
+  const response = await runBuildPersona({
+    scoutUserChatId,
+    statReport: async () => {},
+    abortSignal: req.signal,
+    studyLog: rootLogger,
   });
+
+  return response.toTextStreamResponse();
 }

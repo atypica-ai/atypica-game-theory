@@ -1,13 +1,17 @@
 import { checkTezignAuth } from "@/app/admin/utils";
-import { AgentChatPage } from "@/app/agents/AgentChatPage";
 import { fetchUserChatById } from "@/data/UserChat";
 import { authOptions } from "@/lib/auth";
 import { getServerSession } from "next-auth/next";
 import { forbidden, notFound, redirect } from "next/navigation";
+import { BuildPersonaStreamObjectClient } from "./BuildPersonaStreamObjectClient";
 
 export const dynamic = "force-dynamic";
 
-export default async function BuildPersonaPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function BuildPersonaStreamObjectPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   await checkTezignAuth(); // 内部人员可以和 acout agent 聊天
   const userChatId = parseInt((await params).id);
 
@@ -28,11 +32,9 @@ export default async function BuildPersonaPage({ params }: { params: Promise<{ i
   }
 
   return (
-    <AgentChatPage
-      chatId={userChat.id.toString()}
-      chatTitle={userChat.title}
-      initialMessages={userChat.messages}
-      useChatAPI="/api/chat/scout/build"
+    <BuildPersonaStreamObjectClient
+      chatId={userChatId.toString()}
+      useObjectAPI={`/api/chat/scout/buildStreamObject`}
     />
   );
 }

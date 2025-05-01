@@ -26,13 +26,15 @@ export function ExpandableText({ text }: { text: string }) {
 
 export default function ToolArgsTable({ toolInvocation }: { toolInvocation: ToolInvocation }) {
   const mask = (value: string) => {
-    const keep = value.length >= 6 ? 2 : 1;
-    const partialMaskedValue = value.substring(0, keep) + "***" + value.slice(-keep);
-    return partialMaskedValue;
+    return value; // 方便排查，最近先不 mask 了
+    // const keep = value.length >= 6 ? 2 : 1;
+    // const partialMaskedValue = value.substring(0, keep) + "***" + value.slice(-keep);
+    // return partialMaskedValue;
   };
   const maskedArgs = useMemo<[string, unknown][]>(() => {
-    return Object.entries(toolInvocation.args).map(([key, value]) => {
-      if (/(id|ids)$/.test(key)) {
+    // 如果设置 toolCallStreaming，在状态是 partial-call 的时候，args 是空的
+    return Object.entries(toolInvocation.args ?? {}).map(([key, value]) => {
+      if (/(id|ids|token|key)$/.test(key)) {
         if (Array.isArray(value)) {
           const val = value.map((v) => mask(`${v}`));
           return [key, val];

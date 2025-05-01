@@ -7,9 +7,6 @@ import { PlainTextToolResult } from "../utils";
 
 export interface SavePersonaToolResult extends PlainTextToolResult {
   personaId: number;
-  name: string;
-  tags: string[];
-  prompt: string;
   plainText: string;
 }
 
@@ -52,12 +49,6 @@ export const savePersonaTool = ({
       const persona = await prisma.persona.create({
         data: { name, source, tags, samples, prompt, scoutUserChatId },
       });
-      const result = {
-        personaId: persona.id,
-        name: persona.name,
-        tags: persona.tags as string[],
-        prompt: persona.prompt,
-      };
       if (statReport) {
         await statReport("personas", 1, {
           reportedBy: "savePersona tool",
@@ -66,8 +57,8 @@ export const savePersonaTool = ({
         });
       }
       return {
-        ...result,
-        plainText: JSON.stringify(result),
+        personaId: persona.id,
+        plainText: `Persona saved successfully with ID: ${persona.id}`,
       };
     },
   });

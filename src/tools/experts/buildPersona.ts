@@ -1,12 +1,11 @@
 import { llm, providerOptions } from "@/lib/llm";
-import { CONTINUE_ASSISTANT_STEPS, prepareMessagesForStreaming } from "@/lib/messageUtils";
+import { convertStepsToAIMessage, prepareMessagesForStreaming } from "@/lib/messageUtils";
 import { prisma } from "@/lib/prisma";
-import { fixMalformedUnicodeString } from "@/lib/utils";
 import { buildPersonaSystem } from "@/prompt";
-import { streamObject, tool } from "ai";
+import { DataStreamWriter, Message, streamText, tool } from "ai";
 import { Logger } from "pino";
 import { z } from "zod";
-import { StatReporter } from "..";
+import { savePersonaTool, StatReporter, ToolName } from "..";
 import { PlainTextToolResult } from "../utils";
 
 export interface BuildPersonaToolResult extends PlainTextToolResult {
@@ -53,34 +52,30 @@ export const buildPersonaTool = ({
         };
       }
       const scoutUserChatId = scoutUserChat.id;
-      const response = await runBuildPersona({
-        scoutUserChatId,
-        abortSignal,
-        statReport,
-        studyLog,
-      });
-      const object = await response.object;
-      const personas: BuildPersonaToolResult["personas"] = [];
-      // for (const [key, data] of Object.entries(object)) {
-      //   studyLog.info(`Persona ${key} generated, ${data.name}`);
-      for (const data of object) {
-        studyLog.info(`Persona generated, ${data.name}`);
-        if (data.personaPrompt.length < 20) {
-          continue; // 如果字太少，忽略
-        }
-        try {
-          const { name, source, tags, personaPrompt: prompt } = data;
-          const persona = await prisma.persona.create({
-            data: { name, source, tags, prompt, samples: [], scoutUserChatId },
-          });
-          personas.push({ personaId: persona.id, name, tags, source });
-        } catch (error) {
-          studyLog.error(`Failed to create persona ${JSON.stringify(data)}: ${error}`);
-        }
+      try {
+        await runBuildPersona({
+          scoutUserChatId,
+          abortSignal,
+          statReport,
+          studyLog,
+        });
+      } catch (error) {
+        studyLog.error(`runBuildPersona failed: ${(error as Error).message}`);
+        throw error;
       }
+      const personas = (
+        await prisma.persona.findMany({
+          where: { scoutUserChatId },
+        })
+      ).map((persona) => ({
+        personaId: persona.id,
+        name: persona.name,
+        tags: persona.tags as string[],
+        source: persona.source,
+      }));
       if (personas.length === 0) {
-        studyLog.error("No personas found");
-        throw new Error("No personas found");
+        studyLog.error("No persona built");
+        throw new Error("No persona built");
       }
       if (statReport) {
         await statReport("personas", personas.length, {
@@ -101,70 +96,71 @@ export async function runBuildPersona({
   statReport,
   abortSignal,
   studyLog,
+  streamWriter,
 }: {
   scoutUserChatId: number;
   statReport: StatReporter;
   abortSignal: AbortSignal;
   studyLog: Logger;
+  streamWriter?: DataStreamWriter;
 }) {
   const { coreMessages } = await prepareMessagesForStreaming(scoutUserChatId);
-  let messages = coreMessages.filter(
-    (message) => !(message.role === "user" && message.content === CONTINUE_ASSISTANT_STEPS),
-  );
-  if (messages.length && messages[messages.length - 1].role === "user") {
-    messages = messages.slice(0, -1);
-  }
-  messages.push({
-    role: "user",
-    content: "build personas",
-  });
-  // const schema = z.object({
-  //   persona1: personaBuildSchema(),
-  //   persona2: personaBuildSchema(),
-  //   persona3: personaBuildSchema(),
-  //   persona4: personaBuildSchema(),
-  //   persona5: personaBuildSchema(),
-  //   persona6: personaBuildSchema(),
-  // });
-  const response = streamObject({
-    model: llm("gemini-2.5-pro"),
-    // model: llm("gpt-4o"), // gpt 可以对一个字段的值进行 stream，这样在 prompt 生成部分的时候就可以看到结果，比较快
-    // temperature: 0,
-    providerOptions: providerOptions,
-    system: buildPersonaSystem(),
-    messages,
-    output: "array",
-    schema: personaBuildSchema(),
-    // schema,
-    onFinish: async (result) => {
-      studyLog.info({
-        msg: "streamObject Finished",
-        // object: result.object,
-        usage: result.usage,
-      });
-      if (result.usage.totalTokens > 0 && statReport) {
-        await statReport("tokens", result.usage.totalTokens, {
-          reportedBy: "buildPersona tool",
-          scoutUserChatId,
+  const streamTextPromise = new Promise<Omit<Message, "role">>((resolve, reject) => {
+    const response = streamText({
+      model: llm("gemini-2.5-pro"),
+      providerOptions: providerOptions,
+      system: buildPersonaSystem(),
+      messages: coreMessages,
+      tools: {
+        [ToolName.savePersona]: savePersonaTool({ scoutUserChatId, statReport }),
+        // [ToolName.toolCallError]: toolCallError,
+      },
+      toolChoice: {
+        type: "tool",
+        toolName: ToolName.savePersona,
+      },
+      maxSteps: 1,
+      // toolCallStreaming: true,  // gemini 这个会有问题，会出现所有字段值都是 placeholder
+      // experimental_repairToolCall: handleToolCallError,
+      onChunk: async (chunk) => {
+        console.log(chunk);
+      },
+      onStepFinish: async (step) => {
+        studyLog.info({
+          msg: "Step finished",
+          stepType: step.stepType,
+          toolCalls: step.toolCalls.map((call) => call.toolName),
+          usage: step.usage,
         });
-      }
-    },
-    abortSignal,
+        if (step.usage.totalTokens > 0 && statReport) {
+          await statReport("tokens", step.usage.totalTokens, {
+            reportedBy: "buildPersona tool",
+            scoutUserChatId,
+          });
+        }
+      },
+      onFinish: async ({ steps, usage }) => {
+        const message = convertStepsToAIMessage(steps);
+        resolve(message);
+        studyLog.info({
+          msg: "buildPersona Finished",
+          usage: usage,
+        });
+      },
+      abortSignal,
+    });
+    if (streamWriter) {
+      response.mergeIntoDataStream(streamWriter);
+    }
+    response.consumeStream().catch((error) => reject(error));
   });
-  return response;
-}
 
-export const personaBuildSchema = () =>
-  z.object({
-    name: z.string().describe("名字，不要包含姓氏，使用网名").transform(fixMalformedUnicodeString),
-    source: z.string().describe("数据来源").transform(fixMalformedUnicodeString),
-    // userids: z.array(z.string()).optional().describe("该人设典型的用户 ID 列表").default([]),
-    tags: z
-      .array(z.string())
-      .describe("用户标签，3-5个特征标签")
-      .transform((tags) => tags.map((tag) => fixMalformedUnicodeString(tag))),
-    personaPrompt: z
-      .string()
-      .describe("模拟用户画像的智能体的系统提示词，300到500字")
-      .transform(fixMalformedUnicodeString),
-  });
+  try {
+    const message = await streamTextPromise;
+    studyLog.info(`message stream complete: ${message.content.substring(0, 20)}`);
+  } catch (error) {
+    const errMsg = (error as Error).message;
+    studyLog.error(`message stream error: ${errMsg}`);
+    throw error;
+  }
+}

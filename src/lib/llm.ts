@@ -83,17 +83,23 @@ export function llm(modelName: LLMModelName, options?: any) {
     switch (modelName) {
       case "claude-3-7-sonnet":
         return bedrock("us.anthropic.claude-3-7-sonnet-20250219-v1:0", options);
+      case "claude-3-7-sonnet-beta":
+        return bedrock("us.anthropic.claude-3-7-sonnet-20250219-v1:0", {
+          additionalModelRequestFields: {
+            anthropic_beta: ["token-efficient-tools-2025-02-19"],
+          },
+        });
       case "gemini-2.5-flash":
         return google("gemini-2.5-flash-preview-04-17", options);
       case "gemini-2.5-pro":
         return google("gemini-2.5-pro-preview-03-25", options);
       default:
-        return openai(modelName, options);
+        return openai(modelName, options); // options 支持 parallelToolCalls 参数
     }
   } else {
     switch (modelName) {
       case "gpt-4o":
-        return azure("gpt-4o", options);
+        return azure("gpt-4o", options); // options 支持 parallelToolCalls 参数
       case "o3-mini":
         return azure("o3-mini", options);
       case "claude-3-7-sonnet":
