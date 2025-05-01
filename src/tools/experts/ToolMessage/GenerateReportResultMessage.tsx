@@ -4,18 +4,18 @@ import { AnalystReport } from "@prisma/client";
 import { ToolInvocation } from "ai";
 import { useTranslations } from "next-intl";
 import { FC, useEffect, useState } from "react";
+import { GenerateReportResult } from "../report";
 
 export const GenerateReportResultMessage: FC<{
-  toolInvocation: ToolInvocation;
+  toolInvocation: Omit<Extract<ToolInvocation, { state: "result" }>, "result"> & {
+    result: GenerateReportResult;
+  };
 }> = ({ toolInvocation }) => {
   const t = useTranslations("StudyPage.ToolMessage");
   const [report, setReport] = useState<Omit<AnalystReport, "onePageHtml"> | null>(null);
 
   useEffect(() => {
-    let reportToken = toolInvocation.args.reportToken as string;
-    if (toolInvocation.state === "result") {
-      reportToken = toolInvocation.result.reportToken as string;
-    }
+    const reportToken = toolInvocation.result.reportToken;
     if (reportToken) {
       fetchAnalystReportByToken(reportToken)
         .then((result) => {

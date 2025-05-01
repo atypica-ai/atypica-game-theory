@@ -1,6 +1,7 @@
 import { ToolInvocationMessage } from "@/components/chat/ToolInvocationMessage";
 import { ToolName } from "@/tools";
 import { useMemo } from "react";
+import { BuildPersonaConsole } from "./console/BuildPersonaConsole";
 import { GenerateReportConsole } from "./console/GenerateReportConsole";
 import { InterviewChatConsole } from "./console/InterviewChatConsole";
 import { ReasoningThinkingConsole } from "./console/ReasoningThinkingConsole";
@@ -23,6 +24,8 @@ export function ToolConsole() {
       return <ReasoningThinkingConsole toolInvocation={activeTool} />;
     case ToolName.generateReport:
       return <GenerateReportConsole toolInvocation={activeTool} />;
+    case ToolName.buildPersona:
+      return <BuildPersonaConsole toolInvocation={activeTool} />;
     default:
       return activeTool ? <ToolInvocationMessage toolInvocation={activeTool} /> : null;
   }

@@ -1,5 +1,6 @@
 import { ToolName } from "@/tools";
 import {
+  BuildPersonaResultMessage,
   GenerateReportResultMessage,
   ReasoningThinkingResultMessage,
   ScoutTaskChatResultMessage,
@@ -73,6 +74,8 @@ export const ToolInvocationDisplay = ({
       return <GenerateReportResultMessage toolInvocation={toolInvocation} />;
     case ToolName.scoutTaskChat:
       return <ScoutTaskChatResultMessage toolInvocation={toolInvocation} />;
+    case ToolName.buildPersona:
+      return <BuildPersonaResultMessage toolInvocation={toolInvocation} />;
 
     case ToolName.saveAnalyst:
       return <SaveAnalystToolResultMessage toolInvocation={toolInvocation} />;

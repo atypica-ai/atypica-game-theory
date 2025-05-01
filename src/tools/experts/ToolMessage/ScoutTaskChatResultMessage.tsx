@@ -2,31 +2,24 @@ import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Badge } from "@/components/ui/badge";
 import { ScoutTaskChatResult } from "@/tools/experts/scoutTask";
 import { ToolInvocation } from "ai";
-import { FC, useMemo } from "react";
+import { FC } from "react";
 
 export const ScoutTaskChatResultMessage: FC<{
-  toolInvocation: ToolInvocation;
+  toolInvocation: Omit<Extract<ToolInvocation, { state: "result" }>, "result"> & {
+    result: ScoutTaskChatResult;
+  };
 }> = ({ toolInvocation }) => {
-  const taskResult = useMemo(() => {
-    if (toolInvocation.state === "result") {
-      const { personas, stats } = toolInvocation.result as ScoutTaskChatResult;
-      return { personas, stats };
-    }
-    return null;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [toolInvocation.state]);
-
+  const { personas, stats } = toolInvocation.result as ScoutTaskChatResult;
   // if (!personas || personas.length === 0) {
   //   return <div className="text-sm text-muted-foreground">No personas found.</div>;
   // }
-
   return (
     <div className="space-y-4">
-      {taskResult?.personas?.length && (
+      {personas?.length && (
         <>
           <h3 className="text-sm font-medium">Personas</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-3">
-            {taskResult.personas.map((persona) => (
+            {personas.map((persona) => (
               <div
                 key={persona.id}
                 className="flex items-start gap-3 rounded-lg border border-zinc-100 dark:border-zinc-700/50 p-3 bg-zinc-50 dark:bg-zinc-800"
@@ -47,11 +40,11 @@ export const ScoutTaskChatResultMessage: FC<{
           </div>
         </>
       )}
-      {taskResult?.stats && (
+      {stats && (
         <>
           <h3 className="text-sm font-medium">Stats</h3>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {Object.entries(taskResult.stats).map(([platform, count], index) => (
+            {Object.entries(stats).map(([platform, count], index) => (
               <div
                 key={index}
                 className="flex items-start gap-3 rounded-lg border border-zinc-100 dark:border-zinc-700/50 p-3 bg-zinc-50 dark:bg-zinc-800"

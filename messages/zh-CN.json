@@ -249,6 +249,8 @@
       "autoFollow": "自动跟随",
       "manualSelect": "手动选择",
       "deepThinking": "深度思考",
+      "buildingPersona": "正在构建用户画像",
+      "personaSource": "来源",
       "interviewStarting": "访谈启动中..",
       "researchConclusion": "研究结论",
       "researchTopic": "研究主题",

@@ -249,6 +249,8 @@
       "autoFollow": "Auto Follow",
       "manualSelect": "Manual Select",
       "deepThinking": "Deep Thinking",
+      "buildingPersona": "Building Persona",
+      "personaSource": "Source",
       "interviewStarting": "Interview starting..",
       "researchConclusion": "Research Conclusion",
       "researchTopic": "Research Topic",
