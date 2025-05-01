@@ -1,7 +1,11 @@
 "use server";
 import { studyAgentRequest } from "@/app/api/chat/study/studyAgentRequest";
 import { rootLogger } from "@/lib/logging";
-import { persistentAIMessageToDB, prepareMessagesForStreaming } from "@/lib/messageUtils";
+import {
+  CONTINUE_ASSISTANT_STEPS,
+  persistentAIMessageToDB,
+  prepareMessagesForStreaming,
+} from "@/lib/messageUtils";
 import { prisma } from "@/lib/prisma";
 import { ServerActionResult } from "@/lib/serverAction";
 import { PaymentRecord, User, UserChat, UserTokens } from "@prisma/client";
@@ -110,7 +114,7 @@ export async function retryStudy(studyUserChatId: number): Promise<ServerActionR
     await persistentAIMessageToDB(studyUserChatId, {
       id: generateId(),
       role: "user",
-      content: "Please continue the study",
+      content: CONTINUE_ASSISTANT_STEPS,
     });
     const { coreMessages, streamingMessage, toolUseCount } =
       await prepareMessagesForStreaming(studyUserChatId);

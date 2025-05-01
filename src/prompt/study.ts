@@ -1,4 +1,5 @@
 import { getDeployRegion } from "@/lib/deployRegion";
+import { CONTINUE_ASSISTANT_STEPS } from "@/lib/messageUtils";
 import { promptSystemConfig } from "./systemConfig";
 
 export const studySystem = ({
@@ -28,6 +29,7 @@ TokenUsage (used/limit): ${tokensStat.used}/${tokensStat.limit}
 2. 准备和规划：包括识别研究类型、总结和创建 analyst、向用户说明规划
 3. 研究执行：包括构建用户智能体、专家访谈等
 4. 报告生成
+如果用户发送指令"${CONTINUE_ASSISTANT_STEPS}"，你应该直接继续之前的任务，就像对话从未中断一样
 </工作流程>
 
 <阶段1：主题明确>
@@ -62,12 +64,16 @@ TokenUsage (used/limit): ${tokensStat.used}/${tokensStat.limit}
 
 <阶段3：研究执行>
 - 使用scoutTaskChat时提供明确详细的指令：
-  • 明确说明要构建什么类型的智能体
-  • 详细描述所需智能体的关键特征、背景和知识领域
+  • 明确说明要收集什么类型的用户信息
+  • 详细描述所需用户画像的关键特征、背景和知识领域
   • 指示如何总结和组织收集到的信息
-  • 确保目标明确：构建的智能体将如何应用于研究中
+  • 确保目标明确：收集的用户数据将如何应用于研究中
 - 合理控制scoutTaskChat搜索次数（通常1-2次即可获得足够洞察），确保研究高效且全面
-- 对目标用户进行interview，必须使用本轮研究总结的用户画像，不能凭空捏造
+- 搜索完成后，必须使用buildPersona工具基于搜索结果构建用户智能体：
+  • 提供scoutTaskChat的token作为参数
+  • buildPersona会自动分析搜索数据并生成5-7个差异化用户智能体
+  • 确保每个用户智能体都具有独特的特征和行为模式
+- 对目标用户进行interview，必须使用buildPersona或scoutTaskChat构建的用户智能体，不能凭空捏造
 - 根据信息质量灵活决定是否扩大样本，避免过度搜索导致研究时间过长
 - 确保获取多元视角，提高研究代表性
 - 优先考虑数据质量而非数量，避免过度收集数据

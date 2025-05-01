@@ -3,6 +3,7 @@ import { appendChunkToStreamingMessage, createDebouncePersistentMessage } from "
 import { prisma } from "@/lib/prisma";
 import { studySystem } from "@/prompt";
 import {
+  buildPersonaTool,
   generateReportTool,
   handleToolCallError,
   initStatReporter,
@@ -15,7 +16,15 @@ import {
   toolCallError,
   ToolName,
 } from "@/tools";
-import { CoreMessage, Message, StepResult, streamText, TextStreamPart, ToolChoice } from "ai";
+import {
+  CoreMessage,
+  Message,
+  smoothStream,
+  StepResult,
+  streamText,
+  TextStreamPart,
+  ToolChoice,
+} from "ai";
 import { Logger } from "pino";
 import { createAbortSignals } from "./abortSignal";
 import { backgroundChatUntilCancel, raceForUserChat } from "./background";
@@ -66,6 +75,7 @@ export async function studyAgentRequest({
   let streamStartTime = Date.now();
   const allTools = {
     [ToolName.scoutTaskChat]: scoutTaskChatTool({ userId, abortSignal, statReport, studyLog }),
+    [ToolName.buildPersona]: buildPersonaTool({ userId, abortSignal, statReport, studyLog }),
     [ToolName.saveAnalystStudySummary]: saveAnalystStudySummaryTool(),
     [ToolName.saveAnalyst]: saveAnalystTool({ userId, studyUserChatId }),
     [ToolName.interviewChat]: interviewChatTool({ userId, abortSignal, statReport, studyLog }),
@@ -121,6 +131,10 @@ export async function studyAgentRequest({
     experimental_repairToolCall: handleToolCallError,
     maxSteps: maxSteps,
     maxTokens: maxTokens,
+    // https://sdk.vercel.ai/docs/ai-sdk-ui/smooth-stream-chinese
+    experimental_transform: smoothStream({
+      chunking: /[\u4E00-\u9FFF]|\S+\s+/,
+    }),
     onError: async ({ error }) => {
       // 这里也包括 tool calling 里面直接 throw 的异常
       studyLog.error(`streamText onError: ${(error as Error).message}`);

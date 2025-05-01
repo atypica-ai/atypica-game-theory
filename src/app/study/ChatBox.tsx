@@ -4,6 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useScrollToBottom } from "@/components/use-scroll-to-bottom";
 import { UserTokensBalanceStore } from "@/components/UserTokensBalance";
 import { clearStudyUserChatBackgroundToken } from "@/data/UserChat";
+import { CONTINUE_ASSISTANT_STEPS } from "@/lib/messageUtils";
 import { useDocumentVisibility } from "@/lib/useDocumentVisibility";
 import { cn } from "@/lib/utils";
 import { ToolName } from "@/tools";
@@ -49,6 +50,7 @@ export function ChatBox() {
     setInput,
     status: useChatStatus,
     reload,
+    append,
     addToolResult,
   } = useChat({
     id: studyUserChatId.toString(),
@@ -237,6 +239,20 @@ export function ChatBox() {
             isLastMessage={index === messages.length - 1}
           ></SingleMessage>
         ))}
+        {!inputDisabled && (
+          <div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                // reload(); // 不能 reload 而是 append 一个消息，reload 会在前端删除最后一条 assistant 消息，但其实后端还在
+                append({ role: "user", content: CONTINUE_ASSISTANT_STEPS });
+              }}
+            >
+              Continue
+            </Button>
+          </div>
+        )}
         <div ref={messagesEndRef} />
       </div>
 

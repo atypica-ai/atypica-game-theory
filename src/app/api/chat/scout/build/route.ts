@@ -1,13 +1,9 @@
 import { authOptions } from "@/lib/auth";
-import { llm, providerOptions } from "@/lib/llm";
-import { prepareMessagesForStreaming } from "@/lib/messageUtils";
+import { rootLogger } from "@/lib/logging";
 import { prisma } from "@/lib/prisma";
-import { scoutBuildPersonaSystem } from "@/prompt";
-import { personaBuildSchema } from "@/tools/system/savePersona";
-import { streamObject } from "ai";
+import { runBuildPersona } from "@/tools/experts/buildPersona";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
-import { z } from "zod";
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
@@ -35,23 +31,11 @@ export async function POST(req: Request) {
     );
   }
 
-  const { coreMessages } = await prepareMessagesForStreaming(scoutUserChatId);
-  const schema = z.object({
-    persona1: personaBuildSchema(),
-    persona2: personaBuildSchema(),
-    persona3: personaBuildSchema(),
-    persona4: personaBuildSchema(),
-    persona5: personaBuildSchema(),
-    persona6: personaBuildSchema(),
-  });
-
-  const response = streamObject({
-    model: llm("gpt-4o"), // gpt 可以对一个字段的值进行 stream，这样在 prompt 生成部分的时候就可以看到结果，比较快
-    // temperature: 0,
-    providerOptions: providerOptions,
-    system: scoutBuildPersonaSystem(),
-    messages: coreMessages,
-    schema,
+  const response = await runBuildPersona({
+    scoutUserChatId,
+    statReport: async () => {},
+    abortSignal: req.signal,
+    studyLog: rootLogger,
   });
 
   return response.toTextStreamResponse();

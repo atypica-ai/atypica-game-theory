@@ -2,7 +2,7 @@ import { authOptions } from "@/lib/auth";
 import { rootLogger } from "@/lib/logging";
 import { persistentAIMessageToDB, prepareMessagesForStreaming } from "@/lib/messageUtils";
 import { prisma } from "@/lib/prisma";
-import { Message } from "ai";
+import { CreateMessage, Message } from "ai";
 import { getServerSession } from "next-auth/next";
 import { NextResponse } from "next/server";
 import { noQuotaAgentRequest } from "./noQuotaAgentRequest";
@@ -16,7 +16,7 @@ export async function POST(req: Request) {
   const userId = session.user.id;
   const payload = await req.json();
   const studyUserChatId = parseInt(payload["id"]);
-  const newMessage = payload["message"] as Message;
+  const newMessage = payload["message"] as Message | CreateMessage;
   if (!studyUserChatId || !newMessage) {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
@@ -40,7 +40,10 @@ export async function POST(req: Request) {
   // 首先要把新提交的消息保存
   // 如果是 user message，会新建一条，
   // 如果是 assistant message，一般是 addToolResult 的结果，这时候 messageId 已存在，则更新 tool 的交互结果
-  await persistentAIMessageToDB(studyUserChatId, newMessage);
+  await persistentAIMessageToDB(studyUserChatId, {
+    ...newMessage,
+    id: newMessage.id ?? generateId(),
+  });
   const { coreMessages, streamingMessage, toolUseCount } =
     await prepareMessagesForStreaming(studyUserChatId);
 

@@ -71,11 +71,3 @@ export const savePersonaTool = ({
       };
     },
   });
-
-export const personaBuildSchema = () =>
-  z.object({
-    name: z.string().describe("名字，不要包含姓氏，使用网名"),
-    source: z.string().describe("数据来源"),
-    tags: z.array(z.string()).describe("用户标签，3-5个特征标签"),
-    personaPrompt: z.string().describe("模拟用户画像的智能体的系统提示词，不少于500字"),
-  });

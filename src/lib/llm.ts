@@ -27,9 +27,20 @@ const azure = createAzure({
   apiKey: process.env.AZURE_API_KEY,
 });
 
-const google = createGoogleGenerativeAI({
-  apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
-});
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const google = (modelId: string, settings?: any) => {
+  const apiKeys: string[] = (process.env.GOOGLE_GENERATIVE_AI_API_KEYS ?? "")
+    .split(/\s+/)
+    .map((key) => key.trim())
+    .filter((key) => key.length > 0);
+  if (apiKeys.length === 0) {
+    throw new Error("Google Generative AI API keys are not configured");
+  }
+  const googleGenerativeAI = createGoogleGenerativeAI({
+    apiKey: apiKeys[Math.floor(Math.random() * apiKeys.length)],
+  });
+  return googleGenerativeAI(modelId, settings);
+};
 
 // export const bedrock = (model: "claude-3-7-sonnet" = "claude-3-7-sonnet") => {
 //   if (model === "claude-3-7-sonnet") {
@@ -61,17 +72,24 @@ export type LLMModelName =
   | "claude-3-7-sonnet"
   | "claude-3-7-sonnet-beta"
   | "gemini-2.5-flash"
+  | "gemini-2.5-pro"
   | "deepseek-v3"
   | "deepseek-r1";
 
-export function llm(
-  modelName: LLMModelName,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  options?: any,
-) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function llm(modelName: LLMModelName, options?: any) {
   const deployRegion = getDeployRegion();
   if (deployRegion === "mainland") {
-    return openai(modelName, options);
+    switch (modelName) {
+      case "claude-3-7-sonnet":
+        return bedrock("us.anthropic.claude-3-7-sonnet-20250219-v1:0", options);
+      case "gemini-2.5-flash":
+        return google("gemini-2.5-flash-preview-04-17", options);
+      case "gemini-2.5-pro":
+        return google("gemini-2.5-pro-preview-03-25", options);
+      default:
+        return openai(modelName, options);
+    }
   } else {
     switch (modelName) {
       case "gpt-4o":
@@ -88,6 +106,8 @@ export function llm(
         });
       case "gemini-2.5-flash":
         return google("gemini-2.5-flash-preview-04-17", options);
+      case "gemini-2.5-pro":
+        return google("gemini-2.5-pro-preview-03-25", options);
       case "deepseek-v3":
         return deepseek("Pro/deepseek-ai/DeepSeek-V3", options);
       case "deepseek-r1":

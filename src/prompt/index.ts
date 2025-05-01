@@ -1,3 +1,4 @@
+export * from "./buildPersona";
 export * from "./hello";
 export * from "./interview";
 export * from "./personaAgent";

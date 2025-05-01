@@ -3,6 +3,7 @@ import { UserTokensLogResourceType, UserTokensLogVerb } from "@prisma/client";
 import { InputJsonValue } from "@prisma/client/runtime/library";
 import { Logger } from "pino";
 
+export { buildPersonaTool } from "./experts/buildPersona";
 export { interviewChatTool } from "./experts/interviewChat";
 export { reasoningThinkingTool } from "./experts/reasoning";
 export { generateReportTool } from "./experts/report";
@@ -33,6 +34,7 @@ export enum ToolName {
   generateReport = "generateReport",
   reasoningThinking = "reasoningThinking",
   scoutTaskChat = "scoutTaskChat",
+  buildPersona = "buildPersona",
 
   saveAnalyst = "saveAnalyst",
   saveAnalystStudySummary = "saveAnalystStudySummary",

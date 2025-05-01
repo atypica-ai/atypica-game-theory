@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { useScrollToBottom } from "@/components/use-scroll-to-bottom";
 import { cn } from "@/lib/utils";
-import { personaBuildSchema } from "@/tools/system/savePersona";
+import { personaBuildSchema } from "@/tools/experts/buildPersona";
 import { experimental_useObject as useObject } from "@ai-sdk/react";
 import { useCallback } from "react";
 import { z } from "zod";
@@ -16,7 +16,8 @@ export function ScoutBuildPersonaClient({
 }) {
   const { object, submit, isLoading, stop } = useObject({
     api: useObjectAPI,
-    schema: z.record(z.string(), personaBuildSchema()),
+    // schema: z.record(z.string(), personaBuildSchema()),
+    schema: z.array(personaBuildSchema()),
   });
 
   const generateObject = useCallback(() => {
@@ -53,8 +54,16 @@ export function ScoutBuildPersonaClient({
         ref={messagesContainerRef}
         className="flex-1 flex flex-col gap-6 w-full items-stretch overflow-y-auto scrollbar-thin"
       >
-        {/* <pre className="whitespace-pre-wrap text-xs">{JSON.stringify(object)}</pre> */}
-        {Object.entries(object ?? {}).map(([key, persona]) => (
+        <pre className="whitespace-pre-wrap text-xs">
+          {(() => {
+            try {
+              return JSON.stringify(object, null, 2);
+            } catch (error) {
+              return "Malformed JSON";
+            }
+          })()}
+        </pre>
+        {/* {Object.entries(object ?? {}).map(([key, persona]) => (
           <div key={key}>
             <div className="whitespace-pre-wrap text-sm font-bold">#{key}</div>
             {Object.entries(persona ?? {}).map(([field, value]) => (
@@ -63,7 +72,7 @@ export function ScoutBuildPersonaClient({
               </div>
             ))}
           </div>
-        ))}
+        ))} */}
         <div ref={messagesEndRef} />
       </div>
     </div>

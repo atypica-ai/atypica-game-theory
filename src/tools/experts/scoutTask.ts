@@ -9,7 +9,7 @@ import {
 } from "@/lib/messageUtils";
 import { prisma } from "@/lib/prisma";
 import { generateToken } from "@/lib/utils";
-import { scoutBuildPersonaSystem, scoutSearchSystem } from "@/prompt";
+import { buildPersonaSystem, scoutSystem } from "@/prompt";
 import {
   dyPostCommentsTool,
   dySearchTool,
@@ -18,7 +18,6 @@ import {
   insPostCommentsTool,
   insSearchTool,
   insUserPostsTool,
-  reasoningThinkingTool,
   savePersonaTool,
   StatReporter,
   tiktokPostCommentsTool,
@@ -53,12 +52,31 @@ const REDUCE_TOKENS: {
   ratio: 8,
 };
 
+type TPlatform = "小红书" | "抖音" | "TikTok" | "Instagram";
+const TOOL_PLATFORM: Partial<Record<ToolName, TPlatform>> = {
+  [ToolName.xhsNoteComments]: "小红书",
+  [ToolName.xhsSearch]: "小红书",
+  [ToolName.xhsUserNotes]: "小红书",
+  [ToolName.dySearch]: "抖音",
+  [ToolName.dyPostComments]: "抖音",
+  [ToolName.dyUserPosts]: "抖音",
+  [ToolName.tiktokSearch]: "TikTok",
+  [ToolName.tiktokPostComments]: "TikTok",
+  [ToolName.tiktokUserPosts]: "TikTok",
+  [ToolName.insSearch]: "Instagram",
+  [ToolName.insUserPosts]: "Instagram",
+  [ToolName.insPostComments]: "Instagram",
+};
+
 export interface ScoutTaskChatResult extends PlainTextToolResult {
-  personas: {
+  personas?: {
     id: number;
     name: string;
     tags: string[];
-  }[];
+  }[]; // 历史消息的任务里是有 personas 的，新的没了，不过这个需要长期保留，不做迁移
+  stats?: {
+    [platform in TPlatform]: number;
+  };
   plainText: string;
 }
 
@@ -74,43 +92,28 @@ export const scoutTaskChatTool = ({
   studyLog: Logger;
 }) =>
   tool({
-    description: "开始执行用户画像搜索任务",
+    description: "开始执行用户画像搜索任务（scoutTask）",
     parameters: z.object({
       scoutUserChatToken: z
         .string()
         .optional()
         .describe(
-          "用户画像搜索任务 (scoutTask) 的 token，用于创建任务，如果上一个 scoutTaskChat 任务未完成，请提供上一个 scoutUserChatToken，否则忽略这个参数，系统会自动生成",
+          "用户画像搜索任务 (scoutTask) 的唯一标识，用于创建任务，忽略这个参数，系统会自动生成",
         )
-        .default(() => generateToken()),
+        .transform(() => generateToken()),
       // 始终生成一个新的 token，并且这个会直接覆盖 message 里面 toolInvocation.args 上的参数
-      // .transform(() => generateToken()),
+      // "用户画像搜索任务 (scoutTask) 的 token，用于创建任务，如果上一个 scoutTaskChat 任务未完成，请提供上一个 scoutUserChatToken，否则忽略这个参数，系统会自动生成",
+      // .default(() => generateToken()),
       description: z.string().describe('用户画像搜索需求描述，可以用"帮我寻找"或类似英文短语开头'),
     }),
     experimental_toToolResultContent: (result: PlainTextToolResult) => {
       return [{ type: "text", text: result.plainText }];
     },
     execute: async ({ scoutUserChatToken, description }) => {
-      // if (await prisma.userChat.findUnique({ where: { token: scoutUserChatToken } })) {
-      //   return {
-      //     personas: [],
-      //     plainText: `你提供的 scoutUserChatToken ${scoutUserChatToken} 已经存在，无法使用，请重试。你可以忽略提供这个字段，系统会自动生成 token。`,
-      //   };
-      // }
       const title = description.substring(0, 50);
-      const scoutUserChat = await prisma.userChat.upsert({
-        where: {
-          userId,
-          kind: "scout",
-          token: scoutUserChatToken,
-        },
-        create: {
-          userId,
-          title,
-          kind: "scout",
-          token: scoutUserChatToken,
-        },
-        update: {},
+      // 现在不需要复用一个 scoutTask 了，因为可以随时对一个 scoutTask 构建人设 buildPersona，所以每次都创建新的
+      const scoutUserChat = await prisma.userChat.create({
+        data: { userId, title, kind: "scout", token: scoutUserChatToken },
       });
       const scoutUserChatId = scoutUserChat.id;
       const scoutLog = studyLog.child({ scoutUserChatId, scoutUserChatToken });
@@ -136,28 +139,29 @@ export const scoutTaskChatTool = ({
         // - study 不会因为错误而过度消耗，进而需要人为介入
         // - toolUseCount 不统计没有 result 的 tool
       }
-      const personasResult = await prisma.persona.findMany({
-        where: { scoutUserChatId },
-        orderBy: { createdAt: "desc" },
+      const messages = await prisma.chatMessage.findMany({
+        where: { userChatId: scoutUserChatId },
+        orderBy: { id: "asc" },
       });
-      const personas = personasResult.map((persona) => ({
-        id: persona.id,
-        name: persona.name,
-        tags: persona.tags as string[],
-      }));
-      if (personas.length === 0) {
-        scoutLog.error("No personas found");
-        throw new Error("No personas found");
-      }
+      const stats = messages.reduce(
+        (_stats, message) => {
+          const stats = { ..._stats };
+          ((message.parts ?? []) as NonNullable<Message["parts"]>).forEach((part) => {
+            if (part.type === "tool-invocation") {
+              const toolName = part.toolInvocation.toolName as ToolName;
+              const platform = TOOL_PLATFORM[toolName];
+              if (platform) {
+                stats[platform] = (stats[platform] || 0) + 1;
+              }
+            }
+          });
+          return stats;
+        },
+        {} as NonNullable<ScoutTaskChatResult["stats"]>,
+      );
       return {
-        personas: personas,
-        plainText: `${personas.length} personas found: ${JSON.stringify(personas)}`,
-        // 如果有 personas，就算 hasError 也忽略，不要告诉 llm，不然容易给 llm 造成困扰以为找到的 personas 有问题
-        // plainText: personas.length
-        //   ? `${personas.length} personas found: ${JSON.stringify(personas)}`
-        //   : hasError
-        //     ? "Something went wrong"
-        //     : "No personas found",
+        stats: stats,
+        plainText: `Scout task completed successfully.\n\nStats:\n${JSON.stringify(stats)}`,
       };
     },
   });
@@ -203,7 +207,8 @@ export async function runScoutTaskChatStream({
   };
 
   const allTools = {
-    [ToolName.reasoningThinking]: reasoningThinkingTool({ abortSignal, statReport }),
+    // [ToolName.reasoningThinking]: reasoningThinkingTool({ abortSignal, statReport }), // 会干扰后面 buildPersona ，不要了
+    [ToolName.savePersona]: savePersonaTool({ scoutUserChatId, statReport }), // 实际不会被用到，但先放着，历史代码
     [ToolName.dySearch]: dySearchTool,
     [ToolName.dyPostComments]: dyPostCommentsTool,
     [ToolName.dyUserPosts]: dyUserPostsTool,
@@ -216,29 +221,30 @@ export async function runScoutTaskChatStream({
     [ToolName.xhsSearch]: xhsSearchTool,
     [ToolName.xhsUserNotes]: xhsUserNotesTool,
     [ToolName.xhsNoteComments]: xhsNoteCommentsTool,
-    [ToolName.savePersona]: savePersonaTool({ scoutUserChatId, statReport }),
     [ToolName.toolCallError]: toolCallError,
   };
 
   let endRound = false;
   let tokensConsumed = 0;
   while (true) {
-    const {
-      coreMessages,
-      streamingMessage,
-      // toolUseCount
-    } = await prepareMessagesForStreaming(scoutUserChatId);
-    let systemPrompt = scoutSearchSystem();
+    const { coreMessages, streamingMessage, toolUseCount } =
+      await prepareMessagesForStreaming(scoutUserChatId);
+    let systemPrompt = scoutSystem();
     let reduceTokens: typeof REDUCE_TOKENS | null = REDUCE_TOKENS;
     let tools = Object.fromEntries(
       Object.entries(allTools).filter(([key]) => key !== ToolName.savePersona),
     ) as typeof allTools;
     let toolChoice: ToolChoice<typeof allTools> = "auto";
     let maxSteps = SCOUT_STEPS;
+    if (coreMessages.length > 2 && Object.keys(toolUseCount).length === 0) {
+      // 两条消息以后，必须开始使用工具，但是为了不一直使用工具，调用2次先停下来，后面好重新判断 toolUseCount
+      toolChoice = "required";
+      maxSteps = 2;
+    }
     if (coreMessages.length > SCOUT_STEPS * 2) {
       // 进入终局，批量保存人设
       endRound = true;
-      systemPrompt = scoutBuildPersonaSystem();
+      systemPrompt = buildPersonaSystem();
       reduceTokens = null; // 使用 claude
       tools = Object.fromEntries(
         Object.entries(allTools).filter(
