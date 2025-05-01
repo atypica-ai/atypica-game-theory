@@ -21,7 +21,7 @@ export { xhsSearchTool } from "./social/xhs/search";
 export { xhsUserNotesTool } from "./social/xhs/userNotes";
 export { saveAnalystStudySummaryTool, saveAnalystTool } from "./system/saveAnalyst";
 export { saveInterviewConclusionTool } from "./system/saveInterviewConclusion";
-export { savePersonaTool } from "./system/savePersona";
+export { batchSavePersonasTool, savePersonaTool } from "./system/savePersona";
 export { requestInteractionTool } from "./user/interaction";
 export { requestPaymentTool } from "./user/payment";
 export { thanksTool } from "./user/thanks";
@@ -38,6 +38,7 @@ export enum ToolName {
   saveAnalystStudySummary = "saveAnalystStudySummary",
   saveInterviewConclusion = "saveInterviewConclusion",
   savePersona = "savePersona",
+  batchSavePersonas = "batchSavePersonas",
 
   requestInteraction = "requestInteraction",
   requestPayment = "requestPayment",

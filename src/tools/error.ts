@@ -19,7 +19,7 @@ export const handleToolCallError: ToolCallRepairFunction<ToolSet> = async <T ext
         ? `目前无法使用 ${toolCall.toolName} 工具，请确保使用目前提供给你的工具: ${availableTools.join(", ")}`
         : `Failed to call tool ${toolCall.toolName}, please make sure you are using the tools provided to you: ${availableTools.join(", ")}`;
   } else if (InvalidToolArgumentsError.isInstance(error)) {
-    plainText = `Invalid arguments for tool ${toolCall.toolName}: ${JSON.stringify(toolCall.args)}`;
+    plainText = `Invalid arguments for tool ${toolCall.toolName} with args ${JSON.stringify(toolCall.args)}: ${error.message}`;
   }
   return {
     ...toolCall,
