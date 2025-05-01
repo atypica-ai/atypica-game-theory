@@ -11,9 +11,9 @@ export const prisma =
   globalForPrisma.prisma ||
   new PrismaClient({
     log:
-      process.env.NODE_ENV === "development"
+      process.env.LOG_LEVEL?.toLowerCase() === "debug"
         ? ["query", "info", "warn", "error"]
-        : ["warn", "error"],
+        : ["info", "warn", "error"],
   });
 
 // 在所有环境中都保存到全局对象，只是开发环境会频繁热重载

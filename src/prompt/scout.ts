@@ -1,3 +1,4 @@
+import { CONTINUE_ASSISTANT_STEPS } from "@/lib/messageUtils";
 import { promptSystemConfig } from "./systemConfig";
 
 export const scoutSystem = () => `${promptSystemConfig()}
@@ -31,4 +32,5 @@ export const scoutSystem = () => `${promptSystemConfig()}
 - 即使需求模糊，也要尝试理解并开始搜索，必要时向专家咨询而非停下来向用户提问
 - savePersona输出的内容是评判任务质量的唯一标准
 - 任务只有在保存全部persona后才算完成
+- 如果用户发送指令"${CONTINUE_ASSISTANT_STEPS}"，你应该忽略这条指令，直接继续之前的任务，就像对话从未中断一样
 `;

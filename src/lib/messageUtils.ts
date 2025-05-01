@@ -13,6 +13,8 @@ import {
 } from "ai";
 import { Logger } from "pino";
 
+export const CONTINUE_ASSISTANT_STEPS = "[CONTINUE ASSISTANT STEPS]";
+
 export function fixChatMessages(messages: Message[]) {
   let fixed = messages.map((message) => {
     if (!message.parts) {
@@ -290,7 +292,9 @@ export const createDebouncePersistentMessage = (
     if (timeout) {
       clearTimeout(timeout);
     }
-    await func();
+    if (func) {
+      await func();
+    }
   };
   return {
     debouncePersistentMessage,

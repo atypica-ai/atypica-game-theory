@@ -50,7 +50,7 @@ export async function POST(req: Request) {
         analystInterviewId,
         interviewUserChatId,
         prompt,
-        abortSignal: req.signal,
+        abortSignal: req.signal, // 因为请求了以后立即进入 background，这个 signal 不会产生什么影响
         statReport: async () => {},
         interviewLog: rootLogger.child({ interviewUserChatId, analystInterviewId }),
       })

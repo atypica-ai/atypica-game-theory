@@ -2,8 +2,10 @@
 import { ChatMessage } from "@/components/chat/ChatMessage";
 import { StatusDisplay } from "@/components/chat/StatusDisplay";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
+import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useScrollToBottom } from "@/components/use-scroll-to-bottom";
+import { CONTINUE_ASSISTANT_STEPS } from "@/lib/messageUtils";
 import { cn } from "@/lib/utils";
 import { Message, useChat } from "@ai-sdk/react";
 import { useSession } from "next-auth/react";
@@ -25,7 +27,7 @@ export function AgentChatPage({
   persistMessages?: boolean;
 }) {
   const { data: session } = useSession();
-  const { messages, error, handleSubmit, input, setInput, status, reload } = useChat({
+  const { messages, error, handleSubmit, input, setInput, status, reload, append } = useChat({
     api: useChatAPI,
     id: chatId,
     initialMessages,
@@ -78,6 +80,20 @@ export function AgentChatPage({
             parts={message.parts}
           ></ChatMessage>
         ))}
+        {!inputDisabled && (
+          <div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                // reload(); // 不能 reload 而是 append 一个消息，reload 会在前端删除最后一条 assistant 消息，但其实后端还在
+                append({ role: "user", content: CONTINUE_ASSISTANT_STEPS });
+              }}
+            >
+              Continue
+            </Button>
+          </div>
+        )}
         {error && (
           <div className="flex justify-center items-center text-red-500 dark:text-red-400 text-sm">
             {error.toString()}

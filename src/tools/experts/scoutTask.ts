@@ -1,6 +1,7 @@
 import { llm, LLMModelName, providerOptions } from "@/lib/llm";
 import {
   appendChunkToStreamingMessage,
+  CONTINUE_ASSISTANT_STEPS,
   convertStepsToAIMessage,
   createDebouncePersistentMessage,
   persistentAIMessageToDB,
@@ -30,7 +31,15 @@ import {
   xhsUserNotesTool,
 } from "@/tools";
 import { PlainTextToolResult } from "@/tools/utils";
-import { generateId, Message, streamText, TextStreamPart, tool, ToolChoice } from "ai";
+import {
+  DataStreamWriter,
+  generateId,
+  Message,
+  streamText,
+  TextStreamPart,
+  tool,
+  ToolChoice,
+} from "ai";
 import { Logger } from "pino";
 import { z } from "zod";
 
@@ -155,16 +164,18 @@ export const scoutTaskChatTool = ({
     },
   });
 
-async function runScoutTaskChatStream({
+export async function runScoutTaskChatStream({
   scoutUserChatId,
   abortSignal,
   statReport,
   scoutLog,
+  streamWriter,
 }: {
   scoutUserChatId: number;
   abortSignal: AbortSignal;
   statReport: StatReporter;
   scoutLog: Logger;
+  streamWriter?: DataStreamWriter;
 }): Promise<void> {
   const backgroundToken = new Date().valueOf().toString();
   try {
@@ -195,9 +206,6 @@ async function runScoutTaskChatStream({
 
   const tools = {
     [ToolName.reasoningThinking]: reasoningThinkingTool({ abortSignal, statReport }),
-    [ToolName.xhsSearch]: xhsSearchTool,
-    [ToolName.xhsUserNotes]: xhsUserNotesTool,
-    [ToolName.xhsNoteComments]: xhsNoteCommentsTool,
     [ToolName.dySearch]: dySearchTool,
     [ToolName.dyPostComments]: dyPostCommentsTool,
     [ToolName.dyUserPosts]: dyUserPostsTool,
@@ -207,6 +215,9 @@ async function runScoutTaskChatStream({
     [ToolName.insSearch]: insSearchTool,
     [ToolName.insUserPosts]: insUserPostsTool,
     [ToolName.insPostComments]: insPostCommentsTool,
+    [ToolName.xhsSearch]: xhsSearchTool,
+    [ToolName.xhsUserNotes]: xhsUserNotesTool,
+    [ToolName.xhsNoteComments]: xhsNoteCommentsTool,
     [ToolName.savePersona]: savePersonaTool({ scoutUserChatId, statReport }),
     [ToolName.toolCallError]: toolCallError,
   };
@@ -303,6 +314,9 @@ async function runScoutTaskChatStream({
         },
         abortSignal,
       });
+      if (streamWriter) {
+        response.mergeIntoDataStream(streamWriter);
+      }
       // 这里不要 await 而是用 then，否则会出现一系列嵌套的 await new promise 最终导致 abortController.abort() 操作被取消
       // 可能是 studychat 先断了，await 结束了，后面的 abort 就失败了
       response.consumeStream().catch((error) => reject(error));
@@ -340,8 +354,11 @@ async function runScoutTaskChatStream({
       //   //   ? `目前总结了${personasResult.length}个personas，还不够5个，请批量保存人设后再考虑是否继续`
       //   //   : `Currently we have identified ${personasResult.length} personas, which is not enough to reach 5. Please continue saving multiple personas and then consider whether to continue`,
       // });
-      // ----------------------------------------
-      // 其实不需要一条 continue 消息，直接让 llm 接着上一条 assistant 消息生成就行了。
+      await persistentAIMessageToDB(scoutUserChatId, {
+        id: generateId(),
+        role: "user",
+        content: CONTINUE_ASSISTANT_STEPS,
+      });
       continue;
     } else {
       break;
