@@ -9,9 +9,8 @@ import {
 } from "@/lib/messageUtils";
 import { prisma } from "@/lib/prisma";
 import { generateToken } from "@/lib/utils";
-import { scoutSaveSystem, scoutSearchSystem } from "@/prompt";
+import { scoutBuildPersonaSystem, scoutSearchSystem } from "@/prompt";
 import {
-  batchSavePersonasTool,
   dyPostCommentsTool,
   dySearchTool,
   dyUserPostsTool,
@@ -218,7 +217,6 @@ export async function runScoutTaskChatStream({
     [ToolName.xhsUserNotes]: xhsUserNotesTool,
     [ToolName.xhsNoteComments]: xhsNoteCommentsTool,
     [ToolName.savePersona]: savePersonaTool({ scoutUserChatId, statReport }),
-    [ToolName.batchSavePersonas]: batchSavePersonasTool({ scoutUserChatId, statReport }),
     [ToolName.toolCallError]: toolCallError,
   };
 
@@ -233,27 +231,27 @@ export async function runScoutTaskChatStream({
     let systemPrompt = scoutSearchSystem();
     let reduceTokens: typeof REDUCE_TOKENS | null = REDUCE_TOKENS;
     let tools = Object.fromEntries(
-      Object.entries(allTools).filter(
-        ([key]) => key !== ToolName.savePersona && key !== ToolName.batchSavePersonas,
-      ),
+      Object.entries(allTools).filter(([key]) => key !== ToolName.savePersona),
     ) as typeof allTools;
     let toolChoice: ToolChoice<typeof allTools> = "auto";
     let maxSteps = SCOUT_STEPS;
     if (coreMessages.length > SCOUT_STEPS * 2) {
       // 进入终局，批量保存人设
       endRound = true;
-      systemPrompt = scoutSaveSystem();
+      systemPrompt = scoutBuildPersonaSystem();
       reduceTokens = null; // 使用 claude
       tools = Object.fromEntries(
         Object.entries(allTools).filter(
-          ([key]) => key === ToolName.batchSavePersonas || key === ToolName.toolCallError,
+          ([key]) => key === ToolName.savePersona || key === ToolName.toolCallError,
         ),
       ) as typeof allTools;
       toolChoice = {
         type: "tool",
-        toolName: ToolName.batchSavePersonas,
+        toolName: ToolName.savePersona,
       };
       maxSteps = 1;
+      // 超出限制以后不再继续，直接结束，上面的这些赋值先留着，保留历史代码
+      break;
     }
     const { debouncePersistentMessage, immediatePersistentMessage } =
       createDebouncePersistentMessage(scoutUserChatId, 5000, scoutLog); // 5000 debounce

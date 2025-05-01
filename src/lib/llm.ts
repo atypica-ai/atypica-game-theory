@@ -57,6 +57,7 @@ export const providerOptions = {
 
 export type LLMModelName =
   | "gpt-4o"
+  | "o3-mini"
   | "claude-3-7-sonnet"
   | "claude-3-7-sonnet-beta"
   | "gemini-2.5-flash"
@@ -75,6 +76,8 @@ export function llm(
     switch (modelName) {
       case "gpt-4o":
         return azure("gpt-4o", options);
+      case "o3-mini":
+        return azure("o3-mini", options);
       case "claude-3-7-sonnet":
         return bedrock("us.anthropic.claude-3-7-sonnet-20250219-v1:0", options);
       case "claude-3-7-sonnet-beta":
