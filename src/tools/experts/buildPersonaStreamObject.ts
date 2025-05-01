@@ -19,7 +19,7 @@ interface BuildPersonaToolResult extends PlainTextToolResult {
   plainText: string;
 }
 
-const buildPersonaTool = ({
+export const buildPersonaStreamObjectTool = ({
   userId,
   abortSignal,
   statReport,
@@ -53,7 +53,7 @@ const buildPersonaTool = ({
         };
       }
       const scoutUserChatId = scoutUserChat.id;
-      const response = await runBuildPersona({
+      const response = await runBuildPersonaStreamObject({
         scoutUserChatId,
         abortSignal,
         statReport,
@@ -96,7 +96,7 @@ const buildPersonaTool = ({
     },
   });
 
-export async function runBuildPersona({
+export async function runBuildPersonaStreamObject({
   scoutUserChatId,
   statReport,
   abortSignal,
@@ -119,12 +119,12 @@ export async function runBuildPersona({
     content: "build personas",
   });
   // const schema = z.object({
-  //   persona1: personaBuildSchema(),
-  //   persona2: personaBuildSchema(),
-  //   persona3: personaBuildSchema(),
-  //   persona4: personaBuildSchema(),
-  //   persona5: personaBuildSchema(),
-  //   persona6: personaBuildSchema(),
+  //   persona1: personaBuildSchemaStreamObject(),
+  //   persona2: personaBuildSchemaStreamObject(),
+  //   persona3: personaBuildSchemaStreamObject(),
+  //   persona4: personaBuildSchemaStreamObject(),
+  //   persona5: personaBuildSchemaStreamObject(),
+  //   persona6: personaBuildSchemaStreamObject(),
   // });
   const response = streamObject({
     model: llm("gemini-2.5-pro"),
@@ -134,7 +134,7 @@ export async function runBuildPersona({
     system: buildPersonaSystem(),
     messages,
     output: "array",
-    schema: personaBuildSchema(),
+    schema: personaBuildSchemaStreamObject(),
     // schema,
     onFinish: async (result) => {
       studyLog.info({
@@ -154,7 +154,7 @@ export async function runBuildPersona({
   return response;
 }
 
-export const personaBuildSchema = () =>
+export const personaBuildSchemaStreamObject = () =>
   z.object({
     name: z.string().describe("名字，不要包含姓氏，使用网名").transform(fixMalformedUnicodeString),
     source: z.string().describe("数据来源").transform(fixMalformedUnicodeString),

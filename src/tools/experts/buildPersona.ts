@@ -122,9 +122,9 @@ export async function runBuildPersona({
       maxSteps: 1,
       // toolCallStreaming: true,  // gemini 这个会有问题，会出现所有字段值都是 placeholder
       // experimental_repairToolCall: handleToolCallError,
-      onChunk: async (chunk) => {
-        console.log(chunk);
-      },
+      // onChunk: async (chunk) => {
+      //   console.log(chunk);
+      // },
       onStepFinish: async (step) => {
         studyLog.info({
           msg: "Step finished",

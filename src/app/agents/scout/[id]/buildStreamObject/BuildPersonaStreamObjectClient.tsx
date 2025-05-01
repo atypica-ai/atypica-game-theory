@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { useScrollToBottom } from "@/components/use-scroll-to-bottom";
 import { cn } from "@/lib/utils";
-import { personaBuildSchema } from "@/tools/experts/buildPersonaStreamObject";
+import { personaBuildSchemaStreamObject } from "@/tools/experts/buildPersonaStreamObject";
 import { experimental_useObject as useObject } from "@ai-sdk/react";
 import { useCallback } from "react";
 import { z } from "zod";
@@ -16,15 +16,13 @@ export function BuildPersonaStreamObjectClient({
 }) {
   const { object, submit, isLoading, stop } = useObject({
     api: useObjectAPI,
-    // schema: z.record(z.string(), personaBuildSchema()),
-    schema: z.array(personaBuildSchema()),
+    // schema: z.record(z.string(), personaBuildSchemaStreamObject()),
+    schema: z.array(personaBuildSchemaStreamObject()),
   });
 
   const generateObject = useCallback(() => {
-    submit({
-      id: chatId,
-    });
-  }, [submit]);
+    submit({ id: chatId });
+  }, [submit, chatId]);
 
   const [messagesContainerRef, messagesEndRef] = useScrollToBottom<HTMLDivElement>();
 
@@ -59,6 +57,7 @@ export function BuildPersonaStreamObjectClient({
             try {
               return JSON.stringify(object, null, 2);
             } catch (error) {
+              console.error("Error parsing object:", error);
               return "Malformed JSON";
             }
           })()}

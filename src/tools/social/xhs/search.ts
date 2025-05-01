@@ -84,8 +84,7 @@ function parseXHSSearchResult(data: {
   };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-async function xhsSearchSX({ keyword }: { keyword: string }) {
+async function xhsSearch({ keyword }: { keyword: string }) {
   for (let i = 0; i < 3; i++) {
     try {
       const params = {
@@ -119,7 +118,8 @@ async function xhsSearchSX({ keyword }: { keyword: string }) {
   };
 }
 
-async function xhsSearch({ keyword }: { keyword: string }) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+async function xhsSearchTikhub({ keyword }: { keyword: string }) {
   for (let i = 0; i < 3; i++) {
     try {
       const headers = { Authorization: `Bearer ${process.env.TIKHUB_API_TOKEN!}` };

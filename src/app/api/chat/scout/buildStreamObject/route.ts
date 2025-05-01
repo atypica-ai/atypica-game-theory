@@ -1,7 +1,7 @@
 import { authOptions } from "@/lib/auth";
 import { rootLogger } from "@/lib/logging";
 import { prisma } from "@/lib/prisma";
-import { runBuildPersona } from "@/tools/experts/buildPersona";
+import { runBuildPersonaStreamObject } from "@/tools/experts/buildPersonaStreamObject";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
@@ -31,7 +31,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const response = await runBuildPersona({
+  const response = await runBuildPersonaStreamObject({
     scoutUserChatId,
     statReport: async () => {},
     abortSignal: req.signal,

@@ -53,19 +53,22 @@ const REDUCE_TOKENS: {
 };
 
 type TPlatform = "小红书" | "抖音" | "TikTok" | "Instagram";
-const TOOL_PLATFORM: Partial<Record<ToolName, TPlatform>> = {
-  [ToolName.xhsNoteComments]: "小红书",
-  [ToolName.xhsSearch]: "小红书",
-  [ToolName.xhsUserNotes]: "小红书",
-  [ToolName.dySearch]: "抖音",
-  [ToolName.dyPostComments]: "抖音",
-  [ToolName.dyUserPosts]: "抖音",
-  [ToolName.tiktokSearch]: "TikTok",
-  [ToolName.tiktokPostComments]: "TikTok",
-  [ToolName.tiktokUserPosts]: "TikTok",
-  [ToolName.insSearch]: "Instagram",
-  [ToolName.insUserPosts]: "Instagram",
-  [ToolName.insPostComments]: "Instagram",
+const toolPlatform = (toolName: ToolName): TPlatform | undefined => {
+  const platforms: Partial<Record<ToolName, TPlatform>> = {
+    [ToolName.xhsNoteComments]: "小红书",
+    [ToolName.xhsSearch]: "小红书",
+    [ToolName.xhsUserNotes]: "小红书",
+    [ToolName.dySearch]: "抖音",
+    [ToolName.dyPostComments]: "抖音",
+    [ToolName.dyUserPosts]: "抖音",
+    [ToolName.tiktokSearch]: "TikTok",
+    [ToolName.tiktokPostComments]: "TikTok",
+    [ToolName.tiktokUserPosts]: "TikTok",
+    [ToolName.insSearch]: "Instagram",
+    [ToolName.insUserPosts]: "Instagram",
+    [ToolName.insPostComments]: "Instagram",
+  };
+  return platforms[toolName];
 };
 
 export interface ScoutTaskChatResult extends PlainTextToolResult {
@@ -149,7 +152,7 @@ export const scoutTaskChatTool = ({
           ((message.parts ?? []) as NonNullable<Message["parts"]>).forEach((part) => {
             if (part.type === "tool-invocation") {
               const toolName = part.toolInvocation.toolName as ToolName;
-              const platform = TOOL_PLATFORM[toolName];
+              const platform = toolPlatform(toolName);
               if (platform) {
                 stats[platform] = (stats[platform] || 0) + 1;
               }

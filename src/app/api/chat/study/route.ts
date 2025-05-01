@@ -2,7 +2,7 @@ import { authOptions } from "@/lib/auth";
 import { rootLogger } from "@/lib/logging";
 import { persistentAIMessageToDB, prepareMessagesForStreaming } from "@/lib/messageUtils";
 import { prisma } from "@/lib/prisma";
-import { CreateMessage, Message } from "ai";
+import { CreateMessage, generateId, Message } from "ai";
 import { getServerSession } from "next-auth/next";
 import { NextResponse } from "next/server";
 import { noQuotaAgentRequest } from "./noQuotaAgentRequest";
