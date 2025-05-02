@@ -1,9 +1,20 @@
 "use client";
-
 import { Button } from "@/components/ui/button";
 import UserMenu from "@/components/UserMenu";
 import { AdminRole } from "@prisma/client";
-import { AlertTriangle, CreditCard, Database, Home, Key, MessageCircle, Star, Users, X } from "lucide-react";
+import {
+  AlertTriangle,
+  CreditCard,
+  Database,
+  Home,
+  Key,
+  MessageCircle,
+  MonitorPlay,
+  Star,
+  Users,
+  X,
+} from "lucide-react";
+
 import Link from "next/link";
 import { useMemo } from "react";
 import { AdminPermission } from "../utils";
@@ -23,83 +34,87 @@ interface AdminSidebarProps {
 export default function AdminSidebar({ adminRole, permissions = [] }: AdminSidebarProps) {
   // Define all available sidebar items with their required permissions
   const allSidebarItems = useMemo<(SidebarItem & { permission?: AdminPermission })[]>(
-      () => [
-        {
-          label: "Dashboard",
-          href: "/admin",
-          icon: <Home className="mr-2 h-4 w-4" />,
-          // Dashboard accessible to all admins
-        },
-        {
-          label: "Featured Studies",
-          href: "/admin/featured-studies",
-          icon: <Star className="mr-2 h-4 w-4" />,
-          permission: AdminPermission.MANAGE_STUDIES,
-        },
-        {
-          label: "Issue Studies",
-          href: "/admin/issue-studies",
-          icon: <AlertTriangle className="mr-2 h-4 w-4" />,
-          // Only for super admins
-          role: "SUPER_ADMIN",
-        },
-        {
-          label: "Maintenance Mode",
-          href: "/admin/maintenance",
-          icon: <AlertTriangle className="mr-2 h-4 w-4" />,
-          role: "SUPER_ADMIN",
-        },
-        {
-          label: "Invitation Codes",
-          href: "/admin/invitation-codes",
-          icon: <Key className="mr-2 h-4 w-4" />,
-        },
-        {
-          label: "Users",
-          href: "/admin/users",
-          icon: <Users className="mr-2 h-4 w-4" />,
-          permission: AdminPermission.MANAGE_USERS,
-        },
-        {
-          label: "Payments",
-          href: "/admin/payments",
-          icon: <CreditCard className="mr-2 h-4 w-4" />,
-          permission: AdminPermission.MANAGE_PAYMENTS,
-        },
-        {
-          label: "Enterprise Leads",
-          href: "/admin/enterprise-leads",
-          icon: <MessageCircle className="mr-2 h-4 w-4" />,
-          permission: AdminPermission.VIEW_ENTERPRISE_LEADS,
-        },
-        {
-          label: "View Site",
-          href: "/",
-          icon: <Database className="mr-2 h-4 w-4" />,
-          // View site accessible to all
-        },
-      ],
-      [],
-    );
+    () => [
+      {
+        label: "Dashboard",
+        href: "/admin",
+        icon: <Home className="mr-2 h-4 w-4" />,
+        // Dashboard accessible to all admins
+      },
+      {
+        label: "Featured Studies",
+        href: "/admin/featured-studies",
+        icon: <Star className="mr-2 h-4 w-4" />,
+        permission: AdminPermission.MANAGE_STUDIES,
+      },
+      {
+        label: "Issue Studies",
+        href: "/admin/issue-studies",
+        icon: <AlertTriangle className="mr-2 h-4 w-4" />,
+        // Only for super admins
+        role: "SUPER_ADMIN",
+      },
+      {
+        label: "Maintenance Mode",
+        href: "/admin/maintenance",
+        icon: <AlertTriangle className="mr-2 h-4 w-4" />,
+        role: "SUPER_ADMIN",
+      },
+      {
+        label: "Invitation Codes",
+        href: "/admin/invitation-codes",
+        icon: <Key className="mr-2 h-4 w-4" />,
+      },
+      {
+        label: "Users",
+        href: "/admin/users",
+        icon: <Users className="mr-2 h-4 w-4" />,
+        permission: AdminPermission.MANAGE_USERS,
+      },
+      {
+        label: "Token Consumption",
+        href: "/admin/token-consumption",
+        icon: <MonitorPlay className="mr-2 h-4 w-4" />,
+        permission: AdminPermission.MANAGE_USERS,
+      },
+      {
+        label: "Payments",
+        href: "/admin/payments",
+        icon: <CreditCard className="mr-2 h-4 w-4" />,
+        permission: AdminPermission.MANAGE_PAYMENTS,
+      },
+      {
+        label: "Enterprise Leads",
+        href: "/admin/enterprise-leads",
+        icon: <MessageCircle className="mr-2 h-4 w-4" />,
+        permission: AdminPermission.VIEW_ENTERPRISE_LEADS,
+      },
+      {
+        label: "View Site",
+        href: "/",
+        icon: <Database className="mr-2 h-4 w-4" />,
+        // View site accessible to all
+      },
+    ],
+    [],
+  );
 
   // Filter items based on permissions and role
   const sidebarItems = useMemo(
     () =>
-      allSidebarItems.filter(
-        (item) => {
-          // Super admins can access everything
-          if (adminRole === "SUPER_ADMIN") return true;
-          
-          // Items that require SUPER_ADMIN role are filtered out for others
-          if (item.role === "SUPER_ADMIN") return false;
-          
-          // Items without permission requirements are accessible
-          if (!item.permission) return true;
-          
-          // Check if user has the required permission
-          return permissions.includes(item.permission);
-        }
-      ),
+      allSidebarItems.filter((item) => {
+        // Super admins can access everything
+        if (adminRole === "SUPER_ADMIN") return true;
+
+        // Items that require SUPER_ADMIN role are filtered out for others
+        if (item.role === "SUPER_ADMIN") return false;
+
+        // Items without permission requirements are accessible
+        if (!item.permission) return true;
+
+        // Check if user has the required permission
+        return permissions.includes(item.permission);
+      }),
     [adminRole, permissions, allSidebarItems],
   );
 

@@ -28,18 +28,36 @@ export function debounce<T extends (...args: Parameters<T>) => ReturnType<T>>(
 }
 
 // Format tokens number/balance in human-readable format
-export function formatTokensNumber(balance: number) {
-  if (balance === 0) return "0";
-  const absBalance = Math.abs(balance);
+export function formatTokensNumber(balance: number | string) {
+  if (balance === null || balance === undefined) return "-";
+  // Convert to number if it's a string
+  const numBalance = typeof balance === "string" ? parseFloat(balance) : balance;
+  if (isNaN(numBalance)) return "-";
+  if (numBalance === 0) return "0";
+  const absBalance = Math.abs(numBalance);
   if (absBalance >= 1000000) {
-    return `${(balance / 1000000).toLocaleString(undefined, { maximumFractionDigits: 2 })}M`;
+    return `${(numBalance / 1000000).toLocaleString(undefined, { maximumFractionDigits: 2 })}M`;
   } else if (absBalance >= 100000) {
-    return `${(balance / 1000).toLocaleString(undefined, { maximumFractionDigits: 0 })}k`;
+    return `${(numBalance / 1000).toLocaleString(undefined, { maximumFractionDigits: 0 })}k`;
   } else if (absBalance >= 10000) {
-    return `${(balance / 1000).toLocaleString(undefined, { maximumFractionDigits: 1 })}k`;
+    return `${(numBalance / 1000).toLocaleString(undefined, { maximumFractionDigits: 1 })}k`;
   } else {
-    return balance.toLocaleString();
+    return numBalance.toLocaleString();
   }
+}
+
+// Format date in a standardized format
+export function formatDate(date: Date | string) {
+  if (!date) return "";
+  const d = typeof date === "string" ? new Date(date) : date;
+  return new Intl.DateTimeFormat("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(d);
 }
 
 // Format duration in milliseconds to human-readable format

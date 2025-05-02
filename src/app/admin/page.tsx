@@ -1,5 +1,5 @@
 "use client";
-import { AlertTriangle, CreditCard, Database, Key, MessageCircle, Star, Users } from "lucide-react";
+import { AlertTriangle, CreditCard, Database, Key, MessageCircle, MonitorPlay, Star, Users } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -80,6 +80,17 @@ export default function AdminDashboard() {
             <h2 className="text-xl font-semibold">Users</h2>
           </div>
           <p className="text-sm text-muted-foreground">View and manage user accounts</p>
+        </Link>
+
+        <Link
+          href="/admin/token-consumption"
+          className="rounded-lg border bg-card p-4 shadow-sm hover:shadow-md transition-shadow"
+        >
+          <div className="flex items-center mb-2">
+            <MonitorPlay className="h-5 w-5 mr-2" />
+            <h2 className="text-xl font-semibold">Token Consumption</h2>
+          </div>
+          <p className="text-sm text-muted-foreground">Monitor token usage across chats</p>
         </Link>
 
         <Link
