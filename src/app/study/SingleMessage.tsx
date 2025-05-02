@@ -3,6 +3,7 @@ import { TAddToolResult, ToolInvocationDisplay } from "@/components/chat/ToolInv
 import ToolResultTable from "@/components/chat/ToolResultTable";
 import { Markdown } from "@/components/markdown";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { CONTINUE_ASSISTANT_STEPS } from "@/lib/messageUtils";
 import { cn } from "@/lib/utils";
 import { PlainTextToolResult } from "@/tools/utils";
 import { Message, Message as MessageType, ToolInvocation } from "ai";
@@ -197,7 +198,9 @@ export const SingleMessage = ({
   };
 
   if (role === "user") {
-    return renderUserMessage();
+    if (content !== CONTINUE_ASSISTANT_STEPS) {
+      return renderUserMessage();
+    }
   } else if (role === "assistant") {
     return (
       <motion.div

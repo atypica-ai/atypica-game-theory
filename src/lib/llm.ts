@@ -4,6 +4,7 @@ import { createDeepSeek } from "@ai-sdk/deepseek";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createOpenAI } from "@ai-sdk/openai";
 import { getDeployRegion } from "./deployRegion";
+import { proxiedFetch } from "./proxiedFetch";
 
 const openai = createOpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -20,11 +21,13 @@ const bedrock = createAmazonBedrock({
   region: process.env.AWS_REGION,
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  fetch: proxiedFetch,
 });
 
 const azure = createAzure({
   resourceName: process.env.AZURE_RESOURCE_NAME,
   apiKey: process.env.AZURE_API_KEY,
+  fetch: proxiedFetch,
 });
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -38,6 +41,7 @@ const google = (modelId: string, settings?: any) => {
   }
   const googleGenerativeAI = createGoogleGenerativeAI({
     apiKey: apiKeys[Math.floor(Math.random() * apiKeys.length)],
+    fetch: proxiedFetch,
   });
   return googleGenerativeAI(modelId, settings);
 };
@@ -80,19 +84,20 @@ export type LLMModelName =
 export function llm(modelName: LLMModelName, options?: any) {
   const deployRegion = getDeployRegion();
   if (deployRegion === "mainland") {
+    // return openai(modelName, options); // options 支持 parallelToolCalls 参数
     switch (modelName) {
-      // case "claude-3-7-sonnet":
-      //   return bedrock("us.anthropic.claude-3-7-sonnet-20250219-v1:0", options);
-      // case "claude-3-7-sonnet-beta":
-      //   return bedrock("us.anthropic.claude-3-7-sonnet-20250219-v1:0", {
-      //     additionalModelRequestFields: {
-      //       anthropic_beta: ["token-efficient-tools-2025-02-19"],
-      //     },
-      //   });
-      // case "gemini-2.5-flash":
-      //   return google("gemini-2.5-flash-preview-04-17", options);
-      // case "gemini-2.5-pro":
-      //   return google("gemini-2.5-pro-preview-03-25", options);
+      case "claude-3-7-sonnet":
+        return bedrock("us.anthropic.claude-3-7-sonnet-20250219-v1:0", options);
+      case "claude-3-7-sonnet-beta":
+        return bedrock("us.anthropic.claude-3-7-sonnet-20250219-v1:0", {
+          additionalModelRequestFields: {
+            anthropic_beta: ["token-efficient-tools-2025-02-19"],
+          },
+        });
+      case "gemini-2.5-flash":
+        return google("gemini-2.5-flash-preview-04-17", options);
+      case "gemini-2.5-pro":
+        return google("gemini-2.5-pro-preview-03-25", options);
       default:
         return openai(modelName, options); // options 支持 parallelToolCalls 参数
     }

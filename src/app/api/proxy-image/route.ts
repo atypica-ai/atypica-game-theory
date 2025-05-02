@@ -1,10 +1,7 @@
 // node 18 和 20 的 fetch 函数不直接使用代理，需要额外实现
 // https://stackoverflow.com/questions/72306101/make-a-request-in-native-fetch-with-proxy-in-nodejs-18
-import { HttpsProxyAgent } from "https-proxy-agent";
+import { proxiedFetch } from "@/lib/proxiedFetch";
 import { NextResponse } from "next/server";
-import fetch from "node-fetch";
-
-const proxyUrl = process.env.FETCH_HTTPS_PROXY;
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -13,9 +10,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Missing URL parameter" }, { status: 400 });
   }
   try {
-    const imageResponse = await fetch(url, {
-      agent: proxyUrl ? new HttpsProxyAgent(proxyUrl) : undefined,
-    });
+    const imageResponse = await proxiedFetch(url);
     if (!imageResponse.ok) {
       return NextResponse.json({ error: "Failed to fetch image" }, { status: 502 });
     }
