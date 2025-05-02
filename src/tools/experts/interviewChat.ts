@@ -237,7 +237,7 @@ async function chatWithInterviewer({
           }),
       onStepFinish: async (step) => {
         interviewLog.info({
-          msg: "chatWithInterviewer step finished",
+          msg: "chatWithInterviewer streamText onStepFinish",
           stepType: step.stepType,
           toolCalls: step.toolCalls.map((call) => call.toolName),
           usage: step.usage,
@@ -250,7 +250,8 @@ async function chatWithInterviewer({
           });
         }
       },
-      onFinish: async ({ steps }) => {
+      onFinish: async ({ steps, usage }) => {
+        interviewLog.info({ msg: "chatWithInterviewer streamText onFinish", usage });
         const message = convertStepsToAIMessage(steps);
         resolve(message);
       },
@@ -294,7 +295,7 @@ async function chatWithPersona({
       maxSteps: 3,
       onStepFinish: async (step) => {
         interviewLog.info({
-          msg: "chatWithPersona step finished",
+          msg: "chatWithPersona streamText onStepFinish",
           stepType: step.stepType,
           toolCalls: step.toolCalls.map((call) => call.toolName),
           usage: step.usage,
@@ -307,7 +308,8 @@ async function chatWithPersona({
           });
         }
       },
-      onFinish: ({ steps }) => {
+      onFinish: ({ steps, usage }) => {
+        interviewLog.info({ msg: "chatWithPersona streamText onFinish", usage });
         const message = convertStepsToAIMessage(steps);
         resolve(message);
       },

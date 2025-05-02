@@ -276,14 +276,6 @@ export async function runScoutTaskChatStream({
         toolChoice: toolChoice,
         experimental_repairToolCall: handleToolCallError,
         maxSteps: maxSteps,
-        onFinish: async ({ steps }) => {
-          const message = convertStepsToAIMessage(steps);
-          resolve(message);
-          await statReport("steps", steps.length, {
-            reportedBy: "scoutTaskChat tool",
-            scoutUserChatId,
-          });
-        },
         onChunk: async ({ chunk }: { chunk: TextStreamPart<typeof allTools> }) => {
           appendChunkToStreamingMessage(streamingMessage, chunk);
           await debouncePersistentMessage(streamingMessage, {
@@ -298,30 +290,36 @@ export async function runScoutTaskChatStream({
           // 有时候 llm 返回的消息很少，前面 onChunk 的 persistent 还在 debounce 的时候，后面 user 的 continue 消息已经保存了，这就会导致
           // - assistant 消息还来不及 create，新的 user 消息会覆盖前一条 user 消息
           // - assistant 消息还不完整，新一轮对话拿到的 messages 不完整
-          scoutLog.info({
-            msg: "Step finished",
-            stepType: step.stepType,
-            toolCalls: step.toolCalls.map((call) => call.toolName),
-            usage: step.usage,
-          });
-          if (step.usage.totalTokens > 0) {
-            let tokens = step.usage.totalTokens;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const extra: any = {
-              reportedBy: "scoutTaskChat tool",
-              scoutUserChatId,
-            };
-            if (reduceTokens) {
-              extra["reduceTokens"] = { originalTokens: tokens, ...reduceTokens };
-              tokens = Math.ceil(tokens / reduceTokens.ratio);
+          const toolCalls = step.toolCalls.map((call) => call.toolName);
+          const usage = step.usage;
+          scoutLog.info({ msg: "Step finished", stepType: step.stepType, toolCalls, usage });
+          if (statReport) {
+            const reportedBy = "scoutTaskChat tool";
+            const promises = [
+              statReport("steps", toolCalls.length, { reportedBy, scoutUserChatId, toolCalls }),
+            ];
+            if (usage.totalTokens > 0) {
+              let tokens = usage.totalTokens;
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const extra: any = { reportedBy, scoutUserChatId, usage };
+              if (reduceTokens) {
+                extra["reduceTokens"] = { originalTokens: tokens, ...reduceTokens };
+                tokens = Math.ceil(tokens / reduceTokens.ratio);
+              }
+              tokensConsumed += tokens;
+              promises.push(statReport("tokens", tokens, extra));
             }
-            tokensConsumed += tokens;
-            await statReport("tokens", tokens, extra);
+            await Promise.all(promises);
           }
           // appendStepToStreamingMessage(streamingMessage, step);
           // if (streamingMessage.parts?.length && streamingMessage.content.trim()) {
           //   await persistentAIMessageToDB(scoutUserChatId, streamingMessage);
           // }
+        },
+        onFinish: async ({ steps, usage }) => {
+          scoutLog.info({ msg: "runScoutTaskChatStream streamText onFinish", usage });
+          const message = convertStepsToAIMessage(steps);
+          resolve(message);
         },
         onError: ({ error }) => {
           scoutLog.error(`runScoutTaskChatStream streamText onError: ${(error as Error).message}`);

@@ -205,10 +205,6 @@ async function generateReport({
         messages: messages,
         maxSteps: 1,
         maxTokens: 30000,
-        onError: ({ error }) => {
-          reportLog.error(`HTML generation Error: ${(error as Error).message}`);
-          reject(error);
-        },
         onChunk: async ({ chunk }) => {
           if (chunk.type === "text-delta") {
             onePageHtml += chunk.textDelta.toString();
@@ -231,6 +227,10 @@ async function generateReport({
               part: "onePageHtml",
             });
           }
+        },
+        onError: ({ error }) => {
+          reportLog.error(`HTML generation Error: ${(error as Error).message}`);
+          reject(error);
         },
         abortSignal,
       });

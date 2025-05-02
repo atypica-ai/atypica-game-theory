@@ -135,16 +135,6 @@ export async function studyAgentRequest({
     experimental_transform: smoothStream({
       chunking: /[\u4E00-\u9FFF]|\S+\s+/,
     }),
-    onError: async ({ error }) => {
-      // 这里也包括 tool calling 里面直接 throw 的异常
-      studyLog.error(`streamText onError: ${(error as Error).message}`);
-      // @IMPORTANT 这很重要, 中断所有的 tool calling 里可能还在运行的 streamText
-      try {
-        abortController.abort();
-      } catch (error) {
-        studyLog.error(`Error during abort: ${(error as Error).message}`);
-      }
-    },
     onChunk: async ({ chunk }: { chunk: TextStreamPart<typeof allTools> }) => {
       appendChunkToStreamingMessage(streamingMessage, chunk);
       await debouncePersistentMessage(streamingMessage, {
@@ -160,26 +150,35 @@ export async function studyAgentRequest({
       // - assistant 消息还来不及 create，新的 user 消息会覆盖前一条 user 消息
       // - assistant 消息还不完整，新一轮对话拿到的 messages 不完整
       // 到了这里的 tool calling step 一定是有 result 的，所以得在上面 onChunk 里面获取 call 阶段的 tool
-      studyLog.info({
-        msg: "Step finished",
-        stepType: step.stepType,
-        toolCalls: step.toolCalls.map((call) => call.toolName),
-        usage: step.usage,
-      });
-      if (step.usage.totalTokens > 0) {
-        await Promise.all([
-          statReport("tokens", step.usage.totalTokens, { reportedBy: "study chat" }),
-        ]);
+      const toolCalls = step.toolCalls.map((call) => call.toolName);
+      const usage = step.usage;
+      studyLog.info({ msg: "Step finished", stepType: step.stepType, toolCalls, usage });
+      if (statReport) {
+        const reportedBy = "study chat";
+        const seconds = Math.floor((Date.now() - streamStartTime) / 1000);
+        streamStartTime = Date.now();
+        const promises = [
+          statReport("duration", seconds, { reportedBy }),
+          statReport("steps", toolCalls.length, { reportedBy, toolCalls }),
+        ];
+        if (usage.totalTokens > 0) {
+          promises.push(statReport("tokens", usage.totalTokens, { reportedBy }));
+        }
+        await Promise.all(promises);
       }
     },
-    onFinish: async (event) => {
+    onFinish: async () => {
       await clearBackgroundToken();
-      const seconds = Math.floor((Date.now() - streamStartTime) / 1000);
-      streamStartTime = Date.now();
-      await Promise.all([
-        statReport("duration", seconds, { reportedBy: "study chat" }),
-        statReport("steps", event.steps.length, { reportedBy: "study chat" }),
-      ]);
+    },
+    onError: async ({ error }) => {
+      // 这里也包括 tool calling 里面直接 throw 的异常
+      studyLog.error(`streamText onError: ${(error as Error).message}`);
+      // @IMPORTANT 这很重要, 中断所有的 tool calling 里可能还在运行的 streamText
+      try {
+        abortController.abort();
+      } catch (error) {
+        studyLog.error(`Error during abort: ${(error as Error).message}`);
+      }
     },
     abortSignal: delayedAbortSignal,
   });

@@ -122,30 +122,34 @@ export async function runBuildPersona({
       maxSteps: 1,
       // toolCallStreaming: true,  // gemini 这个会有问题，会出现所有字段值都是 placeholder
       // experimental_repairToolCall: handleToolCallError,
-      // onChunk: async (chunk) => {
-      //   console.log(chunk);
-      // },
+      onChunk: async ({ chunk }) => {
+        studyLog.debug({ chunk });
+      },
       onStepFinish: async (step) => {
-        studyLog.info({
-          msg: "Step finished",
-          stepType: step.stepType,
-          toolCalls: step.toolCalls.map((call) => call.toolName),
-          usage: step.usage,
-        });
-        if (step.usage.totalTokens > 0 && statReport) {
-          await statReport("tokens", step.usage.totalTokens, {
-            reportedBy: "buildPersona tool",
-            scoutUserChatId,
-          });
+        const toolCalls = step.toolCalls.map((call) => call.toolName);
+        const usage = step.usage;
+        studyLog.info({ msg: "Step finished", stepType: step.stepType, toolCalls, usage });
+        if (statReport) {
+          const reportedBy = "buildPersona tool";
+          const promises = [
+            statReport("steps", toolCalls.length, { reportedBy, scoutUserChatId, toolCalls }),
+          ];
+          if (usage.totalTokens > 0) {
+            promises.push(
+              statReport("tokens", usage.totalTokens, { reportedBy, scoutUserChatId, usage }),
+            );
+          }
+          await Promise.all(promises);
         }
       },
       onFinish: async ({ steps, usage }) => {
+        studyLog.info({ msg: "runBuildPersona streamText onFinish", usage });
         const message = convertStepsToAIMessage(steps);
         resolve(message);
-        studyLog.info({
-          msg: "buildPersona Finished",
-          usage: usage,
-        });
+      },
+      onError: ({ error }) => {
+        studyLog.error(`runBuildPersona streamText onError: ${(error as Error).message}`);
+        reject(error);
       },
       abortSignal,
     });
