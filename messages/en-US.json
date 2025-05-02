@@ -215,6 +215,7 @@
       "placeholder": "Ask a follow-up question or reply",
       "noneOfTheAbove": "None of the above",
       "multiSelectHint": "Select 1 or more options",
+      "continueStudy": "Continue studying",
       "confirm": "Confirm"
     },
     "ChatReplay": {

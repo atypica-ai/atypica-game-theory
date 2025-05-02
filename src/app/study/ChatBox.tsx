@@ -9,7 +9,7 @@ import { useDocumentVisibility } from "@/lib/useDocumentVisibility";
 import { cn } from "@/lib/utils";
 import { ToolName } from "@/tools";
 import { Message, useChat } from "@ai-sdk/react";
-import { ArrowRightIcon } from "lucide-react";
+import { ArrowRightIcon, PlayIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { fetchUserChatByToken, fetchUserChatStateByToken } from "./actions";
@@ -69,7 +69,7 @@ export function ChatBox() {
   });
 
   const [backgroundToken, setBackgroundToken] = useState<string | null>(initialBackgroundToken);
-  const useChatRef = useRef({ reload, setMessages });
+  const useChatRef = useRef({ reload, setMessages, append });
 
   // React 在 development 模式下默认会执行两次 useEffect，这是 React 的严格模式的有意设计，帮助发现副作用
   // 两次请求会触发争夺 backgroundToken 冲突，需要阻止
@@ -102,6 +102,17 @@ export function ChatBox() {
     // handleSubmit 不能用 ref，要监听变化
     [handleSubmit, lastSubmitTime, chatRequestBody],
   );
+
+  const handleContinueChat = useCallback(() => {
+    const { lastUserMessage } = popLastUserMessage(messages);
+    if (lastUserMessage) {
+      // 实际不会走到这里，因为页面刚打开如果有 lastUserMessage 就会自动 reload，而如果报错了，continue 按钮是禁用的
+      useChatRef.current.reload();
+    } else {
+      // reload(); // 不能 reload 而是 append 一个消息，reload 会在前端删除最后一条 assistant 消息，但其实后端还在
+      useChatRef.current.append({ role: "user", content: CONTINUE_ASSISTANT_STEPS });
+    }
+  }, [messages]);
 
   // const [chatUpdatedAt, setChatUpdatedAt] = useState<Date | null>(null);
   // 使用 ref，确保 useCallback 里面取到最新值，并且变化了以后不触发 refreshStudyUserChat 和 useEffect 更新
@@ -163,7 +174,12 @@ export function ChatBox() {
     };
   }, [refreshStudyUserChat, isDocumentVisible]);
 
-  const waitForUser = useMemo(() => {
+  const [waitForUser, studyCompleted] = useMemo(() => {
+    if (backgroundToken || useChatStatus === "streaming" || useChatStatus === "submitted") {
+      // 研究进行中不需要再判断 waitForUser，减少无效计算
+      return [false, false];
+    }
+    let waitForUser = false;
     const lastMessage = messages[messages.length - 1];
     if (lastMessage?.parts) {
       const lastPart = lastMessage.parts[lastMessage.parts.length - 1];
@@ -174,11 +190,19 @@ export function ChatBox() {
           lastPart.toolInvocation.toolName as ToolName,
         )
       ) {
-        return true;
+        waitForUser = true;
       }
     }
-    return false;
-  }, [messages]);
+    const studyCompleted = !!messages.find((message) => {
+      return !!message.parts?.find(
+        (part) =>
+          part.type === "tool-invocation" &&
+          part.toolInvocation.toolName === ToolName.generateReport &&
+          part.toolInvocation.state === "result",
+      );
+    });
+    return [waitForUser, studyCompleted];
+  }, [messages, backgroundToken, useChatStatus]);
 
   const uiStatus = useMemo(
     () =>
@@ -201,7 +225,8 @@ export function ChatBox() {
     uiStatus === "streaming" ||
     uiStatus === "submitted" ||
     uiStatus === "outOfQuota" ||
-    uiStatus === "waitForUser";
+    uiStatus === "waitForUser" ||
+    uiStatus === "error";
   const [messagesContainerRef, messagesEndRef] = useScrollToBottom<HTMLDivElement>();
 
   return (
@@ -239,20 +264,6 @@ export function ChatBox() {
             isLastMessage={index === messages.length - 1}
           ></SingleMessage>
         ))}
-        {!inputDisabled && (
-          <div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                // reload(); // 不能 reload 而是 append 一个消息，reload 会在前端删除最后一条 assistant 消息，但其实后端还在
-                append({ role: "user", content: CONTINUE_ASSISTANT_STEPS });
-              }}
-            >
-              Continue
-            </Button>
-          </div>
-        )}
         <div ref={messagesEndRef} />
       </div>
 
@@ -313,6 +324,19 @@ export function ChatBox() {
             </Button>
           )}
         </div>
+        {!inputDisabled && !studyCompleted && (
+          <div className="absolute right-1 top-1">
+            <Button
+              variant="default"
+              size="sm"
+              className="h-6 text-xs scale-90 origin-top-right bg-primary/75"
+              onClick={handleContinueChat}
+            >
+              <PlayIcon className="size-2.5" />
+              <span>{t("continueStudy")}</span>
+            </Button>
+          </div>
+        )}
       </form>
     </>
   );

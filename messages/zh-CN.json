@@ -215,6 +215,7 @@
       "placeholder": "提出后续问题或回复",
       "noneOfTheAbove": "以上都不是",
       "multiSelectHint": "选择1个或多个选项",
+      "continueStudy": "继续研究",
       "confirm": "确认"
     },
     "ChatReplay": {
