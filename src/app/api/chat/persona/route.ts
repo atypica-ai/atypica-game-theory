@@ -2,8 +2,8 @@ import { fetchPersonaById } from "@/app/(legacy)/personas/actions";
 import { authOptions } from "@/lib/auth";
 import { llm, providerOptions } from "@/lib/llm";
 import { personaAgentSystem } from "@/prompt";
-import { dySearchTool, reasoningThinkingTool, ToolName, xhsSearchTool } from "@/tools";
-import { Message, streamText } from "ai";
+import { dySearchTool, ToolName } from "@/tools";
+import { Message, smoothStream, streamText } from "ai";
 import { getServerSession } from "next-auth/next";
 import { notFound } from "next/navigation";
 import { NextResponse } from "next/server";
@@ -29,13 +29,17 @@ export async function POST(req: Request) {
   const persona = result.data;
 
   const streamTextResult = streamText({
-    model: llm("claude-3-7-sonnet"),
+    // model: llm("claude-3-7-sonnet"),
+    model: llm("qwen3-235b-a22b"),
     providerOptions: providerOptions,
     tools: {
-      [ToolName.xhsSearch]: xhsSearchTool,
       [ToolName.dySearch]: dySearchTool,
-      [ToolName.reasoningThinking]: reasoningThinkingTool(),
+      // [ToolName.xhsSearch]: xhsSearchTool,
+      // [ToolName.reasoningThinking]: reasoningThinkingTool(),
     },
+    experimental_transform: smoothStream({
+      chunking: /[\u4E00-\u9FFF]|\S+\s+/,
+    }),
     maxSteps: 3,
     system: personaAgentSystem({ persona, language: "中英皆可" }),
     messages: messages,

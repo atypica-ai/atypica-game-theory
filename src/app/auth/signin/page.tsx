@@ -57,7 +57,7 @@ function SignIn() {
 
   return (
     <div className="flex-1 flex items-center justify-center">
-      <div className="mx-auto w-full max-w-xs space-y-6 px-4 mb-40">
+      <div className="mx-auto w-full max-w-xs space-y-6 px-4 mb-10">
         <div className="space-y-2 text-center">
           <h1 className="text-3xl font-bold">{t("title")}</h1>
           <p className="text-gray-500">{t("subtitle")}</p>

@@ -1,5 +1,5 @@
 import { getDeployRegion } from "@/lib/deployRegion";
-import { llm, providerOptions } from "@/lib/llm";
+import { llm, LLMModelName, providerOptions } from "@/lib/llm";
 import { convertStepsToAIMessage, fixChatMessages } from "@/lib/messageUtils";
 import { prisma } from "@/lib/prisma";
 import { generateToken } from "@/lib/utils";
@@ -11,6 +11,14 @@ import { generateId, Message, streamText, tool } from "ai";
 import { Logger } from "pino";
 import { z } from "zod";
 import { reasoningThinkingTool } from "./reasoning";
+
+const REDUCE_TOKENS: {
+  model: LLMModelName;
+  ratio: number;
+} = {
+  model: "qwen3-235b-a22b", // 角色扮演不错
+  ratio: 4,
+};
 
 export interface InterviewChatResult extends PlainTextToolResult {
   interviews: {
@@ -214,6 +222,7 @@ async function chatWithInterviewer({
   "messages" | "analystInterviewId" | "prompt" | "abortSignal" | "statReport" | "interviewLog"
 >) {
   const result = await new Promise<Omit<Message, "role">>(async (resolve, reject) => {
+    // interviewer 暂时不 reduce tokens，得靠谱点用 claude 3.7，需要控制流程
     const response = streamText({
       model: llm("claude-3-7-sonnet"), // 不能用 gpt-4o，指令遵循的比较差，会结束不了
       providerOptions: providerOptions,
@@ -282,8 +291,9 @@ async function chatWithPersona({
   "messages" | "analystInterviewId" | "prompt" | "abortSignal" | "statReport" | "interviewLog"
 >) {
   const result = await new Promise<Omit<Message, "role">>(async (resolve, reject) => {
+    const reduceTokens: typeof REDUCE_TOKENS | null = REDUCE_TOKENS;
     const response = streamText({
-      model: llm("gpt-4o"),
+      model: reduceTokens ? llm(reduceTokens.model) : llm("claude-3-7-sonnet"),
       providerOptions: providerOptions,
       system: prompt.personaPrompt,
       messages: fixChatMessages(messages), // 有时候在 tool 调用以后会有空文本回复，还是 fix 下靠谱
@@ -301,11 +311,14 @@ async function chatWithPersona({
           usage: step.usage,
         });
         if (step.usage.totalTokens > 0) {
-          await statReport("tokens", step.usage.totalTokens, {
-            reportedBy: "interview tool",
-            analystInterviewId,
-            role: "persona",
-          });
+          let tokens = step.usage.totalTokens;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const extra: any = { reportedBy: "interview tool", analystInterviewId, role: "persona" };
+          if (reduceTokens) {
+            extra["reduceTokens"] = { originalTokens: tokens, ...reduceTokens };
+            tokens = Math.ceil(tokens / reduceTokens.ratio);
+          }
+          await statReport("tokens", tokens, extra);
         }
       },
       onFinish: ({ steps, usage }) => {

@@ -49,7 +49,7 @@ export default function ResetPasswordPage() {
   if (!token) {
     return (
       <div className="flex-1 flex items-center justify-center">
-        <div className="mx-auto w-full max-w-xs space-y-6 px-4 mb-40">
+        <div className="mx-auto w-full max-w-xs space-y-6 px-4 mb-10">
           <div className="rounded-lg bg-red-50 p-4 text-sm text-red-500">
             {t("invalidOrExpiredToken")}
           </div>

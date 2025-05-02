@@ -80,7 +80,7 @@ export function AgentChatPage({
             parts={message.parts}
           ></ChatMessage>
         ))}
-        {!inputDisabled && (
+        {!readOnly && !inputDisabled && (
           <div>
             <Button
               variant="ghost"

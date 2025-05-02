@@ -12,6 +12,11 @@ const openai = createOpenAI({
   compatibility: "strict", // so stream_options will be sent
 });
 
+const siliconflow = createOpenAI({
+  apiKey: process.env.SILICONFLOW_API_KEY,
+  baseURL: process.env.SILICONFLOW_BASE_URL,
+});
+
 const deepseek = createDeepSeek({
   apiKey: process.env.SILICONFLOW_API_KEY,
   baseURL: process.env.SILICONFLOW_BASE_URL,
@@ -78,51 +83,43 @@ export type LLMModelName =
   | "gemini-2.5-flash"
   | "gemini-2.5-pro"
   | "deepseek-v3"
-  | "deepseek-r1";
+  | "deepseek-r1"
+  | "qwen3-235b-a22b";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function llm(modelName: LLMModelName, options?: any) {
   const deployRegion = getDeployRegion();
   if (deployRegion === "mainland") {
-    // return openai(modelName, options); // options 支持 parallelToolCalls 参数
     switch (modelName) {
-      case "claude-3-7-sonnet":
-        return bedrock("us.anthropic.claude-3-7-sonnet-20250219-v1:0", options);
-      case "claude-3-7-sonnet-beta":
-        return bedrock("us.anthropic.claude-3-7-sonnet-20250219-v1:0", {
-          additionalModelRequestFields: {
-            anthropic_beta: ["token-efficient-tools-2025-02-19"],
-          },
-        });
-      case "gemini-2.5-flash":
-        return google("gemini-2.5-flash-preview-04-17", options);
-      case "gemini-2.5-pro":
-        return google("gemini-2.5-pro-preview-03-25", options);
-      default:
+      case "deepseek-v3":
+      case "deepseek-r1":
+      case "o3-mini":
+      case "gpt-4o":
         return openai(modelName, options); // options 支持 parallelToolCalls 参数
     }
-  } else {
-    switch (modelName) {
-      case "gpt-4o":
-        return azure("gpt-4o", options); // options 支持 parallelToolCalls 参数
-      case "o3-mini":
-        return azure("o3-mini", options);
-      case "claude-3-7-sonnet":
-        return bedrock("us.anthropic.claude-3-7-sonnet-20250219-v1:0", options);
-      case "claude-3-7-sonnet-beta":
-        return bedrock("us.anthropic.claude-3-7-sonnet-20250219-v1:0", {
-          additionalModelRequestFields: {
-            anthropic_beta: ["token-efficient-tools-2025-02-19"],
-          },
-        });
-      case "gemini-2.5-flash":
-        return google("gemini-2.5-flash-preview-04-17", options);
-      case "gemini-2.5-pro":
-        return google("gemini-2.5-pro-preview-03-25", options);
-      case "deepseek-v3":
-        return deepseek("Pro/deepseek-ai/DeepSeek-V3", options);
-      case "deepseek-r1":
-        return deepseek("Pro/deepseek-ai/DeepSeek-R1", options);
-    }
+  }
+  switch (modelName) {
+    case "gpt-4o":
+      return azure("gpt-4o", options); // options 支持 parallelToolCalls 参数
+    case "o3-mini":
+      return azure("o3-mini", options);
+    case "claude-3-7-sonnet":
+      return bedrock("us.anthropic.claude-3-7-sonnet-20250219-v1:0", options);
+    case "claude-3-7-sonnet-beta":
+      return bedrock("us.anthropic.claude-3-7-sonnet-20250219-v1:0", {
+        additionalModelRequestFields: {
+          anthropic_beta: ["token-efficient-tools-2025-02-19"],
+        },
+      });
+    case "gemini-2.5-flash":
+      return google("gemini-2.5-flash-preview-04-17", options);
+    case "gemini-2.5-pro":
+      return google("gemini-2.5-pro-preview-03-25", options);
+    case "deepseek-v3":
+      return deepseek("Pro/deepseek-ai/DeepSeek-V3", options);
+    case "deepseek-r1":
+      return deepseek("Pro/deepseek-ai/DeepSeek-R1", options);
+    case "qwen3-235b-a22b":
+      return siliconflow("Qwen/Qwen3-235B-A22B", options);
   }
 }
