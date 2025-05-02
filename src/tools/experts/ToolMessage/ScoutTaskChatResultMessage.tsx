@@ -51,7 +51,7 @@ export const ScoutTaskChatResultMessage: FC<{
               >
                 <div className="flex-1">
                   <div className="font-medium text-sm">{platform}</div>
-                  <div className="text-sm">{count}</div>
+                  <div className="text-sm">{count} steps</div>
                 </div>
               </div>
             ))}

@@ -8,6 +8,7 @@ export { interviewChatTool } from "./experts/interviewChat";
 export { reasoningThinkingTool } from "./experts/reasoning";
 export { generateReportTool } from "./experts/report";
 export { scoutTaskChatTool } from "./experts/scoutTask";
+export { saveInterviewSummaryTool } from "./interviewExpert";
 export { dyPostCommentsTool } from "./social/dy/postComments";
 export { dySearchTool } from "./social/dy/search";
 export { dyUserPostsTool } from "./social/dy/userPosts";
@@ -40,6 +41,7 @@ export enum ToolName {
   saveAnalystStudySummary = "saveAnalystStudySummary",
   saveInterviewConclusion = "saveInterviewConclusion",
   savePersona = "savePersona",
+  saveInterviewSummary = "saveInterviewSummary",
 
   requestInteraction = "requestInteraction",
   requestPayment = "requestPayment",
