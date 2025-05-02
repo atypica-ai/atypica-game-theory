@@ -94,10 +94,10 @@ export default function TokenConsumptionPage() {
     }));
   };
 
-  // Calculate token reduction percentage
-  const getReductionPercentage = (originalTokens: number, tokens: number) => {
-    if (!originalTokens || originalTokens === 0) return null;
-    const reduction = ((originalTokens - tokens) / originalTokens) * 100;
+  // Calculate token reduction percentage based on reduced tokens and total tokens
+  const getReductionPercentage = (reducedTokens: number, totalTokens: number) => {
+    if (totalTokens === 0 || reducedTokens === 0) return null;
+    const reduction = (reducedTokens / (totalTokens + reducedTokens)) * 100;
     return reduction > 0 ? reduction.toFixed(1) + "%" : null;
   };
 
@@ -201,6 +201,19 @@ export default function TokenConsumptionPage() {
                                     {formatTokensNumber(chat.totalTokens)}
                                   </span>
                                 </div>
+                                {chat.totalReducedTokens > 0 && (
+                                  <div className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
+                                    <span>
+                                      Saved: {formatTokensNumber(chat.totalReducedTokens)}
+                                    </span>
+                                    <span className="px-1 py-0.5 bg-green-500/10 rounded">
+                                      {getReductionPercentage(
+                                        chat.totalReducedTokens,
+                                        chat.totalTokens,
+                                      )}
+                                    </span>
+                                  </div>
+                                )}
                               </div>
                             </TableCell>
                           </TableRow>
@@ -212,7 +225,7 @@ export default function TokenConsumptionPage() {
                                   <div className="grid grid-cols-1 gap-1">
                                     {chat.tokenSources.map((source, idx) => {
                                       const sourceReduction = getReductionPercentage(
-                                        source.originalTokens,
+                                        source.reducedTokens,
                                         source.tokens,
                                       );
                                       return (
@@ -225,20 +238,19 @@ export default function TokenConsumptionPage() {
                                           </div>
 
                                           <div className="flex items-center ml-auto gap-2">
-                                            {sourceReduction && (
+                                            {sourceReduction && source.reducedTokens > 0 && (
                                               <div className="text-xs px-1.5 py-0.5 bg-green-500/10 text-green-700 dark:text-green-400 rounded font-medium min-w-[45px] text-center">
                                                 -{sourceReduction}
                                               </div>
                                             )}
-                                            {source.originalTokens > 0 &&
-                                              source.originalTokens !== source.tokens && (
-                                                <div className="text-muted-foreground text-xs inline-flex items-center">
-                                                  <span className="opacity-70">from</span>
-                                                  <span className="ml-1 font-medium">
-                                                    {formatTokensNumber(source.originalTokens)}
-                                                  </span>
-                                                </div>
-                                              )}
+                                            {source.reducedTokens > 0 && (
+                                              <div className="text-muted-foreground text-xs inline-flex items-center">
+                                                <span className="opacity-70">saved</span>
+                                                <span className="ml-1 font-medium">
+                                                  {formatTokensNumber(source.reducedTokens)}
+                                                </span>
+                                              </div>
+                                            )}
                                           </div>
 
                                           <div className="flex items-center pl-2">

@@ -7,6 +7,7 @@ export type TokenSource = {
   reportedBy: string;
   originalTokens: number;
   tokens: number;
+  reducedTokens: number;
 };
 
 export type ChatTokenConsumptionData = {
@@ -19,6 +20,7 @@ export type ChatTokenConsumptionData = {
   userEmail: string;
   tokenSources: TokenSource[];
   totalTokens: number;
+  totalReducedTokens: number;
   createdAt: Date;
 };
 
@@ -32,7 +34,7 @@ export async function fetchTokenConsumption(
   // Calculate pagination
   const skip = (page - 1) * pageSize;
 
-  // Get all data in a single query - closest to your original SQL
+  // Get all data in a single query - with reduction calculation
   const result = await prisma.$queryRaw`
     SELECT
       uc.id as "userChatId",
@@ -44,7 +46,14 @@ export async function fetchTokenConsumption(
       uc."createdAt",
       COALESCE(cs.extra->>'reportedBy', 'Unknown') as "reportedBy",
       SUM(COALESCE((cs.extra->'reduceTokens'->>'originalTokens')::NUMERIC, 0)) as "originalTokens",
-      SUM(cs.value) as "tokens"
+      SUM(cs.value) as "tokens",
+      SUM(
+        CASE
+          WHEN COALESCE((cs.extra->'reduceTokens'->>'originalTokens')::NUMERIC, 0) > 0
+          THEN COALESCE((cs.extra->'reduceTokens'->>'originalTokens')::NUMERIC, 0) - cs.value
+          ELSE 0
+        END
+      ) as "reducedTokens"
     FROM "ChatStatistics" as cs
     INNER JOIN "UserChat" as uc ON uc.id = cs."userChatId"
     INNER JOIN "User" as u ON u.id = uc."userId"
@@ -63,6 +72,8 @@ export async function fetchTokenConsumption(
     const chatId = Number(row.userChatId);
     const originalTokens = Number(row.originalTokens || 0);
     const tokens = Number(row.tokens || 0);
+    const reducedTokens = Number(row.reducedTokens || 0);
+
     // Initialize chat if it doesn't exist in the map
     if (!chatMap.has(chatId)) {
       chatMap.set(chatId, {
@@ -76,6 +87,7 @@ export async function fetchTokenConsumption(
         createdAt: new Date(row.createdAt),
         tokenSources: [],
         totalTokens: 0,
+        totalReducedTokens: 0,
       });
     }
 
@@ -86,10 +98,12 @@ export async function fetchTokenConsumption(
       reportedBy: row.reportedBy,
       originalTokens: originalTokens,
       tokens: tokens,
+      reducedTokens: reducedTokens,
     });
 
     // Update totals
     chat.totalTokens += tokens;
+    chat.totalReducedTokens += reducedTokens;
   });
 
   // Get total count for pagination
