@@ -24,6 +24,7 @@ export { saveAnalystStudySummaryTool, saveAnalystTool } from "./system/saveAnaly
 export { saveInterviewConclusionTool } from "./system/saveInterviewConclusion";
 export { saveInterviewSessionSummaryTool } from "./system/saveInterviewSessionSummaryTool";
 export { savePersonaTool } from "./system/savePersona";
+export { updateInterviewProjectTool } from "./system/updateInterviewProjectTool";
 export { requestInteractionTool } from "./user/interaction";
 export { requestPaymentTool } from "./user/payment";
 export { thanksTool } from "./user/thanks";
@@ -42,6 +43,7 @@ export enum ToolName {
   saveInterviewConclusion = "saveInterviewConclusion",
   savePersona = "savePersona",
   saveInterviewSessionSummary = "saveInterviewSessionSummary",
+  updateInterviewProject = "updateInterviewProject",
 
   requestInteraction = "requestInteraction",
   requestPayment = "requestPayment",

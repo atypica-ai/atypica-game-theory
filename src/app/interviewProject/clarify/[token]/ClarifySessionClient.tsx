@@ -161,7 +161,7 @@ export function ClarifySessionClient({
             <AccordionItem value="about">
               <AccordionTrigger>About This Project</AccordionTrigger>
               <AccordionContent>
-                <p className="text-muted-foreground">{interviewSession.project.description}</p>
+                <p className="text-muted-foreground">{interviewSession.project.brief}</p>
                 <div className="mt-3 text-sm">
                   <span className="font-medium">Project Type:</span>{" "}
                   <span className="text-muted-foreground">{interviewSession.project.category}</span>

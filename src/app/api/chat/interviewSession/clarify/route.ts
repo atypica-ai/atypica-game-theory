@@ -12,6 +12,7 @@ import {
   saveInterviewSessionSummaryTool,
   StatReporter,
   ToolName,
+  updateInterviewProjectTool,
 } from "@/tools";
 import { generateId, smoothStream, streamText } from "ai";
 import { getServerSession } from "next-auth";
@@ -60,7 +61,7 @@ export async function POST(req: NextRequest) {
   // Generate system message with project context
   const systemPrompt = interviewSessionSystem({
     projectTitle: interviewSession.project.title,
-    projectDescription: interviewSession.project.description,
+    projectBrief: interviewSession.project.brief,
     projectCategory: interviewSession.project.category,
     objectives: interviewSession.project.objectives,
     sessionKind: "clarify",
@@ -78,6 +79,9 @@ export async function POST(req: NextRequest) {
       }),
       [ToolName.saveInterviewSessionSummary]: saveInterviewSessionSummaryTool({
         sessionId: interviewSession.id,
+      }),
+      [ToolName.updateInterviewProject]: updateInterviewProjectTool({
+        projectId: interviewSession.projectId,
       }),
     },
     toolChoice: "auto",

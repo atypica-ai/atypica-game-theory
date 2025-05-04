@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
   // Generate system message with project context
   const systemPrompt = interviewSessionSystem({
     projectTitle: interviewSession.project.title,
-    projectDescription: interviewSession.project.description,
+    projectBrief: interviewSession.project.brief,
     projectCategory: interviewSession.project.category,
     objectives: interviewSession.project.objectives,
     sessionKind: "collect",
