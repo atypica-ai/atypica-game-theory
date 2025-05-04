@@ -1,6 +1,7 @@
 "use client";
 import { InterviewProjectWithSessions } from "@/app/interviewProject/actions";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
+import { Markdown } from "@/components/markdown";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -291,6 +292,7 @@ function CollectSessionCard({
   projectToken: string;
 }) {
   const [copySuccess, setCopySuccess] = useState(false);
+  const [showInsights, setShowInsights] = useState(false);
   const collectLink = `${window.location.origin}/interviewProject/collect/${session.token}`;
 
   const statusColors = {
@@ -344,6 +346,18 @@ function CollectSessionCard({
             Expires: {formatDate(session.expiresAt)}
           </div>
         )}
+
+        {(session.keyInsights?.length > 0 || session.summary || session.analysis) && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="mt-3 w-full"
+            onClick={() => setShowInsights(true)}
+          >
+            <FileText className="mr-2 h-4 w-4" />
+            View Insights
+          </Button>
+        )}
       </CardContent>
       <CardFooter className="pt-3 flex gap-2">
         <Button variant="outline" size="sm" className="flex-1" onClick={handleCopyLink}>
@@ -359,6 +373,61 @@ function CollectSessionCard({
           Open
         </Button>
       </CardFooter>
+
+      <Dialog open={showInsights} onOpenChange={setShowInsights}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Session Insights</DialogTitle>
+            <DialogDescription>
+              Key information and analysis from this interview session
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 my-4 max-h-[60vh] overflow-y-auto pr-2">
+            {session.keyInsights && session.keyInsights.length > 0 && (
+              <div>
+                <h3 className="text-lg font-medium mb-2">Key Insights</h3>
+                <div className="space-y-2">
+                  {session.keyInsights.map((insight, index) => (
+                    <div key={index} className="flex items-start gap-2">
+                      <div className="bg-primary/20 text-primary rounded-full size-5 flex items-center justify-center text-xs font-medium mt-0.5">
+                        {index + 1}
+                      </div>
+                      <p>{insight}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {session.summary && (
+              <div>
+                <h3 className="text-lg font-medium mb-2">Summary</h3>
+                <div className="prose prose-sm dark:prose-invert max-w-none">
+                  <Markdown>{session.summary}</Markdown>
+                </div>
+              </div>
+            )}
+
+            {session.analysis && (
+              <div>
+                <h3 className="text-lg font-medium mb-2">Analysis</h3>
+                <div className="prose prose-sm dark:prose-invert max-w-none">
+                  <Markdown>{session.analysis}</Markdown>
+                </div>
+              </div>
+            )}
+
+            {!session.keyInsights?.length && !session.summary && !session.analysis && (
+              <div className="text-center py-8">
+                <div className="text-muted-foreground">
+                  No insights available yet. Complete an interview session to generate insights.
+                </div>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }

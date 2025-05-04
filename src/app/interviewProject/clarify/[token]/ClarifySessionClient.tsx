@@ -1,6 +1,7 @@
 "use client";
 import { ClarifySessionBodySchema } from "@/app/api/chat/interviewSession/lib";
 import { UserChatSession } from "@/components/chat/UserChatSession";
+import { Markdown } from "@/components/markdown";
 import {
   Accordion,
   AccordionContent,
@@ -16,7 +17,6 @@ import { useChat } from "@ai-sdk/react";
 import { Message } from "ai";
 import { BookMarked, Cpu, Download, InfoIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import ReactMarkdown from "react-markdown";
 import { z } from "zod";
 import { fetchClarifyInterviewSession } from "../../actions";
 
@@ -174,7 +174,7 @@ export function ClarifySessionClient({
                 <AccordionTrigger>Interview Analysis</AccordionTrigger>
                 <AccordionContent>
                   <div className="prose prose-sm dark:prose-invert max-w-none">
-                    <ReactMarkdown>{interviewSession.analysis}</ReactMarkdown>
+                    <Markdown>{interviewSession.analysis}</Markdown>
                   </div>
                 </AccordionContent>
               </AccordionItem>
