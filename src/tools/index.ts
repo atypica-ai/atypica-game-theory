@@ -8,7 +8,6 @@ export { interviewChatTool } from "./experts/interviewChat";
 export { reasoningThinkingTool } from "./experts/reasoning";
 export { generateReportTool } from "./experts/report";
 export { scoutTaskChatTool } from "./experts/scoutTask";
-export { saveInterviewSummaryTool } from "./interviewExpert";
 export { dyPostCommentsTool } from "./social/dy/postComments";
 export { dySearchTool } from "./social/dy/search";
 export { dyUserPostsTool } from "./social/dy/userPosts";
@@ -23,6 +22,7 @@ export { xhsSearchTool } from "./social/xhs/search";
 export { xhsUserNotesTool } from "./social/xhs/userNotes";
 export { saveAnalystStudySummaryTool, saveAnalystTool } from "./system/saveAnalyst";
 export { saveInterviewConclusionTool } from "./system/saveInterviewConclusion";
+export { saveInterviewSessionSummaryTool } from "./system/saveInterviewSessionSummaryTool";
 export { savePersonaTool } from "./system/savePersona";
 export { requestInteractionTool } from "./user/interaction";
 export { requestPaymentTool } from "./user/payment";
@@ -41,7 +41,7 @@ export enum ToolName {
   saveAnalystStudySummary = "saveAnalystStudySummary",
   saveInterviewConclusion = "saveInterviewConclusion",
   savePersona = "savePersona",
-  saveInterviewSummary = "saveInterviewSummary",
+  saveInterviewSessionSummary = "saveInterviewSessionSummary",
 
   requestInteraction = "requestInteraction",
   requestPayment = "requestPayment",
