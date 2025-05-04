@@ -1,6 +1,7 @@
 import { fetchClarifyInterviewSession } from "@/app/interviewProject/actions";
 import { authOptions } from "@/lib/auth";
 import { llm, providerOptions } from "@/lib/llm";
+import { rootLogger } from "@/lib/logging";
 import {
   appendStepToStreamingMessage,
   persistentAIMessageToDB,
@@ -37,16 +38,18 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error }, { status: 400 });
   }
 
-  const { message: newMessage, id: userChatId, sessionToken } = parseResult.data;
+  const { message: newMessage, sessionToken } = parseResult.data;
   // 这里会检查用户权限
   const result = await fetchClarifyInterviewSession(sessionToken);
   if (!result.success) {
     return NextResponse.json({ error: result.message }, { status: 400 });
   }
   const interviewSession = result.data;
-  if (interviewSession.userChatId !== userChatId) {
+  if (!interviewSession.userChatId) {
+    rootLogger.error(`userChatId is null on clarify interview session ${sessionToken}`);
     return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
   }
+  const userChatId = interviewSession.userChatId;
 
   // 无需再继续检查，可以直接安全的保存和读取 userChat.messages
   await persistentAIMessageToDB(userChatId, {

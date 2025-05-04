@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error }, { status: 400 });
   }
 
-  const { message: newMessage, id: userChatIdOrNull, sessionToken } = parseResult.data;
+  const { message: newMessage, sessionToken } = parseResult.data;
   const result = await fetchCollectInterviewSession(sessionToken);
   if (!result.success) {
     return NextResponse.json({ error: result.message }, { status: 400 });
@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
   let userChatId: number;
 
   // First message in a collect session? Create UserChat
-  if (!userChatIdOrNull && !interviewSession.userChatId) {
+  if (!interviewSession.userChatId) {
     const userChat = await prisma.$transaction(async (tx) => {
       const project = await tx.interviewProject.findUniqueOrThrow({
         where: { id: interviewSession.projectId },
@@ -63,15 +63,7 @@ export async function POST(req: NextRequest) {
     });
     userChatId = userChat.id;
   } else {
-    // 要么都为空，要么都不为空，且相等
-    if (
-      !userChatIdOrNull ||
-      !interviewSession.userChatId ||
-      interviewSession.userChatId !== userChatIdOrNull
-    ) {
-      return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
-    }
-    userChatId = userChatIdOrNull;
+    userChatId = interviewSession.userChatId;
   }
 
   // 无需再继续检查，可以直接安全的保存和读取 userChat.messages

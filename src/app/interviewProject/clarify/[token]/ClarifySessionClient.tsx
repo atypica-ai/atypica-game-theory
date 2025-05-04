@@ -34,7 +34,8 @@ export function ClarifySessionClient({
     sessionToken: interviewSession.token,
   };
   const useChatHelpers = useChat({
-    id: interviewSession.userChatId?.toString(),
+    // chat 接口直接使用 session.userChatId, 这个 chatId 不使用也不发给后端
+    // id: interviewSession.userChatId?.toString(),
     api: "/api/chat/interviewSession/clarify",
     initialMessages,
     body: initialRequestBody,
@@ -42,7 +43,7 @@ export function ClarifySessionClient({
       const requestBody: typeof initialRequestBody = { ...initialRequestBody, ..._requestBody };
       const body: z.infer<typeof ClarifySessionBodySchema> = {
         message: messages[messages.length - 1],
-        id: interviewSession.userChatId, // 不是用 useChat 自己生成的 chatId
+        // id: interviewSession.userChatId, // 不是用 useChat 自己生成的 chatId
         ...requestBody,
       };
       return body;
