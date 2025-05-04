@@ -1,4 +1,6 @@
 "use client";
+import { CollectSessionBodySchema } from "@/app/api/chat/interviewSession/lib";
+import { UserChatSession } from "@/components/chat/UserChatSession";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
@@ -9,45 +11,58 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Chat } from "@/components/ui/chat";
+import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
-import { InterviewProject, InterviewSession } from "@prisma/client";
 import { BadgeCheck, Info, Shield, ThumbsUp } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { z } from "zod";
+import { fetchCollectInterviewSession } from "../../actions";
 
-type SessionWithProject = InterviewSession & {
-  project: Pick<InterviewProject, "id" | "title" | "description" | "category" | "objectives">;
-};
-
-export function CollectSessionClient({ session }: { session: SessionWithProject }) {
+export function CollectSessionClient({
+  interviewSession,
+}: {
+  interviewSession: ExtractServerActionData<typeof fetchCollectInterviewSession>;
+}) {
   const [interviewComplete, setInterviewComplete] = useState(false);
 
   const initialRequestBody = {
-    sessionId: session.id,
-    sessionToken: session.token,
+    sessionId: interviewSession.id,
+    sessionToken: interviewSession.token,
   };
-  const { messages, input, handleInputChange, handleSubmit, append, isLoading, error } = useChat({
+  const useChatHelpers = useChat({
     initialMessages: [],
-    id: session.userChatId?.toString(),
+    id: interviewSession.userChatId?.toString(),
     api: "/api/chat/interviewSession/collect",
     body: initialRequestBody,
-    experimental_prepareRequestBody({ messages, id, requestBody }) {
-      const body = { ...initialRequestBody, ...requestBody };
-      return { message: messages[messages.length - 1], id, ...body };
+    experimental_prepareRequestBody({ messages, id, requestBody: _requestBody }) {
+      const requestBody: typeof initialRequestBody = { ...initialRequestBody, ..._requestBody };
+      const body: z.infer<typeof CollectSessionBodySchema> = {
+        message: messages[messages.length - 1],
+        id: parseInt(id),
+        ...requestBody,
+      };
+      return body;
     },
   });
+  const { messages } = useChatHelpers;
+  const useChatRef = useRef({
+    reload: useChatHelpers.reload,
+    setMessages: useChatHelpers.setMessages,
+    append: useChatHelpers.append,
+  });
 
+  const requestSentRef = useRef(false);
   useEffect(() => {
     // If no initial message and not already started, start the conversation with AI
-    if (messages.length === 0 && !session.userChatId) {
-      append({
+    if (messages.length === 0 && !interviewSession.userChatId && !requestSentRef.current) {
+      requestSentRef.current = true;
+      useChatRef.current.append({
         role: "system",
-        content: "Starting collect session.",
+        content: "Starting collect interviewSession.",
       });
     }
-
     // Check if interview is complete
     const lastMessage = messages[messages.length - 1];
     if (
@@ -57,7 +72,7 @@ export function CollectSessionClient({ session }: { session: SessionWithProject 
     ) {
       setInterviewComplete(true);
     }
-  }, [append, messages, session.userChatId]);
+  }, [messages, interviewSession.userChatId]);
 
   return (
     <div className="flex flex-col min-h-screen bg-muted/30">
@@ -77,16 +92,18 @@ export function CollectSessionClient({ session }: { session: SessionWithProject 
               <div className="flex items-start justify-between">
                 <div>
                   <CardTitle className="text-xl flex items-center">
-                    <span>{session.title}</span>
+                    <span>{interviewSession.title}</span>
                     <VerifyBadge type="verified" className="ml-2" />
                   </CardTitle>
-                  <CardDescription className="mt-1.5">{session.project.title}</CardDescription>
+                  <CardDescription className="mt-1.5">
+                    {interviewSession.project.title}
+                  </CardDescription>
                 </div>
               </div>
             </CardHeader>
             <CardContent className="p-6">
-              {session.description && (
-                <p className="text-muted-foreground mb-4">{session.description}</p>
+              {interviewSession.description && (
+                <p className="text-muted-foreground mb-4">{interviewSession.description}</p>
               )}
 
               <div className="space-y-4">
@@ -103,7 +120,7 @@ export function CollectSessionClient({ session }: { session: SessionWithProject 
                 <div>
                   <h3 className="text-sm font-medium mb-2">Research Objectives:</h3>
                   <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1.5 pl-2">
-                    {session.project.objectives.map((objective, i) => (
+                    {interviewSession.project.objectives.map((objective, i) => (
                       <li key={i}>{objective}</li>
                     ))}
                   </ul>
@@ -119,22 +136,11 @@ export function CollectSessionClient({ session }: { session: SessionWithProject 
           </Card>
 
           <div className="border rounded-lg overflow-hidden bg-background shadow-sm">
-            <Chat
-              messages={messages}
-              input={input}
-              handleInputChange={handleInputChange}
-              handleSubmit={handleSubmit}
-              isLoading={isLoading}
-              disabled={interviewComplete}
-              placeholder={
-                interviewComplete
-                  ? "Interview complete. Thank you for your participation."
-                  : "Type your response here..."
-              }
-              avatars={{
-                assistant: <HippyGhostAvatar seed={session.token} className="size-8" />,
-              }}
-              className="min-h-[400px]"
+            <UserChatSession
+              chatId={interviewSession.userChatId?.toString()}
+              chatTitle={interviewSession.title}
+              useChatHelpers={useChatHelpers}
+              useChatRef={useChatRef}
             />
           </div>
 
@@ -153,12 +159,6 @@ export function CollectSessionClient({ session }: { session: SessionWithProject 
                 </div>
               </CardContent>
             </Card>
-          )}
-
-          {error && (
-            <div className="p-4 bg-destructive/10 border border-destructive/30 rounded-lg text-destructive">
-              <p>Error: {error.message}</p>
-            </div>
           )}
         </div>
       </main>

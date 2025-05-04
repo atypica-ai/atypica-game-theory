@@ -22,10 +22,11 @@ export async function generateMetadata({
   if (!result.success || !result.data.title) {
     return {};
   }
+  const interviewProject = result.data;
 
   return generatePageMetadata({
-    title: `${result.data.title} - Interview Expert`,
-    description: result.data.description || "Interview expert project",
+    title: interviewProject.title,
+    description: interviewProject.description,
   });
 }
 

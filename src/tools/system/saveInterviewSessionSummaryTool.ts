@@ -2,6 +2,11 @@ import { prisma } from "@/lib/prisma";
 import { InterviewSessionStatus } from "@prisma/client";
 import { tool } from "ai";
 import { z } from "zod";
+import { PlainTextToolResult } from "../utils";
+
+export interface SaveInterviewSessionSummaryToolResult extends PlainTextToolResult {
+  plainText: string;
+}
 
 // Tool to save interview summary and key insights
 export const saveInterviewSessionSummaryTool = ({ sessionId }: { sessionId: number }) =>
@@ -18,6 +23,9 @@ export const saveInterviewSessionSummaryTool = ({ sessionId }: { sessionId: numb
           "Detailed analysis of the interview in markdown format, including patterns, notable quotes, and implications",
         ),
     }),
+    experimental_toToolResultContent: (result: PlainTextToolResult) => {
+      return [{ type: "text", text: result.plainText }];
+    },
     execute: async ({ summary, keyInsights, analysis }) => {
       try {
         // Update the interview session with the summary and insights
@@ -31,16 +39,13 @@ export const saveInterviewSessionSummaryTool = ({ sessionId }: { sessionId: numb
             completedAt: new Date(),
           },
         });
-
         return {
-          success: true,
-          message: "Interview summary saved successfully.",
+          plainText: "Interview summary saved successfully.",
         };
       } catch (error) {
         console.error("Error saving interview summary:", error);
         return {
-          success: false,
-          message: `Failed to save interview summary: ${(error as Error).message}`,
+          plainText: "Failed to save interview summary",
         };
       }
     },

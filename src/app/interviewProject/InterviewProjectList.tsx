@@ -12,7 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import UserTokensBalance from "@/components/UserTokensBalance";
-import { InterviewSessionKind, InterviewSessionStatus } from "@prisma/client";
+import { InterviewSessionStatus } from "@prisma/client";
 import { CalendarDays, FilePlus, FolderPlus } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -36,7 +36,7 @@ export function InterviewProjectList({ projects }: { projects: InterviewProjectW
       <main className="flex-1 container max-w-6xl mx-auto py-8">
         <div className="flex flex-col space-y-6">
           <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold">Interview Expert</h1>
+            <h1 className="text-3xl font-bold">Interview Projects</h1>
             <Button onClick={() => router.push("/interviewProject/create")}>
               <FolderPlus className="mr-2 h-4 w-4" />
               New Project
@@ -89,9 +89,7 @@ function ProjectCard({ project }: { project: InterviewProjectWithSessions }) {
   const completedSessionsCount = project.sessions.filter(
     (s) => s.status === InterviewSessionStatus.completed,
   ).length;
-  const collectSessionsCount = project.sessions.filter(
-    (s) => s.kind === InterviewSessionKind.collect,
-  ).length;
+  const collectSessionsCount = project.sessions.filter((s) => s.kind === "collect").length;
 
   return (
     <Card className="h-full flex flex-col">

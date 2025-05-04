@@ -1,5 +1,11 @@
+import { fetchClarifyInterviewSession } from "@/app/interviewProject/actions";
 import { authOptions } from "@/lib/auth";
 import { llm, providerOptions } from "@/lib/llm";
+import {
+  appendStepToStreamingMessage,
+  persistentAIMessageToDB,
+  prepareMessagesForStreaming,
+} from "@/lib/messageUtils";
 import { prisma } from "@/lib/prisma";
 import { interviewSessionSystem } from "@/prompt/interviewSession";
 import {
@@ -8,10 +14,10 @@ import {
   StatReporter,
   ToolName,
 } from "@/tools";
-import { Message, streamText } from "ai";
+import { generateId, smoothStream, streamText } from "ai";
 import { getServerSession } from "next-auth";
-import { NextRequest } from "next/server";
-import { ClarifySessionBodySchema, saveChatMessage } from "../lib";
+import { NextRequest, NextResponse } from "next/server";
+import { ClarifySessionBodySchema } from "../lib";
 
 export const maxDuration = 60;
 
@@ -19,135 +25,43 @@ export async function POST(req: NextRequest) {
   // Authenticate user
   const session = await getServerSession(authOptions);
   if (!session?.user) {
-    return Response.json(
-      {
-        error: {
-          code: "unauthorized",
-          message: "You must be signed in to use this API.",
-        },
-      },
-      { status: 401 },
-    );
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const userId = session.user.id;
 
-  // Parse the request body
-  let body;
-  try {
-    body = await req.json();
-  } catch (error) {
-    console.log(error);
-    return Response.json(
-      {
-        error: {
-          code: "bad_request",
-          message: "The request body is not valid JSON.",
-        },
-      },
-      { status: 400 },
-    );
-  }
-
+  const payload = await req.json();
   // Validate the request body
-  const parseResult = ClarifySessionBodySchema.safeParse(body);
+  const parseResult = ClarifySessionBodySchema.safeParse(payload);
   if (!parseResult.success) {
-    return Response.json(
-      {
-        error: {
-          code: "bad_request",
-          message: "The request body does not match the expected schema.",
-          details: parseResult.error.format(),
-        },
-      },
-      { status: 400 },
-    );
+    const error = { message: "Invalid request", details: parseResult.error.format() };
+    return NextResponse.json({ error }, { status: 400 });
   }
 
-  // Extract data from request
-  const { message, id: chatId, projectId, sessionId } = parseResult.data;
-
-  // Verify the user has access to this chat
-  const userChat = await prisma.userChat.findUnique({
+  const { message: newMessage, id: userChatId, sessionToken } = parseResult.data;
+  // 这里会检查用户权限
+  const result = await fetchClarifyInterviewSession(sessionToken);
+  if (!result.success) {
+    return NextResponse.json({ error: result.message }, { status: 400 });
+  }
+  const interviewSession = result.data;
+  if (interviewSession.userChatId !== userChatId) {
+    return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
+  }
+  // 无需再继续检查，可以直接安全的读取 userChat
+  const userChat = await prisma.userChat.findUniqueOrThrow({
     where: {
-      id: chatId,
-      userId,
+      id: userChatId,
       kind: "interviewSession",
     },
   });
 
-  if (!userChat) {
-    return Response.json(
-      {
-        error: {
-          code: "not_found",
-          message: "The specified chat was not found or you do not have access to it.",
-        },
-      },
-      { status: 404 },
-    );
-  }
-
-  // Save the user's message to the database
-  await saveChatMessage({
-    userChatId: chatId,
-    message: message,
+  await persistentAIMessageToDB(userChatId, {
+    ...newMessage,
+    id: newMessage.id ?? generateId(),
   });
+  const { coreMessages, streamingMessage } = await prepareMessagesForStreaming(userChatId);
 
-  // Verify the session belongs to this user
-  const interviewSession = await prisma.interviewSession.findUnique({
-    where: {
-      id: sessionId,
-      projectId: projectId,
-      userChatId: chatId,
-    },
-    include: {
-      project: {
-        select: {
-          userId: true,
-          title: true,
-          description: true,
-          category: true,
-          objectives: true,
-        },
-      },
-    },
-  });
-
-  if (!interviewSession || interviewSession.project.userId !== userId) {
-    return Response.json(
-      {
-        error: {
-          code: "forbidden",
-          message: "You do not have access to this interview session.",
-        },
-      },
-      { status: 403 },
-    );
-  }
-
-  // Get previous messages for context
-  const dbMessages = await prisma.chatMessage.findMany({
-    where: {
-      userChatId: chatId,
-    },
-    orderBy: {
-      id: "asc",
-    },
-  });
-
-  const messages: Message[] = dbMessages.map((dbMessage) => ({
-    id: dbMessage.messageId,
-    role: dbMessage.role as "user" | "assistant" | "system",
-    content: dbMessage.content,
-  }));
-
-  // Create abort controller for the request
-  const abortController = new AbortController();
-  req.signal.addEventListener("abort", () => {
-    abortController.abort();
-  });
-
-  // Set up stats reporting, do nothing for the moment
+  const abortSignal = req.signal;
   const statReport: StatReporter = async () => {};
 
   // Generate system message with project context
@@ -162,11 +76,12 @@ export async function POST(req: NextRequest) {
   // Generate response from LLM
   const response = streamText({
     model: llm("gpt-4o"),
+    providerOptions,
     system: systemPrompt,
-    messages: messages,
+    messages: coreMessages,
     tools: {
       [ToolName.reasoningThinking]: reasoningThinkingTool({
-        abortSignal: abortController.signal,
+        abortSignal,
         statReport,
       }),
       [ToolName.saveInterviewSessionSummary]: saveInterviewSessionSummaryTool({
@@ -176,15 +91,16 @@ export async function POST(req: NextRequest) {
     toolChoice: "auto",
     maxSteps: 5,
     temperature: 0.7,
-    providerOptions,
-    abortSignal: abortController.signal,
-    // onStepFinish: async (step) => {
-    //   if (step.usage?.totalTokens) {
-    //     await statReport("tokens", step.usage.totalTokens, {
-    //       // TODO
-    //     });
-    //   }
-    // },
+    experimental_transform: smoothStream({
+      chunking: /[\u4E00-\u9FFF]|\S+\s+/,
+    }),
+    onStepFinish: async (step) => {
+      appendStepToStreamingMessage(streamingMessage, step);
+      if (streamingMessage.parts?.length && streamingMessage.content.trim()) {
+        await persistentAIMessageToDB(userChatId, streamingMessage);
+      }
+    },
+    abortSignal,
   });
 
   // Save assistant's response to database

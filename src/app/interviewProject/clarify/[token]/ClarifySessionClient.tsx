@@ -1,7 +1,7 @@
 "use client";
 import { ClarifySessionBodySchema } from "@/app/api/chat/interviewSession/lib";
+import { UserChatSession } from "@/components/chat/UserChatSession";
 import GlobalHeader from "@/components/GlobalHeader";
-import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import {
   Accordion,
   AccordionContent,
@@ -10,31 +10,34 @@ import {
 } from "@/components/ui/accordion";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Chat } from "@/components/ui/chat";
 import { Separator } from "@/components/ui/separator";
 import UserTokensBalance from "@/components/UserTokensBalance";
+import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
-import { InterviewProject, InterviewSession } from "@prisma/client";
+import { Message } from "ai";
 import { ArrowLeft, BookMarked, Cpu, Download, InfoIcon } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { z } from "zod";
+import { fetchClarifyInterviewSession } from "../../actions";
 
 export function ClarifySessionClient({
-  sessionData,
+  interviewSession,
+  initialMessages = [],
 }: {
-  sessionData: InterviewSession & { project: InterviewProject };
+  interviewSession: ExtractServerActionData<typeof fetchClarifyInterviewSession>;
+  initialMessages: Message[];
 }) {
   const initialRequestBody = {
-    projectId: sessionData.project.id,
-    sessionId: sessionData.id,
+    sessionId: interviewSession.id,
+    sessionToken: interviewSession.token,
   };
-  const { messages, input, handleInputChange, handleSubmit, append, isLoading, error } = useChat({
-    initialMessages: [],
-    id: sessionData.userChatId?.toString(),
+  const useChatHelpers = useChat({
+    id: interviewSession.userChatId?.toString(),
     api: "/api/chat/interviewSession/clarify",
+    initialMessages,
     body: initialRequestBody,
     experimental_prepareRequestBody({ messages, id, requestBody: _requestBody }) {
       const requestBody: typeof initialRequestBody = { ...initialRequestBody, ..._requestBody };
@@ -46,24 +49,34 @@ export function ClarifySessionClient({
       return body;
     },
   });
+  const useChatRef = useRef({
+    reload: useChatHelpers.reload,
+    setMessages: useChatHelpers.setMessages,
+    append: useChatHelpers.append,
+  });
 
   const [showSummary, setShowSummary] = useState(false);
 
+  const requestSentRef = useRef(false);
   useEffect(() => {
-    // If no initial message, start the conversation with AI
-    if (messages.length === 0) {
-      append({
+    if (requestSentRef.current) return;
+    requestSentRef.current = true;
+    if (initialMessages.length === 0) {
+      // If no initial message, start the conversation with AI
+      useChatRef.current.append({
         role: "system",
         content: "Starting interview session.",
       });
+    } else if (initialMessages[initialMessages.length - 1]?.role === "user") {
+      useChatRef.current.reload();
     }
-  }, [append, messages.length]);
+  }, [initialMessages]);
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="h-dvh flex flex-col items-stretch justify-start">
       <GlobalHeader>
         <Button variant="ghost" asChild>
-          <Link href={`/interviewProject/${sessionData.project.token}`}>
+          <Link href={`/interviewProject/${interviewSession.project.token}`}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Project
           </Link>
@@ -71,13 +84,13 @@ export function ClarifySessionClient({
         <UserTokensBalance />
       </GlobalHeader>
 
-      <main className="container flex-1 py-6 max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 flex flex-col">
+      <main className="container flex-1 overflow-hidden py-6 max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="flex-1 overflow-hidden lg:col-span-2 flex flex-col">
           <div className="mb-4">
-            <h1 className="text-2xl font-bold">{sessionData.title}</h1>
-            <p className="text-muted-foreground">{sessionData.project.title}</p>
+            <h1 className="text-2xl font-bold">{interviewSession.title}</h1>
+            <p className="text-muted-foreground">{interviewSession.project.title}</p>
 
-            {sessionData.keyInsights && sessionData.keyInsights.length > 0 && (
+            {interviewSession.keyInsights && interviewSession.keyInsights.length > 0 && (
               <Button
                 variant="outline"
                 size="sm"
@@ -106,52 +119,36 @@ export function ClarifySessionClient({
               showSummary ? "lg:h-1/2" : "lg:h-auto",
             )}
           >
-            <Chat
-              messages={messages}
-              input={input}
-              handleInputChange={handleInputChange}
-              handleSubmit={handleSubmit}
-              isLoading={isLoading}
-              placeholder="Type your response here..."
-              avatars={{
-                user: (
-                  <HippyGhostAvatar
-                    seed={sessionData.project.userId.toString()}
-                    className="size-8"
-                  />
-                ),
-                assistant: <HippyGhostAvatar seed={sessionData.token} className="size-8" />,
-              }}
-              className="flex-1"
+            <UserChatSession
+              chatId={interviewSession.userChatId?.toString()}
+              chatTitle={interviewSession.title}
+              useChatHelpers={useChatHelpers}
+              useChatRef={useChatRef}
             />
           </div>
 
-          {showSummary && sessionData.keyInsights && sessionData.keyInsights.length > 0 && (
-            <div className="mt-4 border rounded-lg p-4 bg-muted/50">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-lg font-medium">Interview Summary</h3>
-                <Button variant="ghost" size="sm" onClick={() => setShowSummary(false)}>
-                  Hide
-                </Button>
-              </div>
-              <div className="space-y-2">
-                {sessionData.keyInsights.map((point, index) => (
-                  <div key={index} className="flex items-start gap-2">
-                    <div className="bg-primary/20 text-primary rounded-full size-5 flex items-center justify-center text-xs font-medium mt-0.5">
-                      {index + 1}
+          {showSummary &&
+            interviewSession.keyInsights &&
+            interviewSession.keyInsights.length > 0 && (
+              <div className="mt-4 border rounded-lg p-4 bg-muted/50">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-lg font-medium">Interview Summary</h3>
+                  <Button variant="ghost" size="sm" onClick={() => setShowSummary(false)}>
+                    Hide
+                  </Button>
+                </div>
+                <div className="space-y-2">
+                  {interviewSession.keyInsights.map((point, index) => (
+                    <div key={index} className="flex items-start gap-2">
+                      <div className="bg-primary/20 text-primary rounded-full size-5 flex items-center justify-center text-xs font-medium mt-0.5">
+                        {index + 1}
+                      </div>
+                      <p>{point}</p>
                     </div>
-                    <p>{point}</p>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
-
-          {error && (
-            <div className="mt-4 p-4 bg-destructive/10 border border-destructive/30 rounded-lg text-destructive">
-              <p>Error: {error.message}</p>
-            </div>
-          )}
+            )}
         </div>
 
         <div className="lg:col-span-1">
@@ -168,7 +165,7 @@ export function ClarifySessionClient({
                 <AccordionTrigger>Research Objectives</AccordionTrigger>
                 <AccordionContent>
                   <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-                    {sessionData.project.objectives.map((objective, i) => (
+                    {interviewSession.project.objectives.map((objective, i) => (
                       <li key={i}>{objective}</li>
                     ))}
                   </ul>
@@ -178,20 +175,22 @@ export function ClarifySessionClient({
               <AccordionItem value="about">
                 <AccordionTrigger>About This Project</AccordionTrigger>
                 <AccordionContent>
-                  <p className="text-muted-foreground">{sessionData.project.description}</p>
+                  <p className="text-muted-foreground">{interviewSession.project.description}</p>
                   <div className="mt-3 text-sm">
                     <span className="font-medium">Project Type:</span>{" "}
-                    <span className="text-muted-foreground">{sessionData.project.category}</span>
+                    <span className="text-muted-foreground">
+                      {interviewSession.project.category}
+                    </span>
                   </div>
                 </AccordionContent>
               </AccordionItem>
 
-              {sessionData.analysis && (
+              {interviewSession.analysis && (
                 <AccordionItem value="analysis">
                   <AccordionTrigger>Interview Analysis</AccordionTrigger>
                   <AccordionContent>
                     <div className="prose prose-sm dark:prose-invert max-w-none">
-                      <ReactMarkdown>{sessionData.analysis}</ReactMarkdown>
+                      <ReactMarkdown>{interviewSession.analysis}</ReactMarkdown>
                     </div>
                   </AccordionContent>
                 </AccordionItem>

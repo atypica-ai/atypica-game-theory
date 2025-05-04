@@ -1,8 +1,7 @@
 import { generatePageMetadata } from "@/lib/metadata";
-import { prisma } from "@/lib/prisma";
-import { InterviewSessionKind } from "@prisma/client";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { fetchCollectInterviewSession } from "../../actions";
 import { CollectSessionClient } from "./CollectSessionClient";
 
 export const dynamic = "force-dynamic";
@@ -17,20 +16,15 @@ export async function generateMetadata({
     return {};
   }
 
-  const session = await prisma.interviewSession.findUnique({
-    where: { token, kind: InterviewSessionKind.collect },
-    include: {
-      project: true,
-    },
-  });
-
-  if (!session) {
+  const result = await fetchCollectInterviewSession(token);
+  if (!result.success) {
     return {};
   }
+  const interviewSession = result.data;
 
   return generatePageMetadata({
-    title: `${session.title} - Interview`,
-    description: session.description || `Share your insights for ${session.project.title}`,
+    title: interviewSession.title,
+    description: `Share your insights for ${interviewSession.project.title}`,
   });
 }
 
@@ -44,28 +38,14 @@ export default async function CollectSessionPage({
     notFound();
   }
 
-  // Find the interview session
-  const session = await prisma.interviewSession.findUnique({
-    where: { token, kind: InterviewSessionKind.collect },
-    include: {
-      project: {
-        select: {
-          id: true,
-          title: true,
-          description: true,
-          category: true,
-          objectives: true,
-        },
-      },
-    },
-  });
-
-  if (!session) {
+  const result = await fetchCollectInterviewSession(token);
+  if (!result.success) {
     notFound();
   }
+  const interviewSession = result.data;
 
   // Check if session is expired
-  if (session.expiresAt && new Date() > new Date(session.expiresAt)) {
+  if (interviewSession.expiresAt && new Date() > new Date(interviewSession.expiresAt)) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen p-4">
         <div className="max-w-md text-center space-y-4">
@@ -79,5 +59,5 @@ export default async function CollectSessionPage({
     );
   }
 
-  return <CollectSessionClient session={session} />;
+  return <CollectSessionClient interviewSession={interviewSession} />;
 }

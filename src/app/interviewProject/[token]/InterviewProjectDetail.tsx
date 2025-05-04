@@ -18,7 +18,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import UserTokensBalance from "@/components/UserTokensBalance";
 import { cn, formatDate } from "@/lib/utils";
-import { InterviewSessionKind, InterviewSessionStatus } from "@prisma/client";
+import { InterviewSessionStatus } from "@prisma/client";
 import {
   ArrowLeft,
   Calendar,
@@ -59,8 +59,8 @@ export function InterviewProjectDetail({ project }: { project: InterviewProjectW
   };
 
   // Group sessions by type and status
-  const mySessions = project.sessions.filter((s) => s.kind === InterviewSessionKind.clarify);
-  const collectSessions = project.sessions.filter((s) => s.kind === InterviewSessionKind.collect);
+  const mySessions = project.sessions.filter((s) => s.kind === "clarify");
+  const collectSessions = project.sessions.filter((s) => s.kind === "collect");
 
   return (
     <div className="flex flex-col min-h-screen">

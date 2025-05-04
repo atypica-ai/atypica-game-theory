@@ -8,8 +8,8 @@ import { fetchInterviewProjects } from "./actions";
 export const dynamic = "force-dynamic";
 
 export const metadata = generatePageMetadata({
-  title: "Interview Expert",
-  description: "Interview expert to gather information and insights",
+  title: "Create Interview Project",
+  description: "Interview project to gather information and insights",
 });
 
 export default async function InterviewProjectListPage() {

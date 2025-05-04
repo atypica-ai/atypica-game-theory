@@ -1,9 +1,11 @@
-import { fetchInterviewSession } from "@/app/interviewProject/actions";
+import { fetchClarifyInterviewSession } from "@/app/interviewProject/actions";
 import { authOptions } from "@/lib/auth";
+import { convertDBMessageToAIMessage } from "@/lib/messageUtils";
 import { generatePageMetadata } from "@/lib/metadata";
+import { prisma } from "@/lib/prisma";
 import { Metadata } from "next";
 import { getServerSession } from "next-auth/next";
-import { forbidden, notFound, redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { ClarifySessionClient } from "./ClarifySessionClient";
 
 export const dynamic = "force-dynamic";
@@ -18,14 +20,15 @@ export async function generateMetadata({
     return {};
   }
 
-  const result = await fetchInterviewSession(token);
-  if (!result.success || !result.data.title) {
+  const result = await fetchClarifyInterviewSession(token);
+  if (!result.success) {
     return {};
   }
+  const interviewSession = result.data;
 
   return generatePageMetadata({
-    title: `${result.data.title} - Interview Expert`,
-    description: result.data.project.description || "Interview expert session",
+    title: interviewSession.title,
+    description: interviewSession.project.description,
   });
 }
 
@@ -45,15 +48,25 @@ export default async function ClarifySessionPage({
     redirect(`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`);
   }
 
-  const result = await fetchInterviewSession(token);
+  const result = await fetchClarifyInterviewSession(token);
   if (!result.success) {
     notFound();
   }
-
   const interviewSession = result.data;
-  if (interviewSession.project.userId !== session.user.id) {
-    forbidden();
+  // fetchClarifyInterviewSession 里面已经判断了
+  // if (interviewSession.project.userId !== session.user.id) {
+  //   forbidden();
+  // }
+  const userChatId = interviewSession.userChatId;
+  if (!userChatId) {
+    throw new Error("Something went wrong, useChat should exist on clarify session");
   }
+  const messages = (
+    await prisma.chatMessage.findMany({
+      where: { userChatId },
+      orderBy: { id: "asc" },
+    })
+  ).map(convertDBMessageToAIMessage);
 
-  return <ClarifySessionClient sessionData={interviewSession} />;
+  return <ClarifySessionClient interviewSession={interviewSession} initialMessages={messages} />;
 }

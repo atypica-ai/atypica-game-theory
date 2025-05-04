@@ -4,7 +4,6 @@ import { prisma } from "@/lib/prisma";
 import {
   Currency,
   PaymentRecord as PaymentRecordPrisma,
-  PaymentStatus,
   SubscriptionPlan,
   UserTokensLogResourceType,
   UserTokensLogVerb,
@@ -126,7 +125,7 @@ export async function createCharge({
       orderNo: orderNo,
       amount: amount, // Convert cents to yuan
       currency: product.currency,
-      status: PaymentStatus.pending,
+      status: "pending",
       paymentMethod: paymentMethod,
       chargeId: chargeResult.id,
       charge: { ...chargeResult },

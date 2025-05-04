@@ -235,17 +235,22 @@ export async function createCollectSession(
   });
 }
 
-// Fetch a specific interview session
-export async function fetchInterviewSession(
-  sessionToken: string,
-): Promise<ServerActionResult<InterviewSession & { project: InterviewProject }>> {
+export async function fetchClarifyInterviewSession<
+  T extends Omit<InterviewSession, "kind"> & {
+    kind: "clarify";
+    project: InterviewProject;
+  },
+>(sessionToken: string): Promise<ServerActionResult<T>> {
   return withAuth(async (user) => {
-    const session = await prisma.interviewSession.findUnique({
-      where: { token: sessionToken },
+    const session = (await prisma.interviewSession.findUnique({
+      where: {
+        token: sessionToken,
+        kind: "clarify",
+      },
       include: {
         project: true,
       },
-    });
+    })) as T | null;
 
     if (!session) {
       return {
@@ -255,11 +260,51 @@ export async function fetchInterviewSession(
       };
     }
 
-    if (session.project.userId !== user.id && session.kind !== InterviewSessionKind.collect) {
+    if (session.project.userId !== user.id) {
       return {
         success: false,
         code: "forbidden",
         message: "You don't have access to this interview session",
+      };
+    }
+
+    return {
+      success: true,
+      data: session,
+    };
+  });
+}
+// Fetch a specific interview session
+export async function fetchCollectInterviewSession<
+  T extends Omit<InterviewSession, "kind"> & {
+    kind: "collect";
+    project: Pick<InterviewProject, "id" | "title" | "description" | "category" | "objectives">;
+  },
+>(sessionToken: string): Promise<ServerActionResult<T>> {
+  return withAuth(async (user) => {
+    const session = (await prisma.interviewSession.findUnique({
+      where: {
+        token: sessionToken,
+        kind: "collect",
+      },
+      include: {
+        project: {
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            category: true,
+            objectives: true,
+          },
+        },
+      },
+    })) as T | null;
+
+    if (!session) {
+      return {
+        success: false,
+        code: "not_found",
+        message: "Interview session not found",
       };
     }
 

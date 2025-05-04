@@ -426,6 +426,9 @@
       "wechatPay": "WeChat Pay",
       "creditCard": "Credit Card",
       "redirectToStripe": "You'll be redirected to our secure payment page"
+    },
+    "UserChatSession": {
+      "continue": "Continue"
     }
   },
   "Maintenance": {

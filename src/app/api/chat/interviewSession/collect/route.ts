@@ -5,26 +5,12 @@ import { generateToken } from "@/lib/utils";
 import { interviewSessionSystem } from "@/prompt/interviewSession";
 import { saveInterviewSessionSummaryTool, ToolName } from "@/tools";
 import { reasoningThinkingTool } from "@/tools/experts/reasoning";
-import { InterviewSessionKind, InterviewSessionStatus, UserChatKind } from "@prisma/client";
+import { InterviewSessionStatus, UserChatKind } from "@prisma/client";
 import { Message, streamText } from "ai";
 import { NextRequest } from "next/server";
-import { z } from "zod";
-import { saveChatMessage } from "../lib";
+import { CollectSessionBodySchema, saveChatMessage } from "../lib";
 
 export const maxDuration = 60;
-
-// Schema for collect session API request body
-const CollectSessionBodySchema = z.object({
-  message: z.object({
-    id: z.string(),
-    role: z.enum(["user", "assistant", "system"]),
-    content: z.string(),
-    parts: z.array(z.any()).optional(),
-  }),
-  id: z.number().optional(), // User chat ID (may be null for first message)
-  sessionId: z.number(),
-  sessionToken: z.string(),
-});
 
 export async function POST(req: NextRequest) {
   // Parse the request body
@@ -67,7 +53,7 @@ export async function POST(req: NextRequest) {
     where: {
       id: sessionId,
       token: sessionToken,
-      kind: InterviewSessionKind.collect,
+      kind: "collect",
     },
     include: {
       project: {

@@ -22,16 +22,14 @@ export const ChatMessage = (message: {
   avatar?: Partial<{ user: ReactNode; assistant: ReactNode; system: ReactNode }>;
   content: string | ReactNode;
   parts?: MessageType["parts"];
-  environment?: "console" | "chat";
 }) => {
-  const { nickname, role, avatar, content, parts, environment = "chat" } = message;
+  const { nickname, role, avatar, content, parts } = message;
 
   return (
     <motion.div
       className={cn(
         "flex flex-row items-start justify-start gap-2 p-4 w-full first-of-type:mt-2 rounded-sm",
         role === "user" ? "bg-zinc-100/70 dark:bg-zinc-800" : "",
-        environment === "console" ? "flex-col" : "",
       )}
       initial={{ y: 5, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
@@ -53,7 +51,7 @@ export const ChatMessage = (message: {
           </div>
         )}
         {parts ? (
-          (environment === "console" ? parts.slice(-1) : parts).map((part, i) => {
+          parts.map((part, i) => {
             // 如果是控制台环境，只显示最后一条
             switch (part.type) {
               case "text":
@@ -69,7 +67,6 @@ export const ChatMessage = (message: {
                     <ToolInvocationDisplay toolInvocation={part.toolInvocation} />
                   </React.Fragment>
                 );
-
               default:
                 return null;
             }

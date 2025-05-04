@@ -1,6 +1,6 @@
 import { getRequestOrigin } from "@/lib/headers";
 import { prisma } from "@/lib/prisma";
-import { Currency, PaymentStatus } from "@prisma/client";
+import { Currency } from "@prisma/client";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { PaymentMethod, ProductName, StripeNewPaymentParams } from "../data";
@@ -70,7 +70,7 @@ async function createStripeFakeCharge({
       orderNo: orderNo,
       amount: amount, // Convert cents to yuan
       currency: product.currency,
-      status: PaymentStatus.pending,
+      status: "pending",
       paymentMethod: paymentMethod,
       chargeId: session.id,
       charge: {},
