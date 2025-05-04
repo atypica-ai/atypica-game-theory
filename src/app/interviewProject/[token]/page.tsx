@@ -31,7 +31,7 @@ export async function generateMetadata({
 
   return generatePageMetadata({
     title: interviewProject.title,
-    description: interviewProject.description,
+    description: interviewProject.brief || undefined,
   });
 }
 

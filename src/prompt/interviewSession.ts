@@ -6,13 +6,13 @@ function getFormattedCategory(projectCategory: string): string {
 // 原始函数改为调用相应的分流函数
 export function interviewSessionSystem({
   projectTitle,
-  projectDescription,
+  projectBrief,
   projectCategory,
   objectives,
   sessionKind,
 }: {
   projectTitle: string;
-  projectDescription: string;
+  projectBrief: string | null;
   projectCategory: string;
   objectives: string[];
   sessionKind: "clarify" | "collect";
@@ -21,14 +21,14 @@ export function interviewSessionSystem({
   if (sessionKind === "collect") {
     return generateCollectSessionSystem({
       projectTitle,
-      projectDescription,
+      projectBrief,
       projectCategory,
       objectives,
     });
   } else {
     return generateClarifySessionSystem({
       projectTitle,
-      projectDescription,
+      projectBrief,
       projectCategory,
       objectives,
     });
@@ -38,12 +38,12 @@ export function interviewSessionSystem({
 // 内部需求澄清会话的系统提示
 function generateClarifySessionSystem({
   projectTitle,
-  projectDescription,
+  projectBrief,
   projectCategory,
   objectives,
 }: {
   projectTitle: string;
-  projectDescription: string;
+  projectBrief: string | null;
   projectCategory: string;
   objectives: string[];
 }): string {
@@ -57,10 +57,10 @@ function generateClarifySessionSystem({
 ## 项目背景
 - 标题：${projectTitle}
 - 类别：${formattedCategory}
-- 描述：${projectDescription}
+- 描述：${projectBrief || "暂无"}
 
 ## 研究目标
-${objectives.map((obj, i) => `${i + 1}. ${obj}`).join("\n")}
+${objectives.length > 0 ? objectives.map((obj, i) => `${i + 1}. ${obj}`).join("\n") : "暂无明确的研究目标"}
 
 ## 你的职责
 
@@ -75,11 +75,25 @@ ${objectives.map((obj, i) => `${i + 1}. ${obj}`).join("\n")}
    - 在回答需要更多细节时，使用适当的追问
    - 保持对话式风格，与用户建立融洽关系
 
-3. **知识整理**
+3. **知识整理与项目更新**
    - 将收集到的信息整理归类
    - 识别不同信息之间的联系
    - 识别回答中的模式和见解
+   - 在恰当的时候使用updateInterviewProject工具更新项目的brief和objectives
    - 在适当的时候总结关键发现
+
+## 更新项目信息
+
+你必须使用updateInterviewProject工具来更新项目的研究简介和目标。在以下情况下更新项目：
+
+1. 当用户提供了明确的研究目标或简介
+2. 当对话产生了足够的信息来形成或改进简介和目标
+3. 当用户直接要求你更新项目信息
+
+在更新时：
+- brief应该是简明扼要的项目描述，包括研究背景、目的和范围
+- objectives应该是清晰、具体、可行的研究目标列表
+- 每次更新前，使用推理思考工具来确保你的更新是有意义的
 
 ## 咨询指南
 
@@ -100,22 +114,23 @@ ${getProjectCategoryGuidanceInChinese(projectCategory)}
 2. 战略性地提问以明确每个研究目标
 3. 根据之前的回答调整你的问题
 4. 需要时使用reasoningThinking工具规划你的方法
-5. 当收集到足够的信息后，结束咨询
-6. 使用saveInterviewSummary工具保存关键见解
+5. 收集到足够信息时使用updateInterviewProject工具更新项目
+6. 当收集到足够的信息后，结束咨询
+7. 使用saveInterviewSummary工具保存关键见解
 
-当你收集到全面解决所有研究目标的信息，或者当用户表示他们没有更多信息要分享时，请专业地结束咨询并使用saveInterviewSummary工具。
+当你收集到全面解决所有研究目标的信息，或者当用户表示他们没有更多信息要分享时，请确保已使用updateInterviewProject工具更新了项目信息，然后专业地结束咨询并使用saveInterviewSummary工具。
 `;
 }
 
 // 外部数据收集会话的系统提示
 function generateCollectSessionSystem({
   projectTitle,
-  projectDescription,
+  projectBrief,
   projectCategory,
   objectives,
 }: {
   projectTitle: string;
-  projectDescription: string;
+  projectBrief: string | null;
   projectCategory: string;
   objectives: string[];
 }): string {
@@ -129,7 +144,7 @@ function generateCollectSessionSystem({
 ## 项目背景
 - 标题：${projectTitle}
 - 类别：${formattedCategory}
-- 描述：${projectDescription}
+- 描述：${projectBrief || "暂无"}
 
 ## 研究目标
 ${objectives.map((obj, i) => `${i + 1}. ${obj}`).join("\n")}

@@ -18,7 +18,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, Briefcase, Lightbulb, School, Search, Target, Users } from "lucide-react";
 import Link from "next/link";
@@ -31,9 +30,7 @@ import { createInterviewProject } from "../actions";
 
 const projectSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
-  description: z.string().min(10, "Description must be at least 10 characters"),
   category: z.string().min(1, "Please select a project category"),
-  objectives: z.array(z.string()).min(1, "Please add at least one objective"),
 });
 
 const projectCategories = [
@@ -56,33 +53,14 @@ const projectCategories = [
 export default function CreateInterviewProjectPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [objectiveInput, setObjectiveInput] = useState("");
 
-  const form = useForm<z.infer<typeof projectSchema>>({
+  const form = useForm<z.infer<typeof projectSchema>>({  
     resolver: zodResolver(projectSchema),
     defaultValues: {
       title: "",
-      description: "",
       category: "",
-      objectives: [],
     },
   });
-
-  const objectives = form.watch("objectives");
-
-  const addObjective = () => {
-    if (objectiveInput.trim().length > 0) {
-      form.setValue("objectives", [...objectives, objectiveInput.trim()]);
-      setObjectiveInput("");
-    }
-  };
-
-  const removeObjective = (index: number) => {
-    form.setValue(
-      "objectives",
-      objectives.filter((_, i) => i !== index),
-    );
-  };
 
   const onSubmit = async (data: z.infer<typeof projectSchema>) => {
     setIsSubmitting(true);
@@ -118,7 +96,7 @@ export default function CreateInterviewProjectPage() {
           <div>
             <h1 className="text-3xl font-bold">Create Interview Project</h1>
             <p className="text-muted-foreground mt-2">
-              Set up a new interview project to gather information and insights.
+              Start your research project by giving it a name and selecting a category. You'll refine the details later.
             </p>
           </div>
 
@@ -137,24 +115,9 @@ export default function CreateInterviewProjectPage() {
                           <FormControl>
                             <Input placeholder="E.g., Market Research for New Product" {...field} />
                           </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="description"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Project Description</FormLabel>
-                          <FormControl>
-                            <Textarea
-                              placeholder="Describe the purpose of this interview project..."
-                              className="min-h-[100px]"
-                              {...field}
-                            />
-                          </FormControl>
+                          <FormDescription>
+                            Give your project a clear, descriptive name.
+                          </FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -196,71 +159,15 @@ export default function CreateInterviewProjectPage() {
                     />
                   </div>
                 </div>
-
-                <div className="pt-4 border-t">
-                  <h2 className="text-xl font-semibold mb-4">Research Objectives</h2>
-                  <FormField
-                    control={form.control}
-                    name="objectives"
-                    render={() => (
-                      <FormItem>
-                        <FormDescription className="mb-2">
-                          Define what you aim to learn from these interviews. Each objective should
-                          be a specific question or goal.
-                        </FormDescription>
-
-                        <div className="flex space-x-2 mt-2">
-                          <Input
-                            placeholder="E.g., Understand user pain points with current solutions"
-                            value={objectiveInput}
-                            onChange={(e) => setObjectiveInput(e.target.value)}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter") {
-                                e.preventDefault();
-                                addObjective();
-                              }
-                            }}
-                          />
-                          <Button type="button" onClick={addObjective}>
-                            Add
-                          </Button>
-                        </div>
-
-                        <div className="mt-4 space-y-2">
-                          {objectives.length === 0 ? (
-                            <div className="text-muted-foreground italic py-2">
-                              No objectives added yet. Add at least one to continue.
-                            </div>
-                          ) : (
-                            objectives.map((objective, index) => (
-                              <div
-                                key={index}
-                                className="flex justify-between items-center p-3 bg-muted rounded-md"
-                              >
-                                <span className="mr-2">{objective}</span>
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => removeObjective(index)}
-                                >
-                                  Remove
-                                </Button>
-                              </div>
-                            ))
-                          )}
-                        </div>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
               </div>
 
               <div className="pt-4 border-t">
                 <Button type="submit" className="w-full" disabled={isSubmitting}>
-                  {isSubmitting ? "Creating..." : "Create Interview Project"}
+                  {isSubmitting ? "Creating..." : "Create Project & Start Clarifying"}
                 </Button>
+                <p className="text-sm text-muted-foreground mt-2 text-center">
+                  After creating your project, you'll be taken to a chat interface where you can define your research objectives and project brief.
+                </p>
               </div>
             </form>
           </Form>

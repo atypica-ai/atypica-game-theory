@@ -21,27 +21,71 @@ export type InterviewProjectWithSessions = InterviewProject & {
 // Create a new interview project
 export async function createInterviewProject(data: {
   title: string;
-  description: string;
   category: string;
-  objectives: string[];
 }): Promise<ServerActionResult<InterviewProject>> {
   return withAuth(async (user) => {
-    const project = await prisma.interviewProject.create({
-      data: {
-        userId: user.id,
-        title: data.title,
-        description: data.description,
-        category: data.category,
-        objectives: data.objectives,
-        token: generateToken(),
-      },
+    // Start a transaction to create project and chat together
+    const result = await prisma.$transaction(async (tx) => {
+      // Create the project with minimal fields
+      const project = await tx.interviewProject.create({
+        data: {
+          userId: user.id,
+          title: data.title,
+          category: data.category,
+          token: generateToken(),
+          objectives: [], // 初始化为空数组
+          brief: null, // 设置为空
+        },
+      });
+
+      // Create a UserChat for the clarify session
+      const userChat = await tx.userChat.create({
+        data: {
+          userId: user.id,
+          title: `Clarify: ${project.title}`,
+          kind: UserChatKind.interviewSession,
+          token: generateToken(),
+        },
+      });
+
+      // Add initial AI message
+      const message = {
+        id: generateId(),
+        role: "assistant" as const,
+        content:
+          "Hello! I'm your interview expert. Let's refine your research project. Tell me about your research goals, and I'll help organize them into clear objectives and a project brief.",
+      };
+
+      await tx.chatMessage.create({
+        data: {
+          messageId: message.id,
+          userChatId: userChat.id,
+          role: message.role,
+          content: message.content,
+          parts: [{ type: "text", text: message.content }],
+        },
+      });
+
+      // Create the clarify session
+      await tx.interviewSession.create({
+        data: {
+          projectId: project.id,
+          title: `Clarify: ${project.title}`,
+          token: generateToken(),
+          userChatId: userChat.id,
+          kind: InterviewSessionKind.clarify,
+          status: InterviewSessionStatus.active,
+        },
+      });
+
+      return project;
     });
 
     revalidatePath("/interviewProject");
 
     return {
       success: true,
-      data: project,
+      data: result,
     };
   });
 }
@@ -71,13 +115,18 @@ export async function fetchInterviewProjects(): Promise<
 // Fetch a specific interview project by token
 export async function fetchInterviewProjectByToken(
   token: string,
-): Promise<ServerActionResult<InterviewProjectWithSessions>> {
+): Promise<
+  ServerActionResult<InterviewProjectWithSessions & { clarifySession?: InterviewSession }>
+> {
   return withAuth(async (user) => {
     const project = await prisma.interviewProject.findUnique({
       where: { token },
       include: {
         sessions: {
           orderBy: { createdAt: "desc" },
+          include: {
+            userChat: true,
+          },
         },
       },
     });
@@ -98,9 +147,15 @@ export async function fetchInterviewProjectByToken(
       };
     }
 
+    // Find the first clarify session (should only be one per project with the new design)
+    const clarifySession = project.sessions.find((session) => session.kind === "clarify");
+
     return {
       success: true,
-      data: project,
+      data: {
+        ...project,
+        clarifySession,
+      },
     };
   });
 }
@@ -186,7 +241,7 @@ export async function createCollectSession(
   projectToken: string,
   data: {
     title: string;
-    description?: string;
+    notes?: string;
     expiresAt?: Date;
   },
 ): Promise<ServerActionResult<InterviewSession>> {
@@ -218,7 +273,7 @@ export async function createCollectSession(
       data: {
         projectId: project.id,
         title: data.title,
-        description: data.description,
+        notes: data.notes,
         token: sessionToken,
         kind: InterviewSessionKind.collect,
         status: InterviewSessionStatus.pending, // No UserChat yet until someone uses it
@@ -278,7 +333,7 @@ export async function fetchClarifyInterviewSession<
 export async function fetchCollectInterviewSession<
   T extends Omit<InterviewSession, "kind"> & {
     kind: "collect";
-    project: Pick<InterviewProject, "id" | "title" | "description" | "category" | "objectives">;
+    project: Pick<InterviewProject, "id" | "title" | "category" | "brief" | "objectives">;
   },
 >(sessionToken: string): Promise<ServerActionResult<T>> {
   const interviewSession = (await prisma.interviewSession.findUnique({
@@ -292,8 +347,8 @@ export async function fetchCollectInterviewSession<
           id: true,
           userId: true,
           title: true,
-          description: true,
           category: true,
+          brief: true,
           objectives: true,
         },
       },
