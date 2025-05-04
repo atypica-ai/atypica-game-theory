@@ -370,13 +370,14 @@ model SystemConfig {
 }
 
 model InterviewProject {
-  id          Int      @id @default(autoincrement())
-  token       String   @unique
-  userId      Int
-  title       String   @db.VarChar(255)
-  description String   @db.VarChar(255)
-  category    String   @db.VarChar(64)
-  objectives  String[]
+  id         Int      @id @default(autoincrement())
+  token      String   @unique
+  userId     Int
+  title      String   @db.VarChar(255)
+  category   String   @db.VarChar(64)
+  brief      String?  @db.Text
+  objectives String[]
+  conclusion String?
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
@@ -402,7 +403,7 @@ model InterviewSession {
   projectId   Int
   userChatId  Int?                   @unique
   title       String                 @db.VarChar(255)
-  description String?                @db.VarChar(255) // 备注信息
+  notes       String?                @db.VarChar(255) // 备注信息
   kind        InterviewSessionKind
   status      InterviewSessionStatus
   summary     String?                @db.Text
