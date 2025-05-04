@@ -1,9 +1,14 @@
 import { fetchInterviewProjectByToken } from "@/app/interviewProject/actions";
+import { Button } from "@/components/ui/button";
+import UserTokensBalance from "@/components/UserTokensBalance";
 import { authOptions } from "@/lib/auth";
 import { generatePageMetadata } from "@/lib/metadata";
+import { ArrowLeftIcon } from "lucide-react";
 import { Metadata } from "next";
 import { getServerSession } from "next-auth/next";
+import Link from "next/link";
 import { forbidden, notFound, redirect } from "next/navigation";
+import { PageLayout } from "../PageLayout";
 import { InterviewProjectDetail } from "./InterviewProjectDetail";
 
 export const dynamic = "force-dynamic";
@@ -56,5 +61,21 @@ export default async function InterviewProjectPage({
     forbidden();
   }
 
-  return <InterviewProjectDetail project={project} />;
+  return (
+    <PageLayout
+      menus={
+        <>
+          <Button variant="ghost" asChild>
+            <Link href="/interviewProject">
+              <ArrowLeftIcon className="mr-2 h-4 w-4" />
+              Back to Projects
+            </Link>
+          </Button>
+          <UserTokensBalance />
+        </>
+      }
+    >
+      <InterviewProjectDetail project={project} />
+    </PageLayout>
+  );
 }

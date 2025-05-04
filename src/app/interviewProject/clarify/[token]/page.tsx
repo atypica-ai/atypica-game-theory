@@ -1,11 +1,16 @@
 import { fetchClarifyInterviewSession } from "@/app/interviewProject/actions";
+import UserTokensBalance from "@/components/UserTokensBalance";
+import { Button } from "@/components/ui/button";
 import { authOptions } from "@/lib/auth";
 import { convertDBMessageToAIMessage } from "@/lib/messageUtils";
 import { generatePageMetadata } from "@/lib/metadata";
 import { prisma } from "@/lib/prisma";
+import { ArrowLeftIcon } from "lucide-react";
 import { Metadata } from "next";
 import { getServerSession } from "next-auth/next";
+import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { PageLayout } from "../../PageLayout";
 import { ClarifySessionClient } from "./ClarifySessionClient";
 
 export const dynamic = "force-dynamic";
@@ -69,9 +74,23 @@ export default async function ClarifySessionPage({
   ).map(convertDBMessageToAIMessage);
 
   return (
-    <ClarifySessionClient
-      interviewSession={{ ...interviewSession, userChatId }}
-      initialMessages={messages}
-    />
+    <PageLayout
+      menus={
+        <>
+          <Button variant="ghost" asChild>
+            <Link href={`/interviewProject/${interviewSession.project.token}`}>
+              <ArrowLeftIcon className="mr-2 h-4 w-4" />
+              Back to Project
+            </Link>
+          </Button>
+          <UserTokensBalance />
+        </>
+      }
+    >
+      <ClarifySessionClient
+        interviewSession={{ ...interviewSession, userChatId }}
+        initialMessages={messages}
+      />
+    </PageLayout>
   );
 }

@@ -82,9 +82,9 @@ export function CollectSessionClient({
   }, [messages]);
 
   return (
-    <div className="flex flex-col min-h-screen bg-muted/30">
+    <div className="h-dvh flex flex-col items-stretch justify-start">
       <header className="sticky top-0 z-10 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-14 items-center">
+        <div className="flex h-14 items-center max-w-4xl mx-auto">
           <Link href="/" className="flex items-center space-x-2">
             <HippyGhostAvatar seed="atypica" className="h-6 w-6" />
             <span className="font-semibold">atypica.AI</span>
@@ -92,7 +92,7 @@ export function CollectSessionClient({
         </div>
       </header>
 
-      <main className="container flex-1 py-6 max-w-4xl mx-auto">
+      <main className="flex-1 py-6 max-w-4xl mx-auto">
         <div className="flex flex-col space-y-6">
           <Card className="overflow-hidden border-primary/20 py-0">
             <CardHeader className="bg-primary/5 pt-6 border-b border-primary/10">
@@ -170,7 +170,7 @@ export function CollectSessionClient({
       </main>
 
       <footer className="border-t py-6 md:py-0">
-        <div className="container flex flex-col items-center justify-between gap-4 md:h-14 md:flex-row">
+        <div className="flex flex-col items-center justify-between gap-4 md:h-14 md:flex-row max-w-4xl mx-auto">
           <p className="text-center text-sm leading-loose text-muted-foreground md:text-left">
             Built with{" "}
             <a

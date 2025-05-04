@@ -1,6 +1,5 @@
 "use client";
 import { InterviewProjectWithSessions } from "@/app/interviewProject/actions";
-import GlobalHeader from "@/components/GlobalHeader";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,11 +15,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import UserTokensBalance from "@/components/UserTokensBalance";
 import { cn, formatDate } from "@/lib/utils";
 import { InterviewSessionStatus } from "@prisma/client";
 import {
-  ArrowLeft,
   Calendar,
   DownloadIcon,
   ExternalLink,
@@ -30,7 +27,6 @@ import {
   Share2,
   Users,
 } from "lucide-react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -63,19 +59,9 @@ export function InterviewProjectDetail({ project }: { project: InterviewProjectW
   const collectSessions = project.sessions.filter((s) => s.kind === "collect");
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <GlobalHeader>
-        <Button variant="ghost" asChild>
-          <Link href="/interviewProject">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Projects
-          </Link>
-        </Button>
-        <UserTokensBalance />
-      </GlobalHeader>
-
-      <main className="flex-1 container max-w-6xl mx-auto py-8">
-        <div className="flex flex-col space-y-8">
+    <>
+      <main className="flex-1 overflow-y-auto scrollbar-thin">
+        <div className="flex flex-col space-y-8 container mx-auto py-8 px-6">
           <div className="flex items-start justify-between">
             <div>
               <div className="flex items-center gap-3">
@@ -212,7 +198,7 @@ export function InterviewProjectDetail({ project }: { project: InterviewProjectW
         open={isShareDialogOpen}
         onOpenChange={setIsShareDialogOpen}
       />
-    </div>
+    </>
   );
 }
 

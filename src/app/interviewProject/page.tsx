@@ -1,9 +1,14 @@
+import { Button } from "@/components/ui/button";
+import UserTokensBalance from "@/components/UserTokensBalance";
 import { authOptions } from "@/lib/auth";
 import { generatePageMetadata } from "@/lib/metadata";
+import { FolderPlusIcon } from "lucide-react";
 import { getServerSession } from "next-auth/next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
-import { InterviewProjectList } from "./InterviewProjectList";
 import { fetchInterviewProjects } from "./actions";
+import { InterviewProjectList } from "./InterviewProjectList";
+import { PageLayout } from "./PageLayout";
 
 export const dynamic = "force-dynamic";
 
@@ -27,5 +32,21 @@ export default async function InterviewProjectListPage() {
     );
   }
 
-  return <InterviewProjectList projects={result.data} />;
+  return (
+    <PageLayout
+      menus={
+        <>
+          <Button variant="ghost" asChild>
+            <Link href="/interviewProject/create">
+              <FolderPlusIcon className="mr-2 h-4 w-4" />
+              New Project
+            </Link>
+          </Button>
+          <UserTokensBalance />
+        </>
+      }
+    >
+      <InterviewProjectList projects={result.data} />
+    </PageLayout>
+  );
 }

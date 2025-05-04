@@ -1,6 +1,5 @@
 "use client";
 
-import GlobalHeader from "@/components/GlobalHeader";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,10 +10,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import UserTokensBalance from "@/components/UserTokensBalance";
 import { InterviewSessionStatus } from "@prisma/client";
 import { CalendarDays, FilePlus, FolderPlus } from "lucide-react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { InterviewProjectWithSessions } from "./actions";
 
@@ -22,45 +19,31 @@ export function InterviewProjectList({ projects }: { projects: InterviewProjectW
   const router = useRouter();
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <GlobalHeader>
-        <Button variant="ghost" asChild>
-          <Link href="/interviewProject/create">
+    <main className="flex-1 overflow-y-auto scrollbar-thin">
+      <div className="flex flex-col space-y-6 container mx-auto py-8 px-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-bold">Interview Projects</h1>
+          {/* <Button onClick={() => router.push("/interviewProject/create")}>
             <FolderPlus className="mr-2 h-4 w-4" />
             New Project
-          </Link>
-        </Button>
-        <UserTokensBalance />
-      </GlobalHeader>
-
-      <main className="flex-1 container max-w-6xl mx-auto py-8">
-        <div className="flex flex-col space-y-6">
-          <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold">Interview Projects</h1>
-            <Button onClick={() => router.push("/interviewProject/create")}>
-              <FolderPlus className="mr-2 h-4 w-4" />
-              New Project
-            </Button>
-          </div>
-
-          {projects.length === 0 ? (
-            <EmptyProjectState />
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {projects.map((project) => (
-                <ProjectCard key={project.id} project={project} />
-              ))}
-            </div>
-          )}
+          </Button> */}
         </div>
-      </main>
-    </div>
+        {projects.length === 0 ? (
+          <EmptyProjectState />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {projects.map((project) => (
+              <ProjectCard key={project.id} project={project} />
+            ))}
+          </div>
+        )}
+      </div>
+    </main>
   );
 }
 
 function EmptyProjectState() {
   const router = useRouter();
-
   return (
     <div className="flex flex-col items-center justify-center text-center p-12 border border-dashed rounded-lg space-y-6">
       <div className="bg-primary/10 rounded-full p-4">
