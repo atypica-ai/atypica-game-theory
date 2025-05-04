@@ -9,7 +9,6 @@ export const ClarifySessionBodySchema = z.object({
     parts: z.custom<NonNullable<Message["parts"]>>().optional(),
   }),
   id: z.number(), // User chat ID
-  sessionId: z.number(),
   sessionToken: z.string(),
 });
 
@@ -20,7 +19,6 @@ export const CollectSessionBodySchema = z.object({
     content: z.string(),
     parts: z.custom<NonNullable<Message["parts"]>>().optional(),
   }),
-  id: z.number().optional(), // User chat ID (may be null for first message)
-  sessionId: z.number(),
+  id: z.number().nullable(), // User chat ID (may be null for first message)
   sessionToken: z.string(),
 });

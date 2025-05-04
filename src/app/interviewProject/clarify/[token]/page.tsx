@@ -68,5 +68,10 @@ export default async function ClarifySessionPage({
     })
   ).map(convertDBMessageToAIMessage);
 
-  return <ClarifySessionClient interviewSession={interviewSession} initialMessages={messages} />;
+  return (
+    <ClarifySessionClient
+      interviewSession={{ ...interviewSession, userChatId }}
+      initialMessages={messages}
+    />
+  );
 }

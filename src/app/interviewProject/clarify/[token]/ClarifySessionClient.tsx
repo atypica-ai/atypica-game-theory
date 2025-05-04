@@ -27,11 +27,13 @@ export function ClarifySessionClient({
   interviewSession,
   initialMessages = [],
 }: {
-  interviewSession: ExtractServerActionData<typeof fetchClarifyInterviewSession>;
+  interviewSession: Omit<
+    ExtractServerActionData<typeof fetchClarifyInterviewSession>,
+    "userChatId"
+  > & { userChatId: number };
   initialMessages: Message[];
 }) {
   const initialRequestBody = {
-    sessionId: interviewSession.id,
     sessionToken: interviewSession.token,
   };
   const useChatHelpers = useChat({
@@ -39,11 +41,11 @@ export function ClarifySessionClient({
     api: "/api/chat/interviewSession/clarify",
     initialMessages,
     body: initialRequestBody,
-    experimental_prepareRequestBody({ messages, id, requestBody: _requestBody }) {
+    experimental_prepareRequestBody({ messages, requestBody: _requestBody }) {
       const requestBody: typeof initialRequestBody = { ...initialRequestBody, ..._requestBody };
       const body: z.infer<typeof ClarifySessionBodySchema> = {
         message: messages[messages.length - 1],
-        id: parseInt(id),
+        id: interviewSession.userChatId, // 不是用 useChat 自己生成的 chatId
         ...requestBody,
       };
       return body;

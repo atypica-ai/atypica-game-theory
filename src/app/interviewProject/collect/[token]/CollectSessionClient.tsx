@@ -14,6 +14,7 @@ import {
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
+import { Message } from "ai";
 import { BadgeCheck, Info, Shield, ThumbsUp } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
@@ -22,25 +23,26 @@ import { fetchCollectInterviewSession } from "../../actions";
 
 export function CollectSessionClient({
   interviewSession,
+  initialMessages,
 }: {
   interviewSession: ExtractServerActionData<typeof fetchCollectInterviewSession>;
+  initialMessages?: Message[];
 }) {
   const [interviewComplete, setInterviewComplete] = useState(false);
 
   const initialRequestBody = {
-    sessionId: interviewSession.id,
     sessionToken: interviewSession.token,
   };
   const useChatHelpers = useChat({
-    initialMessages: [],
     id: interviewSession.userChatId?.toString(),
     api: "/api/chat/interviewSession/collect",
+    initialMessages,
     body: initialRequestBody,
-    experimental_prepareRequestBody({ messages, id, requestBody: _requestBody }) {
+    experimental_prepareRequestBody({ messages, requestBody: _requestBody }) {
       const requestBody: typeof initialRequestBody = { ...initialRequestBody, ..._requestBody };
       const body: z.infer<typeof CollectSessionBodySchema> = {
         message: messages[messages.length - 1],
-        id: parseInt(id),
+        id: interviewSession.userChatId, // 不是用 useChat 自己生成的 chatId
         ...requestBody,
       };
       return body;
@@ -55,15 +57,20 @@ export function CollectSessionClient({
 
   const requestSentRef = useRef(false);
   useEffect(() => {
-    // If no initial message and not already started, start the conversation with AI
-    if (messages.length === 0 && !interviewSession.userChatId && !requestSentRef.current) {
-      requestSentRef.current = true;
+    if (requestSentRef.current) return;
+    requestSentRef.current = true;
+    if (!initialMessages?.length) {
+      // If no initial message and not already started, start the conversation with AI
       useChatRef.current.append({
         role: "system",
-        content: "Starting collect interviewSession.",
+        content: "Starting interview session.",
       });
+    } else if (initialMessages[initialMessages.length - 1]?.role === "user") {
+      useChatRef.current.reload();
     }
-    // Check if interview is complete
+  }, [initialMessages]);
+
+  useEffect(() => {
     const lastMessage = messages[messages.length - 1];
     if (
       lastMessage?.role === "assistant" &&
@@ -72,7 +79,7 @@ export function CollectSessionClient({
     ) {
       setInterviewComplete(true);
     }
-  }, [messages, interviewSession.userChatId]);
+  }, [messages]);
 
   return (
     <div className="flex flex-col min-h-screen bg-muted/30">
@@ -87,8 +94,8 @@ export function CollectSessionClient({
 
       <main className="container flex-1 py-6 max-w-4xl mx-auto">
         <div className="flex flex-col space-y-6">
-          <Card className="overflow-hidden border-primary/20">
-            <CardHeader className="bg-primary/5 border-b border-primary/10">
+          <Card className="overflow-hidden border-primary/20 py-0">
+            <CardHeader className="bg-primary/5 pt-6 border-b border-primary/10">
               <div className="flex items-start justify-between">
                 <div>
                   <CardTitle className="text-xl flex items-center">
@@ -105,7 +112,6 @@ export function CollectSessionClient({
               {interviewSession.description && (
                 <p className="text-muted-foreground mb-4">{interviewSession.description}</p>
               )}
-
               <div className="space-y-4">
                 <Alert>
                   <Info className="h-4 w-4" />
@@ -127,7 +133,7 @@ export function CollectSessionClient({
                 </div>
               </div>
             </CardContent>
-            <CardFooter className="bg-primary/5 border-t border-primary/10 px-6 py-4">
+            <CardFooter className="bg-primary/5 border-t border-primary/10 px-6 pb-6">
               <div className="flex items-center space-x-2 text-xs text-muted-foreground">
                 <Shield className="h-3.5 w-3.5" />
                 <span>Your responses will be used for research purposes only.</span>

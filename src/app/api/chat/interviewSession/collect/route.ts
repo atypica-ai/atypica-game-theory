@@ -1,160 +1,88 @@
+import { fetchCollectInterviewSession } from "@/app/interviewProject/actions";
 import { llm, providerOptions } from "@/lib/llm";
-import { convertDBMessageToAIMessage } from "@/lib/messageUtils";
+import {
+  appendStepToStreamingMessage,
+  persistentAIMessageToDB,
+  prepareMessagesForStreaming,
+} from "@/lib/messageUtils";
 import { prisma } from "@/lib/prisma";
 import { generateToken } from "@/lib/utils";
 import { interviewSessionSystem } from "@/prompt/interviewSession";
-import { saveInterviewSessionSummaryTool, ToolName } from "@/tools";
+import { saveInterviewSessionSummaryTool, StatReporter, ToolName } from "@/tools";
 import { reasoningThinkingTool } from "@/tools/experts/reasoning";
-import { InterviewSessionStatus, UserChatKind } from "@prisma/client";
-import { Message, streamText } from "ai";
-import { NextRequest } from "next/server";
-import { CollectSessionBodySchema, saveChatMessage } from "../lib";
+import { generateId, smoothStream, streamText } from "ai";
+import { after, NextRequest, NextResponse } from "next/server";
+import { CollectSessionBodySchema } from "../lib";
 
 export const maxDuration = 60;
 
 export async function POST(req: NextRequest) {
-  // Parse the request body
-  let body;
-  try {
-    body = await req.json();
-  } catch (error) {
-    console.log(error);
-    return Response.json(
-      {
-        error: {
-          code: "bad_request",
-          message: "The request body is not valid JSON.",
-        },
-      },
-      { status: 400 },
-    );
-  }
-
-  // Validate the request body
-  const parseResult = CollectSessionBodySchema.safeParse(body);
+  const payload = await req.json();
+  const parseResult = CollectSessionBodySchema.safeParse(payload);
   if (!parseResult.success) {
-    return Response.json(
-      {
-        error: {
-          code: "bad_request",
-          message: "The request body does not match the expected schema.",
-          details: parseResult.error.format(),
-        },
-      },
-      { status: 400 },
-    );
+    const error = { message: "Invalid request", details: parseResult.error.format() };
+    return NextResponse.json({ error }, { status: 400 });
   }
 
-  // Extract data from request
-  const { message, id: chatId, sessionId, sessionToken } = parseResult.data;
-
-  // Verify the session token is valid
-  const interviewSession = await prisma.interviewSession.findUnique({
-    where: {
-      id: sessionId,
-      token: sessionToken,
-      kind: "collect",
-    },
-    include: {
-      project: {
-        select: {
-          title: true,
-          description: true,
-          category: true,
-          objectives: true,
-          userId: true,
-        },
-      },
-    },
-  });
-
-  if (!interviewSession) {
-    return Response.json(
-      {
-        error: {
-          code: "not_found",
-          message: "The specified interview session was not found.",
-        },
-      },
-      { status: 404 },
-    );
+  const { message: newMessage, id: userChatIdOrNull, sessionToken } = parseResult.data;
+  const result = await fetchCollectInterviewSession(sessionToken);
+  if (!result.success) {
+    return NextResponse.json({ error: result.message }, { status: 400 });
   }
-
+  const interviewSession = result.data;
   // Check if session is expired
   if (interviewSession.expiresAt && new Date() > new Date(interviewSession.expiresAt)) {
-    return Response.json(
-      {
-        error: {
-          code: "expired",
-          message: "This interview has expired.",
-        },
-      },
-      { status: 403 },
-    );
+    const error = { message: "Interview session has expired." };
+    return Response.json({ error }, { status: 403 });
   }
 
   let userChatId: number;
-  let messages: Message[] = [];
 
   // First message in a collect session? Create UserChat
-  if (!chatId) {
-    // Create a new UserChat for this anonymous user
-    const userChat = await prisma.userChat.create({
-      data: {
-        userId: interviewSession.project.userId, // Owned by the project creator
-        title: `Shared: ${interviewSession.title}`,
-        kind: UserChatKind.interviewSession,
-        token: generateToken(),
-      },
+  if (!userChatIdOrNull && !interviewSession.userChatId) {
+    const userChat = await prisma.$transaction(async (tx) => {
+      const project = await tx.interviewProject.findUniqueOrThrow({
+        where: { id: interviewSession.projectId },
+      });
+      const userChat = await tx.userChat.create({
+        data: {
+          userId: project.userId, // Owned by the project creator
+          title: `Shared: ${interviewSession.title}`,
+          kind: "interviewSession",
+          token: generateToken(),
+        },
+      });
+      await tx.interviewSession.update({
+        where: { id: interviewSession.id },
+        data: {
+          userChatId: userChat.id,
+          status: "active",
+        },
+      });
+      return userChat;
     });
     userChatId = userChat.id;
-    // Update the session with this UserChat
-    await prisma.interviewSession.update({
-      where: { id: sessionId },
-      data: {
-        userChatId: userChatId,
-        status: InterviewSessionStatus.active,
-      },
-    });
   } else {
-    if (interviewSession.userChatId !== chatId) {
-      return new Response(
-        JSON.stringify({
-          error: {
-            code: "invalid_chat_id",
-            message: "Invalid chat ID",
-          },
-        }),
-        { status: 400 },
-      );
+    // 要么都为空，要么都不为空，且相等
+    if (
+      !userChatIdOrNull ||
+      !interviewSession.userChatId ||
+      interviewSession.userChatId !== userChatIdOrNull
+    ) {
+      return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
     }
-    userChatId = chatId;
-    // Get previous messages for context
-    const dbMessages = await prisma.chatMessage.findMany({
-      where: {
-        userChatId,
-      },
-      orderBy: {
-        id: "asc",
-      },
-    });
-    messages = dbMessages.map(convertDBMessageToAIMessage);
+    userChatId = userChatIdOrNull;
   }
 
-  // Save the user's message to the database
-  await saveChatMessage({
-    userChatId,
-    message,
+  // 无需再继续检查，可以直接安全的保存和读取 userChat.messages
+  await persistentAIMessageToDB(userChatId, {
+    ...newMessage,
+    id: newMessage.id ?? generateId(),
   });
+  const { coreMessages, streamingMessage } = await prepareMessagesForStreaming(userChatId);
 
-  // Add the newest message to our context
-  messages.push(message);
-
-  // Create abort controller for the request
-  const abortController = new AbortController();
-  req.signal.addEventListener("abort", () => {
-    abortController.abort();
-  });
+  const abortSignal = req.signal;
+  const statReport: StatReporter = async () => {};
 
   // Generate system message with project context
   const systemPrompt = interviewSessionSystem({
@@ -166,14 +94,15 @@ export async function POST(req: NextRequest) {
   });
 
   // Generate response from LLM
-  const response = streamText({
+  const streamTextResult = streamText({
     model: llm("gpt-4o"),
+    providerOptions,
     system: systemPrompt,
-    messages: messages,
+    messages: coreMessages,
     tools: {
       [ToolName.reasoningThinking]: reasoningThinkingTool({
-        abortSignal: abortController.signal,
-        statReport: async () => {}, // No reporting for collect sessions
+        abortSignal,
+        statReport,
       }),
       [ToolName.saveInterviewSessionSummary]: saveInterviewSessionSummaryTool({
         sessionId: interviewSession.id,
@@ -182,30 +111,30 @@ export async function POST(req: NextRequest) {
     toolChoice: "auto",
     maxSteps: 5,
     temperature: 0.7,
-    providerOptions,
-    abortSignal: abortController.signal,
+    experimental_transform: smoothStream({
+      chunking: /[\u4E00-\u9FFF]|\S+\s+/,
+    }),
+    onStepFinish: async (step) => {
+      appendStepToStreamingMessage(streamingMessage, step);
+      if (streamingMessage.parts?.length && streamingMessage.content.trim()) {
+        await persistentAIMessageToDB(userChatId, streamingMessage);
+      }
+    },
+    abortSignal,
   });
 
-  // Save assistant's response to database
-  // if (response.messages.length > 0) {
-  //   const lastMessage = response.messages[response.messages.length - 1];
-  //   await saveChatMessage({
-  //     userChatId,
-  //     message: lastMessage,
-  //   });
+  // TODO: 需要在调用了 summary 工具以后，标记 completed
 
-  //   // Update session status if needed
-  //   if (
-  //     lastMessage.content.includes("interview is now complete") ||
-  //     lastMessage.content.includes("Thank you for completing this interview")
-  //   ) {
-  //     await prisma.interviewSession.update({
-  //       where: { id: interviewSession.id },
-  //       data: { status: InterviewSessionStatus.completed },
-  //     });
-  //   }
-  // }
+  // 持续 consume stream，不过因为加了 abortSignal，请求断了的时候 stream 也就直接断了，
+  // TODO 要考虑下上面要不要加 abortSignal
+  after(
+    new Promise((resolve, reject) => {
+      streamTextResult
+        .consumeStream()
+        .then(() => resolve(null))
+        .catch((error) => reject(error));
+    }),
+  );
 
-  // Return streaming response
-  return response.toDataStreamResponse();
+  return streamTextResult.toDataStreamResponse();
 }

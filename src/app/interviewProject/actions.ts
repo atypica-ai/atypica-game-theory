@@ -281,36 +281,35 @@ export async function fetchCollectInterviewSession<
     project: Pick<InterviewProject, "id" | "title" | "description" | "category" | "objectives">;
   },
 >(sessionToken: string): Promise<ServerActionResult<T>> {
-  return withAuth(async (user) => {
-    const session = (await prisma.interviewSession.findUnique({
-      where: {
-        token: sessionToken,
-        kind: "collect",
-      },
-      include: {
-        project: {
-          select: {
-            id: true,
-            title: true,
-            description: true,
-            category: true,
-            objectives: true,
-          },
+  const interviewSession = (await prisma.interviewSession.findUnique({
+    where: {
+      token: sessionToken,
+      kind: "collect",
+    },
+    include: {
+      project: {
+        select: {
+          id: true,
+          userId: true,
+          title: true,
+          description: true,
+          category: true,
+          objectives: true,
         },
       },
-    })) as T | null;
+    },
+  })) as T | null;
 
-    if (!session) {
-      return {
-        success: false,
-        code: "not_found",
-        message: "Interview session not found",
-      };
-    }
-
+  if (!interviewSession) {
     return {
-      success: true,
-      data: session,
+      success: false,
+      code: "not_found",
+      message: "Interview session not found",
     };
-  });
+  }
+
+  return {
+    success: true,
+    data: interviewSession,
+  };
 }

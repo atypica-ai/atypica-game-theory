@@ -1,4 +1,7 @@
+import { convertDBMessageToAIMessage } from "@/lib/messageUtils";
 import { generatePageMetadata } from "@/lib/metadata";
+import { prisma } from "@/lib/prisma";
+import { Message } from "ai";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { fetchCollectInterviewSession } from "../../actions";
@@ -59,5 +62,16 @@ export default async function CollectSessionPage({
     );
   }
 
-  return <CollectSessionClient interviewSession={interviewSession} />;
+  const userChatId = interviewSession.userChatId;
+  let messages: Message[] | undefined = undefined;
+  if (userChatId) {
+    messages = (
+      await prisma.chatMessage.findMany({
+        where: { userChatId },
+        orderBy: { id: "asc" },
+      })
+    ).map(convertDBMessageToAIMessage);
+  }
+
+  return <CollectSessionClient interviewSession={interviewSession} initialMessages={messages} />;
 }

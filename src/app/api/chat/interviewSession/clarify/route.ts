@@ -6,7 +6,6 @@ import {
   persistentAIMessageToDB,
   prepareMessagesForStreaming,
 } from "@/lib/messageUtils";
-import { prisma } from "@/lib/prisma";
 import { interviewSessionSystem } from "@/prompt/interviewSession";
 import {
   reasoningThinkingTool,
@@ -16,7 +15,7 @@ import {
 } from "@/tools";
 import { generateId, smoothStream, streamText } from "ai";
 import { getServerSession } from "next-auth";
-import { NextRequest, NextResponse } from "next/server";
+import { after, NextRequest, NextResponse } from "next/server";
 import { ClarifySessionBodySchema } from "../lib";
 
 export const maxDuration = 60;
@@ -27,10 +26,10 @@ export async function POST(req: NextRequest) {
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const userId = session.user.id;
+  // 用不到了，fetchClarifyInterviewSession会检查用户权限
+  // const userId = session.user.id;
 
   const payload = await req.json();
-  // Validate the request body
   const parseResult = ClarifySessionBodySchema.safeParse(payload);
   if (!parseResult.success) {
     const error = { message: "Invalid request", details: parseResult.error.format() };
@@ -47,14 +46,8 @@ export async function POST(req: NextRequest) {
   if (interviewSession.userChatId !== userChatId) {
     return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
   }
-  // 无需再继续检查，可以直接安全的读取 userChat
-  const userChat = await prisma.userChat.findUniqueOrThrow({
-    where: {
-      id: userChatId,
-      kind: "interviewSession",
-    },
-  });
 
+  // 无需再继续检查，可以直接安全的保存和读取 userChat.messages
   await persistentAIMessageToDB(userChatId, {
     ...newMessage,
     id: newMessage.id ?? generateId(),
@@ -73,8 +66,7 @@ export async function POST(req: NextRequest) {
     sessionKind: "clarify",
   });
 
-  // Generate response from LLM
-  const response = streamText({
+  const streamTextResult = streamText({
     model: llm("gpt-4o"),
     providerOptions,
     system: systemPrompt,
@@ -103,26 +95,18 @@ export async function POST(req: NextRequest) {
     abortSignal,
   });
 
-  // Save assistant's response to database
-  // if (response.messages.length > 0) {
-  //   const lastMessage = response.messages[response.messages.length - 1];
-  //   await saveChatMessage({
-  //     userChatId: parseInt(id),
-  //     message: lastMessage,
-  //   });
+  // TODO: 需要在调用了 summary 工具以后，标记 completed
 
-  //   // Update session status if needed
-  //   if (
-  //     lastMessage.content.includes("interview is now complete") ||
-  //     lastMessage.content.includes("Thank you for completing this interview")
-  //   ) {
-  //     await prisma.interviewSession.update({
-  //       where: { id: interviewSession.id },
-  //       data: { status: InterviewSessionStatus.completed },
-  //     });
-  //   }
-  // }
+  // 持续 consume stream，不过因为加了 abortSignal，请求断了的时候 stream 也就直接断了，
+  // TODO 要考虑下上面要不要加 abortSignal
+  after(
+    new Promise((resolve, reject) => {
+      streamTextResult
+        .consumeStream()
+        .then(() => resolve(null))
+        .catch((error) => reject(error));
+    }),
+  );
 
-  // Return streaming response
-  return response.toDataStreamResponse();
+  return streamTextResult.toDataStreamResponse();
 }
