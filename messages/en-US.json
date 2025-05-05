@@ -73,29 +73,23 @@
     },
     "projectCard": {
       "projectCategory": "Project Category",
-      "activeSessions": "active sessions",
-      "completed": "completed",
-      "collectSessions": "collect sessions",
+      "collectSessions": "{total} interviews（{active} active，{completed} completed）",
       "moreObjectives": "more objectives",
       "viewProject": "View Project",
-      "newSession": "New Session",
       "updated": "Updated"
     },
     "projectDetail": {
-      "createCollectSession": "Create Collect Session",
-      "clarifyProject": "Clarify Project",
-      "loadingClarify": "Loading...",
+      "createCollectSession": "Create interview",
+      "clarifyProject": "Clarify project brief",
       "clarifyPrompt": "Click \"Clarify Project\" to define your research brief and objectives.",
-      "projectDetails": "Project Details",
       "projectCategory": "Project Category",
       "created": "Created",
       "lastUpdated": "Last Updated",
       "researchObjectives": "Research Objectives",
       "noObjectives": "No objectives defined yet. Use the \"Clarify Project\" button to define your research objectives.",
-      "exportData": "Export Data",
-      "collectSessionsTab": "Collect Sessions",
-      "noCollectSessions": "No collect sessions yet",
-      "noCollectSessionsDesc": "Create collect sessions to collect insights from others without requiring them to create an account.",
+      "collectSessionsTab": "Interview",
+      "noCollectSessions": "No interviews yet",
+      "noCollectSessionsDesc": "Create interviews to collect insights from others without requiring them to create an account.",
       "shareLink": "Share Link",
       "copyLink": "Copy link",
       "copied": "Copied!",
@@ -108,7 +102,7 @@
       "noClarifySessionError": "No clarify session found. Please contact support."
     },
     "createCollectSession": {
-      "title": "Create Collect Session",
+      "title": "Create interview",
       "description": "Create a session link you can share with participants to collect their insights.",
       "sessionTitle": "Session Title",
       "sessionTitleDesc": "Give this session a descriptive name",
@@ -134,22 +128,18 @@
         "titleMin": "Title must be at least 3 characters"
       },
       "toast": {
-        "success": "Collect session created successfully",
-        "error": "Failed to create collect session",
+        "success": "Interview created successfully",
+        "error": "Failed to create interview",
         "unexpectedError": "An unexpected error occurred"
       }
     },
     "clarifySession": {
-      "interviewInProgress": "Interview in Progress",
-      "interviewDescription": "This interview expert will ask questions based on your project's objectives. Please provide detailed responses to help build a comprehensive knowledge base.",
-      "viewSummary": "View Summary",
-      "interviewSummary": "Interview Summary",
+      "interviewInProgress": "Chat with atypica.AI to clarify project requirements",
+      "interviewDescription": "atypica.AI will ask questions about this project. Please provide detailed answers to help clarify project requirements and better plan user interviews.",
       "projectDetails": "Project Details",
       "researchObjectives": "Research Objectives",
-      "aboutProject": "About This Project",
-      "projectType": "Project Type",
-      "interviewAnalysis": "Interview Analysis",
-      "exportSession": "Export Session"
+      "projectBrief": "Project brief",
+      "projectType": "Project Type"
     },
     "collectSession": {
       "officialInterview": "Official Interview",

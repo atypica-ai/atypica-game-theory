@@ -3,7 +3,14 @@ import { InterviewProjectWithSessions } from "@/app/interviewProject/actions";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -24,13 +31,19 @@ import {
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn, formatDate } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { InterviewSession } from "@prisma/client";
-import { Copy, DownloadIcon, Share2, Users } from "lucide-react";
+import {
+  Copy,
+  MessageSquareTextIcon,
+  NotebookPenIcon,
+  PlusIcon,
+  Share2,
+  Share2Icon,
+} from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -48,7 +61,6 @@ export function InterviewProjectDetail({ project }: { project: ExtendedInterview
   const router = useRouter();
   const t = useTranslations("InterviewProject.projectDetail");
   const locale = useLocale();
-  const [isCreatingSession, setIsCreatingSession] = useState(false);
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
 
   // If there's no clarify session yet, we should redirect to create one (shouldn't happen with new design)
@@ -65,130 +77,114 @@ export function InterviewProjectDetail({ project }: { project: ExtendedInterview
 
   return (
     <>
-      <main className="flex-1 overflow-y-auto scrollbar-thin">
-        <div className="flex flex-col space-y-8 container mx-auto py-8 px-6">
-          <div className="flex items-start justify-between">
-            <div>
-              <div className="flex items-center gap-3">
-                <HippyGhostAvatar seed={project.token} className="h-10 w-10" />
-                <h1 className="text-3xl font-bold">{project.title}</h1>
-              </div>
-              {project.brief && (
-                <p className="text-muted-foreground mt-2 max-w-2xl">{project.brief}</p>
-              )}
-              {!project.brief && project.clarifySession && (
-                <p className="text-muted-foreground mt-2 max-w-2xl">{t("clarifyPrompt")}</p>
-              )}
-            </div>
+      <main
+        className={cn(
+          "flex-1 overflow-y-auto scrollbar-thin",
+          "flex flex-col space-y-6 container mx-auto py-6 sm:py-8 px-6",
+        )}
+      >
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <Card className="lg:col-span-1">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <NotebookPenIcon className="w-5 h-5 mr-2" />
+                <h1 className="text-lg">{project.title}</h1>
+              </CardTitle>
+              <CardDescription>
+                {project.brief && (
+                  <p className="text-sm text-muted-foreground mt-2 max-w-2xl">{project.brief}</p>
+                )}
+                {!project.brief && project.clarifySession && (
+                  <p className="text-sm text-muted-foreground mt-2 max-w-2xl">
+                    {t("clarifyPrompt")}
+                  </p>
+                )}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div>
+                <div className="font-medium">{t("researchObjectives")}</div>
+                {project.objectives && project.objectives.length > 0 && (
+                  <ul className="text-sm list-disc list-inside text-muted-foreground mt-1 space-y-1">
+                    {project.objectives.map((objective, i) => (
+                      <li key={i}>{objective}</li>
+                    ))}
+                  </ul>
+                )}
 
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setIsShareDialogOpen(true)}>
-                <Share2 className="mr-2 h-4 w-4" />
+                {(!project.objectives || project.objectives.length === 0) &&
+                  project.clarifySession && (
+                    <div className="text-sm text-muted-foreground mt-1 italic">
+                      {t("noObjectives")}
+                    </div>
+                  )}
+              </div>
+
+              <div className="mt-6 flex items-center justify-between gap-2 text-sm">
+                <div className="font-medium">{t("projectCategory")}</div>
+                <div className="text-muted-foreground">{project.category}</div>
+              </div>
+
+              <div className="mt-2 flex items-center justify-between gap-2 text-sm">
+                <div className="font-medium">{t("created")}</div>
+                <div className="text-muted-foreground">{formatDate(project.createdAt, locale)}</div>
+              </div>
+
+              <div className="mt-2 flex items-center justify-between gap-2 text-sm">
+                <div className="font-medium">{t("lastUpdated")}</div>
+                <div className="text-muted-foreground">{formatDate(project.updatedAt, locale)}</div>
+              </div>
+            </CardContent>
+            <CardFooter className="flex justify-end border-t pt-4">
+              <Button onClick={handleStartClarifySession}>
+                <MessageSquareTextIcon className="h-5 w-5" />
+                {t("clarifyProject")}
+              </Button>
+            </CardFooter>
+          </Card>
+
+          <div className="lg:col-span-2 space-y-4">
+            <div className="flex items-center gap-2">
+              <Share2Icon className="mr-2 h-4 w-4" />
+              <div className="font-medium">{t("collectSessionsTab")}</div>
+              <Badge className="ml-2 bg-primary/20 text-foreground" variant="secondary">
+                {collectSessions.length}
+              </Badge>
+              <Button
+                className="ml-auto"
+                variant="outline"
+                size="sm"
+                onClick={() => setIsShareDialogOpen(true)}
+              >
+                <PlusIcon className="h-4 w-4" />
                 {t("createCollectSession")}
               </Button>
-
-              <Button onClick={handleStartClarifySession} disabled={isCreatingSession}>
-                <Users className="mr-2 h-4 w-4" />
-                {isCreatingSession ? t("loadingClarify") : t("clarifyProject")}
-              </Button>
             </div>
-          </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <Card className="lg:col-span-1">
-              <CardHeader>
-                <CardTitle>{t("projectDetails")}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div>
-                    <div className="text-sm font-medium">{t("projectCategory")}</div>
-                    <div className="text-muted-foreground">{project.category}</div>
-                  </div>
-
-                  <div>
-                    <div className="text-sm font-medium">{t("created")}</div>
-                    <div className="text-muted-foreground">
-                      {formatDate(project.createdAt, locale)}
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="text-sm font-medium">{t("lastUpdated")}</div>
-                    <div className="text-muted-foreground">
-                      {formatDate(project.updatedAt, locale)}
-                    </div>
-                  </div>
-
-                  {project.objectives && project.objectives.length > 0 && (
-                    <div>
-                      <div className="text-sm font-medium">{t("researchObjectives")}</div>
-                      <ul className="list-disc list-inside text-muted-foreground mt-1 space-y-1">
-                        {project.objectives.map((objective, i) => (
-                          <li key={i}>{objective}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-
-                  {(!project.objectives || project.objectives.length === 0) &&
-                    project.clarifySession && (
-                      <div>
-                        <div className="text-sm font-medium">{t("researchObjectives")}</div>
-                        <div className="text-muted-foreground mt-1 italic">{t("noObjectives")}</div>
-                      </div>
-                    )}
+            {collectSessions.length === 0 ? (
+              <div className="text-center p-12 border border-dashed rounded-lg">
+                <div className="flex justify-center mb-4">
+                  <Share2 className="h-12 w-12 text-muted-foreground" />
                 </div>
-              </CardContent>
-              <CardFooter className="flex justify-end border-t pt-4">
-                <Button variant="outline" size="sm">
-                  <DownloadIcon className="mr-2 h-4 w-4" />
-                  {t("exportData")}
+                <h3 className="text-lg font-medium mb-2">{t("noCollectSessions")}</h3>
+                <p className="text-muted-foreground max-w-md mx-auto mb-6">
+                  {t("noCollectSessionsDesc")}
+                </p>
+                <Button onClick={() => setIsShareDialogOpen(true)}>
+                  <PlusIcon className="h-4 w-4" />
+                  {t("createCollectSession")}
                 </Button>
-              </CardFooter>
-            </Card>
-
-            <div className="lg:col-span-2">
-              <Tabs defaultValue="collect-sessions">
-                <TabsList className="mb-4">
-                  <TabsTrigger value="collect-sessions" className="flex items-center">
-                    <Share2 className="mr-2 h-4 w-4" />
-                    {t("collectSessionsTab")}
-                    <Badge className="ml-2 bg-primary/20 text-foreground" variant="secondary">
-                      {collectSessions.length}
-                    </Badge>
-                  </TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="collect-sessions">
-                  {collectSessions.length === 0 ? (
-                    <div className="text-center p-12 border border-dashed rounded-lg">
-                      <div className="flex justify-center mb-4">
-                        <Share2 className="h-12 w-12 text-muted-foreground" />
-                      </div>
-                      <h3 className="text-lg font-medium mb-2">{t("noCollectSessions")}</h3>
-                      <p className="text-muted-foreground max-w-md mx-auto mb-6">
-                        {t("noCollectSessionsDesc")}
-                      </p>
-                      <Button onClick={() => setIsShareDialogOpen(true)}>
-                        <Share2 className="mr-2 h-4 w-4" />
-                        {t("createCollectSession")}
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {collectSessions.map((session) => (
-                        <CollectSessionCard key={session.id} session={session} />
-                      ))}
-                    </div>
-                  )}
-                </TabsContent>
-              </Tabs>
-            </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {collectSessions.map((session) => (
+                  <CollectSessionCard key={session.id} session={session} />
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </main>
-
       <CreateCollectSessionDialog
         projectToken={project.token}
         open={isShareDialogOpen}
@@ -224,16 +220,14 @@ function CollectSessionCard({ session }: { session: InterviewProjectWithSessions
   }, [collectLink, t]);
 
   return (
-    <Card className="overflow-hidden h-full flex flex-col">
-      <CardHeader className="bg-muted/50 px-4 py-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <HippyGhostAvatar seed={session.token} className="w-6 h-6 mr-2" />
-            <CardTitle className="text-base">{session.title}</CardTitle>
-          </div>
+    <Card className="overflow-hidden h-full flex flex-col py-0">
+      <CardHeader className="p-0 gap-0">
+        <div className="flex items-center gap-2 bg-muted/50 px-4 py-3">
+          <HippyGhostAvatar seed={session.token} className="w-6 h-6 mr-2" />
+          <CardTitle className="text-base">{session.title}</CardTitle>
           <Badge
             variant="secondary"
-            className={cn("ml-2 capitalize", statusColors[session.status])}
+            className={cn("ml-auto capitalize", statusColors[session.status])}
           >
             {session.status}
           </Badge>
@@ -286,7 +280,7 @@ function CollectSessionCard({ session }: { session: InterviewProjectWithSessions
             {showInsights && (
               <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
                 {session.keyInsights.map((insight, i) => (
-                  <li key={i} className="line-clamp-2">
+                  <li key={i} className="text-xs">
                     {insight}
                   </li>
                 ))}
@@ -295,9 +289,9 @@ function CollectSessionCard({ session }: { session: InterviewProjectWithSessions
           </div>
         )}
       </CardContent>
-      <CardFooter className="px-4 py-3 border-t bg-muted/30 flex gap-2">
+      <CardFooter className="px-4 [.border-t]:pt-4 pb-4 flex gap-0">
         <Button
-          variant="default"
+          variant="outline"
           size="sm"
           className="flex-1"
           onClick={() => window.open(`/interviewProject/collect/${session.token}`, "_blank")}

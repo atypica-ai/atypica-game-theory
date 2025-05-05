@@ -28,7 +28,7 @@ export const ChatMessage = (message: {
   return (
     <motion.div
       className={cn(
-        "flex flex-row items-start justify-start gap-2 p-4 w-full first-of-type:mt-2 rounded-sm",
+        "flex flex-row items-start justify-start gap-2 p-3 w-full first-of-type:mt-2 rounded-sm",
         role === "user" ? "bg-zinc-100/70 dark:bg-zinc-800" : "",
       )}
       initial={{ y: 5, opacity: 0 }}
@@ -44,7 +44,7 @@ export const ChatMessage = (message: {
               : null}
       </div>
 
-      <div className={cn("flex-1 overflow-hidden flex flex-col gap-4 px-1")}>
+      <div className={cn("flex-1 overflow-hidden flex flex-col gap-3 px-1")}>
         {nickname && (
           <div className="leading-[24px] text-zinc-800 dark:text-zinc-200 text-sm font-medium">
             {nickname}

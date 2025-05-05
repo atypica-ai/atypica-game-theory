@@ -45,16 +45,18 @@ export function UserChatSession({
     <div
       className={cn(
         "w-full h-full overflow-hidden",
-        "flex flex-col items-stretch justify-between gap-4 p-3",
+        "flex flex-col items-stretch justify-between gap-3",
       )}
     >
-      <div className="relative w-full mt-4">
-        <h1 className="sm:text-lg font-medium text-center truncate">{chatTitle}</h1>
-      </div>
+      {chatTitle && (
+        <div className="relative w-full mt-3">
+          <h1 className="sm:text-lg font-medium text-center truncate">{chatTitle}</h1>
+        </div>
+      )}
 
       <div
         ref={messagesContainerRef}
-        className="flex-1 flex flex-col gap-6 w-full items-center overflow-y-auto scrollbar-thin"
+        className="flex-1 flex flex-col gap-6 w-full items-center overflow-y-auto scrollbar-thin p-3"
       >
         {messages.map((message) => (
           <ChatMessage
@@ -81,7 +83,7 @@ export function UserChatSession({
 
       {!readOnly && <StatusDisplay status={status} />}
       {!readOnly && (
-        <form onSubmit={handleSubmit} className="relative">
+        <form onSubmit={handleSubmit} className="relative mx-3 mb-3">
           <Textarea
             className={cn(
               "block min-h-24 max-lg:min-h-20 text-sm placeholder:text-sm resize-none focus-visible:border-primary/70 transition-colors rounded-lg py-3 px-4",

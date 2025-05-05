@@ -8,13 +8,7 @@ import {
   prepareMessagesForStreaming,
 } from "@/lib/messageUtils";
 import { interviewSessionSystem } from "@/prompt/interviewSession";
-import {
-  reasoningThinkingTool,
-  saveInterviewSessionSummaryTool,
-  StatReporter,
-  ToolName,
-  updateInterviewProjectTool,
-} from "@/tools";
+import { reasoningThinkingTool, StatReporter, ToolName, updateInterviewProjectTool } from "@/tools";
 import { generateId, smoothStream, streamText } from "ai";
 import { getServerSession } from "next-auth";
 import { after, NextRequest, NextResponse } from "next/server";
@@ -79,9 +73,6 @@ export async function POST(req: NextRequest) {
       [ToolName.reasoningThinking]: reasoningThinkingTool({
         abortSignal,
         statReport,
-      }),
-      [ToolName.saveInterviewSessionSummary]: saveInterviewSessionSummaryTool({
-        sessionId: interviewSession.id,
       }),
       [ToolName.updateInterviewProject]: updateInterviewProjectTool({
         projectId: interviewSession.projectId,

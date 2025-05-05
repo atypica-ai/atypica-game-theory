@@ -1,7 +1,6 @@
 "use client";
 import { CollectSessionBodySchema } from "@/app/api/chat/interviewSession/lib";
 import { UserChatSession } from "@/components/chat/UserChatSession";
-import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -145,7 +144,6 @@ export function CollectSessionClient({
         <div className="flex h-14 items-center px-4 lg:px-6">
           <div className="flex items-center gap-2 lg:gap-4 w-full">
             <Link href="/" className="flex items-center space-x-2">
-              <HippyGhostAvatar seed="atypica" className="h-6 w-6" />
               <span className="font-semibold">atypica.AI</span>
             </Link>
             <div className="ml-auto">
@@ -157,7 +155,7 @@ export function CollectSessionClient({
                   className="flex items-center gap-1"
                 >
                   <Info className="h-4 w-4" />
-                  <span>{t("projectDetails", { defaultMessage: "Project Details" })}</span>
+                  <span>{t("projectDetails")}</span>
                 </Button>
               )}
             </div>
@@ -165,59 +163,49 @@ export function CollectSessionClient({
         </div>
       </header>
 
-      <main className="flex-1 overflow-hidden">
-        <div className="h-full flex flex-col lg:flex-row">
-          {/* Chat Area - Always shown and takes full width on mobile */}
-          <div
-            className={cn(
-              "flex-1 flex flex-col overflow-hidden",
-              isDesktop ? "lg:w-3/5 lg:border-r" : "w-full",
-            )}
-          >
-            <div className="flex-1 overflow-hidden">
-              <UserChatSession
-                chatId={interviewSession.userChatId?.toString()}
-                chatTitle={interviewSession.title}
-                useChatHelpers={useChatHelpers}
-                useChatRef={useChatRef}
-              />
-            </div>
-          </div>
-
-          {/* Project Details - Shown on desktop, hidden on mobile */}
-          {isDesktop && (
-            <div className="hidden lg:block lg:w-2/5 p-4 overflow-auto">
-              <ProjectDetailsCard />
-            </div>
+      <main className="flex-1 overflow-hidden flex flex-col lg:flex-row">
+        {/* Chat Area - Always shown and takes full width on mobile */}
+        <div
+          className={cn(
+            "flex-1 flex flex-col overflow-hidden",
+            isDesktop ? "lg:w-3/5 lg:border-r" : "w-full",
           )}
-
-          {/* Drawer for mobile */}
-          {!isDesktop && (
-            <Drawer
-              open={projectDetailsOpen}
-              onOpenChange={setProjectDetailsOpen}
-              direction="right"
-            >
-              <DrawerContent className="h-full w-[85vw] max-w-md border-l">
-                <DrawerHeader className="border-b">
-                  <div className="flex items-center justify-between">
-                    <DrawerTitle>
-                      {t("projectDetails", { defaultMessage: "Project Details" })}
-                    </DrawerTitle>
-                    <DrawerClose asChild>
-                      <Button variant="ghost" size="icon">
-                        <ChevronRight className="h-4 w-4" />
-                      </Button>
-                    </DrawerClose>
-                  </div>
-                </DrawerHeader>
-                <div className="p-4 h-[calc(100%-4rem)] overflow-auto">
-                  <ProjectDetailsCard />
-                </div>
-              </DrawerContent>
-            </Drawer>
-          )}
+        >
+          <UserChatSession
+            chatId={interviewSession.userChatId?.toString()}
+            // chatTitle={interviewSession.title}
+            useChatHelpers={useChatHelpers}
+            useChatRef={useChatRef}
+          />
         </div>
+
+        {/* Project Details - Shown on desktop, hidden on mobile */}
+        {isDesktop && (
+          <div className="hidden lg:block lg:w-2/5 p-4 overflow-auto">
+            <ProjectDetailsCard />
+          </div>
+        )}
+
+        {/* Drawer for mobile */}
+        {!isDesktop && (
+          <Drawer open={projectDetailsOpen} onOpenChange={setProjectDetailsOpen} direction="right">
+            <DrawerContent className="h-full w-[85vw] max-w-md border-l">
+              <DrawerHeader className="border-b">
+                <div className="flex items-center justify-between">
+                  <DrawerTitle>{t("projectDetails")}</DrawerTitle>
+                  <DrawerClose asChild>
+                    <Button variant="ghost" size="icon">
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </DrawerClose>
+                </div>
+              </DrawerHeader>
+              <div className="p-4 h-[calc(100%-4rem)] overflow-auto">
+                <ProjectDetailsCard />
+              </div>
+            </DrawerContent>
+          </Drawer>
+        )}
       </main>
 
       {interviewComplete && (
@@ -236,19 +224,18 @@ export function CollectSessionClient({
         </div>
       )}
 
-      <footer className="border-t py-4">
+      <footer className="border-t py-2">
         <div className="flex flex-col items-center justify-between gap-4 md:h-10 md:flex-row px-4 lg:px-6">
-          <p className="text-center text-sm leading-loose text-muted-foreground md:text-left">
+          <div className="text-center text-xs leading-loose text-muted-foreground md:text-left">
             {t("builtWith")}{" "}
-            <a
+            <Link
               href="https://atypica.ai"
               target="_blank"
-              rel="noreferrer"
               className="font-medium underline underline-offset-4"
             >
               atypica.AI
-            </a>
-          </p>
+            </Link>
+          </div>
         </div>
       </footer>
     </div>

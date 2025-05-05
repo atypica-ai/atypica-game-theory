@@ -1,5 +1,4 @@
 "use client";
-import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -11,8 +10,9 @@ import {
 } from "@/components/ui/card";
 import { formatDate } from "@/lib/utils";
 import { InterviewSessionStatus } from "@prisma/client";
-import { CalendarDays, FilePlus, FolderPlus } from "lucide-react";
+import { CalendarDaysIcon, FolderPlus, NotebookPenIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { InterviewProjectWithSessions } from "./actions";
 
@@ -69,21 +69,19 @@ function ProjectCard({ project }: { project: InterviewProjectWithSessions }) {
   const t = useTranslations("InterviewProject.projectCard");
   const locale = useLocale();
   const activeSessionsCount = project.sessions.filter(
-    (s) => s.status === InterviewSessionStatus.active,
+    (s) => s.kind === "collect" && s.status === InterviewSessionStatus.active,
   ).length;
   const completedSessionsCount = project.sessions.filter(
-    (s) => s.status === InterviewSessionStatus.completed,
+    (s) => s.kind === "collect" && s.status === InterviewSessionStatus.completed,
   ).length;
   const collectSessionsCount = project.sessions.filter((s) => s.kind === "collect").length;
 
   return (
     <Card className="h-full flex flex-col">
       <CardHeader className="pb-2">
-        <div className="flex items-center space-x-2">
-          <HippyGhostAvatar seed={project.token} className="h-8 w-8" />
-          <div>
-            <CardTitle className="line-clamp-1">{project.title}</CardTitle>
-          </div>
+        <div className="flex items-center">
+          <NotebookPenIcon className="w-5 h-5 mr-2" />
+          <CardTitle className="line-clamp-1">{project.title}</CardTitle>
         </div>
         <CardDescription className="line-clamp-2 mt-2">{project.brief}</CardDescription>
       </CardHeader>
@@ -105,44 +103,24 @@ function ProjectCard({ project }: { project: InterviewProjectWithSessions }) {
             )}
           </ul>
         </div>
-
         <div className="flex items-center mt-4 text-sm text-muted-foreground">
-          <CalendarDays className="mr-1 h-4 w-4" />
+          <CalendarDaysIcon className="mr-1 h-4 w-4" />
           <span>
             {t("updated")} {formatDate(project.updatedAt, locale)}
           </span>
         </div>
       </CardContent>
       <CardFooter className="flex flex-col space-y-3 pt-0">
-        <div className="flex justify-between w-full text-sm">
-          <span>
-            {activeSessionsCount} {t("activeSessions")}
-          </span>
-          <span>
-            {completedSessionsCount} {t("completed")}
-          </span>
-          <span>
-            {collectSessionsCount} {t("collectSessions")}
-          </span>
+        <div className="w-full text-sm">
+          {t("collectSessions", {
+            total: collectSessionsCount,
+            active: activeSessionsCount,
+            completed: completedSessionsCount,
+          })}
         </div>
         <div className="flex space-x-2 w-full">
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex-1"
-            onClick={() => router.push(`/interviewProject/${project.token}`)}
-          >
-            {t("viewProject")}
-          </Button>
-          <Button
-            size="sm"
-            className="flex-1"
-            onClick={async () => {
-              router.push(`/interviewProject/${project.token}`);
-            }}
-          >
-            <FilePlus className="mr-2 h-4 w-4" />
-            {t("newSession")}
+          <Button size="sm" className="flex-1" asChild>
+            <Link href={`/interviewProject/${project.token}`}>{t("viewProject")}</Link>
           </Button>
         </div>
       </CardFooter>

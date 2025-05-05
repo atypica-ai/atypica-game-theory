@@ -1,7 +1,6 @@
 "use client";
 import { ClarifySessionBodySchema } from "@/app/api/chat/interviewSession/lib";
 import { UserChatSession } from "@/components/chat/UserChatSession";
-import { Markdown } from "@/components/markdown";
 import {
   Accordion,
   AccordionContent,
@@ -23,7 +22,7 @@ import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
 import { Message } from "ai";
-import { BookMarked, ChevronRight, Cpu, Download, InfoIcon } from "lucide-react";
+import { ChevronRight, Cpu, InfoIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
@@ -40,9 +39,8 @@ export function ClarifySessionClient({
   initialMessages: Message[];
 }) {
   const t = useTranslations("InterviewProject.clarifySession");
-  const isDesktop = useMediaQuery("(min-width: 1024px)");
+  const isMediaLg = useMediaQuery("(min-width: 1024px)"); // 对应 tailwind 的 lg
   const [projectDetailsOpen, setProjectDetailsOpen] = useState(false);
-  const [showSummary, setShowSummary] = useState(false);
 
   const initialRequestBody = {
     sessionToken: interviewSession.token,
@@ -90,12 +88,22 @@ export function ClarifySessionClient({
       <div className="p-4 flex-grow overflow-auto">
         <div className="flex items-center mb-4">
           <Cpu className="h-5 w-5 mr-2 text-primary" />
-          <h2 className="text-lg font-medium">{t("projectDetails")}</h2>
+          <h2 className="text-lg font-medium">{interviewSession.project.title}</h2>
         </div>
 
         <Separator className="my-4" />
 
-        <Accordion type="multiple" defaultValue={["objectives", "about"]} className="w-full">
+        <Accordion type="multiple" defaultValue={["objectives", "brief"]} className="w-full">
+          <AccordionItem value="brief">
+            <AccordionTrigger>{t("projectBrief")}</AccordionTrigger>
+            <AccordionContent>
+              <p className="text-muted-foreground">{interviewSession.project.brief}</p>
+              <div className="mt-3 text-sm">
+                <span className="font-medium">{t("projectType")}:</span>{" "}
+                <span className="text-muted-foreground">{interviewSession.project.category}</span>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
           <AccordionItem value="objectives">
             <AccordionTrigger>{t("researchObjectives")}</AccordionTrigger>
             <AccordionContent>
@@ -106,89 +114,45 @@ export function ClarifySessionClient({
               </ul>
             </AccordionContent>
           </AccordionItem>
-
-          <AccordionItem value="about">
-            <AccordionTrigger>{t("aboutProject")}</AccordionTrigger>
-            <AccordionContent>
-              <p className="text-muted-foreground">{interviewSession.project.brief}</p>
-              <div className="mt-3 text-sm">
-                <span className="font-medium">{t("projectType")}:</span>{" "}
-                <span className="text-muted-foreground">{interviewSession.project.category}</span>
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-
-          {interviewSession.analysis && (
-            <AccordionItem value="analysis">
-              <AccordionTrigger>{t("interviewAnalysis")}</AccordionTrigger>
-              <AccordionContent>
-                <div className="prose prose-sm dark:prose-invert max-w-none">
-                  <Markdown>{interviewSession.analysis}</Markdown>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          )}
         </Accordion>
 
         <Separator className="my-4" />
-
-        <div className="flex justify-end">
-          <Button variant="outline" size="sm" className="mt-2">
-            <Download className="mr-2 h-4 w-4" />
-            {t("exportSession")}
-          </Button>
-        </div>
       </div>
     </div>
   );
 
   return (
-    <div className="flex-1 overflow-hidden p-4 flex flex-col">
-      {/* Header with buttons for mobile */}
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h1 className="text-2xl font-bold">{interviewSession.title}</h1>
-          <p className="text-muted-foreground">{interviewSession.project.title}</p>
-        </div>
-        <div className="flex items-center gap-2">
-          {!isDesktop && (
-            <Button
-              variant="outline"
-              onClick={() => setProjectDetailsOpen(true)}
-              className="flex items-center gap-1"
-            >
-              <InfoIcon className="h-4 w-4" />
-              <span>{t("projectDetails")}</span>
-            </Button>
-          )}
-          {interviewSession.keyInsights && interviewSession.keyInsights.length > 0 && (
-            <Button variant="outline" size="sm" onClick={() => setShowSummary(!showSummary)}>
-              <BookMarked className="mr-2 h-4 w-4" />
-              {showSummary ? t("hideSummary") : t("viewSummary")}
-            </Button>
-          )}
-        </div>
-      </div>
+    <div className="flex-1 overflow-hidden flex flex-col gap-4">
+      {false && !isMediaLg && (
+        <Button
+          variant="outline"
+          onClick={() => setProjectDetailsOpen(true)}
+          className="flex items-center gap-1"
+        >
+          <InfoIcon className="h-4 w-4" />
+          <span>{t("projectDetails")}</span>
+        </Button>
+      )}
 
-      <Alert className="mb-4">
+      <Alert className="w-auto mt-3 mx-3 lg:mt-4 lg:mx-4">
         <InfoIcon className="h-4 w-4" />
         <AlertTitle>{t("interviewInProgress")}</AlertTitle>
         <AlertDescription>{t("interviewDescription")}</AlertDescription>
       </Alert>
 
       {/* Main content area with responsive layout */}
-      <div className="flex-1 flex flex-col lg:flex-row gap-4 h-[calc(100%-8rem)] overflow-hidden">
+      <div className="flex-1 overflow-hidden flex flex-col lg:flex-row gap-4 lg:mx-4 lg:mb-4">
         {/* Chat area - always shown */}
         <div
           className={cn(
-            "flex-1 flex flex-col overflow-hidden border rounded-lg",
-            isDesktop ? "lg:w-2/3" : "w-full h-full",
+            "flex-1 flex flex-col overflow-hidden",
+            "lg:w-2/3 lg:border lg:rounded-lg max-lg:w-full max-lg:h-full",
           )}
         >
           <div className="flex-1 overflow-hidden">
             <UserChatSession
               chatId={interviewSession.userChatId?.toString()}
-              chatTitle={interviewSession.title}
+              // chatTitle={interviewSession.title}
               useChatHelpers={useChatHelpers}
               useChatRef={useChatRef}
             />
@@ -196,37 +160,15 @@ export function ClarifySessionClient({
         </div>
 
         {/* Project details - shown on desktop, hidden on mobile */}
-        {isDesktop && (
-          <div className="hidden lg:block lg:w-1/3 overflow-auto">
+        {isMediaLg && (
+          <div className="w-1/3 overflow-auto">
             <ProjectDetailsPanel />
           </div>
         )}
       </div>
 
-      {/* Summary section - shown when toggled */}
-      {showSummary && interviewSession.keyInsights && interviewSession.keyInsights.length > 0 && (
-        <div className="mt-4 border rounded-lg p-4 bg-muted/50">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-lg font-medium">{t("interviewSummary")}</h3>
-            <Button variant="ghost" size="sm" onClick={() => setShowSummary(false)}>
-              {t("hide")}
-            </Button>
-          </div>
-          <div className="space-y-2">
-            {interviewSession.keyInsights.map((point, index) => (
-              <div key={index} className="flex items-start gap-2">
-                <div className="bg-primary/20 text-primary rounded-full size-5 flex items-center justify-center text-xs font-medium mt-0.5">
-                  {index + 1}
-                </div>
-                <p>{point}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* Drawer for mobile */}
-      {!isDesktop && (
+      {!isMediaLg && (
         <Drawer open={projectDetailsOpen} onOpenChange={setProjectDetailsOpen} direction="right">
           <DrawerContent className="h-full w-[85vw] max-w-md border-l">
             <DrawerHeader className="border-b">
