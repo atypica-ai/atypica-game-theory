@@ -1,11 +1,11 @@
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { useScrollToBottom } from "@/components/use-scroll-to-bottom";
 import { UserTokensBalanceStore } from "@/components/UserTokensBalance";
 import { clearStudyUserChatBackgroundToken } from "@/data/UserChat";
+import { useDocumentVisibility } from "@/hooks/use-document-visibility";
+import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
 import { CONTINUE_ASSISTANT_STEPS } from "@/lib/messageUtils";
-import { useDocumentVisibility } from "@/lib/useDocumentVisibility";
 import { cn } from "@/lib/utils";
 import { ToolName } from "@/tools";
 import { Message, useChat } from "@ai-sdk/react";

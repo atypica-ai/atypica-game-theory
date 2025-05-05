@@ -1,6 +1,6 @@
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Button } from "@/components/ui/button";
-import { useScrollToBottom } from "@/components/use-scroll-to-bottom";
+import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import { useStudyContext } from "./hooks/StudyContext";

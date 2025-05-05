@@ -2,7 +2,7 @@
 import { StatusDisplay } from "@/components/chat/StatusDisplay";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { useScrollToBottom } from "@/components/use-scroll-to-bottom";
+import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
 import { CONTINUE_ASSISTANT_STEPS } from "@/lib/messageUtils";
 import { cn } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";

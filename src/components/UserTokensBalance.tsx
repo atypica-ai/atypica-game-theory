@@ -1,6 +1,6 @@
 "use client";
 import { getUserTokensBalance } from "@/data/UserTokens";
-import { useDocumentVisibility } from "@/lib/useDocumentVisibility";
+import { useDocumentVisibility } from "@/hooks/use-document-visibility";
 import { formatTokensNumber } from "@/lib/utils";
 import { CoinsIcon, LoaderIcon } from "lucide-react";
 import { useSession } from "next-auth/react";

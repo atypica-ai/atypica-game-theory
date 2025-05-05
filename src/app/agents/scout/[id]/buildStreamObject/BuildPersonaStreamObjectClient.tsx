@@ -1,6 +1,6 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { useScrollToBottom } from "@/components/use-scroll-to-bottom";
+import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
 import { cn } from "@/lib/utils";
 import { personaBuildSchemaStreamObject } from "@/tools/experts/buildPersonaStreamObject";
 import { experimental_useObject as useObject } from "@ai-sdk/react";

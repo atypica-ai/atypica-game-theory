@@ -10,7 +10,7 @@ import {
 } from "@/app/study/hooks/useProgressiveMessages";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useScrollToBottom } from "@/components/use-scroll-to-bottom";
+import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
 import { ToolName } from "@/tools";
 import { Analyst, Persona } from "@prisma/client";
 import { Message, ToolInvocation } from "ai";

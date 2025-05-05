@@ -5,7 +5,7 @@ import {
   useProgressiveMessages,
 } from "@/app/study/hooks/useProgressiveMessages";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
-import { useDocumentVisibility } from "@/lib/useDocumentVisibility";
+import { useDocumentVisibility } from "@/hooks/use-document-visibility";
 import { ToolName } from "@/tools";
 import { Message, ToolInvocation } from "ai";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";

@@ -1,9 +1,9 @@
 "use client";
 import GlobalHeader from "@/components/GlobalHeader";
 import { Button } from "@/components/ui/button";
-import { useScrollToBottom } from "@/components/use-scroll-to-bottom";
 import UserTokensBalance from "@/components/UserTokensBalance";
 import { StudyUserChat } from "@/data/UserChat";
+import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
 import { cn } from "@/lib/utils";
 import { ChevronDown, ChevronUp, EyeIcon, EyeOffIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
