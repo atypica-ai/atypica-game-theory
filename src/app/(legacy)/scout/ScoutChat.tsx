@@ -12,6 +12,7 @@ export function ScoutChat() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const { isMobile } = useDevice();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,7 +58,6 @@ export function ScoutChat() {
           enterKeyHint="enter"
           disabled={isLoading}
           onKeyDown={(e) => {
-            const { isMobile } = useDevice();
             if (!isMobile && e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
               e.preventDefault();
               if (input.trim()) {

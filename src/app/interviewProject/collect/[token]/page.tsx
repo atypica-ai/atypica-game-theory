@@ -1,10 +1,10 @@
+import { fetchCollectInterviewSession } from "@/app/interviewProject/actions";
 import { convertDBMessageToAIMessage } from "@/lib/messageUtils";
 import { generatePageMetadata } from "@/lib/metadata";
 import { prisma } from "@/lib/prisma";
 import { Message } from "ai";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { fetchCollectInterviewSession } from "../../actions";
 import { CollectSessionClient } from "./CollectSessionClient";
 
 export const dynamic = "force-dynamic";

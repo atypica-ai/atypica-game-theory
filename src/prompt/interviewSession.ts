@@ -253,6 +253,7 @@ function getProjectCategoryGuidanceInChinese(projectCategory: string): string {
 }
 
 // Get specific guidance based on project category (English version, kept for backward compatibility)
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function getProjectCategoryGuidance(projectCategory: string): string {
   const guidanceMap: Record<string, string> = {
     market_research: `

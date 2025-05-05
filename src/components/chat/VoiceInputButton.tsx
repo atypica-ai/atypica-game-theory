@@ -23,23 +23,25 @@ export function VoiceInputButton({
   const [tooltipOpen, setTooltipOpen] = useState(false);
   const [activeText, setActiveText] = useState<string>("");
 
-  const { isListening, isSupported, transcript, toggleListening, stopListening } =
-    useSpeechRecognition({
-      language,
-      onResult: useCallback((text: string) => {
-        setActiveText(text);
-      }, []),
-      onFinalResult: useCallback((text: string) => {
+  const { isListening, isSupported, toggleListening, stopListening } = useSpeechRecognition({
+    language,
+    onResult: useCallback((text: string) => {
+      setActiveText(text);
+    }, []),
+    onFinalResult: useCallback(
+      (text: string) => {
         if (text.trim()) {
           onTranscript(text);
         }
         setActiveText("");
-      }, []),
-      onError: useCallback(() => {
-        setActiveText("");
-        stopListening();
-      }, []),
-    });
+      },
+      [onTranscript],
+    ),
+    onError: useCallback(() => {
+      setActiveText("");
+      // stopListening();
+    }, []),
+  });
 
   // Stop listening when component is disabled
   useEffect(() => {

@@ -14,6 +14,7 @@ export function InputSection() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const { isMobile } = useDevice();
 
   // Create a properly memoized debounced function
   const debouncedSaveToLocalStorage = useDebouncedCallback((value: string) => {
@@ -64,7 +65,6 @@ export function InputSection() {
           enterKeyHint="enter"
           disabled={isLoading}
           onKeyDown={(e) => {
-            const { isMobile } = useDevice();
             if (!isMobile && e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
               e.preventDefault();
               if (input.trim()) {

@@ -65,7 +65,6 @@ function EmptyProjectState() {
 }
 
 function ProjectCard({ project }: { project: InterviewProjectWithSessions }) {
-  const router = useRouter();
   const t = useTranslations("InterviewProject.projectCard");
   const locale = useLocale();
   const activeSessionsCount = project.sessions.filter(

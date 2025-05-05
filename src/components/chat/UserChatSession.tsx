@@ -38,7 +38,8 @@ export function UserChatSession({
       useChatRef.current.append({ role: "user", content: CONTINUE_ASSISTANT_STEPS });
     }
     // 不要监听 reload, append
-  }, [messages]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messages.length]);
 
   const [messagesContainerRef, messagesEndRef] = useScrollToBottom<HTMLDivElement>();
   const inputDisabled = status === "streaming" || status === "submitted";

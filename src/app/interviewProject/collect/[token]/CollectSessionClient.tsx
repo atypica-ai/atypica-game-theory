@@ -1,5 +1,6 @@
 "use client";
 import { CollectSessionBodySchema } from "@/app/api/chat/interviewSession/lib";
+import { fetchCollectInterviewSession } from "@/app/interviewProject/actions";
 import { UserChatSession } from "@/components/chat/UserChatSession";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -28,7 +29,6 @@ import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
-import { fetchCollectInterviewSession } from "../../actions";
 
 export function CollectSessionClient({
   interviewSession,

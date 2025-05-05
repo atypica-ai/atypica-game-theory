@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 // Define types for the SpeechRecognition API
 interface SpeechRecognitionEvent extends Event {
@@ -25,7 +25,9 @@ interface SpeechRecognitionResultList {
 // Window augmentation
 declare global {
   interface Window {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     SpeechRecognition: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     webkitSpeechRecognition: any;
   }
 }
@@ -46,7 +48,11 @@ export function useSpeechRecognition({
   const [isListening, setIsListening] = useState(false);
   const [isSupported, setIsSupported] = useState(false);
   const [transcript, setTranscript] = useState("");
-  const [recognition, setRecognition] = useState<any>(null);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const recognitionRef = useRef<any>(null);
+
+  const callbackRef = useRef({ onResult, onFinalResult, onError });
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -70,56 +76,57 @@ export function useSpeechRecognition({
           }
           const currentTranscript = finalTranscript || interimTranscript;
           setTranscript(currentTranscript);
-          onResult?.(currentTranscript);
+          callbackRef.current.onResult?.(currentTranscript);
           if (finalTranscript) {
-            onFinalResult?.(finalTranscript);
+            callbackRef.current.onFinalResult?.(finalTranscript);
           }
         };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         instance.onerror = (event: any) => {
           setIsListening(false);
           const error = new Error(`Speech recognition error: ${event.error}`);
           console.error(error);
-          onError?.(error);
+          callbackRef.current.onError?.(error);
         };
         instance.onend = () => {
           setIsListening(false);
         };
-        setRecognition(instance);
+        recognitionRef.current = instance;
       }
     }
     return () => {
-      if (recognition) {
-        recognition.abort();
+      if (recognitionRef.current) {
+        recognitionRef.current.abort();
       }
     };
-  }, [language, onError, onFinalResult, onResult]);
+  }, [language]);
 
-  const startListening = () => {
-    if (recognition && !isListening) {
+  const startListening = useCallback(() => {
+    if (recognitionRef.current && !isListening) {
       try {
-        recognition.start();
+        recognitionRef.current.start();
         setIsListening(true);
         setTranscript("");
       } catch (error) {
         console.error("Error starting speech recognition:", error);
       }
     }
-  };
+  }, [isListening]);
 
-  const stopListening = () => {
-    if (recognition && isListening) {
-      recognition.stop();
+  const stopListening = useCallback(() => {
+    if (recognitionRef.current && isListening) {
+      recognitionRef.current.stop();
       setIsListening(false);
     }
-  };
+  }, [isListening]);
 
-  const toggleListening = () => {
+  const toggleListening = useCallback(() => {
     if (isListening) {
       stopListening();
     } else {
       startListening();
     }
-  };
+  }, [isListening, startListening, stopListening]);
 
   return {
     isListening,
