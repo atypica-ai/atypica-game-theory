@@ -30,6 +30,86 @@
     "noStudies": "No studies found in this category.",
     "viewStudy": "View Study"
   },
+  "InterviewProject": {
+    "title": "Interview Projects",
+    "newProject": "New Project",
+    "createFirstProject": "Create First Project",
+    "emptyState": {
+      "title": "No interview projects yet",
+      "description": "Create your first project to start collecting insights through expert interviews."
+    },
+    "projectCard": {
+      "projectCategory": "Project Category",
+      "activeSessions": "active sessions",
+      "completed": "completed",
+      "collectSessions": "collect sessions",
+      "moreObjectives": "more objectives",
+      "viewProject": "View Project",
+      "newSession": "New Session",
+      "updated": "Updated"
+    },
+    "projectDetail": {
+      "createCollectSession": "Create Collect Session",
+      "clarifyProject": "Clarify Project",
+      "loadingClarify": "Loading...",
+      "clarifyPrompt": "Click \"Clarify Project\" to define your research brief and objectives.",
+      "projectDetails": "Project Details",
+      "projectCategory": "Project Category",
+      "created": "Created",
+      "lastUpdated": "Last Updated",
+      "researchObjectives": "Research Objectives",
+      "noObjectives": "No objectives defined yet. Use the \"Clarify Project\" button to define your research objectives.",
+      "exportData": "Export Data",
+      "collectSessionsTab": "Collect Sessions",
+      "noCollectSessions": "No collect sessions yet",
+      "noCollectSessionsDesc": "Create collect sessions to collect insights from others without requiring them to create an account.",
+      "shareLink": "Share Link",
+      "copyLink": "Copy link",
+      "copied": "Copied!",
+      "keyInsights": "Key Insights",
+      "show": "Show",
+      "hide": "Hide",
+      "viewSession": "View Session",
+      "expiresOn": "Expires"
+    },
+    "createCollectSession": {
+      "title": "Create Collect Session",
+      "description": "Create a session link you can share with participants to collect their insights.",
+      "sessionTitle": "Session Title",
+      "sessionTitleDesc": "Give this session a descriptive name",
+      "notes": "Notes",
+      "notesDesc": "Optional notes for your reference (not visible to participants)",
+      "expiration": "Session Expiration",
+      "expirationDesc": "Set when this session should expire (optional)",
+      "neverExpires": "Never expires",
+      "expiresOn": "Expires on",
+      "create": "Create Session",
+      "cancel": "Cancel"
+    },
+    "clarifySession": {
+      "interviewInProgress": "Interview in Progress",
+      "interviewDescription": "This interview expert will ask questions based on your project's objectives. Please provide detailed responses to help build a comprehensive knowledge base.",
+      "viewSummary": "View Summary",
+      "interviewSummary": "Interview Summary",
+      "projectDetails": "Project Details",
+      "researchObjectives": "Research Objectives",
+      "aboutProject": "About This Project",
+      "projectType": "Project Type",
+      "interviewAnalysis": "Interview Analysis",
+      "exportSession": "Export Session"
+    },
+    "collectSession": {
+      "officialInterview": "Official Interview",
+      "information": "Information",
+      "aboutInterview": "About this interview",
+      "interviewDescription": "This is an automated interview to collect your insights. Your responses will help inform the research or project. The interview is conversational - please answer questions as thoroughly as you can.",
+      "researchObjectives": "Research Objectives:",
+      "privacyNotice": "Your responses will be used for research purposes only.",
+      "thankYou": "Thank You!",
+      "thankYouMessage": "Your responses have been recorded. Thank you for participating in this interview and sharing your valuable insights.",
+      "builtWith": "Built with"
+    }
+  },
   "AnalystListPage": {
     "researchTopics": "Research Topics",
     "createNewTopic": "Create New Topic",

@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
 import { Message } from "ai";
 import { BadgeCheck, Info, Shield, ThumbsUp } from "lucide-react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
@@ -29,6 +30,7 @@ export function CollectSessionClient({
   initialMessages?: Message[];
 }) {
   const [interviewComplete, setInterviewComplete] = useState(false);
+  const t = useTranslations("InterviewProject.collectSession");
 
   const initialRequestBody = {
     sessionToken: interviewSession.token,
@@ -116,16 +118,14 @@ export function CollectSessionClient({
               <div className="space-y-4">
                 <Alert>
                   <Info className="h-4 w-4" />
-                  <AlertTitle>About this interview</AlertTitle>
+                  <AlertTitle>{t("aboutInterview")}</AlertTitle>
                   <AlertDescription>
-                    This is an automated interview to collect your insights. Your responses will
-                    help inform the research or project. The interview is conversational - please
-                    answer questions as thoroughly as you can.
+                    {t("interviewDescription")}
                   </AlertDescription>
                 </Alert>
 
                 <div>
-                  <h3 className="text-sm font-medium mb-2">Research Objectives:</h3>
+                  <h3 className="text-sm font-medium mb-2">{t("researchObjectives")}</h3>
                   <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1.5 pl-2">
                     {interviewSession.project.objectives.map((objective, i) => (
                       <li key={i}>{objective}</li>
@@ -137,7 +137,7 @@ export function CollectSessionClient({
             <CardFooter className="bg-primary/5 border-t border-primary/10 px-6 pb-6">
               <div className="flex items-center space-x-2 text-xs text-muted-foreground">
                 <Shield className="h-3.5 w-3.5" />
-                <span>Your responses will be used for research purposes only.</span>
+                <span>{t("privacyNotice")}</span>
               </div>
             </CardFooter>
           </Card>
@@ -158,10 +158,9 @@ export function CollectSessionClient({
                   <div className="bg-primary/20 p-3 rounded-full">
                     <ThumbsUp className="h-6 w-6 text-primary" />
                   </div>
-                  <h3 className="text-xl font-medium">Thank You!</h3>
+                  <h3 className="text-xl font-medium">{t("thankYou")}</h3>
                   <p className="text-muted-foreground max-w-md">
-                    Your responses have been recorded. Thank you for participating in this interview
-                    and sharing your valuable insights.
+                    {t("thankYouMessage")}
                   </p>
                 </div>
               </CardContent>
@@ -173,7 +172,7 @@ export function CollectSessionClient({
       <footer className="border-t py-6 md:py-0">
         <div className="flex flex-col items-center justify-between gap-4 md:h-14 md:flex-row max-w-4xl mx-auto">
           <p className="text-center text-sm leading-loose text-muted-foreground md:text-left">
-            Built with{" "}
+            {t("builtWith")}{" "}
             <a
               href="https://atypica.ai"
               target="_blank"
@@ -190,6 +189,8 @@ export function CollectSessionClient({
 }
 
 function VerifyBadge({ type, className }: { type: "verified" | "info"; className?: string }) {
+  const t = useTranslations("InterviewProject.collectSession");
+  
   return (
     <div
       className={cn(
@@ -203,12 +204,12 @@ function VerifyBadge({ type, className }: { type: "verified" | "info"; className
       {type === "verified" ? (
         <>
           <BadgeCheck className="mr-1 h-3 w-3" />
-          <span>Official Interview</span>
+          <span>{t("officialInterview")}</span>
         </>
       ) : (
         <>
           <Info className="mr-1 h-3 w-3" />
-          <span>Information</span>
+          <span>{t("information")}</span>
         </>
       )}
     </div>

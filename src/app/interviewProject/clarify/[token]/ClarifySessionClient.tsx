@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
 import { Message } from "ai";
 import { BookMarked, Cpu, Download, InfoIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import { fetchClarifyInterviewSession } from "../../actions";
@@ -30,6 +31,8 @@ export function ClarifySessionClient({
   > & { userChatId: number };
   initialMessages: Message[];
 }) {
+  const t = useTranslations("InterviewProject.clarifySession");
+  
   const initialRequestBody = {
     sessionToken: interviewSession.token,
   };
@@ -87,17 +90,16 @@ export function ClarifySessionClient({
               onClick={() => setShowSummary(true)}
             >
               <BookMarked className="mr-2 h-4 w-4" />
-              View Summary
+              {t("viewSummary")}
             </Button>
           )}
         </div>
 
         <Alert className="mb-4">
           <InfoIcon className="h-4 w-4" />
-          <AlertTitle>Interview in Progress</AlertTitle>
+          <AlertTitle>{t("interviewInProgress")}</AlertTitle>
           <AlertDescription>
-            This interview expert will ask questions based on your project&apos;s objectives. Please
-            provide detailed responses to help build a comprehensive knowledge base.
+            {t("interviewDescription")}
           </AlertDescription>
         </Alert>
 
@@ -119,9 +121,9 @@ export function ClarifySessionClient({
         {showSummary && interviewSession.keyInsights && interviewSession.keyInsights.length > 0 && (
           <div className="mt-4 border rounded-lg p-4 bg-muted/50">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-lg font-medium">Interview Summary</h3>
+              <h3 className="text-lg font-medium">{t("interviewSummary")}</h3>
               <Button variant="ghost" size="sm" onClick={() => setShowSummary(false)}>
-                Hide
+                {t("hide")}
               </Button>
             </div>
             <div className="space-y-2">
@@ -142,14 +144,14 @@ export function ClarifySessionClient({
         <div className="border rounded-lg p-4 sticky top-20">
           <div className="flex items-center mb-4">
             <Cpu className="h-5 w-5 mr-2 text-primary" />
-            <h2 className="text-lg font-medium">Project Details</h2>
+            <h2 className="text-lg font-medium">{t("projectDetails")}</h2>
           </div>
 
           <Separator className="my-4" />
 
           <Accordion type="multiple" defaultValue={["objectives", "about"]} className="w-full">
             <AccordionItem value="objectives">
-              <AccordionTrigger>Research Objectives</AccordionTrigger>
+              <AccordionTrigger>{t("researchObjectives")}</AccordionTrigger>
               <AccordionContent>
                 <ul className="list-disc list-inside space-y-2 text-muted-foreground">
                   {interviewSession.project.objectives.map((objective, i) => (
@@ -160,11 +162,11 @@ export function ClarifySessionClient({
             </AccordionItem>
 
             <AccordionItem value="about">
-              <AccordionTrigger>About This Project</AccordionTrigger>
+              <AccordionTrigger>{t("aboutProject")}</AccordionTrigger>
               <AccordionContent>
                 <p className="text-muted-foreground">{interviewSession.project.brief}</p>
                 <div className="mt-3 text-sm">
-                  <span className="font-medium">Project Type:</span>{" "}
+                  <span className="font-medium">{t("projectType")}:</span>{" "}
                   <span className="text-muted-foreground">{interviewSession.project.category}</span>
                 </div>
               </AccordionContent>
@@ -172,7 +174,7 @@ export function ClarifySessionClient({
 
             {interviewSession.analysis && (
               <AccordionItem value="analysis">
-                <AccordionTrigger>Interview Analysis</AccordionTrigger>
+                <AccordionTrigger>{t("interviewAnalysis")}</AccordionTrigger>
                 <AccordionContent>
                   <div className="prose prose-sm dark:prose-invert max-w-none">
                     <Markdown>{interviewSession.analysis}</Markdown>
@@ -187,7 +189,7 @@ export function ClarifySessionClient({
           <div className="flex justify-end">
             <Button variant="outline" size="sm" className="mt-2">
               <Download className="mr-2 h-4 w-4" />
-              Export Session
+              {t("exportSession")}
             </Button>
           </div>
         </div>

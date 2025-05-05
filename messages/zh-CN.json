@@ -30,6 +30,86 @@
     "noStudies": "该类别下暂无研究。",
     "viewStudy": "查看研究"
   },
+  "InterviewProject": {
+    "title": "访谈项目",
+    "newProject": "新建项目",
+    "createFirstProject": "创建首个项目",
+    "emptyState": {
+      "title": "暂无访谈项目",
+      "description": "创建您的第一个项目，开始通过专家访谈收集洞察。"
+    },
+    "projectCard": {
+      "projectCategory": "项目类别",
+      "activeSessions": "活跃会话",
+      "completed": "已完成",
+      "collectSessions": "收集会话",
+      "moreObjectives": "更多目标",
+      "viewProject": "查看项目",
+      "newSession": "新建会话",
+      "updated": "更新于"
+    },
+    "projectDetail": {
+      "createCollectSession": "创建收集会话",
+      "clarifyProject": "明确项目",
+      "loadingClarify": "加载中...",
+      "clarifyPrompt": "点击“明确项目”来定义您的研究简介和目标。",
+      "projectDetails": "项目详情",
+      "projectCategory": "项目类别",
+      "created": "创建于",
+      "lastUpdated": "最后更新",
+      "researchObjectives": "研究目标",
+      "noObjectives": "尚未定义目标。使用“明确项目”按钮来定义您的研究目标。",
+      "exportData": "导出数据",
+      "collectSessionsTab": "收集会话",
+      "noCollectSessions": "暂无收集会话",
+      "noCollectSessionsDesc": "创建收集会话，无需参与者创建账户即可收集他们的洞察。",
+      "shareLink": "分享链接",
+      "copyLink": "复制链接",
+      "copied": "已复制！",
+      "keyInsights": "关键洞察",
+      "show": "显示",
+      "hide": "隐藏",
+      "viewSession": "查看会话",
+      "expiresOn": "过期于"
+    },
+    "createCollectSession": {
+      "title": "创建收集会话",
+      "description": "创建一个可以分享给参与者以收集洞察的会话链接。",
+      "sessionTitle": "会话标题",
+      "sessionTitleDesc": "为此会话提供一个描述性名称",
+      "notes": "备注",
+      "notesDesc": "可选备注供您参考（参与者不可见）",
+      "expiration": "会话过期时间",
+      "expirationDesc": "设置此会话应过期的时间（可选）",
+      "neverExpires": "永不过期",
+      "expiresOn": "过期于",
+      "create": "创建会话",
+      "cancel": "取消"
+    },
+    "clarifySession": {
+      "interviewInProgress": "访谈进行中",
+      "interviewDescription": "这位访谈专家将根据您的项目目标提出问题。请提供详细的回答，以帮助建立全面的知识库。",
+      "viewSummary": "查看摘要",
+      "interviewSummary": "访谈摘要",
+      "projectDetails": "项目详情",
+      "researchObjectives": "研究目标",
+      "aboutProject": "关于此项目",
+      "projectType": "项目类型",
+      "interviewAnalysis": "访谈分析",
+      "exportSession": "导出会话"
+    },
+    "collectSession": {
+      "officialInterview": "官方访谈",
+      "information": "信息",
+      "aboutInterview": "关于此访谈",
+      "interviewDescription": "这是一个自动化访谈，用于收集您的见解。您的回答将有助于为研究或项目提供信息。访谈是对话式的 - 请尽可能详细地回答问题。",
+      "researchObjectives": "研究目标：",
+      "privacyNotice": "您的回答仅用于研究目的。",
+      "thankYou": "谢谢您！",
+      "thankYouMessage": "您的回答已记录。感谢您参与此次访谈并分享您的宝贵见解。",
+      "builtWith": "由以下技术构建"
+    }
+  },
   "AnalystListPage": {
     "researchTopics": "用户研究主题",
     "createNewTopic": "创建新的主题",

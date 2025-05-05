@@ -31,6 +31,7 @@ import { cn, formatDate } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { InterviewSession } from "@prisma/client";
 import { Copy, DownloadIcon, Share2, Users } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -45,6 +46,7 @@ type ExtendedInterviewProject = InterviewProjectWithSessions & {
 
 export function InterviewProjectDetail({ project }: { project: ExtendedInterviewProject }) {
   const router = useRouter();
+  const t = useTranslations("InterviewProject.projectDetail");
   const [isCreatingSession, setIsCreatingSession] = useState(false);
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
 
@@ -75,7 +77,7 @@ export function InterviewProjectDetail({ project }: { project: ExtendedInterview
               )}
               {!project.brief && project.clarifySession && (
                 <p className="text-muted-foreground mt-2 max-w-2xl">
-                  Click "Clarify Project" to define your research brief and objectives.
+                  {t("clarifyPrompt")}
                 </p>
               )}
             </div>
@@ -83,12 +85,12 @@ export function InterviewProjectDetail({ project }: { project: ExtendedInterview
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => setIsShareDialogOpen(true)}>
                 <Share2 className="mr-2 h-4 w-4" />
-                Create Collect Session
+                {t("createCollectSession")}
               </Button>
 
               <Button onClick={handleStartClarifySession} disabled={isCreatingSession}>
                 <Users className="mr-2 h-4 w-4" />
-                {isCreatingSession ? "Loading..." : "Clarify Project"}
+                {isCreatingSession ? t("loadingClarify") : t("clarifyProject")}
               </Button>
             </div>
           </div>
@@ -96,28 +98,28 @@ export function InterviewProjectDetail({ project }: { project: ExtendedInterview
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <Card className="lg:col-span-1">
               <CardHeader>
-                <CardTitle>Project Details</CardTitle>
+                <CardTitle>{t("projectDetails")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   <div>
-                    <div className="text-sm font-medium">Project Category</div>
+                    <div className="text-sm font-medium">{t("projectCategory")}</div>
                     <div className="text-muted-foreground">{project.category}</div>
                   </div>
 
                   <div>
-                    <div className="text-sm font-medium">Created</div>
+                    <div className="text-sm font-medium">{t("created")}</div>
                     <div className="text-muted-foreground">{formatDate(project.createdAt)}</div>
                   </div>
 
                   <div>
-                    <div className="text-sm font-medium">Last Updated</div>
+                    <div className="text-sm font-medium">{t("lastUpdated")}</div>
                     <div className="text-muted-foreground">{formatDate(project.updatedAt)}</div>
                   </div>
 
                   {project.objectives && project.objectives.length > 0 && (
                     <div>
-                      <div className="text-sm font-medium">Research Objectives</div>
+                      <div className="text-sm font-medium">{t("researchObjectives")}</div>
                       <ul className="list-disc list-inside text-muted-foreground mt-1 space-y-1">
                         {project.objectives.map((objective, i) => (
                           <li key={i}>{objective}</li>
@@ -129,10 +131,9 @@ export function InterviewProjectDetail({ project }: { project: ExtendedInterview
                   {(!project.objectives || project.objectives.length === 0) &&
                     project.clarifySession && (
                       <div>
-                        <div className="text-sm font-medium">Research Objectives</div>
+                        <div className="text-sm font-medium">{t("researchObjectives")}</div>
                         <div className="text-muted-foreground mt-1 italic">
-                          No objectives defined yet. Use the "Clarify Project" button to define your
-                          research objectives.
+                          {t("noObjectives")}
                         </div>
                       </div>
                     )}
@@ -141,7 +142,7 @@ export function InterviewProjectDetail({ project }: { project: ExtendedInterview
               <CardFooter className="flex justify-end border-t pt-4">
                 <Button variant="outline" size="sm">
                   <DownloadIcon className="mr-2 h-4 w-4" />
-                  Export Data
+                  {t("exportData")}
                 </Button>
               </CardFooter>
             </Card>
@@ -151,7 +152,7 @@ export function InterviewProjectDetail({ project }: { project: ExtendedInterview
                 <TabsList className="mb-4">
                   <TabsTrigger value="collect-sessions" className="flex items-center">
                     <Share2 className="mr-2 h-4 w-4" />
-                    Collect Sessions
+                    {t("collectSessionsTab")}
                     <Badge className="ml-2 bg-primary/20 text-foreground" variant="secondary">
                       {collectSessions.length}
                     </Badge>
@@ -164,14 +165,13 @@ export function InterviewProjectDetail({ project }: { project: ExtendedInterview
                       <div className="flex justify-center mb-4">
                         <Share2 className="h-12 w-12 text-muted-foreground" />
                       </div>
-                      <h3 className="text-lg font-medium mb-2">No collect sessions yet</h3>
+                      <h3 className="text-lg font-medium mb-2">{t("noCollectSessions")}</h3>
                       <p className="text-muted-foreground max-w-md mx-auto mb-6">
-                        Create collect sessions to collect insights from others without requiring
-                        them to create an account.
+                        {t("noCollectSessionsDesc")}
                       </p>
                       <Button onClick={() => setIsShareDialogOpen(true)}>
                         <Share2 className="mr-2 h-4 w-4" />
-                        Create Collect Session
+                        {t("createCollectSession")}
                       </Button>
                     </div>
                   ) : (
@@ -201,6 +201,7 @@ function CollectSessionCard({ session }: { session: InterviewProjectWithSessions
   const [copySuccess, setCopySuccess] = useState(false);
   const [showInsights, setShowInsights] = useState(false);
   const [collectLink, setCollectLink] = useState<string | null>(null);
+  const t = useTranslations("InterviewProject.projectDetail");
 
   useEffect(() => {
     setCollectLink(`${window.location.origin}/interviewProject/collect/${session.token}`);
@@ -238,8 +239,8 @@ function CollectSessionCard({ session }: { session: InterviewProjectWithSessions
       </CardHeader>
       <CardContent className="px-4 py-3 flex-grow">
         <div className="text-xs text-muted-foreground flex justify-between mb-2">
-          <span>Created {formatDate(session.createdAt)}</span>
-          {session.expiresAt && <span>Expires {formatDate(session.expiresAt)}</span>}
+          <span>{t("created")} {formatDate(session.createdAt)}</span>
+          {session.expiresAt && <span>{t("expiresOn")} {formatDate(session.expiresAt)}</span>}
         </div>
 
         {session.notes && (
@@ -247,17 +248,17 @@ function CollectSessionCard({ session }: { session: InterviewProjectWithSessions
         )}
 
         <div className="mt-2">
-          <div className="text-sm font-medium mb-1">Share Link:</div>
+          <div className="text-sm font-medium mb-1">{t("shareLink")}:</div>
           <div className="bg-muted p-2 rounded-md flex items-center justify-between">
             <span className="text-xs truncate mr-2">{collectLink}</span>
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button size="sm" variant="ghost" onClick={handleCopyLink} className="h-6 px-2">
-                    {copySuccess ? "Copied!" : <Copy className="h-3 w-3" />}
+                    {copySuccess ? t("copied") : <Copy className="h-3 w-3" />}
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>Copy link</TooltipContent>
+                <TooltipContent>{t("copyLink")}</TooltipContent>
               </Tooltip>
             </TooltipProvider>
           </div>
@@ -269,9 +270,9 @@ function CollectSessionCard({ session }: { session: InterviewProjectWithSessions
               className="text-sm font-medium mb-1 flex items-center cursor-pointer"
               onClick={() => setShowInsights(!showInsights)}
             >
-              Key Insights:
+              {t("keyInsights")}:
               <Button variant="ghost" size="sm" className="ml-1 h-5 px-1">
-                {showInsights ? "Hide" : "Show"}
+                {showInsights ? t("hide") : t("show")}
               </Button>
             </div>
             {showInsights && (
@@ -293,7 +294,7 @@ function CollectSessionCard({ session }: { session: InterviewProjectWithSessions
           className="flex-1"
           onClick={() => window.open(`/interviewProject/collect/${session.token}`, "_blank")}
         >
-          View Session
+          {t("viewSession")}
         </Button>
       </CardFooter>
     </Card>
@@ -319,6 +320,8 @@ function CreateCollectSessionDialog({
   onOpenChange: (open: boolean) => void;
 }) {
   const [isCreating, setIsCreating] = useState(false);
+  const t = useTranslations("InterviewProject.createCollectSession");
+  
   const form = useForm<CollectSessionFormValues>({
     resolver: zodResolver(collectSessionSchema),
     defaultValues: {
@@ -366,10 +369,9 @@ function CreateCollectSessionDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Create a collect session</DialogTitle>
+          <DialogTitle>{t("title")}</DialogTitle>
           <DialogDescription>
-            Share this with anyone to collect research data without requiring them to create an
-            account.
+            {t("description")}
           </DialogDescription>
         </DialogHeader>
 
@@ -380,11 +382,11 @@ function CreateCollectSessionDialog({
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Session Title</FormLabel>
+                  <FormLabel>{t("sessionTitle")}</FormLabel>
                   <FormControl>
                     <Input placeholder="E.g., Customer Feedback" {...field} />
                   </FormControl>
-                  <FormDescription>This will be visible to respondents.</FormDescription>
+                  <FormDescription>{t("sessionTitleDesc")}</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -395,7 +397,7 @@ function CreateCollectSessionDialog({
               name="notes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Notes (Optional)</FormLabel>
+                  <FormLabel>{t("notes")}</FormLabel>
                   <FormControl>
                     <Textarea
                       placeholder="Briefly describe what this session is for..."
@@ -403,6 +405,7 @@ function CreateCollectSessionDialog({
                       {...field}
                     />
                   </FormControl>
+                  <FormDescription>{t("notesDesc")}</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -415,9 +418,9 @@ function CreateCollectSessionDialog({
                 <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
                   <div className="space-y-0.5">
                     <FormLabel className="text-base">
-                      Expiration <span className="text-muted-foreground">(Optional)</span>
+                      {t("expiration")}
                     </FormLabel>
-                    <FormDescription>Set a time limit for collecting responses.</FormDescription>
+                    <FormDescription>{t("expirationDesc")}</FormDescription>
                   </div>
                   <FormControl>
                     <Switch checked={field.value} onCheckedChange={field.onChange} aria-readonly />
@@ -432,7 +435,7 @@ function CreateCollectSessionDialog({
                 name="expiresIn"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Expires After</FormLabel>
+                    <FormLabel>{t("expiresOn")}</FormLabel>
                     <FormControl>
                       <RadioGroup
                         onValueChange={field.onChange}
@@ -472,8 +475,16 @@ function CreateCollectSessionDialog({
             )}
 
             <DialogFooter className="sm:justify-start">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                className="mr-2"
+              >
+                {t("cancel")}
+              </Button>
               <Button type="submit" disabled={isCreating}>
-                {isCreating ? "Creating..." : "Create & Copy Link"}
+                {isCreating ? "Creating..." : t("create")}
               </Button>
             </DialogFooter>
           </form>
