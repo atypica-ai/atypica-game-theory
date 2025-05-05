@@ -282,7 +282,7 @@ export function ChatBox() {
       <form onSubmit={handleSubmitMessage} className="relative mx-4">
         <Textarea
           className={cn(
-            "block min-h-24 max-lg:min-h-20 text-sm placeholder:text-sm resize-none focus-visible:border-primary/70 transition-colors rounded-lg py-3 px-4",
+            "block min-h-24 max-lg:min-h-20 text-sm placeholder:text-sm resize-none focus-visible:border-primary/50 transition-colors rounded-lg py-3 px-4",
             inputDisabled ? "opacity-50 cursor-not-allowed" : "",
           )}
           enterKeyHint="enter"
@@ -303,7 +303,18 @@ export function ChatBox() {
             }
           }}
         />
-        <div className="absolute right-4 bottom-4">
+        <div className="absolute right-1 bottom-1 lg:right-2 lg:bottom-2 flex items-center gap-2">
+          {!inputDisabled && !studyCompleted && (
+            <Button
+              variant="secondary"
+              size="sm"
+              className="h-8 text-xs origin-top-right"
+              onClick={handleContinueChat}
+            >
+              <PlayIcon className="size-2.5" />
+              <span>{t("continueStudy")}</span>
+            </Button>
+          )}
           {uiStatus === "background" || uiStatus === "streaming" ? (
             <CancelButton
               className="size-7"
@@ -317,26 +328,13 @@ export function ChatBox() {
             <Button
               type="submit"
               variant="secondary"
-              disabled={!input.trim()}
+              disabled={inputDisabled || !input.trim()}
               className="rounded-full size-9"
             >
               <ArrowRightIcon className="h-5 w-5 text-primary" />
             </Button>
           )}
         </div>
-        {!inputDisabled && !studyCompleted && (
-          <div className="absolute right-1 top-1">
-            <Button
-              variant="default"
-              size="sm"
-              className="h-6 text-xs scale-90 origin-top-right bg-primary/75"
-              onClick={handleContinueChat}
-            >
-              <PlayIcon className="size-2.5" />
-              <span>{t("continueStudy")}</span>
-            </Button>
-          </div>
-        )}
       </form>
     </>
   );

@@ -1,14 +1,15 @@
 "use client";
 import { StatusDisplay } from "@/components/chat/StatusDisplay";
+import { VoiceInputButton } from "@/components/chat/VoiceInputButton";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
 import { CONTINUE_ASSISTANT_STEPS } from "@/lib/messageUtils";
 import { cn } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
-import { PlayIcon } from "lucide-react";
+import { ArrowRightIcon, PlayIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { RefObject, useCallback } from "react";
 import HippyGhostAvatar from "../HippyGhostAvatar";
 import { ChatMessage } from "./ChatMessage";
@@ -27,6 +28,7 @@ export function UserChatSession({
   useChatRef: RefObject<Pick<ReturnType<typeof useChat>, "append" | "reload" | "setMessages">>;
 }) {
   const t = useTranslations("Components.UserChatSession");
+  const locale = useLocale();
   const { data: session } = useSession();
 
   const handleContinueChat = useCallback(() => {
@@ -86,11 +88,10 @@ export function UserChatSession({
         <form onSubmit={handleSubmit} className="relative mx-3 mb-3">
           <Textarea
             className={cn(
-              "block min-h-24 max-lg:min-h-20 text-sm placeholder:text-sm resize-none focus-visible:border-primary/70 transition-colors rounded-lg py-3 px-4",
+              "block min-h-24 max-lg:min-h-20 text-sm placeholder:text-sm resize-none focus-visible:border-primary/50 transition-colors rounded-lg py-3 px-4",
               inputDisabled ? "opacity-50 cursor-not-allowed" : "",
             )}
             enterKeyHint="enter"
-            rows={3}
             value={input}
             disabled={inputDisabled}
             onChange={(event) => {
@@ -107,19 +108,34 @@ export function UserChatSession({
               }
             }}
           />
-          {!inputDisabled && (
-            <div className="absolute right-1 top-1">
+          <div className="absolute right-1 bottom-1 lg:right-2 lg:bottom-2 flex items-center gap-2">
+            {!inputDisabled && (
               <Button
-                variant="default"
+                variant="secondary"
                 size="sm"
-                className="h-6 text-xs scale-90 origin-top-right bg-primary/75"
+                className="h-8 text-xs origin-top-right"
                 onClick={handleContinueChat}
               >
                 <PlayIcon className="size-2.5" />
                 <span>{t("continue")}</span>
               </Button>
-            </div>
-          )}
+            )}
+            <VoiceInputButton
+              disabled={inputDisabled}
+              onTranscript={(text) => {
+                setInput((current) => (current ? `${current} ${text}` : text));
+              }}
+              language={locale === "zh-CN" ? "zh-CN" : "en-US"}
+            />
+            <Button
+              type="submit"
+              variant="secondary"
+              disabled={inputDisabled || !input.trim()}
+              className="rounded-full size-9"
+            >
+              <ArrowRightIcon className="h-5 w-5 text-primary" />
+            </Button>
+          </div>
         </form>
       )}
     </div>

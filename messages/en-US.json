@@ -339,7 +339,7 @@
       "placeholder": "Ask a follow-up question or reply",
       "noneOfTheAbove": "None of the above",
       "multiSelectHint": "Select 1 or more options",
-      "continueStudy": "Continue studying",
+      "continueStudy": "Continue",
       "confirm": "Confirm"
     },
     "ChatReplay": {
@@ -553,6 +553,12 @@
     },
     "UserChatSession": {
       "continue": "Continue"
+    },
+    "VoiceInputButton": {
+      "startListening": "Start voice input",
+      "stopListening": "Stop voice input",
+      "listeningActive": "Listening...",
+      "clickToSpeak": "Click to speak"
     }
   },
   "Maintenance": {
