@@ -1,5 +1,4 @@
 "use client";
-
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,14 +9,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { formatDate } from "@/lib/utils";
 import { InterviewSessionStatus } from "@prisma/client";
 import { CalendarDays, FilePlus, FolderPlus } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { InterviewProjectWithSessions } from "./actions";
 
 export function InterviewProjectList({ projects }: { projects: InterviewProjectWithSessions[] }) {
-  const router = useRouter();
   const t = useTranslations("InterviewProject");
 
   return (
@@ -47,7 +46,7 @@ export function InterviewProjectList({ projects }: { projects: InterviewProjectW
 function EmptyProjectState() {
   const router = useRouter();
   const t = useTranslations("InterviewProject");
-  
+
   return (
     <div className="flex flex-col items-center justify-center text-center p-12 border border-dashed rounded-lg space-y-6">
       <div className="bg-primary/10 rounded-full p-4">
@@ -55,9 +54,7 @@ function EmptyProjectState() {
       </div>
       <div className="space-y-2">
         <h3 className="text-xl font-semibold">{t("emptyState.title")}</h3>
-        <p className="text-muted-foreground max-w-md">
-          {t("emptyState.description")}
-        </p>
+        <p className="text-muted-foreground max-w-md">{t("emptyState.description")}</p>
       </div>
       <Button onClick={() => router.push("/interviewProject/create")}>
         <FolderPlus className="mr-2 h-4 w-4" />
@@ -70,7 +67,7 @@ function EmptyProjectState() {
 function ProjectCard({ project }: { project: InterviewProjectWithSessions }) {
   const router = useRouter();
   const t = useTranslations("InterviewProject.projectCard");
-
+  const locale = useLocale();
   const activeSessionsCount = project.sessions.filter(
     (s) => s.status === InterviewSessionStatus.active,
   ).length;
@@ -92,7 +89,9 @@ function ProjectCard({ project }: { project: InterviewProjectWithSessions }) {
       </CardHeader>
       <CardContent className="flex-1">
         <div className="bg-muted/50 rounded p-3 text-sm">
-          <div className="font-medium mb-1">{t("projectCategory")}: {project.category}</div>
+          <div className="font-medium mb-1">
+            {t("projectCategory")}: {project.category}
+          </div>
           <ul className="list-disc list-inside text-muted-foreground">
             {project.objectives.slice(0, 3).map((objective, i) => (
               <li key={i} className="line-clamp-1">
@@ -100,21 +99,31 @@ function ProjectCard({ project }: { project: InterviewProjectWithSessions }) {
               </li>
             ))}
             {project.objectives.length > 3 && (
-              <li>+{project.objectives.length - 3} {t("moreObjectives")}</li>
+              <li>
+                +{project.objectives.length - 3} {t("moreObjectives")}
+              </li>
             )}
           </ul>
         </div>
 
         <div className="flex items-center mt-4 text-sm text-muted-foreground">
           <CalendarDays className="mr-1 h-4 w-4" />
-          <span>{t("updated")} {new Date(project.updatedAt).toLocaleDateString()}</span>
+          <span>
+            {t("updated")} {formatDate(project.updatedAt, locale)}
+          </span>
         </div>
       </CardContent>
       <CardFooter className="flex flex-col space-y-3 pt-0">
         <div className="flex justify-between w-full text-sm">
-          <span>{activeSessionsCount} {t("activeSessions")}</span>
-          <span>{completedSessionsCount} {t("completed")}</span>
-          <span>{collectSessionsCount} {t("collectSessions")}</span>
+          <span>
+            {activeSessionsCount} {t("activeSessions")}
+          </span>
+          <span>
+            {completedSessionsCount} {t("completed")}
+          </span>
+          <span>
+            {collectSessionsCount} {t("collectSessions")}
+          </span>
         </div>
         <div className="flex space-x-2 w-full">
           <Button

@@ -1,13 +1,14 @@
 "use client";
 import { checkMaintenanceStatus } from "@/app/admin/maintenance/actions";
-import { cn } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 import { AlertCircleIcon, XIcon } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 
 export function MaintenanceNotification() {
   const t = useTranslations("Maintenance");
+  const locale = useLocale();
 
   const [maintenanceInfo, setMaintenanceInfo] = useState<{
     showNotification: boolean;
@@ -49,10 +50,6 @@ export function MaintenanceNotification() {
     return null;
   }
 
-  const formatDate = (date: string | Date) => {
-    return new Date(date).toLocaleString();
-  };
-
   return (
     <div
       className={cn(
@@ -66,8 +63,8 @@ export function MaintenanceNotification() {
           <span className="font-medium">{t("scheduledMaintenance")} </span>
           {maintenanceInfo.maintenanceData
             ? t("maintenancePeriod", {
-                startTime: formatDate(maintenanceInfo.maintenanceData.startTime),
-                endTime: formatDate(maintenanceInfo.maintenanceData.endTime),
+                startTime: formatDate(maintenanceInfo.maintenanceData.startTime, locale),
+                endTime: formatDate(maintenanceInfo.maintenanceData.endTime, locale),
               })
             : ""}
         </p>

@@ -1,13 +1,14 @@
 "use client";
-
 import { ChatMessage } from "@/components/chat/ChatMessage";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Pagination } from "@/components/ui/pagination";
 import { ExtractServerActionData } from "@/lib/serverAction";
+import { formatDate } from "@/lib/utils";
 import { ToolName } from "@/tools";
 import { Message } from "ai";
 import { useSession } from "next-auth/react";
+import { useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { PaginationInfo } from "../utils";
@@ -17,6 +18,7 @@ type EnterpriseLead = ExtractServerActionData<typeof fetchEnterpriseLeads>[numbe
 
 export default function EnterpriseLeadsPage() {
   const { status } = useSession();
+  const locale = useLocale();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [leads, setLeads] = useState<EnterpriseLead[]>([]);
@@ -69,17 +71,6 @@ export default function EnterpriseLeadsPage() {
     } else {
       setExpandedLead(id);
     }
-  };
-
-  // Format the date to a readable format
-  const formatDate = (date: Date) => {
-    return new Date(date).toLocaleString("zh-CN", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
   };
 
   const renderFullConversation = (messages: Message[]) => {
@@ -150,7 +141,7 @@ export default function EnterpriseLeadsPage() {
                       {lead.user.email}
                     </span>
                     <span className="text-xs text-muted-foreground sm:ml-2 block sm:inline">
-                      {formatDate(lead.createdAt)}
+                      {formatDate(lead.createdAt, locale)}
                     </span>
                   </div>
                 </CardHeader>

@@ -33,7 +33,40 @@
   "InterviewProject": {
     "title": "访谈项目",
     "newProject": "新建项目",
+    "backToProjects": "返回项目列表",
+    "backToProject": "返回项目",
     "createFirstProject": "创建首个项目",
+    "create": {
+      "title": "创建访谈项目",
+      "description": "通过命名和选择类别来开始您的研究项目。您可以稍后完善项目细节。",
+      "projectDetails": "项目详情",
+      "projectTitle": "项目标题",
+      "titlePlaceholder": "例如：新产品市场研究",
+      "titleDescription": "为您的项目提供一个清晰、描述性的名称。",
+      "projectType": "项目类型",
+      "typeSelectPlaceholder": "选择项目类型",
+      "typeDescription": "这有助于访谈专家调整其方法。",
+      "creating": "创建中...",
+      "createButton": "创建项目并开始明确",
+      "afterCreateDescription": "创建项目后，您将进入聊天界面，在那里您可以定义研究目标和项目简介。",
+      "validation": {
+        "titleMin": "标题必须至少有3个字符",
+        "categoryRequired": "请选择项目类别"
+      },
+      "toast": {
+        "createSuccess": "项目创建成功！",
+        "createError": "创建项目失败",
+        "unexpectedError": "发生意外错误"
+      },
+      "categories": {
+        "market_research": "市场研究",
+        "product_development": "产品开发",
+        "academic_research": "学术研究",
+        "user_research": "用户研究",
+        "competitor_analysis": "竞争对手分析",
+        "innovation_ideation": "创新与构思"
+      }
+    },
     "emptyState": {
       "title": "暂无访谈项目",
       "description": "创建您的第一个项目，开始通过专家访谈收集洞察。"
@@ -66,25 +99,45 @@
       "shareLink": "分享链接",
       "copyLink": "复制链接",
       "copied": "已复制！",
+      "linkCopied": "链接已复制到剪贴板",
       "keyInsights": "关键洞察",
       "show": "显示",
       "hide": "隐藏",
       "viewSession": "查看会话",
-      "expiresOn": "过期于"
+      "expiresOn": "过期于",
+      "noClarifySessionError": "未找到明确会话。请联系客服。"
     },
     "createCollectSession": {
       "title": "创建收集会话",
       "description": "创建一个可以分享给参与者以收集洞察的会话链接。",
       "sessionTitle": "会话标题",
       "sessionTitleDesc": "为此会话提供一个描述性名称",
+      "titlePlaceholder": "例如：客户反馈",
       "notes": "备注",
       "notesDesc": "可选备注供您参考（参与者不可见）",
+      "notesPlaceholder": "简要描述此会话的用途...",
       "expiration": "会话过期时间",
       "expirationDesc": "设置此会话应过期的时间（可选）",
       "neverExpires": "永不过期",
       "expiresOn": "过期于",
+      "creating": "创建中...",
       "create": "创建会话",
-      "cancel": "取消"
+      "cancel": "取消",
+      "day": {
+        "one": "1 天",
+        "oneDesc": "（24小时后过期）",
+        "seven": "7 天",
+        "sevenDesc": "（推荐）",
+        "thirty": "30 天"
+      },
+      "validation": {
+        "titleMin": "标题必须至少有3个字符"
+      },
+      "toast": {
+        "success": "收集会话创建成功",
+        "error": "创建收集会话失败",
+        "unexpectedError": "发生意外错误"
+      }
     },
     "clarifySession": {
       "interviewInProgress": "访谈进行中",

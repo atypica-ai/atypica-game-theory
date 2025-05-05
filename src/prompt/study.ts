@@ -10,7 +10,7 @@ export const studySystem = ({
   tokensStat: { used: number; limit: number };
 }) => `<system_config>
 DefaultLanguage: ${getDeployRegion() === "mainland" ? "简体中文" : "English"}
-CurrentTime: ${new Date().toLocaleDateString()}
+CurrentTime: ${new Date().toISOString()}
 ToolUsage (used/limit):
 ${Object.entries(toolUseStat)
   .map(([tool, { used, limit }]) => `  ${tool}: ${used}/${limit}`)

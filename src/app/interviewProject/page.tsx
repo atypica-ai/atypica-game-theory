@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { generatePageMetadata } from "@/lib/metadata";
 import { FolderPlusIcon } from "lucide-react";
 import { getServerSession } from "next-auth/next";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { fetchInterviewProjects } from "./actions";
@@ -36,17 +37,24 @@ export default async function InterviewProjectListPage() {
     <PageLayout
       menus={
         <>
-          <Button variant="ghost" asChild>
-            <Link href="/interviewProject/create">
-              <FolderPlusIcon className="mr-2 h-4 w-4" />
-              New Project
-            </Link>
-          </Button>
+          <NewProjectButton />
           <UserTokensBalance />
         </>
       }
     >
       <InterviewProjectList projects={result.data} />
     </PageLayout>
+  );
+}
+
+function NewProjectButton() {
+  const t = useTranslations("InterviewProject");
+  return (
+    <Button variant="ghost" asChild>
+      <Link href="/interviewProject/create">
+        <FolderPlusIcon className="mr-2 h-4 w-4" />
+        {t("newProject")}
+      </Link>
+    </Button>
   );
 }

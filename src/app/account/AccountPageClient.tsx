@@ -18,7 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { cn } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 import { SubscriptionPlan, UserTokensLog, UserTokensLogVerb } from "@prisma/client";
 import {
   CalendarIcon,
@@ -28,7 +28,7 @@ import {
   GiftIcon,
   User2Icon,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { AddTokensDialog } from "../payment/components/AddTokensDialog";
 import { SubscriptionDialog } from "../payment/components/SubscriptionDialog";
@@ -49,6 +49,7 @@ export function AccountPageClient({
   } | null;
 }) {
   const t = useTranslations("AccountPage");
+  const locale = useLocale();
   const [isAddTokensOpen, setIsAddTokensOpen] = useState(false);
   const [isSubscribeOpen, setIsSubscribeOpen] = useState(false);
   const [tokensHistory, setTokensHistory] = useState<UserTokensLog[]>([]);
@@ -128,7 +129,7 @@ export function AccountPageClient({
                       <div className="font-medium flex items-center">
                         <CalendarIcon className="mr-2 h-4 w-4 opacity-70" />
                         {subscription.endsAt
-                          ? new Date(subscription.endsAt).toLocaleString()
+                          ? formatDate(subscription.endsAt, locale)
                           : t("subscriptionSection.neverExpires")}
                       </div>
                     </div>
@@ -252,7 +253,7 @@ export function AccountPageClient({
                         {Math.abs(item.value)}
                       </TableCell>
                       <TableCell className="text-right">
-                        {new Date(item.createdAt).toLocaleString()}
+                        {formatDate(item.createdAt, locale)}
                       </TableCell>
                     </TableRow>
                   ))}

@@ -1,7 +1,8 @@
 "use client";
 import { Button } from "@/components/ui/button";
+import { formatDate } from "@/lib/utils";
 import { WrenchIcon } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { checkMaintenanceStatus } from "../admin/maintenance/actions";
@@ -15,10 +16,7 @@ export default function MaintenancePage() {
   const [maintenanceData, setMaintenanceData] = useState<TMaintenanceStatus | null>(null);
   // const t = await getTranslations("Maintenance");
   const t = useTranslations("Maintenance");
-
-  const formatDate = (date: Date) => {
-    return new Date(date).toLocaleString();
-  };
+  const locale = useLocale();
 
   // 在前端取，前端渲染，以获得正确的时区
   useEffect(() => {
@@ -40,10 +38,10 @@ export default function MaintenancePage() {
       <p className="text-muted-foreground mb-8">{maintenanceData.message || t("description")}</p>
       <div className="mb-8 text-sm border rounded-md p-4 bg-muted/20">
         <p className="text-muted-foreground">
-          <strong>{t("start")}</strong> {formatDate(maintenanceData.startTime)}
+          <strong>{t("start")}</strong> {formatDate(maintenanceData.startTime, locale)}
         </p>
         <p className="text-muted-foreground">
-          <strong>{t("expectedCompletion")}</strong> {formatDate(maintenanceData.endTime)}
+          <strong>{t("expectedCompletion")}</strong> {formatDate(maintenanceData.endTime, locale)}
         </p>
       </div>
       <Button variant="outline" asChild>

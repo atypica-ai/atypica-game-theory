@@ -7,9 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Pagination } from "@/components/ui/pagination";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ExtractServerActionData } from "@/lib/serverAction";
+import { formatDate } from "@/lib/utils";
 import { Currency } from "@prisma/client";
 import { SearchIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
 import Script from "next/script";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
@@ -36,6 +38,7 @@ type PaymentRecord = ExtractServerActionData<typeof getPaymentRecords>[number];
 
 export default function PaymentTestPage() {
   const { status, data: session } = useSession();
+  const locale = useLocale();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -383,7 +386,7 @@ export default function PaymentTestPage() {
                       </span>
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
-                      {new Date(record.createdAt).toLocaleString()}
+                      {formatDate(record.createdAt, locale)}
                     </td>
                   </tr>
                 ))

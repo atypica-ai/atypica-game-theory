@@ -19,9 +19,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ExtractServerActionData } from "@/lib/serverAction";
+import { formatDate } from "@/lib/utils";
 import { Analyst } from "@prisma/client";
 import { ArrowDown, ArrowUp, SearchIcon, StarIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { useLocale } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
@@ -40,6 +42,7 @@ type FeaturedStudyWithAnalyst = ExtractServerActionData<typeof fetchFeaturedStud
 
 export default function FeaturedStudiesPage() {
   const { status } = useSession();
+  const locale = useLocale();
   const router = useRouter();
   const [featuredStudies, setFeaturedStudies] = useState<FeaturedStudyWithAnalyst[]>([]);
   const [analysts, setAnalysts] = useState<AnalystWithFeature[]>([]);
@@ -332,7 +335,7 @@ export default function FeaturedStudiesPage() {
                     User: {analyst.userAnalysts[0]?.user.email || "N/A"}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    Created: {new Date(analyst.createdAt).toLocaleDateString()}
+                    Created: {formatDate(analyst.createdAt, locale)}
                   </p>
                 </CardContent>
                 <CardFooter className="gap-2 items-center justify-end">

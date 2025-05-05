@@ -1,4 +1,5 @@
 import { clsx, type ClassValue } from "clsx";
+import { Locale } from "next-intl";
 import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
@@ -46,14 +47,16 @@ export function formatTokensNumber(balance: number | string) {
   }
 }
 
-// Format date in a standardized format
-export function formatDate(date: Date | string) {
+/**
+ * 需要确保调用的节点在 NextIntlClientProvider 的里
+ */
+export function formatDate(date: Date | string, locale: Locale) {
   if (!date) return "";
   const d = typeof date === "string" ? new Date(date) : date;
-  return new Intl.DateTimeFormat("en-US", {
+  return new Intl.DateTimeFormat(locale, {
     year: "numeric",
     month: "short",
-    day: "2-digit",
+    day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
     hour12: false,

@@ -2,8 +2,9 @@
 import { Button } from "@/components/ui/button";
 import { Pagination } from "@/components/ui/pagination";
 import { ExtractServerActionData } from "@/lib/serverAction";
-import { formatTokensNumber } from "@/lib/utils";
+import { formatDate, formatTokensNumber } from "@/lib/utils";
 import { useSession } from "next-auth/react";
+import { useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { PaginationInfo } from "../utils";
@@ -13,6 +14,7 @@ type IssueStudy = ExtractServerActionData<typeof fetchIssueStudies>[number];
 
 export default function IssueStudiesPage() {
   const { status } = useSession();
+  const locale = useLocale();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [studies, setStudies] = useState<IssueStudy[]>([]);
@@ -87,12 +89,6 @@ export default function IssueStudiesPage() {
         return newSet;
       });
     }
-  };
-
-  // Format timestamp to human-readable time
-  const formatTime = (timestamp: string | null) => {
-    if (!timestamp) return "-";
-    return new Date(parseInt(timestamp)).toLocaleString();
   };
 
   // Calculate duration in minutes
@@ -175,7 +171,12 @@ export default function IssueStudiesPage() {
                     </div>
                   </div>
                   <div className="shrink-0 text-right">
-                    <div className="text-sm">Started: {formatTime(study.backgroundToken)}</div>
+                    <div className="text-sm">
+                      Started:{" "}
+                      {study.backgroundToken
+                        ? formatDate(new Date(parseInt(study.backgroundToken)), locale)
+                        : "-"}
+                    </div>
                     <div className="text-sm text-muted-foreground">
                       Duration: {calculateDuration(study.backgroundToken)}
                     </div>

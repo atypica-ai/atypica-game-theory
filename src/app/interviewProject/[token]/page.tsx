@@ -1,13 +1,11 @@
 import { fetchInterviewProjectByToken } from "@/app/interviewProject/actions";
-import { Button } from "@/components/ui/button";
 import UserTokensBalance from "@/components/UserTokensBalance";
 import { authOptions } from "@/lib/auth";
 import { generatePageMetadata } from "@/lib/metadata";
-import { ArrowLeftIcon } from "lucide-react";
 import { Metadata } from "next";
 import { getServerSession } from "next-auth/next";
-import Link from "next/link";
 import { forbidden, notFound, redirect } from "next/navigation";
+import { BackToProjectsButton } from "../components/BackButtons";
 import { PageLayout } from "../PageLayout";
 import { InterviewProjectDetail } from "./InterviewProjectDetail";
 
@@ -65,12 +63,7 @@ export default async function InterviewProjectPage({
     <PageLayout
       menus={
         <>
-          <Button variant="ghost" asChild>
-            <Link href="/interviewProject">
-              <ArrowLeftIcon className="mr-2 h-4 w-4" />
-              Back to Projects
-            </Link>
-          </Button>
+          <BackToProjectsButton />
           <UserTokensBalance />
         </>
       }

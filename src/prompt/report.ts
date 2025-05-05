@@ -57,7 +57,7 @@ export const reportHTMLSystem = () => `${promptSystemConfig()}
 
 【底部信息】
 - 报告末尾包含："报告由特赞公司的 atypica.AI 提供技术支持"
-- 生成日期：${new Date().toLocaleDateString()}
+- 生成日期
 
 你的回复应该只包含可直接使用的HTML代码，从<!DOCTYPE html>开始。
 `;

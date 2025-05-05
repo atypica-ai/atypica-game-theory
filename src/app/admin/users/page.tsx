@@ -12,10 +12,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Pagination } from "@/components/ui/pagination";
 import { ExtractServerActionData } from "@/lib/serverAction";
-import { formatTokensNumber } from "@/lib/utils";
+import { formatDate, formatTokensNumber } from "@/lib/utils";
 import { AdminRole } from "@prisma/client";
 import { SearchIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { ConfirmDialog } from "../components/ConfirmDialog";
@@ -33,7 +34,7 @@ type User = ExtractServerActionData<typeof fetchUsers>[number];
 export default function UsersPage() {
   const { status } = useSession();
   const router = useRouter();
-
+  const locale = useLocale();
   const [isLoading, setIsLoading] = useState(true);
   const [users, setUsers] = useState<User[]>([]);
   const [error, setError] = useState("");
@@ -264,13 +265,13 @@ export default function UsersPage() {
                     </Button>
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {new Date(user.createdAt).toLocaleDateString()}
+                    {formatDate(user.createdAt, locale)}
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm">
                     <div className="flex items-center gap-2">
                       {user.emailVerified ? (
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                          {new Date(user.emailVerified).toLocaleDateString()}
+                          {formatDate(user.emailVerified, locale)}
                         </span>
                       ) : (
                         <>
@@ -296,7 +297,7 @@ export default function UsersPage() {
                   <td className="whitespace-nowrap px-6 py-4 text-sm">
                     {user.lastLogin ? (
                       <>
-                        <div>{new Date(user.lastLogin.timestamp).toLocaleDateString()}</div>
+                        <div>{formatDate(new Date(user.lastLogin.timestamp), locale)}</div>
                         <div>{user.lastLogin.clientIp}</div>
                       </>
                     ) : (

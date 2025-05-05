@@ -12,8 +12,10 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Pagination } from "@/components/ui/pagination";
+import { formatDate } from "@/lib/utils";
 import { InvitationCode } from "@prisma/client";
 import { useSession } from "next-auth/react";
+import { useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { PaginationInfo } from "../utils";
@@ -21,6 +23,7 @@ import { createInvitationCode, deleteInvitationCode, fetchInvitationCodes } from
 
 export default function InvitationCodesPage() {
   const { status } = useSession();
+  const locale = useLocale();
   const router = useRouter();
   const [codes, setCodes] = useState<InvitationCode[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -150,7 +153,7 @@ export default function InvitationCodesPage() {
                 <tr key={code.id}>
                   <td className="whitespace-nowrap px-6 py-4 text-sm font-medium">{code.code}</td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {new Date(code.createdAt).toLocaleString()}
+                    {formatDate(code.createdAt, locale)}
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm">{code.createdBy}</td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm">

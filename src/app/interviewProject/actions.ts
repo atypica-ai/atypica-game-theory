@@ -10,7 +10,7 @@ import {
   InterviewSessionStatus,
   UserChatKind,
 } from "@prisma/client";
-import { generateId, Message } from "ai";
+import { generateId } from "ai";
 import { revalidatePath } from "next/cache";
 
 // Types for our frontend to use
@@ -156,82 +156,6 @@ export async function fetchInterviewProjectByToken(
         ...project,
         clarifySession,
       },
-    };
-  });
-}
-
-// Create a new clarify session
-export async function createClarifySession(
-  projectToken: string,
-  title?: string,
-): Promise<ServerActionResult<InterviewSession>> {
-  return withAuth(async (user) => {
-    const project = await prisma.interviewProject.findUnique({
-      where: { token: projectToken },
-    });
-
-    if (!project) {
-      return {
-        success: false,
-        code: "not_found",
-        message: "Interview project not found",
-      };
-    }
-
-    if (project.userId !== user.id) {
-      return {
-        success: false,
-        code: "forbidden",
-        message: "You don't have access to this interview project",
-      };
-    }
-
-    const sessionToken = generateToken();
-    const message: Message = {
-      id: generateId(),
-      role: "assistant",
-      content:
-        "Hello! I'm your interview expert. How can I help you with this research project today?",
-    };
-
-    // Create a UserChat first for storing the conversation
-    const userChat = await prisma.userChat.create({
-      data: {
-        userId: user.id,
-        title: title || `Session for ${project.title}`,
-        kind: UserChatKind.interviewSession,
-        token: generateToken(),
-      },
-    });
-
-    // Save the initial message
-    await prisma.chatMessage.create({
-      data: {
-        messageId: message.id,
-        userChatId: userChat.id,
-        role: message.role,
-        content: message.content,
-        parts: [{ type: "text", text: message.content }],
-      },
-    });
-
-    // Create the interview session
-    const session = await prisma.interviewSession.create({
-      data: {
-        projectId: project.id,
-        title: title || `Session ${new Date().toLocaleString()}`,
-        token: sessionToken,
-        userChatId: userChat.id,
-        kind: InterviewSessionKind.clarify,
-        status: InterviewSessionStatus.active,
-      },
-    });
-
-    revalidatePath(`/interviewProject/${projectToken}`);
-
-    return {
-      success: true,
-      data: session,
     };
   });
 }

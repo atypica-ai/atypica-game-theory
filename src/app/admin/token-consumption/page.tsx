@@ -11,6 +11,7 @@ import {
 import { formatDate, formatTokensNumber } from "@/lib/utils";
 import { ChevronDown, ChevronRight, PlayIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { useLocale } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useCallback, useEffect, useState } from "react";
@@ -20,7 +21,7 @@ import { ChatTokenConsumptionData, fetchTokenConsumption } from "./actions";
 export default function TokenConsumptionPage() {
   const { status } = useSession();
   const router = useRouter();
-
+  const locale = useLocale();
   const [isLoading, setIsLoading] = useState(true);
   const [tokenData, setTokenData] = useState<ChatTokenConsumptionData[]>([]);
   const [error, setError] = useState("");
@@ -180,7 +181,7 @@ export default function TokenConsumptionPage() {
                                 {getUserDisplayName(chat)}
                               </span>
                               <span className="text-xs text-muted-foreground">
-                                {formatDate(chat.createdAt)}
+                                {formatDate(chat.createdAt, locale)}
                               </span>
                             </div>
                           </div>

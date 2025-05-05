@@ -33,7 +33,40 @@
   "InterviewProject": {
     "title": "Interview Projects",
     "newProject": "New Project",
+    "backToProjects": "Back to Projects",
+    "backToProject": "Back to Project",
     "createFirstProject": "Create First Project",
+    "create": {
+      "title": "Create Interview Project",
+      "description": "Start your research project by giving it a name and selecting a category. You'll refine the details later.",
+      "projectDetails": "Project Details",
+      "projectTitle": "Project Title",
+      "titlePlaceholder": "E.g., Market Research for New Product",
+      "titleDescription": "Give your project a clear, descriptive name.",
+      "projectType": "Project Type",
+      "typeSelectPlaceholder": "Select a project type",
+      "typeDescription": "This helps the interview expert tailor its approach.",
+      "creating": "Creating...",
+      "createButton": "Create Project & Start Clarifying",
+      "afterCreateDescription": "After creating your project, you'll be taken to a chat interface where you can define your research objectives and project brief.",
+      "validation": {
+        "titleMin": "Title must be at least 3 characters",
+        "categoryRequired": "Please select a project category"
+      },
+      "toast": {
+        "createSuccess": "Project created successfully!",
+        "createError": "Failed to create project",
+        "unexpectedError": "An unexpected error occurred"
+      },
+      "categories": {
+        "market_research": "Market Research",
+        "product_development": "Product Development",
+        "academic_research": "Academic Research",
+        "user_research": "User Research",
+        "competitor_analysis": "Competitor Analysis",
+        "innovation_ideation": "Innovation & Ideation"
+      }
+    },
     "emptyState": {
       "title": "No interview projects yet",
       "description": "Create your first project to start collecting insights through expert interviews."
@@ -66,25 +99,45 @@
       "shareLink": "Share Link",
       "copyLink": "Copy link",
       "copied": "Copied!",
+      "linkCopied": "Link copied to clipboard",
       "keyInsights": "Key Insights",
       "show": "Show",
       "hide": "Hide",
       "viewSession": "View Session",
-      "expiresOn": "Expires"
+      "expiresOn": "Expires",
+      "noClarifySessionError": "No clarify session found. Please contact support."
     },
     "createCollectSession": {
       "title": "Create Collect Session",
       "description": "Create a session link you can share with participants to collect their insights.",
       "sessionTitle": "Session Title",
       "sessionTitleDesc": "Give this session a descriptive name",
+      "titlePlaceholder": "E.g., Customer Feedback",
       "notes": "Notes",
       "notesDesc": "Optional notes for your reference (not visible to participants)",
+      "notesPlaceholder": "Briefly describe what this session is for...",
       "expiration": "Session Expiration",
       "expirationDesc": "Set when this session should expire (optional)",
       "neverExpires": "Never expires",
       "expiresOn": "Expires on",
+      "creating": "Creating...",
       "create": "Create Session",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "day": {
+        "one": "1 day",
+        "oneDesc": "(Expires in 24 hours)",
+        "seven": "7 days",
+        "sevenDesc": "(Recommended)",
+        "thirty": "30 days"
+      },
+      "validation": {
+        "titleMin": "Title must be at least 3 characters"
+      },
+      "toast": {
+        "success": "Collect session created successfully",
+        "error": "Failed to create collect session",
+        "unexpectedError": "An unexpected error occurred"
+      }
     },
     "clarifySession": {
       "interviewInProgress": "Interview in Progress",

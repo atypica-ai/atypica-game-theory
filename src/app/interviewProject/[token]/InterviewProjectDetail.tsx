@@ -31,7 +31,7 @@ import { cn, formatDate } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { InterviewSession } from "@prisma/client";
 import { Copy, DownloadIcon, Share2, Users } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -47,6 +47,7 @@ type ExtendedInterviewProject = InterviewProjectWithSessions & {
 export function InterviewProjectDetail({ project }: { project: ExtendedInterviewProject }) {
   const router = useRouter();
   const t = useTranslations("InterviewProject.projectDetail");
+  const locale = useLocale();
   const [isCreatingSession, setIsCreatingSession] = useState(false);
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
 
@@ -55,7 +56,7 @@ export function InterviewProjectDetail({ project }: { project: ExtendedInterview
     if (project.clarifySession) {
       router.push(`/interviewProject/clarify/${project.clarifySession.token}`);
     } else {
-      toast.error("No clarify session found. Please contact support.");
+      toast.error(t("noClarifySessionError"));
     }
   };
 
@@ -76,9 +77,7 @@ export function InterviewProjectDetail({ project }: { project: ExtendedInterview
                 <p className="text-muted-foreground mt-2 max-w-2xl">{project.brief}</p>
               )}
               {!project.brief && project.clarifySession && (
-                <p className="text-muted-foreground mt-2 max-w-2xl">
-                  {t("clarifyPrompt")}
-                </p>
+                <p className="text-muted-foreground mt-2 max-w-2xl">{t("clarifyPrompt")}</p>
               )}
             </div>
 
@@ -109,12 +108,16 @@ export function InterviewProjectDetail({ project }: { project: ExtendedInterview
 
                   <div>
                     <div className="text-sm font-medium">{t("created")}</div>
-                    <div className="text-muted-foreground">{formatDate(project.createdAt)}</div>
+                    <div className="text-muted-foreground">
+                      {formatDate(project.createdAt, locale)}
+                    </div>
                   </div>
 
                   <div>
                     <div className="text-sm font-medium">{t("lastUpdated")}</div>
-                    <div className="text-muted-foreground">{formatDate(project.updatedAt)}</div>
+                    <div className="text-muted-foreground">
+                      {formatDate(project.updatedAt, locale)}
+                    </div>
                   </div>
 
                   {project.objectives && project.objectives.length > 0 && (
@@ -132,9 +135,7 @@ export function InterviewProjectDetail({ project }: { project: ExtendedInterview
                     project.clarifySession && (
                       <div>
                         <div className="text-sm font-medium">{t("researchObjectives")}</div>
-                        <div className="text-muted-foreground mt-1 italic">
-                          {t("noObjectives")}
-                        </div>
+                        <div className="text-muted-foreground mt-1 italic">{t("noObjectives")}</div>
                       </div>
                     )}
                 </div>
@@ -202,6 +203,7 @@ function CollectSessionCard({ session }: { session: InterviewProjectWithSessions
   const [showInsights, setShowInsights] = useState(false);
   const [collectLink, setCollectLink] = useState<string | null>(null);
   const t = useTranslations("InterviewProject.projectDetail");
+  const locale = useLocale();
 
   useEffect(() => {
     setCollectLink(`${window.location.origin}/interviewProject/collect/${session.token}`);
@@ -218,8 +220,8 @@ function CollectSessionCard({ session }: { session: InterviewProjectWithSessions
     navigator.clipboard.writeText(collectLink);
     setCopySuccess(true);
     setTimeout(() => setCopySuccess(false), 2000);
-    toast.success("Link copied to clipboard");
-  }, [collectLink]);
+    toast.success(t("linkCopied"));
+  }, [collectLink, t]);
 
   return (
     <Card className="overflow-hidden h-full flex flex-col">
@@ -239,8 +241,14 @@ function CollectSessionCard({ session }: { session: InterviewProjectWithSessions
       </CardHeader>
       <CardContent className="px-4 py-3 flex-grow">
         <div className="text-xs text-muted-foreground flex justify-between mb-2">
-          <span>{t("created")} {formatDate(session.createdAt)}</span>
-          {session.expiresAt && <span>{t("expiresOn")} {formatDate(session.expiresAt)}</span>}
+          <span>
+            {t("created")} {formatDate(session.createdAt, locale)}
+          </span>
+          {session.expiresAt && (
+            <span>
+              {t("expiresOn")} {formatDate(session.expiresAt, locale)}
+            </span>
+          )}
         </div>
 
         {session.notes && (
@@ -301,15 +309,6 @@ function CollectSessionCard({ session }: { session: InterviewProjectWithSessions
   );
 }
 
-const collectSessionSchema = z.object({
-  title: z.string().min(3, "Title must be at least 3 characters"),
-  notes: z.string().optional(),
-  expiresIn: z.string(),
-  expirationEnabled: z.boolean(),
-});
-
-type CollectSessionFormValues = z.infer<typeof collectSessionSchema>;
-
 function CreateCollectSessionDialog({
   projectToken,
   open,
@@ -321,8 +320,15 @@ function CreateCollectSessionDialog({
 }) {
   const [isCreating, setIsCreating] = useState(false);
   const t = useTranslations("InterviewProject.createCollectSession");
-  
-  const form = useForm<CollectSessionFormValues>({
+
+  const collectSessionSchema = z.object({
+    title: z.string().min(3, t("validation.titleMin")),
+    notes: z.string().optional(),
+    expiresIn: z.string(),
+    expirationEnabled: z.boolean(),
+  });
+
+  const form = useForm<z.infer<typeof collectSessionSchema>>({
     resolver: zodResolver(collectSessionSchema),
     defaultValues: {
       title: "",
@@ -351,14 +357,14 @@ function CreateCollectSessionDialog({
       });
 
       if (result.success) {
-        toast.success("Collect session created successfully");
+        toast.success(t("toast.success"));
         form.reset(); // Reset form for next time
         onOpenChange(false); // Close dialog
       } else {
-        toast.error(`Failed to create collect session: ${result.message}`);
+        toast.error(`${t("toast.error")}: ${result.message}`);
       }
     } catch (error) {
-      toast.error("An unexpected error occurred");
+      toast.error(t("toast.unexpectedError"));
       console.error(error);
     } finally {
       setIsCreating(false);
@@ -370,9 +376,7 @@ function CreateCollectSessionDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{t("title")}</DialogTitle>
-          <DialogDescription>
-            {t("description")}
-          </DialogDescription>
+          <DialogDescription>{t("description")}</DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
@@ -384,7 +388,7 @@ function CreateCollectSessionDialog({
                 <FormItem>
                   <FormLabel>{t("sessionTitle")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="E.g., Customer Feedback" {...field} />
+                    <Input placeholder={t("titlePlaceholder")} {...field} />
                   </FormControl>
                   <FormDescription>{t("sessionTitleDesc")}</FormDescription>
                   <FormMessage />
@@ -400,7 +404,7 @@ function CreateCollectSessionDialog({
                   <FormLabel>{t("notes")}</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Briefly describe what this session is for..."
+                      placeholder={t("notesPlaceholder")}
                       className="resize-none"
                       {...field}
                     />
@@ -417,9 +421,7 @@ function CreateCollectSessionDialog({
               render={({ field }) => (
                 <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
                   <div className="space-y-0.5">
-                    <FormLabel className="text-base">
-                      {t("expiration")}
-                    </FormLabel>
+                    <FormLabel className="text-base">{t("expiration")}</FormLabel>
                     <FormDescription>{t("expirationDesc")}</FormDescription>
                   </div>
                   <FormControl>
@@ -447,8 +449,8 @@ function CreateCollectSessionDialog({
                             <RadioGroupItem value="1" />
                           </FormControl>
                           <FormLabel className="font-normal">
-                            1 day
-                            <span className="text-muted-foreground"> (Expires in 24 hours)</span>
+                            {t("day.one")}
+                            <span className="text-muted-foreground"> {t("day.oneDesc")}</span>
                           </FormLabel>
                         </FormItem>
                         <FormItem className="flex items-center space-x-3 space-y-0">
@@ -456,15 +458,15 @@ function CreateCollectSessionDialog({
                             <RadioGroupItem value="7" />
                           </FormControl>
                           <FormLabel className="font-normal">
-                            7 days
-                            <span className="text-muted-foreground"> (Recommended)</span>
+                            {t("day.seven")}
+                            <span className="text-muted-foreground"> {t("day.sevenDesc")}</span>
                           </FormLabel>
                         </FormItem>
                         <FormItem className="flex items-center space-x-3 space-y-0">
                           <FormControl>
                             <RadioGroupItem value="30" />
                           </FormControl>
-                          <FormLabel className="font-normal">30 days</FormLabel>
+                          <FormLabel className="font-normal">{t("day.thirty")}</FormLabel>
                         </FormItem>
                       </RadioGroup>
                     </FormControl>
@@ -484,7 +486,7 @@ function CreateCollectSessionDialog({
                 {t("cancel")}
               </Button>
               <Button type="submit" disabled={isCreating}>
-                {isCreating ? "Creating..." : t("create")}
+                {isCreating ? t("creating") : t("create")}
               </Button>
             </DialogFooter>
           </form>

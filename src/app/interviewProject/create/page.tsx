@@ -19,19 +19,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, Briefcase, Lightbulb, School, Search, Target, Users } from "lucide-react";
-import Link from "next/link";
+import { Briefcase, Lightbulb, School, Search, Target, Users } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { createInterviewProject } from "../actions";
-
-const projectSchema = z.object({
-  title: z.string().min(3, "Title must be at least 3 characters"),
-  category: z.string().min(1, "Please select a project category"),
-});
+import { BackToProjectsButton } from "../components/BackButtons";
 
 const projectCategories = [
   { id: "market_research", name: "Market Research", icon: <Search className="h-5 w-5" /> },
@@ -53,8 +49,14 @@ const projectCategories = [
 export default function CreateInterviewProjectPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const t = useTranslations("InterviewProject.create");
 
-  const form = useForm<z.infer<typeof projectSchema>>({  
+  const projectSchema = z.object({
+    title: z.string().min(3, t("validation.titleMin")),
+    category: z.string().min(1, t("validation.categoryRequired")),
+  });
+
+  const form = useForm<z.infer<typeof projectSchema>>({
     resolver: zodResolver(projectSchema),
     defaultValues: {
       title: "",
@@ -67,13 +69,13 @@ export default function CreateInterviewProjectPage() {
     try {
       const result = await createInterviewProject(data);
       if (result.success) {
-        toast.success("Project created successfully!");
+        toast.success(t("toast.createSuccess"));
         router.push(`/interviewProject/${result.data.token}`);
       } else {
-        toast.error(`Failed to create project: ${result.message}`);
+        toast.error(`${t("toast.createError")}: ${result.message}`);
       }
     } catch (error) {
-      toast.error("An unexpected error occurred");
+      toast.error(t("toast.unexpectedError"));
       console.error(error);
     } finally {
       setIsSubmitting(false);
@@ -83,41 +85,32 @@ export default function CreateInterviewProjectPage() {
   return (
     <div className="flex flex-col min-h-screen">
       <GlobalHeader>
-        <Button variant="ghost" asChild>
-          <Link href="/interviewProject">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Projects
-          </Link>
-        </Button>
+        <BackToProjectsButton />
       </GlobalHeader>
 
       <main className="flex-1 container max-w-3xl mx-auto py-8">
         <div className="flex flex-col space-y-6">
           <div>
-            <h1 className="text-3xl font-bold">Create Interview Project</h1>
-            <p className="text-muted-foreground mt-2">
-              Start your research project by giving it a name and selecting a category. You'll refine the details later.
-            </p>
+            <h1 className="text-3xl font-bold">{t("title")}</h1>
+            <p className="text-muted-foreground mt-2">{t("description")}</p>
           </div>
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-xl font-semibold mb-4">Project Details</h2>
+                  <h2 className="text-xl font-semibold mb-4">{t("projectDetails")}</h2>
                   <div className="space-y-4">
                     <FormField
                       control={form.control}
                       name="title"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Project Title</FormLabel>
+                          <FormLabel>{t("projectTitle")}</FormLabel>
                           <FormControl>
-                            <Input placeholder="E.g., Market Research for New Product" {...field} />
+                            <Input placeholder={t("titlePlaceholder")} {...field} />
                           </FormControl>
-                          <FormDescription>
-                            Give your project a clear, descriptive name.
-                          </FormDescription>
+                          <FormDescription>{t("titleDescription")}</FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -128,11 +121,11 @@ export default function CreateInterviewProjectPage() {
                       name="category"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Project Type</FormLabel>
+                          <FormLabel>{t("projectType")}</FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Select a project type" />
+                                <SelectValue placeholder={t("typeSelectPlaceholder")} />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
@@ -144,15 +137,13 @@ export default function CreateInterviewProjectPage() {
                                 >
                                   <div className="flex items-center">
                                     {category.icon}
-                                    <span className="ml-2">{category.name}</span>
+                                    <span className="ml-2">{t(`categories.${category.id}`)}</span>
                                   </div>
                                 </SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
-                          <FormDescription>
-                            This helps the interview expert tailor its approach.
-                          </FormDescription>
+                          <FormDescription>{t("typeDescription")}</FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -163,10 +154,10 @@ export default function CreateInterviewProjectPage() {
 
               <div className="pt-4 border-t">
                 <Button type="submit" className="w-full" disabled={isSubmitting}>
-                  {isSubmitting ? "Creating..." : "Create Project & Start Clarifying"}
+                  {isSubmitting ? t("creating") : t("createButton")}
                 </Button>
                 <p className="text-sm text-muted-foreground mt-2 text-center">
-                  After creating your project, you'll be taken to a chat interface where you can define your research objectives and project brief.
+                  {t("afterCreateDescription")}
                 </p>
               </div>
             </form>
