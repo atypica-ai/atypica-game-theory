@@ -1,6 +1,7 @@
+import { useDevice } from "@/lib/utils";
 import { Currency } from "@prisma/client";
 import { useSession } from "next-auth/react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { PingxxNewPaymentParams, ProductName, StripeNewPaymentParams } from "../data";
 
 export enum PaymentProvider {
@@ -10,20 +11,10 @@ export enum PaymentProvider {
 
 export function usePay() {
   const { data: session } = useSession();
-  const [isMobile, setIsMobile] = useState<boolean>(false);
   const [paymentScanQR, setPaymentScanQR] = useState<{ url: string; createdAt: Date } | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Check if mobile
-  useEffect(() => {
-    const checkMobile = () => {
-      const userAgent = window.navigator.userAgent.toLowerCase();
-      const mobileRegex = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i;
-      setIsMobile(mobileRegex.test(userAgent));
-    };
-    checkMobile();
-  }, []);
+  const { isMobile } = useDevice();
 
   // Pingxx payment
   const createPingxxPaymentUrl = useCallback(

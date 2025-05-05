@@ -6,7 +6,7 @@ import { clearStudyUserChatBackgroundToken } from "@/data/UserChat";
 import { useDocumentVisibility } from "@/hooks/use-document-visibility";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
 import { CONTINUE_ASSISTANT_STEPS } from "@/lib/messageUtils";
-import { cn } from "@/lib/utils";
+import { cn, useDevice } from "@/lib/utils";
 import { ToolName } from "@/tools";
 import { Message, useChat } from "@ai-sdk/react";
 import { ArrowRightIcon, PlayIcon } from "lucide-react";
@@ -228,6 +228,7 @@ export function ChatBox() {
     uiStatus === "waitForUser" ||
     uiStatus === "error";
   const [messagesContainerRef, messagesEndRef] = useScrollToBottom<HTMLDivElement>();
+  const { isMobile } = useDevice();
 
   return (
     <>
@@ -293,7 +294,6 @@ export function ChatBox() {
             setInput(event.target.value);
           }}
           onKeyDown={(e) => {
-            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
             if (!isMobile && e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
               e.preventDefault();
               if (input.trim()) {

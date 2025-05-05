@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
 import { CONTINUE_ASSISTANT_STEPS } from "@/lib/messageUtils";
-import { cn } from "@/lib/utils";
+import { cn, useDevice } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
 import { ArrowRightIcon, PlayIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -42,6 +42,7 @@ export function UserChatSession({
 
   const [messagesContainerRef, messagesEndRef] = useScrollToBottom<HTMLDivElement>();
   const inputDisabled = status === "streaming" || status === "submitted";
+  const { isMobile } = useDevice();
 
   return (
     <div
@@ -98,7 +99,6 @@ export function UserChatSession({
               setInput(event.target.value);
             }}
             onKeyDown={(e) => {
-              const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
               if (!isMobile && e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
                 e.preventDefault();
                 if (input.trim()) {

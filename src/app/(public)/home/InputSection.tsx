@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { createUserChat } from "@/data/UserChat";
+import { useDevice } from "@/lib/utils";
 import { ArrowRightIcon, RotateCwIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
@@ -63,7 +64,7 @@ export function InputSection() {
           enterKeyHint="enter"
           disabled={isLoading}
           onKeyDown={(e) => {
-            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            const { isMobile } = useDevice();
             if (!isMobile && e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
               e.preventDefault();
               if (input.trim()) {

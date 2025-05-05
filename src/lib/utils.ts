@@ -104,3 +104,13 @@ export function fixMalformedUnicodeString(str?: string) {
     });
   }
 }
+
+export function useDevice() {
+  const isMobile =
+    typeof window !== "undefined"
+      ? /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+          window.navigator.userAgent,
+        )
+      : false;
+  return { isMobile };
+}
