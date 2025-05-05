@@ -8,6 +8,7 @@ export const ClarifySessionBodySchema = z.object({
     content: z.string(),
     parts: z.custom<NonNullable<Message["parts"]>>().optional(),
   }),
+  checkpointId: z.number().optional(),
   sessionToken: z.string(),
 });
 

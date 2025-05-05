@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error }, { status: 400 });
   }
 
-  const { message: newMessage, sessionToken } = parseResult.data;
+  const { message: newMessage, checkpointId, sessionToken } = parseResult.data;
   // 这里会检查用户权限
   const result = await fetchClarifyInterviewSession(sessionToken);
   if (!result.success) {
@@ -50,10 +50,17 @@ export async function POST(req: NextRequest) {
     ...newMessage,
     id: newMessage.id ?? generateId(),
   });
-  const { coreMessages, streamingMessage } = await prepareMessagesForStreaming(userChatId);
+  const { coreMessages, streamingMessage } = await prepareMessagesForStreaming(userChatId, {
+    checkpointId,
+  });
 
   const abortSignal = req.signal;
   const statReport: StatReporter = async () => {};
+  const clarifyLogger = rootLogger.child({
+    interviewProjectId: interviewSession.projectId,
+    sessionChatId: interviewSession.userChatId,
+    sessionToken: interviewSession.token,
+  });
 
   // Generate system message with project context
   const systemPrompt = interviewSessionSystem({
@@ -65,7 +72,7 @@ export async function POST(req: NextRequest) {
   });
 
   const streamTextResult = streamText({
-    model: llm("gpt-4o"),
+    model: llm("claude-3-7-sonnet"),
     providerOptions,
     system: systemPrompt,
     messages: coreMessages,
@@ -82,9 +89,16 @@ export async function POST(req: NextRequest) {
     maxSteps: 5,
     temperature: 0.7,
     experimental_transform: smoothStream({
+      delayInMs: 30,
       chunking: /[\u4E00-\u9FFF]|\S+\s+/,
     }),
     onStepFinish: async (step) => {
+      clarifyLogger.info({
+        msg: "clarify chat streamText onStepFinish",
+        stepType: step.stepType,
+        toolCalls: step.toolCalls.map((call) => call.toolName),
+        usage: step.usage,
+      });
       appendStepToStreamingMessage(streamingMessage, step);
       if (streamingMessage.parts?.length && streamingMessage.content.trim()) {
         await persistentAIMessageToDB(userChatId, streamingMessage);

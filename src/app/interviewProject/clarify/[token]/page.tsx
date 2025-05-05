@@ -4,6 +4,8 @@ import { authOptions } from "@/lib/auth";
 import { convertDBMessageToAIMessage } from "@/lib/messageUtils";
 import { generatePageMetadata } from "@/lib/metadata";
 import { prisma } from "@/lib/prisma";
+import { ToolName } from "@/tools";
+import { Message } from "ai";
 import { Metadata } from "next";
 import { getServerSession } from "next-auth/next";
 import { notFound, redirect } from "next/navigation";
@@ -64,12 +66,18 @@ export default async function ClarifySessionPage({
   if (!userChatId) {
     throw new Error("Something went wrong, useChat should exist on clarify session");
   }
-  const messages = (
-    await prisma.chatMessage.findMany({
-      where: { userChatId },
-      orderBy: { id: "asc" },
-    })
-  ).map(convertDBMessageToAIMessage);
+  const dbMessages = await prisma.chatMessage.findMany({
+    where: { userChatId },
+    orderBy: { id: "asc" },
+  });
+  const checkpoint = dbMessages.findLast((message) => {
+    return !!(message.parts as Message["parts"])?.find(
+      (part) =>
+        part.type === "tool-invocation" &&
+        part.toolInvocation.toolName === ToolName.updateInterviewProject,
+    );
+  });
+  const messages = dbMessages.map(convertDBMessageToAIMessage);
 
   return (
     <PageLayout
@@ -83,6 +91,7 @@ export default async function ClarifySessionPage({
       <ClarifySessionClient
         interviewSession={{ ...interviewSession, userChatId }}
         initialMessages={messages}
+        checkpointId={checkpoint?.id}
       />
     </PageLayout>
   );

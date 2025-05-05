@@ -104,6 +104,7 @@ export async function POST(req: NextRequest) {
     maxSteps: 5,
     temperature: 0.7,
     experimental_transform: smoothStream({
+      delayInMs: 30,
       chunking: /[\u4E00-\u9FFF]|\S+\s+/,
     }),
     onStepFinish: async (step) => {

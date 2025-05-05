@@ -87,8 +87,8 @@ export function InterviewProjectDetail({ project }: { project: ExtendedInterview
           <Card className="lg:col-span-1">
             <CardHeader>
               <CardTitle className="flex items-center">
-                <NotebookPenIcon className="w-5 h-5 mr-2" />
-                <h1 className="text-lg">{project.title}</h1>
+                <NotebookPenIcon className="shrink-0 w-5 h-5 mr-2" />
+                <h1 className="text-base">{project.title}</h1>
               </CardTitle>
               <CardDescription>
                 {project.brief && (

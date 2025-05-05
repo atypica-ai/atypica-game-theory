@@ -38,6 +38,7 @@ export async function POST(req: Request) {
       // [ToolName.reasoningThinking]: reasoningThinkingTool(),
     },
     experimental_transform: smoothStream({
+      delayInMs: 30,
       chunking: /[\u4E00-\u9FFF]|\S+\s+/,
     }),
     maxSteps: 3,

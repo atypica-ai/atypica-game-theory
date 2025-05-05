@@ -133,6 +133,7 @@ export async function studyAgentRequest({
     maxTokens: maxTokens,
     // https://sdk.vercel.ai/docs/ai-sdk-ui/smooth-stream-chinese
     experimental_transform: smoothStream({
+      delayInMs: 30,
       chunking: /[\u4E00-\u9FFF]|\S+\s+/,
     }),
     onChunk: async ({ chunk }: { chunk: TextStreamPart<typeof allTools> }) => {

@@ -319,10 +319,23 @@ export function convertDBMessageToAIMessage({
  * 保存到数据库，取出完整的消息列表
  * 转换成 streamText 的格式
  */
-export async function prepareMessagesForStreaming(userChatId: number) {
-  // persist 了以后，取一下最新的消息列表，包含了最新的 new message, user 或者 assistant 的
+export async function prepareMessagesForStreaming(
+  userChatId: number,
+  {
+    checkpointId,
+  }: {
+    checkpointId?: number; // 给 LLM 的消息从 id > checkpointId 开始取，这里不是 messageId 而是 ChatMessage 的数据库 id，并且 id 是递增的
+  } = {},
+) {
   const messages = await prisma.chatMessage.findMany({
-    where: { userChatId },
+    where: checkpointId
+      ? {
+          userChatId,
+          id: {
+            gt: checkpointId,
+          },
+        }
+      : { userChatId },
     orderBy: { id: "asc" },
   });
   // 使用 fix 之前的统计数据，因为 fix 会把没完成的 tool calls 变成完成

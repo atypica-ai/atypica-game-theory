@@ -22,7 +22,7 @@ import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
 import { Message } from "ai";
-import { ChevronRight, Cpu, InfoIcon } from "lucide-react";
+import { ChevronRight, CpuIcon, InfoIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
@@ -31,18 +31,21 @@ import { fetchClarifyInterviewSession } from "../../actions";
 export function ClarifySessionClient({
   interviewSession,
   initialMessages = [],
+  checkpointId,
 }: {
   interviewSession: Omit<
     ExtractServerActionData<typeof fetchClarifyInterviewSession>,
     "userChatId"
   > & { userChatId: number };
   initialMessages: Message[];
+  checkpointId?: number;
 }) {
   const t = useTranslations("InterviewProject.clarifySession");
   const isMediaLg = useMediaQuery("(min-width: 1024px)"); // 对应 tailwind 的 lg
   const [projectDetailsOpen, setProjectDetailsOpen] = useState(false);
 
   const initialRequestBody = {
+    checkpointId,
     sessionToken: interviewSession.token,
   };
   const useChatHelpers = useChat({
@@ -87,8 +90,8 @@ export function ClarifySessionClient({
     <div className="border rounded-lg h-full flex flex-col overflow-auto">
       <div className="p-4 flex-grow overflow-auto">
         <div className="flex items-center mb-4">
-          <Cpu className="h-5 w-5 mr-2 text-primary" />
-          <h2 className="text-lg font-medium">{interviewSession.project.title}</h2>
+          <CpuIcon className="shrink-0 h-5 w-5 mr-2 text-primary" />
+          <h2 className="font-medium">{interviewSession.project.title}</h2>
         </div>
 
         <Separator className="my-4" />
@@ -123,20 +126,22 @@ export function ClarifySessionClient({
 
   return (
     <div className="flex-1 overflow-hidden flex flex-col gap-4">
-      {false && !isMediaLg && (
-        <Button
-          variant="outline"
-          onClick={() => setProjectDetailsOpen(true)}
-          className="flex items-center gap-1"
-        >
-          <InfoIcon className="h-4 w-4" />
-          <span>{t("projectDetails")}</span>
-        </Button>
-      )}
-
       <Alert className="w-auto mt-3 mx-3 lg:mt-4 lg:mx-4">
-        <InfoIcon className="h-4 w-4" />
-        <AlertTitle>{t("interviewInProgress")}</AlertTitle>
+        {isMediaLg && <InfoIcon className="h-4 w-4" />}
+        <AlertTitle className="flex items-center justify-between">
+          {t("interviewInProgress")}
+          {!isMediaLg && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setProjectDetailsOpen(true)}
+              className="text-xs h-6"
+            >
+              <InfoIcon className="h-3 w-3" />
+              <span>{t("projectDetails")}</span>
+            </Button>
+          )}
+        </AlertTitle>
         <AlertDescription>{t("interviewDescription")}</AlertDescription>
       </Alert>
 
