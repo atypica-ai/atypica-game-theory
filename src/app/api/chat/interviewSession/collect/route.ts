@@ -1,5 +1,6 @@
 import { fetchCollectInterviewSession } from "@/app/interviewProject/actions";
 import { llm, providerOptions } from "@/lib/llm";
+import { rootLogger } from "@/lib/logging";
 import {
   appendStepToStreamingMessage,
   persistentAIMessageToDB,
@@ -75,6 +76,12 @@ export async function POST(req: NextRequest) {
 
   const abortSignal = req.signal;
   const statReport: StatReporter = async () => {};
+  const projectLogger = rootLogger.child({
+    interviewProjectId: interviewSession.projectId,
+    sessionChatId: interviewSession.userChatId,
+    sessionToken: interviewSession.token,
+    sessionKind: interviewSession.kind,
+  });
 
   // Generate system message with project context
   const systemPrompt = interviewSessionSystem({
@@ -87,7 +94,7 @@ export async function POST(req: NextRequest) {
 
   // Generate response from LLM
   const streamTextResult = streamText({
-    model: llm("gpt-4o"),
+    model: llm("claude-3-7-sonnet"),
     providerOptions,
     system: systemPrompt,
     messages: coreMessages,
@@ -108,10 +115,19 @@ export async function POST(req: NextRequest) {
       chunking: /[\u4E00-\u9FFF]|\S+\s+/,
     }),
     onStepFinish: async (step) => {
+      projectLogger.info({
+        msg: "collect session streamText onStepFinish",
+        stepType: step.stepType,
+        toolCalls: step.toolCalls.map((call) => call.toolName),
+        usage: step.usage,
+      });
       appendStepToStreamingMessage(streamingMessage, step);
       if (streamingMessage.parts?.length && streamingMessage.content.trim()) {
         await persistentAIMessageToDB(userChatId, streamingMessage);
       }
+    },
+    onError: ({ error }) => {
+      projectLogger.error(`collect session streamText onError: ${(error as Error).message}`);
     },
     abortSignal,
   });

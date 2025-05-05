@@ -76,10 +76,9 @@ export function ClarifySessionClient({
     requestSentRef.current = true;
     if (initialMessages.length === 0) {
       // If no initial message, start the conversation with AI
-      useChatRef.current.append({
-        role: "system",
-        content: "Starting interview session.",
-      });
+      // useChatRef.current.append({ role: "system", content: "Starting interview session." });
+      // claude 要求第一条消息必须是 user
+      useChatRef.current.append({ role: "user", content: "开始" });
     } else if (initialMessages[initialMessages.length - 1]?.role === "user") {
       useChatRef.current.reload();
     }

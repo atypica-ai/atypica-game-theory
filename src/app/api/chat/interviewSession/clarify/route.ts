@@ -56,10 +56,11 @@ export async function POST(req: NextRequest) {
 
   const abortSignal = req.signal;
   const statReport: StatReporter = async () => {};
-  const clarifyLogger = rootLogger.child({
+  const projectLogger = rootLogger.child({
     interviewProjectId: interviewSession.projectId,
     sessionChatId: interviewSession.userChatId,
     sessionToken: interviewSession.token,
+    sessionKind: interviewSession.kind,
   });
 
   // Generate system message with project context
@@ -93,8 +94,8 @@ export async function POST(req: NextRequest) {
       chunking: /[\u4E00-\u9FFF]|\S+\s+/,
     }),
     onStepFinish: async (step) => {
-      clarifyLogger.info({
-        msg: "clarify chat streamText onStepFinish",
+      projectLogger.info({
+        msg: "clarify session streamText onStepFinish",
         stepType: step.stepType,
         toolCalls: step.toolCalls.map((call) => call.toolName),
         usage: step.usage,
@@ -103,6 +104,9 @@ export async function POST(req: NextRequest) {
       if (streamingMessage.parts?.length && streamingMessage.content.trim()) {
         await persistentAIMessageToDB(userChatId, streamingMessage);
       }
+    },
+    onError: ({ error }) => {
+      projectLogger.error(`clarify session streamText onError: ${(error as Error).message}`);
     },
     abortSignal,
   });

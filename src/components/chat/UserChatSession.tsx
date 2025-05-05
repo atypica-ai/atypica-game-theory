@@ -66,7 +66,13 @@ export function UserChatSession({
           <ChatMessage
             key={message.id}
             role={message.role}
-            nickname={message.role === "user" ? session?.user?.email : message.role}
+            nickname={
+              message.role === "user"
+                ? (session?.user?.email ?? "You")
+                : message.role === "assistant"
+                  ? "atypica.AI"
+                  : message.role
+            }
             avatar={{
               user: session?.user ? (
                 <HippyGhostAvatar className="size-8" seed={session.user.id} />

@@ -74,10 +74,9 @@ export function CollectSessionClient({
     requestSentRef.current = true;
     if (!initialMessages?.length) {
       // If no initial message and not already started, start the conversation with AI
-      useChatRef.current.append({
-        role: "system",
-        content: "Starting interview session.",
-      });
+      // useChatRef.current.append({ role: "system", content: "Starting interview session." });
+      // claude 要求第一条消息必须是 user
+      useChatRef.current.append({ role: "user", content: "开始" });
     } else if (initialMessages[initialMessages.length - 1]?.role === "user") {
       useChatRef.current.reload();
     }
