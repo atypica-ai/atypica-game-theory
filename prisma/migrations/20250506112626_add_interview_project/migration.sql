@@ -13,7 +13,7 @@ CREATE TABLE "InterviewProject" (
     "category" VARCHAR(64) NOT NULL,
     "brief" TEXT,
     "objectives" TEXT[],
-    "conclusion" TEXT,
+    "digest" TEXT,
     "createdAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMPTZ(6) NOT NULL,
 

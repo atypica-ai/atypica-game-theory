@@ -377,7 +377,7 @@ model InterviewProject {
   category   String   @db.VarChar(64)
   brief      String?  @db.Text
   objectives String[]
-  conclusion String?
+  digest     String?  @db.Text
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
