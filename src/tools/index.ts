@@ -1,8 +1,3 @@
-import { prisma } from "@/lib/prisma";
-import { UserTokensLogVerb } from "@prisma/client";
-import { InputJsonValue } from "@prisma/client/runtime/library";
-import { Logger } from "pino";
-
 export { buildPersonaTool } from "./experts/buildPersona";
 export { interviewChatTool } from "./experts/interviewChat";
 export { reasoningThinkingTool } from "./experts/reasoning";
@@ -30,6 +25,7 @@ export { requestPaymentTool } from "./user/payment";
 export { thanksTool } from "./user/thanks";
 
 export { handleToolCallError, toolCallError } from "./error";
+export * from "./stats";
 
 export enum ToolName {
   interviewChat = "interviewChat",
@@ -64,61 +60,3 @@ export enum ToolName {
 
   toolCallError = "toolCallError",
 }
-
-export type StatReporter = (
-  dimension: "tokens" | "duration" | "steps" | "personas",
-  value: number,
-  extra?: unknown,
-) => Promise<void>;
-
-export const initStatReporter = ({
-  userId,
-  studyUserChatId,
-  studyLog,
-}: {
-  userId: number;
-  studyUserChatId: number;
-  studyLog: Logger;
-}): { statReport: StatReporter } => {
-  const statReport: StatReporter = async (dimension, value, extra) => {
-    await prisma.chatStatistics.create({
-      data: {
-        userChatId: studyUserChatId,
-        dimension,
-        value,
-        extra: extra as InputJsonValue,
-      },
-    });
-    if (dimension === "tokens") {
-      try {
-        await prisma.$transaction([
-          prisma.userTokensLog.create({
-            data: {
-              userId: userId,
-              verb: UserTokensLogVerb.consume,
-              resourceType: "StudyUserChat",
-              resourceId: studyUserChatId,
-              value: -value,
-            },
-          }),
-          prisma.userTokens.update({
-            where: { userId },
-            data: {
-              balance: {
-                decrement: value,
-              },
-            },
-          }),
-        ]);
-        studyLog.info({ msg: "User tokens consumed successfully", userId, tokens: value });
-      } catch (error) {
-        studyLog.error({
-          msg: `Failed to consume user tokens: ${(error as Error).message}`,
-          userId,
-          tokens: value,
-        });
-      }
-    }
-  };
-  return { statReport };
-};

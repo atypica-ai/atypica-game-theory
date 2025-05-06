@@ -341,6 +341,7 @@ enum UserTokensLogVerb {
 enum UserTokensLogResourceType {
   StudyUserChat
   ScoutUserChat // 没用到
+  InterviewProject
   PaymentRecord
 }
 

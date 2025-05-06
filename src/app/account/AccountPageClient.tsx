@@ -210,7 +210,22 @@ export function AccountPageClient({
                             case UserTokensLogVerb.consume:
                               return (
                                 <div className="flex items-center gap-1">
-                                  <span>{t("historySection.verbs.consume")}</span>
+                                  {(() => {
+                                    switch (item.resourceType) {
+                                      case "StudyUserChat":
+                                        return (
+                                          <span>{t("historySection.consume.StudyUserChat")}</span>
+                                        );
+                                      case "InterviewProject":
+                                        return (
+                                          <span>
+                                            {t("historySection.consume.InterviewProject")}
+                                          </span>
+                                        );
+                                      default:
+                                        return <span>{t("historySection.verbs.consume")}</span>;
+                                    }
+                                  })()}
                                   <HippyGhostAvatar
                                     className="size-5"
                                     seed={item.resourceId ?? undefined}

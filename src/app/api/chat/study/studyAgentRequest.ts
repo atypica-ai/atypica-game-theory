@@ -6,7 +6,7 @@ import {
   buildPersonaTool,
   generateReportTool,
   handleToolCallError,
-  initStatReporter,
+  initStudyStatReporter,
   interviewChatTool,
   reasoningThinkingTool,
   requestInteractionTool,
@@ -59,7 +59,7 @@ export async function studyAgentRequest({
 }) {
   const { clearBackgroundToken, backgroundToken } = await raceForUserChat(studyUserChatId);
   const { abortController, abortSignal, delayedAbortSignal } = createAbortSignals(reqSignal);
-  const { statReport } = initStatReporter({ userId, studyUserChatId, studyLog });
+  const { statReport } = initStudyStatReporter({ userId, studyUserChatId, studyLog });
   const { debouncePersistentMessage, immediatePersistentMessage } = createDebouncePersistentMessage(
     studyUserChatId,
     5000,

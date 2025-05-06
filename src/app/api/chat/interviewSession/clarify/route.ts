@@ -8,7 +8,12 @@ import {
   prepareMessagesForStreaming,
 } from "@/lib/messageUtils";
 import { interviewSessionSystem } from "@/prompt";
-import { reasoningThinkingTool, StatReporter, ToolName, updateInterviewProjectTool } from "@/tools";
+import {
+  initInterviewProjectStatReporter,
+  reasoningThinkingTool,
+  ToolName,
+  updateInterviewProjectTool,
+} from "@/tools";
 import { generateId, smoothStream, streamText } from "ai";
 import { getServerSession } from "next-auth";
 import { after, NextRequest, NextResponse } from "next/server";
@@ -22,8 +27,7 @@ export async function POST(req: NextRequest) {
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  // 用不到了，fetchClarifyInterviewSession会检查用户权限
-  // const userId = session.user.id;
+  const userId = session.user.id;
 
   const payload = await req.json();
   const parseResult = ClarifySessionBodySchema.safeParse(payload);
@@ -55,12 +59,17 @@ export async function POST(req: NextRequest) {
   });
 
   const abortSignal = req.signal;
-  const statReport: StatReporter = async () => {};
   const projectLogger = rootLogger.child({
     interviewProjectId: interviewSession.projectId,
-    sessionChatId: interviewSession.userChatId,
+    sessionUserChatId: userChatId,
     sessionToken: interviewSession.token,
     sessionKind: interviewSession.kind,
+  });
+  const { statReport } = initInterviewProjectStatReporter({
+    userId,
+    interviewProjectId: interviewSession.projectId,
+    sessionUserChatId: userChatId,
+    logger: projectLogger,
   });
 
   // Generate system message with project context
@@ -94,16 +103,20 @@ export async function POST(req: NextRequest) {
       chunking: /[\u4E00-\u9FFF]|\S+\s+/,
     }),
     onStepFinish: async (step) => {
+      appendStepToStreamingMessage(streamingMessage, step);
+      if (streamingMessage.parts?.length && streamingMessage.content.trim()) {
+        await persistentAIMessageToDB(userChatId, streamingMessage);
+      }
       projectLogger.info({
         msg: "clarify session streamText onStepFinish",
         stepType: step.stepType,
         toolCalls: step.toolCalls.map((call) => call.toolName),
         usage: step.usage,
       });
-      appendStepToStreamingMessage(streamingMessage, step);
-      if (streamingMessage.parts?.length && streamingMessage.content.trim()) {
-        await persistentAIMessageToDB(userChatId, streamingMessage);
-      }
+      await statReport("tokens", step.usage.totalTokens, {
+        reportedBy: "interview project clarify session",
+        usage: step.usage,
+      });
     },
     onError: ({ error }) => {
       projectLogger.error(`clarify session streamText onError: ${(error as Error).message}`);

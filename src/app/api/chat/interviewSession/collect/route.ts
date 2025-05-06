@@ -9,7 +9,11 @@ import {
 import { prisma } from "@/lib/prisma";
 import { generateToken } from "@/lib/utils";
 import { interviewSessionSystem } from "@/prompt";
-import { saveInterviewSessionSummaryTool, StatReporter, ToolName } from "@/tools";
+import {
+  initInterviewProjectStatReporter,
+  saveInterviewSessionSummaryTool,
+  ToolName,
+} from "@/tools";
 import { reasoningThinkingTool } from "@/tools/experts/reasoning";
 import { generateId, smoothStream, streamText } from "ai";
 import { after, NextRequest, NextResponse } from "next/server";
@@ -36,18 +40,18 @@ export async function POST(req: NextRequest) {
     const error = { message: "Interview session has expired." };
     return Response.json({ error }, { status: 403 });
   }
+  const { userId } = await prisma.interviewProject.findUniqueOrThrow({
+    where: { id: interviewSession.projectId },
+  });
 
   let userChatId: number;
 
   // First message in a collect session? Create UserChat
   if (!interviewSession.userChatId) {
     const userChat = await prisma.$transaction(async (tx) => {
-      const project = await tx.interviewProject.findUniqueOrThrow({
-        where: { id: interviewSession.projectId },
-      });
       const userChat = await tx.userChat.create({
         data: {
-          userId: project.userId, // Owned by the project creator
+          userId: userId, // Owned by the project creator
           title: `Shared: ${interviewSession.title}`,
           kind: "interviewSession",
           token: generateToken(),
@@ -75,12 +79,17 @@ export async function POST(req: NextRequest) {
   const { coreMessages, streamingMessage } = await prepareMessagesForStreaming(userChatId);
 
   const abortSignal = req.signal;
-  const statReport: StatReporter = async () => {};
   const projectLogger = rootLogger.child({
     interviewProjectId: interviewSession.projectId,
-    sessionChatId: interviewSession.userChatId,
+    sessionUserChatId: interviewSession.userChatId,
     sessionToken: interviewSession.token,
     sessionKind: interviewSession.kind,
+  });
+  const { statReport } = initInterviewProjectStatReporter({
+    userId,
+    interviewProjectId: interviewSession.projectId,
+    sessionUserChatId: userChatId,
+    logger: projectLogger,
   });
 
   // Generate system message with project context
@@ -115,16 +124,20 @@ export async function POST(req: NextRequest) {
       chunking: /[\u4E00-\u9FFF]|\S+\s+/,
     }),
     onStepFinish: async (step) => {
+      appendStepToStreamingMessage(streamingMessage, step);
+      if (streamingMessage.parts?.length && streamingMessage.content.trim()) {
+        await persistentAIMessageToDB(userChatId, streamingMessage);
+      }
       projectLogger.info({
         msg: "collect session streamText onStepFinish",
         stepType: step.stepType,
         toolCalls: step.toolCalls.map((call) => call.toolName),
         usage: step.usage,
       });
-      appendStepToStreamingMessage(streamingMessage, step);
-      if (streamingMessage.parts?.length && streamingMessage.content.trim()) {
-        await persistentAIMessageToDB(userChatId, streamingMessage);
-      }
+      await statReport("tokens", step.usage.totalTokens, {
+        reportedBy: "interview project collect session",
+        usage: step.usage,
+      });
     },
     onError: ({ error }) => {
       projectLogger.error(`collect session streamText onError: ${(error as Error).message}`);

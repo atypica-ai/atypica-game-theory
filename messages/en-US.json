@@ -618,10 +618,14 @@
       "loadMore": "Load More",
       "verbs": {
         "recharge": "Recharge",
-        "consume": "atypica.AI study consumption",
+        "consume": "atypica.AI task consumption",
         "subscription": "Subscription",
         "gift": "Gift from atypica.AI",
         "signup": "Signup Bonus"
+      },
+      "consume": {
+        "StudyUserChat": "atypica.AI study consumption",
+        "InterviewProject": "interview project consumption"
       }
     }
   }

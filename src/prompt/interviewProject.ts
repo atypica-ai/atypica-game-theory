@@ -21,7 +21,7 @@ export const generateDigestSystem = ({
 
 ## 项目信息
 - 主题：${title}
-- 类别：${category}
+- 类别：${getFormattedCategory(category)}
 - 需求描述：${brief || "尚未形成清晰描述"}
 - 目标定义：${objectives.length > 0 ? "\n" + objectives.map((obj, i) => `  ${i + 1}. ${obj}`).join("\n") : "暂无明确的研究目标"}
 - 对话语言：请使用和"主题"文本一样的语言，并全程保持一致

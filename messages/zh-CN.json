@@ -618,10 +618,14 @@
       "loadMore": "加载更多",
       "verbs": {
         "recharge": "充值",
-        "consume": "atypica.AI 研究消耗",
+        "consume": "atypica.AI 任务消耗",
         "subscription": "订阅会员",
         "gift": "atypica.AI 赠送",
         "signup": "注册赠送"
+      },
+      "consume": {
+        "StudyUserChat": "atypica.AI 研究消耗",
+        "InterviewProject": "访谈项目消耗"
       }
     }
   }

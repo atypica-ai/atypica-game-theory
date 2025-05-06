@@ -4,6 +4,9 @@ CREATE TYPE "InterviewSessionKind" AS ENUM ('clarify', 'collect');
 -- CreateEnum
 CREATE TYPE "InterviewSessionStatus" AS ENUM ('pending', 'active', 'completed');
 
+-- AlterEnum
+ALTER TYPE "UserTokensLogResourceType" ADD VALUE 'InterviewProject';
+
 -- CreateTable
 CREATE TABLE "InterviewProject" (
     "id" SERIAL NOT NULL,

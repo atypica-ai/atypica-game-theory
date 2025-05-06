@@ -5,13 +5,13 @@ import { rootLogger } from "@/lib/logging";
 import { convertDBMessageToAIMessage } from "@/lib/messageUtils";
 import { prisma } from "@/lib/prisma";
 import { generateDigestSystem } from "@/prompt";
-import { StatReporter } from "@/tools";
+import { initInterviewProjectStatReporter } from "@/tools";
 import { convertToCoreMessages, smoothStream, streamText } from "ai";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
-export const GenerateDigestBodySchema = z.object({
+const GenerateDigestBodySchema = z.object({
   projectToken: z.string(),
 });
 
@@ -86,9 +86,13 @@ export async function POST(req: NextRequest) {
   }
 
   const abortSignal = req.signal;
-  const statReport: StatReporter = async () => {};
   const projectLogger = rootLogger.child({
     interviewProjectId: project.id,
+  });
+  const { statReport } = initInterviewProjectStatReporter({
+    userId,
+    interviewProjectId: project.id,
+    logger: projectLogger,
   });
   const prologue = `访谈数据：\n${JSON.stringify(allMessages, null, 2)}\n`;
 
@@ -103,8 +107,12 @@ export async function POST(req: NextRequest) {
       chunking: /[\u4E00-\u9FFF]|\S+\s+/,
     }),
     onFinish: async ({ text, usage }) => {
-      projectLogger.info({ msg: "interview digest streamText onFinish", usage });
       await saveDigest(projectToken, text);
+      projectLogger.info({ msg: "interview digest streamText onFinish", usage });
+      await statReport("tokens", usage.totalTokens, {
+        reportedBy: "interview project generate digest",
+        usage: usage,
+      });
     },
     onError: ({ error }) => {
       projectLogger.error(`interview digest streamText onError: ${(error as Error).message}`);

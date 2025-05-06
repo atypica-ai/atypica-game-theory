@@ -4,7 +4,7 @@ import { llm, providerOptions } from "@/lib/llm";
 import { rootLogger } from "@/lib/logging";
 import { prisma } from "@/lib/prisma";
 import { reportHTMLPrologue, reportHTMLSystem } from "@/prompt";
-import { initStatReporter } from "@/tools";
+import { initStudyStatReporter } from "@/tools";
 import { streamText } from "ai";
 import { getServerSession } from "next-auth";
 import { forbidden } from "next/navigation";
@@ -88,7 +88,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   const studyLog = rootLogger.child({ studyUserChatId: analyst.studyUserChatId });
   const streamStartTime = Date.now();
   const { statReport } = analyst.studyUserChatId
-    ? initStatReporter({
+    ? initStudyStatReporter({
         userId: session.user.id,
         studyUserChatId: analyst.studyUserChatId,
         studyLog,
