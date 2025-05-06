@@ -273,3 +273,46 @@ export async function fetchCollectInterviewSession<
     data: interviewSession,
   };
 }
+
+// Save digest to the database
+export async function saveDigest(
+  projectToken: string,
+  digest: string,
+): Promise<ServerActionResult<null>> {
+  return withAuth(async (user) => {
+    const project = await prisma.interviewProject.findUnique({
+      where: { token: projectToken },
+    });
+
+    if (!project) {
+      return {
+        success: false,
+        code: "not_found",
+        message: "Interview project not found",
+      };
+    }
+
+    if (project.userId !== user.id) {
+      return {
+        success: false,
+        code: "forbidden",
+        message: "You don't have access to this interview project",
+      };
+    }
+
+    await prisma.interviewProject.update({
+      where: { token: projectToken },
+      data: {
+        digest,
+        updatedAt: new Date(),
+      },
+    });
+
+    revalidatePath(`/interviewProject/${projectToken}`);
+
+    return {
+      success: true,
+      data: null,
+    };
+  });
+}

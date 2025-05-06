@@ -92,6 +92,8 @@
       "noCollectSessionsDesc": "创建访谈，无需参与者创建账户即可收集他们的洞察。",
       "shareLink": "分享链接",
       "copyLink": "复制链接",
+      "generateDigest": "生成访谈摘要",
+      "viewDigest": "查看访谈摘要",
       "copied": "已复制！",
       "linkCopied": "链接已复制到剪贴板",
       "keyInsights": "关键洞察",
@@ -137,6 +139,15 @@
         "error": "创建访谈失败",
         "unexpectedError": "发生意外错误"
       }
+    },
+    "digestDialog": {
+      "title": "访谈摘要",
+      "description": "此项目中所有访谈的综合汇编",
+      "noDigestYet": "暂无访谈摘要。点击下方生成按钮创建一个。",
+      "generate": "生成摘要",
+      "regenerate": "重新生成",
+      "generating": "生成中...",
+      "close": "关闭"
     },
     "clarifySession": {
       "interviewInProgress": "与 atypica.AI 交流以明确项目需求",

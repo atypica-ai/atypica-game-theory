@@ -8,14 +8,14 @@ import {
 } from "@/lib/messageUtils";
 import { prisma } from "@/lib/prisma";
 import { generateToken } from "@/lib/utils";
-import { interviewSessionSystem } from "@/prompt/interviewSession";
+import { interviewSessionSystem } from "@/prompt";
 import { saveInterviewSessionSummaryTool, StatReporter, ToolName } from "@/tools";
 import { reasoningThinkingTool } from "@/tools/experts/reasoning";
 import { generateId, smoothStream, streamText } from "ai";
 import { after, NextRequest, NextResponse } from "next/server";
 import { CollectSessionBodySchema } from "../lib";
 
-export const maxDuration = 60;
+// export const maxDuration = 60;
 
 export async function POST(req: NextRequest) {
   const payload = await req.json();

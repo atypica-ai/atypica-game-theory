@@ -7,14 +7,14 @@ import {
   persistentAIMessageToDB,
   prepareMessagesForStreaming,
 } from "@/lib/messageUtils";
-import { interviewSessionSystem } from "@/prompt/interviewSession";
+import { interviewSessionSystem } from "@/prompt";
 import { reasoningThinkingTool, StatReporter, ToolName, updateInterviewProjectTool } from "@/tools";
 import { generateId, smoothStream, streamText } from "ai";
 import { getServerSession } from "next-auth";
 import { after, NextRequest, NextResponse } from "next/server";
 import { ClarifySessionBodySchema } from "../lib";
 
-export const maxDuration = 60;
+// export const maxDuration = 60;
 
 export async function POST(req: NextRequest) {
   // Authenticate user

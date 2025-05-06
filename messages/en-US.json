@@ -92,6 +92,8 @@
       "noCollectSessionsDesc": "Create interviews to collect insights from others without requiring them to create an account.",
       "shareLink": "Share Link",
       "copyLink": "Copy link",
+      "generateDigest": "Generate Digest",
+      "viewDigest": "View Digest",
       "copied": "Copied!",
       "linkCopied": "Link copied to clipboard",
       "keyInsights": "Key Insights",
@@ -137,6 +139,15 @@
         "error": "Failed to create interview",
         "unexpectedError": "An unexpected error occurred"
       }
+    },
+    "digestDialog": {
+      "title": "Interview Digest",
+      "description": "A comprehensive compilation of all interviews in this project",
+      "noDigestYet": "No digest available yet. Click the Generate button below to create one.",
+      "generate": "Generate Digest",
+      "regenerate": "Regenerate Digest",
+      "generating": "Generating...",
+      "close": "Close"
     },
     "clarifySession": {
       "interviewInProgress": "Chat with atypica.AI to clarify project requirements",

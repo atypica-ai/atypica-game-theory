@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { UserTokensLogResourceType, UserTokensLogVerb } from "@prisma/client";
+import { UserTokensLogVerb } from "@prisma/client";
 import { InputJsonValue } from "@prisma/client/runtime/library";
 import { Logger } from "pino";
 
@@ -96,7 +96,7 @@ export const initStatReporter = ({
             data: {
               userId: userId,
               verb: UserTokensLogVerb.consume,
-              resourceType: UserTokensLogResourceType.StudyUserChat,
+              resourceType: "StudyUserChat",
               resourceId: studyUserChatId,
               value: -value,
             },

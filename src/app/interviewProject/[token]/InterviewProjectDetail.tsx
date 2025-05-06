@@ -1,5 +1,6 @@
 "use client";
 import { InterviewProjectWithSessions } from "@/app/interviewProject/actions";
+import { DigestDialog } from "@/app/interviewProject/DigestDialog";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -37,6 +38,7 @@ import { cn, formatDate } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { InterviewSession, InterviewSessionStatus } from "@prisma/client";
 import {
+  BookOpenCheckIcon,
   Copy,
   MessageSquareTextIcon,
   NotebookPenIcon,
@@ -62,6 +64,7 @@ export function InterviewProjectDetail({ project }: { project: ExtendedInterview
   const t = useTranslations("InterviewProject.projectDetail");
   const locale = useLocale();
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+  const [isDigestDialogOpen, setIsDigestDialogOpen] = useState(false);
 
   // If there's no clarify session yet, we should redirect to create one (shouldn't happen with new design)
   const handleStartClarifySession = () => {
@@ -135,11 +138,17 @@ export function InterviewProjectDetail({ project }: { project: ExtendedInterview
                 <div className="text-muted-foreground">{formatDate(project.updatedAt, locale)}</div>
               </div>
             </CardContent>
-            <CardFooter className="flex justify-end border-t pt-4">
+            <CardFooter className="flex justify-end border-t pt-4 gap-2">
               <Button onClick={handleStartClarifySession}>
-                <MessageSquareTextIcon className="h-5 w-5" />
+                <MessageSquareTextIcon className="h-4 w-4" />
                 {t("clarifyProject")}
               </Button>
+              {collectSessions.length > 0 && (
+                <Button variant="outline" onClick={() => setIsDigestDialogOpen(true)}>
+                  <BookOpenCheckIcon className="h-4 w-4" />
+                  {project.digest ? t("viewDigest") : t("generateDigest")}
+                </Button>
+              )}
             </CardFooter>
           </Card>
 
@@ -189,6 +198,12 @@ export function InterviewProjectDetail({ project }: { project: ExtendedInterview
         projectToken={project.token}
         open={isShareDialogOpen}
         onOpenChange={setIsShareDialogOpen}
+      />
+      <DigestDialog
+        projectToken={project.token}
+        open={isDigestDialogOpen}
+        onOpenChange={setIsDigestDialogOpen}
+        initialDigest={project.digest}
       />
     </>
   );

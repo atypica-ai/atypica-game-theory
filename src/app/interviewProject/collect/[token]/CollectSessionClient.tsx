@@ -22,6 +22,7 @@ import {
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn } from "@/lib/utils";
+import { ToolName } from "@/tools";
 import { useChat } from "@ai-sdk/react";
 import { Message } from "ai";
 import { BadgeCheck, ChevronRight, Info, Shield, ThumbsUpIcon } from "lucide-react";
@@ -97,6 +98,11 @@ export function CollectSessionClient({
         ...requestBody,
       };
       return body;
+    },
+    onToolCall({ toolCall }) {
+      if (toolCall.toolName === ToolName.saveInterviewSessionSummary) {
+        setInterviewCompleted(true);
+      }
     },
   });
   const { messages } = useChatHelpers;

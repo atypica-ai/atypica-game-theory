@@ -5,7 +5,6 @@ import {
   Currency,
   PaymentRecord as PaymentRecordPrisma,
   SubscriptionPlan,
-  UserTokensLogResourceType,
   UserTokensLogVerb,
 } from "@prisma/client";
 import { PaymentMethod, ProductName } from "./data";
@@ -180,7 +179,7 @@ export async function handlePaymentSuccess({ chargeId }: { chargeId: string }) {
           data: {
             userId: userId,
             verb: UserTokensLogVerb.recharge,
-            resourceType: UserTokensLogResourceType.PaymentRecord,
+            resourceType: "PaymentRecord",
             resourceId: paymentRecord.id,
             value: rechargeAmount,
           },
@@ -189,7 +188,7 @@ export async function handlePaymentSuccess({ chargeId }: { chargeId: string }) {
           data: {
             userId: userId,
             verb: UserTokensLogVerb.gift,
-            resourceType: UserTokensLogResourceType.PaymentRecord,
+            resourceType: "PaymentRecord",
             resourceId: paymentRecord.id,
             value: giftAmount,
           },
@@ -219,7 +218,7 @@ export async function handlePaymentSuccess({ chargeId }: { chargeId: string }) {
           data: {
             userId: userId,
             verb: UserTokensLogVerb.subscription,
-            resourceType: UserTokensLogResourceType.PaymentRecord,
+            resourceType: "PaymentRecord",
             resourceId: paymentRecord.id,
             value: rechargeAmount,
           },

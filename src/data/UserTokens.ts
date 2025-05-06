@@ -2,7 +2,7 @@
 import { prisma } from "@/lib/prisma";
 import { ServerActionResult } from "@/lib/serverAction";
 import withAuth from "@/lib/withAuth";
-import { UserTokensLogResourceType, UserTokensLogVerb } from "@prisma/client";
+import { UserTokensLogVerb } from "@prisma/client";
 
 export async function getUserTokensBalance(): Promise<ServerActionResult<number>> {
   return withAuth(async ({ id: userId }) => {
@@ -31,7 +31,7 @@ export async function checkStudyUserChatConsume({
       where: {
         userId: userId,
         verb: UserTokensLogVerb.consume,
-        resourceType: UserTokensLogResourceType.StudyUserChat,
+        resourceType: "StudyUserChat",
         resourceId: studyUserChatId,
       },
     });
