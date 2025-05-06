@@ -26,6 +26,7 @@ import {
   XHSUserNotesResultMessage,
 } from "@/tools/social/xhs/ToolMessage";
 import { SaveAnalystToolResultMessage } from "@/tools/system/ToolMessage";
+import { UpdateInterviewProjectToolResultMessage } from "@/tools/system/ToolMessage/UpdateInterviewProjectToolResultMessage";
 import {
   RequestInteractionMessage,
   RequestPaymentMessage,
@@ -79,6 +80,8 @@ export const ToolInvocationDisplay = ({
 
     case ToolName.saveAnalyst:
       return <SaveAnalystToolResultMessage toolInvocation={toolInvocation} />;
+    case ToolName.updateInterviewProject:
+      return <UpdateInterviewProjectToolResultMessage toolInvocation={toolInvocation} />;
 
     case ToolName.xhsSearch:
       return <XHSSearchResultMessage toolInvocation={toolInvocation} />;

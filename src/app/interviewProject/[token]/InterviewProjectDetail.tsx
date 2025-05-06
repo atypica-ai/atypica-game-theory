@@ -35,7 +35,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn, formatDate } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { InterviewSession } from "@prisma/client";
+import { InterviewSession, InterviewSessionStatus } from "@prisma/client";
 import {
   Copy,
   MessageSquareTextIcon,
@@ -194,22 +194,49 @@ export function InterviewProjectDetail({ project }: { project: ExtendedInterview
   );
 }
 
+function SessionStatusBadge({ status }: { status: InterviewSessionStatus }) {
+  const t = useTranslations("InterviewProject.projectDetail");
+  switch (status) {
+    case "active":
+      return (
+        <Badge
+          variant="secondary"
+          className="ml-auto bg-green-500/20 text-green-700 dark:text-green-500"
+        >
+          {t("sessionStatus.active")}
+        </Badge>
+      );
+    case "completed":
+      return (
+        <Badge
+          variant="secondary"
+          className="ml-auto bg-blue-500/20 text-blue-700 dark:text-blue-500"
+        >
+          {t("sessionStatus.completed")}
+        </Badge>
+      );
+    case "pending":
+      return (
+        <Badge
+          variant="secondary"
+          className="ml-auto bg-amber-500/20 text-amber-700 dark:text-amber-500"
+        >
+          {t("sessionStatus.pending")}
+        </Badge>
+      );
+  }
+}
+
 function CollectSessionCard({ session }: { session: InterviewProjectWithSessions["sessions"][0] }) {
+  const t = useTranslations("InterviewProject.projectDetail");
+  const locale = useLocale();
   const [copySuccess, setCopySuccess] = useState(false);
   const [showInsights, setShowInsights] = useState(false);
   const [collectLink, setCollectLink] = useState<string | null>(null);
-  const t = useTranslations("InterviewProject.projectDetail");
-  const locale = useLocale();
 
   useEffect(() => {
     setCollectLink(`${window.location.origin}/interviewProject/collect/${session.token}`);
   }, [session.token]);
-
-  const statusColors = {
-    active: "bg-green-500/20 text-green-700 dark:text-green-500",
-    completed: "bg-blue-500/20 text-blue-700 dark:text-blue-500",
-    pending: "bg-amber-500/20 text-amber-700 dark:text-amber-500",
-  };
 
   const handleCopyLink = useCallback(() => {
     if (!collectLink) return;
@@ -225,12 +252,7 @@ function CollectSessionCard({ session }: { session: InterviewProjectWithSessions
         <div className="flex items-center gap-2 bg-muted/50 px-4 py-3">
           <HippyGhostAvatar seed={session.token} className="w-6 h-6 mr-2" />
           <CardTitle className="text-base">{session.title}</CardTitle>
-          <Badge
-            variant="secondary"
-            className={cn("ml-auto capitalize", statusColors[session.status])}
-          >
-            {session.status}
-          </Badge>
+          <SessionStatusBadge status={session.status} />
         </div>
       </CardHeader>
       <CardContent className="px-4 py-3 flex-grow">

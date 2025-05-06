@@ -121,7 +121,7 @@ export default function CreateInterviewProjectPage() {
                       name="category"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>{t("projectType")}</FormLabel>
+                          <FormLabel>{t("projectCategory")}</FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
                               <SelectTrigger>

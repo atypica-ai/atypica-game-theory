@@ -17,13 +17,15 @@ import { ChatMessage } from "./ChatMessage";
 export function UserChatSession({
   chatId,
   chatTitle,
-  readOnly = false,
+  readOnly,
+  limit,
   useChatHelpers: { messages, status, error, handleSubmit, input, setInput },
   useChatRef,
 }: {
   chatId?: string;
   chatTitle?: string;
   readOnly?: boolean;
+  limit?: number; // 向前保留的消息数量
   useChatHelpers: Omit<ReturnType<typeof useChat>, "append" | "reload" | "setMessages">;
   useChatRef: RefObject<Pick<ReturnType<typeof useChat>, "append" | "reload" | "setMessages">>;
 }) {
@@ -62,7 +64,7 @@ export function UserChatSession({
         ref={messagesContainerRef}
         className="flex-1 flex flex-col gap-6 w-full items-center overflow-y-auto scrollbar-thin p-3"
       >
-        {messages.map((message) => (
+        {(limit ? messages.slice(-limit) : messages).map((message) => (
           <ChatMessage
             key={message.id}
             role={message.role}

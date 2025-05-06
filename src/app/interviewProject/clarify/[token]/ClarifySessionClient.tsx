@@ -20,13 +20,63 @@ import { Separator } from "@/components/ui/separator";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn } from "@/lib/utils";
+import { ToolName } from "@/tools";
 import { useChat } from "@ai-sdk/react";
 import { Message } from "ai";
 import { ChevronRight, CpuIcon, InfoIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import { fetchClarifyInterviewSession } from "../../actions";
+
+type ProjectDetails = {
+  title: string;
+  category: string;
+  brief: string | null;
+  objectives: string[];
+};
+
+const ProjectDetailsPanel = ({ projectDetails }: { projectDetails: ProjectDetails }) => {
+  const t = useTranslations("InterviewProject.clarifySession");
+  return (
+    <div className="border rounded-lg h-full flex flex-col overflow-auto">
+      <div className="p-4 flex-grow overflow-auto">
+        <div className="flex items-center mb-4">
+          <CpuIcon className="shrink-0 h-5 w-5 mr-2 text-primary" />
+          <h2 className="font-medium">{projectDetails.title}</h2>
+        </div>
+
+        <Separator className="my-4" />
+
+        <Accordion type="multiple" defaultValue={["objectives", "brief"]} className="w-full">
+          <AccordionItem value="brief">
+            <AccordionTrigger>{t("projectBrief")}</AccordionTrigger>
+            <AccordionContent>
+              <p className="text-muted-foreground">{projectDetails.brief}</p>
+              <div className="mt-3 text-sm">
+                <span className="font-medium">{t("projectCategory")}:</span>{" "}
+                <span className="text-muted-foreground">{projectDetails.category}</span>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+          <AccordionItem value="objectives">
+            <AccordionTrigger>{t("researchObjectives")}</AccordionTrigger>
+            <AccordionContent>
+              <ul className="list-disc list-inside space-y-2 text-muted-foreground">
+                {projectDetails.objectives.map((objective, i) => (
+                  <li key={i}>{objective}</li>
+                ))}
+              </ul>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+
+        <Separator className="my-4" />
+      </div>
+    </div>
+  );
+};
 
 export function ClarifySessionClient({
   interviewSession,
@@ -43,6 +93,8 @@ export function ClarifySessionClient({
   const t = useTranslations("InterviewProject.clarifySession");
   const isMediaLg = useMediaQuery("(min-width: 1024px)"); // 对应 tailwind 的 lg
   const [projectDetailsOpen, setProjectDetailsOpen] = useState(false);
+  const [projectDetails, setProjectDetails] = useState<ProjectDetails>(interviewSession.project);
+  const [clarifyCompleted, setClarifyCompleted] = useState(false);
 
   const initialRequestBody = {
     checkpointId,
@@ -62,6 +114,15 @@ export function ClarifySessionClient({
         ...requestBody,
       };
       return body;
+    },
+    onToolCall({ toolCall }) {
+      if (toolCall.toolName === ToolName.updateInterviewProject) {
+        setProjectDetails({
+          ...projectDetails,
+          ...(toolCall.args as ProjectDetails),
+        });
+        setClarifyCompleted(true);
+      }
     },
   });
   const useChatRef = useRef({
@@ -84,45 +145,6 @@ export function ClarifySessionClient({
     }
   }, [initialMessages]);
 
-  // Define the ProjectDetailsPanel component
-  const ProjectDetailsPanel = () => (
-    <div className="border rounded-lg h-full flex flex-col overflow-auto">
-      <div className="p-4 flex-grow overflow-auto">
-        <div className="flex items-center mb-4">
-          <CpuIcon className="shrink-0 h-5 w-5 mr-2 text-primary" />
-          <h2 className="font-medium">{interviewSession.project.title}</h2>
-        </div>
-
-        <Separator className="my-4" />
-
-        <Accordion type="multiple" defaultValue={["objectives", "brief"]} className="w-full">
-          <AccordionItem value="brief">
-            <AccordionTrigger>{t("projectBrief")}</AccordionTrigger>
-            <AccordionContent>
-              <p className="text-muted-foreground">{interviewSession.project.brief}</p>
-              <div className="mt-3 text-sm">
-                <span className="font-medium">{t("projectType")}:</span>{" "}
-                <span className="text-muted-foreground">{interviewSession.project.category}</span>
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-          <AccordionItem value="objectives">
-            <AccordionTrigger>{t("researchObjectives")}</AccordionTrigger>
-            <AccordionContent>
-              <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-                {interviewSession.project.objectives.map((objective, i) => (
-                  <li key={i}>{objective}</li>
-                ))}
-              </ul>
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
-
-        <Separator className="my-4" />
-      </div>
-    </div>
-  );
-
   return (
     <div className="flex-1 overflow-hidden flex flex-col gap-4">
       <Alert className="w-auto mt-3 mx-3 lg:mt-4 lg:mx-4">
@@ -143,7 +165,6 @@ export function ClarifySessionClient({
         </AlertTitle>
         <AlertDescription>{t("interviewDescription")}</AlertDescription>
       </Alert>
-
       {/* Main content area with responsive layout */}
       <div className="flex-1 overflow-hidden flex flex-col lg:flex-row gap-4 lg:mx-4 lg:mb-4">
         {/* Chat area - always shown */}
@@ -159,14 +180,30 @@ export function ClarifySessionClient({
               // chatTitle={interviewSession.title}
               useChatHelpers={useChatHelpers}
               useChatRef={useChatRef}
+              readOnly={clarifyCompleted}
+              limit={10}
             />
           </div>
+          {clarifyCompleted && (
+            <div className="p-4 border-t flex flex-col items-center">
+              <Alert className="mb-4">
+                <InfoIcon className="h-4 w-4" />
+                <AlertTitle>{t("clarifyCompletionTitle")}</AlertTitle>
+                <AlertDescription>{t("clarifyCompletionDescription")}</AlertDescription>
+              </Alert>
+              <Button asChild>
+                <Link href={`/interviewProject/${interviewSession.project.token}`} replace={true}>
+                  {t("backToProject")}
+                </Link>
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Project details - shown on desktop, hidden on mobile */}
         {isMediaLg && (
           <div className="w-1/3 overflow-auto">
-            <ProjectDetailsPanel />
+            <ProjectDetailsPanel projectDetails={projectDetails} />
           </div>
         )}
       </div>
@@ -186,7 +223,7 @@ export function ClarifySessionClient({
               </div>
             </DrawerHeader>
             <div className="p-4 h-[calc(100%-4rem)] overflow-auto">
-              <ProjectDetailsPanel />
+              <ProjectDetailsPanel projectDetails={projectDetails} />
             </div>
           </DrawerContent>
         </Drawer>

@@ -9,7 +9,7 @@ export function BackToProjectsButton() {
 
   return (
     <Button variant="ghost" asChild>
-      <Link href="/interviewProject">
+      <Link href="/interviewProject" replace>
         <ArrowLeftIcon className="h-4 w-4" />
         {t("backToProjects")}
       </Link>
@@ -22,7 +22,7 @@ export function BackToProjectButton({ projectToken }: { projectToken: string }) 
 
   return (
     <Button variant="ghost" asChild>
-      <Link href={`/interviewProject/${projectToken}`}>
+      <Link href={`/interviewProject/${projectToken}`} replace>
         <ArrowLeftIcon className="h-4 w-4" />
         {t("backToProject")}
       </Link>

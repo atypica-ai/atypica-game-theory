@@ -43,8 +43,8 @@
       "projectTitle": "Project Title",
       "titlePlaceholder": "E.g., Market Research for New Product",
       "titleDescription": "Give your project a clear, descriptive name.",
-      "projectType": "Project Type",
-      "typeSelectPlaceholder": "Select a project type",
+      "projectCategory": "Project category",
+      "typeSelectPlaceholder": "Select a category",
       "typeDescription": "This helps the interview expert tailor its approach.",
       "creating": "Creating...",
       "createButton": "Create Project & Start Clarifying",
@@ -99,7 +99,12 @@
       "hide": "Hide",
       "viewSession": "View Session",
       "expiresOn": "Expires",
-      "noClarifySessionError": "No clarify session found. Please contact support."
+      "noClarifySessionError": "No clarify session found. Please contact support.",
+      "sessionStatus": {
+        "active": "In progress",
+        "completed": "Completed",
+        "pending": "Not yet started"
+      }
     },
     "createCollectSession": {
       "title": "Create interview",
@@ -139,13 +144,16 @@
       "projectDetails": "Project Details",
       "researchObjectives": "Research Objectives",
       "projectBrief": "Project brief",
-      "projectType": "Project Type"
+      "projectCategory": "Project category",
+      "backToProject": "Back to Project",
+      "clarifyCompletionTitle": "Project Requirements Clarification Completed",
+      "clarifyCompletionDescription": "The project requirements clarification process is now complete. You can now proceed to conduct user interviews."
     },
     "collectSession": {
       "officialInterview": "Official Interview",
       "information": "Information",
       "aboutInterview": "About this interview",
-      "interviewDescription": "This is an automated interview to collect your insights. Your responses will help inform the research or project. The interview is conversational - please answer questions as thoroughly as you can.",
+      "interviewDescription": "This is an automated interview to collect your insights. Your responses will help inform the research or project. The interview is conversational, please answer questions as thoroughly as you can.",
       "researchObjectives": "Research Objectives:",
       "privacyNotice": "Your responses will be used for research purposes only.",
       "thankYou": "Thank You!",

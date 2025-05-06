@@ -24,11 +24,47 @@ import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
 import { Message } from "ai";
-import { BadgeCheck, ChevronRight, Info, Shield, ThumbsUp } from "lucide-react";
+import { BadgeCheck, ChevronRight, Info, Shield, ThumbsUpIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
+
+const ProjectDetailsCard = ({
+  interviewSession,
+}: {
+  interviewSession: ExtractServerActionData<typeof fetchCollectInterviewSession>;
+}) => {
+  const t = useTranslations("InterviewProject.collectSession");
+  return (
+    <Card className="overflow-hidden border-primary/20 py-0 h-full flex flex-col">
+      <CardHeader className="bg-primary/5 pt-6 border-b border-primary/10">
+        <CardTitle className="text-lg flex items-center">
+          <span>{interviewSession.title}</span>
+          <VerifyBadge type="verified" className="ml-2" />
+        </CardTitle>
+        <CardDescription>{interviewSession.project.title}</CardDescription>
+      </CardHeader>
+      <CardContent className="flex-1 overflow-y-auto">
+        <p className="text-sm text-muted-foreground mb-4">{interviewSession.project.brief}</p>
+        <div className="space-y-4">
+          <h3 className="font-medium mb-2">{t("researchObjectives")}</h3>
+          <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1.5 pl-2">
+            {interviewSession.project.objectives.map((objective, i) => (
+              <li key={i}>{objective}</li>
+            ))}
+          </ul>
+        </div>
+      </CardContent>
+      <CardFooter className="bg-primary/5 border-t border-primary/10 px-6 pb-6 mt-auto">
+        <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+          <Shield className="h-3.5 w-3.5" />
+          <span>{t("privacyNotice")}</span>
+        </div>
+      </CardFooter>
+    </Card>
+  );
+};
 
 export function CollectSessionClient({
   interviewSession,
@@ -37,7 +73,9 @@ export function CollectSessionClient({
   interviewSession: ExtractServerActionData<typeof fetchCollectInterviewSession>;
   initialMessages?: Message[];
 }) {
-  const [interviewComplete, setInterviewComplete] = useState(false);
+  const [interviewCompleted, setInterviewCompleted] = useState(
+    interviewSession.status === "completed",
+  );
   const [projectDetailsOpen, setProjectDetailsOpen] = useState(false);
   const isDesktop = useMediaQuery("(min-width: 1024px)");
   const t = useTranslations("InterviewProject.collectSession");
@@ -89,53 +127,9 @@ export function CollectSessionClient({
       (lastMessage.content.includes("interview is now complete") ||
         lastMessage.content.includes("Thank you for completing this interview"))
     ) {
-      setInterviewComplete(true);
+      setInterviewCompleted(true);
     }
   }, [messages]);
-
-  // Define the ProjectDetailsCard component
-  const ProjectDetailsCard = () => (
-    <Card className="overflow-hidden border-primary/20 py-0 h-full flex flex-col">
-      <CardHeader className="bg-primary/5 pt-6 border-b border-primary/10">
-        <div className="flex items-start justify-between">
-          <div>
-            <CardTitle className="text-xl flex items-center">
-              <span>{interviewSession.title}</span>
-              <VerifyBadge type="verified" className="ml-2" />
-            </CardTitle>
-            <CardDescription className="mt-1.5">{interviewSession.project.title}</CardDescription>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="p-6 flex-1 overflow-y-auto">
-        {interviewSession.notes && (
-          <p className="text-muted-foreground mb-4">{interviewSession.notes}</p>
-        )}
-        <div className="space-y-4">
-          <Alert>
-            <Info className="h-4 w-4" />
-            <AlertTitle>{t("aboutInterview")}</AlertTitle>
-            <AlertDescription>{t("interviewDescription")}</AlertDescription>
-          </Alert>
-
-          <div>
-            <h3 className="text-sm font-medium mb-2">{t("researchObjectives")}</h3>
-            <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1.5 pl-2">
-              {interviewSession.project.objectives.map((objective, i) => (
-                <li key={i}>{objective}</li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      </CardContent>
-      <CardFooter className="bg-primary/5 border-t border-primary/10 px-6 pb-6 mt-auto">
-        <div className="flex items-center space-x-2 text-xs text-muted-foreground">
-          <Shield className="h-3.5 w-3.5" />
-          <span>{t("privacyNotice")}</span>
-        </div>
-      </CardFooter>
-    </Card>
-  );
 
   return (
     <div className="h-dvh flex flex-col items-stretch justify-start">
@@ -170,18 +164,37 @@ export function CollectSessionClient({
             isDesktop ? "lg:w-3/5 lg:border-r" : "w-full",
           )}
         >
+          <Alert className="w-auto my-3 mx-3 lg:my-4 lg:mx-4">
+            <Info className="h-4 w-4" />
+            <AlertTitle>{t("aboutInterview")}</AlertTitle>
+            <AlertDescription>{t("interviewDescription")}</AlertDescription>
+          </Alert>
+
           <UserChatSession
             chatId={interviewSession.userChatId?.toString()}
             // chatTitle={interviewSession.title}
             useChatHelpers={useChatHelpers}
             useChatRef={useChatRef}
+            readOnly={interviewCompleted}
           />
+
+          {interviewCompleted && (
+            <Card className="w-auto my-3 mx-3 lg:my-4 lg:mx-4">
+              <CardContent className="pt-4 flex items-center justify-center flex-col text-center space-y-2">
+                <div className="bg-primary/20 p-3 rounded-full">
+                  <ThumbsUpIcon className="h-4 w-4 text-primary" />
+                </div>
+                <h3 className="text-lg font-medium">{t("thankYou")}</h3>
+                <p className="text-sm text-muted-foreground max-w-md">{t("thankYouMessage")}</p>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         {/* Project Details - Shown on desktop, hidden on mobile */}
         {isDesktop && (
           <div className="hidden lg:block lg:w-2/5 p-4 overflow-auto">
-            <ProjectDetailsCard />
+            <ProjectDetailsCard interviewSession={interviewSession} />
           </div>
         )}
 
@@ -200,28 +213,12 @@ export function CollectSessionClient({
                 </div>
               </DrawerHeader>
               <div className="p-4 h-[calc(100%-4rem)] overflow-auto">
-                <ProjectDetailsCard />
+                <ProjectDetailsCard interviewSession={interviewSession} />
               </div>
             </DrawerContent>
           </Drawer>
         )}
       </main>
-
-      {interviewComplete && (
-        <div className="p-4 bg-background">
-          <Card className="bg-primary/5 border-primary/20">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-center flex-col text-center space-y-2">
-                <div className="bg-primary/20 p-3 rounded-full">
-                  <ThumbsUp className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="text-xl font-medium">{t("thankYou")}</h3>
-                <p className="text-muted-foreground max-w-md">{t("thankYouMessage")}</p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
 
       <footer className="border-t py-2">
         <div className="flex flex-col items-center justify-between gap-4 md:h-10 md:flex-row px-4 lg:px-6">

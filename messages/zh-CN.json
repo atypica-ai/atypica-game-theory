@@ -43,7 +43,7 @@
       "projectTitle": "项目标题",
       "titlePlaceholder": "例如：新产品市场研究",
       "titleDescription": "为您的项目提供一个清晰、描述性的名称。",
-      "projectType": "项目类型",
+      "projectCategory": "项目类型",
       "typeSelectPlaceholder": "选择项目类型",
       "typeDescription": "这有助于访谈专家调整其方法。",
       "creating": "创建中...",
@@ -99,7 +99,12 @@
       "hide": "隐藏",
       "viewSession": "查看会话",
       "expiresOn": "过期于",
-      "noClarifySessionError": "未找到明确会话。请联系客服。"
+      "noClarifySessionError": "未找到明确会话。请联系客服。",
+      "sessionStatus": {
+        "active": "进行中",
+        "completed": "已完成",
+        "pending": "待开始"
+      }
     },
     "createCollectSession": {
       "title": "创建访谈",
@@ -139,16 +144,19 @@
       "projectDetails": "项目详情",
       "researchObjectives": "研究目标",
       "projectBrief": "项目需求",
-      "projectType": "项目类型"
+      "projectCategory": "项目类型",
+      "backToProject": "返回项目",
+      "clarifyCompletionTitle": "项目需求明确已完成",
+      "clarifyCompletionDescription": "项目需求明确过程已经完成。您现在可以进行用户访谈了。"
     },
     "collectSession": {
       "officialInterview": "官方访谈",
       "information": "信息",
       "aboutInterview": "关于此访谈",
-      "interviewDescription": "这是一个自动化访谈，用于收集您的见解。您的回答将有助于为研究或项目提供信息。访谈是对话式的 - 请尽可能详细地回答问题。",
+      "interviewDescription": "这是一个自动化访谈，用于收集您的见解。您的回答将有助于为研究或项目提供信息。访谈是对话式的，请尽可能详细地回答问题。",
       "researchObjectives": "研究目标：",
       "privacyNotice": "您的回答仅用于研究目的。",
-      "thankYou": "谢谢您！",
+      "thankYou": "谢谢您!",
       "thankYouMessage": "您的回答已记录。感谢您参与此次访谈并分享您的宝贵见解。",
       "builtWith": "由以下技术构建",
       "projectDetails": "项目详情"

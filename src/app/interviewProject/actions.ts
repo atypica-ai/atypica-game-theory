@@ -10,7 +10,6 @@ import {
   InterviewSessionStatus,
   UserChatKind,
 } from "@prisma/client";
-import { generateId } from "ai";
 import { revalidatePath } from "next/cache";
 
 // Types for our frontend to use
@@ -45,24 +44,6 @@ export async function createInterviewProject(data: {
           title: `Clarify: ${project.title}`,
           kind: UserChatKind.interviewSession,
           token: generateToken(),
-        },
-      });
-
-      // Add initial AI message
-      const message = {
-        id: generateId(),
-        role: "assistant" as const,
-        content:
-          "Hello! I'm your interview expert. Let's refine your research project. Tell me about your research goals, and I'll help organize them into clear objectives and a project brief.",
-      };
-
-      await tx.chatMessage.create({
-        data: {
-          messageId: message.id,
-          userChatId: userChat.id,
-          role: message.role,
-          content: message.content,
-          parts: [{ type: "text", text: message.content }],
         },
       });
 
