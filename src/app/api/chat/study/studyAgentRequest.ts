@@ -125,7 +125,7 @@ export async function studyAgentRequest({
         : "You have reached the tokens limit for this study. You can create a new study project to continue, or contact us through the customer service chat window in the lower right corner for assistance.";
     return createDataStreamResponse({
       execute: async (dataStream) => {
-        dataStream.write(formatDataStreamPart("start_step", { messageId: "out-of-token" }));
+        dataStream.write(formatDataStreamPart("start_step", { messageId: "study-tokens-limit" }));
         dataStream.write(formatDataStreamPart("text", message));
         dataStream.write(formatDataStreamPart("finish_message", { finishReason: "stop" }));
       },
