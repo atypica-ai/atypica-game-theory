@@ -37,7 +37,7 @@ const TOOL_USE_LIMIT = {
   [ToolName.scoutTaskChat]: 2,
   [ToolName.generateReport]: 2,
 };
-const TOKENS_COMSUME_LIMIT = 1_500_000;
+const TOKENS_COMSUME_LIMIT = 1_000_000; // 最新统计来看，100 万 tokens 足够
 
 // 参考了 https://sdk.vercel.ai/docs/ai-sdk-ui/chatbot-message-persistence#storing-messages 的设计来实现
 export async function studyAgentRequest({
@@ -67,6 +67,7 @@ export async function studyAgentRequest({
     5000,
     studyLog,
   ); // 5000 debounce
+
   const tokensConsumed =
     (
       await prisma.chatStatistics.aggregate({
@@ -74,7 +75,6 @@ export async function studyAgentRequest({
         _sum: { value: true },
       })
     )._sum.value ?? 0;
-  let streamStartTime = Date.now();
   const allTools = {
     [ToolName.scoutTaskChat]: scoutTaskChatTool({ userId, abortSignal, statReport, studyLog }),
     [ToolName.buildPersona]: buildPersonaTool({ userId, abortSignal, statReport, studyLog }),
@@ -86,13 +86,28 @@ export async function studyAgentRequest({
     [ToolName.requestInteraction]: requestInteractionTool,
     [ToolName.toolCallError]: toolCallError,
   };
-  let tools: Partial<typeof allTools> = allTools;
-  let toolChoice: ToolChoice<typeof allTools> = "auto";
+  const tools: Partial<typeof allTools> = allTools;
+  const toolChoice: ToolChoice<typeof allTools> = "auto";
+  const maxTokens: number | undefined = undefined;
   let maxSteps = MAX_STEPS_EACH_ROUND;
-  let maxTokens: number | undefined;
   if ((toolUseCount[ToolName.scoutTaskChat] ?? 0) >= TOOL_USE_LIMIT[ToolName.scoutTaskChat]) {
     delete tools[ToolName.scoutTaskChat];
     maxSteps = 10;
+  }
+
+  // 一旦开始生成报告，就只从报告的消息开始生成了，以及无法再使用别的工具
+  // 不是第一个生成成功的报告，而是报告，一旦开始生成，前面的信息目前来看是暂时没用了其实
+  const firstReportIndex = coreMessages.findIndex(
+    (message) =>
+      // message.role === "tool" &&
+      message.role === "assistant" &&
+      Array.isArray(message.content) &&
+      // message.content[0]?.type === "tool-result" &&
+      message.content[0]?.type === "tool-call" &&
+      message.content[0]?.toolName === ToolName.generateReport,
+  );
+  if (firstReportIndex) {
+    coreMessages = coreMessages.slice(firstReportIndex);
   }
   if ((toolUseCount[ToolName.generateReport] ?? 0) >= TOOL_USE_LIMIT[ToolName.generateReport]) {
     delete tools[ToolName.generateReport];
@@ -119,7 +134,7 @@ export async function studyAgentRequest({
 
   const { clearBackgroundToken, backgroundToken } = await raceForUserChat(studyUserChatId);
   const system = studySystem({
-    // 限制是 1.5M，告诉模型限制是 0.9M
+    // 限制是 1M，告诉模型限制是 0.6M
     tokensStat: { used: tokensConsumed, limit: TOKENS_COMSUME_LIMIT * 0.6 },
     toolUseStat: {
       [ToolName.scoutTaskChat]: {
@@ -132,6 +147,7 @@ export async function studyAgentRequest({
       },
     },
   });
+  let streamStartTime = Date.now();
   const streamTextResult = streamText({
     model: llm("claude-3-7-sonnet"),
     providerOptions: providerOptions,
@@ -191,6 +207,8 @@ export async function studyAgentRequest({
       } catch (error) {
         studyLog.error(`Error during abort: ${(error as Error).message}`);
       }
+      // 出错了以后没必要继续在后台执行了
+      await clearBackgroundToken();
     },
     abortSignal: delayedAbortSignal,
   });
