@@ -106,7 +106,7 @@ export async function studyAgentRequest({
       message.content[0]?.type === "tool-call" &&
       message.content[0]?.toolName === ToolName.generateReport,
   );
-  if (firstReportIndex) {
+  if (firstReportIndex >= 0) {
     coreMessages = coreMessages.slice(firstReportIndex);
   }
   if ((toolUseCount[ToolName.generateReport] ?? 0) >= TOOL_USE_LIMIT[ToolName.generateReport]) {
