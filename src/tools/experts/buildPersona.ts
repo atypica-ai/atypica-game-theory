@@ -1,4 +1,4 @@
-import { llm, providerOptions } from "@/lib/llm";
+import { llm, LLMModelName, providerOptions } from "@/lib/llm";
 import { convertStepsToAIMessage, prepareMessagesForStreaming } from "@/lib/messageUtils";
 import { prisma } from "@/lib/prisma";
 import { buildPersonaSystem } from "@/prompt";
@@ -7,6 +7,14 @@ import { Logger } from "pino";
 import { z } from "zod";
 import { savePersonaTool, StatReporter, ToolName } from "..";
 import { PlainTextToolResult } from "../utils";
+
+const REDUCE_TOKENS: {
+  model: LLMModelName;
+  ratio: number;
+} = {
+  model: "gemini-2.5-pro",
+  ratio: 2,
+};
 
 export interface BuildPersonaToolResult extends PlainTextToolResult {
   personas: {
@@ -106,8 +114,9 @@ export async function runBuildPersona({
 }) {
   const { coreMessages } = await prepareMessagesForStreaming(scoutUserChatId);
   const streamTextPromise = new Promise<Omit<Message, "role">>((resolve, reject) => {
+    const reduceTokens = REDUCE_TOKENS as typeof REDUCE_TOKENS | null;
     const response = streamText({
-      model: llm("gemini-2.5-pro"),
+      model: reduceTokens ? llm("gemini-2.5-pro") : llm("claude-3-7-sonnet"),
       providerOptions: providerOptions,
       system: buildPersonaSystem(),
       messages: coreMessages,
@@ -135,9 +144,14 @@ export async function runBuildPersona({
             statReport("steps", toolCalls.length, { reportedBy, scoutUserChatId, toolCalls }),
           ];
           if (usage.totalTokens > 0) {
-            promises.push(
-              statReport("tokens", usage.totalTokens, { reportedBy, scoutUserChatId, usage }),
-            );
+            let tokens = usage.totalTokens;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const extra: any = { reportedBy, scoutUserChatId, usage };
+            if (reduceTokens) {
+              extra["reduceTokens"] = { originalTokens: tokens, ...reduceTokens };
+              tokens = Math.ceil(tokens / reduceTokens.ratio);
+            }
+            promises.push(statReport("tokens", tokens, extra));
           }
           await Promise.all(promises);
         }
