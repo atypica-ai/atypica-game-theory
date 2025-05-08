@@ -1,7 +1,7 @@
 import { llm, providerOptions } from "@/lib/llm";
 import { studySystemNoQuota } from "@/prompt";
 import { requestPaymentTool, ToolName } from "@/tools";
-import { CoreMessage, Message, streamText } from "ai";
+import { CoreMessage, Message, smoothStream, streamText } from "ai";
 
 export async function noQuotaAgentRequest({
   // studyUserChatId,
@@ -30,6 +30,10 @@ export async function noQuotaAgentRequest({
     },
     toolChoice: "required",
     maxSteps: 15,
+    experimental_transform: smoothStream({
+      delayInMs: 30,
+      chunking: /[\u4E00-\u9FFF]|\S+\s+/,
+    }),
     abortSignal: reqSignal,
   });
 

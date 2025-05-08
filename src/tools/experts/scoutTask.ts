@@ -34,6 +34,7 @@ import {
   DataStreamWriter,
   generateId,
   Message,
+  smoothStream,
   streamText,
   TextStreamPart,
   tool,
@@ -276,6 +277,11 @@ export async function runScoutTaskChatStream({
         toolChoice: toolChoice,
         experimental_repairToolCall: handleToolCallError,
         maxSteps: maxSteps,
+        experimental_generateMessageId: () => streamingMessage.id,
+        experimental_transform: smoothStream({
+          delayInMs: 30,
+          chunking: /[\u4E00-\u9FFF]|\S+\s+/,
+        }),
         onChunk: async ({ chunk }: { chunk: TextStreamPart<typeof allTools> }) => {
           appendChunkToStreamingMessage(streamingMessage, chunk);
           await debouncePersistentMessage(streamingMessage, {

@@ -8,7 +8,7 @@ import {
 import { prisma } from "@/lib/prisma";
 import { helloSystem } from "@/prompt";
 import { thanksTool, ToolName } from "@/tools";
-import { Message, streamText } from "ai";
+import { Message, smoothStream, streamText } from "ai";
 import { getServerSession } from "next-auth/next";
 import { NextResponse } from "next/server";
 
@@ -50,6 +50,11 @@ export async function POST(req: Request) {
       [ToolName.thanks]: thanksTool,
     },
     maxSteps: 2,
+    experimental_generateMessageId: () => streamingMessage.id,
+    experimental_transform: smoothStream({
+      delayInMs: 30,
+      chunking: /[\u4E00-\u9FFF]|\S+\s+/,
+    }),
     onStepFinish: async (step) => {
       appendStepToStreamingMessage(streamingMessage, step);
       if (streamingMessage.parts?.length && streamingMessage.content.trim()) {
