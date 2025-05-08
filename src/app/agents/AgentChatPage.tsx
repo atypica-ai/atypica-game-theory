@@ -44,7 +44,7 @@ export function AgentChatPage({
   }, [initialMessages, readOnly]);
 
   return (
-    <div className="flex-1 overflow-hidden flex flex-col items-stretch justify-start max-w-5xl mx-auto">
+    <div className="flex-1 overflow-hidden flex flex-col items-stretch justify-start container mx-auto">
       <UserChatSession
         chatId={chatId}
         chatTitle={chatTitle}

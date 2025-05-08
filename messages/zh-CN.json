@@ -571,7 +571,8 @@
       "redirectToStripe": "您将被重定向至安全支付页面"
     },
     "UserChatSession": {
-      "continue": "继续"
+      "continue": "继续",
+      "you": "你"
     },
     "VoiceInputButton": {
       "startListening": "开始语音输入",

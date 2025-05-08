@@ -70,7 +70,7 @@ export function UserChatSession({
             role={message.role}
             nickname={
               message.role === "user"
-                ? (session?.user?.email ?? "You")
+                ? t("you")
                 : message.role === "assistant"
                   ? "atypica.AI"
                   : message.role

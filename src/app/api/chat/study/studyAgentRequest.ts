@@ -18,6 +18,8 @@ import {
 } from "@/tools";
 import {
   CoreMessage,
+  createDataStreamResponse,
+  formatDataStreamPart,
   Message,
   smoothStream,
   StepResult,
@@ -25,6 +27,7 @@ import {
   TextStreamPart,
   ToolChoice,
 } from "ai";
+import { getLocale } from "next-intl/server";
 import { Logger } from "pino";
 import { createAbortSignals } from "./abortSignal";
 import { backgroundChatUntilCancel, raceForUserChat } from "./background";
@@ -57,7 +60,6 @@ export async function studyAgentRequest({
   reqSignal: AbortSignal | null;
   studyLog: Logger;
 }) {
-  const { clearBackgroundToken, backgroundToken } = await raceForUserChat(studyUserChatId);
   const { abortController, abortSignal, delayedAbortSignal } = createAbortSignals(reqSignal);
   const { statReport } = initStudyStatReporter({ userId, studyUserChatId, studyLog });
   const { debouncePersistentMessage, immediatePersistentMessage } = createDebouncePersistentMessage(
@@ -96,17 +98,26 @@ export async function studyAgentRequest({
     delete tools[ToolName.generateReport];
     maxSteps = 2;
   }
+
+  // 超出 tokens 限制以后，这时候每 chat 一次，就是一个很大的 input tokens 数量
+  // 所以，不能再继续发送消息，直接返回一个特定的消息
   if (tokensConsumed >= TOKENS_COMSUME_LIMIT) {
-    // 超出 tokens 限制以后，无法使用工具，每次回复不超过 1000 tokens
-    // toolChoice = "none"; // claude 不支持 tool_choise = none, 所以只能清空 tools
-    toolChoice = "auto";
-    tools = {
-      [ToolName.toolCallError]: toolCallError,
-    };
-    maxTokens = 1000;
-    maxSteps = 1;
     studyLog.error(`tokensConsumed ${tokensConsumed} exceeds limit ${TOKENS_COMSUME_LIMIT}`);
+    const locale = await getLocale();
+    const message =
+      locale === "zh-CN"
+        ? "当前研究已达 Token 上限，无法继续。您可以创建一个新的研究项目继续，或通过右下角的客服聊天窗口联系我们获取帮助"
+        : "You have reached the tokens limit for this study. You can create a new study project to continue, or contact us through the customer service chat window in the lower right corner for assistance.";
+    return createDataStreamResponse({
+      execute: async (dataStream) => {
+        dataStream.write(formatDataStreamPart("start_step", { messageId: "out-of-token" }));
+        dataStream.write(formatDataStreamPart("text", message));
+        dataStream.write(formatDataStreamPart("finish_message", { finishReason: "stop" }));
+      },
+    });
   }
+
+  const { clearBackgroundToken, backgroundToken } = await raceForUserChat(studyUserChatId);
   const system = studySystem({
     // 限制是 1.5M，告诉模型限制是 0.9M
     tokensStat: { used: tokensConsumed, limit: TOKENS_COMSUME_LIMIT * 0.6 },
