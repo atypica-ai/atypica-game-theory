@@ -10,8 +10,8 @@ import { InputJsonValue } from "@prisma/client/runtime/library";
 import { generateId, Message, streamText, tool } from "ai";
 import { Logger } from "pino";
 import { z } from "zod";
-import { reasoningThinkingTool } from "./reasoning";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const REDUCE_TOKENS: {
   model: LLMModelName;
   ratio: number;
@@ -229,13 +229,13 @@ async function chatWithInterviewer({
       system: prompt.interviewerPrompt,
       messages: fixChatMessages(messages), // 有时候在 tool 调用以后会有空文本回复，还是 fix 下靠谱
       tools: {
-        [ToolName.reasoningThinking]: reasoningThinkingTool({ abortSignal, statReport }),
+        // [ToolName.reasoningThinking]: reasoningThinkingTool({ abortSignal, statReport }), 减少 tokens 消耗，先隐藏
         [ToolName.saveInterviewConclusion]: saveInterviewConclusionTool(analystInterviewId),
       },
       ...(messages.length < 15
         ? {
             toolChoice: "auto",
-            maxSteps: 3,
+            maxSteps: 1, // 减少 token 消耗，从 3 改成 1
           }
         : {
             toolChoice: {
@@ -291,9 +291,10 @@ async function chatWithPersona({
   "messages" | "analystInterviewId" | "prompt" | "abortSignal" | "statReport" | "interviewLog"
 >) {
   const result = await new Promise<Omit<Message, "role">>(async (resolve, reject) => {
-    const reduceTokens: typeof REDUCE_TOKENS | null = REDUCE_TOKENS;
+    // const reduceTokens = REDUCE_TOKENS as typeof REDUCE_TOKENS | null;
+    const reduceTokens = null as typeof REDUCE_TOKENS | null; // 不使用 qwen，幻觉大，persona 会瞎编
     const response = streamText({
-      model: reduceTokens ? llm(reduceTokens.model) : llm("claude-3-7-sonnet"),
+      model: reduceTokens ? llm(reduceTokens.model) : llm("gpt-4o"),
       providerOptions: providerOptions,
       system: prompt.personaPrompt,
       messages: fixChatMessages(messages), // 有时候在 tool 调用以后会有空文本回复，还是 fix 下靠谱
