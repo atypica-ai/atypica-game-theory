@@ -2,7 +2,7 @@
 import { authClientInfo } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ServerActionResult } from "@/lib/serverAction";
-import { AdminRole, User } from "@prisma/client";
+import { AdminRole, Currency, User } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { AdminPermission, checkAdminAuth } from "../utils";
 
@@ -15,6 +15,7 @@ export async function fetchUsers(
   ServerActionResult<
     (Pick<User, "id" | "name" | "email" | "createdAt" | "emailVerified"> & {
       tokens: { balance: number } | null;
+      paymentRecords: { id: number; amount: number; currency: Currency }[];
       adminUser: { role: AdminRole; permissions: AdminPermission[] } | null;
       lastLogin: Awaited<ReturnType<typeof authClientInfo>> | null;
     })[]
@@ -56,6 +57,14 @@ export async function fetchUsers(
         tokens: {
           select: {
             balance: true,
+          },
+        },
+        paymentRecords: {
+          where: { status: "succeeded" },
+          select: {
+            id: true,
+            amount: true,
+            currency: true,
           },
         },
         adminUser: {

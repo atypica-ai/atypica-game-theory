@@ -11,10 +11,18 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Pagination } from "@/components/ui/pagination";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDate, formatTokensNumber } from "@/lib/utils";
 import { AdminRole } from "@prisma/client";
-import { SearchIcon } from "lucide-react";
+import { CoinsIcon, PlusIcon, SearchIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
@@ -205,79 +213,62 @@ export default function UsersPage() {
       </div>
 
       <div className="mb-4 overflow-x-auto rounded-lg border">
-        <table className="min-w-full divide-y divide">
-          <thead>
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                ID
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                Email
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider">
-                Tokens
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider"></th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                Created At
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                Verified
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                Last Login
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                Admin Role
-              </th>
-              <th className="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider">
-                Delete
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>ID</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead className="text-right">Paid</TableHead>
+              <TableHead className="text-right">Tokens</TableHead>
+              <TableHead></TableHead>
+              <TableHead>Created At</TableHead>
+              <TableHead>Last Login</TableHead>
+              <TableHead>Admin Role</TableHead>
+              <TableHead>Delete</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {users.length === 0 ? (
-              <tr>
-                <td colSpan={8} className="px-6 py-4 text-center text-sm">
-                  No users found
-                </td>
-              </tr>
+              <TableRow>
+                <TableCell className="text-center text-sm">No users found</TableCell>
+              </TableRow>
             ) : (
               users.map((user) => (
-                <tr key={user.id.toString()}>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm">{user.id}</td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm">{user.email}</td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm text-right">
+                <TableRow key={user.id.toString()}>
+                  <TableCell className="whitespace-nowrap text-sm">{user.id}</TableCell>
+                  <TableCell className="whitespace-nowrap text-sm">{user.email}</TableCell>
+                  {/* TODO: 去要按照 currency 区分 */}
+                  <TableCell className="whitespace-nowrap text-sm text-right">
+                    {user.paymentRecords.reduce((acc, r) => acc + r.amount, 0)}
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap text-sm text-right">
                     {formatTokensNumber(user.tokens?.balance ?? 0)} <br />
                     <span className="text-xs text-muted-foreground">
                       {(user.tokens?.balance ?? 0).toLocaleString()}
                     </span>
-                  </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap text-sm">
                     <Button
                       variant="outline"
                       size="sm"
-                      className="h-7"
+                      className="h-6 text-xs text-amber-500 hover:text-amber-500 gap-0"
                       onClick={() => openTokensDialog(user)}
                       title="Add tokens"
                     >
-                      Add Tokens
+                      <PlusIcon className="size-3" />
+                      <CoinsIcon className="size-4" />
                     </Button>
-                  </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {formatDate(user.createdAt, locale)}
-                  </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    <div className="flex items-center gap-2">
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap text-xs">
+                    <div>{formatDate(user.createdAt, locale)}</div>
+                    <div className="flex items-center gap-2 mt-2">
                       {user.emailVerified ? (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                          {formatDate(user.emailVerified, locale)}
+                        <span className="text-green-600">
+                          Verified {formatDate(user.emailVerified, locale)}
                         </span>
                       ) : (
                         <>
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                            Not Verified
-                          </span>
+                          <span className="font-medium text-red-500">Not Verified</span>
                           <ConfirmDialog
                             title="Verify User Email"
                             description={`Are you sure you want to mark ${user.email} as verified?`}
@@ -286,15 +277,15 @@ export default function UsersPage() {
                               fetchData();
                             }}
                           >
-                            <Button variant="outline" size="icon" className="size-7">
+                            <Button variant="outline" size="icon" className="size-6 text-xs">
                               ✓
                             </Button>
                           </ConfirmDialog>
                         </>
                       )}
                     </div>
-                  </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap text-xs">
                     {user.lastLogin ? (
                       <>
                         <div>{formatDate(new Date(user.lastLogin.timestamp), locale)}</div>
@@ -303,8 +294,8 @@ export default function UsersPage() {
                     ) : (
                       <span className="text-muted-foreground">-</span>
                     )}
-                  </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap text-sm">
                     <div className="flex items-center gap-2">
                       {user.adminUser ? (
                         <>
@@ -331,8 +322,8 @@ export default function UsersPage() {
                         </Button>
                       )}
                     </div>
-                  </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-center">
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap text-center">
                     <ConfirmDialog
                       title="Delete User Account"
                       description={`Are you sure you want to permanently delete the account for ${user.email}? This will remove all user data including tokens, payments, and subscription information.`}
@@ -348,12 +339,12 @@ export default function UsersPage() {
                         ×
                       </Button>
                     </ConfirmDialog>
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))
             )}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
 
       {pagination && pagination.totalPages > 1 && (
@@ -462,6 +453,7 @@ export default function UsersPage() {
                   AdminPermission.MANAGE_PAYMENTS,
                   AdminPermission.MANAGE_INVITATION_CODES,
                   AdminPermission.VIEW_ENTERPRISE_LEADS,
+                  AdminPermission.VIEW_TOKEN_CONSUMPTION,
                 ].map((permission) => (
                   <div className="flex items-center space-x-2" key={permission}>
                     <input

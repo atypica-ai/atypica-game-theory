@@ -29,7 +29,7 @@ export async function fetchTokenConsumption(
   pageSize: number = 50,
 ): Promise<ServerActionResult<ChatTokenConsumptionData[]>> {
   // Ensure only admins with proper permissions can access this data
-  await checkAdminAuth([AdminPermission.MANAGE_USERS]);
+  await checkAdminAuth([AdminPermission.VIEW_TOKEN_CONSUMPTION]);
 
   // Calculate pagination
   const skip = (page - 1) * pageSize;
