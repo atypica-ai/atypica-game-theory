@@ -27,6 +27,7 @@ export type ChatTokenConsumptionData = {
 export async function fetchTokenConsumption(
   page: number = 1,
   pageSize: number = 50,
+  searchQuery: string,
 ): Promise<ServerActionResult<ChatTokenConsumptionData[]>> {
   // Ensure only admins with proper permissions can access this data
   await checkAdminAuth([AdminPermission.VIEW_TOKEN_CONSUMPTION]);
@@ -35,7 +36,36 @@ export async function fetchTokenConsumption(
   const skip = (page - 1) * pageSize;
 
   // Get all data in a single query - with reduction calculation
-  const result = await prisma.$queryRaw`
+  const result = searchQuery
+    ? await prisma.$queryRaw`
+    SELECT
+      uc.id as "userChatId",
+      uc.token,
+      uc.title,
+      uc."userId",
+      u.name as "userName",
+      u.email as "userEmail",
+      uc."createdAt",
+      COALESCE(cs.extra->>'reportedBy', 'Unknown') as "reportedBy",
+      SUM(COALESCE((cs.extra->'reduceTokens'->>'originalTokens')::NUMERIC, 0)) as "originalTokens",
+      SUM(cs.value) as "tokens",
+      SUM(
+        CASE
+          WHEN COALESCE((cs.extra->'reduceTokens'->>'originalTokens')::NUMERIC, 0) > 0
+          THEN COALESCE((cs.extra->'reduceTokens'->>'originalTokens')::NUMERIC, 0) - cs.value
+          ELSE 0
+        END
+      ) as "reducedTokens"
+    FROM "ChatStatistics" as cs
+    INNER JOIN "UserChat" as uc ON uc.id = cs."userChatId"
+    INNER JOIN "User" as u ON u.id = uc."userId"
+    WHERE cs."dimension" = 'tokens' and uc."kind" = 'study' and (u.email LIKE ${"%" + searchQuery + "%"} or uc.token = ${searchQuery})
+    GROUP BY uc.id, uc.token, uc.title, uc."userId", u.name, u.email, cs.extra->>'reportedBy'
+    ORDER BY uc.id DESC, "tokens" DESC
+    LIMIT ${pageSize * 10}
+    OFFSET ${skip}
+  `
+    : await prisma.$queryRaw`
     SELECT
       uc.id as "userChatId",
       uc.token,
@@ -107,14 +137,25 @@ export async function fetchTokenConsumption(
   });
 
   // Get total count for pagination
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const countResult: any = await prisma.$queryRaw`
-    SELECT COUNT(DISTINCT cs."userChatId") as count
-    FROM "ChatStatistics" cs
-    WHERE cs.dimension = 'tokens'
-  `;
+  const countResult = await prisma.userChat.count({
+    where: searchQuery
+      ? {
+          kind: "study",
+          OR: [
+            {
+              user: {
+                email: { contains: searchQuery },
+              },
+            },
+            { token: searchQuery },
+          ],
+        }
+      : {
+          kind: "study",
+        },
+  });
 
-  const totalCount = Number(countResult[0].count);
+  const totalCount = Number(countResult);
 
   // Convert map to array and sort by userChatId
   const chatList = Array.from(chatMap.values())

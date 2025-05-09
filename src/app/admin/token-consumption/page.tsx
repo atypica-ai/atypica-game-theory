@@ -1,4 +1,6 @@
 "use client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Pagination } from "@/components/ui/pagination";
 import {
   Table,
@@ -9,12 +11,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatDate, formatTokensNumber } from "@/lib/utils";
-import { ChevronDown, ChevronRight, PlayIcon } from "lucide-react";
+import { ChevronDown, ChevronRight, PlayIcon, SearchIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useLocale } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { PaginationInfo } from "../utils";
 import { ChatTokenConsumptionData, fetchTokenConsumption } from "./actions";
 
@@ -28,31 +30,41 @@ export default function TokenConsumptionPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
   const [expandedChats, setExpandedChats] = useState<Record<number, boolean>>({});
+  const [searchQuery, setSearchQuery] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Initialize page from URL on load
   useEffect(() => {
     if (typeof window !== "undefined") {
       const url = new URL(window.location.href);
       const pageParam = url.searchParams.get("page");
+      const searchParam = url.searchParams.get("search");
       if (pageParam) {
         setCurrentPage(parseInt(pageParam, 10));
+      }
+      if (searchParam) {
+        setSearchQuery(searchParam);
       }
     }
   }, []);
 
-  // Update URL when page changes
+  // Update URL when page, search, or admin filter changes
   useEffect(() => {
     const url = new URL(window.location.href);
     url.searchParams.set("page", currentPage.toString());
+    if (searchQuery) {
+      url.searchParams.set("search", searchQuery);
+    } else {
+      url.searchParams.delete("search");
+    }
     window.history.pushState({}, "", url.toString());
-  }, [currentPage]);
+  }, [currentPage, searchQuery]);
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     setError("");
-
     try {
-      const result = await fetchTokenConsumption(currentPage, 50);
+      const result = await fetchTokenConsumption(currentPage, 50, searchQuery);
       if (!result.success) {
         setError(result.message || "Failed to fetch token consumption data");
       } else {
@@ -65,7 +77,7 @@ export default function TokenConsumptionPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage]);
+  }, [currentPage, searchQuery]);
 
   // Initial data fetch
   useEffect(() => {
@@ -82,6 +94,12 @@ export default function TokenConsumptionPage() {
       fetchData();
     }
   }, [currentPage, fetchData, status]);
+
+  const handleSearch = useCallback((e: FormEvent) => {
+    e.preventDefault();
+    setCurrentPage(1); // Reset to first page on new search
+    setSearchQuery(inputRef.current?.value ?? "");
+  }, []);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -122,6 +140,35 @@ export default function TokenConsumptionPage() {
       <h1 className="mb-6 text-2xl font-bold">Token Consumption</h1>
       <div className="mb-6 space-y-4">
         {error && <div className="text-red-500 mb-4">{error}</div>}
+        <div className="mb-6">
+          <form onSubmit={handleSearch} className="flex gap-2">
+            <div className="relative flex-1">
+              <SearchIcon className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                defaultValue={searchQuery}
+                ref={inputRef}
+                placeholder="Search by email or token"
+                className="pl-8"
+              />
+            </div>
+            <Button type="submit">Search</Button>
+            {searchQuery && (
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => {
+                  if (inputRef.current) {
+                    inputRef.current.value = "";
+                  }
+                  setSearchQuery("");
+                  setCurrentPage(1);
+                }}
+              >
+                Clear
+              </Button>
+            )}
+          </form>
+        </div>
         <div className="rounded-md border">
           <Table className="w-full">
             <TableHeader>
