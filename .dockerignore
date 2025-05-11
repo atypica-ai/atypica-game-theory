@@ -11,6 +11,9 @@ yarn.lock
 .next
 out
 
+# Prisma client
+src/prisma/client
+
 # Environment variables
 .env
 .env.local

@@ -18,6 +18,7 @@ FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+COPY --from=deps /app/src/prisma/client ./src/prisma/client
 
 # Accept the encryption key as a build argument
 ARG NEXT_SERVER_ACTIONS_ENCRYPTION_KEY
