@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+const { PrismaClient } = require("../src/prisma/client");
 import { dirname } from "path";
 import { fileURLToPath } from "url";
 

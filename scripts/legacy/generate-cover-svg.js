@@ -1,5 +1,5 @@
+const { PrismaClient } = require("../src/prisma/client");
 import { createOpenAI } from "@ai-sdk/openai";
-import { PrismaClient } from "@prisma/client";
 import { streamText } from "ai";
 import { dirname } from "path";
 import { fileURLToPath } from "url";

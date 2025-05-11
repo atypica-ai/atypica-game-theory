@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+const { PrismaClient } = require("../src/prisma/client");
 import { generateId } from "ai";
 
 const prisma = new PrismaClient();

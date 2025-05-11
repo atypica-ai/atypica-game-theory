@@ -1,9 +1,8 @@
-import { PrismaClient } from "@prisma/client";
-import yaml from "js-yaml";
+const { PrismaClient } = require("../src/prisma/client");
 import fs from "fs";
-import path from "path";
+import yaml from "js-yaml";
+import path, { dirname } from "path";
 import { fileURLToPath } from "url";
-import { dirname } from "path";
 
 // 获取 __dirname (在 ESM 中需要特殊处理)
 const __filename = fileURLToPath(import.meta.url);
