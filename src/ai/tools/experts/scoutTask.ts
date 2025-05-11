@@ -28,8 +28,8 @@ import {
   xhsSearchTool,
   xhsUserNotesTool,
 } from "@/ai/tools";
-import { prisma } from "@/prisma/prisma";
 import { generateToken } from "@/lib/utils";
+import { prisma } from "@/prisma/prisma";
 import {
   DataStreamWriter,
   generateId,
@@ -298,7 +298,12 @@ export async function runScoutTaskChatStream({
           // - assistant 消息还不完整，新一轮对话拿到的 messages 不完整
           const toolCalls = step.toolCalls.map((call) => call.toolName);
           const usage = step.usage;
-          scoutLog.info({ msg: "Step finished", stepType: step.stepType, toolCalls, usage });
+          scoutLog.info({
+            msg: "runScoutTaskChatStream streamText onStepFinish",
+            stepType: step.stepType,
+            toolCalls,
+            usage,
+          });
           if (statReport) {
             const reportedBy = "scoutTaskChat tool";
             const promises = [

@@ -1,6 +1,6 @@
 import { PlainTextToolResult, StatReporter } from "@/ai/tools";
-import { prisma } from "@/prisma/prisma";
 import { fixMalformedUnicodeString } from "@/lib/utils";
+import { prisma } from "@/prisma/prisma";
 import { tool } from "ai";
 import { z } from "zod";
 
@@ -22,16 +22,18 @@ export const savePersonaTool = ({
       name: z
         .string()
         .describe("名字，不要包含姓氏，使用网名")
+        .max(100)
         .transform(fixMalformedUnicodeString),
-      source: z.string().describe("数据来源").transform(fixMalformedUnicodeString),
+      source: z.string().describe("数据来源").max(100).transform(fixMalformedUnicodeString),
       tags: z
-        .array(z.string())
+        .array(z.string().max(50))
         .describe("用户标签")
         .transform((tags) => tags.map((tag) => fixMalformedUnicodeString(tag))),
       // userids: z.array(z.string()).optional().describe("该人设典型的用户 ID 列表").default([]),
       personaPrompt: z
         .string()
-        .describe("用户画像（persona）的系统提示词")
+        .max(2000)
+        .describe("智能体的系统提示词，详细描述用户画像，300到500字")
         .transform(fixMalformedUnicodeString),
     }),
     experimental_toToolResultContent: (result: PlainTextToolResult) => {
