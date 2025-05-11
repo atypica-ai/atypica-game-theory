@@ -137,7 +137,26 @@ export default function CreateInterviewProjectPage() {
                                 >
                                   <div className="flex items-center">
                                     {category.icon}
-                                    <span className="ml-2">{t(`categories.${category.id}`)}</span>
+                                    <span className="ml-2">
+                                      {(() => {
+                                        switch (category.id) {
+                                          case "market_research":
+                                            return t("categories.market_research");
+                                          case "product_development":
+                                            return t("categories.product_development");
+                                          case "academic_research":
+                                            return t("categories.academic_research");
+                                          case "user_research":
+                                            return t("categories.user_research");
+                                          case "competitor_analysis":
+                                            return t("categories.competitor_analysis");
+                                          case "innovation_ideation":
+                                            return t("categories.innovation_ideation");
+                                          default:
+                                            return "-";
+                                        }
+                                      })()}
+                                    </span>
                                   </div>
                                 </SelectItem>
                               ))}
