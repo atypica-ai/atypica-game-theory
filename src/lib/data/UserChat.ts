@@ -1,5 +1,6 @@
 "use server";
 import { convertDBMessageToAIMessage } from "@/ai/messageUtils";
+import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { generateToken } from "@/lib/utils";
@@ -88,14 +89,16 @@ export async function fetchUserChats<Tkind extends UserChatKind>(
   });
 }
 
-export async function clearStudyUserChatBackgroundToken(
+export async function userStopBackgroundStudy(
   studyUserChatId: number,
 ): Promise<ServerActionResult<void>> {
   return withAuth(async (user) => {
-    await prisma.userChat.update({
+    const userChat = await prisma.userChat.update({
       where: { id: studyUserChatId, userId: user.id, kind: "study" },
       data: { backgroundToken: null },
     });
+    const studyLog = rootLogger.child({ studyUserChatId, studyUserChatToken: userChat.token });
+    studyLog.info("Study stopped by user");
     return {
       success: true,
       data: undefined,

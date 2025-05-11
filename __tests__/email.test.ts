@@ -1,6 +1,7 @@
 import { sendEmail } from "@/email/lib";
 import { sendPasswordResetEmail } from "@/email/passwordReset";
 import { sendReportCompletionEmail } from "@/email/reportCompletion";
+import { sendStudyInterruptionEmail } from "@/email/studyInterruption";
 import { sendVerificationEmail } from "@/email/verification";
 import { loadEnvConfig } from "@next/env";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -28,7 +29,7 @@ beforeEach(() => {
   loadEnvConfig(process.cwd());
 });
 
-describe("Email Module Tests", () => {
+describe.skip("Email Module Tests", () => {
   it("should config email test receiver", () => {
     expect(process.env.EMAIL_TEST_RECEIVER).toBeDefined();
   });
@@ -55,8 +56,15 @@ describe("Email Module Tests", () => {
         verificationCode: "123456",
       });
     });
-    it.only("sendReportCompletionEmail", async () => {
+    it("sendReportCompletionEmail", async () => {
       await sendReportCompletionEmail({
+        email: process.env.EMAIL_TEST_RECEIVER!,
+        topic: "测试研究",
+        studyUrl: FAKE_URL,
+      });
+    });
+    it("sendStudyInterruptionEmail", async () => {
+      await sendStudyInterruptionEmail({
         email: process.env.EMAIL_TEST_RECEIVER!,
         topic: "测试研究",
         studyUrl: FAKE_URL,

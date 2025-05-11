@@ -279,6 +279,18 @@
       "viewStudyButtonText": "查看研究页面",
       "thanksMessage": "感谢您使用 atypica.AI 进行研究。希望提供的见解对您有价值。",
       "automatedEmailDisclaimer": "这是来自 atypica.AI 的自动邮件。请勿回复此邮件。"
+    },
+    "StudyInterruption": {
+      "subjectLine": "您的 atypica.AI 研究意外中断",
+      "greeting": "您好，",
+      "emailTitle": "研究中断通知",
+      "interruptionText": "您关于“{topic}”的研究意外中断。请勿担心，您的进度已被保存。",
+      "continueInstructionsText": "您可以通过点击下方按钮前往您的研究，然后在聊天框中输入“继续”或点击继续按钮。",
+      "studyLinkText": "在此访问您的研究",
+      "continueButtonText": "查看研究",
+      "supportText": "如果您遇到任何问题，请点击研究页面右下角的聊天图标寻求帮助。",
+      "thanksMessage": "感谢您的耐心等待，也感谢您使用 atypica.AI 满足您的研究需求。",
+      "automatedEmailDisclaimer": "这是来自 atypica.AI 的自动邮件。请勿回复此邮件。"
     }
   },
   "Auth": {

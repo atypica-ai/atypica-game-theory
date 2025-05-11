@@ -31,7 +31,7 @@ import { getLocale } from "next-intl/server";
 import { Logger } from "pino";
 import { createAbortSignals } from "./abortSignal";
 import { backgroundChatUntilCancel, raceForUserChat } from "./background";
-import { notifyReportCompletion } from "./notify";
+import { notifyReportCompletion, notifyStudyInterruption } from "./notify";
 
 const MAX_STEPS_EACH_ROUND = 15; // streamText 默认 15 步
 const TOOL_USE_LIMIT = {
@@ -191,19 +191,6 @@ export async function studyAgentRequest({
         toolCalls,
         usage,
       });
-      {
-        const generateReportTool = step.toolResults.find(
-          (tool) => tool.toolName === ToolName.generateReport,
-        );
-        if (generateReportTool) {
-          // 通知用户 report 生成成功，不 await
-          notifyReportCompletion({
-            reportToken: generateReportTool.args.reportToken,
-            studyUserChatId,
-            studyLog,
-          });
-        }
-      }
       if (statReport) {
         const reportedBy = "study chat";
         const seconds = Math.floor((Date.now() - streamStartTime) / 1000);
@@ -217,6 +204,19 @@ export async function studyAgentRequest({
         }
         await Promise.all(promises);
       }
+      {
+        const generateReportTool = step.toolResults.find(
+          (tool) => tool.toolName === ToolName.generateReport,
+        );
+        if (generateReportTool) {
+          // 通知用户 report 生成成功，不 await
+          notifyReportCompletion({
+            reportToken: generateReportTool.args.reportToken,
+            studyUserChatId,
+            studyLog,
+          });
+        }
+      }
     },
     onFinish: async ({ usage }) => {
       studyLog.info({ msg: "studyAgentRequest streamText onFinish", usage });
@@ -225,14 +225,18 @@ export async function studyAgentRequest({
     onError: async ({ error }) => {
       // 这里也包括 tool calling 里面直接 throw 的异常
       studyLog.error(`studyAgentRequest streamText onError: ${(error as Error).message}`);
-      // @IMPORTANT 这很重要, 中断所有的 tool calling 里可能还在运行的 streamText
       try {
+        // @IMPORTANT 这很重要, 中断所有的 tool calling 里可能还在运行的 streamText
         abortController.abort();
       } catch (error) {
         studyLog.error(`Error during abort: ${(error as Error).message}`);
       }
       // 出错了以后没必要继续在后台执行了
       await clearBackgroundToken();
+      {
+        // 因为 token 不足 abort 不会触发 onError，如果要通知 token 不足，需要在 backgroundChatUntilCancel 里面触发
+        notifyStudyInterruption({ studyUserChatId, studyLog });
+      }
     },
     abortSignal: delayedAbortSignal,
   });

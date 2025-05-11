@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { UserTokensBalanceStore } from "@/components/UserTokensBalance";
 import { useDocumentVisibility } from "@/hooks/use-document-visibility";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
-import { clearStudyUserChatBackgroundToken } from "@/lib/data/UserChat";
+import { userStopBackgroundStudy } from "@/lib/data/UserChat";
 import { cn, useDevice } from "@/lib/utils";
 import { Message, useChat } from "@ai-sdk/react";
 import { ArrowRightIcon, PlayIcon } from "lucide-react";
@@ -320,7 +320,7 @@ export function ChatBox() {
               className="size-7"
               showEvictionWarning={maybeEvicted}
               onUserCancel={async () => {
-                await clearStudyUserChatBackgroundToken(studyUserChatId);
+                await userStopBackgroundStudy(studyUserChatId);
                 setTimeout(() => window.location.reload(), 100);
               }}
             />
