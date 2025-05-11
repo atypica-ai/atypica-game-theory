@@ -1,6 +1,6 @@
 import { PlainTextToolResult } from "@/ai/tools";
+import { InterviewSessionStatus } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
-import { InterviewSessionStatus } from "@prisma/client";
 import { tool } from "ai";
 import { z } from "zod";
 

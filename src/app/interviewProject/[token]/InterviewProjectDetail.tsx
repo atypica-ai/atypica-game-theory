@@ -35,8 +35,8 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn, formatDate } from "@/lib/utils";
+import { InterviewSession, InterviewSessionStatus } from "@/prisma/client";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { InterviewSession, InterviewSessionStatus } from "@prisma/client";
 import {
   BookOpenCheckIcon,
   Copy,

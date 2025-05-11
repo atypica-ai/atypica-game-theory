@@ -2,7 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { formatDistanceToNow } from "@/lib/utils";
-import { AnalystReport } from "@prisma/client";
+import { AnalystReport } from "@/prisma/client";
 import { ClipboardListIcon, FileType2Icon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";

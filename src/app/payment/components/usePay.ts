@@ -1,5 +1,5 @@
 import { useDevice } from "@/lib/utils";
-import { Currency } from "@prisma/client";
+import { Currency } from "@/prisma/client";
 import { useSession } from "next-auth/react";
 import { useCallback, useState } from "react";
 import { PingxxNewPaymentParams, ProductName, StripeNewPaymentParams } from "../data";

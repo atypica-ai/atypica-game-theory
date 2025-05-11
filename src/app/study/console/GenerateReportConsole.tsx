@@ -1,6 +1,6 @@
 import { fetchAnalystReportByToken } from "@/app/study/actions";
 import { cn } from "@/lib/utils";
-import { AnalystReport } from "@prisma/client";
+import { AnalystReport } from "@/prisma/client";
 import { ToolInvocation } from "ai";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";

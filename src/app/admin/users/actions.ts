@@ -1,8 +1,8 @@
 "use server";
 import { authClientInfo } from "@/lib/auth";
 import { ServerActionResult } from "@/lib/serverAction";
+import { AdminRole, Currency, User } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
-import { AdminRole, Currency, User } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { AdminPermission, checkAdminAuth } from "../utils";
 

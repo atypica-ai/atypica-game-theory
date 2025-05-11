@@ -2,8 +2,8 @@
 import { authOptions } from "@/lib/auth";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
+import { UserTokensLog, UserTokensLogVerb } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
-import { UserTokensLog, UserTokensLogVerb } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { forbidden } from "next/navigation";
 

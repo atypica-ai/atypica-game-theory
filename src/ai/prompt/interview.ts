@@ -1,4 +1,4 @@
-import { Analyst } from "@prisma/client";
+import { Analyst } from "@/prisma/client";
 
 export const interviewerSystem = ({
   analyst,

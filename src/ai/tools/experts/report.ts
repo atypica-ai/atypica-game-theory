@@ -6,9 +6,9 @@ import {
   reportHTMLSystem,
 } from "@/ai/prompt";
 import { PlainTextToolResult, StatReporter } from "@/ai/tools";
-import { prisma } from "@/prisma/prisma";
 import { generateToken } from "@/lib/utils";
-import { Analyst, AnalystReport } from "@prisma/client";
+import { Analyst, AnalystReport } from "@/prisma/client";
+import { prisma } from "@/prisma/prisma";
 import { FinishReason, Message, streamText, tool } from "ai";
 import { Logger } from "pino";
 import { z } from "zod";

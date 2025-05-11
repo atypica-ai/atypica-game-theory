@@ -1,4 +1,4 @@
-import { Currency } from "@prisma/client";
+import { Currency } from "@/prisma/client";
 
 export enum ProductName {
   TEST_A = "TEST_A",

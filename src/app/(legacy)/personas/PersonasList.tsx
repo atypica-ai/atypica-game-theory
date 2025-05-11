@@ -20,7 +20,7 @@ import {
 import { Pagination } from "@/components/ui/pagination";
 import { UserChatWithMessages } from "@/lib/data/UserChat";
 import { cn } from "@/lib/utils";
-import { Persona } from "@prisma/client";
+import { Persona } from "@/prisma/client";
 import { XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";

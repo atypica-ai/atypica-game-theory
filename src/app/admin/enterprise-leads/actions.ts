@@ -1,9 +1,9 @@
 "use server";
 import { convertDBMessageToAIMessage } from "@/ai/messageUtils";
 import { AdminPermission, checkAdminAuth } from "@/app/admin/utils";
-import { prisma } from "@/prisma/prisma";
 import { ServerActionResult } from "@/lib/serverAction";
-import { User, UserChat } from "@prisma/client";
+import { User, UserChat } from "@/prisma/client";
+import { prisma } from "@/prisma/prisma";
 import { Message } from "ai";
 
 // Fetch enterprise leads with pagination

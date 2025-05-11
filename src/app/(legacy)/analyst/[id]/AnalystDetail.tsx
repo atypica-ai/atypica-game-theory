@@ -3,7 +3,7 @@ import { fetchAnalystInterviews } from "@/app/(legacy)/interview/actions";
 import { TokenAlertDialog } from "@/components/TokenAlertDialog";
 import { Button } from "@/components/ui/button";
 import { ExtractServerActionData } from "@/lib/serverAction";
-import { Analyst } from "@prisma/client";
+import { Analyst } from "@/prisma/client";
 import { Link, PlusIcon, UndoIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";

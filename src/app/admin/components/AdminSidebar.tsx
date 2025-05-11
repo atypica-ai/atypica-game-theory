@@ -1,7 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import UserMenu from "@/components/UserMenu";
-import { AdminRole } from "@prisma/client";
+import { AdminRole } from "@/prisma/client";
 import {
   AlertTriangle,
   CreditCard,

@@ -1,9 +1,9 @@
 "use server";
 import { convertDBMessageToAIMessage } from "@/ai/messageUtils";
-import { prisma } from "@/prisma/prisma";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
-import { AnalystInterview, Persona } from "@prisma/client";
+import { AnalystInterview, Persona } from "@/prisma/client";
+import { prisma } from "@/prisma/prisma";
 import { Message } from "ai";
 
 interface PersonaWithTags extends Omit<Persona, "tags"> {

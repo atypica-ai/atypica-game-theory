@@ -1,4 +1,4 @@
-import { Currency } from "@prisma/client";
+import { Currency } from "@/prisma/client";
 import { headers } from "next/headers";
 import { PaymentMethod, PingxxNewPaymentParams, ProductName } from "../data";
 

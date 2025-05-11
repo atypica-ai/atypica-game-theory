@@ -1,7 +1,7 @@
 "use server";
 import { ServerActionResult } from "@/lib/serverAction";
+import { InvitationCode } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
-import { InvitationCode } from "@prisma/client";
 import crypto from "crypto";
 import { revalidatePath } from "next/cache";
 import { AdminPermission, checkTezignAuth, hasPermission } from "../utils";

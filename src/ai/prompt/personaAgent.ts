@@ -1,4 +1,4 @@
-import { Persona } from "@prisma/client";
+import { Persona } from "@/prisma/client";
 
 export const personaAgentSystem = ({
   persona,

@@ -12,7 +12,7 @@ import {
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
-import { Analyst, Persona } from "@prisma/client";
+import { Analyst, Persona } from "@/prisma/client";
 import { Message, ToolInvocation } from "ai";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";

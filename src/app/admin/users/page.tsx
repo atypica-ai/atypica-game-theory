@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/table";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDate, formatTokensNumber } from "@/lib/utils";
-import { AdminRole } from "@prisma/client";
+import { AdminRole } from "@/prisma/client";
 import { CoinsIcon, PlusIcon, SearchIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useLocale } from "next-intl";

@@ -1,12 +1,12 @@
 "use server";
 import { getRequestClientIp, getRequestOrigin } from "@/lib/request/headers";
-import { prisma } from "@/prisma/prisma";
 import {
   Currency,
   PaymentRecord as PaymentRecordPrisma,
   SubscriptionPlan,
   UserTokensLogVerb,
-} from "@prisma/client";
+} from "@/prisma/client";
+import { prisma } from "@/prisma/prisma";
 import { PaymentMethod, ProductName } from "./data";
 
 // Ping++ API configuration

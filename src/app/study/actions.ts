@@ -1,13 +1,13 @@
 "use server";
 import { convertDBMessageToAIMessage } from "@/ai/messageUtils";
 import { ServerActionResult } from "@/lib/serverAction";
-import { prisma } from "@/prisma/prisma";
 import {
   Analyst,
   AnalystInterview,
   AnalystReport,
   UserChat as UserChatPrisma,
-} from "@prisma/client";
+} from "@/prisma/client";
+import { prisma } from "@/prisma/prisma";
 import { Message } from "ai";
 
 export type UserChat = Omit<UserChatPrisma, "messages"> & {

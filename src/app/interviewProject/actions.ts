@@ -1,5 +1,4 @@
 "use server";
-import { prisma } from "@/prisma/prisma";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { generateToken } from "@/lib/utils";
@@ -9,7 +8,8 @@ import {
   InterviewSessionKind,
   InterviewSessionStatus,
   UserChatKind,
-} from "@prisma/client";
+} from "@/prisma/client";
+import { prisma } from "@/prisma/prisma";
 import { revalidatePath } from "next/cache";
 
 // Types for our frontend to use

@@ -1,7 +1,7 @@
 "use server";
 import { ServerActionResult } from "@/lib/serverAction";
+import { Persona } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
-import { Persona } from "@prisma/client";
 // import withAuth from "./withAuth";
 
 export async function fetchPersonas({

@@ -1,5 +1,5 @@
+import { UserTokensLogResourceType, UserTokensLogVerb } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
-import { UserTokensLogResourceType, UserTokensLogVerb } from "@prisma/client";
 
 /*
  * Deprecated

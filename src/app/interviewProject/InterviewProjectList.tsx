@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { formatDate } from "@/lib/utils";
-import { InterviewSessionStatus } from "@prisma/client";
+import { InterviewSessionStatus } from "@/prisma/client";
 import { CalendarDaysIcon, FolderPlus, NotebookPenIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";

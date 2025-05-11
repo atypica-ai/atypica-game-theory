@@ -19,7 +19,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn, formatDate } from "@/lib/utils";
-import { SubscriptionPlan, UserTokensLog, UserTokensLogVerb } from "@prisma/client";
+import { SubscriptionPlan, UserTokensLog, UserTokensLogVerb } from "@/prisma/client";
 import {
   CalendarIcon,
   CircleDollarSignIcon,

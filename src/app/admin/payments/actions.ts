@@ -2,8 +2,8 @@
 import { AdminPermission, checkAdminAuth } from "@/app/admin/utils";
 import { PaymentMethod } from "@/app/payment/data";
 import { ServerActionResult } from "@/lib/serverAction";
+import { PaymentLine, PaymentRecord as PaymentRecordPrisma, User } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
-import { PaymentLine, PaymentRecord as PaymentRecordPrisma, User } from "@prisma/client";
 
 export type PaymentRecord = PaymentRecordPrisma & {
   paymentMethod: PaymentMethod;

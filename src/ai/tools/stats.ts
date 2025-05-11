@@ -1,5 +1,5 @@
+import { UserTokensLogVerb } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
-import { UserTokensLogVerb } from "@prisma/client";
 import { InputJsonValue } from "@prisma/client/runtime/library";
 import { Logger } from "pino";
 

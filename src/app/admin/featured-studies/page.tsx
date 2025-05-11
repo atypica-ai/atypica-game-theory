@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/select";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDate } from "@/lib/utils";
-import { Analyst } from "@prisma/client";
+import { Analyst } from "@/prisma/client";
 import { ArrowDown, ArrowUp, SearchIcon, StarIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useLocale } from "next-intl";

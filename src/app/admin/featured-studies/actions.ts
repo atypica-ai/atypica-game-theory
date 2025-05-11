@@ -2,9 +2,9 @@
 import { FeaturedStudyCategory } from "@/app/(public)/featured-studies/data";
 import { UserChat } from "@/app/study/actions";
 import { StudyUserChat } from "@/lib/data/UserChat";
-import { prisma } from "@/prisma/prisma";
 import { ServerActionResult } from "@/lib/serverAction";
-import { Analyst, FeaturedStudy, User, UserAnalyst } from "@prisma/client";
+import { Analyst, FeaturedStudy, User, UserAnalyst } from "@/prisma/client";
+import { prisma } from "@/prisma/prisma";
 import { revalidatePath } from "next/cache";
 import { AdminPermission, checkAdminAuth } from "../utils";
 // Public action for fetching featured studies (no auth check needed)

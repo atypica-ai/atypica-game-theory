@@ -1,6 +1,6 @@
-import { prisma } from "@/prisma/prisma";
 import { getRequestOrigin } from "@/lib/request/headers";
-import { Currency } from "@prisma/client";
+import { Currency } from "@/prisma/client";
+import { prisma } from "@/prisma/prisma";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { PaymentMethod, ProductName, StripeNewPaymentParams } from "../data";

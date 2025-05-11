@@ -1,4 +1,4 @@
-import { Currency } from "@prisma/client";
+import { Currency } from "@/prisma/client";
 import Script from "next/script";
 import { PingxxNewPaymentParams, ProductName } from "../data";
 import PaymentClient from "./PaymentClient";

@@ -1,4 +1,4 @@
-import { Analyst } from "@prisma/client";
+import { Analyst } from "@/prisma/client";
 import { promptSystemConfig } from "./systemConfig";
 
 export const reportHTMLSystem = () => `${promptSystemConfig()}
