@@ -1,0 +1,58 @@
+import { sendEmail } from "@/email/lib";
+import { sendPasswordResetEmail } from "@/email/passwordReset";
+import { sendVerificationEmail } from "@/email/verification";
+import { loadEnvConfig } from "@next/env";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+const FAKE_URL = "https://atypica.ai/fake";
+
+vi.mock("next-intl/server", () => ({
+  getTranslations: vi.fn(async (key: string) => {
+    const messages = (await import(`../messages/zh-CN.json`)).default;
+    const keys = key.split(".");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const subMessages = keys.reduce((acc: any, key: string) => acc[key], messages);
+    const t = (key: string) => {
+      const keys = key.split(".");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const message = keys.reduce((acc: any, key: string) => acc[key], subMessages);
+      return message;
+    };
+    return t;
+  }),
+}));
+
+beforeEach(() => {
+  // 加载 .env 文件
+  loadEnvConfig(process.cwd());
+});
+
+describe("Email Module Tests", () => {
+  it("should config email test receiver", () => {
+    expect(process.env.EMAIL_TEST_RECEIVER).toBeDefined();
+  });
+  describe("Send Email Function", () => {
+    it("sends an email with correct options", async () => {
+      const options = {
+        to: process.env.EMAIL_TEST_RECEIVER!,
+        subject: "Test Subject",
+        text: "Test Text Content",
+        html: "<p>Test HTML Content</p>",
+      };
+      console.log(options);
+      await sendEmail(options);
+    });
+    it("sendPasswordResetEmail", async () => {
+      await sendPasswordResetEmail({
+        email: process.env.EMAIL_TEST_RECEIVER!,
+        resetUrl: FAKE_URL,
+      });
+    });
+    it("sendVerificationEmail", async () => {
+      await sendVerificationEmail({
+        email: process.env.EMAIL_TEST_RECEIVER!,
+        verificationCode: "123456",
+      });
+    });
+  });
+});
