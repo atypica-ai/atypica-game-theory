@@ -1,7 +1,6 @@
 "use client";
 import { StudyHistoryDrawer } from "@/components/HistoryDrawer";
 import { Avatar } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,6 +8,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
 import Cookies from "js-cookie";
 import {
   CreditCardIcon,
@@ -20,6 +20,7 @@ import {
   Moon,
   Sun,
   User,
+  UserIcon,
 } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
@@ -28,14 +29,15 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import HippyGhostAvatar from "./HippyGhostAvatar";
+import { Button } from "./ui/button";
 
 export default function UserMenu() {
   const { data: session } = useSession();
-  const t = useTranslations("Components.UserMenu");
+  const t = useTranslations("Components.GlobalHeader");
   const { setTheme } = useTheme();
   const router = useRouter();
   const [locale, setLocale] = useState<string>("zh-CN");
-  const [open, setOpen] = useState(false);
+  const [historyDrawerOpen, setHistoryDrawerOpen] = useState(false);
 
   const searchParams = useSearchParams();
   const [signinCallbackUrl, setSigninCallbackUrl] = useState<string>("/");
@@ -85,25 +87,77 @@ export default function UserMenu() {
     );
   };
 
+  const Account = () =>
+    session?.user ? (
+      <>
+        <DropdownMenuItem>
+          <MailIcon className="h-4 w-4 mr-2" />
+          <span className="text-xs tracking-tight">{session.user.email}</span>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link href="/account">
+            <User className="h-4 w-4 mr-2" />
+            <span>{t("viewAccount")}</span>
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/study">
+            <HistoryIcon className="h-4 w-4 mr-2" />
+            {t("myStudies")}
+          </Link>
+        </DropdownMenuItem>
+        {/* <DropdownMenuItem onClick={() => setHistoryDrawerOpen(true)}>
+          <HistoryIcon className="h-4 w-4 mr-2" />
+          {t("history")}
+        </DropdownMenuItem> */}
+      </>
+    ) : null;
+
+  const UserAvatar = ({ className, ...props }: React.ComponentProps<typeof Avatar>) =>
+    session?.user ? (
+      <Avatar className={cn("size-8 cursor-pointer", className)} {...props}>
+        {/* <AvatarImage src={""} /> */}
+        {/* <AvatarFallback>{session.user.email.charAt(0)}</AvatarFallback> */}
+        <HippyGhostAvatar seed={session.user.id} className="size-8" />
+      </Avatar>
+    ) : null;
+
+  const AnonymousAvatar = ({ className, ...props }: React.ComponentProps<"button">) => (
+    <Button
+      variant="ghost"
+      size="icon"
+      className={cn("size-8 rounded-full bg-zinc-100 dark:bg-zinc-700", className)}
+      {...props}
+    >
+      <UserIcon className="size-5" />
+    </Button>
+  );
+
+  const Login = () => (
+    <DropdownMenuItem asChild>
+      <Link href={`/auth/signin?callbackUrl=${encodeURIComponent(signinCallbackUrl)}`}>
+        <LogInIcon className="h-4 w-4 mr-2" />
+        {t("login")}
+      </Link>
+    </DropdownMenuItem>
+  );
+
+  const Logout = () => (
+    <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/" })}>
+      <LogOutIcon className="h-4 w-4 mr-2" />
+      {t("logout")}
+    </DropdownMenuItem>
+  );
+
   if (!session?.user) {
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="size-8 rounded-full bg-zinc-100 dark:bg-zinc-700"
-          >
-            <User className="size-5" />
-          </Button>
+          <AnonymousAvatar />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="min-w-36">
-          <DropdownMenuItem asChild>
-            <Link href={`/auth/signin?callbackUrl=${encodeURIComponent(signinCallbackUrl)}`}>
-              <LogInIcon className="h-4 w-4 mr-2" />
-              {t("login")}
-            </Link>
-          </DropdownMenuItem>
+          <Login />
           <DropdownMenuSeparator />
           <Menus />
         </DropdownMenuContent>
@@ -114,38 +168,22 @@ export default function UserMenu() {
       <>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Avatar className="size-8 cursor-pointer">
-              {/* <AvatarImage src={""} /> */}
-              {/* <AvatarFallback>{session.user.email.charAt(0)}</AvatarFallback> */}
-              <HippyGhostAvatar seed={session.user.id} className="size-8" />
-            </Avatar>
+            <UserAvatar />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="min-w-36">
-            <DropdownMenuItem>
-              <MailIcon className="h-4 w-4 mr-2" />
-              <span className="text-xs tracking-tight">{session.user.email}</span>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <Link href="/account">
-                <User className="h-4 w-4 mr-2" />
-                <span>{t("viewAccount")}</span>
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setOpen(true)}>
-              <HistoryIcon className="h-4 w-4 mr-2" />
-              {t("history")}
-            </DropdownMenuItem>
+            <Account />
             <DropdownMenuSeparator />
             <Menus />
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/" })}>
-              <LogOutIcon className="h-4 w-4 mr-2" />
-              {t("logout")}
-            </DropdownMenuItem>
+            <Logout />
           </DropdownMenuContent>
         </DropdownMenu>
-        <StudyHistoryDrawer open={open} onOpenChange={setOpen} trigger={false} direction="right" />
+        <StudyHistoryDrawer
+          open={historyDrawerOpen}
+          onOpenChange={setHistoryDrawerOpen}
+          trigger={false}
+          direction="right"
+        />
       </>
     );
   }

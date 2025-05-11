@@ -490,7 +490,7 @@
     }
   },
   "PricingPage": {
-    "title": "定价",
+    "title": "价格",
     "subtitle": "选择最适合您的方案",
     "monthly": "每月",
     "freeTitle": "免费版",
@@ -557,14 +557,15 @@
       "title": "本次研究的报告",
       "noReportsYet": "暂无报告"
     },
-    "UserMenu": {
+    "GlobalHeader": {
       "login": "登录",
       "logout": "退出登录",
       "viewAccount": "查看账户",
       "lightTheme": "浅色主题",
       "darkTheme": "深色主题",
-      "history": "历史研究",
-      "pricing": "定价"
+      "myStudies": "我的研究",
+      "featuredStudies": "精选研究",
+      "pricing": "价格"
     },
     "TokenAlertDialog": {
       "confirmOperation": "确认操作",
@@ -579,7 +580,7 @@
     "AddTokensDialog": {
       "title": "购买Token",
       "description": "购买Token以继续使用atypica.AI研究功能。",
-      "viewPricing": "查看定价",
+      "viewPricing": "查看价格",
       "pay": "立即支付",
       "cancel": "取消",
       "refreshPage": "刷新页面",
@@ -598,7 +599,7 @@
     "SubscriptionDialog": {
       "title": "订阅个人Pro版",
       "description": "订阅我们的Pro版以获得增强的研究能力。",
-      "viewPricing": "查看定价",
+      "viewPricing": "查看价格",
       "subscribe": "立即订阅",
       "cancel": "取消",
       "refreshPage": "刷新页面",

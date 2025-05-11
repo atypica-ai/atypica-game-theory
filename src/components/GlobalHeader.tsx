@@ -8,9 +8,11 @@ import UserTokensBalance from "./UserTokensBalance";
 export default function GlobalHeader({
   className,
   children,
+  leftMenus,
 }: {
   className?: string;
   children?: React.ReactNode;
+  leftMenus?: React.ReactNode;
 }) {
   return (
     <>
@@ -20,8 +22,8 @@ export default function GlobalHeader({
           className,
         )}
       >
-        <div className="flex items-center mr-auto">
-          <Link href="/" className="block h-4 w-24 relative">
+        <div className="flex items-center gap-4 sm:gap-8 text-sm mr-auto">
+          <Link href="/" className="block h-4 w-24 mb-0.5 font-medium relative">
             <div className="font-EuclidCircularA font-bold text-lg leading-none">atypica.AI</div>
             {/* <Image
             src="/_public/atypica.svg"
@@ -31,6 +33,7 @@ export default function GlobalHeader({
             className="object-contain hidden dark:block"
           /> */}
           </Link>
+          {leftMenus}
         </div>
 
         {/* additional menus */}

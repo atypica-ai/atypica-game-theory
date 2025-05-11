@@ -557,13 +557,14 @@
       "title": "Reports for this study",
       "noReportsYet": "No reports yet"
     },
-    "UserMenu": {
+    "GlobalHeader": {
       "login": "Login",
       "logout": "Logout",
       "viewAccount": "View Account",
       "lightTheme": "Light Theme",
       "darkTheme": "Dark Theme",
-      "history": "Study History",
+      "myStudies": "My Studies",
+      "featuredStudies": "Featured Studies",
       "pricing": "Pricing"
     },
     "TokenAlertDialog": {
