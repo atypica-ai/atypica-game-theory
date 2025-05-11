@@ -1,6 +1,7 @@
 import { getDeployRegion } from "@/lib/request/deployRegion";
 import { getRequestConfig } from "next-intl/server";
 import { cookies, headers } from "next/headers";
+import { locales } from "./routing";
 
 export default getRequestConfig(async () => {
   // Get locale from cookie or header
@@ -8,7 +9,7 @@ export default getRequestConfig(async () => {
     ([cookies, headers]) => [cookies.get("locale")?.value, headers.get("x-locale")],
   );
   const defaultLocale = getDeployRegion() === "global" ? "en-US" : "zh-CN";
-  const locale = cookieLocale || headerLocale || defaultLocale;
+  const locale = (cookieLocale || headerLocale || defaultLocale) as (typeof locales)[number];
   return {
     locale,
     messages: (await import(`../../messages/${locale}.json`)).default,
