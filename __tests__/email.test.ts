@@ -1,5 +1,6 @@
 import { sendEmail } from "@/email/lib";
 import { sendPasswordResetEmail } from "@/email/passwordReset";
+import { sendReportCompletionEmail } from "@/email/reportCompletion";
 import { sendVerificationEmail } from "@/email/verification";
 import { loadEnvConfig } from "@next/env";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -52,6 +53,13 @@ describe("Email Module Tests", () => {
       await sendVerificationEmail({
         email: process.env.EMAIL_TEST_RECEIVER!,
         verificationCode: "123456",
+      });
+    });
+    it.only("sendReportCompletionEmail", async () => {
+      await sendReportCompletionEmail({
+        email: process.env.EMAIL_TEST_RECEIVER!,
+        topic: "测试研究",
+        studyUrl: FAKE_URL,
       });
     });
   });

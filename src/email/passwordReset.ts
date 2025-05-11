@@ -21,8 +21,8 @@ export async function sendPasswordResetEmail(params: PasswordResetEmailParams): 
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         <h2 style="color: #333;">${t("emailTitle")}</h2>
         <p>${t("resetInstructions")}</p>
-        <div style="text-align: center; margin: 20px 0;">
-          <a href="${resetUrl}" style="background-color: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">
+        <div style="margin: 20px 0;">
+          <a href="${resetUrl}" style="background-color: #1BFF1B; color: black; padding: 8px 16px; text-decoration: none; border-radius: 4px; display: inline-block;">
             ${t("resetButtonText")}
           </a>
         </div>

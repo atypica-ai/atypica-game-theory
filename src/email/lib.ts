@@ -1,3 +1,4 @@
+import { rootLogger } from "@/lib/logging";
 import nodemailer from "nodemailer";
 
 export interface EmailOptions {
@@ -37,4 +38,8 @@ export async function sendEmail(options: EmailOptions): Promise<void> {
   };
 
   await transporter.sendMail(mailOptions);
+
+  rootLogger.info(
+    `Email successfully delivered to ${options.to} with subject: "${options.subject}"`,
+  );
 }

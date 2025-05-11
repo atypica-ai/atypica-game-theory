@@ -31,6 +31,7 @@ import { getLocale } from "next-intl/server";
 import { Logger } from "pino";
 import { createAbortSignals } from "./abortSignal";
 import { backgroundChatUntilCancel, raceForUserChat } from "./background";
+import { notifyReportCompletion } from "./notify";
 
 const MAX_STEPS_EACH_ROUND = 15; // streamText 默认 15 步
 const TOOL_USE_LIMIT = {
@@ -184,7 +185,25 @@ export async function studyAgentRequest({
       // 到了这里的 tool calling step 一定是有 result 的，所以得在上面 onChunk 里面获取 call 阶段的 tool
       const toolCalls = step.toolCalls.map((call) => call.toolName);
       const usage = step.usage;
-      studyLog.info({ msg: "Step finished", stepType: step.stepType, toolCalls, usage });
+      studyLog.info({
+        msg: "studyAgentRequest streamText onStepFinish",
+        stepType: step.stepType,
+        toolCalls,
+        usage,
+      });
+      {
+        const generateReportTool = step.toolResults.find(
+          (tool) => tool.toolName === ToolName.generateReport,
+        );
+        if (generateReportTool) {
+          // 通知用户 report 生成成功，不 await
+          notifyReportCompletion({
+            reportToken: generateReportTool.args.reportToken,
+            studyUserChatId,
+            studyLog,
+          });
+        }
+      }
       if (statReport) {
         const reportedBy = "study chat";
         const seconds = Math.floor((Date.now() - streamStartTime) / 1000);
@@ -199,12 +218,13 @@ export async function studyAgentRequest({
         await Promise.all(promises);
       }
     },
-    onFinish: async () => {
+    onFinish: async ({ usage }) => {
+      studyLog.info({ msg: "studyAgentRequest streamText onFinish", usage });
       await clearBackgroundToken();
     },
     onError: async ({ error }) => {
       // 这里也包括 tool calling 里面直接 throw 的异常
-      studyLog.error(`streamText onError: ${(error as Error).message}`);
+      studyLog.error(`studyAgentRequest streamText onError: ${(error as Error).message}`);
       // @IMPORTANT 这很重要, 中断所有的 tool calling 里可能还在运行的 streamText
       try {
         abortController.abort();

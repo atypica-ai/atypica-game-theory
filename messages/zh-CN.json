@@ -268,6 +268,17 @@
       "emailTitle": "您的验证码",
       "useCodeInstructions": "请使用以下验证码验证您的电子邮箱地址：",
       "automatedEmailDisclaimer": "这是来自 atypica.AI 的自动邮件。请勿回复此邮件。"
+    },
+    "ReportCompletion": {
+      "subjectLine": "您的 atypica.AI 研究报告已准备就绪",
+      "greeting": "您好，",
+      "emailTitle": "研究报告已生成",
+      "reportReadyText": "您关于“{topic}”的研究报告已成功生成，现在可以查看了。",
+      "viewStudyText": "您可以通过访问研究页面查看您的报告",
+      "viewStudyMessage": "请访问研究页面查看您的报告：",
+      "viewStudyButtonText": "查看研究页面",
+      "thanksMessage": "感谢您使用 atypica.AI 进行研究。希望提供的见解对您有价值。",
+      "automatedEmailDisclaimer": "这是来自 atypica.AI 的自动邮件。请勿回复此邮件。"
     }
   },
   "Auth": {
