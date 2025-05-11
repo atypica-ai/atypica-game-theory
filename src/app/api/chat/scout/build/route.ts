@@ -1,7 +1,7 @@
+import { runBuildPersona } from "@/ai/tools/experts/buildPersona";
 import { authOptions } from "@/lib/auth";
 import { rootLogger } from "@/lib/logging";
-import { prisma } from "@/lib/prisma";
-import { runBuildPersona } from "@/tools/experts/buildPersona";
+import { prisma } from "@/prisma/prisma";
 import { createDataStreamResponse } from "ai";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";

@@ -1,5 +1,5 @@
-import { generatePageMetadata } from "@/lib/metadata";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/prisma/prisma";
+import { generatePageMetadata } from "@/lib/request/metadata";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import ReportSharePageClient from "./ReportSharePageClient";

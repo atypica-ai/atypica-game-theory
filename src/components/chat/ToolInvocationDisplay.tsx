@@ -1,38 +1,37 @@
-import { ToolName } from "@/tools";
+import { PlainTextToolResult, ToolName } from "@/ai/tools";
 import {
   BuildPersonaResultMessage,
   GenerateReportResultMessage,
   ReasoningThinkingResultMessage,
   ScoutTaskChatResultMessage,
-} from "@/tools/experts/ToolMessage";
+} from "@/ai/tools/experts/ToolMessage";
 import {
   DYPostCommentsResultMessage,
   DYSearchResultMessage,
   DYUserPostsResultMessage,
-} from "@/tools/social/dy/ToolMessage";
+} from "@/ai/tools/social/dy/ToolMessage";
 import {
   InsPostCommentsResultMessage,
   InsSearchResultMessage,
   InsUserPostsResultMessage,
-} from "@/tools/social/ins/ToolMessage";
+} from "@/ai/tools/social/ins/ToolMessage";
 import {
   TikTokPostCommentsResultMessage,
   TikTokSearchResultMessage,
   TikTokUserPostsResultMessage,
-} from "@/tools/social/tiktok/ToolMessage";
+} from "@/ai/tools/social/tiktok/ToolMessage";
 import {
   XHSNoteCommentsResultMessage,
   XHSSearchResultMessage,
   XHSUserNotesResultMessage,
-} from "@/tools/social/xhs/ToolMessage";
-import { SaveAnalystToolResultMessage } from "@/tools/system/ToolMessage";
-import { UpdateInterviewProjectToolResultMessage } from "@/tools/system/ToolMessage/UpdateInterviewProjectToolResultMessage";
+} from "@/ai/tools/social/xhs/ToolMessage";
+import { SaveAnalystToolResultMessage } from "@/ai/tools/system/ToolMessage";
+import { UpdateInterviewProjectToolResultMessage } from "@/ai/tools/system/ToolMessage/UpdateInterviewProjectToolResultMessage";
 import {
   RequestInteractionMessage,
   RequestPaymentMessage,
   ThanksMessage,
-} from "@/tools/user/ToolMessage";
-import { PlainTextToolResult } from "@/tools/utils";
+} from "@/ai/tools/user/ToolMessage";
 import { ToolInvocation } from "ai";
 
 export type TAddToolResult = ({

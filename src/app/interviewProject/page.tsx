@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import UserTokensBalance from "@/components/UserTokensBalance";
 import { authOptions } from "@/lib/auth";
-import { generatePageMetadata } from "@/lib/metadata";
+import { generatePageMetadata } from "@/lib/request/metadata";
 import { FolderPlusIcon } from "lucide-react";
 import { getServerSession } from "next-auth/next";
 import { useTranslations } from "next-intl";

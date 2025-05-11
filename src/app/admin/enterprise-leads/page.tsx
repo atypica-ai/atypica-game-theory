@@ -1,11 +1,11 @@
 "use client";
+import { ToolName } from "@/ai/tools";
 import { ChatMessage } from "@/components/chat/ChatMessage";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Pagination } from "@/components/ui/pagination";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDate } from "@/lib/utils";
-import { ToolName } from "@/tools";
 import { Message } from "ai";
 import { useSession } from "next-auth/react";
 import { useLocale } from "next-intl";

@@ -1,5 +1,5 @@
 import { StudyPageClient } from "@/app/study/StudyPageClient";
-import { generatePageMetadata } from "@/lib/metadata";
+import { generatePageMetadata } from "@/lib/request/metadata";
 import { throwServerActionError } from "@/lib/serverAction";
 import { notFound, redirect } from "next/navigation";
 import { Metadata } from "next/types";

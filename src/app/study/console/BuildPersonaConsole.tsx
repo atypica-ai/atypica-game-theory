@@ -1,7 +1,7 @@
+import { BuildPersonaToolResult } from "@/ai/tools/experts/buildPersona";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { BuildPersonaToolResult } from "@/tools/experts/buildPersona";
 import { ToolInvocation } from "ai";
 import { useTranslations } from "next-intl";
 import { FC } from "react";

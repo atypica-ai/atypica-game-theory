@@ -1,4 +1,5 @@
 "use client";
+import { ToolName } from "@/ai/tools";
 import { CollectSessionBodySchema } from "@/app/api/chat/interviewSession/lib";
 import { fetchCollectInterviewSession } from "@/app/interviewProject/actions";
 import { UserChatSession } from "@/components/chat/UserChatSession";
@@ -22,7 +23,6 @@ import {
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn } from "@/lib/utils";
-import { ToolName } from "@/tools";
 import { useChat } from "@ai-sdk/react";
 import { Message } from "ai";
 import { BadgeCheck, ChevronRight, Info, Shield, ThumbsUpIcon } from "lucide-react";

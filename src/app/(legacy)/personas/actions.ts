@@ -1,6 +1,6 @@
 "use server";
-import { prisma } from "@/lib/prisma";
 import { ServerActionResult } from "@/lib/serverAction";
+import { prisma } from "@/prisma/prisma";
 import { Persona } from "@prisma/client";
 // import withAuth from "./withAuth";
 

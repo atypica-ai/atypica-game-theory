@@ -1,13 +1,13 @@
+import { CONTINUE_ASSISTANT_STEPS } from "@/ai/messageUtils";
+import { ToolName } from "@/ai/tools";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { UserTokensBalanceStore } from "@/components/UserTokensBalance";
-import { clearStudyUserChatBackgroundToken } from "@/data/UserChat";
 import { useDocumentVisibility } from "@/hooks/use-document-visibility";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
-import { CONTINUE_ASSISTANT_STEPS } from "@/lib/messageUtils";
+import { clearStudyUserChatBackgroundToken } from "@/lib/data/UserChat";
 import { cn, useDevice } from "@/lib/utils";
-import { ToolName } from "@/tools";
 import { Message, useChat } from "@ai-sdk/react";
 import { ArrowRightIcon, PlayIcon } from "lucide-react";
 import { useTranslations } from "next-intl";

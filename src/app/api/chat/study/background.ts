@@ -1,5 +1,5 @@
 import { rootLogger } from "@/lib/logging";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
 import { StreamTextResult, ToolSet } from "ai";
 

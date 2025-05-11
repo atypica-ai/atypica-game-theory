@@ -1,6 +1,6 @@
 "use server";
-import { getRequestClientIp, getRequestOrigin } from "@/lib/headers";
-import { prisma } from "@/lib/prisma";
+import { getRequestClientIp, getRequestOrigin } from "@/lib/request/headers";
+import { prisma } from "@/prisma/prisma";
 import {
   Currency,
   PaymentRecord as PaymentRecordPrisma,

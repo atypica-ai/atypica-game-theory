@@ -1,7 +1,7 @@
+import { convertDBMessageToAIMessage } from "@/ai/messageUtils";
 import { fetchCollectInterviewSession } from "@/app/interviewProject/actions";
-import { convertDBMessageToAIMessage } from "@/lib/messageUtils";
-import { generatePageMetadata } from "@/lib/metadata";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/prisma/prisma";
+import { generatePageMetadata } from "@/lib/request/metadata";
 import { Message } from "ai";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";

@@ -1,6 +1,6 @@
 "use server";
-import { prisma } from "@/lib/prisma";
 import { ServerActionResult } from "@/lib/serverAction";
+import { prisma } from "@/prisma/prisma";
 import { AdminPermission, checkAdminAuth } from "../utils";
 
 export type TokenSource = {

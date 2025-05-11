@@ -1,6 +1,6 @@
 "use server";
 import { authClientInfo, authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/prisma/prisma";
 import { getServerSession } from "next-auth";
 
 export async function recordLastLogin() {

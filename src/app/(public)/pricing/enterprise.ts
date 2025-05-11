@@ -1,5 +1,5 @@
-import { createUserChat } from "@/data/UserChat";
-import { getDeployRegion } from "@/lib/deployRegion";
+import { createUserChat } from "@/lib/data/UserChat";
+import { getDeployRegion } from "@/lib/request/deployRegion";
 
 export const sayHelloToSales = async () => {
   const result = await createUserChat("misc", {

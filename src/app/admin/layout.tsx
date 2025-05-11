@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/prisma/prisma";
 import { getServerSession } from "next-auth";
 import { ReactNode } from "react";
 import AdminMobileHeader from "./components/AdminMobileHeader";

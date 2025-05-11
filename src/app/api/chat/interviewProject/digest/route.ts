@@ -1,11 +1,11 @@
+import { llm, providerOptions } from "@/ai/llm";
+import { convertDBMessageToAIMessage } from "@/ai/messageUtils";
+import { generateDigestSystem } from "@/ai/prompt";
+import { initInterviewProjectStatReporter } from "@/ai/tools";
 import { saveDigest } from "@/app/interviewProject/actions";
 import { authOptions } from "@/lib/auth";
-import { llm, providerOptions } from "@/lib/llm";
 import { rootLogger } from "@/lib/logging";
-import { convertDBMessageToAIMessage } from "@/lib/messageUtils";
-import { prisma } from "@/lib/prisma";
-import { generateDigestSystem } from "@/prompt";
-import { initInterviewProjectStatReporter } from "@/tools";
+import { prisma } from "@/prisma/prisma";
 import { convertToCoreMessages, smoothStream, streamText } from "ai";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";

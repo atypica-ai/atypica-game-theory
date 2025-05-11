@@ -1,4 +1,4 @@
-import { fetchUserChatById } from "@/data/UserChat";
+import { fetchUserChatById } from "@/lib/data/UserChat";
 import { throwServerActionError } from "@/lib/serverAction";
 import PersonasList from "./PersonasList";
 import { fetchPersonas } from "./actions";

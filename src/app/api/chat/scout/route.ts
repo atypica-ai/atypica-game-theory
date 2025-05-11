@@ -1,8 +1,8 @@
+import { persistentAIMessageToDB } from "@/ai/messageUtils";
+import { runScoutTaskChatStream } from "@/ai/tools/experts/scoutTask";
 import { authOptions } from "@/lib/auth";
 import { rootLogger } from "@/lib/logging";
-import { persistentAIMessageToDB } from "@/lib/messageUtils";
-import { prisma } from "@/lib/prisma";
-import { runScoutTaskChatStream } from "@/tools/experts/scoutTask";
+import { prisma } from "@/prisma/prisma";
 import { createDataStreamResponse, CreateMessage, generateId, Message } from "ai";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";

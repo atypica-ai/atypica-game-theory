@@ -1,5 +1,4 @@
-import proxiedImageLoader from "@/lib/proxiedImageLoader";
-import { cn } from "@/lib/utils";
+import { cn, proxiedImageLoader } from "@/lib/utils";
 import Image from "next/image";
 import { FC, HTMLAttributes } from "react";
 

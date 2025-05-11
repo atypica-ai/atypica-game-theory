@@ -2,8 +2,8 @@
 import GlobalHeader from "@/components/GlobalHeader";
 import { Button } from "@/components/ui/button";
 import UserTokensBalance from "@/components/UserTokensBalance";
-import { StudyUserChat } from "@/data/UserChat";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
+import { StudyUserChat } from "@/lib/data/UserChat";
 import { cn } from "@/lib/utils";
 import { ChevronDown, ChevronUp, EyeIcon, EyeOffIcon } from "lucide-react";
 import { useTranslations } from "next-intl";

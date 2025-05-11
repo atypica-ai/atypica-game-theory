@@ -1,6 +1,6 @@
 "use server";
-import { prisma } from "@/lib/prisma";
 import { ServerActionResult } from "@/lib/serverAction";
+import { prisma } from "@/prisma/prisma";
 import { InputJsonValue } from "@prisma/client/runtime/library";
 import { revalidatePath } from "next/cache";
 import { checkAdminAuth } from "../utils";

@@ -1,19 +1,19 @@
-import { fetchClarifyInterviewSession } from "@/app/interviewProject/actions";
-import { authOptions } from "@/lib/auth";
-import { llm, providerOptions } from "@/lib/llm";
-import { rootLogger } from "@/lib/logging";
+import { llm, providerOptions } from "@/ai/llm";
 import {
   appendStepToStreamingMessage,
   persistentAIMessageToDB,
   prepareMessagesForStreaming,
-} from "@/lib/messageUtils";
-import { interviewSessionSystem } from "@/prompt";
+} from "@/ai/messageUtils";
+import { interviewSessionSystem } from "@/ai/prompt";
 import {
   initInterviewProjectStatReporter,
   reasoningThinkingTool,
   ToolName,
   updateInterviewProjectTool,
-} from "@/tools";
+} from "@/ai/tools";
+import { fetchClarifyInterviewSession } from "@/app/interviewProject/actions";
+import { authOptions } from "@/lib/auth";
+import { rootLogger } from "@/lib/logging";
 import { generateId, smoothStream, streamText } from "ai";
 import { getServerSession } from "next-auth";
 import { after, NextRequest, NextResponse } from "next/server";

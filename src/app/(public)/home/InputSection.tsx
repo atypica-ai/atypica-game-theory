@@ -1,7 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { createUserChat } from "@/data/UserChat";
+import { createUserChat } from "@/lib/data/UserChat";
 import { useDevice } from "@/lib/utils";
 import { ArrowRightIcon, RotateCwIcon } from "lucide-react";
 import { useTranslations } from "next-intl";

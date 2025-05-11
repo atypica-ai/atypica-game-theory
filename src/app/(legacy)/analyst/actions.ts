@@ -1,7 +1,7 @@
 "use server";
-import { prisma } from "@/lib/prisma";
+import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
-import withAuth from "@/lib/withAuth";
+import { prisma } from "@/prisma/prisma";
 import { Analyst, AnalystReport } from "@prisma/client";
 
 export async function fetchAnalysts({ take = 30 }: { take?: number } = {}): Promise<

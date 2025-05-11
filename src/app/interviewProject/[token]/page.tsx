@@ -1,7 +1,7 @@
 import { fetchInterviewProjectByToken } from "@/app/interviewProject/actions";
 import UserTokensBalance from "@/components/UserTokensBalance";
 import { authOptions } from "@/lib/auth";
-import { generatePageMetadata } from "@/lib/metadata";
+import { generatePageMetadata } from "@/lib/request/metadata";
 import { Metadata } from "next";
 import { getServerSession } from "next-auth/next";
 import { forbidden, notFound, redirect } from "next/navigation";

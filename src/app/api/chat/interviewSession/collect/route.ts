@@ -1,20 +1,20 @@
-import { fetchCollectInterviewSession } from "@/app/interviewProject/actions";
-import { llm, providerOptions } from "@/lib/llm";
-import { rootLogger } from "@/lib/logging";
+import { llm, providerOptions } from "@/ai/llm";
 import {
   appendStepToStreamingMessage,
   persistentAIMessageToDB,
   prepareMessagesForStreaming,
-} from "@/lib/messageUtils";
-import { prisma } from "@/lib/prisma";
-import { generateToken } from "@/lib/utils";
-import { interviewSessionSystem } from "@/prompt";
+} from "@/ai/messageUtils";
+import { interviewSessionSystem } from "@/ai/prompt";
 import {
   initInterviewProjectStatReporter,
   saveInterviewSessionSummaryTool,
   ToolName,
-} from "@/tools";
-import { reasoningThinkingTool } from "@/tools/experts/reasoning";
+} from "@/ai/tools";
+import { reasoningThinkingTool } from "@/ai/tools/experts/reasoning";
+import { fetchCollectInterviewSession } from "@/app/interviewProject/actions";
+import { rootLogger } from "@/lib/logging";
+import { generateToken } from "@/lib/utils";
+import { prisma } from "@/prisma/prisma";
 import { generateId, smoothStream, streamText } from "ai";
 import { after, NextRequest, NextResponse } from "next/server";
 import { CollectSessionBodySchema } from "../lib";

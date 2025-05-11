@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getDeployRegion } from "@/lib/deployRegion";
+import { getDeployRegion } from "@/lib/request/deployRegion";
 import { cn } from "@/lib/utils";
 import { CoinsIcon, CreditCardIcon, GiftIcon, LoaderCircle } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";

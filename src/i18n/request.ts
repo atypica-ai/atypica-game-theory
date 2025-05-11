@@ -1,4 +1,4 @@
-import { getDeployRegion } from "@/lib/deployRegion";
+import { getDeployRegion } from "@/lib/request/deployRegion";
 import { getRequestConfig } from "next-intl/server";
 import { cookies, headers } from "next/headers";
 

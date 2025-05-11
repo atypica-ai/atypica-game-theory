@@ -1,3 +1,4 @@
+import { ToolName } from "@/ai/tools";
 import { fetchPersonaById } from "@/app/(legacy)/personas/actions";
 import {
   fetchAnalystByStudyUserChatToken,
@@ -11,7 +12,6 @@ import {
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
-import { ToolName } from "@/tools";
 import { Analyst, Persona } from "@prisma/client";
 import { Message, ToolInvocation } from "ai";
 import { useTranslations } from "next-intl";

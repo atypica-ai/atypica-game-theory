@@ -1,13 +1,13 @@
 "use server";
-import { studyAgentRequest } from "@/app/api/chat/study/studyAgentRequest";
-import { rootLogger } from "@/lib/logging";
 import {
   CONTINUE_ASSISTANT_STEPS,
   persistentAIMessageToDB,
   prepareMessagesForStreaming,
-} from "@/lib/messageUtils";
-import { prisma } from "@/lib/prisma";
+} from "@/ai/messageUtils";
+import { studyAgentRequest } from "@/app/api/chat/study/studyAgentRequest";
+import { rootLogger } from "@/lib/logging";
 import { ServerActionResult } from "@/lib/serverAction";
+import { prisma } from "@/prisma/prisma";
 import { PaymentRecord, User, UserChat, UserTokens } from "@prisma/client";
 import { generateId } from "ai";
 import { revalidatePath } from "next/cache";

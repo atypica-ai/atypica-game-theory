@@ -1,5 +1,5 @@
+import { ToolName } from "@/ai/tools";
 import { ToolInvocationMessage } from "@/components/chat/ToolInvocationMessage";
-import { ToolName } from "@/tools";
 import { useMemo } from "react";
 import { BuildPersonaConsole } from "./console/BuildPersonaConsole";
 import { GenerateReportConsole } from "./console/GenerateReportConsole";

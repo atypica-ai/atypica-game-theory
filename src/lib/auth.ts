@@ -1,9 +1,9 @@
 import { sendVerificationEmail } from "@/app/auth/verify/actions";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/prisma/prisma";
+import { getRequestClientIp, getRequestUserAgent } from "@/lib/request/headers";
 import { compare } from "bcryptjs";
 import { type NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { getRequestClientIp, getRequestUserAgent } from "./headers";
 
 export const authClientInfo = async () => {
   const lastLogin = {

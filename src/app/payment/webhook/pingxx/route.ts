@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/prisma/prisma";
 import crypto from "crypto";
 import { NextResponse } from "next/server";
 import { handlePaymentSuccess } from "../../actions";

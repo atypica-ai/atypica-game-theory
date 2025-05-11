@@ -1,5 +1,5 @@
-import { getRequestOrigin } from "@/lib/headers";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/prisma/prisma";
+import { getRequestOrigin } from "@/lib/request/headers";
 import { Currency } from "@prisma/client";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";

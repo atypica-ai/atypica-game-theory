@@ -1,7 +1,7 @@
 "use server";
-import { convertDBMessageToAIMessage } from "@/lib/messageUtils";
-import { prisma } from "@/lib/prisma";
+import { convertDBMessageToAIMessage } from "@/ai/messageUtils";
 import { ServerActionResult } from "@/lib/serverAction";
+import { prisma } from "@/prisma/prisma";
 import {
   Analyst,
   AnalystInterview,

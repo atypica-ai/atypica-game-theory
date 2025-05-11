@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/prisma/prisma";
 import { decryptAnalystId } from "../encrypt";
 
 export async function GET(request: Request, { params }: { params: Promise<{ token: string }> }) {

@@ -1,5 +1,5 @@
 import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/prisma/prisma";
 import { AdminRole } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { forbidden } from "next/navigation";

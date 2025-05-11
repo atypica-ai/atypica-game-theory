@@ -1,6 +1,6 @@
 import { StudyPageClient } from "@/app/study/StudyPageClient";
 import { authOptions } from "@/lib/auth";
-import { generatePageMetadata } from "@/lib/metadata";
+import { generatePageMetadata } from "@/lib/request/metadata";
 import { throwServerActionError } from "@/lib/serverAction";
 import { getServerSession } from "next-auth/next";
 import { forbidden, notFound, redirect } from "next/navigation";

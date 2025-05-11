@@ -1,11 +1,11 @@
+import { CONTINUE_ASSISTANT_STEPS } from "@/ai/messageUtils";
+import { PlainTextToolResult } from "@/ai/tools";
 import ToolArgsTable, { ExpandableText } from "@/components/chat/ToolArgsTable";
 import { TAddToolResult, ToolInvocationDisplay } from "@/components/chat/ToolInvocationDisplay";
 import ToolResultTable from "@/components/chat/ToolResultTable";
 import { Markdown } from "@/components/markdown";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { CONTINUE_ASSISTANT_STEPS } from "@/lib/messageUtils";
 import { cn } from "@/lib/utils";
-import { PlainTextToolResult } from "@/tools/utils";
 import { Message, Message as MessageType, ToolInvocation } from "ai";
 import { motion } from "framer-motion";
 import { BotIcon, ChevronRight, EyeIcon, LoaderIcon, XIcon } from "lucide-react";

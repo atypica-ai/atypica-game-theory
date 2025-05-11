@@ -1,3 +1,4 @@
+import { ToolName } from "@/ai/tools";
 import { fetchUserChatByToken, fetchUserChatStateByToken } from "@/app/study/actions";
 import { useStudyContext } from "@/app/study/hooks/StudyContext";
 import {
@@ -6,7 +7,6 @@ import {
 } from "@/app/study/hooks/useProgressiveMessages";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { useDocumentVisibility } from "@/hooks/use-document-visibility";
-import { ToolName } from "@/tools";
 import { Message, ToolInvocation } from "ai";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { StreamSteps } from "./StreamSteps";

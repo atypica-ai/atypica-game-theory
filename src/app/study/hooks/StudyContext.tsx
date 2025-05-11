@@ -1,5 +1,5 @@
 "use client";
-import { StudyUserChat } from "@/data/UserChat";
+import { StudyUserChat } from "@/lib/data/UserChat";
 import { ToolInvocation } from "ai";
 import { createContext, ReactNode, useContext, useState } from "react";
 

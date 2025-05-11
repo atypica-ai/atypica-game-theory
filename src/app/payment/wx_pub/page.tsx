@@ -1,4 +1,4 @@
-import { getRequestOrigin } from "@/lib/headers";
+import { getRequestOrigin } from "@/lib/request/headers";
 import { Currency } from "@prisma/client";
 import { permanentRedirect } from "next/navigation";
 import Script from "next/script";

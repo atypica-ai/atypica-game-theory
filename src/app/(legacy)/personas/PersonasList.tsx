@@ -18,7 +18,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Pagination } from "@/components/ui/pagination";
-import { UserChatWithMessages } from "@/data/UserChat";
+import { UserChatWithMessages } from "@/lib/data/UserChat";
 import { cn } from "@/lib/utils";
 import { Persona } from "@prisma/client";
 import { XIcon } from "lucide-react";

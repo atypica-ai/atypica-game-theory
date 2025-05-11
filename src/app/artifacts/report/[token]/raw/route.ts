@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/prisma/prisma";
 
 export async function GET(request: Request, { params }: { params: Promise<{ token: string }> }) {
   const token = (await params).token;

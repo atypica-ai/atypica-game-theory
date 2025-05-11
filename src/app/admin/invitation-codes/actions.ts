@@ -1,6 +1,6 @@
 "use server";
-import { prisma } from "@/lib/prisma";
 import { ServerActionResult } from "@/lib/serverAction";
+import { prisma } from "@/prisma/prisma";
 import { InvitationCode } from "@prisma/client";
 import crypto from "crypto";
 import { revalidatePath } from "next/cache";

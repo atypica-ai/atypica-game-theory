@@ -1,8 +1,8 @@
+import { llm, providerOptions } from "@/ai/llm";
+import { personaAgentSystem } from "@/ai/prompt";
+import { dySearchTool, ToolName } from "@/ai/tools";
 import { fetchPersonaById } from "@/app/(legacy)/personas/actions";
 import { authOptions } from "@/lib/auth";
-import { llm, providerOptions } from "@/lib/llm";
-import { personaAgentSystem } from "@/prompt";
-import { dySearchTool, ToolName } from "@/tools";
 import { Message, smoothStream, streamText } from "ai";
 import { getServerSession } from "next-auth/next";
 import { notFound } from "next/navigation";

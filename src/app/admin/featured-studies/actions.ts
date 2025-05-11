@@ -1,8 +1,8 @@
 "use server";
 import { FeaturedStudyCategory } from "@/app/(public)/featured-studies/data";
 import { UserChat } from "@/app/study/actions";
-import { StudyUserChat } from "@/data/UserChat";
-import { prisma } from "@/lib/prisma";
+import { StudyUserChat } from "@/lib/data/UserChat";
+import { prisma } from "@/prisma/prisma";
 import { ServerActionResult } from "@/lib/serverAction";
 import { Analyst, FeaturedStudy, User, UserAnalyst } from "@prisma/client";
 import { revalidatePath } from "next/cache";

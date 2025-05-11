@@ -1,6 +1,6 @@
+import { prepareDBForInterview, runInterview } from "@/ai/tools/experts/interviewChat";
 import { authOptions } from "@/lib/auth";
 import { rootLogger } from "@/lib/logging";
-import { prepareDBForInterview, runInterview } from "@/tools/experts/interviewChat";
 import { waitUntil } from "@vercel/functions";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";

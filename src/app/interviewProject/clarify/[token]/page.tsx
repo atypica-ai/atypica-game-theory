@@ -1,10 +1,10 @@
+import { convertDBMessageToAIMessage } from "@/ai/messageUtils";
+import { ToolName } from "@/ai/tools";
 import { fetchClarifyInterviewSession } from "@/app/interviewProject/actions";
 import UserTokensBalance from "@/components/UserTokensBalance";
 import { authOptions } from "@/lib/auth";
-import { convertDBMessageToAIMessage } from "@/lib/messageUtils";
-import { generatePageMetadata } from "@/lib/metadata";
-import { prisma } from "@/lib/prisma";
-import { ToolName } from "@/tools";
+import { generatePageMetadata } from "@/lib/request/metadata";
+import { prisma } from "@/prisma/prisma";
 import { Message } from "ai";
 import { Metadata } from "next";
 import { getServerSession } from "next-auth/next";

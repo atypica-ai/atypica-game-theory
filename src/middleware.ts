@@ -1,6 +1,6 @@
+import { getDeployRegion } from "@/lib/request/deployRegion";
+import { getRequestClientIp, getRequestOrigin } from "@/lib/request/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { getDeployRegion } from "./lib/deployRegion";
-import { getRequestClientIp, getRequestOrigin } from "./lib/headers";
 
 export const config = {
   matcher: [

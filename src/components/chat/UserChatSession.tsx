@@ -1,10 +1,10 @@
 "use client";
+import { CONTINUE_ASSISTANT_STEPS } from "@/ai/messageUtils";
 import { StatusDisplay } from "@/components/chat/StatusDisplay";
 import { VoiceInputButton } from "@/components/chat/VoiceInputButton";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
-import { CONTINUE_ASSISTANT_STEPS } from "@/lib/messageUtils";
 import { cn, useDevice } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
 import { ArrowRightIcon, PlayIcon } from "lucide-react";

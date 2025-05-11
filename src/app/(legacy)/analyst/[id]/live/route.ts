@@ -1,10 +1,10 @@
+import { llm, providerOptions } from "@/ai/llm";
+import { reportHTMLPrologue, reportHTMLSystem } from "@/ai/prompt";
+import { initStudyStatReporter } from "@/ai/tools";
 import { encryptAnalystReportUrl } from "@/app/(legacy)/analyst/report/encrypt";
 import { authOptions } from "@/lib/auth";
-import { llm, providerOptions } from "@/lib/llm";
 import { rootLogger } from "@/lib/logging";
-import { prisma } from "@/lib/prisma";
-import { reportHTMLPrologue, reportHTMLSystem } from "@/prompt";
-import { initStudyStatReporter } from "@/tools";
+import { prisma } from "@/prisma/prisma";
 import { streamText } from "ai";
 import { getServerSession } from "next-auth";
 import { forbidden } from "next/navigation";

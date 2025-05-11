@@ -1,8 +1,8 @@
 "use server";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/prisma/prisma";
+import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { generateToken } from "@/lib/utils";
-import withAuth from "@/lib/withAuth";
 import {
   InterviewProject,
   InterviewSession,

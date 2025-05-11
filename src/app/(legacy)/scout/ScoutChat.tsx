@@ -1,6 +1,6 @@
 "use client";
 import { Textarea } from "@/components/ui/textarea";
-import { createUserChat } from "@/data/UserChat";
+import { createUserChat } from "@/lib/data/UserChat";
 import { cn, useDevice } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";

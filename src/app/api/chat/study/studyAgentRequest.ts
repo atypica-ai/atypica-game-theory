@@ -1,7 +1,6 @@
-import { llm, providerOptions } from "@/lib/llm";
-import { appendChunkToStreamingMessage, createDebouncePersistentMessage } from "@/lib/messageUtils";
-import { prisma } from "@/lib/prisma";
-import { studySystem } from "@/prompt";
+import { llm, providerOptions } from "@/ai/llm";
+import { appendChunkToStreamingMessage, createDebouncePersistentMessage } from "@/ai/messageUtils";
+import { studySystem } from "@/ai/prompt";
 import {
   buildPersonaTool,
   generateReportTool,
@@ -15,7 +14,8 @@ import {
   scoutTaskChatTool,
   toolCallError,
   ToolName,
-} from "@/tools";
+} from "@/ai/tools";
+import { prisma } from "@/prisma/prisma";
 import {
   CoreMessage,
   createDataStreamResponse,

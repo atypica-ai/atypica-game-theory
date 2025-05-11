@@ -1,8 +1,8 @@
 "use server";
 import { encryptText } from "@/lib/cipher";
-import { getRequestOrigin } from "@/lib/headers";
-import { prisma } from "@/lib/prisma";
+import { getRequestOrigin } from "@/lib/request/headers";
 import { ServerActionResult } from "@/lib/serverAction";
+import { prisma } from "@/prisma/prisma";
 import { getTranslations } from "next-intl/server";
 import nodemailer from "nodemailer";
 

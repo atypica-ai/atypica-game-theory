@@ -1,13 +1,13 @@
-import { authOptions } from "@/lib/auth";
-import { llm, providerOptions } from "@/lib/llm";
+import { llm, providerOptions } from "@/ai/llm";
 import {
   appendStepToStreamingMessage,
   persistentAIMessageToDB,
   prepareMessagesForStreaming,
-} from "@/lib/messageUtils";
-import { prisma } from "@/lib/prisma";
-import { helloSystem } from "@/prompt";
-import { thanksTool, ToolName } from "@/tools";
+} from "@/ai/messageUtils";
+import { helloSystem } from "@/ai/prompt";
+import { thanksTool, ToolName } from "@/ai/tools";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/prisma/prisma";
 import { Message, smoothStream, streamText } from "ai";
 import { getServerSession } from "next-auth/next";
 import { NextResponse } from "next/server";

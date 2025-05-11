@@ -1,5 +1,5 @@
 import { encryptAnalystReportUrl } from "@/app/(legacy)/analyst/report/encrypt";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/prisma/prisma";
 import { notFound } from "next/navigation";
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {

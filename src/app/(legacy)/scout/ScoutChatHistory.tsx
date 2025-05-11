@@ -6,7 +6,7 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { fetchUserChats, ScoutUserChat } from "@/data/UserChat";
+import { fetchUserChats, ScoutUserChat } from "@/lib/data/UserChat";
 import { HistoryIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
