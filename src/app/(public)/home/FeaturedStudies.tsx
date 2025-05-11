@@ -20,7 +20,7 @@ export function FeaturedStudies() {
   useEffect(() => {
     const loadStudies = async () => {
       setLoading(true);
-      const result = await fetchPublicFeaturedStudies({ limit: 6 });
+      const result = await fetchPublicFeaturedStudies({ limit: 6, random: true });
       if (result.success) {
         setStudies(result.data);
       } else {

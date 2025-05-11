@@ -18,6 +18,7 @@ export function LeftMenus() {
 
   const menuItems = [
     <Link
+      key={0}
       href="/pricing"
       className="text-sm font-normal hover:text-foreground/80"
       onClick={(e) => e.currentTarget.blur()}
@@ -25,6 +26,7 @@ export function LeftMenus() {
       {t("pricing")}
     </Link>,
     <Link
+      key={1}
       href="/changelog"
       className="text-sm font-normal hover:text-foreground/80"
       target="_blank"
@@ -33,6 +35,7 @@ export function LeftMenus() {
       {t("changelog")}
     </Link>,
     <Link
+      key={2}
       href="/about"
       className="text-sm font-normal hover:text-foreground/80"
       target="_blank"
@@ -42,6 +45,7 @@ export function LeftMenus() {
     </Link>,
     session?.user ? (
       <Link
+        key={3}
         href="/study"
         className="text-sm font-normal hover:text-foreground/80"
         onClick={(e) => e.currentTarget.blur()}

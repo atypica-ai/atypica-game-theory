@@ -12,9 +12,11 @@ import { AdminPermission, checkAdminAuth } from "../utils";
 export async function fetchPublicFeaturedStudies({
   category,
   limit,
+  random,
 }: {
   category?: string;
   limit?: number;
+  random?: boolean;
 }): Promise<
   ServerActionResult<
     (FeaturedStudy & {
@@ -24,7 +26,20 @@ export async function fetchPublicFeaturedStudies({
     })[]
   >
 > {
-  const where = category && category !== "all" ? { category: category } : undefined;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let where: any = category && category !== "all" ? { category: category } : undefined;
+  if (random && limit) {
+    // 如果有 random，一定要有 limit，并且忽略 category
+    const result =
+      (await prisma.$queryRaw`SELECT id from "FeaturedStudy" ORDER BY RANDOM() LIMIT ${limit}`) as {
+        id: number;
+      }[];
+    where = {
+      id: {
+        in: result.map((item) => item.id),
+      },
+    };
+  }
 
   const featuredStudies = await prisma.featuredStudy.findMany({
     where,
