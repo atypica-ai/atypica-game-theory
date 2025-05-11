@@ -358,6 +358,26 @@
     }
   },
   "StudyPage": {
+    "List": {
+      "title": "My Studies",
+      "description": "Browse and access your studies",
+      "noTopic": "Study topic not yet defined",
+      "updated": "Updated",
+      "viewStudy": "View Study",
+      "startNewStudy": "Start New Study",
+      "noSearchResults": "No studies match your search",
+      "searchPlaceholder": "Search studies",
+      "search": "Search",
+      "status": {
+        "backgroundRunning": "Running in background",
+        "reportGenerated": "Report generated",
+        "notCompleted": "Not completed"
+      },
+      "emptyState": {
+        "title": "You haven't created any studies yet.",
+        "description": "Start a new study to begin analyzing and gathering insights."
+      }
+    },
     "research": "Research",
     "ShareReplayButton": {
       "shareReplay": "Share Replay",

@@ -1,12 +1,15 @@
 "use client";
-import { StudyHistoryDrawer } from "@/components/HistoryDrawer";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { FeaturedStudies } from "./FeaturedStudies";
 import { InputSection } from "./InputSection";
 
-export default function HomePageClient({ anonymous }: { anonymous: boolean }) {
+export default function HomePageClient(
+  {
+    // anonymous
+  }: { anonymous: boolean },
+) {
   const t = useTranslations();
   return (
     <div className="flex-1 overflow-y-auto scrollbar-thin py-10 sm:py-18 space-y-12 sm:space-y-24">
@@ -55,11 +58,6 @@ export default function HomePageClient({ anonymous }: { anonymous: boolean }) {
       <div className="animate-in fade-in slide-in-from-bottom-10 duration-1000 px-8">
         <FeaturedStudies />
       </div>
-      {false && !anonymous ? (
-        <div className="fixed left-2 top-2 sm:top-4 sm:left-4">
-          <StudyHistoryDrawer />
-        </div>
-      ) : null}
       {/* <div className="fixed right-2 top-2 sm:top-4 sm:right-4 flex items-center justify-end gap-4">
         <ThemeToggle />
         <LanguageToggle />
