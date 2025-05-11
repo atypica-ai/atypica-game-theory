@@ -71,23 +71,21 @@ function parseDYUserPosts(result: {
 async function dyUserPosts({ secret_userid }: { secret_userid: string }) {
   for (let i = 0; i < 3; i++) {
     try {
-      const headers = { Authorization: `Bearer ${process.env.BY_API_TOKEN!}` };
-      const params = { sec_user_id: secret_userid, max_cursor: "0" };
+      const headers = { Authorization: `Bearer ${process.env.TIKHUB_API_TOKEN!}` };
+      const params = { sec_user_id: secret_userid, max_cursor: "0", count: "10", sort_type: "0" };
       const queryString = new URLSearchParams(params).toString();
       const response = await fetch(
-        `${process.env.BY_API_BASE_URL}/douyin/user/post/video/raw?${queryString}`,
+        `${process.env.TIKHUB_API_BASE_URL}/douyin/app/v3/fetch_user_post_videos?${queryString}`,
         { headers },
       );
       const res = await response.json();
       toolLog.info(`Response text: ${JSON.stringify(res).slice(0, 100)}`);
-      if (res.code === 0) {
-        const result = parseDYUserPosts(res.result);
+      if (res.code === 200) {
+        const result = parseDYUserPosts(res.data);
         return result;
       } else {
         toolLog.warn(`Failed to fetch DY user posts, retrying... ${i + 1}`);
-        // 2005 错误是 超过所允许的访问间隔
-        const seconds = res.code === 2005 ? Math.floor(Math.random() * 20) + 10 : 3;
-        await new Promise((resolve) => setTimeout(resolve, seconds * 1000));
+        await new Promise((resolve) => setTimeout(resolve, 3 * 1000));
         continue;
       }
     } catch (error) {

@@ -76,7 +76,6 @@ async function tiktokPostComments({ postid }: { postid: string }) {
         return result;
       } else {
         toolLog.warn(`Failed to fetch TikTok post comments, retrying... ${i + 1}`);
-        // 2005 错误是 超过所允许的访问间隔
         await new Promise((resolve) => setTimeout(resolve, 3 * 1000));
         continue;
       }

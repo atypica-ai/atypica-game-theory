@@ -62,23 +62,21 @@ function parseXHSNoteComments(result: {
 async function dyPostComments({ postid }: { postid: string }) {
   for (let i = 0; i < 3; i++) {
     try {
-      const headers = { Authorization: `Bearer ${process.env.BY_API_TOKEN!}` };
-      const params = { aweme_id: postid };
+      const headers = { Authorization: `Bearer ${process.env.TIKHUB_API_TOKEN!}` };
+      const params = { aweme_id: postid, cursor: "0", count: "10" };
       const queryString = new URLSearchParams(params).toString();
       const response = await fetch(
-        `${process.env.BY_API_BASE_URL}/douyin/comment/raw?${queryString}`,
+        `${process.env.TIKHUB_API_BASE_URL}/douyin/app/v3/fetch_video_comments?${queryString}`,
         { headers },
       );
       const res = await response.json();
       toolLog.info(`Response text: ${JSON.stringify(res).slice(0, 100)}`);
-      if (res.code === 0) {
-        const result = parseXHSNoteComments(res.result);
+      if (res.code === 200) {
+        const result = parseXHSNoteComments(res.data);
         return result;
       } else {
         toolLog.warn(`Failed to fetch DY post comments, retrying... ${i + 1}`);
-        // 2005 错误是 超过所允许的访问间隔
-        const seconds = res.code === 2005 ? Math.floor(Math.random() * 20) + 10 : 3;
-        await new Promise((resolve) => setTimeout(resolve, seconds * 1000));
+        await new Promise((resolve) => setTimeout(resolve, 3 * 1000));
         continue;
       }
     } catch (error) {

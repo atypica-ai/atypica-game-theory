@@ -84,7 +84,6 @@ async function tiktokUserPosts({ secret_userid }: { secret_userid: string }) {
         return result;
       } else {
         toolLog.warn(`Failed to fetch TikTok user posts, retrying... ${i + 1}`);
-        // 2005 错误是 超过所允许的访问间隔
         await new Promise((resolve) => setTimeout(resolve, 3 * 1000));
         continue;
       }
