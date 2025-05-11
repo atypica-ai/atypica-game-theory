@@ -1,41 +1,18 @@
 "use server";
+import { sendVerificationEmail } from "@/email/verification";
 import { ServerActionResult } from "@/lib/serverAction";
 import { prisma } from "@/prisma/prisma";
 import { getTranslations } from "next-intl/server";
-import nodemailer from "nodemailer";
 
-export const sendVerificationEmail = async (userEmail: string) => {
-  const t = await getTranslations("Auth.Verify");
-  const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-  const transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST!,
-    port: parseInt(process.env.EMAIL_PORT!),
-    secure: false, // true for port 465, false for other ports
-    auth: {
-      user: process.env.EMAIL_USER!,
-      pass: process.env.EMAIL_PASSWORD!,
-    },
-  });
+/**
+ * Generates a random 6-digit verification code
+ */
+function generateVerificationCode(): string {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
 
-  const mailOptions = {
-    from: process.env.EMAIL_DEFAULT_FROM,
-    to: userEmail,
-    subject: t("emailContent.subjectLine"),
-    text: `${t("emailContent.verificationCodeText", { code: verificationCode })}\n\n${t("emailContent.expirationNote")}\n\n${t("emailContent.ignoreMessage")}`,
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <h2 style="color: #333;">${t("emailContent.emailTitle")}</h2>
-        <p>${t("emailContent.useCodeInstructions")}</p>
-        <div style="background-color: #f5f5f5; padding: 15px; text-align: center; font-size: 24px; letter-spacing: 5px; font-weight: bold; margin: 20px 0;">
-          ${verificationCode}
-        </div>
-        <p>${t("emailContent.expirationNote")}</p>
-        <p>${t("emailContent.ignoreMessage")}</p>
-        <hr style="margin: 20px 0; border: none; border-top: 1px solid #eee;">
-        <p style="font-size: 12px; color: #777;">${t("emailContent.automatedEmailDisclaimer")}</p>
-      </div>
-    `,
-  };
+export const sendVerificationCode = async (userEmail: string) => {
+  const verificationCode = generateVerificationCode();
 
   await prisma.verificationCode.create({
     data: {
@@ -45,7 +22,10 @@ export const sendVerificationEmail = async (userEmail: string) => {
     },
   });
 
-  await transporter.sendMail(mailOptions);
+  await sendVerificationEmail({
+    email: userEmail,
+    verificationCode,
+  });
 };
 
 export async function verifyCode({
@@ -131,7 +111,7 @@ export async function resendVerificationCode(email: string): Promise<ServerActio
       message: t("userNotFound"),
     };
   }
-  await sendVerificationEmail(email);
+  await sendVerificationCode(email);
   return {
     success: true,
     data: null,

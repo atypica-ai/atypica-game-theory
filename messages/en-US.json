@@ -249,6 +249,27 @@
       "source": "Source"
     }
   },
+  "Email": {
+    "PasswordReset": {
+      "subjectLine": "Your atypica.AI Password Reset Link",
+      "resetLinkText": "Click here to reset your password",
+      "expirationNote": "This link will expire in 30 minutes.",
+      "ignoreMessage": "If you didn't request this password reset, please ignore this email.",
+      "emailTitle": "Password Reset Request",
+      "resetInstructions": "We received a request to reset your password. Click the button below to create a new password:",
+      "resetButtonText": "Reset Password",
+      "automatedEmailDisclaimer": "This is an automated email from atypica.AI. Please do not reply to this email."
+    },
+    "Verification": {
+      "subjectLine": "Your atypica.AI Verification Code",
+      "verificationCodeText": "Your verification code is: {code}",
+      "expirationNote": "This code will expire in 30 minutes.",
+      "ignoreMessage": "If you didn't request this code, please ignore this email.",
+      "emailTitle": "Your Verification Code",
+      "useCodeInstructions": "Please use the following code to verify your email address:",
+      "automatedEmailDisclaimer": "This is an automated email from atypica.AI. Please do not reply to this email."
+    }
+  },
   "Auth": {
     "SignIn": {
       "title": "Sign In",
@@ -287,16 +308,7 @@
       "successMessage": "Email verified successfully! You can now sign in.",
       "invalidCode": "Invalid or expired verification code",
       "codeResent": "Verification code resent. Please check your email.",
-      "alreadyVerifiedMessage": "Email already verified",
-      "emailContent": {
-        "subjectLine": "Your atypica.AI Verification Code",
-        "verificationCodeText": "Your verification code is: {code}",
-        "expirationNote": "This code will expire in 30 minutes.",
-        "ignoreMessage": "If you didn't request this code, please ignore this email.",
-        "emailTitle": "Your Verification Code",
-        "useCodeInstructions": "Please use the following code to verify your email address:",
-        "automatedEmailDisclaimer": "This is an automated email from atypica.AI. Please do not reply to this email."
-      }
+      "alreadyVerifiedMessage": "Email already verified"
     },
     "ForgotPassword": {
       "title": "Forgot Password",
@@ -307,17 +319,7 @@
       "successMessage": "If your email is registered with us, you will receive password reset instructions shortly.",
       "backToSignIn": "Back to Sign In",
       "userNotFound": "No account found with this email address",
-      "resetEmailSent": "Password reset email sent. Please check your inbox.",
-      "emailContent": {
-        "subjectLine": "Your atypica.AI Password Reset Link",
-        "resetLinkText": "Click here to reset your password",
-        "expirationNote": "This link will expire in 30 minutes.",
-        "ignoreMessage": "If you didn't request this password reset, please ignore this email.",
-        "emailTitle": "Password Reset Request",
-        "resetInstructions": "We received a request to reset your password. Click the button below to create a new password:",
-        "resetButtonText": "Reset Password",
-        "automatedEmailDisclaimer": "This is an automated email from atypica.AI. Please do not reply to this email."
-      }
+      "resetEmailSent": "Password reset email sent. Please check your inbox."
     },
     "ResetPassword": {
       "title": "Reset Password",

@@ -1,6 +1,6 @@
-import { sendVerificationEmail } from "@/app/auth/verify/actions";
-import { prisma } from "@/prisma/prisma";
+import { sendVerificationCode } from "@/app/auth/verify/actions";
 import { getRequestClientIp, getRequestUserAgent } from "@/lib/request/headers";
+import { prisma } from "@/prisma/prisma";
 import { compare } from "bcryptjs";
 import { type NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -44,7 +44,7 @@ export const authOptions: NextAuthOptions = {
           throw new Error("INVALID_PASSWORD");
         }
         if (!user.emailVerified) {
-          await sendVerificationEmail(user.email);
+          await sendVerificationCode(user.email);
           throw new Error("EMAIL_NOT_VERIFIED");
         }
         return {

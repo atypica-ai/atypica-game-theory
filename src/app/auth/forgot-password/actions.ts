@@ -1,10 +1,10 @@
 "use server";
+import { sendPasswordResetEmail as sendResetEmail } from "@/email/passwordReset";
 import { encryptText } from "@/lib/cipher";
 import { getRequestOrigin } from "@/lib/request/headers";
 import { ServerActionResult } from "@/lib/serverAction";
 import { prisma } from "@/prisma/prisma";
 import { getTranslations } from "next-intl/server";
-import nodemailer from "nodemailer";
 
 export const sendPasswordResetEmail = async (
   email: string,
@@ -40,40 +40,11 @@ export const sendPasswordResetEmail = async (
     const siteOrigin = await getRequestOrigin();
     const resetUrl = `${siteOrigin}/auth/reset-password?token=${resetToken}`;
 
-    // Send email
-    const transporter = nodemailer.createTransport({
-      host: process.env.EMAIL_HOST!,
-      port: parseInt(process.env.EMAIL_PORT!),
-      secure: false,
-      auth: {
-        user: process.env.EMAIL_USER!,
-        pass: process.env.EMAIL_PASSWORD!,
-      },
+    // Send email using the extracted email module
+    await sendResetEmail({
+      email,
+      resetUrl,
     });
-
-    const mailOptions = {
-      from: process.env.EMAIL_DEFAULT_FROM,
-      to: email,
-      subject: t("emailContent.subjectLine"),
-      text: `${t("emailContent.resetInstructions")}\n\n${resetUrl}\n\n${t("emailContent.expirationNote")}\n\n${t("emailContent.ignoreMessage")}`,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2 style="color: #333;">${t("emailContent.emailTitle")}</h2>
-          <p>${t("emailContent.resetInstructions")}</p>
-          <div style="text-align: center; margin: 20px 0;">
-            <a href="${resetUrl}" style="background-color: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">
-              ${t("emailContent.resetButtonText")}
-            </a>
-          </div>
-          <p>${t("emailContent.expirationNote")}</p>
-          <p>${t("emailContent.ignoreMessage")}</p>
-          <hr style="margin: 20px 0; border: none; border-top: 1px solid #eee;">
-          <p style="font-size: 12px; color: #777;">${t("emailContent.automatedEmailDisclaimer")}</p>
-        </div>
-      `,
-    };
-
-    await transporter.sendMail(mailOptions);
 
     return {
       success: true,

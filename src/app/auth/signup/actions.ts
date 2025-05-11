@@ -1,10 +1,10 @@
 "use server";
 import { authClientInfo } from "@/lib/auth";
-import { prisma } from "@/prisma/prisma";
 import { ServerActionResult } from "@/lib/serverAction";
+import { prisma } from "@/prisma/prisma";
 import { hash } from "bcryptjs";
 import { getTranslations } from "next-intl/server";
-import { sendVerificationEmail } from "../verify/actions";
+import { sendVerificationCode } from "../verify/actions";
 
 export async function signUp({
   email,
@@ -88,7 +88,7 @@ export async function signUp({
     });
   }
 
-  await sendVerificationEmail(user.email);
+  await sendVerificationCode(user.email);
 
   return {
     success: true,
