@@ -1,0 +1,791 @@
+<!doctype html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>关于 atypica.AI - 用「语言模型」为「主观世界」建模</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&display=swap");
+
+      :root {
+        --primary: oklch(0.87 0.29 142.57);
+        --primary-glow: oklch(0.87 0.29 142.57 / 0.35);
+        --terminal-bg: #121212;
+        --terminal-border: #333;
+      }
+
+      body {
+        font-family: "Fira Code", monospace;
+        background-color: #0a0a0a;
+        color: #e0e0e0;
+      }
+
+      .primary-text {
+        color: var(--primary);
+      }
+
+      .primary-border {
+        border-color: var(--primary);
+      }
+
+      .terminal {
+        background-color: var(--terminal-bg);
+        border: 1px solid var(--terminal-border);
+        border-radius: 8px;
+        padding: 1rem;
+        position: relative;
+      }
+
+      .terminal-header {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2rem;
+        background-color: #1a1a1a;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+        display: flex;
+        padding: 0 1rem;
+        align-items: center;
+        border-bottom: 1px solid var(--terminal-border);
+      }
+
+      .terminal-body {
+        margin-top: 2rem;
+        max-height: 400px;
+        overflow-y: auto;
+      }
+
+      .terminal-dots {
+        display: flex;
+        gap: 0.5rem;
+      }
+
+      .dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+      }
+
+      .dot-red {
+        background-color: #ff5f56;
+      }
+      .dot-yellow {
+        background-color: #ffbd2e;
+      }
+      .dot-green {
+        background-color: #27c93f;
+      }
+
+      .command {
+        color: var(--primary);
+        margin-bottom: 0.5rem;
+      }
+
+      .command::before {
+        content: "$ ";
+        opacity: 0.7;
+      }
+
+      .response {
+        margin-bottom: 1rem;
+        opacity: 0.9;
+      }
+
+      .agent-card {
+        background-color: rgba(30, 30, 30, 0.7);
+        backdrop-filter: blur(4px);
+        border: 1px solid #333;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+      }
+
+      .agent-card:hover {
+        border-color: var(--primary);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+      }
+
+      .code-title {
+        font-weight: 600;
+        color: #e0e0e0;
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.5rem;
+      }
+
+      .code-title::before {
+        content: "{";
+        color: var(--primary);
+        margin-right: 0.5rem;
+      }
+
+      .code-title::after {
+        content: "}";
+        color: var(--primary);
+        margin-left: 0.5rem;
+      }
+
+      .typing-animation {
+        display: inline-block;
+        overflow: hidden;
+        white-space: nowrap;
+        animation: typing 4s steps(40, end);
+      }
+
+      @keyframes typing {
+        from {
+          width: 0;
+        }
+        to {
+          width: 100%;
+        }
+      }
+
+      .cursor {
+        display: inline-block;
+        width: 0.5rem;
+        height: 1.2rem;
+        background-color: var(--primary);
+        animation: blink 1s step-end infinite;
+        margin-left: 2px;
+        vertical-align: text-bottom;
+      }
+
+      @keyframes blink {
+        from,
+        to {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0;
+        }
+      }
+
+      .glow-text {
+        text-shadow: 0 0 8px var(--primary-glow);
+      }
+
+      blockquote {
+        border-left: 4px solid var(--primary);
+        margin: 1.5rem 0;
+        padding: 0.5rem 0 0.5rem 1.5rem;
+        font-style: italic;
+        background-color: rgba(30, 30, 30, 0.5);
+        border-radius: 0 8px 8px 0;
+      }
+
+      .hippy-ghost {
+        width: 60px;
+        height: 60px;
+        background-color: var(--primary);
+        border-radius: 50% 50% 0 0;
+        position: relative;
+        margin-bottom: 10px;
+      }
+
+      .hippy-ghost::before {
+        content: "";
+        position: absolute;
+        bottom: -10px;
+        left: 0;
+        width: 100%;
+        height: 20px;
+        background-color: var(--primary);
+        border-radius: 0 0 15px 15px;
+      }
+
+      .hippy-ghost::after {
+        content: "";
+        position: absolute;
+        bottom: -20px;
+        left: 10px;
+        width: 40px;
+        height: 10px;
+        background-color: var(--primary);
+        border-radius: 0 0 20px 20px;
+      }
+
+      .hippy-eyes {
+        position: absolute;
+        top: 20px;
+        width: 10px;
+        height: 10px;
+        background-color: #000;
+        border-radius: 50%;
+      }
+
+      .eye-left {
+        left: 15px;
+      }
+
+      .eye-right {
+        right: 15px;
+      }
+
+      .usage-card {
+        border: 1px solid #333;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+      }
+
+      .usage-card:hover {
+        border-color: var(--primary);
+        transform: translateY(-5px);
+      }
+
+      .feature-list li {
+        position: relative;
+        padding-left: 1.5rem;
+        margin-bottom: 0.75rem;
+      }
+
+      .feature-list li::before {
+        content: "→";
+        position: absolute;
+        left: 0;
+        color: var(--primary);
+      }
+    </style>
+  </head>
+  <body class="min-h-screen">
+    <header class="py-12 relative overflow-hidden">
+      <div class="max-w-6xl mx-auto px-4">
+        <h1 class="text-4xl md:text-6xl font-bold mb-4 typing-animation">
+          <span class="primary-text">atypica</span>.AI
+        </h1>
+        <p class="text-xl opacity-80 max-w-3xl">用「语言模型」为「主观世界」建模</p>
+        <blockquote class="text-lg my-4">
+          <p>
+            "人们不是在处理概率，而是在处理故事。" <span class="opacity-70">— 丹尼尔·卡尼曼</span>
+          </p>
+          <p class="text-sm mt-2 opacity-70">
+            People don't choose between things, they choose between descriptions of things. — Daniel
+            Kahneman
+          </p>
+        </blockquote>
+      </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 pb-20">
+      <section class="mb-16">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+          <div>
+            <h2 class="text-2xl font-bold mb-4 primary-text">商业研究的本质</h2>
+            <p class="mb-4">
+              商业研究是一门理解人类决策的学问。人并不只是根据纯粹理性做决策，而是受到叙事、情感和认知偏见的影响。所以，理解影响决策的机制是商业研究的核心。
+            </p>
+            <p class="mb-4">
+              如果，「物理」为「客观世界」建模；那么，「语言模型」则有机会为「主观世界」建模。Atypica.AI能够捕捉到通过数据分析处理的不够好的人类决策机制，为个人和商业决策问题提供深度洞察。
+            </p>
+            <ul class="feature-list mb-6">
+              <li>通过构建「用户智能体」来「模拟」消费者的个性和认知</li>
+              <li>通过「专家智能体」与「用户智能体」的「访谈」来分析消费者的行为和决策</li>
+              <li>自动生成详尽的研究报告，提供可视化洞察</li>
+            </ul>
+          </div>
+          <div class="terminal h-full">
+            <div class="terminal-header">
+              <div class="terminal-dots mr-auto">
+                <div class="dot dot-red"></div>
+                <div class="dot dot-yellow"></div>
+                <div class="dot dot-green"></div>
+              </div>
+              <div class="text-sm opacity-60">atypica@research:~</div>
+            </div>
+            <div class="terminal-body">
+              <p class="command">./atypica.ai --model "主观世界"</p>
+              <pre class="response">
+初始化主观世界模型...
+加载用户智能体库...
+加载专家智能体...
+设置多智能体交互环境...
+准备长推理模型...
+
+[准备就绪] atypica.AI 已启动
+              </pre>
+              <p class="command">run-research "为生日晚餐选合适的中餐餐馆"</p>
+              <pre class="response">
+启动研究流程:
+- 正在明确研究问题...
+- 设计工作任务序列...
+- 浏览社交媒体数据源...
+- 构建用户智能体模型...
+- 启动智能体访谈...
+- 分析用户反馈...
+- 生成研究报告...
+
+[进行中] 研究进度: 34%
+              </pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-gray-900 p-6 rounded-lg border border-gray-800 mb-8">
+          <h3 class="text-xl font-semibold mb-4 primary-text">研究流程</h3>
+          <p class="mb-4">
+            使用Atypica.AI，你只需要提出一个具体商业研究问题，系统会通过10-20分钟的「长推理」给出一份详尽的调研报告。
+          </p>
+          <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-4 mt-6">
+            <div class="agent-card p-4 text-center">
+              <div class="mb-2 font-semibold primary-text">1</div>
+              <p class="text-sm">明确问题</p>
+            </div>
+            <div class="agent-card p-4 text-center">
+              <div class="mb-2 font-semibold primary-text">2</div>
+              <p class="text-sm">设计任务</p>
+            </div>
+            <div class="agent-card p-4 text-center">
+              <div class="mb-2 font-semibold primary-text">3</div>
+              <p class="text-sm">浏览社媒</p>
+            </div>
+            <div class="agent-card p-4 text-center">
+              <div class="mb-2 font-semibold primary-text">4</div>
+              <p class="text-sm">建立智能体</p>
+            </div>
+            <div class="agent-card p-4 text-center">
+              <div class="mb-2 font-semibold primary-text">5</div>
+              <p class="text-sm">访谈模拟</p>
+            </div>
+            <div class="agent-card p-4 text-center">
+              <div class="mb-2 font-semibold primary-text">6</div>
+              <p class="text-sm">总结结果</p>
+            </div>
+            <div class="agent-card p-4 text-center">
+              <div class="mb-2 font-semibold primary-text">7</div>
+              <p class="text-sm">生成报告</p>
+            </div>
+          </div>
+          <div class="mt-6 bg-gray-950 p-4 rounded-lg border border-gray-800">
+            <p class="text-sm">
+              「Nerd
+              Stats」会记录工作过程中耗费多少时间、步骤、有多少个智能体角色、耗费多少token等，这也是一种智能体的「工作证明」（Proof
+              of Work）。
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="mb-16">
+        <h2 class="text-2xl font-bold mb-8 primary-text">使用场景</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div class="usage-card p-6 bg-gray-900">
+            <div class="flex items-center mb-4">
+              <div
+                class="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center text-white mr-4"
+              >
+                T
+              </div>
+              <h3 class="text-xl font-semibold">测试 / Testing</h3>
+            </div>
+            <p class="mb-4 opacity-80">评估营销内容选题与效果，预测受众反应</p>
+            <div class="bg-gray-950 p-4 rounded-lg mb-4 text-sm">
+              <p><strong>示例：</strong>罗技鼠标在小红书上选题，哪个会更受欢迎？</p>
+              <ul class="list-disc pl-6 mt-2 space-y-1 opacity-70">
+                <li>【轻薄如羽，性能如虎】罗技MX Keys迷你版陪我高效办公的日常</li>
+                <li>从按键到芯片：揭秘罗技键盘的静音科技是如何实现的</li>
+                <li>一键多设备切换：我用罗技FLOW技术让工作效率翻倍的小技巧</li>
+                <li>30天续航不是梦：罗技键盘背后的节能技术大揭秘</li>
+                <li>人体工学设计背后的故事：罗技ERGO K860如何拯救我的腕隧道综合症</li>
+              </ul>
+            </div>
+            <div class="flex justify-end">
+              <a
+                href="https://atypica.musedam.cc/study/UrAWv9PYajXLRnke/share?replay=1"
+                class="text-sm primary-text underline"
+                >查看回放</a
+              >
+            </div>
+          </div>
+
+          <div class="usage-card p-6 bg-gray-900">
+            <div class="flex items-center mb-4">
+              <div
+                class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white mr-4"
+              >
+                I
+              </div>
+              <h3 class="text-xl font-semibold">洞察 / Insight</h3>
+            </div>
+            <p class="mb-4 opacity-80">发现用户体验痛点，了解客户评价和体验</p>
+            <div class="bg-gray-950 p-4 rounded-lg mb-4 text-sm">
+              <p>
+                <strong>示例：</strong
+                >我是LV上海区总经理，客户对我们上海门店的购物体验有什么反馈？哪些方面需要改进，哪些方面做得好需要继续加强？请给我一个全面的报告。
+              </p>
+            </div>
+            <div class="flex justify-end">
+              <a
+                href="https://atypica.musedam.cc/study/eiaiWKxJjuhmHdb4/share?replay=1"
+                class="text-sm primary-text underline"
+                >查看回放</a
+              >
+            </div>
+          </div>
+
+          <div class="usage-card p-6 bg-gray-900">
+            <div class="flex items-center mb-4">
+              <div
+                class="w-10 h-10 rounded-full bg-green-600 flex items-center justify-center text-white mr-4"
+              >
+                C
+              </div>
+              <h3 class="text-xl font-semibold">共创 / Co-create</h3>
+            </div>
+            <p class="mb-4 opacity-80">与模拟用户共同创意，开发新产品和服务</p>
+            <div class="bg-gray-950 p-4 rounded-lg mb-4 text-sm">
+              <p>
+                <strong>示例：</strong
+                >和一线城市的年轻父母，一起共创Mars的&lt;脆香米&gt;的新产品想法？
+              </p>
+            </div>
+            <div class="flex justify-end">
+              <a
+                href="https://atypica.musedam.cc/study/eLPPsnWhwKgduV3D/share?replay=1"
+                class="text-sm primary-text underline"
+                >查看回放</a
+              >
+            </div>
+          </div>
+
+          <div class="usage-card p-6 bg-gray-900">
+            <div class="flex items-center mb-4">
+              <div
+                class="w-10 h-10 rounded-full bg-yellow-600 flex items-center justify-center text-white mr-4"
+              >
+                P
+              </div>
+              <h3 class="text-xl font-semibold">规划 / Planning</h3>
+            </div>
+            <p class="mb-4 opacity-80">制定市场营销策略，开发产品路线图</p>
+            <div class="bg-gray-950 p-4 rounded-lg mb-4 text-sm">
+              <p><strong>示例：</strong>INAH 银那无醇葡萄饮市场营销策划书</p>
+            </div>
+            <div class="flex justify-end">
+              <a
+                href="https://atypica.musedam.cc/study/Miw9cmdmfLmdzxaq/share?replay=1"
+                class="text-sm primary-text underline"
+                >查看回放</a
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-8 bg-gray-900 p-6 rounded-lg border border-gray-800">
+          <h3 class="text-xl font-semibold mb-4 primary-text">个人决策辅助</h3>
+          <p class="mb-4">
+            虽然Atypica.AI是以商业研究分析的智能体，但是也可以进行一些个人决策研究：
+          </p>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-gray-950 p-4 rounded-lg">
+              <h4 class="font-medium mb-2 primary-text">开放问题</h4>
+              <p class="text-sm mb-2">为生日晚餐选合适的中餐餐馆？</p>
+              <div class="flex justify-end">
+                <a
+                  href="https://atypica.musedam.cc/study/KpTXMFFwLiset92k/share?replay=1"
+                  class="text-xs primary-text underline"
+                  >回放链接</a
+                >
+              </div>
+            </div>
+            <div class="bg-gray-950 p-4 rounded-lg">
+              <h4 class="font-medium mb-2 primary-text">选择问题</h4>
+              <p class="text-sm mb-2">便携式显示器该怎么选？</p>
+              <div class="flex justify-end">
+                <a
+                  href="https://atypica.musedam.cc/analyst/report/HWG3ACD7eJY2xsdY"
+                  class="text-xs primary-text underline"
+                  >最终报告</a
+                >
+              </div>
+            </div>
+            <div class="bg-gray-950 p-4 rounded-lg">
+              <h4 class="font-medium mb-2 primary-text">规划问题</h4>
+              <p class="text-sm mb-2">游泳特长生，该怎么规划去美国或英国读高中？</p>
+              <div class="flex justify-end">
+                <a
+                  href="https://atypica.musedam.cc/analyst/report/zCuK9uLX6shRkNpp"
+                  class="text-xs primary-text underline"
+                  >最终报告</a
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="mb-16">
+        <h2 class="text-2xl font-bold mb-8 primary-text flex items-center">
+          <span class="mr-2">技术起源与发展</span>
+          <div
+            class="h-px bg-gradient-to-r from-transparent via-gray-500 to-transparent flex-grow ml-4"
+          ></div>
+        </h2>
+
+        <div class="mb-10">
+          <div class="bg-gray-900 p-6 rounded-lg border border-gray-800 mb-6">
+            <div class="flex items-center mb-4">
+              <div class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center mr-4">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-6 w-6 text-white"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                  />
+                </svg>
+              </div>
+              <h3 class="text-xl font-semibold primary-text">Atypica.AI的缘起</h3>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div class="bg-gray-950 p-4 rounded-lg border-l-4 border-gray-600">
+                <div class="flex items-center mb-2">
+                  <span class="text-xs bg-gray-800 px-2 py-1 rounded mr-2">2023</span>
+                  <h4 class="font-medium primary-text">多智能体互动</h4>
+                </div>
+                <p class="text-sm opacity-80">
+                  斯坦福小镇的论文《Generative Agents: Interactive Simulacra of Human
+                  Behavior》让我们第一次见识了多智能体互动的概念，但是这篇文章并没有真正的展示智能体如何进行交互的。
+                </p>
+              </div>
+
+              <div class="bg-gray-950 p-4 rounded-lg border-l-4 border-blue-600">
+                <div class="flex items-center mb-2">
+                  <span class="text-xs bg-gray-800 px-2 py-1 rounded mr-2">2023.12</span>
+                  <h4 class="font-medium primary-text">模型工具调用</h4>
+                </div>
+                <p class="text-sm opacity-80">
+                  OpenAI发布了GPT-4的Function
+                  Calling功能，让模型能够调用外部工具；2024年11月，Claude的MCP协议，让我们看到了模型操作工具（比如我们做的内容管理工具）的可能性。这种技术进步开创了全新的应用场景，使模型不再局限于对话框内的交互，而是能够主动与外部世界建立连接。
+                </p>
+              </div>
+
+              <div class="bg-gray-950 p-4 rounded-lg border-l-4 border-green-600 md:col-span-2">
+                <div class="flex items-center mb-2">
+                  <span class="text-xs bg-gray-800 px-2 py-1 rounded mr-2">2024.11</span>
+                  <h4 class="font-medium primary-text">语言模型为主观世界建模</h4>
+                </div>
+                <p class="text-sm opacity-80">
+                  斯坦福小镇研究团队发表了题为《Generative Agent Simulations of 1,000
+                  People》的开创性论文，该研究成功模拟了1000个随机美国人的行为模式。研究人员通过AI对真实人类进行深入采访，构建了能够准确反映个体行为和决策模式的智能体。令人瞩目的是，这些智能体与真人的行为一致性高达85%以上，展现出前所未有的模拟精度。
+                </p>
+                <p class="text-sm opacity-80 mt-2">
+                  这项研究揭示了智能体模拟真实人类行为和进行有效访谈的巨大潜力。传统研究用户(如同研究橙汁)的方法是分析其组成元素(标签)，但即使掌握了全部标签，也难以完整重构用户的复杂性。而这种新方法则相当于将橙汁提炼为精华粉末，再通过语言模型作为"水"将其重新冲调成橙汁。
+                </p>
+              </div>
+
+              <div class="bg-gray-950 p-4 rounded-lg border-l-4 border-yellow-600">
+                <div class="flex items-center mb-2">
+                  <span class="text-xs bg-gray-800 px-2 py-1 rounded mr-2">2025.02</span>
+                  <h4 class="font-medium primary-text">发散优先的长推理</h4>
+                </div>
+                <p class="text-sm opacity-80">
+                  Deepseek
+                  R1让我们看到透明的推理过程，因此知道了怎么来设计在基座模型基础上的推理架构。与针对客观世界/科学问题的推理方法强调"收敛"不同，主观世界/商业问题的推理需要强调"发散"。我们定义为四个维度：1）学习过去的案例、2）灵光乍现、3）反馈的质量、4）迭代的数量。
+                </p>
+                <p class="text-sm opacity-80 mt-2">
+                  因此我们基于这四个维度，开始进行多步骤、长发散的推理模型架构"Creative
+                  Reasoning"的开发，从而形成对通用商业问题思考、分析、研究的调优。
+                </p>
+              </div>
+
+              <div class="bg-gray-950 p-4 rounded-lg border-l-4 border-red-600">
+                <div class="flex items-center mb-2">
+                  <span class="text-xs bg-gray-800 px-2 py-1 rounded mr-2">2025.03</span>
+                  <h4 class="font-medium primary-text">多智能体产品形态</h4>
+                </div>
+                <p class="text-sm opacity-80">
+                  Manus、Claude的Artifacts、Devin的发布，让我们看到了多智能体产品设计的可能性。尤其是Manus在如何把智能体工作过程表达出来，并可以进行回放上的产品创新。看到智能体如何工作，确实可以让人对其产生的结果更有同理心。
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h2 class="text-2xl font-bold mb-8 primary-text flex items-center">
+          <span class="mr-2">技术局限与展望</span>
+          <div
+            class="h-px bg-gradient-to-r from-transparent via-gray-500 to-transparent flex-grow ml-4"
+          ></div>
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+          <div>
+            <div class="bg-gray-900 p-6 rounded-lg border border-gray-800 h-full">
+              <h3 class="text-xl font-semibold mb-6 primary-text flex items-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-5 w-5 mr-2"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+                Atypica.AI的局限性
+              </h3>
+              <ul class="space-y-4">
+                <li class="flex">
+                  <div
+                    class="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center mr-3 flex-shrink-0"
+                  >
+                    1
+                  </div>
+                  <div>
+                    <strong class="primary-text block mb-1">输入问题的质量</strong>
+                    <p class="text-sm opacity-80">输入问题的准确度，很大程度上决定了报告的质量</p>
+                  </div>
+                </li>
+                <li class="flex">
+                  <div
+                    class="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center mr-3 flex-shrink-0"
+                  >
+                    2
+                  </div>
+                  <div>
+                    <strong class="primary-text block mb-1">模型精确度局限</strong>
+                    <p class="text-sm opacity-80">
+                      斯坦福的研究中表明这种方法可以80%准确模拟消费者的复杂决策过程，对高度情感化或情境依赖的决策预测有局限，对新兴小众消费群体的模拟不够准确（合成橙汁还是和天然橙汁不一样）
+                    </p>
+                  </div>
+                </li>
+                <li class="flex">
+                  <div
+                    class="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center mr-3 flex-shrink-0"
+                  >
+                    3
+                  </div>
+                  <div>
+                    <strong class="primary-text block mb-1">数据整合复杂性</strong>
+                    <p class="text-sm opacity-80">
+                      数据质量和结构差异大，整合难度高，数据干净度问题可能导致模型扭曲；这种方法更善于模拟用户的正向和负向反馈，但是不擅长模拟用户的偏见和局限
+                    </p>
+                  </div>
+                </li>
+                <li class="flex">
+                  <div
+                    class="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center mr-3 flex-shrink-0"
+                  >
+                    4
+                  </div>
+                  <div>
+                    <strong class="primary-text block mb-1">创新性预测困难</strong>
+                    <p class="text-sm opacity-80">难以预测真正突破性的创新反应</p>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div>
+            <div class="bg-gray-900 p-6 rounded-lg border border-gray-800 h-full">
+              <h3 class="text-xl font-semibold mb-6 primary-text flex items-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-5 w-5 mr-2"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+                方法类比
+              </h3>
+              <div class="bg-gray-950 p-5 rounded-lg mb-4">
+                <blockquote class="border-l-4 border-gray-600 pl-4 italic">
+                  <p class="mb-3">
+                    这种方法相当于将橙汁提炼为精华粉末，再通过语言模型作为"水"将其重新冲调成橙汁。
+                  </p>
+                  <p>
+                    虽然这种「合成橙汁」并非完全天然，但它尽量模拟了真实橙汁的口感、色彩和营养特性。
+                  </p>
+                </blockquote>
+              </div>
+
+              <div class="bg-gray-950 p-5 rounded-lg">
+                <h4 class="font-medium mb-3 primary-text">展望未来</h4>
+                <p class="text-sm opacity-80 mb-3">
+                  随着语言模型的持续发展和多模态能力的增强，Atypica.AI将在以下方面持续改进：
+                </p>
+                <ul class="text-sm space-y-2 pl-4">
+                  <li class="opacity-80 flex items-start">
+                    <span class="text-gray-500 mr-2">•</span>
+                    更精准的用户画像和行为模型
+                  </li>
+                  <li class="opacity-80 flex items-start">
+                    <span class="text-gray-500 mr-2">•</span>
+                    更深入的心理模型整合
+                  </li>
+                  <li class="opacity-80 flex items-start">
+                    <span class="text-gray-500 mr-2">•</span>
+                    更细致的群体差异建模
+                  </li>
+                  <li class="opacity-80 flex items-start">
+                    <span class="text-gray-500 mr-2">•</span>
+                    更透明的AI推理和解释系统
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-gray-900 p-6 rounded-lg border border-gray-800 mb-4">
+          <div class="flex flex-col md:flex-row items-center">
+            <div class="md:w-1/3 flex justify-center mb-6 md:mb-0">
+              <img
+                src="/_public/hippyghost-square-dark.jpg"
+                alt="HippyGhost"
+                class="w-40 h-40 rounded-lg shadow-lg border-2 border-green-600"
+              />
+            </div>
+            <div class="md:w-2/3 md:pl-8">
+              <h3 class="text-xl font-bold mb-4 primary-text">HippyGhosts</h3>
+              <p class="mb-4 opacity-90">
+                atypica.AI的皮肤来自于代表极客精神的快乐嬉皮鬼社区HippyGhosts.io。
+              </p>
+              <p class="mb-4 opacity-80">
+                在Atypica.AI的世界中，每一个「智能体」的物理化身都是一枚「Hippy
+                Ghost」，代表着技术与创意的融合，也象征着我们对构建有个性、有温度的AI智能体的追求。
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="max-w-6xl mx-auto px-4 py-8 border-t border-gray-800 mt-12">
+      <div class="flex flex-col md:flex-row justify-between items-center">
+        <div class="mb-4 md:mb-0">
+          <div class="text-lg font-bold"><span class="primary-text">atypica</span>.AI</div>
+          <div class="text-sm opacity-60">为「主观世界」建模</div>
+        </div>
+        <div class="flex space-x-6">
+          <a href="/changelog" class="text-sm opacity-60 hover:opacity-100 transition-opacity"
+            >项目历程</a
+          >
+          <a href="/" class="text-sm opacity-60 hover:opacity-100 transition-opacity">立即试用</a>
+          <a href="/pricing" class="text-sm opacity-60 hover:opacity-100 transition-opacity"
+            >价格</a
+          >
+        </div>
+        <div class="text-sm opacity-60 mt-4 md:mt-0">© 2025 Tezign Technology</div>
+      </div>
+    </footer>
+  </body>
+</html>

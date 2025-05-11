@@ -1,4 +1,5 @@
 "use client";
+import { LeftMenus } from "@/app/(public)/LeftMenu";
 import GlobalHeader from "@/components/GlobalHeader";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Button } from "@/components/ui/button";
@@ -57,7 +58,7 @@ export function StudyListPageClient() {
       url.searchParams.delete("search");
     }
 
-    window.history.pushState({}, "", url.toString());
+    window.history.replaceState({}, "", url.toString());
   }, [currentPage, searchQuery]);
 
   const loadStudies = useCallback(async () => {
@@ -104,7 +105,7 @@ export function StudyListPageClient() {
 
   return (
     <>
-      <GlobalHeader />
+      <GlobalHeader leftMenus={<LeftMenus />} />
       <div className="flex-1 overflow-y-auto scrollbar-thin p-4 md:p-8 space-y-4 md:space-y-6">
         <h1 className="text-2xl md:text-3xl font-bold text-center">{t("title")}</h1>
         <p className="text-muted-foreground mt-1 text-center text-sm md:text-base">

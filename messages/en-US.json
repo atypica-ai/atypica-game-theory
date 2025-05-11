@@ -565,7 +565,9 @@
       "darkTheme": "Dark Theme",
       "myStudies": "My Studies",
       "featuredStudies": "Featured Studies",
-      "pricing": "Pricing"
+      "pricing": "Pricing",
+      "changelog": "Roadmap",
+      "about": "About"
     },
     "TokenAlertDialog": {
       "confirmOperation": "Confirm Operation",

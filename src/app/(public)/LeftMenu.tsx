@@ -8,16 +8,23 @@ export function LeftMenus() {
   const t = useTranslations("Components.GlobalHeader");
   return (
     <>
-      <Link href="/pricing">{t("pricing")}</Link>
+      <Link href="/pricing" className="text-sm font-normal">
+        {t("pricing")}
+      </Link>
+      <Link href="/changelog" className="text-sm font-normal" target="_blank">
+        {t("changelog")}
+      </Link>
+      <Link href="/about" className="text-sm font-normal" target="_blank">
+        {t("about")}
+      </Link>
       {session?.user ? (
-        <Link href="/study">
+        <Link href="/study" className="text-sm font-normal">
           <span>{t("myStudies")}</span>
         </Link>
-      ) : (
-        <Link href="/featured-studies">
-          <span>{t("featuredStudies")}</span>
-        </Link>
-      )}
+      ) : null}
+      {/* <Link href="/featured-studies" className="text-sm font-normal">
+        <span>{t("featuredStudies")}</span>
+      </Link> */}
     </>
   );
 }

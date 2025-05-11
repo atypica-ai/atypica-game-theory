@@ -38,6 +38,7 @@ const nextConfig: NextConfig = {
     return [
       { source: "/changelog.html", destination: "/_public/changelog.html" },
       { source: "/changelog", destination: "/_public/changelog.html" },
+      { source: "/about", destination: "/_public/about.html" },
     ];
   },
 };
