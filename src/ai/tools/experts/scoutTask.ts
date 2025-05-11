@@ -44,7 +44,7 @@ import { Logger } from "pino";
 import { z } from "zod";
 
 const TOKENS_COMSUME_LIMIT = 300_000; // 限制 30w token 消耗量，根据统计，差不多
-const SCOUT_STEPS = 15; // 进行 15 步搜索，结束以后保存画像
+const SCOUT_CALLS_LIMIT = 15; // 进行 15 步搜索，结束以后保存画像
 const REDUCE_TOKENS: {
   model: LLMModelName;
   ratio: number;
@@ -239,13 +239,13 @@ export async function runScoutTaskChatStream({
       Object.entries(allTools).filter(([key]) => key !== ToolName.savePersona),
     ) as typeof allTools;
     let toolChoice: ToolChoice<typeof allTools> = "auto";
-    let maxSteps = SCOUT_STEPS;
+    let maxSteps = 3; // 不要一下子很多 steps 因为现在会并行调用 tools，每一轮 steps 少一点，方便及时判断 coreMessages 长度
     if (coreMessages.length > 2 && Object.keys(toolUseCount).length === 0) {
       // 两条消息以后，必须开始使用工具，但是为了不一直使用工具，调用2次先停下来，后面好重新判断 toolUseCount
       toolChoice = "required";
-      maxSteps = 2;
+      maxSteps = 1;
     }
-    if (coreMessages.length > SCOUT_STEPS * 2) {
+    if (coreMessages.length > SCOUT_CALLS_LIMIT * 2) {
       // 进入终局，批量保存人设
       endRound = true;
       systemPrompt = buildPersonaSystem();
