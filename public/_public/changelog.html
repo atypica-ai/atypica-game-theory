@@ -278,9 +278,9 @@ export default async function StudyPage({
           <div class="terminal-body">
             <p class="command">git log --oneline | head -3</p>
             <pre class="response">
-001f205 update readme
-51b2a74 update prompt
-78dabc4 Bump next from 15.2.1 to 15.2.3
+ee7febb update headers and usermenu, add pricing and study history on page header
+044ebf3 add study list page
+1ebfa76 fix lint issues
                     </pre
             >
             <p class="command">cat README.md | grep -i "atypica"</p>
@@ -314,7 +314,7 @@ atypica.AI 是一个面向主观世界建模的用户研究平台，通过大语
             </p>
           </div>
           <p class="mb-2">
-            带着这个问题，我们开始了一段为期20天的高速迭代开发，演进出了三个不同阶段的产品形态，每一个都比前一个更加强大和易用。
+            带着这个问题，我们开始了一段为期两个多月的高速迭代开发，演进出了四个不同阶段的产品形态，每一个都比前一个更加强大和易用。
           </p>
         </div>
 
@@ -616,6 +616,76 @@ atypica.AI 是一个面向主观世界建模的用户研究平台，通过大语
               </div>
             </div>
           </div>
+
+          <!-- 第四阶段 -->
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <h3 class="text-xl font-semibold mb-3 primary-text">
+              版本四：商业化与平台优化
+              <span class="text-gray-400 text-sm font-normal ml-2">2025.3.28-5.12</span>
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
+              <div class="col-span-2">
+                <p class="mb-4">
+                  在完善了核心研究功能后，我们转向了商业化运营与全球部署，添加了订阅、令牌计费、多语言支持等功能。
+                </p>
+                <div class="code-title">产品形态</div>
+                <ul class="list-disc pl-6 mb-5 space-y-1">
+                  <li>完整的SaaS服务，包含免费和付费层级</li>
+                  <li>多语言界面与全球部署支持</li>
+                  <li>令牌消费统计与充值流程</li>
+                  <li>研究历史与学习列表</li>
+                  <li>高级访谈项目功能</li>
+                </ul>
+                <div class="bg-gray-900 p-4 rounded-lg mb-4 border-l-4 primary-border">
+                  <p class="italic opacity-80 text-sm">
+                    "Token计费模式非常公平，我只需为实际使用的研究支付费用。而且，我可以随时查看消耗统计，了解每个研究项目的成本。"
+                    — 企业用户
+                  </p>
+                </div>
+              </div>
+              <div>
+                <div class="grid grid-cols-1 gap-4">
+                  <div class="agent-card p-4">
+                    <div class="flex items-center mb-2">
+                      <div class="w-2 h-2 rounded-full bg-purple-500 mr-2"></div>
+                      <div class="text-sm font-medium">Tokens</div>
+                    </div>
+                    <p class="text-xs opacity-80 mb-2">令牌消费统计与计费</p>
+                    <div class="h-1 w-full bg-gray-800 rounded-full overflow-hidden">
+                      <div class="h-1 bg-purple-500 rounded-full" style="width: 80%"></div>
+                    </div>
+                  </div>
+                  <div class="agent-card p-4">
+                    <div class="flex items-center mb-2">
+                      <div class="w-2 h-2 rounded-full bg-blue-500 mr-2"></div>
+                      <div class="text-sm font-medium">i18n</div>
+                    </div>
+                    <p class="text-xs opacity-80 mb-2">多语言支持与全球部署</p>
+                    <div class="h-1 w-full bg-gray-800 rounded-full overflow-hidden">
+                      <div class="h-1 bg-blue-500 rounded-full" style="width: 90%"></div>
+                    </div>
+                  </div>
+                  <div class="agent-card p-4">
+                    <div class="flex items-center mb-2">
+                      <div class="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
+                      <div class="text-sm font-medium">Subscription</div>
+                    </div>
+                    <p class="text-xs opacity-80 mb-2">专业版订阅与权限管理</p>
+                    <div class="h-1 w-full bg-gray-800 rounded-full overflow-hidden">
+                      <div class="h-1 bg-green-500 rounded-full" style="width: 75%"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="bg-gradient-to-r from-gray-900 to-gray-800 rounded-lg p-1">
+              <div class="text-center py-2">
+                <span class="primary-text font-semibold">里程碑：</span>
+                2025年4月20日推出完整的订阅和Token计费模式，实现商业化运营
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -646,6 +716,10 @@ atypica.AI 是一个面向主观世界建模的用户研究平台，通过大语
                 <span class="primary-text mr-2">v3</span>
                 <span>对话式一站操作，AI自动执行全流程</span>
               </li>
+              <li class="flex items-start">
+                <span class="primary-text mr-2">v4</span>
+                <span>商业化一站式研究平台，全球化部署</span>
+              </li>
             </ul>
           </div>
 
@@ -667,6 +741,10 @@ atypica.AI 是一个面向主观世界建模的用户研究平台，通过大语
               <li class="flex items-start">
                 <span class="primary-text mr-2">v3</span>
                 <span>单页面分屏设计，左对话右执行</span>
+              </li>
+              <li class="flex items-start">
+                <span class="primary-text mr-2">v4</span>
+                <span>统一全局导航，多语言支持，移动响应式设计</span>
               </li>
             </ul>
           </div>
@@ -690,7 +768,64 @@ atypica.AI 是一个面向主观世界建模的用户研究平台，通过大语
                 <span class="primary-text mr-2">v3</span>
                 <span>指挥官模式，Study Agent统筹协调</span>
               </li>
+              <li class="flex items-start">
+                <span class="primary-text mr-2">v4</span>
+                <span>多模型策略，根据任务智能切换不同LLM</span>
+              </li>
             </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="mb-16">
+        <h2
+          class="text-2xl font-bold mb-8 primary-text border-b border-dashed pb-2 inline-block border-gray-700"
+        >
+          $ ./analyze --type "commercial_model"
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div
+            class="bg-gray-900 p-6 rounded-lg border border-gray-800 transition-all hover:border-primary"
+          >
+            <h3 class="text-lg font-semibold mb-4 flex items-center">
+              <span class="primary-text mr-2">04</span> 商业模式的演进
+            </h3>
+            <ul class="space-y-3">
+              <li class="flex items-start">
+                <span class="primary-text mr-2">v1-v3</span>
+                <span>功能验证阶段，无商业模式</span>
+              </li>
+              <li class="flex items-start">
+                <span class="primary-text mr-2">v4</span>
+                <span>引入令牌经济与订阅制，平衡用户体验与可持续发展</span>
+              </li>
+            </ul>
+          </div>
+
+          <div
+            class="bg-gray-900 p-6 rounded-lg border border-gray-800 transition-all hover:border-primary"
+          >
+            <h3 class="text-lg font-semibold mb-4 flex items-center">
+              <span class="primary-text mr-2">主要收入来源</span>
+            </h3>
+            <div class="space-y-3">
+              <div class="flex items-center">
+                <div class="w-2 h-2 rounded-full bg-purple-500 mr-2"></div>
+                <span class="font-medium">按需付费令牌</span>
+                <div class="ml-auto text-sm text-gray-400">充值即用</div>
+              </div>
+              <div class="flex items-center">
+                <div class="w-2 h-2 rounded-full bg-blue-500 mr-2"></div>
+                <span class="font-medium">专业版订阅</span>
+                <div class="ml-auto text-sm text-gray-400">月付/年付</div>
+              </div>
+              <div class="flex items-center">
+                <div class="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
+                <span class="font-medium">企业解决方案</span>
+                <div class="ml-auto text-sm text-gray-400">定制化</div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -781,14 +916,14 @@ atypica.AI 是一个面向主观世界建模的用户研究平台，通过大语
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div>
             <p class="mb-4">
-              在短短20天内，atypica.AI完成了从单一功能工具到完整研究平台的蜕变，核心演进是从"多步骤操作"到"分步引导式操作"，最终达到"对话式一站操作"的境界。
+              在短短两个多月内，atypica.AI完成了从单一功能工具到商业化研究平台的蜕变，核心演进是从"多步骤操作"到"分步引导式操作"，再到"对话式一站操作"，最终成为"商业化一站式研究平台"。
             </p>
             <p class="mb-4">
-              最终版本中，用户只需在单一对话界面与研究助手交流，AI会自动协调多个专业Agent在右侧控制台可视化地完成全部研究流程，大幅简化了用户体验。
+              最新版本不仅保留了简洁的用户体验，还实现了商业可持续性，支持全球化部署和多语言环境，通过令牌经济和订阅模式为各类用户提供了强大而直观的主观世界建模工具。
             </p>
             <div class="bg-gray-900 p-4 rounded-lg mb-4 border-l-4 primary-border">
               <p class="italic opacity-80 text-sm">
-                "atypica.AI的发展历程体现了我们团队的核心理念：通过技术创新持续降低用户研究的门槛，让每个人都能轻松获取深度洞察。"
+                "atypica.AI的发展历程体现了我们团队的核心理念：通过技术创新持续降低用户研究的门槛，让每个人都能轻松获取深度洞察，同时建立可持续的商业模式，确保产品能持续为用户创造价值。"
                 — 项目负责人
               </p>
             </div>
@@ -807,11 +942,12 @@ atypica.AI 是一个面向主观世界建模的用户研究平台，通过大语
               <p class="command">cat roadmap.txt</p>
               <pre class="response">
 未来计划:
-- 集成更多数据源，包括问卷和定量数据分析
-- 优化访谈质量和深度
-- 增强数据可视化能力
-- 支持更多行业特定研究模板
-- 优化团队协作功能
+- 扩展AI模型选择，优化不同任务的性能表现
+- 增强跨语言和跨文化研究能力
+- 研发更高级的数据可视化工具
+- 添加企业级团队协作与权限管理
+- 构建开发者API，实现自定义研究工具
+- 优化令牌使用效率，降低研究成本
                         </pre
               >
               <p class="command">git commit -m "Continue the journey..."</p>

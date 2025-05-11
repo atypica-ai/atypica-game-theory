@@ -36,10 +36,8 @@ const nextConfig: NextConfig = {
   },
   async rewrites() {
     return [
-      {
-        source: "/changelog.html",
-        destination: "/_public/changelog.html",
-      },
+      { source: "/changelog.html", destination: "/_public/changelog.html" },
+      { source: "/changelog", destination: "/_public/changelog.html" },
     ];
   },
 };
