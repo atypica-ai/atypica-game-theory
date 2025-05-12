@@ -6,57 +6,55 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
 import { MenuIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import React, { useState } from "react";
+import { useState } from "react";
 
 export function LeftMenus() {
   const { data: session } = useSession();
   const t = useTranslations("Components.GlobalHeader");
 
-  const menuItems = [
-    <Link
-      key={0}
-      href="/pricing"
-      className="text-sm font-normal hover:text-foreground/80"
-      onClick={(e) => e.currentTarget.blur()}
-    >
-      {t("pricing")}
-    </Link>,
-    <Link
-      key={1}
-      href="/changelog"
-      className="text-sm font-normal hover:text-foreground/80"
-      target="_blank"
-      onClick={(e) => e.currentTarget.blur()}
-    >
-      {t("changelog")}
-    </Link>,
-    <Link
-      key={2}
-      href="/about"
-      className="text-sm font-normal hover:text-foreground/80"
-      target="_blank"
-      onClick={(e) => e.currentTarget.blur()}
-    >
-      {t("about")}
-    </Link>,
-    session?.user ? (
-      <Link
-        key={3}
-        href="/study"
-        className="text-sm font-normal hover:text-foreground/80"
-        onClick={(e) => e.currentTarget.blur()}
-      >
-        <span>{t("myStudies")}</span>
-      </Link>
-    ) : null,
-  ];
-  // <Link href="/featured-studies" className="text-sm font-normal">
-  //   <span>{t("featuredStudies")}</span>
-  // </Link>
+  const MenuLink = ({
+    className,
+    children,
+    ...props
+  }: React.ComponentProps<typeof Link> & { children: React.ReactNode }) => (
+    <Link {...props} className={cn("p-1 text-sm font-normal hover:text-foreground/80", className)}>
+      {children}
+    </Link>
+  );
+
+  const DesktopMenu = () => {
+    const [isOpen, setIsOpen] = useState(false);
+    return (
+      <div className="hidden sm:flex items-center gap-4">
+        <MenuLink href="/study">{t("myStudies")}</MenuLink>
+        <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+          <DropdownMenuTrigger asChild>
+            <MenuLink href="/about" target="_blank">
+              {t("about")}
+            </MenuLink>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="center">
+            <DropdownMenuItem asChild>
+              <MenuLink href="/about" target="_blank">
+                {t("about")}
+              </MenuLink>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <MenuLink href="/changelog" target="_blank">
+                {t("changelog")}
+              </MenuLink>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <MenuLink href="/pricing">{t("pricing")}</MenuLink>
+      </div>
+    );
+  };
 
   const MobileMenu = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -68,9 +66,22 @@ export function LeftMenus() {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="center" className="min-w-36">
-          {menuItems.map((menuItem, index) => (
-            <DropdownMenuItem key={index}>{menuItem}</DropdownMenuItem>
-          ))}
+          <DropdownMenuItem>
+            {session?.user ? (
+              <MenuLink href="/study">{t("myStudies")}</MenuLink>
+            ) : (
+              <MenuLink href="/featured-studies">{t("featuredStudies")}</MenuLink>
+            )}
+          </DropdownMenuItem>
+          <DropdownMenuItem>
+            <MenuLink href="/about">{t("about")}</MenuLink>
+          </DropdownMenuItem>
+          <DropdownMenuItem>
+            <MenuLink href="/changelog">{t("changelog")}</MenuLink>
+          </DropdownMenuItem>
+          <DropdownMenuItem>
+            <MenuLink href="/pricing">{t("pricing")}</MenuLink>
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     );
@@ -79,12 +90,7 @@ export function LeftMenus() {
   return (
     <>
       {/* 桌面端显示 */}
-      <div className="hidden sm:flex items-center gap-6">
-        {menuItems.map((menuItem, index) => (
-          <React.Fragment key={index}>{menuItem}</React.Fragment>
-        ))}
-      </div>
-
+      <DesktopMenu />
       {/* 移动端显示 */}
       <MobileMenu />
     </>

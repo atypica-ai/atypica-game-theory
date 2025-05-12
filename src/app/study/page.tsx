@@ -10,6 +10,13 @@ export default async function StudyPage({
   searchParams: Promise<{ id: string }>;
 }) {
   const { id } = await searchParams;
+
+  const session = await getServerSession(authOptions);
+  if (!session?.user) {
+    const callbackUrl = `/study${id ? `?id=${id}` : ""}`;
+    redirect(`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`);
+  }
+
   if (!id) {
     // redirect("/");
     return <StudyListPageClient />;
@@ -22,13 +29,9 @@ export default async function StudyPage({
   if (!studyUserChat) {
     notFound();
   }
-  const session = await getServerSession(authOptions);
-  if (!session?.user) {
-    const callbackUrl = `/study/${studyUserChat.token}`;
-    redirect(`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`);
-  }
   if (studyUserChat.userId !== session.user.id) {
     forbidden();
   }
+
   redirect(`/study/${studyUserChat.token}`);
 }

@@ -359,7 +359,7 @@
   },
   "StudyPage": {
     "List": {
-      "title": "我的研究",
+      "title": "我的项目",
       "description": "浏览和访问您的研究",
       "noTopic": "研究主题尚未明确",
       "updated": "更新于",
@@ -567,11 +567,11 @@
       "viewAccount": "查看账户",
       "lightTheme": "浅色主题",
       "darkTheme": "深色主题",
-      "myStudies": "我的研究",
+      "myStudies": "我的项目",
       "featuredStudies": "精选研究",
       "pricing": "价格",
       "changelog": "项目历程",
-      "about": "关于 atypica.AI"
+      "about": "关于"
     },
     "TokenAlertDialog": {
       "confirmOperation": "确认操作",
