@@ -1,4 +1,5 @@
 "use client";
+import { generateReportPDF } from "@/app/artifacts/report/actions";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -10,26 +11,52 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { ClipboardCopyIcon, EyeIcon } from "lucide-react";
+import { ClipboardCopyIcon, EyeIcon, FileDownIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useCallback, useState } from "react";
+import { useCallback, useState, useTransition } from "react";
 import { toast } from "sonner";
 
 export function AnalystReportShareButton({
-  publicReportUrl,
+  reportToken,
   children,
 }: {
-  publicReportUrl: string;
+  reportToken: string;
   children?: React.ReactNode;
 }) {
+  const publicReportUrl = `/artifacts/report/${reportToken}/share`;
   const t = useTranslations("StudyPage.AnalystReportShareButton");
   const [open, setOpen] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const fullUrl = `${window.location.origin}${publicReportUrl}`;
 
   const handleCopyUrl = useCallback(() => {
     navigator.clipboard.writeText(fullUrl);
     toast.success(t("copySuccess"));
   }, [t, fullUrl]);
+
+  const handleDownloadPDF = useCallback(() => {
+    startTransition(async () => {
+      try {
+        toast.loading(t("generatingPDF") || "Generating PDF...");
+        const { pdfBlob, fileName } = await generateReportPDF(reportToken);
+        // Create a download link and trigger download
+        const url = URL.createObjectURL(pdfBlob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        toast.dismiss();
+        toast.success(t("pdfDownloadSuccess"));
+      } catch (error) {
+        console.error(error);
+        toast.dismiss();
+        toast.error(t("pdfGenerationFailed"));
+      }
+    });
+  }, [reportToken, t]);
 
   return (
     <AlertDialog
@@ -65,6 +92,10 @@ export function AnalystReportShareButton({
         </div>
         <AlertDialogFooter>
           <AlertDialogCancel onClick={() => setOpen(false)}>{t("closeButton")}</AlertDialogCancel>
+          <Button variant="outline" onClick={handleDownloadPDF} disabled={isPending}>
+            <FileDownIcon size={16} className="mr-1" />
+            {isPending ? t("generatingPDF") : t("downloadPDF")}
+          </Button>
           <Button onClick={() => window.open(fullUrl, "_blank")}>{t("openButton")}</Button>
         </AlertDialogFooter>
       </AlertDialogContent>

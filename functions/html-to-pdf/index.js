@@ -11,7 +11,7 @@ app.use(express.json());
  * @param {string} filename - The filename for the output PDF (without extension)
  * @returns {Promise<Buffer>} - PDF buffer content
  */
-async function htmlToPDF(url, filename) {
+async function htmlToPDF({ url, html, filename }) {
   console.log(`Converting URL: ${url} to PDF`);
 
   // Launch browser
@@ -28,10 +28,17 @@ async function htmlToPDF(url, filename) {
 
   try {
     // Navigate to the URL and wait for the page to load
-    await page.goto(url, {
-      waitUntil: "networkidle0",
-      timeout: 60000, // 60 second timeout
-    });
+    if (html) {
+      await page.setContent(html, {
+        waitUntil: "networkidle0",
+        timeout: 10000, // 10 second timeout
+      });
+    } else {
+      await page.goto(url, {
+        waitUntil: "networkidle0",
+        timeout: 60000, // 60 second timeout
+      });
+    }
 
     // Get the actual page height
     const bodyHeight = await page.evaluate(() => {
@@ -67,18 +74,18 @@ async function htmlToPDF(url, filename) {
 // API endpoint for PDF generation
 app.post("/html-to-pdf", async (req, res) => {
   try {
-    const { url, filename } = req.body;
+    const { url, html, filename } = req.body;
 
     // Validate required parameters
-    if (!url || !filename) {
+    if ((!url && !html) || !filename) {
       return res.status(400).json({
         success: false,
-        error: "Missing required parameters: url and filename are required",
+        error: "Missing required parameters: url or html is required, filename is required",
       });
     }
 
     // Generate PDF buffer directly
-    const pdfBuffer = await htmlToPDF(url, filename);
+    const pdfBuffer = await htmlToPDF({ url, html, filename });
 
     // Return the PDF buffer as a response
     res.set({
@@ -99,7 +106,11 @@ app.post("/html-to-pdf", async (req, res) => {
 
 // Start server
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => {
-  console.log(`html-to-pdf server running on port ${PORT}`);
-  console.log(`PDF generation endpoint: http://localhost:${PORT}/html-to-pdf`);
+app.listen(PORT, (error) => {
+  if (error) {
+    console.error("Error starting server:", error);
+  } else {
+    console.log(`html-to-pdf server running on port ${PORT}`);
+    console.log(`PDF generation endpoint: http://localhost:${PORT}/html-to-pdf`);
+  }
 });

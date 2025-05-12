@@ -38,7 +38,7 @@ export const GenerateReportResultMessage: FC<{
         target="_blank"
         dangerouslySetInnerHTML={{ __html: report.coverSvg }}
       ></Link> */}
-      <AnalystReportShareButton publicReportUrl={`/artifacts/report/${report.token}/share`}>
+      <AnalystReportShareButton reportToken={report.token}>
         <div
           className="block mb-4 w-[360px] h-[180px] [&>svg]:w-[360px] [&>svg]:h-[180px] cursor-pointer border border-input/50 rounded-md overflow-hidden"
           dangerouslySetInnerHTML={{ __html: report.coverSvg }}

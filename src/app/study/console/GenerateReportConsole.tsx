@@ -89,9 +89,7 @@ export const GenerateReportConsole = ({ toolInvocation }: { toolInvocation: Tool
               {t("shareReport")}
             </Link>
           </Button> */}
-          <AnalystReportShareButton
-            publicReportUrl={`/artifacts/report/${analystReport.token}/share`}
-          />
+          <AnalystReportShareButton reportToken={analystReport.token} />
         </div>
       )}
     </div>
