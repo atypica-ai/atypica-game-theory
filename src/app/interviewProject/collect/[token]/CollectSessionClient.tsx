@@ -78,7 +78,7 @@ export function CollectSessionClient({
     interviewSession.status === "completed",
   );
   const [projectDetailsOpen, setProjectDetailsOpen] = useState(false);
-  const isDesktop = useMediaQuery("(min-width: 1024px)");
+  const isDesktop = useMediaQuery("lg");
   const t = useTranslations("InterviewProject.collectSession");
 
   const initialRequestBody = {

@@ -91,7 +91,7 @@ export function ClarifySessionClient({
   checkpointId?: number;
 }) {
   const t = useTranslations("InterviewProject.clarifySession");
-  const isMediaLg = useMediaQuery("(min-width: 1024px)"); // 对应 tailwind 的 lg
+  const isMediaLg = useMediaQuery("lg"); // (min-width: 1024px)
   const [projectDetailsOpen, setProjectDetailsOpen] = useState(false);
   const [projectDetails, setProjectDetails] = useState<ProjectDetails>(interviewSession.project);
   const [clarifyCompleted, setClarifyCompleted] = useState(false);
