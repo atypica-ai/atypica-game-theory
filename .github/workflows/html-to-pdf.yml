@@ -1,0 +1,56 @@
+name: Build and push html-to-pdf
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Get short SHA
+        id: get_sha
+        run: echo "SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
+      - name: Log into ghcr.io
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Login to Docker Registry
+        uses: docker/login-action@v2
+        with:
+          registry: musecr.azurecr.cn
+          username: ${{ secrets.AZURE_REGISTRY_USERNAME }}
+          password: ${{ secrets.AZURE_REGISTRY_PASSWORD }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build and push Docker image for html-to-pdf
+        uses: docker/build-push-action@v4
+        timeout-minutes: 10  # 10 分钟超时
+        with:
+          context: ./functions/html-to-pdf
+          push: true
+          tags: |
+            ghcr.io/bmrlab/html-to-pdf:${{ env.SHA }}
+            ghcr.io/bmrlab/html-to-pdf:latest
+            musecr.azurecr.cn/bmrlab/html-to-pdf:${{ env.SHA }}
+            musecr.azurecr.cn/bmrlab/html-to-pdf:latest
+
+      # - name: Setup Kubernetes Config And Update Deployment
+      #   run: |
+      #     mkdir -p $HOME/.kube
+      #     echo "${{ secrets.KUBE_CONFIG_MUSE_CLUSTER }}" > $HOME/.kube/config
+      #     chmod 600 $HOME/.kube/config
+      #     export KUBECONFIG=$HOME/.kube/config
+      #     kubectl config use-context muse-aws-cn-prod
+      #     kubectl set image deployment/html-to-pdf html-to-pdf=musecr.azurecr.cn/bmrlab/html-to-pdf:${{ env.SHA }} --namespace bmrlab
+      #     kubectl config use-context muse-aws-us-prod
+      #     kubectl set image deployment/html-to-pdf html-to-pdf=musecr.azurecr.cn/bmrlab/html-to-pdf:${{ env.SHA }} --namespace bmrlab
