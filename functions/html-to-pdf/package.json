@@ -1,0 +1,21 @@
+{
+  "name": "html-to-pdf-server",
+  "version": "1.0.0",
+  "description": "HTTP server for converting HTML to PDF",
+  "main": "html-to-pdf.js",
+  "scripts": {
+    "start": "node html-to-pdf.js"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "puppeteer": "^24.8.2"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "puppeteer"
+    ]
+  }
+}
