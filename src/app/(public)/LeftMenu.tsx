@@ -66,20 +66,20 @@ export function LeftMenus() {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="center" className="min-w-36">
-          <DropdownMenuItem>
+          <DropdownMenuItem asChild>
             {session?.user ? (
               <MenuLink href="/study">{t("myStudies")}</MenuLink>
             ) : (
               <MenuLink href="/featured-studies">{t("featuredStudies")}</MenuLink>
             )}
           </DropdownMenuItem>
-          <DropdownMenuItem>
+          <DropdownMenuItem asChild>
             <MenuLink href="/about">{t("about")}</MenuLink>
           </DropdownMenuItem>
-          <DropdownMenuItem>
+          <DropdownMenuItem asChild>
             <MenuLink href="/changelog">{t("changelog")}</MenuLink>
           </DropdownMenuItem>
-          <DropdownMenuItem>
+          <DropdownMenuItem asChild>
             <MenuLink href="/pricing">{t("pricing")}</MenuLink>
           </DropdownMenuItem>
         </DropdownMenuContent>

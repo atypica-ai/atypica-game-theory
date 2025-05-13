@@ -1,3 +1,4 @@
+// tikhub douyin 搜索接口是 $0.01 太贵了
 import { PlainTextToolResult } from "@/ai/tools";
 import { rootLogger } from "@/lib/logging";
 import { fixMalformedUnicodeString } from "@/lib/utils";
@@ -31,18 +32,20 @@ export interface DYSearchResult extends PlainTextToolResult {
 }
 
 function parseDYSearchResult(result: {
-  data: {
-    type: number;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    aweme_info: any;
+  business_data: {
+    data: {
+      type: number;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      aweme_info: any;
+    };
   }[];
 }): DYSearchResult {
   const posts: DYPost[] = [];
   // 过滤并取前十条
-  const topPosts = (result?.data ?? [])
-    .filter((item) => item.type === 1) // 有 aweme_info
+  const topPosts = (result?.business_data ?? [])
+    .filter(({ data }) => data?.type === 1) // 有 aweme_info
     .slice(0, 10);
-  topPosts.forEach(({ aweme_info }) => {
+  topPosts.forEach(({ data: { aweme_info } }) => {
     posts.push({
       id: aweme_info.aweme_id,
       desc: aweme_info.desc,
@@ -78,23 +81,35 @@ function parseDYSearchResult(result: {
 async function dySearch({ keyword }: { keyword: string }) {
   for (let i = 0; i < 3; i++) {
     try {
-      const headers = { Authorization: `Bearer ${process.env.BY_API_TOKEN!}` };
-      const params = { keyword };
-      const queryString = new URLSearchParams(params).toString();
+      const headers = { Authorization: `Bearer ${process.env.TIKHUB_API_TOKEN!}` };
+      const payload = {
+        keyword,
+        cursor: 0,
+        sort_type: "0",
+        publish_time: "0",
+        filter_duration: "0",
+        content_type: "0",
+        search_id: "",
+      };
       const response = await fetch(
-        `${process.env.BY_API_BASE_URL}/douyin/video/search/raw?${queryString}`,
-        { headers },
+        `${process.env.TIKHUB_API_BASE_URL}/douyin/search/fetch_video_search_v2`,
+        {
+          method: "POST",
+          headers: {
+            ...headers,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        },
       );
       const res = await response.json();
       toolLog.info(`Response text: ${JSON.stringify(res).slice(0, 100)}`);
-      if (res.code === 0) {
-        const result = parseDYSearchResult(res.result);
+      if (res.code === 200) {
+        const result = parseDYSearchResult(res.data);
         return result;
       } else {
         toolLog.warn(`Failed to fetch DY feed, retrying... ${i + 1}`);
-        // 2005 错误是 超过所允许的访问间隔
-        const seconds = res.code === 2005 ? Math.floor(Math.random() * 20) + 10 : 3;
-        await new Promise((resolve) => setTimeout(resolve, seconds * 1000));
+        await new Promise((resolve) => setTimeout(resolve, 3 * 1000));
         continue;
       }
     } catch (error) {
