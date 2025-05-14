@@ -8,6 +8,13 @@ import { Logger } from "pino";
 import { z } from "zod";
 import { savePersonaTool, StatReporter, ToolName } from "..";
 
+export type TPersonaForStudy = {
+  personaId: number;
+  name: string;
+  tags: string[];
+  source: string;
+};
+
 const REDUCE_TOKENS: {
   model: LLMModelName;
   ratio: number;
@@ -17,12 +24,7 @@ const REDUCE_TOKENS: {
 };
 
 export interface BuildPersonaToolResult extends PlainTextToolResult {
-  personas: {
-    personaId: number;
-    name: string;
-    tags: string[];
-    source: string;
-  }[];
+  personas: TPersonaForStudy[];
   plainText: string;
 }
 
@@ -38,7 +40,8 @@ export const buildPersonaTool = ({
   studyLog: Logger;
 }) =>
   tool({
-    description: "基于用户画像搜索（scoutTaskChat）的信息总结并构建智能体",
+    description:
+      "分析用户画像搜索任务（scoutTaskChat）的结果，归纳总结，构可以建模拟用户行为和决策的智能体",
     parameters: z.object({
       scoutUserChatToken: z
         .string()

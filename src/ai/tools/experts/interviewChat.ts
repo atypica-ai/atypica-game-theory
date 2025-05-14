@@ -8,9 +8,9 @@ import {
   StatReporter,
   ToolName,
 } from "@/ai/tools";
-import { prisma } from "@/prisma/prisma";
 import { getDeployRegion } from "@/lib/request/deployRegion";
-import { generateToken } from "@/lib/utils";
+import { fixMalformedUnicodeString, generateToken } from "@/lib/utils";
+import { prisma } from "@/prisma/prisma";
 import { InputJsonValue } from "@prisma/client/runtime/library";
 import { generateId, Message, streamText, tool } from "ai";
 import { Logger } from "pino";
@@ -28,9 +28,13 @@ const REDUCE_TOKENS: {
 export interface InterviewChatResult extends PlainTextToolResult {
   interviews: {
     analystId: number;
-    personaId: number;
-    personaName: string;
-    conclusion?: string;
+    persona: {
+      id: number;
+      name: string;
+    };
+    // personaId: number;
+    // personaName: string;
+    // conclusion?: string;  // 不再返回 conclusion，study agent 用不到
     result: string;
   }[];
   plainText: string;
@@ -48,18 +52,21 @@ export const interviewChatTool = ({
   studyLog: Logger;
 }) =>
   tool({
-    description: "针对一个调研主题的一系列用户进行访谈，每次最多5人",
+    description: "针对一个研究主题的一系列用户进行访谈，每次最多5人",
     parameters: z.object({
-      analystId: z.number().describe("调研主题的ID"),
+      analystId: z.number().describe("研究主题的ID"),
       personas: z
         .array(
           z.object({
-            id: z.number().describe("调研对象的ID，必须使用总结出来的personaId，不能编造"),
-            name: z.string().describe("调研对象的姓名"),
+            id: z.number().describe("用户智能体（用户画像）的personaId"),
+            name: z.string().describe("personaId 对应的用户智能体的名字"),
           }),
         )
-        .describe("调研对象的列表，最多5人"),
-      instruction: z.string().describe("在研究主题的基础上，本次访谈的具体需求"),
+        .describe("调研对象的列表，最多5，必须使用本次研究总结或搜索到的用户，不能编造"),
+      instruction: z
+        .string()
+        .describe("在研究主题的基础上，本次访谈的具体需求")
+        .transform(fixMalformedUnicodeString),
       language: z
         .string()
         .optional()
@@ -75,7 +82,7 @@ export const interviewChatTool = ({
       instruction,
       language,
     }): Promise<InterviewChatResult> => {
-      const single = async ({ id: personaId, name: personaName }: { id: number; name: string }) => {
+      const single = async ({ id: personaId, name }: { id: number; name: string }) => {
         try {
           const interview = await prisma.analystInterview.findUnique({
             where: { analystId_personaId: { analystId, personaId } },
@@ -84,9 +91,8 @@ export const interviewChatTool = ({
           if (interview?.conclusion) {
             return {
               analystId,
-              personaId,
-              personaName,
-              result: `对 ${personaName} 的访谈之前已经完成，无需重复进行`,
+              persona: { id: personaId, name },
+              result: "访谈已完成 - 该用户已被访谈过，系统自动跳过重复访谈",
             };
           }
           const { analystInterviewId, interviewUserChatId, prompt } = await prepareDBForInterview({
@@ -105,21 +111,19 @@ export const interviewChatTool = ({
             statReport,
             interviewLog,
           });
-          const updatedInterview = await prisma.analystInterview.findUniqueOrThrow({
-            where: { id: analystInterviewId },
-          });
+          // const updatedInterview = await prisma.analystInterview.findUniqueOrThrow({
+          //   where: { id: analystInterviewId },
+          // });
           return {
             analystId,
-            personaId,
-            personaName,
-            conclusion: updatedInterview.conclusion,
+            persona: { id: personaId, name },
+            // conclusion: updatedInterview.conclusion,
             result: "访谈结束",
           };
         } catch (error) {
           return {
             analystId,
-            personaId,
-            personaName,
+            persona: { id: personaId, name },
             result: `访谈遇到问题 ${(error as Error).message}`,
           };
         }

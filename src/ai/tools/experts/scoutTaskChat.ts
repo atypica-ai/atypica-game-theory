@@ -96,14 +96,12 @@ export const scoutTaskChatTool = ({
   studyLog: Logger;
 }) =>
   tool({
-    description: "开始执行用户画像搜索任务（scoutTask）",
+    description: "从社交网络搜集信息，分析和总结用户画像，用于后续构建用户智能体",
     parameters: z.object({
       scoutUserChatToken: z
         .string()
         .optional()
-        .describe(
-          "用户画像搜索任务 (scoutTask) 的唯一标识，用于创建任务，忽略这个参数，系统会自动生成",
-        )
+        .describe("搜索任务的唯一标识，用于创建任务，忽略这个参数，系统会自动生成")
         .transform(() => generateToken()),
       // 始终生成一个新的 token，并且这个会直接覆盖 message 里面 toolInvocation.args 上的参数
       // "用户画像搜索任务 (scoutTask) 的 token，用于创建任务，如果上一个 scoutTaskChat 任务未完成，请提供上一个 scoutUserChatToken，否则忽略这个参数，系统会自动生成",

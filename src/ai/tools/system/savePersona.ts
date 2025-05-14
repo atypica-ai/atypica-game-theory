@@ -1,6 +1,9 @@
+import { createTextEmbedding } from "@/ai/embedding";
 import { PlainTextToolResult, StatReporter } from "@/ai/tools";
 import { fixMalformedUnicodeString } from "@/lib/utils";
+import { Persona } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
+import { waitUntil } from "@vercel/functions";
 import { tool } from "ai";
 import { z } from "zod";
 
@@ -50,6 +53,7 @@ export const savePersonaTool = ({
       const persona = await prisma.persona.create({
         data: { name, source, tags, samples, prompt, scoutUserChatId },
       });
+      waitUntil(createPersonaEmbedding(persona));
       if (statReport) {
         await statReport("personas", 1, {
           reportedBy: "savePersona tool",
@@ -63,3 +67,21 @@ export const savePersonaTool = ({
       };
     },
   });
+
+async function createPersonaEmbedding(persona: Persona) {
+  try {
+    const text = persona.name + " " + (persona.tags as string[])?.join(" ");
+    // const text = persona.prompt;
+    const embedding = await createTextEmbedding(text);
+    await prisma.$executeRaw`
+      UPDATE "Persona"
+      SET "embedding" = ${JSON.stringify(embedding)}::vector
+      WHERE "id" = ${persona.id}
+    `;
+    console.log(`Updated embedding for persona ${persona.id}`);
+  } catch (error) {
+    console.error(
+      `Failed to update embedding for persona ${persona.id}: ${(error as Error).message}`,
+    );
+  }
+}

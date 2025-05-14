@@ -28,9 +28,9 @@ export const generateReportTool = ({
   studyLog: Logger;
 }) =>
   tool({
-    description: "为调研主题生成报告",
+    description: "为本次研究生成报告",
     parameters: z.object({
-      analystId: z.number().describe("调研主题的 ID"),
+      analystId: z.number().describe("研究主题的ID"),
       instruction: z.string().describe("用户指令，包括额外的报告内容和样式等").default(""),
       regenerate: z.boolean().describe("重新生成报告").default(false),
       reportToken: z
@@ -64,7 +64,7 @@ export const generateReportTool = ({
       if (report?.generatedAt && !regenerate) {
         return {
           reportToken: report.token,
-          plainText: `调研主题 ${analystId} 的报告已经存在，如需重新生成请设置 regenerate: true。您可以提供额外的指令来指定报告风格或内容要求。`,
+          plainText: `研究 ${analystId} 的报告已经存在，如需重新生成请设置 regenerate: true。您可以提供额外的指令来指定报告风格或内容要求。`,
         };
       }
       if (report && !report.generatedAt) {
@@ -104,7 +104,7 @@ export const generateReportTool = ({
         reportLog.error(`Error generating report for analyst ${analystId}: ${error}`);
         throw error;
         // return {
-        //   plainText: `为调研主题 ${analystId} 生成报告失败：${(error as Error).message}`,
+        //   plainText: `为研究主题 ${analystId} 生成报告失败：${(error as Error).message}`,
         // };
       }
       try {
@@ -122,7 +122,7 @@ export const generateReportTool = ({
       }
       return {
         reportToken: report.token,
-        plainText: `已成功为调研主题 ${analystId} 生成报告。${hint}`,
+        plainText: `已成功为研究主题 ${analystId} 生成报告。${hint}`,
       };
     },
   });

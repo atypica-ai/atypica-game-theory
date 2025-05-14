@@ -12,6 +12,7 @@ import {
   saveAnalystStudySummaryTool,
   saveAnalystTool,
   scoutTaskChatTool,
+  searchPersonasTool,
   toolCallError,
   ToolName,
 } from "@/ai/tools";
@@ -77,6 +78,7 @@ export async function studyAgentRequest({
       })
     )._sum.value ?? 0;
   const allTools = {
+    [ToolName.searchPersonas]: searchPersonasTool({ statReport, studyLog }),
     [ToolName.scoutTaskChat]: scoutTaskChatTool({ userId, abortSignal, statReport, studyLog }),
     [ToolName.buildPersona]: buildPersonaTool({ userId, abortSignal, statReport, studyLog }),
     [ToolName.saveAnalystStudySummary]: saveAnalystStudySummaryTool(),

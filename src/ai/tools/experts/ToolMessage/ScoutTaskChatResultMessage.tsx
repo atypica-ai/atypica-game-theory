@@ -1,4 +1,4 @@
-import { ScoutTaskChatResult } from "@/ai/tools/experts/scoutTask";
+import { ScoutTaskChatResult } from "@/ai/tools/experts/scoutTaskChat";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Badge } from "@/components/ui/badge";
 import { ToolInvocation } from "ai";

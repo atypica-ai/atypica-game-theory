@@ -19,7 +19,7 @@ async function embeddingRequest(text) {
   if (res.status === 429) {
     const seconds = 10 + Math.floor(Math.random() * 50);
     console.log(`Rate limit exceeded, wait for ${seconds} seconds`);
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       setTimeout(() => {
         embeddingRequest(text)
           .then((embedding) => resolve(embedding))
@@ -39,16 +39,15 @@ async function embeddingRequest(text) {
 }
 
 async function createEmbedding() {
-  let skip = 0;
-  const take = 100;
+  // let skip = 0; // 不需要 skip，因为上一轮处理好，embedding 就不是 null 了，所以每次取 30 条 embedding 为空的就行，其实
+  const take = 30;
   while (true) {
     const personas = await prisma.$queryRaw`
       SELECT id, name, tags, prompt
       FROM "Persona"
       WHERE "embedding" IS NULL
-      ORDER BY "id"
+      ORDER BY "id" ASC
       LIMIT ${take}
-      OFFSET ${skip}
     `;
     if (!personas.length) break;
     const promises = [];
@@ -74,7 +73,6 @@ async function createEmbedding() {
       promises.push(promise);
     }
     await Promise.all(promises);
-    skip += take;
   }
 }
 
@@ -96,5 +94,5 @@ async function searchPersona(keyword) {
   }
 }
 
-createEmbedding();
-// searchPersona("星球大战爱好者");
+// createEmbedding();
+searchPersona("星球大战爱好者");

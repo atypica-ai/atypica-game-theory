@@ -93,7 +93,7 @@ ${analyst.topic}
 
 ${analyst.interviews.map((interview) => `<conclusion>\n${interview.conclusion}\n</conclusion>`).join("\n\n")}
 
-以下是研究专家的总结：
+以下是研究过程总结：
 
 <studySummary>
 ${analyst.studySummary}

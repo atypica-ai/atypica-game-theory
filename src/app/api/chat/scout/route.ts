@@ -1,5 +1,5 @@
 import { persistentAIMessageToDB } from "@/ai/messageUtils";
-import { runScoutTaskChatStream } from "@/ai/tools/experts/scoutTask";
+import { runScoutTaskChatStream } from "@/ai/tools/experts/scoutTaskChat";
 import { authOptions } from "@/lib/auth";
 import { rootLogger } from "@/lib/logging";
 import { prisma } from "@/prisma/prisma";

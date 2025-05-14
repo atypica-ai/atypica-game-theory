@@ -1,4 +1,5 @@
 import { PlainTextToolResult } from "@/ai/tools";
+import { fixMalformedUnicodeString } from "@/lib/utils";
 import { prisma } from "@/prisma/prisma";
 import { tool } from "ai";
 import { z } from "zod";
@@ -16,10 +17,13 @@ export const saveAnalystTool = ({
   studyUserChatId: number;
 }) =>
   tool({
-    description: "保存调研主题",
+    description: "保存研究主题",
     parameters: z.object({
-      role: z.string().describe("调研者的角色"),
-      topic: z.string().describe("调研主题的描述，应当完整，确保后续研究有明确方向"),
+      role: z.string().describe("研究者的角色"),
+      topic: z
+        .string()
+        .describe("研究主题的描述，应当完整，详细，确保后续研究有明确方向")
+        .transform(fixMalformedUnicodeString),
     }),
     experimental_toToolResultContent: (result: PlainTextToolResult) => {
       return [{ type: "text", text: result.plainText }];
@@ -29,12 +33,7 @@ export const saveAnalystTool = ({
       if (analystExisting) {
         return {
           analystId: analystExisting.id,
-          plainText: JSON.stringify({
-            analystId: analystExisting.id,
-            role: analystExisting.role,
-            topic: analystExisting.topic,
-            hint: "Analyst already exists for this study, returning existing one",
-          }),
+          plainText: `本次研究的研究主题已保存过，返回现有主题 ID：${JSON.stringify({ analystId: analystExisting.id })}`,
         };
       }
       const analyst = await prisma.analyst.upsert({
@@ -51,27 +50,22 @@ export const saveAnalystTool = ({
       });
       return {
         analystId: analyst.id,
-        plainText: JSON.stringify({
-          analystId: analyst.id,
-          role: analyst.role,
-          topic: analyst.topic,
-        }),
+        plainText: `研究主题保存成功：${JSON.stringify({ analystId: analyst.id })}`,
       };
     },
   });
 
 export interface SaveAnalystStudySummaryToolResult extends PlainTextToolResult {
   analystId: number;
-  studySummary: string;
   plainText: string;
 }
 
 export const saveAnalystStudySummaryTool = () =>
   tool({
-    description: "保存调研专家的研究总结",
+    description: "总结并保存研究过程",
     parameters: z.object({
-      analystId: z.number().describe("调研主题的 ID"),
-      studySummary: z.string().describe("调研专家的研究总结"),
+      analystId: z.number().describe("研究主题的ID"),
+      studySummary: z.string().describe("客观描述研究过程").transform(fixMalformedUnicodeString),
     }),
     experimental_toToolResultContent: (result: PlainTextToolResult) => {
       return [{ type: "text", text: result.plainText }];
@@ -83,11 +77,7 @@ export const saveAnalystStudySummaryTool = () =>
       });
       return {
         analystId: analyst.id,
-        studySummary: analyst.studySummary,
-        plainText: JSON.stringify({
-          analystId: analyst.id,
-          studySummary: analyst.studySummary,
-        }),
+        plainText: `研究过程保存成功：${JSON.stringify({ analystId: analyst.id })}`,
       };
     },
   });
