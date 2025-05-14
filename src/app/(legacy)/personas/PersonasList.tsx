@@ -17,15 +17,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { Pagination } from "@/components/ui/pagination";
 import { UserChatWithMessages } from "@/lib/data/UserChat";
+import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn } from "@/lib/utils";
-import { Persona } from "@/prisma/client";
-import { XIcon } from "lucide-react";
+import { SearchIcon, XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { fetchPersonas } from "./actions";
 
 type PaginationInfo = {
@@ -35,80 +36,138 @@ type PaginationInfo = {
   totalPages: number;
 };
 
+type TPersona = ExtractServerActionData<typeof fetchPersonas>[number];
+
 export default function PersonasList({
-  initialPersonas,
-  paginationInfo,
   scoutUserChat,
+  initialParams,
 }: {
-  initialPersonas: Persona[];
-  paginationInfo?: PaginationInfo;
   scoutUserChat?: UserChatWithMessages;
+  initialParams: { page?: number; search?: string };
 }) {
   const t = useTranslations("PersonasPage");
   const router = useRouter();
-  const [selectedPersona, setSelectedPersona] = useState<Persona | null>(null);
 
-  const [personas, setPersonas] = useState<Persona[]>(initialPersonas);
-  const [pagination, setPagination] = useState<PaginationInfo | undefined>(paginationInfo);
-  const [currentPage, setCurrentPage] = useState<number>(paginationInfo?.page || 1);
+  const [selectedPersona, setSelectedPersona] = useState<TPersona | null>(null);
+  const [personas, setPersonas] = useState<TPersona[]>([]);
+  const [pagination, setPagination] = useState<PaginationInfo | null>(null);
+  const [currentPage, setCurrentPage] = useState<number>(initialParams.page || 1);
+  const [searchQuery, setSearchQuery] = useState<string>(initialParams.search || "");
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  // Initialize page from URL on load
+  // Initialize page and search query from URL on load
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const url = new URL(window.location.href);
-      const pageParam = url.searchParams.get("page");
-      if (pageParam) {
-        setCurrentPage(parseInt(pageParam, 10));
-      }
+    // 不用 const searchParams = useSearchParams(); 因为 useSearchParams 一开始取值是空的
+    const url = new URL(window.location.href);
+    const pageParam = url.searchParams.get("page");
+    const searchParam = url.searchParams.get("search");
+    if (pageParam) {
+      setCurrentPage(parseInt(pageParam, 10));
+    }
+    if (searchParam) {
+      setSearchQuery(searchParam);
     }
   }, []);
 
-  // Update URL when page changes
+  // Update URL when page or search changes
   useEffect(() => {
     const url = new URL(window.location.href);
+
+    // Update page parameter
     url.searchParams.set("page", currentPage.toString());
+
+    // Update search parameter
+    if (searchQuery) {
+      url.searchParams.set("search", searchQuery);
+    } else {
+      url.searchParams.delete("search");
+    }
 
     // If there's a scoutUserChat ID, preserve it in the URL
     if (scoutUserChat) {
       url.searchParams.set("scoutUserChat", scoutUserChat.id.toString());
     }
 
-    window.history.pushState({}, "", url.toString());
-  }, [currentPage, scoutUserChat]);
+    window.history.replaceState({}, "", url.toString());
+  }, [currentPage, searchQuery, scoutUserChat]);
 
-  // Fetch personas when page changes
+  // Fetch personas when page or search query changes
   const fetchPersonasForPage = useCallback(async () => {
     setIsLoading(true);
     try {
       const result = await fetchPersonas({
         scoutUserChatId: scoutUserChat?.id,
+        searchQuery: searchQuery,
         page: currentPage,
       });
-
-      if (result.success) {
-        setPersonas(result.data);
-        if (result.pagination) {
-          setPagination(result.pagination);
-        }
+      if (!result.success) {
+        throw new Error(result.message);
+      }
+      setPersonas(result.data);
+      if (result.pagination) {
+        setPagination(result.pagination);
       }
     } catch (error) {
       console.error("Failed to fetch personas:", error);
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage, scoutUserChat?.id]);
+  }, [currentPage, searchQuery, scoutUserChat?.id]);
 
   useEffect(() => {
     fetchPersonasForPage();
   }, [fetchPersonasForPage]);
 
+  const handleSearch = useCallback((e: FormEvent) => {
+    e.preventDefault();
+    setCurrentPage(1); // Reset to first page on new search
+    setSearchQuery(inputRef.current?.value ?? "");
+  }, []);
+
+  // Handle search clear
+  const handleClearSearch = () => {
+    if (inputRef.current) {
+      inputRef.current.value = "";
+    }
+    setSearchQuery("");
+    setCurrentPage(1);
+  };
+
   return (
-    <div className={cn("flex-1 overflow-hidden w-full flex flex-col gap-6 p-3 max-w-6xl mx-auto")}>
-      <div className="relative w-full mb-4 sm:mb-8">
+    <div className={cn("flex-1 overflow-y-auto scrollbar-thin space-y-6 py-10 px-3")}>
+      <div className="container mx-auto">
         <h1 className="sm:text-lg font-medium px-18 text-center truncate">{t("title")}</h1>
       </div>
-      <div className="flex-1 flex-col gap-6 overflow-y-auto scrollbar-thin">
+
+      {/* Search Input */}
+      <div className="container mx-auto">
+        <form onSubmit={handleSearch} className="flex gap-2">
+          <div className="flex-1 relative flex gap-2">
+            <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder={t("searchPlaceholder")}
+              defaultValue={searchQuery}
+              ref={inputRef}
+              className="pl-9 pr-9"
+            />
+            {searchQuery && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
+                onClick={handleClearSearch}
+                type="button"
+              >
+                <XIcon className="size-3" />
+              </Button>
+            )}
+          </div>
+          <Button type="submit">Search</Button>
+        </form>
+      </div>
+
+      <div className="container mx-auto flex-1 flex-col gap-6 ">
         <div className="mb-8">
           <div className="bg-muted/50 rounded-lg p-6">
             <div className="font-medium mb-2">💡 {t("guide.title")}</div>
@@ -132,8 +191,8 @@ export default function PersonasList({
           </div>
         </div>
 
-        {scoutUserChat && (
-          <div className="flex items-center justify-start gap-3">
+        {scoutUserChat && !isLoading && (
+          <div className="flex items-center justify-start gap-3 mb-4">
             <div className="flex items-center justify-center size-8 rounded-md border">🔍</div>
             <p className="text-sm text-muted-foreground">
               {t("searchResult")}「
@@ -144,7 +203,7 @@ export default function PersonasList({
             </p>
             <Button
               variant="ghost"
-              className="size-6 p-0"
+              size="icon"
               onClick={() => {
                 router.replace("/personas", { scroll: false });
               }}
@@ -154,42 +213,62 @@ export default function PersonasList({
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {personas.map((persona) => (
-            <Card
-              key={persona.id}
-              className="transition-all duration-300 hover:bg-accent/50 cursor-pointer hover:shadow-md"
-              onClick={() => setSelectedPersona(persona)}
-            >
-              <CardHeader>
-                <CardTitle className="text-lg line-clamp-1">{persona.name}</CardTitle>
-                <CardDescription className="text-xs text-muted-foreground">
-                  {t("source")}：{persona.source}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="line-clamp-2 text-sm">{persona.prompt}</div>
-              </CardContent>
-              <CardFooter>
-                <div className="flex flex-wrap gap-1.5">
-                  {(persona.tags as string[])?.map((tag, index) => (
-                    <Badge key={index} variant="outline" className="text-xs">
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
+        {searchQuery && !isLoading && (
+          <div className="flex items-center justify-start gap-3 mb-4">
+            <div className="flex items-center justify-center size-8 rounded-md border">🔍</div>
+            <p className="text-sm text-muted-foreground">
+              {pagination?.totalCount} {t("searchResultsFor")}「{searchQuery}」
+            </p>
+            <Button variant="ghost" size="icon" onClick={handleClearSearch}>
+              <XIcon className="size-3" />
+            </Button>
+          </div>
+        )}
+
+        {isLoading ? (
+          <div className="py-12 flex justify-center items-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </div>
+        ) : personas.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {personas.map((persona) => (
+              <Card
+                key={persona.id}
+                className="transition-all duration-300 hover:bg-accent/50 cursor-pointer hover:shadow-md"
+                onClick={() => setSelectedPersona(persona)}
+              >
+                <CardHeader>
+                  <CardTitle className="text-lg line-clamp-1">{persona.name}</CardTitle>
+                  <CardDescription className="text-xs text-muted-foreground">
+                    {t("source")}：{persona.source}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="line-clamp-2 text-sm">{persona.prompt}</div>
+                </CardContent>
+                <CardFooter>
+                  <div className="flex flex-wrap gap-1.5">
+                    {(persona.tags as string[])?.map((tag, index) => (
+                      <Badge key={index} variant="outline" className="text-xs">
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <div className="py-12 text-center">
+            <p className="text-muted-foreground">
+              {searchQuery ? t("noSearchResults") : t("noPersonas")}
+            </p>
+          </div>
+        )}
       </div>
 
-      {isLoading ? (
-        <div className="flex justify-center">
-          <p className="text-muted-foreground text-sm">Loading...</p>
-        </div>
-      ) : pagination && pagination.totalPages > 1 ? (
-        <div className="flex justify-center">
+      {pagination && pagination.totalPages > 1 ? (
+        <div className="flex justify-center mt-4">
           <Pagination
             currentPage={currentPage}
             totalPages={pagination.totalPages}

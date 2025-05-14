@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Pagination } from "@/components/ui/pagination";
-import { Persona } from "@/prisma/client";
+import { ExtractServerActionData } from "@/lib/serverAction";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -16,6 +16,8 @@ interface SelectPersonaDialogProps {
   onSuccess: () => void;
 }
 
+type TPersona = ExtractServerActionData<typeof fetchPersonas>[number];
+
 export function SelectPersonaDialog({
   open,
   onOpenChange,
@@ -24,7 +26,7 @@ export function SelectPersonaDialog({
 }: SelectPersonaDialogProps) {
   const t = useTranslations("AnalystPage.SelectPersonaDialog");
   const [loading, setLoading] = useState(true);
-  const [personas, setPersonas] = useState<Persona[]>([]);
+  const [personas, setPersonas] = useState<TPersona[]>([]);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);

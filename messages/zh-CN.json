@@ -247,7 +247,11 @@
     "source": "来源",
     "personaDialog": {
       "source": "来源"
-    }
+    },
+    "searchPlaceholder": "搜索用户画像",
+    "searchResultsFor": "搜索结果",
+    "noSearchResults": "没有符合您搜索条件的用户画像",
+    "noPersonas": "暂无用户画像"
   },
   "Email": {
     "PasswordReset": {

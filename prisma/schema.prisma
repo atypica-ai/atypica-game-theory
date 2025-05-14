@@ -13,9 +13,12 @@ generator client {
 
 datasource db {
   provider          = "postgresql"
-  // 新增 extension 的这个 migration 执行前需要给一下 superuser 权限给数据库用户，搞完了以后再恢复回来
-  // ALTER USER username WITH SUPERUSER;
-  // ALTER USER username WITH NOSUPERUSER;
+  // 开发环境:
+  //  新增 extension 的这个 migration 执行前需要给一下 superuser 权限给数据库用户，搞完了以后再恢复回来
+  //  ALTER USER username WITH SUPERUSER; ALTER USER username WITH NOSUPERUSER;
+  // 生产环境:
+  //  不给用户 superuser 权限
+  //  先用用 superuser 运行 CREATE EXTENSION VECTOR; 然后直接 migrate deploy，因为 extension 已经创建，会跳过
   extensions        = [vector]
   url               = env("DATABASE_URL")
   shadowDatabaseUrl = env("SHADOW_DATABASE_URL")

@@ -96,5 +96,5 @@ async function searchPersona(keyword) {
   }
 }
 
-// createEmbedding();
-searchPersona("星球大战爱好者");
+createEmbedding();
+// searchPersona("星球大战爱好者");

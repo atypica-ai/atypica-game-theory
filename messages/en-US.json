@@ -247,7 +247,11 @@
     "source": "Source",
     "personaDialog": {
       "source": "Source"
-    }
+    },
+    "searchPlaceholder": "Search user personas",
+    "searchResultsFor": "Search results",
+    "noSearchResults": "No user personas match your search criteria",
+    "noPersonas": "No user personas yet"
   },
   "Email": {
     "PasswordReset": {
