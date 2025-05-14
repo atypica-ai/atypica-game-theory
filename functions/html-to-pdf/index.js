@@ -3,7 +3,11 @@ const puppeteer = require("puppeteer");
 
 // Create Express app
 const app = express();
-app.use(express.json());
+app.use(
+  express.json({
+    limit: "1mb", // html 内容在 1mb 以内
+  }),
+);
 
 /**
  * Converts a webpage to PDF
@@ -12,7 +16,11 @@ app.use(express.json());
  * @returns {Promise<Buffer>} - PDF buffer content
  */
 async function htmlToPDF({ url, html, filename }) {
-  console.log(`Converting URL: ${url} to PDF`);
+  if (html) {
+    console.log(`Converting HTML content to PDF, size ${html.length} bytes`);
+  } else {
+    console.log(`Converting URL: ${url} to PDF`);
+  }
 
   // Launch browser
   const browser = await puppeteer.launch();
