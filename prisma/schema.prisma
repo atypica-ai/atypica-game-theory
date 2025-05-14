@@ -5,13 +5,18 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
   // https://www.prisma.io/docs/orm/prisma-schema/overview/generators
-  output   = "../src/prisma/client"
+  output          = "../src/prisma/client"
 }
 
 datasource db {
   provider          = "postgresql"
+  // 新增 extension 的这个 migration 执行前需要给一下 superuser 权限给数据库用户，搞完了以后再恢复回来
+  // ALTER USER username WITH SUPERUSER;
+  // ALTER USER username WITH NOSUPERUSER;
+  extensions        = [vector]
   url               = env("DATABASE_URL")
   shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
@@ -82,10 +87,14 @@ model Persona {
   scoutUserChatId Int?      @db.Integer
   scoutUserChat   UserChat? @relation(fields: [scoutUserChatId], references: [id])
 
+  embedding Unsupported("vector(1024)")? // 使用 Unsupported 类型表示向量
+
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
   interviews AnalystInterview[]
+
+  @@index([embedding])
 }
 
 model Analyst {
