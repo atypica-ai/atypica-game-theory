@@ -417,6 +417,9 @@
     "ChatReplay": {
       "skipToEnd": "跳到结尾"
     },
+    "SingleMessage": {
+      "viewToolCall": "查看过程"
+    },
     "StatusDisplay": {
       "background": "atypica 正在后台执行中",
       "outOfQuota": "研究额度已经用完",
@@ -443,8 +446,7 @@
       "paymentSuccess": "🎉 支付成功，atypica.AI 的研究即将开始！"
     },
     "ToolConsole": {
-      "autoFollow": "自动跟随",
-      "manualSelect": "手动选择",
+      "autoFollow": "跟随最新进度",
       "deepThinking": "深度思考",
       "buildingPersona": "正在构建用户画像",
       "personaSource": "来源",

@@ -417,6 +417,9 @@
     "ChatReplay": {
       "skipToEnd": "Skip to End"
     },
+    "SingleMessage": {
+      "viewToolCall": "View process"
+    },
     "StatusDisplay": {
       "background": "atypica is running in the background",
       "outOfQuota": "You have reached your quota",
@@ -443,8 +446,7 @@
       "paymentSuccess": "🎉 Payment successful, atypica.AI research is about to begin!"
     },
     "ToolConsole": {
-      "autoFollow": "Auto Follow",
-      "manualSelect": "Manual Select",
+      "autoFollow": "Follow latest progress",
       "deepThinking": "Deep Thinking",
       "buildingPersona": "Building Persona",
       "personaSource": "Source",

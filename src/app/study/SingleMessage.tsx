@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { Message, Message as MessageType, ToolInvocation } from "ai";
 import { motion } from "framer-motion";
 import { BotIcon, ChevronRight, EyeIcon, LoaderIcon, XIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { PropsWithChildren, ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { useStudyContext } from "./hooks/StudyContext";
 
@@ -21,6 +22,7 @@ const ToolInvocationMessage = ({
   addToolResult: TAddToolResult;
   isLastToolPart?: boolean;
 }) => {
+  const t = useTranslations("StudyPage.SingleMessage");
   const [open, setOpen] = useState(false);
   const { setViewToolInvocation, setLastToolInvocation, setConsoleOpen } = useStudyContext();
 
@@ -49,13 +51,13 @@ const ToolInvocationMessage = ({
         open={open}
         onOpenChange={setOpen}
       >
-        <CollapsibleTrigger className="w-full flex items-center gap-1 hover:opacity-90 group">
+        <CollapsibleTrigger className="w-full flex items-center justify-between gap-2 hover:opacity-90 group">
           <ChevronRight className="h-3 w-3 transition-transform group-data-[state=open]:rotate-90 text-primary" />
-          <div className="ml-1 my-2 font-bold text-xs text-primary">
+          <div className="ml-1 my-2 font-bold text-xs text-primary truncate">
             exec {toolInvocation.toolName}
           </div>
           <div
-            className="text-foreground/70 ml-auto mr-2 p-2 hover:bg-zinc-100 hover:dark:bg-zinc-900 rounded-md"
+            className="shrink-0 text-foreground/70 ml-auto mr-2 p-2 hover:bg-zinc-100 hover:dark:bg-zinc-900 rounded-md flex items-center gap-2 cursor-pointer"
             onClick={(e) => {
               e.stopPropagation();
               setViewToolInvocation(toolInvocation);
@@ -63,6 +65,7 @@ const ToolInvocationMessage = ({
             }}
           >
             <EyeIcon className="size-3.5" />
+            {t("viewToolCall")}
           </div>
         </CollapsibleTrigger>
         <CollapsibleContent className="pl-4">

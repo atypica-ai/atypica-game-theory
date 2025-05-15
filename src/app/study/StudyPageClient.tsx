@@ -39,12 +39,11 @@ const FollowButton = () => {
       onClick={() => unsetViewToolInvocation()}
       variant="ghost"
       size="sm"
+      className="gap-1"
       title={viewToolInvocation ? "Stop following latest result" : "Follow latest result"}
     >
-      {!viewToolInvocation ? <EyeIcon className="h-4 w-4" /> : <EyeOffIcon className="h-4 w-4" />}
-      <span className="ml-1 text-xs">
-        {!viewToolInvocation ? t("autoFollow") : t("manualSelect")}
-      </span>
+      {!viewToolInvocation ? <EyeIcon className="size-4" /> : <EyeOffIcon className="size-4" />}
+      <span className="text-xs">{t("autoFollow")}</span>
     </Button>
   );
 };
