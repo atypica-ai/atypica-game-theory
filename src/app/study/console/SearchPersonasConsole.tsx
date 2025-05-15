@@ -25,8 +25,8 @@ export const SearchPersonasConsole: FC<{
   const { personas } = toolInvocation.result as BuildPersonaToolResult;
 
   return (
-    <div className="py-2">
-      <h3 className="text-sm mb-4">🤖 {t("searchPersonasResult", { count: personas.length })}</h3>
+    <div className="py-2 h-full flex flex-col items-stretch justify-start gap-4">
+      <h3 className="text-sm">🤖 {t("searchPersonasResult", { count: personas.length })}</h3>
       <PersonaGrids personas={personas} />
     </div>
   );

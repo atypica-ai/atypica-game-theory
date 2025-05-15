@@ -294,12 +294,13 @@ export async function fetchAnalystReportsOfStudyUserChat({
   };
 }
 
-export async function fetchPersonasByIds({
-  ids,
-}: {
-  ids: number[];
-}): Promise<
-  ServerActionResult<(Pick<Persona, "id" | "name" | "source" | "prompt"> & { tags: string[] })[]>
+export async function fetchPersonasByIds({ ids }: { ids: number[] }): Promise<
+  ServerActionResult<
+    (Pick<Persona, "id" | "name" | "source" | "prompt"> & {
+      tags: string[];
+      scoutUserChatToken: string | null;
+    })[]
+  >
 > {
   const personas = await prisma.persona.findMany({
     where: { id: { in: ids } },
@@ -309,12 +310,18 @@ export async function fetchPersonasByIds({
       source: true,
       prompt: true,
       tags: true,
+      scoutUserChat: {
+        select: {
+          token: true,
+        },
+      },
     },
   });
   return {
     success: true,
-    data: personas.map(({ tags, ...persona }) => ({
+    data: personas.map(({ tags, scoutUserChat, ...persona }) => ({
       ...persona,
+      scoutUserChatToken: scoutUserChat?.token ?? null,
       tags: tags as string[],
     })),
   };
