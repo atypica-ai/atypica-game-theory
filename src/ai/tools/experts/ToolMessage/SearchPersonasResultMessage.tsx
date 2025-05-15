@@ -6,12 +6,12 @@ import { useTranslations } from "next-intl";
 import { FC } from "react";
 import { BuildPersonaToolResult } from "../buildPersona";
 
-export const BuildPersonaResultMessage: FC<{
+export const SearchPersonasResultMessage: FC<{
   toolInvocation: Omit<Extract<ToolInvocation, { state: "result" }>, "result"> & {
     result: BuildPersonaToolResult;
   };
 }> = ({ toolInvocation }) => {
-  const t = useTranslations("Components.BuildPersonaResultMessage");
+  const t = useTranslations("Components.SearchPersonasResultMessage");
   const { setViewToolInvocation } = useStudyContext();
   const { personas } = toolInvocation.result;
   if (!personas?.length) {
@@ -20,7 +20,7 @@ export const BuildPersonaResultMessage: FC<{
   return (
     <div className="p-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 rounded-lg text-sm">
       <div className="font-medium mb-2 flex items-center gap-2">
-        <div>🤖 {t("personaCreated", { count: personas.length })}</div>
+        <div>🔍 {t("personasFound", { count: personas.length })}</div>
         <Button
           variant="outline"
           size="sm"

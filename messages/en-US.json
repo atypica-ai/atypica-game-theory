@@ -449,15 +449,15 @@
       "autoFollow": "Follow latest progress",
       "deepThinking": "Deep Thinking",
       "buildingPersona": "Building Persona",
+      "buildPersonaResult": "Built {count} persona agents",
+      "searchPersonasResult": "Found {count} user persona agents",
       "personaSource": "Source",
+      "personaPrompt": "Agent",
       "interviewStarting": "Interview starting..",
       "researchConclusion": "Research Conclusion",
       "researchTopic": "Research Topic",
       "interviewing": "Interviewing with {count} people",
       "reportBeingGenerated": "Report being generated..."
-    },
-    "ToolMessage": {
-      "reportGenerated": "Report is generated, click to view"
     }
   },
   "ScoutPage": {
@@ -637,6 +637,20 @@
       "stopListening": "Stop voice input",
       "listeningActive": "Listening...",
       "clickToSpeak": "Click to speak"
+    },
+    "GenerateReportResultMessage": {
+      "reportGenerated": "Report is generated, click to view"
+    },
+    "ScoutTaskChatResultMessage": {
+      "searchStats": "Search Statistics"
+    },
+    "BuildPersonaResultMessage": {
+      "personaCreated": "Built {count} persona agents",
+      "viewDetails": "Click to view"
+    },
+    "SearchPersonasResultMessage": {
+      "personasFound": "Found {count} persona agents",
+      "viewDetails": "Click to view"
     }
   },
   "Maintenance": {

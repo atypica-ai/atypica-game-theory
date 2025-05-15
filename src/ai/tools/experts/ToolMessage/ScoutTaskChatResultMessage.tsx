@@ -2,6 +2,7 @@ import { ScoutTaskChatResult } from "@/ai/tools/experts/scoutTaskChat";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Badge } from "@/components/ui/badge";
 import { ToolInvocation } from "ai";
+import { useTranslations } from "next-intl";
 import { FC } from "react";
 
 export const ScoutTaskChatResultMessage: FC<{
@@ -9,6 +10,7 @@ export const ScoutTaskChatResultMessage: FC<{
     result: ScoutTaskChatResult;
   };
 }> = ({ toolInvocation }) => {
+  const t = useTranslations("Components.ScoutTaskChatResultMessage");
   const { personas, stats } = toolInvocation.result as ScoutTaskChatResult;
   // if (!personas || personas.length === 0) {
   //   return <div className="text-sm text-muted-foreground">No personas found.</div>;
@@ -42,7 +44,7 @@ export const ScoutTaskChatResultMessage: FC<{
       )}
       {stats && (
         <>
-          <h3 className="text-sm font-medium">Stats</h3>
+          <h3 className="text-sm font-medium">📊 {t("searchStats")}</h3>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {Object.entries(stats).map(([platform, count], index) => (
               <div

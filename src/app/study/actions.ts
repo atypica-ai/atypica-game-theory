@@ -5,6 +5,7 @@ import {
   Analyst,
   AnalystInterview,
   AnalystReport,
+  Persona,
   UserChat as UserChatPrisma,
 } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
@@ -290,5 +291,31 @@ export async function fetchAnalystReportsOfStudyUserChat({
   return {
     success: true,
     data: reports,
+  };
+}
+
+export async function fetchPersonasByIds({
+  ids,
+}: {
+  ids: number[];
+}): Promise<
+  ServerActionResult<(Pick<Persona, "id" | "name" | "source" | "prompt"> & { tags: string[] })[]>
+> {
+  const personas = await prisma.persona.findMany({
+    where: { id: { in: ids } },
+    select: {
+      id: true,
+      name: true,
+      source: true,
+      prompt: true,
+      tags: true,
+    },
+  });
+  return {
+    success: true,
+    data: personas.map(({ tags, ...persona }) => ({
+      ...persona,
+      tags: tags as string[],
+    })),
   };
 }

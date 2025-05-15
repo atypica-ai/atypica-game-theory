@@ -11,7 +11,7 @@ export const GenerateReportResultMessage: FC<{
     result: GenerateReportResult;
   };
 }> = ({ toolInvocation }) => {
-  const t = useTranslations("StudyPage.ToolMessage");
+  const t = useTranslations("Components.GenerateReportResultMessage");
   const [report, setReport] = useState<Omit<AnalystReport, "onePageHtml"> | null>(null);
 
   useEffect(() => {

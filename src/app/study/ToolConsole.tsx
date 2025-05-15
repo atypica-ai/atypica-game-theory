@@ -6,6 +6,7 @@ import { GenerateReportConsole } from "./console/GenerateReportConsole";
 import { InterviewChatConsole } from "./console/InterviewChatConsole";
 import { ReasoningThinkingConsole } from "./console/ReasoningThinkingConsole";
 import { ScoutTaskChatConsole } from "./console/ScoutTaskChatConsole";
+import { SearchPersonasConsole } from "./console/SearchPersonasConsole";
 import { useStudyContext } from "./hooks/StudyContext";
 
 export function ToolConsole() {
@@ -26,6 +27,8 @@ export function ToolConsole() {
       return <GenerateReportConsole toolInvocation={activeTool} />;
     case ToolName.buildPersona:
       return <BuildPersonaConsole toolInvocation={activeTool} />;
+    case ToolName.searchPersonas:
+      return <SearchPersonasConsole toolInvocation={activeTool} />;
     default:
       return activeTool ? <ToolInvocationMessage toolInvocation={activeTool} /> : null;
   }

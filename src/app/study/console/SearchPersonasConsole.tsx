@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import { FC } from "react";
 import { PersonaGrids } from "./PersonaGrids";
 
-export const BuildPersonaConsole: FC<{
+export const SearchPersonasConsole: FC<{
   toolInvocation: ToolInvocation;
 }> = ({ toolInvocation }) => {
   const t = useTranslations("StudyPage.ToolConsole");
@@ -25,8 +25,8 @@ export const BuildPersonaConsole: FC<{
   const { personas } = toolInvocation.result as BuildPersonaToolResult;
 
   return (
-    <div className="p-2">
-      <h3 className="text-sm mb-4">🤖 {t("buildPersonaResult", { count: personas.length })}</h3>
+    <div className="py-2">
+      <h3 className="text-sm mb-4">🤖 {t("searchPersonasResult", { count: personas.length })}</h3>
       <PersonaGrids personas={personas} />
     </div>
   );
