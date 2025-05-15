@@ -15,6 +15,7 @@ import { ClipboardCopyIcon, EyeIcon, FileDownIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useState, useTransition } from "react";
 import { toast } from "sonner";
+import { useStudyContext } from "../hooks/StudyContext";
 
 export function AnalystReportShareButton({
   reportToken,
@@ -23,6 +24,7 @@ export function AnalystReportShareButton({
   reportToken: string;
   children?: React.ReactNode;
 }) {
+  const { replay } = useStudyContext();
   const publicReportUrl = `/artifacts/report/${reportToken}/share`;
   const t = useTranslations("StudyPage.AnalystReportShareButton");
   const [open, setOpen] = useState(false);
@@ -92,10 +94,12 @@ export function AnalystReportShareButton({
         </div>
         <AlertDialogFooter>
           <AlertDialogCancel onClick={() => setOpen(false)}>{t("closeButton")}</AlertDialogCancel>
-          <Button variant="outline" onClick={handleDownloadPDF} disabled={isPending}>
-            <FileDownIcon size={16} className="mr-1" />
-            {isPending ? t("generatingPDF") : t("downloadPDF")}
-          </Button>
+          {!replay && (
+            <Button variant="outline" onClick={handleDownloadPDF} disabled={isPending}>
+              <FileDownIcon size={16} className="mr-1" />
+              {isPending ? t("generatingPDF") : t("downloadPDF")}
+            </Button>
+          )}
           <Button onClick={() => window.open(fullUrl, "_blank")}>{t("openButton")}</Button>
         </AlertDialogFooter>
       </AlertDialogContent>
