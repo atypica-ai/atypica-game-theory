@@ -12,7 +12,7 @@ export const BuildPersonaResultMessage: FC<{
   };
 }> = ({ toolInvocation }) => {
   const t = useTranslations("Components.BuildPersonaResultMessage");
-  const { setViewToolInvocation } = useStudyContext();
+  const { setViewToolInvocation, setConsoleOpen } = useStudyContext();
   const { personas } = toolInvocation.result;
   if (!personas?.length) {
     return <div className="text-sm text-muted-foreground">No persona built</div>;
@@ -25,7 +25,10 @@ export const BuildPersonaResultMessage: FC<{
           variant="outline"
           size="sm"
           className="px-2 h-6 text-xs"
-          onClick={() => setViewToolInvocation(toolInvocation)}
+          onClick={() => {
+            setViewToolInvocation(toolInvocation);
+            setConsoleOpen(true);
+          }}
         >
           {t("viewDetails")}
         </Button>
