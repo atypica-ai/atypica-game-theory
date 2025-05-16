@@ -42,11 +42,13 @@ export interface InterviewChatResult extends PlainTextToolResult {
 
 export const interviewChatTool = ({
   userId,
+  studyUserChatId,
   abortSignal,
   statReport,
   studyLog,
 }: {
   userId: number;
+  studyUserChatId: number;
   abortSignal: AbortSignal;
   statReport: StatReporter;
   studyLog: Logger;
@@ -82,6 +84,13 @@ export const interviewChatTool = ({
       instruction,
       language,
     }): Promise<InterviewChatResult> => {
+      const analyst = await prisma.analyst.findUnique({ where: { id: analystId } });
+      if (analyst?.studyUserChatId !== studyUserChatId) {
+        return {
+          interviews: [],
+          plainText: "无效的 analystId，请首先使用 savePersona 保存研究主题",
+        };
+      }
       const single = async ({ id: personaId, name }: { id: number; name: string }) => {
         try {
           const interview = await prisma.analystInterview.findUnique({

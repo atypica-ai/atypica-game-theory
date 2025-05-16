@@ -98,12 +98,12 @@ export function UserChatSession({
           </div>
         )}
         {!readOnly && (
-          <form onSubmit={handleSubmit} className="relative">
+          <form onSubmit={handleSubmit} className="relative bg-background rounded-lg">
             <Textarea
               className={cn(
-                "block min-h-24 max-lg:min-h-20 resize-none focus-visible:border-primary/50 transition-colors rounded-lg",
+                "block min-h-24 max-lg:min-h-20 resize-none focus-visible:border-primary/50 transition-colors",
                 "px-4 pt-3 pb-11",
-                "bg-background text-[15px] placeholder:text-[15px]", // "text-sm placeholder:text-sm",
+                "text-[15px] placeholder:text-[15px]", // "text-sm placeholder:text-sm",
               )}
               enterKeyHint="enter"
               value={input}

@@ -22,7 +22,7 @@ export const saveAnalystTool = ({
       role: z.string().describe("研究者的角色"),
       topic: z
         .string()
-        .describe("研究主题的描述，应当完整，详细，确保后续研究有明确方向")
+        .describe("研究主题，应包含所有背景和上下文，确保后续研究的信息完整")
         .transform(fixMalformedUnicodeString),
     }),
     experimental_toToolResultContent: (result: PlainTextToolResult) => {
@@ -56,11 +56,11 @@ export const saveAnalystTool = ({
   });
 
 export interface SaveAnalystStudySummaryToolResult extends PlainTextToolResult {
-  analystId: number;
+  // analystId: number;
   plainText: string;
 }
 
-export const saveAnalystStudySummaryTool = () =>
+export const saveAnalystStudySummaryTool = ({ studyUserChatId }: { studyUserChatId: number }) =>
   tool({
     description: "总结并保存研究过程",
     parameters: z.object({
@@ -71,12 +71,18 @@ export const saveAnalystStudySummaryTool = () =>
       return [{ type: "text", text: result.plainText }];
     },
     execute: async ({ analystId, studySummary }): Promise<SaveAnalystStudySummaryToolResult> => {
-      const analyst = await prisma.analyst.update({
+      const analyst = await prisma.analyst.findUnique({ where: { id: analystId } });
+      if (analyst?.studyUserChatId !== studyUserChatId) {
+        return {
+          plainText: "无效的 analystId，请首先使用 savePersona 保存研究主题",
+        };
+      }
+      await prisma.analyst.update({
         where: { id: analystId },
         data: { studySummary },
       });
       return {
-        analystId: analyst.id,
+        // analystId,
         plainText: `研究过程保存成功：${JSON.stringify({ analystId: analyst.id })}`,
       };
     },

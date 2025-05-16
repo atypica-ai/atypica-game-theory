@@ -283,12 +283,12 @@ export function ChatBox() {
           </div>
         </div>
 
-        <form onSubmit={handleSubmitMessage} className="relative">
+        <form onSubmit={handleSubmitMessage} className="relative bg-background rounded-lg">
           <Textarea
             className={cn(
               "block min-h-24 max-lg:min-h-20 resize-none focus-visible:border-primary/30 transition-colors rounded-lg",
               "px-4 pt-3 pb-11",
-              "bg-background text-[15px] placeholder:text-[15px]", // "text-sm placeholder:text-sm",
+              "text-[15px] placeholder:text-[15px]", // "text-sm placeholder:text-sm",
             )}
             enterKeyHint="enter"
             placeholder={t("placeholder")}

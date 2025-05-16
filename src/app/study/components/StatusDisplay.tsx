@@ -170,7 +170,7 @@ export function StatusDisplay({
   if (!status) return null;
 
   return (
-    <div className="flex flex-wrap gap-2 px-2 items-center text-primary">
+    <div className="flex flex-wrap items-center gap-2 px-2 text-primary">
       <div className="text-xs tracking-wider font-medium">{getStatusMessage(status)}</div>
       {status === "outOfQuota" && (
         <Button
@@ -187,7 +187,7 @@ export function StatusDisplay({
         <div className="text-xs">({formatDuration(elapsedTime)})</div>
       )}
       {(status === "streaming" || status === "background" || status === "submitted") && (
-        <div className="flex gap-1">
+        <div className="flex gap-1 h-4">
           <span className="animate-bounce">·</span>
           <span className="animate-bounce [animation-delay:0.2s]">·</span>
           <span className="animate-bounce [animation-delay:0.4s]">·</span>

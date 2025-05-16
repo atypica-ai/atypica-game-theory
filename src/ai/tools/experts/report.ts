@@ -19,10 +19,12 @@ export interface GenerateReportResult extends PlainTextToolResult {
 }
 
 export const generateReportTool = ({
+  studyUserChatId,
   abortSignal,
   statReport,
   studyLog,
 }: {
+  studyUserChatId: number;
   abortSignal: AbortSignal;
   statReport: StatReporter;
   studyLog: Logger;
@@ -50,6 +52,14 @@ export const generateReportTool = ({
       regenerate,
       reportToken,
     }): Promise<GenerateReportResult> => {
+      if (
+        (await prisma.analyst.findUnique({ where: { id: analystId } }))?.studyUserChatId !==
+        studyUserChatId
+      ) {
+        return {
+          plainText: "无效的 analystId，请首先使用 savePersona 保存研究主题",
+        };
+      }
       // if (await prisma.analystReport.findUnique({ where: { token: reportToken } })) {
       //   return {
       //     plainText: `为调研主题 ${analystId} 生成报告失败：你提供的 reportToken ${reportToken} 已经存在，无法使用，请重试。你可以忽略提供这个字段，系统会自动生成 token。`,
