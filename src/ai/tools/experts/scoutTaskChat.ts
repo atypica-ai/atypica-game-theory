@@ -50,7 +50,7 @@ const REDUCE_TOKENS: {
   ratio: number;
 } = {
   model: "gemini-2.5-flash",
-  ratio: 8,
+  ratio: 10,
 };
 
 type TPlatform = "小红书" | "抖音" | "TikTok" | "Instagram";

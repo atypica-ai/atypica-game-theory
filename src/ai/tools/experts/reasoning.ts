@@ -32,7 +32,7 @@ ${question}
     return new Promise(async (resolve, reject) => {
       const response = streamText({
         // model: llm("deepseek-r1"),
-        model: llm("gpt-4o"),
+        model: llm("o3-mini"),
         providerOptions: providerOptions,
         system: "你是一个专业的顾问，需要逐步仔细思考这个问题。用较少的文字回复，不要超过300字。",
         messages: [{ role: "user", content: prompt }],

@@ -24,7 +24,8 @@ export function StatusDisplay({ status }: { status: string }) {
   if (!status) return null;
 
   return (
-    <div className="flex gap-2 justify-center items-center text-zinc-500 dark:text-zinc-400 text-xs">
+    <div className="flex gap-2 justify-center items-center text-xs">
+      <span>{getStatusMessage(status)}</span>
       {status === "streaming" && (
         <div className="flex gap-1 h-4">
           <span className="animate-bounce">·</span>
@@ -32,7 +33,6 @@ export function StatusDisplay({ status }: { status: string }) {
           <span className="animate-bounce [animation-delay:0.4s]">·</span>
         </div>
       )}
-      <span>{getStatusMessage(status)}</span>
     </div>
   );
 }

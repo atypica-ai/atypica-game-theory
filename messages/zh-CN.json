@@ -478,8 +478,8 @@
     },
     "inputPlaceholder": "描述你想找的用户特征，例如：帮我找3位经常分享手工巧克力、有试吃经验、对美食很有研究的博主",
     "status": {
-      "thinking": "atypica 正在思考中...",
-      "processing": "正在处理您的请求...",
+      "thinking": "atypica 正在思考中",
+      "processing": "正在处理您的请求",
       "complete": "处理完成 ✨",
       "error": "出现错误，请刷新页面后重试",
       "ready": "atypica 已准备就绪"

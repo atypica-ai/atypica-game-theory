@@ -478,8 +478,8 @@
     },
     "inputPlaceholder": "Describe the user characteristics you're looking for, e.g.: Help me find 3 bloggers who frequently share handmade chocolates, have tasting experience, and are knowledgeable about food",
     "status": {
-      "thinking": "atypica is thinking...",
-      "processing": "Processing your request...",
+      "thinking": "atypica is thinking",
+      "processing": "Processing your request",
       "complete": "Processing complete ✨",
       "error": "An error occurred, please refresh the page and try again",
       "ready": "atypica is ready"

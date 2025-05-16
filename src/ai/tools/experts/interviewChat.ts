@@ -3,9 +3,12 @@ import { convertStepsToAIMessage, fixChatMessages } from "@/ai/messageUtils";
 import { interviewerPrologue, interviewerSystem, personaAgentSystem } from "@/ai/prompt";
 import {
   dySearchTool,
+  insSearchTool,
   PlainTextToolResult,
+  reasoningThinkingTool,
   saveInterviewConclusionTool,
   StatReporter,
+  tiktokSearchTool,
   ToolName,
 } from "@/ai/tools";
 import { getDeployRegion } from "@/lib/request/deployRegion";
@@ -16,13 +19,12 @@ import { generateId, Message, streamText, tool } from "ai";
 import { Logger } from "pino";
 import { z } from "zod";
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const REDUCE_TOKENS: {
   model: LLMModelName;
   ratio: number;
 } = {
-  model: "qwen3-235b-a22b", // 角色扮演不错
-  ratio: 4,
+  model: "gemini-2.5-flash", // 角色扮演不错
+  ratio: 10,
 };
 
 export interface InterviewChatResult extends PlainTextToolResult {
@@ -247,13 +249,13 @@ async function chatWithInterviewer({
       system: prompt.interviewerPrompt,
       messages: fixChatMessages(messages), // 有时候在 tool 调用以后会有空文本回复，还是 fix 下靠谱
       tools: {
-        // [ToolName.reasoningThinking]: reasoningThinkingTool({ abortSignal, statReport }), 减少 tokens 消耗，先隐藏
+        [ToolName.reasoningThinking]: reasoningThinkingTool({ abortSignal, statReport }), // 减少 tokens 消耗，先隐藏
         [ToolName.saveInterviewConclusion]: saveInterviewConclusionTool(analystInterviewId),
       },
       ...(messages.length < 15
         ? {
             toolChoice: "auto",
-            maxSteps: 1, // 减少 token 消耗，从 3 改成 1
+            maxSteps: 1, // 从 3 改成 1，避免连续工具调用消耗太多 token
           }
         : {
             toolChoice: {
@@ -309,8 +311,7 @@ async function chatWithPersona({
   "messages" | "analystInterviewId" | "prompt" | "abortSignal" | "statReport" | "interviewLog"
 >) {
   const result = await new Promise<Omit<Message, "role">>(async (resolve, reject) => {
-    // const reduceTokens = REDUCE_TOKENS as typeof REDUCE_TOKENS | null;
-    const reduceTokens = null as typeof REDUCE_TOKENS | null; // 不使用 qwen，幻觉大，persona 会瞎编
+    const reduceTokens = REDUCE_TOKENS as typeof REDUCE_TOKENS | null;
     const response = streamText({
       model: reduceTokens ? llm(reduceTokens.model) : llm("gpt-4o"),
       providerOptions: providerOptions,
@@ -318,8 +319,9 @@ async function chatWithPersona({
       messages: fixChatMessages(messages), // 有时候在 tool 调用以后会有空文本回复，还是 fix 下靠谱
       tools: {
         [ToolName.dySearch]: dySearchTool,
-        // [ToolName.tiktokSearch]: tiktokSearchTool,
-        // [ToolName.insSearch]: insSearchTool,
+        [ToolName.insSearch]: insSearchTool,
+        [ToolName.tiktokSearch]: tiktokSearchTool,
+        // [ToolName.xhsSearch]: xhsSearchTool,  // 太贵了，先不用
       },
       maxSteps: 3,
       onStepFinish: async (step) => {

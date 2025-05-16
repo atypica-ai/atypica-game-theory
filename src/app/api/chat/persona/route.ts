@@ -1,6 +1,6 @@
 import { llm, providerOptions } from "@/ai/llm";
 import { personaAgentSystem } from "@/ai/prompt";
-import { dySearchTool, ToolName } from "@/ai/tools";
+import { dySearchTool, insSearchTool, tiktokSearchTool, ToolName } from "@/ai/tools";
 import { fetchPersonaById } from "@/app/(legacy)/personas/actions";
 import { authOptions } from "@/lib/auth";
 import { Message, smoothStream, streamText } from "ai";
@@ -30,18 +30,21 @@ export async function POST(req: Request) {
 
   const streamTextResult = streamText({
     // model: llm("claude-3-7-sonnet"),
-    model: llm("qwen3-235b-a22b"),
+    // model: llm("qwen3-235b-a22b"),
+    model: llm("gemini-2.5-flash"),
     providerOptions: providerOptions,
     tools: {
       [ToolName.dySearch]: dySearchTool,
-      // [ToolName.xhsSearch]: xhsSearchTool,
+      [ToolName.insSearch]: insSearchTool,
+      [ToolName.tiktokSearch]: tiktokSearchTool,
+      // [ToolName.xhsSearch]: xhsSearchTool,  // 太贵了，先不用
       // [ToolName.reasoningThinking]: reasoningThinkingTool(),
     },
     experimental_transform: smoothStream({
       delayInMs: 30,
       chunking: /[\u4E00-\u9FFF]|\S+\s+/,
     }),
-    maxSteps: 3,
+    maxSteps: 2,
     system: personaAgentSystem({ persona, language: "中英皆可" }),
     messages: messages,
     abortSignal: req.signal,
