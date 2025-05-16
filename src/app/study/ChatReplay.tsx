@@ -21,12 +21,12 @@ export function ChatReplay() {
   });
   const [messagesContainerRef, messagesEndRef] = useScrollToBottom<HTMLDivElement>();
   return (
-    <>
+    <div className="flex-1 overflow-hidden relative">
       <div
         ref={messagesContainerRef}
         className={cn(
-          "flex-1 flex flex-col pb-12 gap-4 w-full items-center overflow-y-auto scrollbar-thin",
-          "p-4",
+          "h-full w-full flex flex-col items-center gap-4 overflow-y-auto scrollbar-thin",
+          "pt-4 px-4 pb-80",
         )}
       >
         {messagesDisplay.map((message, index) => (
@@ -48,6 +48,6 @@ export function ChatReplay() {
           </Button>
         </div>
       )}
-    </>
+    </div>
   );
 }

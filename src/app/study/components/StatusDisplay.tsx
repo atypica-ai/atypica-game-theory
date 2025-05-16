@@ -170,7 +170,7 @@ export function StatusDisplay({
   if (!status) return null;
 
   return (
-    <div className="flex flex-wrap gap-2 px-2 justify-start sm:justify-center items-center text-primary">
+    <div className="flex flex-wrap gap-2 px-2 items-center text-primary">
       <div className="text-xs tracking-wider font-medium">{getStatusMessage(status)}</div>
       {status === "outOfQuota" && (
         <Button

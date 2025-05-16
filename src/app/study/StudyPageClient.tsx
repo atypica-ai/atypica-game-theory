@@ -15,21 +15,6 @@ import { ShareReplayButton } from "./components/ShareReplayButton";
 import { StudyProvider, useStudyContext } from "./hooks/StudyContext";
 import { ToolConsole } from "./ToolConsole";
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function Header() {
-  const t = useTranslations("StudyPage");
-  const { studyUserChat, replay } = useStudyContext();
-  return (
-    <div className="relative w-full flex items-center justify-between gap-2">
-      <h1 className="flex-1 sm:text-lg font-medium truncate">
-        {studyUserChat.title || t("research")}
-      </h1>
-      {/* <div className="absolute right-0 top-1/2 -translate-y-1/2"> */}
-      {!replay ? <ShareReplayButton studyUserChat={studyUserChat} /> : <NerdStats />}
-    </div>
-  );
-}
-
 // 添加跟随状态切换按钮
 const FollowButton = () => {
   const t = useTranslations("StudyPage.ToolConsole");
@@ -117,7 +102,7 @@ export function StudyPageClient({
     <StudyProvider studyUserChat={studyUserChat} replay={replay}>
       <main className="relative flex-1 flex flex-rows w-dvw h-dvh overflow-hidden">
         {/* Left panel, the chat box */}
-        <section className="h-full w-1/2 max-lg:w-full pb-4 max-lg:pb-16 flex flex-col items-stretch justify-start">
+        <section className="h-full w-1/2 max-lg:w-full pb-4 max-lg:pb-16 pl-2 max-lg:pl-0 flex flex-col items-stretch justify-start">
           <GlobalHeader className="border-border/50">
             {!replay ? (
               <>
@@ -132,14 +117,7 @@ export function StudyPageClient({
               </>
             )}
           </GlobalHeader>
-          <div
-            className={cn(
-              "flex-1 overflow-y-auto scrollbar-thin flex flex-col items-stretch justify-start gap-4 relative",
-            )}
-          >
-            {/* <Header /> */}
-            {replay ? <ChatReplay /> : <ChatBox />}
-          </div>
+          {replay ? <ChatReplay /> : <ChatBox />}
         </section>
 
         {/* Right panel, the console */}

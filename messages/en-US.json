@@ -382,7 +382,6 @@
         "description": "Start a new study to begin analyzing and gathering insights."
       }
     },
-    "research": "Research",
     "ShareReplayButton": {
       "shareReplay": "Share Replay",
       "title": "Replay URL",

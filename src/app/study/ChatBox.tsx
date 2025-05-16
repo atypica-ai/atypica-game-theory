@@ -231,12 +231,12 @@ export function ChatBox() {
   const { isMobile } = useDevice();
 
   return (
-    <>
+    <div className="flex-1 overflow-hidden relative">
       <div
         ref={messagesContainerRef}
         className={cn(
-          "flex-1 flex flex-col pb-12 gap-4 w-full items-center overflow-y-auto scrollbar-thin",
-          "p-4",
+          "h-full w-full flex flex-col items-center gap-4 overflow-y-auto scrollbar-thin",
+          "pt-4 pb-80 px-4",
         )}
       >
         {messages.map((message, index) => (
@@ -268,75 +268,79 @@ export function ChatBox() {
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="relative mx-4">
-        {error && (
-          <div className="text-destructive text-xs mx-32 mb-2 line-clamp-1 text-center">
-            {error?.message?.toString() || error.toString()}
+      <div className="absolute bottom-0 left-0 right-0 w-full px-4 max-lg:px-2">
+        <div className="relative flex flex-col items-center max-lg:items-start justify-center mb-3 max-lg:mb-1.5">
+          {error && (
+            <div className="text-destructive text-xs mx-32 mb-2 line-clamp-1 text-center">
+              {error?.message?.toString() || error.toString()}
+            </div>
+          )}
+          <div className="px-2 py-2 rounded-full shadow bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/90">
+            <StatusDisplay status={uiStatus} backgroundToken={backgroundToken} />
           </div>
-        )}
-        <StatusDisplay status={uiStatus} backgroundToken={backgroundToken} />
-        <div className="absolute right-0 -bottom-1">
-          <NerdStats />
+          <div className="absolute right-0 bottom-0 px-1 py-1 rounded-full shadow bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/90">
+            <NerdStats />
+          </div>
         </div>
-      </div>
 
-      <form onSubmit={handleSubmitMessage} className="relative mx-4">
-        <Textarea
-          className={cn(
-            "block min-h-24 max-lg:min-h-20 resize-none focus-visible:border-primary/50 transition-colors rounded-lg py-3 px-4",
-            inputDisabled ? "opacity-50 cursor-not-allowed" : "",
-            "text-[15px] placeholder:text-[15px]", // "text-sm placeholder:text-sm",
-          )}
-          enterKeyHint="enter"
-          placeholder={t("placeholder")}
-          value={input}
-          disabled={inputDisabled}
-          onChange={(event) => {
-            setInput(event.target.value);
-          }}
-          onKeyDown={(e) => {
-            if (!isMobile && e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
-              e.preventDefault();
-              if (input.trim()) {
-                const form = e.currentTarget.form;
-                if (form) form.requestSubmit();
+        <form onSubmit={handleSubmitMessage} className="relative bg-background">
+          <Textarea
+            className={cn(
+              "block min-h-24 max-lg:min-h-20 resize-none focus-visible:border-primary/50 transition-colors rounded-lg py-3 px-4",
+              inputDisabled ? "opacity-50 cursor-not-allowed" : "",
+              "text-[15px] placeholder:text-[15px]", // "text-sm placeholder:text-sm",
+            )}
+            enterKeyHint="enter"
+            placeholder={t("placeholder")}
+            value={input}
+            disabled={inputDisabled}
+            onChange={(event) => {
+              setInput(event.target.value);
+            }}
+            onKeyDown={(e) => {
+              if (!isMobile && e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
+                e.preventDefault();
+                if (input.trim()) {
+                  const form = e.currentTarget.form;
+                  if (form) form.requestSubmit();
+                }
               }
-            }
-          }}
-        />
-        <div className="absolute right-1 bottom-1 lg:right-2 lg:bottom-2 flex items-center gap-2">
-          {!inputDisabled && !studyCompleted && (
-            <Button
-              variant="secondary"
-              size="sm"
-              className="h-8 text-xs origin-top-right"
-              onClick={handleContinueChat}
-            >
-              <PlayIcon className="size-2.5" />
-              <span>{t("continueStudy")}</span>
-            </Button>
-          )}
-          {uiStatus === "background" || uiStatus === "streaming" ? (
-            <CancelButton
-              className="size-7"
-              showEvictionWarning={maybeEvicted}
-              onUserCancel={async () => {
-                await userStopBackgroundStudy(studyUserChatId);
-                setTimeout(() => window.location.reload(), 100);
-              }}
-            />
-          ) : (
-            <Button
-              type="submit"
-              variant="secondary"
-              disabled={inputDisabled || !input.trim()}
-              className="rounded-full size-9"
-            >
-              <ArrowRightIcon className="h-5 w-5 text-primary" />
-            </Button>
-          )}
-        </div>
-      </form>
-    </>
+            }}
+          />
+          <div className="absolute right-1 bottom-1 lg:right-2 lg:bottom-2 flex items-center gap-2">
+            {!inputDisabled && !studyCompleted && (
+              <Button
+                variant="secondary"
+                size="sm"
+                className="h-8 text-xs origin-top-right"
+                onClick={handleContinueChat}
+              >
+                <PlayIcon className="size-2.5" />
+                <span>{t("continueStudy")}</span>
+              </Button>
+            )}
+            {uiStatus === "background" || uiStatus === "streaming" ? (
+              <CancelButton
+                className="size-7"
+                showEvictionWarning={maybeEvicted}
+                onUserCancel={async () => {
+                  await userStopBackgroundStudy(studyUserChatId);
+                  setTimeout(() => window.location.reload(), 100);
+                }}
+              />
+            ) : (
+              <Button
+                type="submit"
+                variant="secondary"
+                disabled={inputDisabled || !input.trim()}
+                className="rounded-full size-9"
+              >
+                <ArrowRightIcon className="h-5 w-5 text-primary" />
+              </Button>
+            )}
+          </div>
+        </form>
+      </div>
+    </div>
   );
 }

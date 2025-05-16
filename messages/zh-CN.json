@@ -382,7 +382,6 @@
         "description": "开始一项新研究，开始分析并收集洞察。"
       }
     },
-    "research": "研究",
     "ShareReplayButton": {
       "shareReplay": "分享回放",
       "title": "回放链接",
