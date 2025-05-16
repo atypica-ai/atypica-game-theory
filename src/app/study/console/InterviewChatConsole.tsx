@@ -113,7 +113,7 @@ const SingleInterviewChat = ({
   const t = useTranslations("StudyPage.ToolConsole");
   const { studyUserChat } = useStudyContext();
 
-  const [interviewId, setInterviewId] = useState<number | null>(null);
+  // const [interviewId, setInterviewId] = useState<number | null>(null);
   const [backgroundToken, setBackgroundToken] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [conclusion, setConclusion] = useState<string | null>(null);
@@ -138,7 +138,7 @@ const SingleInterviewChat = ({
       setMessages(interviewResult.data.interviewUserChat?.messages || []);
       setPersona(personaResult.data);
       setBackgroundToken(interviewResult.data.interviewUserChat?.backgroundToken ?? null);
-      setInterviewId(interviewResult.data.id);
+      // setInterviewId(interviewResult.data.id);
       setConclusion(interviewResult.data.conclusion);
     } catch (error) {
       console.log("Error fetching interview:", (error as Error).message);
@@ -179,10 +179,13 @@ const SingleInterviewChat = ({
       {messagesDisplay.map((message) => (
         <StreamSteps
           key={`message-${message.id}`}
-          avatar={{
-            user: <HippyGhostAvatar seed={personaId} />,
-            assistant: <HippyGhostAvatar seed={interviewId || analyst.id} />,
-          }}
+          avatar={
+            message.role === "assistant" ? (
+              <HippyGhostAvatar seed={personaId} />
+            ) : message.role === "user" ? (
+              <HippyGhostAvatar seed={analyst.id} />
+            ) : undefined
+          }
           nickname={message.role === "assistant" ? persona?.name : analyst.role}
           role={message.role}
           content={message.content}

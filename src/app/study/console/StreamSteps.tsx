@@ -24,7 +24,7 @@ export const StreamSteps = ({
   content,
   parts,
 }: {
-  avatar?: Partial<{ user: ReactNode; assistant: ReactNode; system: ReactNode }>;
+  avatar?: ReactNode;
   nickname?: string;
   role: "assistant" | "user" | "system" | "data";
   content: string | ReactNode;
@@ -71,11 +71,11 @@ export const StreamSteps = ({
         )}
       >
         {role === "user"
-          ? avatar?.user || <UserIcon className="size-6" />
+          ? avatar || <UserIcon className="size-6" />
           : role === "assistant"
-            ? avatar?.assistant || <BotIcon className="size-6" />
+            ? avatar || <BotIcon className="size-6" />
             : role === "system"
-              ? avatar?.system || <CpuIcon className="size-6" />
+              ? avatar || <CpuIcon className="size-6" />
               : null}
         {nickname && (
           <div className="leading-[24px] text-zinc-800 dark:text-zinc-200 text-sm font-medium">

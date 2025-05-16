@@ -1,5 +1,5 @@
 import { llm, LLMModelName, providerOptions } from "@/ai/llm";
-import { convertStepsToAIMessage, fixChatMessages } from "@/ai/messageUtils";
+import { convertStepsToAIMessage } from "@/ai/messageUtils";
 import { interviewerPrologue, interviewerSystem, personaAgentSystem } from "@/ai/prompt";
 import {
   dySearchTool,
@@ -10,6 +10,7 @@ import {
   StatReporter,
   tiktokSearchTool,
   ToolName,
+  xhsSearchTool,
 } from "@/ai/tools";
 import { getDeployRegion } from "@/lib/request/deployRegion";
 import { fixMalformedUnicodeString, generateToken } from "@/lib/utils";
@@ -23,7 +24,7 @@ const REDUCE_TOKENS: {
   model: LLMModelName;
   ratio: number;
 } = {
-  model: "gemini-2.5-flash", // 角色扮演不错
+  model: "gemini-2.5-flash",
   ratio: 10,
 };
 
@@ -247,15 +248,16 @@ async function chatWithInterviewer({
       model: llm("claude-3-7-sonnet"), // 不能用 gpt-4o，指令遵循的比较差，会结束不了
       providerOptions: providerOptions,
       system: prompt.interviewerPrompt,
-      messages: fixChatMessages(messages), // 有时候在 tool 调用以后会有空文本回复，还是 fix 下靠谱
+      temperature: 0.5,
+      messages: messages,
       tools: {
         [ToolName.reasoningThinking]: reasoningThinkingTool({ abortSignal, statReport }), // 减少 tokens 消耗，先隐藏
         [ToolName.saveInterviewConclusion]: saveInterviewConclusionTool(analystInterviewId),
       },
-      ...(messages.length < 15
+      ...(messages.length < 10
         ? {
             toolChoice: "auto",
-            maxSteps: 1, // 从 3 改成 1，避免连续工具调用消耗太多 token
+            maxSteps: 2,
           }
         : {
             toolChoice: {
@@ -316,14 +318,15 @@ async function chatWithPersona({
       model: reduceTokens ? llm(reduceTokens.model) : llm("gpt-4o"),
       providerOptions: providerOptions,
       system: prompt.personaPrompt,
-      messages: fixChatMessages(messages), // 有时候在 tool 调用以后会有空文本回复，还是 fix 下靠谱
+      temperature: 0.3,
+      messages: messages,
       tools: {
+        [ToolName.tiktokSearch]: tiktokSearchTool,
         [ToolName.dySearch]: dySearchTool,
         [ToolName.insSearch]: insSearchTool,
-        [ToolName.tiktokSearch]: tiktokSearchTool,
-        // [ToolName.xhsSearch]: xhsSearchTool,  // 太贵了，先不用
+        [ToolName.xhsSearch]: xhsSearchTool,
       },
-      maxSteps: 3,
+      maxSteps: 2,
       onStepFinish: async (step) => {
         interviewLog.info({
           msg: "chatWithPersona streamText onStepFinish",
@@ -414,58 +417,38 @@ export async function runInterview({
     data: { backgroundToken },
   });
 
-  const personaAgent: {
-    messages: Message[];
-  } = {
-    messages: [{ id: generateId(), role: "user", content: prompt.interviewerProloguePrompt }],
+  const personaAgent = {
+    messages: [
+      { id: generateId(), role: "user", content: prompt.interviewerProloguePrompt },
+    ] as Message[],
   };
-
-  const interviewer: {
-    messages: Message[];
-  } = {
-    messages: [],
-  };
+  const interviewer = { messages: [] as Message[] };
+  const saveParams = { analystInterviewId, interviewUserChatId, backgroundToken, interviewLog };
+  const chatParams = { analystInterviewId, prompt, abortSignal, statReport, interviewLog };
 
   while (true) {
     const personaReply = await chatWithPersona({
       messages: personaAgent.messages,
-      analystInterviewId,
-      prompt,
-      abortSignal,
-      statReport,
-      interviewLog,
+      ...chatParams,
     });
     // interviewLog.info(`Persona:\n${message.content}\n`);
+    await saveMessage({ message: { ...personaReply, role: "assistant" }, ...saveParams });
     personaAgent.messages.push({ ...personaReply, role: "assistant" });
     interviewer.messages.push({ ...personaReply, role: "user" });
 
-    await saveMessage({
-      message: { ...personaReply, role: "assistant" },
-      analystInterviewId,
-      interviewUserChatId,
-      backgroundToken,
-      interviewLog,
-    });
-
     const interviewerReply = await chatWithInterviewer({
       messages: interviewer.messages,
-      analystInterviewId,
-      prompt,
-      abortSignal,
-      statReport,
-      interviewLog,
+      ...chatParams,
     });
     // interviewLog.info(`Interviewer:\n${message.content}\n`);
+    await saveMessage({ message: { ...interviewerReply, role: "user" }, ...saveParams });
     interviewer.messages.push({ ...interviewerReply, role: "assistant" });
     personaAgent.messages.push({ ...interviewerReply, role: "user" });
 
-    await saveMessage({
-      message: { ...interviewerReply, role: "user" },
-      analystInterviewId,
-      interviewUserChatId,
-      backgroundToken,
-      interviewLog,
-    });
+    // TODO 这里可能有个问题：
+    // 有时候 personaReply 或 interviewerReply 的 content 是空的，这时候一般是调用了一次工具但还没有文本回复
+    // 由于 interviewer 的 assistant 消息会转换成 user 消息给 persona，反过来也是一样，user role message 转换成 coreMessage 的时候，tool 的内容会被忽略，这样就产生了一条空消息，没意义
+    // 还没太好的解决方案，有一种方案就是让 interviewer 或者 persona 继续生成，直到输出文本，然后再让另一方继续
 
     const _updated = await prisma.analystInterview.findUnique({
       where: { id: analystInterviewId },

@@ -15,7 +15,7 @@ import { Logger } from "pino";
 
 export const CONTINUE_ASSISTANT_STEPS = "[CONTINUE ASSISTANT STEPS]";
 
-export function fixChatMessages(messages: Message[]) {
+function fixChatMessages(messages: Message[]) {
   let fixed = messages.map((message) => {
     if (!message.parts) {
       return message;

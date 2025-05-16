@@ -2,6 +2,7 @@
 import { ToolName } from "@/ai/tools";
 import { ClarifySessionBodySchema } from "@/app/api/chat/interviewSession/lib";
 import { UserChatSession } from "@/components/chat/UserChatSession";
+import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import {
   Accordion,
   AccordionContent,
@@ -79,10 +80,15 @@ const ProjectDetailsPanel = ({ projectDetails }: { projectDetails: ProjectDetail
 };
 
 export function ClarifySessionClient({
+  user,
   interviewSession,
   initialMessages = [],
   checkpointId,
 }: {
+  user: {
+    id: number;
+    email: string;
+  };
   interviewSession: Omit<
     ExtractServerActionData<typeof fetchClarifyInterviewSession>,
     "userChatId"
@@ -178,6 +184,13 @@ export function ClarifySessionClient({
             <UserChatSession
               chatId={interviewSession.userChatId?.toString()}
               // chatTitle={interviewSession.title}
+              nickname={{ user: user.email, assistant: "atypica.AI" }}
+              avatar={{
+                user: <HippyGhostAvatar className="size-8" seed={user.id} />,
+                assistant: (
+                  <HippyGhostAvatar className="size-8" seed={interviewSession.userChatId} />
+                ),
+              }}
               useChatHelpers={useChatHelpers}
               useChatRef={useChatRef}
               readOnly={clarifyCompleted}

@@ -119,7 +119,7 @@ export const SingleMessage = ({
     toolCallId: string;
     result: PlainTextToolResult;
   }) => void;
-  avatar?: Partial<{ user: ReactNode; assistant: ReactNode; system: ReactNode }>;
+  avatar?: ReactNode;
   nickname?: string;
   onDelete?: () => void;
   isLastMessage?: boolean;
@@ -213,7 +213,7 @@ export const SingleMessage = ({
         transition={{ duration: 0.4, ease: "easeOut" }}
       >
         <div className="mb-4 flex items-center justify-start gap-4">
-          {avatar?.assistant || <BotIcon className="size-6" />}
+          {avatar || <BotIcon className="size-6" />}
           {nickname && (
             <div className="leading-[32px] text-zinc-800 dark:text-zinc-200 text-sm font-medium">
               {nickname}

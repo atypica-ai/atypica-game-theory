@@ -34,7 +34,11 @@ export function ChatReplay() {
             key={message.id}
             addToolResult={() => {}}
             message={message}
-            avatar={{ assistant: <HippyGhostAvatar seed={studyUserChat.token} /> }}
+            avatar={
+              message.role === "assistant" ? (
+                <HippyGhostAvatar seed={studyUserChat.token} />
+              ) : undefined
+            }
             isLastMessage={index === messagesDisplay.length - 1}
           ></SingleMessage>
         ))}

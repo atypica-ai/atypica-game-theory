@@ -17,9 +17,9 @@ const PlainText = ({ children }: PropsWithChildren) => {
 };
 
 export const ChatMessage = (message: {
-  nickname?: string;
   role: "assistant" | "user" | "system" | "data";
-  avatar?: Partial<{ user: ReactNode; assistant: ReactNode; system: ReactNode }>;
+  nickname?: string;
+  avatar?: ReactNode;
   content: string | ReactNode;
   parts?: MessageType["parts"];
 }) => {
@@ -36,17 +36,15 @@ export const ChatMessage = (message: {
     >
       <div className="mb-3 flex flex-row items-center gap-2 flex-shrink-0">
         {role === "user"
-          ? avatar?.user || <UserIcon className="size-6 text-blue-500 dark:text-zinc-200" />
+          ? avatar || <UserIcon className="size-6 text-blue-500 dark:text-zinc-200" />
           : role === "assistant"
-            ? avatar?.assistant || <BotIcon className="size-6 text-gray-500 dark:text-zinc-200" />
+            ? avatar || <BotIcon className="size-6 text-gray-500 dark:text-zinc-200" />
             : role === "system"
-              ? avatar?.system || <CpuIcon className="size-6 text-green-500 dark:text-zinc-200" />
+              ? avatar || <CpuIcon className="size-6 text-green-500 dark:text-zinc-200" />
               : null}
-        {nickname && (
-          <div className="leading-[24px] text-zinc-800 dark:text-zinc-200 text-sm font-medium">
-            {nickname}
-          </div>
-        )}
+        <div className="leading-[24px] text-zinc-800 dark:text-zinc-200 text-sm font-medium">
+          {nickname ?? role}
+        </div>
       </div>
 
       <div className={cn("flex-1 overflow-hidden flex flex-col gap-3 px-1")}>

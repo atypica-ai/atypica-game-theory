@@ -6,6 +6,8 @@ import { useEffect, useRef } from "react";
 export function AgentChatPage({
   chatId,
   chatTitle,
+  nickname,
+  avatar,
   useChatAPI,
   readOnly,
   initialMessages = [],
@@ -13,6 +15,8 @@ export function AgentChatPage({
 }: {
   chatId?: string; // 不一定是 UserChat 的 id
   chatTitle?: string;
+  nickname?: Parameters<typeof UserChatSession>[0]["nickname"];
+  avatar?: Parameters<typeof UserChatSession>[0]["avatar"];
   useChatAPI?: string;
   readOnly?: boolean;
   initialMessages?: Message[];
@@ -48,6 +52,8 @@ export function AgentChatPage({
       <UserChatSession
         chatId={chatId}
         chatTitle={chatTitle}
+        nickname={nickname}
+        avatar={avatar}
         readOnly={readOnly}
         useChatHelpers={useChatHelpers}
         useChatRef={useChatRef}

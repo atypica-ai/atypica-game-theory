@@ -92,6 +92,7 @@ export default async function ClarifySessionPage({
         interviewSession={{ ...interviewSession, userChatId }}
         initialMessages={messages}
         checkpointId={checkpoint?.id}
+        user={session.user}
       />
     </PageLayout>
   );

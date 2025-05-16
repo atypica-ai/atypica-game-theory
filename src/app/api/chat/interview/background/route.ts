@@ -21,7 +21,8 @@ export async function POST(req: Request) {
     personaId,
     analystId,
     instruction: "",
-    language: "中英皆可",
+    // language: "中英皆可",
+    language: "中文",
   });
 
   waitUntil(

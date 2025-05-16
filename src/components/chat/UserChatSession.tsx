@@ -8,15 +8,15 @@ import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
 import { cn, useDevice } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
 import { ArrowRightIcon, PlayIcon } from "lucide-react";
-import { useSession } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
-import { RefObject, useCallback } from "react";
-import HippyGhostAvatar from "../HippyGhostAvatar";
+import { ReactNode, RefObject, useCallback } from "react";
 import { ChatMessage } from "./ChatMessage";
 
 export function UserChatSession({
-  chatId,
+  // chatId,
   chatTitle,
+  nickname,
+  avatar,
   readOnly,
   limit,
   useChatHelpers: { messages, status, error, handleSubmit, input, setInput },
@@ -24,6 +24,8 @@ export function UserChatSession({
 }: {
   chatId?: string;
   chatTitle?: string;
+  nickname?: Partial<{ user: string; assistant: string; system: string; data: string }>;
+  avatar?: Partial<{ user: ReactNode; assistant: ReactNode; system: ReactNode; data: ReactNode }>;
   readOnly?: boolean;
   limit?: number; // 向前保留的消息数量
   useChatHelpers: Omit<ReturnType<typeof useChat>, "append" | "reload" | "setMessages">;
@@ -31,7 +33,6 @@ export function UserChatSession({
 }) {
   const t = useTranslations("Components.UserChatSession");
   const locale = useLocale();
-  const { data: session } = useSession();
 
   const handleContinueChat = useCallback(() => {
     if (messages.length > 0 && messages[messages.length - 1].role === "user") {
@@ -60,19 +61,8 @@ export function UserChatSession({
           <ChatMessage
             key={message.id}
             role={message.role}
-            nickname={
-              message.role === "user"
-                ? t("you")
-                : message.role === "assistant"
-                  ? "atypica.AI"
-                  : message.role
-            }
-            avatar={{
-              user: session?.user ? (
-                <HippyGhostAvatar className="size-8" seed={session.user.id} />
-              ) : undefined,
-              assistant: <HippyGhostAvatar className="size-8" seed={chatId} />,
-            }}
+            nickname={nickname ? nickname[message.role] : undefined}
+            avatar={avatar ? avatar[message.role] : undefined}
             content={message.content}
             parts={message.parts}
           ></ChatMessage>

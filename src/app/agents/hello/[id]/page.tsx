@@ -1,3 +1,4 @@
+import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { authOptions } from "@/lib/auth";
 import { fetchUserChatById } from "@/lib/data/UserChat";
 import { getServerSession } from "next-auth/next";
@@ -29,6 +30,11 @@ export default async function HelloAgentPage({ params }: { params: Promise<{ id:
     <AgentChatPage
       chatId={userChat.id.toString()}
       chatTitle={userChat.title}
+      nickname={{ user: session.user.email, assistant: "atypica.AI" }}
+      avatar={{
+        user: <HippyGhostAvatar className="size-8" seed={session.user.id} />,
+        assistant: <HippyGhostAvatar className="size-8" seed={userChat.id} />,
+      }}
       initialMessages={userChat.messages}
       useChatAPI="/api/chat/hello"
     />

@@ -1,9 +1,10 @@
+"use client";
 import { cn, proxiedImageLoader } from "@/lib/utils";
 import Image from "next/image";
 import { FC, HTMLAttributes } from "react";
 
 const HippyGhostAvatar: FC<
-  HTMLAttributes<HTMLDivElement> & { seed: number | string | undefined }
+  HTMLAttributes<HTMLDivElement> & { seed: number | string | undefined | null }
 > = ({ seed, className }) => {
   // If seed is a string, convert it to a number
   const numericSeed =

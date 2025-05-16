@@ -84,10 +84,13 @@ export const ScoutTaskChatConsole = ({ toolInvocation }: { toolInvocation: ToolI
       {messagesDisplay.map((message) => (
         <StreamSteps
           key={`message-${message.id}`}
-          avatar={{
-            assistant: <HippyGhostAvatar seed={scoutUserChatToken} />,
-            user: <HippyGhostAvatar seed={studyUserChat.token} />,
-          }}
+          avatar={
+            message.role === "assistant" ? (
+              <HippyGhostAvatar seed={scoutUserChatToken} />
+            ) : message.role === "user" ? (
+              <HippyGhostAvatar seed={studyUserChat.token} />
+            ) : undefined
+          }
           role={message.role}
           content={message.content}
           parts={message.parts}

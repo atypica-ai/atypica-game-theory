@@ -3,6 +3,7 @@ import { ToolName } from "@/ai/tools";
 import { CollectSessionBodySchema } from "@/app/api/chat/interviewSession/lib";
 import { fetchCollectInterviewSession } from "@/app/interviewProject/actions";
 import { UserChatSession } from "@/components/chat/UserChatSession";
+import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -179,6 +180,11 @@ export function CollectSessionClient({
           <UserChatSession
             chatId={interviewSession.userChatId?.toString()}
             // chatTitle={interviewSession.title}
+            nickname={{ user: "You", assistant: "atypica.AI" }}
+            avatar={{
+              user: undefined,
+              assistant: <HippyGhostAvatar className="size-8" seed={interviewSession.userChatId} />,
+            }}
             useChatHelpers={useChatHelpers}
             useChatRef={useChatRef}
             readOnly={interviewCompleted}

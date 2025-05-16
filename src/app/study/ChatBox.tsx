@@ -246,7 +246,11 @@ export function ChatBox() {
             message={message}
             nickname={message.role === "assistant" ? "atypica.AI" : undefined}
             addToolResult={addToolResult}
-            avatar={{ assistant: <HippyGhostAvatar seed={studyUserChatToken} /> }}
+            avatar={
+              message.role === "assistant" ? (
+                <HippyGhostAvatar seed={studyUserChatToken} />
+              ) : undefined
+            }
             // TODO: 目前先禁用这个功能
             // onDelete={
             //   message.role === "user" && index >= messages.length - 2

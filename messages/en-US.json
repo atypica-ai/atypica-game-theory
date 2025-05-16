@@ -629,8 +629,7 @@
       "redirectToStripe": "You'll be redirected to our secure payment page"
     },
     "UserChatSession": {
-      "continue": "Continue",
-      "you": "You"
+      "continue": "Continue"
     },
     "VoiceInputButton": {
       "startListening": "Start voice input",
