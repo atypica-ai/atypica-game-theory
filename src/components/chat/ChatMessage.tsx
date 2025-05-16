@@ -28,13 +28,13 @@ export const ChatMessage = (message: {
   return (
     <motion.div
       className={cn(
-        "flex flex-row items-start justify-start gap-2 p-3 w-full first-of-type:mt-2 rounded-sm",
+        "p-3 w-full rounded-sm",
         role === "user" ? "bg-zinc-100/70 dark:bg-zinc-800" : "",
       )}
       initial={{ y: 5, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
     >
-      <div className={cn("flex flex-rot items-center gap-2 flex-shrink-0")}>
+      <div className="mb-3 flex flex-row items-center gap-2 flex-shrink-0">
         {role === "user"
           ? avatar?.user || <UserIcon className="size-6 text-blue-500 dark:text-zinc-200" />
           : role === "assistant"
@@ -42,14 +42,14 @@ export const ChatMessage = (message: {
             : role === "system"
               ? avatar?.system || <CpuIcon className="size-6 text-green-500 dark:text-zinc-200" />
               : null}
-      </div>
-
-      <div className={cn("flex-1 overflow-hidden flex flex-col gap-3 px-1")}>
         {nickname && (
           <div className="leading-[24px] text-zinc-800 dark:text-zinc-200 text-sm font-medium">
             {nickname}
           </div>
         )}
+      </div>
+
+      <div className={cn("flex-1 overflow-hidden flex flex-col gap-3 px-1")}>
         {parts ? (
           parts.map((part, i) => {
             // 如果是控制台环境，只显示最后一条

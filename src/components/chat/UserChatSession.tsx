@@ -48,21 +48,13 @@ export function UserChatSession({
   const { isMobile } = useDevice();
 
   return (
-    <div
-      className={cn(
-        "w-full h-full overflow-hidden",
-        "flex flex-col items-stretch justify-between gap-3",
-      )}
-    >
-      {chatTitle && (
-        <div className="relative w-full mt-3">
-          <h1 className="sm:text-lg font-medium text-center truncate">{chatTitle}</h1>
-        </div>
-      )}
-
+    <div className="w-full h-full overflow-hidden relative pb-4">
       <div
         ref={messagesContainerRef}
-        className="flex-1 flex flex-col gap-6 w-full items-center overflow-y-auto scrollbar-thin p-3"
+        className={cn(
+          "h-full w-full overflow-y-auto scrollbar-thin flex flex-col items-center gap-4",
+          "pt-16 pb-80 px-3",
+        )}
       >
         {(limit ? messages.slice(-limit) : messages).map((message) => (
           <ChatMessage
@@ -93,61 +85,73 @@ export function UserChatSession({
         <div ref={messagesEndRef} />
       </div>
 
-      {!readOnly && <StatusDisplay status={status} />}
-      {!readOnly && (
-        <form onSubmit={handleSubmit} className="relative mx-3 mb-3">
-          <Textarea
-            className={cn(
-              "block min-h-24 max-lg:min-h-20 resize-none focus-visible:border-primary/50 transition-colors rounded-lg py-3 px-4",
-              inputDisabled ? "opacity-50 cursor-not-allowed" : "",
-              "text-[15px] placeholder:text-[15px]", // "text-sm placeholder:text-sm",
-            )}
-            enterKeyHint="enter"
-            value={input}
-            disabled={inputDisabled}
-            onChange={(event) => {
-              setInput(event.target.value);
-            }}
-            onKeyDown={(e) => {
-              if (!isMobile && e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
-                e.preventDefault();
-                if (input.trim()) {
-                  const form = e.currentTarget.form;
-                  if (form) form.requestSubmit();
-                }
-              }
-            }}
-          />
-          <div className="absolute right-1 bottom-1 lg:right-2 lg:bottom-2 flex items-center gap-2">
-            {!inputDisabled && (
-              <Button
-                variant="secondary"
-                size="sm"
-                className="h-8 text-xs origin-top-right"
-                onClick={handleContinueChat}
-              >
-                <PlayIcon className="size-2.5" />
-                <span>{t("continue")}</span>
-              </Button>
-            )}
-            <VoiceInputButton
-              disabled={inputDisabled}
-              onTranscript={(text) => {
-                setInput((current) => (current ? `${current} ${text}` : text));
-              }}
-              language={locale === "zh-CN" ? "zh-CN" : "en-US"}
-            />
-            <Button
-              type="submit"
-              variant="secondary"
-              disabled={inputDisabled || !input.trim()}
-              className="rounded-full size-9"
-            >
-              <ArrowRightIcon className="h-5 w-5 text-primary" />
-            </Button>
-          </div>
-        </form>
+      {chatTitle && (
+        <div className="absolute top-0 left-0 right-0 p-3 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/90">
+          <h1 className="sm:text-lg font-medium text-center truncate">{chatTitle}</h1>
+        </div>
       )}
+
+      <div className="absolute bottom-0 left-0 right-0 w-full px-3 max-lg:px-1 pb-3 max-lg:pb-1">
+        {!readOnly && (
+          <div className="w-fit mx-auto mb-3 max-lg:mb-1.5 px-4 py-2 rounded-full shadow bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/90">
+            <StatusDisplay status={status} />
+          </div>
+        )}
+        {!readOnly && (
+          <form onSubmit={handleSubmit} className="relative">
+            <Textarea
+              className={cn(
+                "block min-h-24 max-lg:min-h-20 resize-none focus-visible:border-primary/50 transition-colors rounded-lg",
+                "px-4 pt-3 pb-11",
+                "bg-background text-[15px] placeholder:text-[15px]", // "text-sm placeholder:text-sm",
+              )}
+              enterKeyHint="enter"
+              value={input}
+              disabled={inputDisabled}
+              onChange={(event) => {
+                setInput(event.target.value);
+              }}
+              onKeyDown={(e) => {
+                if (!isMobile && e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
+                  e.preventDefault();
+                  if (input.trim()) {
+                    const form = e.currentTarget.form;
+                    if (form) form.requestSubmit();
+                  }
+                }
+              }}
+            />
+            <div className="absolute right-2 bottom-2 max-lg:right-1 max-lg:bottom-1 max-lg:scale-90 max-lg:origin-bottom-right flex items-center gap-2">
+              {!inputDisabled && (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="h-8 text-xs origin-top-right"
+                  onClick={handleContinueChat}
+                >
+                  <PlayIcon className="size-2.5" />
+                  <span>{t("continue")}</span>
+                </Button>
+              )}
+              <VoiceInputButton
+                disabled={inputDisabled}
+                onTranscript={(text) => {
+                  setInput((current) => (current ? `${current} ${text}` : text));
+                }}
+                language={locale === "zh-CN" ? "zh-CN" : "en-US"}
+              />
+              <Button
+                type="submit"
+                variant="secondary"
+                disabled={inputDisabled || !input.trim()}
+                className="rounded-full size-9"
+              >
+                <ArrowRightIcon className="h-5 w-5 text-primary" />
+              </Button>
+            </div>
+          </form>
+        )}
+      </div>
     </div>
   );
 }

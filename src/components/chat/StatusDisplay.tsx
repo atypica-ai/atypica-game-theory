@@ -24,7 +24,7 @@ export function StatusDisplay({ status }: { status: string }) {
   if (!status) return null;
 
   return (
-    <div className="flex gap-2 justify-center items-center text-zinc-500 dark:text-zinc-400 text-sm">
+    <div className="flex gap-2 justify-center items-center text-zinc-500 dark:text-zinc-400 text-xs">
       {status === "streaming" && (
         <div className="flex gap-1">
           <span className="animate-bounce">·</span>
