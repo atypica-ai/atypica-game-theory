@@ -231,7 +231,8 @@ export function ChatBox() {
   const { isMobile } = useDevice();
 
   return (
-    <div className="flex-1 overflow-hidden relative">
+    // pb-2 是为了防止 textarea 下方的圆角处不露出 messages 区域
+    <div className="flex-1 overflow-hidden relative pb-2">
       <div
         ref={messagesContainerRef}
         className={cn(
@@ -267,8 +268,7 @@ export function ChatBox() {
         ))}
         <div ref={messagesEndRef} />
       </div>
-
-      <div className="absolute bottom-0 left-0 right-0 w-full px-4 max-lg:px-2">
+      <div className="absolute bottom-0 left-0 right-0 w-full px-4 max-lg:px-1">
         <div className="relative flex flex-col items-center max-lg:items-start justify-center mb-3 max-lg:mb-1.5">
           {error && (
             <div className="text-destructive text-xs mx-32 mb-2 line-clamp-1 text-center">
@@ -283,12 +283,12 @@ export function ChatBox() {
           </div>
         </div>
 
-        <form onSubmit={handleSubmitMessage} className="relative bg-background">
+        <form onSubmit={handleSubmitMessage} className="relative">
           <Textarea
             className={cn(
-              "block min-h-24 max-lg:min-h-20 resize-none focus-visible:border-primary/50 transition-colors rounded-lg py-3 px-4",
-              inputDisabled ? "opacity-50 cursor-not-allowed" : "",
-              "text-[15px] placeholder:text-[15px]", // "text-sm placeholder:text-sm",
+              "block min-h-24 max-lg:min-h-20 resize-none focus-visible:border-primary/30 transition-colors rounded-lg",
+              "px-4 pt-3 pb-11",
+              "bg-background text-[15px] placeholder:text-[15px]", // "text-sm placeholder:text-sm",
             )}
             enterKeyHint="enter"
             placeholder={t("placeholder")}
@@ -307,8 +307,8 @@ export function ChatBox() {
               }
             }}
           />
-          <div className="absolute right-1 bottom-1 lg:right-2 lg:bottom-2 flex items-center gap-2">
-            {!inputDisabled && !studyCompleted && (
+          <div className="absolute right-2 bottom-2 max-lg:right-1 max-lg:bottom-1 max-lg:scale-90 max-lg:origin-bottom-right flex items-center gap-2">
+            {!inputDisabled && !studyCompleted && !input.trim() && (
               <Button
                 variant="secondary"
                 size="sm"

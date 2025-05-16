@@ -108,7 +108,7 @@ export function SegmentAnalytics() {
       <div
         className={cn(
           "sm:hidden",
-          "fixed right-3 bottom-26",
+          "fixed right-3 bottom-44",
           "rounded-full size-10 flex items-center justify-center",
           "bg-black text-white",
         )}

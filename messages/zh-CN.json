@@ -446,6 +446,7 @@
     },
     "ToolConsole": {
       "autoFollow": "跟随最新进度",
+      "viewConsole": "查看控制台",
       "deepThinking": "深度思考",
       "buildingPersona": "正在构建用户画像",
       "buildPersonaResult": "完成构建{count}个用户画像智能体",
