@@ -1,10 +1,11 @@
 "use client";
 import { Markdown } from "@/components/markdown";
 import { cn } from "@/lib/utils";
-import { Message as MessageType } from "ai";
+import { Message, Message as MessageType } from "ai";
 import { motion } from "framer-motion";
 import { BotIcon, CpuIcon, UserIcon } from "lucide-react";
 import React, { PropsWithChildren, ReactNode } from "react";
+import { FileAttachment } from "./FileAttachment";
 import { ToolInvocationDisplay } from "./ToolInvocationDisplay";
 import { ToolInvocationMessage } from "./ToolInvocationMessage";
 
@@ -22,8 +23,10 @@ export const ChatMessage = (message: {
   avatar?: ReactNode;
   content: string | ReactNode;
   parts?: MessageType["parts"];
+  extra?: Omit<Message, "id" | "role" | "content" | "parts">;
 }) => {
-  const { nickname, role, avatar, content, parts } = message;
+  console.log(message);
+  const { nickname, role, avatar, content, parts, extra } = message;
 
   return (
     <motion.div
@@ -46,6 +49,21 @@ export const ChatMessage = (message: {
           {nickname ?? role}
         </div>
       </div>
+      {extra?.experimental_attachments && (
+        <div className="mb-2 flex flex-wrap gap-2 max-w-full overflow-x-auto">
+          {extra?.experimental_attachments.map((file, index) => (
+            <FileAttachment
+              key={index}
+              file={{
+                url: file.url,
+                name: file.name,
+                mimeType: file.contentType!,
+              }}
+              className="w-24 h-24"
+            />
+          ))}
+        </div>
+      )}
 
       <div className={cn("flex-1 overflow-hidden flex flex-col gap-3 px-1")}>
         {parts ? (

@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
   devIndicators: false,
   images: {
     remotePatterns: [
+      { protocol: "https", hostname: "*bmrlab*" },
       { protocol: "https", hostname: "**.xhscdn.com" },
       { protocol: "http", hostname: "**.xhscdn.com" },
       { protocol: "https", hostname: "**.xiaohongshu.com" },

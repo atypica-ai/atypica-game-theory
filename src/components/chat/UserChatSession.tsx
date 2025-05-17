@@ -9,8 +9,10 @@ import { cn, useDevice } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
 import { ArrowRightIcon, PlayIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { ReactNode, RefObject, useCallback } from "react";
+import { ReactNode, RefObject, useCallback, useState } from "react";
 import { ChatMessage } from "./ChatMessage";
+import { FileAttachment } from "./FileAttachment";
+import { FileUploadButton, FileUploadInfo } from "./FileUploadButton";
 
 export function UserChatSession({
   // chatId,
@@ -33,6 +35,7 @@ export function UserChatSession({
 }) {
   const t = useTranslations("Components.UserChatSession");
   const locale = useLocale();
+  const [uploadedFiles, setUploadedFiles] = useState<FileUploadInfo[]>([]);
 
   const handleContinueChat = useCallback(() => {
     if (messages.length > 0 && messages[messages.length - 1].role === "user") {
@@ -43,6 +46,43 @@ export function UserChatSession({
     // 不要监听 reload, append
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messages.length]);
+
+  const handleFileUploaded = useCallback((fileInfo: FileUploadInfo) => {
+    setUploadedFiles((prev) => [...prev, fileInfo]);
+  }, []);
+
+  const handleRemoveFile = useCallback((index: number) => {
+    setUploadedFiles((prev) => prev.filter((_, i) => i !== index));
+  }, []);
+
+  const handleFormSubmit = useCallback(
+    (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      // Store uploaded files before clearing
+      const filesToAttach = [...uploadedFiles];
+
+      if (filesToAttach.length > 0) {
+        useChatRef.current?.append({
+          role: "user",
+          content: input.trim(),
+          experimental_attachments: filesToAttach.map((file) => ({
+            url: file.url,
+            name: file.name,
+            contentType: file.mimeType,
+          })),
+        });
+
+        // Clear the input field and uploaded files
+        setInput("");
+        setUploadedFiles([]);
+      } else {
+        // No files, just submit the text message normally
+        handleSubmit(e);
+        setUploadedFiles([]);
+      }
+    },
+    [handleSubmit, uploadedFiles, useChatRef, input, setInput],
+  );
 
   const [messagesContainerRef, messagesEndRef] = useScrollToBottom<HTMLDivElement>();
   const inputDisabled = status === "streaming" || status === "submitted";
@@ -57,16 +97,19 @@ export function UserChatSession({
           "pt-16 pb-80 px-3",
         )}
       >
-        {(limit ? messages.slice(-limit) : messages).map((message) => (
-          <ChatMessage
-            key={message.id}
-            role={message.role}
-            nickname={nickname ? nickname[message.role] : undefined}
-            avatar={avatar ? avatar[message.role] : undefined}
-            content={message.content}
-            parts={message.parts}
-          ></ChatMessage>
-        ))}
+        {(limit ? messages.slice(-limit) : messages).map(
+          ({ id, role, content, parts, ...extra }) => (
+            <ChatMessage
+              key={id}
+              role={role}
+              nickname={nickname ? nickname[role] : undefined}
+              avatar={avatar ? avatar[role] : undefined}
+              content={content}
+              parts={parts}
+              extra={extra}
+            ></ChatMessage>
+          ),
+        )}
         {error && (
           <div className="flex justify-center items-center text-red-500 dark:text-red-400 text-sm">
             {error.toString()}
@@ -88,7 +131,19 @@ export function UserChatSession({
           </div>
         )}
         {!readOnly && (
-          <form onSubmit={handleSubmit} className="relative bg-background rounded-lg">
+          <form onSubmit={handleFormSubmit} className="relative bg-background rounded-lg">
+            {uploadedFiles.length > 0 && (
+              <div className="absolute bottom-full left-0 mb-2 flex flex-wrap gap-2 max-w-full overflow-x-auto">
+                {uploadedFiles.map((file, index) => (
+                  <FileAttachment
+                    key={index}
+                    file={file}
+                    onRemove={() => handleRemoveFile(index)}
+                    className="w-24 h-24"
+                  />
+                ))}
+              </div>
+            )}
             <Textarea
               className={cn(
                 "block min-h-24 max-lg:min-h-20 resize-none focus-visible:border-primary/50 transition-colors",
@@ -104,7 +159,7 @@ export function UserChatSession({
               onKeyDown={(e) => {
                 if (!isMobile && e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
                   e.preventDefault();
-                  if (input.trim()) {
+                  if (input.trim() || uploadedFiles.length > 0) {
                     const form = e.currentTarget.form;
                     if (form) form.requestSubmit();
                   }
@@ -113,15 +168,21 @@ export function UserChatSession({
             />
             <div className="absolute right-2 bottom-2 max-lg:right-1 max-lg:bottom-1 max-lg:scale-90 max-lg:origin-bottom-right flex items-center gap-2">
               {!inputDisabled && (
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  className="h-8 text-xs origin-top-right"
-                  onClick={handleContinueChat}
-                >
-                  <PlayIcon className="size-2.5" />
-                  <span>{t("continue")}</span>
-                </Button>
+                <>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="h-8 text-xs origin-top-right"
+                    onClick={handleContinueChat}
+                  >
+                    <PlayIcon className="size-2.5" />
+                    <span>{t("continue")}</span>
+                  </Button>
+                  <FileUploadButton
+                    onFileUploadedAction={handleFileUploaded}
+                    disabled={inputDisabled}
+                  />
+                </>
               )}
               <VoiceInputButton
                 disabled={inputDisabled}
@@ -133,7 +194,7 @@ export function UserChatSession({
               <Button
                 type="submit"
                 variant="secondary"
-                disabled={inputDisabled || !input.trim()}
+                disabled={inputDisabled || (!input.trim() && uploadedFiles.length === 0)}
                 className="rounded-full size-9"
               >
                 <ArrowRightIcon className="h-5 w-5 text-primary" />
