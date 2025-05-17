@@ -23,9 +23,9 @@ const deepseek = createDeepSeek({
 });
 
 const bedrock = createAmazonBedrock({
-  region: process.env.AWS_REGION,
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: process.env.AWS_BEDROCK_REGION,
+  accessKeyId: process.env.AWS_BEDROCK_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_BEDROCK_SECRET_ACCESS_KEY,
   fetch: proxiedFetch,
 });
 
