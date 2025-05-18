@@ -102,8 +102,8 @@ model Persona {
 
 model Analyst {
   id              Int       @id @default(autoincrement())
-  userId          Int?
-  user            User?     @relation(fields: [userId], references: [id])
+  userId          Int
+  user            User      @relation(fields: [userId], references: [id])
   brief           String    @db.Text
   role            String    @db.VarChar(255)
   topic           String    @db.Text
