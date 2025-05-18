@@ -198,7 +198,6 @@ export async function deleteUserAccount(userId: number): Promise<ServerActionRes
     where: { id: userId },
     include: {
       analysts: true,
-      userAnalysts: true,
       userChats: true,
       paymentRecords: true,
       tokens: true,
@@ -216,7 +215,6 @@ export async function deleteUserAccount(userId: number): Promise<ServerActionRes
 
   if (
     user.analysts.length > 0 ||
-    user.userAnalysts.length > 0 ||
     user.userChats.length > 0 ||
     user.paymentRecords.length > 0 ||
     user.tokensLogs.length > 1 ||

@@ -38,7 +38,6 @@ model User {
   tokens            UserTokens?
   tokensLogs        UserTokensLog[]
   adminUser         AdminUser?
-  userAnalysts      UserAnalyst[] // legacy fields, todo: remove
   analysts          Analyst[]
   userChats         UserChat[]
   paymentRecords    PaymentRecord[]
@@ -105,7 +104,7 @@ model Analyst {
   id              Int       @id @default(autoincrement())
   userId          Int?
   user            User?     @relation(fields: [userId], references: [id])
-  brief           String?   @db.Text
+  brief           String    @db.Text
   role            String    @db.VarChar(255)
   topic           String    @db.Text
   studySummary    String    @db.Text
@@ -116,7 +115,6 @@ model Analyst {
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
   interviews    AnalystInterview[]
-  userAnalysts  UserAnalyst[]
   reports       AnalystReport[]
   featuredStudy FeaturedStudy?
 }
@@ -139,7 +137,7 @@ model AnalystReport {
   token       String    @unique @db.VarChar(64)
   analystId   Int       @db.Integer
   analyst     Analyst   @relation(fields: [analystId], references: [id])
-  instruction String?   @db.Text
+  instruction String    @db.Text
   coverSvg    String    @db.Text
   onePageHtml String    @db.Text
   generatedAt DateTime? @db.Timestamptz(6)
@@ -154,9 +152,7 @@ model AnalystInterview {
   analyst             Analyst   @relation(fields: [analystId], references: [id])
   personaId           Int       @db.Integer
   persona             Persona   @relation(fields: [personaId], references: [id])
-  personaPrompt       String?   @db.Text // legacy fields, todo: drop
-  interviewerPrompt   String?   @db.Text // legacy fields, todo: drop
-  instruction         String?   @db.Text
+  instruction         String    @db.Text
   conclusion          String    @db.Text
   interviewUserChatId Int?      @unique @db.Integer
   interviewUserChat   UserChat? @relation(fields: [interviewUserChatId], references: [id])
@@ -165,23 +161,6 @@ model AnalystInterview {
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
   @@unique([analystId, personaId])
-}
-
-// legacy model, todo: remove
-model UserAnalyst {
-  id        Int     @id @default(autoincrement())
-  userId    Int
-  user      User    @relation(fields: [userId], references: [id])
-  analystId Int
-  analyst   Analyst @relation(fields: [analystId], references: [id])
-  role      String  @default("admin") @db.VarChar(255)
-
-  createdAt DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt DateTime @updatedAt @db.Timestamptz(6)
-
-  @@unique([userId, analystId])
-  @@index([userId])
-  @@index([analystId])
 }
 
 enum UserChatKind {
