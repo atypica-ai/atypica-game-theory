@@ -84,7 +84,7 @@ export const generateReportTool = ({
         hint = `从上次未完成的报告记录（${report.token}）继续生成。`;
         report = await prisma.analystReport.update({
           where: { id: report.id },
-          data: { token: reportToken, instruction, onePageHtml: "", coverSvg: "" },
+          data: { token: reportToken, instruction },
         });
       } else {
         report = await prisma.analystReport.create({
@@ -150,10 +150,7 @@ async function generateReport({
   statReport: StatReporter;
   reportLog: Logger;
 }) {
-  let onePageHtml = "";
-  let messages: Omit<Message, "id">[] = [
-    { role: "user", content: reportHTMLPrologue(analyst, instruction) },
-  ];
+  let onePageHtml = report.onePageHtml; // 如果 report 有内容，就继续使用 report 的 onePageHtml
 
   const throttleSaveHTML = (() => {
     let timerId: NodeJS.Timeout | null = null;
@@ -201,6 +198,20 @@ async function generateReport({
       finishReason: FinishReason;
       content: string;
     }>((resolve, reject) => {
+      let messages: Omit<Message, "id">[] = [
+        { role: "user", content: reportHTMLPrologue(analyst, instruction) },
+      ];
+      if (onePageHtml) {
+        messages = [
+          ...messages,
+          { role: "assistant", content: onePageHtml },
+          {
+            role: "user",
+            content: "请继续生成剩余的网页内容，无需重复已经生成的部分，直接接着上文继续完成。",
+          },
+        ];
+      }
+
       const response = streamText({
         model: llm("claude-3-7-sonnet"),
         providerOptions: providerOptions,
@@ -244,17 +255,6 @@ async function generateReport({
     await throttleSaveHTML(report.id, onePageHtml, { immediate: true });
 
     if (finishReason === "length") {
-      // messages.push({ role: "assistant", content: content });
-      // messages.push({ role: "user", content: "continue" });
-      messages = [
-        { role: "user", content: reportHTMLPrologue(analyst, instruction) },
-        { role: "assistant", content: onePageHtml },
-        {
-          role: "user",
-          content:
-            "我看到您的回复因为长度限制被截断了。请继续生成剩余的网页内容，无需重复已经生成的部分，直接接着上文继续完成。",
-        },
-      ];
       continue;
     } else {
       await prisma.analystReport.update({
