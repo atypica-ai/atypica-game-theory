@@ -52,13 +52,6 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       },
     });
   }
-  const userAnalyst = await prisma.userAnalyst.findUnique({
-    where: { userId_analystId: { userId: session.user.id, analystId } },
-  });
-  if (!userAnalyst) {
-    // return new Response("Analyst not belong to user", { status: 403 });
-    forbidden();
-  }
 
   const analyst = await prisma.analyst.findUnique({
     where: { id: analystId },
@@ -70,6 +63,10 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   });
   if (!analyst) {
     return new Response("Analyst not found", { status: 404 });
+  }
+  if (analyst.userId !== session.user.id) {
+    // return new Response("Analyst not belong to user", { status: 403 });
+    forbidden();
   }
 
   const publicReportUrl = await encryptAnalystReportUrl(analystId);

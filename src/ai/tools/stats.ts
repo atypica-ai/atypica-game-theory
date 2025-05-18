@@ -1,6 +1,6 @@
 import { UserTokensLogVerb } from "@/prisma/client";
+import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
-import { InputJsonValue } from "@prisma/client/runtime/library";
 import { Logger } from "pino";
 
 export type StatReporter = (

@@ -1,7 +1,7 @@
 "use client";
+import { createStudyUserChat } from "@/app/study/actions";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { createUserChat } from "@/lib/data/UserChat";
 import { useDevice } from "@/lib/utils";
 import { ArrowRightIcon, RotateCwIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -33,7 +33,7 @@ export function InputSection() {
     if (!input.trim()) return;
     setIsLoading(true);
     try {
-      const result = await createUserChat("study", {
+      const result = await createStudyUserChat({
         role: "user",
         content: input,
       });

@@ -32,7 +32,6 @@ export const generateReportTool = ({
   tool({
     description: "为本次研究生成报告",
     parameters: z.object({
-      analystId: z.number().describe("研究主题的ID"),
       instruction: z.string().describe("用户指令，包括额外的报告内容和样式等").default(""),
       regenerate: z.boolean().describe("重新生成报告").default(false),
       reportToken: z
@@ -46,20 +45,23 @@ export const generateReportTool = ({
     experimental_toToolResultContent: (result: PlainTextToolResult) => {
       return [{ type: "text", text: result.plainText }];
     },
-    execute: async ({
-      analystId,
-      instruction,
-      regenerate,
-      reportToken,
-    }): Promise<GenerateReportResult> => {
-      if (
-        (await prisma.analyst.findUnique({ where: { id: analystId } }))?.studyUserChatId !==
-        studyUserChatId
-      ) {
-        return {
-          plainText: "无效的 analystId，请首先使用 savePersona 保存研究主题",
-        };
+    execute: async ({ instruction, regenerate, reportToken }): Promise<GenerateReportResult> => {
+      const { analyst } = await prisma.userChat.findUniqueOrThrow({
+        where: { id: studyUserChatId, kind: "study" },
+        select: {
+          analyst: {
+            include: {
+              interviews: {
+                where: { conclusion: { not: "" } },
+              },
+            },
+          },
+        },
+      });
+      if (!analyst) {
+        throw new Error("Something went wrong, analyst does not exist on studyUserChat");
       }
+      const analystId = analyst.id;
       // if (await prisma.analystReport.findUnique({ where: { token: reportToken } })) {
       //   return {
       //     plainText: `为调研主题 ${analystId} 生成报告失败：你提供的 reportToken ${reportToken} 已经存在，无法使用，请重试。你可以忽略提供这个字段，系统会自动生成 token。`,
@@ -82,21 +84,13 @@ export const generateReportTool = ({
         hint = `从上次未完成的报告记录（${report.token}）继续生成。`;
         report = await prisma.analystReport.update({
           where: { id: report.id },
-          data: { onePageHtml: "", token: reportToken, coverSvg: "" },
+          data: { token: reportToken, instruction, onePageHtml: "", coverSvg: "" },
         });
       } else {
         report = await prisma.analystReport.create({
           data: { analystId, token: reportToken, coverSvg: "", onePageHtml: "" },
         });
       }
-      const analyst = await prisma.analyst.findUniqueOrThrow({
-        where: { id: analystId },
-        include: {
-          interviews: {
-            where: { conclusion: { not: "" } },
-          },
-        },
-      });
       try {
         await generateReport({
           analyst,

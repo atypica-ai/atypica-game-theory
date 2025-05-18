@@ -1,7 +1,7 @@
 import { ToolName } from "@/ai/tools";
 import { ChatMessage } from "@/prisma/client";
+import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
-import { InputJsonValue } from "@prisma/client/runtime/library";
 import {
   convertToCoreMessages,
   generateId,

@@ -1,8 +1,8 @@
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDistanceToNow } from "@/lib/utils";
-import { AnalystReport } from "@/prisma/client";
 import { ClipboardListIcon, FileType2Icon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
@@ -14,7 +14,9 @@ export default function ReportsListPanel() {
   const t = useTranslations("Components.ReportsListPanel");
   const { studyUserChat } = useStudyContext();
   const [isOpen, setIsOpen] = useState(false);
-  const [reports, setReports] = useState<Omit<AnalystReport, "onePageHtml">[]>([]);
+  const [reports, setReports] = useState<
+    ExtractServerActionData<typeof fetchAnalystReportsOfStudyUserChat>
+  >([]);
 
   useEffect(() => {
     fetchAnalystReportsOfStudyUserChat({ studyUserChatToken: studyUserChat.token })

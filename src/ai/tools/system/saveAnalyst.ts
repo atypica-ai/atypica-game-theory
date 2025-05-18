@@ -10,7 +10,7 @@ export interface SaveAnalystToolResult extends PlainTextToolResult {
 }
 
 export const saveAnalystTool = ({
-  userId,
+  // userId,
   studyUserChatId,
 }: {
   userId: number;
@@ -29,28 +29,35 @@ export const saveAnalystTool = ({
       return [{ type: "text", text: result.plainText }];
     },
     execute: async ({ role, topic }): Promise<SaveAnalystToolResult> => {
-      const analystExisting = await prisma.analyst.findUnique({ where: { studyUserChatId } });
-      if (analystExisting) {
-        return {
-          analystId: analystExisting.id,
-          plainText: `本次研究的研究主题已保存过，返回现有主题 ID：${JSON.stringify({ analystId: analystExisting.id })}`,
-        };
-      }
-      const analyst = await prisma.analyst.upsert({
-        where: { studyUserChatId },
-        create: { role, topic, studySummary: "", studyUserChatId },
-        update: {},
-      });
-      await prisma.userAnalyst.upsert({
-        where: {
-          userId_analystId: { userId, analystId: analyst.id },
+      const { analyst } = await prisma.userChat.findUniqueOrThrow({
+        where: { id: studyUserChatId, kind: "study" },
+        select: {
+          analyst: {
+            select: {
+              id: true,
+              topic: true,
+            },
+          },
         },
-        create: { userId, analystId: analyst.id },
-        update: {},
+      });
+      if (!analyst) {
+        throw new Error("Something went wrong, analyst does not exist on studyUserChat");
+      }
+      const analystId = analyst.id;
+      const isUpdate = !!analyst.topic;
+      // if (analyst.topic) {
+      //   return {
+      //     analystId,
+      //     plainText: `本次研究的研究主题已保存过，返回现有主题：${JSON.stringify({ analystId: analyst.id, topic: analyst.topic })}`,
+      //   };
+      // }
+      await prisma.analyst.update({
+        where: { id: analystId },
+        data: { role, topic },
       });
       return {
         analystId: analyst.id,
-        plainText: `研究主题保存成功：${JSON.stringify({ analystId: analyst.id })}`,
+        plainText: `研究主题${isUpdate ? "更新" : "保存"}成功：${JSON.stringify({ analystId: analyst.id })}`,
       };
     },
   });
@@ -64,19 +71,20 @@ export const saveAnalystStudySummaryTool = ({ studyUserChatId }: { studyUserChat
   tool({
     description: "总结并保存研究过程",
     parameters: z.object({
-      analystId: z.number().describe("研究主题的ID"),
       studySummary: z.string().describe("客观描述研究过程").transform(fixMalformedUnicodeString),
     }),
     experimental_toToolResultContent: (result: PlainTextToolResult) => {
       return [{ type: "text", text: result.plainText }];
     },
-    execute: async ({ analystId, studySummary }): Promise<SaveAnalystStudySummaryToolResult> => {
-      const analyst = await prisma.analyst.findUnique({ where: { id: analystId } });
-      if (analyst?.studyUserChatId !== studyUserChatId) {
-        return {
-          plainText: "无效的 analystId，请首先使用 savePersona 保存研究主题",
-        };
+    execute: async ({ studySummary }): Promise<SaveAnalystStudySummaryToolResult> => {
+      const { analyst } = await prisma.userChat.findUniqueOrThrow({
+        where: { id: studyUserChatId, kind: "study" },
+        select: { analyst: { select: { id: true } } },
+      });
+      if (!analyst) {
+        throw new Error("Something went wrong, analyst does not exist on studyUserChat");
       }
+      const analystId = analyst.id;
       await prisma.analyst.update({
         where: { id: analystId },
         data: { studySummary },

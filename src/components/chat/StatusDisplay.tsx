@@ -26,7 +26,7 @@ export function StatusDisplay({ status }: { status: string }) {
   return (
     <div className="flex gap-2 justify-center items-center text-xs">
       <span>{getStatusMessage(status)}</span>
-      {status === "streaming" && (
+      {(status === "streaming" || status === "submitted") && (
         <div className="flex gap-1 h-4">
           <span className="animate-bounce">·</span>
           <span className="animate-bounce [animation-delay:0.2s]">·</span>

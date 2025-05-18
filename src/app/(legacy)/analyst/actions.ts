@@ -30,16 +30,6 @@ export async function fetchAnalysts({ take = 30 }: { take?: number } = {}): Prom
 
 export async function fetchAnalystById(analystId: number): Promise<ServerActionResult<Analyst>> {
   return withAuth(async (user) => {
-    const userAnalyst = await prisma.userAnalyst.findUnique({
-      where: { userId_analystId: { userId: user.id, analystId } },
-    });
-    if (!userAnalyst) {
-      return {
-        success: false,
-        code: "forbidden",
-        message: "User not allowed to access this analyst",
-      };
-    }
     const analyst = await prisma.analyst.findUnique({
       where: { id: analystId },
     });
@@ -48,6 +38,13 @@ export async function fetchAnalystById(analystId: number): Promise<ServerActionR
         success: false,
         code: "not_found",
         message: "Analyst not found",
+      };
+    }
+    if (analyst.userId !== user.id) {
+      return {
+        success: false,
+        code: "forbidden",
+        message: "Analyst not belong to user",
       };
     }
     return {
@@ -64,13 +61,12 @@ export async function createAnalyst({
   const analyst = await withAuth(async (user) => {
     try {
       const analyst = await prisma.analyst.create({
-        // Empty report for new analysts
-        data: { role, topic, studySummary: "" },
-      });
-      await prisma.userAnalyst.create({
         data: {
           userId: user.id,
-          analystId: analyst.id,
+          brief: "",
+          role,
+          topic,
+          studySummary: "",
         },
       });
       return analyst;
@@ -99,17 +95,14 @@ export async function updateAnalyst(
 ): Promise<ServerActionResult<Analyst>> {
   const analyst = await withAuth(async (user) => {
     try {
-      const userAnalyst = await prisma.userAnalyst.findUnique({
-        where: { userId_analystId: { userId: user.id, analystId } },
-      });
-      if (!userAnalyst) return null;
-
       const data: Partial<Pick<Analyst, "role" | "topic">> = {};
       if (typeof role !== "undefined") data.role = role;
       if (typeof topic !== "undefined") data.topic = topic;
-
       const analyst = await prisma.analyst.update({
-        where: { id: analystId },
+        where: {
+          id: analystId,
+          userId: user.id, // ensure user owns the analyst
+        },
         data,
       });
       return analyst;

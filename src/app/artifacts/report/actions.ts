@@ -16,14 +16,12 @@ export async function generateReportPDF(reportToken: string): Promise<{
           select: {
             id: true,
             topic: true,
+            userId: true,
           },
         },
       },
     });
-    const userAnalyst = await prisma.userAnalyst.findUnique({
-      where: { userId_analystId: { userId: user.id, analystId: report.analyst.id } },
-    });
-    if (!userAnalyst) {
+    if (report.analyst.userId === user.id) {
       forbidden();
     }
     const filename = reportToken;

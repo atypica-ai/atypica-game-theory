@@ -38,7 +38,8 @@ model User {
   tokens            UserTokens?
   tokensLogs        UserTokensLog[]
   adminUser         AdminUser?
-  userAnalysts      UserAnalyst[]
+  userAnalysts      UserAnalyst[] // legacy fields, todo: remove
+  analysts          Analyst[]
   userChats         UserChat[]
   paymentRecords    PaymentRecord[]
   subscriptions     UserSubscription[]
@@ -102,6 +103,9 @@ model Persona {
 
 model Analyst {
   id              Int       @id @default(autoincrement())
+  userId          Int?
+  user            User?     @relation(fields: [userId], references: [id])
+  brief           String?   @db.Text
   role            String    @db.VarChar(255)
   topic           String    @db.Text
   studySummary    String    @db.Text
@@ -135,6 +139,7 @@ model AnalystReport {
   token       String    @unique @db.VarChar(64)
   analystId   Int       @db.Integer
   analyst     Analyst   @relation(fields: [analystId], references: [id])
+  instruction String?   @db.Text
   coverSvg    String    @db.Text
   onePageHtml String    @db.Text
   generatedAt DateTime? @db.Timestamptz(6)
@@ -149,8 +154,9 @@ model AnalystInterview {
   analyst             Analyst   @relation(fields: [analystId], references: [id])
   personaId           Int       @db.Integer
   persona             Persona   @relation(fields: [personaId], references: [id])
-  personaPrompt       String    @db.Text
-  interviewerPrompt   String    @db.Text
+  personaPrompt       String?   @db.Text // legacy fields, todo: drop
+  interviewerPrompt   String?   @db.Text // legacy fields, todo: drop
+  instruction         String?   @db.Text
   conclusion          String    @db.Text
   interviewUserChatId Int?      @unique @db.Integer
   interviewUserChat   UserChat? @relation(fields: [interviewUserChatId], references: [id])
@@ -161,6 +167,7 @@ model AnalystInterview {
   @@unique([analystId, personaId])
 }
 
+// legacy model, todo: remove
 model UserAnalyst {
   id        Int     @id @default(autoincrement())
   userId    Int

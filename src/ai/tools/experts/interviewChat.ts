@@ -14,8 +14,8 @@ import {
 } from "@/ai/tools";
 import { getDeployRegion } from "@/lib/request/deployRegion";
 import { fixMalformedUnicodeString, generateToken } from "@/lib/utils";
+import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
-import { InputJsonValue } from "@prisma/client/runtime/library";
 import { generateId, Message, streamText, tool } from "ai";
 import { Logger } from "pino";
 import { z } from "zod";
@@ -59,7 +59,6 @@ export const interviewChatTool = ({
   tool({
     description: "针对一个研究主题的一系列用户进行访谈，每次最多5人",
     parameters: z.object({
-      analystId: z.number().describe("研究主题的ID"),
       personas: z
         .array(
           z.object({
@@ -81,19 +80,15 @@ export const interviewChatTool = ({
     experimental_toToolResultContent: (result: PlainTextToolResult) => {
       return [{ type: "text", text: result.plainText }];
     },
-    execute: async ({
-      analystId,
-      personas,
-      instruction,
-      language,
-    }): Promise<InterviewChatResult> => {
-      const analyst = await prisma.analyst.findUnique({ where: { id: analystId } });
-      if (analyst?.studyUserChatId !== studyUserChatId) {
-        return {
-          interviews: [],
-          plainText: "无效的 analystId，请首先使用 savePersona 保存研究主题",
-        };
+    execute: async ({ personas, instruction, language }): Promise<InterviewChatResult> => {
+      const { analyst } = await prisma.userChat.findUniqueOrThrow({
+        where: { id: studyUserChatId, kind: "study" },
+        select: { analyst: { select: { id: true } } },
+      });
+      if (!analyst) {
+        throw new Error("Something went wrong, analyst does not exist on studyUserChat");
       }
+      const analystId = analyst.id;
       const single = async ({ id: personaId, name }: { id: number; name: string }) => {
         try {
           const interview = await prisma.analystInterview.findUnique({
@@ -173,16 +168,12 @@ export async function prepareDBForInterview({
   const interviewerPrompt = interviewerSystem({ analyst, language, instruction });
   const interviewerProloguePrompt = interviewerPrologue({ analyst, language });
   const conclusion = ""; // conclusion 被用于判断是否结束，开始前一定要清空
-  // 确认 analyst 属于用户
-  await prisma.userAnalyst.findUniqueOrThrow({
-    where: { userId_analystId: { userId, analystId } },
-  });
   const interview = await prisma.analystInterview.upsert({
     where: {
       analystId_personaId: { analystId, personaId },
     },
-    update: { personaPrompt, interviewerPrompt, conclusion },
-    create: { analystId, personaId, personaPrompt, interviewerPrompt, conclusion },
+    update: { instruction, conclusion },
+    create: { analystId, personaId, instruction, conclusion },
   });
   let interviewUserChatId = interview.interviewUserChatId;
   if (!interviewUserChatId) {

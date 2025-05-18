@@ -178,10 +178,13 @@ export function UserChatSession({
                     <PlayIcon className="size-2.5" />
                     <span>{t("continue")}</span>
                   </Button>
-                  <FileUploadButton
-                    onFileUploadedAction={handleFileUploaded}
-                    disabled={inputDisabled}
-                  />
+                  {/* 暂时隐藏 */}
+                  {false && (
+                    <FileUploadButton
+                      onFileUploadedAction={handleFileUploaded}
+                      disabled={inputDisabled}
+                    />
+                  )}
                 </>
               )}
               <VoiceInputButton

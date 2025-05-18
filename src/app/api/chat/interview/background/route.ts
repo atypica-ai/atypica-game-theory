@@ -1,8 +1,10 @@
 import { prepareDBForInterview, runInterview } from "@/ai/tools/experts/interviewChat";
 import { authOptions } from "@/lib/auth";
 import { rootLogger } from "@/lib/logging";
+import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
 import { getServerSession } from "next-auth";
+import { forbidden } from "next/navigation";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -15,6 +17,14 @@ export async function POST(req: Request) {
   const payload = await req.json();
   const analystId = parseInt(payload["analystId"]);
   const personaId = parseInt(payload["personaId"]);
+
+  // 确保 analyst 属于当前用户
+  const analyst = await prisma.analyst.findUnique({
+    where: { id: analystId },
+  });
+  if (analyst?.userId !== session.user.id) {
+    forbidden();
+  }
 
   const { analystInterviewId, interviewUserChatId, prompt } = await prepareDBForInterview({
     userId,

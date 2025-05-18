@@ -5,8 +5,8 @@ import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { generateToken } from "@/lib/utils";
 import { type UserChatKind, UserChat as UserChatPrisma } from "@/prisma/client";
+import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
-import { InputJsonValue } from "@prisma/client/runtime/library";
 import { generateId, Message } from "ai";
 
 export type UserChatWithMessages = Omit<UserChatPrisma, "messages"> & {
@@ -22,7 +22,8 @@ export type StudyUserChat = Omit<UserChatWithMessages, "kind"> & {
   kind: "study";
 };
 
-export async function createUserChat<TKind extends UserChatWithMessages["kind"]>(
+// export async function createUserChat<TKind extends UserChatWithMessages["kind"]>(
+export async function createUserChat<TKind extends "misc" | "scout">(
   kind: TKind,
   { role, content }: { role: "user" | "assistant"; content: string },
 ): Promise<ServerActionResult<Omit<UserChatWithMessages, "kind"> & { kind: TKind }>> {

@@ -1,6 +1,6 @@
 import { fetchAnalystReportByToken } from "@/app/study/actions";
+import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn } from "@/lib/utils";
-import { AnalystReport } from "@/prisma/client";
 import { ToolInvocation } from "ai";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -42,9 +42,9 @@ export const GenerateReportConsole = ({ toolInvocation }: { toolInvocation: Tool
     };
   }, [updateDimensions]);
 
-  const [analystReport, setAnalystReport] = useState<Omit<AnalystReport, "onePageHtml"> | null>(
-    null,
-  );
+  const [analystReport, setAnalystReport] = useState<ExtractServerActionData<
+    typeof fetchAnalystReportByToken
+  > | null>(null);
 
   useEffect(() => {
     let reportToken = toolInvocation.args.reportToken as string;

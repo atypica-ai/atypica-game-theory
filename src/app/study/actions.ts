@@ -1,6 +1,9 @@
 "use server";
 import { convertDBMessageToAIMessage } from "@/ai/messageUtils";
+import { UserChatWithMessages } from "@/lib/data/UserChat";
+import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
+import { generateToken } from "@/lib/utils";
 import {
   Analyst,
   AnalystInterview,
@@ -8,12 +11,68 @@ import {
   Persona,
   UserChat as UserChatPrisma,
 } from "@/prisma/client";
+import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
-import { Message } from "ai";
+import { generateId, Message } from "ai";
 
 export type UserChat = Omit<UserChatPrisma, "messages"> & {
   messages: Message[];
 };
+
+export async function createStudyUserChat({
+  role,
+  content,
+}: {
+  role: "user" | "assistant";
+  content: string;
+}): Promise<ServerActionResult<Omit<UserChatWithMessages, "kind"> & { kind: "study" }>> {
+  return withAuth(async (user) => {
+    const message: Message = {
+      id: generateId(),
+      role,
+      content,
+      parts: [{ type: "text", text: content }],
+    };
+    const userChat = await prisma.$transaction(async (tx) => {
+      const userChat = await tx.userChat.create({
+        data: {
+          userId: user.id,
+          title: message.content.substring(0, 50),
+          kind: "study",
+          token: generateToken(),
+        },
+      });
+      await tx.chatMessage.create({
+        data: {
+          messageId: generateId(),
+          userChatId: userChat.id,
+          role,
+          content,
+          parts: message.parts as InputJsonValue,
+        },
+      });
+      await tx.analyst.create({
+        data: {
+          userId: user.id,
+          studyUserChatId: userChat.id,
+          brief: content, // 用户的第一条消息作为 brief
+          role: "",
+          topic: "",
+          studySummary: "",
+        },
+      });
+      return userChat;
+    });
+    return {
+      success: true,
+      data: {
+        ...userChat,
+        kind: "study",
+        messages: [message],
+      },
+    };
+  });
+}
 
 export async function fetchUserChatByToken<Tkind extends UserChat["kind"]>(
   token: string,

@@ -23,20 +23,12 @@ export async function fetchAnalystInterviews(analystId: number): Promise<
   >
 > {
   return withAuth(async (user) => {
-    const userAnalyst = await prisma.userAnalyst.findUnique({
+    await prisma.analyst.findUniqueOrThrow({
       where: {
-        userId_analystId: { userId: user.id, analystId },
+        id: analystId,
+        userId: user.id, // ensure user owns the analyst
       },
     });
-
-    if (!userAnalyst) {
-      return {
-        success: false,
-        code: "forbidden",
-        message: "User not allowed to access this analyst",
-      };
-    }
-
     const interviews = await prisma.analystInterview.findMany({
       where: { analystId },
       include: {
@@ -87,6 +79,7 @@ export async function fetchAnalystInterviewById(interviewId: number): Promise<
       where: { id: interviewId },
       include: {
         persona: true,
+        analyst: { select: { userId: true } },
         interviewUserChat: {
           select: {
             token: true,
@@ -105,13 +98,7 @@ export async function fetchAnalystInterviewById(interviewId: number): Promise<
       };
     }
 
-    const userAnalyst = await prisma.userAnalyst.findUnique({
-      where: {
-        userId_analystId: { userId: user.id, analystId: interview.analystId },
-      },
-    });
-
-    if (!userAnalyst) {
+    if (interview.analyst.userId !== user.id) {
       return {
         success: false,
         code: "forbidden",
@@ -146,18 +133,12 @@ export async function upsertAnalystInterview({
   personaId: number;
 }): Promise<ServerActionResult<AnalystInterview>> {
   return withAuth(async (user) => {
-    const userAnalyst = await prisma.userAnalyst.findUnique({
-      where: { userId_analystId: { userId: user.id, analystId } },
+    await prisma.analyst.findUniqueOrThrow({
+      where: {
+        id: analystId,
+        userId: user.id, // ensure user owns the analyst
+      },
     });
-
-    if (!userAnalyst) {
-      return {
-        success: false,
-        code: "forbidden",
-        message: "User not allowed to access this analyst",
-      };
-    }
-
     const interview = await prisma.analystInterview.upsert({
       where: {
         analystId_personaId: {
