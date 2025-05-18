@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { InterviewCard } from "./InterviewCard";
 import { ReportDialog } from "./ReportDialog";
 import { SelectPersonaDialog } from "./SelectPersonaDialog";
+import { batchBackgroundInterview } from "./actions";
 
 type AnalystInterview = ExtractServerActionData<typeof fetchAnalystInterviews>[number];
 
@@ -63,18 +64,10 @@ export function AnalystDetail({
           const pending = interviews.filter(
             (i) => !i.conclusion && !i.interviewUserChat?.backgroundToken,
           );
-          for (const interview of pending) {
-            await fetch("/api/chat/interview/background", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                analystId: analyst.id,
-                personaId: interview.persona.id,
-              }),
-            });
-          }
+          await batchBackgroundInterview({
+            analystId: analyst.id,
+            personaIds: pending.map((i) => i.persona.id),
+          });
           router.refresh();
         }}
       >
@@ -93,12 +86,17 @@ export function AnalystDetail({
 
       <div className="bg-accent/40 rounded-lg p-6 border mx-auto max-w-4xl">
         <div className="flex items-start gap-3">
-          <div className="mt-1 rounded-md bg-background p-2 border">📝</div>
+          <div className="shrink-0 rounded-md bg-background size-10 flex items-center justify-center text-xl border">
+            📝
+          </div>
           <div className="flex-1">
-            <div className="text-sm font-medium mb-2">{t("topicCard.researchTopic")}</div>
-            <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
+            <div className="text-base font-medium mb-1">{t("topicCard.researchTopic")}</div>
+            <div className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
               {analyst.topic}
-            </p>
+            </div>
+            <div className="mt-4 text-xs text-muted-foreground whitespace-pre-wrap rounded-md border p-4 max-h-40 overflow-y-auto scrollbar-thin">
+              {analyst.brief}
+            </div>
             <div className="mt-4 flex justify-end flex-wrap gap-4">
               {/* {analyst.report ? ( */}
               {false ? (

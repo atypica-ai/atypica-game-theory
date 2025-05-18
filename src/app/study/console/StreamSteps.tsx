@@ -66,7 +66,7 @@ export const StreamSteps = ({
     >
       <div
         className={cn(
-          "mb-2 flex gap-2 justify-start items-center flex-shrink-0",
+          "mb-2 flex gap-2 justify-start items-center shrink-0",
           role === "user" ? "flex-row-reverse" : "flex-row",
         )}
       >

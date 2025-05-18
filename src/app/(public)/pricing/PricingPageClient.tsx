@@ -165,7 +165,7 @@ export default function PricingPageClient() {
       </div>
 
       <div className="max-w-7xl mx-auto bg-muted/50 rounded-lg p-4 flex items-center gap-3 border border-border/50">
-        <InfoIcon className="size-5 text-primary flex-shrink-0" />
+        <InfoIcon className="size-5 text-primary shrink-0" />
         <p className="text-sm text-foreground/80">{t("averageStudyToken")}</p>
       </div>
 

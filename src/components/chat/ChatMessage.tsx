@@ -36,7 +36,7 @@ export const ChatMessage = (message: {
       initial={{ y: 5, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
     >
-      <div className="mb-3 flex flex-row items-center gap-2 flex-shrink-0">
+      <div className="mb-3 flex flex-row items-center gap-2 shrink-0">
         {role === "user"
           ? avatar || <UserIcon className="size-6 text-blue-500 dark:text-zinc-200" />
           : role === "assistant"

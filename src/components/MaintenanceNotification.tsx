@@ -58,7 +58,7 @@ export function MaintenanceNotification() {
       )}
     >
       <div className="flex items-center gap-2 max-w-4xl mx-auto">
-        <AlertCircleIcon className="h-5 w-5 flex-shrink-0" />
+        <AlertCircleIcon className="h-5 w-5 shrink-0" />
         <p className="text-sm">
           <span className="font-medium">{t("scheduledMaintenance")} </span>
           {maintenanceInfo.maintenanceData

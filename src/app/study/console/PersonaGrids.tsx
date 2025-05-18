@@ -164,7 +164,7 @@ export const PersonaGrids: FC<{
           {personas.map((persona) => (
             <Card
               key={persona.personaId}
-              className="duration-300 hover:bg-accent/50 hover:shadow-md p-4 cursor-pointer min-w-80 w-80 flex-shrink-0 flex flex-col"
+              className="duration-300 hover:bg-accent/50 hover:shadow-md p-4 cursor-pointer min-w-80 w-80 shrink-0 flex flex-col"
               onClick={() => onScoutPersona(persona.personaId)}
             >
               <CardHeader className="px-0">
