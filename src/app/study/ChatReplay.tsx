@@ -3,12 +3,13 @@ import { Button } from "@/components/ui/button";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
+import { useEffect } from "react";
 import { useStudyContext } from "./hooks/StudyContext";
 import { useProgressiveMessages } from "./hooks/useProgressiveMessages";
 import { SingleMessage } from "./SingleMessage";
 
 export function ChatReplay() {
-  const { studyUserChat } = useStudyContext();
+  const { studyUserChat, setLastToolInvocation } = useStudyContext();
   const t = useTranslations("StudyPage.ChatReplay");
   const {
     partialMessages: messagesDisplay,
@@ -19,6 +20,28 @@ export function ChatReplay() {
     messages: studyUserChat.messages,
     enabled: true,
   });
+
+  useEffect(() => {
+    for (let i = messagesDisplay.length - 1; i >= 0; i--) {
+      const message = messagesDisplay[i];
+      if (!message.parts) {
+        continue;
+      }
+      for (let j = message.parts.length - 1; j >= 0; j--) {
+        const part = message.parts[j];
+        if (part.type === "tool-invocation") {
+          setLastToolInvocation((prev) => {
+            if (prev?.toolCallId === part.toolInvocation.toolCallId) {
+              return prev;
+            }
+            return part.toolInvocation;
+          });
+          return;
+        }
+      }
+    }
+  }, [messagesDisplay, setLastToolInvocation]);
+
   const [messagesContainerRef, messagesEndRef] = useScrollToBottom<HTMLDivElement>();
   return (
     <div className="flex-1 overflow-hidden relative">
