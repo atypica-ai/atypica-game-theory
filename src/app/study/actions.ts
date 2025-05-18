@@ -164,10 +164,8 @@ export async function fetchStatsByStudyUserChatToken(
 
 export async function fetchAnalystByStudyUserChatToken({
   studyUserChatToken,
-  analystId,
 }: {
   studyUserChatToken: string;
-  analystId: number;
 }): Promise<ServerActionResult<Analyst>> {
   const studyUserChat = await prisma.userChat.findUnique({
     where: { token: studyUserChatToken, kind: "study" },
@@ -180,12 +178,6 @@ export async function fetchAnalystByStudyUserChatToken({
       success: false,
       code: "not_found",
       message: "Analyst not found",
-    };
-  }
-  if (studyUserChat.analyst.id !== analystId) {
-    return {
-      success: false,
-      message: "Something went wrong, analyst ID mismatch",
     };
   }
   return {

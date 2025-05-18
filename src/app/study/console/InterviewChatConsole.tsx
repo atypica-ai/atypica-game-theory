@@ -21,7 +21,6 @@ import { StreamSteps } from "./StreamSteps";
 export const InterviewChatConsole = ({ toolInvocation }: { toolInvocation: ToolInvocation }) => {
   const t = useTranslations("StudyPage.ToolConsole");
   const { studyUserChat } = useStudyContext();
-  const analystId = toolInvocation.args.analystId as number;
   const personasArg = toolInvocation.args.personas as { id: number; name: string }[];
 
   const [analyst, setAnalyst] = useState<Analyst>();
@@ -30,7 +29,6 @@ export const InterviewChatConsole = ({ toolInvocation }: { toolInvocation: ToolI
       try {
         const result = await fetchAnalystByStudyUserChatToken({
           studyUserChatToken: studyUserChat.token,
-          analystId,
         });
         if (!result.success) {
           throw result;
@@ -40,7 +38,7 @@ export const InterviewChatConsole = ({ toolInvocation }: { toolInvocation: ToolI
         console.log("Error fetching analyst:", error);
       }
     })();
-  }, [analystId, studyUserChat.token]);
+  }, [studyUserChat.token]);
 
   if (!analyst || !personasArg.length) {
     return <div className="font-mono text-sm">Loading...</div>;

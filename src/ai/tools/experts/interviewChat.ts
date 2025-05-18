@@ -75,6 +75,7 @@ export const interviewChatTool = ({
         .string()
         .optional()
         .describe("访谈使用的语言")
+        .transform(fixMalformedUnicodeString)
         .default(() => (getDeployRegion() === "mainland" ? "简体中文" : "English")),
     }),
     experimental_toToolResultContent: (result: PlainTextToolResult) => {

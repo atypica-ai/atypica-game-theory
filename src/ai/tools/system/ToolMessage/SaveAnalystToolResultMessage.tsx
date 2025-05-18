@@ -9,7 +9,7 @@ export const SaveAnalystToolResultMessage: FC<{
 }> = ({ toolInvocation }) => {
   // const { result: { analystId } } = toolInvocation;
   return (
-    <div className="p-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 rounded-lg text-xs">
+    <div className="p-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 rounded-lg text-xs whitespace-pre-wrap">
       📝 {toolInvocation.args.topic}
       {/* <Link href={`/analyst/${analystId}`} target="_blank" className="text-blue-500">
         点击查看研究主题
