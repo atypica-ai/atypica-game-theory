@@ -24,13 +24,17 @@ const ToolInvocationMessage = ({
 }) => {
   const t = useTranslations("StudyPage.SingleMessage");
   const [open, setOpen] = useState(false);
-  const { setViewToolInvocation, setLastToolInvocation, setConsoleOpen } = useStudyContext();
+  const {
+    setViewToolInvocation,
+    // setLastToolInvocation,
+    setConsoleOpen,
+  } = useStudyContext();
 
-  useEffect(() => {
-    if (isLastToolPart) {
-      setLastToolInvocation(toolInvocation);
-    }
-  }, [toolInvocation, setLastToolInvocation, isLastToolPart]);
+  // useEffect(() => {
+  //   if (isLastToolPart) {
+  //     setLastToolInvocation(toolInvocation);
+  //   }
+  // }, [toolInvocation, setLastToolInvocation, isLastToolPart]);
 
   const prevIsLastPartRef = useRef(isLastToolPart);
   useEffect(() => {

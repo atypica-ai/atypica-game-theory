@@ -1,7 +1,7 @@
 "use client";
 import { StudyUserChat } from "@/lib/data/UserChat";
 import { ToolInvocation } from "ai";
-import { createContext, ReactNode, useContext, useState } from "react";
+import { createContext, Dispatch, ReactNode, SetStateAction, useContext, useState } from "react";
 
 interface StudyContextType {
   studyUserChat: StudyUserChat;
@@ -9,7 +9,7 @@ interface StudyContextType {
   consoleOpen: boolean;
   setConsoleOpen: (open: boolean) => void;
   lastToolInvocation: ToolInvocation | null;
-  setLastToolInvocation: (toolInvocation: ToolInvocation | null) => void;
+  setLastToolInvocation: Dispatch<SetStateAction<ToolInvocation | null>>; //(toolInvocation: ToolInvocation | null) => void;
   viewToolInvocation: ToolInvocation | null;
   setViewToolInvocation: (toolInvocation: ToolInvocation | null) => void;
   unsetViewToolInvocation: () => void;

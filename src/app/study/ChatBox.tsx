@@ -32,6 +32,7 @@ export function ChatBox() {
   // 这个组件是不支持对话直接切换的，如果切换，需要刷新页面重新加载！);
   const t = useTranslations("StudyPage.ChatBox");
   const {
+    setLastToolInvocation,
     studyUserChat: {
       id: studyUserChatId,
       token: studyUserChatToken,
@@ -173,6 +174,24 @@ export function ChatBox() {
       if (timeoutId) clearTimeout(timeoutId);
     };
   }, [refreshStudyUserChat, isDocumentVisible]);
+
+  useEffect(() => {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const message = messages[i];
+      for (let j = message.parts.length - 1; j >= 0; j--) {
+        const part = message.parts[j];
+        if (part.type === "tool-invocation") {
+          setLastToolInvocation((prev) => {
+            if (prev?.toolCallId === part.toolInvocation.toolCallId) {
+              return prev;
+            }
+            return part.toolInvocation;
+          });
+          return;
+        }
+      }
+    }
+  }, [messages]);
 
   const [waitForUser, studyCompleted] = useMemo(() => {
     if (backgroundToken || useChatStatus === "streaming" || useChatStatus === "submitted") {
