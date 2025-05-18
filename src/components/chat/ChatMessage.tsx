@@ -25,7 +25,6 @@ export const ChatMessage = (message: {
   parts?: MessageType["parts"];
   extra?: Omit<Message, "id" | "role" | "content" | "parts">;
 }) => {
-  console.log(message);
   const { nickname, role, avatar, content, parts, extra } = message;
 
   return (

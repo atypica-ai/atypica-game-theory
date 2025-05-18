@@ -1,3 +1,4 @@
+import { checkTezignAuth } from "@/app/admin/utils";
 import { fetchUserChatById } from "@/lib/data/UserChat";
 import { throwServerActionError } from "@/lib/serverAction";
 import PersonasList from "./PersonasList";
@@ -18,6 +19,7 @@ export default async function PersonasPage({
     search?: string;
   }>;
 }) {
+  await checkTezignAuth();
   const { scoutUserChat: userChatParam, page: pageStr, search } = await searchParams;
   const page = pageStr ? parseInt(pageStr) : undefined;
   if (userChatParam) {

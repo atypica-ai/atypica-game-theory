@@ -1,8 +1,9 @@
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { authOptions } from "@/lib/auth";
 import { fetchUserChatById } from "@/lib/data/UserChat";
+import { throwServerActionError } from "@/lib/serverAction";
 import { getServerSession } from "next-auth/next";
-import { forbidden, notFound, redirect } from "next/navigation";
+import { forbidden, redirect } from "next/navigation";
 import { AgentChatPage } from "../../AgentChatPage";
 
 export const dynamic = "force-dynamic";
@@ -12,7 +13,7 @@ export default async function HelloAgentPage({ params }: { params: Promise<{ id:
 
   const result = await fetchUserChatById(userChatId, "misc");
   if (!result.success) {
-    notFound();
+    throwServerActionError(result);
   }
   const userChat = result.data;
 
