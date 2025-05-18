@@ -150,8 +150,7 @@ export async function upsertAnalystInterview({
       create: {
         analystId,
         personaId,
-        personaPrompt: "",
-        interviewerPrompt: "",
+        instruction: "",
         conclusion: "",
       },
     });

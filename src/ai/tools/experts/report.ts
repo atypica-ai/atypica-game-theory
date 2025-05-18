@@ -88,7 +88,7 @@ export const generateReportTool = ({
         });
       } else {
         report = await prisma.analystReport.create({
-          data: { analystId, token: reportToken, coverSvg: "", onePageHtml: "" },
+          data: { analystId, instruction, token: reportToken, coverSvg: "", onePageHtml: "" },
         });
       }
       try {

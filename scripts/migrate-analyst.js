@@ -86,7 +86,7 @@ async function updateAnalystBrief() {
     const studyUserChats = await prisma.userChat.findMany({
       where: {
         analyst: {
-          brief: "",
+          OR: [{ brief: "" }, { brief: null }],
         },
         kind: "study",
       },

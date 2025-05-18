@@ -110,10 +110,13 @@ export function AnalystsList({ analysts: initialAnalysts }: { analysts: Analyst[
             onClick={() => router.push(`/analyst/${analyst.id}`)}
           >
             <CardHeader>
-              <CardTitle className="text-lg">{analyst.role}</CardTitle>
-              <CardDescription className="mt-2 whitespace-pre-wrap line-clamp-4">
-                {analyst.topic}
+              <CardTitle className="text-lg">{analyst.role || "尚未明确主题"}</CardTitle>
+              <CardDescription className="mt-2 line-clamp-1">
+                {analyst.brief || "-"}
               </CardDescription>
+              <div className="mt-4 whitespace-pre-wrap line-clamp-4">
+                {analyst.topic || "尚未明确主题"}
+              </div>
             </CardHeader>
           </Card>
         ))}
