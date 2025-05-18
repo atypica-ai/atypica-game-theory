@@ -131,7 +131,7 @@ export const generateReportTool = ({
     },
   });
 
-async function generateReport({
+export async function generateReport({
   analyst,
   report,
   instruction,
@@ -266,7 +266,7 @@ async function generateReport({
   }
 }
 
-async function generateCover({
+export async function generateCover({
   analyst,
   report,
   instruction,

@@ -1,12 +1,53 @@
 "use server";
 import { StatReporter } from "@/ai/tools";
 import { prepareDBForInterview, runInterview } from "@/ai/tools/experts/interviewChat";
-import { authOptions } from "@/lib/auth";
+import { generateCover, generateReport } from "@/ai/tools/experts/report";
 import { rootLogger } from "@/lib/logging";
+import { withAuth } from "@/lib/request/withAuth";
+import { ServerActionResult } from "@/lib/serverAction";
+import { generateToken } from "@/lib/utils";
+import { Analyst, AnalystReport } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
-import { getServerSession } from "next-auth";
 import { forbidden } from "next/navigation";
+import { Logger } from "pino";
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function backgroundWait(promise: Promise<any>, logger: Logger) {
+  waitUntil(
+    new Promise(async (resolve, reject) => {
+      let stop = false;
+      const start = Date.now();
+      const tick = () => {
+        const now = Date.now();
+        const elapsedSeconds = Math.floor((now - start) / 1000);
+        if (elapsedSeconds > 1200) {
+          // 20 mins
+          logger.warn("timeout");
+          stop = true;
+          reject(new Error("interview timeout"));
+        }
+        if (stop) {
+          logger.info("stopped");
+        } else {
+          logger.info(`ongoing, ${elapsedSeconds} seconds`);
+          setTimeout(() => tick(), 5000);
+        }
+      };
+      tick();
+
+      promise
+        .then(() => {
+          stop = true;
+          resolve(null);
+        })
+        .catch((error) => {
+          stop = true;
+          reject(error);
+        });
+    }),
+  );
+}
 
 export async function batchBackgroundInterview({
   analystId,
@@ -15,61 +56,38 @@ export async function batchBackgroundInterview({
   analystId: number;
   personaIds: number[];
 }): Promise<void> {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) {
-    forbidden();
-  }
-  const userId = session.user.id;
-  // 确保 analyst 属于当前用户
-  const analyst = await prisma.analyst.findUnique({
-    where: { id: analystId },
-  });
-  if (analyst?.userId !== session.user.id) {
-    forbidden();
-  }
-
-  const abortController = new AbortController();
-  const abortSignal = abortController.signal;
-
-  for (const personaId of personaIds) {
-    const { analystInterviewId, interviewUserChatId, prompt } = await prepareDBForInterview({
-      userId,
-      personaId,
-      analystId,
-      instruction: "",
-      // language: "中英皆可",
-      language: "中文",
+  return withAuth(async (user) => {
+    // 确保 analyst 属于当前用户
+    const analyst = await prisma.analyst.findUnique({
+      where: { id: analystId },
     });
+    if (analyst?.userId !== user.id) {
+      forbidden();
+    }
 
-    const interviewLog = rootLogger.child({ interviewUserChatId, analystInterviewId });
-    const statReport: StatReporter = async (dimension, value, extra) => {
-      interviewLog.info(
-        `Stat report in batchBackgroundInterview: ${dimension}=${value} ${JSON.stringify(extra)}`,
-      );
-    };
+    const abortController = new AbortController();
+    const abortSignal = abortController.signal;
 
-    waitUntil(
-      new Promise(async (resolve, reject) => {
-        let stop = false;
-        const start = Date.now();
-        const tick = () => {
-          const now = Date.now();
-          const elapsedSeconds = Math.floor((now - start) / 1000);
-          if (elapsedSeconds > 1200) {
-            // 20 mins
-            console.log(`Interview [${analystInterviewId}] timeout`);
-            stop = true;
-            reject(new Error("interview timeout"));
-          }
-          if (stop) {
-            console.log(`Interview [${analystInterviewId}] stopped`);
-          } else {
-            console.log(`Interview [${analystInterviewId}] is ongoing, ${elapsedSeconds} seconds`);
-            setTimeout(() => tick(), 5000);
-          }
-        };
-        tick();
+    for (const personaId of personaIds) {
+      const { analystInterviewId, interviewUserChatId, prompt } = await prepareDBForInterview({
+        userId: user.id,
+        personaId,
+        analystId,
+        instruction: "",
+        // language: "中英皆可",
+        language: "中文",
+      });
 
+      const interviewLog = rootLogger.child({
+        interviewUserChatId,
+        analystInterviewId,
+        method: "batchBackgroundInterview",
+      });
+      const statReport: StatReporter = async (dimension, value, extra) => {
+        interviewLog.info(`statReport: ${dimension}=${value} ${JSON.stringify(extra)}`);
+      };
+
+      backgroundWait(
         runInterview({
           analystInterviewId,
           interviewUserChatId,
@@ -77,16 +95,125 @@ export async function batchBackgroundInterview({
           abortSignal,
           statReport,
           interviewLog,
-        })
-          .then(() => {
-            stop = true;
-            resolve(null);
-          })
-          .catch((error) => {
-            stop = true;
-            reject(error);
-          });
-      }),
+        }),
+        interviewLog,
+      );
+    }
+  });
+}
+
+export async function fetchAnalystReports({
+  analystId,
+}: {
+  analystId: number;
+}): Promise<
+  ServerActionResult<
+    (Pick<
+      AnalystReport,
+      "id" | "token" | "analystId" | "coverSvg" | "generatedAt" | "createdAt" | "updatedAt"
+    > & { analyst: Analyst })[]
+  >
+> {
+  return withAuth(async (user) => {
+    const analyst = await prisma.analyst.findUnique({
+      where: { id: analystId },
+    });
+    if (analyst?.userId !== user.id) {
+      return {
+        success: false,
+        code: "forbidden",
+        message: "You are not authorized to access this resource.",
+      };
+    }
+    const reports = await prisma.analystReport.findMany({
+      where: {
+        analystId: analyst.id,
+        // generatedAt: { not: null },
+      },
+      select: {
+        id: true,
+        token: true,
+        analystId: true,
+        analyst: true,
+        coverSvg: true,
+        generatedAt: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    return {
+      success: true,
+      data: reports,
+    };
+  });
+}
+
+export async function backgroundGenerateReport({
+  analystId,
+  instruction = "",
+}: {
+  analystId: number;
+  instruction?: string;
+}): Promise<void> {
+  return withAuth(async (user) => {
+    const analyst = await prisma.analyst.findUnique({
+      where: { id: analystId },
+      include: {
+        interviews: {
+          select: {
+            conclusion: true,
+          },
+        },
+      },
+    });
+    if (analyst?.userId !== user.id) {
+      forbidden();
+    }
+
+    const reportToken = generateToken();
+    const report = await prisma.analystReport.create({
+      data: {
+        analystId,
+        instruction,
+        token: reportToken,
+        coverSvg: "",
+        onePageHtml: "",
+      },
+    });
+
+    const abortController = new AbortController();
+    const abortSignal = abortController.signal;
+
+    const reportLog = rootLogger.child({
+      analystId,
+      reportToken,
+      method: "backgroundGenerateReport",
+    });
+    const statReport: StatReporter = async (dimension, value, extra) => {
+      reportLog.info(`statReport: ${dimension}=${value} ${JSON.stringify(extra)}`);
+    };
+
+    backgroundWait(
+      (async () => {
+        await generateReport({
+          analyst,
+          report,
+          instruction,
+          abortSignal,
+          statReport,
+          reportLog,
+        });
+        await generateCover({
+          analyst,
+          report,
+          instruction,
+          abortSignal,
+          statReport,
+          reportLog,
+        });
+      })(),
+      reportLog,
     );
-  }
+  });
 }

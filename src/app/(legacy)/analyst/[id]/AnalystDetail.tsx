@@ -1,33 +1,29 @@
 "use client";
 import { fetchAnalystInterviews } from "@/app/(legacy)/interview/actions";
-import { TokenAlertDialog } from "@/components/TokenAlertDialog";
-import { Button } from "@/components/ui/button";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { Analyst } from "@/prisma/client";
-import { Link, PlusIcon, UndoIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { toast } from "sonner";
-import { InterviewCard } from "./InterviewCard";
-import { ReportDialog } from "./ReportDialog";
-import { SelectPersonaDialog } from "./SelectPersonaDialog";
-import { batchBackgroundInterview } from "./actions";
+import { useEffect, useState } from "react";
+import { AnalystInterviewsSection } from "./AnalystInterviewsSection";
+import { AnalystReportsSection } from "./AnalystReportsSection";
+import { fetchAnalystReports } from "./actions";
 
 type AnalystInterview = ExtractServerActionData<typeof fetchAnalystInterviews>[number];
+type AnalystReport = ExtractServerActionData<typeof fetchAnalystReports>[number];
 
 export function AnalystDetail({
   analyst,
   interviews,
+  reports,
 }: {
   analyst: Analyst;
   interviews: AnalystInterview[];
+  reports: AnalystReport[];
 }) {
   const t = useTranslations("AnalystPage");
   const router = useRouter();
-
-  const [isOpen, setIsOpen] = useState(false);
-  const [isReportOpen, setIsReportOpen] = useState(false);
+  const [isPersonaDialogOpen, setIsPersonaDialogOpen] = useState(false);
 
   // Poll for status
   useEffect(() => {
@@ -38,53 +34,13 @@ export function AnalystDetail({
     return () => clearInterval(intervalId);
   }, [router, analyst.id]);
 
-  const addPersona = () => {
-    setIsOpen(true);
-  };
-
-  const generateReport = useCallback(async () => {
-    try {
-      // await updateAnalyst(analyst.id, { report: "" });
-      router.refresh();
-      setIsReportOpen(true);
-    } catch (error) {
-      toast.error(`${error}`);
-      throw error;
-    }
-  }, [router]);
-
-  const tokensDialog = useMemo(() => {
-    const pendingCount = interviews.filter(
-      (i) => !i.conclusion && !i.interviewUserChat?.backgroundToken,
-    ).length;
-    return (
-      <TokenAlertDialog
-        value={pendingCount * 5}
-        onConfirm={async () => {
-          const pending = interviews.filter(
-            (i) => !i.conclusion && !i.interviewUserChat?.backgroundToken,
-          );
-          await batchBackgroundInterview({
-            analystId: analyst.id,
-            personaIds: pending.map((i) => i.persona.id),
-          });
-          router.refresh();
-        }}
-      >
-        <Button variant="default" size="sm" disabled={pendingCount === 0}>
-          {t("interviewSection.startAllInterviews")} ({pendingCount})
-        </Button>
-      </TokenAlertDialog>
-    );
-  }, [analyst, interviews, router, t]);
-
   return (
-    <div className="flex-1 w-full overflow-y-auto scrollbar-thin py-12 space-y-8">
+    <div className="flex-1 w-full overflow-y-auto scrollbar-thin px-3 py-12 space-y-8">
       <div className="relative w-full">
         <h1 className="text-center text-xl font-medium mb-4">{analyst.role}</h1>
       </div>
 
-      <div className="bg-accent/40 rounded-lg p-6 border mx-auto max-w-4xl">
+      <div className="bg-accent/40 rounded-lg p-6 border mx-auto container">
         <div className="flex items-start gap-3">
           <div className="shrink-0 rounded-md bg-background size-10 flex items-center justify-center text-xl border">
             📝
@@ -97,35 +53,11 @@ export function AnalystDetail({
             <div className="mt-4 text-xs text-muted-foreground whitespace-pre-wrap rounded-md border p-4 max-h-40 overflow-y-auto scrollbar-thin">
               {analyst.brief}
             </div>
-            <div className="mt-4 flex justify-end flex-wrap gap-4">
-              {/* {analyst.report ? ( */}
-              {false ? (
-                <>
-                  <Button asChild variant="default" size="sm">
-                    <Link href={`/analyst/${analyst.id}/html`} target="_blank">
-                      {t("topicCard.viewReport")}
-                    </Link>
-                  </Button>
-
-                  <TokenAlertDialog value={100} onConfirm={generateReport}>
-                    <Button variant="outline" size="sm">
-                      <UndoIcon /> {t("topicCard.regenerateReport")}
-                    </Button>
-                  </TokenAlertDialog>
-                </>
-              ) : (
-                <TokenAlertDialog value={100} onConfirm={generateReport}>
-                  <Button variant="default" size="sm">
-                    {t("topicCard.generateReport")}
-                  </Button>
-                </TokenAlertDialog>
-              )}
-            </div>
           </div>
         </div>
       </div>
 
-      <div className="mb-8 bg-muted/50 rounded-lg p-4 text-sm text-muted-foreground  mx-auto max-w-4xl">
+      <div className="mb-8 bg-muted/50 rounded-lg p-4 text-sm text-muted-foreground mx-auto container">
         <p>💡 {t("guide.title")}</p>
         <ul className="list-disc ml-4 mt-1 space-y-1">
           <li>{t("guide.tip1")}</li>
@@ -134,30 +66,14 @@ export function AnalystDetail({
         </ul>
       </div>
 
-      <div className="flex items-end justify-start flex-wrap gap-4 mb-4 mx-auto max-w-4xl">
-        <h2 className="text-lg font-medium m-0">{t("interviewSection.title")}</h2>
-        <div className="ml-auto" />
-        <div className="flex items-center justify-end flex-wrap gap-4">
-          {tokensDialog}
-          <Button variant="outline" size="sm" onClick={addPersona}>
-            <PlusIcon /> {t("interviewSection.addInterviewSubject")}
-          </Button>
-        </div>
-      </div>
+      <AnalystReportsSection analystId={analyst.id} reports={reports} />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mx-auto max-w-4xl">
-        {interviews.map((interview) => (
-          <InterviewCard key={interview.id} interview={interview} />
-        ))}
-      </div>
-
-      <SelectPersonaDialog
-        open={isOpen}
-        onOpenChange={setIsOpen}
+      <AnalystInterviewsSection
         analystId={analyst.id}
-        onSuccess={() => router.refresh()}
+        interviews={interviews}
+        isPersonaDialogOpen={isPersonaDialogOpen}
+        setIsPersonaDialogOpen={setIsPersonaDialogOpen}
       />
-      <ReportDialog open={isReportOpen} onOpenChange={setIsReportOpen} analystId={analyst.id} />
     </div>
   );
 }

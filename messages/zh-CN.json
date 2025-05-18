@@ -200,8 +200,6 @@
     },
     "topicCard": {
       "researchTopic": "研究主题",
-      "viewReport": "查看报告",
-      "regenerateReport": "重新生成报告",
       "generateReport": "生成报告"
     },
     "interviewSection": {
@@ -218,13 +216,6 @@
       "title": "选择访谈对象",
       "cancel": "取消",
       "confirm": "确定"
-    },
-    "ReportDialog": {
-      "reportGenerated": "报告已生成",
-      "generatingReport": "生成报告中",
-      "completeMessage": "报告生成完成，请点击下方按钮查看完整报告。",
-      "waitMessage": "正在生成研究报告，请勿关闭此窗口。生成完成后会自动提示。",
-      "viewReport": "查看报告"
     }
   },
   "PersonasPage": {

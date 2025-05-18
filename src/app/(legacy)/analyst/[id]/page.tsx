@@ -3,6 +3,7 @@ import { checkTezignAuth } from "@/app/admin/utils";
 import { throwServerActionError } from "@/lib/serverAction";
 import { fetchAnalystById } from "../actions";
 import { AnalystDetail } from "./AnalystDetail";
+import { fetchAnalystReports } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -22,5 +23,11 @@ export default async function AnalystPage({ params }: { params: Promise<{ id: st
   }
   const interviews = interviewsResult.data;
 
-  return <AnalystDetail analyst={analyst} interviews={interviews} />;
+  const reportsResult = await fetchAnalystReports({ analystId: analyst.id });
+  if (!reportsResult.success) {
+    throwServerActionError(reportsResult);
+  }
+  const reports = reportsResult.data;
+
+  return <AnalystDetail analyst={analyst} interviews={interviews} reports={reports} />;
 }

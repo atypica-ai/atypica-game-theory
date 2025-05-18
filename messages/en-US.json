@@ -200,8 +200,6 @@
     },
     "topicCard": {
       "researchTopic": "Research Topic",
-      "viewReport": "View Report",
-      "regenerateReport": "Regenerate Report",
       "generateReport": "Generate Report"
     },
     "interviewSection": {
@@ -218,13 +216,6 @@
       "title": "Select Interview Subjects",
       "cancel": "Cancel",
       "confirm": "Confirm"
-    },
-    "ReportDialog": {
-      "reportGenerated": "Report Generated",
-      "generatingReport": "Generating Report",
-      "completeMessage": "The report has been generated. Click the button below to view the full report.",
-      "waitMessage": "Generating research report, please do not close this window. You will be notified when the generation is complete.",
-      "viewReport": "View Report"
     }
   },
   "PersonasPage": {
