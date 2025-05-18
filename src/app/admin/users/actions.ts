@@ -197,6 +197,7 @@ export async function deleteUserAccount(userId: number): Promise<ServerActionRes
   const user = await prisma.user.findUnique({
     where: { id: userId },
     include: {
+      analysts: true,
       userAnalysts: true,
       userChats: true,
       paymentRecords: true,
@@ -214,6 +215,7 @@ export async function deleteUserAccount(userId: number): Promise<ServerActionRes
   }
 
   if (
+    user.analysts.length > 0 ||
     user.userAnalysts.length > 0 ||
     user.userChats.length > 0 ||
     user.paymentRecords.length > 0 ||

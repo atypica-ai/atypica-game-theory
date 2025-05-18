@@ -332,7 +332,7 @@ export default function FeaturedStudiesPage() {
                 <CardContent>
                   <p className="text-sm line-clamp-3 mb-2">{analyst.studySummary}</p>
                   <p className="text-sm text-muted-foreground">
-                    User: {analyst.userAnalysts[0]?.user.email || "N/A"}
+                    User: {analyst.user?.email || "N/A"}
                   </p>
                   <p className="text-sm text-muted-foreground">
                     Created: {formatDate(analyst.createdAt, locale)}

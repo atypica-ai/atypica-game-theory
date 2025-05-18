@@ -10,11 +10,7 @@ export async function fetchAnalysts({ take = 30 }: { take?: number } = {}): Prom
   return withAuth(async (user) => {
     const analysts = await prisma.analyst.findMany({
       where: {
-        userAnalysts: {
-          some: {
-            userId: user.id,
-          },
-        },
+        userId: user.id,
       },
       orderBy: {
         createdAt: "desc",

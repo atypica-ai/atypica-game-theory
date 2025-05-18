@@ -3,7 +3,7 @@ import { FeaturedStudyCategory } from "@/app/(public)/featured-studies/data";
 import { UserChat } from "@/app/study/actions";
 import { StudyUserChat } from "@/lib/data/UserChat";
 import { ServerActionResult } from "@/lib/serverAction";
-import { Analyst, FeaturedStudy, User, UserAnalyst } from "@/prisma/client";
+import { Analyst, FeaturedStudy, User } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { revalidatePath } from "next/cache";
 import { AdminPermission, checkAdminAuth } from "../utils";
@@ -107,9 +107,7 @@ export async function fetchAnalysts(
 ): Promise<
   ServerActionResult<
     (Analyst & {
-      userAnalysts: (UserAnalyst & {
-        user: Pick<User, "email">;
-      })[];
+      user: Pick<User, "email"> | null;
       featuredStudy: FeaturedStudy | null;
       studyUserChat: Pick<UserChat, "token"> | null;
     })[]
@@ -123,10 +121,8 @@ export async function fetchAnalysts(
         OR: [
           { topic: { contains: search } },
           {
-            userAnalysts: {
-              some: {
-                user: { email: { contains: search } },
-              },
+            user: {
+              email: { contains: search },
             },
           },
         ],
@@ -143,13 +139,9 @@ export async function fetchAnalysts(
           token: true,
         },
       },
-      userAnalysts: {
-        include: {
-          user: {
-            select: {
-              email: true,
-            },
-          },
+      user: {
+        select: {
+          email: true,
         },
       },
     },
