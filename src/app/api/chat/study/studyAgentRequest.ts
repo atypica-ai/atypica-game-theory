@@ -38,6 +38,8 @@ const MAX_STEPS_EACH_ROUND = 15; // streamText 默认 15 步
 const TOOL_USE_LIMIT = {
   [ToolName.scoutTaskChat]: 2,
   [ToolName.generateReport]: 2,
+  [ToolName.buildPersona]: 1,
+  [ToolName.searchPersonas]: 2,
 };
 const TOKENS_COMSUME_LIMIT = 1_000_000; // 最新统计来看，100 万 tokens 足够
 
@@ -109,6 +111,9 @@ export async function studyAgentRequest({
     maxSteps = 10;
   }
 
+  /*
+  这部分先拿掉，先在这样会让 study agent 开始新的研究，
+  TODO: 后面要修改下，把提示词也改掉，改成追问 agent
   // 一旦开始生成报告，就只从报告的消息开始生成了，以及无法再使用别的工具
   // 不是第一个生成成功的报告，而是报告，一旦开始生成，前面的信息目前来看是暂时没用了其实
   const firstReportIndex = coreMessages.findIndex(
@@ -123,6 +128,7 @@ export async function studyAgentRequest({
   if (firstReportIndex >= 0) {
     coreMessages = coreMessages.slice(firstReportIndex);
   }
+  */
   if ((toolUseCount[ToolName.generateReport] ?? 0) >= TOOL_USE_LIMIT[ToolName.generateReport]) {
     delete tools[ToolName.generateReport];
     maxSteps = 2;
@@ -158,6 +164,14 @@ export async function studyAgentRequest({
       [ToolName.generateReport]: {
         used: toolUseCount[ToolName.generateReport] ?? 0,
         limit: TOOL_USE_LIMIT[ToolName.generateReport],
+      },
+      [ToolName.buildPersona]: {
+        used: toolUseCount[ToolName.buildPersona] ?? 0,
+        limit: TOOL_USE_LIMIT[ToolName.buildPersona],
+      },
+      [ToolName.searchPersonas]: {
+        used: toolUseCount[ToolName.searchPersonas] ?? 0,
+        limit: TOOL_USE_LIMIT[ToolName.searchPersonas],
       },
     },
   });
