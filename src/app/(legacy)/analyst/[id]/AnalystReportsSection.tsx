@@ -1,6 +1,8 @@
+import { reportHTMLSystem } from "@/ai/prompt";
 import { TokenAlertDialog } from "@/components/TokenAlertDialog";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDistanceToNow } from "@/lib/utils";
 import { Loader2Icon } from "lucide-react";
@@ -23,25 +25,34 @@ export function AnalystReportsSection({
   const t = useTranslations("AnalystPage");
   const router = useRouter();
   const [isReportDialogOpen, setIsReportDialogOpen] = useState<AnalystReport | null>(null);
+  const [isPromptDialogOpen, setIsPromptDialogOpen] = useState(false);
+  const [systemPrompt, setSystemPrompt] = useState("");
+
+  const openPromptDialog = useCallback(() => {
+    const system = reportHTMLSystem();
+    setSystemPrompt(system);
+    setIsPromptDialogOpen(true);
+  }, []);
 
   const generateReport = useCallback(async () => {
     try {
-      await backgroundGenerateReport({ analystId });
+      await backgroundGenerateReport({
+        analystId,
+        systemPrompt,
+      });
       router.refresh();
     } catch (error) {
       toast.error(`${error}`);
     }
-  }, [analystId, router]);
+  }, [analystId, router, systemPrompt]);
 
   return (
-    <div className="mx-auto container">
-      <div className="mt-4 flex justify-start flex-wrap gap-4">
-        <div className="text-lg font-medium mb-4">Reports</div>
-        <TokenAlertDialog value={100000} onConfirm={generateReport}>
-          <Button variant="default" size="sm">
-            {t("topicCard.generateReport")}
-          </Button>
-        </TokenAlertDialog>
+    <>
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+        <div className="text-lg font-medium">Reports</div>
+        <Button variant="default" size="sm" onClick={openPromptDialog}>
+          {t("topicCard.generateReport")}
+        </Button>
       </div>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {reports.map((report) => (
@@ -94,6 +105,40 @@ export function AnalystReportsSection({
           )}
         </DialogContent>
       </Dialog>
-    </div>
+
+      <Dialog open={isPromptDialogOpen} onOpenChange={(open) => setIsPromptDialogOpen(open)}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Customize Report Prompt</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <Textarea
+              placeholder="Enter custom instructions for the report generation. Leave blank to use default settings."
+              className="min-h-[200px] max-h-[400px]"
+              value={systemPrompt}
+              onChange={(e) => setSystemPrompt(e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground mt-2">
+              Additional instructions will be passed to the AI when generating your report. These
+              will supplement the standard report template.
+            </p>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setIsPromptDialogOpen(false)}>
+              Cancel
+            </Button>
+            <TokenAlertDialog
+              value={100000}
+              onConfirm={() => {
+                generateReport();
+                setIsPromptDialogOpen(false);
+              }}
+            >
+              <Button variant="default">Generate Report</Button>
+            </TokenAlertDialog>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

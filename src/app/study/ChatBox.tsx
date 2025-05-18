@@ -191,7 +191,7 @@ export function ChatBox() {
         }
       }
     }
-  }, [messages]);
+  }, [messages, setLastToolInvocation]);
 
   const [waitForUser, studyCompleted] = useMemo(() => {
     if (backgroundToken || useChatStatus === "streaming" || useChatStatus === "submitted") {

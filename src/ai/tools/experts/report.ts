@@ -138,6 +138,7 @@ export async function generateReport({
   abortSignal,
   statReport,
   reportLog,
+  systemPrompt,
 }: {
   analyst: Analyst & {
     interviews: {
@@ -149,6 +150,7 @@ export async function generateReport({
   abortSignal: AbortSignal;
   statReport: StatReporter;
   reportLog: Logger;
+  systemPrompt?: string;
 }) {
   let onePageHtml = report.onePageHtml; // 如果 report 有内容，就继续使用 report 的 onePageHtml
 
@@ -215,7 +217,7 @@ export async function generateReport({
       const response = streamText({
         model: llm("claude-3-7-sonnet"),
         providerOptions: providerOptions,
-        system: reportHTMLSystem(),
+        system: systemPrompt ? systemPrompt : reportHTMLSystem(),
         messages: messages,
         maxSteps: 1,
         maxTokens: 30000,

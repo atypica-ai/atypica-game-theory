@@ -152,9 +152,11 @@ export async function fetchAnalystReports({
 export async function backgroundGenerateReport({
   analystId,
   instruction = "",
+  systemPrompt,
 }: {
   analystId: number;
   instruction?: string;
+  systemPrompt?: string;
 }): Promise<void> {
   return withAuth(async (user) => {
     const analyst = await prisma.analyst.findUnique({
@@ -203,6 +205,7 @@ export async function backgroundGenerateReport({
           abortSignal,
           statReport,
           reportLog,
+          systemPrompt,
         });
         await generateCover({
           analyst,

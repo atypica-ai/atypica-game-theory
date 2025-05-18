@@ -35,45 +35,51 @@ export function AnalystDetail({
   }, [router, analyst.id]);
 
   return (
-    <div className="flex-1 w-full overflow-y-auto scrollbar-thin px-3 py-12 space-y-8">
-      <div className="relative w-full">
-        <h1 className="text-center text-xl font-medium mb-4">{analyst.role}</h1>
-      </div>
-
-      <div className="bg-accent/40 rounded-lg p-6 border mx-auto container">
-        <div className="flex items-start gap-3">
-          <div className="shrink-0 rounded-md bg-background size-10 flex items-center justify-center text-xl border">
-            📝
+    <div className="flex-1 w-full overflow-y-auto scrollbar-thin px-3 py-12">
+      <div className="grid grid-cols-1 lg:grid-cols-3 lg:gap-8 container mx-auto">
+        <section className="col-span-1 space-y-8">
+          <div className="relative w-full">
+            <h1 className="text-center text-xl font-medium mb-4">{analyst.role}</h1>
           </div>
-          <div className="flex-1">
-            <div className="text-base font-medium mb-1">{t("topicCard.researchTopic")}</div>
-            <div className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
-              {analyst.topic}
-            </div>
-            <div className="mt-4 text-xs text-muted-foreground whitespace-pre-wrap rounded-md border p-4 max-h-40 overflow-y-auto scrollbar-thin">
-              {analyst.brief}
+
+          <div className="bg-accent/40 rounded-lg p-6 border">
+            <div className="flex items-start max-lg:flex-col gap-3">
+              <div className="shrink-0 rounded-md bg-background size-10 flex items-center justify-center text-xl border">
+                📝
+              </div>
+              <div className="flex-1">
+                <div className="text-base font-medium mb-1">{t("topicCard.researchTopic")}</div>
+                <div className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
+                  {analyst.topic}
+                </div>
+                <div className="mt-4 text-xs text-muted-foreground whitespace-pre-wrap rounded-md border p-4 max-h-40 overflow-y-auto scrollbar-thin">
+                  {analyst.brief}
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+
+          <div className="mb-8 bg-muted/50 rounded-lg p-4 text-sm text-muted-foreground">
+            <p>💡 {t("guide.title")}</p>
+            <ul className="list-disc ml-4 mt-1 space-y-1">
+              <li>{t("guide.tip1")}</li>
+              <li>{t("guide.tip2")}</li>
+              <li>{t("guide.tip3")}</li>
+            </ul>
+          </div>
+        </section>
+
+        <section className="col-span-2 space-y-8">
+          <AnalystReportsSection analystId={analyst.id} reports={reports} />
+
+          <AnalystInterviewsSection
+            analystId={analyst.id}
+            interviews={interviews}
+            isPersonaDialogOpen={isPersonaDialogOpen}
+            setIsPersonaDialogOpen={setIsPersonaDialogOpen}
+          />
+        </section>
       </div>
-
-      <div className="mb-8 bg-muted/50 rounded-lg p-4 text-sm text-muted-foreground mx-auto container">
-        <p>💡 {t("guide.title")}</p>
-        <ul className="list-disc ml-4 mt-1 space-y-1">
-          <li>{t("guide.tip1")}</li>
-          <li>{t("guide.tip2")}</li>
-          <li>{t("guide.tip3")}</li>
-        </ul>
-      </div>
-
-      <AnalystReportsSection analystId={analyst.id} reports={reports} />
-
-      <AnalystInterviewsSection
-        analystId={analyst.id}
-        interviews={interviews}
-        isPersonaDialogOpen={isPersonaDialogOpen}
-        setIsPersonaDialogOpen={setIsPersonaDialogOpen}
-      />
     </div>
   );
 }
