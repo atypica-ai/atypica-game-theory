@@ -16,30 +16,22 @@ import { getDeployRegion } from "@/lib/request/deployRegion";
 import { fixMalformedUnicodeString, generateToken } from "@/lib/utils";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
-import { generateId, Message, streamText, tool } from "ai";
+import { generateId, generateText, Message, streamText, tool } from "ai";
 import { Logger } from "pino";
 import { z } from "zod";
 
-const REDUCE_TOKENS: {
-  model: LLMModelName;
-  ratio: number;
-} = {
-  model: "gemini-2.5-flash",
-  ratio: 10,
-};
-
 export interface InterviewChatResult extends PlainTextToolResult {
-  interviews: {
-    analystId: number;
-    persona: {
-      id: number;
-      name: string;
-    };
-    // personaId: number;
-    // personaName: string;
-    // conclusion?: string;  // 不再返回 conclusion，study agent 用不到
-    result: string;
-  }[];
+  // interviews: {
+  //   analystId: number;
+  //   persona: {
+  //     id: number;
+  //     name: string;
+  //   };
+  //   // personaId: number;
+  //   // personaName: string;
+  //   // conclusion?: string;  // 不再返回 conclusion，study agent 用不到
+  //   result: string;
+  // }[];
   plainText: string;
 }
 
@@ -90,7 +82,13 @@ export const interviewChatTool = ({
         throw new Error("Something went wrong, analyst does not exist on studyUserChat");
       }
       const analystId = analyst.id;
-      const single = async ({ id: personaId, name }: { id: number; name: string }) => {
+      const single = async ({
+        id: personaId,
+        name,
+      }: {
+        id: number;
+        name: string;
+      }): Promise<{ name: string; issue: string } | { name: string; conclusion: string }> => {
         try {
           const interview = await prisma.analystInterview.findUnique({
             where: { analystId_personaId: { analystId, personaId } },
@@ -98,9 +96,9 @@ export const interviewChatTool = ({
           // 不重复访谈
           if (interview?.conclusion) {
             return {
-              analystId,
-              persona: { id: personaId, name },
-              result: "访谈已完成 - 该用户已被访谈过，系统自动跳过重复访谈",
+              name,
+              conclusion: interview.conclusion,
+              // issue: "和该用户的访谈在",
             };
           }
           const { analystInterviewId, interviewUserChatId, prompt } = await prepareDBForInterview({
@@ -119,34 +117,49 @@ export const interviewChatTool = ({
             statReport,
             interviewLog,
           });
-          // const updatedInterview = await prisma.analystInterview.findUniqueOrThrow({
-          //   where: { id: analystInterviewId },
-          // });
+          const updatedInterview = await prisma.analystInterview.findUniqueOrThrow({
+            where: { id: analystInterviewId },
+          });
           return {
-            analystId,
-            persona: { id: personaId, name },
-            // conclusion: updatedInterview.conclusion,
-            result: "访谈结束",
+            name,
+            conclusion: updatedInterview.conclusion,
           };
         } catch (error) {
           return {
-            analystId,
-            persona: { id: personaId, name },
-            result: `访谈遇到问题 ${(error as Error).message}`,
+            name,
+            issue: `访谈遇到问题 ${(error as Error).message}`,
           };
         }
       };
       const interviewResults = await Promise.all(personas.map(single));
-      await new Promise((resolve) => {
-        // 等 5s, 确保前端可以把 conclusion 显示出来
-        setTimeout(() => resolve(null), 5000);
-      });
+      const digest = await generateDigest(interviewResults);
       return {
-        interviews: interviewResults,
-        plainText: JSON.stringify(interviewResults),
+        plainText: digest,
       };
     },
   });
+
+async function generateDigest(
+  results: ({ name: string; issue: string } | { name: string; conclusion: string })[],
+) {
+  // 注意，这里没有统计 tokens，模型便宜问题不大
+  const prompt = `
+请根据以下访谈结果生成一份简单的摘要，不超过200字。
+${results
+  .map((result) => {
+    const text = "conclusion" in result ? result.conclusion : "issue" in result ? result.issue : "";
+    return `${result.name}\n${text}\n`;
+  })
+  .join("\n")}
+`;
+  const digest = await generateText({
+    model: llm("gpt-4o-mini"),
+    providerOptions,
+    prompt,
+    maxTokens: 2000,
+  });
+  return digest.text;
+}
 
 export async function prepareDBForInterview({
   userId,
@@ -234,16 +247,24 @@ async function chatWithInterviewer({
   ChatProps,
   "messages" | "analystInterviewId" | "prompt" | "abortSignal" | "statReport" | "interviewLog"
 >) {
+  const REDUCE_TOKENS: {
+    model: LLMModelName;
+    ratio: number;
+  } = {
+    model: "gemini-2.5-pro",
+    ratio: 2,
+  };
+
   const result = await new Promise<Omit<Message, "role">>(async (resolve, reject) => {
-    // interviewer 暂时不 reduce tokens，得靠谱点用 claude 3.7，需要控制流程
+    const reduceTokens = REDUCE_TOKENS as typeof REDUCE_TOKENS | null;
     const response = streamText({
-      model: llm("claude-3-7-sonnet"), // 不能用 gpt-4o，指令遵循的比较差，会结束不了
+      model: reduceTokens ? llm(reduceTokens.model) : llm("claude-3-7-sonnet"), // 不能用 gpt-4o，指令遵循的比较差，会结束不了
       providerOptions: providerOptions,
       system: prompt.interviewerPrompt,
       temperature: 0.5,
       messages: messages,
       tools: {
-        [ToolName.reasoningThinking]: reasoningThinkingTool({ abortSignal, statReport }), // 减少 tokens 消耗，先隐藏
+        [ToolName.reasoningThinking]: reasoningThinkingTool({ abortSignal, statReport }),
         [ToolName.saveInterviewConclusion]: saveInterviewConclusionTool(analystInterviewId),
       },
       ...(messages.length < 10
@@ -266,11 +287,18 @@ async function chatWithInterviewer({
           usage: step.usage,
         });
         if (step.usage.totalTokens > 0) {
-          await statReport("tokens", step.usage.totalTokens, {
+          let tokens = step.usage.totalTokens;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const extra: any = {
             reportedBy: "interview tool",
             analystInterviewId,
             role: "interviewer",
-          });
+          };
+          if (reduceTokens) {
+            extra["reduceTokens"] = { originalTokens: tokens, ...reduceTokens };
+            tokens = Math.ceil(tokens / reduceTokens.ratio);
+          }
+          await statReport("tokens", tokens, extra);
         }
       },
       onFinish: async ({ steps, usage }) => {
@@ -304,6 +332,13 @@ async function chatWithPersona({
   ChatProps,
   "messages" | "analystInterviewId" | "prompt" | "abortSignal" | "statReport" | "interviewLog"
 >) {
+  const REDUCE_TOKENS: {
+    model: LLMModelName;
+    ratio: number;
+  } = {
+    model: "gemini-2.5-flash",
+    ratio: 10,
+  };
   const result = await new Promise<Omit<Message, "role">>(async (resolve, reject) => {
     const reduceTokens = REDUCE_TOKENS as typeof REDUCE_TOKENS | null;
     const response = streamText({

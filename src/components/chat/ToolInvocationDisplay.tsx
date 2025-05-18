@@ -5,6 +5,7 @@ import {
   ReasoningThinkingResultMessage,
   ScoutTaskChatResultMessage,
 } from "@/ai/tools/experts/ToolMessage";
+import { InterviewChatResultMessage } from "@/ai/tools/experts/ToolMessage/SaveAnalystToolResultMessage";
 import { SearchPersonasResultMessage } from "@/ai/tools/experts/ToolMessage/SearchPersonasResultMessage";
 import {
   DYPostCommentsResultMessage,
@@ -79,6 +80,8 @@ export const ToolInvocationDisplay = ({
       return <BuildPersonaResultMessage toolInvocation={toolInvocation} />;
     case ToolName.searchPersonas:
       return <SearchPersonasResultMessage toolInvocation={toolInvocation} />;
+    case ToolName.interviewChat:
+      return <InterviewChatResultMessage toolInvocation={toolInvocation} />;
 
     case ToolName.saveAnalyst:
       return <SaveAnalystToolResultMessage toolInvocation={toolInvocation} />;

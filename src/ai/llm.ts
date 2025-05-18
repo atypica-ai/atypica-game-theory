@@ -77,6 +77,7 @@ export const providerOptions = {
 
 export type LLMModelName =
   | "gpt-4o"
+  | "gpt-4o-mini"
   | "o3-mini"
   | "claude-3-7-sonnet"
   | "claude-3-7-sonnet-beta"
@@ -95,12 +96,15 @@ export function llm(modelName: LLMModelName, options?: any) {
       case "deepseek-r1":
       case "o3-mini":
       case "gpt-4o":
+      case "gpt-4o-mini":
         return openai(modelName, options); // options 支持 parallelToolCalls 参数
     }
   }
   switch (modelName) {
     case "gpt-4o":
       return azure("gpt-4o", options); // options 支持 parallelToolCalls 参数
+    case "gpt-4o-mini":
+      return azure("gpt-4o-mini", options); // options 支持 parallelToolCalls 参数
     case "o3-mini":
       return azure("o3-mini", options);
     case "claude-3-7-sonnet":
