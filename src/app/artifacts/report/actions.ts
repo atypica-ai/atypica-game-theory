@@ -21,7 +21,7 @@ export async function generateReportPDF(reportToken: string): Promise<{
         },
       },
     });
-    if (report.analyst.userId === user.id) {
+    if (report.analyst.userId !== user.id) {
       forbidden();
     }
     const filename = reportToken;
