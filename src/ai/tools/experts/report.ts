@@ -6,6 +6,8 @@ import {
   reportHTMLSystem,
 } from "@/ai/prompt";
 import { PlainTextToolResult, StatReporter } from "@/ai/tools";
+import { ChatMessageAttachment } from "@/lib/attachments";
+import { s3SignedUrl } from "@/lib/attachments/s3";
 import { generateToken } from "@/lib/utils";
 import { Analyst, AnalystReport } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
@@ -199,21 +201,32 @@ export async function generateReport({
     } = await new Promise<{
       finishReason: FinishReason;
       content: string;
-    }>((resolve, reject) => {
-      let messages: Omit<Message, "id">[] = [
-        { role: "user", content: reportHTMLPrologue(analyst, instruction) },
+    }>(async (resolve, reject) => {
+      const experimental_attachments = analyst.attachments
+        ? await Promise.all(
+            (analyst.attachments as ChatMessageAttachment[]).map(
+              async ({ objectUrl, name, mimeType }) => ({
+                url: await s3SignedUrl(objectUrl),
+                name: name,
+                contentType: mimeType,
+              }),
+            ),
+          )
+        : undefined;
+      const messages: Omit<Message, "id">[] = [
+        {
+          role: "user",
+          content: reportHTMLPrologue(analyst, instruction),
+          experimental_attachments,
+        },
       ];
       if (onePageHtml) {
-        messages = [
-          ...messages,
-          { role: "assistant", content: onePageHtml },
-          {
-            role: "user",
-            content: "请继续生成剩余的网页内容，无需重复已经生成的部分，直接接着上文继续完成。",
-          },
-        ];
+        messages.push({ role: "assistant", content: onePageHtml });
+        messages.push({
+          role: "user",
+          content: "请继续生成剩余的网页内容，无需重复已经生成的部分，直接接着上文继续完成。",
+        });
       }
-
       const response = streamText({
         model: llm("claude-3-7-sonnet"),
         providerOptions: providerOptions,
