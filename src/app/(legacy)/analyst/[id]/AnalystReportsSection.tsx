@@ -111,7 +111,7 @@ export function AnalystReportsSection({
           <DialogHeader>
             <DialogTitle>Customize Report Prompt</DialogTitle>
           </DialogHeader>
-          <div className="py-4">
+          <div className="py-4 overflow-hidden">
             <Textarea
               placeholder="Enter custom instructions for the report generation. Leave blank to use default settings."
               className="min-h-[200px] max-h-[400px]"
