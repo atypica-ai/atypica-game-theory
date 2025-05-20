@@ -182,7 +182,10 @@ export function ChatBox() {
         const part = message.parts[j];
         if (part.type === "tool-invocation") {
           setLastToolInvocation((prev) => {
-            if (prev?.toolCallId === part.toolInvocation.toolCallId) {
+            if (
+              prev?.toolCallId === part.toolInvocation.toolCallId &&
+              prev?.state === part.toolInvocation.state
+            ) {
               return prev;
             }
             return part.toolInvocation;

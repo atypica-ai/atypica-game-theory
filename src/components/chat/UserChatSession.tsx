@@ -140,7 +140,6 @@ export function UserChatSession({
                       contentType: file.mimeType,
                     }}
                     onRemove={() => handleRemoveFile(index)}
-                    className="w-24 h-24"
                   />
                 ))}
               </div>

@@ -51,7 +51,7 @@ export const ChatMessage = (message: {
       {extra?.experimental_attachments && (
         <div className="mb-2 flex flex-wrap gap-2 max-w-full overflow-x-auto">
           {extra?.experimental_attachments.map((attachment, index) => (
-            <FileAttachment key={index} attachment={attachment} className="w-24 h-24" />
+            <FileAttachment key={index} attachment={attachment} />
           ))}
         </div>
       )}

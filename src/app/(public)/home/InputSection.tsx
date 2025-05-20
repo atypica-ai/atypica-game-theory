@@ -97,7 +97,7 @@ export function InputSection() {
             }
           }}
         />
-        <div className="absolute left-0 bottom-0 right-0 p-4 flex items-center justify-start gap-2">
+        <div className="absolute left-0 bottom-0 right-0 flex items-center justify-start gap-2 p-4">
           <FileUploadButton
             onFileUploadedAction={handleFileUploaded}
             disabled={
@@ -114,7 +114,6 @@ export function InputSection() {
                 contentType: file.mimeType,
               }}
               onRemove={() => handleRemoveFile(index)}
-              className="w-8 h-8"
             />
           ))}
           <div className="ml-auto" />

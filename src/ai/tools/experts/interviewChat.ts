@@ -1,6 +1,11 @@
 import { llm, LLMModelName, providerOptions } from "@/ai/llm";
 import { convertStepsToAIMessage } from "@/ai/messageUtils";
-import { interviewerPrologue, interviewerSystem, personaAgentSystem } from "@/ai/prompt";
+import {
+  interviewerAttachment,
+  interviewerPrologue,
+  interviewerSystem,
+  personaAgentSystem,
+} from "@/ai/prompt";
 import {
   dySearchTool,
   insSearchTool,
@@ -12,6 +17,8 @@ import {
   ToolName,
   xhsSearchTool,
 } from "@/ai/tools";
+import { ChatMessageAttachment } from "@/lib/attachments";
+import { s3SignedUrl } from "@/lib/attachments/s3";
 import { getDeployRegion } from "@/lib/request/deployRegion";
 import { fixMalformedUnicodeString, generateToken } from "@/lib/utils";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
@@ -101,18 +108,20 @@ export const interviewChatTool = ({
               // issue: "和该用户的访谈在",
             };
           }
-          const { analystInterviewId, interviewUserChatId, prompt } = await prepareDBForInterview({
-            userId,
-            personaId,
-            analystId,
-            instruction,
-            language,
-          });
+          const { analystInterviewId, interviewUserChatId, prompt, attachments } =
+            await prepareDBForInterview({
+              userId,
+              personaId,
+              analystId,
+              instruction,
+              language,
+            });
           const interviewLog = studyLog.child({ interviewUserChatId, analystInterviewId });
           await runInterview({
             analystInterviewId,
             interviewUserChatId,
             prompt,
+            attachments,
             abortSignal,
             statReport,
             interviewLog,
@@ -181,6 +190,10 @@ export async function prepareDBForInterview({
   const personaPrompt = personaAgentSystem({ persona, language });
   const interviewerPrompt = interviewerSystem({ analyst, language, instruction });
   const interviewerProloguePrompt = interviewerPrologue({ analyst, language });
+  const interviewerAttachmentPrompt = interviewerAttachment({ persona });
+  const attachments = analyst.attachments
+    ? (analyst.attachments as ChatMessageAttachment[])
+    : undefined;
   const conclusion = ""; // conclusion 被用于判断是否结束，开始前一定要清空
   const interview = await prisma.analystInterview.upsert({
     where: {
@@ -217,36 +230,36 @@ export async function prepareDBForInterview({
       personaPrompt,
       interviewerPrompt,
       interviewerProloguePrompt,
+      interviewerAttachmentPrompt,
     },
+    attachments,
   };
 }
 
 type ChatProps = {
-  messages: Message[];
   analystInterviewId: number;
   interviewUserChatId: number;
-  backgroundToken: string;
   prompt: {
     personaPrompt: string;
     interviewerPrompt: string;
     interviewerProloguePrompt: string;
+    interviewerAttachmentPrompt: string;
   };
+  attachments?: ChatMessageAttachment[];
   abortSignal: AbortSignal;
   statReport: StatReporter;
   interviewLog: Logger;
 };
 
-async function chatWithInterviewer({
-  messages,
-  analystInterviewId,
-  prompt,
-  abortSignal,
-  statReport,
-  interviewLog,
-}: Pick<
-  ChatProps,
-  "messages" | "analystInterviewId" | "prompt" | "abortSignal" | "statReport" | "interviewLog"
->) {
+async function chatWithInterviewer(chatProps: ChatProps, messages: Message[]) {
+  const {
+    analystInterviewId,
+    prompt: { interviewerPrompt },
+    abortSignal,
+    statReport,
+    interviewLog,
+  } = chatProps;
+
   const REDUCE_TOKENS: {
     model: LLMModelName;
     ratio: number;
@@ -260,8 +273,8 @@ async function chatWithInterviewer({
     const response = streamText({
       model: reduceTokens ? llm(reduceTokens.model) : llm("claude-3-7-sonnet"), // 不能用 gpt-4o，指令遵循的比较差，会结束不了
       providerOptions: providerOptions,
-      system: prompt.interviewerPrompt,
-      temperature: 0.5,
+      system: interviewerPrompt,
+      temperature: 0.3,
       messages: messages,
       tools: {
         [ToolName.reasoningThinking]: reasoningThinkingTool({ abortSignal, statReport }),
@@ -321,17 +334,15 @@ async function chatWithInterviewer({
   return result;
 }
 
-async function chatWithPersona({
-  messages,
-  analystInterviewId,
-  prompt,
-  abortSignal,
-  statReport,
-  interviewLog,
-}: Pick<
-  ChatProps,
-  "messages" | "analystInterviewId" | "prompt" | "abortSignal" | "statReport" | "interviewLog"
->) {
+async function chatWithPersona(chatProps: ChatProps, messages: Message[]) {
+  const {
+    analystInterviewId,
+    prompt: { personaPrompt },
+    abortSignal,
+    statReport,
+    interviewLog,
+  } = chatProps;
+
   const REDUCE_TOKENS: {
     model: LLMModelName;
     ratio: number;
@@ -339,12 +350,13 @@ async function chatWithPersona({
     model: "gemini-2.5-flash",
     ratio: 10,
   };
+
   const result = await new Promise<Omit<Message, "role">>(async (resolve, reject) => {
     const reduceTokens = REDUCE_TOKENS as typeof REDUCE_TOKENS | null;
     const response = streamText({
       model: reduceTokens ? llm(reduceTokens.model) : llm("gpt-4o"),
       providerOptions: providerOptions,
-      system: prompt.personaPrompt,
+      system: personaPrompt,
       temperature: 0.3,
       messages: messages,
       tools: {
@@ -430,43 +442,54 @@ async function saveMessage({
   }
 }
 
-export async function runInterview({
-  analystInterviewId,
-  interviewUserChatId,
-  prompt,
-  abortSignal,
-  statReport,
-  interviewLog,
-}: Omit<ChatProps, "messages" | "backgroundToken">) {
+export async function runInterview(chatProps: ChatProps) {
+  const { analystInterviewId, interviewUserChatId, prompt, attachments, interviewLog } = chatProps;
   const backgroundToken = new Date().valueOf().toString();
   await prisma.userChat.update({
     where: { id: interviewUserChatId, kind: "interview" },
     data: { backgroundToken },
   });
-
+  const experimental_attachments = attachments
+    ? await Promise.all(
+        attachments.map(async ({ objectUrl, name, mimeType }) => ({
+          url: await s3SignedUrl(objectUrl),
+          name: name,
+          contentType: mimeType,
+        })),
+      )
+    : undefined;
   const personaAgent = {
     messages: [
-      { id: generateId(), role: "user", content: prompt.interviewerProloguePrompt },
+      {
+        id: generateId(),
+        role: "user",
+        content: prompt.interviewerProloguePrompt,
+        experimental_attachments,
+      },
     ] as Message[],
   };
-  const interviewer = { messages: [] as Message[] };
+  const interviewer = {
+    messages: (experimental_attachments
+      ? [
+          {
+            id: generateId(),
+            role: "user",
+            content: prompt.interviewerAttachmentPrompt,
+            experimental_attachments,
+          },
+        ]
+      : []) as Message[],
+  };
   const saveParams = { analystInterviewId, interviewUserChatId, backgroundToken, interviewLog };
-  const chatParams = { analystInterviewId, prompt, abortSignal, statReport, interviewLog };
 
   while (true) {
-    const personaReply = await chatWithPersona({
-      messages: personaAgent.messages,
-      ...chatParams,
-    });
+    const personaReply = await chatWithPersona(chatProps, personaAgent.messages);
     // interviewLog.info(`Persona:\n${message.content}\n`);
     await saveMessage({ message: { ...personaReply, role: "assistant" }, ...saveParams });
     personaAgent.messages.push({ ...personaReply, role: "assistant" });
     interviewer.messages.push({ ...personaReply, role: "user" });
 
-    const interviewerReply = await chatWithInterviewer({
-      messages: interviewer.messages,
-      ...chatParams,
-    });
+    const interviewerReply = await chatWithInterviewer(chatProps, interviewer.messages);
     // interviewLog.info(`Interviewer:\n${message.content}\n`);
     await saveMessage({ message: { ...interviewerReply, role: "user" }, ...saveParams });
     interviewer.messages.push({ ...interviewerReply, role: "assistant" });

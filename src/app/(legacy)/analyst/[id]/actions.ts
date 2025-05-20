@@ -69,14 +69,15 @@ export async function batchBackgroundInterview({
     const abortSignal = abortController.signal;
 
     for (const personaId of personaIds) {
-      const { analystInterviewId, interviewUserChatId, prompt } = await prepareDBForInterview({
-        userId: user.id,
-        personaId,
-        analystId,
-        instruction: "",
-        // language: "中英皆可",
-        language: "中文",
-      });
+      const { analystInterviewId, interviewUserChatId, prompt, attachments } =
+        await prepareDBForInterview({
+          userId: user.id,
+          personaId,
+          analystId,
+          instruction: "",
+          // language: "中英皆可",
+          language: "中文",
+        });
 
       const interviewLog = rootLogger.child({
         interviewUserChatId,
@@ -92,6 +93,7 @@ export async function batchBackgroundInterview({
           analystInterviewId,
           interviewUserChatId,
           prompt,
+          attachments,
           abortSignal,
           statReport,
           interviewLog,

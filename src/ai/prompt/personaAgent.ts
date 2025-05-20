@@ -7,8 +7,10 @@ export const personaAgentSystem = ({
   persona: Persona;
   language: string;
 }) => `
+<name>${persona.name}</name>
+
 <role>
-${persona.prompt ?? ""}
+${persona.prompt}
 </role>
 
 <tags>

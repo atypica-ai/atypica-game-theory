@@ -167,7 +167,7 @@ export const SingleMessage = ({
         {experimental_attachments && (
           <div className="mt-4 flex flex-wrap gap-2 max-w-full overflow-x-auto">
             {experimental_attachments.map((attachment, index) => (
-              <FileAttachment key={index} attachment={attachment} className="w-24 h-24" />
+              <FileAttachment key={index} attachment={attachment} />
             ))}
           </div>
         )}

@@ -1,4 +1,4 @@
-import { Analyst } from "@/prisma/client";
+import { Analyst, Persona } from "@/prisma/client";
 
 export const interviewerSystem = ({
   analyst,
@@ -76,4 +76,10 @@ ${analyst.topic}
 这次对话旨在了解您的真实体验和想法，没有对错之分，您分享的每一个观点对我们都非常宝贵。整个过程会像朋友间的自然交流，大约持续10-15分钟。
 
 在我们开始前，请您用${language}简单介绍一下自己（如您的职业、兴趣或与今天话题相关的经历）。这有助于我更好地理解您的背景和观点。
+`;
+
+export const interviewerAttachment = ({ persona }: { persona: Persona }) => `
+<系统消息>
+这是本次访谈的附件，接下来话题交给受访对象${persona.name}
+</系统消息>
 `;

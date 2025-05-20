@@ -11,6 +11,7 @@ export async function fetchAnalysts({ take = 30 }: { take?: number } = {}): Prom
     const analysts = await prisma.analyst.findMany({
       where: {
         userId: user.id,
+        topic: { not: "" },
       },
       orderBy: {
         createdAt: "desc",
