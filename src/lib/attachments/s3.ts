@@ -1,5 +1,6 @@
 import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { rootLogger } from "../logging";
 
 export const s3Client = new S3Client({
   region: process.env.AWS_S3_REGION!,
@@ -21,7 +22,8 @@ export async function s3SignedUrl(url: string): Promise<string> {
     try {
       const parsedUrl = new URL(urlPath);
       urlPath = parsedUrl.pathname;
-    } catch (e) {
+    } catch (error) {
+      rootLogger.error(`Something went wrong when parsing the URL: ${(error as Error).message}`);
       urlPath = urlPath.startsWith("/") ? urlPath : "/" + urlPath;
     }
     if (urlPath.startsWith("/")) {

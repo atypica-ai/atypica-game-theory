@@ -173,7 +173,7 @@ export const SingleMessage = ({
         )}
       </div>
     );
-  }, [content, onDelete]);
+  }, [content, onDelete, experimental_attachments]);
 
   // const { replay } = useStudyContext();
   const renderParts = (parts: NonNullable<MessageType["parts"]>) => {
