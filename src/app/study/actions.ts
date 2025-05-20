@@ -1,43 +1,32 @@
 "use server";
-import { convertDBMessageToAIMessage } from "@/ai/messageUtils";
+import { convertDBMessagesToAIMessages, convertDBMessageToAIMessage } from "@/ai/messageUtils";
+import { ChatMessageAttachment } from "@/lib/attachments";
 import { UserChatWithMessages } from "@/lib/data/UserChat";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { generateToken } from "@/lib/utils";
-import {
-  Analyst,
-  AnalystInterview,
-  AnalystReport,
-  Persona,
-  UserChat as UserChatPrisma,
-} from "@/prisma/client";
+import { Analyst, AnalystInterview, AnalystReport, Persona, UserChat } from "@/prisma/client";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import { generateId, Message } from "ai";
 
-export type UserChat = Omit<UserChatPrisma, "messages"> & {
-  messages: Message[];
-};
-
-export async function createStudyUserChat({
-  role,
-  content,
-}: {
-  role: "user" | "assistant";
-  content: string;
-}): Promise<ServerActionResult<Omit<UserChatWithMessages, "kind"> & { kind: "study" }>> {
+export async function createStudyUserChat(
+  {
+    role,
+    content,
+  }: {
+    role: "user" | "assistant";
+    content: string;
+  },
+  attachments?: ChatMessageAttachment[],
+): Promise<ServerActionResult<Omit<UserChat, "kind"> & { kind: "study" }>> {
   return withAuth(async (user) => {
-    const message: Message = {
-      id: generateId(),
-      role,
-      content,
-      parts: [{ type: "text", text: content }],
-    };
+    const parts = [{ type: "text", text: content }];
     const userChat = await prisma.$transaction(async (tx) => {
       const userChat = await tx.userChat.create({
         data: {
           userId: user.id,
-          title: message.content.substring(0, 50),
+          title: content.substring(0, 50),
           kind: "study",
           token: generateToken(),
         },
@@ -48,7 +37,8 @@ export async function createStudyUserChat({
           userChatId: userChat.id,
           role,
           content,
-          parts: message.parts as InputJsonValue,
+          parts: parts as InputJsonValue,
+          attachments: attachments,
         },
       });
       await tx.analyst.create({
@@ -59,6 +49,7 @@ export async function createStudyUserChat({
           role: "",
           topic: "",
           studySummary: "",
+          attachments: attachments,
         },
       });
       return userChat;
@@ -68,7 +59,6 @@ export async function createStudyUserChat({
       data: {
         ...userChat,
         kind: "study",
-        messages: [message],
       },
     };
   });
@@ -79,7 +69,7 @@ export async function fetchUserChatByToken<Tkind extends UserChat["kind"]>(
   kind: Tkind,
 ): Promise<
   ServerActionResult<
-    Omit<UserChat, "kind"> & {
+    Omit<UserChatWithMessages, "kind"> & {
       kind: Tkind;
       messages: Message[];
     }
@@ -103,12 +93,12 @@ export async function fetchUserChatByToken<Tkind extends UserChat["kind"]>(
     data: {
       ...userChat,
       kind: userChat.kind as Tkind,
-      messages: userChat.messages.map(convertDBMessageToAIMessage),
+      messages: await convertDBMessagesToAIMessages(userChat.messages),
     },
   };
 }
 
-export async function fetchUserChatStateByToken<Tkind extends UserChat["kind"]>(
+export async function fetchUserChatStateByToken<Tkind extends UserChatWithMessages["kind"]>(
   studyUserChatToken: string,
   kind: Tkind,
 ): Promise<ServerActionResult<{ backgroundToken: string | null; chatMessageUpdatedAt: Date }>> {

@@ -1,4 +1,6 @@
 import { ToolName } from "@/ai/tools";
+import { ChatMessageAttachment } from "@/lib/attachments";
+import { s3SignedUrl } from "@/lib/attachments/s3";
 import { ChatMessage } from "@/prisma/client";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
@@ -218,11 +220,25 @@ export function appendChunkToStreamingMessage<T extends ToolSet>(
   // 其他类型的在 studychat 里遇不到，不用处理
 }
 
-export const persistentAIMessageToDB = async (userChatId: number, message: Message) => {
+/**
+ * AI message 上面的 experimental_attachments 会被忽略，使用 attachments
+ */
+export const persistentAIMessageToDB = async (
+  userChatId: number,
+  message: Message,
+  attachments?: ChatMessageAttachment[], // 暂时还没地方用到，现在唯一存储 attachments 的地方，在 createStudyUserChat 里直接实现了
+) => {
   const { id: messageId, role, content, parts: _parts, createdAt, ...extra } = message;
   const parts: NonNullable<Message["parts"]> = _parts?.length
     ? _parts
     : [{ type: "text", text: content }];
+  const dataToPersist = {
+    role,
+    content,
+    parts: parts as InputJsonValue,
+    extra: extra as InputJsonValue,
+    ...(attachments ? { attachments } : undefined),
+  };
   if (role === "user") {
     // 如果最后一条消息是 user，则覆盖
     const lastUserMessage = await prisma.chatMessage.findFirst({
@@ -234,10 +250,8 @@ export const persistentAIMessageToDB = async (userChatId: number, message: Messa
         where: { id: lastUserMessage.id },
         data: {
           messageId,
-          content,
-          parts: parts as InputJsonValue,
-          extra: extra as InputJsonValue,
-          createdAt,
+          createdAt, // 同时也覆盖 createdAt
+          ...dataToPersist,
         },
       });
       // 结束，不再继续
@@ -249,17 +263,11 @@ export const persistentAIMessageToDB = async (userChatId: number, message: Messa
     create: {
       userChatId,
       messageId,
-      role,
-      content,
-      parts: parts as InputJsonValue,
-      extra: extra as InputJsonValue,
       createdAt,
+      ...dataToPersist,
     },
     update: {
-      role,
-      content,
-      parts: parts as InputJsonValue,
-      extra: extra as InputJsonValue,
+      ...dataToPersist,
     },
   });
 };
@@ -302,16 +310,56 @@ export const createDebouncePersistentMessage = (
   };
 };
 
+/**
+ * Deprecated, use async function convertDBMessagesToAIMessages instead
+ */
 export function convertDBMessageToAIMessage({
   messageId: id,
   role,
   content,
   parts: _parts,
+  extra: _extra,
   createdAt,
 }: ChatMessage): Message {
   const parts = _parts as Message["parts"];
-  const message: Message = { id, role, content, parts, createdAt };
+  const extra = _extra as Omit<Message, "id" | "role" | "content" | "parts" | "createdAt"> | null;
+  const message: Message = { ...extra, id, role, content, parts, createdAt };
   return message;
+}
+
+export async function convertDBMessagesToAIMessages(dbMessages: ChatMessage[]): Promise<Message[]> {
+  const aiMessages = await Promise.all(
+    dbMessages.map(
+      async ({
+        messageId: id,
+        role,
+        content,
+        parts: _parts,
+        extra: _extra,
+        attachments: _attachments,
+        createdAt,
+      }) => {
+        const parts = _parts as Message["parts"];
+        const extra = _extra
+          ? (_extra as Omit<Message, "id" | "role" | "content" | "parts" | "createdAt">)
+          : undefined;
+        const attachments = _attachments ? (_attachments as ChatMessageAttachment[]) : undefined;
+        const message: Message = { ...extra, id, role, content, parts, createdAt };
+        if (attachments) {
+          message["experimental_attachments"] = await Promise.all(
+            attachments.map(async ({ objectUrl, name, mimeType, size }) => ({
+              url: await s3SignedUrl(objectUrl),
+              name,
+              contentType: mimeType,
+              size,
+            })),
+          );
+        }
+        return message;
+      },
+    ),
+  );
+  return aiMessages;
 }
 
 /*
@@ -327,7 +375,7 @@ export async function prepareMessagesForStreaming(
     checkpointId?: number; // 给 LLM 的消息从 id > checkpointId 开始取，这里不是 messageId 而是 ChatMessage 的数据库 id，并且 id 是递增的
   } = {},
 ) {
-  const messages = await prisma.chatMessage.findMany({
+  const dbMessages = await prisma.chatMessage.findMany({
     where: checkpointId
       ? {
           userChatId,
@@ -339,7 +387,7 @@ export async function prepareMessagesForStreaming(
     orderBy: { id: "asc" },
   });
   // 使用 fix 之前的统计数据，因为 fix 会把没完成的 tool calls 变成完成
-  const toolUseCount = messages.reduce(
+  const toolUseCount = dbMessages.reduce(
     (_count, message) => {
       const count = { ..._count };
       ((message.parts ?? []) as NonNullable<Message["parts"]>).forEach((part) => {
@@ -352,7 +400,7 @@ export async function prepareMessagesForStreaming(
     },
     {} as Partial<Record<ToolName, number>>,
   );
-  const aiMessages = fixChatMessages(messages.map(convertDBMessageToAIMessage)); // 传给 LLM 的时候需要修复
+  const aiMessages = fixChatMessages(await convertDBMessagesToAIMessages(dbMessages)); // 传给 LLM 的时候需要修复
   let streamingMessage: Omit<Message, "role"> & {
     parts: NonNullable<Message["parts"]>;
     role: "assistant";

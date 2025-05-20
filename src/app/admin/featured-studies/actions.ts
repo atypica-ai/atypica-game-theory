@@ -1,7 +1,6 @@
 "use server";
 import { FeaturedStudyCategory } from "@/app/(public)/featured-studies/data";
-import { UserChat } from "@/app/study/actions";
-import { StudyUserChat } from "@/lib/data/UserChat";
+import { StudyUserChat, UserChatWithMessages } from "@/lib/data/UserChat";
 import { ServerActionResult } from "@/lib/serverAction";
 import { Analyst, FeaturedStudy, User } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
@@ -109,7 +108,7 @@ export async function fetchAnalysts(
     (Analyst & {
       user: Pick<User, "email"> | null;
       featuredStudy: FeaturedStudy | null;
-      studyUserChat: Pick<UserChat, "token"> | null;
+      studyUserChat: Pick<UserChatWithMessages, "token"> | null;
     })[]
   >
 > {
