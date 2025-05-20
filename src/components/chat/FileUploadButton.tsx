@@ -1,16 +1,20 @@
 "use client";
-import { getS3UploadCredentials } from "@/app/agents/actions";
 import { Button } from "@/components/ui/button";
+import { getS3UploadCredentials } from "@/lib/attachments/actions";
 import { Loader2, PaperclipIcon } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 
-export interface FileUploadInfo {
+export const MAX_SINGLE_FILE_SIZE = 5 * 1024 * 1024;
+export const MAX_TOTAL_FILE_SIZE = 10 * 1024 * 1024;
+
+export type FileUploadInfo = {
+  objectUrl: string; // s3 object url without signature
   url: string;
-  name?: string;
-  mimeType?: string;
-  size?: number;
-}
+  name: string;
+  mimeType: string;
+  size: number; // bytes
+};
 
 interface FileUploadButtonProps {
   onFileUploadedAction: (fileInfo: FileUploadInfo) => void;
@@ -32,7 +36,7 @@ export function FileUploadButton({ onFileUploadedAction, disabled }: FileUploadB
     }
 
     // Check file size (max 10MB)
-    if (file.size > 10 * 1024 * 1024) {
+    if (file.size > MAX_SINGLE_FILE_SIZE) {
       toast.error("File size exceeds 10MB limit");
       return;
     }
@@ -40,13 +44,16 @@ export function FileUploadButton({ onFileUploadedAction, disabled }: FileUploadB
     setIsUploading(true);
 
     try {
-      const result = await getS3UploadCredentials(file.type, file.name);
+      const result = await getS3UploadCredentials({
+        fileType: file.type,
+        fileName: file.name,
+      });
 
       if (!result.success) {
         throw new Error(result.message);
       }
 
-      const { putObjectUrl, getObjectUrl } = result.data;
+      const { putObjectUrl, getObjectUrl, objectUrl } = result.data;
 
       const uploadResponse = await fetch(putObjectUrl, {
         method: "PUT",
@@ -61,6 +68,7 @@ export function FileUploadButton({ onFileUploadedAction, disabled }: FileUploadB
       }
 
       onFileUploadedAction({
+        objectUrl: objectUrl,
         url: getObjectUrl,
         name: file.name,
         mimeType: file.type,
@@ -95,6 +103,7 @@ export function FileUploadButton({ onFileUploadedAction, disabled }: FileUploadB
         disabled={disabled || isUploading}
       />
       <Button
+        type="button"
         variant="secondary"
         size="sm"
         className="h-8 text-xs"

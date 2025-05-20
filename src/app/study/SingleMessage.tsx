@@ -1,5 +1,6 @@
 import { CONTINUE_ASSISTANT_STEPS } from "@/ai/messageUtils";
 import { PlainTextToolResult } from "@/ai/tools";
+import { FileAttachment } from "@/components/chat/FileAttachment";
 import ToolArgsTable, { ExpandableText } from "@/components/chat/ToolArgsTable";
 import { TAddToolResult, ToolInvocationDisplay } from "@/components/chat/ToolInvocationDisplay";
 import ToolResultTable from "@/components/chat/ToolResultTable";
@@ -105,7 +106,7 @@ const PlainText = ({ children }: PropsWithChildren) => {
 };
 
 export const SingleMessage = ({
-  message: { role, content, parts },
+  message: { role, content, parts, experimental_attachments },
   addToolResult,
   avatar,
   nickname,
@@ -133,34 +134,43 @@ export const SingleMessage = ({
     return (
       <div
         className={cn(
-          "w-full mt-8 mb-6 flex items-center justify-between",
+          "w-full mt-8 mb-6",
           "not-first-of-type:border-t not-first-of-type:border-zinc-100 not-first-of-type:dark:border-zinc-700/50 not-first-of-type:pt-12",
         )}
       >
-        <span
-          className={cn(
-            contentLength < 20
-              ? "text-2xl"
-              : contentLength < 50
-                ? "text-xl"
-                : contentLength < 80
-                  ? "text-lg"
-                  : contentLength < 100
-                    ? "text-base"
-                    : "text-sm",
-            "font-medium whitespace-pre-wrap",
-          )}
-        >
-          {content}
-        </span>
-        {onDelete ? (
-          <div
-            className="p-2 text-muted-foreground hover:text-muted-foreground/50 mr-4"
-            onClick={() => onDelete()}
+        <div className="w-full flex items-center justify-between">
+          <span
+            className={cn(
+              contentLength < 20
+                ? "text-2xl"
+                : contentLength < 50
+                  ? "text-xl"
+                  : contentLength < 80
+                    ? "text-lg"
+                    : contentLength < 100
+                      ? "text-base"
+                      : "text-sm",
+              "font-medium whitespace-pre-wrap",
+            )}
           >
-            <XIcon className="w-4 h-4" />
+            {content}
+          </span>
+          {onDelete ? (
+            <div
+              className="p-2 text-muted-foreground hover:text-muted-foreground/50 mr-4"
+              onClick={() => onDelete()}
+            >
+              <XIcon className="w-4 h-4" />
+            </div>
+          ) : null}
+        </div>
+        {experimental_attachments && (
+          <div className="mt-4 flex flex-wrap gap-2 max-w-full overflow-x-auto">
+            {experimental_attachments.map((attachment, index) => (
+              <FileAttachment key={index} attachment={attachment} className="w-24 h-24" />
+            ))}
           </div>
-        ) : null}
+        )}
       </div>
     );
   }, [content, onDelete]);

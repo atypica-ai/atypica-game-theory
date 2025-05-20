@@ -348,10 +348,14 @@ export async function convertDBMessagesToAIMessages(dbMessages: ChatMessage[]): 
         if (attachments) {
           message["experimental_attachments"] = await Promise.all(
             attachments.map(async ({ objectUrl, name, mimeType, size }) => ({
+              extra: {
+                // 不管3721，都放进去，但不要依赖这个值
+                objectUrl,
+                size,
+              },
               url: await s3SignedUrl(objectUrl),
               name,
               contentType: mimeType,
-              size,
             })),
           );
         }

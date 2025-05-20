@@ -50,16 +50,8 @@ export const ChatMessage = (message: {
       </div>
       {extra?.experimental_attachments && (
         <div className="mb-2 flex flex-wrap gap-2 max-w-full overflow-x-auto">
-          {extra?.experimental_attachments.map((file, index) => (
-            <FileAttachment
-              key={index}
-              file={{
-                url: file.url,
-                name: file.name,
-                mimeType: file.contentType!,
-              }}
-              className="w-24 h-24"
-            />
+          {extra?.experimental_attachments.map((attachment, index) => (
+            <FileAttachment key={index} attachment={attachment} className="w-24 h-24" />
           ))}
         </div>
       )}

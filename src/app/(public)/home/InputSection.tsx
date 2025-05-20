@@ -1,20 +1,27 @@
 "use client";
 import { createStudyUserChat } from "@/app/study/actions";
+import { FileAttachment } from "@/components/chat/FileAttachment";
+import {
+  FileUploadButton,
+  FileUploadInfo,
+  MAX_TOTAL_FILE_SIZE,
+} from "@/components/chat/FileUploadButton";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useDevice } from "@/lib/utils";
 import { ArrowRightIcon, RotateCwIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 
 export function InputSection() {
   const t = useTranslations("HomePage.InputSection");
-  const [input, setInput] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { isMobile } = useDevice();
+  const [input, setInput] = useState("");
+  const [uploadedFiles, setUploadedFiles] = useState<FileUploadInfo[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Create a properly memoized debounced function
   const debouncedSaveToLocalStorage = useDebouncedCallback((value: string) => {
@@ -28,15 +35,31 @@ export function InputSection() {
     }
   }, []);
 
+  const handleFileUploaded = useCallback((fileInfo: FileUploadInfo) => {
+    setUploadedFiles((prev) => [...prev, fileInfo]);
+  }, []);
+
+  const handleRemoveFile = useCallback((index: number) => {
+    setUploadedFiles((prev) => prev.filter((_, i) => i !== index));
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
     setIsLoading(true);
     try {
-      const result = await createStudyUserChat({
-        role: "user",
-        content: input,
-      });
+      const result = await createStudyUserChat(
+        {
+          role: "user",
+          content: input,
+        },
+        uploadedFiles.map((file) => ({
+          objectUrl: file.objectUrl,
+          name: file.name,
+          mimeType: file.mimeType,
+          size: file.size,
+        })),
+      );
       if (!result.success) {
         throw result;
       }
@@ -61,7 +84,7 @@ export function InputSection() {
             debouncedSaveToLocalStorage(value);
           }}
           placeholder={t("placeholder")}
-          className="min-h-48 resize-none focus-visible:border-primary/70 transition-colors rounded-none p-5 border-2"
+          className="min-h-48 resize-none focus-visible:border-primary/70 transition-colors rounded-none pt-5 px-5 pb-16 border-2"
           enterKeyHint="enter"
           disabled={isLoading}
           onKeyDown={(e) => {
@@ -74,18 +97,40 @@ export function InputSection() {
             }
           }}
         />
-        <Button
-          type="submit"
-          variant="secondary"
-          disabled={isLoading || !input.trim()}
-          className="rounded-full size-9 absolute right-4 bottom-4"
-        >
-          {isLoading ? (
-            <RotateCwIcon className="h-4 w-4 text-primary animate-spin" />
-          ) : (
-            <ArrowRightIcon className="h-4 w-4 text-primary" />
-          )}
-        </Button>
+        <div className="absolute left-0 bottom-0 right-0 p-4 flex items-center justify-start gap-2">
+          <FileUploadButton
+            onFileUploadedAction={handleFileUploaded}
+            disabled={
+              isLoading ||
+              uploadedFiles.reduce((acc, file) => acc + file.size, 0) > MAX_TOTAL_FILE_SIZE
+            }
+          />
+          {uploadedFiles.map((file, index) => (
+            <FileAttachment
+              key={index}
+              attachment={{
+                url: file.url,
+                name: file.name,
+                contentType: file.mimeType,
+              }}
+              onRemove={() => handleRemoveFile(index)}
+              className="w-8 h-8"
+            />
+          ))}
+          <div className="ml-auto" />
+          <Button
+            type="submit"
+            variant="secondary"
+            disabled={isLoading || !input.trim()}
+            className="rounded-full size-9"
+          >
+            {isLoading ? (
+              <RotateCwIcon className="h-4 w-4 text-primary animate-spin" />
+            ) : (
+              <ArrowRightIcon className="h-4 w-4 text-primary" />
+            )}
+          </Button>
+        </div>
       </form>
     </div>
   );

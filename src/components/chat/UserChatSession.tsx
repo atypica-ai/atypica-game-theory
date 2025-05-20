@@ -58,23 +58,20 @@ export function UserChatSession({
   const handleFormSubmit = useCallback(
     (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
-      // Store uploaded files before clearing
       const filesToAttach = [...uploadedFiles];
-
       if (filesToAttach.length > 0) {
-        useChatRef.current?.append({
-          role: "user",
-          content: input.trim(),
-          experimental_attachments: filesToAttach.map((file) => ({
-            url: file.url,
-            name: file.name,
-            contentType: file.mimeType,
-          })),
-        });
-
-        // Clear the input field and uploaded files
-        setInput("");
-        setUploadedFiles([]);
+        throw new Error("not implemented, see persistentAIMessageToDB");
+        // useChatRef.current?.append({
+        //   role: "user",
+        //   content: input.trim(),
+        //   experimental_attachments: filesToAttach.map((file) => ({
+        //     url: file.url,
+        //     name: file.name,
+        //     contentType: file.mimeType,
+        //   })),
+        // });
+        // setInput("");
+        // setUploadedFiles([]);
       } else {
         // No files, just submit the text message normally
         handleSubmit(e);
@@ -137,7 +134,11 @@ export function UserChatSession({
                 {uploadedFiles.map((file, index) => (
                   <FileAttachment
                     key={index}
-                    file={file}
+                    attachment={{
+                      url: file.url,
+                      name: file.name,
+                      contentType: file.mimeType,
+                    }}
                     onRemove={() => handleRemoveFile(index)}
                     className="w-24 h-24"
                   />
