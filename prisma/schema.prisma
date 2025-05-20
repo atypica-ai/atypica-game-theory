@@ -110,6 +110,7 @@ model Analyst {
   studySummary    String    @db.Text
   studyUserChatId Int?      @unique @db.Integer
   studyUserChat   UserChat? @relation(fields: [studyUserChatId], references: [id])
+  attachments     Json?
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
@@ -208,6 +209,7 @@ model ChatMessage {
   content    String      @db.Text
   parts      Json
   extra      Json?
+  attachments     Json?
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)

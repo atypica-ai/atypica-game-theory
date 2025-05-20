@@ -86,7 +86,10 @@ async function updateAnalystBrief() {
     const studyUserChats = await prisma.userChat.findMany({
       where: {
         analyst: {
-          OR: [{ brief: "" }, { brief: null }],
+          OR: [
+            { brief: "" },
+            // { brief: null }  // 数据库更新过了, brief 不能是 null
+          ],
         },
         kind: "study",
       },
