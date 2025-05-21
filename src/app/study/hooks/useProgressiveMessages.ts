@@ -1,4 +1,4 @@
-import { ToolName } from "@/ai/tools";
+import { ToolName } from "@/ai/tools/types";
 import { Message } from "ai";
 import { useEffect, useMemo, useState } from "react";
 

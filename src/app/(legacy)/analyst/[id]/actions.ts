@@ -1,7 +1,7 @@
 "use server";
-import { StatReporter } from "@/ai/tools";
 import { prepareDBForInterview, runInterview } from "@/ai/tools/experts/interviewChat";
 import { generateCover, generateReport } from "@/ai/tools/experts/report";
+import { StatReporter } from "@/ai/tools/types";
 import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";

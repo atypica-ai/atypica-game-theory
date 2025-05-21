@@ -1,4 +1,4 @@
-import { ToolName } from "@/ai/tools";
+import { ToolName } from "@/ai/tools/types";
 import { ChatMessageAttachment } from "@/lib/attachments";
 import { s3SignedUrl } from "@/lib/attachments/s3";
 import { ChatMessage } from "@/prisma/client";

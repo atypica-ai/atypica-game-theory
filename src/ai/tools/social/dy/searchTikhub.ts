@@ -1,11 +1,12 @@
+import "server-only";
+
 // tikhub douyin 搜索接口是 $0.01 太贵了
-import { PlainTextToolResult } from "@/ai/tools";
+import { PlainTextToolResult, SocialUser } from "@/ai/tools/types";
 import { rootLogger } from "@/lib/logging";
 import { fixMalformedUnicodeString } from "@/lib/utils";
 import { tool } from "ai";
 import { z } from "zod";
-import { SocialUser } from "../types";
-import { tryFindValidImage } from "./utils";
+import { tryFindValidImage } from "../utils";
 
 const toolLog = rootLogger.child({
   tool: "dySearch",

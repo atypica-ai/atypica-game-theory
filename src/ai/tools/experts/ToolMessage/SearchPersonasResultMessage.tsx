@@ -1,10 +1,10 @@
+import { BuildPersonaToolResult } from "@/ai/tools/types";
 import { useStudyContext } from "@/app/study/hooks/StudyContext";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Button } from "@/components/ui/button";
 import { ToolInvocation } from "ai";
 import { useTranslations } from "next-intl";
 import { FC } from "react";
-import { BuildPersonaToolResult } from "../buildPersona";
 
 export const SearchPersonasResultMessage: FC<{
   toolInvocation: Omit<Extract<ToolInvocation, { state: "result" }>, "result"> & {

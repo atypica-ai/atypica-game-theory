@@ -1,4 +1,4 @@
-import { TPersonaForStudy } from "@/ai/tools/experts/buildPersona";
+import { TPersonaForStudy } from "@/ai/tools/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

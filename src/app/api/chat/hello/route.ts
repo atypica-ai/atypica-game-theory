@@ -5,7 +5,8 @@ import {
   prepareMessagesForStreaming,
 } from "@/ai/messageUtils";
 import { helloSystem } from "@/ai/prompt";
-import { thanksTool, ToolName } from "@/ai/tools";
+import { thanksTool } from "@/ai/tools/tools";
+import { ToolName } from "@/ai/tools/types";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/prisma/prisma";
 import { Message, smoothStream, streamText } from "ai";

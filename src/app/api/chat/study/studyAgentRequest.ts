@@ -14,8 +14,8 @@ import {
   scoutTaskChatTool,
   searchPersonasTool,
   toolCallError,
-  ToolName,
-} from "@/ai/tools";
+} from "@/ai/tools/tools";
+import { ToolName } from "@/ai/tools/types";
 import { prisma } from "@/prisma/prisma";
 import {
   CoreMessage,

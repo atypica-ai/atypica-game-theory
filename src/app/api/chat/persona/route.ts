@@ -1,6 +1,7 @@
 import { llm, providerOptions } from "@/ai/llm";
 import { personaAgentSystem } from "@/ai/prompt";
-import { dySearchTool, insSearchTool, tiktokSearchTool, ToolName } from "@/ai/tools";
+import { dySearchTool, insSearchTool, tiktokSearchTool } from "@/ai/tools/tools";
+import { ToolName } from "@/ai/tools/types";
 import { fetchPersonaById } from "@/app/(legacy)/personas/actions";
 import { authOptions } from "@/lib/auth";
 import { Message, smoothStream, streamText } from "ai";

@@ -1,5 +1,5 @@
 import { CONTINUE_ASSISTANT_STEPS } from "@/ai/messageUtils";
-import { ToolName } from "@/ai/tools";
+import { ToolName } from "@/ai/tools/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";

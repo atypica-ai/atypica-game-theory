@@ -1,5 +1,5 @@
 "use client";
-import { ToolName } from "@/ai/tools";
+import { ToolName } from "@/ai/tools/types";
 import { CollectSessionBodySchema } from "@/app/api/chat/interviewSession/lib";
 import { fetchCollectInterviewSession } from "@/app/interviewProject/actions";
 import { UserChatSession } from "@/components/chat/UserChatSession";

@@ -1,4 +1,4 @@
-import { ToolName } from "@/ai/tools";
+import { ToolName } from "@/ai/tools/types";
 import { ToolInvocationMessage } from "@/components/chat/ToolInvocationMessage";
 import { useMemo } from "react";
 import { BuildPersonaConsole } from "./console/BuildPersonaConsole";

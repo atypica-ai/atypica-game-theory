@@ -2,12 +2,7 @@ import { UserTokensLogVerb } from "@/prisma/client";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import { Logger } from "pino";
-
-export type StatReporter = (
-  dimension: "tokens" | "duration" | "steps" | "personas",
-  value: number,
-  extra?: unknown,
-) => Promise<void>;
+import { StatReporter } from "./types";
 
 export const initStudyStatReporter = ({
   userId,

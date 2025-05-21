@@ -8,9 +8,9 @@ import { interviewSessionSystem } from "@/ai/prompt";
 import {
   initInterviewProjectStatReporter,
   reasoningThinkingTool,
-  ToolName,
   updateInterviewProjectTool,
-} from "@/ai/tools";
+} from "@/ai/tools/tools";
+import { ToolName } from "@/ai/tools/types";
 import { fetchClarifyInterviewSession } from "@/app/interviewProject/actions";
 import { authOptions } from "@/lib/auth";
 import { rootLogger } from "@/lib/logging";

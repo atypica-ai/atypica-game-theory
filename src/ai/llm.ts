@@ -1,4 +1,4 @@
-import "server-only"; // To prevent accidental usage in Client Components
+// import "server-only"; // To prevent accidental usage in Client Components
 
 import { proxiedFetch } from "@/lib/proxy/fetch";
 import { getDeployRegion } from "@/lib/request/deployRegion";
@@ -65,11 +65,11 @@ const vertex = (modelId: string, settings?: any) => {
   const _vertex = createVertex({
     location: "global",
     project,
-    googleCredentials: {
-      clientEmail,
-      privateKeyId,
-      privateKey,
-    },
+    // googleAuthOptions: {
+    //   clientEmail,
+    //   privateKeyId,
+    //   privateKey,
+    // },
     fetch: proxiedFetch,
   });
   return _vertex(modelId, settings);

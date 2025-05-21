@@ -1,5 +1,5 @@
 import { CONTINUE_ASSISTANT_STEPS } from "@/ai/messageUtils";
-import { PlainTextToolResult } from "@/ai/tools";
+import { PlainTextToolResult } from "@/ai/tools/types";
 import { FileAttachment } from "@/components/chat/FileAttachment";
 import ToolArgsTable, { ExpandableText } from "@/components/chat/ToolArgsTable";
 import { TAddToolResult, ToolInvocationDisplay } from "@/components/chat/ToolInvocationDisplay";

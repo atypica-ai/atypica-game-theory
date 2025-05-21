@@ -1,4 +1,4 @@
-import { BuildPersonaToolResult } from "@/ai/tools/experts/buildPersona";
+import { BuildPersonaToolResult } from "@/ai/tools/types";
 import { ToolInvocation } from "ai";
 import { useTranslations } from "next-intl";
 import { FC } from "react";

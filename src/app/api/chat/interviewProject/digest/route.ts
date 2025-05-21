@@ -1,7 +1,7 @@
 import { llm, providerOptions } from "@/ai/llm";
 import { convertDBMessageToAIMessage } from "@/ai/messageUtils";
 import { generateDigestSystem } from "@/ai/prompt";
-import { initInterviewProjectStatReporter } from "@/ai/tools";
+import { initInterviewProjectStatReporter } from "@/ai/tools/tools";
 import { saveDigest } from "@/app/interviewProject/actions";
 import { authOptions } from "@/lib/auth";
 import { rootLogger } from "@/lib/logging";

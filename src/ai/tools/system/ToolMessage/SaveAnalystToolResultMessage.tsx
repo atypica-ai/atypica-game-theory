@@ -1,4 +1,4 @@
-import { SaveAnalystToolResult } from "@/ai/tools/system/saveAnalyst";
+import { SaveAnalystToolResult } from "@/ai/tools/types";
 import { ToolInvocation } from "ai";
 import { FC } from "react";
 

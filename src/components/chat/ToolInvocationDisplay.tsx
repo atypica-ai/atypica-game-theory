@@ -1,4 +1,3 @@
-import { PlainTextToolResult, ToolName } from "@/ai/tools";
 import {
   BuildPersonaResultMessage,
   GenerateReportResultMessage,
@@ -29,6 +28,7 @@ import {
 } from "@/ai/tools/social/xhs/ToolMessage";
 import { SaveAnalystToolResultMessage } from "@/ai/tools/system/ToolMessage";
 import { UpdateInterviewProjectToolResultMessage } from "@/ai/tools/system/ToolMessage/UpdateInterviewProjectToolResultMessage";
+import { PlainTextToolResult, ToolName } from "@/ai/tools/types";
 import {
   RequestInteractionMessage,
   RequestPaymentMessage,

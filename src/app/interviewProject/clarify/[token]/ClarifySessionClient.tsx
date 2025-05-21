@@ -1,5 +1,5 @@
 "use client";
-import { ToolName } from "@/ai/tools";
+import { ToolName } from "@/ai/tools/types";
 import { ClarifySessionBodySchema } from "@/app/api/chat/interviewSession/lib";
 import { UserChatSession } from "@/components/chat/UserChatSession";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";

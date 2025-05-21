@@ -1,4 +1,4 @@
-import { ToolName } from "@/ai/tools";
+import { ToolName } from "@/ai/tools/types";
 import { fetchUserChatByToken, fetchUserChatStateByToken } from "@/app/study/actions";
 import { useStudyContext } from "@/app/study/hooks/StudyContext";
 import {

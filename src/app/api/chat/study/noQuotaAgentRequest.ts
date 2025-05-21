@@ -1,4 +1,4 @@
-import { ToolName } from "@/ai/tools";
+import { ToolName } from "@/ai/tools/types";
 import { CoreMessage, createDataStreamResponse, formatDataStreamPart, Message } from "ai";
 
 export async function noQuotaAgentRequest(

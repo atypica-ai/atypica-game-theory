@@ -1,4 +1,4 @@
-import { ToolName } from "@/ai/tools";
+import { ToolName } from "@/ai/tools/types";
 import { fetchPersonaById } from "@/app/(legacy)/personas/actions";
 import {
   fetchAnalystByStudyUserChatToken,

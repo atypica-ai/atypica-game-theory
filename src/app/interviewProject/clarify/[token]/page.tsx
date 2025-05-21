@@ -1,5 +1,5 @@
 import { convertDBMessageToAIMessage } from "@/ai/messageUtils";
-import { ToolName } from "@/ai/tools";
+import { ToolName } from "@/ai/tools/types";
 import { fetchClarifyInterviewSession } from "@/app/interviewProject/actions";
 import UserTokensBalance from "@/components/UserTokensBalance";
 import { authOptions } from "@/lib/auth";
