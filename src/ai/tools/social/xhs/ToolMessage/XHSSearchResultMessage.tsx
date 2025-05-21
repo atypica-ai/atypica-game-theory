@@ -1,8 +1,8 @@
+import { XHSSearchResult } from "@/ai/tools/types";
 import { cn } from "@/lib/utils";
 import { ToolInvocation } from "ai";
 import Image from "next/image";
 import { FC } from "react";
-import { XHSSearchResult } from "../search";
 
 export const XHSSearchResultMessage: FC<{
   toolInvocation: Omit<Extract<ToolInvocation, { state: "result" }>, "result"> & {

@@ -1,4 +1,4 @@
-import { RequestPaymentResult } from "@/ai/tools/user/payment";
+import { RequestPaymentResult } from "@/ai/tools/types";
 import { getUserTokensBalance } from "@/app/account/actions";
 import { AddTokensDialog } from "@/app/payment/components/AddTokensDialog";
 import { useStudyContext } from "@/app/study/hooks/StudyContext";

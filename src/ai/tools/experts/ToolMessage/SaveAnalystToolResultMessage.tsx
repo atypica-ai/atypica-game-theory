@@ -1,6 +1,6 @@
+import { InterviewChatResult } from "@/ai/tools/types";
 import { ToolInvocation } from "ai";
 import { FC } from "react";
-import { InterviewChatResult } from "../interviewChat";
 
 export const InterviewChatResultMessage: FC<{
   toolInvocation: Omit<Extract<ToolInvocation, { state: "result" }>, "result"> & {

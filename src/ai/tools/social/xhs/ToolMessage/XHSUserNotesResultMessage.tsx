@@ -1,8 +1,8 @@
+import { XHSUserNotesResult } from "@/ai/tools/types";
 import { cn } from "@/lib/utils";
 import { ToolInvocation } from "ai";
 import Image from "next/image";
 import { FC } from "react";
-import { XHSUserNotesResult } from "../userNotes";
 
 export const XHSUserNotesResultMessage: FC<{
   toolInvocation: Omit<Extract<ToolInvocation, { state: "result" }>, "result"> & {

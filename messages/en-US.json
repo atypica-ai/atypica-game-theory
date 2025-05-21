@@ -205,7 +205,7 @@
     "interviewSection": {
       "title": "Interview Subjects",
       "startAllInterviews": "Start All Interviews",
-      "addInterviewSubject": "Add Interview Subject"
+      "addInterviewPersona": "Add Interview Persona"
     },
     "InterviewCard": {
       "interviewing": "Interviewing",

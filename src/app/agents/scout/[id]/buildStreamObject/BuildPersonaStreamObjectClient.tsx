@@ -1,5 +1,5 @@
 "use client";
-import { personaBuildSchemaStreamObject } from "@/ai/tools/experts/buildPersonaStreamObject";
+import { personaBuildSchemaStreamObject } from "@/ai/tools/experts/buildPersonaStreamObject/types";
 import { Button } from "@/components/ui/button";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
 import { cn } from "@/lib/utils";

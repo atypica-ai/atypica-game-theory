@@ -1,8 +1,8 @@
+import { DYUserPostsResult } from "@/ai/tools/types";
 import { cn } from "@/lib/utils";
 import { ToolInvocation } from "ai";
 import Image from "next/image";
 import { FC } from "react";
-import { DYUserPostsResult } from "../userPosts";
 
 export const DYUserPostsResultMessage: FC<{
   toolInvocation: Omit<Extract<ToolInvocation, { state: "result" }>, "result"> & {

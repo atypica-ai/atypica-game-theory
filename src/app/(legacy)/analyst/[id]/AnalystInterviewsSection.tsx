@@ -58,7 +58,7 @@ export function AnalystInterviewsSection({
             </Button>
           </TokenAlertDialog>
           <Button variant="outline" size="sm" onClick={addPersona}>
-            <PlusIcon /> {t("interviewSection.addInterviewSubject")}
+            <PlusIcon /> {t("interviewSection.addInterviewPersona")}
           </Button>
         </div>
       </div>

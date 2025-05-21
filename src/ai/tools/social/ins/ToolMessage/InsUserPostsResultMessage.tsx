@@ -1,8 +1,8 @@
+import { InsUserPostsResult } from "@/ai/tools/types";
 import { cn, proxiedImageLoader } from "@/lib/utils";
 import { ToolInvocation } from "ai";
 import Image from "next/image";
 import { FC } from "react";
-import { InsUserPostsResult } from "../userPosts";
 
 export const InsUserPostsResultMessage: FC<{
   toolInvocation: Omit<Extract<ToolInvocation, { state: "result" }>, "result"> & {

@@ -1,4 +1,4 @@
-import { ReasoningThinkingResult } from "@/ai/tools/experts/reasoning";
+import { ReasoningThinkingResult } from "@/ai/tools/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Markdown } from "@/components/markdown";
 import { ToolInvocation } from "ai";

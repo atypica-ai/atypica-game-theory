@@ -1,7 +1,7 @@
+import { DYPostCommentsResult } from "@/ai/tools/types";
 import { ToolInvocation } from "ai";
 import Image from "next/image";
 import { FC } from "react";
-import { DYPostCommentsResult } from "../postComments";
 
 export const DYPostCommentsResultMessage: FC<{
   toolInvocation: Omit<Extract<ToolInvocation, { state: "result" }>, "result"> & {

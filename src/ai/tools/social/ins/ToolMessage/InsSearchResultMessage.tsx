@@ -1,8 +1,8 @@
+import { InsSearchResult } from "@/ai/tools/types";
 import { cn, proxiedImageLoader } from "@/lib/utils";
 import { ToolInvocation } from "ai";
 import Image from "next/image";
 import { FC } from "react";
-import { InsSearchResult } from "../search";
 
 export const InsSearchResultMessage: FC<{
   toolInvocation: Omit<Extract<ToolInvocation, { state: "result" }>, "result"> & {

@@ -1,4 +1,4 @@
-import { RequestInteractionResult } from "@/ai/tools/user/interaction";
+import { RequestInteractionResult } from "@/ai/tools/types";
 import { useStudyContext } from "@/app/study/hooks/StudyContext";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";

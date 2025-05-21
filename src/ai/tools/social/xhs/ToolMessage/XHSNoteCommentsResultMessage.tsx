@@ -1,7 +1,7 @@
+import { XHSNoteCommentsResult } from "@/ai/tools/types";
 import { ToolInvocation } from "ai";
 import Image from "next/image";
 import { FC } from "react";
-import { XHSNoteCommentsResult } from "../noteComments";
 
 export const XHSNoteCommentsResultMessage: FC<{
   toolInvocation: Omit<Extract<ToolInvocation, { state: "result" }>, "result"> & {

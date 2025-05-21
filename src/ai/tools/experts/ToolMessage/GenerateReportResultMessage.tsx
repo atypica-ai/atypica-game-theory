@@ -1,10 +1,10 @@
+import { GenerateReportResult } from "@/ai/tools/types";
 import { fetchAnalystReportByToken } from "@/app/study/actions";
 import { AnalystReportShareButton } from "@/app/study/components/AnalystReportShareButton";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { ToolInvocation } from "ai";
 import { useTranslations } from "next-intl";
 import { FC, useEffect, useState } from "react";
-import { GenerateReportResult } from "../report";
 
 export const GenerateReportResultMessage: FC<{
   toolInvocation: Omit<Extract<ToolInvocation, { state: "result" }>, "result"> & {

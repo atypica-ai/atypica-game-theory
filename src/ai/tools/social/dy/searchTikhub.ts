@@ -6,7 +6,7 @@ import { rootLogger } from "@/lib/logging";
 import { fixMalformedUnicodeString } from "@/lib/utils";
 import { tool } from "ai";
 import { z } from "zod";
-import { tryFindValidImage } from "../utils";
+import { tryFindValidImage } from "./utils";
 
 const toolLog = rootLogger.child({
   tool: "dySearch",

@@ -205,7 +205,7 @@
     "interviewSection": {
       "title": "访谈用户",
       "startAllInterviews": "开启所有人访谈",
-      "addInterviewSubject": "添加访谈对象"
+      "addInterviewPersona": "添加访谈对象"
     },
     "InterviewCard": {
       "interviewing": "正在访谈",

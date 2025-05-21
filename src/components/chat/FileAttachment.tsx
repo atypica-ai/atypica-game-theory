@@ -39,7 +39,7 @@ export function FileAttachment({
         </div>
       ) : (
         <div className="h-8 w-24 flex flex-row items-center justify-start gap-1 p-2 overflow-hidden">
-          <FileIcon className="h-full" />
+          <FileIcon className="shrink-0 h-full" />
           <div className="text-xs text-center truncate">{attachment.name}</div>
         </div>
       )}

@@ -1,8 +1,8 @@
+import { InsPostCommentsResult } from "@/ai/tools/types";
 import { proxiedImageLoader } from "@/lib/utils";
 import { ToolInvocation } from "ai";
 import Image from "next/image";
 import { FC } from "react";
-import { InsPostCommentsResult } from "../postComments";
 
 export const InsPostCommentsResultMessage: FC<{
   toolInvocation: Omit<Extract<ToolInvocation, { state: "result" }>, "result"> & {

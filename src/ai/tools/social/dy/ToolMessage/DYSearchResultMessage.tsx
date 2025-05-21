@@ -1,8 +1,8 @@
+import { DYSearchResult } from "@/ai/tools/types";
 import { cn } from "@/lib/utils";
 import { ToolInvocation } from "ai";
 import Image from "next/image";
 import { FC } from "react";
-import { DYSearchResult } from "../search";
 
 export const DYSearchResultMessage: FC<{
   toolInvocation: Omit<Extract<ToolInvocation, { state: "result" }>, "result"> & {

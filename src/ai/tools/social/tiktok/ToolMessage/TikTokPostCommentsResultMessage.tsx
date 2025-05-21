@@ -1,8 +1,8 @@
+import { TikTokPostCommentsResult } from "@/ai/tools/types";
 import { proxiedImageLoader } from "@/lib/utils";
 import { ToolInvocation } from "ai";
 import Image from "next/image";
 import { FC } from "react";
-import { TikTokPostCommentsResult } from "../postComments";
 
 export const TikTokPostCommentsResultMessage: FC<{
   toolInvocation: Omit<Extract<ToolInvocation, { state: "result" }>, "result"> & {

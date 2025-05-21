@@ -4,12 +4,11 @@ import { llm, providerOptions } from "@/ai/llm";
 import { CONTINUE_ASSISTANT_STEPS, prepareMessagesForStreaming } from "@/ai/messageUtils";
 import { buildPersonaSystem } from "@/ai/prompt";
 import { PlainTextToolResult, StatReporter } from "@/ai/tools/types";
-import { fixMalformedUnicodeString } from "@/lib/utils";
 import { prisma } from "@/prisma/prisma";
 import { streamObject, tool } from "ai";
 import { Logger } from "pino";
 import { z } from "zod";
-import { BuildPersonaToolResult } from "./types";
+import { BuildPersonaToolResult, personaBuildSchemaStreamObject } from "./types";
 
 export const buildPersonaStreamObjectTool = ({
   userId,
@@ -145,18 +144,3 @@ export async function runBuildPersonaStreamObject({
   });
   return response;
 }
-
-export const personaBuildSchemaStreamObject = () =>
-  z.object({
-    name: z.string().describe("名字，不要包含姓氏，使用网名").transform(fixMalformedUnicodeString),
-    source: z.string().describe("数据来源").transform(fixMalformedUnicodeString),
-    // userids: z.array(z.string()).optional().describe("该人设典型的用户 ID 列表").default([]),
-    tags: z
-      .array(z.string())
-      .describe("用户标签，3-5个特征标签")
-      .transform((tags) => tags.map((tag) => fixMalformedUnicodeString(tag))),
-    personaPrompt: z
-      .string()
-      .describe("模拟用户画像的智能体的系统提示词，300到500字")
-      .transform(fixMalformedUnicodeString),
-  });

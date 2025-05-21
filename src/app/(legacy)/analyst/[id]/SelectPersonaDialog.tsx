@@ -113,7 +113,7 @@ export function SelectPersonaDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-6xl">
+      <DialogContent className="md:max-w-3xl lg:max-w-5xl">
         <DialogHeader>
           <DialogTitle>{t("title")}</DialogTitle>
         </DialogHeader>
@@ -148,14 +148,14 @@ export function SelectPersonaDialog({
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-4 gap-4 mt-4 max-h-[60vh] overflow-y-auto relative">
+            <div className="grid lg:grid-cols-3 gap-4 mt-4 max-h-[60vh] overflow-y-auto scrollbar-thin relative">
               {loading && (currentPage > 1 || searchQuery) && (
                 <div className="absolute inset-0 bg-background/80 flex justify-center items-center z-10">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
                 </div>
               )}
               {personas.length === 0 && !loading ? (
-                <div className="col-span-4 py-12 text-center">
+                <div className="col-span-3 py-12 text-center">
                   <p className="text-muted-foreground">
                     {searchQuery
                       ? `No results found for "${searchQuery}"`
@@ -209,7 +209,7 @@ export function SelectPersonaDialog({
                 ))
               )}
             </div>
-            <div className="flex justify-between items-center mt-4">
+            <div className="flex flex-wrap justify-between items-center mt-4">
               {totalPages > 1 && (
                 <Pagination
                   currentPage={currentPage}
