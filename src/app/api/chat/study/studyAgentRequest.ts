@@ -110,9 +110,8 @@ export async function studyAgentRequest({
     delete tools[ToolName.scoutTaskChat];
     maxSteps = 10;
   }
-
   /*
-  这部分先拿掉，先在这样会让 study agent 开始新的研究，
+  这部分先拿掉，现在这样会让 study agent 开始新的研究，
   TODO: 后面要修改下，把提示词也改掉，改成追问 agent
   // 一旦开始生成报告，就只从报告的消息开始生成了，以及无法再使用别的工具
   // 不是第一个生成成功的报告，而是报告，一旦开始生成，前面的信息目前来看是暂时没用了其实
@@ -130,7 +129,8 @@ export async function studyAgentRequest({
   }
   */
   if ((toolUseCount[ToolName.generateReport] ?? 0) >= TOOL_USE_LIMIT[ToolName.generateReport]) {
-    delete tools[ToolName.generateReport];
+    // 还是继续允许一直生成报告，不过，限制一下 steps
+    // delete tools[ToolName.generateReport];
     maxSteps = 2;
   }
 

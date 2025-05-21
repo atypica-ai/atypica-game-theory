@@ -1,11 +1,32 @@
+import "server-only";
+
 import { sendVerificationCode } from "@/app/auth/verify/actions";
 import { getRequestClientIp, getRequestUserAgent } from "@/lib/request/headers";
 import { prisma } from "@/prisma/prisma";
 import { compare, hash } from "bcryptjs";
+import { HttpsProxyAgent } from "https-proxy-agent";
 import { type NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
+import https from "node:https";
 import { rootLogger } from "./logging";
+
+if (process.env.FETCH_HTTPS_PROXY) {
+  const httpsProxyAgent = new HttpsProxyAgent(process.env.FETCH_HTTPS_PROXY);
+  const originRequest = https.request;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  https.request = function (...args: any) {
+    rootLogger.info(`Requesting ${args[0]} in overrided https.request`);
+    console.log(`Requesting ${args[0]} in overrided https.request`);
+    if (args.length === 2 && typeof args[0] === "string") {
+      const [url, options] = args;
+      if (/google/.test(url)) {
+        options.agent = httpsProxyAgent;
+      }
+    }
+    return originRequest.apply(https, args);
+  };
+}
 
 export const authClientInfo = async () => {
   const lastLogin = {
