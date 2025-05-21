@@ -31,7 +31,9 @@ export async function POST(req: Request) {
   const streamTextResult = streamText({
     // model: llm("claude-3-7-sonnet"),
     // model: llm("qwen3-235b-a22b"),
-    model: llm("gemini-2.5-flash"),
+    model: llm("gemini-2.5-flash", {
+      //
+    }),
     providerOptions: providerOptions,
     tools: {
       [ToolName.dySearch]: dySearchTool,
@@ -48,6 +50,9 @@ export async function POST(req: Request) {
     system: personaAgentSystem({ persona, language: "中英皆可" }),
     messages: messages,
     abortSignal: req.signal,
+    onError: (error) => {
+      console.error("Error occurred:", error);
+    },
   });
 
   return streamTextResult.toDataStreamResponse();

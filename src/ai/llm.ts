@@ -1,9 +1,12 @@
+import "server-only"; // To prevent accidental usage in Client Components
+
 import { proxiedFetch } from "@/lib/proxy/fetch";
 import { getDeployRegion } from "@/lib/request/deployRegion";
 import { createAmazonBedrock } from "@ai-sdk/amazon-bedrock";
 import { createAzure } from "@ai-sdk/azure";
 import { createDeepSeek } from "@ai-sdk/deepseek";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { createVertex } from "@ai-sdk/google-vertex";
 import { createOpenAI } from "@ai-sdk/openai";
 
 const openai = createOpenAI({
@@ -35,7 +38,7 @@ const azure = createAzure({
   fetch: proxiedFetch,
 });
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
 const google = (modelId: string, settings?: any) => {
   const apiKeys: string[] = (process.env.GOOGLE_GENERATIVE_AI_API_KEYS ?? "")
     .split(/\s+/)
@@ -49,6 +52,27 @@ const google = (modelId: string, settings?: any) => {
     fetch: proxiedFetch,
   });
   return googleGenerativeAI(modelId, settings);
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const vertex = (modelId: string, settings?: any) => {
+  const {
+    project_id: project,
+    private_key_id: privateKeyId,
+    private_key: privateKey,
+    client_email: clientEmail,
+  } = JSON.parse(process.env.GOOGLE_VERTEX_AI_APPLICATION_CREDENTIALS!);
+  const _vertex = createVertex({
+    location: "global",
+    project,
+    googleCredentials: {
+      clientEmail,
+      privateKeyId,
+      privateKey,
+    },
+    fetch: proxiedFetch,
+  });
+  return _vertex(modelId, settings);
 };
 
 // export const bedrock = (model: "claude-3-7-sonnet" = "claude-3-7-sonnet") => {
@@ -115,10 +139,14 @@ export function llm(modelName: LLMModelName, options?: any) {
           anthropic_beta: ["token-efficient-tools-2025-02-19"],
         },
       });
+    // case "gemini-2.5-flash":
+    //   return google("gemini-2.5-flash-preview-04-17", options);
+    // case "gemini-2.5-pro":
+    //   return google("gemini-2.5-pro-preview-03-25", options);
     case "gemini-2.5-flash":
-      return google("gemini-2.5-flash-preview-04-17", options);
+      return vertex("gemini-2.5-flash-preview-05-20", options);
     case "gemini-2.5-pro":
-      return google("gemini-2.5-pro-preview-03-25", options);
+      return vertex("gemini-2.5-pro-preview-05-06", options);
     case "deepseek-v3":
       return deepseek("Pro/deepseek-ai/DeepSeek-V3", options);
     case "deepseek-r1":
