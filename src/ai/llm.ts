@@ -1,4 +1,4 @@
-// import "server-only"; // To prevent accidental usage in Client Components
+import "server-only"; // To prevent accidental usage in Client Components
 
 import { proxiedFetch } from "@/lib/proxy/fetch";
 import { getDeployRegion } from "@/lib/request/deployRegion";
@@ -56,20 +56,13 @@ const google = (modelId: string, settings?: any) => {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const vertex = (modelId: string, settings?: any) => {
-  const {
-    project_id: project,
-    private_key_id: privateKeyId,
-    private_key: privateKey,
-    client_email: clientEmail,
-  } = JSON.parse(process.env.GOOGLE_VERTEX_AI_APPLICATION_CREDENTIALS!);
+  const credentials = JSON.parse(process.env.GOOGLE_VERTEX_AI_APPLICATION_CREDENTIALS!);
   const _vertex = createVertex({
-    location: "global",
-    project,
-    // googleAuthOptions: {
-    //   clientEmail,
-    //   privateKeyId,
-    //   privateKey,
-    // },
+    location: process.env.GOOGLE_VERTEX_LOCATION,
+    project: process.env.GOOGLE_VERTEX_PROJECT,
+    googleAuthOptions: {
+      credentials: credentials,
+    },
     fetch: proxiedFetch,
   });
   return _vertex(modelId, settings);

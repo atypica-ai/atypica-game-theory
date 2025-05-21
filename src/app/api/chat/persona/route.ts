@@ -1,7 +1,5 @@
 import { llm, providerOptions } from "@/ai/llm";
 import { personaAgentSystem } from "@/ai/prompt";
-import { dySearchTool, insSearchTool, tiktokSearchTool } from "@/ai/tools/tools";
-import { ToolName } from "@/ai/tools/types";
 import { fetchPersonaById } from "@/app/(legacy)/personas/actions";
 import { authOptions } from "@/lib/auth";
 import { Message, smoothStream, streamText } from "ai";
@@ -33,24 +31,35 @@ export async function POST(req: Request) {
     // model: llm("claude-3-7-sonnet"),
     // model: llm("qwen3-235b-a22b"),
     model: llm("gemini-2.5-flash", {
-      //
+      useSearchGrounding: true,
     }),
-    providerOptions: providerOptions,
+    providerOptions: {
+      ...providerOptions,
+      // google: {
+      //   thinkingConfig: {
+      //     thinkingBudget: 2048, // Optional
+      //     includeThoughts: true,
+      //   },
+      // } satisfies GoogleGenerativeAIProviderOptions,
+    },
+    system: personaAgentSystem({ persona, language: "中英皆可" }),
+    messages: messages,
     tools: {
-      [ToolName.dySearch]: dySearchTool,
-      [ToolName.insSearch]: insSearchTool,
-      [ToolName.tiktokSearch]: tiktokSearchTool,
+      // [ToolName.dySearch]: dySearchTool,
+      // [ToolName.insSearch]: insSearchTool,
+      // [ToolName.tiktokSearch]: tiktokSearchTool,
       // [ToolName.xhsSearch]: xhsSearchTool,  // 太贵了，先不用
       // [ToolName.reasoningThinking]: reasoningThinkingTool(),
     },
+    maxSteps: 2,
     experimental_transform: smoothStream({
       delayInMs: 30,
       chunking: /[\u4E00-\u9FFF]|\S+\s+/,
     }),
-    maxSteps: 2,
-    system: personaAgentSystem({ persona, language: "中英皆可" }),
-    messages: messages,
     abortSignal: req.signal,
+    onStepFinish: async (step) => {
+      console.log(step);
+    },
     onError: (error) => {
       console.error("Error occurred:", error);
     },

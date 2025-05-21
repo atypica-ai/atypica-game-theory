@@ -1,6 +1,6 @@
 import "server-only";
 
-import { llm, LLMModelName, providerOptions } from "@/ai/llm";
+import { llm, providerOptions } from "@/ai/llm";
 import { convertStepsToAIMessage } from "@/ai/messageUtils";
 import {
   interviewerAttachment,
@@ -13,11 +13,9 @@ import {
   insSearchTool,
   reasoningThinkingTool,
   saveInterviewConclusionTool,
-  StatReporter,
   tiktokSearchTool,
-  xhsSearchTool,
 } from "@/ai/tools/tools";
-import { InterviewChatResult, PlainTextToolResult, ToolName } from "@/ai/tools/types";
+import { InterviewChatResult, PlainTextToolResult, StatReporter, ToolName } from "@/ai/tools/types";
 import { ChatMessageAttachment } from "@/lib/attachments";
 import { s3SignedUrl } from "@/lib/attachments/s3";
 import { getDeployRegion } from "@/lib/request/deployRegion";
@@ -246,18 +244,15 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: Message[]) {
     interviewLog,
   } = chatProps;
 
-  const REDUCE_TOKENS: {
-    model: LLMModelName;
-    ratio: number;
-  } = {
-    model: "gemini-2.5-pro",
+  const REDUCE_TOKENS = {
+    model: llm("gemini-2.5-pro"),
     ratio: 2,
   };
 
   const result = await new Promise<Omit<Message, "role">>(async (resolve, reject) => {
     const reduceTokens = REDUCE_TOKENS as typeof REDUCE_TOKENS | null;
     const response = streamText({
-      model: reduceTokens ? llm(reduceTokens.model) : llm("claude-3-7-sonnet"), // 不能用 gpt-4o，指令遵循的比较差，会结束不了
+      model: reduceTokens ? reduceTokens.model : llm("claude-3-7-sonnet"), // 不能用 gpt-4o，指令遵循的比较差，会结束不了
       providerOptions: providerOptions,
       system: interviewerPrompt,
       temperature: 0.3,
@@ -329,18 +324,17 @@ async function chatWithPersona(chatProps: ChatProps, messages: Message[]) {
     interviewLog,
   } = chatProps;
 
-  const REDUCE_TOKENS: {
-    model: LLMModelName;
-    ratio: number;
-  } = {
-    model: "gemini-2.5-flash",
+  const REDUCE_TOKENS = {
+    model: llm("gemini-2.5-flash", {
+      useSearchGrounding: true,
+    }),
     ratio: 10,
   };
 
   const result = await new Promise<Omit<Message, "role">>(async (resolve, reject) => {
     const reduceTokens = REDUCE_TOKENS as typeof REDUCE_TOKENS | null;
     const response = streamText({
-      model: reduceTokens ? llm(reduceTokens.model) : llm("gpt-4o"),
+      model: reduceTokens ? REDUCE_TOKENS.model : llm("gpt-4o"),
       providerOptions: providerOptions,
       system: personaPrompt,
       temperature: 0.3,
@@ -349,7 +343,7 @@ async function chatWithPersona(chatProps: ChatProps, messages: Message[]) {
         [ToolName.tiktokSearch]: tiktokSearchTool,
         [ToolName.dySearch]: dySearchTool,
         [ToolName.insSearch]: insSearchTool,
-        [ToolName.xhsSearch]: xhsSearchTool,
+        // [ToolName.xhsSearch]: xhsSearchTool, // 因为有 grounding 了，tools 可以去掉一些
       },
       maxSteps: 2,
       onStepFinish: async (step) => {
