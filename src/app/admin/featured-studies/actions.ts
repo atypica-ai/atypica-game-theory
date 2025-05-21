@@ -1,11 +1,12 @@
 "use server";
 import { FeaturedStudyCategory } from "@/app/(public)/featured-studies/data";
+import { checkAdminAuth } from "@/app/admin/actions";
 import { StudyUserChat, UserChatWithMessages } from "@/lib/data/UserChat";
 import { ServerActionResult } from "@/lib/serverAction";
 import { Analyst, FeaturedStudy, User } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { revalidatePath } from "next/cache";
-import { AdminPermission, checkAdminAuth } from "../utils";
+import { AdminPermission } from "../types";
 // Public action for fetching featured studies (no auth check needed)
 
 export async function fetchPublicFeaturedStudies({

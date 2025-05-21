@@ -1,4 +1,4 @@
-import { checkTezignAuth } from "@/app/admin/utils";
+import { checkTezignAuth } from "@/app/admin/actions";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { fetchUserChatById } from "@/lib/data/UserChat";
 import { prisma } from "@/prisma/prisma";

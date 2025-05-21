@@ -1,10 +1,11 @@
 "use server";
+import { checkAdminAuth } from "@/app/admin/actions";
+import { AdminPermission } from "@/app/admin/types";
 import { authClientInfo } from "@/lib/auth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { AdminRole, Currency, User } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { revalidatePath } from "next/cache";
-import { AdminPermission, checkAdminAuth } from "../utils";
 
 export async function fetchUsers(
   page: number = 1,

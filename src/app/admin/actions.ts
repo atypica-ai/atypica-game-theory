@@ -1,25 +1,10 @@
+"use server";
 import { authOptions } from "@/lib/auth";
 import { AdminRole } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { getServerSession } from "next-auth";
 import { forbidden } from "next/navigation";
-
-export enum AdminPermission {
-  MANAGE_STUDIES = "MANAGE_STUDIES",
-  MANAGE_USERS = "MANAGE_USERS",
-  MANAGE_PAYMENTS = "MANAGE_PAYMENTS",
-  MANAGE_INVITATION_CODES = "MANAGE_INVITATION_CODES",
-  VIEW_ENTERPRISE_LEADS = "VIEW_ENTERPRISE_LEADS",
-  VIEW_TOKEN_CONSUMPTION = "VIEW_TOKEN_CONSUMPTION",
-  MANAGE_MAINTENANCE = "MANAGE_MAINTENANCE",
-}
-
-export type PaginationInfo = {
-  page: number;
-  pageSize: number;
-  totalCount: number;
-  totalPages: number;
-};
+import { AdminPermission } from "./types";
 
 /**
  * Check if the user is authorized as an admin with specific permissions

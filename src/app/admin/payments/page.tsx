@@ -15,7 +15,7 @@ import { useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
 import Script from "next/script";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
-import { PaginationInfo } from "../utils";
+import { PaginationInfo } from "../types";
 import { getPaymentRecords } from "./actions";
 
 // Define Ping++ global object type

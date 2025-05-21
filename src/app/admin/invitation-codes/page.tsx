@@ -18,7 +18,7 @@ import { useSession } from "next-auth/react";
 import { useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { PaginationInfo } from "../utils";
+import { PaginationInfo } from "../types";
 import { createInvitationCode, deleteInvitationCode, fetchInvitationCodes } from "./actions";
 
 export default function InvitationCodesPage() {

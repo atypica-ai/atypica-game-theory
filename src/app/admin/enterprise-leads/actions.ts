@@ -1,6 +1,7 @@
 "use server";
 import { convertDBMessageToAIMessage } from "@/ai/messageUtils";
-import { AdminPermission, checkAdminAuth } from "@/app/admin/utils";
+import { checkAdminAuth } from "@/app/admin/actions";
+import { AdminPermission } from "@/app/admin/types";
 import { ServerActionResult } from "@/lib/serverAction";
 import { User, UserChat } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";

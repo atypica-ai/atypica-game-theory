@@ -1,4 +1,4 @@
-import { checkTezignAuth } from "@/app/admin/utils";
+import { checkTezignAuth } from "@/app/admin/actions";
 import { fetchUserChatById } from "@/lib/data/UserChat";
 import { throwServerActionError } from "@/lib/serverAction";
 import PersonasList from "./PersonasList";

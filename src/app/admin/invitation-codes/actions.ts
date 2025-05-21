@@ -1,10 +1,11 @@
 "use server";
+import { checkTezignAuth, hasPermission } from "@/app/admin/actions";
+import { AdminPermission } from "@/app/admin/types";
 import { ServerActionResult } from "@/lib/serverAction";
 import { InvitationCode } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import crypto from "crypto";
 import { revalidatePath } from "next/cache";
-import { AdminPermission, checkTezignAuth, hasPermission } from "../utils";
 
 // Function to generate a random invitation code
 function generateInvitationCode(length: number = 8): string {

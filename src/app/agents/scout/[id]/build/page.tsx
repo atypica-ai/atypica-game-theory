@@ -1,4 +1,4 @@
-import { checkTezignAuth } from "@/app/admin/utils";
+import { checkTezignAuth } from "@/app/admin/actions";
 import { AgentChatPage } from "@/app/agents/AgentChatPage";
 import { authOptions } from "@/lib/auth";
 import { fetchUserChatById } from "@/lib/data/UserChat";

@@ -1,0 +1,16 @@
+export enum AdminPermission {
+  MANAGE_STUDIES = "MANAGE_STUDIES",
+  MANAGE_USERS = "MANAGE_USERS",
+  MANAGE_PAYMENTS = "MANAGE_PAYMENTS",
+  MANAGE_INVITATION_CODES = "MANAGE_INVITATION_CODES",
+  VIEW_ENTERPRISE_LEADS = "VIEW_ENTERPRISE_LEADS",
+  VIEW_TOKEN_CONSUMPTION = "VIEW_TOKEN_CONSUMPTION",
+  MANAGE_MAINTENANCE = "MANAGE_MAINTENANCE",
+}
+
+export type PaginationInfo = {
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+};

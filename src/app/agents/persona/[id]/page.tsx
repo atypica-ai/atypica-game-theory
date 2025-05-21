@@ -1,5 +1,5 @@
 import { fetchPersonaById } from "@/app/(legacy)/personas/actions";
-import { checkTezignAuth } from "@/app/admin/utils";
+import { checkTezignAuth } from "@/app/admin/actions";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { notFound } from "next/navigation";
 import { AgentChatPage } from "../../AgentChatPage";

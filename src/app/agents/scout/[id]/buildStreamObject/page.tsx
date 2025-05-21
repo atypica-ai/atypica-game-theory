@@ -1,4 +1,4 @@
-import { checkTezignAuth } from "@/app/admin/utils";
+import { checkTezignAuth } from "@/app/admin/actions";
 import { authOptions } from "@/lib/auth";
 import { fetchUserChatById } from "@/lib/data/UserChat";
 import { getServerSession } from "next-auth/next";

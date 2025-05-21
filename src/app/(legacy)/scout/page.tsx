@@ -1,4 +1,4 @@
-import { checkTezignAuth } from "@/app/admin/utils";
+import { checkTezignAuth } from "@/app/admin/actions";
 import { ScoutChat } from "./ScoutChat";
 
 export const dynamic = "force-dynamic";

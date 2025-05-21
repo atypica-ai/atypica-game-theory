@@ -1,5 +1,5 @@
 import { fetchAnalystInterviews } from "@/app/(legacy)/interview/actions";
-import { checkTezignAuth } from "@/app/admin/utils";
+import { checkTezignAuth } from "@/app/admin/actions";
 import { throwServerActionError } from "@/lib/serverAction";
 import { fetchAnalystById } from "../actions";
 import { AnalystDetail } from "./AnalystDetail";

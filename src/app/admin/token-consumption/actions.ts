@@ -1,7 +1,8 @@
 "use server";
+import { checkAdminAuth } from "@/app/admin/actions";
+import { AdminPermission } from "@/app/admin/types";
 import { ServerActionResult } from "@/lib/serverAction";
 import { prisma } from "@/prisma/prisma";
-import { AdminPermission, checkAdminAuth } from "../utils";
 
 export type TokenSource = {
   reportedBy: string;

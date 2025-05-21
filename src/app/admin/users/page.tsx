@@ -28,7 +28,7 @@ import { useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { ConfirmDialog } from "../components/ConfirmDialog";
-import { AdminPermission, PaginationInfo } from "../utils";
+import { AdminPermission, PaginationInfo } from "../types";
 import {
   addTokensToUser,
   deleteUserAccount,

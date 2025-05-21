@@ -17,7 +17,7 @@ import { useLocale } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { FormEvent, useCallback, useEffect, useRef, useState } from "react";
-import { PaginationInfo } from "../utils";
+import { PaginationInfo } from "../types";
 import { ChatTokenConsumptionData, fetchTokenConsumption } from "./actions";
 
 export default function TokenConsumptionPage() {

@@ -1,5 +1,6 @@
 "use client";
 import { FeaturedStudyCategory } from "@/app/(public)/featured-studies/data";
+import { PaginationInfo } from "@/app/admin/types";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -27,7 +28,6 @@ import { useLocale } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
-import { PaginationInfo } from "../utils";
 import {
   fetchAnalysts,
   fetchFeaturedStudies,

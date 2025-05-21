@@ -5,7 +5,7 @@ import { getServerSession } from "next-auth";
 import { ReactNode } from "react";
 import AdminMobileHeader from "./components/AdminMobileHeader";
 import AdminSidebar from "./components/AdminSidebar";
-import { AdminPermission } from "./utils";
+import { AdminPermission } from "./types";
 
 interface AdminLayoutProps {
   children: ReactNode;

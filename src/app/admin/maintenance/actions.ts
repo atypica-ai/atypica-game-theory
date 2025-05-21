@@ -1,9 +1,9 @@
 "use server";
+import { checkAdminAuth } from "@/app/admin/actions";
 import { ServerActionResult } from "@/lib/serverAction";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import { revalidatePath } from "next/cache";
-import { checkAdminAuth } from "../utils";
 
 // Type definitions for maintenance config
 export interface MaintenanceConfig {

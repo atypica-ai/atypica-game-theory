@@ -17,7 +17,7 @@ import {
 
 import Link from "next/link";
 import { useMemo } from "react";
-import { AdminPermission } from "../utils";
+import { AdminPermission } from "../types";
 
 interface SidebarItem {
   label: string;

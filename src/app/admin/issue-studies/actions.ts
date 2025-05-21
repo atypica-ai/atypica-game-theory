@@ -4,6 +4,7 @@ import {
   persistentAIMessageToDB,
   prepareMessagesForStreaming,
 } from "@/ai/messageUtils";
+import { checkAdminAuth } from "@/app/admin/actions";
 import { studyAgentRequest } from "@/app/api/chat/study/studyAgentRequest";
 import { rootLogger } from "@/lib/logging";
 import { ServerActionResult } from "@/lib/serverAction";
@@ -11,7 +12,6 @@ import { PaymentRecord, User, UserChat, UserTokens } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { generateId } from "ai";
 import { revalidatePath } from "next/cache";
-import { checkAdminAuth } from "../utils";
 
 // Fetch studies that might be having issues (have an active backgroundToken)
 export async function fetchIssueStudies(

@@ -1,4 +1,5 @@
 "use client";
+import { PaginationInfo } from "@/app/admin/types";
 import { Button } from "@/components/ui/button";
 import { Pagination } from "@/components/ui/pagination";
 import { ExtractServerActionData } from "@/lib/serverAction";
@@ -7,7 +8,6 @@ import { useSession } from "next-auth/react";
 import { useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { PaginationInfo } from "../utils";
 import { fetchIssueStudies, retryStudy } from "./actions";
 
 type IssueStudy = ExtractServerActionData<typeof fetchIssueStudies>[number];
