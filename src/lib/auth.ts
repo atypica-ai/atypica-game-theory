@@ -16,13 +16,18 @@ if (process.env.FETCH_HTTPS_PROXY) {
   const originRequest = https.request;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   https.request = function (...args: any) {
-    rootLogger.info(`Requesting ${args[0]} in overrided https.request`);
-    console.log(`Requesting ${args[0]} in overrided https.request`);
-    if (args.length === 2 && typeof args[0] === "string") {
-      const [url, options] = args;
-      if (/google/.test(url)) {
-        options.agent = httpsProxyAgent;
-      }
+    rootLogger.info(`Requesting ${JSON.stringify(args[0])} in overrided https.request`);
+    let options = null;
+    let url = null;
+    if (typeof args[0] === "string") {
+      [url, options] = args;
+    }
+    if (typeof args[0] === "object") {
+      url = args[0].href;
+      options = args[0];
+    }
+    if (/google/.test(url)) {
+      options.agent = httpsProxyAgent;
     }
     return originRequest.apply(https, args);
   };
