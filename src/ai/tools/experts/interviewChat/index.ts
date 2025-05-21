@@ -1,6 +1,6 @@
 import "server-only";
 
-import { llm, providerOptions } from "@/ai/llm";
+import { llm, LLMModelName, providerOptions } from "@/ai/llm";
 import { convertStepsToAIMessage } from "@/ai/messageUtils";
 import {
   interviewerAttachment,
@@ -245,14 +245,15 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: Message[]) {
   } = chatProps;
 
   const REDUCE_TOKENS = {
-    model: llm("gemini-2.5-pro"),
+    // model: llm("gemini-2.5-pro"), // 不能这么写，一定要下面每次都重新初始化 llm，不然会卡住
+    model: "gemini-2.5-pro" as LLMModelName,
     ratio: 2,
   };
 
   const result = await new Promise<Omit<Message, "role">>(async (resolve, reject) => {
     const reduceTokens = REDUCE_TOKENS as typeof REDUCE_TOKENS | null;
     const response = streamText({
-      model: reduceTokens ? reduceTokens.model : llm("claude-3-7-sonnet"), // 不能用 gpt-4o，指令遵循的比较差，会结束不了
+      model: reduceTokens ? llm(reduceTokens.model) : llm("claude-3-7-sonnet"), // 不能用 gpt-4o，指令遵循的比较差，会结束不了
       providerOptions: providerOptions,
       system: interviewerPrompt,
       temperature: 0.3,
@@ -325,16 +326,18 @@ async function chatWithPersona(chatProps: ChatProps, messages: Message[]) {
   } = chatProps;
 
   const REDUCE_TOKENS = {
-    model: llm("gemini-2.5-flash", {
+    // model: llm("gemini-2.5-flash"), // 不能这么写，一定要下面每次都重新初始化 llm，不然会卡住
+    model: "gemini-2.5-flash" as LLMModelName,
+    options: {
       useSearchGrounding: true,
-    }),
+    },
     ratio: 10,
   };
 
   const result = await new Promise<Omit<Message, "role">>(async (resolve, reject) => {
     const reduceTokens = REDUCE_TOKENS as typeof REDUCE_TOKENS | null;
     const response = streamText({
-      model: reduceTokens ? REDUCE_TOKENS.model : llm("gpt-4o"),
+      model: reduceTokens ? llm(reduceTokens.model, reduceTokens.options) : llm("gpt-4o"),
       providerOptions: providerOptions,
       system: personaPrompt,
       temperature: 0.3,
