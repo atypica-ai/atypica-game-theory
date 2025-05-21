@@ -299,7 +299,9 @@
       "submittingButton": "登录中...",
       "errorMessage": "邮箱或密码错误",
       "noAccountText": "还没有账号？",
-      "signUpLink": "立即注册"
+      "signUpLink": "立即注册",
+      "orContinueWith": "或者通过以下方式",
+      "signInWithGoogle": "谷歌账号登录"
     },
     "SignUp": {
       "title": "注册",

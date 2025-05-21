@@ -1,8 +1,7 @@
 "use server";
-import { authClientInfo } from "@/lib/auth";
+import { createUser } from "@/lib/auth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { prisma } from "@/prisma/prisma";
-import { hash } from "bcryptjs";
 import { getTranslations } from "next-intl/server";
 import { sendVerificationCode } from "../verify/actions";
 
@@ -54,27 +53,7 @@ export async function signUp({
     };
   }
 
-  const lastLogin = await authClientInfo();
-  const hashedPassword = await hash(password, 10);
-  const user = await prisma.user.create({
-    data: {
-      email,
-      password: hashedPassword,
-      lastLogin,
-    },
-  });
-  await prisma.$transaction([
-    prisma.userTokensLog.create({
-      data: {
-        userId: user.id,
-        verb: "signup",
-        value: 1_500_000,
-      },
-    }),
-    prisma.userTokens.create({
-      data: { userId: user.id, balance: 1_500_000 }, // 注册赠送 1_500_000 tokens
-    }),
-  ]);
+  const user = await createUser({ email, password });
 
   // If an invitation code was used, mark it as used
   // if (invitationCode && !email.endsWith("@tezign.com")) {

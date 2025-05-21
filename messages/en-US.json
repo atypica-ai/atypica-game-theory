@@ -299,7 +299,9 @@
       "submittingButton": "Signing in...",
       "errorMessage": "Invalid email or password",
       "noAccountText": "Don't have an account?",
-      "signUpLink": "Sign up now"
+      "signUpLink": "Sign up now",
+      "orContinueWith": "Or continue with",
+      "signInWithGoogle": "Sign in with Google"
     },
     "SignUp": {
       "title": "Sign Up",

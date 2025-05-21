@@ -18,7 +18,7 @@ export default function GlobalHeader({
     <>
       <header
         className={cn(
-          "h-12 px-4 flex items-center justify-between gap-2 bg-background/80 backdrop-blur-sm border-b border-border",
+          "shrink-0 h-12 px-4 flex items-center justify-between gap-2 bg-background/80 backdrop-blur-sm border-b border-border",
           className,
         )}
       >
