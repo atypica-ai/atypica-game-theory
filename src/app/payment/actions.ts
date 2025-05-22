@@ -1,11 +1,6 @@
 "use server";
 import { getRequestClientIp, getRequestOrigin } from "@/lib/request/headers";
-import {
-  Currency,
-  PaymentRecord as PaymentRecordPrisma,
-  SubscriptionPlan,
-  UserTokensLogVerb,
-} from "@/prisma/client";
+import { Currency } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { PaymentMethod, ProductName } from "./data";
 
@@ -13,12 +8,6 @@ import { PaymentMethod, ProductName } from "./data";
 const PINGPP_API_KEY = process.env.PINGPP_API_KEY!;
 const PINGPP_APP_ID = process.env.PINGPP_APP_ID!;
 const PINGPP_API_URL = process.env.PINGPP_API_URL!;
-
-export type PaymentRecord = PaymentRecordPrisma & {
-  paymentMethod: PaymentMethod;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  credential: Record<"alipay_pc_direct" | "alipay_wap" | "wx_pub", any>;
-};
 
 // Create a ping++ charge
 export async function createCharge({
@@ -157,91 +146,7 @@ export async function retrieveLatestPaid(createdAtFrom: Date) {
   });
 }
 
-export async function handlePaymentSuccess({ chargeId }: { chargeId: string }) {
-  const paymentRecord = await prisma.paymentRecord.findUniqueOrThrow({
-    where: { chargeId },
-    include: {
-      paymentLines: true,
-    },
-  });
-  const userId = paymentRecord.userId;
-  await prisma.userTokens.upsert({
-    where: { userId },
-    create: { userId, balance: 0 },
-    update: {},
-  });
-  for (const paymentLine of paymentRecord.paymentLines) {
-    if (paymentLine.productName === ProductName.TOKENS1M) {
-      const rechargeAmount = 1_000_000;
-      const giftAmount = 1_000_000;
-      await prisma.$transaction([
-        prisma.userTokensLog.create({
-          data: {
-            userId: userId,
-            verb: UserTokensLogVerb.recharge,
-            resourceType: "PaymentRecord",
-            resourceId: paymentRecord.id,
-            value: rechargeAmount,
-          },
-        }),
-        prisma.userTokensLog.create({
-          data: {
-            userId: userId,
-            verb: UserTokensLogVerb.gift,
-            resourceType: "PaymentRecord",
-            resourceId: paymentRecord.id,
-            value: giftAmount,
-          },
-        }),
-        prisma.userTokens.update({
-          where: { userId },
-          data: {
-            balance: {
-              increment: rechargeAmount + giftAmount,
-            },
-          },
-        }),
-      ]);
-    } else if (paymentLine.productName === ProductName.PRO1MONTH) {
-      const rechargeAmount = 3_000_000;
-      let planStartsAt = new Date();
-      const existingSubscription = await prisma.userSubscription.findFirst({
-        where: { userId },
-        orderBy: { endsAt: "desc" },
-      });
-      if (existingSubscription?.endsAt) {
-        planStartsAt = existingSubscription.endsAt;
-      }
-      const planEndsAt = new Date(planStartsAt.getTime() + 30 * 24 * 60 * 60 * 1000); // 有效期 31 天
-      await prisma.$transaction([
-        prisma.userTokensLog.create({
-          data: {
-            userId: userId,
-            verb: UserTokensLogVerb.subscription,
-            resourceType: "PaymentRecord",
-            resourceId: paymentRecord.id,
-            value: rechargeAmount,
-          },
-        }),
-        prisma.userTokens.update({
-          where: { userId },
-          data: {
-            balance: {
-              increment: rechargeAmount,
-            },
-          },
-        }),
-        prisma.userSubscription.create({
-          data: {
-            userId,
-            plan: SubscriptionPlan.pro,
-            startsAt: planStartsAt,
-            endsAt: planEndsAt,
-            extra: { paymentRecordId: paymentRecord.id },
-          },
-        }),
-      ]);
-    }
-  }
-  // end for
-}
+/**
+ * 注意：这个方法之前放在了 server action 里，意味着它可以被前端调用，现在移动到了 webhook/lib 下
+ */
+// export async function handlePaymentSuccess

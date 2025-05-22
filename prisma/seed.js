@@ -34,14 +34,14 @@ async function createProducts() {
       price: 16,
       currency: "USD",
       description: "atypica.AI recharge 1 million Tokens",
-      extra: { price_id: "price_1RFNxFGU0jUFYcrNgjrI3a7K" },
+      extra: { price_id: "price_1RFNxFGU0jUFYcrNgjrI3a7K" }, // 测试环境 price_1RFpy7GU0jUFYcrNG7fNLoDv
     },
     {
       name: "PRO1MONTH",
       price: 20,
       currency: "USD",
       description: "atypica.AI Pro membership for 1 month",
-      extra: { price_id: "price_1RG1ZkGU0jUFYcrNLp3ykPOm" },
+      extra: { price_id: "price_1RG1ZkGU0jUFYcrNLp3ykPOm" }, // 测试环境 price_1RRIwUGU0jUFYcrNJL8ZwX3L
     },
   ];
   // Create products

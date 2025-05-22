@@ -118,6 +118,7 @@ export async function fetchAnalysts(
   const skip = (page - 1) * pageSize;
   const where = search
     ? {
+        topic: { not: "" },
         OR: [
           { topic: { contains: search } },
           {
@@ -127,7 +128,9 @@ export async function fetchAnalysts(
           },
         ],
       }
-    : undefined;
+    : {
+        topic: { not: "" },
+      };
 
   // Get all analysts with their featured status
   const analysts = await prisma.analyst.findMany({

@@ -137,7 +137,7 @@ export const SubscriptionDialog = ({ open, onOpenChange, onSuccess }: Subscripti
               <TabsList className="grid grid-cols-2 mb-4">
                 <TabsTrigger
                   value={PaymentProvider.Pingxx}
-                  disabled={loading || deployRegion === "global"}
+                  disabled={loading}
                   onClick={() => clearPaymentLink()} // 切换 tab 需要清空带支付的二维码
                 >
                   <div className="size-5 mr-1 rounded-lg overflow-hidden relative">
@@ -161,7 +161,7 @@ export const SubscriptionDialog = ({ open, onOpenChange, onSuccess }: Subscripti
                 </TabsTrigger>
                 <TabsTrigger
                   value={PaymentProvider.Stripe}
-                  disabled={loading || deployRegion === "mainland"}
+                  disabled={loading}
                   onClick={() => clearPaymentLink()} // 切换 tab 需要清空带支付的二维码
                 >
                   <div className="size-5 mr-1 rounded-lg overflow-hidden relative">

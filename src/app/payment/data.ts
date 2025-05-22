@@ -1,4 +1,4 @@
-import { Currency } from "@/prisma/client";
+import { Currency, PaymentRecord as PaymentRecordPrisma } from "@/prisma/client";
 
 export enum ProductName {
   TEST_A = "TEST_A",
@@ -31,4 +31,10 @@ export type StripeNewPaymentParams = {
   productName: ProductName;
   currency: Currency;
   successUrl: string;
+};
+
+export type PaymentRecord = PaymentRecordPrisma & {
+  paymentMethod: PaymentMethod;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  credential: Record<"alipay_pc_direct" | "alipay_wap" | "wx_pub", any>;
 };

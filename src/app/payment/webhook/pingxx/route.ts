@@ -1,7 +1,9 @@
+import { rootLogger } from "@/lib/logging";
 import { prisma } from "@/prisma/prisma";
 import crypto from "crypto";
 import { NextResponse } from "next/server";
-import { handlePaymentSuccess } from "../../actions";
+import { ProductName } from "../../data";
+import { handlePaymentSuccess } from "../lib";
 
 // Verify a Ping++ webhook
 async function verifyWebhook(signature: string, rawBody: string) {
@@ -32,15 +34,34 @@ async function handleWebhook(request: Request) {
   // Handle successful payment
   if (event.type === "charge.succeeded") {
     const charge = event.data.object;
-    // Update payment record in database
-    await prisma.paymentRecord.update({
-      where: { chargeId: charge.id },
-      data: {
-        status: "succeeded",
-        paidAt: new Date(),
-      },
+    try {
+      await prisma.paymentRecord.update({
+        where: {
+          chargeId: charge.id,
+          status: "pending", // 确保 pending -> succeeded 只更新一次
+        },
+        data: {
+          status: "succeeded",
+          paidAt: new Date(),
+        },
+      });
+    } catch (error) {
+      rootLogger.error(
+        `Duplicate webhook detected for chargeId ${charge.id}: ${(error as Error).message}`,
+      );
+      return new Response("Duplicate webhook received", { status: 400 });
+    }
+    const paymentRecord = await prisma.paymentRecord.findUniqueOrThrow({
+      where: { chargeId: charge.id, status: "succeeded" },
+      include: { paymentLines: true },
     });
-    await handlePaymentSuccess({ chargeId: charge.id });
+    for (const paymentLine of paymentRecord.paymentLines) {
+      // 其实不会有多行
+      await handlePaymentSuccess({
+        paymentRecord,
+        productName: paymentLine.productName as ProductName,
+      });
+    }
     return { status: 200, body: { received: true } };
   }
 
@@ -48,7 +69,10 @@ async function handleWebhook(request: Request) {
   if (event.type === "charge.failed") {
     const charge = event.data.object;
     await prisma.paymentRecord.update({
-      where: { chargeId: charge.id },
+      where: {
+        chargeId: charge.id,
+        status: "pending", // 确保 pending -> succeeded 只更新一次
+      },
       data: {
         status: "failed",
       },

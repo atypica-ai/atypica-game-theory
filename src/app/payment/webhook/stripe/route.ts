@@ -1,10 +1,30 @@
+import { rootLogger } from "@/lib/logging";
+import { getDeployRegion } from "@/lib/request/deployRegion";
+import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
-import { handlePaymentSuccess } from "../../actions";
+import { handlePaymentSuccess, StripeMetadata } from "../lib";
+
+function checkInvoiceMetadata(invoiceData: Stripe.Invoice) {
+  const metadata = (
+    invoiceData.billing_reason === "manual"
+      ? (invoiceData.metadata ?? null)
+      : invoiceData.billing_reason === "subscription_create" ||
+          invoiceData.billing_reason === "subscription_cycle"
+        ? (invoiceData.parent?.subscription_details?.metadata ?? null)
+        : null
+  ) as StripeMetadata | null;
+  if (metadata?.project !== "atypica" || metadata.deployRegion !== getDeployRegion()) {
+    rootLogger.info(`project or deployRegion not belong to this app, ignore invoice`);
+    return null;
+  }
+  return metadata;
+}
 
 export async function POST(req: Request) {
   const payloadStr = await req.text();
+  // rootLogger.info(`Stripe Webhook Received: ${payloadStr}`);
   const sig = req.headers.get("stripe-signature") || "";
   const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET || "";
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
@@ -12,26 +32,72 @@ export async function POST(req: Request) {
   try {
     event = stripe.webhooks.constructEvent(payloadStr, sig, endpointSecret);
   } catch (error) {
-    console.log(error);
+    rootLogger.warn(`Stripe Webhook Error: ${error}`);
     return new Response("Webhook Error", { status: 400 });
   }
   switch (event.type) {
-    case "checkout.session.completed": {
-      const sessionId = event.data.object.id;
-      await prisma.paymentRecord.update({
-        where: { chargeId: sessionId },
-        data: {
-          status: "succeeded",
-          paidAt: new Date(),
-        },
-      });
+    case "invoice.payment_succeeded": {
+      const invoiceData = event.data.object;
+      const metadata = checkInvoiceMetadata(invoiceData);
+      if (!metadata) {
+        return NextResponse.json({ received: true }, { status: 200 }); // ignore this event
+      }
+      let paymentRecord;
+      try {
+        paymentRecord = await prisma.paymentRecord.update({
+          where: {
+            orderNo: metadata.orderNo,
+            status: "pending", // 确保 pending -> succeeded 只更新一次
+          },
+          data: {
+            status: "succeeded",
+            paidAt: new Date(),
+            charge: {
+              invoice: invoiceData as unknown as InputJsonValue,
+            },
+          },
+        });
+      } catch (error) {
+        rootLogger.error(
+          `Duplicate webhook detected for payment record ${metadata.orderNo} with session ${invoiceData.id}: ${(error as Error).message}`,
+        );
+        return new Response("Duplicate webhook received", { status: 400 });
+      }
       await handlePaymentSuccess({
-        chargeId: sessionId,
+        paymentRecord,
+        productName: metadata.productName,
+        invoiceData,
       });
-      break;
+      return NextResponse.json({ received: true }, { status: 200 });
     }
-    default:
-      console.log(`Unhandled event type ${event.type}`);
+    // case "checkout.session.completed": {
+    //   const sessionData = event.data.object;
+    //   const orderNo = sessionData.client_reference_id;
+    //   if (!orderNo) {
+    //     rootLogger.error(`Missing client_reference_id in Stripe webhook`);
+    //     return new Response("Missing client_reference_id in webhook", { status: 400 });
+    //   }
+    //   try {
+    //     // where status: "pending" 确保只更新一次
+    //     await prisma.paymentRecord.update({
+    //       where: { orderNo, status: "pending" },
+    //       data: {
+    //         status: "succeeded",
+    //         paidAt: new Date(),
+    //       },
+    //     });
+    //   } catch (error) {
+    //     rootLogger.error(
+    //       `Duplicate webhook detected for payment record ${orderNo} with session ${sessionData.id}`,
+    //     );
+    //     return new Response("Duplicate webhook received", { status: 400 });
+    //   }
+    //   await handlePaymentSuccess({ orderNo });
+    //   return NextResponse.json({ received: true }, { status: 200 });
+    // }
+    default: {
+      rootLogger.debug(`Unhandled event type ${event.type}`);
+      return NextResponse.json({ received: true }, { status: 200 });
+    }
   }
-  return NextResponse.json({ received: true }, { status: 200 });
 }

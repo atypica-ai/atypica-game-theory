@@ -133,8 +133,8 @@ export function usePay() {
   }, [paymentScanQR]);
 
   return {
-    createPingxxPaymentUrl,
-    submitForStripePayment,
+    // createPingxxPaymentUrl,
+    // submitForStripePayment,
     createPaymentLink,
     clearPaymentLink,
     paymentScanQR,
