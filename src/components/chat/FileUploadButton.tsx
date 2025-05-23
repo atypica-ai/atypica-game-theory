@@ -5,7 +5,7 @@ import { Loader2, PaperclipIcon } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 
-export const MAX_SINGLE_FILE_SIZE = 5 * 1024 * 1024;
+export const MAX_SINGLE_FILE_SIZE = 3 * 1024 * 1024;
 export const MAX_TOTAL_FILE_SIZE = 10 * 1024 * 1024;
 
 export type FileUploadInfo = {
@@ -35,9 +35,9 @@ export function FileUploadButton({ onFileUploadedAction, disabled }: FileUploadB
       return;
     }
 
-    // Check file size (max 10MB)
+    // Check file size (max 3MB)
     if (file.size > MAX_SINGLE_FILE_SIZE) {
-      toast.error("File size exceeds 10MB limit");
+      toast.error("File size exceeds 3MB limit");
       return;
     }
 

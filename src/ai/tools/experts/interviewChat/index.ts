@@ -462,21 +462,18 @@ export async function runInterview(chatProps: ChatProps) {
 
   while (true) {
     const personaReply = await chatWithPersona(chatProps, personaAgent.messages);
+    fixEmptyTextIssue(personaReply);
     // interviewLog.info(`Persona:\n${message.content}\n`);
     await saveMessage({ message: { ...personaReply, role: "assistant" }, ...saveParams });
     personaAgent.messages.push({ ...personaReply, role: "assistant" });
     interviewer.messages.push({ ...personaReply, role: "user" });
 
     const interviewerReply = await chatWithInterviewer(chatProps, interviewer.messages);
+    fixEmptyTextIssue(interviewerReply);
     // interviewLog.info(`Interviewer:\n${message.content}\n`);
     await saveMessage({ message: { ...interviewerReply, role: "user" }, ...saveParams });
     interviewer.messages.push({ ...interviewerReply, role: "assistant" });
     personaAgent.messages.push({ ...interviewerReply, role: "user" });
-
-    // TODO 这里可能有个问题：
-    // 有时候 personaReply 或 interviewerReply 的 content 是空的，这时候一般是调用了一次工具但还没有文本回复
-    // 由于 interviewer 的 assistant 消息会转换成 user 消息给 persona，反过来也是一样，user role message 转换成 coreMessage 的时候，tool 的内容会被忽略，这样就产生了一条空消息，没意义
-    // 还没太好的解决方案，有一种方案就是让 interviewer 或者 persona 继续生成，直到输出文本，然后再让另一方继续
 
     const _updated = await prisma.analystInterview.findUnique({
       where: { id: analystInterviewId },
@@ -498,5 +495,19 @@ export async function runInterview(chatProps: ChatProps) {
     interviewLog.error(
       `Error clearing interview token ${backgroundToken}: ${(error as Error).message}`,
     );
+  }
+}
+
+function fixEmptyTextIssue(message: Omit<Message, "role">) {
+  // 有时候 personaReply 或 interviewerReply 的 content 是空的，这时候一般是调用了一次工具但还没有文本回复
+  // 由于 interviewer 的 assistant 消息会转换成 user 消息给 persona，反过来也是一样，user role message 转换成 coreMessage 的时候，tool 的内容会被忽略，这样就产生了一条空消息，没意义
+  // 还没太好的解决方案，有一种方案就是让 interviewer 或者 persona 继续生成，直到输出文本，然后再让另一方继续
+  for (const part of message.parts ?? []) {
+    if (part.type === "text" && !part.text.trim()) {
+      part.text = "[CONTINUE]";
+    }
+  }
+  if (!message.content) {
+    message.content = "[CONTINUE]";
   }
 }
