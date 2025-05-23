@@ -69,18 +69,20 @@ export function PaymentHistory() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>{t("date")}</TableHead>
                 <TableHead>{t("details")}</TableHead>
                 <TableHead>{t("status.title")}</TableHead>
                 <TableHead className="text-right">{t("amount")}</TableHead>
+                <TableHead className="text-center">{t("date")}</TableHead>
                 <TableHead className="text-center">{t("invoice")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {paymentRecords.map((item) => (
                 <TableRow key={item.id}>
-                  <TableCell>{formatDate(item.createdAt, locale)}</TableCell>
-                  <TableCell>{item.description}</TableCell>
+                  <TableCell>
+                    <div>{item.orderNo}</div>
+                    <div className="text-zinc-500">{item.description}</div>
+                  </TableCell>
                   <TableCell>
                     {item.status === "succeeded" ? (
                       <span className="font-medium text-green-500">{t("status.success")}</span>
@@ -93,6 +95,9 @@ export function PaymentHistory() {
                   <TableCell className="text-right">
                     {item.currency === "CNY" ? "¥" : item.currency === "USD" ? "$" : ""}
                     {item.amount.toFixed(2)}
+                  </TableCell>
+                  <TableCell className="text-center">
+                    {formatDate(item.createdAt, locale)}
                   </TableCell>
                   <TableCell className="text-center">
                     {item.charge?.invoice?.hosted_invoice_url ? (

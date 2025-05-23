@@ -3,12 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatDate } from "@/lib/utils";
-import { SubscriptionPlan } from "@/prisma/client";
+import { UserSubscription } from "@/prisma/client";
 import { CalendarIcon, CircleDollarSignIcon, CreditCardIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import { AddTokensDialog } from "../payment/components/AddTokensDialog";
 import { SubscriptionDialog } from "../payment/components/SubscriptionDialog";
+import { PlanExtraData } from "../payment/data";
 import { PaymentHistory } from "./PaymentHistory";
 import { TokensHistory } from "./TokensHistory";
 
@@ -19,12 +20,11 @@ export function AccountPageClient({
   userTokens: {
     balance: number;
   } | null;
-  subscription: {
-    id: number;
-    plan: SubscriptionPlan;
-    endsAt: Date | null;
-    startsAt: Date;
-  } | null;
+  subscription:
+    | (Omit<UserSubscription, "extra"> & {
+        extra?: PlanExtraData;
+      })
+    | null;
 }) {
   const t = useTranslations("AccountPage");
   const locale = useLocale();
@@ -86,11 +86,15 @@ export function AccountPageClient({
               </div>
             </CardContent>
             <CardFooter>
-              <Button className="w-full mt-4" onClick={() => setIsSubscribeOpen(true)}>
-                {subscription
-                  ? t("subscriptionSection.renewalDate")
-                  : t("subscriptionSection.upgrade")}
-              </Button>
+              {subscription?.extra?.invoice ? (
+                <div className="w-full mt-4 text-center px-2 py-1.5 text-sm rounded-md border bg-background shadow-xs dark:bg-input/30 dark:border-input">
+                  {t("subscriptionSection.autoRenew")}
+                </div>
+              ) : (
+                <Button className="w-full mt-4" onClick={() => setIsSubscribeOpen(true)}>
+                  {subscription ? t("subscriptionSection.renew") : t("subscriptionSection.upgrade")}
+                </Button>
+              )}
             </CardFooter>
           </Card>
 

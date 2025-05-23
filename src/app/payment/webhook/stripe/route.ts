@@ -27,7 +27,10 @@ async function cycleNewPaymentRecord(invoiceData: Stripe.Invoice, metadata: Stri
     where: { orderNo: metadata.orderNo },
     include: { paymentLines: true },
   });
-  const uniqueIdSuffix = `-${Date.now().toString()}`;
+  const count = await prisma.paymentRecord.count({
+    where: { orderNo: { startsWith: metadata.orderNo } },
+  });
+  const uniqueIdSuffix = `-${count}`;
   const paymentRecord = await prisma.paymentRecord.create({
     data: {
       userId: initial.userId,

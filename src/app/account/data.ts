@@ -1,6 +1,7 @@
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/prisma/prisma";
 import { getServerSession } from "next-auth/next";
+import { PlanExtraData } from "../payment/data";
 
 export async function fetchUserTokens() {
   const session = await getServerSession(authOptions);
@@ -23,16 +24,21 @@ export async function fetchUserSubscription() {
     return null;
   }
   const userId = session.user.id;
+  const now = new Date();
   const subscription = await prisma.userSubscription.findFirst({
     where: {
       userId,
-      endsAt: {
-        gt: new Date(),
-      },
+      // startsAt: { lt: now },
+      endsAt: { gt: now },
     },
     orderBy: {
       endsAt: "desc",
     },
   });
-  return subscription;
+  return subscription
+    ? {
+        ...subscription,
+        extra: subscription.extra as unknown as PlanExtraData | undefined,
+      }
+    : null;
 }

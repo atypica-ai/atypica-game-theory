@@ -40,6 +40,12 @@ export type PaymentChargeData = {
   invoice?: Stripe.Invoice;
 };
 
+export type PlanExtraData = {
+  // ... pingxx invoice data tbd
+  paymentRecordId: number;
+  invoice?: Stripe.Invoice;
+};
+
 export type PaymentRecord = Omit<PaymentRecordPrisma, "paymentMethod" | "charge" | "credential"> & {
   paymentMethod: PaymentMethod;
   charge: PaymentChargeData;

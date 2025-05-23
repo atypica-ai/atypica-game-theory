@@ -59,7 +59,7 @@ export function formatDate(date: Date | string, locale: Locale) {
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
-    hour12: false,
+    // hour12: false,  // 有时候会服务端和客户端渲染不一致，0点的情况，会出现 0 和 24 两种值
   }).format(d);
 }
 
