@@ -14,17 +14,20 @@ import { generateToken } from "@/lib/utils";
 import { Analyst, AnalystReport } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { FinishReason, Message, streamText, tool } from "ai";
+import { Locale } from "next-intl";
 import { Logger } from "pino";
 import { z } from "zod";
 import { type GenerateReportResult } from "./types";
 
 export const generateReportTool = ({
   studyUserChatId,
+  locale,
   abortSignal,
   statReport,
   studyLog,
 }: {
   studyUserChatId: number;
+  locale: Locale;
   abortSignal: AbortSignal;
   statReport: StatReporter;
   studyLog: Logger;
@@ -96,6 +99,7 @@ export const generateReportTool = ({
           analyst,
           report,
           instruction,
+          locale,
           abortSignal,
           statReport,
           reportLog,
@@ -116,6 +120,7 @@ export const generateReportTool = ({
           analyst,
           report,
           instruction,
+          locale,
           abortSignal,
           statReport,
           reportLog,
@@ -135,6 +140,7 @@ export async function generateReport({
   analyst,
   report,
   instruction,
+  locale,
   abortSignal,
   statReport,
   reportLog,
@@ -147,6 +153,7 @@ export async function generateReport({
   };
   report: AnalystReport;
   instruction: string;
+  locale: Locale;
   abortSignal: AbortSignal;
   statReport: StatReporter;
   reportLog: Logger;
@@ -228,7 +235,7 @@ export async function generateReport({
       const response = streamText({
         model: llm("claude-3-7-sonnet"),
         providerOptions: providerOptions,
-        system: systemPrompt ? systemPrompt : reportHTMLSystem(),
+        system: systemPrompt ? systemPrompt : reportHTMLSystem({ locale }),
         messages: messages,
         maxSteps: 1,
         maxTokens: 30000,
@@ -283,6 +290,7 @@ export async function generateCover({
   analyst,
   report,
   instruction,
+  locale,
   abortSignal,
   statReport,
   reportLog,
@@ -294,6 +302,7 @@ export async function generateCover({
   };
   report: AnalystReport;
   instruction: string;
+  locale: Locale;
   abortSignal: AbortSignal;
   statReport: StatReporter;
   reportLog: Logger;
@@ -301,7 +310,7 @@ export async function generateCover({
   const response = streamText({
     model: llm("claude-3-7-sonnet"),
     providerOptions: providerOptions,
-    system: reportCoverSystem(),
+    system: reportCoverSystem({ locale }),
     messages: [{ role: "user", content: reportCoverPrologue(analyst, instruction) }],
     maxSteps: 1,
     maxTokens: 10000,

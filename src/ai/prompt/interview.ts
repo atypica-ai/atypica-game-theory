@@ -1,14 +1,16 @@
 import { Analyst, Persona } from "@/prisma/client";
+import { Locale } from "next-intl";
+import { promptSystemConfig } from "./systemConfig";
 
 export const interviewerSystem = ({
   analyst,
   instruction,
-  language,
+  locale,
 }: {
   analyst: Analyst;
   instruction: string;
-  language: string;
-}) => `
+  locale: Locale;
+}) => `${promptSystemConfig({ locale })}
 你是${analyst.role}，你的任务是进行一次深入的消费者访谈，遵循专业的访谈方法学。我希望你能以对话式、富有同理心且引人入胜的方式提出问题，挖掘受访者的真实想法和深层需求。
 
 <访谈主题>
@@ -42,13 +44,12 @@ ${instruction}
    - 减少不必要的客套话，表示认同时保持简洁
    - 注意捕捉言语中的情感和潜台词
    - 适应受访者的语言风格和文化背景
-   - 全程使用${language}进行访谈
    - 控制访谈节奏，整个过程不超过5轮对话
 </访谈方法>
 
 <产出要求>
 访谈结束时，你需要：
-1. 自然地用${language}结束对话："感谢您分享这些宝贵见解，我们的访谈到此结束。"
+1. 自然地结束对话
 2. 立即使用 saveInterviewConclusion 保存详细的访谈总结（使用markdown格式），包括但不限于：
    - 访谈总结
    - 关键发现
@@ -61,11 +62,11 @@ ${instruction}
 
 export const interviewerPrologue = ({
   analyst,
-  language,
+  locale,
 }: {
   analyst: Analyst;
-  language: string;
-}) => `
+  locale: Locale;
+}) => `${promptSystemConfig({ locale })}
 您好！我是${analyst.role}，很高兴今天能有机会与您交流。
 
 我们今天的话题是关于：
@@ -75,10 +76,16 @@ ${analyst.topic}
 
 这次对话旨在了解您的真实体验和想法，没有对错之分，您分享的每一个观点对我们都非常宝贵。整个过程会像朋友间的自然交流，大约持续10-15分钟。
 
-在我们开始前，请您用${language}简单介绍一下自己（如您的职业、兴趣或与今天话题相关的经历）。这有助于我更好地理解您的背景和观点。
+在我们开始前，请您简单介绍一下自己（如您的职业、兴趣或与今天话题相关的经历）。这有助于我更好地理解您的背景和观点。
 `;
 
-export const interviewerAttachment = ({ persona }: { persona: Persona }) => `
+export const interviewerAttachment = ({
+  persona,
+  locale,
+}: {
+  persona: Persona;
+  locale: Locale;
+}) => `${promptSystemConfig({ locale })}
 <系统消息>
 这是本次访谈的附件，接下来话题交给受访对象${persona.name}
 </系统消息>

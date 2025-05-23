@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDistanceToNow } from "@/lib/utils";
 import { Loader2Icon } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
@@ -22,6 +22,7 @@ export function AnalystReportsSection({
   analystId: number;
   reports: AnalystReport[];
 }) {
+  const locale = useLocale();
   const t = useTranslations("AnalystPage");
   const router = useRouter();
   const [isReportDialogOpen, setIsReportDialogOpen] = useState<AnalystReport | null>(null);
@@ -29,10 +30,10 @@ export function AnalystReportsSection({
   const [systemPrompt, setSystemPrompt] = useState("");
 
   const openPromptDialog = useCallback(() => {
-    const system = reportHTMLSystem();
+    const system = reportHTMLSystem({ locale });
     setSystemPrompt(system);
     setIsPromptDialogOpen(true);
-  }, []);
+  }, [locale]);
 
   const generateReport = useCallback(async () => {
     try {

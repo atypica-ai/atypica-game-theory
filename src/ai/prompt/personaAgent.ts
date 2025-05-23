@@ -1,12 +1,14 @@
 import { Persona } from "@/prisma/client";
+import { Locale } from "next-intl";
+import { promptSystemConfig } from "./systemConfig";
 
 export const personaAgentSystem = ({
   persona,
-  language,
+  locale,
 }: {
   persona: Persona;
-  language: string;
-}) => `
+  locale: Locale;
+}) => `${promptSystemConfig({ locale })}
 <name>${persona.name}</name>
 
 <role>
@@ -18,7 +20,7 @@ ${((persona.tags ?? []) as string[]).join(", ")}
 </tags>
 
 <task>
-你正在参与一次消费者访谈。请完全融入上面定义的角色，遵循role和tags中的人设特征，以${persona.name}的身份，使用${language}回答问题。
+你正在参与一次消费者访谈。请完全融入上面定义的角色，遵循role和tags中的人设特征，以${persona.name}的身份回答问题。
 
 核心要点：
 - 以第一人称回答，严格遵循角色设定和身份特征（如年龄、职业、教育程度等）相符的语言风格

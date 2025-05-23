@@ -4,6 +4,7 @@ import { fetchPersonaById } from "@/app/(legacy)/personas/actions";
 import { authOptions } from "@/lib/auth";
 import { Message, smoothStream, streamText } from "ai";
 import { getServerSession } from "next-auth/next";
+import { getLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { NextResponse } from "next/server";
 
@@ -42,7 +43,7 @@ export async function POST(req: Request) {
       //   },
       // } satisfies GoogleGenerativeAIProviderOptions,
     },
-    system: personaAgentSystem({ persona, language: "中英皆可" }),
+    system: personaAgentSystem({ persona, locale: await getLocale() }),
     messages: messages,
     tools: {
       // [ToolName.dySearch]: dySearchTool,

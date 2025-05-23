@@ -9,7 +9,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getDeployRegion } from "@/lib/request/deployRegion";
 import { cn } from "@/lib/utils";
 import { CoinsIcon, CreditCardIcon, GiftIcon, LoaderCircle } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
@@ -28,10 +27,9 @@ interface AddTokensDialogProps {
 
 export const AddTokensDialog = ({ open, onOpenChange, onSuccess }: AddTokensDialogProps) => {
   const locale = useLocale();
-  const deployRegion = getDeployRegion();
   const t = useTranslations("Components.AddTokensDialog");
   const [paymentProvider, setPaymentProvider] = useState<PaymentProvider>(
-    deployRegion === "mainland" ? PaymentProvider.Pingxx : PaymentProvider.Stripe,
+    locale === "zh-CN" ? PaymentProvider.Pingxx : PaymentProvider.Stripe,
   );
   const [paymentSuccess, setPaymentSuccess] = useState<boolean>(false);
 
@@ -125,9 +123,7 @@ export const AddTokensDialog = ({ open, onOpenChange, onSuccess }: AddTokensDial
             </div>
 
             <Tabs
-              defaultValue={
-                deployRegion === "mainland" ? PaymentProvider.Pingxx : PaymentProvider.Stripe
-              }
+              value={paymentProvider}
               onValueChange={(value) => setPaymentProvider(value as PaymentProvider)}
             >
               <TabsList className="grid grid-cols-2 mb-4">

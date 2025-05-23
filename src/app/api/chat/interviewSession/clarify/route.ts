@@ -16,6 +16,7 @@ import { authOptions } from "@/lib/auth";
 import { rootLogger } from "@/lib/logging";
 import { generateId, smoothStream, streamText } from "ai";
 import { getServerSession } from "next-auth";
+import { getLocale } from "next-intl/server";
 import { after, NextRequest, NextResponse } from "next/server";
 import { ClarifySessionBodySchema } from "../lib";
 
@@ -28,6 +29,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const userId = session.user.id;
+
+  const locale = await getLocale();
 
   const payload = await req.json();
   const parseResult = ClarifySessionBodySchema.safeParse(payload);
@@ -88,6 +91,7 @@ export async function POST(req: NextRequest) {
     messages: coreMessages,
     tools: {
       [ToolName.reasoningThinking]: reasoningThinkingTool({
+        locale,
         abortSignal,
         statReport,
       }),

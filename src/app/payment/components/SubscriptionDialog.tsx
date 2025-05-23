@@ -127,7 +127,7 @@ export const SubscriptionDialog = ({ open, onOpenChange, onSuccess }: Subscripti
             </div>
 
             <Tabs
-              defaultValue={locale === "zh-CN" ? PaymentProvider.Pingxx : PaymentProvider.Stripe}
+              value={paymentProvider}
               onValueChange={(value) => setPaymentProvider(value as PaymentProvider)}
             >
               <TabsList className="grid grid-cols-2 mb-4">

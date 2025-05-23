@@ -7,6 +7,7 @@ import { savePersonaTool } from "@/ai/tools/tools";
 import { PlainTextToolResult, StatReporter, ToolName } from "@/ai/tools/types";
 import { prisma } from "@/prisma/prisma";
 import { DataStreamWriter, Message, streamText, tool } from "ai";
+import { Locale } from "next-intl";
 import { Logger } from "pino";
 import { z } from "zod";
 import { BuildPersonaToolResult } from "./types";
@@ -21,11 +22,13 @@ const REDUCE_TOKENS: {
 
 export const buildPersonaTool = ({
   userId,
+  locale,
   abortSignal,
   statReport,
   studyLog,
 }: {
   userId: number;
+  locale: Locale;
   abortSignal: AbortSignal;
   statReport: StatReporter;
   studyLog: Logger;
@@ -56,6 +59,7 @@ export const buildPersonaTool = ({
       const scoutUserChatId = scoutUserChat.id;
       try {
         await runBuildPersona({
+          locale,
           scoutUserChatId,
           abortSignal,
           statReport,
@@ -94,12 +98,14 @@ export const buildPersonaTool = ({
   });
 
 export async function runBuildPersona({
+  locale,
   scoutUserChatId,
   statReport,
   abortSignal,
   studyLog,
   streamWriter,
 }: {
+  locale: Locale;
   scoutUserChatId: number;
   statReport: StatReporter;
   abortSignal: AbortSignal;
@@ -112,7 +118,7 @@ export async function runBuildPersona({
     const response = streamText({
       model: reduceTokens ? llm("gemini-2.5-pro") : llm("claude-3-7-sonnet"),
       providerOptions: providerOptions,
-      system: buildPersonaSystem(),
+      system: buildPersonaSystem({ locale }),
       messages: coreMessages,
       tools: {
         [ToolName.savePersona]: savePersonaTool({ scoutUserChatId, statReport }),

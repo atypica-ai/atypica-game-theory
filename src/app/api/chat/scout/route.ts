@@ -5,6 +5,7 @@ import { rootLogger } from "@/lib/logging";
 import { prisma } from "@/prisma/prisma";
 import { createDataStreamResponse, CreateMessage, generateId, Message } from "ai";
 import { getServerSession } from "next-auth";
+import { getLocale } from "next-intl/server";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -42,6 +43,7 @@ export async function POST(req: Request) {
     execute: async (dataStream) => {
       await runScoutTaskChatStream({
         scoutUserChatId,
+        locale: await getLocale(),
         abortSignal: req.signal,
         statReport: async () => {},
         scoutLog,

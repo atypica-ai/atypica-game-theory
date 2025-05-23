@@ -16,6 +16,7 @@ import { rootLogger } from "@/lib/logging";
 import { generateToken } from "@/lib/utils";
 import { prisma } from "@/prisma/prisma";
 import { generateId, smoothStream, streamText } from "ai";
+import { getLocale } from "next-intl/server";
 import { after, NextRequest, NextResponse } from "next/server";
 import { CollectSessionBodySchema } from "../lib";
 
@@ -28,6 +29,8 @@ export async function POST(req: NextRequest) {
     const error = { message: "Invalid request", details: parseResult.error.format() };
     return NextResponse.json({ error }, { status: 400 });
   }
+
+  const locale = await getLocale();
 
   const { message: newMessage, sessionToken } = parseResult.data;
   const result = await fetchCollectInterviewSession(sessionToken);
@@ -109,6 +112,7 @@ export async function POST(req: NextRequest) {
     messages: coreMessages,
     tools: {
       [ToolName.reasoningThinking]: reasoningThinkingTool({
+        locale,
         abortSignal,
         statReport,
       }),

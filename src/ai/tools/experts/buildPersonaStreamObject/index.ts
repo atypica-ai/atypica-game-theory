@@ -6,6 +6,7 @@ import { buildPersonaSystem } from "@/ai/prompt";
 import { PlainTextToolResult, StatReporter } from "@/ai/tools/types";
 import { prisma } from "@/prisma/prisma";
 import { streamObject, tool } from "ai";
+import { getLocale } from "next-intl/server";
 import { Logger } from "pino";
 import { z } from "zod";
 import { BuildPersonaToolResult, personaBuildSchemaStreamObject } from "./types";
@@ -122,7 +123,7 @@ export async function runBuildPersonaStreamObject({
     // model: llm("gpt-4o"), // gpt 可以对一个字段的值进行 stream，这样在 prompt 生成部分的时候就可以看到结果，比较快
     // temperature: 0,
     providerOptions: providerOptions,
-    system: buildPersonaSystem(),
+    system: buildPersonaSystem({ locale: await getLocale() }),
     messages,
     output: "array",
     schema: personaBuildSchemaStreamObject(),

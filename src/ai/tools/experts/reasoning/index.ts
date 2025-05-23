@@ -1,17 +1,21 @@
 import "server-only";
 
 import { llm, providerOptions } from "@/ai/llm";
+import { reasoningSystem } from "@/ai/prompt";
 import { PlainTextToolResult, ReasoningThinkingResult, StatReporter } from "@/ai/tools/types";
 import { fixMalformedUnicodeString } from "@/lib/utils";
 import { streamText, tool } from "ai";
+import { Locale } from "next-intl";
 import { z } from "zod";
 
 async function reasoningThinking({
+  locale,
   background,
   question,
   abortSignal,
   statReport,
 }: {
+  locale: Locale;
   background: string;
   question: string;
   abortSignal?: AbortSignal;
@@ -30,7 +34,7 @@ ${question}
         // model: llm("deepseek-r1"),
         model: llm("o3-mini"),
         providerOptions: providerOptions,
-        system: "你是一个专业的顾问，需要逐步仔细思考这个问题。用较少的文字回复，不要超过300字。",
+        system: reasoningSystem({ locale }),
         messages: [{ role: "user", content: prompt }],
         // maxTokens: 500,
         // onChunk: (chunk) => console.log("[Reasoning]", JSON.stringify(chunk)),
@@ -63,12 +67,14 @@ ${question}
 }
 
 export const reasoningThinkingTool = ({
+  locale,
   abortSignal,
   statReport,
 }: {
+  locale: Locale;
   abortSignal?: AbortSignal;
   statReport?: StatReporter;
-} = {}) =>
+}) =>
   tool({
     description:
       "针对特定话题或问题提供专家分析和逐步思考过程，问问题的时候要把当前对话内容的总结也发给专家，以帮助专家更好地理解问题。",
@@ -89,7 +95,13 @@ export const reasoningThinkingTool = ({
         // messages
       },
     ) => {
-      const result = await reasoningThinking({ background, question, abortSignal, statReport });
+      const result = await reasoningThinking({
+        locale,
+        background,
+        question,
+        abortSignal,
+        statReport,
+      });
       return result;
     },
   });

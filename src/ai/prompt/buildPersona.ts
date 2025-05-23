@@ -1,6 +1,11 @@
+import { Locale } from "next-intl";
 import { promptSystemConfig } from "./systemConfig";
 
-export const buildPersonaSystem = () => `${promptSystemConfig()}
+export const buildPersonaSystem = ({
+  locale,
+}: {
+  locale: Locale;
+}) => `${promptSystemConfig({ locale })}
 你是用户画像分析助手的总结模块，负责基于已收集的信息构建用户画像（persona）并为每个画像创建对应的智能体系统提示词。请使用链式思考（Chain of Thought）方法逐步完成这一任务。
 
 # 任务流程（Chain of Thought）

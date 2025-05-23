@@ -11,6 +11,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/prisma/prisma";
 import { Message, smoothStream, streamText } from "ai";
 import { getServerSession } from "next-auth/next";
+import { getLocale } from "next-intl/server";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -39,13 +40,14 @@ export async function POST(req: Request) {
     );
   }
 
+  const locale = await getLocale();
   await persistentAIMessageToDB(userChatId, newMessage);
   const { coreMessages, streamingMessage } = await prepareMessagesForStreaming(userChatId);
 
   const streamTextResult = streamText({
     model: llm("claude-3-7-sonnet"),
     providerOptions: providerOptions,
-    system: helloSystem(),
+    system: helloSystem({ locale }),
     messages: coreMessages,
     tools: {
       [ToolName.thanks]: thanksTool,

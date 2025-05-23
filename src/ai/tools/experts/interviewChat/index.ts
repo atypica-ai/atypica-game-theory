@@ -18,23 +18,25 @@ import {
 import { InterviewChatResult, PlainTextToolResult, StatReporter, ToolName } from "@/ai/tools/types";
 import { ChatMessageAttachment } from "@/lib/attachments";
 import { s3SignedUrl } from "@/lib/attachments/s3";
-import { getDeployRegion } from "@/lib/request/deployRegion";
 import { fixMalformedUnicodeString, generateToken } from "@/lib/utils";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import { generateId, generateText, Message, streamText, tool } from "ai";
+import { Locale } from "next-intl";
 import { Logger } from "pino";
 import { z } from "zod";
 
 export const interviewChatTool = ({
   userId,
   studyUserChatId,
+  locale,
   abortSignal,
   statReport,
   studyLog,
 }: {
   userId: number;
   studyUserChatId: number;
+  locale: Locale;
   abortSignal: AbortSignal;
   statReport: StatReporter;
   studyLog: Logger;
@@ -54,17 +56,11 @@ export const interviewChatTool = ({
         .string()
         .describe("在研究主题的基础上，本次访谈的具体需求")
         .transform(fixMalformedUnicodeString),
-      language: z
-        .string()
-        .optional()
-        .describe("访谈使用的语言")
-        .transform(fixMalformedUnicodeString)
-        .default(() => (getDeployRegion() === "mainland" ? "简体中文" : "English")),
     }),
     experimental_toToolResultContent: (result: PlainTextToolResult) => {
       return [{ type: "text", text: result.plainText }];
     },
-    execute: async ({ personas, instruction, language }): Promise<InterviewChatResult> => {
+    execute: async ({ personas, instruction }): Promise<InterviewChatResult> => {
       const { analyst } = await prisma.userChat.findUniqueOrThrow({
         where: { id: studyUserChatId, kind: "study" },
         select: { analyst: { select: { id: true } } },
@@ -98,10 +94,11 @@ export const interviewChatTool = ({
               personaId,
               analystId,
               instruction,
-              language,
+              locale,
             });
           const interviewLog = studyLog.child({ interviewUserChatId, analystInterviewId });
           await runInterview({
+            locale,
             analystInterviewId,
             interviewUserChatId,
             prompt,
@@ -159,22 +156,22 @@ export async function prepareDBForInterview({
   personaId,
   analystId,
   instruction,
-  language,
+  locale,
 }: {
   userId: number;
   personaId: number;
   analystId: number;
   instruction: string;
-  language: string;
+  locale: Locale;
 }) {
   const [persona, analyst] = await Promise.all([
     prisma.persona.findUniqueOrThrow({ where: { id: personaId } }),
     prisma.analyst.findUniqueOrThrow({ where: { id: analystId } }),
   ]);
-  const personaPrompt = personaAgentSystem({ persona, language });
-  const interviewerPrompt = interviewerSystem({ analyst, language, instruction });
-  const interviewerProloguePrompt = interviewerPrologue({ analyst, language });
-  const interviewerAttachmentPrompt = interviewerAttachment({ persona });
+  const personaPrompt = personaAgentSystem({ persona, locale });
+  const interviewerPrompt = interviewerSystem({ analyst, instruction, locale });
+  const interviewerProloguePrompt = interviewerPrologue({ analyst, locale });
+  const interviewerAttachmentPrompt = interviewerAttachment({ persona, locale });
   const attachments = analyst.attachments
     ? (analyst.attachments as ChatMessageAttachment[])
     : undefined;
@@ -221,6 +218,7 @@ export async function prepareDBForInterview({
 }
 
 type ChatProps = {
+  locale: Locale;
   analystInterviewId: number;
   interviewUserChatId: number;
   prompt: {
@@ -237,6 +235,7 @@ type ChatProps = {
 
 async function chatWithInterviewer(chatProps: ChatProps, messages: Message[]) {
   const {
+    locale,
     analystInterviewId,
     prompt: { interviewerPrompt },
     abortSignal,
@@ -259,7 +258,7 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: Message[]) {
       temperature: 0.3,
       messages: messages,
       tools: {
-        [ToolName.reasoningThinking]: reasoningThinkingTool({ abortSignal, statReport }),
+        [ToolName.reasoningThinking]: reasoningThinkingTool({ locale, abortSignal, statReport }),
         [ToolName.saveInterviewConclusion]: saveInterviewConclusionTool(analystInterviewId),
       },
       ...(messages.length < 10

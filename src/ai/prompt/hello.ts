@@ -1,6 +1,7 @@
+import { Locale } from "next-intl";
 import { promptSystemConfig } from "./systemConfig";
 
-export const helloSystem = () => `${promptSystemConfig()}
+export const helloSystem = ({ locale }: { locale: Locale }) => `${promptSystemConfig({ locale })}
 商业研究本质上是关于理解和影响人类决策过程的学问。消费者并不只是根据纯粹的数据和统计概率做决策，而是受到叙事、情感和认知偏见的强烈影响。
 
 我们做了一个商业问题研究的智能体框架「atypica.AI」，将「语言模型」应用于理解商业领域中那些难以量化的主观因素——消费者情绪、市场认知和决策偏好。

@@ -41,7 +41,7 @@ async function createProducts() {
       price: 20,
       currency: "USD",
       description: "atypica.AI Pro membership for 1 month",
-      extra: { price_id: "price_1RRIwUGU0jUFYcrNJL8ZwX3L" }, // 测试环境 price_1RRIwUGU0jUFYcrNJL8ZwX3L
+      extra: { price_id: "price_1RRtJQGU0jUFYcrN9ib9SVl7" }, // 测试环境 price_1RRIwUGU0jUFYcrNJL8ZwX3L
     },
   ];
   // Create products

@@ -9,6 +9,7 @@ import { generateToken } from "@/lib/utils";
 import { Analyst, AnalystReport } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
+import { getLocale } from "next-intl/server";
 import { forbidden } from "next/navigation";
 import { Logger } from "pino";
 
@@ -67,6 +68,7 @@ export async function batchBackgroundInterview({
 
     const abortController = new AbortController();
     const abortSignal = abortController.signal;
+    const locale = await getLocale();
 
     for (const personaId of personaIds) {
       const { analystInterviewId, interviewUserChatId, prompt, attachments } =
@@ -75,8 +77,7 @@ export async function batchBackgroundInterview({
           personaId,
           analystId,
           instruction: "",
-          // language: "中英皆可",
-          language: "中文",
+          locale,
         });
 
       const interviewLog = rootLogger.child({
@@ -94,6 +95,7 @@ export async function batchBackgroundInterview({
           interviewUserChatId,
           prompt,
           attachments,
+          locale,
           abortSignal,
           statReport,
           interviewLog,
@@ -197,6 +199,7 @@ export async function backgroundGenerateReport({
     const statReport: StatReporter = async (dimension, value, extra) => {
       reportLog.info(`statReport: ${dimension}=${value} ${JSON.stringify(extra)}`);
     };
+    const locale = await getLocale();
 
     backgroundWait(
       (async () => {
@@ -204,6 +207,7 @@ export async function backgroundGenerateReport({
           analyst,
           report,
           instruction,
+          locale,
           abortSignal,
           statReport,
           reportLog,
@@ -213,6 +217,7 @@ export async function backgroundGenerateReport({
           analyst,
           report,
           instruction,
+          locale,
           abortSignal,
           statReport,
           reportLog,

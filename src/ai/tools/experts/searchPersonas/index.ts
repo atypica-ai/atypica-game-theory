@@ -4,14 +4,17 @@ import { createTextEmbedding } from "@/ai/embedding";
 import { PlainTextToolResult, StatReporter, TPersonaForStudy } from "@/ai/tools/types";
 import { prisma } from "@/prisma/prisma";
 import { tool } from "ai";
+import { Locale } from "next-intl";
 import { Logger } from "pino";
 import { z } from "zod";
 import { type SearchPersonasToolResult } from "./types";
 
 export const searchPersonasTool = ({
+  // locale, // TODO: 根据语言搜索 persona
   statReport,
   // studyLog,
 }: {
+  locale: Locale;
   statReport: StatReporter;
   studyLog: Logger;
 }) =>

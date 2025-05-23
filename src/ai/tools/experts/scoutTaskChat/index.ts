@@ -40,6 +40,7 @@ import {
   tool,
   ToolChoice,
 } from "ai";
+import { Locale } from "next-intl";
 import { Logger } from "pino";
 import { z } from "zod";
 import { type ScoutTaskChatResult, type TPlatform } from "./types";
@@ -74,11 +75,13 @@ const toolPlatform = (toolName: ToolName): TPlatform | undefined => {
 
 export const scoutTaskChatTool = ({
   userId,
+  locale,
   abortSignal,
   statReport,
   studyLog,
 }: {
   userId: number;
+  locale: Locale;
   abortSignal: AbortSignal;
   statReport: StatReporter;
   studyLog: Logger;
@@ -116,6 +119,7 @@ export const scoutTaskChatTool = ({
       // let hasError = false;
       try {
         await runScoutTaskChatStream({
+          locale,
           scoutUserChatId,
           abortSignal,
           statReport,
@@ -158,12 +162,14 @@ export const scoutTaskChatTool = ({
 
 export async function runScoutTaskChatStream({
   scoutUserChatId,
+  locale,
   abortSignal,
   statReport,
   scoutLog,
   streamWriter,
 }: {
   scoutUserChatId: number;
+  locale: Locale;
   abortSignal: AbortSignal;
   statReport: StatReporter;
   scoutLog: Logger;
@@ -219,7 +225,7 @@ export async function runScoutTaskChatStream({
   while (true) {
     const { coreMessages, streamingMessage, toolUseCount } =
       await prepareMessagesForStreaming(scoutUserChatId);
-    let systemPrompt = scoutSystem();
+    let systemPrompt = scoutSystem({ locale });
     let reduceTokens: typeof REDUCE_TOKENS | null = REDUCE_TOKENS;
     let tools = Object.fromEntries(
       Object.entries(allTools).filter(([key]) => key !== ToolName.savePersona),
@@ -234,7 +240,7 @@ export async function runScoutTaskChatStream({
     if (coreMessages.length > SCOUT_CALLS_LIMIT * 2) {
       // 进入终局，批量保存人设
       endRound = true;
-      systemPrompt = buildPersonaSystem();
+      systemPrompt = buildPersonaSystem({ locale });
       reduceTokens = null; // 使用 claude
       tools = Object.fromEntries(
         Object.entries(allTools).filter(

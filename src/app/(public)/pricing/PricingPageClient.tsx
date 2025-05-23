@@ -134,7 +134,7 @@ export default function PricingPageClient() {
         <Card className="flex flex-col not-dark:border-muted/40">
           <CardHeader>
             <CardTitle className="text-2xl">{t("enterpriseTitle")}</CardTitle>
-            <CardDescription>{t("enterpriseSubtitle")}</CardDescription>
+            {/* <CardDescription>{t("enterpriseSubtitle")}</CardDescription> */}
           </CardHeader>
           <CardContent className="flex-grow space-y-3">
             <div className="mb-6">

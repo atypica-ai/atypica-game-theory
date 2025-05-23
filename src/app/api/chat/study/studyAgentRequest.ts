@@ -64,6 +64,7 @@ export async function studyAgentRequest({
   reqSignal: AbortSignal | null;
   studyLog: Logger;
 }) {
+  const locale = await getLocale();
   const { abortController, abortSignal, delayedAbortSignal } = createAbortSignals(reqSignal);
   const { statReport } = initStudyStatReporter({ userId, studyUserChatId, studyLog });
   const { debouncePersistentMessage, immediatePersistentMessage } = createDebouncePersistentMessage(
@@ -79,26 +80,16 @@ export async function studyAgentRequest({
         _sum: { value: true },
       })
     )._sum.value ?? 0;
+  const agentToolArgs = { locale, abortSignal, statReport, studyLog };
   const allTools = {
-    [ToolName.searchPersonas]: searchPersonasTool({ statReport, studyLog }),
-    [ToolName.scoutTaskChat]: scoutTaskChatTool({ userId, abortSignal, statReport, studyLog }),
-    [ToolName.buildPersona]: buildPersonaTool({ userId, abortSignal, statReport, studyLog }),
+    [ToolName.searchPersonas]: searchPersonasTool({ ...agentToolArgs }),
+    [ToolName.scoutTaskChat]: scoutTaskChatTool({ userId, ...agentToolArgs }),
+    [ToolName.buildPersona]: buildPersonaTool({ userId, ...agentToolArgs }),
+    [ToolName.interviewChat]: interviewChatTool({ userId, studyUserChatId, ...agentToolArgs }),
+    [ToolName.generateReport]: generateReportTool({ studyUserChatId, ...agentToolArgs }),
+    [ToolName.reasoningThinking]: reasoningThinkingTool({ ...agentToolArgs }),
     [ToolName.saveAnalystStudySummary]: saveAnalystStudySummaryTool({ studyUserChatId }),
     [ToolName.saveAnalyst]: saveAnalystTool({ userId, studyUserChatId }),
-    [ToolName.interviewChat]: interviewChatTool({
-      userId,
-      studyUserChatId,
-      abortSignal,
-      statReport,
-      studyLog,
-    }),
-    [ToolName.generateReport]: generateReportTool({
-      studyUserChatId,
-      abortSignal,
-      statReport,
-      studyLog,
-    }),
-    [ToolName.reasoningThinking]: reasoningThinkingTool({ abortSignal, statReport }),
     [ToolName.requestInteraction]: requestInteractionTool,
     [ToolName.toolCallError]: toolCallError,
   };
@@ -154,6 +145,7 @@ export async function studyAgentRequest({
 
   const { clearBackgroundToken, backgroundToken } = await raceForUserChat(studyUserChatId);
   const system = studySystem({
+    locale,
     // 限制是 1M，告诉模型限制是 0.6M
     tokensStat: { used: tokensConsumed, limit: TOKENS_COMSUME_LIMIT * 0.6 },
     toolUseStat: {

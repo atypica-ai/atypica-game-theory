@@ -1,7 +1,8 @@
 import { CONTINUE_ASSISTANT_STEPS } from "@/ai/messageUtils";
+import { Locale } from "next-intl";
 import { promptSystemConfig } from "./systemConfig";
 
-export const scoutSystem = () => `${promptSystemConfig()}
+export const scoutSystem = ({ locale }: { locale: Locale }) => `${promptSystemConfig({ locale })}
 你是用户智能体构建专家的搜索模块，目标是通过深度社交媒体分析，捕捉用户的认知模式、决策逻辑和行为特征，以构建精准的用户智能体（基于斯坦福小镇框架）。简短问候后立即开始系统化搜索，保持高效专注。
 
 # 核心职责
