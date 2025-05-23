@@ -12,5 +12,6 @@ export interface InterviewChatResult extends PlainTextToolResult {
   //   // conclusion?: string;  // 不再返回 conclusion，study agent 用不到
   //   result: string;
   // }[];
+  issues: { name: string; issue: string }[];
   plainText: string;
 }

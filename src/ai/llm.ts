@@ -97,7 +97,7 @@ export type LLMModelName =
   | "gpt-4o-mini"
   | "o3-mini"
   | "claude-3-7-sonnet"
-  | "claude-3-7-sonnet-beta"
+  | "claude-4-sonnet"
   | "gemini-2.5-flash"
   | "gemini-2.5-pro"
   | "deepseek-v3"
@@ -126,12 +126,14 @@ export function llm(modelName: LLMModelName, options?: any) {
       return azure("o3-mini", options);
     case "claude-3-7-sonnet":
       return bedrock("us.anthropic.claude-3-7-sonnet-20250219-v1:0", options);
-    case "claude-3-7-sonnet-beta":
-      return bedrock("us.anthropic.claude-3-7-sonnet-20250219-v1:0", {
-        additionalModelRequestFields: {
-          anthropic_beta: ["token-efficient-tools-2025-02-19"],
-        },
-      });
+    // case "claude-3-7-sonnet-beta":
+    //   return bedrock("us.anthropic.claude-3-7-sonnet-20250219-v1:0", {
+    //     additionalModelRequestFields: {
+    //       anthropic_beta: ["token-efficient-tools-2025-02-19"],
+    //     },
+    //   });
+    case "claude-4-sonnet":
+      return bedrock("us.anthropic.claude-sonnet-4-20250514-v1:0", options);
     // case "gemini-2.5-flash":
     //   return google("gemini-2.5-flash-preview-04-17", options);
     // case "gemini-2.5-pro":

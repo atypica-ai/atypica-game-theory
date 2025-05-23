@@ -173,7 +173,6 @@ const SingleInterviewChat = ({
 
   return (
     <div ref={messagesContainerRef} className="flex-1 overflow-y-auto space-y-8 scrollbar-thin">
-      {(!persona || !messages.length) && <div className="font-mono text-sm">Loading...</div>}
       {messagesDisplay.map((message) => (
         <StreamSteps
           key={`message-${message.id}`}

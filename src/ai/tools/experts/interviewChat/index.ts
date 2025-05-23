@@ -8,6 +8,7 @@ import {
   interviewerSystem,
   personaAgentSystem,
 } from "@/ai/prompt";
+import { promptSystemConfig } from "@/ai/prompt/systemConfig";
 import {
   dySearchTool,
   insSearchTool,
@@ -85,7 +86,6 @@ export const interviewChatTool = ({
             return {
               name,
               conclusion: interview.conclusion,
-              // issue: "和该用户的访谈在",
             };
           }
           const { analystInterviewId, interviewUserChatId, prompt, attachments } =
@@ -122,18 +122,20 @@ export const interviewChatTool = ({
         }
       };
       const interviewResults = await Promise.all(personas.map(single));
-      const digest = await generateDigest(interviewResults);
+      const digest = await generateDigest(locale, interviewResults);
       return {
+        issues: interviewResults.filter((result) => "issue" in result),
         plainText: digest,
       };
     },
   });
 
 async function generateDigest(
+  locale: Locale,
   results: ({ name: string; issue: string } | { name: string; conclusion: string })[],
 ) {
   // 注意，这里没有统计 tokens，模型便宜问题不大
-  const prompt = `
+  const prompt = `${promptSystemConfig({ locale })}
 请根据以下访谈结果生成一份简单的摘要，不超过200字。
 ${results
   .map((result) => {
@@ -257,22 +259,18 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: Message[]) {
       system: interviewerPrompt,
       temperature: 0.3,
       messages: messages,
+      maxSteps: 2,
       tools: {
         [ToolName.reasoningThinking]: reasoningThinkingTool({ locale, abortSignal, statReport }),
         [ToolName.saveInterviewConclusion]: saveInterviewConclusionTool(analystInterviewId),
       },
-      ...(messages.length < 10
-        ? {
-            toolChoice: "auto",
-            maxSteps: 2,
-          }
-        : {
-            toolChoice: {
+      toolChoice:
+        messages.length < 10
+          ? "auto"
+          : {
               type: "tool",
               toolName: ToolName.saveInterviewConclusion,
             },
-            maxSteps: 1,
-          }),
       onStepFinish: async (step) => {
         interviewLog.info({
           msg: "chatWithInterviewer streamText onStepFinish",
@@ -326,11 +324,11 @@ async function chatWithPersona(chatProps: ChatProps, messages: Message[]) {
 
   const REDUCE_TOKENS = {
     // model: llm("gemini-2.5-flash"), // 不能这么写，一定要下面每次都重新初始化 llm，不然会卡住
-    model: "gemini-2.5-flash" as LLMModelName,
+    model: "gemini-2.5-pro" as LLMModelName,
     options: {
       useSearchGrounding: true,
     },
-    ratio: 10,
+    ratio: 2,
   };
 
   const result = await new Promise<Omit<Message, "role">>(async (resolve, reject) => {
@@ -380,8 +378,6 @@ async function chatWithPersona(chatProps: ChatProps, messages: Message[]) {
     // 这里不要 await 而是用 then，否则会出现一系列嵌套的 await new promise 最终导致 abortController.abort() 操作被取消
     // 可能是 studychat 先断了，await 结束了，后面的 abort 就失败了
     response.consumeStream().catch((error) => reject(error));
-  }).catch((error) => {
-    throw error;
   });
   return result;
 }
