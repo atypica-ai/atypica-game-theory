@@ -4,18 +4,33 @@ import { SubscriptionDialog } from "@/app/payment/components/SubscriptionDialog"
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { createUserChat } from "@/lib/data/UserChat";
 import { cn } from "@/lib/utils";
 import { CheckIcon, GiftIcon, InfoIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
-import { useState } from "react";
-import { sayHelloToSales } from "./enterprise";
+import { useCallback, useState } from "react";
 
 export default function PricingPageClient() {
   const locale = useLocale();
   const t = useTranslations("PricingPage");
   const [isTokensDialogOpen, setIsTokensDialogOpen] = useState(false);
   const [isSubscriptionDialogOpen, setIsSubscriptionDialogOpen] = useState(false);
+
+  const sayHelloToSales = useCallback(async () => {
+    const result = await createUserChat("misc", {
+      role: "user",
+      content:
+        locale === "zh-CN"
+          ? "我是企业用户，想了解一下企业版"
+          : "I want to learn about the enterprise plan",
+    });
+    if (!result.success) {
+      throw result;
+    }
+    const chat = result.data;
+    window.location.href = `/agents/hello/${chat.id}`;
+  }, [locale]);
 
   return (
     <div className={cn("flex-1 overflow-y-auto scrollbar-thin", "px-4 py-16")}>
