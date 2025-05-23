@@ -36,27 +36,3 @@ export async function fetchUserSubscription() {
   });
   return subscription;
 }
-
-export async function fetchPaymentRecords(limit = 10, offset = 0) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) {
-    return [];
-  }
-
-  const userId = session.user.id;
-  const payments = await prisma.paymentRecord.findMany({
-    where: { userId },
-    orderBy: { createdAt: "desc" },
-    take: limit,
-    skip: offset,
-    include: {
-      paymentLines: {
-        include: {
-          product: true,
-        },
-      },
-    },
-  });
-
-  return payments;
-}

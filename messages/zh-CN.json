@@ -680,12 +680,12 @@
       "balance": "余额",
       "purchase": "购买Token"
     },
-    "historySection": {
-      "title": "交易记录",
+    "tokensHistorySection": {
+      "title": "Token记录",
       "type": "类型",
       "amount": "数量",
       "date": "日期",
-      "noRecords": "暂无交易记录",
+      "noRecords": "暂无Token记录",
       "loadMore": "加载更多",
       "verbs": {
         "recharge": "充值",
@@ -698,6 +698,22 @@
         "StudyUserChat": "atypica.AI 研究消耗",
         "InterviewProject": "访谈项目消耗"
       }
+    },
+    "paymentRecordsSection": {
+      "title": "交易记录",
+      "status": {
+        "title": "交易状态",
+        "pending": "待支付",
+        "success": "支付成功",
+        "failed": "支付失败"
+      },
+      "details": "详情",
+      "amount": "金额",
+      "date": "日期",
+      "invoice": "Invoice",
+      "downloadInvoice": "Invoice",
+      "noRecords": "暂无交易记录",
+      "loadMore": "加载更多"
     }
   }
 }

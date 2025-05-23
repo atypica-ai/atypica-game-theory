@@ -680,12 +680,12 @@
       "balance": "Balance",
       "purchase": "Purchase Tokens"
     },
-    "historySection": {
-      "title": "Transaction History",
+    "tokensHistorySection": {
+      "title": "Tokens History",
       "type": "Type",
       "amount": "Amount",
       "date": "Date",
-      "noRecords": "No transaction records",
+      "noRecords": "No tokens records",
       "loadMore": "Load More",
       "verbs": {
         "recharge": "Recharge",
@@ -698,6 +698,22 @@
         "StudyUserChat": "atypica.AI study consumption",
         "InterviewProject": "interview project consumption"
       }
+    },
+    "paymentRecordsSection": {
+      "title": "Payment Records",
+      "status": {
+        "title": "Status",
+        "pending": "Payment Pending",
+        "success": "Payment Successful",
+        "failed": "Payment Failed"
+      },
+      "details": "Details",
+      "amount": "Amount",
+      "date": "Date",
+      "invoice": "Invoice",
+      "downloadInvoice": "Invoice",
+      "noRecords": "No payment records",
+      "loadMore": "Load More"
     }
   }
 }

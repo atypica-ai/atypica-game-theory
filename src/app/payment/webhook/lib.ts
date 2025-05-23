@@ -105,21 +105,15 @@ export async function handlePaymentSuccess({
     await addPlan3MTokens({ userId, paymentRecordId: paymentRecord.id });
     // create plan
     let planStartsAt = new Date();
-    let planEndsAt;
-    if (invoiceData) {
-      planStartsAt = new Date(invoiceData.period_start * 1000);
-      planEndsAt = new Date(invoiceData.period_end * 1000);
-    } else {
-      const existingSubscription = await prisma.userSubscription.findFirst({
-        where: { userId },
-        orderBy: { endsAt: "desc" },
-      });
-      if (existingSubscription?.endsAt && existingSubscription.endsAt > planStartsAt) {
-        planStartsAt = existingSubscription.endsAt;
-      }
-      planEndsAt = new Date(planStartsAt.getTime() + 31 * 86400 * 1000); // 有效期 31 天。
+    const existingSubscription = await prisma.userSubscription.findFirst({
+      where: { userId },
+      orderBy: { endsAt: "desc" },
+    });
+    if (existingSubscription?.endsAt && existingSubscription.endsAt > planStartsAt) {
+      planStartsAt = existingSubscription.endsAt;
     }
-    prisma.userSubscription.create({
+    const planEndsAt = new Date(planStartsAt.getTime() + 31 * 86400 * 1000); // 有效期 31 天。
+    await prisma.userSubscription.create({
       data: {
         userId,
         plan: SubscriptionPlan.pro,

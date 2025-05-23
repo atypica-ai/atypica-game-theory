@@ -1,16 +1,10 @@
 "use server";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
-import { PaymentMethod } from "@/app/payment/data";
+import { PaymentRecord } from "@/app/payment/data";
 import { ServerActionResult } from "@/lib/serverAction";
-import { PaymentLine, PaymentRecord as PaymentRecordPrisma, User } from "@/prisma/client";
+import { PaymentLine, User } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
-
-export type PaymentRecord = PaymentRecordPrisma & {
-  paymentMethod: PaymentMethod;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  credential: Record<"alipay_pc_direct" | "alipay_wap" | "wx_pub", any>;
-};
 
 // Get payment records for display
 export async function getPaymentRecords(

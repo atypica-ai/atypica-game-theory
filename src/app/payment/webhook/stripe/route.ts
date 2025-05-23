@@ -22,6 +22,45 @@ function checkInvoiceMetadata(invoiceData: Stripe.Invoice) {
   return metadata;
 }
 
+async function cycleNewPaymentRecord(invoiceData: Stripe.Invoice, metadata: StripeMetadata) {
+  const initial = await prisma.paymentRecord.findUniqueOrThrow({
+    where: { orderNo: metadata.orderNo },
+    include: { paymentLines: true },
+  });
+  const uniqueIdSuffix = `-${Date.now().toString()}`;
+  const paymentRecord = await prisma.paymentRecord.create({
+    data: {
+      userId: initial.userId,
+      orderNo: initial.orderNo + uniqueIdSuffix,
+      amount: initial.amount, // Convert cents to yuan
+      currency: initial.currency,
+      paymentMethod: initial.paymentMethod,
+      chargeId: initial.chargeId + uniqueIdSuffix,
+      credential: {},
+      description: initial.description,
+      status: "succeeded",
+      paidAt: new Date(),
+      charge: {
+        invoice: invoiceData as unknown as InputJsonValue,
+      },
+    },
+  });
+  await prisma.paymentLine.createMany({
+    data: initial.paymentLines.map(
+      ({ productId, productName, quantity, price, currency, description }) => ({
+        paymentRecordId: paymentRecord.id,
+        productId,
+        productName,
+        quantity,
+        price,
+        currency,
+        description,
+      }),
+    ),
+  });
+  return paymentRecord;
+}
+
 export async function POST(req: Request) {
   const payloadStr = await req.text();
   // rootLogger.info(`Stripe Webhook Received: ${payloadStr}`);
@@ -43,25 +82,29 @@ export async function POST(req: Request) {
         return NextResponse.json({ received: true }, { status: 200 }); // ignore this event
       }
       let paymentRecord;
-      try {
-        paymentRecord = await prisma.paymentRecord.update({
-          where: {
-            orderNo: metadata.orderNo,
-            status: "pending", // 确保 pending -> succeeded 只更新一次
-          },
-          data: {
-            status: "succeeded",
-            paidAt: new Date(),
-            charge: {
-              invoice: invoiceData as unknown as InputJsonValue,
+      if (invoiceData.billing_reason === "subscription_cycle") {
+        paymentRecord = await cycleNewPaymentRecord(invoiceData, metadata);
+      } else {
+        try {
+          paymentRecord = await prisma.paymentRecord.update({
+            where: {
+              orderNo: metadata.orderNo,
+              status: "pending", // 确保 pending -> succeeded 只更新一次
             },
-          },
-        });
-      } catch (error) {
-        rootLogger.error(
-          `Duplicate webhook detected for payment record ${metadata.orderNo} with session ${invoiceData.id}: ${(error as Error).message}`,
-        );
-        return new Response("Duplicate webhook received", { status: 400 });
+            data: {
+              status: "succeeded",
+              paidAt: new Date(),
+              charge: {
+                invoice: invoiceData as unknown as InputJsonValue,
+              },
+            },
+          });
+        } catch (error) {
+          rootLogger.error(
+            `Duplicate webhook detected for payment record ${metadata.orderNo} with session ${invoiceData.id}: ${(error as Error).message}`,
+          );
+          return new Response("Duplicate webhook received", { status: 400 });
+        }
       }
       await handlePaymentSuccess({
         paymentRecord,
