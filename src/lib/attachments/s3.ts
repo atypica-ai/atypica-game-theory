@@ -1,3 +1,5 @@
+import "server-only";
+
 import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { rootLogger } from "../logging";
@@ -85,4 +87,39 @@ export async function s3UploadCredentials({
   const objectUrl = getObjectUrl.split("?")[0];
 
   return { putObjectUrl, getObjectUrl, objectUrl };
+}
+
+export async function uploadToS3({
+  keySuffix,
+  fileBody,
+  mimeType,
+}: {
+  keySuffix: `${string}/${string}.${string}`;
+  fileBody: Uint8Array<ArrayBufferLike>;
+  mimeType: string;
+}) {
+  const key = `atypica/${keySuffix}`;
+
+  const putObjectCommand = new PutObjectCommand({
+    Bucket: s3Bucket,
+    Key: key,
+    Body: fileBody,
+    ContentType: mimeType,
+    CacheControl: "public, max-age=31536000, immutable",
+  });
+
+  await s3Client.send(putObjectCommand);
+
+  const getObjectCommand = new GetObjectCommand({
+    Bucket: s3Bucket,
+    Key: key,
+  });
+
+  const getObjectUrl = await getSignedUrl(s3Client, getObjectCommand, {
+    expiresIn: 3600, // URL expires in 1 hour
+  });
+
+  const objectUrl = getObjectUrl.split("?")[0];
+
+  return { getObjectUrl, objectUrl };
 }

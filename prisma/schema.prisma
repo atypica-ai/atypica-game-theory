@@ -423,3 +423,15 @@ model InterviewSession {
   project  InterviewProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
   userChat UserChat?        @relation(fields: [userChatId], references: [id])
 }
+
+model ImageGeneration {
+  id          Int       @id @default(autoincrement())
+  prompt      String    @db.Text
+  promptHash  String    @unique // unique hash
+  objectUrl   String    @db.VarChar(255) // s3 object url for generated image
+  extra       Json?
+  generatedAt DateTime? @db.Timestamptz(6)
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+}
