@@ -47,7 +47,12 @@ export const savePersonaTool = ({
           "Comprehensive AI agent system prompt that enables realistic simulation of this persona's thinking patterns, decision-making, and communication style (300-500 words)",
         )
         .transform(fixMalformedUnicodeString),
-      locale: z.enum(["zh-CN", "en-US"]).describe("Language locale of the saved content"),
+      locale: z
+        .enum(["zh-CN", "en-US"])
+        .optional()
+        .describe(
+          "Language locale of the saved content. Do not provide a value if there is no matching option",
+        ),
     }),
     experimental_toToolResultContent: (result: PlainTextToolResult) => {
       return [{ type: "text", text: result.plainText }];

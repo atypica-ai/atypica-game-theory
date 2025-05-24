@@ -27,7 +27,12 @@ export const saveAnalystTool = ({
           "Complete research topic description including background context, objectives, target audience, key questions, and any constraints or requirements for comprehensive analysis",
         )
         .transform(fixMalformedUnicodeString),
-      locale: z.enum(["zh-CN", "en-US"]).describe("Language locale of the saved content"),
+      locale: z
+        .enum(["zh-CN", "en-US"])
+        .optional()
+        .describe(
+          "Language locale of the saved content. Do not provide a value if there is no matching option",
+        ),
     }),
     experimental_toToolResultContent: (result: PlainTextToolResult) => {
       return [{ type: "text", text: result.plainText }];

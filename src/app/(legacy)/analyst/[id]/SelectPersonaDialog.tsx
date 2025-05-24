@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Pagination } from "@/components/ui/pagination";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { SearchIcon, XIcon } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -26,6 +26,7 @@ export function SelectPersonaDialog({
   analystId,
   onSuccess,
 }: SelectPersonaDialogProps) {
+  const locale = useLocale();
   const t = useTranslations("AnalystPage.SelectPersonaDialog");
   const [loading, setLoading] = useState(true);
   const [personas, setPersonas] = useState<TPersona[]>([]);
@@ -35,22 +36,26 @@ export function SelectPersonaDialog({
   const [searchQuery, setSearchQuery] = useState<string>("");
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const loadPersonas = useCallback(async (page: number, search: string = "") => {
-    setLoading(true);
-    try {
-      const result = await fetchPersonas({
-        page,
-        searchQuery: search,
-      });
-      if (!result.success) throw result;
-      setPersonas(result.data);
-      if (result.pagination) {
-        setTotalPages(result.pagination.totalPages);
+  const loadPersonas = useCallback(
+    async (page: number, search: string = "") => {
+      setLoading(true);
+      try {
+        const result = await fetchPersonas({
+          locale: locale,
+          searchQuery: search,
+          page,
+        });
+        if (!result.success) throw result;
+        setPersonas(result.data);
+        if (result.pagination) {
+          setTotalPages(result.pagination.totalPages);
+        }
+      } finally {
+        setLoading(false);
       }
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    },
+    [locale],
+  );
 
   useEffect(() => {
     if (open) {

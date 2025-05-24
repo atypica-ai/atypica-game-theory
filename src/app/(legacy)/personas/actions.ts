@@ -3,21 +3,26 @@ import { createTextEmbedding } from "@/ai/embedding";
 import { ServerActionResult } from "@/lib/serverAction";
 import { Persona } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
+import { Locale } from "next-intl";
+import { getLocale } from "next-intl/server";
 // import withAuth from "./withAuth";
 
 type TPersona = Pick<Persona, "id" | "name" | "source" | "prompt"> & { tags: string[] };
 
 export async function fetchPersonas({
+  locale,
   scoutUserChatId,
   searchQuery,
   page = 1,
   pageSize = 12,
 }: {
+  locale?: Locale;
   scoutUserChatId?: number;
   searchQuery?: string;
   page?: number;
   pageSize?: number;
 } = {}): Promise<ServerActionResult<TPersona[]>> {
+  locale = locale || (await getLocale());
   const skip = (page - 1) * pageSize;
 
   // If there's a search query, use vector search, and ignore scoutUserChatId query
@@ -27,7 +32,7 @@ export async function fetchPersonas({
       const personas = await prisma.$queryRaw<TPersona[]>`
         SELECT id, name, source, prompt, tags
         FROM "Persona"
-        WHERE "embedding" <=> ${JSON.stringify(embedding)}::vector < 0.9
+        WHERE "embedding" <=> ${JSON.stringify(embedding)}::vector < 0.9 AND locale = ${locale}
         ORDER BY "embedding" <=> ${JSON.stringify(embedding)}::vector ASC
         LIMIT ${pageSize}
         OFFSET ${skip}
@@ -35,7 +40,7 @@ export async function fetchPersonas({
       const totalCountResult = await prisma.$queryRaw<{ count: number }[]>`
         SELECT COUNT(*) as count
         FROM "Persona"
-        WHERE "embedding" <=> ${JSON.stringify(embedding)}::vector < 0.9
+        WHERE "embedding" <=> ${JSON.stringify(embedding)}::vector < 0.9 AND locale = ${locale}
       `;
       // 向量搜索的结果现在看起来最多就是 40，这个应该是索引的设置
       const totalCount = Math.min(40, Number(totalCountResult[0].count));
@@ -63,7 +68,7 @@ export async function fetchPersonas({
     }
   }
 
-  const where = scoutUserChatId ? { scoutUserChatId } : undefined;
+  const where = scoutUserChatId ? { scoutUserChatId, locale } : { locale };
   // Regular search (no query or fallback from vector search error)
   const [personas, totalCount] = await Promise.all([
     prisma.persona.findMany({

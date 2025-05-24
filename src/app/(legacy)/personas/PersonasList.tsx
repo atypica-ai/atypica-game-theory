@@ -23,7 +23,7 @@ import { UserChatWithMessages } from "@/lib/data/UserChat";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn } from "@/lib/utils";
 import { SearchIcon, XIcon } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
@@ -45,9 +45,9 @@ export default function PersonasList({
   scoutUserChat?: UserChatWithMessages;
   initialParams: { page?: number; search?: string };
 }) {
+  const locale = useLocale();
   const t = useTranslations("PersonasPage");
   const router = useRouter();
-
   const [selectedPersona, setSelectedPersona] = useState<TPersona | null>(null);
   const [personas, setPersonas] = useState<TPersona[]>([]);
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
@@ -97,6 +97,7 @@ export default function PersonasList({
     setIsLoading(true);
     try {
       const result = await fetchPersonas({
+        locale: locale,
         scoutUserChatId: scoutUserChat?.id,
         searchQuery: searchQuery,
         page: currentPage,
@@ -113,7 +114,7 @@ export default function PersonasList({
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage, searchQuery, scoutUserChat?.id]);
+  }, [currentPage, searchQuery, scoutUserChat?.id, locale]);
 
   useEffect(() => {
     fetchPersonasForPage();

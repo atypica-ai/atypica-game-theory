@@ -10,7 +10,7 @@ import { z } from "zod";
 import { type SearchPersonasToolResult } from "./types";
 
 export const searchPersonasTool = ({
-  // locale, // TODO: 根据语言搜索 persona
+  locale,
   statReport,
   // studyLog,
 }: {
@@ -26,14 +26,16 @@ export const searchPersonasTool = ({
         .array(z.string().max(100))
         .min(1)
         .max(5)
-        .describe("Search terms describing target user characteristics, demographics, interests, or behaviors (provide 1-5 diverse keywords for broad coverage)"),
+        .describe(
+          "Search terms describing target user characteristics, demographics, interests, or behaviors (provide 1-5 diverse keywords for broad coverage)",
+        ),
     }),
     experimental_toToolResultContent: (result: PlainTextToolResult) => {
       return [{ type: "text", text: result.plainText }];
     },
     execute: async ({ searchQueries }): Promise<SearchPersonasToolResult> => {
       const searchResults = await Promise.all(
-        searchQueries.map((searchQuery) => searchPersonas(searchQuery)),
+        searchQueries.map((searchQuery) => searchPersonas(locale, searchQuery)),
       );
       let personas: TPersonaForStudy[] = [];
       const seenPersonaIds = new Set<number>();
@@ -70,7 +72,7 @@ export const searchPersonasTool = ({
     },
   });
 
-async function searchPersonas(searchQuery: string) {
+async function searchPersonas(locale: Locale, searchQuery: string) {
   const embedding = await createTextEmbedding(searchQuery);
   const personas = await prisma.$queryRaw<TPersonaForStudy[]>`
       SELECT
@@ -79,7 +81,7 @@ async function searchPersonas(searchQuery: string) {
         "source",
         "tags"
       FROM "Persona"
-      WHERE "embedding" <=> ${JSON.stringify(embedding)}::vector < 0.5
+      WHERE "embedding" <=> ${JSON.stringify(embedding)}::vector < 0.5 AND locale = ${locale}
       ORDER BY "embedding" <=> ${JSON.stringify(embedding)}::vector ASC
       LIMIT 5
     `;
