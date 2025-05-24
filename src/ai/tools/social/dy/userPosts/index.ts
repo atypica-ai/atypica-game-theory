@@ -82,7 +82,7 @@ async function dyUserPosts({ secret_userid }: { secret_userid: string }) {
 }
 
 export const dyUserPostsTool = tool({
-  description: "获取抖音特定用户的帖子，用于分析用户的特征和喜好",
+  description: "获取抖音特定用户的帖子",
   parameters: z.object({
     secret_userid: z.string().describe("The secret user ID to fetch posts from"),
   }),

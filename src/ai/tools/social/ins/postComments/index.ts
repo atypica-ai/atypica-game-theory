@@ -79,8 +79,7 @@ async function insPostComments({ postcode }: { postcode: string }) {
 }
 
 export const insPostCommentsTool = tool({
-  description:
-    "获取 Instagram 特定帖子的评论，用于获取对特定品牌或者主题关注的用户，以及他们的反馈",
+  description: "Fetch comments from specific Instagram post",
   parameters: z.object({
     postcode: z.string().describe("The post slug to fetch comments from"),
   }),

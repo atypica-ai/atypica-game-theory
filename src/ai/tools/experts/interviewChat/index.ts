@@ -3,12 +3,12 @@ import "server-only";
 import { llm, LLMModelName, providerOptions } from "@/ai/llm";
 import { convertStepsToAIMessage } from "@/ai/messageUtils";
 import {
+  interviewDigestSystem,
   interviewerAttachment,
   interviewerPrologue,
   interviewerSystem,
   personaAgentSystem,
 } from "@/ai/prompt";
-import { promptSystemConfig } from "@/ai/prompt/systemConfig";
 import {
   dySearchTool,
   insSearchTool,
@@ -43,19 +43,25 @@ export const interviewChatTool = ({
   studyLog: Logger;
 }) =>
   tool({
-    description: "针对一个研究主题的一系列用户进行访谈，每次最多5人",
+    description:
+      "Conduct in-depth user interviews by having expert agents interview user persona agents to understand decision-making patterns, preferences, and behavioral insights for the study topic",
     parameters: z.object({
       personas: z
         .array(
           z.object({
-            id: z.number().describe("用户智能体（用户画像）的personaId"),
-            name: z.string().describe("personaId 对应的用户智能体的名字"),
+            id: z.number().describe("The personaId value from previously built or found personas"),
+            name: z.string().describe("Display name of the persona corresponding to the personaId"),
           }),
         )
-        .describe("调研对象的列表，最多5，必须使用本次研究总结或搜索到的用户，不能编造"),
+        .max(5)
+        .describe(
+          "List of study participants (maximum 5). Must use personas that have been built or found in the current study - do not create fictional ones",
+        ),
       instruction: z
         .string()
-        .describe("在研究主题的基础上，本次访谈的具体需求")
+        .describe(
+          "Interview focus and specific questions or topics to explore based on the study objectives",
+        )
         .transform(fixMalformedUnicodeString),
     }),
     experimental_toToolResultContent: (result: PlainTextToolResult) => {
@@ -135,19 +141,10 @@ async function generateDigest(
   results: ({ name: string; issue: string } | { name: string; conclusion: string })[],
 ) {
   // 注意，这里没有统计 tokens，模型便宜问题不大
-  const prompt = `${promptSystemConfig({ locale })}
-请根据以下访谈结果生成一份简单的摘要，不超过200字。
-${results
-  .map((result) => {
-    const text = "conclusion" in result ? result.conclusion : "issue" in result ? result.issue : "";
-    return `${result.name}\n${text}\n`;
-  })
-  .join("\n")}
-`;
   const digest = await generateText({
     model: llm("gpt-4o-mini"),
     providerOptions,
-    prompt,
+    prompt: interviewDigestSystem({ locale, results }),
     maxTokens: 2000,
   });
   return digest.text;
@@ -273,7 +270,7 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: Message[]) {
             },
       onStepFinish: async (step) => {
         interviewLog.info({
-          msg: "chatWithInterviewer streamText onStepFinish",
+          msg: "Expert interviewer step completed",
           stepType: step.stepType,
           toolCalls: step.toolCalls.map((call) => call.toolName),
           usage: step.usage,
@@ -294,12 +291,12 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: Message[]) {
         }
       },
       onFinish: async ({ steps, usage }) => {
-        interviewLog.info({ msg: "chatWithInterviewer streamText onFinish", usage });
+        interviewLog.info({ msg: "Expert interviewer stream completed", usage });
         const message = convertStepsToAIMessage(steps);
         resolve(message);
       },
       onError: ({ error }) => {
-        interviewLog.error(`chatWithInterviewer streamText onError: ${(error as Error).message}`);
+        interviewLog.error(`Expert interviewer stream error: ${(error as Error).message}`);
         reject(error);
       },
       abortSignal,
@@ -348,7 +345,7 @@ async function chatWithPersona(chatProps: ChatProps, messages: Message[]) {
       maxSteps: 2,
       onStepFinish: async (step) => {
         interviewLog.info({
-          msg: "chatWithPersona streamText onStepFinish",
+          msg: "User persona interview step completed",
           stepType: step.stepType,
           toolCalls: step.toolCalls.map((call) => call.toolName),
           usage: step.usage,
@@ -365,12 +362,12 @@ async function chatWithPersona(chatProps: ChatProps, messages: Message[]) {
         }
       },
       onFinish: ({ steps, usage }) => {
-        interviewLog.info({ msg: "chatWithPersona streamText onFinish", usage });
+        interviewLog.info({ msg: "User persona interview stream completed", usage });
         const message = convertStepsToAIMessage(steps);
         resolve(message);
       },
       onError: ({ error }) => {
-        interviewLog.error(`chatWithPersona streamText onError: ${(error as Error).message}`);
+        interviewLog.error(`User persona interview stream error: ${(error as Error).message}`);
         reject(error);
       },
       abortSignal,
@@ -415,7 +412,7 @@ async function saveMessage({
     ]);
   } catch (error) {
     interviewLog.error(
-      `Error saving messages with token ${backgroundToken}: ${(error as Error).message}`,
+      `Error saving interview messages with token ${backgroundToken}: ${(error as Error).message}`,
     );
   }
 }
@@ -493,7 +490,7 @@ export async function runInterview(chatProps: ChatProps) {
     });
   } catch (error) {
     interviewLog.error(
-      `Error clearing interview token ${backgroundToken}: ${(error as Error).message}`,
+      `Error clearing interview session token ${backgroundToken}: ${(error as Error).message}`,
     );
   }
 }

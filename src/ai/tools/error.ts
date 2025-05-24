@@ -11,15 +11,15 @@ import { z } from "zod";
 export const handleToolCallError: ToolCallRepairFunction<ToolSet> = async <T extends ToolSet>(
   ...[{ toolCall, tools, error }]: Parameters<ToolCallRepairFunction<T>>
 ) => {
-  let plainText = `Failed to call tool ${toolCall.toolName} with args ${JSON.stringify(toolCall.args)}: ${error.message}`;
+  let plainText = `Failed to execute tool "${toolCall.toolName}" with parameters ${JSON.stringify(toolCall.args)}: ${error.message}`;
   if (NoSuchToolError.isInstance(error)) {
     const availableTools = Object.keys(tools).filter((toolName) => toolName !== "toolCallError");
     plainText =
       getDeployRegion() === "mainland"
         ? `目前无法使用 ${toolCall.toolName} 工具，请确保使用目前提供给你的工具: ${availableTools.join(", ")}`
-        : `Failed to call tool ${toolCall.toolName}, please make sure you are using the tools provided to you: ${availableTools.join(", ")}`;
+        : `Tool "${toolCall.toolName}" is not available. Please use only the tools provided to you: ${availableTools.join(", ")}`;
   } else if (InvalidToolArgumentsError.isInstance(error)) {
-    plainText = `Invalid arguments for tool ${toolCall.toolName} with args ${JSON.stringify(toolCall.args)}: ${error.message}`;
+    plainText = `Invalid arguments provided for tool "${toolCall.toolName}" with parameters ${JSON.stringify(toolCall.args)}: ${error.message}`;
   }
   return {
     ...toolCall,
@@ -29,7 +29,8 @@ export const handleToolCallError: ToolCallRepairFunction<ToolSet> = async <T ext
 };
 
 export const toolCallError = tool({
-  description: "用于提示工具调用错误，请不要主动使用这个工具",
+  description:
+    "System tool for reporting tool execution errors. This tool is automatically invoked and should not be used directly",
   parameters: z.object({
     plainText: z.string(),
   }),
@@ -46,7 +47,7 @@ export const toolCallError = tool({
 //   limitedTool: T;
 // }) {
 //   return tool({
-//     description: "用于提示工具调用调用达到上限",
+//     description: "Used to indicate tool call limit has been reached",
 //     parameters: limitedTool.parameters,
 //     execute: async ({}) => {
 //       return { plainText };

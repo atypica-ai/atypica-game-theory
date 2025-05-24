@@ -23,8 +23,9 @@ export function AgentChatPage({
   persistMessages?: boolean;
 }) {
   const useChatHelpers = useChat({
-    api: useChatAPI,
     id: chatId,
+    api: useChatAPI,
+    experimental_throttle: 300,
     initialMessages,
     experimental_prepareRequestBody: persistMessages
       ? ({ messages, id }) => {

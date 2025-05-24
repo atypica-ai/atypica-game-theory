@@ -78,7 +78,7 @@ async function dyPostComments({ postid }: { postid: string }) {
 }
 
 export const dyPostCommentsTool = tool({
-  description: "获取抖音特定帖子的评论，用于获取对特定品牌或者主题关注的用户，以及他们的反馈",
+  description: "获取抖音特定帖子的评论",
   parameters: z.object({
     postid: z.string().describe("The post ID to fetch comments from"),
   }),

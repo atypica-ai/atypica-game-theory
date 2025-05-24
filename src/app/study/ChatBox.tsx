@@ -58,6 +58,7 @@ export function ChatBox() {
     initialMessages: initialMessages,
     sendExtraMessageFields: true, // send id and createdAt for each message
     api: "/api/chat/study",
+    experimental_throttle: 300,
     // maxSteps: 15,  // 后端 chat api 设置了 maxSteps 并且会控制，这里不能再设置，会覆盖后端的配置！
     body: chatRequestBody,
     // see https://sdk.vercel.ai/docs/ai-sdk-ui/chatbot-message-persistence#sending-only-the-last-message

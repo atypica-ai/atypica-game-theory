@@ -110,6 +110,7 @@ export function ClarifySessionClient({
     // chat 接口直接使用 session.userChatId, 这个 chatId 不使用也不发给后端
     // id: interviewSession.userChatId?.toString(),
     api: "/api/chat/interviewSession/clarify",
+    experimental_throttle: 300,
     initialMessages,
     body: initialRequestBody,
     experimental_prepareRequestBody({ messages, requestBody: _requestBody }) {

@@ -1,7 +1,7 @@
 import "server-only";
 
 import { llm, providerOptions } from "@/ai/llm";
-import { reasoningSystem } from "@/ai/prompt";
+import { reasoningPrologue, reasoningSystem } from "@/ai/prompt";
 import { PlainTextToolResult, ReasoningThinkingResult, StatReporter } from "@/ai/tools/types";
 import { fixMalformedUnicodeString } from "@/lib/utils";
 import { streamText, tool } from "ai";
@@ -21,13 +21,6 @@ async function reasoningThinking({
   abortSignal?: AbortSignal;
   statReport?: StatReporter;
 }): Promise<ReasoningThinkingResult> {
-  const prompt = `
-背景：
-${background}
-
-问题：
-${question}
-`;
   try {
     return new Promise(async (resolve, reject) => {
       const response = streamText({
@@ -35,7 +28,16 @@ ${question}
         model: llm("o3-mini"),
         providerOptions: providerOptions,
         system: reasoningSystem({ locale }),
-        messages: [{ role: "user", content: prompt }],
+        messages: [
+          {
+            role: "user",
+            content: reasoningPrologue({
+              locale,
+              background,
+              question,
+            }),
+          },
+        ],
         // maxTokens: 500,
         // onChunk: (chunk) => console.log("[Reasoning]", JSON.stringify(chunk)),
         onFinish: async (result) => {
@@ -77,13 +79,20 @@ export const reasoningThinkingTool = ({
 }) =>
   tool({
     description:
-      "针对特定话题或问题提供专家分析和逐步思考过程，问问题的时候要把当前对话内容的总结也发给专家，以帮助专家更好地理解问题。",
+      "Get expert consultation and step-by-step reasoning analysis for complex problems or decisions. Provides detailed thinking process and professional insights on specific research questions or challenges.",
     parameters: z.object({
       background: z
         .string()
-        .describe("问题的背景，你当前的发现和思考")
+        .describe(
+          "Current context, findings so far, and relevant background information to help the expert understand the situation",
+        )
         .transform(fixMalformedUnicodeString),
-      question: z.string().describe("问题或需要分析的主题").transform(fixMalformedUnicodeString),
+      question: z
+        .string()
+        .describe(
+          "Specific question, problem, or topic that requires expert analysis and reasoning",
+        )
+        .transform(fixMalformedUnicodeString),
     }),
     experimental_toToolResultContent: (result: PlainTextToolResult) => {
       return [{ type: "text", text: result.plainText }];

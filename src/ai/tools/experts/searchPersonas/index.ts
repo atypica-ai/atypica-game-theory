@@ -19,13 +19,14 @@ export const searchPersonasTool = ({
   studyLog: Logger;
 }) =>
   tool({
-    description: "根据语义相似度搜索与查询条件匹配的用户智能体画像",
+    description:
+      "Search existing user persona database using semantic similarity matching to find relevant user profiles that match research criteria",
     parameters: z.object({
       searchQueries: z
         .array(z.string().max(100))
         .min(1)
         .max(5)
-        .describe("搜索用户画像的关键词或短语，可提供1-5个"),
+        .describe("Search terms describing target user characteristics, demographics, interests, or behaviors (provide 1-5 diverse keywords for broad coverage)"),
     }),
     experimental_toToolResultContent: (result: PlainTextToolResult) => {
       return [{ type: "text", text: result.plainText }];

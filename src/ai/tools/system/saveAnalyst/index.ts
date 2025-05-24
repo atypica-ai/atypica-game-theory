@@ -15,18 +15,24 @@ export const saveAnalystTool = ({
   studyUserChatId: number;
 }) =>
   tool({
-    description: "保存研究主题",
+    description:
+      "Save comprehensive research topic definition and expert analyst role configuration for the study",
     parameters: z.object({
-      role: z.string().describe("研究者的角色"),
+      role: z
+        .string()
+        .describe("The expert analyst's professional role, specialization, or domain expertise"),
       topic: z
         .string()
-        .describe("研究主题，应包含所有背景和上下文，确保后续研究的信息完整")
+        .describe(
+          "Complete research topic description including background context, objectives, target audience, key questions, and any constraints or requirements for comprehensive analysis",
+        )
         .transform(fixMalformedUnicodeString),
+      locale: z.enum(["zh-CN", "en-US"]).describe("Language locale of the saved content"),
     }),
     experimental_toToolResultContent: (result: PlainTextToolResult) => {
       return [{ type: "text", text: result.plainText }];
     },
-    execute: async ({ role, topic }): Promise<SaveAnalystToolResult> => {
+    execute: async ({ role, topic, locale }): Promise<SaveAnalystToolResult> => {
       const { analyst } = await prisma.userChat.findUniqueOrThrow({
         where: { id: studyUserChatId, kind: "study" },
         select: {
@@ -46,16 +52,16 @@ export const saveAnalystTool = ({
       // if (analyst.topic) {
       //   return {
       //     analystId,
-      //     plainText: `本次研究的研究主题已保存过，返回现有主题：${JSON.stringify({ analystId: analyst.id, topic: analyst.topic })}`,
+      //     plainText: `Research topic already exists, returning existing topic: ${JSON.stringify({ analystId: analyst.id, topic: analyst.topic })}`,
       //   };
       // }
       await prisma.analyst.update({
         where: { id: analystId },
-        data: { role, topic },
+        data: { role, topic, locale },
       });
       return {
         analystId: analyst.id,
-        plainText: `研究主题${isUpdate ? "更新" : "保存"}成功：${JSON.stringify({ analystId: analyst.id })}`,
+        plainText: `Study topic and analyst configuration ${isUpdate ? "updated" : "saved"} successfully with analystId: ${analyst.id}`,
       };
     },
   });
@@ -67,9 +73,15 @@ export interface SaveAnalystStudySummaryToolResult extends PlainTextToolResult {
 
 export const saveAnalystStudySummaryTool = ({ studyUserChatId }: { studyUserChatId: number }) =>
   tool({
-    description: "总结并保存研究过程",
+    description:
+      "Save an objective summary of the completed research methodology and process workflow for report generation",
     parameters: z.object({
-      studySummary: z.string().describe("客观描述研究过程").transform(fixMalformedUnicodeString),
+      studySummary: z
+        .string()
+        .describe(
+          "Objective documentation of research design, methodology steps, data collection process, and workflow execution (exclude conclusions or findings)",
+        )
+        .transform(fixMalformedUnicodeString),
     }),
     experimental_toToolResultContent: (result: PlainTextToolResult) => {
       return [{ type: "text", text: result.plainText }];
@@ -89,7 +101,7 @@ export const saveAnalystStudySummaryTool = ({ studyUserChatId }: { studyUserChat
       });
       return {
         // analystId,
-        plainText: `研究过程保存成功：${JSON.stringify({ analystId: analyst.id })}`,
+        plainText: `Study summary saved successfully for analyst ${analystId}`,
       };
     },
   });

@@ -14,15 +14,25 @@ export interface BuildPersonaToolResult extends PlainTextToolResult {
 
 export const personaBuildSchemaStreamObject = () =>
   z.object({
-    name: z.string().describe("名字，不要包含姓氏，使用网名").transform(fixMalformedUnicodeString),
-    source: z.string().describe("数据来源").transform(fixMalformedUnicodeString),
+    name: z
+      .string()
+      .describe("User persona display name or nickname (avoid using family names for privacy)")
+      .transform(fixMalformedUnicodeString),
+    source: z
+      .string()
+      .describe("Data source or platform where persona characteristics were observed")
+      .transform(fixMalformedUnicodeString),
     // userids: z.array(z.string()).optional().describe("该人设典型的用户 ID 列表").default([]),
     tags: z
       .array(z.string())
-      .describe("用户标签，3-5个特征标签")
+      .describe(
+        "3-5 characteristic tags that define this persona's key traits, interests, or demographics",
+      )
       .transform((tags) => tags.map((tag) => fixMalformedUnicodeString(tag))),
     personaPrompt: z
       .string()
-      .describe("模拟用户画像的智能体的系统提示词，300到500字")
+      .describe(
+        "Comprehensive AI agent system prompt that enables realistic simulation of this persona's thinking patterns, decision-making, and communication style (300-500 words)",
+      )
       .transform(fixMalformedUnicodeString),
   });

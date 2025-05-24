@@ -78,7 +78,7 @@ async function xhsNoteComments({ noteid }: { noteid: string }) {
 }
 
 export const xhsNoteCommentsTool = tool({
-  description: "获取小红书特定帖子的评论，用于获取对特定品牌或者主题关注的用户，以及他们的反馈",
+  description: "获取小红书特定帖子的评论",
   parameters: z.object({
     noteid: z.string().describe("The note ID to fetch comments from"),
   }),

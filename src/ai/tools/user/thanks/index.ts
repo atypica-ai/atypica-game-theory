@@ -6,17 +6,17 @@ import { z } from "zod";
 import { ThanksResult } from "./types";
 
 export const thanksTool = tool({
-  description: "感谢用户",
+  description: "Collect user contact information and thank them for participating in the research consultation",
   parameters: z.object({
-    name: z.string().describe("用户姓名"),
-    company: z.string().describe("企业名称"),
-    title: z.string().describe("职位名称"),
-    contact: z.string().describe("联系方式"),
+    name: z.string().describe("User's full name for follow-up contact"),
+    company: z.string().describe("Company or organization name"),
+    title: z.string().describe("Professional job title or role"),
+    contact: z.string().describe("Contact information (email or phone number for follow-up)"),
   }),
   experimental_toToolResultContent: (result: PlainTextToolResult) => {
     return [{ type: "text", text: result.plainText }];
   },
   execute: async (): Promise<ThanksResult> => {
-    return { plainText: "Saved" };
+    return { plainText: "Contact information saved successfully. Thank you for your interest in atypica.AI enterprise solutions." };
   },
 });

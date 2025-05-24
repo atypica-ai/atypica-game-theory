@@ -84,17 +84,17 @@ async function xhsSearch({ keyword }: { keyword: string }) {
         const result = parseXHSSearchResult(data);
         return result;
       } else {
-        toolLog.warn(`Failed to fetch XHS feed, retrying... ${i + 1}`);
+        toolLog.warn(`Failed to fetch XHS posts, retrying... ${i + 1}`);
         await new Promise((resolve) => setTimeout(resolve, 3000));
         continue;
       }
     } catch (error) {
-      toolLog.warn(`Error fetching XHS feed: ${(error as Error).message}`);
+      toolLog.warn(`Error fetching XHS posts: ${(error as Error).message}`);
     }
   }
   return {
     notes: [],
-    plainText: "Failed to fetch XHS feed after 3 retries",
+    plainText: "Failed to fetch XHS posts after 3 retries",
   };
 }
 
@@ -115,17 +115,17 @@ async function xhsSearchTikhub({ keyword }: { keyword: string }) {
         const result = parseXHSSearchResult(res.data);
         return result;
       } else {
-        console.log("Failed to fetch XHS feed, retrying...", i + 1);
+        console.log("Failed to fetch XHS posts, retrying...", i + 1);
         await new Promise((resolve) => setTimeout(resolve, 3 * 1000));
         continue;
       }
     } catch (error) {
-      console.log("Error fetching XHS feed:", error);
+      console.log("Error fetching XHS posts:", error);
     }
   }
   return {
     notes: [],
-    plainText: "Failed to fetch XHS feed after 3 retries",
+    plainText: "Failed to fetch XHS posts after 3 retries",
   };
 }
 

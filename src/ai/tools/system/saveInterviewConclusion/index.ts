@@ -7,9 +7,14 @@ import { z } from "zod";
 
 export const saveInterviewConclusionTool = (interviewId: number) =>
   tool({
-    description: "将生成的结论保存到数据库",
+    description:
+      "Save comprehensive interview summary and key insights to conclude the user interview session",
     parameters: z.object({
-      conclusion: z.string().describe("生成的结论"),
+      conclusion: z
+        .string()
+        .describe(
+          "Detailed interview conclusion including key findings, user insights, behavioral patterns, and memorable quotes in markdown format",
+        ),
     }),
     experimental_toToolResultContent: (result: PlainTextToolResult) => {
       return [{ type: "text", text: result.plainText }];
@@ -21,7 +26,7 @@ export const saveInterviewConclusionTool = (interviewId: number) =>
       });
       return {
         id: interviewId,
-        plainText: `Saved interview conclusion to DB with id ${interviewId}`,
+        plainText: `Interview conclusion and insights saved successfully for interview ${interviewId}`,
       };
     },
   });

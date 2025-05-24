@@ -83,7 +83,7 @@ async function insSearch({ keyword }: { keyword: string }) {
 }
 
 export const insSearchTool = tool({
-  description: "在 Instagram 上搜索内容，可以搜索特定的主题，也可以搜索一个品牌",
+  description: "Search for content on Instagram, including specific topics or brands",
   parameters: z.object({
     keyword: z.string().describe("Search keywords").transform(fixMalformedUnicodeString),
   }),

@@ -81,7 +81,7 @@ async function tiktokUserPosts({ secret_userid }: { secret_userid: string }) {
 }
 
 export const tiktokUserPostsTool = tool({
-  description: "获取 TikTok 特定用户的帖子，用于分析用户的特征和喜好",
+  description: "Fetch posts from specific TikTok user",
   parameters: z.object({
     secret_userid: z.string().describe("The secret user ID to fetch posts from"),
   }),

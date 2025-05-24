@@ -89,7 +89,7 @@ async function xhsUserNotes({ userid }: { userid: string }) {
 }
 
 export const xhsUserNotesTool = tool({
-  description: "获取小红书特定用户的帖子，用于分析用户的特征和喜好",
+  description: "获取小红书特定用户的帖子",
   parameters: z.object({
     userid: z.string().describe("The user ID to fetch notes from"),
   }),

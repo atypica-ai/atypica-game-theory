@@ -89,6 +89,7 @@ model Persona {
   prompt          String    @db.Text
   scoutUserChatId Int?      @db.Integer
   scoutUserChat   UserChat? @relation(fields: [scoutUserChatId], references: [id])
+  locale          String?   @db.VarChar(16)
 
   embedding Unsupported("vector(1024)")? // 使用 Unsupported 类型表示向量
 
@@ -111,6 +112,7 @@ model Analyst {
   studyUserChatId Int?      @unique @db.Integer
   studyUserChat   UserChat? @relation(fields: [studyUserChatId], references: [id])
   attachments     Json?
+  locale          String?   @db.VarChar(16)
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)

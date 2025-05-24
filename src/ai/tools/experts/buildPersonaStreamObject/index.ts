@@ -23,12 +23,13 @@ export const buildPersonaStreamObjectTool = ({
   studyLog: Logger;
 }) =>
   tool({
-    description: "基于用户画像搜索（scoutTaskChat）的信息总结并构建智能体",
+    description:
+      "Analyze social media research data and build detailed user personas with AI agent simulation capabilities using streaming object generation",
     parameters: z.object({
       scoutUserChatToken: z
         .string()
         .describe(
-          "用户画像搜索任务（scoutTaskChat）的 token，必须使用本次研究中搜索任务的 token，不能编造",
+          "Token from the completed user profile search task (scoutTaskChat). Must use the actual token from current research session - do not fabricate or reuse old tokens",
         ),
     }),
     experimental_toToolResultContent: (result: PlainTextToolResult) => {
@@ -71,8 +72,8 @@ export const buildPersonaStreamObjectTool = ({
         }
       }
       if (personas.length === 0) {
-        studyLog.error("No personas found");
-        throw new Error("No personas found");
+        studyLog.error("No valid personas generated");
+        throw new Error("No valid personas generated");
       }
       if (statReport) {
         await statReport("personas", personas.length, {
@@ -83,7 +84,7 @@ export const buildPersonaStreamObjectTool = ({
       }
       return {
         personas,
-        plainText: `${personas.length} personas build: ${JSON.stringify(personas)}`,
+        plainText: `${personas.length} user personas built successfully: ${JSON.stringify(personas)}`,
       };
     },
   });
@@ -130,7 +131,7 @@ export async function runBuildPersonaStreamObject({
     // schema,
     onFinish: async (result) => {
       studyLog.info({
-        msg: "streamObject Finished",
+        msg: "Persona generation stream completed",
         // object: result.object,
         usage: result.usage,
       });

@@ -33,14 +33,23 @@ export const generateReportTool = ({
   studyLog: Logger;
 }) =>
   tool({
-    description: "为本次研究生成报告",
+    description:
+      "Generate a comprehensive study report synthesizing all interview data, user insights, and findings from the completed study",
     parameters: z.object({
-      instruction: z.string().describe("用户指令，包括额外的报告内容和样式等").default(""),
-      regenerate: z.boolean().describe("重新生成报告").default(false),
+      instruction: z
+        .string()
+        .describe("Additional formatting, style, or content focus requirements for the report")
+        .default(""),
+      regenerate: z
+        .boolean()
+        .describe("Whether to regenerate an existing report with new analysis")
+        .default(false),
       reportToken: z
         .string()
         .optional()
-        .describe("报告的 token，用于创建记录，你不需要提供，系统会自动生成")
+        .describe(
+          "Report token used to create records. You don't need to provide this - the system will automatically generate it",
+        )
         // .default(() => generateToken())
         // 始终生成一个新的 token，并且这个会直接覆盖 message 里面 toolInvocation.args 上的参数
         .transform(() => generateToken()),
@@ -79,12 +88,12 @@ export const generateReportTool = ({
       if (report?.generatedAt && !regenerate) {
         return {
           reportToken: report.token,
-          plainText: `研究 ${analystId} 的报告已经存在，如需重新生成请设置 regenerate: true。您可以提供额外的指令来指定报告风格或内容要求。`,
+          plainText: `Report for study ${analystId} already exists. To regenerate, please set regenerate: true. You can provide additional instructions to specify report style or content requirements.`,
         };
       }
       if (report && !report.generatedAt) {
         // 复用这个没完成的 report 记录，并覆盖 token
-        hint = `从上次未完成的报告记录（${report.token}）继续生成。`;
+        hint = `Continuing from previous incomplete report (${report.token}).`;
         report = await prisma.analystReport.update({
           where: { id: report.id },
           data: { token: reportToken, instruction },
@@ -131,7 +140,7 @@ export const generateReportTool = ({
       }
       return {
         reportToken: report.token,
-        plainText: `已成功为研究主题 ${analystId} 生成报告。${hint}`,
+        plainText: `Report successfully generated. ${hint}`,
       };
     },
   });
@@ -229,7 +238,8 @@ export async function generateReport({
         messages.push({ role: "assistant", content: onePageHtml });
         messages.push({
           role: "user",
-          content: "请继续生成剩余的网页内容，无需重复已经生成的部分，直接接着上文继续完成。",
+          content:
+            "Please continue with the remaining webpage content without repeating what's already been generated.",
         });
       }
       const response = streamText({

@@ -83,7 +83,7 @@ async function insUserPosts({ userid }: { userid: string }) {
 }
 
 export const insUserPostsTool = tool({
-  description: "获取 Instagram 特定用户的帖子，用于分析用户的特征和喜好",
+  description: "Fetch posts from specific Instagram user",
   parameters: z.object({
     userid: z.string().describe("The user ID to fetch posts from"),
   }),

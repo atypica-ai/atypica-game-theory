@@ -78,7 +78,7 @@ async function tiktokPostComments({ postid }: { postid: string }) {
 }
 
 export const tiktokPostCommentsTool = tool({
-  description: "获取 TikTok 特定帖子的评论，用于获取对特定品牌或者主题关注的用户，以及他们的反馈",
+  description: "Fetch comments from specific TikTok post",
   parameters: z.object({
     postid: z.string().describe("The post ID to fetch comments from"),
   }),

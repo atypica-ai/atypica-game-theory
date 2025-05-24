@@ -73,19 +73,19 @@ async function dySearch({ keyword }: { keyword: string }) {
         const result = parseDYSearchResult(res.result);
         return result;
       } else {
-        toolLog.warn(`Failed to fetch DY feed, retrying... ${i + 1}`);
+        toolLog.warn(`Failed to fetch DY posts, retrying... ${i + 1}`);
         // 2005 错误是 超过所允许的访问间隔
         const seconds = res.code === 2005 ? Math.floor(Math.random() * 20) + 10 : 3;
         await new Promise((resolve) => setTimeout(resolve, seconds * 1000));
         continue;
       }
     } catch (error) {
-      toolLog.warn(`Error fetching DY feed: ${(error as Error).message}`);
+      toolLog.warn(`Error fetching DY posts: ${(error as Error).message}`);
     }
   }
   return {
     posts: [],
-    plainText: "Failed to fetch DY feed after 3 retries",
+    plainText: "Failed to fetch DY posts after 3 retries",
   };
 }
 

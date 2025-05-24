@@ -20,24 +20,34 @@ export const savePersonaTool = ({
   statReport?: StatReporter;
 }) =>
   tool({
-    description: "将生成的完整用户画像保存到数据库（确保 personaPrompt 信息完整）",
+    description:
+      "Save a detailed user persona and its corresponding AI agent system prompt to the database for future interview simulations",
     parameters: z.object({
       name: z
         .string()
-        .describe("名字，不要包含姓氏，使用网名")
+        .describe("User persona display name or nickname (avoid using family names for privacy)")
         .max(100)
         .transform(fixMalformedUnicodeString),
-      source: z.string().describe("数据来源").max(100).transform(fixMalformedUnicodeString),
+      source: z
+        .string()
+        .describe("Data source or platform where persona characteristics were observed")
+        .max(100)
+        .transform(fixMalformedUnicodeString),
       tags: z
         .array(z.string().max(50))
-        .describe("用户标签")
+        .describe(
+          "3-5 characteristic tags that define this persona's key traits, interests, or demographics",
+        )
         .transform((tags) => tags.map((tag) => fixMalformedUnicodeString(tag))),
       // userids: z.array(z.string()).optional().describe("该人设典型的用户 ID 列表").default([]),
       personaPrompt: z
         .string()
         .max(2000)
-        .describe("智能体的系统提示词，详细描述用户画像，300到500字")
+        .describe(
+          "Comprehensive AI agent system prompt that enables realistic simulation of this persona's thinking patterns, decision-making, and communication style (300-500 words)",
+        )
         .transform(fixMalformedUnicodeString),
+      locale: z.enum(["zh-CN", "en-US"]).describe("Language locale of the saved content"),
     }),
     experimental_toToolResultContent: (result: PlainTextToolResult) => {
       return [{ type: "text", text: result.plainText }];
@@ -48,10 +58,11 @@ export const savePersonaTool = ({
       tags,
       // userids: samples,
       personaPrompt: prompt,
+      locale,
     }): Promise<SavePersonaToolResult> => {
       const samples = [] as string[];
       const persona = await prisma.persona.create({
-        data: { name, source, tags, samples, prompt, scoutUserChatId },
+        data: { name, source, tags, samples, prompt, locale, scoutUserChatId },
       });
       waitUntil(createPersonaEmbedding(persona));
       if (statReport) {
@@ -63,7 +74,7 @@ export const savePersonaTool = ({
       }
       return {
         personaId: persona.id,
-        plainText: `Persona saved successfully with ID: ${persona.id}`,
+        plainText: `User persona "${name}" saved successfully with ID: ${persona.id}`,
       };
     },
   });
@@ -78,10 +89,10 @@ async function createPersonaEmbedding(persona: Persona) {
       SET "embedding" = ${JSON.stringify(embedding)}::vector
       WHERE "id" = ${persona.id}
     `;
-    console.log(`Updated embedding for persona ${persona.id}`);
+    console.log(`Updated semantic embedding for persona ${persona.id}`);
   } catch (error) {
     console.error(
-      `Failed to update embedding for persona ${persona.id}: ${(error as Error).message}`,
+      `Failed to update semantic embedding for persona ${persona.id}: ${(error as Error).message}`,
     );
   }
 }

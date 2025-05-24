@@ -6,10 +6,15 @@ import { z } from "zod";
 // import { RequestInteractionResult } from "./types";
 
 export const requestInteractionTool = tool({
-  description: "向用户以选择题的形式提问以获得回复，必须提供选项",
+  description:
+    "Present multiple-choice questions to users for collecting specific feedback, preferences, or decisions during research workflow",
   parameters: z.object({
-    question: z.string().describe("问题"),
-    options: z.array(z.string()).describe("2~4个选项"),
+    question: z.string().describe("Clear question asking for user input, preference, or decision"),
+    options: z
+      .array(z.string())
+      .describe(
+        "2-4 distinct answer choices for the user to select from (users can select multiple options)",
+      ),
   }),
   experimental_toToolResultContent: (result: PlainTextToolResult) => {
     return [{ type: "text", text: result.plainText }];

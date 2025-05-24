@@ -35,12 +35,12 @@ export const buildPersonaTool = ({
 }) =>
   tool({
     description:
-      "分析用户画像搜索任务（scoutTaskChat）的结果，归纳总结，构可以建模拟用户行为和决策的智能体",
+      "Analyze social media data from user profile search tasks, create detailed user personas, and build AI agents that simulate realistic user behavior and decision-making patterns",
     parameters: z.object({
       scoutUserChatToken: z
         .string()
         .describe(
-          "用户画像搜索任务（scoutTaskChat）的 token，必须使用本次研究中搜索任务的 token，不能编造",
+          "Token from the completed user profile search task (scoutTaskChat). Must use the actual token from current research session - do not fabricate or reuse old tokens",
         ),
     }),
     experimental_toToolResultContent: (result: PlainTextToolResult) => {
@@ -137,7 +137,7 @@ export async function runBuildPersona({
       onStepFinish: async (step) => {
         const toolCalls = step.toolCalls.map((call) => call.toolName);
         const usage = step.usage;
-        studyLog.info({ msg: "Step finished", stepType: step.stepType, toolCalls, usage });
+        studyLog.info({ msg: "Persona building step completed", stepType: step.stepType, toolCalls, usage });
         if (statReport) {
           const reportedBy = "buildPersona tool";
           const promises = [
@@ -157,12 +157,12 @@ export async function runBuildPersona({
         }
       },
       onFinish: async ({ steps, usage }) => {
-        studyLog.info({ msg: "runBuildPersona streamText onFinish", usage });
+        studyLog.info({ msg: "Persona building stream completed", usage });
         const message = convertStepsToAIMessage(steps);
         resolve(message);
       },
       onError: ({ error }) => {
-        studyLog.error(`runBuildPersona streamText onError: ${(error as Error).message}`);
+        studyLog.error(`Persona building stream error: ${(error as Error).message}`);
         reject(error);
       },
       abortSignal,
@@ -175,10 +175,10 @@ export async function runBuildPersona({
 
   try {
     const message = await streamTextPromise;
-    studyLog.info(`message stream complete: ${message.content.substring(0, 20)}`);
+    studyLog.info(`Persona building stream complete: ${message.content.substring(0, 20)}`);
   } catch (error) {
     const errMsg = (error as Error).message;
-    studyLog.error(`message stream error: ${errMsg}`);
+    studyLog.error(`Persona building stream error: ${errMsg}`);
     throw error;
   }
 }

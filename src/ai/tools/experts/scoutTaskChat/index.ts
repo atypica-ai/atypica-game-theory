@@ -85,17 +85,24 @@ export const scoutTaskChatTool = ({
   studyLog: Logger;
 }) =>
   tool({
-    description: "从社交网络搜集信息，分析和总结用户画像，用于后续构建用户智能体",
+    description:
+      "Conduct comprehensive social media research to discover user behavioral patterns, decision-making processes, and cognitive frameworks across multiple platforms for building representative user personas",
     parameters: z.object({
       scoutUserChatToken: z
         .string()
         .optional()
-        .describe("搜索任务的唯一标识，用于创建任务，忽略这个参数，系统会自动生成")
+        .describe(
+          "Unique identifier for the search task used to create the task. You don't need to provide this - the system will automatically generate it.",
+        )
         .transform(() => generateToken()),
       // 始终生成一个新的 token，并且这个会直接覆盖 message 里面 toolInvocation.args 上的参数
       // "用户画像搜索任务 (scoutTask) 的 token，用于创建任务，如果上一个 scoutTaskChat 任务未完成，请提供上一个 scoutUserChatToken，否则忽略这个参数，系统会自动生成",
       // .default(() => generateToken()),
-      description: z.string().describe('用户画像搜索需求描述，可以用"帮我寻找"或类似英文短语开头'),
+      description: z
+        .string()
+        .describe(
+          "Research objective describing the target user groups or behavioral patterns to investigate. Use descriptive phrases like 'Help me find users who...', 'Research people interested in...', '帮我寻找...', or similar research requests.",
+        ),
     }),
     experimental_toToolResultContent: (result: PlainTextToolResult) => {
       return [{ type: "text", text: result.plainText }];
@@ -153,7 +160,7 @@ export const scoutTaskChatTool = ({
       );
       return {
         stats: stats,
-        plainText: `Scout task completed successfully.\n\nStats:\n${JSON.stringify(stats)}`,
+        plainText: `Social media research completed successfully. Data collected from multiple platforms ready for persona building.\n\nPlatform Coverage:\n${JSON.stringify(stats)}`,
       };
     },
   });
@@ -320,13 +327,13 @@ export async function runScoutTaskChatStream({
 
     try {
       const message = await streamTextPromise;
-      scoutLog.info(`message stream complete: ${message.content.substring(0, 20)}`);
+      scoutLog.info(`runScoutTaskChatStream stream complete: ${message.content.substring(0, 20)}`);
     } catch (error) {
       const errMsg = (error as Error).message;
-      scoutLog.error(`message stream error: ${errMsg}`);
+      scoutLog.error(`runScoutTaskChatStream stream error: ${errMsg}`);
       if (errMsg.includes("RESOURCE_EXHAUSTED")) {
         // 如果遇到了用量限制，不报错，换个模型
-        scoutLog.error(`RESOURCE_EXHAUSTED, fallback to llm without reduceTokens`);
+        scoutLog.warn(`Resource exhausted, switching to alternative model without token reduction`);
         reduceTokens = null;
       } else {
         await clearBackgroundToken();
@@ -336,7 +343,9 @@ export async function runScoutTaskChatStream({
 
     if (tokensConsumed > TOKENS_COMSUME_LIMIT) {
       // 达到了离谱的 token 消耗，无条件退出
-      scoutLog.error(`tokensConsumed ${tokensConsumed} exceeds limit ${TOKENS_COMSUME_LIMIT}`);
+      scoutLog.error(
+        `Token consumption ${tokensConsumed} exceeds limit ${TOKENS_COMSUME_LIMIT}, ending research`,
+      );
       break;
     }
     if (coreMessages.length >= SCOUT_CALLS_LIMIT * 2) {

@@ -89,6 +89,7 @@ export function CollectSessionClient({
     // interviewSession.userChatId 新建以后这里并不会实时更新，chat 接口直接使用 session.userChatId, 这个 chatId 不使用也不发给后端
     // id: interviewSession.userChatId?.toString(),
     api: "/api/chat/interviewSession/collect",
+    experimental_throttle: 300,
     initialMessages,
     body: initialRequestBody,
     experimental_prepareRequestBody({ messages, requestBody: _requestBody }) {
