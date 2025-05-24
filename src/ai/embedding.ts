@@ -1,4 +1,7 @@
-export async function createTextEmbedding(text: string) {
+export async function createTextEmbedding(
+  text: string,
+  task: "retrieval.query" | "retrieval.passage",
+) {
   try {
     const res = await fetch("https://api.jina.ai/v1/embeddings", {
       method: "POST",
@@ -8,7 +11,7 @@ export async function createTextEmbedding(text: string) {
       },
       body: JSON.stringify({
         model: "jina-embeddings-v3",
-        task: "retrieval.query",
+        task: task,
         truncate: true,
         input: [text],
       }),

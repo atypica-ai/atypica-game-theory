@@ -23,11 +23,11 @@ export const searchPersonasTool = ({
       "Search existing user persona database using semantic similarity matching to find relevant user profiles that match research criteria",
     parameters: z.object({
       searchQueries: z
-        .array(z.string().max(100))
-        .min(1)
-        .max(5)
+        .array(z.string().max(300))
+        .min(2)
+        .max(3)
         .describe(
-          "Search terms describing target user characteristics, demographics, interests, or behaviors (provide 1-5 diverse keywords for broad coverage)",
+          "Detailed descriptions of target user profiles to find. Each description should be specific and comprehensive, describing user characteristics, demographics, interests, behaviors, goals, and context. The more detailed and specific, the better the search results (provide 2-3 diverse detailed descriptions)",
         ),
     }),
     experimental_toToolResultContent: (result: PlainTextToolResult) => {
@@ -73,7 +73,7 @@ export const searchPersonasTool = ({
   });
 
 async function searchPersonas(locale: Locale, searchQuery: string) {
-  const embedding = await createTextEmbedding(searchQuery);
+  const embedding = await createTextEmbedding(searchQuery, "retrieval.query");
   const personas = await prisma.$queryRaw<TPersonaForStudy[]>`
       SELECT
         "id" as "personaId",

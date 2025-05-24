@@ -91,8 +91,8 @@ TokenUsage (used/limit): ${tokensStat.used}/${tokensStat.limit}
 <执行顺序和工具使用>
 1. 【步骤1】明确研究所针对的用户类型和群体特征，为后续构建代表性智能体提供基础
 2. 【步骤2】先用 searchPersonas 工具查找现有用户画像智能体：
-   • 【必须】提供与研究主题相关的 3-5 个关键词或短语作为搜索条件，确保覆盖面广泛
-   • 关键词应涵盖不同维度（如人口特征、行业、兴趣等），但无需过于精确匹配
+   • 【必须】提供与研究主题相关的 2-3 个详细描述作为搜索条件，每个描述应具体全面
+   • 描述应该详细说明目标用户的特征、背景、行为模式、目标和使用场景，越具体越好
    • 记住用户智能体具有泛化性，即使标签或名称不完全匹配，只要代表相关人群特征即可使用
    • 【条件判断】如找到不少于 5 个相关用户画像智能体，直接进入步骤4，无需执行步骤3
 3. 【步骤3 - 条件执行】当且仅当 searchPersonas 结果毫不相关或数量不足时，执行：
@@ -249,8 +249,8 @@ If the above conditions are not met, do not proceed to the next phase
 <EXECUTION_ORDER_AND_TOOL_USAGE>
 1. 【Step 1】Clarify user types and group characteristics targeted by the research to provide foundation for subsequent construction of representative agents
 2. 【Step 2】First use searchPersonas tool to find existing user persona agents:
-   • 【MANDATORY】Provide 3-5 keywords or phrases related to the research topic as search criteria, ensuring broad coverage
-   • Keywords should cover different dimensions (such as demographics, industry, interests, etc.), but need not match too precisely
+   • 【MANDATORY】Provide 2-3 detailed descriptions related to the research topic as search criteria, each description should be specific and comprehensive
+   • Descriptions should detail target user characteristics, backgrounds, behavioral patterns, goals, and usage scenarios - the more specific, the better
    • Remember that user agents have generalizability - even if labels or names don't match exactly, they can be used as long as they represent relevant population characteristics
    • 【CONDITIONAL JUDGMENT】If no fewer than 5 relevant user persona agents are found, proceed directly to Step 4, no need to execute Step 3
 3. 【Step 3 - CONDITIONAL EXECUTION】Execute only when searchPersonas results are completely irrelevant or insufficient in quantity:

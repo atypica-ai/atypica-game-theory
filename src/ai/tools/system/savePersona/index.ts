@@ -86,9 +86,9 @@ export const savePersonaTool = ({
 
 async function createPersonaEmbedding(persona: Persona) {
   try {
-    const text = persona.name + " " + (persona.tags as string[])?.join(" ");
-    // const text = persona.prompt;
-    const embedding = await createTextEmbedding(text);
+    // const text = persona.name + " " + (persona.tags as string[])?.join(" ");
+    const text = persona.prompt; // 使用 prompt 进行更精确的搜索
+    const embedding = await createTextEmbedding(text, "retrieval.passage");
     await prisma.$executeRaw`
       UPDATE "Persona"
       SET "embedding" = ${JSON.stringify(embedding)}::vector

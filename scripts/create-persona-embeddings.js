@@ -2,7 +2,7 @@ const { PrismaClient } = require("../src/prisma/client");
 
 const prisma = new PrismaClient();
 
-async function embeddingRequest(text) {
+async function embeddingRequest(text, task) {
   const res = await fetch("https://api.jina.ai/v1/embeddings", {
     method: "POST",
     headers: {
@@ -11,7 +11,7 @@ async function embeddingRequest(text) {
     },
     body: JSON.stringify({
       model: "jina-embeddings-v3",
-      task: "retrieval.query",
+      task: task,
       truncate: true,
       input: [text],
     }),
@@ -21,7 +21,7 @@ async function embeddingRequest(text) {
     console.log(`Rate limit exceeded, wait for ${seconds} seconds`);
     return await new Promise((resolve, reject) => {
       setTimeout(() => {
-        embeddingRequest(text)
+        embeddingRequest(text, task)
           .then((embedding) => resolve(embedding))
           .catch((error) => reject(error));
       }, seconds * 1000);
@@ -54,9 +54,9 @@ async function createEmbedding() {
     for (const persona of personas) {
       const promise = new Promise(async (resolve, reject) => {
         try {
-          const text = persona.name + " " + persona.tags.join(" ");
-          // const text = persona.prompt;
-          const embedding = await embeddingRequest(text);
+          // const text = persona.name + " " + persona.tags.join(" ");
+          const text = persona.prompt;
+          const embedding = await embeddingRequest(text, "retrieval.passage");
           await prisma.$executeRaw`
             UPDATE "Persona"
             SET "embedding" = ${JSON.stringify(embedding)}::vector
@@ -77,14 +77,14 @@ async function createEmbedding() {
 }
 
 async function searchPersona(keyword) {
-  const embedding = await embeddingRequest(keyword);
+  const embedding = await embeddingRequest(keyword, "retrieval.query");
   const result = await prisma.$queryRaw`
     SELECT
       id,
       name,
       "embedding" <=> ${JSON.stringify(embedding)}::vector AS distance
     FROM "Persona"
-    WHERE embedding IS NOT NULL AND ("embedding" <=> ${JSON.stringify(embedding)}::vector) < 0.9
+    WHERE embedding IS NOT NULL AND ("embedding" <=> ${JSON.stringify(embedding)}::vector) < 0.5
     ORDER BY distance ASC
     LIMIT 5
   `;
