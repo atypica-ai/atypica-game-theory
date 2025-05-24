@@ -51,7 +51,7 @@ export const savePersonaTool = ({
         .enum(["zh-CN", "en-US"])
         .optional()
         .describe(
-          "Language locale of the saved content. Do not provide a value if there is no matching option",
+          "Language used in the text parameters (name, personaPrompt, tags, etc.). Use 'zh-CN' for Chinese content, 'en-US' for English content. Do not provide a value if there is no matching option",
         ),
     }),
     experimental_toToolResultContent: (result: PlainTextToolResult) => {

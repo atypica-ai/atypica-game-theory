@@ -5,13 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ExtractServerActionData } from "@/lib/serverAction";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
 type FeaturedStudy = ExtractServerActionData<typeof fetchPublicFeaturedStudies>[number];
 
 export function FeaturedStudies() {
+  const locale = useLocale();
   const t = useTranslations("HomePage.FeaturedStudies");
   const [studies, setStudies] = useState<FeaturedStudy[]>([]);
   const [loading, setLoading] = useState(true);
@@ -20,7 +21,11 @@ export function FeaturedStudies() {
   useEffect(() => {
     const loadStudies = async () => {
       setLoading(true);
-      const result = await fetchPublicFeaturedStudies({ limit: 6, random: true });
+      const result = await fetchPublicFeaturedStudies({
+        locale,
+        limit: 6,
+        random: true,
+      });
       if (result.success) {
         setStudies(result.data);
       } else {
@@ -29,7 +34,7 @@ export function FeaturedStudies() {
       setLoading(false);
     };
     loadStudies();
-  }, []);
+  }, [locale]);
 
   if (loading) {
     return (

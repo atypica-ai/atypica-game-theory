@@ -5,15 +5,19 @@ import { StudyUserChat, UserChatWithMessages } from "@/lib/data/UserChat";
 import { ServerActionResult } from "@/lib/serverAction";
 import { Analyst, FeaturedStudy, User } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
+import { Locale } from "next-intl";
+import { getLocale } from "next-intl/server";
 import { revalidatePath } from "next/cache";
 import { AdminPermission } from "../types";
 // Public action for fetching featured studies (no auth check needed)
 
 export async function fetchPublicFeaturedStudies({
+  locale,
   category,
   limit,
   random,
 }: {
+  locale: Locale;
   category?: string;
   limit?: number;
   random?: boolean;
@@ -26,14 +30,30 @@ export async function fetchPublicFeaturedStudies({
     })[]
   >
 > {
+  locale = locale || (await getLocale());
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let where: any = category && category !== "all" ? { category: category } : undefined;
+  let where: any =
+    category && category !== "all"
+      ? {
+          category: category,
+          analyst: { locale: locale },
+        }
+      : {
+          analyst: { locale: locale },
+        };
   if (random && limit) {
     // 如果有 random，一定要有 limit，并且忽略 category
-    const result =
-      (await prisma.$queryRaw`SELECT id from "FeaturedStudy" ORDER BY RANDOM() LIMIT ${limit}`) as {
-        id: number;
-      }[];
+    const result = (await prisma.$queryRaw`
+      SELECT "FeaturedStudy".id
+      FROM "FeaturedStudy"
+      INNER JOIN "Analyst" ON "Analyst".id = "FeaturedStudy"."analystId"
+      WHERE "Analyst".locale = ${locale}
+      ORDER BY RANDOM()
+      LIMIT ${limit}
+    `) as {
+      id: number;
+    }[];
+    console.log(result);
     where = {
       id: {
         in: result.map((item) => item.id),

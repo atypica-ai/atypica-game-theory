@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn } from "@/lib/utils";
 import { Loader2Icon } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { FeaturedStudyCategory } from "./data";
@@ -15,6 +15,7 @@ import { FeaturedStudyCategory } from "./data";
 type TStudies = ExtractServerActionData<typeof fetchPublicFeaturedStudies>;
 
 export default function FeaturedStudiesClient() {
+  const locale = useLocale();
   const t = useTranslations("FeaturedStudiesPage");
   const [studies, setStudies] = useState<TStudies>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -25,6 +26,7 @@ export default function FeaturedStudiesClient() {
       setIsLoading(true);
       try {
         const result = await fetchPublicFeaturedStudies({
+          locale,
           category: activeCategory === "all" ? undefined : activeCategory,
         });
         if (result.success) {
@@ -35,7 +37,7 @@ export default function FeaturedStudiesClient() {
       }
     }
     loadStudies();
-  }, [activeCategory]);
+  }, [activeCategory, locale]);
 
   // Filter studies by category
   const filteredStudies =
