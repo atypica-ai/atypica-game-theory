@@ -53,7 +53,6 @@ export async function fetchPublicFeaturedStudies({
     `) as {
       id: number;
     }[];
-    console.log(result);
     where = {
       id: {
         in: result.map((item) => item.id),

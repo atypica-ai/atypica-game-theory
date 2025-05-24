@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { Locale } from "next-intl";
+import { ImageLoader } from "next/image";
 import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
@@ -107,9 +108,11 @@ export function fixMalformedUnicodeString(str?: string) {
 
 // node 18 和 20 的 fetch 函数不直接使用代理，需要额外实现
 // https://stackoverflow.com/questions/72306101/make-a-request-in-native-fetch-with-proxy-in-nodejs-18
-export function proxiedImageLoader({ src }: { src: string }) {
-  return `/api/proxy-image?url=${encodeURIComponent(src)}`;
-}
+export const proxiedImageLoader: ImageLoader = ({ src, width, quality }) => {
+  const proxiedUrl = `/api/proxy-image?url=${encodeURIComponent(src)}`;
+  // 这样可以使用 nextjs 的图像优化方法以及缓存 .next/cache/images
+  return `/_next/image?url=${encodeURIComponent(proxiedUrl)}&w=${width}&q=${quality ?? 100}`;
+};
 
 export function useDevice() {
   const isMobile =
