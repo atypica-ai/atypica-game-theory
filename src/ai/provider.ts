@@ -54,10 +54,9 @@ const google = (modelId: string, settings?: any) => {
   return googleGenerativeAI(modelId, settings);
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const vertex = (modelId: string, settings?: any) => {
+const vertex = (() => {
   const credentials = JSON.parse(process.env.GOOGLE_VERTEX_AI_APPLICATION_CREDENTIALS!);
-  const _vertex = createVertex({
+  return createVertex({
     location: process.env.GOOGLE_VERTEX_LOCATION,
     project: process.env.GOOGLE_VERTEX_PROJECT,
     googleAuthOptions: {
@@ -65,8 +64,7 @@ const vertex = (modelId: string, settings?: any) => {
     },
     fetch: proxiedFetch,
   });
-  return _vertex(modelId, settings);
-};
+})();
 
 // export const bedrock = (model: "claude-3-7-sonnet" = "claude-3-7-sonnet") => {
 //   if (model === "claude-3-7-sonnet") {
@@ -148,5 +146,19 @@ export function llm(modelName: LLMModelName, options?: any) {
       return deepseek("Pro/deepseek-ai/DeepSeek-R1", options);
     case "qwen3-235b-a22b":
       return siliconflow("Qwen/Qwen3-235B-A22B", options);
+  }
+}
+
+export type ImageModelName = "gpt-image-1" | "imagen-4.0-ultra" | "imagen-4.0";
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function imageModel(modelName: ImageModelName, options?: any) {
+  switch (modelName) {
+    case "gpt-image-1":
+      return azure.imageModel("gpt-image-1", options);
+    case "imagen-4.0-ultra":
+      return vertex.image("imagen-4.0-ultra-generate-exp-05-20", options);
+    case "imagen-4.0":
+      return vertex.image("imagen-4.0-generate-preview-05-20", options);
   }
 }

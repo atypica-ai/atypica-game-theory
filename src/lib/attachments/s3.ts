@@ -13,6 +13,9 @@ export const s3Client = new S3Client({
 
 export const s3Bucket = process.env.AWS_S3_BUCKET_NAME!;
 
+/**
+ * @todo 要从 url 里面识别和获取 s3 bucket 并判断是否支持签名
+ */
 export async function s3SignedUrl(url: string): Promise<string> {
   const key = (() => {
     let urlPath = url;
