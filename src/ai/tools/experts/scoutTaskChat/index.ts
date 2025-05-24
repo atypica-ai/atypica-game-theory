@@ -9,7 +9,7 @@ import {
   persistentAIMessageToDB,
   prepareMessagesForStreaming,
 } from "@/ai/messageUtils";
-import { buildPersonaSystem, scoutSystem } from "@/ai/prompt";
+import { scoutSystem } from "@/ai/prompt";
 import {
   dyPostCommentsTool,
   dySearchTool,
@@ -18,11 +18,9 @@ import {
   insPostCommentsTool,
   insSearchTool,
   insUserPostsTool,
-  savePersonaTool,
   tiktokPostCommentsTool,
   tiktokSearchTool,
   tiktokUserPostsTool,
-  toolCallError,
   xhsNoteCommentsTool,
   xhsSearchTool,
   xhsUserNotesTool,
@@ -203,8 +201,6 @@ export async function runScoutTaskChatStream({
   };
 
   const allTools = {
-    // [ToolName.reasoningThinking]: reasoningThinkingTool({ abortSignal, statReport }), // 会干扰后面 buildPersona ，不要了
-    [ToolName.savePersona]: savePersonaTool({ scoutUserChatId, statReport }), // 实际不会被用到，但先放着，历史代码
     [ToolName.dySearch]: dySearchTool,
     [ToolName.dyPostComments]: dyPostCommentsTool,
     [ToolName.dyUserPosts]: dyUserPostsTool,
@@ -217,43 +213,27 @@ export async function runScoutTaskChatStream({
     [ToolName.xhsSearch]: xhsSearchTool,
     [ToolName.xhsUserNotes]: xhsUserNotesTool,
     [ToolName.xhsNoteComments]: xhsNoteCommentsTool,
-    [ToolName.toolCallError]: toolCallError,
+    // [ToolName.toolCallError]: toolCallError,
   };
+  const systemPrompt = scoutSystem({ locale });
+  const tools =
+    locale === "zh-CN"
+      ? allTools
+      : (Object.fromEntries(
+          Object.entries(allTools).filter(([key]) => !/^(xhs|dy)/.test(key)),
+        ) as typeof allTools);
 
-  let endRound = false;
   let tokensConsumed = 0;
   while (true) {
     const { coreMessages, streamingMessage, toolUseCount } =
       await prepareMessagesForStreaming(scoutUserChatId);
-    let systemPrompt = scoutSystem({ locale });
-    let reduceTokens: typeof REDUCE_TOKENS | null = REDUCE_TOKENS;
-    let tools = Object.fromEntries(
-      Object.entries(allTools).filter(([key]) => key !== ToolName.savePersona),
-    ) as typeof allTools;
     let toolChoice: ToolChoice<typeof allTools> = "auto";
     let maxSteps = 3; // 不要一下子很多 steps 因为现在会并行调用 tools，每一轮 steps 少一点，方便及时判断 coreMessages 长度
+    let reduceTokens: typeof REDUCE_TOKENS | null = REDUCE_TOKENS;
     if (coreMessages.length > 2 && Object.keys(toolUseCount).length === 0) {
       // 两条消息以后，必须开始使用工具，但是为了不一直使用工具，调用2次先停下来，后面好重新判断 toolUseCount
       toolChoice = "required";
       maxSteps = 1;
-    }
-    if (coreMessages.length > SCOUT_CALLS_LIMIT * 2) {
-      // 进入终局，批量保存人设
-      endRound = true;
-      systemPrompt = buildPersonaSystem({ locale });
-      reduceTokens = null; // 使用 claude
-      tools = Object.fromEntries(
-        Object.entries(allTools).filter(
-          ([key]) => key === ToolName.savePersona || key === ToolName.toolCallError,
-        ),
-      ) as typeof allTools;
-      toolChoice = {
-        type: "tool",
-        toolName: ToolName.savePersona,
-      };
-      maxSteps = 1;
-      // 超出限制以后不再继续，直接结束，上面的这些赋值先留着，保留历史代码
-      break;
     }
     const { debouncePersistentMessage, immediatePersistentMessage } =
       createDebouncePersistentMessage(scoutUserChatId, 5000, scoutLog); // 5000 debounce
@@ -354,15 +334,16 @@ export async function runScoutTaskChatStream({
       }
     }
 
-    if (endRound) {
-      scoutLog.info("ScoutTask completed");
-      break;
-    }
     if (tokensConsumed > TOKENS_COMSUME_LIMIT) {
       // 达到了离谱的 token 消耗，无条件退出
       scoutLog.error(`tokensConsumed ${tokensConsumed} exceeds limit ${TOKENS_COMSUME_LIMIT}`);
       break;
     }
+    if (coreMessages.length >= SCOUT_CALLS_LIMIT * 2) {
+      // 超出限制以后不再继续，直接结束，这个判断后置，也就是说，超出了以后，再跑最后一轮
+      break;
+    }
+
     // 开始一轮新的搜索，插入一条新消息，下一次循环开始的时候会从数据库里读取新的 messages 记录
     await persistentAIMessageToDB(scoutUserChatId, {
       id: generateId(),

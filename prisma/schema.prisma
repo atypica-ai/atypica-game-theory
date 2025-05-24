@@ -201,15 +201,15 @@ enum MessageRole {
 }
 
 model ChatMessage {
-  id         Int         @id @default(autoincrement())
-  messageId  String      @unique @db.VarChar(64)
-  userChatId Int
-  userChat   UserChat    @relation(fields: [userChatId], references: [id])
-  role       MessageRole
-  content    String      @db.Text
-  parts      Json
-  extra      Json?
-  attachments     Json?
+  id          Int         @id @default(autoincrement())
+  messageId   String      @unique @db.VarChar(64)
+  userChatId  Int
+  userChat    UserChat    @relation(fields: [userChatId], references: [id])
+  role        MessageRole
+  content     String      @db.Text
+  parts       Json
+  extra       Json?
+  attachments Json?
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
