@@ -1,12 +1,12 @@
 import "server-only";
 
-import { llm, providerOptions } from "@/ai/llm";
 import {
   reportCoverPrologue,
   reportCoverSystem,
   reportHTMLPrologue,
   reportHTMLSystem,
 } from "@/ai/prompt";
+import { llm, providerOptions } from "@/ai/provider";
 import { PlainTextToolResult, StatReporter } from "@/ai/tools/types";
 import { ChatMessageAttachment } from "@/lib/attachments";
 import { s3SignedUrl } from "@/lib/attachments/s3";

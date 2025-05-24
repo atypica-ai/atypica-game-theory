@@ -1,8 +1,8 @@
 import "server-only";
 
-import { llm, LLMModelName, providerOptions } from "@/ai/llm";
 import { convertStepsToAIMessage, prepareMessagesForStreaming } from "@/ai/messageUtils";
 import { buildPersonaSystem } from "@/ai/prompt";
+import { llm, LLMModelName, providerOptions } from "@/ai/provider";
 import { savePersonaTool } from "@/ai/tools/tools";
 import { PlainTextToolResult, StatReporter, ToolName } from "@/ai/tools/types";
 import { prisma } from "@/prisma/prisma";
@@ -137,7 +137,12 @@ export async function runBuildPersona({
       onStepFinish: async (step) => {
         const toolCalls = step.toolCalls.map((call) => call.toolName);
         const usage = step.usage;
-        studyLog.info({ msg: "Persona building step completed", stepType: step.stepType, toolCalls, usage });
+        studyLog.info({
+          msg: "Persona building step completed",
+          stepType: step.stepType,
+          toolCalls,
+          usage,
+        });
         if (statReport) {
           const reportedBy = "buildPersona tool";
           const promises = [

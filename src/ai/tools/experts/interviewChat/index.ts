@@ -1,6 +1,5 @@
 import "server-only";
 
-import { llm, LLMModelName, providerOptions } from "@/ai/llm";
 import { convertStepsToAIMessage } from "@/ai/messageUtils";
 import {
   interviewDigestSystem,
@@ -9,6 +8,7 @@ import {
   interviewerSystem,
   personaAgentSystem,
 } from "@/ai/prompt";
+import { llm, LLMModelName, providerOptions } from "@/ai/provider";
 import {
   dySearchTool,
   insSearchTool,

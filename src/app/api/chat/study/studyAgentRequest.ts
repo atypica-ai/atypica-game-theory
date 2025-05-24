@@ -1,6 +1,6 @@
-import { llm, providerOptions } from "@/ai/llm";
 import { appendChunkToStreamingMessage, createDebouncePersistentMessage } from "@/ai/messageUtils";
 import { studySystem } from "@/ai/prompt";
+import { llm, providerOptions } from "@/ai/provider";
 import {
   buildPersonaTool,
   generateReportTool,

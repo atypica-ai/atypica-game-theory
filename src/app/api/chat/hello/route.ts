@@ -1,10 +1,10 @@
-import { llm, providerOptions } from "@/ai/llm";
 import {
   appendStepToStreamingMessage,
   persistentAIMessageToDB,
   prepareMessagesForStreaming,
 } from "@/ai/messageUtils";
 import { helloSystem } from "@/ai/prompt";
+import { llm, providerOptions } from "@/ai/provider";
 import { thanksTool } from "@/ai/tools/tools";
 import { ToolName } from "@/ai/tools/types";
 import { authOptions } from "@/lib/auth";

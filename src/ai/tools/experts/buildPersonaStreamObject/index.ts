@@ -1,8 +1,8 @@
 import "server-only";
 
-import { llm, providerOptions } from "@/ai/llm";
 import { CONTINUE_ASSISTANT_STEPS, prepareMessagesForStreaming } from "@/ai/messageUtils";
 import { buildPersonaSystem } from "@/ai/prompt";
+import { llm, providerOptions } from "@/ai/provider";
 import { PlainTextToolResult, StatReporter } from "@/ai/tools/types";
 import { prisma } from "@/prisma/prisma";
 import { streamObject, tool } from "ai";

@@ -1,5 +1,5 @@
-import { llm, providerOptions } from "@/ai/llm";
 import { personaAgentSystem } from "@/ai/prompt";
+import { llm, providerOptions } from "@/ai/provider";
 import { fetchPersonaById } from "@/app/(legacy)/personas/actions";
 import { authOptions } from "@/lib/auth";
 import { Message, smoothStream, streamText } from "ai";

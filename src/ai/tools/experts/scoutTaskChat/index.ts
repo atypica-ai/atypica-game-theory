@@ -1,6 +1,5 @@
 import "server-only";
 
-import { llm, LLMModelName, providerOptions } from "@/ai/llm";
 import {
   appendChunkToStreamingMessage,
   CONTINUE_ASSISTANT_STEPS,
@@ -10,6 +9,7 @@ import {
   prepareMessagesForStreaming,
 } from "@/ai/messageUtils";
 import { scoutSystem } from "@/ai/prompt";
+import { llm, LLMModelName, providerOptions } from "@/ai/provider";
 import {
   dyPostCommentsTool,
   dySearchTool,

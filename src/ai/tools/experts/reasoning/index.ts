@@ -1,7 +1,7 @@
 import "server-only";
 
-import { llm, providerOptions } from "@/ai/llm";
 import { reasoningPrologue, reasoningSystem } from "@/ai/prompt";
+import { llm, providerOptions } from "@/ai/provider";
 import { PlainTextToolResult, ReasoningThinkingResult, StatReporter } from "@/ai/tools/types";
 import { fixMalformedUnicodeString } from "@/lib/utils";
 import { streamText, tool } from "ai";

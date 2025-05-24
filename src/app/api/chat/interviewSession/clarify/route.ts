@@ -1,10 +1,10 @@
-import { llm, providerOptions } from "@/ai/llm";
 import {
   appendStepToStreamingMessage,
   persistentAIMessageToDB,
   prepareMessagesForStreaming,
 } from "@/ai/messageUtils";
 import { interviewSessionSystem } from "@/ai/prompt";
+import { llm, providerOptions } from "@/ai/provider";
 import {
   initInterviewProjectStatReporter,
   reasoningThinkingTool,
