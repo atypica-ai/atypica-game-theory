@@ -81,7 +81,7 @@ async function searchPersonas(locale: Locale, searchQuery: string) {
         "source",
         "tags"
       FROM "Persona"
-      WHERE "embedding" <=> ${JSON.stringify(embedding)}::vector < 0.5 AND locale = ${locale}
+      WHERE "embedding" <=> ${JSON.stringify(embedding)}::vector < 0.9 AND locale = ${locale}
       ORDER BY "embedding" <=> ${JSON.stringify(embedding)}::vector ASC
       LIMIT 5
     `;

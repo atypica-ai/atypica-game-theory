@@ -46,7 +46,7 @@ async function createEmbedding() {
       SELECT id, name, tags, prompt
       FROM "Persona"
       WHERE "embedding" IS NULL
-      ORDER BY "id" ASC
+      ORDER BY "id" DESC
       LIMIT ${take}
     `;
     if (!personas.length) break;
@@ -55,6 +55,7 @@ async function createEmbedding() {
       const promise = new Promise(async (resolve, reject) => {
         try {
           // const text = persona.name + " " + persona.tags.join(" ");
+          // 如果 prompt 长度 < 300，是质量不好的 persona，要跳过。embedding = null, locale = null, 确保不会被搜索出来
           const text = persona.prompt;
           const embedding = await embeddingRequest(text, "retrieval.passage");
           await prisma.$executeRaw`
@@ -84,7 +85,7 @@ async function searchPersona(keyword) {
       name,
       "embedding" <=> ${JSON.stringify(embedding)}::vector AS distance
     FROM "Persona"
-    WHERE embedding IS NOT NULL AND ("embedding" <=> ${JSON.stringify(embedding)}::vector) < 0.5
+    WHERE embedding IS NOT NULL AND ("embedding" <=> ${JSON.stringify(embedding)}::vector) < 0.9
     ORDER BY distance ASC
     LIMIT 5
   `;
