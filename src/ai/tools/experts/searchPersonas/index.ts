@@ -23,7 +23,7 @@ export const searchPersonasTool = ({
       "Search existing user persona database using semantic similarity matching to find relevant user profiles that match research criteria",
     parameters: z.object({
       searchQueries: z
-        .array(z.string().max(300))
+        .array(z.string()) // 英文比中文字符数多很多，这里不要加 .max(300)
         .min(2)
         .max(3)
         .describe(
