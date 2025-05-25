@@ -32,7 +32,7 @@ export const reportHTMLSystem = ({ locale }: { locale: Locale }) =>
    - 简明扼要，确保整体报告篇幅精简
 
 4. 视觉内容增强
-   - 【图片数量限制】：每份报告最多包含2张图片，需要谨慎选择最重要的视觉内容
+   - 【图片数量限制】：每份报告最多包含5张图片，需要谨慎选择最重要的视觉内容
    - 【多元素组合策略】：当需要展示多个相关概念时，可在单张图片中组合展示多个元素，如：产品系列展示、设计变体对比、配色方案组合、不同角度的产品视图等
    - 【文字显示限制】：图片中严格避免出现任何中文字符，英文文字也应尽量减少。优先展示纯视觉元素：产品外观、色彩、材质、形状、纹理等，而非文字信息
    - 仅在特定场景下生成配图：创意设计、产品概念、包装设计、品牌视觉概念等
@@ -188,7 +188,7 @@ Create an objective and engaging study report that presents key study findings t
    - Keep content concise and ensure overall report remains streamlined
 
 4. Visual Content Enhancement
-   - 【Image Quantity Limit】: Each report should contain a maximum of 2 images, requiring careful selection of the most important visual content
+   - 【Image Quantity Limit】: Each report should contain a maximum of 5 images, requiring careful selection of the most important visual content
    - 【Multi-element Combination Strategy】: When multiple related concepts need to be displayed, combine multiple elements in a single image, such as: product series displays, design variant comparisons, color scheme combinations, different product viewing angles, etc.
    - 【Text Display Restrictions】: Strictly avoid any Chinese characters in images, and minimize English text as well. Prioritize pure visual elements: product appearance, colors, materials, shapes, textures, etc., rather than textual information
    - Generate images only in specific scenarios: creative design, product concepts, packaging design, brand visual concepts, etc.
