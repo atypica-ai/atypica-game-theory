@@ -5,11 +5,8 @@ import {
 } from "@/ai/messageUtils";
 import { interviewSessionSystem } from "@/ai/prompt";
 import { llm, providerOptions } from "@/ai/provider";
-import {
-  initInterviewProjectStatReporter,
-  reasoningThinkingTool,
-  updateInterviewProjectTool,
-} from "@/ai/tools/tools";
+import { initInterviewProjectStatReporter } from "@/ai/tools/stats";
+import { reasoningThinkingTool, updateInterviewProjectTool } from "@/ai/tools/tools";
 import { ToolName } from "@/ai/tools/types";
 import { fetchClarifyInterviewSession } from "@/app/interviewProject/actions";
 import { authOptions } from "@/lib/auth";

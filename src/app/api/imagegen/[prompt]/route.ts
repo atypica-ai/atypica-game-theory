@@ -1,17 +1,50 @@
 import { imageModel } from "@/ai/provider";
+import { initStudyStatReporter } from "@/ai/tools/stats";
 import { s3SignedUrl, uploadToS3 } from "@/lib/attachments/s3";
+import { authOptions } from "@/lib/auth";
 import { rootLogger } from "@/lib/logging";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
 import { experimental_generateImage as generateImage } from "ai";
 import { createHash } from "crypto";
+import { getServerSession } from "next-auth";
 import { z } from "zod";
 
-export async function GET(
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  req: Request,
-  { params }: { params: Promise<{ prompt: string }> },
-) {
+export async function GET(req: Request, { params }: { params: Promise<{ prompt: string }> }) {
+  const referer = req.headers.get("referer") ?? "";
+  const match = referer.match(/\/artifacts\/report\/(\w+)\//);
+  if (!match) {
+    return new Response("imagegen url is only available on report page", { status: 403 });
+  }
+  const reportToken = match[1];
+  const report = await prisma.analystReport.findUniqueOrThrow({
+    where: { token: reportToken },
+    select: {
+      analyst: {
+        select: {
+          id: true,
+          userId: true,
+          studyUserChat: { select: { id: true, token: true } },
+        },
+      },
+    },
+  });
+  if (!report.analyst.studyUserChat) {
+    rootLogger.error(`Failed to find studyUserChat for analyst ${report.analyst.id}`);
+    return new Response("Something went wrong", { status: 500 });
+  }
+  const studyLog = rootLogger.child({
+    studyUserChatId: report.analyst.studyUserChat.id,
+    studyUserChatToken: report.analyst.studyUserChat.token,
+  });
+  const { statReport } = initStudyStatReporter({
+    userId: report.analyst.userId,
+    studyUserChatId: report.analyst.studyUserChat.id,
+    studyLog,
+  });
+
+  const session = await getServerSession(authOptions);
+
   const { prompt } = await params;
   const url = new URL(req.url);
   let ratio = url.searchParams.get("ratio") as `${number}:${number}` | undefined;
@@ -20,7 +53,7 @@ export async function GET(
   } catch {
     ratio = "1:1";
   }
-  const genLog = rootLogger.child({
+  const genLog = studyLog.child({
     prompt: prompt.substring(0, 20),
     ratio,
   });
@@ -65,13 +98,18 @@ export async function GET(
     }
   }
 
+  if (!session?.user || report.analyst.userId !== session.user.id) {
+    // 如果图片还没生成，只有用户自己可以访问，因为要消耗 token
+    return new Response("Unauthorized", { status: 401 });
+  }
+
   // 立即先插入记录
   const { id } = await prisma.imageGeneration.create({
     data: {
       prompt,
       promptHash,
       objectUrl: "",
-      extra: { ratio },
+      extra: { ratio, reportToken },
     },
   });
 
@@ -83,6 +121,11 @@ export async function GET(
         prompt,
         aspectRatio: ratio,
         // abortSignal: req.signal, // 后台运行，不 abort
+      });
+      // 图像生成一张固定消耗 10000 tokens
+      await statReport("tokens", 10000, {
+        reportedBy: "image generation",
+        imageGenerationId: id,
       });
       const { getObjectUrl, objectUrl } = await uploadToS3({
         keySuffix: `imagegen/${promptHash}.png`,

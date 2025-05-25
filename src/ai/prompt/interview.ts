@@ -157,23 +157,25 @@ export const interviewDigestSystem = ({
 }: {
   locale: Locale;
   results: ({ name: string; issue: string } | { name: string; conclusion: string })[];
-}) =>
-  locale === "zh-CN"
+}) => {
+  const text = results
+    .map((result) => {
+      const text =
+        "conclusion" in result && result.conclusion
+          ? result.conclusion
+          : "issue" in result && result.issue
+            ? result.issue
+            : "";
+      return `<interview>${result.name}\n${text}</interview>`;
+    })
+    .join("\n");
+  return locale === "zh-CN"
     ? `${promptSystemConfig({ locale })}
 请根据以下访谈结果生成一份简单的摘要，不超过500字。
-${results
-  .map((result) => {
-    const text = "conclusion" in result ? result.conclusion : "issue" in result ? result.issue : "";
-    return `${result.name}\n${text}\n`;
-  })
-  .join("\n")}
+${text}
 `
     : `${promptSystemConfig({ locale })}
 Please generate a brief summary based on the following interview results, no more than 500 words.
-${results
-  .map((result) => {
-    const text = "conclusion" in result ? result.conclusion : "issue" in result ? result.issue : "";
-    return `${result.name}\n${text}\n`;
-  })
-  .join("\n")}
+${text}
 `;
+};

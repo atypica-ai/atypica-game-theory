@@ -123,7 +123,7 @@ export const interviewChatTool = ({
         } catch (error) {
           return {
             name,
-            issue: `访谈遇到问题 ${(error as Error).message}`,
+            issue: `Interview encountered an issue: ${(error as Error).message}`,
           };
         }
       };
@@ -136,11 +136,15 @@ export const interviewChatTool = ({
     },
   });
 
+/**
+ * - 这里没有统计 tokens，模型便宜问题不大
+ * - 这里也没有 abortSignal, 所以在研究被人工 abort 了以后 (tool 会先停止，然后是 study)，有一定概率会出现 interview 中断自动跳过开始进行 generateDigest，
+ *   最后 study 还是有访谈总结，这样挺好的。。。
+ */
 async function generateDigest(
   locale: Locale,
   results: ({ name: string; issue: string } | { name: string; conclusion: string })[],
 ) {
-  // 注意，这里没有统计 tokens，模型便宜问题不大
   const digest = await generateText({
     model: llm("gpt-4o-mini"),
     providerOptions,
@@ -253,6 +257,7 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: Message[]) {
     const response = streamText({
       model: reduceTokens ? llm(reduceTokens.model) : llm("claude-3-7-sonnet"), // 不能用 gpt-4o，指令遵循的比较差，会结束不了
       providerOptions: providerOptions,
+      maxRetries: 0, // 不要自动重试
       system: interviewerPrompt,
       temperature: 0.3,
       messages: messages,
@@ -338,6 +343,7 @@ async function chatWithPersona(chatProps: ChatProps, messages: Message[]) {
       model: reduceTokens ? llm(reduceTokens.model, reduceTokens.options) : llm("gpt-4o"),
       providerOptions: providerOptions,
       system: personaPrompt,
+      maxRetries: 0, // 不要自动重试
       temperature: 0.3,
       messages: messages,
       tools: {

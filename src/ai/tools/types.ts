@@ -72,5 +72,5 @@ export enum ToolName {
 export type StatReporter = (
   dimension: "tokens" | "duration" | "steps" | "personas",
   value: number,
-  extra?: unknown,
+  extra: { reportedBy: string } & Record<string, unknown>,
 ) => Promise<void>;

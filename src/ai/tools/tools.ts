@@ -28,4 +28,3 @@ export { requestPaymentTool } from "./user/payment";
 export { thanksTool } from "./user/thanks";
 
 export { handleToolCallError, toolCallError } from "./error";
-export * from "./stats";

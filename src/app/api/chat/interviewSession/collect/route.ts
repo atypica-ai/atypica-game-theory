@@ -6,10 +6,8 @@ import {
 import { interviewSessionSystem } from "@/ai/prompt";
 import { llm, providerOptions } from "@/ai/provider";
 import { reasoningThinkingTool } from "@/ai/tools/experts/reasoning";
-import {
-  initInterviewProjectStatReporter,
-  saveInterviewSessionSummaryTool,
-} from "@/ai/tools/tools";
+import { initInterviewProjectStatReporter } from "@/ai/tools/stats";
+import { saveInterviewSessionSummaryTool } from "@/ai/tools/tools";
 import { ToolName } from "@/ai/tools/types";
 import { fetchCollectInterviewSession } from "@/app/interviewProject/actions";
 import { rootLogger } from "@/lib/logging";
