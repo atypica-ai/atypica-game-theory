@@ -8,8 +8,8 @@ import {
 } from "@/ai/prompt";
 import { llm, providerOptions } from "@/ai/provider";
 import { PlainTextToolResult, StatReporter } from "@/ai/tools/types";
-import { ChatMessageAttachment } from "@/lib/attachments";
 import { s3SignedUrl } from "@/lib/attachments/s3";
+import { ChatMessageAttachment } from "@/lib/attachments/types";
 import { generateToken } from "@/lib/utils";
 import { Analyst, AnalystReport } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
@@ -230,7 +230,7 @@ export async function generateReport({
       const messages: Omit<Message, "id">[] = [
         {
           role: "user",
-          content: reportHTMLPrologue(analyst, instruction),
+          content: reportHTMLPrologue({ locale, analyst, instruction }),
           experimental_attachments,
         },
       ];
@@ -321,7 +321,7 @@ export async function generateCover({
     model: llm("claude-3-7-sonnet"),
     providerOptions: providerOptions,
     system: reportCoverSystem({ locale }),
-    messages: [{ role: "user", content: reportCoverPrologue(analyst, instruction) }],
+    messages: [{ role: "user", content: reportCoverPrologue({ locale, analyst, instruction }) }],
     maxSteps: 1,
     maxTokens: 10000,
     onError: ({ error }) => reportLog.error(`Cover SVG error: ${(error as Error).message}`),

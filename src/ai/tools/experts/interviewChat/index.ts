@@ -17,8 +17,8 @@ import {
   tiktokSearchTool,
 } from "@/ai/tools/tools";
 import { InterviewChatResult, PlainTextToolResult, StatReporter, ToolName } from "@/ai/tools/types";
-import { ChatMessageAttachment } from "@/lib/attachments";
 import { s3SignedUrl } from "@/lib/attachments/s3";
+import { ChatMessageAttachment } from "@/lib/attachments/types";
 import { fixMalformedUnicodeString, generateToken } from "@/lib/utils";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
@@ -256,18 +256,22 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: Message[]) {
       system: interviewerPrompt,
       temperature: 0.3,
       messages: messages,
-      maxSteps: 2,
       tools: {
         [ToolName.reasoningThinking]: reasoningThinkingTool({ locale, abortSignal, statReport }),
         [ToolName.saveInterviewConclusion]: saveInterviewConclusionTool(analystInterviewId),
       },
-      toolChoice:
-        messages.length < 10
-          ? "auto"
-          : {
+      ...(messages.length < 10
+        ? {
+            toolChoice: "auto",
+            maxSteps: 2,
+          }
+        : {
+            toolChoice: {
               type: "tool",
               toolName: ToolName.saveInterviewConclusion,
             },
+            maxSteps: 1,
+          }),
       onStepFinish: async (step) => {
         interviewLog.info({
           msg: "Expert interviewer step completed",

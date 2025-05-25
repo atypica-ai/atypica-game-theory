@@ -1,4 +1,5 @@
 "use server";
+import { getRequestOrigin } from "@/lib/request/headers";
 import { withAuth } from "@/lib/request/withAuth";
 import { prisma } from "@/prisma/prisma";
 import { forbidden } from "next/navigation";
@@ -29,15 +30,15 @@ export async function generateReportPDF(reportToken: string): Promise<{
     if (!apiBase) {
       throw new Error("HTML_TO_PDF_API environment variable is not set");
     }
-    // const origin = await getRequestOrigin();
+    const origin = await getRequestOrigin();
     const response = await fetch(apiBase, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        // url: `${origin}/artifacts/report/${reportToken}/raw`,
-        html: report.onePageHtml,
+        url: `${origin}/artifacts/report/${reportToken}/raw`, // 要加载图像，不能用 html 得用 url
+        // html: report.onePageHtml,
         filename: filename,
       }),
     });

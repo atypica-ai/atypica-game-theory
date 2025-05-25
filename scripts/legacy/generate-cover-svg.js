@@ -63,7 +63,7 @@ async function generateCover({ analyst, report }) {
       openai: { stream_options: { include_usage: true } },
     },
     system: reportCoverSystem(),
-    messages: [{ role: "user", content: reportCoverPrologue(analyst, report) }],
+    messages: [{ role: "user", content: reportCoverPrologue({ analyst, report }) }],
     maxSteps: 3,
     maxTokens: 20000,
     // onChunk: ({ chunk }) => {

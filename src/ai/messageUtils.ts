@@ -1,6 +1,6 @@
 import { ToolName } from "@/ai/tools/types";
-import { ChatMessageAttachment } from "@/lib/attachments";
-import { s3SignedUrl } from "@/lib/attachments/s3";
+import { getS3SignedUrl } from "@/lib/attachments/actions";
+import { ChatMessageAttachment } from "@/lib/attachments/types";
 import { ChatMessage } from "@/prisma/client";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
@@ -346,18 +346,21 @@ export async function convertDBMessagesToAIMessages(dbMessages: ChatMessage[]): 
         const attachments = _attachments ? (_attachments as ChatMessageAttachment[]) : undefined;
         const message: Message = { ...extra, id, role, content, parts, createdAt };
         if (attachments) {
-          message["experimental_attachments"] = await Promise.all(
-            attachments.map(async ({ objectUrl, name, mimeType, size }) => ({
-              extra: {
-                // 不管3721，都放进去，但不要依赖这个值
-                objectUrl,
-                size,
-              },
-              url: await s3SignedUrl(objectUrl),
-              name,
-              contentType: mimeType,
-            })),
-          );
+          message["experimental_attachments"] = (
+            await Promise.all(
+              attachments.map(async ({ objectUrl, name, mimeType, size }) => {
+                const signResult = await getS3SignedUrl(objectUrl);
+                return signResult.success
+                  ? {
+                      extra: { objectUrl, size }, // 不管3721，都放进去，但不要依赖这个值
+                      url: signResult.data,
+                      name,
+                      contentType: mimeType,
+                    }
+                  : null;
+              }),
+            )
+          ).filter((item) => item !== null);
         }
         return message;
       },

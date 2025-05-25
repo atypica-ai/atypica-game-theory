@@ -3,6 +3,7 @@ import "server-only";
 import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { rootLogger } from "../logging";
+import { S3UploadCredentials } from "./types";
 
 export const s3Client = new S3Client({
   region: process.env.AWS_S3_REGION!,
@@ -47,12 +48,6 @@ export async function s3SignedUrl(url: string): Promise<string> {
   });
 
   return signedUrl;
-}
-
-export interface S3UploadCredentials {
-  putObjectUrl: string;
-  getObjectUrl: string;
-  objectUrl: string; // s3 object url without signature
 }
 
 export async function s3UploadCredentials({
