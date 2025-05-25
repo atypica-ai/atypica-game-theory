@@ -17,7 +17,6 @@ if (process.env.FETCH_HTTPS_PROXY) {
   const originRequest = https.request;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   https.request = function (...args: any) {
-    rootLogger.debug(`Requesting ${JSON.stringify(args[0])} in overrided https.request`);
     let options = null;
     let url = null;
     if (typeof args[0] === "string") {

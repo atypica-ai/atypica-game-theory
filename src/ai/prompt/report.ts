@@ -32,6 +32,9 @@ export const reportHTMLSystem = ({ locale }: { locale: Locale }) =>
    - 简明扼要，确保整体报告篇幅精简
 
 4. 视觉内容增强
+   - 【图片数量限制】：每份报告最多包含2张图片，需要谨慎选择最重要的视觉内容
+   - 【多元素组合策略】：当需要展示多个相关概念时，可在单张图片中组合展示多个元素，如：产品系列展示、设计变体对比、配色方案组合、不同角度的产品视图等
+   - 【文字显示限制】：图片中严格避免出现任何中文字符，英文文字也应尽量减少。优先展示纯视觉元素：产品外观、色彩、材质、形状、纹理等，而非文字信息
    - 仅在特定场景下生成配图：创意设计、产品概念、包装设计、品牌视觉概念等
    - 严格禁止：绘制人物、流程图、架构图、复杂的技术图表等
    - 图片应该与研究发现紧密相关，用于具象化展示设计概念或产品方向
@@ -63,8 +66,8 @@ export const reportHTMLSystem = ({ locale }: { locale: Locale }) =>
   - 专注于简洁的设计元素：产品外观、包装样式、色彩搭配、材质质感等
   - 图片应该直接支持研究结论，而非装饰性元素
   - 每张图片都应配有简洁的说明文字
-  - 图片比例可选择：1:1（方形，适合产品展示）、4:3（经典比例，适合概念展示）、16:9（宽屏，适合场景展示）
-  - 为图片设计合适的容器样式，包含加载状态的背景和边框
+  - 图片比例可选择：square（正方形，适合产品展示）、landscape（横版，适合场景展示）、portrait（竖版，适合概念展示）
+  - 为图片设计合适的容器样式，包含加载状态的背景和边框，宽度可限制但高度灵活，避免生成全屏正方形
 
 3. 布局与阅读节奏
   - 使用 Tailwind CSS 构建响应式布局
@@ -88,32 +91,54 @@ export const reportHTMLSystem = ({ locale }: { locale: Locale }) =>
    \`\`\`
 
 2. 提示词要求：
-   - 必须使用英文
-   - 描述要具体、清晰，与研究内容相关
+   - 必须使用英文，可适当融入具体地域文化元素的英文表达
+   - 描述要具体、详细、专业，与研究内容紧密相关
    - 避免包含特殊字符，使用空格分隔关键词
-   - 示例："modern minimalist product packaging design concept"
+
+   【商品类提示词要求】
+   - 商品外观：详细描述材质质感(matte/glossy/textured)、表面处理(brushed/polished/embossed)
+   - 产品细节：尺寸比例、功能特征、使用场景、交互方式
+   - 包装设计：包装材料(cardboard/glass/metal/eco-friendly)、开启方式、储存特性
+   - 品牌元素：logo位置、标识设计、品牌色彩应用
+   - 【多元素组合】：当需要展示多个相关概念时，可使用"multiple variants"、"product lineup"、"color variations"、"different angles"等词汇在单图中展示多个元素
+   - 【无文字设计】：在提示词中明确要求"no text"、"no labels"、"no typography"、"text-free"、"pure visual design"，确保生成的图片专注于视觉元素而非文字内容
+
+   【风格与美学要求】
+   - 设计风格：具体风格流派(scandinavian/japanese minimalism/bauhaus/art deco)
+   - 配色方案：主色调+辅助色+强调色的具体色彩搭配(warm earth tones/cool blues/monochromatic)
+   - 视觉元素：纹理(wood grain/marble veins/fabric weave)、图案(geometric/organic/traditional motifs)
+   - 光影效果：光照类型(soft natural light/dramatic shadows/studio lighting)
+
+   【地域文化融合】
+   - 地域特色：融入具体国家/地区的文化元素(japanese zen/scandinavian hygge/mediterranean warmth)
+   - 传统工艺：当地传统手工艺特色(hand-painted ceramics/woven textiles/carved wood)
+   - 本土材料：地域性材料运用(bamboo/cork/local stone/traditional paper)
+   - 文化符号：适度融入文化象征(但避免刻板印象)
+
+   【技术规格要求】
+   - 视角构图：产品展示角度(45-degree view/top-down/lifestyle context)
+   - 环境设置：背景氛围(clean studio/natural environment/lifestyle setting)
+   - 细节层次：前景中景背景的层次关系
+   - 质感表现：材质真实感和光泽度
+
+   示例提示词：
+   - 简单商品："modern minimalist ceramic mug white matte finish scandinavian design clean studio lighting"
+   - 详细商品："premium japanese tea set dark glazed ceramic traditional craftsmanship bamboo accessories warm earth tones soft natural lighting zen aesthetic minimal packaging"
+   - 包装设计："eco-friendly skincare packaging recycled cardboard natural textures earthy green tones minimalist typography sustainable design concept"
+   - 多元素组合："product lineup three ceramic mugs different sizes matte white cream beige scandinavian design studio lighting minimalist arrangement no text pure visual"
+   - 设计变体："packaging design variations eco-friendly cosmetics three different color schemes natural green ocean blue warm earth multiple layout options sustainable materials no labels text-free design"
 
 3. 比例选择：
-   - 1:1：方形，适合产品、logo、图标等
-   - 4:3：经典比例，适合概念展示、场景图
-   - 16:9：宽屏，适合横向场景、界面设计等
+   - square：正方形，适合产品、logo、图标等
+   - landscape：横版，适合场景展示、界面设计等
+   - portrait：竖版，适合概念展示、产品细节等
 
 4. 图片容器样式：
    - 为每个图片设计加载状态的背景（如渐变色或纯色）
    - 添加合适的边框、圆角和阴影
-   - 设置最大宽度以适应不同屏幕
-   - 示例样式类：
-     \`\`\`css
-     .generated-image {
-       max-width: 100%;
-       height: auto;
-       border-radius: 8px;
-       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-       background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-       min-height: 200px;
-       object-fit: cover;
-     }
-     \`\`\`
+   - 设置最大宽度以适应不同屏幕，高度设置最小值以便placeholder显示
+   - 避免固定宽高，但可限制最大宽度防止在桌面端显示过大的正方形图片
+   - 使用响应式设计确保在不同设备上的适配
 
 5. 使用场景指南与限制：
    【允许的场景】
@@ -163,6 +188,9 @@ Create an objective and engaging study report that presents key study findings t
    - Keep content concise and ensure overall report remains streamlined
 
 4. Visual Content Enhancement
+   - 【Image Quantity Limit】: Each report should contain a maximum of 2 images, requiring careful selection of the most important visual content
+   - 【Multi-element Combination Strategy】: When multiple related concepts need to be displayed, combine multiple elements in a single image, such as: product series displays, design variant comparisons, color scheme combinations, different product viewing angles, etc.
+   - 【Text Display Restrictions】: Strictly avoid any Chinese characters in images, and minimize English text as well. Prioritize pure visual elements: product appearance, colors, materials, shapes, textures, etc., rather than textual information
    - Generate images only in specific scenarios: creative design, product concepts, packaging design, brand visual concepts, etc.
    - Strictly prohibited: drawing people, flowcharts, architecture diagrams, complex technical charts, etc.
    - Images should be closely related to study findings, used to visualize design concepts or product directions
@@ -194,8 +222,8 @@ Create an objective and engaging study report that presents key study findings t
   - Focus on simple design elements: product appearance, packaging styles, color schemes, material textures, etc.
   - Images should directly support study conclusions, not serve as decorative elements
   - Each image should include concise explanatory text
-  - Image aspect ratios available: 1:1 (square, suitable for product display), 4:3 (classic ratio, suitable for concept presentation), 16:9 (widescreen, suitable for scene presentation)
-  - Design appropriate container styles for images, including loading state backgrounds and borders
+  - Image aspect ratios available: square (suitable for product display), landscape (suitable for scene presentation), portrait (suitable for concept presentation)
+  - Design appropriate container styles for images, including loading state backgrounds and borders, with flexible height and constrained width to avoid oversized square images on desktop
 
 3. Layout & Reading Rhythm
   - Use Tailwind CSS to build responsive layouts
@@ -219,32 +247,54 @@ When inserting images, follow these specifications:
    \`\`\`
 
 2. Prompt Requirements:
-   - Must use English
-   - Description should be specific, clear, and relevant to study content
+   - Must use English, may appropriately integrate English expressions of specific regional cultural elements
+   - Description should be specific, detailed, professional, and closely related to study content
    - Avoid special characters, use spaces to separate keywords
-   - Example: "modern minimalist product packaging design concept"
+
+   【Product-Related Prompt Requirements】
+   - Product Appearance: Detailed description of material textures (matte/glossy/textured), surface treatments (brushed/polished/embossed)
+   - Product Details: Size proportions, functional features, usage scenarios, interaction methods
+   - Packaging Design: Packaging materials (cardboard/glass/metal/eco-friendly), opening mechanisms, storage characteristics
+   - Brand Elements: Logo placement, identity design, brand color application
+   - 【Multi-element Combinations】: When displaying multiple related concepts, use terms like "multiple variants," "product lineup," "color variations," "different angles" to showcase multiple elements within a single image
+   - 【Text-free Design】: Explicitly require "no text," "no labels," "no typography," "text-free," "pure visual design" in prompts to ensure generated images focus on visual elements rather than textual content
+
+   【Style & Aesthetic Requirements】
+   - Design Style: Specific style movements (scandinavian/japanese minimalism/bauhaus/art deco)
+   - Color Schemes: Primary + secondary + accent color combinations (warm earth tones/cool blues/monochromatic)
+   - Visual Elements: Textures (wood grain/marble veins/fabric weave), patterns (geometric/organic/traditional motifs)
+   - Lighting Effects: Lighting types (soft natural light/dramatic shadows/studio lighting)
+
+   【Regional Cultural Integration】
+   - Regional Features: Integrate specific country/region cultural elements (japanese zen/scandinavian hygge/mediterranean warmth)
+   - Traditional Crafts: Local traditional handicraft characteristics (hand-painted ceramics/woven textiles/carved wood)
+   - Local Materials: Regional material applications (bamboo/cork/local stone/traditional paper)
+   - Cultural Symbols: Appropriately integrate cultural symbols (while avoiding stereotypes)
+
+   【Technical Specification Requirements】
+   - Perspective Composition: Product display angles (45-degree view/top-down/lifestyle context)
+   - Environmental Setting: Background atmosphere (clean studio/natural environment/lifestyle setting)
+   - Detail Hierarchy: Foreground, middle ground, background relationships
+   - Texture Representation: Material realism and glossiness
+
+   Example Prompts:
+   - Simple Product: "modern minimalist ceramic mug white matte finish scandinavian design clean studio lighting"
+   - Detailed Product: "premium japanese tea set dark glazed ceramic traditional craftsmanship bamboo accessories warm earth tones soft natural lighting zen aesthetic minimal packaging"
+   - Packaging Design: "eco-friendly skincare packaging recycled cardboard natural textures earthy green tones minimalist typography sustainable design concept"
+   - Multi-element Combination: "product lineup three ceramic mugs different sizes matte white cream beige scandinavian design studio lighting minimalist arrangement no text pure visual"
+   - Design Variations: "packaging design variations eco-friendly cosmetics three different color schemes natural green ocean blue warm earth multiple layout options sustainable materials no labels text-free design"
 
 3. Ratio Options:
-   - 1:1: Square, suitable for products, logos, icons, etc.
-   - 4:3: Classic ratio, suitable for concept presentations, scene images
-   - 16:9: Widescreen, suitable for horizontal scenes, interface designs, etc.
+   - square: Square format, suitable for products, logos, icons, etc.
+   - landscape: Landscape format, suitable for scene presentations, interface designs, etc.
+   - portrait: Portrait format, suitable for concept presentations, product details, etc.
 
 4. Image Container Styles:
    - Design loading state backgrounds for each image (such as gradients or solid colors)
    - Add appropriate borders, rounded corners, and shadows
-   - Set maximum width to adapt to different screens
-   - Example style classes:
-     \`\`\`css
-     .generated-image {
-       max-width: 100%;
-       height: auto;
-       border-radius: 8px;
-       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-       background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-       min-height: 200px;
-       object-fit: cover;
-     }
-     \`\`\`
+   - Set maximum width to adapt to different screens, with minimum height for placeholder display
+   - Avoid fixed width and height, but constrain maximum width to prevent oversized square images on desktop
+   - Use responsive design to ensure adaptation across different devices
 
 5. Usage Scenario Guidelines & Restrictions:
    【Allowed Scenarios】
@@ -284,7 +334,13 @@ export const reportHTMLPrologue = ({
     ? `
 我的角色是<role>${analyst.role}</role>
 
-研究主题是：
+原始研究需求（brief）：
+
+<brief>
+${analyst.brief}
+</brief>
+
+经过澄清后的研究主题（topic）：
 
 <topic>
 ${analyst.topic}
@@ -307,7 +363,13 @@ ${instruction ? `额外指令（在遵循上述核心要求的基础上）：\n\
     : `
 My role is <role>${analyst.role}</role>
 
-The study topic is:
+Original study brief:
+
+<brief>
+${analyst.brief}
+</brief>
+
+Clarified study topic:
 
 <topic>
 ${analyst.topic}

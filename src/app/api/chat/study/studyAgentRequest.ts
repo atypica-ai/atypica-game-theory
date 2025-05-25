@@ -36,10 +36,10 @@ import { notifyReportCompletion, notifyStudyInterruption } from "./notify";
 
 const MAX_STEPS_EACH_ROUND = 15; // streamText 默认 15 步
 const TOOL_USE_LIMIT = {
-  [ToolName.scoutTaskChat]: 2,
+  [ToolName.scoutTaskChat]: 1,
   [ToolName.generateReport]: 2,
   [ToolName.buildPersona]: 1,
-  [ToolName.searchPersonas]: 2,
+  [ToolName.searchPersonas]: 1,
 };
 const TOKENS_COMSUME_LIMIT = 1_000_000; // 最新统计来看，100 万 tokens 足够
 
@@ -98,8 +98,9 @@ export async function studyAgentRequest({
   const maxTokens: number | undefined = undefined;
   let maxSteps = MAX_STEPS_EACH_ROUND;
   if ((toolUseCount[ToolName.scoutTaskChat] ?? 0) >= TOOL_USE_LIMIT[ToolName.scoutTaskChat]) {
-    delete tools[ToolName.scoutTaskChat];
-    maxSteps = 10;
+    // 这个限制也拿掉吧，现在指令遵循还行其实，不要增加复杂度了
+    // delete tools[ToolName.scoutTaskChat];
+    // maxSteps = 10;
   }
   /*
   这部分先拿掉，现在这样会让 study agent 开始新的研究，
@@ -119,6 +120,7 @@ export async function studyAgentRequest({
     coreMessages = coreMessages.slice(firstReportIndex);
   }
   */
+
   if ((toolUseCount[ToolName.generateReport] ?? 0) >= TOOL_USE_LIMIT[ToolName.generateReport]) {
     // 还是继续允许一直生成报告，不过，限制一下 steps
     // delete tools[ToolName.generateReport];

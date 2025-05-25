@@ -47,11 +47,11 @@ export async function GET(req: Request, { params }: { params: Promise<{ prompt: 
 
   const { prompt } = await params;
   const url = new URL(req.url);
-  let ratio = url.searchParams.get("ratio") as `${number}:${number}` | undefined;
+  let ratio = url.searchParams.get("ratio") as "square" | "landscape" | "portrait" | undefined;
   try {
-    ratio = z.enum(["1:1", "4:3", "16:9"]).default("1:1").parse(ratio);
+    ratio = z.enum(["square", "landscape", "portrait"]).default("square").parse(ratio);
   } catch {
-    ratio = "1:1";
+    ratio = "square";
   }
   const genLog = studyLog.child({
     prompt: prompt.substring(0, 20),
@@ -118,8 +118,10 @@ export async function GET(req: Request, { params }: { params: Promise<{ prompt: 
       // Generate the image
       const { image } = await generateImage({
         model: imageModel("imagen-4.0-ultra"),
+        aspectRatio: ratio === "square" ? "1:1" : ratio === "landscape" ? "16:9" : "9:16",
+        // model: imageModel("gpt-image-1"),
+        // size: ratio === "square" ? "1024x1024" : ratio === "landscape" ? "1536x1024" : "1024x1536",
         prompt,
-        aspectRatio: ratio,
         // abortSignal: req.signal, // 后台运行，不 abort
       });
       // 图像生成一张固定消耗 10000 tokens

@@ -146,7 +146,7 @@ async function generateDigest(
   results: ({ name: string; issue: string } | { name: string; conclusion: string })[],
 ) {
   const digest = await generateText({
-    model: llm("gpt-4o-mini"),
+    model: llm("gpt-4.1-nano"),
     providerOptions,
     prompt: interviewDigestSystem({ locale, results }),
     maxTokens: 2000,
@@ -248,8 +248,10 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: Message[]) {
 
   const REDUCE_TOKENS = {
     // model: llm("gemini-2.5-pro"), // 不能这么写，一定要下面每次都重新初始化 llm，不然会卡住
-    model: "gemini-2.5-pro" as LLMModelName,
-    ratio: 2,
+    // model: "gemini-2.5-pro" as LLMModelName,
+    // ratio: 2,
+    model: "gpt-4.1-mini" as LLMModelName,
+    ratio: 5,
   };
 
   const result = await new Promise<Omit<Message, "role">>(async (resolve, reject) => {
@@ -330,20 +332,25 @@ async function chatWithPersona(chatProps: ChatProps, messages: Message[]) {
 
   const REDUCE_TOKENS = {
     // model: llm("gemini-2.5-flash"), // 不能这么写，一定要下面每次都重新初始化 llm，不然会卡住
-    model: "gemini-2.5-pro" as LLMModelName,
-    options: {
-      useSearchGrounding: true,
-    },
-    ratio: 2,
+    model: "gemini-2.5-flash" as LLMModelName,
+    ratio: 10,
   };
 
   const result = await new Promise<Omit<Message, "role">>(async (resolve, reject) => {
     const reduceTokens = REDUCE_TOKENS as typeof REDUCE_TOKENS | null;
     const response = streamText({
-      model: reduceTokens ? llm(reduceTokens.model, reduceTokens.options) : llm("gpt-4o"),
+      model: reduceTokens
+        ? llm(reduceTokens.model, {
+            useSearchGrounding: true,
+            dynamicRetrievalConfig: {
+              mode: "MODE_DYNAMIC",
+              dynamicThreshold: 0.5,
+            },
+          })
+        : llm("gpt-4.1"),
       providerOptions: providerOptions,
       system: personaPrompt,
-      maxRetries: 0, // 不要自动重试
+      // maxRetries: 0, // 不要自动重试
       temperature: 0.3,
       messages: messages,
       tools: {

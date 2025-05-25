@@ -43,8 +43,8 @@ import { Logger } from "pino";
 import { z } from "zod";
 import { type ScoutTaskChatResult, type TPlatform } from "./types";
 
-const TOKENS_COMSUME_LIMIT = 300_000; // 限制 30w token 消耗量，根据统计，差不多
-const SCOUT_CALLS_LIMIT = 15; // 进行 15 步搜索，结束以后保存画像
+const TOKENS_COMSUME_LIMIT = 150_000; // 限制 15w token 消耗量
+const SCOUT_CALLS_LIMIT = 10; // 进行 10 步搜索，结束以后保存画像
 const REDUCE_TOKENS: {
   model: LLMModelName;
   ratio: number;
@@ -235,7 +235,7 @@ export async function runScoutTaskChatStream({
     const { coreMessages, streamingMessage, toolUseCount } =
       await prepareMessagesForStreaming(scoutUserChatId);
     let toolChoice: ToolChoice<typeof allTools> = "auto";
-    let maxSteps = 3; // 不要一下子很多 steps 因为现在会并行调用 tools，每一轮 steps 少一点，方便及时判断 coreMessages 长度
+    let maxSteps = 2; // 不要一下子很多 steps 因为现在会并行调用 tools，每一轮 steps 少一点，方便及时判断 coreMessages 长度
     let reduceTokens: typeof REDUCE_TOKENS | null = REDUCE_TOKENS;
     if (coreMessages.length > 2 && Object.keys(toolUseCount).length === 0) {
       // 两条消息以后，必须开始使用工具，但是为了不一直使用工具，调用2次先停下来，后面好重新判断 toolUseCount

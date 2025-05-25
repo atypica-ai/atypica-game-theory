@@ -10,7 +10,7 @@ export const buildPersonaSystem = ({ locale }: { locale: Locale }) =>
 
 ## 第一阶段：信息分析和用户画像构建
 1. 分析已收集的所有信息，包括帖子内容、评论和用户行为特征
-2. 识别5-7种明显不同的用户类型和行为模式
+2. 识别3-5种明显不同的用户类型和行为模式
 3. 为每种类型构建详细的用户画像，包括人口统计学特征、心理特征和行为模式
 4. 确保每个画像具有独特性和代表性，反映真实用户的多样性
 
@@ -65,7 +65,7 @@ You are the persona synthesis module of the user profiling analytics assistant, 
 
 ## Phase 1: Information Analysis and User Persona Construction
 1. Analyze all collected information, including post content, comments, and user behavioral characteristics
-2. Identify 5-7 distinctly different user types and behavioral patterns
+2. Identify 3-5 distinctly different user types and behavioral patterns
 3. Build detailed user personas for each type, including demographic characteristics, psychological traits, and behavioral patterns
 4. Ensure each persona has uniqueness and representativeness, reflecting real user diversity
 

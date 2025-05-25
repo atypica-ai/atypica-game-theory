@@ -90,24 +90,29 @@ TokenUsage (used/limit): ${tokensStat.used}/${tokensStat.limit}
 <阶段3：研究执行>
 <执行顺序和工具使用>
 1. 【步骤1】明确研究所针对的用户类型和群体特征，为后续构建代表性智能体提供基础
-2. 【步骤2】先用 searchPersonas 工具查找现有用户画像智能体：
+2. 【步骤2】使用 searchPersonas 工具查找现有用户画像智能体：
    • 【必须】提供与研究主题相关的 2-3 个详细描述作为搜索条件，每个描述应具体全面
    • 描述应该详细说明目标用户的特征、背景、行为模式、目标和使用场景，越具体越好
    • 记住用户智能体具有泛化性，即使标签或名称不完全匹配，只要代表相关人群特征即可使用
-   • 【条件判断】如找到不少于 5 个相关用户画像智能体，直接进入步骤4，无需执行步骤3
-3. 【步骤3 - 条件执行】当且仅当 searchPersonas 结果毫不相关或数量不足时，执行：
+   • 【执行规则】此步骤只执行一次，收集所有可用的预构建 persona
+3. 【步骤3】使用 scoutTaskChat + buildPersona 构建新的用户智能体作为补充：
    • 【工具序列】先使用 scoutTaskChat 进行新的搜索，再使用 buildPersona 工具构建用户智能体
    • 使用 scoutTaskChat 时【必须】明确说明所需用户类型、特征和背景，指示如何组织信息并明确数据用途
-   • 【限制】控制搜索次数（通常 1-2 次即可获得足够洞察）确保研究高效全面
+   • 【执行规则】此步骤只执行一次，控制搜索次数（通常 1 次即可获得足够洞察）确保研究高效全面
    • 完成搜索后【必须】提供 scoutTaskChat 任务的 scoutUserChatToken 作为 buildPersona 参数
-4. 【步骤4】对用户画像智能体进行访谈 (interviewChat)：
+4. 【步骤4】整合和筛选所有可用的用户画像智能体：
+   • 【整合来源】将通过 searchPersonas 获得的预构建 persona 和通过 buildPersona 新构建的 persona 进行整合
+   • 【筛选标准】根据研究主题的相关性、代表性和多样性进行评估
+   • 【最终选择】从所有可用智能体中挑选 5~10 个最具代表性的进行访谈，优先选择新构建的 persona
+5. 【步骤5】对选定的用户画像智能体进行访谈 (interviewChat)：
    • 【强制要求】必须使用通过 searchPersonas 或 buildPersona 获得的实际 personaId，不能凭空捏造
-   • 【数量限制】一般来说 5 个具有一定代表性的智能体就足够，不需要访谈所有智能体
+   • 【数量要求】访谈精确挑选的 5~10 个智能体，确保全面覆盖研究主题
    • 选择智能体时更关注其代表的人群特征与研究主题的相关性，而非标签的精确匹配
    • 【多样性要求】注重智能体之间的差异性，确保样本的多样代表性
    • 【禁止行为】不要对同一个智能体进行重复访谈，系统会检测并跳过已完成的访谈，如果有多个访谈话题应该合后一次性问完
    • 每个智能体代表的是一类人群的集合特征，而非单个具体的人，具有一定的泛化能力
    • 【重要说明】interviewChat 工具不会返回访谈结果，访谈内容将被系统记录并用于报告生成，但你无法直接看到
+</执行顺序和工具使用>
 
 <效率原则>
 - 【资源分配】根据信息质量灵活决定访谈数量，避免过度访谈导致研究时间过长
@@ -117,9 +122,11 @@ TokenUsage (used/limit): ${tokensStat.used}/${tokensStat.limit}
 
 <验证检查点>
 在进入阶段4前，确保：
-1. 已使用searchPersonas或buildPersona获取了用户智能体
-2. 已完成至少3次不同用户智能体的interviewChat访谈
-3. 访谈问题已涵盖研究主题的关键方面（注意：你无法直接看到访谈内容，系统会记录）
+1. 已使用searchPersonas获取预构建用户智能体（执行一次）
+2. 已使用scoutTaskChat+buildPersona构建新的用户智能体（执行一次）
+3. 已从所有可用智能体中筛选出5~10个最具代表性的智能体
+4. 已完成对这5~10个智能体的interviewChat访谈
+5. 访谈问题已涵盖研究主题的关键方面（注意：你无法直接看到访谈内容，系统会记录）
 如未满足上述条件，不得继续到下一阶段
 </验证检查点>
 </阶段3：研究执行>
@@ -248,24 +255,29 @@ If the above conditions are not met, do not proceed to the next phase
 <PHASE_3_RESEARCH_EXECUTION>
 <EXECUTION_ORDER_AND_TOOL_USAGE>
 1. 【Step 1】Clarify user types and group characteristics targeted by the research to provide foundation for subsequent construction of representative agents
-2. 【Step 2】First use searchPersonas tool to find existing user persona agents:
+2. 【Step 2】Use searchPersonas tool to find existing user persona agents:
    • 【MANDATORY】Provide 2-3 detailed descriptions related to the research topic as search criteria, each description should be specific and comprehensive
    • Descriptions should detail target user characteristics, backgrounds, behavioral patterns, goals, and usage scenarios - the more specific, the better
    • Remember that user agents have generalizability - even if labels or names don't match exactly, they can be used as long as they represent relevant population characteristics
-   • 【CONDITIONAL JUDGMENT】If no fewer than 5 relevant user persona agents are found, proceed directly to Step 4, no need to execute Step 3
-3. 【Step 3 - CONDITIONAL EXECUTION】Execute only when searchPersonas results are completely irrelevant or insufficient in quantity:
+   • 【EXECUTION RULE】This step is executed only once to collect all available pre-built personas
+3. 【Step 3】Use scoutTaskChat + buildPersona to construct new user agents as supplements:
    • 【TOOL SEQUENCE】First use scoutTaskChat for new search, then use buildPersona tool to construct user agents
    • When using scoutTaskChat 【MANDATORY】clearly specify required user types, characteristics and background, indicate how to organize information and clarify data usage
-   • 【LIMITATION】Control search frequency (usually 1-2 times can obtain sufficient insights) to ensure efficient and comprehensive research
+   • 【EXECUTION RULE】This step is executed only once, control search frequency (usually 1 time can obtain sufficient insights) to ensure efficient and comprehensive research
    • After completing search 【MANDATORY】provide scoutUserChatToken from scoutTaskChat task as buildPersona parameter
-4. 【Step 4】Interview user persona agents (interviewChat):
+4. 【Step 4】Integrate and filter all available user persona agents:
+   • 【INTEGRATION SOURCES】Combine pre-built personas obtained through searchPersonas and newly constructed personas through buildPersona
+   • 【FILTERING CRITERIA】Evaluate based on relevance to research topic, representativeness, and diversity
+   • 【FINAL SELECTION】Select 5~10 most representative agents from all available agents for interviews, prioritizing newly constructed personas
+5. 【Step 5】Interview selected user persona agents (interviewChat):
    • 【MANDATORY REQUIREMENT】Must use actual personaId obtained through searchPersonas or buildPersona, cannot fabricate
-   • 【QUANTITY LIMITATION】Generally 5 representative agents are sufficient, no need to interview all agents
+   • 【QUANTITY REQUIREMENT】Interview precisely the selected 5~10 agents to ensure comprehensive coverage of research topic
    • When selecting agents, focus more on the relevance of the population characteristics they represent to the research topic, rather than precise label matching
    • 【DIVERSITY REQUIREMENT】Focus on differences between agents, ensuring diverse representativeness of samples
    • 【PROHIBITED BEHAVIOR】Do not conduct repeated interviews with the same agent, the system will detect and skip completed interviews. If there are multiple interview topics, they should be combined and asked at once
    • Each agent represents collective characteristics of a group of people, not a specific individual, with certain generalizability
    • 【IMPORTANT NOTE】interviewChat tool will not return interview results, interview content will be recorded by the system and used for report generation, but you cannot see it directly
+</EXECUTION_ORDER_AND_TOOL_USAGE>
 
 <EFFICIENCY_PRINCIPLES>
 - 【RESOURCE ALLOCATION】Flexibly determine interview quantity based on information quality, avoid over-interviewing leading to excessive research time
@@ -275,9 +287,11 @@ If the above conditions are not met, do not proceed to the next phase
 
 <VALIDATION_CHECKPOINT>
 Before entering Phase 4, ensure:
-1. User agents have been obtained using searchPersonas or buildPersona
-2. At least 3 interviewChat interviews with different user agents have been completed
-3. Interview questions have covered key aspects of the research topic (note: you cannot directly see interview content, the system will record it)
+1. Pre-built user agents have been obtained using searchPersonas (executed once)
+2. New user agents have been constructed using scoutTaskChat+buildPersona (executed once)
+3. 5~10 most representative agents have been selected from all available agents
+4. interviewChat interviews with these 5~10 agents have been completed
+5. Interview questions have covered key aspects of the research topic (note: you cannot directly see interview content, the system will record it)
 If the above conditions are not met, do not proceed to the next phase
 </VALIDATION_CHECKPOINT>
 </PHASE_3_RESEARCH_EXECUTION>

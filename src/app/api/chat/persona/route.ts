@@ -33,6 +33,10 @@ export async function POST(req: Request) {
     // model: llm("qwen3-235b-a22b"),
     model: llm("gemini-2.5-flash", {
       useSearchGrounding: true,
+      dynamicRetrievalConfig: {
+        mode: "MODE_DYNAMIC",
+        dynamicThreshold: 0.5,
+      },
     }),
     providerOptions: {
       ...providerOptions,
