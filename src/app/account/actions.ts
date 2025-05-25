@@ -21,16 +21,42 @@ export async function fetchTokensHistory(
   const skip = (page - 1) * pageSize;
 
   const [tokensLogs, totalCount] = await Promise.all([
-    prisma.userTokensLog.findMany({
-      where: { userId },
-      orderBy: { createdAt: "desc" },
-      take: pageSize,
-      skip: skip,
-    }),
-    prisma.userTokensLog.count({
-      where: { userId },
-    }),
+    (
+      await prisma.userTokensLog.groupBy({
+        by: ["userId", "resourceType", "resourceId", "verb"],
+        where: { userId },
+        _sum: { value: true },
+        _min: { id: true, createdAt: true, updatedAt: true },
+        orderBy: { _min: { createdAt: "desc" } },
+        take: pageSize,
+        skip: skip,
+      })
+    ).map(({ _sum, _min, ...item }) => ({
+      ...item,
+      value: _sum.value!,
+      id: _min.id!,
+      createdAt: _min.createdAt!,
+      updatedAt: _min.updatedAt!,
+    })),
+    (
+      await prisma.userTokensLog.groupBy({
+        by: ["userId", "resourceType", "resourceId", "verb"],
+        where: { userId },
+      })
+    ).length,
   ]);
+
+  // const [tokensLogs, totalCount] = await Promise.all([
+  //   prisma.userTokensLog.findMany({
+  //     where: { userId },
+  //     orderBy: { createdAt: "desc" },
+  //     take: pageSize,
+  //     skip: skip,
+  //   }),
+  //   prisma.userTokensLog.count({
+  //     where: { userId },
+  //   }),
+  // ]);
 
   return {
     success: true,

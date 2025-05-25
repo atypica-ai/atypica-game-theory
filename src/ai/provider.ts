@@ -55,7 +55,10 @@ const google = (modelId: string, settings?: any) => {
 };
 
 const vertex = (() => {
-  const credentials = JSON.parse(process.env.GOOGLE_VERTEX_AI_APPLICATION_CREDENTIALS!);
+  // build 环境下 env 都是空的，这里不能直接 parse，直接跳过就行，因为不会用到
+  const credentials = process.env.GOOGLE_VERTEX_AI_APPLICATION_CREDENTIALS
+    ? JSON.parse(process.env.GOOGLE_VERTEX_AI_APPLICATION_CREDENTIALS)
+    : undefined;
   return createVertex({
     location: process.env.GOOGLE_VERTEX_LOCATION,
     project: process.env.GOOGLE_VERTEX_PROJECT,
