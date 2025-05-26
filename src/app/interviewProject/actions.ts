@@ -238,7 +238,7 @@ export async function fetchClarifyInterviewSession<
 export async function fetchCollectInterviewSession<
   T extends Omit<InterviewSession, "kind"> & {
     kind: "collect";
-    project: Pick<InterviewProject, "id" | "title" | "category" | "brief" | "objectives">;
+    project: Pick<InterviewProject, "id" | "title" | "category" | "brief" | "objectives" | "collectSystem">;
   },
 >(sessionToken: string): Promise<ServerActionResult<T>> {
   const interviewSession = (await prisma.interviewSession.findUnique({
@@ -255,6 +255,7 @@ export async function fetchCollectInterviewSession<
           category: true,
           brief: true,
           objectives: true,
+          collectSystem: true,
         },
       },
     },
@@ -304,6 +305,49 @@ export async function saveDigest(
       where: { token: projectToken },
       data: {
         digest,
+        updatedAt: new Date(),
+      },
+    });
+
+    revalidatePath(`/interviewProject/${projectToken}`);
+
+    return {
+      success: true,
+      data: null,
+    };
+  });
+}
+
+// Update collect system prompt for the interview project
+export async function updateCollectSystem(
+  projectToken: string,
+  collectSystem: string | null,
+): Promise<ServerActionResult<null>> {
+  return withAuth(async (user) => {
+    const project = await prisma.interviewProject.findUnique({
+      where: { token: projectToken },
+    });
+
+    if (!project) {
+      return {
+        success: false,
+        code: "not_found",
+        message: "Interview project not found",
+      };
+    }
+
+    if (project.userId !== user.id) {
+      return {
+        success: false,
+        code: "forbidden",
+        message: "You don't have access to this interview project",
+      };
+    }
+
+    await prisma.interviewProject.update({
+      where: { token: projectToken },
+      data: {
+        collectSystem: collectSystem || null,
         updatedAt: new Date(),
       },
     });

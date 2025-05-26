@@ -81,6 +81,7 @@
     "projectDetail": {
       "createCollectSession": "创建访谈",
       "clarifyProject": "明确项目需求",
+      "editCollectSystem": "编辑访谈系统",
       "clarifyPrompt": "点击“明确项目需求”来定义您的研究简介和目标。",
       "projectCategory": "项目类别",
       "created": "创建于",
@@ -107,6 +108,18 @@
         "completed": "已完成",
         "pending": "待开始"
       }
+    },
+    "editCollectSystem": {
+      "title": "编辑访谈系统提示词",
+      "description": "自定义访谈主持人的系统提示词。如果留空，将使用默认的专业访谈提示词。",
+      "collectSystemLabel": "访谈系统提示词",
+      "collectSystemPlaceholder": "输入自定义的系统提示词...",
+      "collectSystemDescription": "这个提示词将指导访谈主持人的行为和风格。留空将使用默认的专业访谈提示词。",
+      "cancel": "取消",
+      "save": "保存",
+      "saving": "保存中...",
+      "updateSuccess": "访谈系统提示词已更新",
+      "updateError": "更新失败，请重试"
     },
     "createCollectSession": {
       "title": "创建访谈",

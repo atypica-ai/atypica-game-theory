@@ -81,6 +81,7 @@
     "projectDetail": {
       "createCollectSession": "Create interview",
       "clarifyProject": "Clarify project brief",
+      "editCollectSystem": "Edit Interview System",
       "clarifyPrompt": "Click \"Clarify Project brief\" to define your research brief and objectives.",
       "projectCategory": "Project Category",
       "created": "Created",
@@ -107,6 +108,18 @@
         "completed": "Completed",
         "pending": "Not yet started"
       }
+    },
+    "editCollectSystem": {
+      "title": "Edit Interview System Prompt",
+      "description": "Customize the system prompt for the interview host. If left empty, the default professional interview prompt will be used.",
+      "collectSystemLabel": "Interview System Prompt",
+      "collectSystemPlaceholder": "Enter custom system prompt...",
+      "collectSystemDescription": "This prompt will guide the interview host's behavior and style. Leave empty to use the default professional interview prompt.",
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving...",
+      "updateSuccess": "Interview system prompt updated successfully",
+      "updateError": "Failed to update, please try again"
     },
     "createCollectSession": {
       "title": "Create interview",

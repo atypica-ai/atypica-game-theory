@@ -1,3 +1,4 @@
+import { interviewSessionSystem } from "@/ai/prompt";
 import { fetchInterviewProjectByToken } from "@/app/interviewProject/actions";
 import UserTokensBalance from "@/components/UserTokensBalance";
 import { authOptions } from "@/lib/auth";
@@ -59,6 +60,14 @@ export default async function InterviewProjectPage({
     forbidden();
   }
 
+  const defaultCollectSystem = interviewSessionSystem({
+    projectTitle: project.title,
+    projectBrief: project.brief,
+    projectCategory: project.category,
+    objectives: project.objectives,
+    sessionKind: "collect",
+  });
+
   return (
     <PageLayout
       menus={
@@ -68,7 +77,7 @@ export default async function InterviewProjectPage({
         </>
       }
     >
-      <InterviewProjectDetail project={project} />
+      <InterviewProjectDetail project={project} defaultCollectSystem={defaultCollectSystem} />
     </PageLayout>
   );
 }

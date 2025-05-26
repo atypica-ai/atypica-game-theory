@@ -43,6 +43,7 @@ import {
   MessageSquareTextIcon,
   NotebookPenIcon,
   PlusIcon,
+  Settings,
   Share2,
   Share2Icon,
 } from "lucide-react";
@@ -52,19 +53,26 @@ import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import { createCollectSession } from "../actions";
+import { createCollectSession, updateCollectSystem } from "../actions";
 
 type ExtendedInterviewProject = InterviewProjectWithSessions & {
   clarifySession?: (InterviewSession & { userChat?: { id: number } }) | null;
   brief?: string | null;
 };
 
-export function InterviewProjectDetail({ project }: { project: ExtendedInterviewProject }) {
+export function InterviewProjectDetail({
+  project,
+  defaultCollectSystem,
+}: {
+  project: ExtendedInterviewProject;
+  defaultCollectSystem: string;
+}) {
   const router = useRouter();
   const t = useTranslations("InterviewProject.projectDetail");
   const locale = useLocale();
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   const [isDigestDialogOpen, setIsDigestDialogOpen] = useState(false);
+  const [isEditCollectSystemOpen, setIsEditCollectSystemOpen] = useState(false);
 
   // If there's no clarify session yet, we should redirect to create one (shouldn't happen with new design)
   const handleStartClarifySession = () => {
@@ -138,10 +146,14 @@ export function InterviewProjectDetail({ project }: { project: ExtendedInterview
                 <div className="text-muted-foreground">{formatDate(project.updatedAt, locale)}</div>
               </div>
             </CardContent>
-            <CardFooter className="flex justify-end border-t pt-4 gap-2">
+            <CardFooter className="flex flex-wrap justify-end border-t pt-4 gap-2">
               <Button onClick={handleStartClarifySession}>
                 <MessageSquareTextIcon className="h-4 w-4" />
                 {t("clarifyProject")}
+              </Button>
+              <Button variant="outline" onClick={() => setIsEditCollectSystemOpen(true)}>
+                <Settings className="h-4 w-4" />
+                {t("editCollectSystem")}
               </Button>
               {collectSessions.length > 0 && (
                 <Button variant="outline" onClick={() => setIsDigestDialogOpen(true)}>
@@ -205,7 +217,119 @@ export function InterviewProjectDetail({ project }: { project: ExtendedInterview
         onOpenChange={setIsDigestDialogOpen}
         initialDigest={project.digest}
       />
+      <EditCollectSystemDialog
+        projectToken={project.token}
+        open={isEditCollectSystemOpen}
+        onOpenChange={setIsEditCollectSystemOpen}
+        initialCollectSystem={project.collectSystem || defaultCollectSystem}
+      />
     </>
+  );
+}
+
+// Schema for the collect system form
+const collectSystemFormSchema = z.object({
+  collectSystem: z.string(),
+});
+
+type CollectSystemFormData = z.infer<typeof collectSystemFormSchema>;
+
+function EditCollectSystemDialog({
+  projectToken,
+  open,
+  onOpenChange,
+  initialCollectSystem,
+}: {
+  projectToken: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  initialCollectSystem?: string | null;
+}) {
+  const t = useTranslations("InterviewProject.editCollectSystem");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const form = useForm<CollectSystemFormData>({
+    resolver: zodResolver(collectSystemFormSchema),
+    defaultValues: {
+      collectSystem: initialCollectSystem || "",
+    },
+  });
+
+  // Reset form when dialog opens with new initial values
+  useEffect(() => {
+    if (open) {
+      form.reset({
+        collectSystem: initialCollectSystem || "",
+      });
+    }
+  }, [open, initialCollectSystem, form]);
+
+  const onSubmit = async (data: CollectSystemFormData) => {
+    setIsLoading(true);
+
+    try {
+      const result = await updateCollectSystem(projectToken, data.collectSystem.trim() || null);
+
+      if (result.success) {
+        toast.success(t("updateSuccess"));
+        onOpenChange(false);
+      } else {
+        toast.error(result.message || t("updateError"));
+      }
+    } catch (error) {
+      console.error("Error updating collect system:", error);
+      toast.error(t("updateError"));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[600px]">
+        <DialogHeader>
+          <DialogTitle>{t("title")}</DialogTitle>
+          <DialogDescription>{t("description")}</DialogDescription>
+        </DialogHeader>
+
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <FormField
+              control={form.control}
+              name="collectSystem"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t("collectSystemLabel")}</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder={t("collectSystemPlaceholder")}
+                      className="min-h-[200px] max-h-[400px] resize-none"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormDescription>{t("collectSystemDescription")}</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                disabled={isLoading}
+              >
+                {t("cancel")}
+              </Button>
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? t("saving") : t("save")}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
   );
 }
 

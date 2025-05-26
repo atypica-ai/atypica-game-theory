@@ -94,13 +94,15 @@ export async function POST(req: NextRequest) {
   });
 
   // Generate system message with project context
-  const systemPrompt = interviewSessionSystem({
-    projectTitle: interviewSession.project.title,
-    projectBrief: interviewSession.project.brief,
-    projectCategory: interviewSession.project.category,
-    objectives: interviewSession.project.objectives,
-    sessionKind: "collect",
-  });
+  const systemPrompt = interviewSession.project.collectSystem
+    ? interviewSession.project.collectSystem
+    : interviewSessionSystem({
+        projectTitle: interviewSession.project.title,
+        projectBrief: interviewSession.project.brief,
+        projectCategory: interviewSession.project.category,
+        objectives: interviewSession.project.objectives,
+        sessionKind: "collect",
+      });
 
   // Generate response from LLM
   const streamTextResult = streamText({
