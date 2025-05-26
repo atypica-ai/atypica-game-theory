@@ -222,13 +222,23 @@ export function appendChunkToStreamingMessage<T extends ToolSet>(
 
 /**
  * AI message 上面的 experimental_attachments 会被忽略，使用 attachments
+ * 重要：这是唯一会保存 ChatMessage 的地方，这一点要始终遵循，确保保存 ChatMessage 的规则一致
  */
 export const persistentAIMessageToDB = async (
   userChatId: number,
   message: Message,
   attachments?: ChatMessageAttachment[], // 暂时还没地方用到，现在唯一存储 attachments 的地方，在 createStudyUserChat 里直接实现了
 ) => {
-  const { id: messageId, role, content, parts: _parts, createdAt, ...extra } = message;
+  const {
+    id: messageId,
+    role,
+    content,
+    parts: _parts,
+    createdAt,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    experimental_attachments, // 忽略，用不到，不用保存，而且里面会有 base64 file content, 保存下来太大了
+    ...extra
+  } = message;
   const parts: NonNullable<Message["parts"]> = _parts?.length
     ? _parts
     : [{ type: "text", text: content }];
@@ -350,14 +360,17 @@ export async function convertDBMessagesToAIMessages(dbMessages: ChatMessage[]): 
             await Promise.all(
               attachments.map(async ({ objectUrl, name, mimeType, size }) => {
                 const signResult = await getS3SignedUrl(objectUrl);
-                return signResult.success
-                  ? {
-                      extra: { objectUrl, size }, // 不管3721，都放进去，但不要依赖这个值
-                      url: signResult.data,
-                      name,
-                      contentType: mimeType,
-                    }
-                  : null;
+                if (!signResult.success) {
+                  return null;
+                }
+                const url = signResult.data;
+                const dataUrl = await fileUrlToDataUrl({ url, mimeType });
+                return {
+                  extra: { objectUrl, size }, // 不管3721，都放进去，但不要依赖这个值
+                  url: dataUrl,
+                  name,
+                  contentType: mimeType,
+                };
               }),
             )
           ).filter((item) => item !== null);
@@ -435,4 +448,17 @@ export async function prepareMessagesForStreaming(
     streamingMessage,
     toolUseCount,
   };
+}
+
+export async function fileUrlToDataUrl({
+  url,
+  mimeType,
+}: {
+  url: string;
+  mimeType: string;
+}): Promise<`data:${string};base64,${string}`> {
+  const response = await fetch(url);
+  const buffer = await response.arrayBuffer();
+  const base64 = Buffer.from(buffer).toString("base64");
+  return `data:${mimeType};base64,${base64}`;
 }

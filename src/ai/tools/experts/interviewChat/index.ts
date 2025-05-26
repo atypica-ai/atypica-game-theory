@@ -1,6 +1,6 @@
 import "server-only";
 
-import { convertStepsToAIMessage } from "@/ai/messageUtils";
+import { convertStepsToAIMessage, fileUrlToDataUrl } from "@/ai/messageUtils";
 import {
   interviewDigestSystem,
   interviewerAttachment,
@@ -146,7 +146,8 @@ async function generateDigest(
   results: ({ name: string; issue: string } | { name: string; conclusion: string })[],
 ) {
   const digest = await generateText({
-    model: llm("gpt-4.1-nano"),
+    // model: llm("gpt-4.1-nano"),
+    model: llm("gpt-4.1-mini"),
     providerOptions,
     prompt: interviewDigestSystem({ locale, results }),
     maxTokens: 2000,
@@ -248,10 +249,10 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: Message[]) {
 
   const REDUCE_TOKENS = {
     // model: llm("gemini-2.5-pro"), // 不能这么写，一定要下面每次都重新初始化 llm，不然会卡住
-    // model: "gemini-2.5-pro" as LLMModelName,
-    // ratio: 2,
-    model: "gpt-4.1-mini" as LLMModelName,
-    ratio: 5,
+    model: "gemini-2.5-pro" as LLMModelName,
+    ratio: 2,
+    // model: "gpt-4.1-mini" as LLMModelName,  // 不支持读文件，没法用
+    // ratio: 5,
   };
 
   const result = await new Promise<Omit<Message, "role">>(async (resolve, reject) => {
@@ -443,11 +444,15 @@ export async function runInterview(chatProps: ChatProps) {
   });
   const experimental_attachments = attachments
     ? await Promise.all(
-        attachments.map(async ({ objectUrl, name, mimeType }) => ({
-          url: await s3SignedUrl(objectUrl),
-          name: name,
-          contentType: mimeType,
-        })),
+        attachments.map(async ({ objectUrl, name, mimeType }) => {
+          const url = await s3SignedUrl(objectUrl);
+          const dataUrl = await fileUrlToDataUrl({ url, mimeType });
+          return {
+            url: dataUrl,
+            name: name,
+            contentType: mimeType,
+          };
+        }),
       )
     : undefined;
   const personaAgent = {

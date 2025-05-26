@@ -1,5 +1,6 @@
 import "server-only";
 
+import { fileUrlToDataUrl } from "@/ai/messageUtils";
 import {
   reportCoverPrologue,
   reportCoverSystem,
@@ -219,11 +220,15 @@ export async function generateReport({
       const experimental_attachments = analyst.attachments
         ? await Promise.all(
             (analyst.attachments as ChatMessageAttachment[]).map(
-              async ({ objectUrl, name, mimeType }) => ({
-                url: await s3SignedUrl(objectUrl),
-                name: name,
-                contentType: mimeType,
-              }),
+              async ({ objectUrl, name, mimeType }) => {
+                const url = await s3SignedUrl(objectUrl);
+                const dataUrl = await fileUrlToDataUrl({ url, mimeType });
+                return {
+                  url: dataUrl,
+                  name: name,
+                  contentType: mimeType,
+                };
+              },
             ),
           )
         : undefined;
