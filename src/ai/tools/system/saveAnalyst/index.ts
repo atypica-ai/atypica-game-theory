@@ -20,7 +20,9 @@ export const saveAnalystTool = ({
     parameters: z.object({
       role: z
         .string()
-        .describe("The expert analyst's professional role, specialization, or domain expertise"),
+        .describe(
+          "The expert analyst's professional role, specialization, or domain of expertise (maximum 5 words)",
+        ),
       topic: z
         .string()
         .describe(
@@ -62,7 +64,11 @@ export const saveAnalystTool = ({
       // }
       await prisma.analyst.update({
         where: { id: analystId },
-        data: { role, topic, locale },
+        data: {
+          role: role.slice(0, 100), // 为了数据库不报错，防御性的截断一下
+          topic,
+          locale,
+        },
       });
       return {
         analystId: analyst.id,

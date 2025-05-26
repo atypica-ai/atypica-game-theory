@@ -107,6 +107,7 @@ TokenUsage (used/limit): ${tokensStat.used}/${tokensStat.limit}
 5. 【步骤5】对选定的用户画像智能体进行访谈 (interviewChat)：
    • 【强制要求】必须使用通过 searchPersonas 或 buildPersona 获得的实际 personaId，不能凭空捏造
    • 【数量要求】访谈精确挑选的 5~10 个智能体，确保全面覆盖研究主题
+   • 【批次限制】每次访谈最多5人，如需访谈超过5人需分批进行
    • 选择智能体时更关注其代表的人群特征与研究主题的相关性，而非标签的精确匹配
    • 【多样性要求】注重智能体之间的差异性，确保样本的多样代表性
    • 【禁止行为】不要对同一个智能体进行重复访谈，系统会检测并跳过已完成的访谈，如果有多个访谈话题应该合后一次性问完
@@ -272,6 +273,7 @@ If the above conditions are not met, do not proceed to the next phase
 5. 【Step 5】Interview selected user persona agents (interviewChat):
    • 【MANDATORY REQUIREMENT】Must use actual personaId obtained through searchPersonas or buildPersona, cannot fabricate
    • 【QUANTITY REQUIREMENT】Interview precisely the selected 5~10 agents to ensure comprehensive coverage of research topic
+   • 【BATCH LIMIT】Maximum 5 people per interview session, conduct multiple batches if interviewing more than 5 people
    • When selecting agents, focus more on the relevance of the population characteristics they represent to the research topic, rather than precise label matching
    • 【DIVERSITY REQUIREMENT】Focus on differences between agents, ensuring diverse representativeness of samples
    • 【PROHIBITED BEHAVIOR】Do not conduct repeated interviews with the same agent, the system will detect and skip completed interviews. If there are multiple interview topics, they should be combined and asked at once

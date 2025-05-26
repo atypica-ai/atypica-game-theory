@@ -53,7 +53,7 @@ export const interviewChatTool = ({
             name: z.string().describe("Display name of the persona corresponding to the personaId"),
           }),
         )
-        .max(5)
+        // .max(5) // 去掉，防止 zod 在 validate 的时候报错，有时候模型会不遵守，但其实问题不大
         .describe(
           "List of study participants (maximum 5). Must use personas that have been built or found in the current study - do not create fictional ones",
         ),

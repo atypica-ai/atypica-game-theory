@@ -25,14 +25,14 @@ export const savePersonaTool = ({
     parameters: z.object({
       name: z
         .string()
-        .describe("User persona display name or nickname (avoid using family names for privacy)")
+        .describe(
+          "User persona display name or nickname (avoid family names for privacy reasons), keep it under 5 words",
+        )
         // .max(100) // 英文环境下，gemini 对这个 100 的理解不是 100 个字符，这里先去掉
         .transform(fixMalformedUnicodeString),
       source: z
         .string()
-        .describe(
-          "Data source or platform where persona characteristics were observed, less than 10 words",
-        )
+        .describe("Source or platform where persona characteristics were observed (10 words max)")
         // .max(100) // 英文环境下，gemini 对这个 100 的理解不是 100 个字符，这里先去掉
         .transform(fixMalformedUnicodeString),
       tags: z
@@ -70,9 +70,9 @@ export const savePersonaTool = ({
       const samples = [] as string[];
       const persona = await prisma.persona.create({
         data: {
-          name: name.substring(0, 200), // 为了数据库不报错，防御性的截断一下
-          source: source.substring(0, 200),
-          tags: tags.map((tag) => tag.substring(0, 50)),
+          name: name.slice(0, 50),
+          source: source.slice(0, 200), // 为了数据库不报错，防御性的截断一下
+          tags: tags.map((tag) => tag.slice(0, 50)),
           samples,
           prompt,
           locale,
