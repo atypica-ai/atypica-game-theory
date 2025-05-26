@@ -1,5 +1,16 @@
 import { prisma } from "@/prisma/prisma";
 
+function injectImgTag(html: string, reportToken: string) {
+  const imgTagRegex = /<img([^>]*?)src="(\/api\/imagegen\/[^"]*)"([^>]*?)>/g;
+  const modifiedHtml = html.replace(imgTagRegex, (match, beforeSrc, src, afterSrc) => {
+    const separator = src.includes("?") ? "&" : "?";
+    const newSrc = `${src}${separator}reportToken=${encodeURIComponent(reportToken)}`;
+    return `<img${beforeSrc}src="${newSrc}"${afterSrc}>`;
+  });
+  html = modifiedHtml;
+  return html;
+}
+
 export async function GET(request: Request, { params }: { params: Promise<{ token: string }> }) {
   const token = (await params).token;
   const url = new URL(request.url);
@@ -16,9 +27,10 @@ export async function GET(request: Request, { params }: { params: Promise<{ toke
             const analystReport = await prisma.analystReport.findUniqueOrThrow({
               where: { token },
             });
-            const chunk = analystReport.onePageHtml.substring(start);
+            const onePageHtml = injectImgTag(analystReport.onePageHtml, token);
+            const chunk = onePageHtml.substring(start);
             controller.enqueue(encoder.encode(chunk));
-            start = analystReport.onePageHtml.length;
+            start = onePageHtml.length;
             // If report is complete (has a generatedAt timestamp), end the stream
             if (analystReport.generatedAt) {
               controller.close();
@@ -47,7 +59,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ toke
   const analystReport = await prisma.analystReport.findUniqueOrThrow({
     where: { token },
   });
-  return new Response(analystReport.onePageHtml, {
+  const onePageHtml = injectImgTag(analystReport.onePageHtml, token);
+  return new Response(onePageHtml, {
     headers: {
       "Content-Type": "text/html; charset=utf-8",
     },

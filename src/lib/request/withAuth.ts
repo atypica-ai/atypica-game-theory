@@ -11,7 +11,7 @@ export async function withAuth<T>(
 ): Promise<T> {
   const headersList = await headers();
   const session = await getServerSession(authOptions);
-  const referer = headersList.get("referer") || "/";
+  const referer = headersList.get("referer") || "/"; // 因为浏览器隐私设置，这个值不一定每次都有
   if (!session?.user) {
     redirect(`/auth/signin?callbackUrl=${encodeURIComponent(referer)}`);
   }

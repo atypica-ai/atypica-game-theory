@@ -11,12 +11,11 @@ import { getServerSession } from "next-auth";
 import { z } from "zod";
 
 export async function GET(req: Request, { params }: { params: Promise<{ prompt: string }> }) {
-  const referer = req.headers.get("referer") ?? "";
-  const match = referer.match(/\/artifacts\/report\/(\w+)\//);
-  if (!match) {
+  const url = new URL(req.url);
+  const reportToken = url.searchParams.get("reportToken");
+  if (!reportToken) {
     return new Response("imagegen url is only available on report page", { status: 403 });
   }
-  const reportToken = match[1];
   const report = await prisma.analystReport.findUniqueOrThrow({
     where: { token: reportToken },
     select: {
@@ -46,7 +45,6 @@ export async function GET(req: Request, { params }: { params: Promise<{ prompt: 
   const session = await getServerSession(authOptions);
 
   const { prompt } = await params;
-  const url = new URL(req.url);
   let ratio = url.searchParams.get("ratio") as "square" | "landscape" | "portrait" | undefined;
   try {
     ratio = z.enum(["square", "landscape", "portrait"]).default("square").parse(ratio);
