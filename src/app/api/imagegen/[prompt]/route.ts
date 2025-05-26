@@ -10,8 +10,37 @@ import { createHash } from "crypto";
 import { getServerSession } from "next-auth";
 import { z } from "zod";
 
+const ratioSchema = z.enum(["square", "landscape", "portrait"]).default("square");
+
 export async function GET(req: Request, { params }: { params: Promise<{ prompt: string }> }) {
+  const { prompt } = await params;
   const url = new URL(req.url);
+  let ratio = url.searchParams.get("ratio") as z.infer<typeof ratioSchema> | undefined;
+  try {
+    ratio = ratioSchema.parse(ratio);
+  } catch {
+    ratio = "square";
+  }
+  const promptHash = createHash("sha256")
+    .update(JSON.stringify({ prompt, ratio }))
+    .digest("hex")
+    .substring(0, 40);
+  const existingImage = await prisma.imageGeneration.findUnique({
+    where: { promptHash },
+  });
+  if (existingImage) {
+    if (existingImage.generatedAt) {
+      return Response.redirect(await s3SignedUrl(existingImage.objectUrl), 302);
+    } else if (
+      Date.now() - existingImage.createdAt.getTime() >
+      10 * 60 * 1000 // 超过十分钟算超时
+    ) {
+      return Response.json({ error: "image generation timeout" }, { status: 408 });
+    }
+  }
+
+  // 以上部分，不需要检测 reportToken 和 user
+
   const reportToken = url.searchParams.get("reportToken");
   if (!reportToken) {
     return new Response("imagegen url is only available on report page", { status: 403 });
@@ -36,35 +65,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ prompt: 
     studyUserChatId: report.analyst.studyUserChat.id,
     studyUserChatToken: report.analyst.studyUserChat.token,
   });
-  const { statReport } = initStudyStatReporter({
-    userId: report.analyst.userId,
-    studyUserChatId: report.analyst.studyUserChat.id,
-    studyLog,
-  });
-
-  const session = await getServerSession(authOptions);
-
-  const { prompt } = await params;
-  let ratio = url.searchParams.get("ratio") as "square" | "landscape" | "portrait" | undefined;
-  try {
-    ratio = z.enum(["square", "landscape", "portrait"]).default("square").parse(ratio);
-  } catch {
-    ratio = "square";
-  }
   const genLog = studyLog.child({
     prompt: prompt.substring(0, 20),
     ratio,
-  });
-
-  // Generate hash for the prompt
-  const promptHash = createHash("sha256")
-    .update(JSON.stringify({ prompt, ratio }))
-    .digest("hex")
-    .substring(0, 40);
-
-  // Check if image already exists in database
-  const existingImage = await prisma.imageGeneration.findUnique({
-    where: { promptHash },
   });
 
   if (existingImage) {
@@ -98,6 +101,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ prompt: 
     }
   }
 
+  // 图片没有生成过，需要检查必要的权限，有权限以后可以接下来插入数据库条目
+
+  const session = await getServerSession(authOptions);
   if (!session?.user || report.analyst.userId !== session.user.id) {
     // 如果图片还没生成，只有用户自己可以访问，因为要消耗 token
     return new Response("Unauthorized", { status: 401 });
@@ -112,6 +118,12 @@ export async function GET(req: Request, { params }: { params: Promise<{ prompt: 
       objectUrl: "",
       extra: { ...recordExtra },
     },
+  });
+
+  const { statReport } = initStudyStatReporter({
+    userId: report.analyst.userId,
+    studyUserChatId: report.analyst.studyUserChat.id,
+    studyLog,
   });
 
   const backgroundGeneration = new Promise<string>(async (resolve, reject) => {
