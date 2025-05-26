@@ -26,15 +26,17 @@ export const savePersonaTool = ({
       name: z
         .string()
         .describe("User persona display name or nickname (avoid using family names for privacy)")
-        .max(100)
+        // .max(100) // 英文环境下，gemini 对这个 100 的理解不是 100 个字符，这里先去掉
         .transform(fixMalformedUnicodeString),
       source: z
         .string()
-        .describe("Data source or platform where persona characteristics were observed")
-        .max(100)
+        .describe(
+          "Data source or platform where persona characteristics were observed, less than 10 words",
+        )
+        // .max(100) // 英文环境下，gemini 对这个 100 的理解不是 100 个字符，这里先去掉
         .transform(fixMalformedUnicodeString),
       tags: z
-        .array(z.string().max(50))
+        .array(z.string())
         .describe(
           "3-5 characteristic tags that define this persona's key traits, interests, or demographics",
         )
@@ -42,7 +44,7 @@ export const savePersonaTool = ({
       // userids: z.array(z.string()).optional().describe("该人设典型的用户 ID 列表").default([]),
       personaPrompt: z
         .string()
-        .max(2000)
+        // .max(2000) // 英文环境下，gemini 对这个 100 的理解不是 100 个字符，这里先去掉
         .describe(
           "Comprehensive AI agent system prompt that enables realistic simulation of this persona's thinking patterns, decision-making, and communication style (300-500 words)",
         )
@@ -67,7 +69,15 @@ export const savePersonaTool = ({
     }): Promise<SavePersonaToolResult> => {
       const samples = [] as string[];
       const persona = await prisma.persona.create({
-        data: { name, source, tags, samples, prompt, locale, scoutUserChatId },
+        data: {
+          name: name.substring(0, 200), // 为了数据库不报错，防御性的截断一下
+          source: source.substring(0, 200),
+          tags: tags.map((tag) => tag.substring(0, 50)),
+          samples,
+          prompt,
+          locale,
+          scoutUserChatId,
+        },
       });
       waitUntil(createPersonaEmbedding(persona));
       if (statReport) {
