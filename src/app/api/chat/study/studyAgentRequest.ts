@@ -19,8 +19,6 @@ import { ToolName } from "@/ai/tools/types";
 import { prisma } from "@/prisma/prisma";
 import {
   CoreMessage,
-  createDataStreamResponse,
-  formatDataStreamPart,
   Message,
   smoothStream,
   StepResult,
@@ -127,29 +125,29 @@ export async function studyAgentRequest({
     maxSteps = 2;
   }
 
-  // 超出 tokens 限制以后，这时候每 chat 一次，就是一个很大的 input tokens 数量
-  // 所以，不能再继续发送消息，直接返回一个特定的消息
-  if (tokensConsumed >= TOKENS_COMSUME_LIMIT) {
-    studyLog.error(`tokensConsumed ${tokensConsumed} exceeds limit ${TOKENS_COMSUME_LIMIT}`);
-    const locale = await getLocale();
-    const message =
-      locale === "zh-CN"
-        ? "当前研究已达 Token 上限，无法继续。您可以创建一个新的研究项目继续，或通过右下角的客服聊天窗口联系我们获取帮助"
-        : "You have reached the tokens limit for this study. You can create a new study project to continue, or contact us through the customer service chat window in the lower right corner for assistance.";
-    return createDataStreamResponse({
-      execute: async (dataStream) => {
-        dataStream.write(formatDataStreamPart("start_step", { messageId: "study-tokens-limit" }));
-        dataStream.write(formatDataStreamPart("text", message));
-        dataStream.write(formatDataStreamPart("finish_message", { finishReason: "stop" }));
-      },
-    });
-  }
+  // // 超出 tokens 限制以后，这时候每 chat 一次，就是一个很大的 input tokens 数量
+  // // 所以，不能再继续发送消息，直接返回一个特定的消息
+  // if (tokensConsumed >= TOKENS_COMSUME_LIMIT) {
+  //   studyLog.error(`tokensConsumed ${tokensConsumed} exceeds limit ${TOKENS_COMSUME_LIMIT}`);
+  //   const locale = await getLocale();
+  //   const message =
+  //     locale === "zh-CN"
+  //       ? "当前研究已达 Token 上限，无法继续。您可以创建一个新的研究项目继续，或通过右下角的客服聊天窗口联系我们获取帮助"
+  //       : "You have reached the tokens limit for this study. You can create a new study project to continue, or contact us through the customer service chat window in the lower right corner for assistance.";
+  //   return createDataStreamResponse({
+  //     execute: async (dataStream) => {
+  //       dataStream.write(formatDataStreamPart("start_step", { messageId: "study-tokens-limit" }));
+  //       dataStream.write(formatDataStreamPart("text", message));
+  //       dataStream.write(formatDataStreamPart("finish_message", { finishReason: "stop" }));
+  //     },
+  //   });
+  // }
 
   const { clearBackgroundToken, backgroundToken } = await raceForUserChat(studyUserChatId);
   const system = studySystem({
     locale,
     // 限制是 1M，告诉模型限制是 0.6M
-    tokensStat: { used: tokensConsumed, limit: TOKENS_COMSUME_LIMIT * 0.6 },
+    tokensStat: { used: tokensConsumed, limit: TOKENS_COMSUME_LIMIT * 0.5 },
     toolUseStat: {
       [ToolName.scoutTaskChat]: {
         used: toolUseCount[ToolName.scoutTaskChat] ?? 0,
