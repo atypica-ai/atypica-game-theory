@@ -375,14 +375,15 @@ model SystemConfig {
 }
 
 model InterviewProject {
-  id         Int      @id @default(autoincrement())
-  token      String   @unique
-  userId     Int
-  title      String   @db.VarChar(255)
-  category   String   @db.VarChar(64)
-  brief      String?  @db.Text
-  objectives String[]
-  digest     String?  @db.Text
+  id            Int      @id @default(autoincrement())
+  token         String   @unique
+  userId        Int
+  title         String   @db.VarChar(255)
+  category      String   @db.VarChar(64)
+  brief         String?  @db.Text
+  objectives    String[]
+  digest        String?  @db.Text
+  collectSystem String?  @db.Text // 访谈真人过程中的系统提示词
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
