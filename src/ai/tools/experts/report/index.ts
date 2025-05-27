@@ -7,7 +7,7 @@ import {
   reportHTMLPrologue,
   reportHTMLSystem,
 } from "@/ai/prompt";
-import { llm, providerOptions } from "@/ai/provider";
+import { llm, LLMModelName, providerOptions } from "@/ai/provider";
 import { PlainTextToolResult, StatReporter } from "@/ai/tools/types";
 import { s3SignedUrl } from "@/lib/attachments/s3";
 import { ChatMessageAttachment } from "@/lib/attachments/types";
@@ -209,12 +209,13 @@ export async function generateReport({
     };
   })();
 
+  let modelName: LLMModelName = "claude-4-sonnet";
   while (true) {
     const {
       finishReason,
       // content,
     } = await new Promise<{
-      finishReason: FinishReason;
+      finishReason: FinishReason | "Too many tokens";
       content: string;
     }>(async (resolve, reject) => {
       const experimental_attachments = analyst.attachments
@@ -248,7 +249,7 @@ export async function generateReport({
         });
       }
       const response = streamText({
-        model: llm("claude-4-sonnet"),
+        model: llm(modelName),
         providerOptions: providerOptions,
         system: systemPrompt ? systemPrompt : reportHTMLSystem({ locale }),
         messages: messages,
@@ -278,8 +279,20 @@ export async function generateReport({
           }
         },
         onError: ({ error }) => {
-          reportLog.error(`HTML generation Error: ${(error as Error).message}`);
-          reject(error);
+          const msg = (error as Error).message;
+          if (msg.includes("Too many tokens")) {
+            reportLog.warn(
+              `HTML generation hit token limit, cooling down and switching model: ${msg}`,
+            );
+            // claude 有时候会遇到 quota 不够，这时候不报错，随机等待1~2min，换个模型继续
+            setTimeout(
+              () => resolve({ finishReason: "Too many tokens", content: "" }),
+              Math.floor(Math.random() * (120_000 - 60_000 + 1)) + 60_000,
+            );
+          } else {
+            reportLog.error(`HTML generation Error: ${msg}`);
+            reject(error);
+          }
         },
         abortSignal,
       });
@@ -290,6 +303,9 @@ export async function generateReport({
     await throttleSaveHTML(report.id, onePageHtml, { immediate: true });
 
     if (finishReason === "length") {
+      continue;
+    } else if (finishReason === "Too many tokens") {
+      modelName = "claude-3-7-sonnet";
       continue;
     } else {
       await prisma.analystReport.update({

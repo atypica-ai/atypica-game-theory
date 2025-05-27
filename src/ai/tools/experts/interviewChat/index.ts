@@ -260,7 +260,7 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: Message[]) {
     const response = streamText({
       model: reduceTokens ? llm(reduceTokens.model) : llm("claude-3-7-sonnet"), // 不能用 gpt-4o，指令遵循的比较差，会结束不了
       providerOptions: providerOptions,
-      maxRetries: 0, // 不要自动重试
+      // maxRetries: 0, // 不要自动重试？不，gemini 偶尔连不上，还是得自动重试，慢是慢了点
       system: interviewerPrompt,
       temperature: 0.3,
       messages: messages,
@@ -282,7 +282,7 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: Message[]) {
           }),
       onStepFinish: async (step) => {
         interviewLog.info({
-          msg: "Expert interviewer step completed",
+          msg: "chatWithInterviewer streamText onStepFinish",
           stepType: step.stepType,
           toolCalls: step.toolCalls.map((call) => call.toolName),
           usage: step.usage,
@@ -303,12 +303,12 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: Message[]) {
         }
       },
       onFinish: async ({ steps, usage }) => {
-        interviewLog.info({ msg: "Expert interviewer stream completed", usage });
+        interviewLog.info({ msg: "chatWithInterviewer streamText onFinish", usage });
         const message = convertStepsToAIMessage(steps);
         resolve(message);
       },
       onError: ({ error }) => {
-        interviewLog.error(`Expert interviewer stream error: ${(error as Error).message}`);
+        interviewLog.error(`chatWithInterviewer streamText onError: ${(error as Error).message}`);
         reject(error);
       },
       abortSignal,
@@ -351,7 +351,7 @@ async function chatWithPersona(chatProps: ChatProps, messages: Message[]) {
         : llm("gpt-4.1"),
       providerOptions: providerOptions,
       system: personaPrompt,
-      // maxRetries: 0, // 不要自动重试
+      // maxRetries: 0,  // 不要自动重试？不，gemini 偶尔连不上，还是得自动重试，慢是慢了点
       temperature: 0.3,
       messages: messages,
       tools: {
@@ -363,7 +363,7 @@ async function chatWithPersona(chatProps: ChatProps, messages: Message[]) {
       maxSteps: 2,
       onStepFinish: async (step) => {
         interviewLog.info({
-          msg: "User persona interview step completed",
+          msg: "chatWithPersona streamText onStepFinish",
           stepType: step.stepType,
           toolCalls: step.toolCalls.map((call) => call.toolName),
           usage: step.usage,
@@ -380,12 +380,12 @@ async function chatWithPersona(chatProps: ChatProps, messages: Message[]) {
         }
       },
       onFinish: ({ steps, usage }) => {
-        interviewLog.info({ msg: "User persona interview stream completed", usage });
+        interviewLog.info({ msg: "chatWithPersona streamText onFinish", usage });
         const message = convertStepsToAIMessage(steps);
         resolve(message);
       },
       onError: ({ error }) => {
-        interviewLog.error(`User persona interview stream error: ${(error as Error).message}`);
+        interviewLog.error(`chatWithPersona streamText onError: ${(error as Error).message}`);
         reject(error);
       },
       abortSignal,
