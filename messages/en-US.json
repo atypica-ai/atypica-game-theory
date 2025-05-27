@@ -425,7 +425,13 @@
       "confirm": "Confirm"
     },
     "ChatReplay": {
-      "skipToEnd": "Skip to End"
+      "skipToEnd": "Skip to End",
+      "continueStudyTitle": "Continue Your Study",
+      "continueStudyDescription": "Pick up where you left off and continue exploring your study topic.",
+      "continueStudy": "Continue Study",
+      "startNewStudyTitle": "Start Your Own Study",
+      "startNewStudyDescription": "This study belongs to another user. Create your own study to get started.",
+      "startNewStudy": "Start New Study"
     },
     "SingleMessage": {
       "viewToolCall": "View process"

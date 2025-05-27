@@ -425,7 +425,13 @@
       "confirm": "确认"
     },
     "ChatReplay": {
-      "skipToEnd": "跳到结尾"
+      "skipToEnd": "跳到结尾",
+      "continueStudyTitle": "继续您的研究",
+      "continueStudyDescription": "从上次停止的地方继续，深入探索您的研究主题。",
+      "continueStudy": "继续研究",
+      "startNewStudyTitle": "开启您自己的研究",
+      "startNewStudyDescription": "这项研究属于其他用户。创建您自己的研究来开始吧。",
+      "startNewStudy": "开始新研究"
     },
     "SingleMessage": {
       "viewToolCall": "查看过程"

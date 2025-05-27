@@ -2,7 +2,9 @@ import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Button } from "@/components/ui/button";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
 import { cn } from "@/lib/utils";
+import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
+import Link from "next/link";
 import { useEffect } from "react";
 import { useStudyContext } from "./hooks/StudyContext";
 import { useProgressiveMessages } from "./hooks/useProgressiveMessages";
@@ -11,6 +13,7 @@ import { SingleMessage } from "./SingleMessage";
 export function ChatReplay() {
   const { studyUserChat, setLastToolInvocation } = useStudyContext();
   const t = useTranslations("StudyPage.ChatReplay");
+  const { data: session } = useSession();
   const {
     partialMessages: messagesDisplay,
     skipToEnd,
@@ -20,6 +23,8 @@ export function ChatReplay() {
     messages: studyUserChat.messages,
     enabled: true,
   });
+
+  const isOwnStudy = session?.user?.id === studyUserChat.userId;
 
   useEffect(() => {
     for (let i = messagesDisplay.length - 1; i >= 0; i--) {
@@ -73,6 +78,29 @@ export function ChatReplay() {
           <Button variant="outline" size="sm" onClick={skipToEnd}>
             {t("skipToEnd")}
           </Button>
+        </div>
+      )}
+      {isCompleted && (
+        <div className="flex flex-col items-center gap-4 absolute bottom-4 left-1/2 -translate-x-1/2 bg-background/95 backdrop-blur-sm border rounded-lg p-6 shadow-lg">
+          <div className="text-center">
+            <h3 className="text-lg font-semibold mb-2">
+              {isOwnStudy ? t("continueStudyTitle") : t("startNewStudyTitle")}
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              {isOwnStudy ? t("continueStudyDescription") : t("startNewStudyDescription")}
+            </p>
+          </div>
+          <div className="flex gap-3">
+            {isOwnStudy ? (
+              <Button asChild>
+                <Link href={`/study/${studyUserChat.token}`}>{t("continueStudy")}</Link>
+              </Button>
+            ) : (
+              <Button asChild>
+                <Link href="/">{t("startNewStudy")}</Link>
+              </Button>
+            )}
+          </div>
         </div>
       )}
     </div>
