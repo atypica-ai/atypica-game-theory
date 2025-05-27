@@ -5,6 +5,7 @@ import { authOptions } from "@/lib/auth";
 import { generatePageMetadata } from "@/lib/request/metadata";
 import { Metadata } from "next";
 import { getServerSession } from "next-auth/next";
+import { getLocale } from "next-intl/server";
 import { forbidden, notFound, redirect } from "next/navigation";
 import { BackToProjectsButton } from "../components/BackButtons";
 import { PageLayout } from "../PageLayout";
@@ -17,6 +18,7 @@ export async function generateMetadata({
 }: {
   params: Promise<{ token: string }>;
 }): Promise<Metadata> {
+  const locale = await getLocale();
   const { token } = await params;
   if (!token) {
     return {};
@@ -31,6 +33,7 @@ export async function generateMetadata({
   return generatePageMetadata({
     title: interviewProject.title,
     description: interviewProject.brief || undefined,
+    locale,
   });
 }
 

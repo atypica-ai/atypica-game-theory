@@ -258,7 +258,11 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: Message[]) {
   const result = await new Promise<Omit<Message, "role">>(async (resolve, reject) => {
     const reduceTokens = REDUCE_TOKENS as typeof REDUCE_TOKENS | null;
     const response = streamText({
-      model: reduceTokens ? llm(reduceTokens.model) : llm("claude-3-7-sonnet"), // 不能用 gpt-4o，指令遵循的比较差，会结束不了
+      model: reduceTokens
+        ? llm(reduceTokens.model)
+        : // gpt-4.1 系列都不支持 pdf，目前只有 gemini 和 claude 支持
+          // 不能用 gpt-4o，指令遵循的比较差，会结束不了
+          llm("claude-3-7-sonnet"),
       providerOptions: providerOptions,
       // maxRetries: 0, // 不要自动重试？不，gemini 偶尔连不上，还是得自动重试，慢是慢了点
       system: interviewerPrompt,
@@ -348,7 +352,7 @@ async function chatWithPersona(chatProps: ChatProps, messages: Message[]) {
               dynamicThreshold: 0.5,
             },
           })
-        : llm("gpt-4.1"),
+        : llm("claude-3-7-sonnet"), // gpt 4.1 不支持 pdf，目前只有 gemini 和 claude 支持
       providerOptions: providerOptions,
       system: personaPrompt,
       // maxRetries: 0,  // 不要自动重试？不，gemini 偶尔连不上，还是得自动重试，慢是慢了点

@@ -1,9 +1,10 @@
 import { convertDBMessageToAIMessage } from "@/ai/messageUtils";
 import { fetchCollectInterviewSession } from "@/app/interviewProject/actions";
-import { prisma } from "@/prisma/prisma";
 import { generatePageMetadata } from "@/lib/request/metadata";
+import { prisma } from "@/prisma/prisma";
 import { Message } from "ai";
 import { Metadata } from "next";
+import { getLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { CollectSessionClient } from "./CollectSessionClient";
 
@@ -14,6 +15,7 @@ export async function generateMetadata({
 }: {
   params: Promise<{ token: string }>;
 }): Promise<Metadata> {
+  const locale = await getLocale();
   const { token } = await params;
   if (!token) {
     return {};
@@ -28,6 +30,7 @@ export async function generateMetadata({
   return generatePageMetadata({
     title: interviewSession.title,
     description: `Share your insights for ${interviewSession.project.title}`,
+    locale,
   });
 }
 

@@ -1,6 +1,7 @@
-import { prisma } from "@/prisma/prisma";
 import { generatePageMetadata } from "@/lib/request/metadata";
+import { prisma } from "@/prisma/prisma";
 import { Metadata } from "next";
+import { getLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import ReportSharePageClient from "./ReportSharePageClient";
 
@@ -11,6 +12,7 @@ export async function generateMetadata({
 }: {
   params: Promise<{ token: string }>;
 }): Promise<Metadata> {
+  const locale = await getLocale();
   const { token: reportToken } = await params;
   const report = await prisma.analystReport.findUnique({
     where: { token: reportToken },
@@ -33,7 +35,7 @@ export async function generateMetadata({
     /[\n\r]/g,
     " ",
   );
-  return generatePageMetadata({ title, description });
+  return generatePageMetadata({ title, description, locale });
 }
 
 export default async function ReportSharePage({ params }: { params: Promise<{ token: string }> }) {

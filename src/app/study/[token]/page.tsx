@@ -3,6 +3,7 @@ import { authOptions } from "@/lib/auth";
 import { generatePageMetadata } from "@/lib/request/metadata";
 import { throwServerActionError } from "@/lib/serverAction";
 import { getServerSession } from "next-auth/next";
+import { getLocale } from "next-intl/server";
 import { forbidden, notFound, redirect } from "next/navigation";
 import { Metadata } from "next/types";
 import { fetchUserChatByToken } from "../actions";
@@ -14,6 +15,7 @@ export async function generateMetadata({
 }: {
   params: Promise<{ token: string }>;
 }): Promise<Metadata> {
+  const locale = await getLocale();
   const token = (await params).token;
   if (!token) {
     return {};
@@ -25,6 +27,7 @@ export async function generateMetadata({
   const studyUserChat = result.data;
   return generatePageMetadata({
     title: studyUserChat.title,
+    locale,
   });
 }
 

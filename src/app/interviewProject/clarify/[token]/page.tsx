@@ -8,6 +8,7 @@ import { prisma } from "@/prisma/prisma";
 import { Message } from "ai";
 import { Metadata } from "next";
 import { getServerSession } from "next-auth/next";
+import { getLocale } from "next-intl/server";
 import { notFound, redirect } from "next/navigation";
 import { PageLayout } from "../../PageLayout";
 import { BackToProjectButton } from "../../components/BackButtons";
@@ -20,6 +21,7 @@ export async function generateMetadata({
 }: {
   params: Promise<{ token: string }>;
 }): Promise<Metadata> {
+  const locale = await getLocale();
   const { token } = await params;
   if (!token) {
     return {};
@@ -34,6 +36,7 @@ export async function generateMetadata({
   return generatePageMetadata({
     title: interviewSession.title,
     description: interviewSession.project.brief || undefined,
+    locale,
   });
 }
 

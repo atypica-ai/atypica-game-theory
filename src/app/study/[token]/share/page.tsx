@@ -1,6 +1,7 @@
 import { StudyPageClient } from "@/app/study/StudyPageClient";
 import { generatePageMetadata } from "@/lib/request/metadata";
 import { throwServerActionError } from "@/lib/serverAction";
+import { getLocale } from "next-intl/server";
 import { notFound, redirect } from "next/navigation";
 import { Metadata } from "next/types";
 import { fetchUserChatByToken } from "../../actions";
@@ -12,6 +13,7 @@ export async function generateMetadata({
 }: {
   params: Promise<{ token: string }>;
 }): Promise<Metadata> {
+  const locale = await getLocale();
   const token = (await params).token;
   if (!token) {
     return {};
@@ -22,7 +24,7 @@ export async function generateMetadata({
   }
   const studyUserChat = result.data;
   const title = "💬 " + studyUserChat.title;
-  return generatePageMetadata({ title });
+  return generatePageMetadata({ title, locale });
 }
 
 export default async function StudySharePage({

@@ -227,10 +227,7 @@ function StudyCard({ study: { studyUserChat, analyst } }: { study: TStudy }) {
         <div className="flex items-center justify-between mt-auto">
           <div className="flex items-center text-xs text-muted-foreground">
             <CalendarDaysIcon className="mr-1 h-4 w-4" />
-            <div>
-              <span className="max-md:hidden">{t("updated")}</span>
-              {formatDate(studyUserChat.updatedAt, locale)}
-            </div>
+            <div>{formatDate(studyUserChat.updatedAt, locale)}</div>
           </div>
           <div className="flex items-center">
             <span

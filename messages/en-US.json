@@ -1,5 +1,5 @@
 {
-  "tagline": "Modeling the Subjective World",
+  "tagline": "AI-Powered Intelligence for Subjective Reality",
   "HomePage": {
     "title": "Home",
     "HistoryDrawer": {
@@ -7,7 +7,7 @@
       "unnamedChat": "Unnamed Chat"
     },
     "InputSection": {
-      "placeholder": "Ask a specific business research question, and atypica.AI will provide a detailed business report through 10-20 minutes of 'deep reasoning'."
+      "placeholder": "Submit your business research question and atypica.AI will generate a comprehensive report using 10-20 minutes of advanced AI reasoning."
     },
     "FeaturedStudies": {
       "title": "Featured Research",
@@ -35,10 +35,10 @@
     "newProject": "New Project",
     "backToProjects": "Back to Projects",
     "backToProject": "Back to Project",
-    "createFirstProject": "Create First Project",
+    "createFirstProject": "Create Your First Project",
     "create": {
-      "title": "Create Interview Project",
-      "description": "Start your research project by giving it a name and selecting a category. You'll refine the details later.",
+      "title": "Create Research Project",
+      "description": "Start your research project by giving it a name and selecting a category. You'll define objectives and details in the next step.",
       "projectDetails": "Project Details",
       "projectTitle": "Project Title",
       "titlePlaceholder": "E.g., Market Research for New Product",
@@ -47,8 +47,8 @@
       "typeSelectPlaceholder": "Select a category",
       "typeDescription": "This helps the interview expert tailor its approach.",
       "creating": "Creating...",
-      "createButton": "Create Project & Start Clarifying",
-      "afterCreateDescription": "After creating your project, you'll be taken to a chat interface where you can define your research objectives and project brief.",
+      "createButton": "Create Project & Define Objectives",
+      "afterCreateDescription": "After creating your project, you'll define your research objectives and methodology through an interactive setup process.",
       "validation": {
         "titleMin": "Title must be at least 3 characters",
         "categoryRequired": "Please select a project category"
@@ -68,29 +68,29 @@
       }
     },
     "emptyState": {
-      "title": "No interview projects yet",
-      "description": "Create your first project to start collecting insights through expert interviews."
+      "title": "No research projects yet",
+      "description": "Create your first project to start collecting insights through AI-powered research interviews."
     },
     "projectCard": {
       "projectCategory": "Project Category",
-      "collectSessions": "{total} interviews（{active} active，{completed} completed）",
+      "collectSessions": "{total} sessions ({active} active, {completed} completed)",
       "moreObjectives": "more objectives",
       "viewProject": "View Project",
       "updated": "Updated"
     },
     "projectDetail": {
-      "createCollectSession": "Create interview",
-      "clarifyProject": "Clarify project brief",
+      "createCollectSession": "Create Interview Session",
+      "clarifyProject": "Define Project Objectives",
       "editCollectSystem": "Edit Interview System",
-      "clarifyPrompt": "Click \"Clarify Project brief\" to define your research brief and objectives.",
+      "clarifyPrompt": "Click \"Define Project Objectives\" to set up your research goals and methodology.",
       "projectCategory": "Project Category",
       "created": "Created",
       "lastUpdated": "Last Updated",
       "researchObjectives": "Research Objectives",
-      "noObjectives": "No objectives defined yet. Use the \"Clarify Project brief\" button to define your research objectives.",
-      "collectSessionsTab": "Interview",
-      "noCollectSessions": "No interviews yet",
-      "noCollectSessionsDesc": "Create interviews to collect insights from others without requiring them to create an account.",
+      "noObjectives": "No objectives defined yet. Use the \"Define Project Objectives\" button to set up your research goals.",
+      "collectSessionsTab": "Interview Sessions",
+      "noCollectSessions": "No interview sessions yet",
+      "noCollectSessionsDesc": "Create interview sessions to collect insights from participants without requiring them to create an account.",
       "shareLink": "Share Link",
       "copyLink": "Copy link",
       "generateDigest": "Generate Digest",
@@ -102,11 +102,11 @@
       "hide": "Hide",
       "viewSession": "View Session",
       "expiresOn": "Expires",
-      "noClarifySessionError": "No clarify session found. Please contact support.",
+      "noClarifySessionError": "Project setup session not found. Please contact support.",
       "sessionStatus": {
-        "active": "In progress",
+        "active": "Active",
         "completed": "Completed",
-        "pending": "Not yet started"
+        "pending": "Pending"
       }
     },
     "editCollectSystem": {
@@ -122,8 +122,8 @@
       "updateError": "Failed to update, please try again"
     },
     "createCollectSession": {
-      "title": "Create interview",
-      "description": "Create a session link you can share with participants to collect their insights.",
+      "title": "Create Interview Session",
+      "description": "Generate a shareable session link to collect insights from participants.",
       "sessionTitle": "Session Title",
       "sessionTitleDesc": "Give this session a descriptive name",
       "titlePlaceholder": "E.g., Customer Feedback",
@@ -375,23 +375,22 @@
   },
   "StudyPage": {
     "List": {
-      "title": "My Studies",
+      "title": "My Projects",
       "description": "Browse and access your studies",
       "noTopic": "Study topic not yet defined",
-      "updated": "Updated",
       "viewStudy": "View Study",
       "startNewStudy": "Start New Study",
       "noSearchResults": "No studies match your search",
       "searchPlaceholder": "Search studies",
       "search": "Search",
       "status": {
-        "backgroundRunning": "Running in background",
-        "reportGenerated": "Report generated",
-        "notCompleted": "Not completed"
+        "backgroundRunning": "Study in Progress",
+        "reportGenerated": "Report Available",
+        "notCompleted": "Not Completed"
       },
       "emptyState": {
-        "title": "You haven't created any studies yet.",
-        "description": "Start a new study to begin analyzing and gathering insights."
+        "title": "No Research Studies Yet",
+        "description": "Create your first AI-powered research study to unlock business insights and market intelligence."
       }
     },
     "ShareReplayButton": {
@@ -432,10 +431,10 @@
       "viewToolCall": "View process"
     },
     "StatusDisplay": {
-      "background": "atypica is running in the background",
+      "background": "Running",
       "outOfQuota": "You have reached your quota",
       "waitForUser": "Wait for your interaction",
-      "thinking": "atypica is thinking",
+      "thinking": "Thinking",
       "processing": "Processing your request",
       "complete": "Processing complete ✨",
       "error": "An error occurred, please refresh the page and try again",
@@ -535,11 +534,11 @@
     "chooseBasic": "Buy Tokens",
     "upgradeToPro": "Upgrade to Pro",
     "contactSales": "Contact Sales",
-    "averageStudyToken": "An average study typically consumes around 400K tokens; more complex and detailed queries will require additional token usage.",
+    "averageStudyToken": "A typical research study uses approximately 400K tokens. Complex analyses may require additional tokens.",
     "features": {
       "socialPlatforms": {
-        "single": "Access to single social media platform for research data",
-        "multiple": "Access to multiple social media platforms (currently includes: TikTok, Instagram, Rednote, Douyin)"
+        "single": "Single Social Platform Data Access",
+        "multiple": "Multi-Platform Social Intelligence (TikTok, Instagram, RedNote, Douyin)"
       },
       "personas": {
         "limited": "Generate up to 10 personas for market research",
@@ -686,7 +685,7 @@
       "autoRenew": "Auto Renew",
       "status": "Status",
       "active": "Active",
-      "proPlan": "Pro Plan",
+      "proPlan": "Pro Subscription",
       "notSubscribed": "Not Subscribed"
     },
     "tokensSection": {
@@ -702,15 +701,15 @@
       "noRecords": "No tokens records",
       "loadMore": "Load More",
       "verbs": {
-        "recharge": "Recharge",
-        "consume": "atypica.AI task consumption",
+        "recharge": "Token Purchase",
+        "consume": "AI Study Usage",
         "subscription": "Subscription",
         "gift": "Gift from atypica.AI",
         "signup": "Signup Bonus"
       },
       "consume": {
-        "StudyUserChat": "atypica.AI study consumption",
-        "InterviewProject": "interview project consumption"
+        "StudyUserChat": "AI Study Usage",
+        "InterviewProject": "Interview Project Usage"
       }
     },
     "paymentRecordsSection": {

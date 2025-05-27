@@ -5,6 +5,7 @@ import { generatePageMetadata } from "@/lib/request/metadata";
 import { FolderPlusIcon } from "lucide-react";
 import { getServerSession } from "next-auth/next";
 import { useTranslations } from "next-intl";
+import { getLocale } from "next-intl/server";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { fetchInterviewProjects } from "./actions";
@@ -13,10 +14,14 @@ import { PageLayout } from "./PageLayout";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = generatePageMetadata({
-  title: "Create Interview Project",
-  description: "Interview project to gather information and insights",
-});
+export async function generateMetadata() {
+  const locale = await getLocale();
+  return generatePageMetadata({
+    title: "Create Interview Project",
+    description: "Interview project to gather information and insights",
+    locale,
+  });
+}
 
 export default async function InterviewProjectListPage() {
   const session = await getServerSession(authOptions);

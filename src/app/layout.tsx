@@ -15,31 +15,46 @@ export const viewport: Viewport = {
   themeColor: "black",
 };
 
-const title = "atypica.AI - 为「主观世界」建模";
-const pageMetadata = generatePageMetadata({ title });
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const title =
+    locale === "zh-CN"
+      ? "atypica.AI - 为「主观世界」建模"
+      : "atypica.AI - AI-Powered Intelligence for Subjective Reality";
+  const pageMetadata = generatePageMetadata({ title, locale });
 
-export const metadata: Metadata = {
-  title: {
-    default: title,
-    template: "%s | atypica.AI",
-  },
-  description: pageMetadata.description,
-  keywords: [],
-  authors: [{ name: "Tezign" }],
-  category: "technology",
-  openGraph: pageMetadata.openGraph,
-  twitter: pageMetadata.twitter,
-  robots: {
-    index: true,
-    follow: true,
-  },
-  icons: {
-    icon: "/_public/hippyghost-square-dark.jpg",
-    shortcut: "/_public/hippyghost-square-dark.jpg",
-    apple: { url: "/_public/hippyghost-square-dark.jpg", sizes: "180x180", type: "image/png" },
-  },
-  manifest: "/manifest.json",
-};
+  return {
+    title: {
+      default: title,
+      template: "%s | atypica.AI",
+    },
+    description: pageMetadata.description,
+    keywords:
+      locale === "zh-CN"
+        ? ["商业研究", "AI智能体", "消费者洞察", "市场分析", "决策支持"]
+        : [
+            "business research",
+            "AI agents",
+            "consumer insights",
+            "market analysis",
+            "decision support",
+          ],
+    authors: [{ name: "Tezign" }],
+    category: "technology",
+    openGraph: pageMetadata.openGraph,
+    twitter: pageMetadata.twitter,
+    robots: {
+      index: true,
+      follow: true,
+    },
+    icons: {
+      icon: "/_public/hippyghost-square-dark.jpg",
+      shortcut: "/_public/hippyghost-square-dark.jpg",
+      apple: { url: "/_public/hippyghost-square-dark.jpg", sizes: "180x180", type: "image/png" },
+    },
+    manifest: "/manifest.json",
+  };
+}
 
 export default async function RootLayout({
   children,
