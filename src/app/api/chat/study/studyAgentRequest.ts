@@ -169,7 +169,8 @@ export async function studyAgentRequest({
   });
   let streamStartTime = Date.now();
   const streamTextResult = streamText({
-    model: llm("claude-4-sonnet"),
+    // model: llm("claude-4-sonnet"),
+    model: llm("claude-3-7-sonnet"),
     providerOptions: providerOptions,
     system: system,
     messages: coreMessages,

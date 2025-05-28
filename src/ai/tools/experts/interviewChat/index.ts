@@ -27,6 +27,12 @@ import { Locale } from "next-intl";
 import { Logger } from "pino";
 import { z } from "zod";
 
+type TReduceTokens = {
+  // model: llm("gemini-2.5-pro"), // 不能这么写，一定要下面每次都重新初始化 llm，不然会卡住
+  model: LLMModelName;
+  ratio: number;
+} | null;
+
 export const interviewChatTool = ({
   userId,
   studyUserChatId,
@@ -247,16 +253,13 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: Message[]) {
     interviewLog,
   } = chatProps;
 
-  const REDUCE_TOKENS = {
-    // model: llm("gemini-2.5-pro"), // 不能这么写，一定要下面每次都重新初始化 llm，不然会卡住
-    model: "gemini-2.5-pro" as LLMModelName,
-    ratio: 2,
-    // model: "gpt-4.1-mini" as LLMModelName,  // 不支持读文件，没法用
-    // ratio: 5,
-  };
-
   const result = await new Promise<Omit<Message, "role">>(async (resolve, reject) => {
-    const reduceTokens = REDUCE_TOKENS as typeof REDUCE_TOKENS | null;
+    const hasAttachments = !!messages.find(
+      (message) => (message.experimental_attachments ?? []).length > 0,
+    );
+    const reduceTokens: TReduceTokens = hasAttachments
+      ? { model: "gemini-2.5-pro", ratio: 2 }
+      : { model: "gpt-4.1", ratio: 2 };
     const response = streamText({
       model: reduceTokens
         ? llm(reduceTokens.model)
@@ -335,24 +338,25 @@ async function chatWithPersona(chatProps: ChatProps, messages: Message[]) {
     interviewLog,
   } = chatProps;
 
-  const REDUCE_TOKENS = {
-    // model: llm("gemini-2.5-flash"), // 不能这么写，一定要下面每次都重新初始化 llm，不然会卡住
-    model: "gemini-2.5-flash" as LLMModelName,
-    ratio: 10,
-  };
-
   const result = await new Promise<Omit<Message, "role">>(async (resolve, reject) => {
-    const reduceTokens = REDUCE_TOKENS as typeof REDUCE_TOKENS | null;
-    const response = streamText({
-      model: reduceTokens
-        ? llm(reduceTokens.model, {
+    const hasAttachments = !!messages.find(
+      (message) => (message.experimental_attachments ?? []).length > 0,
+    );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const [reduceTokens, options]: [TReduceTokens, any] = hasAttachments
+      ? [
+          { model: "gemini-2.5-flash", ratio: 10 },
+          {
             useSearchGrounding: true,
             dynamicRetrievalConfig: {
               mode: "MODE_DYNAMIC",
               dynamicThreshold: 0.5,
             },
-          })
-        : llm("claude-3-7-sonnet"), // gpt 4.1 不支持 pdf，目前只有 gemini 和 claude 支持
+          },
+        ]
+      : [{ model: "gpt-4.1-mini", ratio: 5 }, undefined];
+    const response = streamText({
+      model: reduceTokens ? llm(reduceTokens.model, options) : llm("claude-3-7-sonnet"), // gpt 4.1 不支持 pdf，目前只有 gemini 和 claude 支持
       providerOptions: providerOptions,
       system: personaPrompt,
       // maxRetries: 0,  // 不要自动重试？不，gemini 偶尔连不上，还是得自动重试，慢是慢了点
