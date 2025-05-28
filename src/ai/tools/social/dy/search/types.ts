@@ -1,21 +1,12 @@
-import { PlainTextToolResult, SocialUser } from "@/ai/tools/types";
+import { PlainTextToolResult, SocialPost, SocialUser } from "@/ai/tools/types";
 
-export interface DYPost {
-  id: string;
-  desc: string;
-  liked_count: number;
-  collected_count: number;
-  comments_count: number;
+export interface DYPost extends SocialPost {
   user: SocialUser & {
     secret_userid: string;
   };
-  images_list: {
-    url: string;
-  }[];
 }
 
 export interface DYSearchResult extends PlainTextToolResult {
   posts: DYPost[];
-  // total: number;
   plainText: string;
 }

@@ -1,14 +1,21 @@
-import { DYUserPostsResult } from "@/ai/tools/types";
-import { cn } from "@/lib/utils";
+import { SocialPost } from "@/ai/tools/types";
+import { cn, proxiedImageLoader } from "@/lib/utils";
 import { ToolInvocation } from "ai";
 import Image from "next/image";
 import { FC } from "react";
 
-export const DYUserPostsResultMessage: FC<{
+export const SocialPostsResultMessage: FC<{
   toolInvocation: Omit<Extract<ToolInvocation, { state: "result" }>, "result"> & {
-    result: DYUserPostsResult;
+    result: {
+      notes?: SocialPost[];
+      posts?: SocialPost[];
+    };
   };
-}> = ({ toolInvocation: { result } }) => {
+}> = ({
+  toolInvocation: {
+    result: { notes, posts },
+  },
+}) => {
   return (
     <div
       className={cn(
@@ -17,10 +24,11 @@ export const DYUserPostsResultMessage: FC<{
       )}
     >
       {/* 只挑选 10 条展示 */}
-      {(result.posts ?? []).slice(0, 10).map((post) => (
+      {(notes || posts || []).slice(0, 10).map((post) => (
         <div key={post.id} className="flex flex-col items-center w-[120px]">
           <div className="relative w-[120px] h-[120px] rounded-lg overflow-hidden">
             <Image
+              loader={proxiedImageLoader}
               src={post.images_list[0]?.url}
               alt="Note image"
               fill
@@ -32,6 +40,7 @@ export const DYUserPostsResultMessage: FC<{
             <div className="flex items-center gap-1 mb-1">
               <div className="relative w-4 h-4">
                 <Image
+                  loader={proxiedImageLoader}
                   src={post.user.image}
                   alt="User Avatar"
                   sizes="100%"
@@ -41,7 +50,10 @@ export const DYUserPostsResultMessage: FC<{
               </div>
               <div className="text-xs text-foreground/80 line-clamp-1">{post.user.nickname}</div>
             </div>
+            {/* <h3 className="font-medium text-xs line-clamp-1">{post.title}</h3> */}
             <p className="text-foreground/80 text-xs mt-1 line-clamp-2">{post.desc}</p>
+            {/* <div>{note.id}</div> */}
+            {/* <div className="text-foreground/80 text-xs mt-1">评论数：{note.comments_count}</div> */}
           </div>
         </div>
       ))}

@@ -42,8 +42,8 @@ function parseXHSSearchResult(data: {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       images_list: note.images_list?.slice(0, 1).map((image: any) => ({
         url: image.url,
-        width: image.width,
-        height: image.height,
+        // width: image.width,
+        // height: image.height,
       })),
     });
   });

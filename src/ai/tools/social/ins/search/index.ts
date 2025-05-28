@@ -27,6 +27,7 @@ function parseinsSearchResult(result: {
       desc: item.caption?.text,
       liked_count: item.like_count,
       comments_count: item.comment_count,
+      collected_count: 0, // instagram 没有这个属性
       user: {
         nickname: item.user?.username,
         userid: item.user?.id,

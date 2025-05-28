@@ -1,17 +1,9 @@
-import { PlainTextToolResult, SocialUser } from "@/ai/tools/types";
+import { PlainTextToolResult, SocialPost, SocialUser } from "@/ai/tools/types";
 
-export interface TikTokUserPost {
-  id: string;
-  desc: string;
-  liked_count: number;
-  collected_count: number;
-  comments_count: number;
+export interface TikTokUserPost extends SocialPost {
   user: SocialUser & {
     secret_userid: string;
   };
-  images_list: {
-    url: string;
-  }[];
 }
 
 export interface TikTokUserPostsResult extends PlainTextToolResult {

@@ -7,25 +7,9 @@ import {
 import { InterviewChatResultMessage } from "@/ai/tools/experts/ToolMessage/SaveAnalystToolResultMessage";
 import { SearchPersonasResultMessage } from "@/ai/tools/experts/ToolMessage/SearchPersonasResultMessage";
 import {
-  DYPostCommentsResultMessage,
-  DYSearchResultMessage,
-  DYUserPostsResultMessage,
-} from "@/ai/tools/social/dy/ToolMessage";
-import {
-  InsPostCommentsResultMessage,
-  InsSearchResultMessage,
-  InsUserPostsResultMessage,
-} from "@/ai/tools/social/ins/ToolMessage";
-import {
-  TikTokPostCommentsResultMessage,
-  TikTokSearchResultMessage,
-  TikTokUserPostsResultMessage,
-} from "@/ai/tools/social/tiktok/ToolMessage";
-import {
-  XHSNoteCommentsResultMessage,
-  XHSSearchResultMessage,
-  XHSUserNotesResultMessage,
-} from "@/ai/tools/social/xhs/ToolMessage";
+  SocialPostCommentsResultMessage,
+  SocialPostsResultMessage,
+} from "@/ai/tools/social/ToolMessage";
 import { SaveAnalystToolResultMessage } from "@/ai/tools/system/ToolMessage";
 import { UpdateInterviewProjectToolResultMessage } from "@/ai/tools/system/ToolMessage/UpdateInterviewProjectToolResultMessage";
 import { PlainTextToolResult, ToolName } from "@/ai/tools/types";
@@ -89,29 +73,20 @@ export const ToolInvocationDisplay = ({
       return <UpdateInterviewProjectToolResultMessage toolInvocation={toolInvocation} />;
 
     case ToolName.xhsSearch:
-      return <XHSSearchResultMessage toolInvocation={toolInvocation} />;
-    case ToolName.xhsUserNotes:
-      return <XHSUserNotesResultMessage toolInvocation={toolInvocation} />;
-    case ToolName.xhsNoteComments:
-      return <XHSNoteCommentsResultMessage toolInvocation={toolInvocation} />;
     case ToolName.dySearch:
-      return <DYSearchResultMessage toolInvocation={toolInvocation} />;
-    case ToolName.dyUserPosts:
-      return <DYUserPostsResultMessage toolInvocation={toolInvocation} />;
-    case ToolName.dyPostComments:
-      return <DYPostCommentsResultMessage toolInvocation={toolInvocation} />;
     case ToolName.tiktokSearch:
-      return <TikTokSearchResultMessage toolInvocation={toolInvocation} />;
-    case ToolName.tiktokUserPosts:
-      return <TikTokUserPostsResultMessage toolInvocation={toolInvocation} />;
-    case ToolName.tiktokPostComments:
-      return <TikTokPostCommentsResultMessage toolInvocation={toolInvocation} />;
     case ToolName.insSearch:
-      return <InsSearchResultMessage toolInvocation={toolInvocation} />;
+    case ToolName.xhsUserNotes:
+    case ToolName.dyUserPosts:
+    case ToolName.tiktokUserPosts:
     case ToolName.insUserPosts:
-      return <InsUserPostsResultMessage toolInvocation={toolInvocation} />;
+      return <SocialPostsResultMessage toolInvocation={toolInvocation} />;
+
+    case ToolName.xhsNoteComments:
+    case ToolName.dyPostComments:
+    case ToolName.tiktokPostComments:
     case ToolName.insPostComments:
-      return <InsPostCommentsResultMessage toolInvocation={toolInvocation} />;
+      return <SocialPostCommentsResultMessage toolInvocation={toolInvocation} />;
 
     default:
       return null;

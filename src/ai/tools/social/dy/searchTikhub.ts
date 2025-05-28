@@ -1,7 +1,7 @@
 import "server-only";
 
 // tikhub douyin 搜索接口是 $0.01 太贵了
-import { PlainTextToolResult, SocialUser } from "@/ai/tools/types";
+import { PlainTextToolResult, SocialPost, SocialUser } from "@/ai/tools/types";
 import { rootLogger } from "@/lib/logging";
 import { fixMalformedUnicodeString } from "@/lib/utils";
 import { tool } from "ai";
@@ -12,23 +12,14 @@ const toolLog = rootLogger.child({
   tool: "dySearch",
 });
 
-interface DYPost {
-  id: string;
-  desc: string;
-  liked_count: number;
-  collected_count: number;
-  comments_count: number;
+interface DYPost extends SocialPost {
   user: SocialUser & {
     secret_userid: string;
   };
-  images_list: {
-    url: string;
-  }[];
 }
 
 export interface DYSearchResult extends PlainTextToolResult {
   posts: DYPost[];
-  // total: number;
   plainText: string;
 }
 

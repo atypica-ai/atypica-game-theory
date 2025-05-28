@@ -26,6 +26,7 @@ function parseInsUserPosts(result: {
       desc: item.caption?.text,
       liked_count: item.like_count,
       comments_count: item.comment_count,
+      collected_count: 0, // instagram 没有这个字段
       user: {
         nickname: item.user?.username,
         userid: item.user?.id,

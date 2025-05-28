@@ -1,15 +1,7 @@
-import { PlainTextToolResult, SocialUser } from "@/ai/tools/types";
+import { PlainTextToolResult, SocialPost } from "@/ai/tools/types";
 
-export interface InsUserPost {
-  id: string;
+export interface InsUserPost extends SocialPost {
   code: string;
-  desc: string;
-  liked_count: number;
-  comments_count: number;
-  user: SocialUser;
-  images_list: {
-    url: string;
-  }[];
 }
 
 export interface InsUserPostsResult extends PlainTextToolResult {

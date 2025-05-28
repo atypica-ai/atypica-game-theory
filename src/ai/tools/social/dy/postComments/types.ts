@@ -1,13 +1,9 @@
-import { PlainTextToolResult, SocialUser } from "@/ai/tools/types";
+import { PlainTextToolResult, SocialPostComment, SocialUser } from "@/ai/tools/types";
 
-interface DYComment {
-  id: string;
-  content: string;
+interface DYComment extends SocialPostComment {
   user: SocialUser & {
     secret_userid: string;
   };
-  like_count: number;
-  sub_comment_count: number;
 }
 
 export interface DYPostCommentsResult extends PlainTextToolResult {

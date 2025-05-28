@@ -1,18 +1,24 @@
-import { InsPostCommentsResult } from "@/ai/tools/types";
+import { SocialPostComment } from "@/ai/tools/types";
 import { proxiedImageLoader } from "@/lib/utils";
 import { ToolInvocation } from "ai";
 import Image from "next/image";
 import { FC } from "react";
 
-export const InsPostCommentsResultMessage: FC<{
+export const SocialPostCommentsResultMessage: FC<{
   toolInvocation: Omit<Extract<ToolInvocation, { state: "result" }>, "result"> & {
-    result: InsPostCommentsResult;
+    result: {
+      comments: SocialPostComment[];
+    };
   };
-}> = ({ toolInvocation: { result } }) => {
+}> = ({
+  toolInvocation: {
+    result: { comments },
+  },
+}) => {
   return (
     <div className="p-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-md">
       {/* 只挑选 10 条展示 */}
-      {(result.comments ?? []).slice(0, 10).map((comment) => (
+      {(comments || []).slice(0, 10).map((comment) => (
         <div key={comment.id} className="flex items-start justify-start gap-3 mb-2">
           <div className="relative mt-2 w-6 h-6 rounded-full overflow-hidden">
             <Image
