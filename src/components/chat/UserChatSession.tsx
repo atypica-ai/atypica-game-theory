@@ -5,6 +5,7 @@ import { VoiceInputButton } from "@/components/chat/VoiceInputButton";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
+import { fileUrlToDataUrl } from "@/lib/attachments/actions";
 import { cn, useDevice } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
 import { ArrowRightIcon, PlayIcon } from "lucide-react";
@@ -23,6 +24,7 @@ export function UserChatSession({
   limit,
   useChatHelpers: { messages, status, error, handleSubmit, input, setInput },
   useChatRef,
+  persistMessages = true,
 }: {
   chatId?: string;
   chatTitle?: string;
@@ -32,6 +34,7 @@ export function UserChatSession({
   limit?: number; // 向前保留的消息数量
   useChatHelpers: Omit<ReturnType<typeof useChat>, "append" | "reload" | "setMessages">;
   useChatRef: RefObject<Pick<ReturnType<typeof useChat>, "append" | "reload" | "setMessages">>;
+  persistMessages?: boolean;
 }) {
   const t = useTranslations("Components.UserChatSession");
   const locale = useLocale();
@@ -56,22 +59,26 @@ export function UserChatSession({
   }, []);
 
   const handleFormSubmit = useCallback(
-    (e: React.FormEvent<HTMLFormElement>) => {
+    async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
       const filesToAttach = [...uploadedFiles];
       if (filesToAttach.length > 0) {
-        throw new Error("not implemented, see persistentAIMessageToDB");
-        // useChatRef.current?.append({
-        //   role: "user",
-        //   content: input.trim(),
-        //   experimental_attachments: filesToAttach.map((file) => ({
-        //     url: file.url,
-        //     name: file.name,
-        //     contentType: file.mimeType,
-        //   })),
-        // });
-        // setInput("");
-        // setUploadedFiles([]);
+        if (!persistMessages) {
+          useChatRef.current?.append({
+            role: "user",
+            content: input.trim(),
+            experimental_attachments: await Promise.all(
+              filesToAttach.map(async ({ name, mimeType, objectUrl }: FileUploadInfo) => {
+                const dataUrl = (await fileUrlToDataUrl({ objectUrl, mimeType })) as string;
+                return { name, url: dataUrl, contentType: mimeType };
+              }),
+            ),
+          });
+        } else {
+          throw new Error("Not implemented");
+        }
+        setInput("");
+        setUploadedFiles([]);
       } else {
         // No files, just submit the text message normally
         handleSubmit(e);
@@ -130,12 +137,12 @@ export function UserChatSession({
         {!readOnly && (
           <form onSubmit={handleFormSubmit} className="relative bg-background rounded-lg">
             {uploadedFiles.length > 0 && (
-              <div className="absolute bottom-full left-0 mb-2 flex flex-wrap gap-2 max-w-full overflow-x-auto">
+              <div className="absolute bottom-full left-0 mb-2 flex flex-wrap gap-2 max-w-full">
                 {uploadedFiles.map((file, index) => (
                   <FileAttachment
                     key={index}
                     attachment={{
-                      url: file.url,
+                      url: file.url, // 注意，这里直接用了上传以后的 s3 url, 没用 fileUrlToCdnUrl 以及 fileUrlToDataUrl
                       name: file.name,
                       contentType: file.mimeType,
                     }}
@@ -179,12 +186,10 @@ export function UserChatSession({
                     <span>{t("continue")}</span>
                   </Button>
                   {/* 暂时隐藏 */}
-                  {false && (
-                    <FileUploadButton
-                      onFileUploadedAction={handleFileUploaded}
-                      disabled={inputDisabled}
-                    />
-                  )}
+                  <FileUploadButton
+                    onFileUploadedAction={handleFileUploaded}
+                    disabled={inputDisabled}
+                  />
                 </>
               )}
               <VoiceInputButton

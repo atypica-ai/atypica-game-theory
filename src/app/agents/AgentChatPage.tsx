@@ -58,6 +58,7 @@ export function AgentChatPage({
         readOnly={readOnly}
         useChatHelpers={useChatHelpers}
         useChatRef={useChatRef}
+        persistMessages={persistMessages}
       />
     </div>
   );

@@ -1,8 +1,8 @@
 import { personaAgentSystem } from "@/ai/prompt";
-import { llm, providerOptions } from "@/ai/provider";
+import { fixFileNameInMessageToUsePromptCache, llm, providerOptions } from "@/ai/provider";
 import { fetchPersonaById } from "@/app/(legacy)/personas/actions";
 import { authOptions } from "@/lib/auth";
-import { Message, smoothStream, streamText } from "ai";
+import { convertToCoreMessages, Message, smoothStream, streamText } from "ai";
 import { getServerSession } from "next-auth/next";
 import { getLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -28,16 +28,25 @@ export async function POST(req: Request) {
   }
   const persona = result.data;
 
-  const streamTextResult = streamText({
-    // model: llm("claude-3-7-sonnet"),
-    // model: llm("qwen3-235b-a22b"),
-    model: llm("gemini-2.5-flash", {
-      useSearchGrounding: true,
-      dynamicRetrievalConfig: {
-        mode: "MODE_DYNAMIC",
-        dynamicThreshold: 0.5,
+  const coreMessages = convertToCoreMessages(messages);
+  const firstAssistantMessage = coreMessages.find((message) => message.role === "assistant");
+  if (firstAssistantMessage) {
+    firstAssistantMessage.providerOptions = {
+      bedrock: {
+        cachePoint: { type: "default" },
       },
-    }),
+    };
+  }
+
+  const streamTextResult = streamText({
+    model: fixFileNameInMessageToUsePromptCache(llm("claude-3-7-sonnet")),
+    // model: llm("gemini-2.5-flash", {
+    //   useSearchGrounding: true,
+    //   dynamicRetrievalConfig: {
+    //     mode: "MODE_DYNAMIC",
+    //     dynamicThreshold: 0.5,
+    //   },
+    // }),
     providerOptions: {
       ...providerOptions,
       // google: {
@@ -48,7 +57,7 @@ export async function POST(req: Request) {
       // } satisfies GoogleGenerativeAIProviderOptions,
     },
     system: personaAgentSystem({ persona, locale: await getLocale() }),
-    messages: messages,
+    messages: coreMessages,
     tools: {
       // [ToolName.dySearch]: dySearchTool,
       // [ToolName.insSearch]: insSearchTool,
@@ -64,9 +73,12 @@ export async function POST(req: Request) {
     abortSignal: req.signal,
     onStepFinish: async (step) => {
       console.log(step);
+      // const { usage, providerMetadata } = step
+      // console.log("usage", usage);
+      // console.log("cache", providerMetadata?.bedrock?.usage);
     },
-    onError: (error) => {
-      console.error("Error occurred:", error);
+    onError: ({ error }) => {
+      console.log("Error occurred:", JSON.stringify(error));
     },
   });
 
