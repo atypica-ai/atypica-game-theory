@@ -8,7 +8,12 @@ import {
   interviewerSystem,
   personaAgentSystem,
 } from "@/ai/prompt";
-import { llm, LLMModelName, providerOptions } from "@/ai/provider";
+import {
+  fixFileNameInMessageToUsePromptCache,
+  llm,
+  LLMModelName,
+  providerOptions,
+} from "@/ai/provider";
 import {
   dySearchTool,
   insSearchTool,
@@ -22,7 +27,15 @@ import { ChatMessageAttachment } from "@/lib/attachments/types";
 import { fixMalformedUnicodeString, generateToken } from "@/lib/utils";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
-import { generateId, generateText, Message, streamText, tool } from "ai";
+import {
+  convertToCoreMessages,
+  CoreMessage,
+  generateId,
+  generateText,
+  Message,
+  streamText,
+  tool,
+} from "ai";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
 import { z } from "zod";
@@ -243,6 +256,37 @@ type ChatProps = {
   interviewLog: Logger;
 };
 
+function setBedrockCache(model: `claude-${string}`, coreMessages: CoreMessage[]) {
+  if (!model) return coreMessages; // 这句话没意义，只是为了用一下 model
+  const checkpoints = {
+    ">=1": false,
+    ">=4": false,
+    ">=8": false,
+    ">=16": false,
+  };
+  const cachedCoreMessages = coreMessages.map((message, index) => {
+    const providerOptions = { bedrock: { cachePoint: { type: "default" } } };
+    if (message.role === "assistant" && index >= 1 && !checkpoints[">=1"]) {
+      checkpoints[">=1"] = true;
+      return { ...message, providerOptions };
+    }
+    if (message.role === "assistant" && index >= 4 && !checkpoints[">=4"]) {
+      checkpoints[">=4"] = true;
+      return { ...message, providerOptions };
+    }
+    if (message.role === "assistant" && index >= 8 && !checkpoints[">=8"]) {
+      checkpoints[">=8"] = true;
+      return { ...message, providerOptions };
+    }
+    if (message.role === "assistant" && index >= 16 && !checkpoints[">=16"]) {
+      checkpoints[">=16"] = true;
+      return { ...message, providerOptions };
+    }
+    return { ...message };
+  });
+  return cachedCoreMessages;
+}
+
 async function chatWithInterviewer(chatProps: ChatProps, messages: Message[]) {
   const {
     locale,
@@ -254,28 +298,30 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: Message[]) {
   } = chatProps;
 
   const result = await new Promise<Omit<Message, "role">>(async (resolve, reject) => {
-    const hasAttachments = !!messages.find(
-      (message) => (message.experimental_attachments ?? []).length > 0,
-    );
-    const reduceTokens: TReduceTokens = hasAttachments
-      ? { model: "gemini-2.5-pro", ratio: 2 }
-      : { model: "gpt-4.1", ratio: 2 };
+    // const hasAttachments = !!messages.find(
+    //   (message) => (message.experimental_attachments ?? []).length > 0,
+    // );
+    const reduceTokens: TReduceTokens = null as TReduceTokens;
+    // hasAttachments
+    // ? { model: "gemini-2.5-pro", ratio: 2 }
+    // : { model: "gpt-4.1", ratio: 2 };
+    const coreMessages = setBedrockCache("claude-3-7-sonnet", convertToCoreMessages(messages));
     const response = streamText({
       model: reduceTokens
         ? llm(reduceTokens.model)
         : // gpt-4.1 系列都不支持 pdf，目前只有 gemini 和 claude 支持
           // 不能用 gpt-4o，指令遵循的比较差，会结束不了
-          llm("claude-3-7-sonnet"),
+          fixFileNameInMessageToUsePromptCache(llm("claude-3-7-sonnet")),
       providerOptions: providerOptions,
       // maxRetries: 0, // 不要自动重试？不，gemini 偶尔连不上，还是得自动重试，慢是慢了点
       system: interviewerPrompt,
       temperature: 0.3,
-      messages: messages,
+      messages: coreMessages,
       tools: {
         [ToolName.reasoningThinking]: reasoningThinkingTool({ locale, abortSignal, statReport }),
         [ToolName.saveInterviewConclusion]: saveInterviewConclusionTool(analystInterviewId),
       },
-      ...(messages.length < 10
+      ...(coreMessages.length < 14
         ? {
             toolChoice: "auto",
             maxSteps: 2,
@@ -287,23 +333,32 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: Message[]) {
             },
             maxSteps: 1,
           }),
-      onStepFinish: async (step) => {
+      onStepFinish: async ({ usage, stepType, toolCalls, ...step }) => {
+        const cache = step.providerMetadata?.bedrock?.usage as
+          | { cacheReadInputTokens: number; cacheWriteInputTokens: number }
+          | undefined;
         interviewLog.info({
           msg: "chatWithInterviewer streamText onStepFinish",
-          stepType: step.stepType,
-          toolCalls: step.toolCalls.map((call) => call.toolName),
-          usage: step.usage,
+          stepType: stepType,
+          toolCalls: toolCalls.map((call) => call.toolName),
+          usage,
+          cache,
         });
-        if (step.usage.totalTokens > 0) {
-          let tokens = step.usage.totalTokens;
+        if (usage.totalTokens > 0) {
+          let tokens =
+            usage.totalTokens +
+            Math.floor((cache?.cacheReadInputTokens || 0) / 10) +
+            Math.floor((cache?.cacheWriteInputTokens || 0) * 1.1);
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const extra: any = {
             reportedBy: "interview tool",
             analystInterviewId,
             role: "interviewer",
+            usage,
+            cache,
           };
           if (reduceTokens) {
-            extra["reduceTokens"] = { originalTokens: tokens, ...reduceTokens };
+            extra["reduceTokens"] = { originalTokens: tokens, ...reduceTokens }; // originalTokens 用于 admin 后台计算省下的 tokens
             tokens = Math.ceil(tokens / reduceTokens.ratio);
           }
           await statReport("tokens", tokens, extra);
@@ -379,7 +434,12 @@ async function chatWithPersona(chatProps: ChatProps, messages: Message[]) {
         if (step.usage.totalTokens > 0) {
           let tokens = step.usage.totalTokens;
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const extra: any = { reportedBy: "interview tool", analystInterviewId, role: "persona" };
+          const extra: any = {
+            reportedBy: "interview tool",
+            analystInterviewId,
+            role: "persona",
+            usage: step.usage,
+          };
           if (reduceTokens) {
             extra["reduceTokens"] = { originalTokens: tokens, ...reduceTokens };
             tokens = Math.ceil(tokens / reduceTokens.ratio);
