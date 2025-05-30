@@ -8,6 +8,7 @@ import { createDeepSeek } from "@ai-sdk/deepseek";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createVertex } from "@ai-sdk/google-vertex";
 import { createOpenAI } from "@ai-sdk/openai";
+import { LanguageModelV1 } from "ai";
 
 const openai = createOpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -164,4 +165,38 @@ export function imageModel(modelName: ImageModelName, options?: any) {
     case "imagen-4.0":
       return vertex.image("imagen-4.0-generate-preview-05-20", options);
   }
+}
+
+/**
+ * https://github.com/vercel/ai/blob/9b09f85143986636570e597c31903daf160608cd/packages/amazon-bedrock/src/convert-to-bedrock-chat-messages.ts#L117C1-L118C1
+ * bedrock 有个问题，file 的 name 在每次准备 bedrock api payload 的时候会产生一个新的，导致包含这个消息的 prompt cache checkpoint 失效
+ * 这里简单修复下，固定文件名
+ */
+export function fixFileNameInMessageToUsePromptCache(model: LanguageModelV1) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const originalGetArgs = (model as any).getArgs;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (model as any).getArgs = function (params: any) {
+    const res = originalGetArgs.call(model, params);
+    const { command, warnings } = res;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const messages = command.messages.map((message: any) => {
+      if (Array.isArray(message.content)) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const content = message.content.map((part: any) => {
+          if (part.document) {
+            const document = { ...part.document, name: "document" };
+            return { ...part, document };
+          } else {
+            return part;
+          }
+        });
+        return { ...message, content };
+      } else {
+        return message;
+      }
+    });
+    return { command: { ...command, messages }, warnings };
+  };
+  return model;
 }
