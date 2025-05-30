@@ -255,20 +255,17 @@ export async function generateReport({
             await throttleSaveHTML(report.id, onePageHtml);
           }
         },
-        onFinish: async (result) => {
+        onFinish: async ({ finishReason, text, usage }) => {
           resolve({
-            finishReason: result.finishReason,
-            content: result.text,
+            finishReason: finishReason,
+            content: text,
           });
-          reportLog.info({
-            msg: "HTML generated",
-            finishReason: result.finishReason,
-            usage: result.usage,
-          });
-          if (result.usage.totalTokens > 0 && statReport) {
-            await statReport("tokens", result.usage.totalTokens, {
+          reportLog.info({ msg: "HTML generated", finishReason, usage });
+          if (usage.totalTokens > 0 && statReport) {
+            await statReport("tokens", usage.totalTokens, {
               reportedBy: "generateReport tool",
               part: "onePageHtml",
+              usage,
             });
           }
         },
@@ -340,16 +337,17 @@ export async function generateCover({
     maxSteps: 1,
     maxTokens: 10000,
     onError: ({ error }) => reportLog.error(`Cover SVG error: ${(error as Error).message}`),
-    onFinish: async (result) => {
+    onFinish: async ({ text, usage }) => {
       reportLog.info("Report cover SVG generated");
       await prisma.analystReport.update({
         where: { id: report.id },
-        data: { coverSvg: result.text },
+        data: { coverSvg: text },
       });
-      if (result.usage.totalTokens > 0 && statReport) {
-        await statReport("tokens", result.usage.totalTokens, {
+      if (usage.totalTokens > 0 && statReport) {
+        await statReport("tokens", usage.totalTokens, {
           reportedBy: "generateReport tool",
           part: "coverSvg",
+          usage,
         });
       }
     },

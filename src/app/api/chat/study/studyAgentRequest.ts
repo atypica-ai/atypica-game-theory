@@ -1,6 +1,6 @@
 import { appendChunkToStreamingMessage, createDebouncePersistentMessage } from "@/ai/messageUtils";
 import { studySystem } from "@/ai/prompt";
-import { llm, providerOptions } from "@/ai/provider";
+import { fixFileNameInMessageToUsePromptCache, llm, providerOptions } from "@/ai/provider";
 import { initStudyStatReporter } from "@/ai/tools/stats";
 import {
   buildPersonaTool,
@@ -39,7 +39,54 @@ const TOOL_USE_LIMIT = {
   [ToolName.buildPersona]: 1,
   [ToolName.searchPersonas]: 1,
 };
-const TOKENS_COMSUME_LIMIT = 1_000_000; // 最新统计来看，100 万 tokens 足够
+// const TOKENS_COMSUME_LIMIT = 1_000_000; // 最新统计来看，100 万 tokens 足够
+
+/**
+ * claude 模型支持 cache https://docs.aws.amazon.com/bedrock/latest/userguide/prompt-caching.html
+ * 最多 4 个 checkpoints，checkpoint 至少 1024 tokens, study agent 第一个 assistant 消息回复以后至少有这个 token 量
+ */
+function setBedrockCache(model: `claude-${string}`, coreMessages: CoreMessage[]) {
+  if (!model) return coreMessages; // 这句话没意义，只是为了用一下 model
+  const checkpoints = {
+    firstAssistant: false,
+    saveAnalystStudySummary: false,
+    ">=8": false,
+    ">=16": false,
+  };
+  const cachedCoreMessages = coreMessages.map((message, index) => {
+    const providerOptions = {
+      bedrock: {
+        cachePoint: { type: "default" },
+      },
+    };
+    if (message.role === "assistant" && !checkpoints["firstAssistant"]) {
+      checkpoints["firstAssistant"] = true;
+      return { ...message, providerOptions };
+    }
+    if (
+      message.role === "assistant" &&
+      Array.isArray(message.content) &&
+      message.content.find(
+        (content) =>
+          content.type === "tool-call" && content.toolName === ToolName.saveAnalystStudySummary,
+      ) &&
+      !checkpoints["saveAnalystStudySummary"]
+    ) {
+      checkpoints["saveAnalystStudySummary"] = true;
+      return { ...message, providerOptions };
+    }
+    if (message.role === "assistant" && index >= 8 && !checkpoints[">=8"]) {
+      checkpoints[">=8"] = true;
+      return { ...message, providerOptions };
+    }
+    if (message.role === "assistant" && index >= 16 && !checkpoints[">=16"]) {
+      checkpoints[">=16"] = true;
+      return { ...message, providerOptions };
+    }
+    return { ...message };
+  });
+  return cachedCoreMessages;
+}
 
 // 参考了 https://sdk.vercel.ai/docs/ai-sdk-ui/chatbot-message-persistence#storing-messages 的设计来实现
 export async function studyAgentRequest({
@@ -95,38 +142,20 @@ export async function studyAgentRequest({
   const toolChoice: ToolChoice<typeof allTools> = "auto";
   const maxTokens: number | undefined = undefined;
   let maxSteps = MAX_STEPS_EACH_ROUND;
+
   if ((toolUseCount[ToolName.scoutTaskChat] ?? 0) >= TOOL_USE_LIMIT[ToolName.scoutTaskChat]) {
-    // 这个限制也拿掉吧，现在指令遵循还行其实，不要增加复杂度了
+    // 这个限制拿掉了，现在指令遵循还行其实，不要增加复杂度了
     // delete tools[ToolName.scoutTaskChat];
     // maxSteps = 10;
   }
-  /*
-  这部分先拿掉，现在这样会让 study agent 开始新的研究，
-  TODO: 后面要修改下，把提示词也改掉，改成追问 agent
-  // 一旦开始生成报告，就只从报告的消息开始生成了，以及无法再使用别的工具
-  // 不是第一个生成成功的报告，而是报告，一旦开始生成，前面的信息目前来看是暂时没用了其实
-  const firstReportIndex = coreMessages.findIndex(
-    (message) =>
-      // message.role === "tool" &&
-      message.role === "assistant" &&
-      Array.isArray(message.content) &&
-      // message.content[0]?.type === "tool-result" &&
-      message.content[0]?.type === "tool-call" &&
-      message.content[0]?.toolName === ToolName.generateReport,
-  );
-  if (firstReportIndex >= 0) {
-    coreMessages = coreMessages.slice(firstReportIndex);
-  }
-  */
-
   if ((toolUseCount[ToolName.generateReport] ?? 0) >= TOOL_USE_LIMIT[ToolName.generateReport]) {
     // 还是继续允许一直生成报告，不过，限制一下 steps
     // delete tools[ToolName.generateReport];
     maxSteps = 2;
   }
 
-  // // 超出 tokens 限制以后，这时候每 chat 一次，就是一个很大的 input tokens 数量
-  // // 所以，不能再继续发送消息，直接返回一个特定的消息
+  // 超出 tokens 限制以后，这时候每 chat 一次，就是一个很大的 input tokens 数量，所以，不能再继续发送消息，直接返回一个特定的消息
+  // 不过现在做了 prompt cache，是不是不大容易超出了？要留意一段日子
   // if (tokensConsumed >= TOKENS_COMSUME_LIMIT) {
   //   studyLog.error(`tokensConsumed ${tokensConsumed} exceeds limit ${TOKENS_COMSUME_LIMIT}`);
   //   const locale = await getLocale();
@@ -146,34 +175,36 @@ export async function studyAgentRequest({
   const { clearBackgroundToken, backgroundToken } = await raceForUserChat(studyUserChatId);
   const system = studySystem({
     locale,
-    // 限制是 1M，告诉模型限制是 0.6M
-    tokensStat: { used: tokensConsumed, limit: TOKENS_COMSUME_LIMIT * 0.5 },
-    toolUseStat: {
-      [ToolName.scoutTaskChat]: {
-        used: toolUseCount[ToolName.scoutTaskChat] ?? 0,
-        limit: TOOL_USE_LIMIT[ToolName.scoutTaskChat],
-      },
-      [ToolName.generateReport]: {
-        used: toolUseCount[ToolName.generateReport] ?? 0,
-        limit: TOOL_USE_LIMIT[ToolName.generateReport],
-      },
-      [ToolName.buildPersona]: {
-        used: toolUseCount[ToolName.buildPersona] ?? 0,
-        limit: TOOL_USE_LIMIT[ToolName.buildPersona],
-      },
-      [ToolName.searchPersonas]: {
-        used: toolUseCount[ToolName.searchPersonas] ?? 0,
-        limit: TOOL_USE_LIMIT[ToolName.searchPersonas],
-      },
-    },
+    // 为了 prompt cache 生效，需要一个固定的 system prompt，这部分先去掉
+    // tokensStat: { used: tokensConsumed, limit: TOKENS_COMSUME_LIMIT * 0.5 }, // 限制是 1M，告诉模型限制是 0.6M
+    // toolUseStat: {
+    //   [ToolName.scoutTaskChat]: {
+    //     used: toolUseCount[ToolName.scoutTaskChat] ?? 0,
+    //     limit: TOOL_USE_LIMIT[ToolName.scoutTaskChat],
+    //   },
+    //   [ToolName.generateReport]: {
+    //     used: toolUseCount[ToolName.generateReport] ?? 0,
+    //     limit: TOOL_USE_LIMIT[ToolName.generateReport],
+    //   },
+    //   [ToolName.buildPersona]: {
+    //     used: toolUseCount[ToolName.buildPersona] ?? 0,
+    //     limit: TOOL_USE_LIMIT[ToolName.buildPersona],
+    //   },
+    //   [ToolName.searchPersonas]: {
+    //     used: toolUseCount[ToolName.searchPersonas] ?? 0,
+    //     limit: TOOL_USE_LIMIT[ToolName.searchPersonas],
+    //   },
+    // },
   });
   let streamStartTime = Date.now();
+  const cachedCoreMessages = setBedrockCache("claude-3-7-sonnet", coreMessages);
+
   const streamTextResult = streamText({
-    // model: llm("claude-4-sonnet"),
-    model: llm("claude-3-7-sonnet"),
+    // model: llm("claude-sonnet-4"),
+    model: fixFileNameInMessageToUsePromptCache(llm("claude-3-7-sonnet")),
     providerOptions: providerOptions,
     system: system,
-    messages: coreMessages,
+    messages: cachedCoreMessages,
     tools: tools,
     toolChoice: toolChoice,
     experimental_repairToolCall: handleToolCallError,
@@ -205,11 +236,15 @@ export async function studyAgentRequest({
       // 到了这里的 tool calling step 一定是有 result 的，所以得在上面 onChunk 里面获取 call 阶段的 tool
       const toolCalls = step.toolCalls.map((call) => call.toolName);
       const usage = step.usage;
+      const cache = step.providerMetadata?.bedrock?.usage as
+        | { cacheReadInputTokens: number; cacheWriteInputTokens: number }
+        | undefined;
       studyLog.info({
         msg: "studyAgentRequest streamText onStepFinish",
         stepType: step.stepType,
         toolCalls,
         usage,
+        cache,
       });
       if (statReport) {
         const reportedBy = "study chat";
@@ -220,7 +255,11 @@ export async function studyAgentRequest({
           statReport("steps", toolCalls.length, { reportedBy, toolCalls }),
         ];
         if (usage.totalTokens > 0) {
-          promises.push(statReport("tokens", usage.totalTokens, { reportedBy }));
+          const tokens =
+            usage.totalTokens +
+            Math.floor((cache?.cacheReadInputTokens || 0) / 10) +
+            Math.floor((cache?.cacheWriteInputTokens || 0) * 1.1);
+          promises.push(statReport("tokens", tokens, { reportedBy, usage, cache }));
         }
         await Promise.all(promises);
       }
@@ -238,8 +277,9 @@ export async function studyAgentRequest({
         }
       }
     },
-    onFinish: async ({ usage }) => {
-      studyLog.info({ msg: "studyAgentRequest streamText onFinish", usage });
+    onFinish: async ({ usage, providerMetadata }) => {
+      const cache = providerMetadata?.bedrock?.usage;
+      studyLog.info({ msg: "studyAgentRequest streamText onFinish", usage, cache });
       await clearBackgroundToken();
     },
     onError: async ({ error }) => {

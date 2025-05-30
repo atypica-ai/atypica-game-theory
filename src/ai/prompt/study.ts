@@ -2,17 +2,7 @@ import { CONTINUE_ASSISTANT_STEPS } from "@/ai/messageUtils";
 import { Locale } from "next-intl";
 import { promptSystemConfig } from "./systemConfig";
 
-export const studySystem = ({
-  locale,
-  toolUseStat,
-  tokensStat,
-}: {
-  locale: Locale;
-  toolUseStat: Record<string, { used: number; limit: number }>;
-  tokensStat: { used: number; limit: number };
-}) =>
-  locale === "zh-CN"
-    ? `${promptSystemConfig({ locale })}
+/*
 <usage>
 ToolUsage (used/limit):
 ${Object.entries(toolUseStat)
@@ -20,7 +10,19 @@ ${Object.entries(toolUseStat)
   .join("\n")}
 TokenUsage (used/limit): ${tokensStat.used}/${tokensStat.limit}
 </usage>
+*/
 
+export const studySystem = ({
+  locale,
+  // toolUseStat,
+  // tokensStat,
+}: {
+  locale: Locale;
+  toolUseStat?: Record<string, { used: number; limit: number }>;
+  tokensStat?: { used: number; limit: number };
+}) =>
+  locale === "zh-CN"
+    ? `${promptSystemConfig({ locale })}
 <CRITICAL_INSTRUCTIONS>
 1. 绝不跳过必需的工具或研究阶段
 2. 在生成最终报告前绝不提供任何研究结论，因为访谈数据对你不可见
@@ -179,14 +181,6 @@ TokenUsage (used/limit): ${tokensStat.used}/${tokensStat.limit}
 </ADHERENCE_REMINDER>
 `
     : `${promptSystemConfig({ locale })}
-<usage>
-ToolUsage (used/limit):
-${Object.entries(toolUseStat)
-  .map(([tool, { used, limit }]) => `  ${tool}: ${used}/${limit}`)
-  .join("\n")}
-TokenUsage (used/limit): ${tokensStat.used}/${tokensStat.limit}
-</usage>
-
 <CRITICAL_INSTRUCTIONS>
 1. Never skip required tools or research phases
 2. Never provide any research conclusions before generating the final report, as interview data is not visible to you
