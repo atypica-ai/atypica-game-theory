@@ -30,8 +30,12 @@ export function FileUploadButton({ onFileUploadedAction, disabled }: FileUploadB
     if (!file) return;
 
     // Check if file is an image or PDF
-    if (!file.type.startsWith("image/") && file.type !== "application/pdf") {
-      toast.error("Only images and PDF files are allowed");
+    if (
+      !file.type.startsWith("image/") &&
+      file.type !== "application/pdf" &&
+      file.type !== "text/plain"
+    ) {
+      toast.error("Only images, PDF, and text files are allowed");
       return;
     }
 
@@ -98,7 +102,7 @@ export function FileUploadButton({ onFileUploadedAction, disabled }: FileUploadB
         type="file"
         ref={fileInputRef}
         onChange={handleFileChange}
-        accept="image/jpeg,image/png,image/gif,image/webp,application/pdf"
+        accept="image/jpeg,image/png,image/gif,image/webp,application/pdf,text/plain"
         className="hidden"
         disabled={disabled || isUploading}
       />

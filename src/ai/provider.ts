@@ -99,7 +99,7 @@ export type LLMModelName =
   | "gpt-4.1-nano"
   | "o3-mini"
   | "claude-3-7-sonnet"
-  | "claude-4-sonnet"
+  | "claude-sonnet-4"
   | "gemini-2.5-flash"
   | "gemini-2.5-pro"
   | "deepseek-v3"
@@ -133,7 +133,7 @@ export function llm(modelName: LLMModelName, options?: any) {
     //       anthropic_beta: ["token-efficient-tools-2025-02-19"],
     //     },
     //   });
-    case "claude-4-sonnet":
+    case "claude-sonnet-4":
       return bedrock("us.anthropic.claude-sonnet-4-20250514-v1:0", options);
     // case "gemini-2.5-flash":
     //   return google("gemini-2.5-flash-preview-04-17", options);

@@ -3,6 +3,7 @@ import { cn, useDevice } from "@/lib/utils";
 import { Attachment } from "ai";
 import { FileIcon, XIcon } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { Button } from "../ui/button";
 
 export function FileAttachment({
@@ -27,21 +28,29 @@ export function FileAttachment({
       )}
     >
       {isImage ? (
-        <div className="relative h-8 w-8 aspect-square rounded-md overflow-hidden">
+        <Link
+          className="block relative h-12 w-12 aspect-square rounded-md overflow-hidden"
+          href={attachment.url}
+          target="_blank"
+        >
           <Image
             src={attachment.url}
             alt={attachment.name ?? "Image"}
             fill
             sizes="100%"
             priority
-            className="object-cover"
+            className="object-contain"
           />
-        </div>
+        </Link>
       ) : (
-        <div className="h-8 w-24 flex flex-row items-center justify-start gap-1 p-2 overflow-hidden">
-          <FileIcon className="shrink-0 h-full" />
-          <div className="text-xs text-center truncate">{attachment.name}</div>
-        </div>
+        <Link
+          className="h-12 w-36 flex flex-row items-center justify-start gap-1 p-2 overflow-hidden"
+          href={attachment.url}
+          target="_blank"
+        >
+          <FileIcon className="shrink-0 w-4 h-4" />
+          <div className="text-xs break-all tracking-tighter line-clamp-2">{attachment.name}</div>
+        </Link>
       )}
 
       {onRemove && (

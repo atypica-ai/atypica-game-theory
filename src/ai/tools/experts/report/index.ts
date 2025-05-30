@@ -208,7 +208,7 @@ export async function generateReport({
     };
   })();
 
-  let modelName: LLMModelName = "claude-4-sonnet";
+  let modelName: LLMModelName = "claude-sonnet-4";
   while (true) {
     const {
       finishReason,
