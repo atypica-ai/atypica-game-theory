@@ -1,5 +1,5 @@
 import { ToolName } from "@/ai/tools/types";
-import { getS3SignedUrl } from "@/lib/attachments/actions";
+import { fileUrlToDataUrl } from "@/lib/attachments/actions";
 import { ChatMessageAttachment } from "@/lib/attachments/types";
 import { ChatMessage } from "@/prisma/client";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
@@ -356,24 +356,13 @@ export async function convertDBMessagesToAIMessages(dbMessages: ChatMessage[]): 
         const attachments = _attachments ? (_attachments as ChatMessageAttachment[]) : undefined;
         const message: Message = { ...extra, id, role, content, parts, createdAt };
         if (attachments) {
-          message["experimental_attachments"] = (
-            await Promise.all(
-              attachments.map(async ({ objectUrl, name, mimeType, size }) => {
-                const signResult = await getS3SignedUrl(objectUrl);
-                if (!signResult.success) {
-                  return null;
-                }
-                const url = signResult.data;
-                const dataUrl = await fileUrlToDataUrl({ url, mimeType });
-                return {
-                  extra: { objectUrl, size }, // 不管3721，都放进去，但不要依赖这个值
-                  url: dataUrl,
-                  name,
-                  contentType: mimeType,
-                };
-              }),
-            )
-          ).filter((item) => item !== null);
+          message["experimental_attachments"] = await Promise.all(
+            attachments.map(async ({ name, objectUrl, mimeType, size }: ChatMessageAttachment) => {
+              const url = await fileUrlToDataUrl({ objectUrl, mimeType });
+              const extra = { objectUrl, size }; // 不管3721，都放进去，但不要依赖这个值
+              return { extra, url, name, contentType: mimeType };
+            }),
+          );
         }
         return message;
       },
@@ -448,17 +437,4 @@ export async function prepareMessagesForStreaming(
     streamingMessage,
     toolUseCount,
   };
-}
-
-export async function fileUrlToDataUrl({
-  url,
-  mimeType,
-}: {
-  url: string;
-  mimeType: string;
-}): Promise<`data:${string};base64,${string}`> {
-  const response = await fetch(url);
-  const buffer = await response.arrayBuffer();
-  const base64 = Buffer.from(buffer).toString("base64");
-  return `data:${mimeType};base64,${base64}`;
 }

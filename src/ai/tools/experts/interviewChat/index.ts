@@ -1,6 +1,6 @@
 import "server-only";
 
-import { convertStepsToAIMessage, fileUrlToDataUrl } from "@/ai/messageUtils";
+import { convertStepsToAIMessage } from "@/ai/messageUtils";
 import {
   interviewDigestSystem,
   interviewerAttachment,
@@ -17,7 +17,7 @@ import {
   tiktokSearchTool,
 } from "@/ai/tools/tools";
 import { InterviewChatResult, PlainTextToolResult, StatReporter, ToolName } from "@/ai/tools/types";
-import { s3SignedUrl } from "@/lib/attachments/s3";
+import { fileUrlToDataUrl } from "@/lib/attachments/actions";
 import { ChatMessageAttachment } from "@/lib/attachments/types";
 import { fixMalformedUnicodeString, generateToken } from "@/lib/utils";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
@@ -452,14 +452,9 @@ export async function runInterview(chatProps: ChatProps) {
   });
   const experimental_attachments = attachments
     ? await Promise.all(
-        attachments.map(async ({ objectUrl, name, mimeType }) => {
-          const url = await s3SignedUrl(objectUrl);
-          const dataUrl = await fileUrlToDataUrl({ url, mimeType });
-          return {
-            url: dataUrl,
-            name: name,
-            contentType: mimeType,
-          };
+        attachments.map(async ({ name, objectUrl, mimeType }: ChatMessageAttachment) => {
+          const url = await fileUrlToDataUrl({ objectUrl, mimeType });
+          return { name, url, contentType: mimeType };
         }),
       )
     : undefined;

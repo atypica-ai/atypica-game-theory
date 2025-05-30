@@ -1,6 +1,5 @@
 import "server-only";
 
-import { fileUrlToDataUrl } from "@/ai/messageUtils";
 import {
   reportCoverPrologue,
   reportCoverSystem,
@@ -9,7 +8,7 @@ import {
 } from "@/ai/prompt";
 import { llm, LLMModelName, providerOptions } from "@/ai/provider";
 import { PlainTextToolResult, StatReporter } from "@/ai/tools/types";
-import { s3SignedUrl } from "@/lib/attachments/s3";
+import { fileUrlToDataUrl } from "@/lib/attachments/actions";
 import { ChatMessageAttachment } from "@/lib/attachments/types";
 import { generateToken } from "@/lib/utils";
 import { Analyst, AnalystReport } from "@/prisma/client";
@@ -221,14 +220,9 @@ export async function generateReport({
       const experimental_attachments = analyst.attachments
         ? await Promise.all(
             (analyst.attachments as ChatMessageAttachment[]).map(
-              async ({ objectUrl, name, mimeType }) => {
-                const url = await s3SignedUrl(objectUrl);
-                const dataUrl = await fileUrlToDataUrl({ url, mimeType });
-                return {
-                  url: dataUrl,
-                  name: name,
-                  contentType: mimeType,
-                };
+              async ({ name, objectUrl, mimeType }) => {
+                const url = await fileUrlToDataUrl({ objectUrl, mimeType });
+                return { name, url, contentType: mimeType };
               },
             ),
           )
