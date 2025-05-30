@@ -44,7 +44,7 @@ import { z } from "zod";
 import { type ScoutTaskChatResult, type TPlatform } from "./types";
 
 const TOKENS_COMSUME_LIMIT = 150_000; // 限制 15w token 消耗量
-const SCOUT_CALLS_LIMIT = 10; // 进行 10 步搜索，结束以后保存画像
+const SCOUT_TOOLS_LIMIT = 10; // 进行 10 步搜索，结束以后保存画像
 const REDUCE_TOKENS: {
   model: LLMModelName;
   ratio: number;
@@ -234,6 +234,29 @@ export async function runScoutTaskChatStream({
   while (true) {
     const { coreMessages, streamingMessage, toolUseCount } =
       await prepareMessagesForStreaming(scoutUserChatId);
+
+    if (tokensConsumed > TOKENS_COMSUME_LIMIT) {
+      // 达到了离谱的 token 消耗，无条件退出
+      scoutLog.error(
+        `Token consumption ${tokensConsumed} exceeds limit ${TOKENS_COMSUME_LIMIT}, ending research`,
+      );
+      break;
+    }
+    const scoutToolsCount = Object.values(toolUseCount).reduce((acc, value) => acc + value, 0);
+    if (scoutToolsCount >= SCOUT_TOOLS_LIMIT) {
+      // 达到了工具使用次数限制，无条件退出
+      scoutLog.info(
+        `Tool usage ${scoutToolsCount} exceeds limit ${SCOUT_TOOLS_LIMIT}, ending research`,
+      );
+      break;
+    }
+
+    // coreMessages 来判断不靠谱，多个 steps 连续的消息在 coreMessages 会作为一整个数组放进 message.content，和 parts 类似
+    // if (coreMessages.length >= SCOUT_CALLS_LIMIT * 2) {
+    //   // 超出限制以后不再继续，直接结束，这个判断后置，也就是说，超出了以后，再跑最后一轮
+    //   break;
+    // }
+
     let toolChoice: ToolChoice<typeof allTools> = "auto";
     let maxSteps = 2; // 不要一下子很多 steps 因为现在会并行调用 tools，每一轮 steps 少一点，方便及时判断 coreMessages 长度
     let reduceTokens: typeof REDUCE_TOKENS | null = REDUCE_TOKENS;
@@ -339,18 +362,6 @@ export async function runScoutTaskChatStream({
         await clearBackgroundToken();
         throw error;
       }
-    }
-
-    if (tokensConsumed > TOKENS_COMSUME_LIMIT) {
-      // 达到了离谱的 token 消耗，无条件退出
-      scoutLog.error(
-        `Token consumption ${tokensConsumed} exceeds limit ${TOKENS_COMSUME_LIMIT}, ending research`,
-      );
-      break;
-    }
-    if (coreMessages.length >= SCOUT_CALLS_LIMIT * 2) {
-      // 超出限制以后不再继续，直接结束，这个判断后置，也就是说，超出了以后，再跑最后一轮
-      break;
     }
 
     // 开始一轮新的搜索，插入一条新消息，下一次循环开始的时候会从数据库里读取新的 messages 记录
