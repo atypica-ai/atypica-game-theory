@@ -1,10 +1,11 @@
 import { getDeployRegion } from "@/lib/request/deployRegion";
 import { getRequestClientIp, getRequestOrigin } from "@/lib/request/headers";
+import { Locale } from "next-intl";
 import { NextRequest, NextResponse } from "next/server";
 
 export const config = {
   matcher: [
-    "/((?!api|_next/static|_next/image|_public|favicon.ico|manifest.json|sitemap.xml|robots.txt).*)",
+    "/((?!api|_next/static|_next/image|_public|_pages|favicon.ico|manifest.json|sitemap.xml|robots.txt).*)",
   ],
 };
 
@@ -32,12 +33,13 @@ function handleLocale(req: NextRequest) {
   // Get the locale from cookies
   const localeCookie = req.cookies.get("locale");
   const defaultLocale = getDeployRegion() === "global" ? "en-US" : "zh-CN";
-  const locale = localeCookie?.value || defaultLocale;
+  const locale = (localeCookie?.value || defaultLocale) as Locale;
+
   // Create a response object from the request
   const response = NextResponse.next();
   // Set the locale in a header to be accessible in server components
   response.headers.set("x-locale", locale);
-  return response;
+  return { response, locale };
 }
 
 // Cache for maintenance status
@@ -99,7 +101,19 @@ export async function middleware(req: NextRequest) {
   }
 
   // Otherwise continue with locale handling
-  const response = handleLocale(req);
+  const { response, locale } = handleLocale(req);
+
+  // Handle locale-aware static pages
+  const path = req.nextUrl.pathname;
+  if (path === "/about" || path === "/changelog") {
+    const url = req.nextUrl.clone();
+    if (path === "/about") {
+      url.pathname = locale === "en-US" ? "/_pages/about-en.html" : "/_pages/about-zh.html";
+    } else if (path === "/changelog") {
+      url.pathname = locale === "en-US" ? "/_pages/changelog-en.html" : "/_pages/changelog-zh.html";
+    }
+    return NextResponse.rewrite(url);
+  }
 
   return response;
 }

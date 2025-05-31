@@ -1,0 +1,782 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>About atypica.AI - AI-Powered Intelligence for Subjective Reality</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&display=swap");
+
+      :root {
+        --primary: oklch(0.87 0.29 142.57);
+        --primary-glow: oklch(0.87 0.29 142.57 / 0.35);
+        --terminal-bg: #121212;
+        --terminal-border: #333;
+      }
+
+      body {
+        font-family: "Fira Code", monospace;
+        background-color: #0a0a0a;
+        color: #e0e0e0;
+      }
+
+      .primary-text {
+        color: var(--primary);
+      }
+
+      .primary-border {
+        border-color: var(--primary);
+      }
+
+      .terminal {
+        background-color: var(--terminal-bg);
+        border: 1px solid var(--terminal-border);
+        border-radius: 8px;
+        padding: 1rem;
+        position: relative;
+      }
+
+      .terminal-header {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2rem;
+        background-color: #1a1a1a;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+        display: flex;
+        padding: 0 1rem;
+        align-items: center;
+        border-bottom: 1px solid var(--terminal-border);
+      }
+
+      .terminal-body {
+        margin-top: 2rem;
+        max-height: 400px;
+        overflow-y: auto;
+      }
+
+      .terminal-dots {
+        display: flex;
+        gap: 0.5rem;
+      }
+
+      .dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+      }
+
+      .dot-red {
+        background-color: #ff5f56;
+      }
+      .dot-yellow {
+        background-color: #ffbd2e;
+      }
+      .dot-green {
+        background-color: #27c93f;
+      }
+
+      .command {
+        color: var(--primary);
+        margin-bottom: 0.5rem;
+      }
+
+      .command::before {
+        content: "$ ";
+        opacity: 0.7;
+      }
+
+      .response {
+        margin-bottom: 1rem;
+        opacity: 0.9;
+      }
+
+      .agent-card {
+        background-color: rgba(30, 30, 30, 0.7);
+        backdrop-filter: blur(4px);
+        border: 1px solid #333;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+      }
+
+      .agent-card:hover {
+        border-color: var(--primary);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+      }
+
+      .code-title {
+        font-weight: 600;
+        color: #e0e0e0;
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.5rem;
+      }
+
+      .code-title::before {
+        content: "{";
+        color: var(--primary);
+        margin-right: 0.5rem;
+      }
+
+      .code-title::after {
+        content: "}";
+        color: var(--primary);
+        margin-left: 0.5rem;
+      }
+
+      .typing-animation {
+        display: inline-block;
+        overflow: hidden;
+        white-space: nowrap;
+        animation: typing 4s steps(40, end);
+      }
+
+      @keyframes typing {
+        from {
+          width: 0;
+        }
+        to {
+          width: 100%;
+        }
+      }
+
+      .cursor {
+        display: inline-block;
+        width: 0.5rem;
+        height: 1.2rem;
+        background-color: var(--primary);
+        animation: blink 1s step-end infinite;
+        margin-left: 2px;
+        vertical-align: text-bottom;
+      }
+
+      @keyframes blink {
+        from,
+        to {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0;
+        }
+      }
+
+      .glow-text {
+        text-shadow: 0 0 8px var(--primary-glow);
+      }
+
+      blockquote {
+        border-left: 4px solid var(--primary);
+        margin: 1.5rem 0;
+        padding: 0.5rem 0 0.5rem 1.5rem;
+        font-style: italic;
+        background-color: rgba(30, 30, 30, 0.5);
+        border-radius: 0 8px 8px 0;
+      }
+
+      .hippy-ghost {
+        width: 60px;
+        height: 60px;
+        background-color: var(--primary);
+        border-radius: 50% 50% 0 0;
+        position: relative;
+        margin-bottom: 10px;
+      }
+
+      .hippy-ghost::before {
+        content: "";
+        position: absolute;
+        bottom: -10px;
+        left: 0;
+        width: 100%;
+        height: 20px;
+        background-color: var(--primary);
+        border-radius: 0 0 15px 15px;
+      }
+
+      .hippy-ghost::after {
+        content: "";
+        position: absolute;
+        bottom: -20px;
+        left: 10px;
+        width: 40px;
+        height: 10px;
+        background-color: var(--primary);
+        border-radius: 0 0 20px 20px;
+      }
+
+      .hippy-eyes {
+        position: absolute;
+        top: 20px;
+        width: 10px;
+        height: 10px;
+        background-color: #000;
+        border-radius: 50%;
+      }
+
+      .eye-left {
+        left: 15px;
+      }
+
+      .eye-right {
+        right: 15px;
+      }
+
+      .usage-card {
+        border: 1px solid #333;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+      }
+
+      .usage-card:hover {
+        border-color: var(--primary);
+        transform: translateY(-5px);
+      }
+
+      .feature-list li {
+        position: relative;
+        padding-left: 1.5rem;
+        margin-bottom: 0.75rem;
+      }
+
+      .feature-list li::before {
+        content: "→";
+        position: absolute;
+        left: 0;
+        color: var(--primary);
+      }
+    </style>
+  </head>
+  <body class="min-h-screen">
+    <header class="py-12 relative overflow-hidden">
+      <div class="max-w-6xl mx-auto px-4">
+        <h1 class="text-4xl md:text-6xl font-bold mb-4 typing-animation">
+          <span class="primary-text">atypica</span>.AI
+        </h1>
+        <p class="text-xl opacity-80 max-w-3xl">AI-Powered Intelligence for Subjective Reality</p>
+        <blockquote class="text-lg my-4">
+          <p>
+            "People don't choose between things, they choose between descriptions of things." <span class="opacity-70">— Daniel Kahneman</span>
+          </p>
+          <p class="text-sm mt-2 opacity-70">
+            人们不是在处理概率，而是在处理故事。— 丹尼尔·卡尼曼
+          </p>
+        </blockquote>
+      </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 pb-20">
+      <section class="mb-16">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+          <div>
+            <h2 class="text-2xl font-bold mb-4 primary-text">The Essence of Business Research</h2>
+            <p class="mb-4">
+              Business research is the science of understanding human decision-making. Humans don't make decisions based purely on rationality, but are influenced by narratives, emotions, and cognitive biases. Therefore, understanding the mechanisms that influence decision-making is at the core of business research.
+            </p>
+            <p class="mb-4">
+              If "physics" models the "objective world," then "language models" have the opportunity to model the "subjective world." Atypica.AI can capture human decision-making mechanisms that traditional data analysis handles poorly, providing deep insights for personal and business decision problems.
+            </p>
+            <ul class="feature-list mb-6">
+              <li>Simulate consumer personalities and cognition by building "user agents"</li>
+              <li>Analyze consumer behavior and decisions through "interviews" between "expert agents" and "user agents"</li>
+              <li>Automatically generate detailed research reports with visual insights</li>
+            </ul>
+          </div>
+          <div class="terminal h-full">
+            <div class="terminal-header">
+              <div class="terminal-dots mr-auto">
+                <div class="dot dot-red"></div>
+                <div class="dot dot-yellow"></div>
+                <div class="dot dot-green"></div>
+              </div>
+              <div class="text-sm opacity-60">atypica@research:~</div>
+            </div>
+            <div class="terminal-body">
+              <p class="command">./atypica.ai --model "subjective-world"</p>
+              <pre class="response">
+Initializing subjective world model...
+Loading user agent library...
+Loading expert agents...
+Setting up multi-agent interaction environment...
+Preparing long reasoning model...
+
+[Ready] atypica.AI launched
+              </pre>
+              <p class="command">run-research "Choose the right Chinese restaurant for birthday dinner"</p>
+              <pre class="response">
+Starting research process:
+- Clarifying research question...
+- Designing task sequence...
+- Browsing social media data sources...
+- Building user agent models...
+- Starting agent interviews...
+- Analyzing user feedback...
+- Generating research report...
+
+[In Progress] Research progress: 34%
+              </pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-gray-900 p-6 rounded-lg border border-gray-800 mb-8">
+          <h3 class="text-xl font-semibold mb-4 primary-text">Research Process</h3>
+          <p class="mb-4">
+            Using Atypica.AI, you simply need to ask a specific business research question, and the system will provide a detailed research report through 10-20 minutes of "long reasoning."
+          </p>
+          <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-4 mt-6">
+            <div class="agent-card p-4 text-center">
+              <div class="mb-2 font-semibold primary-text">1</div>
+              <p class="text-sm">Clarify Problem</p>
+            </div>
+            <div class="agent-card p-4 text-center">
+              <div class="mb-2 font-semibold primary-text">2</div>
+              <p class="text-sm">Design Tasks</p>
+            </div>
+            <div class="agent-card p-4 text-center">
+              <div class="mb-2 font-semibold primary-text">3</div>
+              <p class="text-sm">Browse Social</p>
+            </div>
+            <div class="agent-card p-4 text-center">
+              <div class="mb-2 font-semibold primary-text">4</div>
+              <p class="text-sm">Build Agents</p>
+            </div>
+            <div class="agent-card p-4 text-center">
+              <div class="mb-2 font-semibold primary-text">5</div>
+              <p class="text-sm">Interview Sim</p>
+            </div>
+            <div class="agent-card p-4 text-center">
+              <div class="mb-2 font-semibold primary-text">6</div>
+              <p class="text-sm">Summarize</p>
+            </div>
+            <div class="agent-card p-4 text-center">
+              <div class="mb-2 font-semibold primary-text">7</div>
+              <p class="text-sm">Generate Report</p>
+            </div>
+          </div>
+          <div class="mt-6 bg-gray-950 p-4 rounded-lg border border-gray-800">
+            <p class="text-sm">
+              "Nerd Stats" records how much time, steps, agent roles, and tokens were consumed during the work process, which is also a form of "Proof of Work" for agents.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="mb-16">
+        <h2 class="text-2xl font-bold mb-8 primary-text">Use Cases</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div class="usage-card p-6 bg-gray-900">
+            <div class="flex items-center mb-4">
+              <div
+                class="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center text-white mr-4"
+              >
+                T
+              </div>
+              <h3 class="text-xl font-semibold">Testing</h3>
+            </div>
+            <p class="mb-4 opacity-80">Evaluate marketing content topics and effectiveness, predict audience reactions</p>
+            <div class="bg-gray-950 p-4 rounded-lg mb-4 text-sm">
+              <p><strong>Example:</strong> Which Logitech mouse topic would be more popular on Xiaohongshu?</p>
+              <ul class="list-disc pl-6 mt-2 space-y-1 opacity-70">
+                <li>【Light as a feather, powerful as a tiger】Logitech MX Keys Mini daily efficient office companion</li>
+                <li>From keys to chips: Revealing how Logitech keyboard silent technology works</li>
+                <li>One-key multi-device switching: My tips for doubling work efficiency with Logitech FLOW technology</li>
+                <li>30-day battery life is not a dream: The energy-saving technology behind Logitech keyboards</li>
+                <li>The story behind ergonomic design: How Logitech ERGO K860 saved my carpal tunnel syndrome</li>
+              </ul>
+            </div>
+            <div class="flex justify-end">
+              <a
+                href="https://atypica.musedam.cc/study/UrAWv9PYajXLRnke/share?replay=1"
+                class="text-sm primary-text underline"
+                >View Replay</a
+              >
+            </div>
+          </div>
+
+          <div class="usage-card p-6 bg-gray-900">
+            <div class="flex items-center mb-4">
+              <div
+                class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white mr-4"
+              >
+                I
+              </div>
+              <h3 class="text-xl font-semibold">Insights</h3>
+            </div>
+            <p class="mb-4 opacity-80">Discover user experience pain points, understand customer feedback and experiences</p>
+            <div class="bg-gray-950 p-4 rounded-lg mb-4 text-sm">
+              <p>
+                <strong>Example:</strong>
+                I'm the LV Shanghai regional manager. What feedback do customers have about our Shanghai store shopping experience? Which aspects need improvement, and which are done well and should be strengthened? Please give me a comprehensive report.
+              </p>
+            </div>
+            <div class="flex justify-end">
+              <a
+                href="https://atypica.musedam.cc/study/eiaiWKxJjuhmHdb4/share?replay=1"
+                class="text-sm primary-text underline"
+                >View Replay</a
+              >
+            </div>
+          </div>
+
+          <div class="usage-card p-6 bg-gray-900">
+            <div class="flex items-center mb-4">
+              <div
+                class="w-10 h-10 rounded-full bg-green-600 flex items-center justify-center text-white mr-4"
+              >
+                C
+              </div>
+              <h3 class="text-xl font-semibold">Co-creation</h3>
+            </div>
+            <p class="mb-4 opacity-80">Co-create with simulated users to develop new products and services</p>
+            <div class="bg-gray-950 p-4 rounded-lg mb-4 text-sm">
+              <p>
+                <strong>Example:</strong>
+                Co-create new product ideas for Mars' "Crispy Rice" with young parents from first-tier cities?
+              </p>
+            </div>
+            <div class="flex justify-end">
+              <a
+                href="https://atypica.musedam.cc/study/eLPPsnWhwKgduV3D/share?replay=1"
+                class="text-sm primary-text underline"
+                >View Replay</a
+              >
+            </div>
+          </div>
+
+          <div class="usage-card p-6 bg-gray-900">
+            <div class="flex items-center mb-4">
+              <div
+                class="w-10 h-10 rounded-full bg-yellow-600 flex items-center justify-center text-white mr-4"
+              >
+                P
+              </div>
+              <h3 class="text-xl font-semibold">Planning</h3>
+            </div>
+            <p class="mb-4 opacity-80">Develop marketing strategies and product roadmaps</p>
+            <div class="bg-gray-950 p-4 rounded-lg mb-4 text-sm">
+              <p><strong>Example:</strong> INAH Non-alcoholic Grape Drink Marketing Plan</p>
+            </div>
+            <div class="flex justify-end">
+              <a
+                href="https://atypica.musedam.cc/study/Miw9cmdmfLmdzxaq/share?replay=1"
+                class="text-sm primary-text underline"
+                >View Replay</a
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-8 bg-gray-900 p-6 rounded-lg border border-gray-800">
+          <h3 class="text-xl font-semibold mb-4 primary-text">Personal Decision Support</h3>
+          <p class="mb-4">
+            Although Atypica.AI is designed as a business research and analysis agent, it can also conduct personal decision research:
+          </p>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-gray-950 p-4 rounded-lg">
+              <h4 class="font-medium mb-2 primary-text">Open Questions</h4>
+              <p class="text-sm mb-2">Choose the right Chinese restaurant for birthday dinner?</p>
+              <div class="flex justify-end">
+                <a
+                  href="https://atypica.musedam.cc/study/KpTXMFFwLiset92k/share?replay=1"
+                  class="text-xs primary-text underline"
+                  >Replay Link</a
+                >
+              </div>
+            </div>
+            <div class="bg-gray-950 p-4 rounded-lg">
+              <h4 class="font-medium mb-2 primary-text">Choice Questions</h4>
+              <p class="text-sm mb-2">How to choose a portable monitor?</p>
+              <div class="flex justify-end">
+                <a
+                  href="https://atypica.musedam.cc/analyst/report/HWG3ACD7eJY2xsdY"
+                  class="text-xs primary-text underline"
+                  >Final Report</a
+                >
+              </div>
+            </div>
+            <div class="bg-gray-950 p-4 rounded-lg">
+              <h4 class="font-medium mb-2 primary-text">Planning Questions</h4>
+              <p class="text-sm mb-2">How should a swimming specialist plan to study high school in the US or UK?</p>
+              <div class="flex justify-end">
+                <a
+                  href="https://atypica.musedam.cc/analyst/report/zCuK9uLX6shRkNpp"
+                  class="text-xs primary-text underline"
+                  >Final Report</a
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="mb-16">
+        <h2 class="text-2xl font-bold mb-8 primary-text flex items-center">
+          <span class="mr-2">Technical Origins & Development</span>
+          <div
+            class="h-px bg-gradient-to-r from-transparent via-gray-500 to-transparent flex-grow ml-4"
+          ></div>
+        </h2>
+
+        <div class="mb-10">
+          <div class="bg-gray-900 p-6 rounded-lg border border-gray-800 mb-6">
+            <div class="flex items-center mb-4">
+              <div class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center mr-4">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-6 w-6 text-white"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                  />
+                </svg>
+              </div>
+              <h3 class="text-xl font-semibold primary-text">Origins of Atypica.AI</h3>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div class="bg-gray-950 p-4 rounded-lg border-l-4 border-gray-600">
+                <div class="flex items-center mb-2">
+                  <span class="text-xs bg-gray-800 px-2 py-1 rounded mr-2">2023</span>
+                  <h4 class="font-medium primary-text">Multi-Agent Interaction</h4>
+                </div>
+                <p class="text-sm opacity-80">
+                  The Stanford Town paper "Generative Agents: Interactive Simulacra of Human Behavior" introduced us to the concept of multi-agent interaction for the first time, but this paper didn't truly demonstrate how agents interact with each other.
+                </p>
+              </div>
+
+              <div class="bg-gray-950 p-4 rounded-lg border-l-4 border-blue-600">
+                <div class="flex items-center mb-2">
+                  <span class="text-xs bg-gray-800 px-2 py-1 rounded mr-2">2023.12</span>
+                  <h4 class="font-medium primary-text">Model Tool Calling</h4>
+                </div>
+                <p class="text-sm opacity-80">
+                  OpenAI released GPT-4's Function Calling feature, enabling models to call external tools; in November 2024, Claude's MCP protocol showed us the possibility of models operating tools (like our content management tools). This technological advancement opened up entirely new application scenarios, allowing models to go beyond chatbox interactions and actively connect with the external world.
+                </p>
+              </div>
+
+              <div class="bg-gray-950 p-4 rounded-lg border-l-4 border-green-600 md:col-span-2">
+                <div class="flex items-center mb-2">
+                  <span class="text-xs bg-gray-800 px-2 py-1 rounded mr-2">2024.11</span>
+                  <h4 class="font-medium primary-text">Language Models for Subjective World Modeling</h4>
+                </div>
+                <p class="text-sm opacity-80">
+                  The Stanford Town research team published the groundbreaking paper "Generative Agent Simulations of 1,000 People," which successfully simulated the behavioral patterns of 1,000 random Americans. Researchers conducted in-depth interviews with real humans through AI, building agents that accurately reflect individual behavior and decision-making patterns. Remarkably, these agents achieved over 85% behavioral consistency with real people, demonstrating unprecedented simulation accuracy.
+                </p>
+                <p class="text-sm opacity-80 mt-2">
+                  This research revealed the tremendous potential of agent simulation for real human behavior and effective interviewing. Traditional methods of studying users (like studying orange juice) involve analyzing constituent elements (labels), but even with all labels, it's difficult to completely reconstruct user complexity. This new method is equivalent to refining orange juice into concentrated powder, then using language models as "water" to reconstitute it back into orange juice.
+                </p>
+              </div>
+
+              <div class="bg-gray-950 p-4 rounded-lg border-l-4 border-yellow-600">
+                <div class="flex items-center mb-2">
+                  <span class="text-xs bg-gray-800 px-2 py-1 rounded mr-2">2025.02</span>
+                  <h4 class="font-medium primary-text">Divergence-First Long Reasoning</h4>
+                </div>
+                <p class="text-sm opacity-80">
+                  Deepseek R1 showed us transparent reasoning processes, helping us understand how to design reasoning architectures on top of foundation models. Unlike reasoning methods for objective world/scientific problems that emphasize "convergence," reasoning for subjective world/business problems needs to emphasize "divergence." We define this across four dimensions: 1) Learning from past cases, 2) Eureka moments, 3) Quality of feedback, 4) Number of iterations.
+                </p>
+                <p class="text-sm opacity-80 mt-2">
+                  Based on these four dimensions, we began developing the multi-step, long-divergence reasoning model architecture "Creative Reasoning," forming optimization for thinking, analyzing, and researching general business problems.
+                </p>
+              </div>
+
+              <div class="bg-gray-950 p-4 rounded-lg border-l-4 border-red-600">
+                <div class="flex items-center mb-2">
+                  <span class="text-xs bg-gray-800 px-2 py-1 rounded mr-2">2025.03</span>
+                  <h4 class="font-medium primary-text">Multi-Agent Product Form</h4>
+                </div>
+                <p class="text-sm opacity-80">
+                  The release of Manus, Claude's Artifacts, and Devin showed us the possibilities of multi-agent product design. Especially Manus's product innovation in expressing agent work processes and enabling replay. Seeing how agents work indeed creates more empathy for their results.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h2 class="text-2xl font-bold mb-8 primary-text flex items-center">
+          <span class="mr-2">Technical Limitations & Outlook</span>
+          <div
+            class="h-px bg-gradient-to-r from-transparent via-gray-500 to-transparent flex-grow ml-4"
+          ></div>
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+          <div>
+            <div class="bg-gray-900 p-6 rounded-lg border border-gray-800 h-full">
+              <h3 class="text-xl font-semibold mb-6 primary-text flex items-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-5 w-5 mr-2"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+                Limitations of Atypica.AI
+              </h3>
+              <ul class="space-y-4">
+                <li class="flex">
+                  <div
+                    class="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center mr-3 shrink-0"
+                  >
+                    1
+                  </div>
+                  <div>
+                    <strong class="primary-text block mb-1">Input Question Quality</strong>
+                    <p class="text-sm opacity-80">The accuracy of input questions largely determines report quality</p>
+                  </div>
+                </li>
+                <li class="flex">
+                  <div
+                    class="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center mr-3 shrink-0"
+                  >
+                    2
+                  </div>
+                  <div>
+                    <strong class="primary-text block mb-1">Model Accuracy Limitations</strong>
+                    <p class="text-sm opacity-80">
+                      Stanford research showed this method can accurately simulate 80% of consumers' complex decision-making processes, but has limitations in predicting highly emotional or context-dependent decisions, and insufficient accuracy in simulating emerging niche consumer groups (synthetic orange juice is still different from natural orange juice)
+                    </p>
+                  </div>
+                </li>
+                <li class="flex">
+                  <div
+                    class="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center mr-3 shrink-0"
+                  >
+                    3
+                  </div>
+                  <div>
+                    <strong class="primary-text block mb-1">Data Integration Complexity</strong>
+                    <p class="text-sm opacity-80">
+                      Large differences in data quality and structure make integration difficult; data cleanliness issues may cause model distortion; this method is better at simulating users' positive and negative feedback but not good at simulating users' biases and limitations
+                    </p>
+                  </div>
+                </li>
+                <li class="flex">
+                  <div
+                    class="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center mr-3 shrink-0"
+                  >
+                    4
+                  </div>
+                  <div>
+                    <strong class="primary-text block mb-1">Innovation Prediction Difficulty</strong>
+                    <p class="text-sm opacity-80">Difficult to predict responses to truly breakthrough innovations</p>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div>
+            <div class="bg-gray-900 p-6 rounded-lg border border-gray-800 h-full">
+              <h3 class="text-xl font-semibold mb-6 primary-text flex items-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-5 w-5 mr-2"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+                Methodology Analogy
+              </h3>
+              <div class="bg-gray-950 p-5 rounded-lg mb-4">
+                <blockquote class="border-l-4 border-gray-600 pl-4 italic">
+                  <p class="mb-3">
+                    This method is equivalent to refining orange juice into concentrated powder, then using language models as "water" to reconstitute it back into orange juice.
+                  </p>
+                  <p>
+                    Although this "synthetic orange juice" is not completely natural, it strives to simulate the taste, color, and nutritional characteristics of real orange juice.
+                  </p>
+                </blockquote>
+              </div>
+
+              <div class="bg-gray-950 p-5 rounded-lg">
+                <h4 class="font-medium mb-3 primary-text">Future Outlook</h4>
+                <p class="text-sm opacity-80 mb-3">
+                  With the continuous development of language models and enhanced multimodal capabilities, Atypica.AI will continue to improve in the following areas:
+                </p>
+                <ul class="text-sm space-y-2 pl-4">
+                  <li class="opacity-80 flex items-start">
+                    <span class="text-gray-500 mr-2">•</span>
+                    More precise user profiling and behavior models
+                  </li>
+                  <li class="opacity-80 flex items-start">
+                    <span class="text-gray-500 mr-2">•</span>
+                    Deeper psychological model integration
+                  </li>
+                  <li class="opacity-80 flex items-start">
+                    <span class="text-gray-500 mr-2">•</span>
+                    More nuanced group difference modeling
+                  </li>
+                  <li class="opacity-80 flex items-start">
+                    <span class="text-gray-500 mr-2">•</span>
+                    More transparent AI reasoning and explanation systems
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-gray-900 p-6 rounded-lg border border-gray-800 mb-4">
+          <div class="flex flex-col md:flex-row items-center">
+            <div class="md:w-1/3 flex justify-center mb-6 md:mb-0">
+              <img
+                src="/_public/hippyghost-square-dark.jpg"
+                alt="HippyGhost"
+                class="w-40 h-40 rounded-lg shadow-lg border-2 border-green-600"
+              />
+            </div>
+            <div class="md:w-2/3 md:pl-8">
+              <h3 class="text-xl font-bold mb-4 primary-text">HippyGhosts</h3>
+              <p class="mb-4 opacity-90">
+                The visual identity of atypica.AI comes from the HippyGhosts.io community, which represents the geek spirit of joyful hippy ghosts.
+              </p>
+              <p class="mb-4 opacity-80">
+                In the world of Atypica.AI, the physical embodiment of each "agent" is a "Hippy Ghost," representing the fusion of technology and creativity, and symbolizing our pursuit of building AI agents with personality and warmth.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="max-w-6xl mx-auto px-4 py-8 border-t border-gray-800 mt-12">
+      <div class="flex flex-col md:flex-row justify-between items-center">
+        <div class="mb-4 md:mb-0">
+          <div class="text-lg font-bold"><span class="primary-text">atypica</span>.AI</div>
+          <div class="text-sm opacity-60">AI-Powered Intelligence for Subjective Reality</div>
+        </div>
+        <div class="flex space-x-6">
+          <a href="/changelog" class="text-sm opacity-60 hover:opacity-100 transition-opacity"
+            >Changelog</a
+          >
+          <a href="/" class="text-sm opacity-60 hover:opacity-100 transition-opacity">Try Now</a>
+          <a href="/pricing" class="text-sm opacity-60 hover:opacity-100 transition-opacity"
+            >Pricing</a
+          >
+        </div>
+        <div class="text-sm opacity-60 mt-4 md:mt-0">© 2025 Tezign Technology</div>
+      </div>
+    </footer>
+  </body>
+</html>
