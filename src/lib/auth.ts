@@ -9,44 +9,6 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import { rootLogger } from "./logging";
 
-// 只在海外开放，不使用代理，怀疑代理可能导致了 google gemini 请求卡住
-// import https from "node:https";
-// import { HttpsProxyAgent } from "https-proxy-agent";
-// const originRequest = https.request;
-// if (process.env.FETCH_HTTPS_PROXY) {
-//   const httpsProxyAgent = new HttpsProxyAgent(process.env.FETCH_HTTPS_PROXY);
-//   // https.globalAgent = httpsProxyAgent;
-//   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-//   https.request = function (...args: any) {
-//     try {
-//       let options = null;
-//       let url = null;
-//       if (typeof args[0] === "string") {
-//         [url, options] = args;
-//       }
-//       if (typeof args[0] === "object") {
-//         url = args[0].href;
-//         options = args[0];
-//       }
-//       rootLogger.warn({
-//         msg: "Overriding https.request",
-//         url,
-//         userAgent: options?.headers?.["User-Agent"],
-//       });
-//       if (
-//         /accounts\.google\.com|oauth2\.googleapis\.com|www\.googleapis\.com/.test(url) &&
-//         /openid-client/.test(options?.headers?.["User-Agent"]) &&
-//         !options.agent
-//       ) {
-//         options.agent = httpsProxyAgent;
-//       }
-//     } catch (error) {
-//       rootLogger.error(`Error in https.request: ${(error as Error).message}`);
-//     }
-//     return originRequest.apply(https, args);
-//   };
-// }
-
 export const authClientInfo = async () => {
   const lastLogin = {
     timestamp: Date.now(),
