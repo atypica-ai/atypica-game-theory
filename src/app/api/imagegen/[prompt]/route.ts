@@ -3,12 +3,22 @@ import { initStudyStatReporter } from "@/ai/tools/stats";
 import { s3SignedUrl, uploadToS3 } from "@/lib/attachments/s3";
 import { authOptions } from "@/lib/auth";
 import { rootLogger } from "@/lib/logging";
+import { getRequestOrigin } from "@/lib/request/headers";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
 import { experimental_generateImage as generateImage } from "ai";
 import { createHash } from "crypto";
 import { getServerSession } from "next-auth";
 import { z } from "zod";
+
+/**
+ * @todo 现在每次打开report都会生成一个新的 s3 url，这样会导致 next 的 image 缓存过多
+ */
+async function optimizedImageUrl({ objectUrl }: { objectUrl: string }) {
+  const url = await s3SignedUrl(objectUrl);
+  const siteOrigin = await getRequestOrigin();
+  return `${siteOrigin}/_next/image?url=${encodeURIComponent(url)}&w=1920&q=100`;
+}
 
 const ratioSchema = z.enum(["square", "landscape", "portrait"]).default("square");
 
@@ -30,7 +40,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ prompt: 
   });
   if (existingImage) {
     if (existingImage.generatedAt) {
-      return Response.redirect(await s3SignedUrl(existingImage.objectUrl), 302);
+      return Response.redirect(await optimizedImageUrl(existingImage), 302);
     } else if (
       Date.now() - existingImage.createdAt.getTime() >
       10 * 60 * 1000 // 超过十分钟算超时
@@ -86,7 +96,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ prompt: 
           const updatedImage = await prisma.imageGeneration.findUniqueOrThrow({ where: { id } });
           if (updatedImage.generatedAt) {
             genLog.info(`imagegen completed, ${elapsedSeconds} seconds`);
-            resolve(await s3SignedUrl(updatedImage.objectUrl));
+            resolve(await optimizedImageUrl(updatedImage));
             return;
           } else {
             setTimeout(checkImage, 5000);
