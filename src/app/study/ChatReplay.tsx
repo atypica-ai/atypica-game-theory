@@ -54,7 +54,7 @@ export function ChatReplay() {
         ref={messagesContainerRef}
         className={cn(
           "h-full w-full flex flex-col items-center gap-4 overflow-y-auto scrollbar-thin",
-          "pt-4 px-4 pb-80",
+          "pt-4 px-4",
         )}
       >
         {messagesDisplay.map((message, index) => (
@@ -70,6 +70,31 @@ export function ChatReplay() {
             isLastMessage={index === messagesDisplay.length - 1}
           ></SingleMessage>
         ))}
+        {isCompleted ? (
+          <div className="mt-30 mb-30 flex flex-col items-center gap-4 bg-background/95 backdrop-blur-sm border rounded-lg p-6 shadow-lg">
+            <div className="text-center">
+              <h3 className="text-lg font-semibold mb-2">
+                {isOwnStudy ? t("continueStudyTitle") : t("startNewStudyTitle")}
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                {isOwnStudy ? t("continueStudyDescription") : t("startNewStudyDescription")}
+              </p>
+            </div>
+            <div className="flex gap-3">
+              {isOwnStudy ? (
+                <Button asChild>
+                  <Link href={`/study/${studyUserChat.token}`}>{t("continueStudy")}</Link>
+                </Button>
+              ) : (
+                <Button asChild>
+                  <Link href="/">{t("startNewStudy")}</Link>
+                </Button>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="mb-60" />
+        )}
         <div ref={messagesEndRef} />
       </div>
       {!isCompleted && (
@@ -78,29 +103,6 @@ export function ChatReplay() {
           <Button variant="outline" size="sm" onClick={skipToEnd}>
             {t("skipToEnd")}
           </Button>
-        </div>
-      )}
-      {isCompleted && (
-        <div className="flex flex-col items-center gap-4 absolute bottom-4 left-1/2 -translate-x-1/2 bg-background/95 backdrop-blur-sm border rounded-lg p-6 shadow-lg">
-          <div className="text-center">
-            <h3 className="text-lg font-semibold mb-2">
-              {isOwnStudy ? t("continueStudyTitle") : t("startNewStudyTitle")}
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              {isOwnStudy ? t("continueStudyDescription") : t("startNewStudyDescription")}
-            </p>
-          </div>
-          <div className="flex gap-3">
-            {isOwnStudy ? (
-              <Button asChild>
-                <Link href={`/study/${studyUserChat.token}`}>{t("continueStudy")}</Link>
-              </Button>
-            ) : (
-              <Button asChild>
-                <Link href="/">{t("startNewStudy")}</Link>
-              </Button>
-            )}
-          </div>
         </div>
       )}
     </div>

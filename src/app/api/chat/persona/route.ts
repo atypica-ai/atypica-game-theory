@@ -71,12 +71,10 @@ export async function POST(req: Request) {
       chunking: /[\u4E00-\u9FFF]|\S+\s+/,
     }),
     abortSignal: req.signal,
-    onStepFinish: async (step) => {
-      console.log(step);
-      // const { usage, providerMetadata } = step
-      // console.log("usage", usage);
-      // console.log("cache", providerMetadata?.bedrock?.usage);
-    },
+    // onStepFinish: async ({ usage, providerMetadata }) => {
+    //   console.log("usage", usage);
+    //   console.log("cache", providerMetadata?.bedrock?.usage);
+    // },
     onError: ({ error }) => {
       console.log("Error occurred:", JSON.stringify(error));
     },

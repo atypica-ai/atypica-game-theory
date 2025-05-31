@@ -85,7 +85,7 @@ export function UserChatSession({
         setUploadedFiles([]);
       }
     },
-    [handleSubmit, uploadedFiles /*, useChatRef, input, setInput*/],
+    [handleSubmit, uploadedFiles, useChatRef, input, setInput, persistMessages],
   );
 
   const [messagesContainerRef, messagesEndRef] = useScrollToBottom<HTMLDivElement>();

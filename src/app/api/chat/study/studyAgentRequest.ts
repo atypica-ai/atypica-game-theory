@@ -16,7 +16,6 @@ import {
   toolCallError,
 } from "@/ai/tools/tools";
 import { ToolName } from "@/ai/tools/types";
-import { prisma } from "@/prisma/prisma";
 import {
   CoreMessage,
   Message,
@@ -118,13 +117,13 @@ export async function studyAgentRequest({
     studyLog,
   ); // 5000 debounce
 
-  const tokensConsumed =
-    (
-      await prisma.chatStatistics.aggregate({
-        where: { userChatId: studyUserChatId, dimension: "tokens" },
-        _sum: { value: true },
-      })
-    )._sum.value ?? 0;
+  // const tokensConsumed =
+  //   (
+  //     await prisma.chatStatistics.aggregate({
+  //       where: { userChatId: studyUserChatId, dimension: "tokens" },
+  //       _sum: { value: true },
+  //     })
+  //   )._sum.value ?? 0;
   const agentToolArgs = { locale, abortSignal, statReport, studyLog };
   const allTools = {
     [ToolName.searchPersonas]: searchPersonasTool({ ...agentToolArgs }),
