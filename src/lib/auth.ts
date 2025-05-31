@@ -11,23 +11,36 @@ import GoogleProvider from "next-auth/providers/google";
 import https from "node:https";
 import { rootLogger } from "./logging";
 
+const originRequest = https.request;
 if (process.env.FETCH_HTTPS_PROXY) {
   const httpsProxyAgent = new HttpsProxyAgent(process.env.FETCH_HTTPS_PROXY);
   // https.globalAgent = httpsProxyAgent;
-  const originRequest = https.request;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   https.request = function (...args: any) {
-    let options = null;
-    let url = null;
-    if (typeof args[0] === "string") {
-      [url, options] = args;
-    }
-    if (typeof args[0] === "object") {
-      url = args[0].href;
-      options = args[0];
-    }
-    if (/google/.test(url)) {
-      options.agent = httpsProxyAgent;
+    try {
+      let options = null;
+      let url = null;
+      if (typeof args[0] === "string") {
+        [url, options] = args;
+      }
+      if (typeof args[0] === "object") {
+        url = args[0].href;
+        options = args[0];
+      }
+      rootLogger.warn({
+        msg: "Overriding https.request",
+        url,
+        userAgent: options?.headers?.["User-Agent"],
+      });
+      if (
+        /accounts\.google\.com|oauth2\.googleapis\.com|www\.googleapis\.com/.test(url) &&
+        /openid-client/.test(options?.headers?.["User-Agent"]) &&
+        !options.agent
+      ) {
+        options.agent = httpsProxyAgent;
+      }
+    } catch (error) {
+      rootLogger.error(`Error in https.request: ${(error as Error).message}`);
     }
     return originRequest.apply(https, args);
   };
