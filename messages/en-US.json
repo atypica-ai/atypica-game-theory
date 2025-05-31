@@ -652,7 +652,19 @@
       "startListening": "Start voice input",
       "stopListening": "Stop voice input",
       "listeningActive": "Listening...",
-      "clickToSpeak": "Click to speak"
+      "clickToSpeak": "Click to speak",
+      "processing": "Processing..."
+    },
+    "VoiceInputModal": {
+      "listening": "AI is listening",
+      "processing": "Processing your speech",
+      "startListening": "Start Recording",
+      "listeningDescription": "Speak clearly into your microphone",
+      "processingDescription": "AI is analyzing and correcting your speech",
+      "clickToStart": "Click to start voice input",
+      "helpText": "Click the X button to close",
+      "recordingHelpText": "Recording will automatically stop when you finish speaking",
+      "finish": "Finish"
     },
     "GenerateReportResultMessage": {
       "reportGenerated": "Report is generated, click to view"

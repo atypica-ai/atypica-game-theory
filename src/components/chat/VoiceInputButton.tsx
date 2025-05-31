@@ -1,87 +1,60 @@
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
-import { cn } from "@/lib/utils";
-import { MicIcon, MicOffIcon } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useState } from "react";
+import { MicIcon } from "lucide-react";
+import { Locale } from "next-intl";
+import { useState } from "react";
+import { VoiceInputModal } from "./VoiceInputModal";
 
 interface VoiceInputButtonProps {
   onTranscript: (text: string) => void;
-  language?: string;
+  language: Locale;
   disabled?: boolean;
   className?: string;
+  contextText?: string;
 }
 
 export function VoiceInputButton({
   onTranscript,
-  language = "zh-CN",
+  language,
   disabled = false,
   className,
+  contextText,
 }: VoiceInputButtonProps) {
-  const t = useTranslations("Components.VoiceInputButton");
-  const [tooltipOpen, setTooltipOpen] = useState(false);
-  const [activeText, setActiveText] = useState<string>("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalKey, setModalKey] = useState(0);
 
-  const { isListening, isSupported, toggleListening, stopListening } = useSpeechRecognition({
-    language,
-    onResult: useCallback((text: string) => {
-      setActiveText(text);
-    }, []),
-    onFinalResult: useCallback(
-      (text: string) => {
-        if (text.trim()) {
-          onTranscript(text);
-        }
-        setActiveText("");
-      },
-      [onTranscript],
-    ),
-    onError: useCallback(() => {
-      setActiveText("");
-      // stopListening();
-    }, []),
-  });
-
-  // Stop listening when component is disabled
-  useEffect(() => {
-    if (disabled && isListening) {
-      stopListening();
+  // Check if speech recognition is supported
+  if (typeof window !== "undefined") {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      return null;
     }
-  }, [disabled, isListening, stopListening]);
-
-  if (!isSupported) {
-    return null;
   }
 
   return (
-    <TooltipProvider>
-      <Tooltip open={tooltipOpen || isListening} onOpenChange={setTooltipOpen}>
-        <TooltipTrigger asChild>
-          <Button
-            type="button"
-            variant="secondary"
-            size="icon"
-            className={cn(
-              "h-9 w-9 rounded-full",
-              isListening && "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400",
-              className,
-            )}
-            disabled={disabled}
-            onClick={toggleListening}
-            aria-label={isListening ? t("stopListening") : t("startListening")}
-          >
-            {isListening ? <MicOffIcon className="h-4 w-4" /> : <MicIcon className="h-4 w-4" />}
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent side="top">
-          {isListening
-            ? activeText
-              ? `${t("listeningActive")}: ${activeText}`
-              : t("listeningActive")
-            : t("clickToSpeak")}
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <>
+      <Button
+        type="button"
+        variant="secondary"
+        size="icon"
+        className={className}
+        disabled={disabled}
+        onClick={() => {
+          setModalKey(prev => prev + 1);
+          setIsModalOpen(true);
+        }}
+        aria-label="Start voice input"
+      >
+        <MicIcon />
+      </Button>
+
+      <VoiceInputModal
+        key={modalKey}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onTranscript={onTranscript}
+        language={language}
+        contextText={contextText}
+      />
+    </>
   );
 }

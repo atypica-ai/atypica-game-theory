@@ -196,7 +196,8 @@ export function UserChatSession({
                 onTranscript={(text) => {
                   setInput((current) => (current ? `${current} ${text}` : text));
                 }}
-                language={locale === "zh-CN" ? "zh-CN" : "en-US"}
+                language={locale}
+                contextText={input}
               />
               <Button
                 type="submit"

@@ -6,16 +6,18 @@ import {
   FileUploadInfo,
   MAX_TOTAL_FILE_SIZE,
 } from "@/components/chat/FileUploadButton";
+import { VoiceInputButton } from "@/components/chat/VoiceInputButton";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useDevice } from "@/lib/utils";
 import { ArrowRightIcon, RotateCwIcon } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 
 export function InputSection() {
+  const locale = useLocale();
   const t = useTranslations("HomePage.InputSection");
   const router = useRouter();
   const { isMobile } = useDevice();
@@ -117,6 +119,14 @@ export function InputSection() {
             />
           ))}
           <div className="ml-auto" />
+          <VoiceInputButton
+            onTranscript={(text) => {
+              setInput((current) => (current ? `${current} ${text}` : text));
+            }}
+            language={locale}
+            contextText={input}
+            disabled={isLoading}
+          />
           <Button
             type="submit"
             variant="secondary"
