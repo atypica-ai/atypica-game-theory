@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const config = {
   matcher: [
-    "/((?!api|_next/static|_next/image|_public|_pages|favicon.ico|manifest.json|sitemap.xml|robots.txt).*)",
+    "/((?!api|_next/static|_next/image|_public|_pages|favicon.ico|manifest.json|sitemap.xml|robots.txt|llm.txt).*)",
   ],
 };
 
