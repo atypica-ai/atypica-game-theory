@@ -48,19 +48,6 @@ jobs:
             musecr.azurecr.cn/bmrlab/atypica-llm-app:${{ env.VERSION }}
             musecr.azurecr.cn/bmrlab/atypica-llm-app:latest
 
-      - name: Build and push Docker image for Jobs
-        uses: docker/build-push-action@v4
-        timeout-minutes: 10  # 10 分钟超时
-        with:
-          context: .
-          file: ./Dockerfile.job
-          push: true
-          tags: |
-            ghcr.io/bmrlab/atypica-llm-app:${{ env.VERSION }}-job
-            ghcr.io/bmrlab/atypica-llm-app:latest-job
-            musecr.azurecr.cn/bmrlab/atypica-llm-app:${{ env.VERSION }}-job
-            musecr.azurecr.cn/bmrlab/atypica-llm-app:latest-job
-
       - name: Setup Kubernetes Config And Update Deployment
         run: |
           mkdir -p $HOME/.kube
