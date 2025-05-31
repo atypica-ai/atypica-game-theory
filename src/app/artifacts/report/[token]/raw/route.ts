@@ -43,6 +43,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ toke
   const url = new URL(request.url);
   const isLive = url.searchParams.get("live") === "1";
   const session = await getServerSession(authOptions);
+
+  // @todo 其实不需要判断这个
   const isOwner = analystReport.analyst.userId === session?.user?.id;
 
   // Handle live streaming mode

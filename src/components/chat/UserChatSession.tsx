@@ -174,23 +174,22 @@ export function UserChatSession({
               }}
             />
             <div className="absolute right-2 bottom-2 max-lg:right-1 max-lg:bottom-1 max-lg:scale-90 max-lg:origin-bottom-right flex items-center gap-2">
+              {!inputDisabled && !input.trim() && (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="h-8 text-xs origin-top-right"
+                  onClick={handleContinueChat}
+                >
+                  <PlayIcon className="size-2.5" />
+                  <span>{t("continue")}</span>
+                </Button>
+              )}
               {!inputDisabled && (
-                <>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    className="h-8 text-xs origin-top-right"
-                    onClick={handleContinueChat}
-                  >
-                    <PlayIcon className="size-2.5" />
-                    <span>{t("continue")}</span>
-                  </Button>
-                  {/* 暂时隐藏 */}
-                  <FileUploadButton
-                    onFileUploadedAction={handleFileUploaded}
-                    disabled={inputDisabled}
-                  />
-                </>
+                <FileUploadButton
+                  onFileUploadedAction={handleFileUploaded}
+                  disabled={inputDisabled}
+                />
               )}
               <VoiceInputButton
                 disabled={inputDisabled}
