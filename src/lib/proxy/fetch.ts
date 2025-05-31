@@ -24,6 +24,7 @@ if (process.env.FETCH_HTTPS_PROXY) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   https.request = function (...args: any) {
     try {
+      rootLogger.info({ msg: "Overriding https.request", args });
       let options = null;
       let url = null;
       if (typeof args[0] === "string") {
@@ -33,11 +34,6 @@ if (process.env.FETCH_HTTPS_PROXY) {
         url = args[0].href;
         options = args[0];
       }
-      rootLogger.info({
-        msg: "Overriding https.request",
-        url,
-        userAgent: options?.headers?.["User-Agent"],
-      });
       if (
         /accounts\.google\.com|oauth2\.googleapis\.com|www\.googleapis\.com\/oauth2/.test(url) &&
         // /openid-client/.test(options?.headers?.["User-Agent"]) &&

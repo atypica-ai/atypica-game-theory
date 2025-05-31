@@ -394,22 +394,32 @@ async function chatWithPersona(chatProps: ChatProps, messages: Message[]) {
   } = chatProps;
 
   const result = await new Promise<Omit<Message, "role">>(async (resolve, reject) => {
-    const hasAttachments = !!messages.find(
-      (message) => (message.experimental_attachments ?? []).length > 0,
-    );
+    // const hasAttachments = !!messages.find(
+    //   (message) => (message.experimental_attachments ?? []).length > 0,
+    // );
+    // const [reduceTokens, options]: [TReduceTokens, any] = hasAttachments
+    //   ? [
+    //       { model: "gemini-2.5-flash", ratio: 10 },
+    //       {
+    //         useSearchGrounding: true,
+    //         dynamicRetrievalConfig: {
+    //           mode: "MODE_DYNAMIC",
+    //           dynamicThreshold: 0.5,
+    //         },
+    //       },
+    //     ]
+    //   : [{ model: "gpt-4.1-mini", ratio: 5 }, undefined];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const [reduceTokens, options]: [TReduceTokens, any] = hasAttachments
-      ? [
-          { model: "gemini-2.5-flash", ratio: 10 },
-          {
-            useSearchGrounding: true,
-            dynamicRetrievalConfig: {
-              mode: "MODE_DYNAMIC",
-              dynamicThreshold: 0.5,
-            },
-          },
-        ]
-      : [{ model: "gpt-4.1-mini", ratio: 5 }, undefined];
+    const [reduceTokens, options]: [TReduceTokens, any] = [
+      { model: "gemini-2.5-flash", ratio: 10 },
+      {
+        useSearchGrounding: true,
+        dynamicRetrievalConfig: {
+          mode: "MODE_DYNAMIC",
+          dynamicThreshold: 0.5,
+        },
+      },
+    ];
     const response = streamText({
       model: reduceTokens ? llm(reduceTokens.model, options) : llm("claude-3-7-sonnet"), // gpt 4.1 不支持 pdf，目前只有 gemini 和 claude 支持
       providerOptions: providerOptions,

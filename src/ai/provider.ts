@@ -55,20 +55,17 @@ const google = (modelId: string, settings?: any) => {
   return googleGenerativeAI(modelId, settings);
 };
 
-const vertex = (() => {
-  // build 环境下 env 都是空的，这里不能直接 parse，直接跳过就行，因为不会用到
-  const credentials = process.env.GOOGLE_VERTEX_AI_APPLICATION_CREDENTIALS
-    ? JSON.parse(process.env.GOOGLE_VERTEX_AI_APPLICATION_CREDENTIALS)
-    : undefined;
-  return createVertex({
-    location: process.env.GOOGLE_VERTEX_LOCATION,
-    project: process.env.GOOGLE_VERTEX_PROJECT,
-    googleAuthOptions: {
-      credentials: credentials,
+const vertex = createVertex({
+  location: process.env.GOOGLE_VERTEX_LOCATION,
+  project: process.env.GOOGLE_VERTEX_PROJECT,
+  googleAuthOptions: {
+    credentials: {
+      client_email: process.env.GOOGLE_VERTEX_CLIENT_EMAIL,
+      private_key: process.env.GOOGLE_VERTEX_PRIVATE_KEY,
     },
-    fetch: proxiedFetch,
-  });
-})();
+  },
+  fetch: proxiedFetch,
+});
 
 // export const bedrock = (model: "claude-3-7-sonnet" = "claude-3-7-sonnet") => {
 //   if (model === "claude-3-7-sonnet") {
