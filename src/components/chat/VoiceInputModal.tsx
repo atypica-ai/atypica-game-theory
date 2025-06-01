@@ -104,6 +104,11 @@ export function VoiceInputModal({
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/10" />
         <div className="absolute inset-0 border border-primary/20 animate-pulse rounded-lg" />
 
+        {/* Language indicator */}
+        <div className="absolute top-3 left-3 text-xs text-muted-foreground heading-mono z-10">
+          {t("currentLanguage")}
+        </div>
+
         {/* Close button */}
         <Button
           variant="ghost"
@@ -121,7 +126,11 @@ export function VoiceInputModal({
             <div className="flex items-center justify-center gap-2 text-primary heading-mono text-sm">
               <Waves />
               <span className="tracking-wider">
-                {isProcessing ? "PROCESSING" : isListening ? "LISTENING" : "READY"}
+                {isProcessing
+                  ? t("statusProcessing")
+                  : isListening
+                    ? t("statusListening")
+                    : t("statusReady")}
               </span>
               <Waves />
             </div>
@@ -250,7 +259,7 @@ export function VoiceInputModal({
                             : "text-muted-foreground/60",
                         )}
                       >
-                        {isListening ? "Listening for your voice..." : "Processing..."}
+                        {isListening ? t("waitingForVoice") : t("processingMessage")}
                       </span>
                     </div>
                   </div>
@@ -288,7 +297,7 @@ export function VoiceInputModal({
                           audioLevel > 0.2 ? "text-primary" : "text-primary/80",
                         )}
                       >
-                        ♪ {audioLevel > 0.2 ? "Speaking detected" : "Audio detected"}
+                        ♪ {audioLevel > 0.2 ? t("speakingDetected") : t("audioDetected")}
                       </span>
                     </div>
                   )}
@@ -304,11 +313,11 @@ export function VoiceInputModal({
             </h3>
             <p className="text-xs text-muted-foreground heading-mono max-w-xs mx-auto leading-relaxed">
               {isProcessing
-                ? "Enhancing your speech with AI..."
+                ? t("enhancingMessage")
                 : isListening
                   ? displayedText
-                    ? "Keep speaking or click finish when done"
-                    : "Start speaking now..."
+                    ? t("keepSpeakingMessage")
+                    : t("startSpeakingMessage")
                   : t("clickToStart")}
             </p>
           </div>

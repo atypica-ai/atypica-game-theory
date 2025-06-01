@@ -747,7 +747,18 @@
       "clickToStart": "Click to start voice input",
       "helpText": "Click the X button to close",
       "recordingHelpText": "Recording will automatically stop when you finish speaking",
-      "finish": "Finish"
+      "finish": "Finish",
+      "statusProcessing": "PROCESSING",
+      "statusListening": "LISTENING",
+      "statusReady": "READY",
+      "enhancingMessage": "Enhancing your speech with AI...",
+      "keepSpeakingMessage": "Keep speaking or click finish when done",
+      "startSpeakingMessage": "Start speaking now...",
+      "waitingForVoice": "Listening for your voice...",
+      "processingMessage": "Processing...",
+      "speakingDetected": "Speaking detected",
+      "audioDetected": "Audio detected",
+      "currentLanguage": "Language: English"
     },
     "GenerateReportResultMessage": {
       "reportGenerated": "Report is generated, click to view"
