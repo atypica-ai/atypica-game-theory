@@ -15,14 +15,14 @@ export function HeroSection() {
           <h1
             className={cn(
               "text-6xl sm:text-7xl lg:text-8xl tracking-tight text-foreground",
-              "font-EuclidCircularA block dark:hidden mb-8",
+              "font-EuclidCircularA block dark:hidden mb-16",
             )}
           >
             atypica.AI
           </h1>
           <div
             className={cn(
-              "relative w-[320px] h-[100px] max-w-10/12 mx-auto animate-in fade-in slide-in-from-bottom-4 duration-1000",
+              "relative w-[300px] h-[100px] sm:w-[480px] sm:h-[160px] max-w-10/12 mx-auto animate-in fade-in slide-in-from-bottom-4 duration-1000",
               "hidden dark:block mb-4",
             )}
           >
@@ -40,7 +40,7 @@ export function HeroSection() {
         </div>
 
         {/* Main CTA Description */}
-        <p className="text-muted-foreground max-w-2xl mx-auto leading-relaxed reveal-up reveal-delay-1">
+        <p className="text-sm text-muted-foreground max-w-2xl mx-auto leading-relaxed reveal-up reveal-delay-1">
           {t("description")}
         </p>
 
@@ -50,7 +50,7 @@ export function HeroSection() {
         </div>
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 pt-8 max-w-lg mx-auto reveal-up reveal-delay-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 pt-8 max-w-lg mx-auto reveal-up reveal-delay-3">
           <div className="text-center p-4">
             <div className="text-2xl font-bold heading-mono text-foreground">50K+</div>
             <div className="text-sm text-muted-foreground">{t("stats.personas")}</div>
@@ -59,10 +59,11 @@ export function HeroSection() {
             <div className="text-2xl font-bold heading-mono text-foreground">100K+</div>
             <div className="text-sm text-muted-foreground">{t("stats.interviews")}</div>
           </div>
-          <div className="text-center p-4">
-            <div className="text-2xl font-bold heading-mono text-foreground">500+</div>
-            <div className="text-sm text-muted-foreground">{t("stats.businesses")}</div>
-          </div>
+        </div>
+
+        {/* Trusted Users Banner */}
+        <div className="pt-4 max-w-2xl mx-auto text-center reveal-up reveal-delay-4">
+          <div className="text-sm text-muted-foreground">{t("stats.trustedUsers")}</div>
         </div>
       </div>
     </div>

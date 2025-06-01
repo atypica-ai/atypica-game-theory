@@ -44,6 +44,23 @@ export function FeaturesSection() {
           </Badge>
           <h2 className="text-3xl sm:text-4xl font-bold heading-serif">{t("title")}</h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">{t("description")}</p>
+
+          {/* Visual metaphor for objective vs subjective */}
+          <div className="flex items-center justify-center gap-8 mt-8 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-muted border-2 border-border flex items-center justify-center">
+                <span className="text-xs font-mono">Φ</span>
+              </div>
+              <span>{t("metaphor.objective")}</span>
+            </div>
+            <div className="text-primary">→</div>
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-primary/10 border-2 border-primary/30 flex items-center justify-center">
+                <span className="text-xs font-mono">Ψ</span>
+              </div>
+              <span>{t("metaphor.subjective")}</span>
+            </div>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

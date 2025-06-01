@@ -1,5 +1,5 @@
 {
-  "tagline": "AI-Powered Intelligence for Subjective Reality",
+  "tagline": "Modeling the Subjective World with AI",
   "HomePage": {
     "title": "Home",
     "HistoryDrawer": {
@@ -7,50 +7,58 @@
       "unnamedChat": "Unnamed Chat"
     },
     "HeroSection": {
-      "subtitle": "> AI-powered personas for business research",
-      "description": "Build intelligent personas to simulate real users and conduct in-depth interviews. Get comprehensive business insights through AI agent conversations in minutes, not weeks.",
+      "subtitle": "> Modeling subjective decision-making for business insights",
+      "description": "If physics models the objective world, language models can model the subjective world. Build AI personas that capture human decision-making mechanisms and conduct authentic interviews to understand the narratives, emotions, and biases that drive real choices.",
       "stats": {
         "personas": "AI Personas Created",
         "interviews": "Interviews Conducted",
-        "businesses": "Businesses Served"
+        "trustedUsers": "Trusted by individuals from leading organizations"
       }
     },
     "FeaturesSection": {
-      "badge": "Core Technology",
-      "title": "AI personas that think like real people",
-      "description": "Our language model-based \"subjective world modeling\" captures the nuanced decision-making processes of different user groups",
+      "badge": "Subjective World Modeling",
+      "title": "AI personas that capture human subjectivity",
+      "description": "People don't choose between things, they choose between descriptions of things. Our subjective world modeling captures the narratives, emotions, and cognitive biases that drive real human decisions.",
+      "metaphor": {
+        "objective": "Objective World",
+        "subjective": "Subjective World"
+      },
       "features": {
         "personaConstruction": {
-          "title": "AI Persona Construction",
-          "description": "Build intelligent user personas that simulate real people's thoughts, behaviors, and decision-making patterns"
+          "title": "Subjective Decision Modeling",
+          "description": "Build AI personas that capture the subjective factors—emotions, biases, narratives—that influence real human decision-making"
         },
         "agentInterviews": {
-          "title": "Agent Interviews",
-          "description": "Conduct in-depth interviews between expert agents and persona agents to gather authentic insights"
+          "title": "Multi-Agent Conversations",
+          "description": "Expert agents interview persona agents to uncover the 'why' behind decisions, revealing insights traditional data analysis misses"
         },
         "cognitiveModeling": {
-          "title": "Cognitive Modeling",
-          "description": "Capture subjective factors like emotions, biases, and decision mechanisms that traditional data analysis misses"
+          "title": "Beyond Rational Choice",
+          "description": "Model the irrational, emotional, and context-dependent aspects of human behavior that drive real-world decisions"
         },
         "rapidResearch": {
-          "title": "Rapid Research",
-          "description": "Complete comprehensive business research in 10-20 minutes instead of weeks of traditional methods"
+          "title": "Long-Form AI Reasoning",
+          "description": "Generate comprehensive research through 10-20 minutes of deep AI reasoning, not weeks of traditional surveys"
         }
       }
     },
     "DemoSection": {
       "badge": "Live Demo",
-      "title": "See AI persona research in action",
-      "description": "Watch how our AI constructs user personas and conducts authentic interviews",
+      "title": "See subjective world modeling in action",
+      "description": "Watch how our AI captures the subjective reality behind human decision-making",
+      "quote": {
+        "text": "People don't choose between things, they choose between descriptions of things.",
+        "author": "Daniel Kahneman"
+      },
       "terminal": {
         "title": "atypica.AI Research Terminal",
         "command": "$ atypica research \"sustainable packaging preferences in European markets\"",
         "steps": {
-          "scout": "→ Scout: Analyzing social media behavior patterns across target demographics",
-          "builder": "→ Builder: Constructing 8 AI personas with distinct cognitive frameworks",
-          "expert": "→ Expert: Interviewing personas on packaging decisions and environmental values",
-          "analyst": "→ Analyst: Extracting cognitive patterns and decision-making mechanisms",
-          "complete": "✓ Research complete: 12 minutes, 8 personas interviewed, 4 key insights"
+          "scout": "→ Scout: Mapping subjective narratives and emotional patterns in social discourse",
+          "builder": "→ Builder: Modeling 8 AI personas with distinct decision-making biases",
+          "expert": "→ Expert: Probing the 'why' behind choices through authentic conversations",
+          "analyst": "→ Analyst: Uncovering subjective factors that drive real purchasing decisions",
+          "complete": "✓ Subjective world mapped: 12 minutes, 8 personas modeled, 4 key insights"
         }
       },
       "interview": {
@@ -73,8 +81,8 @@
     },
     "InputSection": {
       "label": "AI Research Query",
-      "placeholder": "Submit your business research question and atypica.AI will generate a comprehensive report using 10-20 minutes of advanced AI reasoning.",
-      "hint": "Describe your target users and research questions - we'll build AI personas to interview",
+      "placeholder": "Ask any business research question about human behavior and decision-making. We'll model the subjective factors that drive real choices.",
+      "hint": "Describe the human decisions you want to understand - we'll model the subjective factors that drive them",
       "sendLabel": "Send",
       "enterToSend": "Enter to send",
       "tapToSend": "Tap to send"
@@ -87,8 +95,8 @@
       "noFeatured": "No featured studies available"
     },
     "CTASection": {
-      "title": "Ready to understand your users at a deeper level?",
-      "description": "Join hundreds of businesses using AI personas to make smarter, user-centered decisions",
+      "title": "Ready to model the subjective world of your users?",
+      "description": "Join researchers, strategists, and decision-makers from leading organizations who use AI to understand human subjectivity",
       "startButton": "Start Research",
       "examplesButton": "View Examples"
     }

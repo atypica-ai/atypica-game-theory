@@ -7,50 +7,58 @@
       "unnamedChat": "未命名对话"
     },
     "HeroSection": {
-      "subtitle": "> AI智能体驱动的商业研究",
-      "description": "构建智能用户画像，模拟真实用户进行深度访谈。通过AI智能体对话，在几分钟内获得全面的商业洞察，而非数周的传统调研。",
+      "subtitle": "> 为主观决策过程建模，洞察商业本质",
+      "description": "如果说物理学为「客观世界」建模，那么语言模型有机会为「主观世界」建模。构建能够捕捉人类决策机制的AI画像，通过真实访谈理解驱动真实选择的叙述、情感和偏见。",
       "stats": {
         "personas": "AI用户画像创建",
         "interviews": "访谈已完成",
-        "businesses": "企业客户"
+        "trustedUsers": "受到各大机构用户信赖"
       }
     },
     "FeaturesSection": {
-      "badge": "核心技术",
-      "title": "像真人一样思考的AI用户画像",
-      "description": "我们基于语言模型的「主观世界建模」技术，能够捕捉不同用户群体细致入微的决策过程",
+      "badge": "主观世界建模",
+      "title": "捕捉人类主观性的AI画像",
+      "description": "人们不是在事物之间做选择，而是在事物的描述之间做选择。我们的主观世界建模技术捕捉驱动真实人类决策的叙述、情感和认知偏见。",
+      "metaphor": {
+        "objective": "客观世界",
+        "subjective": "主观世界"
+      },
       "features": {
         "personaConstruction": {
-          "title": "AI用户画像构建",
-          "description": "构建智能用户画像，模拟真实用户的思维、行为和决策模式"
+          "title": "主观决策建模",
+          "description": "构建能够捕捉主观因素的AI画像——情感、偏见、叙述——这些影响真实人类决策的要素"
         },
         "agentInterviews": {
-          "title": "智能体访谈",
-          "description": "在专家智能体和用户画像智能体之间进行深度访谈，获取真实洞察"
+          "title": "多智能体对话",
+          "description": "专家智能体访谈画像智能体，揭示决策背后的「为什么」，发现传统数据分析遗漏的洞察"
         },
         "cognitiveModeling": {
-          "title": "认知建模",
-          "description": "捕捉传统数据分析无法触及的主观因素，如情感、偏见和决策机制"
+          "title": "超越理性选择",
+          "description": "建模人类行为中非理性、情感化和情境依赖的方面，这些驱动着现实世界的决策"
         },
         "rapidResearch": {
-          "title": "快速研究",
-          "description": "在10-20分钟内完成全面的商业研究，而非传统方法的数周时间"
+          "title": "长推理AI研究",
+          "description": "通过10-20分钟的深度AI推理生成全面研究，而非数周的传统调研"
         }
       }
     },
     "DemoSection": {
       "badge": "实时演示",
-      "title": "看AI用户画像研究如何运作",
-      "description": "观看我们的AI如何构建用户画像并进行真实访谈",
+      "title": "看主观世界建模如何运作",
+      "description": "观看我们的AI如何捕捉人类决策背后的主观现实",
+      "quote": {
+        "text": "人们不是在事物之间做选择，而是在事物的描述之间做选择。",
+        "author": "丹尼尔·卡尼曼"
+      },
       "terminal": {
         "title": "atypica.AI 研究终端",
         "command": "$ atypica research \"欧洲市场可持续包装偏好\"",
         "steps": {
-          "scout": "→ 侦察员：分析目标人群的社交媒体行为模式",
-          "builder": "→ 构建者：构建8个具有不同认知框架的AI用户画像",
-          "expert": "→ 专家：就包装决策和环保价值观访谈用户画像",
-          "analyst": "→ 分析师：提取认知模式和决策机制",
-          "complete": "✓ 研究完成：12分钟，访谈8个用户画像，获得4个关键洞察"
+          "scout": "→ 侦察员：映射社交话语中的主观叙述和情感模式",
+          "builder": "→ 构建者：为8个具有不同决策偏见的AI画像建模",
+          "expert": "→ 专家：通过真实对话探寻选择背后的「为什么」",
+          "analyst": "→ 分析师：揭示驱动真实购买决策的主观因素",
+          "complete": "✓ 主观世界建模完成：12分钟，8个画像建模，4个关键洞察"
         }
       },
       "interview": {
@@ -72,9 +80,9 @@
       }
     },
     "InputSection": {
-      "label": "AI研究查询",
-      "placeholder": "提出具体商业研究问题，atypica.AI 会通过 10-20分钟的「长推理」给出一份详尽的商业研究报告。",
-      "hint": "描述您的目标用户和研究问题——我们将构建AI用户画像进行访谈",
+      "label": "商业研究问题",
+      "placeholder": "提出任何关于人类行为和决策的商业研究问题。我们将为驱动真实选择的主观因素建模。",
+      "hint": "描述您想要理解的人类决策——我们将建模驱动这些决策的主观因素",
       "sendLabel": "发送",
       "enterToSend": "按回车发送",
       "tapToSend": "点击发送"
@@ -87,8 +95,8 @@
       "noFeatured": "暂无精选研究"
     },
     "CTASection": {
-      "title": "准备好更深入地了解您的用户了吗？",
-      "description": "加入数百家使用AI用户画像做出更智能、以用户为中心决策的企业",
+      "title": "准备好为您用户的主观世界建模了吗？",
+      "description": "加入来自各大机构的研究者、策略师和决策者，他们使用AI来理解人类主观性",
       "startButton": "开始研究",
       "examplesButton": "查看示例"
     }

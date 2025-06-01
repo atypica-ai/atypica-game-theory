@@ -14,6 +14,14 @@ export function DemoSection() {
           </Badge>
           <h2 className="text-3xl sm:text-4xl font-bold heading-serif">{t("title")}</h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">{t("description")}</p>
+
+          {/* Kahneman Quote */}
+          <div className="mt-8 mx-auto flex items-center justify-center">
+            <blockquote className="border-l-4 border-primary/30 pl-4 italic text-muted-foreground">
+              <p className="text-base">{t("quote.text")}</p>
+              <footer className="text-sm mt-2 opacity-70">— {t("quote.author")}</footer>
+            </blockquote>
+          </div>
         </div>
 
         <div className="mb-8">
