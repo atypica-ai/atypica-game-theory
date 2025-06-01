@@ -29,8 +29,8 @@ export function FeaturesSection() {
     },
     {
       icon: ClockIcon,
-      title: t("features.rapidResearch.title"),
-      description: t("features.rapidResearch.description"),
+      title: t("features.rapidStudies.title"),
+      description: t("features.rapidStudies.description"),
       highlight: false,
     },
   ];
@@ -38,32 +38,15 @@ export function FeaturesSection() {
   return (
     <div className="py-24 px-6">
       <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-16 space-y-4">
+        <div className="text-center mb-12 space-y-4">
           <Badge variant="outline" className="mb-4">
             {t("badge")}
           </Badge>
           <h2 className="text-3xl sm:text-4xl font-bold heading-serif">{t("title")}</h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">{t("description")}</p>
-
-          {/* Visual metaphor for objective vs subjective */}
-          <div className="flex items-center justify-center gap-8 mt-8 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-muted border-2 border-border flex items-center justify-center">
-                <span className="text-xs font-mono">Φ</span>
-              </div>
-              <span>{t("metaphor.objective")}</span>
-            </div>
-            <div className="text-primary">→</div>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-primary/10 border-2 border-primary/30 flex items-center justify-center">
-                <span className="text-xs font-mono">Ψ</span>
-              </div>
-              <span>{t("metaphor.subjective")}</span>
-            </div>
-          </div>
+          <p className="text-lg text-muted-foreground max-w-3xl mx-auto">{t("description")}</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {features.map((feature, index) => {
             const Icon = feature.icon;
             return (
@@ -71,14 +54,16 @@ export function FeaturesSection() {
                 key={index}
                 className={cn("feature-card h-full reveal-up", `reveal-delay-${index + 1}`)}
               >
-                <CardHeader className="space-y-3">
-                  <div className="tech-icon w-12 h-12 flex items-center justify-center">
-                    <Icon className="w-6 h-6" />
+                <CardHeader className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="tech-icon w-10 h-10 flex items-center justify-center">
+                      <Icon className="w-5 h-5" />
+                    </div>
+                    <CardTitle className="text-xl heading-serif">{feature.title}</CardTitle>
                   </div>
-                  <CardTitle className="text-lg heading-serif">{feature.title}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <CardDescription className="leading-relaxed">
+                  <CardDescription className="text-base leading-relaxed">
                     {feature.description}
                   </CardDescription>
                 </CardContent>

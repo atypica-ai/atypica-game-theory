@@ -6,36 +6,28 @@ export function DemoSection() {
   const t = useTranslations("HomePage.DemoSection");
 
   return (
-    <div className="py-24 px-6 bg-muted/30">
-      <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-16 space-y-4">
+    <div className="py-20 px-6 bg-muted/30">
+      <div className="max-w-5xl mx-auto">
+        <div className="text-center mb-12 space-y-4">
           <Badge variant="outline" className="mb-4">
             {t("badge")}
           </Badge>
           <h2 className="text-3xl sm:text-4xl font-bold heading-serif">{t("title")}</h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">{t("description")}</p>
-
-          {/* Kahneman Quote */}
-          <div className="mt-8 mx-auto flex items-center justify-center">
-            <blockquote className="border-l-4 border-primary/30 pl-4 italic text-muted-foreground">
-              <p className="text-base">{t("quote.text")}</p>
-              <footer className="text-sm mt-2 opacity-70">— {t("quote.author")}</footer>
-            </blockquote>
-          </div>
         </div>
 
         <div className="mb-8">
-          <div className="code-block-style p-6">
+          <div className="bg-background border border-border p-6 rounded-lg">
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-2 h-2 bg-red-500"></div>
-              <div className="w-2 h-2 bg-yellow-500"></div>
-              <div className="w-2 h-2 bg-green-500"></div>
+              <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+              <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
               <span className="ml-4 text-sm text-muted-foreground heading-mono">
                 {t("terminal.title")}
               </span>
             </div>
             <div className="space-y-2 text-sm">
-              <div className="heading-mono text-primary">{t("terminal.command")}</div>
+              <div className="heading-mono text-primary mb-3">{t("terminal.command")}</div>
               <div className="text-muted-foreground">{t("terminal.steps.scout")}</div>
               <div className="text-muted-foreground">{t("terminal.steps.builder")}</div>
               <div className="text-muted-foreground">{t("terminal.steps.expert")}</div>
@@ -45,10 +37,17 @@ export function DemoSection() {
           </div>
         </div>
 
-        <div className="bg-background border border-border p-6">
-          <h3 className="text-lg font-semibold mb-4 heading-serif">{t("interview.title")}</h3>
+        <div className="bg-background border border-border p-6 rounded-lg">
+          <div className="flex items-center gap-3 mb-4">
+            <h3 className="text-lg font-semibold heading-serif">{t("interview.title")}</h3>
+            <div className="flex-1 text-right">
+              <blockquote className="text-sm text-muted-foreground italic">
+                &quot;{t("quote.text")}&quot; <br />— {t("quote.author")}
+              </blockquote>
+            </div>
+          </div>
           <div className="space-y-4 text-sm">
-            <div className="bg-muted/30 p-3 border-l-2 border-primary">
+            <div className="bg-muted/20 p-3 border-l-2 border-primary rounded-r-md">
               <div className="font-medium text-xs text-primary mb-1">
                 {t("interview.profile.label")}
               </div>

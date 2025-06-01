@@ -11,11 +11,11 @@ export function HeroSection() {
     <div className="hero-grid relative min-h-screen flex flex-col items-center justify-center px-6">
       <div className="relative z-10 max-w-4xl mx-auto text-center space-y-8">
         {/* Logo/Brand */}
-        <div className="space-y-4 reveal-up">
+        <div className="reveal-up mb-16">
           <h1
             className={cn(
               "text-6xl sm:text-7xl lg:text-8xl tracking-tight text-foreground",
-              "font-EuclidCircularA block dark:hidden mb-16",
+              "font-EuclidCircularA block dark:hidden mb-8",
             )}
           >
             atypica.AI
@@ -34,18 +34,13 @@ export function HeroSection() {
               className="object-contain dark:block hidden"
             />
           </div>
-          <div className="heading-mono text-lg sm:text-xl text-muted-foreground tracking-wide typing-animation">
+          <div className="heading-mono text-lg text-muted-foreground tracking-wide typing-animation">
             {t("subtitle")}
           </div>
         </div>
 
-        {/* Main CTA Description */}
-        <p className="text-sm text-muted-foreground max-w-2xl mx-auto leading-relaxed reveal-up reveal-delay-1">
-          {t("description")}
-        </p>
-
         {/* Primary Input Section */}
-        <div className="max-w-2xl mx-auto reveal-up reveal-delay-2">
+        <div className="max-w-2xl mx-auto reveal-up reveal-delay-1">
           <InputSection />
         </div>
 

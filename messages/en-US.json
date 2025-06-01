@@ -7,8 +7,7 @@
       "unnamedChat": "Unnamed Chat"
     },
     "HeroSection": {
-      "subtitle": "> Modeling subjective decision-making for business insights",
-      "description": "If physics models the objective world, language models can model the subjective world. Build AI personas that capture human decision-making mechanisms and conduct authentic interviews to understand the narratives, emotions, and biases that drive real choices.",
+      "subtitle": "> AI-powered market research that understands what really drives human decisions",
       "stats": {
         "personas": "AI Personas Created",
         "interviews": "Interviews Conducted",
@@ -16,88 +15,88 @@
       }
     },
     "FeaturesSection": {
-      "badge": "Subjective World Modeling",
-      "title": "AI personas that capture human subjectivity",
-      "description": "People don't choose between things, they choose between descriptions of things. Our subjective world modeling captures the narratives, emotions, and cognitive biases that drive real human decisions.",
+      "badge": "How It Works",
+      "title": "From question to insights in minutes",
+      "description": "Our AI system automatically builds personas, conducts interviews, and analyzes patterns to reveal the emotional and cognitive factors behind human choices.",
       "metaphor": {
-        "objective": "Objective World",
-        "subjective": "Subjective World"
+        "objective": "Traditional Data",
+        "subjective": "Human Psychology"
       },
       "features": {
         "personaConstruction": {
-          "title": "Subjective Decision Modeling",
-          "description": "Build AI personas that capture the subjective factors—emotions, biases, narratives—that influence real human decision-making"
+          "title": "AI Persona Generation",
+          "description": "Automatically create diverse AI personas based on real behavioral patterns and demographic insights"
         },
         "agentInterviews": {
-          "title": "Multi-Agent Conversations",
-          "description": "Expert agents interview persona agents to uncover the 'why' behind decisions, revealing insights traditional data analysis misses"
+          "title": "Expert-Led Interviews",
+          "description": "AI experts conduct natural conversations with personas to uncover deep motivations and decision drivers"
         },
         "cognitiveModeling": {
-          "title": "Beyond Rational Choice",
-          "description": "Model the irrational, emotional, and context-dependent aspects of human behavior that drive real-world decisions"
+          "title": "Behavioral Analysis",
+          "description": "Identify emotional triggers, cognitive biases, and cultural factors that influence real purchasing decisions"
         },
-        "rapidResearch": {
-          "title": "Long-Form AI Reasoning",
-          "description": "Generate comprehensive research through 10-20 minutes of deep AI reasoning, not weeks of traditional surveys"
+        "rapidStudies": {
+          "title": "Instant Insights",
+          "description": "Get comprehensive studies in 10-20 minutes instead of weeks of traditional surveying"
         }
       }
     },
     "DemoSection": {
-      "badge": "Live Demo",
-      "title": "See subjective world modeling in action",
-      "description": "Watch how our AI captures the subjective reality behind human decision-making",
+      "badge": "Live Example",
+      "title": "Real research in action",
+      "description": "See how AI personas reveal authentic insights about sustainable packaging preferences",
       "quote": {
         "text": "People don't choose between things, they choose between descriptions of things.",
         "author": "Daniel Kahneman"
       },
       "terminal": {
-        "title": "atypica.AI Research Terminal",
+        "title": "Study Process",
         "command": "$ atypica research \"sustainable packaging preferences in European markets\"",
         "steps": {
-          "scout": "→ Scout: Mapping subjective narratives and emotional patterns in social discourse",
-          "builder": "→ Builder: Modeling 8 AI personas with distinct decision-making biases",
-          "expert": "→ Expert: Probing the 'why' behind choices through authentic conversations",
-          "analyst": "→ Analyst: Uncovering subjective factors that drive real purchasing decisions",
-          "complete": "✓ Subjective world mapped: 12 minutes, 8 personas modeled, 4 key insights"
+          "scout": "→ Analyzing social conversations and market discussions",
+          "builder": "→ Building 8 distinct consumer personas with unique motivations",
+          "expert": "→ Conducting in-depth interviews about purchasing decisions",
+          "analyst": "→ Identifying key emotional and practical decision factors",
+          "complete": "✓ Study complete: 12 minutes, 8 personas interviewed, 4 actionable insights"
         }
       },
       "interview": {
-        "title": "AI Persona Interview Sample",
+        "title": "Sample AI Interview",
         "profile": {
           "label": "PERSONA PROFILE",
-          "name": "Sarah Chen",
+          "name": "Sarah",
           "details": "Environmental Advocate | Age 34 | Working Mother",
-          "pattern": "Cognitive Pattern: Values-driven decision maker with social validation needs"
+          "pattern": "Values-driven with strong social influence factors"
         },
         "conversation": {
-          "expert": "Research Expert:",
+          "expert": "Study Expert:",
           "persona": "Sarah (AI Persona):",
-          "question1": "Walk me through your thought process when choosing packaged products for your family.",
-          "answer1": "Sustainability is my first filter - I scan for recycling symbols before even looking at price. My 8-year-old daughter actually calls me out if I grab something that 'hurts the planet.' I'll pay 15-20% more for truly eco-friendly packaging because it aligns with our family values.",
-          "question2": "How do you distinguish between genuine sustainability and greenwashing?",
-          "answer2": "I cross-reference with mom groups on social media. If a brand gets called out for greenwashing, word spreads fast in our community. Trust is everything - once lost, it's nearly impossible to regain."
+          "question1": "What goes through your mind when choosing packaged products?",
+          "answer1": "I always check for recycling symbols first, even before price. My daughter actually holds me accountable - she'll point out if something isn't eco-friendly. I'm willing to pay 15-20% more because it reflects our family values.",
+          "question2": "How do you tell real sustainability from marketing hype?",
+          "answer2": "I rely heavily on my mom network online. Word travels fast in our community when brands are caught greenwashing. Once trust is broken with a brand, it's really hard for them to win me back."
         }
       }
     },
     "InputSection": {
-      "label": "AI Research Query",
-      "placeholder": "Ask any business research question about human behavior and decision-making. We'll model the subjective factors that drive real choices.",
-      "hint": "Describe the human decisions you want to understand - we'll model the subjective factors that drive them",
-      "sendLabel": "Send",
-      "enterToSend": "Enter to send",
-      "tapToSend": "Tap to send"
+      "label": "Start Your Study",
+      "placeholder": "Ask any business question about human behavior and decision-making. We'll model the subjective factors that drive real choices.",
+      "hint": "Ask about any consumer decision - we'll interview AI personas to uncover the real motivations",
+      "sendLabel": "Study",
+      "enterToSend": "Enter to start",
+      "tapToSend": "Tap to start"
     },
     "FeaturedStudies": {
-      "title": "Featured Research",
-      "description": "Explore our curated selection of research studies",
+      "title": "Featured Studies",
+      "description": "Explore our curated selection of AI studies",
       "viewStudy": "View Study",
       "viewMore": "View More Studies",
       "noFeatured": "No featured studies available"
     },
     "CTASection": {
-      "title": "Ready to model the subjective world of your users?",
-      "description": "Join researchers, strategists, and decision-makers from leading organizations who use AI to understand human subjectivity",
-      "startButton": "Start Research",
+      "title": "Ready to understand your customers better?",
+      "description": "Join thousands of researchers and marketers who use AI interviews to uncover authentic consumer insights",
+      "startButton": "Start Study",
       "examplesButton": "View Examples"
     }
   },
