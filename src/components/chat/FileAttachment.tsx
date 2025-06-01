@@ -29,7 +29,7 @@ export function FileAttachment({
     >
       {isImage ? (
         <Link
-          className="block relative h-12 w-12 aspect-square rounded-md overflow-hidden"
+          className="block relative h-8 w-8 aspect-square rounded-md overflow-hidden"
           href={attachment.url}
           target="_blank"
         >
@@ -44,12 +44,12 @@ export function FileAttachment({
         </Link>
       ) : (
         <Link
-          className="h-12 w-36 flex flex-row items-center justify-start gap-1 p-2 overflow-hidden"
+          className="h-8 w-32 flex flex-row items-center justify-start gap-1 p-2 overflow-hidden"
           href={attachment.url}
           target="_blank"
         >
           <FileIcon className="shrink-0 w-4 h-4" />
-          <div className="text-xs break-all tracking-tighter line-clamp-2">{attachment.name}</div>
+          <div className="text-xs break-all tracking-tighter truncate">{attachment.name}</div>
         </Link>
       )}
 

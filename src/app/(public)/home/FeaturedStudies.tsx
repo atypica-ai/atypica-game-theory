@@ -1,10 +1,12 @@
 "use client";
 import { fetchPublicFeaturedStudies } from "@/app/admin/featured-studies/actions";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ExtractServerActionData } from "@/lib/serverAction";
+import { ExternalLinkIcon, FileTextIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -38,21 +40,29 @@ export function FeaturedStudies() {
 
   if (loading) {
     return (
-      <div className="space-y-4 max-w-6xl mx-auto">
-        <h2 className="text-2xl font-medium text-center">{t("title")}</h2>
-        <p className="text-muted-foreground text-center">{t("description")}</p>
-        <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="space-y-6">
+        <div className="text-center space-y-2">
+          <h2 className="text-2xl font-bold heading-serif">{t("title")}</h2>
+          <p className="text-muted-foreground">{t("description")}</p>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3].map((i) => (
-            <Card key={i} className="overflow-hidden">
-              <CardHeader>
-                <Skeleton className="h-6 w-3/4" />
-                <Skeleton className="h-4 w-1/2" />
+            <Card
+              key={i}
+              className="bg-background border border-border transition-colors hover:border-primary"
+            >
+              <CardHeader className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <Skeleton className="h-8 w-8 rounded-full" />
+                  <Skeleton className="h-4 w-24" />
+                </div>
+                <Skeleton className="h-5 w-3/4" />
               </CardHeader>
               <CardContent>
-                <Skeleton className="h-20 w-full" />
+                <Skeleton className="h-16 w-full" />
               </CardContent>
               <CardFooter>
-                <Skeleton className="h-9 w-28" />
+                <Skeleton className="h-8 w-full" />
               </CardFooter>
             </Card>
           ))}
@@ -62,49 +72,77 @@ export function FeaturedStudies() {
   }
 
   if (error) {
-    return <div className="text-red-500">Error loading featured studies: {error}</div>;
+    return (
+      <div className="text-center space-y-4">
+        <div className="text-red-500 text-sm">Error loading featured studies: {error}</div>
+      </div>
+    );
   }
 
   if (studies.length === 0) {
     return (
-      <div className="space-y-4 max-w-6xl mx-auto">
-        <h2 className="text-2xl font-medium text-center">{t("title")}</h2>
-        <p className="text-muted-foreground text-center">{t("noFeatured")}</p>
+      <div className="text-center space-y-4">
+        <h2 className="text-2xl font-bold heading-serif">{t("title")}</h2>
+        <p className="text-muted-foreground">{t("noFeatured")}</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4 max-w-6xl mx-auto">
-      <h2 className="text-3xl font-medium text-center">{t("title")}</h2>
-      <p className="text-muted-foreground text-center">{t("description")}</p>
-      <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <div className="space-y-8">
+      <div className="text-center space-y-3">
+        <h2 className="text-3xl font-bold heading-serif">{t("title")}</h2>
+        <p className="text-muted-foreground max-w-2xl mx-auto">{t("description")}</p>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {studies.map((study) => (
-          <Link
+          <Card
             key={study.id}
-            href={`/study/${study.studyUserChat.token}/share?replay=1`}
-            className="flex"
-            target="_blank"
+            className="bg-background border border-border transition-colors hover:border-primary group cursor-pointer"
           >
-            <Card className="cursor-pointer w-full">
-              <CardHeader>
-                <div className="flex items-center justify-start gap-2 overflow-hidden">
-                  <HippyGhostAvatar seed={study.id} className="size-6" />
-                  <div className="text-xs text-muted-foreground truncate">{study.analyst.role}</div>
+            <CardHeader className="space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 flex items-center justify-center bg-muted border border-border">
+                  <HippyGhostAvatar seed={study.id} className="size-5" />
                 </div>
-                <CardTitle className="line-clamp-1 leading-5">{study.analyst.topic}</CardTitle>
-              </CardHeader>
-              <CardContent className="mt-auto">
-                <p className="line-clamp-3 text-xs text-muted-foreground">
-                  {study.analyst.studySummary}
-                </p>
-              </CardContent>
-            </Card>
-          </Link>
+                <Badge variant="secondary" className="text-xs">
+                  {study.analyst.role}
+                </Badge>
+              </div>
+              <CardTitle className="text-base line-clamp-2 leading-6 heading-serif">
+                {study.analyst.topic}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed">
+                {study.analyst.studySummary}
+              </p>
+            </CardContent>
+            <CardFooter className="mt-auto">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full group-hover:bg-muted transition-colors"
+                asChild
+              >
+                <Link
+                  href={`/study/${study.studyUserChat.token}/share?replay=1`}
+                  target="_blank"
+                  className="flex items-center gap-2"
+                >
+                  <FileTextIcon className="h-3 w-3" />
+                  <span>View Study</span>
+                  <ExternalLinkIcon className="h-3 w-3" />
+                </Link>
+              </Button>
+            </CardFooter>
+          </Card>
         ))}
       </div>
-      <div className="mt-8 flex justify-center">
-        <Button variant="outline" asChild>
+
+      <div className="text-center">
+        <Button variant="outline" size="lg" className="px-8" asChild>
           <Link href="/featured-studies">{t("viewMore")}</Link>
         </Button>
       </div>

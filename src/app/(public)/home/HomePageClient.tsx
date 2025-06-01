@@ -1,68 +1,25 @@
 "use client";
-import { cn } from "@/lib/utils";
-import { useTranslations } from "next-intl";
-import Image from "next/image";
+import { CTASection } from "./CTASection";
+import { DemoSection } from "./DemoSection";
 import { FeaturedStudies } from "./FeaturedStudies";
-import { InputSection } from "./InputSection";
+import { FeaturesSection } from "./FeaturesSection";
+import { HeroSection } from "./HeroSection";
+import "./home.css";
 
 export default function HomePageClient(
   {
     // anonymous
   }: { anonymous: boolean },
 ) {
-  const t = useTranslations();
   return (
-    <div className="flex-1 overflow-y-auto scrollbar-thin py-10 sm:py-18 space-y-12 sm:space-y-24">
-      <div className="text-center space-y-6">
-        <h1
-          className={cn(
-            "mt-16 sm:mt-10 text-5xl sm:text-6xl font-mono font-light leading-tight tracking-wide bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent animate-in fade-in slide-in-from-bottom-4 duration-1000",
-            "font-EuclidCircularA font-bold",
-            "block dark:hidden",
-          )}
-        >
-          atypica.AI
-        </h1>
-        <div
-          className={cn(
-            "relative w-[320px] h-[100px] mt-16 sm:mt-10 max-w-10/12 mx-auto animate-in fade-in slide-in-from-bottom-4 duration-1000",
-            "hidden dark:block",
-          )}
-        >
-          {/* <Image
-            src="/_public/atypica.ai.black.svg"
-            alt="atypica Logo"
-            fill
-            priority
-            className="object-contain block dark:hidden"
-          /> */}
-          <Image
-            src="/_public/atypica.ai.green.svg"
-            alt="atypica Logo"
-            fill
-            priority
-            className="object-contain dark:block hidden"
-          />
-        </div>
-        <p
-          className={cn(
-            "text-base sm:text-xl font-light text-muted-foreground max-w-3xl mx-auto leading-relaxed animate-in fade-in slide-in-from-bottom-6 duration-1000",
-          )}
-        >
-          {t("tagline")}
-        </p>
-      </div>
-      <div className="animate-in fade-in slide-in-from-bottom-8 duration-1000 px-8">
-        <InputSection />
-      </div>
-      <div className="animate-in fade-in slide-in-from-bottom-10 duration-1000 px-8">
+    <div className="flex-1 overflow-y-auto scrollbar-thin">
+      <HeroSection />
+      <FeaturesSection />
+      <DemoSection />
+      <div className="py-24 px-6 max-w-6xl mx-auto">
         <FeaturedStudies />
       </div>
-      {/* <div className="fixed right-2 top-2 sm:top-4 sm:right-4 flex items-center justify-end gap-4">
-        <ThemeToggle />
-        <LanguageToggle />
-        <UserMenu />
-      </div> */}
+      <CTASection />
     </div>
   );
 }

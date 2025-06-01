@@ -6,8 +6,78 @@
       "title": "Chat History",
       "unnamedChat": "Unnamed Chat"
     },
+    "HeroSection": {
+      "subtitle": "> AI-powered personas for business research",
+      "description": "Build intelligent personas to simulate real users and conduct in-depth interviews. Get comprehensive business insights through AI agent conversations in minutes, not weeks.",
+      "stats": {
+        "personas": "AI Personas Created",
+        "interviews": "Interviews Conducted",
+        "businesses": "Businesses Served"
+      }
+    },
+    "FeaturesSection": {
+      "badge": "Core Technology",
+      "title": "AI personas that think like real people",
+      "description": "Our language model-based \"subjective world modeling\" captures the nuanced decision-making processes of different user groups",
+      "features": {
+        "personaConstruction": {
+          "title": "AI Persona Construction",
+          "description": "Build intelligent user personas that simulate real people's thoughts, behaviors, and decision-making patterns"
+        },
+        "agentInterviews": {
+          "title": "Agent Interviews",
+          "description": "Conduct in-depth interviews between expert agents and persona agents to gather authentic insights"
+        },
+        "cognitiveModeling": {
+          "title": "Cognitive Modeling",
+          "description": "Capture subjective factors like emotions, biases, and decision mechanisms that traditional data analysis misses"
+        },
+        "rapidResearch": {
+          "title": "Rapid Research",
+          "description": "Complete comprehensive business research in 10-20 minutes instead of weeks of traditional methods"
+        }
+      }
+    },
+    "DemoSection": {
+      "badge": "Live Demo",
+      "title": "See AI persona research in action",
+      "description": "Watch how our AI constructs user personas and conducts authentic interviews",
+      "terminal": {
+        "title": "atypica.AI Research Terminal",
+        "command": "$ atypica research \"sustainable packaging preferences in European markets\"",
+        "steps": {
+          "scout": "→ Scout: Analyzing social media behavior patterns across target demographics",
+          "builder": "→ Builder: Constructing 8 AI personas with distinct cognitive frameworks",
+          "expert": "→ Expert: Interviewing personas on packaging decisions and environmental values",
+          "analyst": "→ Analyst: Extracting cognitive patterns and decision-making mechanisms",
+          "complete": "✓ Research complete: 12 minutes, 8 personas interviewed, 4 key insights"
+        }
+      },
+      "interview": {
+        "title": "AI Persona Interview Sample",
+        "profile": {
+          "label": "PERSONA PROFILE",
+          "name": "Sarah Chen",
+          "details": "Environmental Advocate | Age 34 | Working Mother",
+          "pattern": "Cognitive Pattern: Values-driven decision maker with social validation needs"
+        },
+        "conversation": {
+          "expert": "Research Expert:",
+          "persona": "Sarah (AI Persona):",
+          "question1": "Walk me through your thought process when choosing packaged products for your family.",
+          "answer1": "Sustainability is my first filter - I scan for recycling symbols before even looking at price. My 8-year-old daughter actually calls me out if I grab something that 'hurts the planet.' I'll pay 15-20% more for truly eco-friendly packaging because it aligns with our family values.",
+          "question2": "How do you distinguish between genuine sustainability and greenwashing?",
+          "answer2": "I cross-reference with mom groups on social media. If a brand gets called out for greenwashing, word spreads fast in our community. Trust is everything - once lost, it's nearly impossible to regain."
+        }
+      }
+    },
     "InputSection": {
-      "placeholder": "Submit your business research question and atypica.AI will generate a comprehensive report using 10-20 minutes of advanced AI reasoning."
+      "label": "AI Research Query",
+      "placeholder": "Submit your business research question and atypica.AI will generate a comprehensive report using 10-20 minutes of advanced AI reasoning.",
+      "hint": "Describe your target users and research questions - we'll build AI personas to interview",
+      "sendLabel": "Send",
+      "enterToSend": "Enter to send",
+      "tapToSend": "Tap to send"
     },
     "FeaturedStudies": {
       "title": "Featured Research",
@@ -15,6 +85,12 @@
       "viewStudy": "View Study",
       "viewMore": "View More Studies",
       "noFeatured": "No featured studies available"
+    },
+    "CTASection": {
+      "title": "Ready to understand your users at a deeper level?",
+      "description": "Join hundreds of businesses using AI personas to make smarter, user-centered decisions",
+      "startButton": "Start Research",
+      "examplesButton": "View Examples"
     }
   },
   "FeaturedStudiesPage": {
