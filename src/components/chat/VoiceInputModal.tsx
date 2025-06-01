@@ -98,17 +98,17 @@ export function VoiceInputModal({
   if (!isOpen) return null;
 
   const modalContent = (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm">
-      <div className="relative z-10 bg-black/60 backdrop-blur-xl border border-green-500/30 max-w-md w-full mx-4 text-center overflow-hidden">
-        {/* Matrix-style border effect */}
-        <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 via-transparent to-blue-500/5" />
-        <div className="absolute inset-0 border border-green-400/20 animate-pulse" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+      <div className="relative z-10 bg-card/90 backdrop-blur-xl border border-border max-w-md w-full mx-4 text-center overflow-hidden rounded-lg">
+        {/* Subtle gradient effect */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/10" />
+        <div className="absolute inset-0 border border-primary/20 animate-pulse rounded-lg" />
 
         {/* Close button */}
         <Button
           variant="ghost"
           size="sm"
-          className="absolute top-3 right-3 text-green-400/80 hover:text-green-400 hover:bg-green-500/10 z-10"
+          className="absolute top-3 right-3 text-muted-foreground hover:text-foreground hover:bg-muted z-10"
           onClick={handleManualClose}
         >
           <X />
@@ -118,7 +118,7 @@ export function VoiceInputModal({
         <div className="relative p-8 space-y-6">
           {/* Status indicator */}
           <div className="space-y-4">
-            <div className="flex items-center justify-center gap-2 text-green-400 font-mono text-sm">
+            <div className="flex items-center justify-center gap-2 text-primary heading-mono text-sm">
               <Waves />
               <span className="tracking-wider">
                 {isProcessing ? "PROCESSING" : isListening ? "LISTENING" : "READY"}
@@ -133,22 +133,18 @@ export function VoiceInputModal({
               {/* Main microphone circle */}
               <div
                 className={cn(
-                  "w-28 h-28 border-2 flex items-center justify-center transition-all duration-500 relative",
+                  "w-28 h-28 border-2 flex items-center justify-center transition-all duration-500 relative rounded-lg",
                   isProcessing
-                    ? "border-blue-400/60 bg-blue-500/10 text-blue-400"
+                    ? "border-primary/80 bg-primary/10 text-primary"
                     : isListening
-                      ? "border-green-400/80 bg-green-500/10 text-green-400"
-                      : "border-gray-500/40 bg-gray-500/5 text-gray-400",
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-muted-foreground/40 bg-muted/20 text-muted-foreground",
                 )}
-                style={{
-                  clipPath:
-                    "polygon(20% 0%, 80% 0%, 100% 20%, 100% 80%, 80% 100%, 20% 100%, 0% 80%, 0% 20%)",
-                }}
               >
                 {isProcessing ? (
                   <div className="relative">
                     <Loader2 className="size-8 animate-spin" />
-                    <div className="absolute inset-0 bg-blue-400/20 animate-pulse rounded-full" />
+                    <div className="absolute inset-0 bg-primary/20 animate-pulse rounded-full" />
                   </div>
                 ) : (
                   <Mic className="size-8" />
@@ -159,18 +155,14 @@ export function VoiceInputModal({
               {isListening && (
                 <>
                   <div
-                    className="absolute inset-0 border border-green-400/40 animate-ping"
+                    className="absolute inset-0 border border-primary/40 animate-ping rounded-lg"
                     style={{
-                      clipPath:
-                        "polygon(20% 0%, 80% 0%, 100% 20%, 100% 80%, 80% 100%, 20% 100%, 0% 80%, 0% 20%)",
                       animationDuration: "2s",
                     }}
                   />
                   <div
-                    className="absolute inset-0 border border-green-400/20 animate-ping"
+                    className="absolute inset-0 border border-primary/20 animate-ping rounded-lg"
                     style={{
-                      clipPath:
-                        "polygon(20% 0%, 80% 0%, 100% 20%, 100% 80%, 80% 100%, 20% 100%, 0% 80%, 0% 20%)",
                       animationDuration: "3s",
                       animationDelay: "0.5s",
                     }}
@@ -180,7 +172,7 @@ export function VoiceInputModal({
 
               {/* Processing grid overlay */}
               {isProcessing && (
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-400/10 to-transparent animate-pulse" />
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent animate-pulse rounded-lg" />
               )}
             </div>
           </div>
@@ -191,19 +183,19 @@ export function VoiceInputModal({
               {/* Transcript text with typewriter effect */}
               <div
                 className={cn(
-                  "min-h-[80px] max-h-[120px] overflow-y-auto bg-black/40 border rounded p-4 relative transition-all duration-200",
+                  "min-h-[80px] max-h-[120px] overflow-y-auto bg-muted/40 border rounded p-4 relative transition-all duration-200",
                   audioLevel > 0.1 && isListening
-                    ? "border-green-400/60 bg-green-900/20 shadow-lg shadow-green-400/20"
-                    : "border-green-500/30",
+                    ? "border-primary/60 bg-primary/5 shadow-lg shadow-primary/20"
+                    : "border-border",
                 )}
               >
-                {/* Matrix-style grid overlay */}
+                {/* Subtle grid overlay */}
                 <div
                   className={cn(
-                    "absolute inset-0 pointer-events-none transition-opacity duration-200",
+                    "absolute inset-0 pointer-events-none transition-opacity duration-200 rounded",
                     audioLevel > 0.1 && isListening
-                      ? "opacity-20 bg-gradient-to-br from-green-300/30 via-transparent to-green-400/30"
-                      : "opacity-10 bg-gradient-to-br from-green-400/20 via-transparent to-blue-400/20",
+                      ? "opacity-20 bg-gradient-to-br from-primary/20 via-transparent to-primary/30"
+                      : "opacity-10 bg-gradient-to-br from-primary/10 via-transparent to-primary/20",
                   )}
                 />
 
@@ -211,10 +203,10 @@ export function VoiceInputModal({
                   <div className="text-left relative z-10">
                     <span
                       className={cn(
-                        "font-mono text-sm leading-relaxed break-words transition-all duration-150",
+                        "heading-mono text-sm leading-relaxed break-words transition-all duration-150",
                         audioLevel > 0.1 && isListening
-                          ? "text-green-200 drop-shadow-sm"
-                          : "text-green-300",
+                          ? "text-foreground drop-shadow-sm"
+                          : "text-foreground",
                       )}
                     >
                       {displayedText}
@@ -223,10 +215,9 @@ export function VoiceInputModal({
                           className={cn(
                             "font-bold transition-all duration-150",
                             audioLevel > 0.1
-                              ? "animate-pulse text-green-200"
-                              : "animate-pulse text-green-400",
+                              ? "animate-pulse text-primary"
+                              : "animate-pulse text-primary",
                           )}
-                          style={audioLevel > 0.1 ? { textShadow: "0 0 8px #4ade80" } : {}}
                         >
                           |
                         </span>
@@ -234,7 +225,7 @@ export function VoiceInputModal({
                     </span>
                     {/* Enhanced glowing text effect */}
                     {isListening && displayedText && audioLevel > 0.1 && (
-                      <div className="absolute inset-0 text-green-200/40 font-mono text-sm leading-relaxed break-words animate-pulse pointer-events-none blur-sm">
+                      <div className="absolute inset-0 text-primary/40 heading-mono text-sm leading-relaxed break-words animate-pulse pointer-events-none blur-sm">
                         {displayedText}
                       </div>
                     )}
@@ -253,10 +244,10 @@ export function VoiceInputModal({
                       </div>
                       <span
                         className={cn(
-                          "font-mono text-xs transition-all duration-200",
+                          "heading-mono text-xs transition-all duration-200",
                           audioLevel > 0.1 && isListening
-                            ? "text-green-300/80 animate-pulse"
-                            : "text-green-400/60",
+                            ? "text-muted-foreground animate-pulse"
+                            : "text-muted-foreground/60",
                         )}
                       >
                         {isListening ? "Listening for your voice..." : "Processing..."}
@@ -273,7 +264,7 @@ export function VoiceInputModal({
                     {[...Array(20)].map((_, i) => (
                       <div
                         key={i}
-                        className="w-0.5 bg-green-400 transition-all duration-75 ease-out rounded-full shadow-sm"
+                        className="w-0.5 bg-primary transition-all duration-75 ease-out rounded-full shadow-sm"
                         style={{
                           height: `${Math.max(
                             2,
@@ -284,7 +275,6 @@ export function VoiceInputModal({
                             ),
                           )}px`,
                           opacity: 0.3 + audioLevel * 0.7,
-                          boxShadow: audioLevel > 0.1 ? `0 0 4px #4ade80` : "none",
                         }}
                       />
                     ))}
@@ -294,10 +284,9 @@ export function VoiceInputModal({
                     <div className="text-center">
                       <span
                         className={cn(
-                          "text-xs font-mono animate-pulse transition-all duration-200",
-                          audioLevel > 0.2 ? "text-green-300" : "text-green-400/80",
+                          "text-xs heading-mono animate-pulse transition-all duration-200",
+                          audioLevel > 0.2 ? "text-primary" : "text-primary/80",
                         )}
-                        style={audioLevel > 0.2 ? { textShadow: "0 0 4px #4ade80" } : {}}
                       >
                         ♪ {audioLevel > 0.2 ? "Speaking detected" : "Audio detected"}
                       </span>
@@ -310,10 +299,10 @@ export function VoiceInputModal({
 
           {/* Status text */}
           <div className="space-y-2">
-            <h3 className="text-lg font-mono font-bold text-green-400 tracking-wide">
+            <h3 className="text-lg heading-mono font-bold text-primary tracking-wide">
               {isProcessing ? t("processing") : isListening ? t("listening") : t("startListening")}
             </h3>
-            <p className="text-xs text-gray-400/80 font-mono max-w-xs mx-auto leading-relaxed">
+            <p className="text-xs text-muted-foreground heading-mono max-w-xs mx-auto leading-relaxed">
               {isProcessing
                 ? "Enhancing your speech with AI..."
                 : isListening
@@ -330,7 +319,7 @@ export function VoiceInputModal({
               <Button
                 onClick={startListening}
                 size="sm"
-                className="px-6 font-mono bg-green-600/20 hover:bg-green-600/30 text-green-400 border border-green-500/40 hover:border-green-500/60"
+                className="px-6 heading-mono bg-primary/20 hover:bg-primary/30 text-primary border border-primary/40 hover:border-primary/60"
               >
                 {t("startListening")}
               </Button>
@@ -340,7 +329,7 @@ export function VoiceInputModal({
               <Button
                 onClick={handleFinish}
                 size="sm"
-                className="px-6 font-mono bg-green-600/20 hover:bg-green-600/30 text-green-400 border border-green-500/40 hover:border-green-500/60"
+                className="px-6 heading-mono bg-primary/20 hover:bg-primary/30 text-primary border border-primary/40 hover:border-primary/60"
               >
                 {t("finish")}
               </Button>
@@ -348,7 +337,7 @@ export function VoiceInputModal({
           </div>
 
           {/* Help text */}
-          <p className="text-xs text-gray-500/60 font-mono max-w-xs mx-auto">
+          <p className="text-xs text-muted-foreground/60 heading-mono max-w-xs mx-auto">
             {isListening || isProcessing ? t("recordingHelpText") : t("helpText")}
           </p>
         </div>

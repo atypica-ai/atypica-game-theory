@@ -52,11 +52,11 @@ export function HeroSection() {
         {/* Quick Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 pt-8 max-w-lg mx-auto reveal-up reveal-delay-3">
           <div className="text-center p-4">
-            <div className="text-2xl font-bold heading-mono text-foreground">10K+</div>
+            <div className="text-2xl font-bold heading-mono text-foreground">50K+</div>
             <div className="text-sm text-muted-foreground">{t("stats.personas")}</div>
           </div>
           <div className="text-center p-4">
-            <div className="text-2xl font-bold heading-mono text-foreground">50K+</div>
+            <div className="text-2xl font-bold heading-mono text-foreground">100K+</div>
             <div className="text-sm text-muted-foreground">{t("stats.interviews")}</div>
           </div>
           <div className="text-center p-4">

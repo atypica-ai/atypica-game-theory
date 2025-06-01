@@ -15,13 +15,13 @@ export function CTASection() {
           {t("description")}
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center reveal-up reveal-delay-2">
-          <Button size="lg" className="btn-primary-enhanced px-8 h-12" asChild>
+          <Button size="lg" className="btn-primary-enhanced" asChild>
             <Link href="/study">
               {t("startButton")}
-              <ArrowRightIcon className="ml-2 h-4 w-4" />
+              <ArrowRightIcon className="h-4 w-4" />
             </Link>
           </Button>
-          <Button variant="outline" size="lg" className="px-8 h-12" asChild>
+          <Button variant="outline" size="lg" asChild>
             <Link href="/featured-studies">{t("examplesButton")}</Link>
           </Button>
         </div>
