@@ -1,7 +1,6 @@
 "use client";
 import { fetchPublicFeaturedStudies } from "@/app/admin/featured-studies/actions";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -102,13 +101,11 @@ export function FeaturedStudies() {
             className="bg-background border border-border transition-colors hover:border-primary group cursor-pointer"
           >
             <CardHeader className="space-y-3">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 flex items-center justify-center bg-muted border border-border">
+              <div className="flex items-center gap-3 overflow-hidden">
+                <div className="shrink-0 w-8 h-8 flex items-center justify-center bg-muted border border-border">
                   <HippyGhostAvatar seed={study.id} className="size-5" />
                 </div>
-                <Badge variant="secondary" className="text-xs">
-                  {study.analyst.role}
-                </Badge>
+                <div className="text-xs truncate">{study.analyst.role}</div>
               </div>
               <CardTitle className="text-base line-clamp-2 leading-6 heading-serif">
                 {study.analyst.topic}
