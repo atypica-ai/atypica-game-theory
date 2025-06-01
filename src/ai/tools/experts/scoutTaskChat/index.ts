@@ -44,7 +44,8 @@ import { z } from "zod";
 import { type ScoutTaskChatResult, type TPlatform } from "./types";
 
 const TOKENS_COMSUME_LIMIT = 150_000; // 限制 15w token 消耗量
-const SCOUT_TOOLS_LIMIT = 10; // 进行 10 步搜索，结束以后保存画像
+const SCOUT_TOOLS_LIMIT = 15; // 进行 15 次搜索，结束以后保存画像
+const SCOUT_MESSAGES_LIMIT = 10; // 最多 10 轮对话，结束以后保存画像
 const REDUCE_TOKENS: {
   model: LLMModelName;
   ratio: number;
@@ -238,7 +239,7 @@ export async function runScoutTaskChatStream({
     if (tokensConsumed > TOKENS_COMSUME_LIMIT) {
       // 达到了离谱的 token 消耗，无条件退出
       scoutLog.error(
-        `Token consumption ${tokensConsumed} exceeds limit ${TOKENS_COMSUME_LIMIT}, ending research`,
+        `Token consumption ${tokensConsumed} exceeds limit ${TOKENS_COMSUME_LIMIT}, ending scout`,
       );
       break;
     }
@@ -246,7 +247,14 @@ export async function runScoutTaskChatStream({
     if (scoutToolsCount >= SCOUT_TOOLS_LIMIT) {
       // 达到了工具使用次数限制，无条件退出
       scoutLog.info(
-        `Tool usage ${scoutToolsCount} exceeds limit ${SCOUT_TOOLS_LIMIT}, ending research`,
+        `Tool usage ${scoutToolsCount} exceeds limit ${SCOUT_TOOLS_LIMIT}, ending scout`,
+      );
+      break;
+    }
+    if (coreMessages.length >= SCOUT_MESSAGES_LIMIT) {
+      // 达到了消息数量限制，无条件退出，有时候模型会不调用工具反复输出文本消息，所以这个限制需要加上
+      scoutLog.info(
+        `Message count ${coreMessages.length} exceeds limit ${SCOUT_MESSAGES_LIMIT}, ending scout`,
       );
       break;
     }
