@@ -148,11 +148,11 @@ export async function createUser({
       data: {
         userId: user.id,
         verb: "signup",
-        value: 1_500_000,
+        value: 1_000_000,
       },
     }),
     prisma.userTokens.create({
-      data: { userId: user.id, balance: 1_500_000 }, // 注册赠送 1_500_000 tokens
+      data: { userId: user.id, balance: 1_000_000 }, // 注册赠送 1_000_000 tokens
     }),
   ]);
 
