@@ -41,7 +41,7 @@ export function FeaturedStudies() {
     return (
       <div className="space-y-6">
         <div className="text-center space-y-2">
-          <h2 className="text-2xl font-bold heading-sans">{t("title")}</h2>
+          <h2 className="text-2xl font-bold tracking-tight leading-tight">{t("title")}</h2>
           <p className="text-muted-foreground">{t("description")}</p>
         </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -81,7 +81,7 @@ export function FeaturedStudies() {
   if (studies.length === 0) {
     return (
       <div className="text-center space-y-4">
-        <h2 className="text-2xl font-bold heading-sans">{t("title")}</h2>
+        <h2 className="text-2xl font-bold tracking-tight leading-tight">{t("title")}</h2>
         <p className="text-muted-foreground">{t("noFeatured")}</p>
       </div>
     );
@@ -90,16 +90,13 @@ export function FeaturedStudies() {
   return (
     <div className="space-y-8">
       <div className="text-center space-y-3">
-        <h2 className="text-3xl font-bold heading-sans">{t("title")}</h2>
+        <h2 className="text-3xl font-bold tracking-tight leading-tight">{t("title")}</h2>
         <p className="text-muted-foreground max-w-2xl mx-auto">{t("description")}</p>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {studies.map((study) => (
-          <Card
-            key={study.id}
-            className="bg-background border border-border transition-colors hover:border-primary group cursor-pointer"
-          >
+          <Card key={study.id} className="group cursor-pointer">
             <CardHeader className="space-y-3">
               <div className="flex items-center gap-3 overflow-hidden">
                 <div className="shrink-0 w-8 h-8 flex items-center justify-center bg-muted border border-border">
@@ -107,7 +104,7 @@ export function FeaturedStudies() {
                 </div>
                 <div className="text-xs truncate">{study.analyst.role}</div>
               </div>
-              <CardTitle className="text-base line-clamp-2 leading-6 heading-sans">
+              <CardTitle className="text-base line-clamp-2 tracking-tight leading-tight">
                 {study.analyst.topic}
               </CardTitle>
             </CardHeader>
@@ -129,7 +126,7 @@ export function FeaturedStudies() {
                   className="flex items-center gap-2"
                 >
                   <FileTextIcon className="h-3 w-3" />
-                  <span>View Study</span>
+                  <span>{t("viewStudy")}</span>
                   <ExternalLinkIcon className="h-3 w-3" />
                 </Link>
               </Button>

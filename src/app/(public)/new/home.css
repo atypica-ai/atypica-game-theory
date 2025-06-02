@@ -1,3 +1,5 @@
+/* @import "tailwindcss"; 不能在这里 import，会导致 global.css 对 tailwindcss 默认样式的覆盖失效 */
+
 /* Technical hero background */
 .hero-grid {
   position: relative;
@@ -22,27 +24,6 @@
   background-image:
     linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-}
-
-/* Typography improvements */
-.heading-serif {
-  font-family: Georgia, "Times New Roman", serif;
-  font-weight: 500;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
-}
-
-.heading-sans {
-  @apply font-sans;
-  font-weight: 500;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
-}
-
-.heading-mono {
-  font-family: "IBMPlexMonoRegular", "Courier New", monospace;
-  font-weight: 400;
-  letter-spacing: -0.01em;
 }
 
 /* Terminal-style typing animation */
@@ -89,19 +70,6 @@
 }
 .reveal-delay-4 {
   animation-delay: 0.4s;
-}
-
-/* Enhanced feature cards */
-.feature-card {
-  transition: all 0.3s ease;
-  border: 1px solid hsl(var(--border));
-  background: hsl(var(--background));
-}
-
-.feature-card:hover {
-  border-color: hsl(var(--primary) / 0.3);
-  box-shadow: 0 4px 12px hsl(var(--primary) / 0.1);
-  transform: translateY(-2px);
 }
 
 .tech-icon {

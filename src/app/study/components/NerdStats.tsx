@@ -52,7 +52,7 @@ export function NerdStats() {
           <Button
             variant="ghost"
             size="sm"
-            className="h-6 px-2 text-xs text-muted-foreground hover:bg-transparent hover:text-primary"
+            className="h-6 px-2 text-xs text-muted-foreground hover:bg-transparent hover:text-primary font-mono"
             onMouseEnter={() => setIsOpen(true)}
             onMouseLeave={() => setIsOpen(false)}
           >
@@ -71,7 +71,7 @@ export function NerdStats() {
             {isLoading ? (
               <div className="text-sm text-muted-foreground">Loading stats...</div>
             ) : (
-              <div className="bg-zinc-50 dark:bg-zinc-900 rounded-xl sm:rounded-3xl border border-input overflow-hidden">
+              <div className="bg-zinc-50 dark:bg-zinc-900 rounded-xl sm:rounded-3xl border border-input overflow-hidden font-mono">
                 {/* Header */}
                 <div className="px-3 tracking-tighter sm:px-6 sm:tracking-normal py-4 border-b border-input flex items-center">
                   <div className="text-xs sm:text-xl font-mono space-x-2">

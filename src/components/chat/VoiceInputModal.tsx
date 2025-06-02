@@ -105,7 +105,7 @@ export function VoiceInputModal({
         <div className="absolute inset-0 border border-primary/20 animate-pulse rounded-lg" />
 
         {/* Language indicator */}
-        <div className="absolute top-3 left-3 text-xs text-muted-foreground heading-mono z-10">
+        <div className="absolute top-3 left-3 text-xs text-muted-foreground font-mono tracking-tight z-10">
           {t("currentLanguage")}
         </div>
 
@@ -123,7 +123,7 @@ export function VoiceInputModal({
         <div className="relative p-8 space-y-6">
           {/* Status indicator */}
           <div className="space-y-4">
-            <div className="flex items-center justify-center gap-2 text-primary heading-mono text-sm">
+            <div className="flex items-center justify-center gap-2 text-primary font-mono tracking-tight text-sm">
               <Waves />
               <span className="tracking-wider">
                 {isProcessing
@@ -212,7 +212,7 @@ export function VoiceInputModal({
                   <div className="text-left relative z-10">
                     <span
                       className={cn(
-                        "heading-mono text-sm leading-relaxed break-words transition-all duration-150",
+                        "font-mono tracking-tight text-sm leading-relaxed break-words transition-all duration-150",
                         audioLevel > 0.1 && isListening
                           ? "text-foreground drop-shadow-sm"
                           : "text-foreground",
@@ -234,7 +234,7 @@ export function VoiceInputModal({
                     </span>
                     {/* Enhanced glowing text effect */}
                     {isListening && displayedText && audioLevel > 0.1 && (
-                      <div className="absolute inset-0 text-primary/40 heading-mono text-sm leading-relaxed break-words animate-pulse pointer-events-none blur-sm">
+                      <div className="absolute inset-0 text-primary/40 font-mono tracking-tight text-sm leading-relaxed break-words animate-pulse pointer-events-none blur-sm">
                         {displayedText}
                       </div>
                     )}
@@ -253,7 +253,7 @@ export function VoiceInputModal({
                       </div>
                       <span
                         className={cn(
-                          "heading-mono text-xs transition-all duration-200",
+                          "font-mono tracking-tight text-xs transition-all duration-200",
                           audioLevel > 0.1 && isListening
                             ? "text-muted-foreground animate-pulse"
                             : "text-muted-foreground/60",
@@ -293,7 +293,7 @@ export function VoiceInputModal({
                     <div className="text-center">
                       <span
                         className={cn(
-                          "text-xs heading-mono animate-pulse transition-all duration-200",
+                          "text-xs font-mono tracking-tight animate-pulse transition-all duration-200",
                           audioLevel > 0.2 ? "text-primary" : "text-primary/80",
                         )}
                       >
@@ -308,10 +308,10 @@ export function VoiceInputModal({
 
           {/* Status text */}
           <div className="space-y-2">
-            <h3 className="text-lg heading-mono font-bold text-primary tracking-wide">
+            <h3 className="text-lg font-mono font-bold text-primary tracking-wide">
               {isProcessing ? t("processing") : isListening ? t("listening") : t("startListening")}
             </h3>
-            <p className="text-xs text-muted-foreground heading-mono max-w-xs mx-auto leading-relaxed">
+            <p className="text-xs text-muted-foreground font-mono font-normal tracking-tight max-w-xs mx-auto leading-relaxed">
               {isProcessing
                 ? t("enhancingMessage")
                 : isListening
@@ -328,7 +328,7 @@ export function VoiceInputModal({
               <Button
                 onClick={startListening}
                 size="sm"
-                className="px-6 heading-mono bg-primary/20 hover:bg-primary/30 text-primary border border-primary/40 hover:border-primary/60"
+                className="px-6 font-mono tracking-tight bg-primary/20 hover:bg-primary/30 text-primary border border-primary/40 hover:border-primary/60"
               >
                 {t("startListening")}
               </Button>
@@ -338,7 +338,7 @@ export function VoiceInputModal({
               <Button
                 onClick={handleFinish}
                 size="sm"
-                className="px-6 heading-mono bg-primary/20 hover:bg-primary/30 text-primary border border-primary/40 hover:border-primary/60"
+                className="px-6 font-mono tracking-tight bg-primary/20 hover:bg-primary/30 text-primary border border-primary/40 hover:border-primary/60"
               >
                 {t("finish")}
               </Button>
@@ -346,7 +346,7 @@ export function VoiceInputModal({
           </div>
 
           {/* Help text */}
-          <p className="text-xs text-muted-foreground/60 heading-mono max-w-xs mx-auto">
+          <p className="text-xs text-muted-foreground/60 font-mono tracking-tight max-w-xs mx-auto">
             {isListening || isProcessing ? t("recordingHelpText") : t("helpText")}
           </p>
         </div>

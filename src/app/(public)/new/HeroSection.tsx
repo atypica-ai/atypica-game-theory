@@ -5,10 +5,11 @@ import Image from "next/image";
 import { InputSection } from "./InputSection";
 
 export function HeroSection() {
+  const tRoot = useTranslations();
   const t = useTranslations("HomePage.HeroSection");
 
   return (
-    <div className="hero-grid relative min-h-screen flex flex-col items-center justify-center px-6">
+    <div className="hero-grid relative px-4 py-12 sm:py-40">
       <div className="relative z-10 max-w-4xl mx-auto text-center space-y-8">
         {/* Logo/Brand */}
         <div className="reveal-up mb-16">
@@ -34,8 +35,11 @@ export function HeroSection() {
               className="object-contain dark:block hidden"
             />
           </div>
-          <div className="heading-mono text-lg text-muted-foreground tracking-wide typing-animation">
+          {/* <div className="font-mono text-lg text-muted-foreground tracking-wide typing-animation">
             {t("subtitle")}
+          </div> */}
+          <div className="text-base sm:text-xl font-light text-muted-foreground">
+            {tRoot("tagline")}
           </div>
         </div>
 
@@ -45,21 +49,21 @@ export function HeroSection() {
         </div>
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 pt-8 max-w-lg mx-auto reveal-up reveal-delay-3">
+        {/* <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 pt-8 max-w-lg mx-auto reveal-up reveal-delay-3">
           <div className="text-center p-4">
-            <div className="text-2xl font-bold heading-mono text-foreground">50K+</div>
+            <div className="text-2xl font-bold font-mono tracking-tight text-foreground">50K+</div>
             <div className="text-sm text-muted-foreground">{t("stats.personas")}</div>
           </div>
           <div className="text-center p-4">
-            <div className="text-2xl font-bold heading-mono text-foreground">100K+</div>
+            <div className="text-2xl font-bold font-mono tracking-tight text-foreground">100K+</div>
             <div className="text-sm text-muted-foreground">{t("stats.interviews")}</div>
           </div>
-        </div>
+        </div> */}
 
         {/* Trusted Users Banner */}
-        <div className="pt-4 max-w-2xl mx-auto text-center reveal-up reveal-delay-4">
+        {/* <div className="pt-4 max-w-2xl mx-auto text-center reveal-up reveal-delay-4">
           <div className="text-sm text-muted-foreground">{t("stats.trustedUsers")}</div>
-        </div>
+        </div> */}
       </div>
     </div>
   );

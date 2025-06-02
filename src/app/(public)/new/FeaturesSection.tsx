@@ -42,7 +42,9 @@ export function FeaturesSection() {
           <Badge variant="outline" className="mb-4">
             {t("badge")}
           </Badge>
-          <h2 className="text-3xl sm:text-4xl font-bold heading-sans">{t("title")}</h2>
+          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight leading-tight">
+            {t("title")}
+          </h2>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto">{t("description")}</p>
         </div>
 
@@ -50,16 +52,15 @@ export function FeaturesSection() {
           {features.map((feature, index) => {
             const Icon = feature.icon;
             return (
-              <Card
-                key={index}
-                className={cn("feature-card h-full reveal-up", `reveal-delay-${index + 1}`)}
-              >
+              <Card key={index} className={cn("h-full reveal-up", `reveal-delay-${index + 1}`)}>
                 <CardHeader className="space-y-4">
                   <div className="flex items-center gap-3">
                     <div className="tech-icon w-10 h-10 flex items-center justify-center">
                       <Icon className="w-5 h-5" />
                     </div>
-                    <CardTitle className="text-xl heading-sans">{feature.title}</CardTitle>
+                    <CardTitle className="text-xl font-medium tracking-tight leading-tight">
+                      {feature.title}
+                    </CardTitle>
                   </div>
                 </CardHeader>
                 <CardContent>

@@ -161,7 +161,7 @@ export function InputSection() {
         </div>
 
         {/* Hint text */}
-        <div className="mt-2 text-xs text-muted-foreground text-center">{t("hint")}</div>
+        {/* <div className="mt-2 text-xs text-muted-foreground text-center">{t("hint")}</div> */}
       </form>
     </div>
   );

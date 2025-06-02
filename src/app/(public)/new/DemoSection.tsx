@@ -12,7 +12,9 @@ export function DemoSection() {
           <Badge variant="outline" className="mb-4">
             {t("badge")}
           </Badge>
-          <h2 className="text-3xl sm:text-4xl font-bold heading-sans">{t("title")}</h2>
+          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight leading-tight">
+            {t("title")}
+          </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">{t("description")}</p>
         </div>
 
@@ -22,12 +24,14 @@ export function DemoSection() {
               <div className="w-2 h-2 bg-red-500 rounded-full"></div>
               <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span className="ml-4 text-sm text-muted-foreground heading-mono">
+              <span className="ml-4 text-sm text-muted-foreground font-mono tracking-tight">
                 {t("terminal.title")}
               </span>
             </div>
             <div className="space-y-2 text-sm">
-              <div className="heading-mono text-primary mb-3">{t("terminal.command")}</div>
+              <div className="font-mono tracking-tight text-primary mb-3">
+                {t("terminal.command")}
+              </div>
               <div className="text-muted-foreground">{t("terminal.steps.scout")}</div>
               <div className="text-muted-foreground">{t("terminal.steps.builder")}</div>
               <div className="text-muted-foreground">{t("terminal.steps.expert")}</div>
@@ -39,7 +43,9 @@ export function DemoSection() {
 
         <div className="bg-background border border-border p-6 rounded-lg">
           <div className="flex items-center gap-3 mb-4">
-            <h3 className="text-lg font-semibold heading-sans">{t("interview.title")}</h3>
+            <h3 className="text-lg font-semibold tracking-tight leading-tight">
+              {t("interview.title")}
+            </h3>
             <div className="flex-1 text-right">
               <blockquote className="text-sm text-muted-foreground italic">
                 &quot;{t("quote.text")}&quot; <br />— {t("quote.author")}
