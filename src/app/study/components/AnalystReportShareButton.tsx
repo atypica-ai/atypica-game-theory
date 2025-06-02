@@ -1,5 +1,5 @@
 "use client";
-import { generateReportPDF } from "@/app/artifacts/report/actions";
+import { generateReportPDFAction } from "@/app/artifacts/report/actions";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -40,9 +40,16 @@ export function AnalystReportShareButton({
     startTransition(async () => {
       try {
         toast.loading(t("generatingPDF") || "Generating PDF...");
-        const { pdfBlob, fileName } = await generateReportPDF(reportToken);
+        const {
+          // pdfBlob,
+          pdfUrl,
+          fileName,
+        } = await generateReportPDFAction(reportToken);
         // Create a download link and trigger download
-        const url = URL.createObjectURL(pdfBlob);
+        const response = await fetch(pdfUrl);
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        // const url = URL.createObjectURL(pdfBlob);
         const a = document.createElement("a");
         a.href = url;
         a.download = fileName;
