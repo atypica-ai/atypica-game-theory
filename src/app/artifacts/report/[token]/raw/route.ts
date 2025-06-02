@@ -1,5 +1,5 @@
 import { checkAdminAuth } from "@/app/admin/actions";
-import { triggerImagegenInReport } from "@/app/artifacts/lib";
+import { triggerImagegenInReport } from "@/app/artifacts/lib/imagegen";
 import { prisma } from "@/prisma/prisma";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

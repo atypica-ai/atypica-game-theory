@@ -26,12 +26,12 @@ export async function generateReportPDF(reportToken: string): Promise<{
       forbidden();
     }
     const filename = reportToken;
-    const apiBase = process.env.HTML_TO_PDF_API;
+    const apiBase = process.env.BROWSER_API_BASE_URL;
     if (!apiBase) {
-      throw new Error("HTML_TO_PDF_API environment variable is not set");
+      throw new Error("BROWSER_API_BASE_URL environment variable is not set");
     }
     const origin = await getRequestOrigin();
-    const response = await fetch(apiBase, {
+    const response = await fetch(`${apiBase}/html-to-pdf`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

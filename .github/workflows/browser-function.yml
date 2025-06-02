@@ -1,4 +1,4 @@
-name: Build and push html-to-pdf
+name: Build and push browser function
 
 on:
   workflow_dispatch:
@@ -32,17 +32,17 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      - name: Build and push Docker image for html-to-pdf
+      - name: Build and push Docker image for browser function
         uses: docker/build-push-action@v4
         timeout-minutes: 10  # 10 分钟超时
         with:
-          context: ./functions/html-to-pdf
+          context: ./functions/browser
           push: true
           tags: |
-            ghcr.io/bmrlab/html-to-pdf:${{ env.SHA }}
-            ghcr.io/bmrlab/html-to-pdf:latest
-            musecr.azurecr.cn/bmrlab/html-to-pdf:${{ env.SHA }}
-            musecr.azurecr.cn/bmrlab/html-to-pdf:latest
+            ghcr.io/bmrlab/browser-function:${{ env.SHA }}
+            ghcr.io/bmrlab/browser-function:latest
+            musecr.azurecr.cn/bmrlab/browser-function:${{ env.SHA }}
+            musecr.azurecr.cn/bmrlab/browser-function:latest
 
       # - name: Setup Kubernetes Config And Update Deployment
       #   run: |
@@ -51,6 +51,6 @@ jobs:
       #     chmod 600 $HOME/.kube/config
       #     export KUBECONFIG=$HOME/.kube/config
       #     kubectl config use-context muse-aws-cn-prod
-      #     kubectl set image deployment/html-to-pdf html-to-pdf=musecr.azurecr.cn/bmrlab/html-to-pdf:${{ env.SHA }} --namespace bmrlab
+      #     kubectl set image deployment/browser-function browser-function=musecr.azurecr.cn/bmrlab/browser-function:${{ env.SHA }} --namespace bmrlab
       #     kubectl config use-context muse-aws-us-prod
-      #     kubectl set image deployment/html-to-pdf html-to-pdf=musecr.azurecr.cn/bmrlab/html-to-pdf:${{ env.SHA }} --namespace bmrlab
+      #     kubectl set image deployment/browser-function browser-function=musecr.azurecr.cn/bmrlab/browser-function:${{ env.SHA }} --namespace bmrlab

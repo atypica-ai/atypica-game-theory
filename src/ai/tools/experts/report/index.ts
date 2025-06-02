@@ -8,7 +8,7 @@ import {
 } from "@/ai/prompt";
 import { llm, LLMModelName, providerOptions } from "@/ai/provider";
 import { PlainTextToolResult, StatReporter } from "@/ai/tools/types";
-import { triggerImagegenInReport } from "@/app/artifacts/lib";
+import { triggerImagegenInReport } from "@/app/artifacts/lib/imagegen";
 import { fileUrlToDataUrl } from "@/lib/attachments/actions";
 import { ChatMessageAttachment } from "@/lib/attachments/types";
 import { generateToken } from "@/lib/utils";
