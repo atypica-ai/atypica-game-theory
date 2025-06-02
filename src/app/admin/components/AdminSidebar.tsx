@@ -6,6 +6,7 @@ import {
   AlertTriangle,
   CreditCard,
   Database,
+  FileText,
   Home,
   Key,
   MessageCircle,
@@ -45,6 +46,12 @@ export default function AdminSidebar({ adminRole, permissions = [] }: AdminSideb
         label: "Featured Studies",
         href: "/admin/featured-studies",
         icon: <Star className="mr-2 h-4 w-4" />,
+        permission: AdminPermission.MANAGE_STUDIES,
+      },
+      {
+        label: "Analyst Reports",
+        href: "/admin/analyst-reports",
+        icon: <FileText className="mr-2 h-4 w-4" />,
         permission: AdminPermission.MANAGE_STUDIES,
       },
       {

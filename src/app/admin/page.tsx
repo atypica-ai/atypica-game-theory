@@ -1,5 +1,15 @@
 "use client";
-import { AlertTriangle, CreditCard, Database, Key, MessageCircle, MonitorPlay, Star, Users } from "lucide-react";
+import {
+  AlertTriangle,
+  CreditCard,
+  Database,
+  FileText,
+  Key,
+  MessageCircle,
+  MonitorPlay,
+  Star,
+  Users,
+} from "lucide-react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -34,6 +44,17 @@ export default function AdminDashboard() {
           <p className="text-sm text-muted-foreground">
             Manage featured studies that appear on the homepage
           </p>
+        </Link>
+
+        <Link
+          href="/admin/analyst-reports"
+          className="rounded-lg border bg-card p-4 shadow-sm hover:shadow-md transition-shadow"
+        >
+          <div className="flex items-center mb-2">
+            <FileText className="h-5 w-5 mr-2" />
+            <h2 className="text-xl font-semibold">Analyst Reports</h2>
+          </div>
+          <p className="text-sm text-muted-foreground">Manage generated analyst reports</p>
         </Link>
 
         <Link

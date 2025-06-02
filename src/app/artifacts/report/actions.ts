@@ -1,10 +1,7 @@
 "use server";
 import { generateReportPDF } from "@/app/artifacts/lib/pdf";
-import { s3SignedUrl, uploadToS3 } from "@/lib/attachments/s3";
 import { withAuth } from "@/lib/request/withAuth";
-import { InputJsonObject } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
-import { createHash } from "crypto";
 import { forbidden } from "next/navigation";
 
 export async function generateReportPDFAction(reportToken: string): Promise<{
@@ -49,41 +46,20 @@ export async function generateReportPDFAction(reportToken: string): Promise<{
     }
     const fileName = `${topicExcept} [${reportToken}].pdf`;
 
-    const pdfObjectUrl = (report.extra as { pdfObjectUrl?: string } | null)?.pdfObjectUrl;
-    if (pdfObjectUrl) {
-      const pdfUrl = await s3SignedUrl(pdfObjectUrl);
-      return {
-        fileName,
-        pdfUrl,
-      };
-    }
-
     const {
       // pdfBlob
-      pdfBuffer,
-    } = await generateReportPDF(report);
-
-    const hash = createHash("sha256").update(reportToken).digest("hex").substring(0, 40);
-    const { getObjectUrl, objectUrl } = await uploadToS3({
-      keySuffix: `pdf/${hash}.pdf`,
-      fileBody: new Uint8Array(pdfBuffer),
-      mimeType: "application/pdf",
-    });
-
-    await prisma.analystReport.update({
-      where: { token: reportToken },
-      data: {
-        extra: {
-          ...(report.extra as InputJsonObject),
-          pdfObjectUrl: objectUrl,
-        },
-      },
+      pdfUrl,
+    } = await generateReportPDF({
+      ...report,
+      extra: report.extra as {
+        pdfObjectUrl?: string;
+      } | null,
     });
 
     return {
       fileName,
       // pdfBlob,
-      pdfUrl: getObjectUrl,
+      pdfUrl,
     };
   });
 }
