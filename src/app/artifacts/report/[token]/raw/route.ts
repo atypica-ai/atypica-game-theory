@@ -1,8 +1,7 @@
 import { imagegen } from "@/app/api/imagegen/[prompt]/actions";
-import { authOptions } from "@/lib/auth";
+import { rootLogger } from "@/lib/logging";
 import { getRequestOrigin } from "@/lib/request/headers";
 import { prisma } from "@/prisma/prisma";
-import { getServerSession } from "next-auth";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function injectImgTag(html: string, reportToken: string) {
@@ -16,11 +15,14 @@ function injectImgTag(html: string, reportToken: string) {
   return html;
 }
 
+/**
+ * 现在每次打开都会 triggerImageGeneration，可以加一个 report 上的标记，比如 extra 里，生成过了就标记下
+ */
 async function triggerImageGeneration(html: string, reportToken: string) {
   const imgTagRegex = /<img([^>]*?)src="(\/api\/imagegen\/[^"]*)"([^>]*?)>/g;
   const matches = [...html.matchAll(imgTagRegex)];
   const siteOrigin = await getRequestOrigin();
-  return Promise.all(
+  const promises = Promise.all(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     matches.map(([match, beforeSrc, src, afterSrc], index) => {
       // Extract prompt and ratio from the URL
@@ -31,6 +33,13 @@ async function triggerImageGeneration(html: string, reportToken: string) {
       return imagegen({ prompt, ratio, reportToken });
     }),
   );
+  try {
+    await promises;
+  } catch (error) {
+    rootLogger.error(
+      `Error in triggerImageGeneration for report ${reportToken}: ${(error as Error).message}`,
+    );
+  }
 }
 
 export async function GET(request: Request, { params }: { params: Promise<{ token: string }> }) {
@@ -42,10 +51,10 @@ export async function GET(request: Request, { params }: { params: Promise<{ toke
 
   const url = new URL(request.url);
   const isLive = url.searchParams.get("live") === "1";
-  const session = await getServerSession(authOptions);
+  // const session = await getServerSession(authOptions);
 
-  // @todo 其实不需要判断这个
-  const isOwner = analystReport.analyst.userId === session?.user?.id;
+  // 其实不需要判断这个
+  // const isOwner = analystReport.analyst.userId === session?.user?.id;
 
   // Handle live streaming mode
   if (isLive) {
@@ -59,9 +68,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ toke
               where: { token },
             });
             const onePageHtml = analystReport.onePageHtml;
-            if (isOwner) {
-              await triggerImageGeneration(onePageHtml, token);
-            }
+            // if (isOwner) {
+            await triggerImageGeneration(onePageHtml, token);
             const chunk = onePageHtml.substring(start);
             controller.enqueue(encoder.encode(chunk));
             start = onePageHtml.length;
@@ -91,9 +99,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ toke
 
   // Regular non-streaming response
   const onePageHtml = analystReport.onePageHtml;
-  if (isOwner) {
-    await triggerImageGeneration(onePageHtml, token);
-  }
+  // if (isOwner) {
+  await triggerImageGeneration(onePageHtml, token);
   return new Response(onePageHtml, {
     headers: {
       "Content-Type": "text/html; charset=utf-8",
