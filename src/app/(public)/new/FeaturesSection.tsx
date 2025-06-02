@@ -42,7 +42,7 @@ export function FeaturesSection() {
           <Badge variant="outline" className="mb-4">
             {t("badge")}
           </Badge>
-          <h2 className="text-3xl sm:text-4xl font-bold heading-serif">{t("title")}</h2>
+          <h2 className="text-3xl sm:text-4xl font-bold heading-sans">{t("title")}</h2>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto">{t("description")}</p>
         </div>
 
@@ -59,7 +59,7 @@ export function FeaturesSection() {
                     <div className="tech-icon w-10 h-10 flex items-center justify-center">
                       <Icon className="w-5 h-5" />
                     </div>
-                    <CardTitle className="text-xl heading-serif">{feature.title}</CardTitle>
+                    <CardTitle className="text-xl heading-sans">{feature.title}</CardTitle>
                   </div>
                 </CardHeader>
                 <CardContent>

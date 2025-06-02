@@ -41,7 +41,7 @@ export function FeaturedStudies() {
     return (
       <div className="space-y-6">
         <div className="text-center space-y-2">
-          <h2 className="text-2xl font-bold heading-serif">{t("title")}</h2>
+          <h2 className="text-2xl font-bold heading-sans">{t("title")}</h2>
           <p className="text-muted-foreground">{t("description")}</p>
         </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -81,7 +81,7 @@ export function FeaturedStudies() {
   if (studies.length === 0) {
     return (
       <div className="text-center space-y-4">
-        <h2 className="text-2xl font-bold heading-serif">{t("title")}</h2>
+        <h2 className="text-2xl font-bold heading-sans">{t("title")}</h2>
         <p className="text-muted-foreground">{t("noFeatured")}</p>
       </div>
     );
@@ -90,7 +90,7 @@ export function FeaturedStudies() {
   return (
     <div className="space-y-8">
       <div className="text-center space-y-3">
-        <h2 className="text-3xl font-bold heading-serif">{t("title")}</h2>
+        <h2 className="text-3xl font-bold heading-sans">{t("title")}</h2>
         <p className="text-muted-foreground max-w-2xl mx-auto">{t("description")}</p>
       </div>
 
@@ -107,7 +107,7 @@ export function FeaturedStudies() {
                 </div>
                 <div className="text-xs truncate">{study.analyst.role}</div>
               </div>
-              <CardTitle className="text-base line-clamp-2 leading-6 heading-serif">
+              <CardTitle className="text-base line-clamp-2 leading-6 heading-sans">
                 {study.analyst.topic}
               </CardTitle>
             </CardHeader>

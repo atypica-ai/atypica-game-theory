@@ -66,7 +66,8 @@ export default async function RootLayout({
     <html lang={locale} data-deploy-region={getDeployRegion()} suppressHydrationWarning>
       <body
         className={cn(
-          "font-IBMPlexMonoRegular antialiased",
+          "font-sans antialiased",
+          // "font-IBMPlexMonoRegular antialiased",
           // "h-dvh flex flex-col items-stretch justify-start",
         )}
       >

@@ -32,6 +32,13 @@
   line-height: 1.2;
 }
 
+.heading-sans {
+  @apply font-sans;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
 .heading-mono {
   font-family: "IBMPlexMonoRegular", "Courier New", monospace;
   font-weight: 400;
