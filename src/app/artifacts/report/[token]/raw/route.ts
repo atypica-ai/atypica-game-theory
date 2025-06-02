@@ -1,6 +1,5 @@
-import { imagegen } from "@/app/api/imagegen/[prompt]/actions";
-import { rootLogger } from "@/lib/logging";
-import { getRequestOrigin } from "@/lib/request/headers";
+import { checkAdminAuth } from "@/app/admin/actions";
+import { triggerImagegenInReport } from "@/app/artifacts/lib";
 import { prisma } from "@/prisma/prisma";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -15,46 +14,16 @@ function injectImgTag(html: string, reportToken: string) {
   return html;
 }
 
-/**
- * 现在每次打开都会 triggerImageGeneration，可以加一个 report 上的标记，比如 extra 里，生成过了就标记下
- */
-async function triggerImageGeneration(html: string, reportToken: string) {
-  const imgTagRegex = /<img([^>]*?)src="(\/api\/imagegen\/[^"]*)"([^>]*?)>/g;
-  const matches = [...html.matchAll(imgTagRegex)];
-  const siteOrigin = await getRequestOrigin();
-  const promises = Promise.all(
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    matches.map(([match, beforeSrc, src, afterSrc], index) => {
-      // Extract prompt and ratio from the URL
-      const urlParts = src.split("/");
-      const prompt = urlParts[urlParts.length - 1].split("?")[0];
-      const urlObj = new URL(src, siteOrigin);
-      const ratio = urlObj.searchParams.get("ratio") || "";
-      return imagegen({ prompt, ratio, reportToken });
-    }),
-  );
-  try {
-    await promises;
-  } catch (error) {
-    rootLogger.error(
-      `Error in triggerImageGeneration for report ${reportToken}: ${(error as Error).message}`,
-    );
-  }
-}
-
 export async function GET(request: Request, { params }: { params: Promise<{ token: string }> }) {
-  const token = (await params).token;
+  const reportToken = (await params).token;
   const analystReport = await prisma.analystReport.findUniqueOrThrow({
-    where: { token },
+    where: { token: reportToken },
     include: { analyst: true },
   });
 
   const url = new URL(request.url);
   const isLive = url.searchParams.get("live") === "1";
-  // const session = await getServerSession(authOptions);
-
-  // 其实不需要判断这个
-  // const isOwner = analystReport.analyst.userId === session?.user?.id;
+  const isRegenerateImages = url.searchParams.get("regenerateImages") === "1";
 
   // Handle live streaming mode
   if (isLive) {
@@ -65,11 +34,9 @@ export async function GET(request: Request, { params }: { params: Promise<{ toke
         while (true) {
           try {
             const analystReport = await prisma.analystReport.findUniqueOrThrow({
-              where: { token },
+              where: { token: reportToken },
             });
             const onePageHtml = analystReport.onePageHtml;
-            // if (isOwner) {
-            await triggerImageGeneration(onePageHtml, token);
             const chunk = onePageHtml.substring(start);
             controller.enqueue(encoder.encode(chunk));
             start = onePageHtml.length;
@@ -99,8 +66,13 @@ export async function GET(request: Request, { params }: { params: Promise<{ toke
 
   // Regular non-streaming response
   const onePageHtml = analystReport.onePageHtml;
-  // if (isOwner) {
-  await triggerImageGeneration(onePageHtml, token);
+
+  if (isRegenerateImages) {
+    // 超级管理员可以触发 regenerateImages
+    await checkAdminAuth("SUPER_ADMIN");
+    await triggerImagegenInReport(onePageHtml, reportToken);
+  }
+
   return new Response(onePageHtml, {
     headers: {
       "Content-Type": "text/html; charset=utf-8",

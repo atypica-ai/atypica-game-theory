@@ -8,6 +8,7 @@ import {
 } from "@/ai/prompt";
 import { llm, LLMModelName, providerOptions } from "@/ai/provider";
 import { PlainTextToolResult, StatReporter } from "@/ai/tools/types";
+import { triggerImagegenInReport } from "@/app/artifacts/lib";
 import { fileUrlToDataUrl } from "@/lib/attachments/actions";
 import { ChatMessageAttachment } from "@/lib/attachments/types";
 import { generateToken } from "@/lib/utils";
@@ -196,10 +197,11 @@ export async function generateReport({
 
       async function saveNow() {
         try {
-          await prisma.analystReport.update({
+          const report = await prisma.analystReport.update({
             where: { id: reportId },
             data: { onePageHtml },
           });
+          await triggerImagegenInReport(onePageHtml, report.token);
           reportLog.info("HTML persisted successfully");
         } catch (error) {
           reportLog.error(`Error persisting HTML: ${(error as Error).message}`);

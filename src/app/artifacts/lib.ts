@@ -1,8 +1,10 @@
-"use server";
+import "server-only";
+
 import { imageModel } from "@/ai/provider";
 import { initStudyStatReporter } from "@/ai/tools/stats";
 import { uploadToS3 } from "@/lib/attachments/s3";
 import { rootLogger } from "@/lib/logging";
+import { getRequestOrigin } from "@/lib/request/headers";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
 import { experimental_generateImage as generateImage } from "ai";
@@ -10,9 +12,36 @@ import { createHash } from "crypto";
 import { Logger } from "pino";
 import { z } from "zod";
 
+/**
+ * 在 reportGenerationTool 的 throttleSaveHTML 方法里调用
+ */
+export async function triggerImagegenInReport(html: string, reportToken: string) {
+  const imgTagRegex = /<img([^>]*?)src="(\/api\/imagegen\/[^"]*)"([^>]*?)>/g;
+  const matches = [...html.matchAll(imgTagRegex)];
+  const siteOrigin = await getRequestOrigin();
+  const promises = Promise.all(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    matches.map(([match, beforeSrc, src, afterSrc], index) => {
+      // Extract prompt and ratio from the URL
+      const urlParts = src.split("/");
+      const prompt = urlParts[urlParts.length - 1].split("?")[0];
+      const urlObj = new URL(src, siteOrigin);
+      const ratio = urlObj.searchParams.get("ratio") || "";
+      return backgroundGenerateImage({ prompt, ratio, reportToken });
+    }),
+  );
+  try {
+    await promises;
+  } catch (error) {
+    rootLogger.error(
+      `Error in triggerImageGeneration for report ${reportToken}: ${(error as Error).message}`,
+    );
+  }
+}
+
 const ratioSchema = z.enum(["square", "landscape", "portrait"]).default("square");
 
-export async function imagegen({
+async function backgroundGenerateImage({
   prompt,
   ratio: _ratio,
   reportToken,
@@ -128,14 +157,7 @@ export async function imagegen({
   });
 
   waitUntil(backgroundGeneration);
-
-  try {
-    const getObjectUrl = await backgroundGeneration;
-    return Response.redirect(getObjectUrl, 302);
-  } catch (error) {
-    genLog.error(`Image generation failed with error: ${(error as Error).message}`);
-    return new Response("Image generation failed", { status: 500 });
-  }
+  // 不返回 promise，立即 resolve，调用者可以继续，imagegen 在后台运行，直到结束
 }
 
 async function generateMidjourney({

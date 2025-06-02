@@ -52,6 +52,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ prompt: 
   const { id } = existingImage;
   try {
     const getObjectUrl = await new Promise<string>(async (resolve, reject) => {
+      req.signal.addEventListener("abort", () => {
+        reject(null);
+      });
       const startTime = Date.now();
       let elapsedSeconds = 0;
       const checkImage = async () => {
@@ -60,10 +63,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ prompt: 
           reject(new Error("imagegen timeout"));
           return;
         }
-        genLog.info(`imagegen ongoing, ${elapsedSeconds} seconds`);
         const updatedImage = await prisma.imageGeneration.findUniqueOrThrow({ where: { id } });
         if (updatedImage.generatedAt) {
-          genLog.info(`imagegen completed, ${elapsedSeconds} seconds`);
           resolve(await optimizedImageUrl(updatedImage));
           return;
         } else {
@@ -74,7 +75,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ prompt: 
     });
     return Response.redirect(getObjectUrl, 302);
   } catch (error) {
-    genLog.error(`Error checking image status: ${(error as Error).message}`);
+    if (error) {
+      genLog.error(`Error checking image status: ${(error as Error).message}`);
+    }
     return new Response("Internal Server Error", { status: 500 });
   }
 }
