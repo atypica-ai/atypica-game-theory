@@ -1,8 +1,9 @@
 "use client";
+import { NewStudyInputBox } from "@/components/NewStudyInputBox";
 import { cn } from "@/lib/utils";
+import { CommandIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
-import { InputSection } from "./InputSection";
 
 export function HeroSection() {
   const tRoot = useTranslations();
@@ -45,7 +46,15 @@ export function HeroSection() {
 
         {/* Primary Input Section */}
         <div className="max-w-2xl mx-auto reveal-up reveal-delay-1">
-          <InputSection />
+          <div className="flex items-center gap-2 mb-2 text-xs text-muted-foreground">
+            <CommandIcon className="h-4 w-4" />
+            <span className="font-mono">{t("startYourStudy")}</span>
+          </div>
+          <div className="w-full">
+            <NewStudyInputBox />
+          </div>
+          {/* Hint text */}
+          {/* <div className="mt-2 text-xs text-muted-foreground text-center">{t("newStudyHint")}</div> */}
         </div>
 
         {/* Quick Stats */}

@@ -8,6 +8,8 @@
     },
     "HeroSection": {
       "subtitle": "> AI-powered market research that understands what really drives human decisions",
+      "startYourStudy": "Start Your Study",
+      "newStudyHint": "Ask about any consumer decision - we'll interview AI personas to uncover the real motivations",
       "stats": {
         "personas": "AI Personas Created",
         "interviews": "Interviews Conducted",
@@ -474,6 +476,11 @@
       "emptyState": {
         "title": "No Research Studies Yet",
         "description": "Create your first AI-powered research study to unlock business insights and market intelligence."
+      },
+      "newStudyCard": {
+        "title": "New Research",
+        "description": "Start exploring a new topic with AI-powered research and analysis",
+        "badge": "Quick Start"
       }
     },
     "ShareReplayButton": {
@@ -659,6 +666,13 @@
     }
   },
   "Components": {
+    "NewStudyInputBox": {
+      "startNewStudy": "Start New Study",
+      "placeholder": "Ask any business question about human behavior and decision-making. We'll model the subjective factors that drive real choices.",
+      "sendLabel": "Study",
+      "enterToSend": "Enter to start",
+      "tapToSend": "Tap to start"
+    },
     "UserTokensBalance": {
       "balance": "{balance} available tokens",
       "viewHistory": "View token history"

@@ -2,6 +2,7 @@
 import { LeftMenus } from "@/app/(public)/LeftMenu";
 import GlobalHeader from "@/components/GlobalHeader";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
+import { NewStudyButton } from "@/components/NewStudyInputBox";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -153,6 +154,37 @@ export function StudyListPageClient() {
           ) : (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6 w-full">
+                {/* New Study Quick Action Card */}
+                <Card className="flex flex-col h-full transition-shadow hover:shadow-md border-dashed border border-primary/30">
+                  <CardHeader className="flex flex-row items-center">
+                    <div className="bg-primary/20 rounded-full p-1 mr-2 shrink-0">
+                      <NotebookTextIcon className="h-4 w-4 text-primary" />
+                    </div>
+                    <CardTitle className="text-lg font-semibold">
+                      {t("newStudyCard.title") || "New Research"}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex-1 flex flex-col justify-center">
+                    <div className="text-sm text-muted-foreground mb-4 text-center">
+                      {t("newStudyCard.description") ||
+                        "Start exploring a new topic with AI-powered research and analysis"}
+                    </div>
+                    <div className="flex items-center justify-center text-xs text-muted-foreground">
+                      <div className="bg-primary/10 px-2 py-1 rounded-full">
+                        {t("newStudyCard.badge") || "Quick Start"}
+                      </div>
+                    </div>
+                  </CardContent>
+                  <CardFooter>
+                    <NewStudyButton>
+                      <Button className="w-full">
+                        <NotebookTextIcon className="h-4 w-4 mr-2" />
+                        {t("startNewStudy")}
+                      </Button>
+                    </NewStudyButton>
+                  </CardFooter>
+                </Card>
+
                 {studies.map((study) => (
                   <StudyCard key={study.studyUserChat.id} study={study} />
                 ))}
@@ -187,12 +219,12 @@ function EmptyStudyState() {
         <h3 className="text-xl font-semibold">{t("emptyState.title")}</h3>
         <p className="text-muted-foreground max-w-md">{t("emptyState.description")}</p>
       </div>
-      <Button asChild>
-        <Link href="/study/new">
-          <NotebookTextIcon className="mr-2 h-4 w-4" />
+      <NewStudyButton>
+        <Button>
+          <NotebookTextIcon className="h-4 w-4" />
           {t("startNewStudy")}
-        </Link>
-      </Button>
+        </Button>
+      </NewStudyButton>
     </div>
   );
 }

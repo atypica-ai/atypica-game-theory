@@ -8,6 +8,8 @@
     },
     "HeroSection": {
       "subtitle": "> AI驱动的市场研究，深入理解人类决策的真实驱动因素",
+      "startYourStudy": "开始您的研究",
+      "newStudyHint": "询问任何消费者决策问题——我们将访谈AI画像来揭示真实动机",
       "stats": {
         "personas": "AI用户画像创建",
         "interviews": "访谈已完成",
@@ -474,6 +476,11 @@
       "emptyState": {
         "title": "您尚未创建任何研究。",
         "description": "开始一项新研究，开始分析并收集洞察。"
+      },
+      "newStudyCard": {
+        "title": "新研究",
+        "description": "开始探索新主题，通过AI驱动的研究和分析获得洞察",
+        "badge": "快速开始"
       }
     },
     "ShareReplayButton": {
@@ -659,6 +666,13 @@
     }
   },
   "Components": {
+    "NewStudyInputBox": {
+      "startNewStudy": "开始新研究",
+      "placeholder": "提出任何关于人类行为和决策的商业问题。我们将为驱动真实选择的主观因素建模。",
+      "sendLabel": "研究",
+      "enterToSend": "按回车开始",
+      "tapToSend": "点击开始"
+    },
     "UserTokensBalance": {
       "balance": "{balance}个Token可用",
       "viewHistory": "查看Token历史"
