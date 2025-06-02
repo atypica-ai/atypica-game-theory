@@ -2,13 +2,11 @@
 import { imageModel } from "@/ai/provider";
 import { initStudyStatReporter } from "@/ai/tools/stats";
 import { uploadToS3 } from "@/lib/attachments/s3";
-import { authOptions } from "@/lib/auth";
 import { rootLogger } from "@/lib/logging";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
 import { experimental_generateImage as generateImage } from "ai";
 import { createHash } from "crypto";
-import { getServerSession } from "next-auth";
 import { Logger } from "pino";
 import { z } from "zod";
 
@@ -68,12 +66,12 @@ export async function imagegen({
   const genLog = studyLog.child({ prompt, ratio });
 
   // 图片没有生成过，需要检查必要的权限，有权限以后可以接下来插入数据库条目
-
-  const session = await getServerSession(authOptions);
-  if (!session?.user || report.analyst.userId !== session.user.id) {
-    // 如果图片还没生成，只有用户自己可以访问，因为要消耗 token
-    return new Response("Unauthorized", { status: 401 });
-  }
+  // update: 现在是 triggerImageGeneration 方法在调用，所以无需校验用户了
+  // const session = await getServerSession(authOptions);
+  // if (!session?.user || report.analyst.userId !== session.user.id) {
+  //   // 如果图片还没生成，只有用户自己可以访问，因为要消耗 token
+  //   return new Response("Unauthorized", { status: 401 });
+  // }
 
   // 立即先插入记录
   const recordExtra = { ratio, reportToken };
