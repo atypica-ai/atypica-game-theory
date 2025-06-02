@@ -32,12 +32,22 @@ export async function generateReportPDFAction(reportToken: string): Promise<{
       forbidden();
     }
 
-    const topicExcept = report.analyst.topic
-      .replace(/\s+/g, "-")
+    const topic = report.analyst.topic
+      .replace(/\s+/g, " ")
       .replace(/[<>:"/\\|?*]/g, "")
-      .replace(/\./g, "")
-      .slice(0, 20);
-    const fileName = `${topicExcept}-report-${reportToken}.pdf`;
+      .replace(/\./g, "");
+    // Check if topic contains Chinese characters
+    const hasChinese = /[\u4e00-\u9fff]/.test(topic);
+    let topicExcept: string;
+    if (hasChinese) {
+      // For Chinese: limit to 20 characters
+      topicExcept = topic.slice(0, 20);
+    } else {
+      // For English: limit to 10 words
+      const words = topic.split(" ");
+      topicExcept = words.slice(0, 10).join(" ");
+    }
+    const fileName = `${topicExcept} [${reportToken}].pdf`;
 
     const pdfObjectUrl = (report.extra as { pdfObjectUrl?: string } | null)?.pdfObjectUrl;
     if (pdfObjectUrl) {
