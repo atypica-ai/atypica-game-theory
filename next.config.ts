@@ -37,6 +37,23 @@ const nextConfig: NextConfig = {
     //     : [],
     // },
   },
+  async headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          {
+            key: "X-Frame-Options",
+            value: "SAMEORIGIN",
+          },
+          {
+            key: "Content-Security-Policy",
+            value: `frame-ancestors ${process.env.IFRAME_ALLOWED_ORIGINS || "'self'"}`,
+          },
+        ],
+      },
+    ];
+  },
   async rewrites() {
     return [
       { source: "/changelog.html", destination: "/_public/changelog.html" },
