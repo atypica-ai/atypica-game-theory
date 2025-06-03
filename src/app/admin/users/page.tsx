@@ -22,7 +22,7 @@ import {
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDate, formatTokensNumber } from "@/lib/utils";
 import { AdminRole } from "@/prisma/client";
-import { CoinsIcon, PlusIcon, SearchIcon } from "lucide-react";
+import { CheckIcon, CoinsIcon, CopyIcon, LinkIcon, PlusIcon, SearchIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
@@ -33,6 +33,7 @@ import {
   addTokensToUser,
   deleteUserAccount,
   fetchUsers,
+  generateImpersonationLoginForUser,
   updateAdminStatus,
   verifyUserEmail,
 } from "./actions";
@@ -59,6 +60,10 @@ export default function UsersPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [adminOnly, setAdminOnly] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [isLoginDialogOpen, setIsLoginDialogOpen] = useState(false);
+  const [loginUrl, setLoginUrl] = useState("");
+  const [isGeneratingLogin, setIsGeneratingLogin] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   // Initialize page from URL on load
   useEffect(() => {
@@ -157,6 +162,34 @@ export default function UsersPage() {
     setIsAdminDialogOpen(true);
   };
 
+  const generateLoginUrl = async (user: User) => {
+    setSelectedUser(user);
+    setIsGeneratingLogin(true);
+    setError("");
+    try {
+      const result = await generateImpersonationLoginForUser(user.id, 24);
+      if (result.success) {
+        setLoginUrl(result.data);
+        setIsLoginDialogOpen(true);
+      } else {
+        setError(result.message || "Failed to generate login URL");
+      }
+    } catch (err) {
+      setError((err as Error).message);
+    }
+    setIsGeneratingLogin(false);
+  };
+
+  const copyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(loginUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy:", err);
+    }
+  };
+
   if (status === "loading" || isLoading) {
     return <div>Loading...</div>;
   }
@@ -224,6 +257,7 @@ export default function UsersPage() {
               <TableHead>Created At</TableHead>
               <TableHead>Last Login</TableHead>
               <TableHead>Admin Role</TableHead>
+              <TableHead>Impersonation Login</TableHead>
               <TableHead>Delete</TableHead>
             </TableRow>
           </TableHeader>
@@ -322,6 +356,23 @@ export default function UsersPage() {
                         </Button>
                       )}
                     </div>
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap text-center">
+                    {user.emailVerified ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-7 gap-1"
+                        onClick={() => generateLoginUrl(user)}
+                        disabled={isGeneratingLogin}
+                        title="Generate impersonation login URL"
+                      >
+                        <LinkIcon className="size-3" />
+                        {isGeneratingLogin ? "..." : "Login"}
+                      </Button>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">Email not verified</span>
+                    )}
                   </TableCell>
                   <TableCell className="whitespace-nowrap text-center">
                     <ConfirmDialog
@@ -506,6 +557,46 @@ export default function UsersPage() {
               }}
             >
               Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isLoginDialogOpen} onOpenChange={setIsLoginDialogOpen}>
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Impersonation Login URL</DialogTitle>
+            <DialogDescription>
+              Generated login URL for {selectedUser?.email} (valid for 24 hours)
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="grid gap-4 py-4">
+            <div className="space-y-2">
+              <Label>Login URL</Label>
+              <div className="flex gap-2">
+                <Input value={loginUrl} readOnly className="font-mono text-xs" />
+                <Button variant="outline" size="sm" onClick={copyToClipboard} className="gap-1">
+                  {copied ? <CheckIcon className="size-4" /> : <CopyIcon className="size-4" />}
+                  {copied ? "Copied!" : "Copy"}
+                </Button>
+              </div>
+              <div className="text-xs text-muted-foreground">
+                This URL will automatically log in the user and expires in 24 hours.
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsLoginDialogOpen(false);
+                setLoginUrl("");
+                setCopied(false);
+              }}
+            >
+              Close
             </Button>
           </DialogFooter>
         </DialogContent>

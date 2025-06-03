@@ -2,6 +2,7 @@
 import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
 import { authClientInfo } from "@/lib/auth";
+import { generateImpersonationLoginUrl } from "@/lib/impersonationLogin";
 import { ServerActionResult } from "@/lib/serverAction";
 import { AdminRole, Currency, User } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
@@ -294,4 +295,47 @@ export async function updateAdminStatus(
     success: true,
     data: undefined,
   };
+}
+
+export async function generateImpersonationLoginForUser(
+  userId: number,
+  expiryHours: number = 24,
+): Promise<ServerActionResult<string>> {
+  // Only super admins can generate impersonation login tokens
+  await checkAdminAuth("SUPER_ADMIN");
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+
+  if (!user) {
+    return {
+      success: false,
+      message: "User not found",
+    };
+  }
+
+  if (!user.emailVerified) {
+    return {
+      success: false,
+      message: "User email is not verified",
+    };
+  }
+
+  // Get the base URL from environment or construct it
+  const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+
+  try {
+    const loginUrl = generateImpersonationLoginUrl(userId, baseUrl, expiryHours);
+    return {
+      success: true,
+      data: loginUrl,
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      success: false,
+      message: "Failed to generate login token",
+    };
+  }
 }

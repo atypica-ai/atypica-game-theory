@@ -56,6 +56,7 @@ function ImpersonationLogin() {
           }
         }
       } catch (err) {
+        console.log(err);
         setStatus("error");
         setError("An error occurred during login");
       }

@@ -51,6 +51,7 @@ export function verifyImpersonationLoginToken(token: string): ImpersonationLogin
 
     return payload;
   } catch (error) {
+    console.log(error);
     // Decryption failed or invalid JSON
     return null;
   }
