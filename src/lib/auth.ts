@@ -7,6 +7,7 @@ import { compare, hash } from "bcryptjs";
 import { type NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
+import { verifyImpersonationLoginToken } from "./impersonationLogin";
 import { rootLogger } from "./logging";
 
 export const authClientInfo = async () => {
@@ -33,7 +34,7 @@ export const authOptions: NextAuthOptions = {
     },
     callbackUrl: {
       name: "next-auth.callback-url",
-      options: { httpOnly: true, sameSite: "none", path: "/", secure: true },
+      options: { sameSite: "none", path: "/", secure: true },
     },
     csrfToken: {
       name: "next-auth.csrf-token",
@@ -42,6 +43,7 @@ export const authOptions: NextAuthOptions = {
   },
   providers: [
     CredentialsProvider({
+      id: "credentials",
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
@@ -65,6 +67,42 @@ export const authOptions: NextAuthOptions = {
           await sendVerificationCode(user.email);
           throw new Error("EMAIL_NOT_VERIFIED");
         }
+        return {
+          id: user.id,
+          email: user.email,
+        };
+      },
+    }),
+    CredentialsProvider({
+      id: "impersonation-login",
+      credentials: {
+        token: { label: "Token", type: "text" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.token) {
+          throw new Error("TOKEN_REQUIRED");
+        }
+        // Verify the impersonation login token
+        const payload = verifyImpersonationLoginToken(credentials.token);
+        if (!payload) {
+          throw new Error("INVALID_TOKEN");
+        }
+        // Find the user
+        const user = await prisma.user.findUnique({
+          where: { id: payload.userId },
+        });
+        if (!user) {
+          throw new Error("USER_NOT_FOUND");
+        }
+        if (!user.emailVerified) {
+          throw new Error("EMAIL_NOT_VERIFIED");
+        }
+        // Update user's last login info
+        const lastLogin = await authClientInfo();
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { lastLogin },
+        });
         return {
           id: user.id,
           email: user.email,
