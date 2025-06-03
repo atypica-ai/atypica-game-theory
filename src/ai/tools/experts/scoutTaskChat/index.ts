@@ -46,13 +46,10 @@ import { type ScoutTaskChatResult, type TPlatform } from "./types";
 const TOKENS_COMSUME_LIMIT = 150_000; // 限制 15w token 消耗量
 const SCOUT_TOOLS_LIMIT = 15; // 进行 15 次搜索，结束以后保存画像
 const SCOUT_MESSAGES_LIMIT = 10; // 最多 10 轮对话，结束以后保存画像
-const REDUCE_TOKENS: {
+type TReduceTokens = {
   model: LLMModelName;
   ratio: number;
-} = {
-  model: "gemini-2.5-flash",
-  ratio: 10,
-};
+} | null;
 
 const toolPlatform = (toolName: ToolName): TPlatform | undefined => {
   const platforms: Partial<Record<ToolName, TPlatform>> = {
@@ -267,7 +264,17 @@ export async function runScoutTaskChatStream({
 
     let toolChoice: ToolChoice<typeof allTools> = "auto";
     let maxSteps = 2; // 不要一下子很多 steps 因为现在会并行调用 tools，每一轮 steps 少一点，方便及时判断 coreMessages 长度
-    let reduceTokens: typeof REDUCE_TOKENS | null = REDUCE_TOKENS;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let [reduceTokens, llmOptions]: [TReduceTokens, any] = [
+      { model: "gemini-2.5-flash", ratio: 10 },
+      {
+        // useSearchGrounding: true,
+        // dynamicRetrievalConfig: {
+        //   mode: "MODE_DYNAMIC",
+        //   dynamicThreshold: 0.5,
+        // },
+      },
+    ];
     if (coreMessages.length > 2 && Object.keys(toolUseCount).length === 0) {
       // 两条消息以后，必须开始使用工具，但是为了不一直使用工具，调用2次先停下来，后面好重新判断 toolUseCount
       toolChoice = "required";
@@ -277,7 +284,7 @@ export async function runScoutTaskChatStream({
       createDebouncePersistentMessage(scoutUserChatId, 5000, scoutLog); // 5000 debounce
     const streamTextPromise = new Promise<Omit<Message, "role">>((resolve, reject) => {
       const response = streamText({
-        model: reduceTokens ? llm(reduceTokens.model) : llm("claude-3-7-sonnet"),
+        model: reduceTokens ? llm(reduceTokens.model, llmOptions) : llm("claude-3-7-sonnet"),
         // model: llm("claude-3-7-sonnet-beta")  // 这个模型不大好用，savePersona 总是返回一半输入
         providerOptions: providerOptions,
         system: systemPrompt,
@@ -366,6 +373,7 @@ export async function runScoutTaskChatStream({
         // 如果遇到了用量限制，不报错，换个模型
         scoutLog.warn(`Resource exhausted, switching to alternative model without token reduction`);
         reduceTokens = null;
+        llmOptions = null;
       } else {
         await clearBackgroundToken();
         throw error;

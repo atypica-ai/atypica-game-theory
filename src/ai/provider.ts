@@ -89,6 +89,13 @@ export const providerOptions = {
     // IMPORTANT: litellm 不支持这个 bedrock 的参数输入，但是在 litellm model 配置里设置了，它会发给 bedrock api
     // anthropic_beta: ["token-efficient-tools-2025-02-19"],
   },
+  // google: {
+  //   // Options are nested under 'google' for Vertex provider
+  //   thinkingConfig: {
+  //     includeThoughts: false,
+  //     // thinkingBudget: 2048, // Optional
+  //   },
+  // } satisfies GoogleGenerativeAIProviderOptions,
 };
 
 export type LLMModelName =
