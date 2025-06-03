@@ -9,6 +9,7 @@ import {
 import { llm, LLMModelName, providerOptions } from "@/ai/provider";
 import { PlainTextToolResult, StatReporter } from "@/ai/tools/types";
 import { triggerImagegenInReport } from "@/app/artifacts/lib/imagegen";
+import { generateReportScreenshot } from "@/app/artifacts/lib/screenshot";
 import { fileUrlToDataUrl } from "@/lib/attachments/actions";
 import { ChatMessageAttachment } from "@/lib/attachments/types";
 import { generateToken } from "@/lib/utils";
@@ -125,8 +126,16 @@ export const generateReportTool = ({
         //   plainText: `为研究主题 ${analystId} 生成报告失败：${(error as Error).message}`,
         // };
       }
-      try {
-        await generateCover({
+
+      await Promise.all([
+        generateReportScreenshot({
+          ...report,
+          extra: report.extra as { coverObjectUrl?: string } | null,
+          analyst,
+        }).catch((error) => {
+          reportLog.error(`Error generating screenshot for report ${report.token}: ${error}`); // cover 生成失败就算了
+        }),
+        generateCover({
           analyst,
           report,
           instruction,
@@ -134,11 +143,11 @@ export const generateReportTool = ({
           abortSignal,
           statReport,
           reportLog,
-        });
-      } catch (error) {
-        // cover 生成失败就算了
-        reportLog.error(`Error generating cover for analyst ${analystId}: ${error}`);
-      }
+        }).catch((error) => {
+          reportLog.error(`Error generating cover for analyst ${analystId}: ${error}`); // cover 生成失败就算了
+        }),
+      ]);
+
       return {
         reportToken: report.token,
         plainText: `Report successfully generated. ${hint}`,

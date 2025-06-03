@@ -3,6 +3,7 @@ import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
 import { authClientInfo } from "@/lib/auth";
 import { generateImpersonationLoginUrl } from "@/lib/impersonationLogin";
+import { getRequestOrigin } from "@/lib/request/headers";
 import { ServerActionResult } from "@/lib/serverAction";
 import { AdminRole, Currency, User } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
@@ -323,10 +324,10 @@ export async function generateImpersonationLoginForUser(
   }
 
   // Get the base URL from environment or construct it
-  const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+  const siteOrigin = await getRequestOrigin();
 
   try {
-    const loginUrl = generateImpersonationLoginUrl(userId, baseUrl, expiryHours);
+    const loginUrl = generateImpersonationLoginUrl(userId, siteOrigin, expiryHours);
     return {
       success: true,
       data: loginUrl,

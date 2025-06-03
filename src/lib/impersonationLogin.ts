@@ -60,15 +60,15 @@ export function verifyImpersonationLoginToken(token: string): ImpersonationLogin
 /**
  * Generate a complete impersonation login URL
  * @param userId - The user ID to generate URL for
- * @param baseUrl - The base URL of the application (e.g., "https://example.com")
+ * @param siteOrigin - The site origin URL (e.g., "https://example.com")
  * @param expiryHours - How many hours the token should be valid (default: 24)
  * @returns The complete impersonation login URL
  */
 export function generateImpersonationLoginUrl(
   userId: number,
-  baseUrl: string,
+  siteOrigin: string,
   expiryHours: number = 24,
 ): string {
   const token = generateImpersonationLoginToken(userId, expiryHours);
-  return `${baseUrl}/auth/impersonation-login?token=${encodeURIComponent(token)}`;
+  return `${siteOrigin}/auth/impersonation-login?token=${encodeURIComponent(token)}`;
 }

@@ -9,7 +9,7 @@ import { prisma } from "@/prisma/prisma";
 import { revalidatePath } from "next/cache";
 
 // Get all analyst reports with pagination
-export async function fetchAnalystReports(
+export async function fetchAnalystReportsAction(
   page: number = 1,
   pageSize: number = 10,
   searchQuery?: string,
@@ -107,7 +107,7 @@ export async function adminGenerateScreenshotAction(
 ): Promise<ServerActionResult<string>> {
   await checkAdminAuth([AdminPermission.MANAGE_STUDIES]);
 
-  const report = await prisma.analystReport.findUnique({
+  const report = (await prisma.analystReport.findUnique({
     where: { id: reportId },
     include: {
       analyst: {
@@ -118,7 +118,16 @@ export async function adminGenerateScreenshotAction(
         },
       },
     },
-  });
+  })) as Omit<AnalystReport, "extra"> & {
+    extra: {
+      coverObjectUrl?: string;
+    } | null;
+    analyst: {
+      userId: number;
+      id: number;
+      topic: string;
+    };
+  };
 
   if (!report) {
     return {
@@ -128,12 +137,8 @@ export async function adminGenerateScreenshotAction(
   }
 
   try {
-    const { coverUrl } = await generateReportScreenshot({
-      ...report,
-      extra: report.extra as { coverObjectUrl?: string } | null,
-    });
+    const { coverUrl } = await generateReportScreenshot(report);
     revalidatePath("/admin/analyst-reports");
-
     return {
       success: true,
       data: coverUrl,

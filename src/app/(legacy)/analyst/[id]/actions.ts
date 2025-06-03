@@ -2,6 +2,7 @@
 import { prepareDBForInterview, runInterview } from "@/ai/tools/experts/interviewChat";
 import { generateCover, generateReport } from "@/ai/tools/experts/report";
 import { StatReporter } from "@/ai/tools/types";
+import { generateReportScreenshot } from "@/app/artifacts/lib/screenshot";
 import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
@@ -212,6 +213,11 @@ export async function backgroundGenerateReport({
           statReport,
           reportLog,
           systemPrompt,
+        });
+        await generateReportScreenshot({
+          ...report,
+          extra: report.extra as { coverObjectUrl?: string } | null,
+          analyst,
         });
         await generateCover({
           analyst,

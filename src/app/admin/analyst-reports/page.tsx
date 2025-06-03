@@ -14,9 +14,9 @@ import { useRouter } from "next/navigation";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 
 import { PaginationInfo } from "../types";
-import { adminGenerateScreenshotAction, fetchAnalystReports } from "./actions";
+import { adminGenerateScreenshotAction, fetchAnalystReportsAction } from "./actions";
 
-type AnalystReportWithAnalyst = ExtractServerActionData<typeof fetchAnalystReports>[number];
+type AnalystReportWithAnalyst = ExtractServerActionData<typeof fetchAnalystReportsAction>[number];
 
 export default function AnalystReportsPage() {
   const { status } = useSession();
@@ -66,7 +66,7 @@ export default function AnalystReportsPage() {
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
-    const result = await fetchAnalystReports(currentPage, 12, searchQuery);
+    const result = await fetchAnalystReportsAction(currentPage, 12, searchQuery);
     if (!result.success) {
       setError(result.message);
     } else {
