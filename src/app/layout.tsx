@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import type { Metadata, Viewport } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale } from "next-intl/server";
+import { Embed } from "./embed/Embed";
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -83,6 +84,7 @@ export default async function RootLayout({
               {/* <GlobalHeader /> */}
               {children}
               <Toaster richColors={true} />
+              <Embed />
             </NextIntlClientProvider>
           </ThemeProvider>
           <Analytics />
