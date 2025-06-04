@@ -292,8 +292,10 @@ export async function fetchAnalystReportByToken(
 
 export async function fetchAnalystReportsOfStudyUserChat({
   studyUserChatToken,
+  includeOnePageHtml = false,
 }: {
   studyUserChatToken: string;
+  includeOnePageHtml?: boolean;
 }): Promise<
   ServerActionResult<
     (Pick<
@@ -326,6 +328,7 @@ export async function fetchAnalystReportsOfStudyUserChat({
       generatedAt: true,
       createdAt: true,
       updatedAt: true,
+      onePageHtml: includeOnePageHtml,
     },
     orderBy: { createdAt: "desc" },
   });

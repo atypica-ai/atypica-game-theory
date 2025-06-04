@@ -1,6 +1,7 @@
 "use client";
+import { createStudyUserChat, fetchAnalystReportsOfStudyUserChat } from "@/app/study/actions";
 import { useSession } from "next-auth/react";
-import { useParams, usePathname, useSearchParams } from "next/navigation";
+import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 
 export function Embed() {
@@ -8,13 +9,14 @@ export function Embed() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const params = useParams();
-  // const router = useRouter();
+  const router = useRouter();
 
   useEffect(() => {
     // console.log("pathname:", pathname);
     // console.log("searchParams:", searchParams);
     // console.log("params:", params);
-    const href = `${window.location.origin}${pathname}?${searchParams.toString()}`;
+    const search = searchParams.toString();
+    const href = `${window.location.origin}${pathname}${search ? `?${search}` : ""}`;
     // console.log("href:", href);
     if (window.parent !== window) {
       window.parent.postMessage(
@@ -31,8 +33,10 @@ export function Embed() {
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      if (event.data.target === "atypica" && event.data.type === "check_auth") {
-        // 响应父窗口的认证状态检查
+      if (event.data.target !== "atypica") {
+        return;
+      }
+      if (event.data.type === "check_auth") {
         window.parent.postMessage(
           {
             source: "atypica",
@@ -44,11 +48,58 @@ export function Embed() {
           "*",
         );
       }
+      if (event.data.type === "action") {
+        if (
+          event.data.action === "fetchAnalystReportsOfStudyUserChat" &&
+          /^\/study/.test(pathname) &&
+          typeof params.token === "string"
+        ) {
+          fetchAnalystReportsOfStudyUserChat({
+            studyUserChatToken: params.token,
+            includeOnePageHtml: true,
+          })
+            .then((result) => {
+              if (!result.success) throw result;
+              console.log(result.data);
+              window.parent.postMessage(
+                {
+                  source: "atypica",
+                  type: "action_result",
+                  action: "fetchAnalystReportsOfStudyUserChat",
+                  result: result.data,
+                  timestamp: new Date().toISOString(),
+                },
+                "*",
+              );
+            })
+            .catch((error) => console.error(error));
+        }
+        if (event.data.action === "createStudyUserChat") {
+          createStudyUserChat({
+            role: "user",
+            content: event.data.args.content,
+          })
+            .then((result) => {
+              if (!result.success) throw result;
+              router.push(`/study/${result.data.token}`);
+              window.parent.postMessage(
+                {
+                  source: "atypica",
+                  type: "action_result",
+                  action: "createStudyUserChat",
+                  result: result.data,
+                  timestamp: new Date().toISOString(),
+                },
+                "*",
+              );
+            })
+            .catch((error) => console.error(error));
+        }
+      }
     };
-
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
-  }, [status, session]);
+  }, [status, session, params, pathname, router]);
 
   return <></>;
 }
