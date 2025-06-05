@@ -141,8 +141,8 @@ export const studySystem = ({
    • 【禁止内容】不要包含研究发现和研究结论等主观观点
 2. 【第二步 - 必须】调用 generateReport 生成报告：
    • 【风格指导要求】必须在 instruction 参数中详细描述期望的报告风格，**不能仅提供风格名称**，需要包含具体的设计指令：
-     - **设计理念描述**：详细说明整体美学理念和设计方向（参考风格可选择极简主义、现代商务、传统文化等，但必须详细描述具体特征）
-     - **视觉设计规范**：明确指定色彩搭配方案、字体选择要求、排版布局方式的具体标准
+     - **设计理念描述**：详细说明整体美学理念和设计方向（可参考原研哉极简美学、安藤忠雄几何线条、MUJI无印良品、Spotify活力感、Apple设计风、McKinsey专业风、Bloomberg金融风、中国古书装帧、日式和风设计等，但不仅限于此，应发挥想象力选择专业风格并详细描述具体特征和感性表达）
+     - **视觉设计规范**：明确指定色彩搭配方案、字体选择要求、排版布局方式的具体标准，需要包含感性的视觉描述和氛围营造
      - **内容呈现方式**：详细说明内容展示的样式要求、视觉元素的风格描述、信息层级的处理方法
      - **重要提醒**：generateReport 工具需要根据这些具体描述来理解和执行设计要求，因此必须提供足够详细和明确的指令
    • 【限制范围】**不要**规划报告的具体内容，让系统自动根据收集的数据生成报告内容
@@ -303,8 +303,8 @@ If the above conditions are not met, do not proceed to the next phase
    • 【PROHIBITED CONTENT】Do not include research findings and research conclusions or other subjective opinions
 2. 【Second Step - MANDATORY】Call generateReport to generate report:
    • 【STYLE GUIDANCE REQUIREMENTS】Must provide detailed report style descriptions in the instruction parameter, **cannot provide style names only**, must include specific design instructions:
-     - **Design Philosophy Description**: Detailed explanation of overall aesthetic philosophy and design direction (reference styles may include minimalism, modern business, traditional culture, etc., but must describe specific characteristics in detail)
-     - **Visual Design Standards**: Clearly specify color combination schemes, typography requirements, layout methods with concrete standards
+     - **Design Philosophy Description**: Detailed explanation of overall aesthetic philosophy and design direction (may reference Kenya Hara minimalist aesthetics, Tadao Ando geometric lines, MUJI style, Spotify vitality, Apple design, McKinsey professional style, Bloomberg financial style, Chinese ancient book binding, Japanese wa-style design, etc., but not limited to these - should use imagination to choose professional styles and describe specific characteristics with emotional expression in detail)
+     - **Visual Design Standards**: Clearly specify color combination schemes, typography requirements, layout methods with concrete standards, must include emotional visual descriptions and atmosphere creation
      - **Content Presentation Methods**: Detailed description of content display style requirements, visual element style descriptions, information hierarchy handling methods
      - **Important Reminder**: The generateReport tool needs to understand and execute design requirements based on these specific descriptions, therefore must provide sufficiently detailed and clear instructions
    • 【SCOPE LIMITATION】Do **NOT** plan specific report content, let the system automatically generate report content based on collected data

@@ -47,6 +47,10 @@ export async function GET(request: Request, { params }: { params: Promise<{ toke
             }
             // Wait for 3 seconds before fetching again
             await new Promise((resolve) => setTimeout(resolve, 5000));
+            if (request.signal.aborted) {
+              // controller.close(); abort 以后就不能调用 close 了
+              break;
+            }
           } catch (error) {
             console.error("Error streaming report:", error);
             controller.error(error);
