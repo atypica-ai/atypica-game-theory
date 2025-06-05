@@ -67,7 +67,7 @@ export function StudyListPageClient() {
     try {
       const result = await fetchUserStudies({
         page: currentPage,
-        pageSize: 9, // 3x3 grid
+        pageSize: 8, // 3x3-1 grid (留一个给 new study block)
         searchQuery,
       });
 

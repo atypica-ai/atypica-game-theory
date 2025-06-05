@@ -2,7 +2,7 @@ const { PrismaClient } = require("../src/prisma/client");
 
 const prisma = new PrismaClient();
 
-const dateBefore = new Date("2025-05-01T00:00:00+08:00");
+const dateBefore = new Date("2025-06-01T00:00:00+08:00");
 const pad12 = (n) => n.toLocaleString().padStart(12, " ");
 const fdate = (d) =>
   new Intl.DateTimeFormat("zh-CN", {
@@ -85,4 +85,4 @@ async function main() {
 }
 
 main();
-// node scripts/payment-stats.mjs > payment-stats.csv
+// node scripts/payment-stats.js > payment-stats.csv

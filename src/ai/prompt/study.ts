@@ -140,8 +140,12 @@ export const studySystem = ({
    • 【工具用途】该工具仅用于保存客观总结的研究过程
    • 【禁止内容】不要包含研究发现和研究结论等主观观点
 2. 【第二步 - 必须】调用 generateReport 生成报告：
-   • 【限制范围】仅提供报告的格式和样式方面的指导（如布局、字体、配色等），**不要**规划报告内容
-   • 【必须参数】明确指定研究类型与基本背景信息，让系统自动根据收集的数据生成报告内容
+   • 【风格指导要求】必须在 instruction 参数中详细描述期望的报告风格，**不能仅提供风格名称**，需要包含具体的设计指令：
+     - **设计理念描述**：详细说明整体美学理念和设计方向（参考风格可选择极简主义、现代商务、传统文化等，但必须详细描述具体特征）
+     - **视觉设计规范**：明确指定色彩搭配方案、字体选择要求、排版布局方式的具体标准
+     - **内容呈现方式**：详细说明内容展示的样式要求、视觉元素的风格描述、信息层级的处理方法
+     - **重要提醒**：generateReport 工具需要根据这些具体描述来理解和执行设计要求，因此必须提供足够详细和明确的指令
+   • 【限制范围】**不要**规划报告的具体内容，让系统自动根据收集的数据生成报告内容
    • 【使用条件】仅在有新研究结论时生成，避免重复
 
 <错误防范>
@@ -298,8 +302,12 @@ If the above conditions are not met, do not proceed to the next phase
    • 【TOOL PURPOSE】This tool is only used to save objective summary of research process
    • 【PROHIBITED CONTENT】Do not include research findings and research conclusions or other subjective opinions
 2. 【Second Step - MANDATORY】Call generateReport to generate report:
-   • 【SCOPE LIMITATION】Only provide guidance on report format and style aspects (such as layout, fonts, colors, etc.), do **NOT** plan report content
-   • 【MANDATORY PARAMETERS】Clearly specify research type and basic background information, let the system automatically generate report content based on collected data
+   • 【STYLE GUIDANCE REQUIREMENTS】Must provide detailed report style descriptions in the instruction parameter, **cannot provide style names only**, must include specific design instructions:
+     - **Design Philosophy Description**: Detailed explanation of overall aesthetic philosophy and design direction (reference styles may include minimalism, modern business, traditional culture, etc., but must describe specific characteristics in detail)
+     - **Visual Design Standards**: Clearly specify color combination schemes, typography requirements, layout methods with concrete standards
+     - **Content Presentation Methods**: Detailed description of content display style requirements, visual element style descriptions, information hierarchy handling methods
+     - **Important Reminder**: The generateReport tool needs to understand and execute design requirements based on these specific descriptions, therefore must provide sufficiently detailed and clear instructions
+   • 【SCOPE LIMITATION】Do **NOT** plan specific report content, let the system automatically generate report content based on collected data
    • 【USAGE CONDITIONS】Generate only when there are new research conclusions, avoid duplication
 
 <ERROR_PREVENTION>

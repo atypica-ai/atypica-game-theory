@@ -36,11 +36,13 @@ export const generateReportTool = ({
 }) =>
   tool({
     description:
-      "Generate a comprehensive study report synthesizing all interview data, user insights, and findings from the completed study",
+      "Generate a comprehensive study report synthesizing all interview data, user insights, and findings from the completed study.",
     parameters: z.object({
       instruction: z
         .string()
-        .describe("Additional formatting, style, or content focus requirements for the report")
+        .describe(
+          "REQUIRED: Detailed report style descriptions. Cannot provide style names only, must include specific design instructions: 1) Design Philosophy Description - detailed explanation of overall aesthetic philosophy and design direction with specific characteristics, 2) Visual Design Standards - clearly specify color combination schemes, typography requirements, layout methods with concrete standards, 3) Content Presentation Methods - detailed description of content display style requirements, visual element style descriptions, information hierarchy handling methods.",
+        )
         .default(""),
       regenerate: z
         .boolean()

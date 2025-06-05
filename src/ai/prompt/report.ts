@@ -43,25 +43,24 @@ export const reportHTMLSystem = ({ locale }: { locale: Locale }) =>
 - 坦诚讨论研究局限性
 
 【设计指南】
-1. 视觉叙事设计
-  - 运用现代网页设计元素打造精简的视觉结构
+1. 基础设计原则
+  - 运用现代网页设计元素打造清晰的视觉结构
   - 创建清晰的视觉流向，引导读者高效获取信息
-  - 元素之间维持恰当距离，构建简洁高效的视觉结构
+  - 元素之间维持恰当距离，构建易读的视觉结构
   - 使用和谐的配色方案突出关键数据和发现
-  - 运用简单的视觉元素创建层次，确保一目了然
+  - 运用视觉元素创建层次，确保信息传达清晰
 
-2. 布局与阅读节奏
+2. 技术实现要求
   - 使用 Tailwind CSS 构建响应式布局
-  - 选择专业、易读的字体系统
-  - 为不同屏幕尺寸优化布局，保持内容精简
+  - 选择易读的字体系统
+  - 为不同屏幕尺寸优化布局
   - 重要发现和数据应突出显示
   - 通过合理的留白和间距确保报告易于浏览
 
-3. 创意设计风格（可选择融合）
-  - 科技现代：Spotify活力风、Instagram社交风、Helvetica极简风、Apple设计风
-  - 艺术经典：MOLESKINE优雅风、Acne Studios北欧风、莫兰迪柔和风
-  - 商务专业：Bloomberg财经风、McKinsey咨询风、Goldman Sachs金融风、IBM企业风
-  - 学术研究：Nature期刊风、Harvard商学院风、MIT技术风、Oxford学术风
+3. 风格实现
+  - 严格按照指定的风格要求进行设计
+  - 如果未明确指定风格，使用简洁专业的默认样式
+  - 确保所选风格与报告内容和目标受众匹配
 
 【视觉内容增强】
 - 仅在特定场景下生成配图：创意设计、产品概念、包装设计、品牌视觉概念等
@@ -140,25 +139,24 @@ Create an objective and engaging research report that presents key research find
 - Honestly discuss research limitations
 
 【Design Guidelines】
-1. Visual Narrative Design
-  - Use modern web design elements to create streamlined visual structure
+1. Basic Design Principles
+  - Use modern web design elements to create clear visual structure
   - Create clear visual flow to guide readers to efficiently obtain information
-  - Maintain appropriate spacing between elements, building simple and efficient visual structure
+  - Maintain appropriate spacing between elements, building readable visual structure
   - Use harmonious color schemes to highlight key data and findings
-  - Use simple visual elements to create hierarchy, ensuring clarity at a glance
+  - Use visual elements to create hierarchy, ensuring clear information delivery
 
-2. Layout & Reading Rhythm
+2. Technical Implementation Requirements
   - Use Tailwind CSS for responsive layouts
-  - Choose professional, readable font systems
-  - Optimize layouts for different screen sizes while keeping content streamlined
+  - Choose readable font systems
+  - Optimize layouts for different screen sizes
   - Important findings and data should be prominently displayed
   - Ensure report is easy to browse through proper whitespace and spacing
 
-3. Creative Design Styles (Optional Integration)
-  - Tech Modern: Spotify vibrant, Instagram social, Helvetica minimalist, Apple design
-  - Art Classic: MOLESKINE elegant, Acne Studios Nordic, Morandi soft
-  - Business Elite: Bloomberg financial, McKinsey consulting, Goldman Sachs investment, IBM corporate
-  - Academic Research: Nature journal, Harvard Business School, MIT technical, Oxford scholarly
+3. Style Implementation
+  - Strictly follow the style requirements specified in the instruction
+  - If the style is not specified, use a clean and professional default style
+  - Ensure the selected style matches the report content and target audience
 
 【Visual Content Enhancement】
 - Generate illustrations only in specific scenarios: creative design, product concepts, packaging design, brand visual concepts, etc.
