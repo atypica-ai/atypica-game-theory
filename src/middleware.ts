@@ -103,6 +103,13 @@ export async function middleware(req: NextRequest) {
   // Otherwise continue with locale handling
   const { response, locale } = handleLocale(req);
 
+  // Set security headers dynamically at runtime
+  response.headers.set("X-Frame-Options", "SAMEORIGIN");
+  response.headers.set(
+    "Content-Security-Policy",
+    `frame-ancestors ${process.env.IFRAME_ALLOWED_ORIGINS || "'self'"}`,
+  );
+
   // Handle locale-aware static pages
   const path = req.nextUrl.pathname;
   if (path === "/about" || path === "/changelog") {
