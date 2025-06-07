@@ -1,7 +1,7 @@
 "use server";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
-import { generateToken } from "@/lib/utils";
+import { createUserChat } from "@/lib/userChat/lib";
 import { UserChat, type UserChatKind } from "@/prisma/client";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
@@ -49,13 +49,10 @@ export async function createScoutUserChatAction({
       content,
       parts: [{ type: "text", text: content }],
     };
-    const userChat = await prisma.userChat.create({
-      data: {
-        userId: user.id,
-        title: message.content.substring(0, 50),
-        kind: "scout",
-        token: generateToken(),
-      },
+    const userChat = await createUserChat({
+      userId: user.id,
+      title: message.content.substring(0, 50),
+      kind: "scout",
     });
     await prisma.chatMessage.create({
       data: {

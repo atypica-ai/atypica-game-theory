@@ -1,6 +1,7 @@
 "use server";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
+import { createUserChat } from "@/lib/userChat/lib";
 import { generateToken } from "@/lib/utils";
 import {
   InterviewProject,
@@ -38,13 +39,11 @@ export async function createInterviewProject(data: {
       });
 
       // Create a UserChat for the clarify session
-      const userChat = await tx.userChat.create({
-        data: {
-          userId: user.id,
-          title: `Clarify: ${project.title}`,
-          kind: UserChatKind.interviewSession,
-          token: generateToken(),
-        },
+      const userChat = await createUserChat({
+        userId: user.id,
+        title: `Clarify: ${project.title}`,
+        kind: UserChatKind.interviewSession,
+        tx,
       });
 
       // Create the clarify session
@@ -238,7 +237,10 @@ export async function fetchClarifyInterviewSession<
 export async function fetchCollectInterviewSession<
   T extends Omit<InterviewSession, "kind"> & {
     kind: "collect";
-    project: Pick<InterviewProject, "id" | "title" | "category" | "brief" | "objectives" | "collectSystem">;
+    project: Pick<
+      InterviewProject,
+      "id" | "title" | "category" | "brief" | "objectives" | "collectSystem"
+    >;
   },
 >(sessionToken: string): Promise<ServerActionResult<T>> {
   const interviewSession = (await prisma.interviewSession.findUnique({

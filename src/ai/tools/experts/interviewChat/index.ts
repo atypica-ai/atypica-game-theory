@@ -24,7 +24,8 @@ import {
 import { InterviewChatResult, PlainTextToolResult, StatReporter, ToolName } from "@/ai/tools/types";
 import { fileUrlToDataUrl } from "@/lib/attachments/actions";
 import { ChatMessageAttachment } from "@/lib/attachments/types";
-import { fixMalformedUnicodeString, generateToken } from "@/lib/utils";
+import { createUserChat } from "@/lib/userChat/lib";
+import { fixMalformedUnicodeString } from "@/lib/utils";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import {
@@ -212,13 +213,10 @@ export async function prepareDBForInterview({
   });
   let interviewUserChatId = interview.interviewUserChatId;
   if (!interviewUserChatId) {
-    const interviewUserChat = await prisma.userChat.create({
-      data: {
-        userId,
-        token: generateToken(),
-        title: analyst.topic.substring(0, 50),
-        kind: "interview",
-      },
+    const interviewUserChat = await createUserChat({
+      userId,
+      title: analyst.topic.substring(0, 50),
+      kind: "interview",
     });
     interviewUserChatId = interviewUserChat.id;
     await prisma.analystInterview.update({

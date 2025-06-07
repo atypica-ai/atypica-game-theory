@@ -26,6 +26,7 @@ import {
   xhsUserNotesTool,
 } from "@/ai/tools/tools";
 import { PlainTextToolResult, StatReporter, ToolName } from "@/ai/tools/types";
+import { createUserChat } from "@/lib/userChat/lib";
 import { generateToken } from "@/lib/utils";
 import { prisma } from "@/prisma/prisma";
 import {
@@ -108,8 +109,11 @@ export const scoutTaskChatTool = ({
     execute: async ({ scoutUserChatToken, description }) => {
       const title = description.substring(0, 50);
       // 现在不需要复用一个 scoutTask 了，因为可以随时对一个 scoutTask 构建人设 buildPersona，所以每次都创建新的
-      const scoutUserChat = await prisma.userChat.create({
-        data: { userId, title, kind: "scout", token: scoutUserChatToken },
+      const scoutUserChat = await createUserChat({
+        userId,
+        title,
+        kind: "scout",
+        token: scoutUserChatToken,
       });
       const scoutUserChatId = scoutUserChat.id;
       const scoutLog = studyLog.child({ scoutUserChatId, scoutUserChatToken });
@@ -419,13 +423,10 @@ export async function runScoutTaskChatStream({
 //     },
 //     execute: async ({ description }): Promise<ScoutTaskCreateResult> => {
 //       const title = description.substring(0, 50);
-//       const scoutUserChat = await prisma.userChat.create({
-//         data: {
-//           userId,
-//           title,
-//           kind: "scout",
-//           token: generateToken(),
-//         },
+//       const scoutUserChat = await createUserChat({
+//         userId,
+//         title,
+//         kind: "scout",
 //       });
 //       return {
 //         scoutUserChatId: scoutUserChat.id,

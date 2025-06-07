@@ -40,15 +40,7 @@ export async function fetchIssueStudies(
         not: null,
       },
     },
-    select: {
-      id: true,
-      token: true,
-      userId: true,
-      title: true,
-      kind: true,
-      backgroundToken: true,
-      createdAt: true,
-      updatedAt: true,
+    include: {
       user: {
         select: {
           id: true,

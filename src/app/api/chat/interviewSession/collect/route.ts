@@ -11,6 +11,7 @@ import { saveInterviewSessionSummaryTool } from "@/ai/tools/tools";
 import { ToolName } from "@/ai/tools/types";
 import { fetchCollectInterviewSession } from "@/app/interviewProject/actions";
 import { rootLogger } from "@/lib/logging";
+import { createUserChat } from "@/lib/userChat/lib";
 import { generateToken } from "@/lib/utils";
 import { prisma } from "@/prisma/prisma";
 import { generateId, smoothStream, streamText } from "ai";
@@ -50,13 +51,12 @@ export async function POST(req: NextRequest) {
   // First message in a collect session? Create UserChat
   if (!interviewSession.userChatId) {
     const userChat = await prisma.$transaction(async (tx) => {
-      const userChat = await tx.userChat.create({
-        data: {
-          userId: userId, // Owned by the project creator
-          title: `Shared: ${interviewSession.title}`,
-          kind: "interviewSession",
-          token: generateToken(),
-        },
+      const userChat = await createUserChat({
+        userId: userId, // Owned by the project creator
+        title: `Shared: ${interviewSession.title}`,
+        kind: "interviewSession",
+        token: generateToken(),
+        tx,
       });
       await tx.interviewSession.update({
         where: { id: interviewSession.id },
