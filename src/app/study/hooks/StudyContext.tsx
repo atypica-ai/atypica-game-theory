@@ -1,10 +1,15 @@
 "use client";
-import { StudyUserChat } from "@/lib/data/UserChat";
-import { ToolInvocation } from "ai";
+import { UserChat } from "@/prisma/client";
+import { Message, ToolInvocation } from "ai";
 import { createContext, Dispatch, ReactNode, SetStateAction, useContext, useState } from "react";
 
+type TStudyUserChat = Omit<UserChat, "kind"> & {
+  kind: "study";
+  messages: Message[];
+};
+
 interface StudyContextType {
-  studyUserChat: StudyUserChat;
+  studyUserChat: TStudyUserChat;
   replay: boolean;
   consoleOpen: boolean;
   setConsoleOpen: (open: boolean) => void;
@@ -23,7 +28,7 @@ export function StudyProvider({
   replay,
 }: {
   children: ReactNode;
-  studyUserChat: StudyUserChat;
+  studyUserChat: TStudyUserChat;
   replay: boolean;
 }) {
   const [consoleOpen, setConsoleOpen] = useState(false);

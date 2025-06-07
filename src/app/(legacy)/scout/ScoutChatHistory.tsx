@@ -6,11 +6,14 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { fetchUserChats, ScoutUserChat } from "@/lib/data/UserChat";
+import { ExtractServerActionData } from "@/lib/serverAction";
 import { HistoryIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { fetchUserChatsAction } from "./actions";
+
+type ScoutUserChat = ExtractServerActionData<typeof fetchUserChatsAction>[number];
 
 export function ScoutChatHistory() {
   const t = useTranslations("ScoutPage.HistoryDrawer");
@@ -19,7 +22,7 @@ export function ScoutChatHistory() {
 
   useEffect(() => {
     const fetchChats = async () => {
-      const result = await fetchUserChats("scout");
+      const result = await fetchUserChatsAction("scout");
       if (result.success) {
         setChats(result.data);
       } else {

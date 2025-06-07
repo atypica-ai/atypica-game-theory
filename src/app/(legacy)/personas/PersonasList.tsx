@@ -19,9 +19,9 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Pagination } from "@/components/ui/pagination";
-import { UserChatWithMessages } from "@/lib/data/UserChat";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn } from "@/lib/utils";
+import { UserChat } from "@/prisma/client";
 import { SearchIcon, XIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
@@ -42,7 +42,7 @@ export default function PersonasList({
   scoutUserChat,
   initialParams,
 }: {
-  scoutUserChat?: UserChatWithMessages;
+  scoutUserChat?: UserChat;
   initialParams: { page?: number; search?: string };
 }) {
   const locale = useLocale();

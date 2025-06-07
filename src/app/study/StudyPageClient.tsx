@@ -4,8 +4,9 @@ import { Button } from "@/components/ui/button";
 import UserTokensBalance from "@/components/UserTokensBalance";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
-import { StudyUserChat } from "@/lib/data/UserChat";
 import { cn } from "@/lib/utils";
+import { UserChat } from "@/prisma/client";
+import { Message } from "ai";
 import { EyeIcon, EyeOffIcon, ScanIcon, XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { ChatBox } from "./ChatBox";
@@ -125,7 +126,10 @@ export function StudyPageClient({
   studyUserChat,
   replay,
 }: {
-  studyUserChat: StudyUserChat;
+  studyUserChat: Omit<UserChat, "kind"> & {
+    kind: "study";
+    messages: Message[];
+  };
   replay: boolean;
 }) {
   // useEffect(() => {

@@ -6,13 +6,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { UserTokensBalanceStore } from "@/components/UserTokensBalance";
 import { useDocumentVisibility } from "@/hooks/use-document-visibility";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
-import { userStopBackgroundStudy } from "@/lib/data/UserChat";
 import { cn, useDevice } from "@/lib/utils";
 import { Message, useChat } from "@ai-sdk/react";
 import { ArrowRightIcon, PlayIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { fetchUserChatByToken, fetchUserChatStateByToken } from "./actions";
+import {
+  fetchUserChatByToken,
+  fetchUserChatStateByToken,
+  userStopBackgroundStudyAction,
+} from "./actions";
 import { NerdStats } from "./components/NerdStats";
 import { CancelButton, StatusDisplay } from "./components/StatusDisplay";
 import { useStudyContext } from "./hooks/StudyContext";
@@ -351,7 +354,7 @@ export function ChatBox() {
                 className="size-7"
                 showEvictionWarning={maybeEvicted}
                 onUserCancel={async () => {
-                  await userStopBackgroundStudy(studyUserChatId);
+                  await userStopBackgroundStudyAction(studyUserChatId);
                   setTimeout(() => window.location.reload(), 100);
                 }}
               />

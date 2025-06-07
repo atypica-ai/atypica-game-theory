@@ -1,6 +1,6 @@
+import { fetchUserChatByIdAction } from "@/app/agents/actions";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { authOptions } from "@/lib/auth";
-import { fetchUserChatById } from "@/lib/data/UserChat";
 import { throwServerActionError } from "@/lib/serverAction";
 import { getServerSession } from "next-auth/next";
 import { forbidden, redirect } from "next/navigation";
@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 export default async function HelloAgentPage({ params }: { params: Promise<{ id: string }> }) {
   const userChatId = parseInt((await params).id);
 
-  const result = await fetchUserChatById(userChatId, "misc");
+  const result = await fetchUserChatByIdAction(userChatId, "misc");
   if (!result.success) {
     throwServerActionError(result);
   }

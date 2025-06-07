@@ -10,13 +10,17 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { StudyUserChat } from "@/lib/data/UserChat";
+import { UserChat } from "@/prisma/client";
 import { ClipboardCopyIcon, ShareIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
-export function ShareReplayButton({ studyUserChat }: { studyUserChat: StudyUserChat }) {
+export function ShareReplayButton({
+  studyUserChat,
+}: {
+  studyUserChat: Omit<UserChat, "kind"> & { kind: "study" };
+}) {
   const t = useTranslations("StudyPage.ShareReplayButton");
   const [open, setOpen] = useState(false);
   const [shareUrl, setShareUrl] = useState("");

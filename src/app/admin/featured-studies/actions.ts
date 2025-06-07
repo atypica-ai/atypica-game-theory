@@ -1,9 +1,8 @@
 "use server";
 import { FeaturedStudyCategory } from "@/app/(public)/featured-studies/data";
 import { checkAdminAuth } from "@/app/admin/actions";
-import { StudyUserChat, UserChatWithMessages } from "@/lib/data/UserChat";
 import { ServerActionResult } from "@/lib/serverAction";
-import { Analyst, FeaturedStudy, User } from "@/prisma/client";
+import { Analyst, FeaturedStudy, User, UserChat } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { Locale } from "next-intl";
 import { getLocale } from "next-intl/server";
@@ -25,7 +24,7 @@ export async function fetchPublicFeaturedStudies({
   ServerActionResult<
     (FeaturedStudy & {
       analyst: Pick<Analyst, "id" | "role" | "topic" | "studySummary">;
-      studyUserChat: Pick<StudyUserChat, "id" | "token">;
+      studyUserChat: Pick<UserChat, "id" | "token">;
       category: FeaturedStudyCategory | null;
     })[]
   >
@@ -96,7 +95,7 @@ export async function fetchPublicFeaturedStudies({
 // Get all featured studies
 export async function fetchFeaturedStudies(): Promise<
   ServerActionResult<
-    (FeaturedStudy & { analyst: Analyst; studyUserChat: Pick<StudyUserChat, "id" | "token"> })[]
+    (FeaturedStudy & { analyst: Analyst; studyUserChat: Pick<UserChat, "id" | "token"> })[]
   >
 > {
   await checkAdminAuth([AdminPermission.MANAGE_STUDIES]);
@@ -128,7 +127,7 @@ export async function fetchAnalysts(
     (Analyst & {
       user: Pick<User, "email"> | null;
       featuredStudy: FeaturedStudy | null;
-      studyUserChat: Pick<UserChatWithMessages, "token"> | null;
+      studyUserChat: Pick<UserChat, "token"> | null;
     })[]
   >
 > {

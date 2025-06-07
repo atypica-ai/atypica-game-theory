@@ -1,11 +1,11 @@
 "use client";
 import { Textarea } from "@/components/ui/textarea";
-import { createUserChat } from "@/lib/data/UserChat";
 import { cn, useDevice } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ScoutChatHistory } from "./ScoutChatHistory";
+import { createScoutUserChatAction } from "./actions";
 
 export function ScoutChat() {
   const t = useTranslations("ScoutPage");
@@ -19,7 +19,7 @@ export function ScoutChat() {
     if (!input.trim()) return;
     setIsLoading(true);
     try {
-      const result = await createUserChat("scout", {
+      const result = await createScoutUserChatAction({
         role: "user",
         content: input,
       });

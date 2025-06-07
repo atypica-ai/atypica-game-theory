@@ -4,12 +4,12 @@ import { SubscriptionDialog } from "@/app/payment/components/SubscriptionDialog"
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { createUserChat } from "@/lib/data/UserChat";
 import { cn } from "@/lib/utils";
 import { CheckIcon, GiftIcon, InfoIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useCallback, useState } from "react";
+import { createHelloUserChatAction } from "./actions";
 
 export default function PricingPageClient() {
   const locale = useLocale();
@@ -18,7 +18,7 @@ export default function PricingPageClient() {
   const [isSubscriptionDialogOpen, setIsSubscriptionDialogOpen] = useState(false);
 
   const sayHelloToSales = useCallback(async () => {
-    const result = await createUserChat("misc", {
+    const result = await createHelloUserChatAction({
       role: "user",
       content:
         locale === "zh-CN"

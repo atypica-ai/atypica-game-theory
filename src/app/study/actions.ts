@@ -1,7 +1,7 @@
 "use server";
 import { convertDBMessagesToAIMessages, convertDBMessageToAIMessage } from "@/ai/messageUtils";
 import { ChatMessageAttachment } from "@/lib/attachments/types";
-import { UserChatWithMessages } from "@/lib/data/UserChat";
+import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { generateToken } from "@/lib/utils";
@@ -69,7 +69,7 @@ export async function fetchUserChatByToken<Tkind extends UserChat["kind"]>(
   kind: Tkind,
 ): Promise<
   ServerActionResult<
-    Omit<UserChatWithMessages, "kind"> & {
+    Omit<UserChat, "kind"> & {
       kind: Tkind;
       messages: Message[];
     }
@@ -98,7 +98,7 @@ export async function fetchUserChatByToken<Tkind extends UserChat["kind"]>(
   };
 }
 
-export async function fetchUserChatStateByToken<Tkind extends UserChatWithMessages["kind"]>(
+export async function fetchUserChatStateByToken<Tkind extends UserChat["kind"]>(
   studyUserChatToken: string,
   kind: Tkind,
 ): Promise<ServerActionResult<{ backgroundToken: string | null; chatMessageUpdatedAt: Date }>> {
@@ -369,4 +369,21 @@ export async function fetchPersonasByIds({ ids }: { ids: number[] }): Promise<
       tags: tags as string[],
     })),
   };
+}
+
+export async function userStopBackgroundStudyAction(
+  studyUserChatId: number,
+): Promise<ServerActionResult<void>> {
+  return withAuth(async (user) => {
+    const userChat = await prisma.userChat.update({
+      where: { id: studyUserChatId, userId: user.id, kind: "study" },
+      data: { backgroundToken: null },
+    });
+    const studyLog = rootLogger.child({ studyUserChatId, studyUserChatToken: userChat.token });
+    studyLog.info("Study stopped by user");
+    return {
+      success: true,
+      data: undefined,
+    };
+  });
 }

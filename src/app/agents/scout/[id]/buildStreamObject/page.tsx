@@ -1,6 +1,6 @@
 import { checkTezignAuth } from "@/app/admin/actions";
+import { fetchUserChatByIdAction } from "@/app/agents/actions";
 import { authOptions } from "@/lib/auth";
-import { fetchUserChatById } from "@/lib/data/UserChat";
 import { getServerSession } from "next-auth/next";
 import { forbidden, notFound, redirect } from "next/navigation";
 import { BuildPersonaStreamObjectClient } from "./BuildPersonaStreamObjectClient";
@@ -15,7 +15,7 @@ export default async function BuildPersonaStreamObjectPage({
   await checkTezignAuth(); // 内部人员可以和 acout agent 聊天
   const userChatId = parseInt((await params).id);
 
-  const result = await fetchUserChatById(userChatId, "scout");
+  const result = await fetchUserChatByIdAction(userChatId, "scout");
   if (!result.success) {
     notFound();
   }

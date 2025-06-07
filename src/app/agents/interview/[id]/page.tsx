@@ -1,6 +1,6 @@
 import { checkTezignAuth } from "@/app/admin/actions";
+import { fetchUserChatByIdAction } from "@/app/agents/actions";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
-import { fetchUserChatById } from "@/lib/data/UserChat";
 import { prisma } from "@/prisma/prisma";
 import { forbidden, notFound } from "next/navigation";
 import { AgentChatPage } from "../../AgentChatPage";
@@ -11,7 +11,7 @@ export default async function InterviewAgentPage({ params }: { params: Promise<{
   const user = await checkTezignAuth(); // 内部人员可以和 persona 聊天
 
   const userChatId = parseInt((await params).id);
-  const result = await fetchUserChatById(userChatId, "interview");
+  const result = await fetchUserChatByIdAction(userChatId, "interview");
   if (!result.success) {
     notFound();
   }
