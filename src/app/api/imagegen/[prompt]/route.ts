@@ -1,5 +1,6 @@
 import { s3SignedUrl } from "@/lib/attachments/s3";
 import { rootLogger } from "@/lib/logging";
+import { getDeployRegion } from "@/lib/request/deployRegion";
 import { getRequestOrigin } from "@/lib/request/headers";
 import { prisma } from "@/prisma/prisma";
 import { createHash } from "crypto";
@@ -11,7 +12,12 @@ import { z } from "zod";
 async function optimizedImageUrl({ objectUrl }: { objectUrl: string }) {
   const url = await s3SignedUrl(objectUrl);
   const siteOrigin = await getRequestOrigin();
-  return `${siteOrigin}/_next/image?url=${encodeURIComponent(url)}&w=1920&q=100`;
+  if (getDeployRegion() === "mainland" && !/amazonaws\.com\.cn/.test(objectUrl)) {
+    const proxiedUrl = `/api/proxy-image?url=${encodeURIComponent(url)}`;
+    return `${siteOrigin}/_next/image?url=${encodeURIComponent(proxiedUrl)}&w=1920&q=100`;
+  } else {
+    return `${siteOrigin}/_next/image?url=${encodeURIComponent(url)}&w=1920&q=100`;
+  }
 }
 
 const ratioSchema = z.enum(["square", "landscape", "portrait"]).default("square");
@@ -59,8 +65,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ prompt: 
       let elapsedSeconds = 0;
       const checkImage = async () => {
         elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
-        if (elapsedSeconds > 60) {
-          reject(new Error("imagegen timeout"));
+        if (elapsedSeconds > 60 * 3) {
+          reject(new Error("timeout"));
           return;
         }
         const updatedImage = await prisma.imageGeneration.findUniqueOrThrow({ where: { id } });
