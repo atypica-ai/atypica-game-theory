@@ -24,8 +24,8 @@ export const initStudyStatReporter = ({
     });
     if (dimension === "tokens") {
       try {
-        await prisma.$transaction([
-          prisma.userTokensLog.create({
+        await prisma.$transaction(async (tx) => {
+          await tx.userTokensLog.create({
             data: {
               userId: userId,
               verb: UserTokensLogVerb.consume,
@@ -33,16 +33,16 @@ export const initStudyStatReporter = ({
               resourceId: studyUserChatId,
               value: -value,
             },
-          }),
-          prisma.userTokens.update({
+          });
+          await tx.userTokens.update({
             where: { userId },
             data: {
               balance: {
                 decrement: value,
               },
             },
-          }),
-        ]);
+          });
+        });
         studyLog.info({ msg: "User tokens consumed successfully", userId, tokens: value });
       } catch (error) {
         studyLog.error({
@@ -80,8 +80,8 @@ export const initInterviewProjectStatReporter = ({
     }
     if (dimension === "tokens") {
       try {
-        await prisma.$transaction([
-          prisma.userTokensLog.create({
+        await prisma.$transaction(async (tx) => {
+          await tx.userTokensLog.create({
             data: {
               userId: userId,
               verb: UserTokensLogVerb.consume,
@@ -89,16 +89,16 @@ export const initInterviewProjectStatReporter = ({
               resourceId: interviewProjectId,
               value: -value,
             },
-          }),
-          prisma.userTokens.update({
+          });
+          await tx.userTokens.update({
             where: { userId },
             data: {
               balance: {
                 decrement: value,
               },
             },
-          }),
-        ]);
+          });
+        });
         logger.info({ msg: "User tokens consumed successfully", userId, tokens: value });
       } catch (error) {
         logger.error({

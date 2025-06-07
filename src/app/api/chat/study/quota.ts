@@ -40,8 +40,8 @@ export async function checkQuota({
   const balance = user.tokens?.balance ?? 0;
 
   if (balance >= cost) {
-    await prisma.$transaction([
-      prisma.userTokensLog.create({
+    await prisma.$transaction(async (tx) => {
+      await tx.userTokensLog.create({
         data: {
           userId: userId,
           verb: "consume",
@@ -49,16 +49,16 @@ export async function checkQuota({
           resourceId: studyUserChatId,
           value: -cost,
         },
-      }),
-      prisma.userTokens.update({
+      });
+      await tx.userTokens.update({
         where: { userId },
         data: {
           balance: {
             decrement: cost,
           },
         },
-      }),
-    ]);
+      });
+    });
     return true;
   }
 

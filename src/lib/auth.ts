@@ -195,18 +195,22 @@ export async function createUser({
     },
   });
 
-  await prisma.$transaction([
-    prisma.userTokensLog.create({
+  // 注册赠送 1_000_000 tokens
+  await prisma.$transaction(async (tx) => {
+    await tx.userTokensLog.create({
       data: {
         userId: user.id,
         verb: "signup",
         value: 1_000_000,
       },
-    }),
-    prisma.userTokens.create({
-      data: { userId: user.id, balance: 1_000_000 }, // 注册赠送 1_000_000 tokens
-    }),
-  ]);
+    });
+    await tx.userTokens.create({
+      data: {
+        userId: user.id,
+        balance: 1_000_000,
+      },
+    });
+  });
 
   return user;
 }

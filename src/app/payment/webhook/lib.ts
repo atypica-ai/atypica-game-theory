@@ -23,8 +23,8 @@ async function recharge1MTokens({
 }) {
   const rechargeAmount = 1_000_000;
   const giftAmount = 1_000_000;
-  await prisma.$transaction([
-    prisma.userTokensLog.create({
+  await prisma.$transaction(async (tx) => {
+    await tx.userTokensLog.create({
       data: {
         userId: userId,
         verb: UserTokensLogVerb.recharge,
@@ -32,8 +32,8 @@ async function recharge1MTokens({
         resourceId: paymentRecordId,
         value: rechargeAmount,
       },
-    }),
-    prisma.userTokensLog.create({
+    });
+    await tx.userTokensLog.create({
       data: {
         userId: userId,
         verb: UserTokensLogVerb.gift,
@@ -41,16 +41,16 @@ async function recharge1MTokens({
         resourceId: paymentRecordId,
         value: giftAmount,
       },
-    }),
-    prisma.userTokens.update({
+    });
+    await tx.userTokens.update({
       where: { userId },
       data: {
         balance: {
           increment: rechargeAmount + giftAmount,
         },
       },
-    }),
-  ]);
+    });
+  });
 }
 
 async function addPlan3MTokens({
@@ -61,8 +61,8 @@ async function addPlan3MTokens({
   paymentRecordId: number;
 }) {
   const rechargeAmount = 3_000_000;
-  await prisma.$transaction([
-    prisma.userTokensLog.create({
+  await prisma.$transaction(async (tx) => {
+    await tx.userTokensLog.create({
       data: {
         userId: userId,
         verb: UserTokensLogVerb.subscription,
@@ -70,16 +70,16 @@ async function addPlan3MTokens({
         resourceId: paymentRecordId,
         value: rechargeAmount,
       },
-    }),
-    prisma.userTokens.update({
+    });
+    await tx.userTokens.update({
       where: { userId },
       data: {
         balance: {
           increment: rechargeAmount,
         },
       },
-    }),
-  ]);
+    });
+  });
 }
 
 export async function handlePaymentSuccess({

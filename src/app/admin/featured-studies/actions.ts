@@ -277,16 +277,16 @@ export async function updateDisplayOrder(
   }
 
   // Swap display orders
-  await prisma.$transaction([
-    prisma.featuredStudy.update({
+  await prisma.$transaction(async (tx) => {
+    await tx.featuredStudy.update({
       where: { id: currentStudy.id },
       data: { displayOrder: adjacentStudy.displayOrder },
-    }),
-    prisma.featuredStudy.update({
+    });
+    await tx.featuredStudy.update({
       where: { id: adjacentStudy.id },
       data: { displayOrder: currentStudy.displayOrder },
-    }),
-  ]);
+    });
+  });
 
   revalidatePath("/admin/featured-studies");
   return {
@@ -357,9 +357,9 @@ export async function updatePositionDirect(
   // Update all affected studies in a transaction
   if (currentStudy.displayOrder > targetPosition) {
     // Moving up: increment studies between target and current
-    await prisma.$transaction([
+    await prisma.$transaction(async (tx) => {
       // Move studies between target and current position down by 1
-      prisma.featuredStudy.updateMany({
+      await tx.featuredStudy.updateMany({
         where: {
           displayOrder: {
             gte: targetPosition,
@@ -369,18 +369,18 @@ export async function updatePositionDirect(
         data: {
           displayOrder: { increment: 1 },
         },
-      }),
+      });
       // Set the current study to the target position
-      prisma.featuredStudy.update({
+      await tx.featuredStudy.update({
         where: { id },
         data: { displayOrder: targetPosition },
-      }),
-    ]);
+      });
+    });
   } else {
     // Moving down: decrement studies between current and target
-    await prisma.$transaction([
+    await prisma.$transaction(async (tx) => {
       // Move studies between current position and target down by 1
-      prisma.featuredStudy.updateMany({
+      await tx.featuredStudy.updateMany({
         where: {
           displayOrder: {
             gt: currentStudy.displayOrder,
@@ -390,13 +390,13 @@ export async function updatePositionDirect(
         data: {
           displayOrder: { decrement: 1 },
         },
-      }),
+      });
       // Set the current study to the target position
-      prisma.featuredStudy.update({
+      await tx.featuredStudy.update({
         where: { id },
         data: { displayOrder: targetPosition },
-      }),
-    ]);
+      });
+    });
   }
 
   revalidatePath("/admin/featured-studies");

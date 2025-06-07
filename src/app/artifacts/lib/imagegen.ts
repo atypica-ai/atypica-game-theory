@@ -160,7 +160,6 @@ async function backgroundGenerateImage({
   // 不返回 promise，立即 resolve，调用者可以继续，imagegen 在后台运行，直到结束
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function generateMidjourney({
   prompt,
   ratio,

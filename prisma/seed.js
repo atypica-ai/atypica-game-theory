@@ -65,66 +65,66 @@ async function createProducts() {
   console.log("Seeding completed successfully!");
 }
 
-async function initUserPoints() {
-  const users = await prisma.user.findMany();
-  for (const user of users) {
-    const userPoints = await prisma.userPoints.findUnique({
-      where: { userId: user.id },
-    });
-    if (!userPoints) {
-      await prisma.$transaction([
-        prisma.userPoints.create({
-          data: {
-            userId: user.id,
-            balance: 300,
-          },
-        }),
-        prisma.userPointsLog.create({
-          data: {
-            userId: user.id,
-            verb: "signup",
-            points: 300,
-          },
-        }),
-      ]);
-    }
-    console.log(`Initialized points for user: ${user.email}`);
-  }
-}
+// async function initUserPoints() {
+//   const users = await prisma.user.findMany();
+//   for (const user of users) {
+//     const userPoints = await prisma.userPoints.findUnique({
+//       where: { userId: user.id },
+//     });
+//     if (!userPoints) {
+//       await prisma.$transaction(async (tx) => {
+//         await tx.userPoints.create({
+//           data: {
+//             userId: user.id,
+//             balance: 300,
+//           },
+//         });
+//         await tx.userPointsLog.create({
+//           data: {
+//             userId: user.id,
+//             verb: "signup",
+//             points: 300,
+//           },
+//         });
+//       });
+//     }
+//     console.log(`Initialized points for user: ${user.email}`);
+//   }
+// }
 
-async function chargeHistoryChats() {
-  const chats = await prisma.userChat.findMany({
-    where: {
-      kind: "study",
-    },
-    select: {
-      id: true,
-      userId: true,
-    },
-  });
-  for (const chat of chats) {
-    const log = await prisma.userPointsLog.findFirst({
-      where: {
-        // userId: chat.userId,
-        verb: "consume",
-        resourceType: "StudyUserChat",
-        resourceId: chat.id,
-      },
-    });
-    if (!log && chat.userId) {
-      await prisma.userPointsLog.create({
-        data: {
-          userId: chat.userId,
-          verb: "consume",
-          resourceType: "StudyUserChat",
-          resourceId: chat.id,
-          points: 0,
-        },
-      });
-      console.log(`Charge history chat: ${chat.id}`);
-    }
-  }
-}
+// async function chargeHistoryChats() {
+//   const chats = await prisma.userChat.findMany({
+//     where: {
+//       kind: "study",
+//     },
+//     select: {
+//       id: true,
+//       userId: true,
+//     },
+//   });
+//   for (const chat of chats) {
+//     const log = await prisma.userPointsLog.findFirst({
+//       where: {
+//         // userId: chat.userId,
+//         verb: "consume",
+//         resourceType: "StudyUserChat",
+//         resourceId: chat.id,
+//       },
+//     });
+//     if (!log && chat.userId) {
+//       await prisma.userPointsLog.create({
+//         data: {
+//           userId: chat.userId,
+//           verb: "consume",
+//           resourceType: "StudyUserChat",
+//           resourceId: chat.id,
+//           points: 0,
+//         },
+//       });
+//       console.log(`Charge history chat: ${chat.id}`);
+//     }
+//   }
+// }
 
 async function main() {
   await createProducts();

@@ -502,12 +502,12 @@ async function saveMessage({
   try {
     const { id: messageId, role, content, parts: _parts } = message;
     const parts = _parts?.length ? _parts : [{ type: "text", text: content }];
-    await prisma.$transaction([
+    await prisma.$transaction(async (tx) => {
       // 先确保 backgroundToken 是当前的
-      prisma.userChat.findUniqueOrThrow({
+      await tx.userChat.findUniqueOrThrow({
         where: { id: interviewUserChatId, kind: "interview", backgroundToken },
-      }),
-      prisma.chatMessage.create({
+      });
+      await tx.chatMessage.create({
         data: {
           userChatId: interviewUserChatId,
           messageId,
@@ -515,8 +515,8 @@ async function saveMessage({
           content,
           parts: parts as InputJsonValue,
         },
-      }),
-    ]);
+      });
+    });
   } catch (error) {
     interviewLog.error(
       `Error saving interview messages with token ${backgroundToken}: ${(error as Error).message}`,
