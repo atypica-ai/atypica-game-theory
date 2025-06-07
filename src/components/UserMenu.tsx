@@ -1,5 +1,4 @@
 "use client";
-import { StudyHistoryDrawer } from "@/components/HistoryDrawer";
 import { Avatar } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -37,7 +36,6 @@ export default function UserMenu() {
   const { setTheme } = useTheme();
   const router = useRouter();
   const [locale, setLocale] = useState<string>("zh-CN");
-  const [historyDrawerOpen, setHistoryDrawerOpen] = useState(false);
 
   const searchParams = useSearchParams();
   const [signinCallbackUrl, setSigninCallbackUrl] = useState<string>("/");
@@ -107,10 +105,6 @@ export default function UserMenu() {
             {t("myStudies")}
           </Link>
         </DropdownMenuItem>
-        {/* <DropdownMenuItem onClick={() => setHistoryDrawerOpen(true)}>
-          <HistoryIcon className="h-4 w-4 mr-2" />
-          {t("history")}
-        </DropdownMenuItem> */}
       </>
     ) : null;
 
@@ -178,12 +172,6 @@ export default function UserMenu() {
             <Logout />
           </DropdownMenuContent>
         </DropdownMenu>
-        <StudyHistoryDrawer
-          open={historyDrawerOpen}
-          onOpenChange={setHistoryDrawerOpen}
-          trigger={false}
-          direction="right"
-        />
       </>
     );
   }
