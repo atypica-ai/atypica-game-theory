@@ -57,11 +57,15 @@ export const buildPersonaTool = ({
         };
       }
       const scoutUserChatId = scoutUserChat.id;
+      const mergedAbortSignal = AbortSignal.any([
+        abortSignal,
+        AbortSignal.timeout(10 * 60 * 1000), // 10 分钟超时
+      ]);
       try {
         await runBuildPersona({
           locale,
           scoutUserChatId,
-          abortSignal,
+          abortSignal: mergedAbortSignal,
           statReport,
           studyLog,
         });
@@ -172,10 +176,16 @@ export async function runBuildPersona({
       },
       abortSignal,
     });
+    abortSignal.addEventListener("abort", () => {
+      reject(new Error("building persona aborted"));
+    });
     if (streamWriter) {
       response.mergeIntoDataStream(streamWriter);
     }
-    response.consumeStream().catch((error) => reject(error));
+    response
+      .consumeStream()
+      .then(() => {})
+      .catch((error) => reject(error));
   });
 
   try {

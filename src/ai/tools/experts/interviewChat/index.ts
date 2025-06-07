@@ -122,13 +122,17 @@ export const interviewChatTool = ({
               locale,
             });
           const interviewLog = studyLog.child({ interviewUserChatId, analystInterviewId });
+          const mergedAbortSignal = AbortSignal.any([
+            abortSignal,
+            AbortSignal.timeout(10 * 60 * 1000), // 10 分钟超时
+          ]);
           await runInterview({
             locale,
             analystInterviewId,
             interviewUserChatId,
             prompt,
             attachments,
-            abortSignal,
+            abortSignal: mergedAbortSignal,
             statReport,
             interviewLog,
           });
@@ -296,7 +300,6 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: Message[]) {
     statReport,
     interviewLog,
   } = chatProps;
-
   const result = await new Promise<Omit<Message, "role">>(async (resolve, reject) => {
     // const hasAttachments = !!messages.find(
     //   (message) => (message.experimental_attachments ?? []).length > 0,
@@ -375,9 +378,19 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: Message[]) {
       },
       abortSignal,
     });
+    // abortSignal 发生了以后，会进 consumeStream 的 then 而不是 catch，
+    // 由于 abort 了以后就不会触发 onFinish，如果这里不 resolve/reject 就会导致 promise 一直不退出
+    // 所以对于放进 promise 里的 streamText，除了设置 abortSignal 还需要单独监听 abortSignal 并 reject
+    abortSignal.addEventListener("abort", () => {
+      // 如果前面已经 resolve 了，这里 eventListener 不需要取消，reject 会被忽略
+      reject(new Error("Interview aborted"));
+    });
     // 这里不要 await 而是用 then，否则会出现一系列嵌套的 await new promise 最终导致 abortController.abort() 操作被取消
     // 可能是 studychat 先断了，await 结束了，后面的 abort 就失败了
-    response.consumeStream().catch((error) => reject(error));
+    response
+      .consumeStream()
+      .then(() => {})
+      .catch((error) => reject(error));
     // 必须写这个 await for loop，把 stream 消费完，也可以使用 consumeStream 方法
     // for await (const textPart of response.textStream) { console.log(textPart); }
   });
