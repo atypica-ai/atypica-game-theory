@@ -7,7 +7,7 @@ import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { generateToken } from "@/lib/utils";
-import { Analyst, AnalystReport } from "@/prisma/client";
+import { Analyst, AnalystReport, AnalystReportExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
 import { getLocale } from "next-intl/server";
@@ -216,7 +216,7 @@ export async function backgroundGenerateReport({
         });
         await generateReportScreenshot({
           ...report,
-          extra: report.extra as { coverObjectUrl?: string } | null,
+          extra: report.extra as AnalystReportExtra,
           analyst,
         });
         await generateCover({

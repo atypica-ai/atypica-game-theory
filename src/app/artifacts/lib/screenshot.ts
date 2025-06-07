@@ -1,6 +1,7 @@
 "use server";
 import { s3SignedUrl, uploadToS3 } from "@/lib/attachments/s3";
 import { getRequestOrigin } from "@/lib/request/headers";
+import { AnalystReportExtra } from "@/prisma/client";
 import { InputJsonObject } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import { createHash } from "node:crypto";
@@ -12,7 +13,7 @@ export async function generateReportScreenshot(report: {
     id: number;
     topic: string;
   };
-  extra: { coverObjectUrl?: string } | null;
+  extra: AnalystReportExtra;
   onePageHtml: string;
 }): Promise<{
   // screenshotBlob: Blob;

@@ -13,7 +13,7 @@ import { generateReportScreenshot } from "@/app/artifacts/lib/screenshot";
 import { fileUrlToDataUrl } from "@/lib/attachments/actions";
 import { ChatMessageAttachment } from "@/lib/attachments/types";
 import { generateToken } from "@/lib/utils";
-import { Analyst, AnalystReport } from "@/prisma/client";
+import { Analyst, AnalystReport, AnalystReportExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { FinishReason, Message, streamText, tool } from "ai";
 import { Locale } from "next-intl";
@@ -132,7 +132,7 @@ export const generateReportTool = ({
       await Promise.all([
         generateReportScreenshot({
           ...report,
-          extra: report.extra as { coverObjectUrl?: string } | null,
+          extra: report.extra as AnalystReportExtra,
           analyst,
         }).catch((error) => {
           reportLog.error(`Error generating screenshot for report ${report.token}: ${error}`); // cover 生成失败就算了

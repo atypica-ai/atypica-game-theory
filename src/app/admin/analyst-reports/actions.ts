@@ -4,7 +4,7 @@ import { AdminPermission } from "@/app/admin/types";
 import { generateReportScreenshot } from "@/app/artifacts/lib/screenshot";
 import { s3SignedUrl } from "@/lib/attachments/s3";
 import { ServerActionResult } from "@/lib/serverAction";
-import { Analyst, AnalystReport, User } from "@/prisma/client";
+import { Analyst, AnalystReport, AnalystReportExtra, User } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { revalidatePath } from "next/cache";
 
@@ -72,7 +72,7 @@ export async function fetchAnalystReportsAction(
       let coverUrl: string | undefined;
 
       if (report.extra && typeof report.extra === "object" && "coverObjectUrl" in report.extra) {
-        const coverObjectUrl = (report.extra as { coverObjectUrl?: string }).coverObjectUrl;
+        const coverObjectUrl = report.extra.coverObjectUrl as string;
         if (coverObjectUrl) {
           try {
             coverUrl = await s3SignedUrl(coverObjectUrl);
@@ -119,9 +119,7 @@ export async function adminGenerateScreenshotAction(
       },
     },
   })) as Omit<AnalystReport, "extra"> & {
-    extra: {
-      coverObjectUrl?: string;
-    } | null;
+    extra: AnalystReportExtra;
     analyst: {
       userId: number;
       id: number;

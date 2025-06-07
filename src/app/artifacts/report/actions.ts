@@ -1,6 +1,7 @@
 "use server";
 import { generateReportPDF } from "@/app/artifacts/lib/pdf";
 import { withAuth } from "@/lib/request/withAuth";
+import { AnalystReportExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { forbidden } from "next/navigation";
 
@@ -51,9 +52,7 @@ export async function generateReportPDFAction(reportToken: string): Promise<{
       pdfUrl,
     } = await generateReportPDF({
       ...report,
-      extra: report.extra as {
-        pdfObjectUrl?: string;
-      } | null,
+      extra: report.extra as AnalystReportExtra,
     });
 
     return {
