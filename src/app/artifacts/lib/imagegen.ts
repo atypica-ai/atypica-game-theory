@@ -121,12 +121,18 @@ async function backgroundGenerateImage({
 
   const backgroundGeneration = new Promise<string>(async (resolve, reject) => {
     try {
-      const { getObjectUrl, objectUrl, urls } = await generateMidjourney({
+      // const { getObjectUrl, objectUrl, urls } = await generateMidjourney({
+      //   prompt,
+      //   ratio,
+      //   promptHash,
+      //   genLog,
+      //   // abortSignal: req.signal,
+      // });
+      const { getObjectUrl, objectUrl } = await generateGPTImage({
         prompt,
         ratio,
         promptHash,
         genLog,
-        // abortSignal: req.signal,
       });
       // 图像生成一张固定消耗 10000 tokens
       await statReport("tokens", 10000, {
@@ -140,7 +146,7 @@ async function backgroundGenerateImage({
           generatedAt: new Date(),
           extra: {
             ...recordExtra,
-            midjourney: { urls },
+            // midjourney: { urls },
           },
         },
       });
@@ -160,6 +166,7 @@ async function backgroundGenerateImage({
   // 不返回 promise，立即 resolve，调用者可以继续，imagegen 在后台运行，直到结束
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function generateMidjourney({
   prompt,
   ratio,
@@ -247,25 +254,46 @@ async function generateMidjourney({
 /**
  * gemini 总是出现 Error [AI_NoImageGeneratedError]: No image generated.，可用性还需要多测试
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function generateGPTImage({
   prompt,
   ratio,
   promptHash,
+  genLog,
 }: {
   prompt: string;
   ratio: "square" | "landscape" | "portrait";
   promptHash: string;
+  genLog: Logger;
   abortSignal?: AbortSignal;
 }) {
-  const { image } = await generateImage({
-    model: imageModel("imagen-4.0-ultra"),
-    aspectRatio: ratio === "square" ? "1:1" : ratio === "landscape" ? "16:9" : "9:16",
-    // model: imageModel("gpt-image-1"),
-    // size: ratio === "square" ? "1024x1024" : ratio === "landscape" ? "1536x1024" : "1024x1536",
-    prompt,
-    // abortSignal: req.signal, // 后台运行，不 abort
-  });
+  const { image } = await new Promise<Awaited<ReturnType<typeof generateImage>>>(
+    async (resolve, reject) => {
+      generateImage({
+        model: imageModel("imagen-4.0-ultra"),
+        aspectRatio: ratio === "square" ? "1:1" : ratio === "landscape" ? "16:9" : "9:16",
+        // model: imageModel("gpt-image-1"),
+        // size: ratio === "square" ? "1024x1024" : ratio === "landscape" ? "1536x1024" : "1024x1536",
+        prompt,
+        // abortSignal: req.signal, // 后台运行，不 abort
+        abortSignal: AbortSignal.timeout(300 * 1000),
+      })
+        .then((res) => resolve(res))
+        .catch((error) => reject(error));
+
+      const startTime = Date.now();
+      let elapsedSeconds = 0;
+      const checkJob = async () => {
+        elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
+        if (elapsedSeconds > 300) {
+          reject(new Error("generateGPTImage request timeout"));
+          return;
+        }
+        genLog.info(`generateGPTImage ${promptHash}, ${elapsedSeconds} seconds`);
+        setTimeout(checkJob, 5000);
+      };
+      setTimeout(checkJob, 0);
+    },
+  );
   const { getObjectUrl, objectUrl } = await uploadToS3({
     keySuffix: `imagegen/${promptHash}.png`,
     fileBody: image.uint8Array,
