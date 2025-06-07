@@ -92,7 +92,6 @@ async function backgroundGenerateImage({
     studyUserChatId: report.analyst.studyUserChat.id,
     studyUserChatToken: report.analyst.studyUserChat.token,
   });
-  const genLog = studyLog.child({ prompt, ratio });
 
   // 图片没有生成过，需要检查必要的权限，有权限以后可以接下来插入数据库条目
   // update: 现在是 triggerImageGeneration 方法在调用，所以无需校验用户了
@@ -112,54 +111,49 @@ async function backgroundGenerateImage({
       extra: { ...recordExtra },
     },
   });
-
+  const genLog = rootLogger.child({ promptHash, imageGenerationId: id });
   const { statReport } = initStudyStatReporter({
     userId: report.analyst.userId,
     studyUserChatId: report.analyst.studyUserChat.id,
     studyLog,
   });
 
+  // const abortSignal = req.signal;
   const backgroundGeneration = new Promise<string>(async (resolve, reject) => {
+    let result: { getObjectUrl: string; objectUrl: string; urls?: string[] };
     try {
-      // const { getObjectUrl, objectUrl, urls } = await generateMidjourney({
-      //   prompt,
-      //   ratio,
-      //   promptHash,
-      //   genLog,
-      //   // abortSignal: req.signal,
-      // });
-      const { getObjectUrl, objectUrl } = await generateGPTImage({
-        prompt,
-        ratio,
-        promptHash,
-        genLog,
-      });
-      // 图像生成一张固定消耗 10000 tokens
-      await statReport("tokens", 10000, {
-        reportedBy: "image generation",
-        imageGenerationId: id,
-      });
-      await prisma.imageGeneration.update({
-        where: { id },
-        data: {
-          objectUrl,
-          generatedAt: new Date(),
-          extra: {
-            ...recordExtra,
-            // midjourney: { urls },
-          },
-        },
-      });
-      resolve(getObjectUrl);
+      // result = await generateMidjourney({ prompt, ratio, promptHash, genLog });
+      result = await generateGPTImage({ prompt, ratio, promptHash, genLog });
     } catch (error) {
-      await prisma.imageGeneration.update({
-        where: { id },
-        data: {
-          extra: { ...recordExtra, error: (error as Error).message },
-        },
-      });
-      reject(error);
+      const errorMsg = (error as Error).message;
+      if (errorMsg.includes("No image generated")) {
+        // 一个还不知道什么原因的 imagen-4.0-ultra 的错误
+        genLog.error(`generateGPTImage error: ${errorMsg}, fallback to generateMidjourney`);
+        result = await generateMidjourney({ prompt, ratio, promptHash, genLog });
+      } else {
+        await prisma.imageGeneration.update({
+          where: { id },
+          data: { extra: { ...recordExtra, error: errorMsg } },
+        });
+        reject(error);
+        return;
+      }
     }
+    const { getObjectUrl, objectUrl, urls } = result;
+    // 图像生成一张固定消耗 10000 tokens
+    await statReport("tokens", 10000, {
+      reportedBy: "image generation",
+      imageGenerationId: id,
+    });
+    await prisma.imageGeneration.update({
+      where: { id },
+      data: {
+        objectUrl,
+        generatedAt: new Date(),
+        extra: urls ? { ...recordExtra, midjourney: { urls } } : { ...recordExtra },
+      },
+    });
+    resolve(getObjectUrl);
   });
 
   waitUntil(backgroundGeneration);

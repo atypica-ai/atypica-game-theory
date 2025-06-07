@@ -32,8 +32,6 @@ export async function GET(req: Request, { params }: { params: Promise<{ prompt: 
     ratio = "square";
   }
 
-  const genLog = rootLogger.child({ prompt, ratio });
-
   const promptHash = createHash("sha256")
     .update(JSON.stringify({ prompt, ratio }))
     .digest("hex")
@@ -55,7 +53,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ prompt: 
   ) {
     return Response.json({ error: "image generation timeout" }, { status: 408 });
   }
+
   const { id } = existingImage;
+  const genLog = rootLogger.child({ promptHash, imageGenerationId: id });
   try {
     const getObjectUrl = await new Promise<string>(async (resolve, reject) => {
       req.signal.addEventListener("abort", () => {
