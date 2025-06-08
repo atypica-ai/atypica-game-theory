@@ -40,7 +40,7 @@ export async function generateMetadata(): Promise<Metadata> {
             "market analysis",
             "decision support",
           ],
-    authors: [{ name: "Tezign" }],
+    authors: [{ name: "BMRLab" }],
     category: "technology",
     openGraph: pageMetadata.openGraph,
     twitter: pageMetadata.twitter,

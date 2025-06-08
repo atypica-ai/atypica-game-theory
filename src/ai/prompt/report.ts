@@ -95,7 +95,7 @@ export const reportHTMLSystem = ({ locale }: { locale: Locale }) =>
 - 不使用复杂的CSS图表或可视化
 
 【底部信息】
-- 报告末尾包含："报告由特赞公司的 atypica.AI 提供技术支持"
+- 报告末尾包含："报告由 atypica.AI 提供技术支持"
 - 生成日期
 
 你的回复应该只包含可直接使用的HTML代码，从<!DOCTYPE html>开始。
@@ -191,7 +191,7 @@ English Prompt Creation Requirements (Professional Text-to-Image Artist Perspect
 - Do not use complex CSS charts or visualizations
 
 【Footer Information】
-- Include at the end of report: "Report powered by atypica.AI from Tezign"
+- Include at the end of report: "Report powered by atypica.AI"
 - Generation date
 
 Your response should contain only ready-to-use HTML code, starting with <!DOCTYPE html>.

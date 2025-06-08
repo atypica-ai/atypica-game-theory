@@ -71,7 +71,7 @@ export function NerdStats() {
             {isLoading ? (
               <div className="text-sm text-muted-foreground">Loading stats...</div>
             ) : (
-              <div className="bg-zinc-50 dark:bg-zinc-900 rounded-xl sm:rounded-3xl border border-input overflow-hidden font-mono">
+              <div className="bg-zinc-50 dark:bg-zinc-900 rounded-xl sm:rounded-3xl border border-input overflow-hidden">
                 {/* Header */}
                 <div className="px-3 tracking-tighter sm:px-6 sm:tracking-normal py-4 border-b border-input flex items-center">
                   <div className="text-xs sm:text-xl font-mono space-x-2">
@@ -82,7 +82,7 @@ export function NerdStats() {
                   </div>
                 </div>
                 {/* Stats Header */}
-                <div className="text-xs sm:text-base text-foreground/70  grid grid-cols-4 border-b border-input border-dashed">
+                <div className="text-xs sm:text-base text-foreground/70  grid grid-cols-4 border-b border-input border-dashed font-mono">
                   <div className="py-3 px-3 sm:px-6 text-center border-r border-input border-dashed">
                     time
                   </div>
@@ -112,8 +112,8 @@ export function NerdStats() {
                 </div>
 
                 {/* Footer */}
-                <div className="text-xs sm:text-sm px-3 sm:px-6 py-3 text-zinc-600 dark:text-[#85CFF6] font-medium">
-                  BMRLab @ 特赞科技
+                <div className="text-xs sm:text-sm px-3 sm:px-6 py-3 text-zinc-600 dark:text-[#85CFF6] font-medium text-right">
+                  BMRLab
                 </div>
               </div>
             )}
