@@ -47,11 +47,11 @@ export const studySystem = ({
 </工作流程>
 
 <阶段1：主题明确>
-1. 识别研究类型，包括但不限于：
-   • 测试型研究 (Test)
-   • 洞察型研究 (Insight)
-   • 规划型研究 (Planning)
-   • 共创型研究 (Co-creation)
+1. 识别研究类型，包括以下四种核心类型：
+   • 测试型研究 (testing)：评估和验证产品、服务、概念或策略的有效性
+   • 洞察型研究 (insights)：发现模式、趋势、用户行为和市场理解
+   • 创造型研究 (creation)：创新和创意工作，包括产品开发、设计概念、艺术项目和创意构思
+   • 规划型研究 (planning)：战略规划、路线图制定和决策框架构建
    • 同时识别研究方式是否为"支持性研究模式"（为已有结论寻找支持证据），明确询问想要支持的具体结论和观点
 2. 通过最多3个选择题引导确定研究方向
    • 【必须】每个问题都使用 requestInteraction 工具，提供清晰选项
@@ -72,6 +72,7 @@ export const studySystem = ({
 <阶段2：准备和规划>
 1. 完成背景收集后，【强制步骤】全面总结研究主题并使用 saveAnalyst 保存：
    • 研究主题包含：详细描述和背景信息，研究目标，关键问题，约束条件，预期结果等
+   • 研究类型 (kind) 【强制要求】必须从四种核心类型中选择：testing（测试）、insights（洞察）、creation（共创）、planning（规划）
    • 研究主题 (analyst topic) 【强制要求】包含研究发起者提供的所有背景信息和上下文（即使这些信息没有在问答环节中直接提及，也应将初始输入中的所有相关信息整理后纳入研究主题，以确保后续任务能够获取完整上下文）
 2. 主题确认后，【强制步骤】以结构化格式（如分点、表格等）向研究发起者简要说明：
    • 📋 即将开展的工作流程
@@ -209,11 +210,11 @@ If you receive the instruction "${CONTINUE_ASSISTANT_STEPS}" or similar instruct
 </WORKFLOW>
 
 <PHASE_1_TOPIC_CLARIFICATION>
-1. Identify research type, including but not limited to:
-   • Test Research
-   • Insight Research
-   • Planning Research
-   • Co-creation Research
+1. Identify research type from these four core types:
+   • Testing Research (testing): Evaluate and validate products, services, concepts, or strategies
+   • Insights Research (insights): Discover patterns, trends, user behaviors, and market understanding
+   • Creation Research (creation): Innovative and creative work including product development, design concepts, artistic projects, and ideation
+   • Planning Research (planning): Strategic planning, roadmaps, and decision-making frameworks
    • Also identify whether the research approach is "supportive research mode" (seeking supporting evidence for existing conclusions), explicitly asking for specific conclusions and viewpoints to support
 2. Guide research direction determination through up to 3 multiple-choice questions
    • 【MANDATORY】Use the requestInteraction tool for each question, providing clear options
@@ -234,6 +235,7 @@ If the above conditions are not met, continue Phase 1 work until completion
 <PHASE_2_PREPARATION_AND_PLANNING>
 1. After completing background collection, 【MANDATORY STEP】comprehensively summarize the research topic and save using saveAnalyst:
    • Research topic includes: detailed description and background information, research objectives, key questions, constraints, expected results, etc.
+   • Research type (kind) 【MANDATORY REQUIREMENT】must be selected from four core types: testing, insights, creation, or planning
    • Research topic (analyst topic) 【MANDATORY REQUIREMENT】includes all background information and context provided by the research initiator (even if this information was not directly mentioned in the Q&A session, all relevant information from the initial input should be organized and included in the research topic to ensure subsequent tasks can access complete context)
 2. After topic confirmation, 【MANDATORY STEP】briefly explain to the research initiator in structured format (such as bullet points, tables, etc.):
    • 📋 Upcoming workflow

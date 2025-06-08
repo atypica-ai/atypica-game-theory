@@ -112,6 +112,7 @@ model Analyst {
   studyUserChatId Int?      @unique @db.Integer
   studyUserChat   UserChat? @relation(fields: [studyUserChatId], references: [id])
   attachments     Json?
+  kind            String?   @db.VarChar(16)
   locale          String?   @db.VarChar(16)
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)

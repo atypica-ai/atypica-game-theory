@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Pagination } from "@/components/ui/pagination";
 import { ExtractServerActionData } from "@/lib/serverAction";
-import { formatDate } from "@/lib/utils";
+import { formatDate, proxiedImageLoader } from "@/lib/utils";
 import { CameraIcon, ExternalLinkIcon, SearchIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useLocale } from "next-intl";
@@ -163,6 +163,7 @@ export default function AnalystReportsPage() {
                 {report.coverUrl && (
                   <div className="relative w-full aspect-video overflow-hidden rounded-t-lg">
                     <Image
+                      loader={proxiedImageLoader} // mainland 加载 us s3 的资源需要 proxy
                       src={report.coverUrl}
                       alt={`Cover for ${report.analyst.topic}`}
                       fill

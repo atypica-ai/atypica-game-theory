@@ -29,7 +29,7 @@ export async function createUserChat<TKind extends UserChatKind>({
   if (!token) {
     token = generateToken();
   }
-  const extra = { clientIp, userAgent, locale };
+  const extra = { clientIp, userAgent, locale }; // 发起 chat 时候的客户端信息，不用于后续逻辑判断
   const userChat = await tx.userChat.create({
     data: { userId, title, kind, token, extra },
   });

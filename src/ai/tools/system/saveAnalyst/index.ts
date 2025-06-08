@@ -29,6 +29,11 @@ export const saveAnalystTool = ({
           "Complete research topic description including background context, objectives, target audience, key questions, and any constraints or requirements for comprehensive analysis",
         )
         .transform(fixMalformedUnicodeString),
+      kind: z
+        .enum(["testing", "planning", "insights", "creation"])
+        .describe(
+          "Research type: 'testing' for evaluating and validating products, services, concepts, or strategies; 'insights' for discovering patterns, trends, user behaviors, and market understanding; 'creation' for innovative and creative work including product development, design concepts, artistic projects, and ideation; 'planning' for strategic planning, roadmaps, and decision-making frameworks",
+        ),
       locale: z
         .enum(["zh-CN", "en-US"])
         .optional()
@@ -39,7 +44,7 @@ export const saveAnalystTool = ({
     experimental_toToolResultContent: (result: PlainTextToolResult) => {
       return [{ type: "text", text: result.plainText }];
     },
-    execute: async ({ role, topic, locale }): Promise<SaveAnalystToolResult> => {
+    execute: async ({ role, topic, kind: analystKind, locale }): Promise<SaveAnalystToolResult> => {
       const { analyst } = await prisma.userChat.findUniqueOrThrow({
         where: { id: studyUserChatId, kind: "study" },
         select: {
@@ -67,6 +72,7 @@ export const saveAnalystTool = ({
         data: {
           role: role.slice(0, 100), // 为了数据库不报错，防御性的截断一下
           topic,
+          kind: analystKind,
           locale,
         },
       });
