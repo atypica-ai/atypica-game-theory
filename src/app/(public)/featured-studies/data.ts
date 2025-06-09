@@ -1,6 +1,7 @@
-export enum FeaturedStudyCategory {
-  TESTING = "TESTING",
-  PLANNING = "PLANNING",
-  INSIGHTS = "INSIGHTS",
-  COCREATION = "COCREATION",
+export enum AnalystKind {
+  testing = "testing",
+  planning = "planning",
+  insights = "insights",
+  creation = "creation",
+  misc = "misc",
 }

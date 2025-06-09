@@ -1,5 +1,5 @@
 "use server";
-import { FeaturedStudyCategory } from "@/app/(public)/featured-studies/data";
+import { AnalystKind } from "@/app/(public)/featured-studies/data";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { ServerActionResult } from "@/lib/serverAction";
 import { Analyst, FeaturedStudy, User, UserChat } from "@/prisma/client";
@@ -12,30 +12,30 @@ import { AdminPermission } from "../types";
 
 export async function fetchPublicFeaturedStudies({
   locale,
-  category,
+  kind,
   limit,
   random,
 }: {
   locale: Locale;
-  category?: string;
+  kind?: AnalystKind | "all";
   limit?: number;
   random?: boolean;
 }): Promise<
   ServerActionResult<
-    (FeaturedStudy & {
-      analyst: Pick<Analyst, "id" | "role" | "topic" | "studySummary">;
+    (Pick<FeaturedStudy, "id" | "displayOrder"> & {
+      analyst: Pick<Analyst, "id" | "role" | "topic" | "studySummary"> & {
+        kind: AnalystKind | null;
+      };
       studyUserChat: Pick<UserChat, "id" | "token">;
-      category: FeaturedStudyCategory | null;
     })[]
   >
 > {
   locale = locale || (await getLocale());
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let where: any =
-    category && category !== "all"
+    kind && kind !== "all"
       ? {
-          category: category,
-          analyst: { locale: locale },
+          analyst: { locale: locale, kind: kind },
         }
       : {
           analyst: { locale: locale },
@@ -61,7 +61,9 @@ export async function fetchPublicFeaturedStudies({
 
   const featuredStudies = await prisma.featuredStudy.findMany({
     where,
-    include: {
+    select: {
+      id: true,
+      displayOrder: true,
       studyUserChat: {
         select: {
           id: true,
@@ -71,6 +73,7 @@ export async function fetchPublicFeaturedStudies({
       analyst: {
         select: {
           id: true,
+          kind: true,
           role: true,
           topic: true,
           studySummary: true,
@@ -87,7 +90,10 @@ export async function fetchPublicFeaturedStudies({
     success: true,
     data: featuredStudies.map((study) => ({
       ...study,
-      category: study.category as FeaturedStudyCategory | null,
+      analyst: {
+        ...study.analyst,
+        kind: study.analyst.kind as AnalystKind | null,
+      },
     })),
   };
 }
@@ -95,12 +101,19 @@ export async function fetchPublicFeaturedStudies({
 // Get all featured studies
 export async function fetchFeaturedStudies(): Promise<
   ServerActionResult<
-    (FeaturedStudy & { analyst: Analyst; studyUserChat: Pick<UserChat, "id" | "token"> })[]
+    (Pick<FeaturedStudy, "id" | "displayOrder"> & {
+      analyst: Omit<Analyst, "kind"> & {
+        kind: AnalystKind | null;
+      };
+      studyUserChat: Pick<UserChat, "id" | "token">;
+    })[]
   >
 > {
   await checkAdminAuth([AdminPermission.MANAGE_STUDIES]);
   const featuredStudies = await prisma.featuredStudy.findMany({
-    include: {
+    select: {
+      id: true,
+      displayOrder: true,
       analyst: true,
       studyUserChat: {
         select: {
@@ -113,7 +126,13 @@ export async function fetchFeaturedStudies(): Promise<
   });
   return {
     success: true,
-    data: featuredStudies,
+    data: featuredStudies.map((study) => ({
+      ...study,
+      analyst: {
+        ...study.analyst,
+        kind: study.analyst.kind as AnalystKind | null,
+      },
+    })),
   };
 }
 
@@ -289,30 +308,6 @@ export async function updateDisplayOrder(
   });
 
   revalidatePath("/admin/featured-studies");
-  return {
-    success: true,
-    data: undefined,
-  };
-}
-
-export async function updateCategory(
-  id: number,
-  category: FeaturedStudyCategory,
-): Promise<ServerActionResult<void>> {
-  await checkAdminAuth([AdminPermission.MANAGE_STUDIES]);
-
-  // Sanitize the category string
-  const sanitizedCategory = category.trim() || "general";
-
-  await prisma.featuredStudy.update({
-    where: { id },
-    data: { category: sanitizedCategory },
-  });
-
-  revalidatePath("/admin/featured-studies");
-  revalidatePath("/featured-studies");
-  revalidatePath("/"); // Revalidate home page as well
-
   return {
     success: true,
     data: undefined,

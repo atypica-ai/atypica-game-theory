@@ -1,5 +1,4 @@
 "use client";
-import { FeaturedStudyCategory } from "@/app/(public)/featured-studies/data";
 import { PaginationInfo } from "@/app/admin/types";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,13 +11,6 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Pagination } from "@/components/ui/pagination";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDate } from "@/lib/utils";
 import { Analyst } from "@/prisma/client";
@@ -32,7 +24,6 @@ import {
   fetchAnalysts,
   fetchFeaturedStudies,
   toggleFeaturedStatus,
-  updateCategory,
   updateDisplayOrder,
   updatePositionDirect,
 } from "./actions";
@@ -131,14 +122,6 @@ export default function FeaturedStudiesPage() {
     }
   };
 
-  const handleCategoryChange = async (id: number, category: string) => {
-    const result = await updateCategory(id, category as FeaturedStudyCategory);
-    if (!result.success) {
-      setError(result.message);
-    } else {
-      await fetchData();
-    }
-  };
   const handlePositionChange = async (id: number, newPosition: number) => {
     const result = await updatePositionDirect(id, newPosition);
     if (!result.success) {
@@ -177,7 +160,7 @@ export default function FeaturedStudiesPage() {
                     Role
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                    Category
+                    Kind
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                     Actions
@@ -229,23 +212,7 @@ export default function FeaturedStudiesPage() {
                     </td>
                     <td className="px-4 py-2 text-xs">{study.analyst.topic}</td>
                     <td className="whitespace-nowrap px-4 py-2 text-xs">{study.analyst.role}</td>
-                    <td className="whitespace-nowrap px-4 py-2 text-xs">
-                      <Select
-                        defaultValue={study.category || "GENERAL"}
-                        onValueChange={(value) => handleCategoryChange(study.id, value)}
-                      >
-                        <SelectTrigger size="sm" className="w-36 text-xs">
-                          <SelectValue placeholder="Select category" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {Object.values(FeaturedStudyCategory).map((category) => (
-                            <SelectItem key={category} value={category} className="text-xs">
-                              {category.charAt(0) + category.slice(1).toLowerCase()}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </td>
+                    <td className="whitespace-nowrap px-4 py-2 text-xs">{study.analyst.kind}</td>
                     <td className="whitespace-nowrap px-4 py-2 text-xs space-x-2">
                       <Button
                         variant="destructive"

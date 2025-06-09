@@ -10,7 +10,7 @@ import { Loader2Icon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { FeaturedStudyCategory } from "./data";
+import { AnalystKind } from "./data";
 
 type TStudies = ExtractServerActionData<typeof fetchPublicFeaturedStudies>;
 
@@ -19,7 +19,7 @@ export default function FeaturedStudiesClient() {
   const t = useTranslations("FeaturedStudiesPage");
   const [studies, setStudies] = useState<TStudies>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeCategory, setActiveCategory] = useState<string>("all");
+  const [activeAnalystKind, setActiveAnalystKind] = useState<AnalystKind | "all">("all");
 
   useEffect(() => {
     async function loadStudies() {
@@ -27,7 +27,7 @@ export default function FeaturedStudiesClient() {
       try {
         const result = await fetchPublicFeaturedStudies({
           locale,
-          category: activeCategory === "all" ? undefined : activeCategory,
+          kind: activeAnalystKind === "all" ? undefined : activeAnalystKind,
         });
         if (result.success) {
           setStudies(result.data);
@@ -37,37 +37,37 @@ export default function FeaturedStudiesClient() {
       }
     }
     loadStudies();
-  }, [activeCategory, locale]);
+  }, [activeAnalystKind, locale]);
 
   // Filter studies by category
   const filteredStudies =
-    activeCategory === "all"
+    activeAnalystKind === "all"
       ? studies
-      : studies.filter((study) => study.category === activeCategory);
+      : studies.filter((study) => study.analyst.kind === activeAnalystKind);
 
-  const categories: ("all" | FeaturedStudyCategory)[] = [
+  const kinds: ("all" | AnalystKind)[] = [
     "all",
-    FeaturedStudyCategory.TESTING,
-    FeaturedStudyCategory.PLANNING,
-    FeaturedStudyCategory.INSIGHTS,
-    FeaturedStudyCategory.COCREATION,
+    AnalystKind.testing,
+    AnalystKind.planning,
+    AnalystKind.insights,
+    AnalystKind.creation,
   ];
 
-  const getCategoryLabel = (category: "all" | FeaturedStudyCategory | null) => {
-    if (!category) return "";
-    switch (category) {
+  const getAnalystKindLabel = (kind: "all" | AnalystKind | null) => {
+    if (!kind) return "";
+    switch (kind) {
       case "all":
-        return t("categories.all");
-      case FeaturedStudyCategory.TESTING:
-        return t("categories.testing");
-      case FeaturedStudyCategory.PLANNING:
-        return t("categories.planning");
-      case FeaturedStudyCategory.INSIGHTS:
-        return t("categories.insights");
-      case FeaturedStudyCategory.COCREATION:
-        return t("categories.cocreation");
+        return t("kinds.all");
+      case AnalystKind.testing:
+        return t("kinds.testing");
+      case AnalystKind.planning:
+        return t("kinds.planning");
+      case AnalystKind.insights:
+        return t("kinds.insights");
+      case AnalystKind.creation:
+        return t("kinds.creation");
       default:
-        return category;
+        return kind;
     }
   };
 
@@ -88,7 +88,7 @@ export default function FeaturedStudiesClient() {
               <HippyGhostAvatar seed={study.id} className="size-6" />
               <CardTitle className="text-sm font-normal truncate">{study.analyst.role}</CardTitle>
               <div className="ml-auto text-xs md:text-sm text-muted-foreground">
-                {getCategoryLabel(study.category)}
+                {getAnalystKindLabel(study.analyst.kind)}
               </div>
             </CardHeader>
             <CardContent className="flex-1">
@@ -120,19 +120,19 @@ export default function FeaturedStudiesClient() {
 
         {/* Desktop view: Tabs */}
         <Tabs
-          defaultValue="all"
-          value={activeCategory}
-          onValueChange={setActiveCategory}
+          defaultValue={"all" as AnalystKind | "all"}
+          value={activeAnalystKind}
+          onValueChange={(value) => setActiveAnalystKind(value as AnalystKind | "all")}
           className="mt-6 items-center hidden md:flex w-full"
         >
           <TabsList className="mb-6">
-            {categories.map((category) => (
-              <TabsTrigger key={category} value={category} className="capitalize">
-                {getCategoryLabel(category)}
+            {kinds.map((kind) => (
+              <TabsTrigger key={kind} value={kind} className="capitalize">
+                {getAnalystKindLabel(kind)}
               </TabsTrigger>
             ))}
           </TabsList>
-          <TabsContent value={activeCategory}>
+          <TabsContent value={activeAnalystKind}>
             {isLoading ? (
               <div className="flex justify-center">
                 <Loader2Icon className="size-8 animate-spin" />
@@ -146,13 +146,13 @@ export default function FeaturedStudiesClient() {
         {/* Mobile view: Dropdown select */}
         <div className="md:hidden w-full max-w-xs mt-6">
           <select
-            value={activeCategory}
-            onChange={(e) => setActiveCategory(e.target.value)}
+            value={activeAnalystKind}
+            onChange={(e) => setActiveAnalystKind(e.target.value as AnalystKind | "all")}
             className="w-full p-2 border rounded-md bg-background"
           >
-            {categories.map((category) => (
-              <option key={category} value={category} className="capitalize">
-                {getCategoryLabel(category)}
+            {kinds.map((kind) => (
+              <option key={kind} value={kind} className="capitalize">
+                {getAnalystKindLabel(kind)}
               </option>
             ))}
           </select>

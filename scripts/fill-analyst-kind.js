@@ -10,25 +10,12 @@ const bedrock = createAmazonBedrock({
   secretAccessKey: process.env.AWS_BEDROCK_SECRET_ACCESS_KEY,
 });
 
-async function main() {
-  const analysts = await prisma.analyst.findMany({
-    select: { id: true, role: true, topic: true },
-    where: {
-      kind: null,
-      topic: {
-        not: "",
-      },
-    },
-    orderBy: { id: "desc" },
-  });
-  console.log(`Found ${analysts.length} analysts without kind classification`);
-  for (const analyst of analysts) {
-    try {
-      console.log(`Processing analyst ${analyst.id}...`);
+async function single(analyst) {
+  console.log(`Processing analyst ${analyst.id}...`);
 
-      const result = await generateText({
-        model: bedrock("us.anthropic.claude-3-7-sonnet-20250219-v1:0"),
-        prompt: `You are a professional research classification expert. Based on the analyst's role and research topic, determine what type of research this is.
+  const result = await generateText({
+    model: bedrock("us.anthropic.claude-3-7-sonnet-20250219-v1:0"),
+    prompt: `You are a professional research classification expert. Based on the analyst's role and research topic, determine what type of research this is.
 
 Research type definitions:
 - testing: Compare options, validate hypotheses, measure effectiveness, and test user reactions or preferences
@@ -45,39 +32,51 @@ Requirements:
 1. Carefully analyze the core objectives and content of the research topic
 2. Return only one word as the result: testing, insights, creation, planning, or misc
 3. Do not include any explanations or other text`,
-        maxTokens: 50,
-      });
+    maxTokens: 50,
+  });
 
-      let kind = result.text.trim().toLowerCase();
+  let kind = result.text.trim().toLowerCase();
 
-      // 验证返回的类型是否有效
-      const validKinds = ["testing", "insights", "creation", "planning", "misc"];
-      if (!validKinds.includes(kind)) {
-        console.warn(`Invalid kind '${kind}' for analyst ${analyst.id}, using 'misc' as fallback`);
-        kind = "misc";
-      }
-
-      // 更新数据库
-      await prisma.analyst.update({
-        where: { id: analyst.id },
-        data: { kind },
-      });
-
-      console.log(`✓ Analyst ${analyst.id} classified as: ${kind}`);
-
-      // 添加小延迟避免API限流
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-    } catch (error) {
-      console.error(`Error processing analyst ${analyst.id}:`, error);
-      // 发生错误时设置为 misc
-      await prisma.analyst.update({
-        where: { id: analyst.id },
-        data: { kind: "misc" },
-      });
-      console.log(`✓ Analyst ${analyst.id} set to 'misc' due to error`);
-    }
+  // 验证返回的类型是否有效
+  const validKinds = ["testing", "insights", "creation", "planning", "misc"];
+  if (!validKinds.includes(kind)) {
+    console.warn(`Invalid kind '${kind}' for analyst ${analyst.id}, using 'misc' as fallback`);
+    kind = "misc";
   }
 
+  // 更新数据库
+  await prisma.analyst.update({
+    where: { id: analyst.id },
+    data: { kind },
+  });
+
+  console.log(`✓ Analyst ${analyst.id} classified as: ${kind}`);
+}
+
+async function main() {
+  const analysts = await prisma.analyst.findMany({
+    select: { id: true, role: true, topic: true },
+    where: {
+      // featuredStudy: {
+      //   isNot: null,
+      // },
+      kind: null,
+      topic: {
+        not: "",
+      },
+    },
+    orderBy: { id: "desc" },
+  });
+  console.log(`Found ${analysts.length} analysts without kind classification`);
+  const promises = [];
+  for (const analyst of analysts) {
+    promises.push(single(analyst));
+    if (promises.length >= 10) {
+      await Promise.all(promises);
+      promises.length = 0;
+    }
+  }
+  await Promise.all(promises);
   console.log("All analysts processed successfully");
 }
 

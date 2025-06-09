@@ -105,12 +105,12 @@
   "FeaturedStudiesPage": {
     "title": "精选研究",
     "description": "浏览我们的市场研究和分析集合",
-    "categories": {
+    "kinds": {
       "all": "全部研究",
       "testing": "测试",
       "planning": "规划",
       "insights": "洞察",
-      "cocreation": "共创"
+      "creation": "创意"
     },
     "noStudies": "该类别下暂无研究。",
     "viewStudy": "查看研究"
