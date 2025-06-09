@@ -35,10 +35,9 @@ export const saveAnalystTool = ({
           "Research type: 'testing' for comparing options, validating hypotheses, measuring effectiveness, and testing user reactions or preferences; 'insights' for understanding current situations, discovering problems, and analyzing behaviors; 'creation' for generating new ideas, designing innovative solutions, and creative exploration; 'planning' for developing frameworks, designing solution architectures, and creating structured implementation plans; 'misc' for general research that doesn't fit the other categories",
         ),
       locale: z
-        .enum(["zh-CN", "en-US"])
-        .optional()
+        .enum(["zh-CN", "en-US", "misc"])
         .describe(
-          "Language used in the text parameters (role, topic, etc.). Use 'zh-CN' for Chinese content, 'en-US' for English content. Do not provide a value if there is no matching option",
+          "Language used in the text parameters (role, topic, etc.). Use 'zh-CN' for Chinese content, 'en-US' for English content, 'misc' for unclear or mixed languages that cannot be clearly determined.",
         ),
     }),
     experimental_toToolResultContent: (result: PlainTextToolResult) => {

@@ -74,6 +74,7 @@ export const studySystem = ({
 1. 完成背景收集后，【强制步骤】全面总结研究主题并使用 saveAnalyst 保存：
    • 研究主题包含：详细描述和背景信息，研究目标，关键问题，约束条件，预期结果等
    • 研究类型 (kind) 【强制要求】必须从五种核心类型中选择：testing（测试）、insights（洞察）、creation（创造）、planning（规划）、misc（综合）
+   • 语言类型 (locale) 【强制要求】必须根据内容语言选择：'zh-CN' 表示中文内容，'en-US' 表示英文内容，'misc' 表示语言不清楚或无法明确判断的混合语言内容
    • 研究主题 (analyst topic) 【强制要求】包含研究发起者提供的所有背景信息和上下文（即使这些信息没有在问答环节中直接提及，也应将初始输入中的所有相关信息整理后纳入研究主题，以确保后续任务能够获取完整上下文）
 2. 主题确认后，【强制步骤】以结构化格式（如分点、表格等）向研究发起者简要说明：
    • 📋 即将开展的工作流程
@@ -238,6 +239,7 @@ If the above conditions are not met, continue Phase 1 work until completion
 1. After completing background collection, 【MANDATORY STEP】comprehensively summarize the research topic and save using saveAnalyst:
    • Research topic includes: detailed description and background information, research objectives, key questions, constraints, expected results, etc.
    • Research type (kind) 【MANDATORY REQUIREMENT】must be selected from five core types: testing, insights, creation, planning, or misc
+   • Language type (locale) 【MANDATORY REQUIREMENT】must be selected based on content language: 'zh-CN' for Chinese content, 'en-US' for English content, 'misc' for unclear or mixed languages that cannot be clearly determined
    • Research topic (analyst topic) 【MANDATORY REQUIREMENT】includes all background information and context provided by the research initiator (even if this information was not directly mentioned in the Q&A session, all relevant information from the initial input should be organized and included in the research topic to ensure subsequent tasks can access complete context)
 2. After topic confirmation, 【MANDATORY STEP】briefly explain to the research initiator in structured format (such as bullet points, tables, etc.):
    • 📋 Upcoming workflow
