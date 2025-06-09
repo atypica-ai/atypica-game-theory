@@ -2,6 +2,7 @@ import { Card } from "@/components/ui/card";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/prisma/prisma";
 import { getServerSession } from "next-auth";
+import { forbidden } from "next/navigation";
 import { ReactNode } from "react";
 import AdminMobileHeader from "./components/AdminMobileHeader";
 import AdminSidebar from "./components/AdminSidebar";
@@ -20,7 +21,12 @@ export default async function AdminLayout({ children }: AdminLayoutProps) {
         include: { adminUser: true },
       })
     : null;
-  const adminRole = user?.adminUser?.role;
+
+  if (!user?.adminUser) {
+    forbidden();
+  }
+
+  const adminRole = user.adminUser.role;
 
   // Get user permissions
   let permissions: AdminPermission[] = [];

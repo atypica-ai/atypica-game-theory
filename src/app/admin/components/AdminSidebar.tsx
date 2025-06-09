@@ -8,7 +8,6 @@ import {
   Database,
   FileText,
   Home,
-  Key,
   MessageCircle,
   MonitorPlay,
   Star,
@@ -43,45 +42,27 @@ export default function AdminSidebar({ adminRole, permissions = [] }: AdminSideb
         // Dashboard accessible to all admins
       },
       {
-        label: "Featured Studies",
-        href: "/admin/featured-studies",
-        icon: <Star className="mr-2 h-4 w-4" />,
-        permission: AdminPermission.MANAGE_STUDIES,
-      },
-      {
         label: "Analyst Reports",
         href: "/admin/analyst-reports",
         icon: <FileText className="mr-2 h-4 w-4" />,
         permission: AdminPermission.MANAGE_STUDIES,
       },
       {
-        label: "Issue Studies",
-        href: "/admin/issue-studies",
-        icon: <AlertTriangle className="mr-2 h-4 w-4" />,
-        // Only for super admins
-        role: "SUPER_ADMIN",
-      },
-      {
-        label: "Maintenance Mode",
-        href: "/admin/maintenance",
-        icon: <AlertTriangle className="mr-2 h-4 w-4" />,
-        role: "SUPER_ADMIN",
-      },
-      {
-        label: "Invitation Codes",
-        href: "/admin/invitation-codes",
-        icon: <Key className="mr-2 h-4 w-4" />,
-      },
-      {
-        label: "Users",
-        href: "/admin/users",
-        icon: <Users className="mr-2 h-4 w-4" />,
-        permission: AdminPermission.MANAGE_USERS,
+        label: "Featured Studies",
+        href: "/admin/featured-studies",
+        icon: <Star className="mr-2 h-4 w-4" />,
+        permission: AdminPermission.MANAGE_STUDIES,
       },
       {
         label: "Token Consumption",
         href: "/admin/token-consumption",
         icon: <MonitorPlay className="mr-2 h-4 w-4" />,
+        permission: AdminPermission.VIEW_TOKEN_CONSUMPTION,
+      },
+      {
+        label: "Users",
+        href: "/admin/users",
+        icon: <Users className="mr-2 h-4 w-4" />,
         permission: AdminPermission.MANAGE_USERS,
       },
       {
@@ -96,6 +77,24 @@ export default function AdminSidebar({ adminRole, permissions = [] }: AdminSideb
         icon: <MessageCircle className="mr-2 h-4 w-4" />,
         permission: AdminPermission.VIEW_ENTERPRISE_LEADS,
       },
+      {
+        label: "Issue Studies",
+        href: "/admin/issue-studies",
+        icon: <AlertTriangle className="mr-2 h-4 w-4" />,
+        // Only for super admins
+        role: "SUPER_ADMIN",
+      },
+      {
+        label: "Maintenance Mode",
+        href: "/admin/maintenance",
+        icon: <AlertTriangle className="mr-2 h-4 w-4" />,
+        role: "SUPER_ADMIN",
+      },
+      // {
+      //   label: "Invitation Codes",
+      //   href: "/admin/invitation-codes",
+      //   icon: <Key className="mr-2 h-4 w-4" />,
+      // },
       {
         label: "View Site",
         href: "/",
