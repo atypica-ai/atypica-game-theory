@@ -17,6 +17,7 @@ declare module "@/prisma/client" {
     planning = "planning",
     insights = "insights",
     creation = "creation",
+    misc = "misc",
   }
 
   // import { AnalystReport as AnalystReportPrisma } from "@/prisma/client/index";

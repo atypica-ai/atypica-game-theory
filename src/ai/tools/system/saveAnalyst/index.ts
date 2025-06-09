@@ -30,9 +30,9 @@ export const saveAnalystTool = ({
         )
         .transform(fixMalformedUnicodeString),
       kind: z
-        .enum(["testing", "planning", "insights", "creation"])
+        .enum(["testing", "planning", "insights", "creation", "misc"])
         .describe(
-          "Research type: 'testing' for evaluating and validating products, services, concepts, or strategies; 'insights' for discovering patterns, trends, user behaviors, and market understanding; 'creation' for innovative and creative work including product development, design concepts, artistic projects, and ideation; 'planning' for strategic planning, roadmaps, and decision-making frameworks",
+          "Research type: 'testing' for comparing options, validating hypotheses, measuring effectiveness, and testing user reactions or preferences; 'insights' for understanding current situations, discovering problems, and analyzing behaviors; 'creation' for generating new ideas, designing innovative solutions, and creative exploration; 'planning' for developing frameworks, designing solution architectures, and creating structured implementation plans; 'misc' for general research that doesn't fit the other categories",
         ),
       locale: z
         .enum(["zh-CN", "en-US"])
