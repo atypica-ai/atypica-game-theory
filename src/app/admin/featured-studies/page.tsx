@@ -1,4 +1,5 @@
 "use client";
+import { AnalystKind } from "@/app/(public)/featured-studies/data";
 import { PaginationInfo } from "@/app/admin/types";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,38 +11,41 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Pagination } from "@/components/ui/pagination";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDate } from "@/lib/utils";
 import { Analyst } from "@/prisma/client";
-import { ArrowDown, ArrowUp, SearchIcon, StarIcon } from "lucide-react";
+import { SearchIcon, Star } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useLocale } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
-import {
-  fetchAnalysts,
-  fetchFeaturedStudies,
-  toggleFeaturedStatus,
-  updateDisplayOrder,
-  updatePositionDirect,
-} from "./actions";
+import { fetchAnalysts, toggleFeaturedStatus } from "./actions";
 
 type AnalystWithFeature = ExtractServerActionData<typeof fetchAnalysts>[number];
-type FeaturedStudyWithAnalyst = ExtractServerActionData<typeof fetchFeaturedStudies>[number];
 
 export default function FeaturedStudiesPage() {
   const { status } = useSession();
   const locale = useLocale();
   const router = useRouter();
-  const [featuredStudies, setFeaturedStudies] = useState<FeaturedStudyWithAnalyst[]>([]);
   const [analysts, setAnalysts] = useState<AnalystWithFeature[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedKind, setSelectedKind] = useState<AnalystKind | "all">("all");
+  const [featuredOnly, setFeaturedOnly] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Initialize page from URL on load
@@ -50,25 +54,49 @@ export default function FeaturedStudiesPage() {
       const url = new URL(window.location.href);
       const pageParam = url.searchParams.get("page");
       const searchParam = url.searchParams.get("search");
+      const kindParam = url.searchParams.get("kind");
+      const featuredParam = url.searchParams.get("featured");
+
       if (pageParam) {
         setCurrentPage(parseInt(pageParam, 10));
       }
       if (searchParam) {
         setSearchQuery(searchParam);
       }
+      if (kindParam) {
+        setSelectedKind(kindParam as AnalystKind | "all");
+      }
+      if (featuredParam === "true") {
+        setFeaturedOnly(true);
+      }
     }
   }, []);
-  // Update URL when page changes
+
+  // Update URL when filters change
   useEffect(() => {
     const url = new URL(window.location.href);
     url.searchParams.set("page", currentPage.toString());
+
     if (searchQuery) {
       url.searchParams.set("search", searchQuery);
     } else {
       url.searchParams.delete("search");
     }
+
+    if (selectedKind !== "all") {
+      url.searchParams.set("kind", selectedKind);
+    } else {
+      url.searchParams.delete("kind");
+    }
+
+    if (featuredOnly) {
+      url.searchParams.set("featured", "true");
+    } else {
+      url.searchParams.delete("featured");
+    }
+
     window.history.pushState({}, "", url.toString());
-  }, [currentPage, searchQuery]);
+  }, [currentPage, searchQuery, selectedKind, featuredOnly]);
 
   const handleSearch = useCallback((e: FormEvent) => {
     e.preventDefault();
@@ -78,15 +106,14 @@ export default function FeaturedStudiesPage() {
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
-    const [featuredResult, analystsResult] = await Promise.all([
-      fetchFeaturedStudies(),
-      fetchAnalysts(currentPage, searchQuery),
-    ]);
-    if (!featuredResult.success) {
-      setError(featuredResult.message);
-    } else {
-      setFeaturedStudies(featuredResult.data);
-    }
+    const analystsResult = await fetchAnalysts(
+      currentPage,
+      searchQuery,
+      12,
+      selectedKind,
+      featuredOnly,
+    );
+
     if (!analystsResult.success) {
       setError(analystsResult.message);
     } else {
@@ -94,7 +121,7 @@ export default function FeaturedStudiesPage() {
       if (analystsResult.pagination) setPagination(analystsResult.pagination);
     }
     setIsLoading(false);
-  }, [currentPage, searchQuery]);
+  }, [currentPage, searchQuery, selectedKind, featuredOnly]);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -113,27 +140,31 @@ export default function FeaturedStudiesPage() {
     }
   };
 
-  const handleMoveOrder = async (id: number, direction: "up" | "down") => {
-    const result = await updateDisplayOrder(id, direction);
-    if (!result.success) {
-      setError(result.message);
-    } else {
-      await fetchData();
-    }
+  const handleKindChange = (value: string) => {
+    setSelectedKind(value as AnalystKind | "all");
+    setCurrentPage(1);
   };
 
-  const handlePositionChange = async (id: number, newPosition: number) => {
-    const result = await updatePositionDirect(id, newPosition);
-    if (!result.success) {
-      setError(result.message);
-    } else {
-      await fetchData();
+  const handleFeaturedToggle = (checked: boolean) => {
+    setFeaturedOnly(checked);
+    setCurrentPage(1);
+  };
+
+  const clearAllFilters = () => {
+    if (inputRef.current) {
+      inputRef.current.value = "";
     }
+    setSearchQuery("");
+    setSelectedKind("all");
+    setFeaturedOnly(false);
+    setCurrentPage(1);
   };
 
   if (status === "loading" || isLoading) {
     return <div className="container mt-8">Loading...</div>;
   }
+
+  const hasActiveFilters = searchQuery || selectedKind !== "all" || featuredOnly;
 
   return (
     <div>
@@ -141,143 +172,75 @@ export default function FeaturedStudiesPage() {
 
       {error && <div className="mb-4 rounded-lg bg-red-50 p-4 text-red-500">{error}</div>}
 
-      <div className="mb-8">
-        <h2 className="mb-4 text-xl font-semibold">Featured Studies</h2>
-        {featuredStudies.length === 0 ? (
-          <p className="text-gray-500">No featured studies currently selected.</p>
-        ) : (
-          <div className="max-h-[400px] overflow-y-auto overflow-x-auto rounded-lg border">
-            <table className="min-w-full divide-y divide">
-              <thead>
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                    Position
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                    Study Topic
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                    Role
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                    Kind
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide">
-                {featuredStudies.map((study, index) => (
-                  <tr key={study.id}>
-                    <td className="whitespace-nowrap px-4 py-2 text-xs font-medium">
-                      <div className="flex items-center gap-2">
-                        <div className="w-18">
-                          <Input
-                            type="number"
-                            min="1"
-                            max={featuredStudies.length}
-                            defaultValue={study.displayOrder}
-                            className="h-7 text-xs w-full"
-                            onBlur={(e) => {
-                              const newPos = parseInt(e.target.value, 10);
-                              if (!isNaN(newPos) && newPos !== study.displayOrder) {
-                                handlePositionChange(study.id, newPos);
-                              }
-                            }}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter") {
-                                e.currentTarget.blur();
-                              }
-                            }}
-                          />
-                        </div>
-                        <div className="flex flex-col">
-                          <button
-                            onClick={() => handleMoveOrder(study.id, "up")}
-                            disabled={index === 0}
-                            className="disabled:opacity-30"
-                          >
-                            <ArrowUp className="size-3" />
-                          </button>
-                          <button
-                            onClick={() => handleMoveOrder(study.id, "down")}
-                            disabled={index === featuredStudies.length - 1}
-                            className="disabled:opacity-30"
-                          >
-                            <ArrowDown className="size-3" />
-                          </button>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-2 text-xs">{study.analyst.topic}</td>
-                    <td className="whitespace-nowrap px-4 py-2 text-xs">{study.analyst.role}</td>
-                    <td className="whitespace-nowrap px-4 py-2 text-xs">{study.analyst.kind}</td>
-                    <td className="whitespace-nowrap px-4 py-2 text-xs space-x-2">
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        className="text-xs"
-                        onClick={() => handleToggleFeatured(study.analyst)}
-                      >
-                        Remove
-                      </Button>
-                      <Button variant="outline" size="sm" className="text-xs" asChild>
-                        <Link
-                          href={`/study/${study.studyUserChat.token}/share?replay=1`}
-                          target="_blank"
-                        >
-                          View Study
-                        </Link>
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+      {/* Filters Section */}
+      <div className="mb-6 space-y-4">
+        <form onSubmit={handleSearch} className="flex flex-wrap gap-4 items-center">
+          <div className="relative flex-1 min-w-64">
+            <div className="relative">
+              <SearchIcon className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="text"
+                defaultValue={searchQuery}
+                ref={inputRef}
+                placeholder="Search by email or topic..."
+                className="pl-8"
+              />
+            </div>
+          </div>
+          <Select value={selectedKind} onValueChange={handleKindChange}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select kind" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Kinds</SelectItem>
+              <SelectItem value={AnalystKind.testing}>Testing</SelectItem>
+              <SelectItem value={AnalystKind.planning}>Planning</SelectItem>
+              <SelectItem value={AnalystKind.insights}>Insights</SelectItem>
+              <SelectItem value={AnalystKind.creation}>Creation</SelectItem>
+              <SelectItem value={AnalystKind.misc}>Misc</SelectItem>
+            </SelectContent>
+          </Select>
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="featured-only"
+              checked={featuredOnly}
+              onCheckedChange={handleFeaturedToggle}
+            />
+            <Label htmlFor="featured-only">Featured only</Label>
+          </div>
+          <Button type="submit">Search</Button>
+        </form>
+
+        {hasActiveFilters && (
+          <div className="flex items-center gap-2 text-sm">
+            <span className="text-muted-foreground">Active filters:</span>
+            {searchQuery && (
+              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                Search: {searchQuery}
+              </span>
+            )}
+            {selectedKind !== "all" && (
+              <span className="bg-green-100 text-green-800 px-2 py-1 rounded">
+                Kind: {selectedKind}
+              </span>
+            )}
+            {featuredOnly && (
+              <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded">Featured only</span>
+            )}
+            <Button variant="outline" size="sm" onClick={clearAllFilters}>
+              Clear all
+            </Button>
           </div>
         )}
       </div>
 
-      <form onSubmit={handleSearch} className="mb-6 flex flex-wrap gap-4 items-center">
-        <div className="relative flex-1">
-          <SearchIcon className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            type="text"
-            defaultValue={searchQuery}
-            ref={inputRef}
-            placeholder="Search by email or topic..."
-            className="pl-8"
-          />
-        </div>
-        <Button type="submit">Search</Button>
-        {searchQuery && (
-          <Button
-            variant="outline"
-            onClick={() => {
-              if (inputRef.current) {
-                inputRef.current.value = "";
-              }
-              setSearchQuery("");
-              setCurrentPage(1);
-            }}
-          >
-            Clear Search
-          </Button>
-        )}
-      </form>
-
+      {/* Studies Grid */}
       <div className="mb-4">
-        <h2 className="mb-4 text-xl font-semibold">All Studies</h2>
-        {searchQuery && (
-          <div className="mb-4 text-sm text-muted-foreground">
-            Filtering by email or topic: <span className="font-medium">{searchQuery}</span>
-          </div>
-        )}
+        <h2 className="mb-4 text-xl font-semibold">Studies</h2>
         {analysts.length === 0 ? (
           <div className="text-center py-8">
             <p className="text-lg font-semibold text-gray-500">
-              {searchQuery ? `No studies found for query "${searchQuery}"` : "No studies found"}
+              {hasActiveFilters ? "No studies found matching your filters" : "No studies found"}
             </p>
           </div>
         ) : (
@@ -290,28 +253,49 @@ export default function FeaturedStudiesPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between w-full overflow-hidden">
                     <div className="truncate leading-normal">{analyst.topic}</div>
-                    {analyst.featuredStudy && (
-                      <StarIcon className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-                    )}
+                    <button
+                      onClick={() => handleToggleFeatured(analyst)}
+                      className="flex-shrink-0 p-1 hover:bg-gray-100 rounded transition-colors"
+                      title={analyst.featuredStudy ? "Remove from featured" : "Add to featured"}
+                    >
+                      <Star
+                        className={`h-5 w-5 ${
+                          analyst.featuredStudy
+                            ? "fill-yellow-400 text-yellow-400"
+                            : "text-gray-400 hover:text-yellow-400"
+                        } transition-colors`}
+                      />
+                    </button>
                   </CardTitle>
                   <CardDescription>{analyst.role}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm line-clamp-3 mb-2">{analyst.studySummary}</p>
-                  <p className="text-sm text-muted-foreground">
-                    User: {analyst.user?.email || "N/A"}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Created: {formatDate(analyst.createdAt, locale)}
-                  </p>
+                  <div className="space-y-1 text-sm text-muted-foreground">
+                    <p>User: {analyst.user?.email || "N/A"}</p>
+                    <p>Created: {formatDate(analyst.createdAt, locale)}</p>
+                  </div>
                 </CardContent>
-                <CardFooter className="gap-2 items-center justify-end">
-                  <Button
-                    variant={analyst.featuredStudy ? "outline" : "outline"}
-                    onClick={() => handleToggleFeatured(analyst)}
-                  >
-                    {analyst.featuredStudy ? "Remove from Featured" : "Add to Featured"}
-                  </Button>
+                <CardFooter className="gap-2 items-center justify-between mt-auto">
+                  <div className="flex items-center">
+                    <span
+                      className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                        analyst.kind === "testing"
+                          ? "bg-blue-100 text-blue-800"
+                          : analyst.kind === "planning"
+                            ? "bg-green-100 text-green-800"
+                            : analyst.kind === "insights"
+                              ? "bg-purple-100 text-purple-800"
+                              : analyst.kind === "creation"
+                                ? "bg-orange-100 text-orange-800"
+                                : analyst.kind === "misc"
+                                  ? "bg-gray-100 text-gray-800"
+                                  : "bg-gray-100 text-gray-500"
+                      }`}
+                    >
+                      {analyst.kind || "N/A"}
+                    </span>
+                  </div>
                   <Button variant="outline" asChild>
                     <Link
                       href={`/study/${analyst.studyUserChat?.token}/share?replay=1`}

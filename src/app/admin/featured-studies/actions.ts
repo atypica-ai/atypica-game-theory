@@ -141,6 +141,8 @@ export async function fetchAnalysts(
   page: number = 1,
   search?: string,
   pageSize: number = 12,
+  kind?: AnalystKind | "all",
+  featuredOnly?: boolean,
 ): Promise<
   ServerActionResult<
     (Analyst & {
@@ -153,21 +155,43 @@ export async function fetchAnalysts(
   await checkAdminAuth([AdminPermission.MANAGE_STUDIES]);
 
   const skip = (page - 1) * pageSize;
-  const where = search
-    ? {
-        topic: { not: "" },
-        OR: [
-          { topic: { contains: search } },
-          {
-            user: {
-              email: { contains: search },
-            },
-          },
-        ],
-      }
-    : {
-        topic: { not: "" },
-      };
+
+  // Build where clause
+  const where: {
+    topic: { not: string };
+    OR?: Array<{
+      topic?: { contains: string };
+      user?: { email: { contains: string } };
+    }>;
+    kind?: AnalystKind;
+    featuredStudy?: { isNot: null };
+  } = {
+    topic: { not: "" },
+  };
+
+  // Add search filter
+  if (search) {
+    where.OR = [
+      { topic: { contains: search } },
+      {
+        user: {
+          email: { contains: search },
+        },
+      },
+    ];
+  }
+
+  // Add kind filter
+  if (kind && kind !== "all") {
+    where.kind = kind;
+  }
+
+  // Add featured filter
+  if (featuredOnly) {
+    where.featuredStudy = {
+      isNot: null,
+    };
+  }
 
   // Get all analysts with their featured status
   const analysts = await prisma.analyst.findMany({
