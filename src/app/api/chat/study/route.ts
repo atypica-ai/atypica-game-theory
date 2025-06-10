@@ -57,10 +57,10 @@ export async function POST(req: Request) {
     reqSignal,
     studyLog,
   };
-  // const hasQuota = await checkQuota({ studyUserChatId, userId, cost: 500_000 });
-  const { balance } = await prisma.userTokens.findUniqueOrThrow({
+  const { permanentBalance, monthlyBalance } = await prisma.userTokens.findUniqueOrThrow({
     where: { userId: userId },
   });
+  const balance = permanentBalance + monthlyBalance;
   if (balance <= 0) {
     return await noQuotaAgentRequest(params);
   } else {

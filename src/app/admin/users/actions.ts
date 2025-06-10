@@ -17,7 +17,7 @@ export async function fetchUsers(
 ): Promise<
   ServerActionResult<
     (Pick<User, "id" | "name" | "email" | "createdAt" | "emailVerified"> & {
-      tokens: { balance: number } | null;
+      tokens: { permanentBalance: number; monthlyBalance: number } | null;
       paymentRecords: { id: number; amount: number; currency: Currency }[];
       adminUser: { role: AdminRole; permissions: AdminPermission[] } | null;
       lastLogin: Awaited<ReturnType<typeof authClientInfo>> | null;
@@ -59,7 +59,8 @@ export async function fetchUsers(
         lastLogin: true,
         tokens: {
           select: {
-            balance: true,
+            permanentBalance: true,
+            monthlyBalance: true,
           },
         },
         paymentRecords: {
@@ -131,23 +132,12 @@ export async function addTokensToUser(
 
   await prisma.$transaction(async (tx) => {
     // Create user tokens if they don't exist
-    if (!user.tokens) {
-      await tx.userTokens.create({
-        data: {
-          userId: user.id,
-          balance: tokens,
-        },
-      });
-    } else {
-      // Update existing tokens
-      await tx.userTokens.update({
-        where: { userId: user.id },
-        data: {
-          balance: { increment: tokens },
-        },
-      });
-    }
-
+    await tx.userTokens.update({
+      where: { userId: user.id },
+      data: {
+        permanentBalance: { increment: tokens },
+      },
+    });
     // Create a log entry
     await tx.userTokensLog.create({
       data: {

@@ -3,13 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatDate } from "@/lib/utils";
-import { UserSubscription } from "@/prisma/client";
+import { UserSubscription, UserSubscriptionExtra } from "@/prisma/client";
 import { CalendarIcon, CircleDollarSignIcon, CreditCardIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import { AddTokensDialog } from "../payment/components/AddTokensDialog";
 import { SubscriptionDialog } from "../payment/components/SubscriptionDialog";
-import { PlanExtraData } from "../payment/data";
 import { PaymentHistory } from "./PaymentHistory";
 import { TokensHistory } from "./TokensHistory";
 
@@ -18,11 +17,13 @@ export function AccountPageClient({
   subscription,
 }: {
   userTokens: {
-    balance: number;
+    permanentBalance: number;
+    monthlyBalance: number;
+    monthlyResetAt: Date | null;
   } | null;
   subscription:
     | (Omit<UserSubscription, "extra"> & {
-        extra?: PlanExtraData;
+        extra: UserSubscriptionExtra;
       })
     | null;
 }) {
@@ -109,9 +110,39 @@ export function AccountPageClient({
             <CardContent className="flex-1">
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <div className="text-sm text-muted-foreground">{t("tokensSection.balance")}</div>
-                  <div className="text-2xl font-bold">
-                    {(userTokens?.balance || 0).toLocaleString()}
+                  <div className="text-sm text-muted-foreground">
+                    {t("tokensSection.permanentBalance")}
+                  </div>
+                  <div className="text-lg font-semibold">
+                    {(userTokens?.permanentBalance || 0).toLocaleString()}
+                  </div>
+                </div>
+                <div className="flex justify-between items-center">
+                  <div className="text-sm text-muted-foreground">
+                    {t("tokensSection.monthlyBalance")}
+                  </div>
+                  <div className="text-lg font-semibold">
+                    {(userTokens?.monthlyBalance || 0).toLocaleString()}
+                  </div>
+                </div>
+                {userTokens?.monthlyResetAt && (
+                  <div className="flex justify-between items-center">
+                    <div className="text-sm text-muted-foreground">
+                      {t("tokensSection.monthlyResetAt")}
+                    </div>
+                    <div className="text-sm font-medium">
+                      {formatDate(userTokens.monthlyResetAt, locale)}
+                    </div>
+                  </div>
+                )}
+                <div className="pt-2 border-t">
+                  <div className="flex justify-between items-center">
+                    <div className="text-sm font-medium">{t("tokensSection.totalBalance")}</div>
+                    <div className="text-xl font-bold">
+                      {(
+                        (userTokens?.permanentBalance || 0) + (userTokens?.monthlyBalance || 0)
+                      ).toLocaleString()}
+                    </div>
                   </div>
                 </div>
               </div>

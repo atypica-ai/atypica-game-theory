@@ -12,8 +12,16 @@ import {
 } from "@/components/ui/table";
 import { cn, formatDate } from "@/lib/utils";
 import { UserTokensLog, UserTokensLogVerb } from "@/prisma/client";
-import { CoinsIcon, CreditCardIcon, GiftIcon, User2Icon } from "lucide-react";
+import {
+  ClockIcon,
+  CoinsIcon,
+  CreditCardIcon,
+  ExternalLinkIcon,
+  GiftIcon,
+  User2Icon,
+} from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { fetchTokensHistory } from "./actions";
 
@@ -88,48 +96,58 @@ export function TokensHistory() {
                           );
                         case UserTokensLogVerb.consume:
                           return (
-                            <div className="flex items-center gap-1">
-                              {(() => {
-                                switch (item.resourceType) {
-                                  case "StudyUserChat":
-                                    return (
-                                      <span>{t("tokensHistorySection.consume.StudyUserChat")}</span>
-                                    );
-                                  case "InterviewProject":
-                                    return (
-                                      <span>
-                                        {t("tokensHistorySection.consume.InterviewProject")}
-                                      </span>
-                                    );
-                                  default:
-                                    return <span>{t("tokensHistorySection.verbs.consume")}</span>;
-                                }
-                              })()}
-                              <HippyGhostAvatar
-                                className="size-5"
-                                seed={item.resourceId ?? undefined}
-                              />
-                            </div>
+                            <Link href={`/study?id=${item.resourceId}`} target="_blank">
+                              <div className="flex items-center gap-2">
+                                <HippyGhostAvatar
+                                  className="size-5"
+                                  seed={item.resourceId ?? undefined}
+                                />
+                                {(() => {
+                                  switch (item.resourceType) {
+                                    case "StudyUserChat":
+                                      return (
+                                        <span>
+                                          {t("tokensHistorySection.consume.StudyUserChat")}
+                                        </span>
+                                      );
+                                    case "InterviewProject":
+                                      return (
+                                        <span>
+                                          {t("tokensHistorySection.consume.InterviewProject")}
+                                        </span>
+                                      );
+                                    default:
+                                      return <span>{t("tokensHistorySection.verbs.consume")}</span>;
+                                  }
+                                })()}
+                                <ExternalLinkIcon className="size-4" />
+                              </div>
+                            </Link>
                           );
                         case UserTokensLogVerb.subscription:
-                          return (
-                            <div className="flex items-center gap-1">
-                              <span>{t("tokensHistorySection.verbs.subscription")}</span>
+                          return item.value > 0 ? (
+                            <div className="flex items-center gap-2">
                               <CreditCardIcon className="size-4" />
+                              <span>{t("tokensHistorySection.verbs.subscription")}</span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2">
+                              <ClockIcon className="size-4" />
+                              <span>{t("tokensHistorySection.verbs.subscriptionReset")}</span>
                             </div>
                           );
                         case UserTokensLogVerb.gift:
                           return (
-                            <div className="flex items-center gap-1">
-                              <span>{t("tokensHistorySection.verbs.gift")}</span>
+                            <div className="flex items-center gap-2">
                               <GiftIcon className="size-4" />
+                              <span>{t("tokensHistorySection.verbs.gift")}</span>
                             </div>
                           );
                         case UserTokensLogVerb.signup:
                           return (
-                            <div className="flex items-center gap-1">
-                              <span>{t("tokensHistorySection.verbs.signup")}</span>
+                            <div className="flex items-center gap-2">
                               <User2Icon className="size-4" />
+                              <span>{t("tokensHistorySection.verbs.signup")}</span>
                             </div>
                           );
                         default:
@@ -144,7 +162,7 @@ export function TokensHistory() {
                     })}
                   >
                     {item.value > 0 ? "+" : item.value < 0 ? "-" : ""}
-                    {Math.abs(item.value)}
+                    {Math.abs(item.value).toLocaleString()}
                   </TableCell>
                   <TableCell className="text-right">{formatDate(item.createdAt, locale)}</TableCell>
                 </TableRow>

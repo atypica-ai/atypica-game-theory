@@ -817,6 +817,10 @@
     "tokensSection": {
       "title": "Tokens",
       "balance": "Balance",
+      "permanentBalance": "Permanent Balance",
+      "monthlyBalance": "Monthly Balance",
+      "monthlyResetAt": "Monthly Reset",
+      "totalBalance": "Total Balance",
       "purchase": "Purchase Tokens"
     },
     "tokensHistorySection": {
@@ -830,6 +834,7 @@
         "recharge": "Token Purchase",
         "consume": "AI Study Usage",
         "subscription": "Subscription",
+        "subscriptionReset": "Subscription Monthly Reset",
         "gift": "Gift from atypica.AI",
         "signup": "Signup Bonus"
       },

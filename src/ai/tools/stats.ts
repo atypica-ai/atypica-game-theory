@@ -34,14 +34,21 @@ export const initStudyStatReporter = ({
               value: -value,
             },
           });
-          await tx.userTokens.update({
+          const userTokens = await tx.userTokens.findUniqueOrThrow({
             where: { userId },
-            data: {
-              balance: {
-                decrement: value,
-              },
-            },
           });
+          // 优先扣除 monthlyBalance，并且不拆分，balance 可以是负数
+          if (userTokens.monthlyBalance > 0) {
+            await tx.userTokens.update({
+              where: { userId },
+              data: { monthlyBalance: { decrement: value } },
+            });
+          } else {
+            await tx.userTokens.update({
+              where: { userId },
+              data: { permanentBalance: { decrement: value } },
+            });
+          }
         });
         studyLog.info({ msg: "User tokens consumed successfully", userId, tokens: value });
       } catch (error) {
@@ -90,14 +97,21 @@ export const initInterviewProjectStatReporter = ({
               value: -value,
             },
           });
-          await tx.userTokens.update({
+          const userTokens = await tx.userTokens.findUniqueOrThrow({
             where: { userId },
-            data: {
-              balance: {
-                decrement: value,
-              },
-            },
           });
+          // 优先扣除 monthlyBalance，并且不拆分，balance 可以是负数
+          if (userTokens.monthlyBalance > 0) {
+            await tx.userTokens.update({
+              where: { userId },
+              data: { monthlyBalance: { decrement: value } },
+            });
+          } else {
+            await tx.userTokens.update({
+              where: { userId },
+              data: { permanentBalance: { decrement: value } },
+            });
+          }
         });
         logger.info({ msg: "User tokens consumed successfully", userId, tokens: value });
       } catch (error) {

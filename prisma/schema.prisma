@@ -312,6 +312,7 @@ model PaymentLine {
 
 enum SubscriptionPlan {
   pro
+  max
 }
 
 model UserSubscription {
@@ -328,10 +329,12 @@ model UserSubscription {
 }
 
 model UserTokens {
-  id      Int  @id @default(autoincrement())
-  userId  Int  @unique
-  user    User @relation(fields: [userId], references: [id])
-  balance Int  @default(0)
+  id               Int       @id @default(autoincrement())
+  userId           Int       @unique
+  user             User      @relation(fields: [userId], references: [id])
+  permanentBalance Int       @default(0)
+  monthlyBalance   Int       @default(0)
+  monthlyResetAt   DateTime? @db.Timestamptz(6)
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
@@ -350,6 +353,7 @@ enum UserTokensLogResourceType {
   ScoutUserChat // 没用到
   InterviewProject
   PaymentRecord
+  UserSubscription
 }
 
 model UserTokensLog {

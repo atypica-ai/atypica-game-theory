@@ -2,7 +2,7 @@
 import { authOptions } from "@/lib/auth";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
-import { UserTokensLog, UserTokensLogVerb } from "@/prisma/client";
+import { UserSubscription, UserSubscriptionExtra, UserTokensLog } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { getServerSession } from "next-auth";
 import { forbidden } from "next/navigation";
@@ -118,46 +118,41 @@ export async function getUserTokensBalance(): Promise<ServerActionResult<number>
     });
     return {
       success: true,
-      data: userTokens.balance,
+      data: userTokens.permanentBalance + userTokens.monthlyBalance,
     };
   });
 }
 
-/*
- * Deprecated
- */
-export async function checkStudyUserChatConsume({
-  studyUserChatId,
-}: {
-  studyUserChatId: number;
-}): Promise<ServerActionResult<boolean>> {
-  throw new Error("Deprecated");
-
-  return withAuth(async ({ id: userId }) => {
-    const log = await prisma.userTokensLog.findFirst({
-      where: {
-        userId: userId,
-        verb: UserTokensLogVerb.consume,
-        resourceType: "StudyUserChat",
-        resourceId: studyUserChatId,
-      },
-    });
-    if (log) {
-      return {
-        success: true,
-        data: true,
-      };
-    }
-    const balanceResult = await getUserTokensBalance();
-    if (!balanceResult.success) {
-      return {
-        success: false,
-        message: balanceResult.message,
-      };
-    }
+// 返回当前生效的订阅信息
+export async function fetchActiveUserSubscription(): Promise<
+  ServerActionResult<UserSubscription | null>
+> {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) {
     return {
       success: true,
-      data: balanceResult.data >= 100,
+      data: null,
     };
+  }
+  const userId = session.user.id;
+  const now = new Date();
+  const subscription = await prisma.userSubscription.findFirst({
+    where: {
+      userId,
+      startsAt: { lte: now },
+      endsAt: { gt: now },
+    },
+    orderBy: {
+      endsAt: "desc",
+    },
   });
+  return {
+    success: true,
+    data: subscription
+      ? {
+          ...subscription,
+          extra: subscription.extra as UserSubscriptionExtra,
+        }
+      : null,
+  };
 }

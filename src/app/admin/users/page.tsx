@@ -276,9 +276,15 @@ export default function UsersPage() {
                     {user.paymentRecords.reduce((acc, r) => acc + r.amount, 0)}
                   </TableCell>
                   <TableCell className="whitespace-nowrap text-sm text-right">
-                    {formatTokensNumber(user.tokens?.balance ?? 0)} <br />
+                    {formatTokensNumber(
+                      user.tokens ? user.tokens.permanentBalance + user.tokens.monthlyBalance : 0,
+                    )}{" "}
+                    <br />
                     <span className="text-xs text-muted-foreground">
-                      {(user.tokens?.balance ?? 0).toLocaleString()}
+                      {(user.tokens
+                        ? user.tokens.permanentBalance + user.tokens.monthlyBalance
+                        : 0
+                      ).toLocaleString()}
                     </span>
                   </TableCell>
                   <TableCell className="whitespace-nowrap text-sm">
@@ -419,7 +425,11 @@ export default function UsersPage() {
             <div className="grid grid-cols-4 items-center gap-4">
               <Label className="text-right">Balance</Label>
               <div className="col-span-3 text-sm">
-                {(selectedUser?.tokens?.balance ?? 0).toLocaleString()} tokens
+                {(selectedUser?.tokens
+                  ? selectedUser.tokens.permanentBalance + selectedUser.tokens.monthlyBalance
+                  : 0
+                ).toLocaleString()}{" "}
+                tokens
               </div>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">

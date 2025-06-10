@@ -161,7 +161,12 @@ export default function IssueStudiesPage() {
                     <div className="text-sm text-muted-foreground mt-1">
                       <span className="inline-block mr-4">User: {study.user.email}</span>
                       <span className="inline-block mr-4">
-                        Token Balance: {formatTokensNumber(study.user.tokens?.balance ?? 0)}
+                        Token Balance:{" "}
+                        {formatTokensNumber(
+                          study.user.tokens
+                            ? study.user.tokens.permanentBalance + study.user.tokens.monthlyBalance
+                            : 0,
+                        )}
                       </span>
                       <span className="inline-block mr-4">
                         Paid: {study.user.paymentRecords.length}

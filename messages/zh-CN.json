@@ -817,6 +817,10 @@
     "tokensSection": {
       "title": "Token",
       "balance": "余额",
+      "permanentBalance": "永久余额",
+      "monthlyBalance": "每月余额",
+      "monthlyResetAt": "每月重置时间",
+      "totalBalance": "总余额",
       "purchase": "购买Token"
     },
     "tokensHistorySection": {
@@ -830,6 +834,7 @@
         "recharge": "充值",
         "consume": "atypica.AI 任务消耗",
         "subscription": "订阅会员",
+        "subscriptionReset": "订阅月末重置",
         "gift": "atypica.AI 赠送",
         "signup": "注册赠送"
       },

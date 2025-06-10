@@ -10,6 +10,7 @@ export enum ProductName {
   // POINTS100_D = "POINTS100_D", // 小蓝瓶咖啡
   TOKENS1M = "TOKENS1M",
   PRO1MONTH = "PRO1MONTH",
+  MAX1MONTH = "MAX1MONTH",
 }
 
 export enum PaymentMethod {
@@ -37,12 +38,6 @@ export type StripeNewPaymentParams = {
 export type PaymentChargeData = {
   // 这里只定义 stripe 相关的字段，ping++ 的那些支付以后一般用不到了，如果需要，就在这里定义
   // ... pingxx charge data
-  invoice?: Stripe.Invoice;
-};
-
-export type PlanExtraData = {
-  // ... pingxx invoice data tbd
-  paymentRecordId: number;
   invoice?: Stripe.Invoice;
 };
 
