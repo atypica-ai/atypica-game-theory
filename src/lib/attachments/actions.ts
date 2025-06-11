@@ -1,4 +1,7 @@
 "use server";
+import { rootLogger } from "@/lib/logging";
+import { proxiedFetch } from "@/lib/proxy/fetch";
+import { getDeployRegion } from "@/lib/request/deployRegion";
 import { ServerActionResult } from "@/lib/serverAction";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
@@ -66,9 +69,16 @@ export async function fileUrlToDataUrl({
   if (fs.existsSync(fileFullPath)) {
     buffer = await fs.promises.readFile(fileFullPath);
   } else {
-    const response = await fetch(url);
+    let response;
+    if (getDeployRegion() === "mainland" && !/amazonaws\.com\.cn/.test(objectUrl)) {
+      response = await proxiedFetch(url);
+    } else {
+      response = await fetch(url);
+    }
     if (!response.ok) {
-      throw new Error(`Failed to fetch file: ${url} ${response.status} ${response.statusText}`);
+      const errorMsg = `Failed to fetch file: ${url} ${response.status} ${response.statusText}`;
+      rootLogger.error(errorMsg);
+      throw new Error(errorMsg);
     }
     buffer = Buffer.from(await response.arrayBuffer());
     await fs.promises.writeFile(fileFullPath, buffer);

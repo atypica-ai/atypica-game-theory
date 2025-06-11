@@ -123,6 +123,12 @@ cp .env.example .env
 - 数据库连接信息
 - 第三方API密钥（如小红书API）
 
+```bash
+npx auth secret
+```
+
+设置 `AUTH_SECRET`, read more: https://cli.authjs.dev
+
 3. 初始化数据库
 
 ```bash
