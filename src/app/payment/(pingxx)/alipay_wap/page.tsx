@@ -1,6 +1,6 @@
+import { PaymentMethod, PingxxNewPaymentParams, ProductName } from "@/app/payment/data";
 import { Currency } from "@/prisma/client";
 import Script from "next/script";
-import { PingxxNewPaymentParams, ProductName } from "../data";
 import PaymentClient from "./PaymentClient";
 
 export default async function PingxxPaymentPage(props: {
@@ -15,6 +15,7 @@ export default async function PingxxPaymentPage(props: {
   const params: PingxxNewPaymentParams = {
     userId: parseInt(searchParams.userId),
     productName: searchParams.productName as ProductName,
+    paymentMethod: PaymentMethod.alipay_wap,
     currency: searchParams.currency as Currency,
     successUrl: searchParams.successUrl,
   };

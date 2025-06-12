@@ -1,8 +1,8 @@
 "use client";
+import { createPingxxCharge } from "@/app/payment/(pingxx)/actions";
+import { PaymentMethod, PingxxNewPaymentParams } from "@/app/payment/data";
 import { useCallback, useEffect } from "react";
 import { toast } from "sonner";
-import { createCharge } from "../actions";
-import { PaymentMethod, PingxxNewPaymentParams } from "../data";
 
 export default function PaymentClient({
   userId,
@@ -11,7 +11,7 @@ export default function PaymentClient({
   successUrl,
 }: PingxxNewPaymentParams) {
   const handlePayment = useCallback(async () => {
-    const { charge } = await createCharge({
+    const { charge } = await createPingxxCharge({
       userId,
       paymentMethod: PaymentMethod.alipay_wap,
       productName,

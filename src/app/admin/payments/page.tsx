@@ -1,5 +1,5 @@
 "use client";
-import { createCharge } from "@/app/payment/actions";
+import { createPingxxCharge } from "@/app/payment/(pingxx)/actions";
 import { PaymentMethod, ProductName } from "@/app/payment/data";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -125,7 +125,7 @@ export default function PaymentTestPage() {
       if (!session?.user) {
         return;
       }
-      const { charge } = await createCharge({
+      const { charge } = await createPingxxCharge({
         userId: session.user.id,
         paymentMethod: method,
         productName,

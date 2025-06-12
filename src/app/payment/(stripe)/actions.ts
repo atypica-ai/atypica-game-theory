@@ -1,25 +1,28 @@
+"use server";
+import {
+  PaymentMethod,
+  ProductName,
+  StripeMetadata,
+  StripeNewPaymentParams,
+} from "@/app/payment/data";
 import { getDeployRegion } from "@/lib/request/deployRegion";
 import { getRequestOrigin } from "@/lib/request/headers";
-import { Currency } from "@/prisma/client";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
-import { NextResponse } from "next/server";
 import Stripe from "stripe";
-import { PaymentMethod, ProductName, StripeNewPaymentParams } from "../data";
-import { StripeMetadata } from "../webhook/lib";
 
-// Create a fake charge for stripe
-async function createStripeSession({
+export async function createStripeSession({
   userId,
   productName,
   currency,
   successUrl,
 }: StripeNewPaymentParams) {
-  // const clientIp = await getRequestClientIp();
-  const paymentMethod: PaymentMethod = PaymentMethod.stripe;
-  if (currency !== Currency.USD) {
+  if (currency !== "USD") {
     throw new Error("Only USD currency is supported");
   }
+
+  // const clientIp = await getRequestClientIp();
+  const paymentMethod: PaymentMethod = PaymentMethod.stripe;
 
   // Generate a unique order number
   const timestamp = Date.now().toString();
@@ -115,27 +118,11 @@ async function createStripeSession({
     })),
   });
 
-  return { session } as {
-    session: Omit<typeof session, "url"> & { url: string };
-  };
-}
+  // return { session } as {
+  //   session: Omit<typeof session, "url"> & { url: string };
+  // };
 
-export async function POST(req: Request) {
-  try {
-    const formData = await req.formData();
-    const params: StripeNewPaymentParams = {
-      userId: parseInt(formData.get("userId") as string),
-      productName: formData.get("productName") as string as ProductName,
-      currency: formData.get("currency") as string as Currency,
-      successUrl: formData.get("successUrl") as string,
-    };
-    const { session } = await createStripeSession(params);
-    return NextResponse.redirect(session.url, 303);
-  } catch (error) {
-    return NextResponse.json(
-      { error: (error as Error).message },
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      { status: (error as any).statusCode || 500 },
-    );
-  }
+  return {
+    sessionUrl: session.url,
+  };
 }

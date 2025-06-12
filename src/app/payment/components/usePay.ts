@@ -23,13 +23,13 @@ export function usePay() {
       currency,
       userId,
       // paymentMethod, // 扫码自动判断渠道，不需要传
-    }: Omit<PingxxNewPaymentParams, "successUrl">) => {
+    }: Omit<PingxxNewPaymentParams, "paymentMethod">) => {
       try {
         setLoading(true);
         setError(null);
         setPaymentScanQR(null);
         const url = new URL(`${window.location.origin}/payment/auto-redirect`);
-        const params: PingxxNewPaymentParams = {
+        const params: Omit<PingxxNewPaymentParams, "paymentMethod"> = {
           userId,
           // paymentMethod,
           productName,

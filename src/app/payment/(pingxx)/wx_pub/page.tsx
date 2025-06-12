@@ -1,8 +1,8 @@
+import { PaymentMethod, PingxxNewPaymentParams, ProductName } from "@/app/payment/data";
 import { getRequestOrigin } from "@/lib/request/headers";
 import { Currency } from "@/prisma/client";
 import { permanentRedirect } from "next/navigation";
 import Script from "next/script";
-import { PingxxNewPaymentParams, ProductName } from "../data";
 import PaymentClient from "./PaymentClient";
 
 async function createWeixinLoginUrl({
@@ -10,7 +10,7 @@ async function createWeixinLoginUrl({
   productName,
   currency,
   successUrl,
-}: PingxxNewPaymentParams) {
+}: Omit<PingxxNewPaymentParams, "paymentMethod">) {
   const siteOrigin = await getRequestOrigin();
   const state = `${userId}:${productName}:${currency}`;
   const res = await fetch("https://heidianapi.com/api/clients/wechat-auth-url/", {
@@ -62,13 +62,12 @@ export default async function PingxxPaymentPage(props: {
 
   // 先微信授权获得 openid 以后再继续
   if (!searchParams.code || !searchParams.state) {
-    const params: PingxxNewPaymentParams = {
+    const { url: weixinLoginUrl } = await createWeixinLoginUrl({
       userId: parseInt(searchParams.userId),
       productName: searchParams.productName as ProductName,
       currency: searchParams.currency as Currency,
       successUrl: searchParams.successUrl,
-    };
-    const { url: weixinLoginUrl } = await createWeixinLoginUrl(params);
+    });
     permanentRedirect(weixinLoginUrl);
   }
 
@@ -76,18 +75,18 @@ export default async function PingxxPaymentPage(props: {
   const { openid } = await exchangeOpenIDWithCode({ code });
 
   const splits = state.split(":");
-  const userId = parseInt(splits[0]);
-  const productName = splits[1] as ProductName;
-  const currency = splits[2] as Currency;
+
+  const params: PingxxNewPaymentParams & { openid: string } = {
+    userId: parseInt(splits[0]),
+    productName: splits[1] as ProductName,
+    currency: splits[2] as Currency,
+    paymentMethod: PaymentMethod.wx_pub,
+    openid: openid as string,
+  };
 
   return (
     <div>
-      <PaymentClient
-        userId={userId}
-        productName={productName}
-        currency={currency}
-        openid={openid}
-      />
+      <PaymentClient {...params} />
       <Script
         src="https://global.heidiancdn.com/javascripts/vendor/pingpp-2.2.11.js"
         strategy="beforeInteractive"

@@ -1,18 +1,10 @@
 import "server-only";
 
-import { TDeployRegion } from "@/lib/request/deployRegion";
+import { ProductName } from "@/app/payment/data";
 import { PaymentRecord, SubscriptionPlan, UserTokensLogVerb } from "@/prisma/client";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import Stripe from "stripe";
-import { ProductName } from "../data";
-
-export type StripeMetadata = {
-  project: "atypica";
-  deployRegion: TDeployRegion;
-  orderNo: string;
-  productName: ProductName;
-};
 
 async function recharge1MTokens({
   userId,

@@ -1,11 +1,14 @@
+import { PaymentMethod, PingxxNewPaymentParams, ProductName } from "@/app/payment/data";
 import { Currency } from "@/prisma/client";
 import { headers } from "next/headers";
-import { PaymentMethod, PingxxNewPaymentParams, ProductName } from "../data";
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const searchParams = Object.fromEntries(url.searchParams.entries());
-  const params: PingxxNewPaymentParams = {
+  const params: Omit<PingxxNewPaymentParams, "paymentMethod"> & {
+    paymentMethod: PaymentMethod | undefined;
+    successUrl: string;
+  } = {
     userId: parseInt(searchParams.userId),
     productName: searchParams.productName as ProductName,
     currency: searchParams.currency as Currency,

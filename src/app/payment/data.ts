@@ -1,3 +1,4 @@
+import { TDeployRegion } from "@/lib/request/deployRegion";
 import { Currency, PaymentRecord as PaymentRecordPrisma } from "@/prisma/client";
 import Stripe from "stripe";
 
@@ -24,8 +25,9 @@ export type PingxxNewPaymentParams = {
   userId: number;
   productName: ProductName;
   currency: Currency;
-  paymentMethod?: PaymentMethod;
-  successUrl: string;
+  paymentMethod: PaymentMethod;
+  successUrl?: string;
+  openid?: string;
 };
 
 export type StripeNewPaymentParams = {
@@ -46,4 +48,11 @@ export type PaymentRecord = Omit<PaymentRecordPrisma, "paymentMethod" | "charge"
   charge: PaymentChargeData;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   credential: Record<"alipay_pc_direct" | "alipay_wap" | "wx_pub", any> | null;
+};
+
+export type StripeMetadata = {
+  project: "atypica";
+  deployRegion: TDeployRegion;
+  orderNo: string;
+  productName: ProductName;
 };

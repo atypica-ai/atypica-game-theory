@@ -20,7 +20,7 @@ async function fetchUserTokens() {
 }
 
 // 返回最后一个 subscription
-export async function fetchLastUserSubscription() {
+async function fetchLastUserSubscription() {
   const session = await getServerSession(authOptions);
   if (!session?.user) {
     return null;

@@ -1,9 +1,9 @@
+import { ProductName } from "@/app/payment/data";
+import { handlePaymentSuccess } from "@/app/payment/lib";
 import { rootLogger } from "@/lib/logging";
 import { prisma } from "@/prisma/prisma";
 import crypto from "crypto";
 import { NextResponse } from "next/server";
-import { ProductName } from "../../data";
-import { handlePaymentSuccess } from "../lib";
 
 // Verify a Ping++ webhook
 async function verifyWebhook(signature: string, rawBody: string) {
