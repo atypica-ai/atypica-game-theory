@@ -39,7 +39,7 @@ export default function PricingPageClient() {
         <p className="text-xl text-muted-foreground">{t("subtitle")}</p>
       </div>
 
-      <div className="py-8 md:pt-12 max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+      <div className="py-8 md:pt-12 max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Free Plan */}
         <Card className="flex flex-col not-dark:border-muted/40">
           <CardHeader>
@@ -53,7 +53,7 @@ export default function PricingPageClient() {
               </div>
             </div>
           </CardHeader>
-          <CardContent className="flex-grow space-y-4">
+          <CardContent className="flex-grow flex flex-col gap-4">
             <div className="mb-6">
               <Button className="w-full" asChild>
                 <Link href="/auth/signup">{t("getStarted")}</Link>
@@ -66,7 +66,12 @@ export default function PricingPageClient() {
         </Card>
 
         {/* Basic Plan */}
-        <Card className="flex flex-col not-dark:border-muted/40">
+        <Card
+          className={cn(
+            "flex flex-col not-dark:border-muted/40",
+            "hidden", // 在 account 页面 add tokens，只有会员可以
+          )}
+        >
           <CardHeader>
             <CardTitle className="text-2xl">{t("basicTitle")}</CardTitle>
             <CardDescription className="h-12">{t("basicSubtitle")}</CardDescription>
@@ -94,28 +99,20 @@ export default function PricingPageClient() {
               </div>
             </div>
           </CardHeader>
-          <CardContent className="flex-grow space-y-4">
+          <CardContent className="flex-grow flex flex-col gap-4">
             <div className="mb-6">
               <Button className="w-full" onClick={() => setIsTokensDialogOpen(true)}>
                 {t("chooseBasic")}
               </Button>
             </div>
-            <FeatureItem
-              text={t("features.socialPlatforms.multiple")}
-              className={cn(locale === "en-US" && "tracking-tighter")}
-            />
+            <FeatureItem text={t("features.socialPlatforms.multiple")} />
             <FeatureItem text={t("features.personas.limited")} />
             <FeatureItem text={t("features.reports.followUp")} />
           </CardContent>
         </Card>
 
         {/* Pro Plan */}
-        <Card className="flex flex-col relative border-primary/50 shadow-md">
-          <div className="absolute -top-4 left-0 right-0 flex justify-center">
-            <div className="bg-primary text-primary-foreground px-4 py-1 text-sm rounded-full font-medium">
-              Popular
-            </div>
-          </div>
+        <Card className="flex flex-col not-dark:border-muted/40">
           <CardHeader>
             <CardTitle className="text-2xl">{t("proTitle")}</CardTitle>
             <CardDescription className="h-12">{t("proSubtitle")}</CardDescription>
@@ -124,34 +121,103 @@ export default function PricingPageClient() {
                 <span className="text-3xl font-bold">{t("proPrice")}</span>
                 <span className="text-lg">/{t("month")}</span>
               </div>
-              <div className={cn("mt-1", locale === "en-US" && "tracking-tighter")}>
-                {t("proMonthlyTokens")}
+              <div className="mt-1">{t("proMonthlyTokens")}</div>
+              <div className="mt-2 flex items-start text-sm">
+                <GiftIcon className="size-4 text-primary mr-2 mt-0.5" />
+                <span className="flex-1 font-semibold">{t("features.tokens.proGift")}</span>
               </div>
             </div>
           </CardHeader>
-          <CardContent className="flex-grow space-y-4">
+          <CardContent className="flex-grow flex flex-col gap-4">
             <div className="mb-6">
               <Button className="w-full" onClick={() => setIsSubscriptionDialogOpen(true)}>
                 {t("upgradeToPro")}
               </Button>
             </div>
-            <FeatureItem
-              text={t("features.socialPlatforms.multiple")}
-              className={cn(locale === "en-US" && "tracking-tighter")}
-            />
+            <FeatureItem text={t("features.multiModal")} />
+            <FeatureItem text={t("features.socialPlatforms.multiple")} />
             <FeatureItem text={t("features.personas.unlimited")} />
-            <FeatureItem text={t("features.reports.followUp")} />
             <FeatureItem text={t("features.analysisModel.enhanced")} />
+            <div className="mt-auto" />
+            <div className="text-center mt-4">
+              <div className="text-sm text-muted-foreground mb-2">
+                {t("additionalTokensDescription")}
+              </div>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => setIsTokensDialogOpen(true)}
+              >
+                {t("purchaseAdditionalTokens")}
+              </Button>
+              <div className="text-xs text-muted-foreground mt-1">{t("additionalTokensPrice")}</div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Max Plan */}
+        {/* <Card className="flex flex-col relative border-primary/50 shadow-md">
+          <div className="absolute -top-4 left-0 right-0 flex justify-center">
+            <div className="bg-primary text-primary-foreground px-4 py-1 text-sm rounded-full font-medium">
+              Popular
+            </div>
+          </div> */}
+        <Card className="flex flex-col not-dark:border-muted/40">
+          <CardHeader>
+            <CardTitle className="text-2xl">{t("maxTitle")}</CardTitle>
+            <CardDescription className="h-12">{t("maxSubtitle")}</CardDescription>
+            <div className="mt-4 h-30">
+              <div>
+                <span className="text-3xl font-bold">{t("maxPrice")}</span>
+                <span className="text-lg">/{t("month")}</span>
+              </div>
+              <div className="mt-1">{t("maxMonthlyTokens")}</div>
+              <div className="mt-2 flex items-start text-sm">
+                <GiftIcon className="size-4 text-primary mr-2 mt-0.5" />
+                <span className="flex-1 font-semibold">{t("features.tokens.maxGift")}</span>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="flex-grow flex flex-col gap-4">
+            <div className="mb-6">
+              <Button className="w-full" onClick={() => setIsSubscriptionDialogOpen(true)}>
+                {t("upgradeToMax")}
+              </Button>
+            </div>
+            <FeatureItem text={t("features.multiModal")} />
+            <FeatureItem text={t("features.socialPlatforms.multiple")} />
+            <FeatureItem text={t("features.personas.curated")} />
+            <FeatureItem text={t("features.analysisModel.superior")} />
+            <FeatureItem text={t("features.reports.followUp")} />
+            <div className="mt-auto" />
+            <div className="text-center mt-4">
+              <div className="text-sm text-muted-foreground mb-2">
+                {t("additionalTokensDescription")}
+              </div>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => setIsTokensDialogOpen(true)}
+              >
+                {t("purchaseAdditionalTokens")}
+              </Button>
+              <div className="text-xs text-muted-foreground mt-1">{t("additionalTokensPrice")}</div>
+            </div>
           </CardContent>
         </Card>
 
         {/* Enterprise Plan */}
-        <Card className="flex flex-col not-dark:border-muted/40">
+        <Card
+          className={cn(
+            "flex flex-col not-dark:border-muted/40",
+            "hidden", // 暂时隐藏
+          )}
+        >
           <CardHeader>
             <CardTitle className="text-2xl">{t("enterpriseTitle")}</CardTitle>
             {/* <CardDescription>{t("enterpriseSubtitle")}</CardDescription> */}
           </CardHeader>
-          <CardContent className="flex-grow space-y-3">
+          <CardContent className="flex-grow flex flex-col gap-4">
             <div className="mb-6">
               <Button className="w-full" variant="outline" onClick={() => sayHelloToSales()}>
                 {t("contactSales")}

@@ -622,23 +622,32 @@
     "proTitle": "Pro",
     "proSubtitle": "For regular in-depth business analysis",
     "proPrice": "$20",
+    "maxTitle": "Max",
+    "maxSubtitle": "For advanced business analysis",
+    "maxPrice": "$50",
     "month": "month",
-    "proMonthlyTokens": "3M tokens (30-day validity)",
+    "proMonthlyTokens": "2M tokens (30-day validity)",
+    "maxMonthlyTokens": "5M tokens (30-day validity)",
     "enterpriseTitle": "Enterprise",
     "enterpriseSubtitle": "Coming mid-May",
     "getStarted": "Get Started Free",
     "chooseBasic": "Buy Tokens",
     "upgradeToPro": "Upgrade to Pro",
+    "upgradeToMax": "Upgrade to Max",
     "contactSales": "Contact Sales",
+    "purchaseAdditionalTokens": "Purchase Additional Tokens",
+    "additionalTokensPrice": "$16/1M tokens",
+    "additionalTokensDescription": "Need more tokens? Purchase additional tokens anytime",
     "averageStudyToken": "A typical research study uses approximately 400K tokens. Complex analyses may require additional tokens.",
     "features": {
       "socialPlatforms": {
         "single": "Single Social Platform Data Access",
-        "multiple": "Multi-Platform Social Intelligence (TikTok, Instagram, RedNote, Douyin)"
+        "multiple": "Multi-Platform Social Intelligence (TikTok, Instagram, X)"
       },
       "personas": {
         "limited": "Generate up to 10 personas for market research",
-        "unlimited": "Unlimited custom personas for targeted research"
+        "unlimited": "Unlimited advanced custom personas for highly targeted research",
+        "curated": "Curated personas with authentic behavioral patterns and realistic traits"
       },
       "analysisModel": {
         "standard": "Standard analysis model",
@@ -650,14 +659,16 @@
         "deepDive": "Deep-dive capabilities into report topics"
       },
       "tokens": {
-        "basicGift": "Limited Offer: +1M bonus tokens per purchase"
+        "basicGift": "Limited Offer: +1M bonus tokens per purchase",
+        "proGift": "Limited Offer: +1M bonus tokens per month",
+        "maxGift": "Limited Offer: +3M bonus tokens per month"
       },
       "enterprise": {
         "AdvancedAnalysisTools": "Advanced Analysis Tools",
         "DataIntegration": "Data Integration",
         "SecurityAndCollaboration": "Security and Collaboration"
       },
-      "multiModal": "Multi-modal input analysis and insights (text, images, video)",
+      "multiModal": "Multi-modal input analysis and insights (text, images, etc.)",
       "customReports": "Customized enterprise report structures",
       "enterpriseData": "Integration with proprietary enterprise data",
       "customPersonas": "Custom enterprise personas",
