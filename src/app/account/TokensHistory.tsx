@@ -162,7 +162,7 @@ export function TokensHistory() {
                     })}
                   >
                     {item.value > 0 ? "+" : item.value < 0 ? "-" : ""}
-                    {Math.abs(item.value).toLocaleString()}
+                    {(item.value < 0 ? -item.value : item.value).toLocaleString()}
                   </TableCell>
                   <TableCell className="text-right">{formatDate(item.createdAt, locale)}</TableCell>
                 </TableRow>

@@ -812,7 +812,14 @@
       "status": "状态",
       "active": "有效",
       "proPlan": "个人Pro版",
-      "notSubscribed": "未订阅"
+      "notSubscribed": "未订阅",
+      "cancelSubscription": "取消自动续费",
+      "confirmCancel": "取消自动续费",
+      "cancelDescription": "确定要取消自动续费吗？您的当前订阅将保持有效直到到期日，但不会自动续费。",
+      "keepSubscription": "保持自动续费",
+      "canceling": "取消中...",
+      "cancelSuccess": "自动续费取消成功",
+      "cancelError": "取消自动续费失败"
     },
     "tokensSection": {
       "title": "Token",

@@ -812,7 +812,14 @@
       "status": "Status",
       "active": "Active",
       "proPlan": "Pro Subscription",
-      "notSubscribed": "Not Subscribed"
+      "notSubscribed": "Not Subscribed",
+      "cancelSubscription": "Cancel Auto-Renewal",
+      "confirmCancel": "Cancel Auto-Renewal",
+      "cancelDescription": "Are you sure you want to cancel auto-renewal? Your current subscription will remain active until the expiration date, but it will not automatically renew.",
+      "keepSubscription": "Keep Auto-Renewal",
+      "canceling": "Canceling...",
+      "cancelSuccess": "Auto-renewal cancelled successfully",
+      "cancelError": "Failed to cancel auto-renewal"
     },
     "tokensSection": {
       "title": "Tokens",

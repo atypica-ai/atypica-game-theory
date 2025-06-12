@@ -48,7 +48,7 @@ async function recharge1MTokens({
 /**
  * 定期调用，找到当前生效的套餐，如果生效时间 > userTokens 上的重置余额时间，就重置余额并更新重置时间
  */
-async function resetMonthlyTokens({ userId }: { userId: number }) {
+export async function resetMonthlyTokens({ userId }: { userId: number }) {
   const now = new Date();
 
   let userTokens = await prisma.userTokens.upsert({

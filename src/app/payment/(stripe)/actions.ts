@@ -21,6 +21,18 @@ export async function createStripeSession({
     throw new Error("Only USD currency is supported");
   }
 
+  if (productName === ProductName.TOKENS1M) {
+    // 只有会员才能充值
+    const now = new Date();
+    const subscription = await prisma.userSubscription.findFirst({
+      where: { userId, startsAt: { lte: now }, endsAt: { gt: now } },
+      orderBy: { endsAt: "desc" },
+    });
+    if (!subscription) {
+      throw new Error("Recharge is only available to users with a valid subscription");
+    }
+  }
+
   // const clientIp = await getRequestClientIp();
   const paymentMethod: PaymentMethod = PaymentMethod.stripe;
 

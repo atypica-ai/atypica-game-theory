@@ -1,4 +1,15 @@
 "use client";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -6,11 +17,15 @@ import { formatDate } from "@/lib/utils";
 import { UserSubscription, UserSubscriptionExtra } from "@/prisma/client";
 import { CalendarIcon, CircleDollarSignIcon, CreditCardIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { useState } from "react";
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
+import Stripe from "stripe";
 import { AddTokensDialog } from "../payment/components/AddTokensDialog";
 import { SubscriptionDialog } from "../payment/components/SubscriptionDialog";
 import { PaymentHistory } from "./PaymentHistory";
 import { TokensHistory } from "./TokensHistory";
+import { cancelSubscription, fetchStripeSubscription } from "./actions";
 
 export function AccountPageClient({
   userTokens,
@@ -31,6 +46,56 @@ export function AccountPageClient({
   const locale = useLocale();
   const [isAddTokensOpen, setIsAddTokensOpen] = useState(false);
   const [isSubscribeOpen, setIsSubscribeOpen] = useState(false);
+  const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
+  const [isCanceling, setIsCanceling] = useState(false);
+  const [stripeSubscription, setStripeSubscription] = useState<Pick<
+    Stripe.Subscription,
+    "id" | "status"
+  > | null>(null);
+
+  const stripeSubscriptionId = useMemo(() => {
+    const invoice = subscription?.extra?.invoice;
+    if (!invoice || !invoice.parent?.subscription_details) {
+      return null;
+    }
+    const subscription_details = invoice.parent.subscription_details;
+    if (typeof subscription_details.subscription === "string") {
+      return subscription_details.subscription;
+    } else {
+      return subscription_details.subscription.id;
+    }
+  }, []);
+
+  useEffect(() => {
+    if (stripeSubscriptionId) {
+      fetchStripeSubscription(stripeSubscriptionId)
+        .then((stripeSubscription) => {
+          setStripeSubscription(stripeSubscription);
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    }
+  }, [stripeSubscriptionId]);
+
+  const handleCancelSubscription = async () => {
+    setIsCanceling(true);
+    try {
+      const result = await cancelSubscription();
+      if (result.success) {
+        toast.success(t("subscriptionSection.cancelSuccess"));
+        // Refresh the page to update subscription status
+        window.location.reload();
+      } else {
+        toast.error(result.message || t("subscriptionSection.cancelError"));
+      }
+    } catch (error) {
+      toast.error(t("subscriptionSection.cancelError"));
+    } finally {
+      setIsCanceling(false);
+      setIsCancelDialogOpen(false);
+    }
+  };
 
   return (
     <div className="flex-1 overflow-y-auto scrollbar-thin py-6">
@@ -73,7 +138,9 @@ export function AccountPageClient({
 
                     <div className="flex justify-between items-center">
                       <div className="text-sm text-muted-foreground">
-                        {t("subscriptionSection.expires")}
+                        {stripeSubscription?.status === "active"
+                          ? t("subscriptionSection.autoRenew")
+                          : t("subscriptionSection.expires")}
                       </div>
                       <div className="font-medium flex items-center">
                         <CalendarIcon className="mr-2 h-4 w-4 opacity-70" />
@@ -87,13 +154,46 @@ export function AccountPageClient({
               </div>
             </CardContent>
             <CardFooter>
-              {subscription?.extra?.invoice ? (
-                <div className="w-full mt-4 text-center px-2 py-1.5 text-sm rounded-md border bg-background shadow-xs dark:bg-input/30 dark:border-input">
-                  {t("subscriptionSection.autoRenew")}
-                </div>
+              {stripeSubscription?.status === "active" ? (
+                <AlertDialog open={isCancelDialogOpen} onOpenChange={setIsCancelDialogOpen}>
+                  <AlertDialogTrigger asChild>
+                    <Button className="w-full mt-4">
+                      {t("subscriptionSection.cancelSubscription")}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>{t("subscriptionSection.confirmCancel")}</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        {t("subscriptionSection.cancelDescription")}
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel disabled={isCanceling}>
+                        {t("subscriptionSection.keepSubscription")}
+                      </AlertDialogCancel>
+                      <AlertDialogAction onClick={handleCancelSubscription} disabled={isCanceling}>
+                        {isCanceling
+                          ? t("subscriptionSection.canceling")
+                          : t("subscriptionSection.confirmCancel")}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              ) : stripeSubscriptionId ? (
+                // 是 stripeSubscription 但是状态不是 active，啥也不显示
+                <></>
               ) : (
-                <Button className="w-full mt-4" onClick={() => setIsSubscribeOpen(true)}>
-                  {subscription ? t("subscriptionSection.renew") : t("subscriptionSection.upgrade")}
+                // 非 stripeSubscription，直接显示续费/升级按钮
+                // <Button className="w-full mt-4" onClick={() => setIsSubscribeOpen(true)}>
+                //   {subscription ? t("subscriptionSection.renew") : t("subscriptionSection.upgrade")}
+                // </Button>
+                <Button className="w-full mt-4" asChild>
+                  <Link href="/pricing">
+                    {subscription
+                      ? t("subscriptionSection.renew")
+                      : t("subscriptionSection.upgrade")}
+                  </Link>
                 </Button>
               )}
             </CardFooter>
@@ -148,7 +248,11 @@ export function AccountPageClient({
               </div>
             </CardContent>
             <CardFooter>
-              <Button className="w-full mt-4" onClick={() => setIsAddTokensOpen(true)}>
+              <Button
+                className="w-full mt-4"
+                onClick={() => setIsAddTokensOpen(true)}
+                disabled={!subscription} // 只有订阅的用户才能 add tokens
+              >
                 {t("tokensSection.purchase")}
               </Button>
             </CardFooter>

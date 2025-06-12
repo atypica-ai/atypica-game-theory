@@ -1,11 +1,11 @@
 import { RequestPaymentResult } from "@/ai/tools/types";
 import { getUserTokensBalance } from "@/app/account/actions";
-import { AddTokensDialog } from "@/app/payment/components/AddTokensDialog";
 import { useStudyContext } from "@/app/study/hooks/StudyContext";
 import { Button } from "@/components/ui/button";
 import { ToolInvocation } from "ai";
 import { CoinsIcon, MessageCircleQuestionIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
+import Link from "next/link";
 import { FC, useEffect, useState } from "react";
 
 export const RequestPaymentMessage: FC<{
@@ -22,7 +22,6 @@ export const RequestPaymentMessage: FC<{
   // addToolResult
 }) => {
   const t = useTranslations("StudyPage.RequestPaymentMessage");
-  const [isTokensDialogOpen, setIsTokensDialogOpen] = useState(false);
   const {
     studyUserChat: { id: studyUserChatId },
   } = useStudyContext();
@@ -66,16 +65,12 @@ export const RequestPaymentMessage: FC<{
         <strong>{t("outOfQuotaHint")}</strong>
         <MessageCircleQuestionIcon className="size-4" />
       </div>
-      <Button
-        variant="ghost"
-        size="sm"
-        className="text-xs h-7"
-        onClick={() => setIsTokensDialogOpen(true)}
-      >
-        <CoinsIcon className="h-3.5 w-3.5 text-amber-500" />
-        {t("addMoreTokens")}
+      <Button variant="ghost" size="sm" className="text-xs h-7" asChild>
+        <Link href="/account">
+          <CoinsIcon className="h-3.5 w-3.5 text-amber-500" />
+          {t("addMoreTokens")}
+        </Link>
       </Button>
-      <AddTokensDialog open={isTokensDialogOpen} onOpenChange={setIsTokensDialogOpen} />
     </div>
   ) : (
     <div className="text-sm">{t("paymentSuccess")}</div>

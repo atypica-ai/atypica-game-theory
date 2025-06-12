@@ -1,5 +1,4 @@
 "use client";
-import { AddTokensDialog } from "@/app/payment/components/AddTokensDialog";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -13,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { cn, formatDuration } from "@/lib/utils";
 import { CoinsIcon, Loader2Icon, RefreshCcwIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
 export function CancelButton({
@@ -123,7 +123,6 @@ export function StatusDisplay({
 }) {
   const t = useTranslations("StudyPage.StatusDisplay");
   const [elapsedTime, setElapsedTime] = useState<number>(0);
-  const [isTokensDialogOpen, setIsTokensDialogOpen] = useState(false);
 
   // Update elapsed time when in background status
   useEffect(() => {
@@ -173,14 +172,11 @@ export function StatusDisplay({
     <div className="flex flex-wrap items-center gap-2 px-2 text-primary">
       <div className="text-xs tracking-wider font-medium">{getStatusMessage(status)}</div>
       {status === "outOfQuota" && (
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-xs h-7"
-          onClick={() => setIsTokensDialogOpen(true)}
-        >
-          <CoinsIcon className="h-3.5 w-3.5 text-amber-500" />
-          {t("addMoreTokens")}
+        <Button variant="ghost" size="sm" className="text-xs h-7" asChild>
+          <Link href="/account">
+            <CoinsIcon className="h-3.5 w-3.5 text-amber-500" />
+            {t("addMoreTokens")}
+          </Link>
         </Button>
       )}
       {status === "background" && elapsedTime > 0 && (
@@ -201,7 +197,6 @@ export function StatusDisplay({
           <RefreshCcwIcon className="size-4" />
         </div>
       )}
-      <AddTokensDialog open={isTokensDialogOpen} onOpenChange={setIsTokensDialogOpen} />
     </div>
   );
 }

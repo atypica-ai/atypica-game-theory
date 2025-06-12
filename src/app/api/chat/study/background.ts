@@ -115,7 +115,7 @@ export function backgroundChatUntilCancel<TOOLS extends ToolSet, PARTIAL_OUTPUT>
         });
         if (stop) {
           logger.info(`stopped, quit checkUserTokensBalance`);
-        } else if (userTokens.balance <= 0) {
+        } else if (userTokens.permanentBalance + userTokens.monthlyBalance <= 0) {
           logger.warn(`user is out of balance, aborting background running`);
           try {
             abortController.abort(); // stop streamText

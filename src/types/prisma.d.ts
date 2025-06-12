@@ -1,4 +1,5 @@
 declare module "@/prisma/client" {
+  import Stripe from "stripe";
   export * from "@/prisma/client/index";
 
   export type AnalystReportExtra = {
