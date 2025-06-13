@@ -66,7 +66,7 @@ export const RequestPaymentMessage: FC<{
         <MessageCircleQuestionIcon className="size-4" />
       </div>
       <Button variant="ghost" size="sm" className="text-xs h-7" asChild>
-        <Link href="/account">
+        <Link href="/pricing">
           <CoinsIcon className="h-3.5 w-3.5 text-amber-500" />
           {t("addMoreTokens")}
         </Link>

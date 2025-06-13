@@ -2,10 +2,11 @@
 import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
-import { UserSubscription, UserSubscriptionExtra, UserTokensLog } from "@/prisma/client";
+import { UserTokensLog } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import Stripe from "stripe";
 import { PaymentChargeData, PaymentMethod, PaymentRecord } from "../payment/data";
+import { fetchActiveUserSubscription } from "./lib";
 
 export async function fetchTokensHistory(
   page: number = 1,
@@ -152,42 +153,32 @@ export async function getUserTokensBalance(): Promise<ServerActionResult<number>
 }
 
 // 返回当前生效的订阅信息
-export async function fetchActiveUserSubscription(): Promise<
-  ServerActionResult<
-    | (Omit<UserSubscription, "extra"> & {
-        extra: UserSubscriptionExtra;
-      })
-    | null
-  >
+export async function activeUserSubscriptionAction(): Promise<
+  ServerActionResult<Awaited<ReturnType<typeof fetchActiveUserSubscription>>>
 > {
   return withAuth(async (user) => {
-    const userId = user.id;
-    const now = new Date();
-    const subscription = await prisma.userSubscription.findFirst({
-      where: {
-        userId,
-        startsAt: { lte: now },
-        endsAt: { gt: now },
-      },
-      orderBy: {
-        endsAt: "desc",
-      },
-    });
-    return {
-      success: true,
-      data: subscription
-        ? {
-            ...subscription,
-            extra: subscription.extra as unknown as UserSubscriptionExtra,
-          }
-        : null,
-    };
+    try {
+      const result = await fetchActiveUserSubscription({ userId: user.id });
+      return {
+        success: true,
+        data: result,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : "Unknown error",
+      };
+    }
   });
 }
 
-export async function fetchStripeSubscription(stripeSubscriptionId: string) {
-  return withAuth(async () => {
+export async function stripeSubscriptionAction() {
+  return withAuth(async (user) => {
+    const { stripeSubscriptionId } = await fetchActiveUserSubscription({ userId: user.id });
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+    if (!stripeSubscriptionId) {
+      return null;
+    }
     const stripeSubscription = await stripe.subscriptions.retrieve(stripeSubscriptionId);
     return {
       id: stripeSubscription.id,
@@ -200,39 +191,19 @@ export async function fetchStripeSubscription(stripeSubscriptionId: string) {
  * 只有 stripe subscription 可以被 cancel
  * active subscription 后面不可能再有另一个 subscription 了，一定是最后一个
  */
-export async function cancelSubscription(): Promise<ServerActionResult<null>> {
+export async function cancelSubscriptionAction(): Promise<ServerActionResult<null>> {
   return withAuth(async (user) => {
-    const now = new Date();
-    const activeSubscription = (await prisma.userSubscription.findFirst({
-      where: {
-        userId: user.id,
-        startsAt: { lte: now },
-        endsAt: { gt: now },
-      },
-      orderBy: {
-        endsAt: "desc",
-      },
-    })) as
-      | (Omit<UserSubscription, "extra"> & {
-          extra: UserSubscriptionExtra;
-        })
-      | null;
-    const invoice = activeSubscription?.extra?.invoice;
-    if (!invoice || !invoice.parent?.subscription_details) {
+    const { activeSubscription, stripeSubscriptionId } = await fetchActiveUserSubscription({
+      userId: user.id,
+    });
+    if (!activeSubscription || !stripeSubscriptionId) {
       return {
         success: false,
         message: "No active subscription found",
       };
     }
-    let stripeSubscriptionId: string;
-    const subscription_details = invoice.parent.subscription_details;
-    if (typeof subscription_details.subscription === "string") {
-      stripeSubscriptionId = subscription_details.subscription;
-    } else {
-      stripeSubscriptionId = subscription_details.subscription.id;
-    }
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
     try {
       await stripe.subscriptions.cancel(stripeSubscriptionId);
     } catch (error) {

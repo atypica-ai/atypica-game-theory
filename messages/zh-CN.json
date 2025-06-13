@@ -622,7 +622,7 @@
     "proTitle": "Pro版",
     "proSubtitle": "经常进行深度商业分析",
     "proPrice": "129元",
-    "maxTitle": "Max",
+    "maxTitle": "Max版",
     "maxSubtitle": "进行高级商业分析",
     "maxPrice": "399元",
     "month": "月",
@@ -636,13 +636,11 @@
     "upgradeToMax": "升级到Max",
     "contactSales": "联系销售",
     "purchaseAdditionalTokens": "购买额外Token",
-    "additionalTokensPrice": "100元/100万Token",
-    "additionalTokensDescription": "需要更多Token？随时购买额外Token",
     "averageStudyToken": "每次研究平均40万个Token，复杂问题或者追问会消耗更多",
     "features": {
       "socialPlatforms": {
         "single": "覆盖单个社交媒体平台作为调研数据源",
-        "multiple": "覆盖多个社交媒体平台作为调研数据源（现在包括：小红书、抖音）"
+        "multiple": "覆盖多个社交媒体平台作为调研数据源（小红书、抖音等）"
       },
       "personas": {
         "limited": "生成不超过10个Persona进行调研",
@@ -673,7 +671,11 @@
       "enterpriseData": "接入企业私有数据",
       "customPersonas": "定制企业私有Persona",
       "collaboration": "团队协作功能（分享、协作）",
-      "security": "数据安全功能（指定可见、有效期）"
+      "security": "数据安全功能（指定可见、有效期）",
+      "tokenPurchase": {
+        "available": "可随时购买更多Token（100元每100万 + 100万赠送）",
+        "notAvailable": "无法增购Token"
+      }
     }
   },
   "Components": {

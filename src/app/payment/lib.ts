@@ -1,5 +1,6 @@
 import "server-only";
 
+import { fetchActiveUserSubscription } from "@/app/account/lib";
 import { ProductName } from "@/app/payment/data";
 import { PaymentRecord, SubscriptionPlan, UserTokensLogVerb } from "@/prisma/client";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
@@ -88,14 +89,7 @@ export async function resetMonthlyTokens({ userId }: { userId: number }) {
   });
 
   // now 在 [startsAt, endsAt) 的区间内，理应只有一个，所以 orderBy 和 findFirst 都其实没意义
-  const activeSubscription = await prisma.userSubscription.findFirst({
-    where: {
-      userId,
-      startsAt: { lte: now },
-      endsAt: { gt: now },
-    },
-    orderBy: { endsAt: "desc" },
-  });
+  const { activeSubscription } = await fetchActiveUserSubscription({ userId });
   if (!activeSubscription) {
     // 当前没有生效中的订阅
     return;

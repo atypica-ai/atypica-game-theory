@@ -1,4 +1,5 @@
 "use server";
+import { fetchActiveUserSubscription } from "@/app/account/lib";
 import { PaymentMethod, ProductName } from "@/app/payment/data";
 import { getRequestClientIp, getRequestOrigin } from "@/lib/request/headers";
 import { Currency } from "@/prisma/client";
@@ -33,15 +34,18 @@ export async function createPingxxCharge({
   // }
   // 支付因为要换手机设备打开，不需要登录
 
+  const { activeSubscription, stripeSubscriptionId } = await fetchActiveUserSubscription({
+    userId,
+  });
   if (productName === ProductName.TOKENS1M) {
     // 只有会员才能充值
-    const now = new Date();
-    const subscription = await prisma.userSubscription.findFirst({
-      where: { userId, startsAt: { lte: now }, endsAt: { gt: now } },
-      orderBy: { endsAt: "desc" },
-    });
-    if (!subscription) {
+    if (!activeSubscription) {
       throw new Error("Recharge is only available to users with a valid subscription");
+    }
+  } else if (productName === ProductName.PRO1MONTH || productName === ProductName.MAX1MONTH) {
+    // 如果当前套餐是自动续费的，不能继续
+    if (stripeSubscriptionId) {
+      throw new Error("Cannot continue with an active auto-renewing subscription");
     }
   }
 

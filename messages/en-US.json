@@ -636,13 +636,11 @@
     "upgradeToMax": "Upgrade to Max",
     "contactSales": "Contact Sales",
     "purchaseAdditionalTokens": "Purchase Additional Tokens",
-    "additionalTokensPrice": "$16/1M tokens",
-    "additionalTokensDescription": "Need more tokens? Purchase additional tokens anytime",
     "averageStudyToken": "A typical research study uses approximately 400K tokens. Complex analyses may require additional tokens.",
     "features": {
       "socialPlatforms": {
         "single": "Single Social Platform Data Access",
-        "multiple": "Multi-Platform Social Intelligence (TikTok, Instagram, X)"
+        "multiple": "Multi-Platform Social Intelligence (TikTok, Instagram, X, etc.)"
       },
       "personas": {
         "limited": "Generate up to 10 personas for market research",
@@ -673,7 +671,11 @@
       "enterpriseData": "Integration with proprietary enterprise data",
       "customPersonas": "Custom enterprise personas",
       "collaboration": "Team collaboration features (share, collaborate)",
-      "security": "Data security controls (specified visibility, expiration dates)"
+      "security": "Data security controls (specified visibility, expiration dates)",
+      "tokenPurchase": {
+        "available": "Purchase additional tokens anytime ($16 per 1M + 1M bonus)",
+        "notAvailable": "Cannot purchase additional tokens"
+      }
     }
   },
   "Components": {

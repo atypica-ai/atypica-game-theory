@@ -18,34 +18,37 @@ import { UserSubscription, UserSubscriptionExtra } from "@/prisma/client";
 import { CalendarIcon, CircleDollarSignIcon, CreditCardIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import Stripe from "stripe";
 import { AddTokensDialog } from "../payment/components/AddTokensDialog";
-import { SubscriptionDialog } from "../payment/components/SubscriptionDialog";
 import { PaymentHistory } from "./PaymentHistory";
 import { TokensHistory } from "./TokensHistory";
-import { cancelSubscription, fetchStripeSubscription } from "./actions";
+import { cancelSubscriptionAction, stripeSubscriptionAction } from "./actions";
 
 export function AccountPageClient({
   userTokens,
-  subscription,
+  activeSubscription,
+  planExpiresAt,
+  stripeSubscriptionId,
 }: {
   userTokens: {
     permanentBalance: number;
     monthlyBalance: number;
     monthlyResetAt: Date | null;
   } | null;
-  subscription:
+  activeSubscription:
     | (Omit<UserSubscription, "extra"> & {
         extra: UserSubscriptionExtra;
       })
     | null;
+  planExpiresAt: Date | null;
+  stripeSubscriptionId: string | null;
 }) {
   const t = useTranslations("AccountPage");
   const locale = useLocale();
   const [isAddTokensOpen, setIsAddTokensOpen] = useState(false);
-  const [isSubscribeOpen, setIsSubscribeOpen] = useState(false);
+  // const [isSubscribeOpen, setIsSubscribeOpen] = useState(false);
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
   const [isCanceling, setIsCanceling] = useState(false);
   const [stripeSubscription, setStripeSubscription] = useState<Pick<
@@ -53,22 +56,9 @@ export function AccountPageClient({
     "id" | "status"
   > | null>(null);
 
-  const stripeSubscriptionId = useMemo(() => {
-    const invoice = subscription?.extra?.invoice;
-    if (!invoice || !invoice.parent?.subscription_details) {
-      return null;
-    }
-    const subscription_details = invoice.parent.subscription_details;
-    if (typeof subscription_details.subscription === "string") {
-      return subscription_details.subscription;
-    } else {
-      return subscription_details.subscription.id;
-    }
-  }, []);
-
   useEffect(() => {
     if (stripeSubscriptionId) {
-      fetchStripeSubscription(stripeSubscriptionId)
+      stripeSubscriptionAction()
         .then((stripeSubscription) => {
           setStripeSubscription(stripeSubscription);
         })
@@ -78,10 +68,13 @@ export function AccountPageClient({
     }
   }, [stripeSubscriptionId]);
 
-  const handleCancelSubscription = async () => {
+  const handleCancelSubscription = useCallback(async () => {
+    if (!stripeSubscriptionId) {
+      return;
+    }
     setIsCanceling(true);
     try {
-      const result = await cancelSubscription();
+      const result = await cancelSubscriptionAction();
       if (result.success) {
         toast.success(t("subscriptionSection.cancelSuccess"));
         // Refresh the page to update subscription status
@@ -95,7 +88,7 @@ export function AccountPageClient({
       setIsCanceling(false);
       setIsCancelDialogOpen(false);
     }
-  };
+  }, [stripeSubscriptionId, t]);
 
   return (
     <div className="flex-1 overflow-y-auto scrollbar-thin py-6">
@@ -118,13 +111,13 @@ export function AccountPageClient({
                     {t("subscriptionSection.currentPlan")}
                   </div>
                   <div className="font-medium">
-                    {subscription
+                    {activeSubscription
                       ? `${t("subscriptionSection.proPlan")}` //(${subscription.plan})
                       : t("subscriptionSection.notSubscribed")}
                   </div>
                 </div>
 
-                {subscription && (
+                {activeSubscription && (
                   <>
                     <div className="flex justify-between items-center">
                       <div className="text-sm text-muted-foreground">
@@ -136,19 +129,31 @@ export function AccountPageClient({
                       </div>
                     </div>
 
-                    <div className="flex justify-between items-center">
-                      <div className="text-sm text-muted-foreground">
-                        {stripeSubscription?.status === "active"
-                          ? t("subscriptionSection.autoRenew")
-                          : t("subscriptionSection.expires")}
+                    {stripeSubscriptionId ? (
+                      <div className="flex justify-between items-center">
+                        <div className="text-sm text-muted-foreground">
+                          {stripeSubscription?.status === "active"
+                            ? t("subscriptionSection.autoRenew")
+                            : t("subscriptionSection.expires")}
+                        </div>
+                        <div className="font-medium flex items-center">
+                          <CalendarIcon className="mr-2 h-4 w-4 opacity-70" />
+                          {formatDate(activeSubscription.endsAt, locale)}
+                        </div>
                       </div>
-                      <div className="font-medium flex items-center">
-                        <CalendarIcon className="mr-2 h-4 w-4 opacity-70" />
-                        {subscription.endsAt
-                          ? formatDate(subscription.endsAt, locale)
-                          : t("subscriptionSection.neverExpires")}
+                    ) : (
+                      <div className="flex justify-between items-center">
+                        <div className="text-sm text-muted-foreground">
+                          {t("subscriptionSection.expires")}
+                        </div>
+                        <div className="font-medium flex items-center">
+                          <CalendarIcon className="mr-2 h-4 w-4 opacity-70" />
+                          {planExpiresAt
+                            ? formatDate(planExpiresAt, locale)
+                            : t("subscriptionSection.neverExpires")}
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </>
                 )}
               </div>
@@ -190,7 +195,7 @@ export function AccountPageClient({
                 // </Button>
                 <Button className="w-full mt-4" asChild>
                   <Link href="/pricing">
-                    {subscription
+                    {activeSubscription
                       ? t("subscriptionSection.renew")
                       : t("subscriptionSection.upgrade")}
                   </Link>
@@ -251,7 +256,7 @@ export function AccountPageClient({
               <Button
                 className="w-full mt-4"
                 onClick={() => setIsAddTokensOpen(true)}
-                disabled={!subscription} // 只有订阅的用户才能 add tokens
+                disabled={!activeSubscription} // 只有订阅的用户才能 add tokens
               >
                 {t("tokensSection.purchase")}
               </Button>
@@ -273,7 +278,7 @@ export function AccountPageClient({
       </div>
       {/* Dialogs */}
       <AddTokensDialog open={isAddTokensOpen} onOpenChange={setIsAddTokensOpen} />
-      <SubscriptionDialog open={isSubscribeOpen} onOpenChange={setIsSubscribeOpen} />
+      {/* <SubscriptionDialog open={isSubscribeOpen} onOpenChange={setIsSubscribeOpen} /> */}
     </div>
   );
 }

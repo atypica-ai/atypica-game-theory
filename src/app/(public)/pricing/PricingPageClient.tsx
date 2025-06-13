@@ -5,13 +5,26 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { SubscriptionPlan, UserSubscription, UserSubscriptionExtra } from "@/prisma/client";
 import { CheckIcon, GiftIcon, InfoIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useCallback, useState } from "react";
 import { createHelloUserChatAction } from "./actions";
 
-export default function PricingPageClient() {
+export default function PricingPageClient({
+  activeSubscription,
+  // planExpiresAt,
+  stripeSubscriptionId,
+}: {
+  activeSubscription:
+    | (Omit<UserSubscription, "extra"> & {
+        extra: UserSubscriptionExtra;
+      })
+    | null;
+  // planExpiresAt: Date | null;
+  stripeSubscriptionId: string | null;
+}) {
   const locale = useLocale();
   const t = useTranslations("PricingPage");
   const [isTokensDialogOpen, setIsTokensDialogOpen] = useState(false);
@@ -53,12 +66,17 @@ export default function PricingPageClient() {
               </div>
             </div>
           </CardHeader>
-          <CardContent className="flex-grow flex flex-col gap-4">
-            <div className="mb-6">
-              <Button className="w-full" asChild>
+          <CardContent className="flex-grow space-y-4">
+            {activeSubscription ? (
+              <Button className="w-full mb-6" disabled>
+                {t("getStarted")}
+              </Button>
+            ) : (
+              <Button className="w-full mb-6" asChild>
                 <Link href="/auth/signup">{t("getStarted")}</Link>
               </Button>
-            </div>
+            )}
+            <FeatureItem text={t("features.tokenPurchase.notAvailable")} />
             <FeatureItem text={t("features.socialPlatforms.single")} />
             <FeatureItem text={t("features.personas.limited")} />
             <FeatureItem text={t("features.analysisModel.standard")} />
@@ -99,12 +117,14 @@ export default function PricingPageClient() {
               </div>
             </div>
           </CardHeader>
-          <CardContent className="flex-grow flex flex-col gap-4">
-            <div className="mb-6">
-              <Button className="w-full" onClick={() => setIsTokensDialogOpen(true)}>
-                {t("chooseBasic")}
-              </Button>
-            </div>
+          <CardContent className="flex-grow space-y-4">
+            <Button
+              className="w-full mb-6"
+              onClick={() => setIsTokensDialogOpen(true)}
+              disabled={!activeSubscription}
+            >
+              {t("chooseBasic")}
+            </Button>
             <FeatureItem text={t("features.socialPlatforms.multiple")} />
             <FeatureItem text={t("features.personas.limited")} />
             <FeatureItem text={t("features.reports.followUp")} />
@@ -128,30 +148,25 @@ export default function PricingPageClient() {
               </div>
             </div>
           </CardHeader>
-          <CardContent className="flex-grow flex flex-col gap-4">
-            <div className="mb-6">
-              <Button className="w-full" onClick={() => setIsSubscriptionDialogOpen(true)}>
+          <CardContent className="flex-grow space-y-4">
+            {!activeSubscription ? (
+              <Button className="w-full mb-6" onClick={() => setIsSubscriptionDialogOpen(true)}>
                 {t("upgradeToPro")}
               </Button>
-            </div>
+            ) : activeSubscription.plan === SubscriptionPlan.pro ? (
+              <Button className="w-full mb-6" onClick={() => setIsTokensDialogOpen(true)}>
+                {t("purchaseAdditionalTokens")}
+              </Button>
+            ) : (
+              <Button className="w-full mb-6" disabled>
+                {t("upgradeToPro")}
+              </Button>
+            )}
+            <FeatureItem text={t("features.tokenPurchase.available")} />
             <FeatureItem text={t("features.multiModal")} />
             <FeatureItem text={t("features.socialPlatforms.multiple")} />
             <FeatureItem text={t("features.personas.unlimited")} />
             <FeatureItem text={t("features.analysisModel.enhanced")} />
-            <div className="mt-auto" />
-            <div className="text-center mt-4">
-              <div className="text-sm text-muted-foreground mb-2">
-                {t("additionalTokensDescription")}
-              </div>
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => setIsTokensDialogOpen(true)}
-              >
-                {t("purchaseAdditionalTokens")}
-              </Button>
-              <div className="text-xs text-muted-foreground mt-1">{t("additionalTokensPrice")}</div>
-            </div>
           </CardContent>
         </Card>
 
@@ -178,31 +193,26 @@ export default function PricingPageClient() {
               </div>
             </div>
           </CardHeader>
-          <CardContent className="flex-grow flex flex-col gap-4">
-            <div className="mb-6">
-              <Button className="w-full" onClick={() => setIsSubscriptionDialogOpen(true)}>
+          <CardContent className="flex-grow space-y-4">
+            {!activeSubscription ? (
+              <Button className="w-full mb-6" onClick={() => setIsSubscriptionDialogOpen(true)}>
                 {t("upgradeToMax")}
               </Button>
-            </div>
+            ) : activeSubscription.plan === SubscriptionPlan.max ? (
+              <Button className="w-full mb-6" onClick={() => setIsTokensDialogOpen(true)}>
+                {t("purchaseAdditionalTokens")}
+              </Button>
+            ) : (
+              <Button className="w-full mb-6" disabled>
+                {t("upgradeToMax")}
+              </Button>
+            )}
+            <FeatureItem text={t("features.tokenPurchase.available")} />
             <FeatureItem text={t("features.multiModal")} />
             <FeatureItem text={t("features.socialPlatforms.multiple")} />
             <FeatureItem text={t("features.personas.curated")} />
             <FeatureItem text={t("features.analysisModel.superior")} />
             <FeatureItem text={t("features.reports.followUp")} />
-            <div className="mt-auto" />
-            <div className="text-center mt-4">
-              <div className="text-sm text-muted-foreground mb-2">
-                {t("additionalTokensDescription")}
-              </div>
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => setIsTokensDialogOpen(true)}
-              >
-                {t("purchaseAdditionalTokens")}
-              </Button>
-              <div className="text-xs text-muted-foreground mt-1">{t("additionalTokensPrice")}</div>
-            </div>
           </CardContent>
         </Card>
 
@@ -217,12 +227,10 @@ export default function PricingPageClient() {
             <CardTitle className="text-2xl">{t("enterpriseTitle")}</CardTitle>
             {/* <CardDescription>{t("enterpriseSubtitle")}</CardDescription> */}
           </CardHeader>
-          <CardContent className="flex-grow flex flex-col gap-4">
-            <div className="mb-6">
-              <Button className="w-full" variant="outline" onClick={() => sayHelloToSales()}>
-                {t("contactSales")}
-              </Button>
-            </div>
+          <CardContent className="flex-grow space-y-4">
+            <Button className="w-full mb-6" variant="outline" onClick={() => sayHelloToSales()}>
+              {t("contactSales")}
+            </Button>
             <h3 className="font-medium mb-3">{t("features.enterprise.AdvancedAnalysisTools")}:</h3>
             <FeatureItem text={t("features.multiModal")} />
             <FeatureItem text={t("features.analysisModel.superior")} />
