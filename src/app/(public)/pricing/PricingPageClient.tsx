@@ -14,21 +14,21 @@ import { createHelloUserChatAction } from "./actions";
 
 export default function PricingPageClient({
   activeSubscription,
-  // planExpiresAt,
-  stripeSubscriptionId,
+  // stripeSubscriptionId,
 }: {
   activeSubscription:
     | (Omit<UserSubscription, "extra"> & {
         extra: UserSubscriptionExtra;
       })
     | null;
-  // planExpiresAt: Date | null;
   stripeSubscriptionId: string | null;
 }) {
   const locale = useLocale();
   const t = useTranslations("PricingPage");
   const [isTokensDialogOpen, setIsTokensDialogOpen] = useState(false);
-  const [isSubscriptionDialogOpen, setIsSubscriptionDialogOpen] = useState(false);
+  const [isSubscriptionDialogOpen, setIsSubscriptionDialogOpen] = useState<{
+    plan: SubscriptionPlan;
+  } | null>(null);
 
   const sayHelloToSales = useCallback(async () => {
     const result = await createHelloUserChatAction({
@@ -150,7 +150,10 @@ export default function PricingPageClient({
           </CardHeader>
           <CardContent className="flex-grow space-y-4">
             {!activeSubscription ? (
-              <Button className="w-full mb-6" onClick={() => setIsSubscriptionDialogOpen(true)}>
+              <Button
+                className="w-full mb-6"
+                onClick={() => setIsSubscriptionDialogOpen({ plan: SubscriptionPlan.pro })}
+              >
                 {t("upgradeToPro")}
               </Button>
             ) : activeSubscription.plan === SubscriptionPlan.pro ? (
@@ -195,7 +198,10 @@ export default function PricingPageClient({
           </CardHeader>
           <CardContent className="flex-grow space-y-4">
             {!activeSubscription ? (
-              <Button className="w-full mb-6" onClick={() => setIsSubscriptionDialogOpen(true)}>
+              <Button
+                className="w-full mb-6"
+                onClick={() => setIsSubscriptionDialogOpen({ plan: SubscriptionPlan.max })}
+              >
                 {t("upgradeToMax")}
               </Button>
             ) : activeSubscription.plan === SubscriptionPlan.max ? (
@@ -260,8 +266,11 @@ export default function PricingPageClient({
 
       <AddTokensDialog open={isTokensDialogOpen} onOpenChange={setIsTokensDialogOpen} />
       <SubscriptionDialog
-        open={isSubscriptionDialogOpen}
-        onOpenChange={setIsSubscriptionDialogOpen}
+        plan={isSubscriptionDialogOpen?.plan}
+        open={isSubscriptionDialogOpen !== null}
+        onOpenChange={(open) => {
+          if (!open) setIsSubscriptionDialogOpen(null);
+        }}
       />
     </div>
   );

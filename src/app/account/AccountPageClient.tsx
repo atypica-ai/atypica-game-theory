@@ -48,7 +48,6 @@ export function AccountPageClient({
   const t = useTranslations("AccountPage");
   const locale = useLocale();
   const [isAddTokensOpen, setIsAddTokensOpen] = useState(false);
-  // const [isSubscribeOpen, setIsSubscribeOpen] = useState(false);
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
   const [isCanceling, setIsCanceling] = useState(false);
   const [stripeSubscription, setStripeSubscription] = useState<Pick<
@@ -190,9 +189,6 @@ export function AccountPageClient({
                 <></>
               ) : (
                 // 非 stripeSubscription，直接显示续费/升级按钮
-                // <Button className="w-full mt-4" onClick={() => setIsSubscribeOpen(true)}>
-                //   {subscription ? t("subscriptionSection.renew") : t("subscriptionSection.upgrade")}
-                // </Button>
                 <Button className="w-full mt-4" asChild>
                   <Link href="/pricing">
                     {activeSubscription
@@ -278,7 +274,6 @@ export function AccountPageClient({
       </div>
       {/* Dialogs */}
       <AddTokensDialog open={isAddTokensOpen} onOpenChange={setIsAddTokensOpen} />
-      {/* <SubscriptionDialog open={isSubscribeOpen} onOpenChange={setIsSubscribeOpen} /> */}
     </div>
   );
 }

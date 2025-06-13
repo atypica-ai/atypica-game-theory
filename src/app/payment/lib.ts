@@ -158,8 +158,6 @@ export async function handlePaymentSuccess({
     // recharge 1M tokens
     await recharge1MTokens({ userId, paymentRecordId: paymentRecord.id });
   } else if (productName === ProductName.PRO1MONTH) {
-    // // reset monthly tokens
-    // await resetMonthly2MTokens({ userId, paymentRecordId: paymentRecord.id });
     let planStartsAt = new Date();
     const existingSubscription = await prisma.userSubscription.findFirst({
       where: { userId },

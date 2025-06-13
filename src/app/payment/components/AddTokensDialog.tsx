@@ -11,7 +11,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { CoinsIcon, CreditCardIcon, GiftIcon, LoaderCircle } from "lucide-react";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
 import { QRCodeSVG } from "qrcode.react";
@@ -26,11 +26,8 @@ interface AddTokensDialogProps {
 }
 
 export const AddTokensDialog = ({ open, onOpenChange, onSuccess }: AddTokensDialogProps) => {
-  const locale = useLocale();
   const t = useTranslations("Components.AddTokensDialog");
-  const [paymentProvider, setPaymentProvider] = useState<PaymentProvider>(
-    locale === "zh-CN" ? PaymentProvider.Pingxx : PaymentProvider.Stripe,
-  );
+  const [paymentProvider, setPaymentProvider] = useState<PaymentProvider>(PaymentProvider.Stripe);
   const [paymentSuccess, setPaymentSuccess] = useState<boolean>(false);
 
   const { createPaymentLink, clearPaymentLink, paymentScanQR, loading, error } = usePay();
@@ -111,9 +108,7 @@ export const AddTokensDialog = ({ open, onOpenChange, onSuccess }: AddTokensDial
                   </div>
                   <div className="mt-1 text-xs text-muted-foreground flex items-center gap-1">
                     <GiftIcon className="size-3" />
-                    <span className={cn("flex-1", locale === "en-US" && "tracking-tight")}>
-                      {t("oneMillionTokensBonus")}
-                    </span>
+                    <span className="flex-1">{t("oneMillionTokensBonus")}</span>
                   </div>
                 </div>
                 <div className="text-xl font-bold">

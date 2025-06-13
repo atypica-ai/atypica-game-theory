@@ -89,9 +89,9 @@ export function TokensHistory() {
                       switch (item.verb) {
                         case UserTokensLogVerb.recharge:
                           return (
-                            <div className="flex items-center gap-1">
-                              <span>{t("tokensHistorySection.verbs.recharge")}</span>
+                            <div className="flex items-center gap-2">
                               <CoinsIcon className="size-4" />
+                              <span>{t("tokensHistorySection.verbs.recharge")}</span>
                             </div>
                           );
                         case UserTokensLogVerb.consume:

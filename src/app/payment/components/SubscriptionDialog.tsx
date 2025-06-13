@@ -10,12 +10,20 @@ import {
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-import { CalendarIcon, CoinsIcon, CreditCardIcon, LoaderCircle, StarIcon } from "lucide-react";
-import { useLocale, useTranslations } from "next-intl";
+import { SubscriptionPlan } from "@/prisma/client";
+import {
+  CalendarIcon,
+  CoinsIcon,
+  CreditCardIcon,
+  GiftIcon,
+  LoaderCircle,
+  StarIcon,
+} from "lucide-react";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
 import { QRCodeSVG } from "qrcode.react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { retrieveLatestPaid } from "../actions";
 import { PaymentProvider, usePay } from "./usePay";
 
@@ -25,12 +33,17 @@ interface SubscriptionDialogProps {
   onSuccess?: () => void;
 }
 
-export const SubscriptionDialog = ({ open, onOpenChange, onSuccess }: SubscriptionDialogProps) => {
-  const locale = useLocale();
+export const SubscriptionDialog = ({
+  plan,
+  open,
+  onOpenChange,
+  onSuccess,
+}: SubscriptionDialogProps & { plan?: SubscriptionPlan }) => {
+  if (open && !plan) {
+    throw new Error("SubscriptionDialog requires a plan");
+  }
   const t = useTranslations("Components.SubscriptionDialog");
-  const [paymentProvider, setPaymentProvider] = useState<PaymentProvider>(
-    locale === "zh-CN" ? PaymentProvider.Pingxx : PaymentProvider.Stripe,
-  );
+  const [paymentProvider, setPaymentProvider] = useState<PaymentProvider>(PaymentProvider.Stripe);
   const [paymentSuccess, setPaymentSuccess] = useState<boolean>(false);
 
   const { createPaymentLink, clearPaymentLink, paymentScanQR, loading, error } = usePay();
@@ -65,6 +78,22 @@ export const SubscriptionDialog = ({ open, onOpenChange, onSuccess }: Subscripti
     };
   }, [open, paymentScanQR, paymentSuccess, onSuccess]);
 
+  const price = useMemo(() => {
+    if (paymentProvider === PaymentProvider.Pingxx && plan === SubscriptionPlan.pro) {
+      return "¥159";
+    }
+    if (paymentProvider === PaymentProvider.Pingxx && plan === SubscriptionPlan.max) {
+      return "¥399";
+    }
+    if (paymentProvider === PaymentProvider.Stripe && plan === SubscriptionPlan.pro) {
+      return "$20";
+    }
+    if (paymentProvider === PaymentProvider.Stripe && plan === SubscriptionPlan.max) {
+      return "$50";
+    }
+    return "-";
+  }, [paymentProvider, plan]);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
@@ -74,7 +103,9 @@ export const SubscriptionDialog = ({ open, onOpenChange, onSuccess }: Subscripti
         onInteractOutside={(e) => e.preventDefault()}
       >
         <DialogHeader>
-          <DialogTitle>{t("title")}</DialogTitle>
+          <DialogTitle>
+            {plan === "pro" ? t("proTitle") : plan === "max" ? t("maxTitle") : "-"}
+          </DialogTitle>
           <DialogDescription>{t("description")}</DialogDescription>
         </DialogHeader>
 
@@ -106,7 +137,11 @@ export const SubscriptionDialog = ({ open, onOpenChange, onSuccess }: Subscripti
                 <div>
                   <div className="font-semibold flex items-center gap-2">
                     <StarIcon className="size-4 text-primary" />
-                    {t("proSubscription")}
+                    {plan === "pro"
+                      ? t("proSubscription")
+                      : plan === "max"
+                        ? t("maxSubscription")
+                        : "-"}
                   </div>
                   <div className="mt-2 text-xs text-muted-foreground flex items-center gap-1">
                     <CalendarIcon className="size-3" />
@@ -114,13 +149,23 @@ export const SubscriptionDialog = ({ open, onOpenChange, onSuccess }: Subscripti
                   </div>
                   <div className="mt-1 text-xs text-muted-foreground flex items-center gap-1">
                     <CoinsIcon className="size-3" />
-                    <span className={cn("flex-1", locale === "en-US" && "tracking-tight")}>
-                      {t("proMonthlyTokens")}
+                    <span className="flex-1">
+                      {plan === "pro"
+                        ? t("proMonthlyTokens")
+                        : plan === "max"
+                          ? t("maxMonthlyTokens")
+                          : "-"}
+                    </span>
+                  </div>
+                  <div className="mt-1 text-xs text-muted-foreground flex items-center gap-1">
+                    <GiftIcon className="size-3" />
+                    <span className="flex-1">
+                      {plan === "pro" ? t("proGift") : plan === "max" ? t("maxGift") : "-"}
                     </span>
                   </div>
                 </div>
-                <div className="text-xl font-bold">
-                  {paymentProvider === PaymentProvider.Pingxx ? "¥129" : "$20"}
+                <div>
+                  <span className="text-xl font-bold">{price}</span>
                   <span className="text-sm font-normal">/{t("month")}</span>
                 </div>
               </div>
@@ -214,12 +259,18 @@ export const SubscriptionDialog = ({ open, onOpenChange, onSuccess }: Subscripti
               </Button>
               <Button
                 type="button"
-                onClick={() =>
-                  createPaymentLink({
-                    paymentProvider: paymentProvider,
-                    productName: ProductName.PRO1MONTH,
-                  })
-                }
+                onClick={() => {
+                  const productName =
+                    plan === "pro"
+                      ? ProductName.PRO1MONTH
+                      : plan === "max"
+                        ? ProductName.MAX1MONTH
+                        : null;
+                  if (!productName) {
+                    throw new Error("Invalid plan");
+                  }
+                  createPaymentLink({ paymentProvider, productName });
+                }}
                 disabled={loading}
                 className={cn(
                   paymentScanQR && paymentProvider === PaymentProvider.Pingxx ? "hidden" : "",

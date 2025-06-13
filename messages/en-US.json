@@ -640,7 +640,7 @@
     "features": {
       "socialPlatforms": {
         "single": "Single Social Platform Data Access",
-        "multiple": "Multi-Platform Social Intelligence (TikTok, Instagram, X, etc.)"
+        "multiple": "Multi-Platform Social Intelligence (Instagram, X, TikTok, RedNote, Douyin, etc.)"
       },
       "personas": {
         "limited": "Generate up to 10 personas for market research",
@@ -736,8 +736,9 @@
       "redirectToStripe": "You'll be redirected to our secure payment page"
     },
     "SubscriptionDialog": {
-      "title": "Subscribe to Pro Plan",
-      "description": "Subscribe to our Pro plan for enhanced research capabilities.",
+      "proTitle": "Subscribe to Pro Plan",
+      "maxTitle": "Subscribe to Max Plan",
+      "description": "Subscribe to our plan for enhanced research capabilities.",
       "viewPricing": "View pricing",
       "subscribe": "Subscribe Now",
       "cancel": "Cancel",
@@ -745,9 +746,13 @@
       "goToAccount": "View Account",
       "paymentSuccess": "Subscription Successful!",
       "proSubscription": "Pro Plan",
+      "maxSubscription": "Max Plan",
       "monthlySubscription": "Monthly subscription plan",
       "month": "month",
-      "proMonthlyTokens": "3M tokens (30-day validity)",
+      "proMonthlyTokens": "2M tokens (30-day validity)",
+      "maxMonthlyTokens": "5M tokens (30-day validity)",
+      "proGift": "Limited Offer: +1M bonus tokens per month",
+      "maxGift": "Limited Offer: +3M bonus tokens per month",
       "scanQrCode": "Scan the QR code with your payment app",
       "processing": "Processing...",
       "alipay": "Alipay",

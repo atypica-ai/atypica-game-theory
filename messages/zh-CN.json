@@ -612,19 +612,19 @@
     "monthly": "每月",
     "freeTitle": "免费版",
     "freeSubtitle": "欢迎试用Atypica",
-    "freePrice": "0元",
+    "freePrice": "$0",
     "freeTokens": "100万免费Token",
     "basicTitle": "体验版",
     "basicSubtitle": "不定期进行基础商业分析",
-    "oneMillionTokensPrice": "100元",
+    "oneMillionTokensPrice": "$16",
     "oneMillionTokens": "100万Token",
     "payAsYouGoTokens": "按需充值Token",
     "proTitle": "Pro版",
     "proSubtitle": "经常进行深度商业分析",
-    "proPrice": "129元",
+    "proPrice": "$20",
     "maxTitle": "Max版",
     "maxSubtitle": "进行高级商业分析",
-    "maxPrice": "399元",
+    "maxPrice": "$50",
     "month": "月",
     "proMonthlyTokens": "每月200万Token（有效期30天）",
     "maxMonthlyTokens": "每月500万Token（有效期30天）",
@@ -633,14 +633,14 @@
     "getStarted": "免费开始使用",
     "chooseBasic": "购买Token",
     "upgradeToPro": "升级到Pro版",
-    "upgradeToMax": "升级到Max",
+    "upgradeToMax": "升级到Max版",
     "contactSales": "联系销售",
     "purchaseAdditionalTokens": "购买额外Token",
     "averageStudyToken": "每次研究平均40万个Token，复杂问题或者追问会消耗更多",
     "features": {
       "socialPlatforms": {
         "single": "覆盖单个社交媒体平台作为调研数据源",
-        "multiple": "覆盖多个社交媒体平台作为调研数据源（小红书、抖音等）"
+        "multiple": "覆盖多个社交媒体平台作为调研数据源（小红书、抖音、Tiktok、Instagram、X、等）"
       },
       "personas": {
         "limited": "生成不超过10个Persona进行调研",
@@ -673,7 +673,7 @@
       "collaboration": "团队协作功能（分享、协作）",
       "security": "数据安全功能（指定可见、有效期）",
       "tokenPurchase": {
-        "available": "可随时购买更多Token（100元每100万 + 100万赠送）",
+        "available": "可随时购买更多Token（$16每100万 + 100万赠送）",
         "notAvailable": "无法增购Token"
       }
     }
@@ -736,7 +736,8 @@
       "redirectToStripe": "您将被重定向至安全支付页面"
     },
     "SubscriptionDialog": {
-      "title": "订阅个人Pro版",
+      "proTitle": "订阅Pro版",
+      "maxTitle": "订阅Max版",
       "description": "订阅我们的Pro版以获得增强的研究能力。",
       "viewPricing": "查看价格",
       "subscribe": "立即订阅",
@@ -744,10 +745,14 @@
       "refreshPage": "刷新页面",
       "goToAccount": "查看账户",
       "paymentSuccess": "订阅成功！",
-      "proSubscription": "个人Pro版",
+      "proSubscription": "Pro版",
+      "maxSubscription": "Max版",
       "monthlySubscription": "月度订阅计划",
       "month": "月",
-      "proMonthlyTokens": "每月300万Token（有效期30天）",
+      "proMonthlyTokens": "每月200万Token（有效期30天）",
+      "maxMonthlyTokens": "每月500万Token（有效期30天）",
+      "proGift": "限时优惠：每月额外赠送100万Token",
+      "maxGift": "限时优惠：每月额外赠送300万Token",
       "scanQrCode": "请使用支付应用扫描二维码",
       "processing": "处理中...",
       "alipay": "支付宝",

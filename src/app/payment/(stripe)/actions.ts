@@ -73,7 +73,8 @@ export async function createStripeSession({
   const amount = lines.reduce((acc, line) => acc + line.price * line.quantity, 0);
   const description = lines.map((line) => line.description).join(", ");
   const siteOrigin = await getRequestOrigin();
-  const mode = productName === ProductName.PRO1MONTH ? "subscription" : "payment";
+  const mode =
+    productName === ProductName.PRO1MONTH || ProductName.MAX1MONTH ? "subscription" : "payment";
   const metadata: StripeMetadata = {
     project: "atypica",
     deployRegion: getDeployRegion(),
