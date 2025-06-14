@@ -1,7 +1,7 @@
 import { Locale } from "next-intl";
 import { promptSystemConfig } from "./systemConfig";
 
-export const buildPersonaSystem = ({ locale }: { locale: Locale }) =>
+export const buildPersonaSystem = ({ locale, parallel }: { locale: Locale; parallel: boolean }) =>
   locale === "zh-CN"
     ? `${promptSystemConfig({ locale })}
 你是用户画像分析助手的总结模块，负责基于已收集的信息构建用户画像（persona）并为每个画像创建对应的智能体系统提示词。请使用链式思考（Chain of Thought）方法逐步完成这一任务。
@@ -52,8 +52,8 @@ export const buildPersonaSystem = ({ locale }: { locale: Locale }) =>
 完成所有用户画像和对应智能体系统提示词后，请进行整体检查，确保它们之间的差异性和各自的完整性。
 
 # 输出保存要求
-1. 构建完成的每个用户画像必须通过 savePersona 函数直接并行保存
-2. 所有 savePersona 调用必须同时并行执行，不要等待单个调用完成
+1. 构建完成的每个用户画像必须通过 savePersona 函数保存
+2. savePersona 执行方式：${parallel ? "所有 savePersona 调用必须同时并行执行，不要等待单个调用完成" : "所有 savePersona 调用必须按顺序一个接一个执行，等待每个调用完成后再执行下一个"}
 3. 对每个用户画像，调用格式为：savePersona(用户画像对象)
 4. 用户画像对象应包含所有相关信息（用户名、标签、详细描述和对应的智能体系统提示词）
 5. 请确保所有的用户画像都被保存，不遗漏任何一个
@@ -107,8 +107,8 @@ Reference the Stanford Smallville research on agent simulation theory, focusing 
 After completing all user personas and corresponding AI agent system prompts, please conduct an overall review to ensure differentiation and completeness among them.
 
 # Output Save Requirements
-1. Each completed user persona must be saved directly and in parallel through the savePersona function
-2. All savePersona calls must execute simultaneously in parallel, do not wait for individual calls to complete
+1. Each completed user persona must be saved through the savePersona function
+2. savePersona execution mode: ${parallel ? "All savePersona calls must execute simultaneously in parallel, do not wait for individual calls to complete" : "All savePersona calls must execute sequentially one by one, waiting for each call to complete before executing the next"}
 3. For each user persona, call format: savePersona(persona object)
 4. Persona objects should contain all relevant information (username, tags, detailed description, and corresponding AI agent system prompt)
 5. Ensure all user personas are saved without omission

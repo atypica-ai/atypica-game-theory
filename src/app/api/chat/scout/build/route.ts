@@ -1,4 +1,5 @@
 import { runBuildPersona } from "@/ai/tools/experts/buildPersona";
+import { StatReporter } from "@/ai/tools/types";
 import { authOptions } from "@/lib/auth";
 import { rootLogger } from "@/lib/logging";
 import { prisma } from "@/prisma/prisma";
@@ -34,12 +35,17 @@ export async function POST(req: Request) {
   }
 
   const scoutLog = rootLogger.child({ scoutUserChatId: scoutUserChatId });
+  const statReport: StatReporter = async (dimension, value, extra) => {
+    console.log(
+      `Mock StatReport, dimension: ${dimension}, value: ${value}, extra: ${JSON.stringify(extra)}`,
+    );
+  };
   return createDataStreamResponse({
     execute: async (dataStream) => {
       await runBuildPersona({
         scoutUserChatId,
         locale: await getLocale(),
-        statReport: async () => {},
+        statReport,
         abortSignal: req.signal,
         studyLog: scoutLog,
         streamWriter: dataStream,

@@ -257,7 +257,7 @@ export async function studyAgentRequest({
           const tokens =
             usage.totalTokens +
             Math.floor((cache?.cacheReadInputTokens || 0) / 10) +
-            Math.floor((cache?.cacheWriteInputTokens || 0) * 1.1);
+            Math.floor((cache?.cacheWriteInputTokens || 0) * 1.25);
           promises.push(statReport("tokens", tokens, { reportedBy, usage, cache }));
         }
         await Promise.all(promises);

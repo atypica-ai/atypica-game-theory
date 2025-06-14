@@ -12,13 +12,10 @@ import { Logger } from "pino";
 import { z } from "zod";
 import { BuildPersonaToolResult } from "./types";
 
-const REDUCE_TOKENS: {
+type TReduceTokens = {
   model: LLMModelName;
   ratio: number;
-} = {
-  model: "gemini-2.5-pro",
-  ratio: 2,
-};
+} | null;
 
 export const buildPersonaTool = ({
   userId,
@@ -117,12 +114,24 @@ export async function runBuildPersona({
   streamWriter?: DataStreamWriter;
 }) {
   const { coreMessages } = await prepareMessagesForStreaming(scoutUserChatId);
+  const lastAssistantMessage = coreMessages.findLast((message) => message.role === "assistant");
+  if (lastAssistantMessage) {
+    lastAssistantMessage.providerOptions = {
+      bedrock: {
+        cachePoint: { type: "default" },
+      },
+    };
+  }
   const streamTextPromise = new Promise<Omit<Message, "role">>((resolve, reject) => {
-    const reduceTokens = REDUCE_TOKENS as typeof REDUCE_TOKENS | null;
+    // const reduceTokens = { model: "gemini-2.5-pro", ratio: 2 } as TReduceTokens | null;
+    const reduceTokens = null as TReduceTokens | null;
     const response = streamText({
-      model: reduceTokens ? llm("gemini-2.5-pro") : llm("claude-3-7-sonnet"),
+      model: reduceTokens ? llm(reduceTokens.model) : llm("claude-3-7-sonnet"),
       providerOptions: providerOptions,
-      system: buildPersonaSystem({ locale }),
+      system: buildPersonaSystem({
+        locale,
+        parallel: false, // gemini 可以开启, claude 不支持
+      }),
       messages: coreMessages,
       tools: {
         [ToolName.savePersona]: savePersonaTool({ scoutUserChatId, statReport }),
@@ -132,13 +141,16 @@ export async function runBuildPersona({
         type: "tool",
         toolName: ToolName.savePersona,
       },
-      maxSteps: 1,
+      maxSteps: 5,
       // toolCallStreaming: true,  // gemini 这个会有问题，会出现所有字段值都是 placeholder
       // experimental_repairToolCall: handleToolCallError,
       onChunk: async ({ chunk }) => {
         studyLog.debug({ chunk });
       },
       onStepFinish: async (step) => {
+        const cache = step.providerMetadata?.bedrock?.usage as
+          | { cacheReadInputTokens: number; cacheWriteInputTokens: number }
+          | undefined;
         const toolCalls = step.toolCalls.map((call) => call.toolName);
         const usage = step.usage;
         studyLog.info({
@@ -146,6 +158,7 @@ export async function runBuildPersona({
           stepType: step.stepType,
           toolCalls,
           usage,
+          cache,
         });
         if (statReport) {
           const reportedBy = "buildPersona tool";
@@ -160,6 +173,9 @@ export async function runBuildPersona({
               extra["reduceTokens"] = { originalTokens: tokens, ...reduceTokens };
               tokens = Math.ceil(tokens / reduceTokens.ratio);
             }
+            tokens +=
+              Math.floor((cache?.cacheReadInputTokens || 0) / 10) +
+              Math.floor((cache?.cacheWriteInputTokens || 0) * 1.25);
             promises.push(statReport("tokens", tokens, extra));
           }
           await Promise.all(promises);
