@@ -1,4 +1,7 @@
 import { TPersonaForStudy } from "@/ai/tools/types";
+import { fetchPersonasByIds, fetchUserChatByToken } from "@/app/study/actions";
+import { useStudyContext } from "@/app/study/hooks/StudyContext";
+import { useProgressiveMessages } from "@/app/study/hooks/useProgressiveMessages";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,9 +19,6 @@ import { Message } from "ai";
 import { ChevronLeftIcon, ChevronRightIcon, LoaderIcon, SparklesIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { FC, useCallback, useEffect, useRef, useState } from "react";
-import { fetchPersonasByIds, fetchUserChatByToken } from "../actions";
-import { useStudyContext } from "../hooks/StudyContext";
-import { useProgressiveMessages } from "../hooks/useProgressiveMessages";
 import { StreamSteps } from "./StreamSteps";
 
 type TPersonaDetail = ExtractServerActionData<typeof fetchPersonasByIds>[number];

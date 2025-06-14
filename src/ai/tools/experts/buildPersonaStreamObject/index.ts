@@ -124,7 +124,10 @@ export async function runBuildPersonaStreamObject({
     // model: llm("gpt-4.1"), // gpt 可以对一个字段的值进行 stream，这样在 prompt 生成部分的时候就可以看到结果，比较快
     // temperature: 0,
     providerOptions: providerOptions,
-    system: buildPersonaSystem({ locale: await getLocale() }),
+    system: buildPersonaSystem({
+      locale: await getLocale(),
+      parallel: true,
+    }),
     messages,
     output: "array",
     schema: personaBuildSchemaStreamObject(),

@@ -369,6 +369,40 @@ export async function fetchPersonasByIds({ ids }: { ids: number[] }): Promise<
   };
 }
 
+export async function fetchPersonasByScoutUserChatToken({
+  scoutUserChatToken,
+}: {
+  scoutUserChatToken: string;
+}): Promise<
+  ServerActionResult<
+    (Pick<Persona, "id" | "name" | "source" | "prompt"> & {
+      tags: string[];
+    })[]
+  >
+> {
+  const personas = await prisma.persona.findMany({
+    where: {
+      scoutUserChat: {
+        token: scoutUserChatToken,
+      },
+    },
+    select: {
+      id: true,
+      name: true,
+      source: true,
+      prompt: true,
+      tags: true,
+    },
+  });
+  return {
+    success: true,
+    data: personas.map(({ tags, ...persona }) => ({
+      ...persona,
+      tags: tags as string[],
+    })),
+  };
+}
+
 export async function userStopBackgroundStudyAction(
   studyUserChatId: number,
 ): Promise<ServerActionResult<void>> {

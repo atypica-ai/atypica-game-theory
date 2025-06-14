@@ -22,7 +22,7 @@ export const buildPersonaSystem = ({ locale, parallel }: { locale: Locale; paral
 
 # 用户画像要求
 每个用户画像必须包含：
-- 符合特点的用户名
+- 真实自然的用户名：应该像真实中文用户会选择的用户名，可以体现个性和特点，但要避免过于生硬的直译或机械化组合。可以使用连字符、数字等，但要符合中文网络文化的习惯
 - 3-5个特征标签
 - 智能体的系统提示词，详细描述用户画像（300到500字）
   - 基础属性：年龄、性别、职业、教育背景等
@@ -77,7 +77,7 @@ You are the persona synthesis module of the user profiling analytics assistant, 
 
 # User Persona Requirements
 Each user persona must include:
-- Appropriate username reflecting characteristics
+- Authentic and natural username: Should sound like what real English-speaking users would actually choose, reflecting personality and characteristics while avoiding overly direct translations or mechanical combinations. Use creative elements, numbers, underscores, and personal touches that align with English internet culture
 - 3-5 characteristic tags
 - AI agent system prompt with detailed persona description (300-500 words)
   - Basic attributes: age, gender, occupation, educational background, etc.
