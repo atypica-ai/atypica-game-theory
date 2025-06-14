@@ -6,11 +6,11 @@ import {
   StripeMetadata,
   StripeNewPaymentParams,
 } from "@/app/payment/data";
+import { stripeClient } from "@/app/payment/lib";
 import { getDeployRegion } from "@/lib/request/deployRegion";
 import { getRequestOrigin } from "@/lib/request/headers";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
-import Stripe from "stripe";
 
 export async function createStripeSession({
   userId,
@@ -34,6 +34,10 @@ export async function createStripeSession({
     // 如果当前套餐是自动续费的，不能继续
     if (stripeSubscriptionId) {
       throw new Error("Cannot continue with an active auto-renewing subscription");
+    }
+    // 对 stripe 来说，如果当前有套餐（一般是非 stripe 套餐），也不能继续
+    if (stripeSubscriptionId) {
+      throw new Error("Cannot continue with an active subscription");
     }
   }
 
@@ -81,7 +85,7 @@ export async function createStripeSession({
     orderNo,
     productName, // 目前只有一个 product, 直接放进 metadata
   };
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+  const stripe = stripeClient();
   const session = await stripe.checkout.sessions.create({
     customer_email: user.email,
     line_items: [{ price: priceId, quantity: 1 }],

@@ -2,10 +2,21 @@ import "server-only";
 
 import { fetchActiveUserSubscription } from "@/app/account/lib";
 import { ProductName } from "@/app/payment/data";
+import { rootLogger } from "@/lib/logging";
 import { PaymentRecord, SubscriptionPlan, UserTokensLogVerb } from "@/prisma/client";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import Stripe from "stripe";
+
+const globalForStripe = global as unknown as {
+  stripe: Stripe | undefined;
+};
+export const stripeClient = () => {
+  if (!globalForStripe.stripe) {
+    globalForStripe.stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+  }
+  return globalForStripe.stripe;
+};
 
 async function recharge1MTokens({
   userId,
@@ -139,6 +150,57 @@ export async function resetMonthlyTokens({ userId }: { userId: number }) {
   });
 }
 
+async function calculatePlanStartEnd({
+  userId,
+  invoice,
+}: {
+  userId: number;
+  invoice?: Stripe.Invoice;
+}): Promise<{
+  planStartsAt: Date;
+  planEndsAt: Date;
+}> {
+  let planStartsAt = new Date();
+  const existingSubscription = await prisma.userSubscription.findFirst({
+    where: { userId },
+    orderBy: { endsAt: "desc" },
+  });
+  if (existingSubscription?.endsAt && existingSubscription.endsAt > planStartsAt) {
+    planStartsAt = existingSubscription.endsAt;
+  }
+
+  let planEndsAt = new Date(planStartsAt.getTime() + 31 * 86400 * 1000); // 有效期 31 天。
+
+  if (invoice?.parent?.subscription_details) {
+    let stripeSubscriptionId: string | null = null;
+    const subscription_details = invoice.parent.subscription_details;
+    if (typeof subscription_details.subscription === "string") {
+      stripeSubscriptionId = subscription_details.subscription;
+    } else {
+      stripeSubscriptionId = subscription_details.subscription.id;
+    }
+    try {
+      const stripe = stripeClient();
+      const stripeSubscription = await stripe.subscriptions.retrieve(stripeSubscriptionId);
+      const stripeSubscriptionItem = stripeSubscription.items.data[0];
+      if (!stripeSubscriptionItem) {
+        throw new Error(
+          `Subscription item not found on stripe subscription ${stripeSubscriptionId} for user ${userId}`,
+        );
+      }
+      planStartsAt = new Date(stripeSubscriptionItem.current_period_start * 1000);
+      planEndsAt = new Date(stripeSubscriptionItem.current_period_end * 1000);
+    } catch (error) {
+      rootLogger.error(`Failed to retrieve Stripe subscription: ${(error as Error).message}`);
+    }
+  }
+
+  return {
+    planStartsAt,
+    planEndsAt,
+  };
+}
+
 export async function handlePaymentSuccess({
   paymentRecord,
   productName,
@@ -158,15 +220,10 @@ export async function handlePaymentSuccess({
     // recharge 1M tokens
     await recharge1MTokens({ userId, paymentRecordId: paymentRecord.id });
   } else if (productName === ProductName.PRO1MONTH) {
-    let planStartsAt = new Date();
-    const existingSubscription = await prisma.userSubscription.findFirst({
-      where: { userId },
-      orderBy: { endsAt: "desc" },
+    const { planStartsAt, planEndsAt } = await calculatePlanStartEnd({
+      userId,
+      invoice: invoiceData,
     });
-    if (existingSubscription?.endsAt && existingSubscription.endsAt > planStartsAt) {
-      planStartsAt = existingSubscription.endsAt;
-    }
-    const planEndsAt = new Date(planStartsAt.getTime() + 31 * 86400 * 1000); // 有效期 31 天。
     await prisma.userSubscription.create({
       data: {
         userId,
@@ -182,15 +239,10 @@ export async function handlePaymentSuccess({
     // reset monthly tokens
     await resetMonthlyTokens({ userId });
   } else if (productName === ProductName.MAX1MONTH) {
-    let planStartsAt = new Date();
-    const existingSubscription = await prisma.userSubscription.findFirst({
-      where: { userId },
-      orderBy: { endsAt: "desc" },
+    const { planStartsAt, planEndsAt } = await calculatePlanStartEnd({
+      userId,
+      invoice: invoiceData,
     });
-    if (existingSubscription?.endsAt && existingSubscription.endsAt > planStartsAt) {
-      planStartsAt = existingSubscription.endsAt;
-    }
-    const planEndsAt = new Date(planStartsAt.getTime() + 31 * 86400 * 1000); // 有效期 31 天。
     await prisma.userSubscription.create({
       data: {
         userId,

@@ -24,7 +24,7 @@ if (process.env.FETCH_HTTPS_PROXY) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   https.request = function (...args: any) {
     try {
-      rootLogger.info({ msg: "Overriding https.request", args });
+      rootLogger.debug({ msg: "Overriding https.request", args });
       let options = null;
       let url = null;
       if (typeof args[0] === "string") {

@@ -1,11 +1,11 @@
 "use server";
+import { PaymentChargeData, PaymentMethod, PaymentRecord } from "@/app/payment/data";
+import { stripeClient } from "@/app/payment/lib";
 import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { UserTokensLog } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
-import Stripe from "stripe";
-import { PaymentChargeData, PaymentMethod, PaymentRecord } from "../payment/data";
 import { fetchActiveUserSubscription } from "./lib";
 
 export async function fetchTokensHistory(
@@ -175,11 +175,12 @@ export async function activeUserSubscriptionAction(): Promise<
 export async function stripeSubscriptionAction() {
   return withAuth(async (user) => {
     const { stripeSubscriptionId } = await fetchActiveUserSubscription({ userId: user.id });
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+    const stripe = stripeClient();
     if (!stripeSubscriptionId) {
       return null;
     }
     const stripeSubscription = await stripe.subscriptions.retrieve(stripeSubscriptionId);
+    console.log(JSON.stringify(stripeSubscription.items.data));
     return {
       id: stripeSubscription.id,
       status: stripeSubscription.status,
@@ -203,7 +204,7 @@ export async function cancelSubscriptionAction(): Promise<ServerActionResult<nul
       };
     }
 
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+    const stripe = stripeClient();
     try {
       await stripe.subscriptions.cancel(stripeSubscriptionId);
     } catch (error) {

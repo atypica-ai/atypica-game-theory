@@ -1,5 +1,5 @@
 import { StripeMetadata } from "@/app/payment/data";
-import { handlePaymentSuccess } from "@/app/payment/lib";
+import { handlePaymentSuccess, stripeClient } from "@/app/payment/lib";
 import { rootLogger } from "@/lib/logging";
 import { getDeployRegion } from "@/lib/request/deployRegion";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
@@ -70,7 +70,7 @@ export async function POST(req: Request) {
   // rootLogger.info(`Stripe Webhook Received: ${payloadStr}`);
   const sig = req.headers.get("stripe-signature") || "";
   const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET || "";
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+  const stripe = stripeClient();
   let event;
   try {
     event = stripe.webhooks.constructEvent(payloadStr, sig, endpointSecret);

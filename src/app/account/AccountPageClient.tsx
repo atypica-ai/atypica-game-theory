@@ -31,19 +31,22 @@ export function AccountPageClient({
   activeSubscription,
   planExpiresAt,
   stripeSubscriptionId,
-}: {
+}: (
+  | {
+      activeSubscription: Omit<UserSubscription, "extra"> & { extra: UserSubscriptionExtra };
+      planExpiresAt: Date;
+    }
+  | {
+      activeSubscription: null;
+      planExpiresAt: null;
+    }
+) & {
+  stripeSubscriptionId: string | null;
   userTokens: {
     permanentBalance: number;
     monthlyBalance: number;
     monthlyResetAt: Date | null;
   } | null;
-  activeSubscription:
-    | (Omit<UserSubscription, "extra"> & {
-        extra: UserSubscriptionExtra;
-      })
-    | null;
-  planExpiresAt: Date | null;
-  stripeSubscriptionId: string | null;
 }) {
   const t = useTranslations("AccountPage");
   const locale = useLocale();
@@ -74,15 +77,15 @@ export function AccountPageClient({
     setIsCanceling(true);
     try {
       const result = await cancelSubscriptionAction();
-      if (result.success) {
-        toast.success(t("subscriptionSection.cancelSuccess"));
-        // Refresh the page to update subscription status
-        window.location.reload();
-      } else {
-        toast.error(result.message || t("subscriptionSection.cancelError"));
+      if (!result.success) {
+        throw new Error(result.message);
       }
+      toast.success(t("subscriptionSection.cancelSuccess"));
+      // Refresh the page to update subscription status
+      await new Promise((resolve) => setTimeout(() => resolve(null), 1000));
+      window.location.reload();
     } catch (error) {
-      toast.error(t("subscriptionSection.cancelError"));
+      toast.error((error as Error).message || t("subscriptionSection.cancelError"));
     } finally {
       setIsCanceling(false);
       setIsCancelDialogOpen(false);
@@ -137,7 +140,9 @@ export function AccountPageClient({
                         </div>
                         <div className="font-medium flex items-center">
                           <CalendarIcon className="mr-2 h-4 w-4 opacity-70" />
-                          {formatDate(activeSubscription.endsAt, locale)}
+                          {stripeSubscription?.status === "active"
+                            ? formatDate(activeSubscription.endsAt, locale)
+                            : formatDate(planExpiresAt, locale)}
                         </div>
                       </div>
                     ) : (
@@ -147,9 +152,11 @@ export function AccountPageClient({
                         </div>
                         <div className="font-medium flex items-center">
                           <CalendarIcon className="mr-2 h-4 w-4 opacity-70" />
-                          {planExpiresAt
-                            ? formatDate(planExpiresAt, locale)
-                            : t("subscriptionSection.neverExpires")}
+                          {
+                            planExpiresAt
+                              ? formatDate(planExpiresAt, locale)
+                              : t("subscriptionSection.neverExpires") // activeSubscription 不为空的情况下，这个不可能出现
+                          }
                         </div>
                       </div>
                     )}
@@ -161,8 +168,10 @@ export function AccountPageClient({
               {stripeSubscription?.status === "active" ? (
                 <AlertDialog open={isCancelDialogOpen} onOpenChange={setIsCancelDialogOpen}>
                   <AlertDialogTrigger asChild>
-                    <Button className="w-full mt-4">
-                      {t("subscriptionSection.cancelSubscription")}
+                    <Button className="w-full mt-4" disabled={isCanceling}>
+                      {isCanceling
+                        ? t("subscriptionSection.canceling")
+                        : t("subscriptionSection.cancelSubscription")}
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
