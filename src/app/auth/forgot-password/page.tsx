@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import { sendPasswordResetEmail } from "./actions";
+import { sendPasswordResetEmailAction } from "./actions";
 
 export default function ForgotPasswordPage() {
   const searchParams = useSearchParams();
@@ -20,7 +20,7 @@ export default function ForgotPasswordPage() {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const result = await sendPasswordResetEmail(email);
+      const result = await sendPasswordResetEmailAction(email);
       if (!result.success) {
         throw result;
       }

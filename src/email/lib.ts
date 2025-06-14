@@ -37,9 +37,12 @@ export async function sendEmail(options: EmailOptions): Promise<void> {
     html: options.html,
   };
 
-  await transporter.sendMail(mailOptions);
-
-  rootLogger.info(
-    `Email successfully delivered to ${options.to} with subject: "${options.subject}"`,
-  );
+  try {
+    await transporter.sendMail(mailOptions);
+    rootLogger.info(
+      `Email successfully delivered to ${options.to} with subject: "${options.subject}"`,
+    );
+  } catch (error) {
+    rootLogger.error(`Failed to send email to ${options.to}: ${error}`);
+  }
 }

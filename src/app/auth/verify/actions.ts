@@ -1,34 +1,10 @@
 "use server";
-import { sendVerificationEmail } from "@/email/verification";
 import { ServerActionResult } from "@/lib/serverAction";
 import { prisma } from "@/prisma/prisma";
 import { getTranslations } from "next-intl/server";
+import { sendVerificationCode } from "./lib";
 
-/**
- * Generates a random 6-digit verification code
- */
-function generateVerificationCode(): string {
-  return Math.floor(100000 + Math.random() * 900000).toString();
-}
-
-export const sendVerificationCode = async (userEmail: string) => {
-  const verificationCode = generateVerificationCode();
-
-  await prisma.verificationCode.create({
-    data: {
-      email: userEmail,
-      code: verificationCode,
-      expiresAt: new Date(Date.now() + 1000 * 60 * 30), // 30 minutes from now
-    },
-  });
-
-  await sendVerificationEmail({
-    email: userEmail,
-    verificationCode,
-  });
-};
-
-export async function verifyCode({
+export async function verifyCodeAction({
   email,
   code,
 }: {
@@ -93,7 +69,9 @@ export async function verifyCode({
   };
 }
 
-export async function resendVerificationCode(email: string): Promise<ServerActionResult<null>> {
+export async function resendVerificationCodeAction(
+  email: string,
+): Promise<ServerActionResult<null>> {
   const t = await getTranslations("Auth.Verify");
   if (!email) {
     return {
@@ -111,7 +89,15 @@ export async function resendVerificationCode(email: string): Promise<ServerActio
       message: t("userNotFound"),
     };
   }
-  await sendVerificationCode(email);
+  try {
+    await sendVerificationCode(email);
+  } catch {
+    return {
+      success: false,
+      code: "internal_server_error",
+      message: "Failed to send verification code",
+    };
+  }
   return {
     success: true,
     data: null,

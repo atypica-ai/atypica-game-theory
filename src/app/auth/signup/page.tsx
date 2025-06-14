@@ -2,12 +2,12 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Eye, EyeOff } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { signUp } from "./actions";
-import { Eye, EyeOff } from "lucide-react";
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -35,12 +35,10 @@ export default function SignUpPage() {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (password !== confirmPassword) {
       setError(t("passwordMismatch"));
       return;
     }
-    
     setIsLoading(true);
     try {
       setError("");
@@ -139,7 +137,9 @@ export default function SignUpPage() {
                   className="h-10"
                   required={showInvitationField}
                 />
-                <p className="text-xs text-gray-500 dark:text-gray-400">{t("invitationCodeHelp")}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  {t("invitationCodeHelp")}
+                </p>
               </div>
             )}
             <Button

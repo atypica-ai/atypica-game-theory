@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import { resendVerificationCode, verifyCode } from "./actions";
+import { resendVerificationCodeAction, verifyCodeAction } from "./actions";
 
 export default function VerifyPage() {
   const router = useRouter();
@@ -22,7 +22,7 @@ export default function VerifyPage() {
     setIsLoading(true);
     try {
       setError("");
-      const result = await verifyCode({ email, code: verificationCode });
+      const result = await verifyCodeAction({ email, code: verificationCode });
       if (!result.success) {
         throw new Error(result.message);
       }
@@ -38,7 +38,7 @@ export default function VerifyPage() {
     setIsLoading(true);
     try {
       setError("");
-      const result = await resendVerificationCode(email);
+      const result = await resendVerificationCodeAction(email);
       if (!result.success) {
         throw new Error(result.message);
       }

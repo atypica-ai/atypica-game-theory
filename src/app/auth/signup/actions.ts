@@ -1,9 +1,9 @@
 "use server";
+import { sendVerificationCode } from "@/app/auth/verify/lib";
 import { createUser } from "@/lib/auth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { prisma } from "@/prisma/prisma";
 import { getTranslations } from "next-intl/server";
-import { sendVerificationCode } from "../verify/actions";
 
 export async function signUp({
   email,
@@ -67,7 +67,15 @@ export async function signUp({
     });
   }
 
-  await sendVerificationCode(user.email);
+  try {
+    await sendVerificationCode(user.email);
+  } catch {
+    return {
+      success: false,
+      code: "internal_server_error",
+      message: "Failed to send verification code",
+    };
+  }
 
   return {
     success: true,

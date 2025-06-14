@@ -254,7 +254,7 @@ function StudyCard({ study: { studyUserChat, analyst } }: { study: TStudy }) {
         <CardTitle className="text-base font-semibold line-clamp-2">
           {studyUserChat.title}
         </CardTitle>
-        <div className="ml-auto px-2 py-1 text-xs font-semibold">
+        <div className="shrink-0 ml-auto px-2 py-1 text-xs font-semibold">
           {(() => {
             switch (analyst?.kind) {
               case "testing":

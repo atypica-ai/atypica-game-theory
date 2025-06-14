@@ -1,6 +1,6 @@
 import "server-only";
 
-import { sendVerificationCode } from "@/app/auth/verify/actions";
+import { sendVerificationCode } from "@/app/auth/verify/lib";
 import { getRequestClientIp, getRequestUserAgent } from "@/lib/request/headers";
 import { prisma } from "@/prisma/prisma";
 import { compare, hash } from "bcryptjs";
@@ -64,7 +64,11 @@ export const authOptions: NextAuthOptions = {
           throw new Error("INVALID_PASSWORD");
         }
         if (!user.emailVerified) {
-          await sendVerificationCode(user.email);
+          try {
+            await sendVerificationCode(user.email);
+          } catch {
+            // 无法做任何处理，通知了用户也没用，前端直接处理接下来的 EMAIL_NOT_VERIFIED 错误就行，然后去邮箱验证页面
+          }
           throw new Error("EMAIL_NOT_VERIFIED");
         }
         return {

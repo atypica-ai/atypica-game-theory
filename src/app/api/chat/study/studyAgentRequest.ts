@@ -267,12 +267,11 @@ export async function studyAgentRequest({
           (tool) => tool.toolName === ToolName.generateReport,
         );
         if (generateReportTool) {
-          // 通知用户 report 生成成功，不 await
           notifyReportCompletion({
             reportToken: generateReportTool.args.reportToken,
             studyUserChatId,
             studyLog,
-          });
+          }).catch(() => {}); //不 await
         }
       }
     },
@@ -294,7 +293,10 @@ export async function studyAgentRequest({
       await clearBackgroundToken();
       {
         // 因为 token 不足 abort 不会触发 onError，如果要通知 token 不足，需要在 backgroundChatUntilCancel 里面触发
-        notifyStudyInterruption({ studyUserChatId, studyLog });
+        notifyStudyInterruption({
+          studyUserChatId,
+          studyLog,
+        }).catch(() => {}); //不 await
       }
     },
     abortSignal: delayedAbortSignal,
