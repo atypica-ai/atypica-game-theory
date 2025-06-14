@@ -13,13 +13,13 @@ async function createProducts() {
     },
     {
       name: "PRO1MONTH",
-      price: 159,
+      price: 129,
       currency: "CNY",
       description: "atypica.AI Pro 会员 1 个月",
     },
     {
       name: "MAX1MONTH",
-      price: 399,
+      price: 329,
       currency: "CNY",
       description: "atypica.AI Max 会员 1 个月",
     },
@@ -42,7 +42,7 @@ async function createProducts() {
       price: 50,
       currency: "USD",
       description: "atypica.AI Max membership for 1 month",
-      extra: { price_id: "price_1RYI8TGU0jUFYcrNvctz9kpB" }, // 测试环境 price_1RYI0FGU0jUFYcrNc8ul4Qd6
+      extra: { price_id: "price_1RZlriGU0jUFYcrNSdxEyGGt" }, // 测试环境 price_1RYI0FGU0jUFYcrNc8ul4Qd6
     },
   ];
   // Create products

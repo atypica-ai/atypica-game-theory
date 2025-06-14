@@ -78,7 +78,9 @@ export async function createStripeSession({
   const description = lines.map((line) => line.description).join(", ");
   const siteOrigin = await getRequestOrigin();
   const mode =
-    productName === ProductName.PRO1MONTH || ProductName.MAX1MONTH ? "subscription" : "payment";
+    productName === ProductName.PRO1MONTH || productName === ProductName.MAX1MONTH
+      ? "subscription"
+      : "payment";
   const metadata: StripeMetadata = {
     project: "atypica",
     deployRegion: getDeployRegion(),
@@ -90,6 +92,7 @@ export async function createStripeSession({
     customer_email: user.email,
     line_items: [{ price: priceId, quantity: 1 }],
     currency: "USD",
+    // payment_method_types: ["card", "alipay"],
     mode: mode,
     success_url: successUrl || `${siteOrigin}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${siteOrigin}/payment/cancel?canceled=true`,

@@ -80,10 +80,10 @@ export const SubscriptionDialog = ({
 
   const price = useMemo(() => {
     if (paymentProvider === PaymentProvider.Pingxx && plan === SubscriptionPlan.pro) {
-      return "¥159";
+      return "¥129";
     }
     if (paymentProvider === PaymentProvider.Pingxx && plan === SubscriptionPlan.max) {
-      return "¥399";
+      return "¥329";
     }
     if (paymentProvider === PaymentProvider.Stripe && plan === SubscriptionPlan.pro) {
       return "$20";

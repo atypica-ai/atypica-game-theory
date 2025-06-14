@@ -33,15 +33,7 @@ export default async function AccountPage() {
   await resetMonthlyTokens({ userId });
 
   const userTokens = await fetchUserTokens();
-  const { activeSubscription, stripeSubscriptionId, planExpiresAt } =
-    await fetchActiveUserSubscription({ userId });
+  const result = await fetchActiveUserSubscription({ userId });
 
-  return (
-    <AccountPageClient
-      userTokens={userTokens}
-      activeSubscription={activeSubscription}
-      stripeSubscriptionId={stripeSubscriptionId}
-      planExpiresAt={planExpiresAt}
-    />
-  );
+  return <AccountPageClient userTokens={userTokens} {...result} />;
 }

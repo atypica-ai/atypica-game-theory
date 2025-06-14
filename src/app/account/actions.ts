@@ -180,7 +180,6 @@ export async function stripeSubscriptionAction() {
       return null;
     }
     const stripeSubscription = await stripe.subscriptions.retrieve(stripeSubscriptionId);
-    console.log(JSON.stringify(stripeSubscription.items.data));
     return {
       id: stripeSubscription.id,
       status: stripeSubscription.status,
