@@ -231,6 +231,7 @@ function EmptyStudyState() {
 
 function StudyCard({ study: { studyUserChat, analyst } }: { study: TStudy }) {
   const t = useTranslations("StudyPage.List");
+  const tRoot = useTranslations();
   const locale = useLocale();
 
   // Determine study status
@@ -248,9 +249,29 @@ function StudyCard({ study: { studyUserChat, analyst } }: { study: TStudy }) {
 
   return (
     <Card className="flex flex-col h-full transition-shadow hover:shadow-md">
-      <CardHeader className="flex flex-row items-center">
+      <CardHeader className="flex flex-row items-top">
         <HippyGhostAvatar seed={studyUserChat.id} className="size-6 mr-2 shrink-0" />
-        <CardTitle className="text-lg font-semibold line-clamp-1">{studyUserChat.title}</CardTitle>
+        <CardTitle className="text-base font-semibold line-clamp-2">
+          {studyUserChat.title}
+        </CardTitle>
+        <div className="ml-auto px-2 py-1 text-xs font-semibold">
+          {(() => {
+            switch (analyst?.kind) {
+              case "testing":
+                return <span>{tRoot("AnalystListPage.kinds.testing")}</span>;
+              case "planning":
+                return <span>{tRoot("AnalystListPage.kinds.planning")}</span>;
+              case "insights":
+                return <span>{tRoot("AnalystListPage.kinds.insights")}</span>;
+              case "creation":
+                return <span>{tRoot("AnalystListPage.kinds.creation")}</span>;
+              case "misc":
+                return <span>{tRoot("AnalystListPage.kinds.misc")}</span>;
+              default:
+                return <span>N/A</span>;
+            }
+          })()}
+        </div>
       </CardHeader>
       <CardContent className="flex-1">
         <div className="text-sm text-muted-foreground mb-3 line-clamp-3 leading-[1.25rem] h-[3.75rem]">

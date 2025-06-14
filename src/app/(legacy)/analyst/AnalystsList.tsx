@@ -110,7 +110,27 @@ export function AnalystsList({ analysts: initialAnalysts }: { analysts: Analyst[
             onClick={() => router.push(`/analyst/${analyst.id}`)}
           >
             <CardHeader>
-              <CardTitle className="text-lg">{analyst.role || "尚未明确主题"}</CardTitle>
+              <CardTitle className="flex items-center justify-between">
+                <div className="text-lg">{analyst.role || "尚未明确主题"}</div>
+                <div className="flex items-center text-xs font-semibold ">
+                  {(() => {
+                    switch (analyst.kind) {
+                      case "testing":
+                        return <span>{t("kinds.testing")}</span>;
+                      case "planning":
+                        return <span>{t("kinds.planning")}</span>;
+                      case "insights":
+                        return <span>{t("kinds.insights")}</span>;
+                      case "creation":
+                        return <span>{t("kinds.creation")}</span>;
+                      case "misc":
+                        return <span>{t("kinds.misc")}</span>;
+                      default:
+                        return <span>{analyst.kind}</span>;
+                    }
+                  })()}
+                </div>
+              </CardTitle>
               <CardDescription className="mt-2 line-clamp-1">
                 {analyst.brief || "-"}
               </CardDescription>

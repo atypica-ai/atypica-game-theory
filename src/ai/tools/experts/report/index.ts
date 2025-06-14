@@ -8,6 +8,7 @@ import {
 } from "@/ai/prompt";
 import { llm, LLMModelName, providerOptions } from "@/ai/provider";
 import { PlainTextToolResult, StatReporter } from "@/ai/tools/types";
+import { AnalystKind } from "@/app/(public)/featured-studies/data";
 import { triggerImagegenInReport } from "@/app/artifacts/lib/imagegen";
 import { generateReportScreenshot } from "@/app/artifacts/lib/screenshot";
 import { fileUrlToDataUrl } from "@/lib/attachments/actions";
@@ -258,7 +259,12 @@ export async function generateReport({
       const response = streamText({
         model: llm(modelName),
         providerOptions: providerOptions,
-        system: systemPrompt ? systemPrompt : reportHTMLSystem({ locale }),
+        system: systemPrompt
+          ? systemPrompt
+          : reportHTMLSystem({
+              locale,
+              analystKind: (analyst.kind as AnalystKind) || AnalystKind.misc,
+            }),
         messages: messages,
         maxSteps: 1,
         maxTokens: 30000,

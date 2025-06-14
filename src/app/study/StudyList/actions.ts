@@ -1,4 +1,5 @@
 "use server";
+import { AnalystKind } from "@/app/(public)/featured-studies/data";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { prisma } from "@/prisma/prisma";
@@ -24,6 +25,7 @@ export async function fetchUserStudies({
       };
       analyst: {
         topic: string;
+        kind: AnalystKind | null;
         reports: {
           id: number;
           token: string;
@@ -70,6 +72,7 @@ export async function fetchUserStudies({
           select: {
             id: true,
             topic: true,
+            kind: true,
             reports: {
               where: { generatedAt: { not: null } },
               select: { id: true, token: true },
@@ -87,7 +90,12 @@ export async function fetchUserStudies({
       data: userChats.map(({ analyst, ...userChat }) => {
         return {
           studyUserChat: userChat,
-          analyst: analyst,
+          analyst: analyst
+            ? {
+                ...analyst,
+                kind: analyst.kind as AnalystKind | null,
+              }
+            : null,
         };
       }),
       pagination: {

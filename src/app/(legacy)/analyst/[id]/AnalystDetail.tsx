@@ -48,7 +48,9 @@ export function AnalystDetail({
                 📝
               </div>
               <div className="flex-1">
-                <div className="text-base font-medium mb-1">{t("topicCard.researchTopic")}</div>
+                <div className="text-base font-medium mb-1">
+                  {t("topicCard.researchTopic")} ({analyst.kind})
+                </div>
                 <div className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
                   {analyst.topic}
                 </div>
@@ -70,8 +72,7 @@ export function AnalystDetail({
         </section>
 
         <section className="col-span-2 space-y-8">
-          <AnalystReportsSection analystId={analyst.id} reports={reports} />
-
+          <AnalystReportsSection analyst={analyst} reports={reports} />
           <AnalystInterviewsSection
             analystId={analyst.id}
             interviews={interviews}

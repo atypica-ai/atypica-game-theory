@@ -172,8 +172,9 @@ export default function AnalystReportsPage() {
                   </div>
                 )}
                 <CardHeader>
-                  <CardTitle className="mt-6 flex items-center justify-between w-full overflow-hidden">
-                    <div className="truncate leading-normal">{report.analyst.topic}</div>
+                  <CardTitle className="mt-6 flex items-top justify-between gap-2 w-full overflow-hidden">
+                    <div className="leading-normal truncate">{report.analyst.topic}</div>
+                    <div className="text-xs font-semibold">{report.analyst.kind}</div>
                   </CardTitle>
                   <CardDescription>{report.analyst.role}</CardDescription>
                 </CardHeader>

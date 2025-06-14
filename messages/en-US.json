@@ -287,6 +287,13 @@
       "title": "Usage Guide",
       "tip1": "Create a research topic to conduct user interviews using AI",
       "tip2": "Click on a card to view interview subjects, content, and full reports"
+    },
+    "kinds": {
+      "testing": "Testing",
+      "planning": "Planning",
+      "insights": "Insights",
+      "creation": "Creation",
+      "misc": "Misc"
     }
   },
   "AnalystPage": {

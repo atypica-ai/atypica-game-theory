@@ -1,10 +1,12 @@
 import { reportHTMLSystem } from "@/ai/prompt";
+import { AnalystKind } from "@/app/(public)/featured-studies/data";
 import { TokenAlertDialog } from "@/components/TokenAlertDialog";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDistanceToNow } from "@/lib/utils";
+import { Analyst } from "@/prisma/client";
 import { Loader2Icon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
@@ -16,10 +18,10 @@ import { backgroundGenerateReport, fetchAnalystReports } from "./actions";
 type AnalystReport = ExtractServerActionData<typeof fetchAnalystReports>[number];
 
 export function AnalystReportsSection({
-  analystId,
+  analyst,
   reports,
 }: {
-  analystId: number;
+  analyst: Analyst;
   reports: AnalystReport[];
 }) {
   const locale = useLocale();
@@ -30,22 +32,25 @@ export function AnalystReportsSection({
   const [systemPrompt, setSystemPrompt] = useState("");
 
   const openPromptDialog = useCallback(() => {
-    const system = reportHTMLSystem({ locale });
+    const system = reportHTMLSystem({
+      locale,
+      analystKind: (analyst.kind as AnalystKind) || AnalystKind.misc,
+    });
     setSystemPrompt(system);
     setIsPromptDialogOpen(true);
-  }, [locale]);
+  }, [locale, analyst.kind]);
 
   const generateReport = useCallback(async () => {
     try {
       await backgroundGenerateReport({
-        analystId,
+        analystId: analyst.id,
         systemPrompt,
       });
       router.refresh();
     } catch (error) {
       toast.error(`${error}`);
     }
-  }, [analystId, router, systemPrompt]);
+  }, [analyst.id, router, systemPrompt]);
 
   return (
     <>

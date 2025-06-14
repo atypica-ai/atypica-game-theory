@@ -287,6 +287,13 @@
       "title": "使用指南",
       "tip1": "创建一个研究主题，利用 atypica 进行用户访谈",
       "tip2": "点击卡片查看访谈对象、访谈内容和完整报告"
+    },
+    "kinds": {
+      "testing": "测试",
+      "planning": "规划",
+      "insights": "洞察",
+      "creation": "创意",
+      "misc": "其他"
     }
   },
   "AnalystPage": {
