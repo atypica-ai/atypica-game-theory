@@ -44,10 +44,9 @@ export const reportHTMLSystemPlanning = ({ locale }: { locale: Locale }) =>
 - 强调规划的系统性和实施的可操作性
 
 【规划专属图片生成】
-- **图片限制：最多1张，作为纯装饰性配图**
-- 专门场景：抽象艺术图案、氛围背景、纯装饰性视觉元素等
-- 规划策略：**严格避免任何具有实际含义的内容**，禁止生成流程图、架构图、实施框架、规划蓝图、时间线等，仅用于视觉美化
-- 英文提示词要求：使用abstract art（抽象艺术）、atmospheric background（氛围背景）、pure decoration（纯装饰）等术语，必须标注"no charts, no frameworks, no diagrams, no planning visuals, purely aesthetic decoration"，比例建议square
+- **图片限制：最多2张，作为概念性配图**
+- 专门场景：规划概念可视化、实施主题展示、架构概念图像等
+- 规划策略：展示与规划主题相关的概念性视觉内容，避免具体的流程图、架构图、实施框架、规划蓝图、时间线等
 
 ${sharedTechnicalSpecs({ locale })}
 `
@@ -91,10 +90,9 @@ Create an objective and engaging planning research report that presents key plan
 - Emphasize systematic nature of planning and actionability of implementation
 
 【Planning-Specific Image Generation】
-- **Image limit: Maximum 1 image as purely decorative visual**
-- Specialized scenarios: abstract art patterns, atmospheric backgrounds, pure decorative visual elements, etc.
-- Planning strategy: **Strictly avoid any content with actual meaning**, prohibit generating flowcharts, architecture diagrams, implementation frameworks, planning blueprints, timelines, etc., only for visual enhancement
-- English prompt requirements: Use professional terms like abstract art, atmospheric background, pure decoration, must specify "no charts, no frameworks, no diagrams, no planning visuals, purely aesthetic decoration", recommended ratio: square
+- **Image limit: Maximum 2 image as conceptual visual**
+- Specialized scenarios: planning concept visualization, implementation theme displays, architecture concept imagery, etc.
+- Planning strategy: Show conceptual visual content related to planning themes, avoid specific flowcharts, architecture diagrams, implementation frameworks, planning blueprints, timelines, etc.
 
 ${sharedTechnicalSpecs({ locale })}
 `;

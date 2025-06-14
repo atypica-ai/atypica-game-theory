@@ -43,10 +43,9 @@ export const reportHTMLSystemInsights = ({ locale }: { locale: Locale }) =>
 - 强调人文关怀的深度感和洞察的价值
 
 【洞察专属图片生成】
-- **图片限制：最多1张，作为纯装饰性配图**
-- 专门场景：抽象艺术图案、氛围背景、纯装饰性视觉元素等
-- 装饰策略：**严格避免任何具有实际含义的内容**，禁止生成情感图表、行为分析图、用户画像、流程图、数据可视化等，仅用于视觉美化
-- 英文提示词要求：使用abstract art（抽象艺术）、atmospheric background（氛围背景）、pure decoration（纯装饰）等术语，必须标注"no charts, no behavioral analysis, no user profiles, no emotional diagrams, purely aesthetic decoration"，比例建议square
+- **图片限制：最多2张，作为概念性配图**
+- 专门场景：洞察概念可视化、用户体验概念、行为理解主题等
+- 洞察策略：展示与用户洞察相关的概念性视觉内容，避免具体的情感图表、行为分析图、用户画像、流程图、数据可视化等
 
 ${sharedTechnicalSpecs({ locale })}
 `
@@ -89,10 +88,9 @@ Create an objective and engaging insights research report that presents key beha
 - Emphasize humanistic depth and value of insights
 
 【Insights-Specific Image Generation】
-- **Image limit: Maximum 1 image as purely decorative visual**
-- Specialized scenarios: abstract art patterns, atmospheric backgrounds, pure decorative visual elements, etc.
-- Decorative strategy: **Strictly avoid any content with actual meaning**, prohibit generating emotional charts, behavioral analysis diagrams, user profiles, flowcharts, data visualization, etc., only for visual enhancement
-- English prompt requirements: Use professional terms like abstract art, atmospheric background, pure decoration, must specify "no charts, no behavioral analysis, no user profiles, no emotional diagrams, purely aesthetic decoration", recommended ratio: square
+- **Image limit: Maximum 2 image as conceptual visual**
+- Specialized scenarios: insights concept visualization, user experience concepts, behavioral understanding themes, etc.
+- Insights strategy: Show conceptual visual content related to user insights, avoid specific emotional charts, behavioral analysis diagrams, user profiles, flowcharts, data visualization, etc.
 
 ${sharedTechnicalSpecs({ locale })}
 `;

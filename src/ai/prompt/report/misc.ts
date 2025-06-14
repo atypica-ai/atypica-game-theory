@@ -45,8 +45,7 @@ export const reportHTMLSystemMisc = ({ locale }: { locale: Locale }) =>
 【综合专属图片生成】
 - **图片限制：最多2张，避免过多配图影响对综合分析和用户反馈的关注**
 - 专门场景：综合概念可视化、多维特征展示、复合解决方案概念、整体策略展示等
-- 综合策略：展示综合概念和多维特征的视觉化表达，突出全面性和多维性
-- 英文提示词要求：使用comprehensive（综合性）、holistic（整体性）、integrated（整合性）等术语，比例建议square或landscape
+- 综合策略：展示与综合研究相关的概念性视觉内容，避免过于具体的流程图、架构图、精确数据展示等
 
 ${sharedTechnicalSpecs({ locale })}
 `
@@ -91,8 +90,7 @@ Create an objective and engaging comprehensive research report that presents key
 【Comprehensive-Specific Image Generation】
 - **Image limit: Maximum 2 images to avoid excessive visuals distracting from comprehensive analysis and user feedback focus**
 - Specialized scenarios: comprehensive concept visualization, multi-dimensional characteristic displays, composite solution concepts, holistic strategy demonstrations, etc.
-- Comprehensive strategy: Show visual expressions of comprehensive concepts and multi-dimensional characteristics, highlight comprehensive and multi-dimensional expressions
-- English prompt requirements: Use professional terms like comprehensive, holistic, integrated, multi-dimensional, recommended ratios: square or landscape
+- Comprehensive strategy: Show conceptual visual content related to comprehensive research, avoid overly specific flowcharts, architecture diagrams, precise data displays, etc.
 
 ${sharedTechnicalSpecs({ locale })}
 `;

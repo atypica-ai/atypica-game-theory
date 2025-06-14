@@ -43,10 +43,9 @@ export const reportHTMLSystemTesting = ({ locale }: { locale: Locale }) =>
 - 强调数据驱动的专业感和可信度
 
 【测试专属图片生成】
-- **图片限制：最多1张，作为纯装饰性配图**
-- 专门场景：抽象艺术图案、氛围背景、纯装饰性视觉元素等
-- 装饰策略：**严格避免任何具有实际含义的内容**，禁止生成图表、流程图、对比图、数据可视化、测试结果展示等，仅用于视觉美化
-- 英文提示词要求：使用abstract art（抽象艺术）、atmospheric background（氛围背景）、pure decoration（纯装饰）等术语，必须标注"no charts, no data, no diagrams, no comparison visuals, purely aesthetic decoration"，比例建议square
+- **图片限制：最多2张，作为概念性配图**
+- 专门场景：测试概念可视化、选择概念展示、验证概念图像等
+- 测试策略：展示与测试主题相关的概念性视觉内容，避免具体的图表、流程图、对比图、数据可视化、精确测试结果等
 
 ${sharedTechnicalSpecs({ locale })}
 `
@@ -89,10 +88,9 @@ Create an objective and engaging testing research report that presents key testi
 - Emphasize data-driven professionalism and credibility
 
 【Testing-Specific Image Generation】
-- **Image limit: Maximum 1 image as purely decorative visual**
-- Specialized scenarios: abstract art patterns, atmospheric backgrounds, pure decorative visual elements, etc.
-- Decorative strategy: **Strictly avoid any content with actual meaning**, prohibit generating charts, diagrams, comparison visuals, data visualization, test result displays, etc., only for visual enhancement
-- English prompt requirements: Use professional terms like abstract art, atmospheric background, pure decoration, must specify "no charts, no data, no diagrams, no comparison visuals, purely aesthetic decoration", recommended ratio: square
+- **Image limit: Maximum 2 image as conceptual visual**
+- Specialized scenarios: testing concept visualization, choice concept displays, validation concept imagery, etc.
+- Testing strategy: Show conceptual visual content related to testing themes, avoid specific charts, diagrams, comparison visuals, data visualization, precise test results, etc.
 
 ${sharedTechnicalSpecs({ locale })}
 `;
