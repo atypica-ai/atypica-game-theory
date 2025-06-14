@@ -1,10 +1,10 @@
 import "server-only";
 
-import { PlainTextToolResult } from "@/ai/tools/types";
+import { PlainTextToolResult, SocialPost } from "@/ai/tools/types";
 import { rootLogger } from "@/lib/logging";
 import { tool } from "ai";
 import { z } from "zod";
-import { TwitterUserPost, TwitterUserPostsResult } from "./types";
+import { TwitterUserPostsResult } from "./types";
 
 const toolLog = rootLogger.child({
   tool: "twitterUserPosts",
@@ -15,7 +15,7 @@ function parseTwitterUserPosts(result: {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   timeline: any[];
 }): TwitterUserPostsResult {
-  const posts: TwitterUserPost[] = [];
+  const posts: SocialPost[] = [];
   // 只取前十条
   const topUserPosts = (result?.timeline ?? []).slice(0, 10);
   topUserPosts.forEach((item) => {

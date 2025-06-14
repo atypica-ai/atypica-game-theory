@@ -1,11 +1,11 @@
 import "server-only";
 
-import { PlainTextToolResult } from "@/ai/tools/types";
+import { PlainTextToolResult, SocialPost } from "@/ai/tools/types";
 import { rootLogger } from "@/lib/logging";
 import { fixMalformedUnicodeString } from "@/lib/utils";
 import { tool } from "ai";
 import { z } from "zod";
-import { TwitterPost, TwitterSearchResult } from "./types";
+import { TwitterSearchResult } from "./types";
 
 const toolLog = rootLogger.child({
   tool: "twitterSearch",
@@ -15,7 +15,7 @@ function parseTwitterSearchResult(result: {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   timeline: any[];
 }): TwitterSearchResult {
-  const posts: TwitterPost[] = [];
+  const posts: SocialPost[] = [];
   // 过滤并取前十条
   const topPosts = (result?.timeline ?? [])
     .filter((item) => item.type === "tweet") //
