@@ -65,6 +65,9 @@ export enum ToolName {
   insSearch = "insSearch",
   insUserPosts = "insUserPosts",
   insPostComments = "insPostComments",
+  twitterSearch = "twitterSearch",
+  twitterUserPosts = "twitterUserPosts",
+  twitterPostComments = "twitterPostComments",
 
   toolCallError = "toolCallError",
 }

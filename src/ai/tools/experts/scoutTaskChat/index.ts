@@ -21,6 +21,9 @@ import {
   tiktokPostCommentsTool,
   tiktokSearchTool,
   tiktokUserPostsTool,
+  twitterPostCommentsTool,
+  twitterSearchTool,
+  twitterUserPostsTool,
   xhsNoteCommentsTool,
   xhsSearchTool,
   xhsUserNotesTool,
@@ -46,7 +49,7 @@ import { type ScoutTaskChatResult, type TPlatform } from "./types";
 
 const TOKENS_COMSUME_LIMIT = 150_000; // 限制 15w token 消耗量
 const SCOUT_TOOLS_LIMIT = 15; // 进行 15 次搜索，结束以后保存画像
-const SCOUT_MESSAGES_LIMIT = 10; // 最多 10 轮对话，结束以后保存画像
+const SCOUT_MESSAGES_LIMIT = 20; // 最多 10 轮对话，结束以后保存画像
 type TReduceTokens = {
   model: LLMModelName;
   ratio: number;
@@ -222,6 +225,9 @@ export async function runScoutTaskChatStream({
     [ToolName.xhsSearch]: xhsSearchTool,
     [ToolName.xhsUserNotes]: xhsUserNotesTool,
     [ToolName.xhsNoteComments]: xhsNoteCommentsTool,
+    [ToolName.twitterSearch]: twitterSearchTool,
+    [ToolName.twitterUserPosts]: twitterUserPostsTool,
+    [ToolName.twitterPostComments]: twitterPostCommentsTool,
     // [ToolName.toolCallError]: toolCallError,
   };
   const systemPrompt = scoutSystem({ locale });

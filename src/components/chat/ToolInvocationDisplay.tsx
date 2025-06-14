@@ -80,12 +80,15 @@ export const ToolInvocationDisplay = ({
     case ToolName.dyUserPosts:
     case ToolName.tiktokUserPosts:
     case ToolName.insUserPosts:
+    case ToolName.twitterSearch:
+    case ToolName.twitterUserPosts:
       return <SocialPostsResultMessage toolInvocation={toolInvocation} />;
 
     case ToolName.xhsNoteComments:
     case ToolName.dyPostComments:
     case ToolName.tiktokPostComments:
     case ToolName.insPostComments:
+    case ToolName.twitterPostComments:
       return <SocialPostCommentsResultMessage toolInvocation={toolInvocation} />;
 
     default:

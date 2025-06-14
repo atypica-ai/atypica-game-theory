@@ -4,32 +4,31 @@ import { PlainTextToolResult } from "@/ai/tools/types";
 import { rootLogger } from "@/lib/logging";
 import { tool } from "ai";
 import { z } from "zod";
-import { InsPostCommentsResult } from "./types";
+import { TwitterPostCommentsResult } from "./types";
 
 const toolLog = rootLogger.child({
-  tool: "insPostComments",
+  tool: "twitterPostComments",
 });
 
-function parseInsPostComments(result: {
-  data: {
-    count: number;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    items: any[];
-  };
-}): InsPostCommentsResult {
+function parseTwitterPostComments(result: {
+  // id: number,
+  // text: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  thread: any[];
+}): TwitterPostCommentsResult {
   // 只取前十条
-  const topComments = (result?.data?.items ?? []).slice(0, 10);
+  const topComments = (result?.thread ?? []).slice(0, 10);
   const comments = topComments.map((item) => {
     return {
       id: item.id,
       content: item.text,
       user: {
-        userid: item.user?.id,
-        nickname: item.user?.username,
-        image: item.user?.profile_pic_url,
+        userid: item.author?.rest_id,
+        nickname: item.author?.name,
+        image: item.author?.image,
       },
-      like_count: item.comment_like_count,
-      sub_comment_count: item.child_comment_count,
+      like_count: item.likes,
+      sub_comment_count: item.replies,
     };
   });
   const plainText = JSON.stringify(
@@ -47,47 +46,46 @@ function parseInsPostComments(result: {
   };
 }
 
-async function insPostComments({ postcode }: { postcode: string }) {
+async function twitterPostComments({ tweetid }: { tweetid: string }) {
   for (let i = 0; i < 3; i++) {
     try {
       const headers = { Authorization: `Bearer ${process.env.TIKHUB_API_TOKEN!}` };
-      const params = { url: `https://www.instagram.com/p/${postcode}/` };
+      const params = { tweet_id: tweetid };
       const queryString = new URLSearchParams(params).toString();
       const response = await fetch(
-        `${process.env.TIKHUB_API_BASE_URL}/instagram/web_app/fetch_post_comments_by_url?${queryString}`,
+        `${process.env.TIKHUB_API_BASE_URL}/twitter/web/fetch_post_comments?${queryString}`,
         { headers },
       );
       const res = await response.json();
       toolLog.info(`Response text: ${JSON.stringify(res).slice(0, 100)}`);
       if (res.code === 200) {
-        const result = parseInsPostComments(res.data);
+        const result = parseTwitterPostComments(res.data);
         return result;
       } else {
-        toolLog.warn(`Failed to fetch Instagram post comments, retrying... ${i + 1}`);
-        // 2005 错误是 超过所允许的访问间隔
+        toolLog.warn(`Failed to fetch Twitter post comments, retrying... ${i + 1}`);
         await new Promise((resolve) => setTimeout(resolve, 3 * 1000));
         continue;
       }
     } catch (error) {
-      toolLog.warn(`Error fetching Instagram post comments: ${(error as Error).message}`);
+      toolLog.warn(`Error fetching Twitter post comments: ${(error as Error).message}`);
     }
   }
   return {
     comments: [],
-    plainText: "Failed to fetch Instagram post comments after 3 attempts",
+    plainText: "Failed to fetch Twitter post comments after 3 attempts",
   };
 }
 
-export const insPostCommentsTool = tool({
-  description: "Fetch comments from specific Instagram post",
+export const twitterPostCommentsTool = tool({
+  description: "Fetch comments from specific Twitter post",
   parameters: z.object({
-    postcode: z.string().describe("The post slug to fetch comments from"),
+    tweetid: z.string().describe("The tweet ID to fetch comments from"),
   }),
   experimental_toToolResultContent: (result: PlainTextToolResult) => {
     return [{ type: "text", text: result.plainText }];
   },
-  execute: async ({ postcode }) => {
-    const result = await insPostComments({ postcode });
+  execute: async ({ tweetid }) => {
+    const result = await twitterPostComments({ tweetid });
     return result;
   },
 });

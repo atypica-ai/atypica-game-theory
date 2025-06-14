@@ -21,14 +21,16 @@ export const SocialPostCommentsResultMessage: FC<{
       {(comments || []).slice(0, 10).map((comment) => (
         <div key={comment.id} className="flex items-start justify-start gap-3 mb-2">
           <div className="relative mt-2 w-6 h-6 rounded-full overflow-hidden">
-            <Image
-              loader={proxiedImageLoader}
-              src={comment.user.image}
-              alt="User Avatar"
-              className="object-cover"
-              sizes="100%"
-              fill
-            />
+            {comment.user.image && (
+              <Image
+                loader={proxiedImageLoader}
+                src={comment.user.image}
+                alt="User Avatar"
+                className="object-cover"
+                sizes="100%"
+                fill
+              />
+            )}
           </div>
           <div className="flex-1 overflow-hidden">
             <strong className="text-xs text-foreground/80">{comment.user.nickname}</strong>
