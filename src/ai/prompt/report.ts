@@ -73,6 +73,10 @@ export const reportHTMLSystem = ({ locale }: { locale: Locale }) =>
 【图片生成】
 语法：\`<img src="/api/imagegen/[英文提示词]?ratio=[比例]" alt="[描述]" class="[样式]" />\`
 
+图片样式要求：
+- 必须限制最大宽度为100%，使用 Tailwind CSS 类 max-w-full 或直接添加 style="max-width: 100%" 内联样式
+- 确保图片在不同设备上的响应式显示
+
 图片策略：
 - 多元素组合：单张图片可展示产品系列、设计变体、配色组合、多角度视图
 - 文字处理原则：如果研究内容需要展示品牌名称、产品标识等文字信息，应在提示词中明确描述；否则专注纯视觉元素：外观、色彩、材质、形状、纹理
@@ -168,6 +172,10 @@ Create an objective and engaging research report that presents key research find
 
 【Image Generation】
 Syntax: \`<img src="/api/imagegen/[English prompt]?ratio=[ratio]" alt="[description]" class="[styles]" />\`
+
+Image Styling Requirements:
+- Must limit maximum width to 100% using Tailwind CSS class max-w-full or directly add inline style="max-width: 100%"
+- Ensure responsive display across different devices
 
 Image Strategy:
 - Multi-element combination: Single image can show product series, design variants, color combinations, multi-angle views
