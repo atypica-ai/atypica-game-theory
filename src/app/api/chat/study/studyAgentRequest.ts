@@ -38,6 +38,7 @@ const TOOL_USE_LIMIT = {
   [ToolName.generateReport]: 2,
   [ToolName.buildPersona]: 1,
   [ToolName.searchPersonas]: 1,
+  [ToolName.webSearch]: 2,
 };
 // const TOKENS_COMSUME_LIMIT = 1_000_000; // 最新统计来看，100 万 tokens 足够
 

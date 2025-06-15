@@ -1,6 +1,6 @@
 import { PlainTextToolResult } from "@/ai/tools/types";
 
-export type TPlatform = "小红书" | "抖音" | "TikTok" | "Instagram";
+export type TPlatform = "小红书" | "抖音" | "TikTok" | "Instagram" | "Twitter";
 
 export interface ScoutTaskChatResult extends PlainTextToolResult {
   personas?: {

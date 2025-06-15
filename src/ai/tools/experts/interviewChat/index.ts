@@ -415,7 +415,7 @@ async function chatWithPersona(chatProps: ChatProps, messages: Message[]) {
     //         useSearchGrounding: true,
     //         dynamicRetrievalConfig: {
     //           mode: "MODE_DYNAMIC",
-    //           dynamicThreshold: 0.5,
+    //           dynamicThreshold: 0.1, // threshold 越小，使用搜索的可能性就越高
     //         },
     //       },
     //     ]
@@ -427,7 +427,7 @@ async function chatWithPersona(chatProps: ChatProps, messages: Message[]) {
         useSearchGrounding: true,
         dynamicRetrievalConfig: {
           mode: "MODE_DYNAMIC",
-          dynamicThreshold: 0.5,
+          dynamicThreshold: 0.1, // threshold 越小，使用搜索的可能性就越高
         },
       },
     ];

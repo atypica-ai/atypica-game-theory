@@ -53,7 +53,7 @@ export async function POST(req: Request) {
       useSearchGrounding: true,
       dynamicRetrievalConfig: {
         mode: "MODE_DYNAMIC",
-        dynamicThreshold: 0.5,
+        dynamicThreshold: 0.3, // threshold 越小，使用搜索的可能性就越高
       },
     }),
     providerOptions: {

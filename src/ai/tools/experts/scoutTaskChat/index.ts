@@ -69,6 +69,9 @@ const toolPlatform = (toolName: ToolName): TPlatform | undefined => {
     [ToolName.insSearch]: "Instagram",
     [ToolName.insUserPosts]: "Instagram",
     [ToolName.insPostComments]: "Instagram",
+    [ToolName.twitterSearch]: "Twitter",
+    [ToolName.twitterUserPosts]: "Twitter",
+    [ToolName.twitterPostComments]: "Twitter",
   };
   return platforms[toolName];
 };
@@ -281,7 +284,7 @@ export async function runScoutTaskChatStream({
         // useSearchGrounding: true,
         // dynamicRetrievalConfig: {
         //   mode: "MODE_DYNAMIC",
-        //   dynamicThreshold: 0.5,
+        //   dynamicThreshold: 0.3, // threshold 越小，使用搜索的可能性就越高
         // },
       },
     ];
