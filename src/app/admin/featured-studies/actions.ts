@@ -8,8 +8,8 @@ import { Locale } from "next-intl";
 import { getLocale } from "next-intl/server";
 import { revalidatePath } from "next/cache";
 import { AdminPermission } from "../types";
-// Public action for fetching featured studies (no auth check needed)
 
+// Public action for fetching featured studies (no auth check needed)
 export async function fetchPublicFeaturedStudies({
   locale,
   kind,
@@ -26,7 +26,7 @@ export async function fetchPublicFeaturedStudies({
       analyst: Pick<Analyst, "id" | "role" | "topic" | "studySummary"> & {
         kind: AnalystKind | null;
       };
-      studyUserChat: Pick<UserChat, "id" | "token">;
+      studyUserChat: Pick<UserChat, "id" | "token" | "title">;
     })[]
   >
 > {
@@ -68,6 +68,7 @@ export async function fetchPublicFeaturedStudies({
         select: {
           id: true,
           token: true,
+          title: true,
         },
       },
       analyst: {
@@ -105,7 +106,7 @@ export async function fetchFeaturedStudies(): Promise<
       analyst: Omit<Analyst, "kind"> & {
         kind: AnalystKind | null;
       };
-      studyUserChat: Pick<UserChat, "id" | "token">;
+      studyUserChat: Pick<UserChat, "id" | "token" | "title">;
     })[]
   >
 > {
@@ -119,6 +120,7 @@ export async function fetchFeaturedStudies(): Promise<
         select: {
           id: true,
           token: true,
+          title: true,
         },
       },
     },
@@ -148,7 +150,7 @@ export async function fetchAnalysts(
     (Analyst & {
       user: Pick<User, "email"> | null;
       featuredStudy: FeaturedStudy | null;
-      studyUserChat: Pick<UserChat, "token"> | null;
+      studyUserChat: Pick<UserChat, "token" | "title"> | null;
     })[]
   >
 > {
@@ -162,6 +164,7 @@ export async function fetchAnalysts(
     OR?: Array<{
       topic?: { contains: string };
       user?: { email: { contains: string } };
+      studyUserChat?: { token: { contains: string } };
     }>;
     kind?: AnalystKind;
     featuredStudy?: { isNot: null };
@@ -176,6 +179,11 @@ export async function fetchAnalysts(
       {
         user: {
           email: { contains: search },
+        },
+      },
+      {
+        studyUserChat: {
+          token: { contains: search },
         },
       },
     ];
@@ -201,6 +209,7 @@ export async function fetchAnalysts(
       studyUserChat: {
         select: {
           token: true,
+          title: true,
         },
       },
       user: {

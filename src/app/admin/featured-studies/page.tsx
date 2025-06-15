@@ -24,7 +24,7 @@ import { Switch } from "@/components/ui/switch";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDate } from "@/lib/utils";
 import { Analyst } from "@/prisma/client";
-import { SearchIcon, Star } from "lucide-react";
+import { ChevronDown, ChevronUp, SearchIcon, Star } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useLocale } from "next-intl";
 import Link from "next/link";
@@ -46,6 +46,8 @@ export default function FeaturedStudiesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedKind, setSelectedKind] = useState<AnalystKind | "all">("all");
   const [featuredOnly, setFeaturedOnly] = useState(false);
+  const [expandedTopics, setExpandedTopics] = useState<Set<number>>(new Set());
+  const [expandedSummaries, setExpandedSummaries] = useState<Set<number>>(new Set());
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Initialize page from URL on load
@@ -145,6 +147,30 @@ export default function FeaturedStudiesPage() {
     setCurrentPage(1);
   };
 
+  const toggleTopicExpansion = (analystId: number) => {
+    setExpandedTopics((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(analystId)) {
+        newSet.delete(analystId);
+      } else {
+        newSet.add(analystId);
+      }
+      return newSet;
+    });
+  };
+
+  const toggleSummaryExpansion = (analystId: number) => {
+    setExpandedSummaries((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(analystId)) {
+        newSet.delete(analystId);
+      } else {
+        newSet.add(analystId);
+      }
+      return newSet;
+    });
+  };
+
   const handleFeaturedToggle = (checked: boolean) => {
     setFeaturedOnly(checked);
     setCurrentPage(1);
@@ -182,7 +208,7 @@ export default function FeaturedStudiesPage() {
                 type="text"
                 defaultValue={searchQuery}
                 ref={inputRef}
-                placeholder="Search by email or topic..."
+                placeholder="Search by email, topic, or token..."
                 className="pl-8"
               />
             </div>
@@ -252,10 +278,15 @@ export default function FeaturedStudiesPage() {
               >
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between w-full overflow-hidden">
-                    <div className="truncate leading-normal">{analyst.topic}</div>
+                    <div className="flex-1 min-w-0">
+                      <div className="leading-normal truncate font-semibold">
+                        <span className="text-xs text-muted-foreground font-normal">Brief: </span>
+                        {analyst.studyUserChat?.title || "Untitled Study"}
+                      </div>
+                    </div>
                     <button
                       onClick={() => handleToggleFeatured(analyst)}
-                      className="flex-shrink-0 p-1 hover:bg-gray-100 rounded transition-colors"
+                      className="flex-shrink-0 p-1 hover:bg-gray-100 rounded transition-colors ml-2"
                       title={analyst.featuredStudy ? "Remove from featured" : "Add to featured"}
                     >
                       <Star
@@ -267,13 +298,85 @@ export default function FeaturedStudiesPage() {
                       />
                     </button>
                   </CardTitle>
-                  <CardDescription>{analyst.role}</CardDescription>
+                  <CardDescription>
+                    <span className="text-xs text-muted-foreground">Role: </span>
+                    {analyst.role}
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm line-clamp-3 mb-2">{analyst.studySummary}</p>
-                  <div className="space-y-1 text-sm text-muted-foreground">
-                    <p>User: {analyst.user?.email || "N/A"}</p>
-                    <p>Created: {formatDate(analyst.createdAt, locale)}</p>
+                  {/* Topic Section */}
+                  <div className="mb-4">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-medium text-muted-foreground">Topic:</span>
+                      <button
+                        onClick={() => toggleTopicExpansion(analyst.id)}
+                        className="inline-flex items-center text-xs text-muted-foreground hover:text-foreground"
+                      >
+                        {expandedTopics.has(analyst.id) ? (
+                          <>
+                            <ChevronUp className="h-3 w-3 mr-1" />
+                            Collapse
+                          </>
+                        ) : (
+                          <>
+                            <ChevronDown className="h-3 w-3 mr-1" />
+                            Expand
+                          </>
+                        )}
+                      </button>
+                    </div>
+                    <p
+                      className={`text-sm ${
+                        expandedTopics.has(analyst.id) ? "whitespace-pre-wrap" : "line-clamp-2"
+                      }`}
+                    >
+                      {analyst.topic}
+                    </p>
+                  </div>
+
+                  {/* Summary Section */}
+                  <div className="mb-4">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-medium text-muted-foreground">Summary:</span>
+                      <button
+                        onClick={() => toggleSummaryExpansion(analyst.id)}
+                        className="inline-flex items-center text-xs text-muted-foreground hover:text-foreground"
+                      >
+                        {expandedSummaries.has(analyst.id) ? (
+                          <>
+                            <ChevronUp className="h-3 w-3 mr-1" />
+                            Collapse
+                          </>
+                        ) : (
+                          <>
+                            <ChevronDown className="h-3 w-3 mr-1" />
+                            Expand
+                          </>
+                        )}
+                      </button>
+                    </div>
+                    <p
+                      className={`text-sm ${
+                        expandedSummaries.has(analyst.id) ? "whitespace-pre-wrap" : "line-clamp-3"
+                      }`}
+                    >
+                      {analyst.studySummary}
+                    </p>
+                  </div>
+
+                  {/* Meta Information */}
+                  <div className="space-y-1 text-sm text-muted-foreground border-t pt-3">
+                    <p>
+                      <span className="text-xs">User:</span> {analyst.user?.email || "N/A"}
+                    </p>
+                    <p>
+                      <span className="text-xs">Token:</span>{" "}
+                      {analyst.studyUserChat?.token || "N/A"}
+                    </p>
+                    <p>
+                      <span className="text-xs">Created:</span>{" "}
+                      {formatDate(analyst.createdAt, locale)}
+                    </p>
                   </div>
                 </CardContent>
                 <CardFooter className="gap-2 items-center justify-between mt-auto">

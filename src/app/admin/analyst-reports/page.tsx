@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Pagination } from "@/components/ui/pagination";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDate, proxiedImageLoader } from "@/lib/utils";
-import { CameraIcon, ExternalLinkIcon, SearchIcon } from "lucide-react";
+import { CameraIcon, ChevronDown, ChevronUp, ExternalLinkIcon, SearchIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useLocale } from "next-intl";
 import Image from "next/image";
@@ -29,6 +29,8 @@ export default function AnalystReportsPage() {
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [generatingScreenshots, setGeneratingScreenshots] = useState<Set<number>>(new Set());
+  const [expandedInstructions, setExpandedInstructions] = useState<Set<number>>(new Set());
+  const [expandedTopics, setExpandedTopics] = useState<Set<number>>(new Set());
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Initialize page from URL on load
@@ -104,6 +106,30 @@ export default function AnalystReportsPage() {
     }
   };
 
+  const toggleInstructionExpansion = (reportId: number) => {
+    setExpandedInstructions((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(reportId)) {
+        newSet.delete(reportId);
+      } else {
+        newSet.add(reportId);
+      }
+      return newSet;
+    });
+  };
+
+  const toggleTopicExpansion = (reportId: number) => {
+    setExpandedTopics((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(reportId)) {
+        newSet.delete(reportId);
+      } else {
+        newSet.add(reportId);
+      }
+      return newSet;
+    });
+  };
+
   if (status === "loading" || isLoading) {
     return <div className="container mt-8">Loading...</div>;
   }
@@ -173,8 +199,36 @@ export default function AnalystReportsPage() {
                 )}
                 <CardHeader>
                   <CardTitle className="mt-6 flex items-top justify-between gap-2 w-full overflow-hidden">
-                    <div className="leading-normal truncate">{report.analyst.topic}</div>
-                    <div className="text-xs font-semibold">{report.analyst.kind}</div>
+                    <div className="flex-1 min-w-0">
+                      <div
+                        className={`leading-normal cursor-pointer ${
+                          expandedTopics.has(report.id) ? "" : "truncate"
+                        }`}
+                        onClick={() => toggleTopicExpansion(report.id)}
+                        title="Click to expand/collapse"
+                      >
+                        {report.analyst.topic}
+                      </div>
+                      <button
+                        onClick={() => toggleTopicExpansion(report.id)}
+                        className="inline-flex items-center text-xs text-muted-foreground hover:text-foreground mt-1"
+                      >
+                        {expandedTopics.has(report.id) ? (
+                          <>
+                            <ChevronUp className="h-3 w-3 mr-1" />
+                            Collapse
+                          </>
+                        ) : (
+                          <>
+                            <ChevronDown className="h-3 w-3 mr-1" />
+                            Expand
+                          </>
+                        )}
+                      </button>
+                    </div>
+                    <div className="text-xs font-semibold flex-shrink-0 ml-2">
+                      {report.analyst.kind}
+                    </div>
                   </CardTitle>
                   <CardDescription>{report.analyst.role}</CardDescription>
                 </CardHeader>
@@ -196,9 +250,36 @@ export default function AnalystReportsPage() {
                       Created: {formatDate(report.createdAt, locale)}
                     </p>
                     {report.instruction && (
-                      <p className="text-sm line-clamp-3 mt-2">
-                        <span className="font-medium">Instruction:</span> {report.instruction}
-                      </p>
+                      <div className="mt-2">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="font-medium text-sm">Instruction:</span>
+                          <button
+                            onClick={() => toggleInstructionExpansion(report.id)}
+                            className="inline-flex items-center text-xs text-muted-foreground hover:text-foreground"
+                          >
+                            {expandedInstructions.has(report.id) ? (
+                              <>
+                                <ChevronUp className="h-3 w-3 mr-1" />
+                                Collapse
+                              </>
+                            ) : (
+                              <>
+                                <ChevronDown className="h-3 w-3 mr-1" />
+                                Expand
+                              </>
+                            )}
+                          </button>
+                        </div>
+                        <p
+                          className={`text-sm ${
+                            expandedInstructions.has(report.id)
+                              ? "whitespace-pre-wrap"
+                              : "line-clamp-3"
+                          }`}
+                        >
+                          {report.instruction}
+                        </p>
+                      </div>
                     )}
                   </div>
                 </CardContent>
