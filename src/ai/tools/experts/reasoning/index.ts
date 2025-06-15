@@ -24,8 +24,14 @@ async function reasoningThinking({
   try {
     return new Promise(async (resolve, reject) => {
       const response = streamText({
-        // model: llm("deepseek-r1"),
-        model: llm("o3-mini"),
+        // model: llm("o3-mini"),
+        model: llm("gemini-2.5-pro", {
+          useSearchGrounding: true,
+          dynamicRetrievalConfig: {
+            mode: "MODE_DYNAMIC",
+            dynamicThreshold: 0, // threshold 越小，使用搜索的可能性就越高，0就是一定会搜索
+          },
+        }),
         providerOptions: providerOptions,
         system: reasoningSystem({ locale }),
         messages: [
