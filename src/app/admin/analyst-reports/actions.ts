@@ -30,18 +30,9 @@ export async function fetchAnalystReportsAction(
     ? {
         OR: [
           { token: { contains: searchQuery } },
-          {
-            analyst: {
-              topic: { contains: searchQuery },
-            },
-          },
-          {
-            analyst: {
-              user: {
-                email: { contains: searchQuery },
-              },
-            },
-          },
+          { analyst: { topic: { contains: searchQuery } } },
+          { analyst: { brief: { contains: searchQuery } } },
+          { analyst: { user: { email: { contains: searchQuery } } } },
         ],
       }
     : {};

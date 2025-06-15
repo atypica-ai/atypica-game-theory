@@ -163,6 +163,7 @@ export async function fetchAnalysts(
     topic: { not: string };
     OR?: Array<{
       topic?: { contains: string };
+      brief?: { contains: string };
       user?: { email: { contains: string } };
       studyUserChat?: { token: { contains: string } };
     }>;
@@ -176,6 +177,7 @@ export async function fetchAnalysts(
   if (search) {
     where.OR = [
       { topic: { contains: search } },
+      { brief: { contains: search } },
       {
         user: {
           email: { contains: search },

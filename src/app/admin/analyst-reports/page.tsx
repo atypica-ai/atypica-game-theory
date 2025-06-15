@@ -1,6 +1,13 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Pagination } from "@/components/ui/pagination";
 import { ExtractServerActionData } from "@/lib/serverAction";
@@ -185,33 +192,42 @@ export default function AnalystReportsPage() {
         ) : (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             {analystReports.map((report) => (
-              <Card key={report.id} className="relative pt-0 pb-0">
-                {report.coverUrl && (
-                  <div className="relative w-full aspect-video overflow-hidden rounded-t-lg">
-                    <Image
-                      loader={proxiedImageLoader} // mainland 加载 us s3 的资源需要 proxy
-                      src={report.coverUrl}
-                      alt={`Cover for ${report.analyst.topic}`}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                )}
+              <Card key={report.id}>
                 <CardHeader>
-                  <CardTitle className="mt-6 flex items-top justify-between gap-2 w-full overflow-hidden">
+                  <CardTitle className="flex items-center justify-between w-full overflow-hidden">
                     <div className="flex-1 min-w-0">
-                      <div
-                        className={`leading-normal cursor-pointer ${
-                          expandedTopics.has(report.id) ? "" : "truncate"
-                        }`}
-                        onClick={() => toggleTopicExpansion(report.id)}
-                        title="Click to expand/collapse"
-                      >
-                        {report.analyst.topic}
+                      <div className="leading-normal truncate font-semibold">
+                        <span className="text-xs text-muted-foreground font-normal">Brief: </span>
+                        {report.analyst.brief || "Untitled Report"}
                       </div>
+                    </div>
+                  </CardTitle>
+                  <CardDescription>
+                    <span className="text-xs text-muted-foreground">Role: </span>
+                    {report.analyst.role}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {/* Cover Image */}
+                  {report.coverUrl && (
+                    <div className="relative w-full aspect-video overflow-hidden rounded-lg mb-4">
+                      <Image
+                        loader={proxiedImageLoader} // mainland 加载 us s3 的资源需要 proxy
+                        src={report.coverUrl}
+                        alt={`Cover for ${report.analyst.topic}`}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                  )}
+
+                  {/* Topic Section */}
+                  <div className="mb-4">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-medium text-muted-foreground">Topic:</span>
                       <button
                         onClick={() => toggleTopicExpansion(report.id)}
-                        className="inline-flex items-center text-xs text-muted-foreground hover:text-foreground mt-1"
+                        className="inline-flex items-center text-xs text-muted-foreground hover:text-foreground"
                       >
                         {expandedTopics.has(report.id) ? (
                           <>
@@ -226,64 +242,92 @@ export default function AnalystReportsPage() {
                         )}
                       </button>
                     </div>
-                    <div className="text-xs font-semibold flex-shrink-0 ml-2">
-                      {report.analyst.kind}
+                    <p
+                      className={`text-sm ${
+                        expandedTopics.has(report.id) ? "whitespace-pre-wrap" : "line-clamp-2"
+                      }`}
+                    >
+                      {report.analyst.topic}
+                    </p>
+                  </div>
+
+                  {/* Instruction Section */}
+                  {report.instruction && (
+                    <div className="mb-4">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-medium text-muted-foreground">
+                          Instruction:
+                        </span>
+                        <button
+                          onClick={() => toggleInstructionExpansion(report.id)}
+                          className="inline-flex items-center text-xs text-muted-foreground hover:text-foreground"
+                        >
+                          {expandedInstructions.has(report.id) ? (
+                            <>
+                              <ChevronUp className="h-3 w-3 mr-1" />
+                              Collapse
+                            </>
+                          ) : (
+                            <>
+                              <ChevronDown className="h-3 w-3 mr-1" />
+                              Expand
+                            </>
+                          )}
+                        </button>
+                      </div>
+                      <p
+                        className={`text-sm ${
+                          expandedInstructions.has(report.id)
+                            ? "whitespace-pre-wrap"
+                            : "line-clamp-3"
+                        }`}
+                      >
+                        {report.instruction}
+                      </p>
                     </div>
-                  </CardTitle>
-                  <CardDescription>{report.analyst.role}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    <p className="text-sm text-muted-foreground">
-                      Token: <span className="font-mono">{report.token}</span>
+                  )}
+
+                  {/* Meta Information */}
+                  <div className="space-y-1 text-sm text-muted-foreground border-t pt-3">
+                    <p>
+                      <span className="text-xs">User:</span> {report.analyst.user?.email || "N/A"}
                     </p>
-                    <p className="text-sm text-muted-foreground">
-                      User: {report.analyst.user?.email || "N/A"}
+                    <p>
+                      <span className="text-xs">Token:</span>{" "}
+                      <span className="font-mono">{report.token}</span>
                     </p>
-                    <p className="text-sm text-muted-foreground">
-                      Generated:{" "}
+                    <p>
+                      <span className="text-xs">Generated:</span>{" "}
                       {report.generatedAt
                         ? formatDate(report.generatedAt, locale)
                         : "Not generated"}
                     </p>
-                    <p className="text-sm text-muted-foreground">
-                      Created: {formatDate(report.createdAt, locale)}
+                    <p>
+                      <span className="text-xs">Created:</span>{" "}
+                      {formatDate(report.createdAt, locale)}
                     </p>
-                    {report.instruction && (
-                      <div className="mt-2">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="font-medium text-sm">Instruction:</span>
-                          <button
-                            onClick={() => toggleInstructionExpansion(report.id)}
-                            className="inline-flex items-center text-xs text-muted-foreground hover:text-foreground"
-                          >
-                            {expandedInstructions.has(report.id) ? (
-                              <>
-                                <ChevronUp className="h-3 w-3 mr-1" />
-                                Collapse
-                              </>
-                            ) : (
-                              <>
-                                <ChevronDown className="h-3 w-3 mr-1" />
-                                Expand
-                              </>
-                            )}
-                          </button>
-                        </div>
-                        <p
-                          className={`text-sm ${
-                            expandedInstructions.has(report.id)
-                              ? "whitespace-pre-wrap"
-                              : "line-clamp-3"
-                          }`}
-                        >
-                          {report.instruction}
-                        </p>
-                      </div>
-                    )}
                   </div>
                 </CardContent>
-                <div className="p-4 pt-0 flex gap-2 items-center justify-between">
+                <CardFooter className="gap-2 items-center justify-between mt-auto">
+                  <div className="flex items-center">
+                    <span
+                      className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                        report.analyst.kind === "testing"
+                          ? "bg-blue-100 text-blue-800"
+                          : report.analyst.kind === "planning"
+                            ? "bg-green-100 text-green-800"
+                            : report.analyst.kind === "insights"
+                              ? "bg-purple-100 text-purple-800"
+                              : report.analyst.kind === "creation"
+                                ? "bg-orange-100 text-orange-800"
+                                : report.analyst.kind === "misc"
+                                  ? "bg-gray-100 text-gray-800"
+                                  : "bg-gray-100 text-gray-500"
+                      }`}
+                    >
+                      {report.analyst.kind || "N/A"}
+                    </span>
+                  </div>
                   <div className="flex gap-2">
                     <Button variant="outline" size="sm" asChild>
                       <Link
@@ -303,12 +347,10 @@ export default function AnalystReportsPage() {
                       className="flex items-center gap-1"
                     >
                       <CameraIcon className="h-3 w-3" />
-                      {generatingScreenshots.has(report.id)
-                        ? "Generating..."
-                        : "Generate Cover (Testing)"}
+                      {generatingScreenshots.has(report.id) ? "Generating..." : "Generate Cover"}
                     </Button>
                   </div>
-                </div>
+                </CardFooter>
               </Card>
             ))}
           </div>
