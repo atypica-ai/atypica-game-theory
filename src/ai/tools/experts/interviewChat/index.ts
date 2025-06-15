@@ -299,13 +299,11 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: Message[]) {
     interviewLog,
   } = chatProps;
   const result = await new Promise<Omit<Message, "role">>(async (resolve, reject) => {
-    // const hasAttachments = !!messages.find(
-    //   (message) => (message.experimental_attachments ?? []).length > 0,
-    // );
+    // const hasAttachments = !!messages.find((message) => (message.experimental_attachments ?? []).length > 0);
     const reduceTokens: TReduceTokens = null as TReduceTokens;
     // hasAttachments
     // ? { model: "gemini-2.5-pro", ratio: 2 }
-    // : { model: "gpt-4.1", ratio: 2 };
+    // : { model: "gpt-4.1", ratio: 2 };  // gpt 无法使用 pdf 文件，claude 和 gemini 可以
     const coreMessages = setBedrockCache("claude-3-7-sonnet", convertToCoreMessages(messages));
     const response = streamText({
       model: reduceTokens
@@ -405,21 +403,7 @@ async function chatWithPersona(chatProps: ChatProps, messages: Message[]) {
   } = chatProps;
 
   const result = await new Promise<Omit<Message, "role">>(async (resolve, reject) => {
-    // const hasAttachments = !!messages.find(
-    //   (message) => (message.experimental_attachments ?? []).length > 0,
-    // );
-    // const [reduceTokens, options]: [TReduceTokens, any] = hasAttachments
-    //   ? [
-    //       { model: "gemini-2.5-flash", ratio: 10 },
-    //       {
-    //         useSearchGrounding: true,
-    //         dynamicRetrievalConfig: {
-    //           mode: "MODE_DYNAMIC",
-    //           dynamicThreshold: 0.1, // threshold 越小，使用搜索的可能性就越高
-    //         },
-    //       },
-    //     ]
-    //   : [{ model: "gpt-4.1-mini", ratio: 5 }, undefined];
+    // const hasAttachments = !!messages.find((message) => (message.experimental_attachments ?? []).length > 0);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [reduceTokens, options]: [TReduceTokens, any] = [
       { model: "gemini-2.5-flash", ratio: 10 },
@@ -427,7 +411,8 @@ async function chatWithPersona(chatProps: ChatProps, messages: Message[]) {
         useSearchGrounding: true,
         dynamicRetrievalConfig: {
           mode: "MODE_DYNAMIC",
-          dynamicThreshold: 0.1, // threshold 越小，使用搜索的可能性就越高
+          // threshold 越小，使用搜索的可能性就越高
+          dynamicThreshold: messages.length <= 2 ? 0.1 : messages.length <= 4 ? 0.3 : 0.5,
         },
       },
     ];

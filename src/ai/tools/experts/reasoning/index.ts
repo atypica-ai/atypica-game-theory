@@ -29,7 +29,7 @@ async function reasoningThinking({
           useSearchGrounding: true,
           dynamicRetrievalConfig: {
             mode: "MODE_DYNAMIC",
-            dynamicThreshold: 0, // threshold 越小，使用搜索的可能性就越高，0就是一定会搜索
+            dynamicThreshold: 0.1, // threshold 越小，使用搜索的可能性就越高，0就是一定会搜索
           },
         }),
         providerOptions: providerOptions,
