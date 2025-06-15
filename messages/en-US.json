@@ -572,7 +572,8 @@
       "researchTopic": "Research Topic",
       "interviewing": "Interviewing with {count} people",
       "reportBeingGenerated": "Report being generated...",
-      "realPersonAgent": "Real Person Agent",
+      "realPersonDigitalTwin": "Real Person Digital Twin",
+      "highPrecisionDigitalTwin": "High-Precision Digital Twin",
       "learnMore": "Learn More",
       "realPersonCount": "including {count} real person agent",
       "realPersonCountPlural": "including {count} real person agents"
@@ -715,7 +716,8 @@
       "featuredStudies": "Featured Studies",
       "pricing": "Pricing",
       "changelog": "Roadmap",
-      "about": "About"
+      "about": "About",
+      "personaSimulation": "Real Person Agents"
     },
     "TokenAlertDialog": {
       "confirmOperation": "Confirm Operation",

@@ -14,57 +14,79 @@ export const RealPersonAgentsMethodology: FC = () => {
     {
       cardTitle: string;
       cardDescription: string;
-      title: string;
-      description: string;
-      methodTitle: string;
-      methods: Array<{ label: string; desc: string }>;
-      accuracyTitle: string;
-      accuracyDesc: string;
+      coreValue: string;
+      coreDesc: string;
+      advantageTitle: string;
+      advantages: Array<{ label: string; desc: string }>;
+      performanceTitle: string;
+      performanceDesc: string;
+      comparisonTitle: string;
+      comparison: Array<{ method: string; score: string; desc: string }>;
     }
   > = {
     "zh-CN": {
-      cardTitle: "关于真人智能体",
-      cardDescription: "基于斯坦福小镇论文方法构建的真人智能体",
-      title: "什么是真人智能体？",
-      description:
-        "真人智能体是基于斯坦福小镇论文方法构建的高仿真度消费者模型。通过AI对真实消费者进行1-2小时的深度访谈，产生平均5000字的转录文本，为每个消费者建立完整的数字分身。",
-      methodTitle: "构建方法",
-      methods: [
+      cardTitle: "真人智能体技术",
+      cardDescription: "解决复杂商业问题的新一代消费者建模技术",
+      coreValue: "核心价值",
+      coreDesc:
+        '真人智能体通过深度访谈构建完整的消费者"数字分身"，能够在新情境下表现出一致的人格特征和决策逻辑，为解决商业和社会领域的复杂问题提供全新可能性。',
+      advantageTitle: "技术优势",
+      advantages: [
         {
-          label: "深度访谈",
-          desc: "基于美国声音项目方法，涵盖生活历程、价值观探索、社会观点表达等多个维度",
+          label: "超越传统建模",
+          desc: "相较于基于人口统计或行为数据的传统方法，准确率提升25-30%",
         },
-        { label: "完整建模", desc: "将访谈转录本直接作为大语言模型上下文，保持信息完整性和连贯性" },
-        { label: "质量验证", desc: "通过多重验证机制确保智能体回答的一致性和准确性" },
+        {
+          label: "接近人类基线",
+          desc: "一致性表现达到接近81%的人类自我一致性极限，代表AI模拟的最高水准",
+        },
+        {
+          label: "跨情境稳定",
+          desc: "在新问题和情境下仍能保持75+分的高一致性表现",
+        },
       ],
-      accuracyTitle: "准确性表现",
-      accuracyDesc:
-        "研究显示，真实人类对同一问题在相隔两周后的回答一致性约为81%。我们的真人智能体在相同测试中表现接近这一人类基线，代表了目前AI模拟人类决策的最高水准。",
+      performanceTitle: "性能表现",
+      performanceDesc:
+        "通过120份商业研究报告的用户满意度测试，真人智能体在洞察分析、营销策略等场景中表现优异，整体满意度达到4.0/5.0，与人工报告持平。",
+      comparisonTitle: "建模方法对比",
+      comparison: [
+        { method: "个人信息", score: "55分", desc: "基础人口统计信息" },
+        { method: "消费数据", score: "73分", desc: "CRM/CDP平台数据" },
+        { method: "社交媒体", score: "79分", desc: "针对性平台数据分析" },
+        { method: "深度访谈", score: "85分", desc: "1-2小时访谈，5000+字转录" },
+      ],
     },
     "en-US": {
-      cardTitle: "About Real Person Agents",
-      cardDescription: "Real person agents built using Stanford Town paper methodology",
-      title: "What are Real Person Agents?",
-      description:
-        "Real Person Agents are high-fidelity consumer models built using Stanford Town paper methodology. Through AI-conducted 1-2 hour in-depth interviews with real consumers, we generate an average of 5,000 words of transcript, creating complete digital twins for each consumer.",
-      methodTitle: "Construction Methods",
-      methods: [
+      cardTitle: "Real Person Agent Technology",
+      cardDescription: "Next-generation consumer modeling for complex business challenges",
+      coreValue: "Core Value",
+      coreDesc:
+        "Real Person Agents create complete consumer 'digital twins' through in-depth interviews, capable of exhibiting consistent personality traits and decision logic in new contexts, providing new possibilities for solving complex problems in business and social domains.",
+      advantageTitle: "Technical Advantages",
+      advantages: [
         {
-          label: "In-depth Interviews",
-          desc: "Based on American Voices Project methodology, covering life journeys, value exploration, social viewpoints, and more",
+          label: "Beyond Traditional Modeling",
+          desc: "25-30% accuracy improvement compared to demographic or behavioral data-based methods",
         },
         {
-          label: "Complete Modeling",
-          desc: "Using interview transcripts directly as LLM context, maintaining information integrity and coherence",
+          label: "Approaching Human Baseline",
+          desc: "Consistency performance reaches near 81% human self-consistency limit, representing AI simulation peak",
         },
         {
-          label: "Quality Validation",
-          desc: "Multiple validation mechanisms ensure agent response consistency and accuracy",
+          label: "Cross-Situational Stability",
+          desc: "Maintains 75+ point consistency in new questions and contexts",
         },
       ],
-      accuracyTitle: "Accuracy Performance",
-      accuracyDesc:
-        "Research shows that real humans have about 81% consistency when answering the same question two weeks apart. Our Real Person Agents perform close to this human baseline in the same tests, representing the highest standard of AI human decision simulation.",
+      performanceTitle: "Performance Results",
+      performanceDesc:
+        "Through satisfaction testing of 120 business research reports, Real Person Agents excel in insight analysis and marketing strategy scenarios, achieving overall 4.0/5.0 satisfaction, matching human-written reports.",
+      comparisonTitle: "Modeling Method Comparison",
+      comparison: [
+        { method: "Personal Info", score: "55pts", desc: "Basic demographic information" },
+        { method: "Consumer Data", score: "73pts", desc: "CRM/CDP platform data" },
+        { method: "Social Media", score: "79pts", desc: "Targeted platform analysis" },
+        { method: "In-depth Interview", score: "85pts", desc: "1-2hr interviews, 5000+ words" },
+      ],
     },
   };
 
@@ -79,19 +101,19 @@ export const RealPersonAgentsMethodology: FC = () => {
       <CardContent className="pt-0">
         <div className="space-y-4 text-sm">
           <div>
-            <h4 className="font-medium mb-2">{currentContent.title}</h4>
-            <p className="text-muted-foreground leading-relaxed">{currentContent.description}</p>
+            <h4 className="font-medium mb-2">{currentContent.coreValue}</h4>
+            <p className="text-muted-foreground leading-relaxed">{currentContent.coreDesc}</p>
           </div>
 
           <div>
-            <h4 className="font-medium mb-2">{currentContent.methodTitle}</h4>
+            <h4 className="font-medium mb-2">{currentContent.advantageTitle}</h4>
             <ul className="space-y-2 text-muted-foreground">
-              {currentContent.methods.map((method, index) => (
+              {currentContent.advantages.map((advantage, index) => (
                 <li key={index} className="flex items-start gap-2">
                   <span className="text-primary">•</span>
                   <span>
-                    <strong>{method.label}：</strong>
-                    {method.desc}
+                    <strong>{advantage.label}：</strong>
+                    {advantage.desc}
                   </span>
                 </li>
               ))}
@@ -99,8 +121,25 @@ export const RealPersonAgentsMethodology: FC = () => {
           </div>
 
           <div>
-            <h4 className="font-medium mb-2">{currentContent.accuracyTitle}</h4>
-            <p className="text-muted-foreground leading-relaxed">{currentContent.accuracyDesc}</p>
+            <h4 className="font-medium mb-2">{currentContent.comparisonTitle}</h4>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              {currentContent.comparison.map((item, index) => (
+                <div
+                  key={index}
+                  className="flex justify-between items-center p-2 bg-muted/30 rounded"
+                >
+                  <span className="font-medium">{item.method}</span>
+                  <span className="text-primary font-semibold">{item.score}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <h4 className="font-medium mb-2">{currentContent.performanceTitle}</h4>
+            <p className="text-muted-foreground leading-relaxed">
+              {currentContent.performanceDesc}
+            </p>
           </div>
 
           <div className="pt-2 border-t border-border">

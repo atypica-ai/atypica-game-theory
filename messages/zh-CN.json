@@ -572,7 +572,8 @@
       "researchTopic": "研究主题",
       "interviewing": "正在与{count}人访谈",
       "reportBeingGenerated": "报告正在生成中",
-      "realPersonAgent": "真人智能体",
+      "realPersonDigitalTwin": "真人数字分身",
+      "highPrecisionDigitalTwin": "高精度数字分身",
       "learnMore": "了解更多",
       "realPersonCount": "含 {count} 个真人智能体",
       "realPersonCountPlural": "含 {count} 个真人智能体"
@@ -715,7 +716,8 @@
       "featuredStudies": "精选研究",
       "pricing": "价格",
       "changelog": "项目历程",
-      "about": "关于"
+      "about": "关于",
+      "personaSimulation": "真人智能体"
     },
     "TokenAlertDialog": {
       "confirmOperation": "确认操作",

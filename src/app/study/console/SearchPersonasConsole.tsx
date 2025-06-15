@@ -90,12 +90,12 @@ const PersonaGrids: FC<{
       <h3 className="text-sm flex items-center gap-1">
         <span>🤖 {t("searchPersonasResult", { count: personas.length })}</span>
         {realPersonCount > 0 && (
-          <span className="text-xs font-medium">
+          <span className="text-xs font-medium text-violet-700 dark:text-violet-300">
             (
             {t(realPersonCount > 1 ? "realPersonCountPlural" : "realPersonCount", {
               count: realPersonCount,
             })}
-            )
+            - {t("highPrecisionDigitalTwin")})
           </span>
         )}
       </h3>
@@ -118,7 +118,7 @@ const PersonaGrids: FC<{
                   <div className="truncate text-sm font-medium">{name}</div>
                   {isRealPerson(personaId) ? (
                     <div className="text-xs text-violet-700 dark:text-violet-300 flex items-center gap-1 font-normal">
-                      {t("realPersonAgent")}
+                      {t("realPersonDigitalTwin")}
                     </div>
                   ) : (
                     <div className="text-xs text-muted-foreground font-normal truncate">
@@ -159,7 +159,7 @@ const PersonaGrids: FC<{
                       className="text-xs bg-gradient-to-r from-violet-50 to-fuchsia-50 text-violet-700 border-violet-200 font-semibold dark:from-violet-950/50 dark:to-fuchsia-950/50 dark:text-violet-300 dark:border-violet-800/50"
                     >
                       <UserCheckIcon className="size-3 mr-1" />
-                      {t("realPersonAgent")}
+                      {t("realPersonDigitalTwin")}
                     </Badge>
                   )}
                 </div>

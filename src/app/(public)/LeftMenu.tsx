@@ -45,6 +45,11 @@ export function LeftMenus() {
               </MenuLink>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
+              <MenuLink href="/persona-simulation" target="_blank">
+                {t("personaSimulation")}
+              </MenuLink>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
               <MenuLink href="/changelog" target="_blank">
                 {t("changelog")}
               </MenuLink>
@@ -72,6 +77,9 @@ export function LeftMenus() {
             ) : (
               <MenuLink href="/featured-studies">{t("featuredStudies")}</MenuLink>
             )}
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <MenuLink href="/persona-simulation">{t("personaSimulation")}</MenuLink>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <MenuLink href="/about">{t("about")}</MenuLink>
