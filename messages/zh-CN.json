@@ -812,6 +812,14 @@
     "SearchPersonasResultMessage": {
       "personasFound": "搜索到{count}个用户画像智能体",
       "viewDetails": "查看详情"
+    },
+    "WebSearchResultMessage": {
+      "searchQuery": "搜索问题",
+      "summary": "总结",
+      "searchResults": "搜索结果"
+    },
+    "ReasoningThinkingResultMessage": {
+      "deepThinking": "深度思考"
     }
   },
   "Maintenance": {

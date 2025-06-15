@@ -35,7 +35,7 @@ export const BuildPersonaResultMessage: FC<{
       </div>
       <div className="space-y-1">
         {personas.map(({ personaId, name }) => (
-          <div className="flex items-center gap-1" key={personaId}>
+          <div className="flex items-center gap-2" key={personaId}>
             <HippyGhostAvatar seed={personaId} className="size-6" />
             {name}
           </div>

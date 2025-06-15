@@ -15,9 +15,7 @@ export default function HomePageClient(
       <HeroSection />
       <FeaturesSection />
       {/* <DemoSection /> */}
-      <div className="py-24 px-6 max-w-6xl mx-auto">
-        <FeaturedStudies />
-      </div>
+      <FeaturedStudies />
       <CTASection />
     </div>
   );

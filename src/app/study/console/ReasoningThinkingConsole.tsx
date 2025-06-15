@@ -15,7 +15,7 @@ export const ReasoningThinkingConsole: FC<{
         "p-3 mb-3 text-foreground/70 bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 rounded-lg text-xs",
       )}
     >
-      <div className="mt-2 mb-6 font-medium flex flex-rows items-start justify-start gap-2">
+      <div className="mt-2 mb-3 font-medium flex flex-rows items-start justify-start gap-2">
         <HippyGhostAvatar seed={toolInvocation.toolCallId.substring(1)} className="size-6" />
         <div className="flex-1 overflow-hidden">
           {t("deepThinking")}: {toolInvocation.args.question}

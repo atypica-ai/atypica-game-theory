@@ -29,7 +29,9 @@ const HippyGhostAvatar: FC<
     // 需要 overflow-hidden 以确保 Image 在 scale 后不会溢出容器
     <div
       className={cn(
-        "relative size-8 overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-700",
+        "relative size-8 overflow-hidden",
+        // "bg-zinc-50 dark:bg-zinc-800",
+        // "rounded-full",
         className,
       )}
     >
@@ -39,7 +41,7 @@ const HippyGhostAvatar: FC<
         alt="Hippy Ghost Avatar"
         fill
         sizes="100%"
-        className="object-contain scale-115"
+        className="object-contain scale-150 origin-[50%_30%]"
       />
     </div>
   );

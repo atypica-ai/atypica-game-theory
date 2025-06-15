@@ -88,21 +88,19 @@ export function FeaturedStudies() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="py-24 px-6 space-y-8">
       <div className="text-center space-y-3">
         <h2 className="text-3xl font-bold tracking-tight leading-tight">{t("title")}</h2>
         <p className="text-muted-foreground max-w-2xl mx-auto">{t("description")}</p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="max-w-6xl mx-auto grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {studies.map((study) => (
           <Card key={study.id} className="group cursor-pointer">
             <CardHeader className="space-y-3">
               <div className="flex items-center gap-3 overflow-hidden">
-                <div className="shrink-0 w-8 h-8 flex items-center justify-center bg-muted border border-border">
-                  <HippyGhostAvatar seed={study.id} className="size-5" />
-                </div>
-                <div className="text-xs truncate">{study.analyst.role}</div>
+                <HippyGhostAvatar seed={study.id} className="shrink-0 size-8" />
+                <div className="text-sm truncate">{study.analyst.role}</div>
               </div>
               <CardTitle className="text-base line-clamp-2 tracking-tight leading-tight">
                 {study.analyst.topic}

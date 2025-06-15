@@ -812,6 +812,14 @@
     "SearchPersonasResultMessage": {
       "personasFound": "Found {count} persona agents",
       "viewDetails": "Click to view"
+    },
+    "WebSearchResultMessage": {
+      "searchQuery": "Search Query",
+      "summary": "Summary",
+      "searchResults": "Search Results"
+    },
+    "ReasoningThinkingResultMessage": {
+      "deepThinking": "Deep Thinking"
     }
   },
   "Maintenance": {

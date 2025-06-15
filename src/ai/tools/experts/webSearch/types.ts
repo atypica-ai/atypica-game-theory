@@ -6,6 +6,5 @@ export interface WebSearchToolArgs {
 
 export interface WebSearchToolResult extends PlainTextToolResult {
   answer?: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   results: { url: string; title: string; content: string }[];
 }

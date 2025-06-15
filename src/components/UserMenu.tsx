@@ -110,7 +110,7 @@ export default function UserMenu() {
 
   const UserAvatar = ({ className, ...props }: React.ComponentProps<typeof Avatar>) =>
     session?.user ? (
-      <Avatar className={cn("size-8 cursor-pointer", className)} {...props}>
+      <Avatar className={cn("size-8 cursor-pointer rounded-none", className)} {...props}>
         {/* <AvatarImage src={""} /> */}
         {/* <AvatarFallback>{session.user.email.charAt(0)}</AvatarFallback> */}
         <HippyGhostAvatar seed={session.user.id} className="size-8" />

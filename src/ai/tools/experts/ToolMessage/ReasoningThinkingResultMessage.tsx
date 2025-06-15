@@ -2,6 +2,8 @@ import { ReasoningThinkingResult } from "@/ai/tools/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Markdown } from "@/components/markdown";
 import { ToolInvocation } from "ai";
+import { BrainIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { FC } from "react";
 
 export const ReasoningThinkingResultMessage: FC<{
@@ -9,17 +11,28 @@ export const ReasoningThinkingResultMessage: FC<{
     result: ReasoningThinkingResult;
   };
 }> = ({ toolInvocation }) => {
+  const t = useTranslations("Components.ReasoningThinkingResultMessage");
+
   return (
-    <div className="p-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 rounded-lg text-xs">
-      <div className="mt-2 mb-6 font-medium flex flex-rows items-start justify-start gap-2">
-        <HippyGhostAvatar seed={toolInvocation.toolCallId.substring(1)} className="size-6" />
-        <div className="flex-1 overflow-hidden">{toolInvocation.args.question}</div>
+    <div className="p-2 text-foreground/70 bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 rounded-lg text-xs">
+      <div className="mt-2 mb-3 flex flex-rows items-start justify-start gap-2">
+        <BrainIcon className="mx-1 size-4 shrink-0" />
+        <div className="flex-1 overflow-hidden">
+          <span className="font-medium">{t("deepThinking")}: </span>
+          {toolInvocation.args.question}
+        </div>
       </div>
       <div className="flex flex-rows items-start justify-start gap-2">
         <HippyGhostAvatar seed={toolInvocation.toolCallId} className="size-6" />
-        <div className="flex-1 overflow-hidden gap-3">
-          <div className="text-foreground/80">{toolInvocation.result.reasoning}</div>
-          <Markdown>{toolInvocation.result.text}</Markdown>
+        <div className="flex-1 overflow-hidden space-y-2">
+          {toolInvocation.result.reasoning && (
+            <div className="text-xs text-zinc-600 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-700 p-2 rounded">
+              {toolInvocation.result.reasoning}
+            </div>
+          )}
+          <div className="text-xs">
+            <Markdown>{toolInvocation.result.text}</Markdown>
+          </div>
         </div>
       </div>
     </div>
