@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>真人智能体 - 基于斯坦福小镇论文的消费者建模方法 | atypica.AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&display=swap");
+
+      :root {
+        --primary: oklch(0.87 0.29 142.57);
+        --primary-glow: oklch(0.87 0.29 142.57 / 0.35);
+        --terminal-bg: #121212;
+        --terminal-border: #333;
+      }
+
+      body {
+        font-family: "Fira Code", monospace;
+        background-color: #0a0a0a;
+        color: #e0e0e0;
+      }
+
+      .primary-text {
+        color: var(--primary);
+      }
+
+      .primary-border {
+        border-color: var(--primary);
+      }
+
+      .terminal {
+        background-color: var(--terminal-bg);
+        border: 1px solid var(--terminal-border);
+        border-radius: 8px;
+        padding: 1.5rem;
+        position: relative;
+        margin: 1rem 0;
+      }
+
+      .terminal-header {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2rem;
+        background-color: #1a1a1a;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+        display: flex;
+        padding: 0 1rem;
+        align-items: center;
+      }
+
+      .terminal-body {
+        padding-top: 2rem;
+        line-height: 1.6;
+        font-size: 0.9rem;
+      }
+
+      .terminal-dots {
+        display: flex;
+        gap: 0.5rem;
+      }
+
+      .dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+      }
+
+      .dot-red {
+        background-color: #ff5f56;
+      }
+      .dot-yellow {
+        background-color: #ffbd2e;
+      }
+      .dot-green {
+        background-color: #27ca3f;
+      }
+
+      .highlight-box {
+        background: linear-gradient(135deg, rgba(135, 206, 250, 0.1), rgba(255, 182, 193, 0.1));
+        border: 1px solid rgba(135, 206, 250, 0.3);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin: 1.5rem 0;
+      }
+
+      .methodology-step {
+        background-color: #1a1a1a;
+        border: 1px solid #333;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin: 1rem 0;
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin: 2rem 0;
+      }
+
+      .stat-card {
+        background-color: #1a1a1a;
+        border: 1px solid #333;
+        border-radius: 8px;
+        padding: 1.5rem;
+        text-align: center;
+      }
+
+      .quote-box {
+        border-left: 4px solid var(--primary);
+        background-color: #1a1a1a;
+        padding: 1.5rem;
+        margin: 2rem 0;
+        font-style: italic;
+      }
+
+      .content {
+        max-width: 4xl;
+        margin: 0 auto;
+        padding: 2rem;
+        line-height: 1.8;
+      }
+
+      .section-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--primary);
+        margin: 2rem 0 1rem 0;
+      }
+
+      .subsection-title {
+        font-size: 1.2rem;
+        font-weight: 500;
+        color: #e0e0e0;
+        margin: 1.5rem 0 0.8rem 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="content">
+      <!-- Header -->
+      <header class="text-center mb-8">
+        <h1 class="text-4xl font-bold primary-text mb-4">真人智能体</h1>
+        <p class="text-xl text-gray-300">基于斯坦福小镇论文的消费者建模方法</p>
+        <p class="text-sm text-gray-500 mt-2">Atypica.AI 的「主观世界建模法」核心技术</p>
+      </header>
+
+      <!-- Introduction -->
+      <div class="highlight-box">
+        <h2 class="text-xl font-semibold primary-text mb-3">什么是真人智能体？</h2>
+        <p class="mb-4">
+          真人智能体是基于斯坦福小镇论文（Generative Agents: Interactive Simulacra of Human Behavior）方法构建的高仿真度消费者模型。
+          通过AI主导的深度访谈，我们为每个真实消费者建立了完整的"数字分身"，实现了前所未有的个体决策模拟精度。
+        </p>
+        <p>
+          这些智能体不仅仅是数据的聚合，而是能够在新情境下表现出一致性人格特征和决策逻辑的智能实体，
+          为解决商业和社会领域的复杂问题（wicked problems）提供了全新的可能性。
+        </p>
+      </div>
+
+      <!-- Problem Statement -->
+      <section>
+        <h2 class="section-title">解决的核心问题</h2>
+        
+        <div class="terminal">
+          <div class="terminal-header">
+            <div class="terminal-dots">
+              <div class="dot dot-red"></div>
+              <div class="dot dot-yellow"></div>
+              <div class="dot dot-green"></div>
+            </div>
+          </div>
+          <div class="terminal-body">
+            <div class="mb-4">
+              <span class="primary-text">challenge@business:~$</span> 理解消费者行为的三大挑战
+            </div>
+            <div class="ml-4 space-y-2 text-sm">
+              <div>• 复杂问题：消费者决策涉及多重因素，无标准答案</div>
+              <div>• 个体差异：传统方法忽略个性化的决策逻辑</div>
+              <div>• 情境变化：静态数据无法预测新环境下的行为</div>
+            </div>
+          </div>
+        </div>
+
+        <p class="text-gray-300">
+          加州大学伯克利分校的 H.W.J. Rittel 和 M.M. Webber 教授指出：商业和社会领域的许多问题都具有复杂性特征，
+          表现为复杂的均衡状态和现实世界的约束条件。消费者行为理解正是这类复杂问题的典型代表。
+        </p>
+      </section>
+
+      <!-- Methodology -->
+      <section>
+        <h2 class="section-title">构建方法论</h2>
+
+        <div class="subsection-title">1. 深度访谈设计</div>
+        <div class="methodology-step">
+          <h4 class="font-medium text-primary mb-2">基于美国声音项目（American Voices Project）</h4>
+          <p class="text-gray-300 mb-3">
+            这是 Stanford 和 Princeton 大学的联合项目，专门用于收集全国范围内的深度个人叙述。
+            我们的访谈结构涵盖四个核心维度：
+          </p>
+          <ul class="space-y-2 text-sm text-gray-400">
+            <li><strong>生活历程叙述：</strong>重要转折点、挫折经历和成就时刻</li>
+            <li><strong>价值观探索：</strong>对家庭、工作、社会责任的深层理解</li>
+            <li><strong>社会观点表达：</strong>政治倾向、社会问题态度、未来期望</li>
+            <li><strong>决策模式分析：</strong>具体情境下的思考过程和权衡因素</li>
+          </ul>
+        </div>
+
+        <div class="subsection-title">2. 访谈规模与质量</div>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="text-2xl font-bold primary-text">1-2 小时</div>
+            <div class="text-sm text-gray-400">每次访谈时长</div>
+          </div>
+          <div class="stat-card">
+            <div class="text-2xl font-bold primary-text">5000+ 字</div>
+            <div class="text-sm text-gray-400">平均转录文本</div>
+          </div>
+          <div class="stat-card">
+            <div class="text-2xl font-bold primary-text">10,000+</div>
+            <div class="text-sm text-gray-400">目标访谈数量</div>
+          </div>
+          <div class="stat-card">
+            <div class="text-2xl font-bold primary-text">200+</div>
+            <div class="text-sm text-gray-400">标准化问题集</div>
+          </div>
+        </div>
+
+        <div class="subsection-title">3. 智能体构建策略</div>
+        <div class="methodology-step">
+          <h4 class="font-medium text-primary mb-2">分段式提示构建</h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+            <div>
+              <strong>背景设定模块：</strong>
+              <span class="text-gray-400">基于访谈中的人口统计信息和生活背景</span>
+            </div>
+            <div>
+              <strong>价值观嵌入模块：</strong>
+              <span class="text-gray-400">将价值观念转化为指导决策的内在原则</span>
+            </div>
+            <div>
+              <strong>行为模式模块：</strong>
+              <span class="text-gray-400">根据消费历史建立一致的行为倾向</span>
+            </div>
+            <div>
+              <strong>语言风格模块：</strong>
+              <span class="text-gray-400">保持表达方式和语言特征的一致性</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Performance -->
+      <section>
+        <h2 class="section-title">准确性表现</h2>
+
+        <div class="quote-box">
+          <p class="mb-2">
+            "研究发现，真实人类对同一问题在相隔两周后的回答一致性约为81%，这一发现揭示了人类回答本身存在的自然变异性。"
+          </p>
+          <footer class="text-sm text-gray-400">—— 人类基线一致性研究</footer>
+        </div>
+
+        <div class="terminal">
+          <div class="terminal-header">
+            <div class="terminal-dots">
+              <div class="dot dot-red"></div>
+              <div class="dot dot-yellow"></div>
+              <div class="dot dot-green"></div>
+            </div>
+          </div>
+          <div class="terminal-body">
+            <div class="mb-4">
+              <span class="primary-text">evaluation@atypica:~$</span> 真人智能体表现评估
+            </div>
+            <div class="ml-4 space-y-3">
+              <div class="bg-green-900/30 p-3 rounded">
+                <div class="text-green-400">✓ 接近人类基线</div>
+                <div class="text-sm text-gray-400">一致性表现达到接近81%的人类自我一致性极限</div>
+              </div>
+              <div class="bg-blue-900/30 p-3 rounded">
+                <div class="text-blue-400">✓ 优于传统建模</div>
+                <div class="text-sm text-gray-400">比基于人口统计和行为数据的模型表现更优（55-73分 vs 79分）</div>
+              </div>
+              <div class="bg-purple-900/30 p-3 rounded">
+                <div class="text-purple-400">✓ 跨情境稳定</div>
+                <div class="text-sm text-gray-400">在新问题和情境下保持75分以上的一致性</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Applications -->
+      <section>
+        <h2 class="section-title">应用场景</h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="methodology-step">
+            <h4 class="font-medium text-primary mb-2">理想应用场景</h4>
+            <ul class="space-y-2 text-sm">
+              <li>• <strong>早期探索：</strong>产品概念验证、市场反应测试</li>
+              <li>• <strong>跨文化洞察：</strong>全球市场进入策略、本土化方案</li>
+              <li>• <strong>快速迭代：</strong>A/B测试预筛选、创意概念评估</li>
+              <li>• <strong>难触达人群：</strong>高净值人群、特定专业群体研究</li>
+            </ul>
+          </div>
+
+          <div class="methodology-step">
+            <h4 class="font-medium text-primary mb-2">应用局限性</h4>
+            <ul class="space-y-2 text-sm">
+              <li>• <strong>复杂行为观察：</strong>需要真实产品使用体验</li>
+              <li>• <strong>高风险决策：</strong>重大产品发布等关键业务</li>
+              <li>• <strong>深度情感洞察：</strong>品牌情感连接等定性研究</li>
+              <li>• <strong>实时互动：</strong>需要即时反馈的用户体验研究</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Quality Control -->
+      <section>
+        <h2 class="section-title">质量控制与验证</h2>
+
+        <div class="terminal">
+          <div class="terminal-header">
+            <div class="terminal-dots">
+              <div class="dot dot-red"></div>
+              <div class="dot dot-yellow"></div>
+              <div class="dot dot-green"></div>
+            </div>
+          </div>
+          <div class="terminal-body">
+            <div class="mb-4">
+              <span class="primary-text">quality@assurance:~$</span> 多重验证机制
+            </div>
+            <div class="ml-4 space-y-3 text-sm">
+              <div>
+                <span class="text-yellow-400">内容充分性检查</span>
+                <div class="text-gray-400 ml-4">→ 自动化分析确保访谈涵盖所有关键维度</div>
+              </div>
+              <div>
+                <span class="text-green-400">一致性验证</span>
+                <div class="text-gray-400 ml-4">→ 对比相似问题回应，检查逻辑连贯性</div>
+              </div>
+              <div>
+                <span class="text-blue-400">预测准确性测试</span>
+                <div class="text-gray-400 ml-4">→ 使用留存访谈片段验证泛化能力</div>
+              </div>
+              <div>
+                <span class="text-purple-400">专家评估</span>
+                <div class="text-gray-400 ml-4">→ 消费者研究专家定性评估商业可用性</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Future -->
+      <section>
+        <h2 class="section-title">技术展望</h2>
+
+        <div class="highlight-box">
+          <h3 class="text-lg font-medium primary-text mb-3">智能体时代的消费者理解</h3>
+          <p class="mb-4">
+            Atypica.AI 代表了消费者洞察分析的新阶段——从依赖历史数据的被动分析，
+            转向基于AI智能体的主动模拟。它不是要完全取代传统的市场调研方法，
+            而是作为一个强有力的补充工具，特别是在需要快速、成本效益高的初步洞察时。
+          </p>
+          <p>
+            在这个复杂问题充斥的商业世界中，真人智能体提供了一种新的解题思路：
+            通过AI智能体的深度模拟，我们能够更好地理解消费者的"为什么"，从而做出更明智的商业决策。
+          </p>
+        </div>
+      </section>
+
+      <!-- Footer -->
+      <footer class="text-center mt-12 pt-8 border-t border-gray-700">
+        <p class="text-gray-500 mb-4">Atypica.AI - 用「语言模型」为「主观世界」建模</p>
+        <div class="space-x-4">
+          <a href="/" class="text-primary hover:underline">返回首页</a>
+          <a href="/about" class="text-primary hover:underline">关于我们</a>
+          <a href="/study" class="text-primary hover:underline">开始研究</a>
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>

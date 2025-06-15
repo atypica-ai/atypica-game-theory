@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Real Person Agents - Consumer Modeling Based on Stanford Town Paper | atypica.AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&display=swap");
+
+      :root {
+        --primary: oklch(0.87 0.29 142.57);
+        --primary-glow: oklch(0.87 0.29 142.57 / 0.35);
+        --terminal-bg: #121212;
+        --terminal-border: #333;
+      }
+
+      body {
+        font-family: "Fira Code", monospace;
+        background-color: #0a0a0a;
+        color: #e0e0e0;
+      }
+
+      .primary-text {
+        color: var(--primary);
+      }
+
+      .primary-border {
+        border-color: var(--primary);
+      }
+
+      .terminal {
+        background-color: var(--terminal-bg);
+        border: 1px solid var(--terminal-border);
+        border-radius: 8px;
+        padding: 1.5rem;
+        position: relative;
+        margin: 1rem 0;
+      }
+
+      .terminal-header {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2rem;
+        background-color: #1a1a1a;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+        display: flex;
+        padding: 0 1rem;
+        align-items: center;
+      }
+
+      .terminal-body {
+        padding-top: 2rem;
+        line-height: 1.6;
+        font-size: 0.9rem;
+      }
+
+      .terminal-dots {
+        display: flex;
+        gap: 0.5rem;
+      }
+
+      .dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+      }
+
+      .dot-red {
+        background-color: #ff5f56;
+      }
+      .dot-yellow {
+        background-color: #ffbd2e;
+      }
+      .dot-green {
+        background-color: #27ca3f;
+      }
+
+      .highlight-box {
+        background: linear-gradient(135deg, rgba(135, 206, 250, 0.1), rgba(255, 182, 193, 0.1));
+        border: 1px solid rgba(135, 206, 250, 0.3);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin: 1.5rem 0;
+      }
+
+      .methodology-step {
+        background-color: #1a1a1a;
+        border: 1px solid #333;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin: 1rem 0;
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin: 2rem 0;
+      }
+
+      .stat-card {
+        background-color: #1a1a1a;
+        border: 1px solid #333;
+        border-radius: 8px;
+        padding: 1.5rem;
+        text-align: center;
+      }
+
+      .quote-box {
+        border-left: 4px solid var(--primary);
+        background-color: #1a1a1a;
+        padding: 1.5rem;
+        margin: 2rem 0;
+        font-style: italic;
+      }
+
+      .content {
+        max-width: 4xl;
+        margin: 0 auto;
+        padding: 2rem;
+        line-height: 1.8;
+      }
+
+      .section-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--primary);
+        margin: 2rem 0 1rem 0;
+      }
+
+      .subsection-title {
+        font-size: 1.2rem;
+        font-weight: 500;
+        color: #e0e0e0;
+        margin: 1.5rem 0 0.8rem 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="content">
+      <!-- Header -->
+      <header class="text-center mb-8">
+        <h1 class="text-4xl font-bold primary-text mb-4">Real Person Agents</h1>
+        <p class="text-xl text-gray-300">Consumer Modeling Based on Stanford Town Paper Methodology</p>
+        <p class="text-sm text-gray-500 mt-2">Core Technology of Atypica.AI's "Subjective World Modeling" Approach</p>
+      </header>
+
+      <!-- Introduction -->
+      <div class="highlight-box">
+        <h2 class="text-xl font-semibold primary-text mb-3">What are Real Person Agents?</h2>
+        <p class="mb-4">
+          Real Person Agents are high-fidelity consumer models built using the methodology from the Stanford Town paper 
+          (Generative Agents: Interactive Simulacra of Human Behavior). Through AI-conducted in-depth interviews lasting 
+          1-2 hours with real consumers, we generate an average of 5,000 words of transcript for each person, creating 
+          complete "digital twins" with unprecedented individual decision-making simulation accuracy.
+        </p>
+        <p>
+          These agents are not mere data aggregations, but intelligent entities capable of exhibiting consistent 
+          personality traits and decision-making logic in new contexts, providing new possibilities for solving 
+          complex problems (wicked problems) in business and social domains.
+        </p>
+      </div>
+
+      <!-- Problem Statement -->
+      <section>
+        <h2 class="section-title">Core Problems Addressed</h2>
+        
+        <div class="terminal">
+          <div class="terminal-header">
+            <div class="terminal-dots">
+              <div class="dot dot-red"></div>
+              <div class="dot dot-yellow"></div>
+              <div class="dot dot-green"></div>
+            </div>
+          </div>
+          <div class="terminal-body">
+            <div class="mb-4">
+              <span class="primary-text">challenge@business:~$</span> Three major challenges in understanding consumer behavior
+            </div>
+            <div class="ml-4 space-y-2 text-sm">
+              <div>• Complex problems: Consumer decisions involve multiple factors with no standard answers</div>
+              <div>• Individual differences: Traditional methods ignore personalized decision-making logic</div>
+              <div>• Contextual changes: Static data cannot predict behavior in new environments</div>
+            </div>
+          </div>
+        </div>
+
+        <p class="text-gray-300">
+          Professors H.W.J. Rittel and M.M. Webber from UC Berkeley point out that many problems in business and 
+          social domains have complex characteristics, manifesting as complex equilibrium states and real-world 
+          constraints. Understanding consumer behavior is a typical example of such complex problems.
+        </p>
+      </section>
+
+      <!-- Methodology -->
+      <section>
+        <h2 class="section-title">Construction Methodology</h2>
+
+        <div class="subsection-title">1. In-Depth Interview Design</div>
+        <div class="methodology-step">
+          <h4 class="font-medium text-primary mb-2">Based on the American Voices Project</h4>
+          <p class="text-gray-300 mb-3">
+            This is a joint project by Stanford and Princeton universities, specifically designed to collect 
+            in-depth personal narratives nationwide. Our interview structure covers four core dimensions:
+          </p>
+          <ul class="space-y-2 text-sm text-gray-400">
+            <li><strong>Life Journey Narrative:</strong> Important turning points, setbacks, and achievements</li>
+            <li><strong>Value Exploration:</strong> Deep understanding of family, work, and social responsibility</li>
+            <li><strong>Social Viewpoint Expression:</strong> Political leanings, social issue attitudes, future expectations</li>
+            <li><strong>Decision Pattern Analysis:</strong> Thought processes and weighing factors in specific contexts</li>
+          </ul>
+        </div>
+
+        <div class="subsection-title">2. Interview Scale and Quality</div>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="text-2xl font-bold primary-text">1-2 hours</div>
+            <div class="text-sm text-gray-400">Per interview duration</div>
+          </div>
+          <div class="stat-card">
+            <div class="text-2xl font-bold primary-text">5000+ words</div>
+            <div class="text-sm text-gray-400">Average transcript length</div>
+          </div>
+          <div class="stat-card">
+            <div class="text-2xl font-bold primary-text">10,000+</div>
+            <div class="text-sm text-gray-400">Target interview count</div>
+          </div>
+          <div class="stat-card">
+            <div class="text-2xl font-bold primary-text">200+</div>
+            <div class="text-sm text-gray-400">Standardized question set</div>
+          </div>
+        </div>
+
+        <div class="subsection-title">3. Agent Construction Strategy</div>
+        <div class="methodology-step">
+          <h4 class="font-medium text-primary mb-2">Segmented Prompt Construction</h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+            <div>
+              <strong>Background Setting Module:</strong>
+              <span class="text-gray-400">Based on demographic information and life background from interviews</span>
+            </div>
+            <div>
+              <strong>Value Embedding Module:</strong>
+              <span class="text-gray-400">Converting value concepts into internal principles guiding decisions</span>
+            </div>
+            <div>
+              <strong>Behavioral Pattern Module:</strong>
+              <span class="text-gray-400">Establishing consistent behavioral tendencies based on consumption history</span>
+            </div>
+            <div>
+              <strong>Language Style Module:</strong>
+              <span class="text-gray-400">Maintaining consistency in expression and linguistic characteristics</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Performance -->
+      <section>
+        <h2 class="section-title">Accuracy Performance</h2>
+
+        <div class="quote-box">
+          <p class="mb-2">
+            "Research has found that real humans' consistency in answering the same question after two weeks is about 81%, 
+            revealing the natural variability inherent in human responses."
+          </p>
+          <footer class="text-sm text-gray-400">—— Human Baseline Consistency Research</footer>
+        </div>
+
+        <div class="terminal">
+          <div class="terminal-header">
+            <div class="terminal-dots">
+              <div class="dot dot-red"></div>
+              <div class="dot dot-yellow"></div>
+              <div class="dot dot-green"></div>
+            </div>
+          </div>
+          <div class="terminal-body">
+            <div class="mb-4">
+              <span class="primary-text">evaluation@atypica:~$</span> Real Person Agent Performance Assessment
+            </div>
+            <div class="ml-4 space-y-3">
+              <div class="bg-green-900/30 p-3 rounded">
+                <div class="text-green-400">✓ Approaching Human Baseline</div>
+                <div class="text-sm text-gray-400">Consistency performance reaches close to the 81% human self-consistency limit</div>
+              </div>
+              <div class="bg-blue-900/30 p-3 rounded">
+                <div class="text-blue-400">✓ Superior to Traditional Modeling</div>
+                <div class="text-sm text-gray-400">Outperforms models based on demographics and behavioral data (55-73 vs 79 points)</div>
+              </div>
+              <div class="bg-purple-900/30 p-3 rounded">
+                <div class="text-purple-400">✓ Cross-Situational Stability</div>
+                <div class="text-sm text-gray-400">Maintains 75+ point consistency in new questions and contexts</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Applications -->
+      <section>
+        <h2 class="section-title">Application Scenarios</h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="methodology-step">
+            <h4 class="font-medium text-primary mb-2">Ideal Application Scenarios</h4>
+            <ul class="space-y-2 text-sm">
+              <li>• <strong>Early Exploration:</strong> Product concept validation, market reaction testing</li>
+              <li>• <strong>Cross-Cultural Insights:</strong> Global market entry strategies, localization plans</li>
+              <li>• <strong>Rapid Iteration:</strong> A/B test pre-screening, creative concept evaluation</li>
+              <li>• <strong>Hard-to-Reach Groups:</strong> High-net-worth individuals, specific professional group research</li>
+            </ul>
+          </div>
+
+          <div class="methodology-step">
+            <h4 class="font-medium text-primary mb-2">Application Limitations</h4>
+            <ul class="space-y-2 text-sm">
+              <li>• <strong>Complex Behavior Observation:</strong> Requires real product usage experience</li>
+              <li>• <strong>High-Risk Decisions:</strong> Critical business like major product launches</li>
+              <li>• <strong>Deep Emotional Insights:</strong> Qualitative research like brand emotional connections</li>
+              <li>• <strong>Real-Time Interaction:</strong> User experience research requiring immediate feedback</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Quality Control -->
+      <section>
+        <h2 class="section-title">Quality Control and Validation</h2>
+
+        <div class="terminal">
+          <div class="terminal-header">
+            <div class="terminal-dots">
+              <div class="dot dot-red"></div>
+              <div class="dot dot-yellow"></div>
+              <div class="dot dot-green"></div>
+            </div>
+          </div>
+          <div class="terminal-body">
+            <div class="mb-4">
+              <span class="primary-text">quality@assurance:~$</span> Multiple validation mechanisms
+            </div>
+            <div class="ml-4 space-y-3 text-sm">
+              <div>
+                <span class="text-yellow-400">Content Sufficiency Check</span>
+                <div class="text-gray-400 ml-4">→ Automated analysis ensures interviews cover all key dimensions</div>
+              </div>
+              <div>
+                <span class="text-green-400">Consistency Validation</span>
+                <div class="text-gray-400 ml-4">→ Compare similar question responses, check logical coherence</div>
+              </div>
+              <div>
+                <span class="text-blue-400">Predictive Accuracy Testing</span>
+                <div class="text-gray-400 ml-4">→ Use reserved interview segments to verify generalization ability</div>
+              </div>
+              <div>
+                <span class="text-purple-400">Expert Assessment</span>
+                <div class="text-gray-400 ml-4">→ Consumer research experts qualitatively assess commercial viability</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Future -->
+      <section>
+        <h2 class="section-title">Technology Outlook</h2>
+
+        <div class="highlight-box">
+          <h3 class="text-lg font-medium primary-text mb-3">Consumer Understanding in the Age of Agents</h3>
+          <p class="mb-4">
+            Atypica.AI represents a new phase in consumer insight analysis—transitioning from passive analysis 
+            relying on historical data to proactive simulation based on AI agents. It's not meant to completely 
+            replace traditional market research methods, but to serve as a powerful complementary tool, especially 
+            when rapid, cost-effective preliminary insights are needed.
+          </p>
+          <p>
+            In this business world filled with complex problems, Real Person Agents provide a new approach to 
+            problem-solving: through deep simulation of AI agents, we can better understand the "why" behind 
+            consumer behavior, enabling more informed business decisions.
+          </p>
+        </div>
+      </section>
+
+      <!-- Footer -->
+      <footer class="text-center mt-12 pt-8 border-t border-gray-700">
+        <p class="text-gray-500 mb-4">Atypica.AI - Modeling the "Subjective World" with "Language Models"</p>
+        <div class="space-x-4">
+          <a href="/" class="text-primary hover:underline">Home</a>
+          <a href="/about" class="text-primary hover:underline">About</a>
+          <a href="/study" class="text-primary hover:underline">Start Research</a>
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>

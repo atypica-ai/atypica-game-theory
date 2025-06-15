@@ -32,7 +32,7 @@ async function handlePingRequest(req: NextRequest) {
 function handleLocale(req: NextRequest) {
   // Get the locale from cookies
   const localeCookie = req.cookies.get("locale");
-  const defaultLocale = getDeployRegion() === "global" ? "en-US" : "zh-CN";
+  const defaultLocale = getDeployRegion() === "mainland" ? "zh-CN" : "en-US";
   const locale = (localeCookie?.value || defaultLocale) as Locale;
 
   // Create a response object from the request
@@ -112,12 +112,17 @@ export async function middleware(req: NextRequest) {
 
   // Handle locale-aware static pages
   const path = req.nextUrl.pathname;
-  if (path === "/about" || path === "/changelog") {
+  if (path === "/about" || path === "/changelog" || path === "/persona-simulation") {
     const url = req.nextUrl.clone();
     if (path === "/about") {
-      url.pathname = locale === "en-US" ? "/_pages/about-en.html" : "/_pages/about-zh.html";
+      url.pathname = locale === "zh-CN" ? "/_pages/about-zh.html" : "/_pages/about-en.html";
     } else if (path === "/changelog") {
-      url.pathname = locale === "en-US" ? "/_pages/changelog-en.html" : "/_pages/changelog-zh.html";
+      url.pathname = locale === "zh-CN" ? "/_pages/changelog-zh.html" : "/_pages/changelog-en.html";
+    } else if (path === "/persona-simulation") {
+      url.pathname =
+        locale === "zh-CN"
+          ? "/_pages/persona-simulation-zh.html"
+          : "/_pages/persona-simulation-en.html";
     }
     return NextResponse.rewrite(url);
   }
