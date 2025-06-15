@@ -3,6 +3,7 @@ import {
   GenerateReportResultMessage,
   ReasoningThinkingResultMessage,
   ScoutTaskChatResultMessage,
+  WebSearchResultMessage,
 } from "@/ai/tools/experts/ToolMessage";
 import { InterviewChatResultMessage } from "@/ai/tools/experts/ToolMessage/SaveAnalystToolResultMessage";
 import { SearchPersonasResultMessage } from "@/ai/tools/experts/ToolMessage/SearchPersonasResultMessage";
@@ -55,6 +56,8 @@ export const ToolInvocationDisplay = ({
   switch (toolInvocation.toolName) {
     case ToolName.reasoningThinking:
       return <ReasoningThinkingResultMessage toolInvocation={toolInvocation} />;
+    case ToolName.webSearch:
+      return <WebSearchResultMessage toolInvocation={toolInvocation} />;
 
     case ToolName.generateReport:
       return <GenerateReportResultMessage toolInvocation={toolInvocation} />;

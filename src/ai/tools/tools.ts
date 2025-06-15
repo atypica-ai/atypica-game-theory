@@ -6,6 +6,7 @@ export { reasoningThinkingTool } from "./experts/reasoning";
 export { generateReportTool } from "./experts/report";
 export { scoutTaskChatTool } from "./experts/scoutTaskChat";
 export { searchPersonasTool } from "./experts/searchPersonas";
+export { webSearchTool } from "./experts/webSearch";
 export { dyPostCommentsTool } from "./social/dy/postComments";
 export { dySearchTool } from "./social/dy/search";
 export { dyUserPostsTool } from "./social/dy/userPosts";
@@ -29,7 +30,5 @@ export { updateInterviewProjectTool } from "./system/updateInterviewProjectTool"
 export { requestInteractionTool } from "./user/interaction";
 export { requestPaymentTool } from "./user/payment";
 export { thanksTool } from "./user/thanks";
-
-export { webSearchTool } from "./web/webSearch";
 
 export { handleToolCallError, toolCallError } from "./error";
