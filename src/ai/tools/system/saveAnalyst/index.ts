@@ -16,7 +16,7 @@ export const saveAnalystTool = ({
 }) =>
   tool({
     description:
-      "Save comprehensive research topic definition and expert analyst role configuration for the study",
+      "Save comprehensive study topic definition and expert analyst role configuration for the study. This is a FOUNDATIONAL tool that establishes the complete study context - all subsequent study activities depend on the completeness and quality of information saved here. MUST include all background information, webSearch findings, and contextual details.",
     parameters: z.object({
       role: z
         .string()
@@ -26,13 +26,13 @@ export const saveAnalystTool = ({
       topic: z
         .string()
         .describe(
-          "Complete research topic description including background context, objectives, target audience, key questions, and any constraints or requirements for comprehensive analysis",
+          "Comprehensive and detailed study topic description that MUST include: 1) Complete background context and problem description provided by the study initiator; 2) All relevant industry information, market trends, concepts, and data obtained through webSearch (even if not directly mentioned in conversations, integrate all webSearch findings into the topic); 3) Specific study objectives and goals; 4) Target audience and user groups; 5) Key study questions and hypotheses to be tested; 6) Any constraints, requirements, or scope limitations; 7) Expected outcomes and deliverables. Format as a well-structured, comprehensive description that provides complete context for all subsequent study activities. This topic will serve as the foundation for the entire study, so include ALL available information and context.",
         )
         .transform(fixMalformedUnicodeString),
       kind: z
         .enum(["testing", "planning", "insights", "creation", "misc"])
         .describe(
-          "Research type: 'testing' for comparing options, validating hypotheses, measuring effectiveness, and testing user reactions or preferences; 'insights' for understanding current situations, discovering problems, and analyzing behaviors; 'creation' for generating new ideas, designing innovative solutions, and creative exploration; 'planning' for developing frameworks, designing solution architectures, and creating structured implementation plans; 'misc' for general research that doesn't fit the other categories",
+          "Study type: 'testing' for comparing options, validating hypotheses, measuring effectiveness, and testing user reactions or preferences; 'insights' for understanding current situations, discovering problems, and analyzing behaviors; 'creation' for generating new ideas, designing innovative solutions, and creative exploration; 'planning' for developing frameworks, designing solution architectures, and creating structured implementation plans; 'misc' for general study that doesn't fit the other categories",
         ),
       locale: z
         .enum(["zh-CN", "en-US", "misc"])
@@ -63,7 +63,7 @@ export const saveAnalystTool = ({
       // if (analyst.topic) {
       //   return {
       //     analystId,
-      //     plainText: `Research topic already exists, returning existing topic: ${JSON.stringify({ analystId: analyst.id, topic: analyst.topic })}`,
+      //     plainText: `Study topic already exists, returning existing topic: ${JSON.stringify({ analystId: analyst.id, topic: analyst.topic })}`,
       //   };
       // }
       await prisma.analyst.update({
@@ -90,12 +90,12 @@ export interface SaveAnalystStudySummaryToolResult extends PlainTextToolResult {
 export const saveAnalystStudySummaryTool = ({ studyUserChatId }: { studyUserChatId: number }) =>
   tool({
     description:
-      "Save an objective summary of the completed research methodology and process workflow for report generation",
+      "Save an objective summary of the completed study methodology and process workflow for report generation",
     parameters: z.object({
       studySummary: z
         .string()
         .describe(
-          "Objective documentation of research design, methodology steps, data collection process, and workflow execution (exclude conclusions or findings)",
+          "Objective documentation of study design, methodology steps, data collection process, and workflow execution (exclude conclusions or findings)",
         )
         .transform(fixMalformedUnicodeString),
     }),
