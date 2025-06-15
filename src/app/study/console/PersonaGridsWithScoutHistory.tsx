@@ -23,7 +23,7 @@ import { StreamSteps } from "./StreamSteps";
 
 type TPersonaDetail = ExtractServerActionData<typeof fetchPersonasByIds>[number];
 
-export const PersonaGrids: FC<{
+export const PersonaGridsWithScoutHistory: FC<{
   personas: TPersonaForStudy[];
 }> = ({ personas }) => {
   const t = useTranslations("StudyPage.ToolConsole");

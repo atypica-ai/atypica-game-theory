@@ -85,5 +85,6 @@ async function searchPersonas(locale: Locale, searchQuery: string) {
       ORDER BY "embedding" <=> ${JSON.stringify(embedding)}::vector ASC
       LIMIT 5
     `;
+
   return { searchQuery, personas };
 }

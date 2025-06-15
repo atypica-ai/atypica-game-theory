@@ -564,14 +564,18 @@
       "deepThinking": "深度思考",
       "buildingPersona": "正在构建用户画像",
       "buildPersonaResult": "完成构建{count}个用户画像智能体",
-      "searchPersonasResult": "搜索到{count}个用户画像智能体",
+      "searchPersonasResult": "匹配到{count}个用户画像智能体",
       "personaSource": "来源",
       "personaPrompt": "智能体",
       "interviewStarting": "访谈启动中..",
       "researchConclusion": "研究结论",
       "researchTopic": "研究主题",
       "interviewing": "正在与{count}人访谈",
-      "reportBeingGenerated": "报告正在生成中"
+      "reportBeingGenerated": "报告正在生成中",
+      "realPersonAgent": "真人智能体",
+      "learnMore": "了解更多",
+      "realPersonCount": "含 {count} 个真人智能体",
+      "realPersonCountPlural": "含 {count} 个真人智能体"
     }
   },
   "ScoutPage": {

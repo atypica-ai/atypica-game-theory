@@ -564,14 +564,18 @@
       "deepThinking": "Deep Thinking",
       "buildingPersona": "Building Persona",
       "buildPersonaResult": "Built {count} persona agents",
-      "searchPersonasResult": "Found {count} user persona agents",
+      "searchPersonasResult": "Matched {count} user persona agents",
       "personaSource": "Source",
       "personaPrompt": "Agent",
       "interviewStarting": "Interview starting..",
       "researchConclusion": "Research Conclusion",
       "researchTopic": "Research Topic",
       "interviewing": "Interviewing with {count} people",
-      "reportBeingGenerated": "Report being generated..."
+      "reportBeingGenerated": "Report being generated...",
+      "realPersonAgent": "Real Person Agent",
+      "learnMore": "Learn More",
+      "realPersonCount": "including {count} real person agent",
+      "realPersonCountPlural": "including {count} real person agents"
     }
   },
   "ScoutPage": {
