@@ -53,6 +53,8 @@ export enum ToolName {
   requestPayment = "requestPayment",
   thanks = "thanks",
 
+  webSearch = "webSearch",
+
   xhsNoteComments = "xhsNoteComments",
   xhsSearch = "xhsSearch",
   xhsUserNotes = "xhsUserNotes",

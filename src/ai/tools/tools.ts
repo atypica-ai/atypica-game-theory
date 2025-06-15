@@ -30,4 +30,6 @@ export { requestInteractionTool } from "./user/interaction";
 export { requestPaymentTool } from "./user/payment";
 export { thanksTool } from "./user/thanks";
 
+export { webSearchTool } from "./web/webSearch";
+
 export { handleToolCallError, toolCallError } from "./error";

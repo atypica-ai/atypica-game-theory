@@ -14,6 +14,7 @@ import {
   scoutTaskChatTool,
   searchPersonasTool,
   toolCallError,
+  webSearchTool,
 } from "@/ai/tools/tools";
 import { ToolName } from "@/ai/tools/types";
 import {
@@ -135,6 +136,7 @@ export async function studyAgentRequest({
     [ToolName.saveAnalystStudySummary]: saveAnalystStudySummaryTool({ studyUserChatId }),
     [ToolName.saveAnalyst]: saveAnalystTool({ userId, studyUserChatId }),
     [ToolName.requestInteraction]: requestInteractionTool,
+    [ToolName.webSearch]: webSearchTool,
     [ToolName.toolCallError]: toolCallError,
   };
   const tools: Partial<typeof allTools> = allTools;
@@ -268,7 +270,9 @@ export async function studyAgentRequest({
         );
         if (generateReportTool) {
           notifyReportCompletion({
-            reportToken: generateReportTool.args.reportToken,
+            // reportToken: generateReportTool.args.reportToken,
+            reportToken:
+              generateReportTool.result.reportToken || generateReportTool.args.reportToken, // 要先取 result 里的
             studyUserChatId,
             studyLog,
           }).catch(() => {}); //不 await

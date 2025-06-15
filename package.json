@@ -41,6 +41,7 @@
     "@radix-ui/react-tooltip": "^1.1.8",
     "@segment/analytics-next": "^1.79.0",
     "@stripe/stripe-js": "^7.0.0",
+    "@tavily/core": "^0.5.7",
     "@vercel/functions": "^2.0.0",
     "ai": "^4.3.6",
     "bcryptjs": "^3.0.2",
