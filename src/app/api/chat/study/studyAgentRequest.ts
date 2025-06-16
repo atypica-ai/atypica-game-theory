@@ -137,7 +137,7 @@ export async function studyAgentRequest({
     [ToolName.saveAnalystStudySummary]: saveAnalystStudySummaryTool({ studyUserChatId }),
     [ToolName.saveAnalyst]: saveAnalystTool({ userId, studyUserChatId }),
     [ToolName.requestInteraction]: requestInteractionTool,
-    [ToolName.webSearch]: webSearchTool,
+    [ToolName.webSearch]: webSearchTool({ studyUserChatId, ...agentToolArgs }),
     [ToolName.toolCallError]: toolCallError,
   };
   const tools: Partial<typeof allTools> = allTools;
