@@ -123,8 +123,13 @@ export async function runBuildPersona({
     };
   }
   const streamTextPromise = new Promise<Omit<Message, "role">>((resolve, reject) => {
+    // 如果是一个个调用 savePersona，
+    //  需要 maxSteps 调大，并且设置 parallel: false，模型只能用 claude，因为需要 cache
+    //  但是不能太多 steps，虽然有 cache，savePersona 的 tool message 会被重复传给 llm
+    // 如果是批量调用 savePersona，目前支持最好的是 gemini-2.5-pro，但是这样太慢
     // const reduceTokens = { model: "gemini-2.5-pro", ratio: 2 } as TReduceTokens | null;
     const reduceTokens = null as TReduceTokens | null;
+    const maxSteps = 5;
     const response = streamText({
       model: reduceTokens ? llm(reduceTokens.model) : llm("claude-3-7-sonnet"),
       providerOptions: providerOptions,
@@ -141,7 +146,7 @@ export async function runBuildPersona({
         type: "tool",
         toolName: ToolName.savePersona,
       },
-      maxSteps: 5,
+      maxSteps,
       // toolCallStreaming: true,  // gemini 这个会有问题，会出现所有字段值都是 placeholder
       experimental_repairToolCall: handleToolCallError, // claude-3-7-sonnet 需要这个，savePersona 有时候会用 json 字符串作为参数
       onChunk: async ({ chunk }) => {

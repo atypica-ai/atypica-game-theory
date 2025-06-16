@@ -1,5 +1,5 @@
 import { personaAgentSystem } from "@/ai/prompt";
-import { llm, providerOptions } from "@/ai/provider";
+import { fixFileNameInMessageToUsePromptCache, llm, providerOptions } from "@/ai/provider";
 import { fetchPersonaById } from "@/app/(legacy)/personas/actions";
 import { authOptions } from "@/lib/auth";
 import { convertToCoreMessages, Message, smoothStream, streamText } from "ai";
@@ -40,22 +40,22 @@ export async function POST(req: Request) {
 
   const mergedAbortSignal = AbortSignal.any([
     req.signal,
-    AbortSignal.timeout(1), //test purpose
+    // AbortSignal.timeout(1), //test purpose
   ]);
   mergedAbortSignal.addEventListener("abort", (ev) => {
     console.log(`aborted`, ev);
   });
 
   const streamTextResult = streamText({
-    // model: fixFileNameInMessageToUsePromptCache(llm("claude-3-7-sonnet")),
+    model: fixFileNameInMessageToUsePromptCache(llm("claude-3-7-sonnet")),
     // model: llm("gpt-4.1-mini"),
-    model: llm("gemini-2.5-flash", {
-      useSearchGrounding: true,
-      dynamicRetrievalConfig: {
-        mode: "MODE_DYNAMIC",
-        dynamicThreshold: 0.3, // threshold 越小，使用搜索的可能性就越高
-      },
-    }),
+    // model: llm("gemini-2.5-flash", {
+    //   useSearchGrounding: true,
+    //   dynamicRetrievalConfig: {
+    //     mode: "MODE_DYNAMIC",
+    //     dynamicThreshold: 0.3, // threshold 越小，使用搜索的可能性就越高
+    //   },
+    // }),
     providerOptions: {
       ...providerOptions,
       // google: {
@@ -80,10 +80,13 @@ export async function POST(req: Request) {
       chunking: /[\u4E00-\u9FFF]|\S+\s+/,
     }),
     abortSignal: mergedAbortSignal,
-    // onStepFinish: async ({ usage, providerMetadata }) => {
-    //   console.log("usage", usage);
-    //   console.log("cache", providerMetadata?.bedrock?.usage);
-    // },
+    onStepFinish: async ({ usage, providerMetadata }) => {
+      console.log("persona chat streamTextResult onStepFinish, usage:", usage);
+      console.log(
+        "persona chat streamTextResult onStepFinish, cache:",
+        providerMetadata?.bedrock?.usage,
+      );
+    },
     onFinish: async () => {
       console.log("persona chat streamTextResult onFinish");
     },
