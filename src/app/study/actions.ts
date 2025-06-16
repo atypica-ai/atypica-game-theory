@@ -4,6 +4,7 @@ import { ChatMessageAttachment } from "@/lib/attachments/types";
 import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
+import { truncateForTitle } from "@/lib/textUtils";
 import { createUserChat } from "@/lib/userChat/lib";
 import { Analyst, AnalystInterview, AnalystReport, Persona, UserChat } from "@/prisma/client";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
@@ -25,7 +26,10 @@ export async function createStudyUserChat(
     const userChat = await prisma.$transaction(async (tx) => {
       const userChat = await createUserChat({
         userId: user.id,
-        title: content.substring(0, 50),
+        title: truncateForTitle(content, {
+          maxDisplayWidth: 100,
+          suffix: "...",
+        }),
         kind: "study",
         tx,
       });

@@ -209,7 +209,7 @@ export default function AnalystReportsPage() {
                 </CardHeader>
                 <CardContent>
                   {/* Cover Image */}
-                  {report.coverUrl && (
+                  {report.coverUrl ? (
                     <div className="relative w-full aspect-video overflow-hidden rounded-lg mb-4">
                       <Image
                         loader={proxiedImageLoader} // mainland 加载 us s3 的资源需要 proxy
@@ -218,6 +218,19 @@ export default function AnalystReportsPage() {
                         fill
                         className="object-cover"
                       />
+                    </div>
+                  ) : (
+                    <div className="mb-4">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleGenerateScreenshot(report.id)}
+                        disabled={generatingScreenshots.has(report.id)}
+                        className="flex items-center gap-1"
+                      >
+                        <CameraIcon className="h-3 w-3" />
+                        {generatingScreenshots.has(report.id) ? "Generating..." : "Generate Cover"}
+                      </Button>
                     </div>
                   )}
 
@@ -308,7 +321,7 @@ export default function AnalystReportsPage() {
                     </p>
                   </div>
                 </CardContent>
-                <CardFooter className="gap-2 items-center justify-between mt-auto">
+                <CardFooter className="gap-2 items-center justify-between flex-wrap mt-auto">
                   <div className="flex items-center">
                     <span
                       className={`px-2 py-1 text-xs font-semibold rounded-full ${
@@ -328,28 +341,16 @@ export default function AnalystReportsPage() {
                       {report.analyst.kind || "N/A"}
                     </span>
                   </div>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" asChild>
-                      <Link
-                        href={`/artifacts/report/${report.token}/share`}
-                        target="_blank"
-                        className="flex items-center gap-1"
-                      >
-                        <ExternalLinkIcon className="h-3 w-3" />
-                        View Report
-                      </Link>
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleGenerateScreenshot(report.id)}
-                      disabled={generatingScreenshots.has(report.id) || !!report.coverUrl}
+                  <Button variant="outline" size="sm" asChild>
+                    <Link
+                      href={`/artifacts/report/${report.token}/share`}
+                      target="_blank"
                       className="flex items-center gap-1"
                     >
-                      <CameraIcon className="h-3 w-3" />
-                      {generatingScreenshots.has(report.id) ? "Generating..." : "Generate Cover"}
-                    </Button>
-                  </div>
+                      <ExternalLinkIcon className="h-3 w-3" />
+                      View Report
+                    </Link>
+                  </Button>
                 </CardFooter>
               </Card>
             ))}
