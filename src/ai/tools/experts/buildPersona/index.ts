@@ -3,7 +3,7 @@ import "server-only";
 import { convertStepsToAIMessage, prepareMessagesForStreaming } from "@/ai/messageUtils";
 import { buildPersonaSystem } from "@/ai/prompt";
 import { llm, LLMModelName, providerOptions } from "@/ai/provider";
-import { savePersonaTool } from "@/ai/tools/tools";
+import { handleToolCallError, savePersonaTool } from "@/ai/tools/tools";
 import { PlainTextToolResult, StatReporter, ToolName } from "@/ai/tools/types";
 import { prisma } from "@/prisma/prisma";
 import { DataStreamWriter, Message, streamText, tool } from "ai";
@@ -143,7 +143,7 @@ export async function runBuildPersona({
       },
       maxSteps: 5,
       // toolCallStreaming: true,  // gemini 这个会有问题，会出现所有字段值都是 placeholder
-      // experimental_repairToolCall: handleToolCallError,
+      experimental_repairToolCall: handleToolCallError, // claude-3-7-sonnet 需要这个，savePersona 有时候会用 json 字符串作为参数
       onChunk: async ({ chunk }) => {
         studyLog.debug({ chunk });
       },
