@@ -624,19 +624,19 @@
     "monthly": "每月",
     "freeTitle": "免费版",
     "freeSubtitle": "欢迎试用Atypica",
-    "freePrice": "$0",
+    "freePrice": "¥0",
     "freeTokens": "100万免费Token",
     "basicTitle": "体验版",
     "basicSubtitle": "不定期进行基础商业分析",
-    "oneMillionTokensPrice": "$16",
+    "oneMillionTokensPrice": "¥100",
     "oneMillionTokens": "100万Token",
     "payAsYouGoTokens": "按需充值Token",
     "proTitle": "Pro版",
     "proSubtitle": "经常进行深度商业分析",
-    "proPrice": "$20",
+    "proPrice": "¥129",
     "maxTitle": "Max版",
     "maxSubtitle": "进行高级商业分析",
-    "maxPrice": "$50",
+    "maxPrice": "¥329",
     "month": "月",
     "proMonthlyTokens": "每月200万Token（有效期30天）",
     "maxMonthlyTokens": "每月500万Token（有效期30天）",
@@ -685,7 +685,7 @@
       "collaboration": "团队协作功能（分享、协作）",
       "security": "数据安全功能（指定可见、有效期）",
       "tokenPurchase": {
-        "available": "可随时购买更多Token（$16每100万 + 100万赠送）",
+        "available": "可随时购买更多Token（¥100每100万 + 100万赠送）",
         "notAvailable": "无法增购Token"
       }
     }

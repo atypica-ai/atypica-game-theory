@@ -9,6 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { getDeployRegion } from "@/lib/request/deployRegion";
 import { cn } from "@/lib/utils";
 import { SubscriptionPlan } from "@/prisma/client";
 import {
@@ -43,7 +44,9 @@ export const SubscriptionDialog = ({
     throw new Error("SubscriptionDialog requires a plan");
   }
   const t = useTranslations("Components.SubscriptionDialog");
-  const [paymentProvider, setPaymentProvider] = useState<PaymentProvider>(PaymentProvider.Stripe);
+  const [paymentProvider, setPaymentProvider] = useState<PaymentProvider>(
+    getDeployRegion() === "mainland" ? PaymentProvider.Pingxx : PaymentProvider.Stripe,
+  );
   const [paymentSuccess, setPaymentSuccess] = useState<boolean>(false);
 
   const { createPaymentLink, clearPaymentLink, paymentScanQR, loading, error } = usePay();
