@@ -187,9 +187,10 @@ export function fixFileNameInMessageToUsePromptCache(model: LanguageModelV1) {
     const messages = command.messages.map((message: any) => {
       if (Array.isArray(message.content)) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const content = message.content.map((part: any) => {
+        const content = message.content.map((part: any, index: number) => {
           if (part.document) {
-            const document = { ...part.document, name: "document" };
+            // 有些模型限制 name 不能一样，需要加上 index，依然可以保持命名固定
+            const document = { ...part.document, name: `document_${index}` };
             return { ...part, document };
           } else {
             return part;
