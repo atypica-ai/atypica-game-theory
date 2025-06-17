@@ -33,13 +33,13 @@ import { backgroundChatUntilCancel, raceForUserChat } from "./background";
 import { notifyReportCompletion, notifyStudyInterruption } from "./notify";
 
 const MAX_STEPS_EACH_ROUND = 15; // streamText 默认 15 步
-const TOOL_USE_LIMIT = {
-  [ToolName.scoutTaskChat]: 1,
-  [ToolName.generateReport]: 2,
-  [ToolName.buildPersona]: 1,
-  [ToolName.searchPersonas]: 1,
-  [ToolName.webSearch]: 2,
-};
+// const TOOL_USE_LIMIT = {
+//   [ToolName.scoutTaskChat]: 1,
+//   [ToolName.generateReport]: 2,
+//   [ToolName.buildPersona]: 1,
+//   [ToolName.searchPersonas]: 1,
+//   [ToolName.webSearch]: 2,
+// };
 // const TOKENS_COMSUME_LIMIT = 1_000_000; // 最新统计来看，100 万 tokens 足够
 
 /**
@@ -140,22 +140,30 @@ export async function studyAgentRequest({
     [ToolName.webSearch]: webSearchTool({ studyUserChatId, ...agentToolArgs }),
     [ToolName.toolCallError]: toolCallError,
   };
-  const tools: Partial<typeof allTools> = allTools;
+  let tools: Partial<typeof allTools> = allTools;
   const toolChoice: ToolChoice<typeof allTools> = "auto";
   const maxTokens: number | undefined = undefined;
   let maxSteps = MAX_STEPS_EACH_ROUND;
 
-  if ((toolUseCount[ToolName.scoutTaskChat] ?? 0) >= TOOL_USE_LIMIT[ToolName.scoutTaskChat]) {
-    // 这个限制拿掉了，现在指令遵循还行其实，不要增加复杂度了
-    // delete tools[ToolName.scoutTaskChat];
-    // maxSteps = 10;
-  }
-  if ((toolUseCount[ToolName.generateReport] ?? 0) >= TOOL_USE_LIMIT[ToolName.generateReport]) {
-    // 还是继续允许一直生成报告，不过，限制一下 steps
-    // delete tools[ToolName.generateReport];
+  if ((toolUseCount[ToolName.generateReport] ?? 0) >= 1) {
+    // ⚠️ 一旦报告生成，后面就不允许构建人设和搜索等其他操作了，但是可以继续和报告进行问答，也可以重新生成报告
+    tools = {
+      [ToolName.generateReport]: generateReportTool({ studyUserChatId, ...agentToolArgs }),
+      [ToolName.reasoningThinking]: reasoningThinkingTool({ ...agentToolArgs }),
+      [ToolName.toolCallError]: toolCallError,
+    };
     maxSteps = 2;
   }
 
+  // if ((toolUseCount[ToolName.scoutTaskChat] ?? 0) >= TOOL_USE_LIMIT[ToolName.scoutTaskChat]) {
+  //   // 这个限制拿掉了，现在指令遵循还行其实，不要增加复杂度了
+  //   delete tools[ToolName.scoutTaskChat];
+  //   maxSteps = 10;
+  // }
+  // if ((toolUseCount[ToolName.generateReport] ?? 0) >= TOOL_USE_LIMIT[ToolName.generateReport]) {
+  //   delete tools[ToolName.generateReport];
+  //   maxSteps = 2;
+  // }
   // 超出 tokens 限制以后，这时候每 chat 一次，就是一个很大的 input tokens 数量，所以，不能再继续发送消息，直接返回一个特定的消息
   // 不过现在做了 prompt cache，是不是不大容易超出了？要留意一段日子
   // if (tokensConsumed >= TOKENS_COMSUME_LIMIT) {

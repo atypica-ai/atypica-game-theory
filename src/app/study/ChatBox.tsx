@@ -1,6 +1,7 @@
 import { CONTINUE_ASSISTANT_STEPS } from "@/ai/messageUtils";
 import { ToolName } from "@/ai/tools/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
+import { NewStudyButton } from "@/components/NewStudyInputBox";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { UserTokensBalanceStore } from "@/components/UserTokensBalance";
@@ -8,7 +9,7 @@ import { useDocumentVisibility } from "@/hooks/use-document-visibility";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
 import { cn, useDevice } from "@/lib/utils";
 import { Message, useChat } from "@ai-sdk/react";
-import { ArrowRightIcon, PlayIcon } from "lucide-react";
+import { ArrowRightIcon, PlayIcon, PlusIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -348,6 +349,14 @@ export function ChatBox() {
                 <PlayIcon className="size-2.5" />
                 <span>{t("continueStudy")}</span>
               </Button>
+            )}
+            {!inputDisabled && studyCompleted && !input.trim() && (
+              <NewStudyButton>
+                <Button variant="outline" size="sm" className="h-8 text-xs">
+                  <PlusIcon className="size-2.5" />
+                  <span>{t("startNewStudy")}</span>
+                </Button>
+              </NewStudyButton>
             )}
             {uiStatus === "background" || uiStatus === "streaming" ? (
               <CancelButton

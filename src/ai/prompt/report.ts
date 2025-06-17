@@ -1,5 +1,5 @@
 import { AnalystKind } from "@/app/(public)/featured-studies/data";
-import { Analyst } from "@/prisma/client";
+import { Analyst, AnalystReport } from "@/prisma/client";
 import { Locale } from "next-intl";
 import { reportHTMLSystemCreation } from "./report/creation";
 import { reportHTMLSystemInsights } from "./report/insights";
@@ -34,6 +34,7 @@ export const reportHTMLPrologue = ({
   locale,
   analyst,
   instruction,
+  lastReport,
 }: {
   locale: Locale;
   analyst: Analyst & {
@@ -42,6 +43,7 @@ export const reportHTMLPrologue = ({
     }[];
   };
   instruction: string;
+  lastReport?: AnalystReport;
 }) =>
   locale === "zh-CN"
     ? `
@@ -69,7 +71,31 @@ ${analyst.interviews.map((interview) => `<conclusion>\n${interview.conclusion}\n
 ${analyst.studySummary}
 </studySummary>
 
-${instruction ? `额外指令（在遵循上述核心要求的基础上）：\n\n<instruction>\n${instruction}\n</instruction>\n` : ""}
+${
+  lastReport
+    ? `
+重要：这不是第一次生成报告。我之前已经为这个研究主题生成过报告，为了保持一致性和连贯性，请在之前报告的基础上进行优化和改进。
+
+之前生成的完整报告内容：
+<previousReport>
+${lastReport.onePageHtml}
+</previousReport>
+
+请基于新的指令进行调整和优化。
+`
+    : ""
+}
+
+${
+  instruction
+    ? `
+额外指令（在遵循上述核心要求的基础上）：
+<instruction>
+${instruction}
+</instruction>
+`
+    : ""
+}
 
 请直接输出完整HTML代码，从<!DOCTYPE html>开始，不要包含任何解释、前言或markdown标记。
 `
@@ -98,7 +124,31 @@ Here is the study process summary:
 ${analyst.studySummary}
 </studySummary>
 
-${instruction ? `Additional instructions (while following the core requirements above):\n\n<instruction>\n${instruction}\n</instruction>\n` : ""}
+${
+  lastReport
+    ? `
+IMPORTANT: This is not the first time generating a report. I have previously generated a report for this study topic. For consistency and coherence, please optimize and improve based on the previous report.
+
+Previously generated complete report content:
+<previousReport>
+${lastReport.onePageHtml}
+</previousReport>
+
+Please make appropriate adjustments and optimizations based on the new instructions.
+`
+    : ""
+}
+
+${
+  instruction
+    ? `
+Additional instructions (while following the core requirements above):
+<instruction>
+${instruction}
+</instruction>
+`
+    : ""
+}
 
 Please directly output complete HTML code, starting with <!DOCTYPE html>, without any explanations, preface, or markdown formatting.
 `;

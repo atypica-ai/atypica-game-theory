@@ -41,6 +41,7 @@ import { Locale } from "next-intl";
 import { Logger } from "pino";
 import { z } from "zod";
 
+const MAX_MESSAGES_LIMIT = 14; // 访谈双方消息总数限制，到达之后必须 saveInterviewConclusion
 type TReduceTokens = {
   // model: llm("gemini-2.5-pro"), // 不能这么写，一定要下面每次都重新初始化 llm，不然会卡住
   model: LLMModelName;
@@ -264,7 +265,7 @@ function setBedrockCache(model: `claude-${string}`, coreMessages: CoreMessage[])
     ">=1": false,
     ">=4": false,
     ">=8": false,
-    ">=16": false,
+    ">=16": false, // 这个应该是到不了的
   };
   const cachedCoreMessages = coreMessages.map((message, index) => {
     const providerOptions = { bedrock: { cachePoint: { type: "default" } } };
@@ -320,7 +321,7 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: Message[]) {
         [ToolName.reasoningThinking]: reasoningThinkingTool({ locale, abortSignal, statReport }),
         [ToolName.saveInterviewConclusion]: saveInterviewConclusionTool(analystInterviewId),
       },
-      ...(coreMessages.length < 14
+      ...(coreMessages.length < MAX_MESSAGES_LIMIT
         ? {
             toolChoice: "auto",
             maxSteps: 2,

@@ -13,7 +13,7 @@ import { triggerImagegenInReport } from "@/app/artifacts/lib/imagegen";
 import { generateReportScreenshot } from "@/app/artifacts/lib/screenshot";
 import { fileUrlToDataUrl } from "@/lib/attachments/actions";
 import { ChatMessageAttachment } from "@/lib/attachments/types";
-import { generateToken } from "@/lib/utils";
+import { fixMalformedUnicodeString, generateToken } from "@/lib/utils";
 import { Analyst, AnalystReport, AnalystReportExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { FinishReason, Message, streamText, tool } from "ai";
@@ -44,11 +44,12 @@ export const generateReportTool = ({
         .describe(
           "REQUIRED: Detailed report style descriptions. Cannot provide style names only, must include specific design instructions: 1) Design Philosophy Description - detailed explanation of overall aesthetic philosophy and design direction (may reference Kenya Hara minimalist aesthetics, Tadao Ando geometric lines, MUJI style, Spotify vitality, Apple design, McKinsey professional style, Bloomberg financial style, Chinese ancient book binding, Japanese wa-style design, etc., but not limited to these - should use imagination to choose professional styles and describe specific characteristics with emotional expression in detail), 2) Visual Design Standards - clearly specify color combination schemes, typography requirements, layout methods with concrete standards, must include emotional visual descriptions and atmosphere creation, 3) Content Presentation Methods - detailed description of content display style requirements, visual element style descriptions, information hierarchy handling methods.",
         )
-        .default(""),
-      regenerate: z
-        .boolean()
-        .describe("Whether to regenerate an existing report with new analysis")
-        .default(false),
+        .transform(fixMalformedUnicodeString),
+      // 这个不要了，只要发起 generateReport 就都是生成一个新的
+      // regenerate: z
+      //   .boolean()
+      //   .describe("Whether to regenerate an existing report with new analysis")
+      //   .default(false),
       reportToken: z
         .string()
         .optional()
@@ -62,7 +63,11 @@ export const generateReportTool = ({
     experimental_toToolResultContent: (result: PlainTextToolResult) => {
       return [{ type: "text", text: result.plainText }];
     },
-    execute: async ({ instruction, regenerate, reportToken }): Promise<GenerateReportResult> => {
+    execute: async ({
+      instruction,
+      // regenerate,
+      reportToken,
+    }): Promise<GenerateReportResult> => {
       const { analyst } = await prisma.userChat.findUniqueOrThrow({
         where: { id: studyUserChatId, kind: "study" },
         select: {
@@ -89,20 +94,22 @@ export const generateReportTool = ({
         where: { analystId },
         orderBy: { createdAt: "desc" },
       });
+      let lastReport: AnalystReport | undefined = report ?? undefined;
       let hint = "";
-      if (report?.generatedAt && !regenerate) {
-        return {
-          reportToken: report.token,
-          plainText: `Report for study ${analystId} already exists. To regenerate, please set regenerate: true. You can provide additional instructions to specify report style or content requirements.`,
-        };
-      }
+      // if (report?.generatedAt && !regenerate) {
+      //   return {
+      //     reportToken: report.token,
+      //     plainText: `Report for study ${analystId} already exists. To regenerate, please set regenerate: true. You can provide additional instructions to specify report style or content requirements.`,
+      //   };
+      // }
       if (report && !report.generatedAt) {
-        // 复用这个没完成的 report 记录，并覆盖 token
+        // 复用这个没完成的 report 记录，并覆盖 token，原来的 token 没用了，因为报告都没生成完
         hint = `Continuing from previous incomplete report (${report.token}).`;
         report = await prisma.analystReport.update({
           where: { id: report.id },
           data: { token: reportToken, instruction },
         });
+        lastReport = undefined;
       } else {
         report = await prisma.analystReport.create({
           data: { analystId, instruction, token: reportToken, coverSvg: "", onePageHtml: "" },
@@ -112,6 +119,7 @@ export const generateReportTool = ({
         await generateReport({
           analyst,
           report,
+          lastReport,
           instruction,
           locale,
           abortSignal,
@@ -161,6 +169,7 @@ export const generateReportTool = ({
 export async function generateReport({
   analyst,
   report,
+  lastReport,
   instruction,
   locale,
   abortSignal,
@@ -174,6 +183,7 @@ export async function generateReport({
     }[];
   };
   report: AnalystReport;
+  lastReport?: AnalystReport;
   instruction: string;
   locale: Locale;
   abortSignal: AbortSignal;
@@ -244,7 +254,12 @@ export async function generateReport({
       const messages: Omit<Message, "id">[] = [
         {
           role: "user",
-          content: reportHTMLPrologue({ locale, analyst, instruction }),
+          content: reportHTMLPrologue({
+            locale,
+            analyst,
+            instruction,
+            lastReport,
+          }),
           experimental_attachments,
         },
       ];

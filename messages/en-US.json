@@ -519,6 +519,7 @@
       "noneOfTheAbove": "None of the above",
       "multiSelectHint": "Select 1 or more options",
       "continueStudy": "Continue",
+      "startNewStudy": "Start New Study",
       "confirm": "Confirm"
     },
     "ChatReplay": {
