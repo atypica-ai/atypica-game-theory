@@ -295,8 +295,11 @@ export async function generateReport({
             content: text,
           });
           reportLog.info({ msg: "HTML generated", finishReason, usage });
-          if (usage.totalTokens > 0 && statReport) {
-            await statReport("tokens", usage.totalTokens, {
+          // svg 生成耗费的 output tokens 比较多，不能和 input tokens 一样计算
+          const totalTokens =
+            (usage.completionTokens ?? 0) * 3 + (usage.promptTokens ?? 0) || usage.totalTokens;
+          if (totalTokens > 0 && statReport) {
+            await statReport("tokens", totalTokens, {
               reportedBy: "generateReport tool",
               part: "onePageHtml",
               usage,
@@ -377,8 +380,11 @@ export async function generateCover({
         where: { id: report.id },
         data: { coverSvg: text },
       });
-      if (usage.totalTokens > 0 && statReport) {
-        await statReport("tokens", usage.totalTokens, {
+      // svg 生成耗费的 output tokens 比较多，不能和 input tokens 一样计算
+      const totalTokens =
+        (usage.completionTokens ?? 0) * 3 + (usage.promptTokens ?? 0) || usage.totalTokens;
+      if (totalTokens > 0 && statReport) {
+        await statReport("tokens", totalTokens, {
           reportedBy: "generateReport tool",
           part: "coverSvg",
           usage,
