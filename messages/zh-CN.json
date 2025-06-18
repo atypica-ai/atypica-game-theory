@@ -626,6 +626,14 @@
       "linkCopied": "链接已复制！"
     }
   },
+  "TermsPage": {
+    "title": "用户协议",
+    "description": "atypica.AI 用户协议 - 使用我们的 AI 驱动市场研究平台的条款和条件"
+  },
+  "PrivacyPage": {
+    "title": "隐私政策",
+    "description": "atypica.AI 隐私政策 - 我们如何收集、使用和保护您的个人信息"
+  },
   "PricingPage": {
     "title": "价格",
     "subtitle": "选择最适合您的方案",
