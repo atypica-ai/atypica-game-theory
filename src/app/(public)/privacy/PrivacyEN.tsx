@@ -1,10 +1,11 @@
+import Link from "next/link";
 import React from "react";
 
 export const PrivacyEN: React.FC = () => {
   return (
     <div className="px-6 py-12 container mx-auto max-w-4xl">
       <div className="mb-8 text-center">
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">Atypica Privacy Policy</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-4">atypica.AI Privacy Policy</h1>
         <p className="text-lg text-gray-600">Version Date: April 01, 2025</p>
       </div>
       <div className="prose prose-lg max-w-none">
@@ -13,28 +14,29 @@ export const PrivacyEN: React.FC = () => {
         </h2>
         <div className="space-y-6 text-gray-700">
           <p className="leading-relaxed">
-            Tezign Tech&amp;Design (HK) Limited (hereinafter referred to as "we") has always been
-            committed to protecting users' personal information. In accordance with the
-            <em> Cybersecurity Law of the People's Republic of China</em> (hereinafter referred to
-            as the "<em>Cybersecurity Law</em>"), the <em>Personal Information Protection Law</em>,{" "}
+            atypica.AI (hereinafter referred to as &ldquo;we&rdquo;) has always been committed to
+            protecting users&apos; personal information. In accordance with the
+            <em> Cybersecurity Law of the People&apos;s Republic of China</em> (hereinafter referred
+            to as the &ldquo;<em>Cybersecurity Law</em>&rdquo;), the{" "}
+            <em>Personal Information Protection Law</em>,{" "}
             <em>
               GB/T 35273 Information Technology Security - Personal Information Security
               Specification,
             </em>{" "}
-            and other relevant laws and regulations, we have formulated the Atypica Privacy Policy
-            (hereinafter referred to as "this Privacy Policy") to explain to you how we will
-            collect, use, share, transfer, and disclose this information when you use our products
-            and/or services, as well as the methods we provide for you to access, update, delete,
-            and protect this information. We are committed to maintaining your trust in us and
-            adhering to the following principles to protect your personal information: the principle
-            of consistent rights and responsibilities, the principle of clear purpose, the principle
-            of consent, the principle of minimum necessity, the principle of ensuring security, the
-            principle of subject participation, and the principle of transparency.
+            and other relevant laws and regulations, we have formulated the atypica.AI Privacy
+            Policy (hereinafter referred to as &ldquo;this Privacy Policy&rdquo;) to explain to you
+            how we will collect, use, share, transfer, and disclose this information when you use
+            our products and/or services, as well as the methods we provide for you to access,
+            update, delete, and protect this information. We are committed to maintaining your trust
+            in us and adhering to the following principles to protect your personal information: the
+            principle of consistent rights and responsibilities, the principle of clear purpose, the
+            principle of consent, the principle of minimum necessity, the principle of ensuring
+            security, the principle of subject participation, and the principle of transparency.
           </p>
 
           <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4">
             <p className="text-yellow-800 leading-relaxed">
-              It is important to note that this Privacy Policy only applies to the [Atypica]
+              It is important to note that this Privacy Policy only applies to the atypica.AI
               products or services we provide to you, and does not apply to the products or services
               provided to you by other third parties. The services provided to you by third parties
               are subject to their own service terms and privacy policies (not this Privacy Policy).
@@ -84,15 +86,19 @@ export const PrivacyEN: React.FC = () => {
         </div>
         <div className="space-y-6 text-gray-700">
           <p className="leading-relaxed">
-            This Privacy Policy is closely related to the [Atypica] products or services you use and
-            the various business functions included in these services. We hope that you will read it
-            carefully before accessing and confirm that you have fully understood the contents
-            stated in this Privacy Policy, allowing you to make appropriate choices as guided by
-            this Privacy Policy. You use our products or services, or continued use after we update
-            this Privacy Policy (we will promptly notify you of any updates), means that you agree
-            to the contents of this Privacy Policy (including the updated version) and consent to
-            our collection, use, storage, and sharing of your relevant information in accordance
-            with this Privacy Policy.
+            This Privacy Policy is closely related to the atypica.AI products or services you use
+            and the various business functions included in these services, and should be read in
+            conjunction with our{" "}
+            <Link href="/terms" className="text-blue-600 underline hover:text-blue-800">
+              User Agreement
+            </Link>
+            . We hope that you will read it carefully before accessing and confirm that you have
+            fully understood the contents stated in this Privacy Policy, allowing you to make
+            appropriate choices as guided by this Privacy Policy. You use our products or services,
+            or continued use after we update this Privacy Policy (we will promptly notify you of any
+            updates), means that you agree to the contents of this Privacy Policy (including the
+            updated version) and consent to our collection, use, storage, and sharing of your
+            relevant information in accordance with this Privacy Policy.
           </p>
 
           <div className="bg-red-50 border border-red-200 rounded-lg p-4">
@@ -194,7 +200,7 @@ export const PrivacyEN: React.FC = () => {
             </thead>
             <tbody>
               <tr>
-                <td className="border border-gray-300 px-4 py-2 text-gray-700">Atypica</td>
+                <td className="border border-gray-300 px-4 py-2 text-gray-700">atypica.AI</td>
                 <td className="border border-gray-300 px-4 py-2 text-gray-700">
                   Phone number,
                   <br />
@@ -209,7 +215,7 @@ export const PrivacyEN: React.FC = () => {
                 </td>
                 <td className="border border-gray-300 px-4 py-2 text-gray-700">
                   <em>
-                    <u>https://atypica.musedam.cc/</u>
+                    <u>https://atypica.ai/</u>
                   </em>
                 </td>
               </tr>
@@ -255,10 +261,18 @@ export const PrivacyEN: React.FC = () => {
         <p className="leading-relaxed">
           When providing you with business functions or specific services, we will collect, use,
           store, externally provide, and protect your information in accordance with this Privacy
-          Policy and the corresponding user agreement; If we collect your information beyond the
-          scope of this Privacy Policy and the corresponding user agreement, we will separately
-          explain the scope and purpose of the information collection to you and obtain your consent
-          before collecting the necessary personal information for the corresponding service.
+          Policy and the corresponding{" "}
+          <Link href="/terms" className="text-blue-600 underline hover:text-blue-800">
+            user agreement
+          </Link>
+          ; If we collect your information beyond the scope of this Privacy Policy and the
+          corresponding{" "}
+          <Link href="/terms" className="text-blue-600 underline hover:text-blue-800">
+            user agreement
+          </Link>
+          , we will separately explain the scope and purpose of the information collection to you
+          and obtain your consent before collecting the necessary personal information for the
+          corresponding service.
         </p>
 
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
@@ -398,10 +412,10 @@ export const PrivacyEN: React.FC = () => {
             store on your computer or mobile device a local storage called Cookies, Flash Cookies,
             or other local storage provided by the browser or associated applications, which usually
             contain identifiers, site names, and some numbers and characters (collectively referred
-            to as "Cookies"). With the help of Cookies, the website can store your preferences or
-            data. We will not use Cookies for any purposes other than those described in this
-            Privacy Policy. You can manage or delete Cookies according to your preferences. You can
-            clear all Cookies saved on your computer. Most web browsers automatically accept
+            to as &ldquo;Cookies&rdquo;). With the help of Cookies, the website can store your
+            preferences or data. We will not use Cookies for any purposes other than those described
+            in this Privacy Policy. You can manage or delete Cookies according to your preferences.
+            You can clear all Cookies saved on your computer. Most web browsers automatically accept
             Cookies, but you can usually modify your browser settings to reject Cookies according to
             your needs. Additionally, you can also clear all saved Cookies. However, if you do so,
             you may need to manually change user settings each time you visit the website, and all
@@ -666,7 +680,7 @@ export const PrivacyEN: React.FC = () => {
               us through the contact information agreed at the bottom of this privacy policy. If you
               find that your personal information has been leaked, especially if your account has
               been compromised, please immediately contact us through the contact information agreed
-              in Article 8 "How to Contact Us" of this privacy policy, so that we can take
+              in Article 8 &ldquo;How to Contact Us&rdquo; of this privacy policy, so that we can take
               corresponding measures.
             </p>
           </div>
@@ -681,7 +695,7 @@ export const PrivacyEN: React.FC = () => {
             <h4 className="font-semibold text-blue-800 mb-2">Data Storage Location</h4>
             <p className="text-blue-700 text-sm leading-relaxed">
               The personal information collected and generated during our operations within the
-              territory of the People's Republic of China is stored within China. If cross-border
+              territory of the People&apos;s Republic of China is stored within China. If cross-border
               data transmission occurs, we will separately inform you of the purpose of the data
               export, the recipient, etc., through push notifications, pop-ups, or emails, and
               obtain your authorization and consent. We will ensure that the data recipient has
@@ -822,7 +836,7 @@ export const PrivacyEN: React.FC = () => {
               </div>
               <div className="flex items-start">
                 <span className="text-purple-500 mr-2 mt-1">•</span>
-                <span>Would cause serious harm to legitimate rights and interests</span>
+                Would cause serious harm to legitimate rights and interests
               </div>
               <div className="flex items-start">
                 <span className="text-purple-500 mr-2 mt-1">•</span>
@@ -834,20 +848,20 @@ export const PrivacyEN: React.FC = () => {
               </div>
               <div className="flex items-start">
                 <span className="text-purple-500 mr-2 mt-1">•</span>
-                <span>For safeguarding significant legal rights and interests</span>
+                For safeguarding significant legal rights and interests
               </div>
             </div>
           </div>
         </div>
         <h2 className="text-2xl font-bold text-gray-900 mt-10 mb-6 pb-2 border-b-2 border-gray-200">
-          6. Protection of Minors' Personal Information
+          6. Protection of Minors&apos; Personal Information
         </h2>
 
         <div className="space-y-6">
           <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4">
             <p className="text-yellow-800 leading-relaxed text-sm">
-              We attach great importance to the protection of minors' personal information. When
-              using our products or services, we presume that you have the corresponding civil
+              We attach great importance to the protection of minors&apos; personal information.
+              When using our products or services, we presume that you have the corresponding civil
               capacity. If you are a minor under the age of 18, you should obtain the written
               consent of your parent or legal guardian in advance before using our products or
               services. We will protect the personal information of minors in accordance with the
@@ -858,7 +872,7 @@ export const PrivacyEN: React.FC = () => {
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <h4 className="font-semibold text-blue-800 mb-2">Parental Consent</h4>
             <p className="text-blue-700 text-sm leading-relaxed">
-              For the collection of minors' personal information with the consent of parents or
+              For the collection of minors&apos; personal information with the consent of parents or
               legal guardians, we will only use, share, transfer or disclose this information when
               it is permitted by law, explicitly agreed by parents or guardians, or necessary to
               protect minors.
@@ -871,7 +885,7 @@ export const PrivacyEN: React.FC = () => {
               If we find that a minor has registered and used our products or services without
               actually obtaining the consent of parents or legal guardians, we will temporarily
               freeze the account, and it will not be able to use our products or services. At the
-              same time, we will try to contact the guardian and strive to delete the minor's
+              same time, we will try to contact the guardian and strive to delete the minor&apos;s
               personal information as soon as possible.
             </p>
           </div>
@@ -914,7 +928,7 @@ export const PrivacyEN: React.FC = () => {
               <li className="flex items-start">
                 <span className="text-blue-500 mr-2 mt-1">•</span>
                 <span>
-                  Significant changes in our company's ownership structure and organizational
+                  Significant changes in our company&apos;s ownership structure and organizational
                   structure
                 </span>
               </li>
@@ -962,18 +976,16 @@ export const PrivacyEN: React.FC = () => {
               <p>
                 <strong>Email:</strong>{" "}
                 <a
-                  href="mailto:support@tezign.com"
+                  href="mailto:hi@atypica.ai"
                   className="text-green-600 underline hover:text-green-800"
                 >
-                  support@tezign.com
+                  hi@atypica.ai
                 </a>
               </p>
-              <p>
+              {/* <p>
                 <strong>Contact Address:</strong>{" "}
-                <span className="italic">
-                  21F, No.175 Longyao Road, Xuhui District, Shanghai Lumina, China
-                </span>
-              </p>
+                <span className="italic">BMRLab, Research Institute</span>
+              </p> */}
             </div>
           </div>
 

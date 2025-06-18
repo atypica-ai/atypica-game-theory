@@ -1,20 +1,26 @@
+import Link from "next/link";
 import React from "react";
 
 export const TermsZH: React.FC = () => {
   return (
     <div className="px-6 py-12 container mx-auto max-w-4xl">
       <div className="mb-8 text-center">
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">Atypica用户协议</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-4">atypica.AI 用户协议</h1>
         <p className="text-lg text-gray-600">版本日期：2025年04月01日</p>
       </div>
       <div className="prose prose-lg max-w-none">
         <p className="text-lg leading-relaxed text-gray-700 mb-6">
-          欢迎使用[Atypica]（以下简称"本服务"）！
+          欢迎使用 atypica.AI（以下简称&ldquo;本服务&rdquo;）！
         </p>
         <p className="mb-6 leading-relaxed text-gray-700">
-          [Atypica]是由特赞（上海）信息科技有限公司（以下简称"我们"）独立开发，主要提供基于语言模型的商业研究服务，通过[Atypica.LLM]智能体框架理解和模拟消费者的主观决策过程，帮助企业洞察那些难以量化的因素（如情绪、认知和偏好），从而优化商业决策和策略制定。任何单位或个人使用本服务之前，应当认真阅读并严格遵守本协议的全部内容（尤其是加粗和/或下划线的内容）。本协议同样适用于您使用本服务任何后续升级或更新的版本。我们有权在法律范围内不定期修订本协议的内容，如果您不同意本协议的内容，您有权停止使用本服务，
+          atypica.AI 是由
+          BMRLab（以下简称&ldquo;我们&rdquo;）独立开发，主要提供基于语言模型的商业研究服务，通过
+          &ldquo;Creative Reasoning&rdquo;
+          智能体框架理解和模拟消费者的主观决策过程，帮助企业洞察那些难以量化的因素（如情绪、认知和偏好），从而优化商业决策和策略制定。任何单位或个人使用本服务之前，应当认真阅读并严格遵守本协议的全部内容（尤其是加粗和/或下划线的内容）。本协议同样适用于您使用本服务任何后续升级或更新的版本。我们有权在法律范围内不定期修订本协议的内容，如果您不同意本协议的内容，您有权停止使用本服务，
           <strong className="text-blue-700 bg-blue-50 px-2 py-1 rounded">
-            <u>您一旦勾选[Atypica用户协议]或使用[Atypica]，即视为您同意遵守本协议中的全部内容。</u>
+            <u>
+              您一旦勾选 atypica.AI 用户协议或使用 atypica.AI，即视为您同意遵守本协议中的全部内容。
+            </u>
           </strong>
         </p>
         <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-8">
@@ -244,10 +250,12 @@ export const TermsZH: React.FC = () => {
           </p>
         </div>
         <div className="bg-indigo-50 border-l-4 border-indigo-400 p-4 mb-8">
-          <h4 className="font-semibold text-indigo-800 mb-2">【特别提醒-AI标识义务】</h4>
+          <h4 className="font-semibold text-indigo-800 mb-2">【特别提醒-AI 标识义务】</h4>
           <p className="text-indigo-700 text-sm leading-relaxed">
             <u>
-              依据《人工智能生成合成内容标识办法》规定，为了确保AI内容的来源可追溯，保障AI内容的合规性和透明度，您通过运用本服务所生成的各类内容，无论其形式和用途如何，您应当主动声明并使用我们提供的标识功能进行标识。任何组织和个人不得恶意删除、篡改、伪造、隐匿AI内容标识。
+              依据《人工智能生成合成内容标识办法》规定，为了确保 AI 内容的来源可追溯，保障 AI
+              内容的合规性和透明度，您通过运用本服务所生成的各类内容，无论其形式和用途如何，您应当主动声明并使用我们提供的标识功能进行标识。任何组织和个人不得恶意删除、篡改、伪造、隐匿
+              AI 内容标识。
             </u>
           </p>
         </div>
@@ -266,7 +274,7 @@ export const TermsZH: React.FC = () => {
           <div className="bg-amber-50 border-l-4 border-amber-400 p-4">
             <h4 className="font-semibold text-amber-800 mb-2">【特别提醒】</h4>
             <p className="text-amber-700 text-sm leading-relaxed">
-              您向本服务提交的文本内容合称"输入"，本服务通过AI等技术能力接收或响应您的输入而生成的内容合称"输出"，
+              您向本服务提交的文本内容合称&ldquo;输入&rdquo;，本服务通过AI等技术能力接收或响应您的输入而生成的内容合称&ldquo;输出&rdquo;，
               <strong>
                 您基于本服务对输入和/或输出内容的使用独立承担法律责任。为避免疑问，如输入和/或输出本身包含了第三方享有知识产权或其他合法权益的内容，则前述输入和/或输出的相应权利仍由该第三方享有，不改变其权属关系。
               </strong>
@@ -330,10 +338,16 @@ export const TermsZH: React.FC = () => {
 
           <p className="leading-relaxed">
             我们十分重视您个人信息的安全性及保密性，我们将运用各种安全技术和程序建立完善的管理制度来保护您的个人信息。
-            <strong className="text-blue-700 bg-blue-50 px-2 py-1 rounded">
-              <u>《Atypica隐私政策》</u>
-            </strong>
-            介绍了您在使用我们的服务过程中，我们将如何收集、使用、共享、转让、披露您的个人信息。除法律法规规定、《Atypica隐私政策》约定或另有约定的情形外，未经您书面许可，我们不会获取、存储或向第三方公开、透露您的个人信息。
+            <Link href="/privacy" className="text-blue-600 underline hover:text-blue-800">
+              <strong className="text-blue-700 bg-blue-50 px-2 py-1 rounded">
+                <u>《atypica.AI 隐私政策》</u>
+              </strong>
+            </Link>
+            介绍了您在使用我们的服务过程中，我们将如何收集、使用、共享、转让、披露您的个人信息。除法律法规规定、
+            <Link href="/privacy" className="text-blue-600 underline hover:text-blue-800">
+              《atypica.AI 隐私政策》
+            </Link>
+            约定或另有约定的情形外，未经您书面许可，我们不会获取、存储或向第三方公开、透露您的个人信息。
           </p>
 
           <p className="leading-relaxed">
@@ -393,7 +407,8 @@ export const TermsZH: React.FC = () => {
           <div className="bg-red-50 border border-red-200 rounded-lg p-4">
             <p className="text-red-800 font-semibold text-sm leading-relaxed">
               <u>
-                您理解，本服务生成的所有内容都是由人工智能模型生成，仅供您参考，我们对其生成内容的准确性、完整性和功能性不做任何保证，并且其生成的内容不代表我们的态度或观点，任何由AI工具或技术能力输出的结果，均无法替代您基于自身独特的经验、知识和判断力做出决策。
+                您理解，本服务生成的所有内容都是由人工智能模型生成，仅供您参考，我们对其生成内容的准确性、完整性和功能性不做任何保证，并且其生成的内容不代表我们的态度或观点，任何由
+                AI 工具或技术能力输出的结果，均无法替代您基于自身独特的经验、知识和判断力做出决策。
               </u>
             </p>
           </div>
@@ -427,13 +442,9 @@ export const TermsZH: React.FC = () => {
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <p className="text-blue-800 leading-relaxed">
             为本协议目的，本协议的制定、有效性、解释、执行、修改、终止及因上述事项引起的争议受
-            <strong className="bg-blue-100 px-1 rounded">
-              <u>中华人民共和国大陆地区法律</u>
-            </strong>
-            管辖。如双方就本协议内容或其执行发生任何争议，双方应尽量友好协商解决；协商不成时，任何一方均可向【
-            <strong className="bg-blue-100 px-1 rounded">
-              <u>我们办公所在地】</u>
-            </strong>
+            <strong className="bg-blue-100 px-1 rounded">中华人民共和国大陆地区法律</strong>
+            管辖。如双方就本协议内容或其执行发生任何争议，双方应尽量友好协商解决；协商不成时，任何一方均可向
+            <strong className="bg-blue-100 px-1 rounded">我们办公所在地</strong>
             的人民法院提起诉讼。
           </p>
         </div>
@@ -447,16 +458,16 @@ export const TermsZH: React.FC = () => {
               <p>
                 <strong>邮箱：</strong>
                 <a
-                  href="mailto:support@tezign.com"
+                  href="mailto:hi@atypica.ai"
                   className="text-green-600 underline hover:text-green-800"
                 >
-                  support@tezign.com
+                  hi@atypica.ai
                 </a>
               </p>
-              <p>
+              {/* <p>
                 <strong>联系地址：</strong>
-                <span className="italic">中国上海市徐汇区龙耀路175号星扬西岸中心21楼</span>
-              </p>
+                <span className="italic">BMRLab，研究机构</span>
+              </p> */}
             </div>
           </div>
 

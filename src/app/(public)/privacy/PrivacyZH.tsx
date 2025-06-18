@@ -1,10 +1,11 @@
+import Link from "next/link";
 import React from "react";
 
 export const PrivacyZH: React.FC = () => {
   return (
     <div className="px-6 py-12 container mx-auto max-w-4xl">
       <div className="mb-8 text-center">
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">Atypica隐私政策</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-4">atypica.AI 隐私政策</h1>
         <p className="text-lg text-gray-600">版本日期：2025年4月1日</p>
       </div>
       <div className="prose prose-lg max-w-none">
@@ -13,13 +14,15 @@ export const PrivacyZH: React.FC = () => {
         </h2>
         <div className="space-y-6 text-gray-700">
           <p className="leading-relaxed">
-            特赞（上海）信息科技有限公司（以下简称"我们"）一直致力于保护用户的个人信息。根据《中华人民共和国网络安全法》（以下简称"《网络安全法》"）、《个人信息保护法》、GB/T35273《信息技术安全
-            个人信息安全规范》以及其他相关的法律规范，我们制定了《Atypica隐私政策》（以下简称"本隐私政策"）向您说明我们在您使用我们的产品和/或服务时我们将如何收集、使用、共享、转让、披露这些信息，以及我们为您提供的访问、更新、删除和保护这些信息的方式。我们致力于维持您对我们的信任，恪守以下原则，保护您的个人信息：权责一致原则、目的明确原则、选择同意原则、最小必要原则、确保安全原则、主体参与原则、公开透明原则。
+            atypica.AI（以下简称&ldquo;我们&rdquo;）一直致力于保护用户的个人信息。根据《中华人民共和国网络安全法》（以下简称&ldquo;《网络安全法》&rdquo;）、《个人信息保护法》、GB/T35273《信息技术安全
+            个人信息安全规范》以及其他相关的法律规范，我们制定了《atypica.AI
+            隐私政策》（以下简称&ldquo;本隐私政策&rdquo;）向您说明我们在您使用我们的产品和/或服务时我们将如何收集、使用、共享、转让、披露这些信息，以及我们为您提供的访问、更新、删除和保护这些信息的方式。我们致力于维持您对我们的信任，恪守以下原则，保护您的个人信息：权责一致原则、目的明确原则、选择同意原则、最小必要原则、确保安全原则、主体参与原则、公开透明原则。
           </p>
 
           <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4">
             <p className="text-yellow-800 leading-relaxed">
-              需要特别说明的是，本隐私政策仅适用于我们为您提供的[Atypica]产品和/或服务，不适用于其他第三方向您提供的产品和/或服务，第三方向您提供的服务适用其向您另行说明的服务条款及隐私政策（而非本隐私政策）。请您妥善保护自己的个人信息，仅在必要的情况下向第三方提供。
+              需要特别说明的是，本隐私政策仅适用于我们为您提供的 atypica.AI
+              产品和/或服务，不适用于其他第三方向您提供的产品和/或服务，第三方向您提供的服务适用其向您另行说明的服务条款及隐私政策（而非本隐私政策）。请您妥善保护自己的个人信息，仅在必要的情况下向第三方提供。
             </p>
           </div>
         </div>
@@ -62,7 +65,12 @@ export const PrivacyZH: React.FC = () => {
         </div>
         <div className="space-y-6 text-gray-700">
           <p className="leading-relaxed">
-            本隐私政策与您所使用的[Atypica]产品和/或服务以及该服务所包括的各种业务功能息息相关，希望您在访问前仔细阅读并确认您已经充分理解本隐私政策所写明的内容，并让您可以按照本隐私政策的指引做出您认为适当的选择。
+            本隐私政策与您所使用的 atypica.AI
+            产品和/或服务以及该服务所包括的各种业务功能息息相关，并应与我们的{" "}
+            <Link href="/terms" className="text-blue-600 underline hover:text-blue-800">
+              用户协议
+            </Link>{" "}
+            一并阅读，希望您在访问前仔细阅读并确认您已经充分理解本隐私政策所写明的内容，并让您可以按照本隐私政策的指引做出您认为适当的选择。
             <strong className="text-blue-700 bg-blue-50 px-2 py-1 rounded">
               <u>
                 您使用或在我们更新本隐私政策后（我们会及时提示您更新的情况）继续使用我们的产品和/或服务，即意味着您同意本隐私政策(含更新版本)内容，并且同意我们按照本隐私政策收集、使用、保存和共享您的相关信息。
@@ -190,7 +198,7 @@ export const PrivacyZH: React.FC = () => {
             </thead>
             <tbody>
               <tr>
-                <td className="border border-gray-300 px-4 py-2 text-gray-700">Atypica</td>
+                <td className="border border-gray-300 px-4 py-2 text-gray-700">atypica.AI</td>
                 <td className="border border-gray-300 px-4 py-2 text-gray-700">
                   手机号
                   <br />
@@ -204,7 +212,7 @@ export const PrivacyZH: React.FC = () => {
                   </div>
                 </td>
                 <td className="border border-gray-300 px-4 py-2 text-gray-700">
-                  https://atypica.musedam.cc/
+                  https://atypica.ai/
                 </td>
               </tr>
             </tbody>
@@ -236,8 +244,15 @@ export const PrivacyZH: React.FC = () => {
         </div>
 
         <p className="leading-relaxed">
-          2.4
-          我们在向您提供业务功能或具体服务时，会按照本隐私政策以及相应的用户协议的约定收集、使用、存储、对外提供及保护您的信息；超出本隐私政策以及相应的用户协议约定收集您信息的，我们会另行向您说明信息收集的范围与目的，并征得您的同意后方收集提供相应服务所必要的个人信息。
+          2.4 我们在向您提供业务功能或具体服务时，会按照本隐私政策以及相应的{" "}
+          <Link href="/terms" className="text-blue-600 underline hover:text-blue-800">
+            用户协议
+          </Link>{" "}
+          的约定收集、使用、存储、对外提供及保护您的信息；超出本隐私政策以及相应的{" "}
+          <Link href="/terms" className="text-blue-600 underline hover:text-blue-800">
+            用户协议
+          </Link>{" "}
+          约定收集您信息的，我们会另行向您说明信息收集的范围与目的，并征得您的同意后方收集提供相应服务所必要的个人信息。
         </p>
 
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
@@ -342,7 +357,7 @@ export const PrivacyZH: React.FC = () => {
           <h4 className="font-semibold text-purple-800 mb-2">（一）Cookies的使用</h4>
           <p className="text-purple-800 leading-relaxed text-sm">
             为确保网站正常运转、为你获得更轻松的访问体验、向你推荐你可能感兴趣的内容，我们会在你的计算机或移动设备上存储名为Cookie、Flash
-            Cookie或浏览器或关联应用程序提供的其他通常包含标识符、站点名称以及一些号码和字符的本地存储（统称"Cookies"）。借助于Cookies，网站能够存储你的偏好或数据。我们不会将
+            Cookie或浏览器或关联应用程序提供的其他通常包含标识符、站点名称以及一些号码和字符的本地存储（统称&ldquo;Cookies&rdquo;）。借助于Cookies，网站能够存储你的偏好或数据。我们不会将
             Cookies 用于本隐私政策所述目的之外的任何用途。您可根据自己的偏好管理或删除
             Cookies。您可以清除计算机上保存的所有
             Cookies，大部分网络浏览器会自动接受Cookies，但您通常可根据自己的需要来修改浏览器的设置以拒绝
@@ -472,7 +487,8 @@ export const PrivacyZH: React.FC = () => {
               <strong>
                 我们已经取得了ISO/IEC27001信息安全管理体系、ISO/IEC27017云服务安全管理体系认证证书
               </strong>
-              ,ISO/IEC27001与ISO/IEC27017是一项被广泛采用的全球安全标准，该认证充分证明特赞产品安全管理符合国际公认的标准，可以为用户提供一个系统的、持续的方法来管理信息安全，以保障自身及客户数据信息的私密性、完整性和可用性。
+              ,ISO/IEC27001与ISO/IEC27017是一项被广泛采用的全球安全标准，该认证充分证明 atypica.AI
+              产品安全管理符合国际公认的标准，可以为用户提供一个系统的、持续的方法来管理信息安全，以保障自身及客户数据信息的私密性、完整性和可用性。
             </p>
           </div>
 
@@ -530,7 +546,7 @@ export const PrivacyZH: React.FC = () => {
           <div className="bg-teal-50 border border-teal-200 rounded-lg p-4">
             <h4 className="font-semibold text-teal-800 mb-2">安全问题联系</h4>
             <p className="text-teal-700 text-sm leading-relaxed">
-              如果您对我们的个人信息保护有任何疑问，可通过本隐私政策最下方约定的联系方式联系我们。如您发现自己的个人信息泄密，尤其是您的账号发生泄露，请您立即通过本隐私政策第八条"如何联系我们"约定的联系方式联络我们，以便我们采取相应措施。
+              如果您对我们的个人信息保护有任何疑问，可通过本隐私政策最下方约定的联系方式联系我们。如您发现自己的个人信息泄密，尤其是您的账号发生泄露，请您立即通过本隐私政策第八条&ldquo;如何联系我们&rdquo;约定的联系方式联络我们，以便我们采取相应措施。
             </p>
           </div>
         </div>
@@ -756,16 +772,16 @@ export const PrivacyZH: React.FC = () => {
               <p>
                 <strong>邮箱：</strong>
                 <a
-                  href="mailto:support@tezign.com"
+                  href="mailto:hi@atypica.ai"
                   className="text-green-600 underline hover:text-green-800"
                 >
-                  support@tezign.com
+                  hi@atypica.ai
                 </a>
               </p>
-              <p>
+              {/* <p>
                 <strong>联系地址：</strong>
-                <span className="italic">上海市徐汇区龙耀路175号星扬西岸中心21F</span>
-              </p>
+                <span className="italic">BMRLab，研究机构</span>
+              </p> */}
             </div>
           </div>
 
