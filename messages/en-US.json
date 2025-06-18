@@ -522,6 +522,13 @@
       "startNewStudy": "Start New Study",
       "confirm": "Confirm"
     },
+    "Feedback": {
+      "title": "Was this study useful?",
+      "useful": "Useful",
+      "notUseful": "Not useful",
+      "submitting": "Submitting...",
+      "thankYou": "Thanks for your feedback!"
+    },
     "ChatReplay": {
       "skipToEnd": "Skip to End",
       "continueStudyTitle": "Continue Your Study",

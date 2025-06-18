@@ -522,6 +522,13 @@
       "startNewStudy": "开始新研究",
       "confirm": "确认"
     },
+    "Feedback": {
+      "title": "这个研究对您有用吗？",
+      "useful": "有用",
+      "notUseful": "没用",
+      "submitting": "提交中...",
+      "thankYou": "感谢您的反馈！"
+    },
     "ChatReplay": {
       "skipToEnd": "跳到结尾",
       "continueStudyTitle": "继续您的研究",

@@ -11,6 +11,10 @@ declare module "@/prisma/client" {
     clientIp: string;
     userAgent: string;
     locale: string;
+    feedback?: {
+      rating: string;
+      submittedAt: string;
+    };
   } | null;
 
   export type UserSubscriptionExtra = {

@@ -19,6 +19,7 @@ import {
 } from "./actions";
 import { NerdStats } from "./components/NerdStats";
 import { CancelButton, StatusDisplay } from "./components/StatusDisplay";
+import { StudyFeedback } from "./components/StudyFeedback";
 import { useStudyContext } from "./hooks/StudyContext";
 import { SingleMessage } from "./SingleMessage";
 
@@ -264,7 +265,7 @@ export function ChatBox() {
         ref={messagesContainerRef}
         className={cn(
           "h-full w-full flex flex-col items-center gap-4 overflow-y-auto scrollbar-thin",
-          "pt-4 pb-80 px-4",
+          "pt-4 pb-60 px-4",
         )}
       >
         {messages.map((message, index) => (
@@ -297,6 +298,12 @@ export function ChatBox() {
             isLastMessage={index === messages.length - 1}
           ></SingleMessage>
         ))}
+
+        {/* Study Feedback */}
+        {studyCompleted && uiStatus !== "background" && uiStatus !== "streaming" && (
+          <StudyFeedback studyUserChatId={studyUserChatId} className="mt-12 max-w-full" />
+        )}
+
         <div ref={messagesEndRef} />
       </div>
       <div className="absolute bottom-0 left-0 right-0 w-full px-4 max-lg:px-1">

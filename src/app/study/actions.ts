@@ -6,7 +6,14 @@ import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { truncateForTitle } from "@/lib/textUtils";
 import { createUserChat } from "@/lib/userChat/lib";
-import { Analyst, AnalystInterview, AnalystReport, Persona, UserChat } from "@/prisma/client";
+import {
+  Analyst,
+  AnalystInterview,
+  AnalystReport,
+  Persona,
+  UserChat,
+  UserChatExtra,
+} from "@/prisma/client";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import { generateId, Message } from "ai";
@@ -417,6 +424,80 @@ export async function userStopBackgroundStudyAction(
     });
     const studyLog = rootLogger.child({ studyUserChatId, studyUserChatToken: userChat.token });
     studyLog.info("Study stopped by user");
+    return {
+      success: true,
+      data: undefined,
+    };
+  });
+}
+
+export async function fetchStudyFeedback(
+  studyUserChatId: number,
+): Promise<ServerActionResult<{ rating: "useful" | "not_useful"; submittedAt: string } | null>> {
+  return withAuth(async (user) => {
+    const userChat = await prisma.userChat.findUnique({
+      where: { id: studyUserChatId, userId: user.id, kind: "study" },
+      select: { extra: true },
+    });
+
+    if (!userChat) {
+      return {
+        success: false,
+        message: "Study not found or access denied",
+      };
+    }
+
+    const extra = userChat.extra as UserChatExtra;
+    const feedback = extra?.feedback as
+      | { rating: "useful" | "not_useful"; submittedAt: string }
+      | undefined;
+
+    return {
+      success: true,
+      data: feedback || null,
+    };
+  });
+}
+
+export async function submitStudyFeedback(
+  studyUserChatId: number,
+  feedback: {
+    rating: "useful" | "not_useful";
+  },
+): Promise<ServerActionResult<void>> {
+  return withAuth(async (user) => {
+    // Check if user owns this study
+    const userChat = await prisma.userChat.findUnique({
+      where: { id: studyUserChatId, userId: user.id, kind: "study" },
+    });
+
+    if (!userChat) {
+      return {
+        success: false,
+        message: "Study not found or access denied",
+      };
+    }
+
+    // Store feedback in database (you may need to create a feedback table)
+    // For now, we'll log it and store it as metadata in the userChat
+    const feedbackData = {
+      rating: feedback.rating,
+      submittedAt: new Date().toISOString(),
+    };
+
+    await prisma.userChat.update({
+      where: { id: studyUserChatId },
+      data: {
+        extra: {
+          ...((userChat.extra as UserChatExtra) || {}),
+          feedback: feedbackData,
+        },
+      },
+    });
+
+    const studyLog = rootLogger.child({ studyUserChatId, studyUserChatToken: userChat.token });
+    studyLog.info("Study feedback submitted", { feedback: feedbackData });
+
     return {
       success: true,
       data: undefined,
