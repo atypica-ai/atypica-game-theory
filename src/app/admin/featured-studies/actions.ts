@@ -150,7 +150,7 @@ export async function fetchAnalysts(
     (Analyst & {
       user: Pick<User, "email"> | null;
       featuredStudy: FeaturedStudy | null;
-      studyUserChat: Pick<UserChat, "token" | "title"> | null;
+      studyUserChat: Pick<UserChat, "token" | "title" | "extra"> | null;
     })[]
   >
 > {
@@ -212,6 +212,7 @@ export async function fetchAnalysts(
         select: {
           token: true,
           title: true,
+          extra: true,
         },
       },
       user: {

@@ -23,8 +23,15 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDate } from "@/lib/utils";
-import { Analyst } from "@/prisma/client";
-import { ChevronDown, ChevronUp, SearchIcon, Star } from "lucide-react";
+import { Analyst, UserChatExtra } from "@/prisma/client";
+import {
+  ChevronDown,
+  ChevronUp,
+  SearchIcon,
+  Star,
+  ThumbsDownIcon,
+  ThumbsUpIcon,
+} from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useLocale } from "next-intl";
 import Link from "next/link";
@@ -141,7 +148,6 @@ export default function FeaturedStudiesPage() {
       await fetchData();
     }
   };
-
   const handleKindChange = (value: string) => {
     setSelectedKind(value as AnalystKind | "all");
     setCurrentPage(1);
@@ -364,8 +370,36 @@ export default function FeaturedStudiesPage() {
                     </p>
                   </div>
 
+                  {/* Feedback Stats */}
+                  <div className="mb-3 p-3 bg-gray-50 rounded-lg border border-gray-200 flex items-center justify-between">
+                    <div className="text-xs font-medium text-gray-700">User Feedback</div>
+                    {(() => {
+                      const extra = analyst.studyUserChat?.extra as UserChatExtra;
+                      const feedback = extra?.feedback;
+                      if (feedback?.rating) {
+                        return (
+                          <div className="flex items-center gap-4">
+                            {feedback.rating === "useful" && (
+                              <div className="flex items-center gap-1.5 text-green-700 bg-green-100 px-2 py-1 rounded-full">
+                                <ThumbsUpIcon className="h-3 w-3" />
+                                <span className="text-xs font-medium">Useful</span>
+                              </div>
+                            )}
+                            {feedback.rating === "not_useful" && (
+                              <div className="flex items-center gap-1.5 text-red-700 bg-red-100 px-2 py-1 rounded-full">
+                                <ThumbsDownIcon className="h-3 w-3" />
+                                <span className="text-xs font-medium">Not useful</span>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      } else {
+                        return <div className="text-xs text-gray-500 italic">No feedback yet</div>;
+                      }
+                    })()}
+                  </div>
                   {/* Meta Information */}
-                  <div className="space-y-1 text-sm text-muted-foreground border-t pt-3">
+                  <div className="space-y-1 text-sm text-muted-foreground">
                     <p>
                       <span className="text-xs">User:</span> {analyst.user?.email || "N/A"}
                     </p>
@@ -382,7 +416,7 @@ export default function FeaturedStudiesPage() {
                 <CardFooter className="gap-2 items-center justify-between mt-auto">
                   <div className="flex items-center">
                     <span
-                      className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                      className={`px-3 py-1 text-xs font-semibold rounded-full ${
                         analyst.kind === "testing"
                           ? "bg-blue-100 text-blue-800"
                           : analyst.kind === "planning"
