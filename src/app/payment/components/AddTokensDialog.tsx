@@ -15,8 +15,7 @@ import { CoinsIcon, CreditCardIcon, GiftIcon, LoaderCircle } from "lucide-react"
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
-import { QRCodeSVG } from "qrcode.react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { retrieveLatestPaid } from "../actions";
 import { PaymentProvider, usePay } from "./usePay";
 
@@ -29,7 +28,7 @@ interface AddTokensDialogProps {
 export const AddTokensDialog = ({ open, onOpenChange, onSuccess }: AddTokensDialogProps) => {
   const t = useTranslations("Components.AddTokensDialog");
   const [paymentProvider, setPaymentProvider] = useState<PaymentProvider>(
-    getDeployRegion() === "mainland" ? PaymentProvider.Pingxx : PaymentProvider.Stripe,
+    getDeployRegion() === "mainland" ? PaymentProvider.StripeCNY : PaymentProvider.Stripe,
   );
   const [paymentSuccess, setPaymentSuccess] = useState<boolean>(false);
 
@@ -64,6 +63,19 @@ export const AddTokensDialog = ({ open, onOpenChange, onSuccess }: AddTokensDial
       if (timeoutId) clearTimeout(timeoutId);
     };
   }, [open, paymentScanQR, paymentSuccess, onSuccess]);
+
+  const price = useMemo(() => {
+    if (paymentProvider === PaymentProvider.Pingxx) {
+      return "¥100";
+    }
+    if (paymentProvider === PaymentProvider.StripeCNY) {
+      return "¥100";
+    }
+    if (paymentProvider === PaymentProvider.Stripe) {
+      return "$16";
+    }
+    return "-";
+  }, [paymentProvider]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -114,9 +126,7 @@ export const AddTokensDialog = ({ open, onOpenChange, onSuccess }: AddTokensDial
                     <span className="flex-1">{t("oneMillionTokensBonus")}</span>
                   </div>
                 </div>
-                <div className="text-xl font-bold">
-                  {paymentProvider === PaymentProvider.Pingxx ? "¥100" : "$16"}
-                </div>
+                <div className="text-xl font-bold">{price}</div>
               </div>
             </div>
 
@@ -125,7 +135,7 @@ export const AddTokensDialog = ({ open, onOpenChange, onSuccess }: AddTokensDial
               onValueChange={(value) => setPaymentProvider(value as PaymentProvider)}
             >
               <TabsList className="grid grid-cols-2 mb-4">
-                <TabsTrigger
+                {/* <TabsTrigger
                   value={PaymentProvider.Pingxx}
                   disabled={loading}
                   onClick={() => clearPaymentLink()} // 切换 tab 需要清空带支付的二维码
@@ -148,6 +158,21 @@ export const AddTokensDialog = ({ open, onOpenChange, onSuccess }: AddTokensDial
                     />
                   </div>
                   <span className="max-sm:hidden">{t("wechatPay")}</span>
+                </TabsTrigger> */}
+                <TabsTrigger
+                  value={PaymentProvider.StripeCNY}
+                  disabled={loading}
+                  onClick={() => clearPaymentLink()} // 切换 tab 需要清空带支付的二维码
+                >
+                  <div className="size-5 mr-1 rounded-lg overflow-hidden relative">
+                    <Image
+                      src="/_public/icon-alipay.png"
+                      alt="alipay"
+                      fill
+                      className="object-contain h-5 mr-2"
+                    />
+                  </div>
+                  <span className="max-sm:hidden">{t("alipay")}</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value={PaymentProvider.Stripe}
@@ -166,7 +191,7 @@ export const AddTokensDialog = ({ open, onOpenChange, onSuccess }: AddTokensDial
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value={PaymentProvider.Pingxx} className="flex justify-center">
+              {/* <TabsContent value={PaymentProvider.Pingxx} className="flex justify-center">
                 {paymentScanQR && !loading ? (
                   <div className="flex flex-col items-center">
                     <div className="text-sm mb-2 text-center">{t("scanQrCode")}</div>
@@ -182,8 +207,13 @@ export const AddTokensDialog = ({ open, onOpenChange, onSuccess }: AddTokensDial
                     </div>
                   </div>
                 ) : null}
-              </TabsContent>
+              </TabsContent> */}
 
+              <TabsContent value={PaymentProvider.StripeCNY} className="flex justify-center">
+                <div className="text-center text-sm text-muted-foreground">
+                  {t("redirectToStripe")}
+                </div>
+              </TabsContent>
               <TabsContent value={PaymentProvider.Stripe} className="flex justify-center">
                 <div className="text-center text-sm text-muted-foreground">
                   {t("redirectToStripe")}

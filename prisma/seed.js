@@ -10,39 +10,42 @@ async function createProducts() {
       price: 100,
       currency: "CNY",
       description: "atypica.AI 充值 100 万 Tokens",
+      extra: { price_id: "price_1RbZh6GU0jUFYcrNqYSrWXfG" }, // 测试环境 price_1RbZ7CGU0jUFYcrNOrdZfZkP
     },
     {
       name: "PRO1MONTH",
       price: 129,
       currency: "CNY",
       description: "atypica.AI Pro 会员 1 个月",
+      extra: { price_id: "price_1RbZj5GU0jUFYcrN9K2QZFDN" }, // 测试环境 price_1RbQuJGU0jUFYcrNyw8cxtEi
     },
     {
       name: "MAX1MONTH",
       price: 329,
       currency: "CNY",
       description: "atypica.AI Max 会员 1 个月",
+      extra: { price_id: "price_1RbZkAGU0jUFYcrNGukQQlO3" }, // 测试环境 price_1RbZ6RGU0jUFYcrNBY6pI6kh
     },
     {
       name: "TOKENS1M",
       price: 16,
       currency: "USD",
       description: "atypica.AI recharge 1 million Tokens",
-      extra: { price_id: "price_1RFNxFGU0jUFYcrNgjrI3a7K" }, // 测试环境 price_1RFpy7GU0jUFYcrNG7fNLoDv
+      extra: { price_id: "price_1RbZh6GU0jUFYcrNqYSrWXfG" }, // 测试环境 price_1RbZ7CGU0jUFYcrNOrdZfZkP
     },
     {
       name: "PRO1MONTH",
       price: 20,
       currency: "USD",
       description: "atypica.AI Pro membership for 1 month",
-      extra: { price_id: "price_1RRtJQGU0jUFYcrN9ib9SVl7" }, // 测试环境 price_1RRIwUGU0jUFYcrNJL8ZwX3L
+      extra: { price_id: "price_1RbZj5GU0jUFYcrN9K2QZFDN" }, // 测试环境 price_1RbQuJGU0jUFYcrNyw8cxtEi
     },
     {
       name: "MAX1MONTH",
       price: 50,
       currency: "USD",
       description: "atypica.AI Max membership for 1 month",
-      extra: { price_id: "price_1RZlriGU0jUFYcrNSdxEyGGt" }, // 测试环境 price_1RYI0FGU0jUFYcrNc8ul4Qd6
+      extra: { price_id: "price_1RbZkAGU0jUFYcrNGukQQlO3" }, // 测试环境 price_1RbZ6RGU0jUFYcrNBY6pI6kh
     },
   ];
   // Create products

@@ -23,7 +23,6 @@ import {
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
-import { QRCodeSVG } from "qrcode.react";
 import { useEffect, useMemo, useState } from "react";
 import { retrieveLatestPaid } from "../actions";
 import { PaymentProvider, usePay } from "./usePay";
@@ -45,7 +44,7 @@ export const SubscriptionDialog = ({
   }
   const t = useTranslations("Components.SubscriptionDialog");
   const [paymentProvider, setPaymentProvider] = useState<PaymentProvider>(
-    getDeployRegion() === "mainland" ? PaymentProvider.Pingxx : PaymentProvider.Stripe,
+    getDeployRegion() === "mainland" ? PaymentProvider.StripeCNY : PaymentProvider.Stripe,
   );
   const [paymentSuccess, setPaymentSuccess] = useState<boolean>(false);
 
@@ -86,6 +85,12 @@ export const SubscriptionDialog = ({
       return "¥129";
     }
     if (paymentProvider === PaymentProvider.Pingxx && plan === SubscriptionPlan.max) {
+      return "¥329";
+    }
+    if (paymentProvider === PaymentProvider.StripeCNY && plan === SubscriptionPlan.pro) {
+      return "¥129";
+    }
+    if (paymentProvider === PaymentProvider.StripeCNY && plan === SubscriptionPlan.max) {
       return "¥329";
     }
     if (paymentProvider === PaymentProvider.Stripe && plan === SubscriptionPlan.pro) {
@@ -179,7 +184,7 @@ export const SubscriptionDialog = ({
               onValueChange={(value) => setPaymentProvider(value as PaymentProvider)}
             >
               <TabsList className="grid grid-cols-2 mb-4">
-                <TabsTrigger
+                {/* <TabsTrigger
                   value={PaymentProvider.Pingxx}
                   disabled={loading}
                   onClick={() => clearPaymentLink()} // 切换 tab 需要清空带支付的二维码
@@ -202,6 +207,21 @@ export const SubscriptionDialog = ({
                     />
                   </div>
                   <span className="max-sm:hidden">{t("wechatPay")}</span>
+                </TabsTrigger> */}
+                <TabsTrigger
+                  value={PaymentProvider.StripeCNY}
+                  disabled={loading}
+                  onClick={() => clearPaymentLink()} // 切换 tab 需要清空带支付的二维码
+                >
+                  <div className="size-5 mr-1 rounded-lg overflow-hidden relative">
+                    <Image
+                      src="/_public/icon-alipay.png"
+                      alt="alipay"
+                      fill
+                      className="object-contain h-5 mr-2"
+                    />
+                  </div>
+                  <span className="max-sm:hidden">{t("alipay")}</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value={PaymentProvider.Stripe}
@@ -220,7 +240,7 @@ export const SubscriptionDialog = ({
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value={PaymentProvider.Pingxx} className="flex justify-center">
+              {/* <TabsContent value={PaymentProvider.Pingxx} className="flex justify-center">
                 {paymentScanQR && !loading ? (
                   <div className="flex flex-col items-center">
                     <div className="text-sm mb-2 text-center">{t("scanQrCode")}</div>
@@ -236,6 +256,12 @@ export const SubscriptionDialog = ({
                     </div>
                   </div>
                 ) : null}
+              </TabsContent> */}
+
+              <TabsContent value={PaymentProvider.StripeCNY} className="flex justify-center">
+                <div className="text-center text-sm text-muted-foreground">
+                  {t("redirectToStripe")}
+                </div>
               </TabsContent>
 
               <TabsContent value={PaymentProvider.Stripe} className="flex justify-center">

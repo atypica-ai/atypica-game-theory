@@ -18,9 +18,9 @@ export async function createStripeSession({
   currency,
   successUrl,
 }: StripeNewPaymentParams) {
-  if (currency !== "USD") {
-    throw new Error("Only USD currency is supported");
-  }
+  // if (currency !== "USD") {
+  //   throw new Error("Only USD currency is supported");
+  // }
 
   const { activeSubscription, stripeSubscriptionId } = await fetchActiveUserSubscription({
     userId,
@@ -91,7 +91,12 @@ export async function createStripeSession({
   const session = await stripe.checkout.sessions.create({
     customer_email: user.email,
     line_items: [{ price: priceId, quantity: 1 }],
-    currency: "USD",
+    ...(currency === "CNY"
+      ? { currency: "CNY", payment_method_types: ["card", "alipay"] }
+      : currency === "USD"
+        ? { currency: "USD", payment_method_types: ["card"] }
+        : {}),
+    // currency: "USD",
     // payment_method_types: ["card", "alipay"],
     mode: mode,
     success_url: successUrl || `${siteOrigin}/payment/success?session_id={CHECKOUT_SESSION_ID}`,

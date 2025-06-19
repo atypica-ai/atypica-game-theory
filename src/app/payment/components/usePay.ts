@@ -6,6 +6,7 @@ import { PingxxNewPaymentParams, ProductName, StripeNewPaymentParams } from "../
 
 export enum PaymentProvider {
   Stripe = "Stripe",
+  StripeCNY = "StripeCNY",
   Pingxx = "Pingxx",
 }
 
@@ -113,6 +114,12 @@ export function usePay() {
         submitForStripePayment({
           productName,
           currency: Currency.USD,
+          userId: session.user.id,
+        });
+      } else if (paymentProvider === PaymentProvider.StripeCNY) {
+        submitForStripePayment({
+          productName,
+          currency: Currency.CNY,
           userId: session.user.id,
         });
       } else {
