@@ -73,6 +73,12 @@ export function ChatBox() {
       const body = { ...chatRequestBody, ...requestBody };
       return { message: messages[messages.length - 1], id, ...body };
     },
+    onError(error) {
+      if (/network error/.test(error?.message)) {
+        // 这里应该不会无限循环，因为 onError 的时候肯定是 assistant 消息在回复，所以 reload 以后最后一条消息不会是 user，也就不会立即开始 chat
+        location.reload();
+      }
+    },
   });
 
   const [backgroundToken, setBackgroundToken] = useState<string | null>(initialBackgroundToken);
