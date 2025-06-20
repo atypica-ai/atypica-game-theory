@@ -78,7 +78,7 @@ export const BuildPersonaConsole: FC<{
       <div className="mb-4 text-sm">
         🤖 {t("buildPersonaResult", { count: personasDetails.length })}
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 2xl:grid-cols-2 gap-4">
         {personasDetails.map((persona) => (
           <Card key={persona.id} className="duration-300 hover:bg-accent/50 hover:shadow-md p-4">
             <CardHeader className="px-0">

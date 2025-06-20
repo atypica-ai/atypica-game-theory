@@ -100,7 +100,7 @@ const PersonaGrids: FC<{
         )}
       </h3>
       {realPersonCount > 0 && <RealPersonAgentsMethodology />}
-      <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-2 2xl:grid-cols-3 gap-4">
         {personas.map(({ personaId, name, source, tags }) => (
           <Card
             key={personaId}

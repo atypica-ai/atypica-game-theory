@@ -128,16 +128,16 @@ export async function studyAgentRequest({
   //   )._sum.value ?? 0;
   const agentToolArgs = { locale, abortSignal, statReport, studyLog };
   const allTools = {
+    [ToolName.requestInteraction]: requestInteractionTool,
+    [ToolName.webSearch]: webSearchTool({ studyUserChatId, ...agentToolArgs }),
+    [ToolName.saveAnalyst]: saveAnalystTool({ userId, studyUserChatId }),
+    [ToolName.reasoningThinking]: reasoningThinkingTool({ ...agentToolArgs }),
     [ToolName.searchPersonas]: searchPersonasTool({ ...agentToolArgs }),
     [ToolName.scoutTaskChat]: scoutTaskChatTool({ userId, ...agentToolArgs }),
     [ToolName.buildPersona]: buildPersonaTool({ userId, ...agentToolArgs }),
     [ToolName.interviewChat]: interviewChatTool({ userId, studyUserChatId, ...agentToolArgs }),
-    [ToolName.generateReport]: generateReportTool({ studyUserChatId, ...agentToolArgs }),
-    [ToolName.reasoningThinking]: reasoningThinkingTool({ ...agentToolArgs }),
     [ToolName.saveAnalystStudySummary]: saveAnalystStudySummaryTool({ studyUserChatId }),
-    [ToolName.saveAnalyst]: saveAnalystTool({ userId, studyUserChatId }),
-    [ToolName.requestInteraction]: requestInteractionTool,
-    [ToolName.webSearch]: webSearchTool({ studyUserChatId, ...agentToolArgs }),
+    [ToolName.generateReport]: generateReportTool({ studyUserChatId, ...agentToolArgs }),
     [ToolName.toolCallError]: toolCallError,
   };
   let tools: Partial<typeof allTools> = allTools;
@@ -145,13 +145,60 @@ export async function studyAgentRequest({
   const maxTokens: number | undefined = undefined;
   let maxSteps = MAX_STEPS_EACH_ROUND;
 
+  if ((toolUseCount[ToolName.saveAnalyst] ?? 0) < 1) {
+    // 明确问题之前，必须先明确问题，直到 saveAnalyst 调用了。
+    tools = Object.fromEntries(
+      Object.entries(allTools).filter(([key]) =>
+        [
+          ToolName.requestInteraction,
+          ToolName.webSearch,
+          ToolName.saveAnalyst,
+          ToolName.reasoningThinking,
+          ToolName.toolCallError,
+        ].includes(key as ToolName),
+      ),
+    ) as typeof allTools;
+    // 同时 maxSteps 设小，方便限制 webSearch 的次数
+    maxSteps = 2;
+    if ((toolUseCount[ToolName.webSearch] ?? 0) >= 1) {
+      delete tools[ToolName.webSearch];
+    }
+  }
+
+  if ((toolUseCount[ToolName.saveAnalyst] ?? 0) >= 1) {
+    // 明确主题以后，不能再更新 analyst，或者搜索互联网了，并且 maxSteps 恢复到最大
+    tools = Object.fromEntries(
+      Object.entries(allTools).filter(([key]) =>
+        [
+          // ToolName.requestInteraction,
+          // ToolName.webSearch,
+          // ToolName.saveAnalyst,
+          ToolName.reasoningThinking,
+          ToolName.searchPersonas,
+          ToolName.scoutTaskChat,
+          ToolName.buildPersona,
+          ToolName.interviewChat,
+          ToolName.saveAnalystStudySummary,
+          ToolName.generateReport,
+          ToolName.toolCallError,
+        ].includes(key as ToolName),
+      ),
+    ) as typeof allTools;
+    maxSteps = MAX_STEPS_EACH_ROUND;
+  }
+
   if ((toolUseCount[ToolName.generateReport] ?? 0) >= 1) {
     // ⚠️ 一旦报告生成，后面就不允许构建人设和搜索等其他操作了，但是可以继续和报告进行问答，也可以重新生成报告
-    tools = {
-      [ToolName.generateReport]: generateReportTool({ studyUserChatId, ...agentToolArgs }),
-      [ToolName.reasoningThinking]: reasoningThinkingTool({ ...agentToolArgs }),
-      [ToolName.toolCallError]: toolCallError,
-    };
+    tools = Object.fromEntries(
+      Object.entries(allTools).filter(([key]) =>
+        [
+          // ToolName.requestInteraction,
+          ToolName.generateReport,
+          ToolName.reasoningThinking,
+          ToolName.toolCallError,
+        ].includes(key as ToolName),
+      ),
+    ) as typeof allTools;
     maxSteps = 2;
   }
 
