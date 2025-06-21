@@ -31,7 +31,7 @@ export function LeftMenus() {
     const [isOpen, setIsOpen] = useState(false);
     return (
       <div className="hidden sm:flex items-center gap-4">
-        <MenuLink href="/study">{t("myStudies")}</MenuLink>
+        <MenuLink href="/studies">{t("myStudies")}</MenuLink>
         <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
           <DropdownMenuTrigger asChild>
             <MenuLink href="/about" target="_blank">
@@ -73,7 +73,7 @@ export function LeftMenus() {
         <DropdownMenuContent align="center" className="min-w-36">
           <DropdownMenuItem asChild>
             {session?.user ? (
-              <MenuLink href="/study">{t("myStudies")}</MenuLink>
+              <MenuLink href="/studies">{t("myStudies")}</MenuLink>
             ) : (
               <MenuLink href="/featured-studies">{t("featuredStudies")}</MenuLink>
             )}

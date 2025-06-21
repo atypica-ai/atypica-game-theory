@@ -1,4 +1,5 @@
 "use client";
+import { AddTokensDialog } from "@/app/payment/components/AddTokensDialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,7 +22,6 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import Stripe from "stripe";
-import { AddTokensDialog } from "../payment/components/AddTokensDialog";
 import { PaymentHistory } from "./PaymentHistory";
 import { TokensHistory } from "./TokensHistory";
 import { cancelSubscriptionAction, stripeSubscriptionAction } from "./actions";

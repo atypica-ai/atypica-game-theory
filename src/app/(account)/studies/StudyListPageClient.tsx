@@ -1,6 +1,4 @@
 "use client";
-import { LeftMenus } from "@/app/(public)/LeftMenu";
-import GlobalHeader from "@/components/GlobalHeader";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { NewStudyButton } from "@/components/NewStudyInputBox";
 import { Button } from "@/components/ui/button";
@@ -24,7 +22,7 @@ type PaginationInfo = {
 };
 
 export function StudyListPageClient() {
-  const t = useTranslations("StudyPage.List");
+  const t = useTranslations("StudyListPage");
   const [studies, setStudies] = useState<TStudy[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -106,7 +104,6 @@ export function StudyListPageClient() {
 
   return (
     <>
-      <GlobalHeader leftMenus={<LeftMenus />} />
       <div className="flex-1 overflow-y-auto scrollbar-thin p-4 md:p-8 space-y-4 md:space-y-6">
         <h1 className="text-2xl md:text-3xl font-bold text-center">{t("title")}</h1>
         <p className="text-muted-foreground mt-1 text-center text-sm md:text-base">
@@ -209,7 +206,7 @@ export function StudyListPageClient() {
 }
 
 function EmptyStudyState() {
-  const t = useTranslations("StudyPage.List");
+  const t = useTranslations("StudyListPage");
   return (
     <div className="flex flex-col items-center justify-center text-center p-12 border border-dashed rounded-lg space-y-6">
       <div className="bg-primary/10 rounded-full p-4">
@@ -230,7 +227,7 @@ function EmptyStudyState() {
 }
 
 function StudyCard({ study: { studyUserChat, analyst } }: { study: TStudy }) {
-  const t = useTranslations("StudyPage.List");
+  const t = useTranslations("StudyListPage");
   const tRoot = useTranslations();
   const locale = useLocale();
 

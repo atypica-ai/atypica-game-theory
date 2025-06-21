@@ -100,7 +100,7 @@ export default function UserMenu() {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link href="/study">
+          <Link href="/studies">
             <HistoryIcon className="h-4 w-4 mr-2" />
             {t("myStudies")}
           </Link>

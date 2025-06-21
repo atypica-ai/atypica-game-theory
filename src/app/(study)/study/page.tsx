@@ -2,7 +2,6 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/prisma/prisma";
 import { getServerSession } from "next-auth/next";
 import { forbidden, notFound, redirect } from "next/navigation";
-import { StudyListPageClient } from "./StudyList/StudyListPageClient";
 
 export default async function StudyPage({
   searchParams,
@@ -19,7 +18,7 @@ export default async function StudyPage({
 
   if (!id) {
     // redirect("/");
-    return <StudyListPageClient />;
+    // TODO: 渲染开始研究的页面
   }
 
   const studyUserChatId = parseInt(id);

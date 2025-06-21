@@ -465,31 +465,31 @@
       "backToSignIn": "Back to Sign In"
     }
   },
-  "StudyPage": {
-    "List": {
-      "title": "My Projects",
-      "description": "Browse and access your studies",
-      "noTopic": "Study topic not yet defined",
-      "viewStudy": "View Study",
-      "startNewStudy": "Start New Study",
-      "noSearchResults": "No studies match your search",
-      "searchPlaceholder": "Search studies",
-      "search": "Search",
-      "status": {
-        "backgroundRunning": "Study in Progress",
-        "reportGenerated": "Report Available",
-        "notCompleted": "Not Completed"
-      },
-      "emptyState": {
-        "title": "No Research Studies Yet",
-        "description": "Create your first AI-powered research study to unlock business insights and market intelligence."
-      },
-      "newStudyCard": {
-        "title": "New Research",
-        "description": "Start exploring a new topic with AI-powered research and analysis",
-        "badge": "Quick Start"
-      }
+  "StudyListPage": {
+    "title": "My Projects",
+    "description": "Browse and access your studies",
+    "noTopic": "Study topic not yet defined",
+    "viewStudy": "View Study",
+    "startNewStudy": "Start New Study",
+    "noSearchResults": "No studies match your search",
+    "searchPlaceholder": "Search studies",
+    "search": "Search",
+    "status": {
+      "backgroundRunning": "Study in Progress",
+      "reportGenerated": "Report Available",
+      "notCompleted": "Not Completed"
     },
+    "emptyState": {
+      "title": "No Research Studies Yet",
+      "description": "Create your first AI-powered research study to unlock business insights and market intelligence."
+    },
+    "newStudyCard": {
+      "title": "New Research",
+      "description": "Start exploring a new topic with AI-powered research and analysis",
+      "badge": "Quick Start"
+    }
+  },
+  "StudyPage": {
     "ShareReplayButton": {
       "shareReplay": "Share Replay",
       "title": "Replay URL",

@@ -465,31 +465,31 @@
       "backToSignIn": "返回登录"
     }
   },
-  "StudyPage": {
-    "List": {
-      "title": "我的项目",
-      "description": "浏览和访问您的研究",
-      "noTopic": "研究主题尚未明确",
-      "viewStudy": "查看研究",
-      "startNewStudy": "开始新研究",
-      "noSearchResults": "没有符合您搜索条件的研究",
-      "searchPlaceholder": "搜索研究主题",
-      "search": "搜索",
-      "status": {
-        "backgroundRunning": "后台运行中",
-        "reportGenerated": "报告已生成",
-        "notCompleted": "研究尚未完成"
-      },
-      "emptyState": {
-        "title": "您尚未创建任何研究。",
-        "description": "开始一项新研究，开始分析并收集洞察。"
-      },
-      "newStudyCard": {
-        "title": "新研究",
-        "description": "开始探索新主题，通过AI驱动的研究和分析获得洞察",
-        "badge": "快速开始"
-      }
+  "StudyListPage": {
+    "title": "我的项目",
+    "description": "浏览和访问您的研究",
+    "noTopic": "研究主题尚未明确",
+    "viewStudy": "查看研究",
+    "startNewStudy": "开始新研究",
+    "noSearchResults": "没有符合您搜索条件的研究",
+    "searchPlaceholder": "搜索研究主题",
+    "search": "搜索",
+    "status": {
+      "backgroundRunning": "后台运行中",
+      "reportGenerated": "报告已生成",
+      "notCompleted": "研究尚未完成"
     },
+    "emptyState": {
+      "title": "您尚未创建任何研究。",
+      "description": "开始一项新研究，开始分析并收集洞察。"
+    },
+    "newStudyCard": {
+      "title": "新研究",
+      "description": "开始探索新主题，通过AI驱动的研究和分析获得洞察",
+      "badge": "快速开始"
+    }
+  },
+  "StudyPage": {
     "ShareReplayButton": {
       "shareReplay": "分享回放",
       "title": "回放链接",

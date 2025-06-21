@@ -96,7 +96,7 @@ export function FeaturedStudies() {
 
       <div className="max-w-6xl mx-auto grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {studies.map((study) => (
-          <Card key={study.id} className="group cursor-pointer">
+          <Card key={study.id} className="group">
             <CardHeader className="space-y-3">
               <div className="flex items-center gap-3 overflow-hidden">
                 <HippyGhostAvatar seed={study.id} className="shrink-0 size-8" />
