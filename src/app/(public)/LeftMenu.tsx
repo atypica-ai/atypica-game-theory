@@ -35,7 +35,7 @@ export function LeftMenus() {
         <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
           <DropdownMenuTrigger asChild>
             <MenuLink href="/about" target="_blank">
-              {t("about")}
+              {t("product")}
             </MenuLink>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="center">

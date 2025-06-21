@@ -9,7 +9,7 @@ export function CTASection() {
 
   return (
     <div className="hero-grid py-24 px-6">
-      <div className="relative z-10 max-w-4xl mx-auto text-center space-y-8">
+      <div className="max-w-4xl mx-auto text-center space-y-8">
         <h2 className="text-3xl sm:text-4xl font-bold tracking-tight leading-tight reveal-up">
           {t("title")}
         </h2>

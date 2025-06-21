@@ -46,7 +46,7 @@ export default function PricingPageClient({
   }, [locale]);
 
   return (
-    <div className={cn("flex-1 overflow-y-auto scrollbar-thin", "px-4 py-16")}>
+    <div className="px-4 py-16">
       <div className="text-center mb-8">
         <h1 className="text-4xl md:text-5xl font-bold mb-4">{t("title")}</h1>
         <p className="text-xl text-muted-foreground">{t("subtitle")}</p>

@@ -12,7 +12,7 @@ export default function HomePageClient(
 ) {
   const t = useTranslations();
   return (
-    <div className="flex-1 overflow-y-auto scrollbar-thin py-10 sm:py-18 space-y-12 sm:space-y-24">
+    <div className="py-10 sm:py-18 space-y-12 sm:space-y-24">
       <div className="text-center space-y-6">
         <h1
           className={cn(

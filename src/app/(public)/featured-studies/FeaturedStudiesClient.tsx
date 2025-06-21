@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ExtractServerActionData } from "@/lib/serverAction";
-import { cn } from "@/lib/utils";
 import { ExternalLinkIcon, FileTextIcon, Loader2Icon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
@@ -127,7 +126,7 @@ export default function FeaturedStudiesClient() {
   };
 
   return (
-    <div className={cn("flex-1 overflow-y-auto scrollbar-thin", "py-4 md:py-6 px-4 md:px-6")}>
+    <div className="py-4 md:py-6 px-4 md:px-6">
       <div className=" flex flex-col items-center gap-4 md:gap-6 max-w-screen-2xl mx-auto">
         <h1 className="text-2xl md:text-3xl font-bold text-center">{t("title")}</h1>
         <p className="text-muted-foreground mt-1 text-center text-sm md:text-base max-w-lg">

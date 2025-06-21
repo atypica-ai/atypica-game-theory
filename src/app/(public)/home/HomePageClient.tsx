@@ -11,7 +11,7 @@ export default function HomePageClient(
   }: { anonymous: boolean },
 ) {
   return (
-    <div className="flex-1 overflow-y-auto scrollbar-thin">
+    <div>
       <HeroSection />
       <FeaturesSection />
       {/* <DemoSection /> */}

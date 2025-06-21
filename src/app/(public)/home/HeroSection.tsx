@@ -9,8 +9,8 @@ export function HeroSection() {
   const t = useTranslations("HomePage.HeroSection");
 
   return (
-    <div className="hero-grid relative px-4 py-12 sm:py-40">
-      <div className="relative z-10 max-w-4xl mx-auto text-center space-y-8">
+    <div className="hero-grid px-4 py-12 sm:py-40">
+      <div className="max-w-4xl mx-auto text-center space-y-8">
         {/* Logo/Brand */}
         <div className="reveal-up mb-16">
           <h1
@@ -31,7 +31,7 @@ export function HeroSection() {
           </h1>
           {/* <div
             className={cn(
-              "relative w-[300px] h-[100px] sm:w-[480px] sm:h-[160px] max-w-10/12 mx-auto animate-in fade-in slide-in-from-bottom-4 duration-1000",
+              "w-[300px] h-[100px] sm:w-[480px] sm:h-[160px] max-w-10/12 mx-auto animate-in fade-in slide-in-from-bottom-4 duration-1000",
               "hidden dark:block mb-4",
             )}
           >

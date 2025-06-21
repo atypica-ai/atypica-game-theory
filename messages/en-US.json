@@ -735,9 +735,23 @@
       "myStudies": "My Projects",
       "featuredStudies": "Featured Studies",
       "pricing": "Pricing",
-      "changelog": "Roadmap",
-      "about": "About",
-      "personaSimulation": "Real Person Agents"
+      "changelog": "Changelog",
+      "about": "About atypica.AI",
+      "personaSimulation": "Persona Simulation",
+      "product": "Product"
+    },
+    "GlobalFooter": {
+      "tagline": "Modeling the Subjective World with AI",
+      "copyright": "© {year} BMRLab. All rights reserved.",
+      "product": "Product",
+      "featuredStudies": "Featured Studies",
+      "personaSimulation": "Persona Simulation",
+      "pricing": "Pricing",
+      "company": "Company",
+      "about": "About atypica.AI",
+      "changelog": "Changelog",
+      "terms": "Terms and Conditions",
+      "privacy": "Privacy Policy"
     },
     "TokenAlertDialog": {
       "confirmOperation": "Confirm Operation",

@@ -735,9 +735,23 @@
       "myStudies": "我的项目",
       "featuredStudies": "精选研究",
       "pricing": "价格",
-      "changelog": "项目历程",
-      "about": "关于",
-      "personaSimulation": "真人智能体"
+      "changelog": "更新日志",
+      "about": "关于 atypica.AI",
+      "personaSimulation": "真人模拟",
+      "product": "产品"
+    },
+    "GlobalFooter": {
+      "tagline": "为「主观世界」建模",
+      "copyright": "© {year} BMRLab. 保留所有权利。",
+      "product": "产品",
+      "featuredStudies": "精选研究",
+      "personaSimulation": "真人模拟",
+      "pricing": "价格",
+      "company": "公司",
+      "about": "关于 atypica.AI",
+      "changelog": "更新日志",
+      "terms": "服务条款",
+      "privacy": "隐私政策"
     },
     "TokenAlertDialog": {
       "confirmOperation": "确认操作",
