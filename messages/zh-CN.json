@@ -490,6 +490,10 @@
     }
   },
   "StudyPage": {
+    "NewStudy": {
+      "startYourStudy": "开始您的研究",
+      "newStudyHint": "询问任何消费者决策问题——我们将访谈AI画像来揭示真实动机"
+    },
     "ShareReplayButton": {
       "shareReplay": "分享回放",
       "title": "回放链接",

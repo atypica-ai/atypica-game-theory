@@ -2,6 +2,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/prisma/prisma";
 import { getServerSession } from "next-auth/next";
 import { forbidden, notFound, redirect } from "next/navigation";
+import { NewStudyPageClient } from "./NewStudyPageClient";
 
 export default async function StudyPage({
   searchParams,
@@ -17,8 +18,7 @@ export default async function StudyPage({
   }
 
   if (!id) {
-    // redirect("/");
-    // TODO: 渲染开始研究的页面
+    return <NewStudyPageClient />;
   }
 
   const studyUserChatId = parseInt(id);

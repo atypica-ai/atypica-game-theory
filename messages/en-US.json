@@ -490,6 +490,10 @@
     }
   },
   "StudyPage": {
+    "NewStudy": {
+      "startYourStudy": "Start Your Study",
+      "newStudyHint": "Ask about any consumer decision - we'll interview AI personas to uncover the real motivations"
+    },
     "ShareReplayButton": {
       "shareReplay": "Share Replay",
       "title": "Replay URL",
