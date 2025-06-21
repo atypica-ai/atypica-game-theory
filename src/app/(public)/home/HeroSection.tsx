@@ -3,7 +3,6 @@ import { NewStudyInputBox } from "@/components/NewStudyInputBox";
 import { cn } from "@/lib/utils";
 import { CommandIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import Image from "next/image";
 
 export function HeroSection() {
   const tRoot = useTranslations();
@@ -22,7 +21,15 @@ export function HeroSection() {
           >
             atypica.AI
           </h1>
-          <div
+          <h1
+            className={cn(
+              "text-6xl sm:text-7xl lg:text-8xl tracking-tight text-primary font-semibold",
+              "font-EuclidCircularA hidden dark:block mb-8",
+            )}
+          >
+            atypica.AI
+          </h1>
+          {/* <div
             className={cn(
               "relative w-[300px] h-[100px] sm:w-[480px] sm:h-[160px] max-w-10/12 mx-auto animate-in fade-in slide-in-from-bottom-4 duration-1000",
               "hidden dark:block mb-4",
@@ -35,7 +42,7 @@ export function HeroSection() {
               priority
               className="object-contain dark:block hidden"
             />
-          </div>
+          </div> */}
           {/* <div className="font-mono text-lg text-muted-foreground tracking-wide typing-animation">
             {t("subtitle")}
           </div> */}

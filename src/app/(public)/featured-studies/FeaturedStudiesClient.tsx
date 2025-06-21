@@ -6,7 +6,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn } from "@/lib/utils";
-import { Loader2Icon } from "lucide-react";
+import { ExternalLinkIcon, FileTextIcon, Loader2Icon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -85,7 +85,7 @@ export default function FeaturedStudiesClient() {
         {studies.map((study) => (
           <Card key={study.id} className="flex flex-col h-full">
             <CardHeader className="flex items-center">
-              <HippyGhostAvatar seed={study.id} className="size-6" />
+              <HippyGhostAvatar seed={study.id} className="shrink-0 size-8" />
               <CardTitle className="text-sm font-normal truncate">{study.analyst.role}</CardTitle>
               <div className="ml-auto text-xs md:text-sm text-muted-foreground">
                 {getAnalystKindLabel(study.analyst.kind)}
@@ -98,9 +98,25 @@ export default function FeaturedStudiesClient() {
               </p>
             </CardContent>
             <CardFooter>
-              <Button variant="outline" asChild className="w-full text-xs md:text-sm">
+              {/* <Button variant="outline" asChild className="w-full text-xs md:text-sm">
                 <Link href={`/study/${study.studyUserChat.token}/share?replay=1`} target="_blank">
                   {t("viewStudy")}
+                </Link>
+              </Button> */}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full group-hover:bg-muted transition-colors"
+                asChild
+              >
+                <Link
+                  href={`/study/${study.studyUserChat.token}/share?replay=1`}
+                  target="_blank"
+                  className="flex items-center gap-2"
+                >
+                  <FileTextIcon className="h-3 w-3" />
+                  <span>{t("viewStudy")}</span>
+                  <ExternalLinkIcon className="h-3 w-3" />
                 </Link>
               </Button>
             </CardFooter>

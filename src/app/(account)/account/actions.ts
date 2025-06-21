@@ -62,16 +62,23 @@ export async function fetchTokensHistory(
         //   where: { userId },
         // })).length,
         const result = await prisma.$queryRaw<Array<{ count: bigint }>>`
-        SELECT
-          COUNT(*) as count
-        FROM "UserTokensLog"
-        WHERE "userId" = ${userId}
-        GROUP BY
-          "userId",
-          "resourceType",
-          "resourceId",
-          "verb",
-          CASE WHEN "resourceType" IS NULL THEN "id" ELSE NULL END
+        SELECT COUNT(*) as count
+        FROM (
+          SELECT
+            "userId",
+            "resourceType",
+            "resourceId",
+            "verb",
+            CASE WHEN "resourceType" IS NULL THEN "id" ELSE NULL END
+          FROM "UserTokensLog"
+          WHERE "userId" = ${userId}
+          GROUP BY
+            "userId",
+            "resourceType",
+            "resourceId",
+            "verb",
+            CASE WHEN "resourceType" IS NULL THEN "id" ELSE NULL END
+        ) as grouped_data
       `;
         return Number(result[0].count);
       })(),

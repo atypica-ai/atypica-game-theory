@@ -19,18 +19,18 @@ import { UserSubscription, UserSubscriptionExtra } from "@/prisma/client";
 import { CalendarIcon, CircleDollarSignIcon, CreditCardIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import Stripe from "stripe";
-import { PaymentHistory } from "./PaymentHistory";
-import { TokensHistory } from "./TokensHistory";
 import { cancelSubscriptionAction, stripeSubscriptionAction } from "./actions";
 
-export function AccountPageClient({
+export function AccountLayout({
   userTokens,
   activeSubscription,
   planExpiresAt,
   stripeSubscriptionId,
+  children,
 }: (
   | {
       activeSubscription: Omit<UserSubscription, "extra"> & { extra: UserSubscriptionExtra };
@@ -47,9 +47,12 @@ export function AccountPageClient({
     monthlyBalance: number;
     monthlyResetAt: Date | null;
   } | null;
+  children: React.ReactNode;
 }) {
   const t = useTranslations("AccountPage");
   const locale = useLocale();
+  const pathname = usePathname();
+  const router = useRouter();
   const [isAddTokensOpen, setIsAddTokensOpen] = useState(false);
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
   const [isCanceling, setIsCanceling] = useState(false);
@@ -57,6 +60,20 @@ export function AccountPageClient({
     Stripe.Subscription,
     "id" | "status"
   > | null>(null);
+
+  // Determine current tab based on pathname
+  const getCurrentTab = () => {
+    if (pathname.includes("/payment")) return "payment";
+    return "tokens"; // default to tokens
+  };
+
+  const handleTabChange = (value: string) => {
+    if (value === "tokens") {
+      router.push("/account/tokens");
+    } else if (value === "payment") {
+      router.push("/account/payment");
+    }
+  };
 
   useEffect(() => {
     if (stripeSubscriptionId) {
@@ -268,16 +285,14 @@ export function AccountPageClient({
             </CardFooter>
           </Card>
         </div>
-        <Tabs defaultValue="Tokens" className="mb-6">
+
+        <Tabs value={getCurrentTab()} onValueChange={handleTabChange} className="mb-6">
           <TabsList>
-            <TabsTrigger value="Tokens">{t("tokensHistorySection.title")}</TabsTrigger>
-            <TabsTrigger value="Payments">{t("paymentRecordsSection.title")}</TabsTrigger>
+            <TabsTrigger value="tokens">{t("tokensHistorySection.title")}</TabsTrigger>
+            <TabsTrigger value="payment">{t("paymentRecordsSection.title")}</TabsTrigger>
           </TabsList>
-          <TabsContent value="Tokens" className="mt-4">
-            <TokensHistory />
-          </TabsContent>
-          <TabsContent value="Payments" className="mt-4">
-            <PaymentHistory />
+          <TabsContent value={getCurrentTab()} className="mt-4">
+            {children}
           </TabsContent>
         </Tabs>
       </div>

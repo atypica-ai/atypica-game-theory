@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { fetchTokensHistory } from "./actions";
 
 export function TokensHistory() {
@@ -30,7 +30,35 @@ export function TokensHistory() {
   const locale = useLocale();
   const [tokensHistory, setTokensHistory] = useState<UserTokensLog[]>([]);
   const [historyIsLoading, setHistoryIsLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState<number | null>(null);
+
+  // Initialize page from URL on load
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      const pageParam = url.searchParams.get("page");
+      if (pageParam) {
+        setCurrentPage(parseInt(pageParam, 10));
+      } else {
+        setCurrentPage(1);
+      }
+    }
+  }, []);
+
+  // Update URL when page changes (but only if page > 1)
+  useEffect(() => {
+    if (currentPage === null) return;
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      if (currentPage > 1) {
+        url.searchParams.set("page", currentPage.toString());
+      } else {
+        url.searchParams.delete("page");
+      }
+      window.history.replaceState({}, "", url.toString());
+    }
+  }, [currentPage]);
+
   const [pagination, setPagination] = useState<{
     page: number;
     pageSize: number;
@@ -38,26 +66,27 @@ export function TokensHistory() {
     totalPages: number;
   } | null>(null);
 
-  // Fetch token history when the component mounts or page changes
-  useEffect(() => {
-    async function loadTokensHistory() {
-      setHistoryIsLoading(true);
-      try {
-        const result = await fetchTokensHistory(currentPage, 10);
-        if (result.success) {
-          setTokensHistory(result.data);
-          if (result.pagination) {
-            setPagination(result.pagination);
-          }
+  const loadTokensHistory = useCallback(async () => {
+    if (currentPage === null) return;
+    setHistoryIsLoading(true);
+    try {
+      const result = await fetchTokensHistory(currentPage, 10);
+      if (result.success) {
+        setTokensHistory(result.data);
+        if (result.pagination) {
+          setPagination(result.pagination);
         }
-      } catch (error) {
-        console.error("Failed to fetch tokens history:", error);
-      } finally {
-        setHistoryIsLoading(false);
       }
+    } catch (error) {
+      console.error("Failed to fetch tokens history:", error);
+    } finally {
+      setHistoryIsLoading(false);
     }
-    loadTokensHistory();
   }, [currentPage]);
+
+  useEffect(() => {
+    loadTokensHistory();
+  }, [loadTokensHistory]);
 
   return (
     <Card>
