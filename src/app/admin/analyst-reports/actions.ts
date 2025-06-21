@@ -1,7 +1,7 @@
 "use server";
+import { generateReportScreenshot } from "@/app/(study)/artifacts/lib/screenshot";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
-import { generateReportScreenshot } from "@/app/artifacts/lib/screenshot";
 import { s3SignedUrl } from "@/lib/attachments/s3";
 import { ServerActionResult } from "@/lib/serverAction";
 import { Analyst, AnalystReport, AnalystReportExtra, User } from "@/prisma/client";

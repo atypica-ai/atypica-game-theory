@@ -1,5 +1,5 @@
 "use server";
-import { fetchActiveUserSubscription } from "@/app/account/lib";
+import { fetchActiveUserSubscription } from "@/app/(account)/account/lib";
 import { PaymentMethod, ProductName } from "@/app/payment/data";
 import { getRequestClientIp, getRequestOrigin } from "@/lib/request/headers";
 import { Currency } from "@/prisma/client";

@@ -1,5 +1,5 @@
 "use client";
-import { createStudyUserChat } from "@/app/study/actions";
+import { createStudyUserChat } from "@/app/(study)/study/actions";
 import { FileAttachment } from "@/components/chat/FileAttachment";
 import {
   FileUploadButton,

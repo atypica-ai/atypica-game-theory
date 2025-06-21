@@ -1,6 +1,6 @@
 import "server-only";
 
-import { fetchActiveUserSubscription } from "@/app/account/lib";
+import { fetchActiveUserSubscription } from "@/app/(account)/account/lib";
 import { ProductName } from "@/app/payment/data";
 import { rootLogger } from "@/lib/logging";
 import { PaymentRecord, SubscriptionPlan, UserTokensLogVerb } from "@/prisma/client";

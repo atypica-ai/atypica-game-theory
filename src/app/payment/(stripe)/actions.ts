@@ -1,5 +1,5 @@
 "use server";
-import { fetchActiveUserSubscription } from "@/app/account/lib";
+import { fetchActiveUserSubscription } from "@/app/(account)/account/lib";
 import {
   PaymentMethod,
   ProductName,

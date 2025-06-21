@@ -4,8 +4,8 @@ import {
   persistentAIMessageToDB,
   prepareMessagesForStreaming,
 } from "@/ai/messageUtils";
+import { studyAgentRequest } from "@/app/(study)/api/chat/study/studyAgentRequest";
 import { checkAdminAuth } from "@/app/admin/actions";
-import { studyAgentRequest } from "@/app/api/chat/study/studyAgentRequest";
 import { rootLogger } from "@/lib/logging";
 import { ServerActionResult } from "@/lib/serverAction";
 import { PaymentRecord, User, UserChat, UserTokens } from "@/prisma/client";

@@ -9,8 +9,8 @@ import {
 import { llm, LLMModelName, providerOptions } from "@/ai/provider";
 import { PlainTextToolResult, StatReporter } from "@/ai/tools/types";
 import { AnalystKind } from "@/app/(public)/featured-studies/data";
-import { triggerImagegenInReport } from "@/app/artifacts/lib/imagegen";
-import { generateReportScreenshot } from "@/app/artifacts/lib/screenshot";
+import { triggerImagegenInReport } from "@/app/(study)/artifacts/lib/imagegen";
+import { generateReportScreenshot } from "@/app/(study)/artifacts/lib/screenshot";
 import { fileUrlToDataUrl } from "@/lib/attachments/actions";
 import { ChatMessageAttachment } from "@/lib/attachments/types";
 import { fixMalformedUnicodeString, generateToken } from "@/lib/utils";

@@ -1,6 +1,6 @@
 import { GenerateReportResult } from "@/ai/tools/types";
-import { fetchAnalystReportByToken } from "@/app/study/actions";
-import { AnalystReportShareButton } from "@/app/study/components/AnalystReportShareButton";
+import { fetchAnalystReportByToken } from "@/app/(study)/study/actions";
+import { AnalystReportShareButton } from "@/app/(study)/study/components/AnalystReportShareButton";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { ToolInvocation } from "ai";
 import { useTranslations } from "next-intl";

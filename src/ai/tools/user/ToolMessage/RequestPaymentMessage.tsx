@@ -1,6 +1,6 @@
 import { RequestPaymentResult } from "@/ai/tools/types";
-import { getUserTokensBalance } from "@/app/account/actions";
-import { useStudyContext } from "@/app/study/hooks/StudyContext";
+import { getUserTokensBalance } from "@/app/(account)/account/actions";
+import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
 import { Button } from "@/components/ui/button";
 import { ToolInvocation } from "ai";
 import { CoinsIcon, MessageCircleQuestionIcon } from "lucide-react";

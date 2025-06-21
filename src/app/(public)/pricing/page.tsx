@@ -1,4 +1,4 @@
-import { fetchActiveUserSubscription } from "@/app/account/lib";
+import { fetchActiveUserSubscription } from "@/app/(account)/account/lib";
 import { authOptions } from "@/lib/auth";
 import { Metadata } from "next";
 import { getServerSession } from "next-auth";

@@ -542,10 +542,10 @@
       "viewToolCall": "查看过程"
     },
     "StatusDisplay": {
-      "background": "atypica 正在后台执行中",
+      "background": "正在执行中",
       "outOfQuota": "研究额度已经用完",
       "waitForUser": "等待您的操作",
-      "thinking": "atypica 正在思考中",
+      "thinking": "正在思考中",
       "processing": "正在处理您的请求",
       "complete": "处理完成 ✨",
       "error": "出现错误，请刷新页面后重试",
