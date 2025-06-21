@@ -31,6 +31,15 @@ const AWS_S3_CONFIG: {
 // });
 // const s3Bucket = process.env.AWS_S3_BUCKET_NAME!;
 
+function getDefaultSignedUrlParams() {
+  const signingDate = new Date();
+  signingDate.setHours(0, 0, 0, 0);
+  return {
+    signingDate,
+    expiresIn: 48 * 3600, // URL expires in 48 hours
+  };
+}
+
 /**
  * @todo 要从 objectUrl 里面识别和获取 s3 bucket 并判断是否支持签名
  */
@@ -71,7 +80,7 @@ export async function s3SignedUrl(objectUrl: string): Promise<string> {
   });
 
   const signedUrl = await getSignedUrl(s3Client, getObjectCommand, {
-    expiresIn: 3600, // URL expires in 1 hour
+    ...getDefaultSignedUrlParams(),
   });
 
   return signedUrl;
@@ -117,7 +126,7 @@ export async function s3UploadCredentials({
   });
 
   const getObjectUrl = await getSignedUrl(s3Client, getObjectCommand, {
-    expiresIn: 3600, // URL expires in 1 hour
+    ...getDefaultSignedUrlParams(),
   });
 
   const objectUrl = getObjectUrl.split("?")[0];
@@ -166,7 +175,7 @@ export async function uploadToS3({
   });
 
   const getObjectUrl = await getSignedUrl(s3Client, getObjectCommand, {
-    expiresIn: 3600, // URL expires in 1 hour
+    ...getDefaultSignedUrlParams(),
   });
 
   const objectUrl = getObjectUrl.split("?")[0];
