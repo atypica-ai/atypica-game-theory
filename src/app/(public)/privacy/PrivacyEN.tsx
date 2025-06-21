@@ -15,20 +15,20 @@ export const PrivacyEN: React.FC = () => {
 
           <div className="space-y-4">
             <p>
-              atypica.AI (hereinafter referred to as "we") has always been committed to protecting
-              users' personal information. In accordance with applicable data protection laws and
-              regulations, including but not limited to the General Data Protection Regulation
-              (GDPR), California Consumer Privacy Act (CCPA), and other relevant privacy laws in
-              jurisdictions where we operate, we have formulated the atypica.AI Privacy Policy
-              (hereinafter referred to as "this Privacy Policy") to explain to you how we will
-              collect, use, share, transfer, and disclose this information when you use our products
-              and/or services, as well as the methods we provide for you to access, update, delete,
-              and protect this information. We are committed to maintaining your trust in us and
-              adhering to the following principles to protect your personal information: the
-              principle of consistent rights and responsibilities, the principle of clear purpose,
-              the principle of consent, the principle of minimum necessity, the principle of
-              ensuring security, the principle of subject participation, and the principle of
-              transparency.
+              atypica.AI (hereinafter referred to as &quot;we&quot;) has always been committed to
+              protecting users&apos; personal information. In accordance with applicable data
+              protection laws and regulations, including but not limited to the General Data
+              Protection Regulation (GDPR), California Consumer Privacy Act (CCPA), and other
+              relevant privacy laws in jurisdictions where we operate, we have formulated the
+              atypica.AI Privacy Policy (hereinafter referred to as &quot;this Privacy Policy&quot;)
+              to explain to you how we will collect, use, share, transfer, and disclose this
+              information when you use our products and/or services, as well as the methods we
+              provide for you to access, update, delete, and protect this information. We are
+              committed to maintaining your trust in us and adhering to the following principles to
+              protect your personal information: the principle of consistent rights and
+              responsibilities, the principle of clear purpose, the principle of consent, the
+              principle of minimum necessity, the principle of ensuring security, the principle of
+              subject participation, and the principle of transparency.
             </p>
 
             <div className="border-l-4 border-gray-400 pl-4">
@@ -356,8 +356,8 @@ export const PrivacyEN: React.FC = () => {
               store on your computer or mobile device a local storage called Cookies, Flash Cookies,
               or other local storage provided by the browser or associated applications, which
               usually contain identifiers, site names, and some numbers and characters (collectively
-              referred to as "Cookies"). With the help of Cookies, the website can store your
-              preferences or data. We will not use Cookies for any purposes other than those
+              referred to as &quot;Cookies&quot;). With the help of Cookies, the website can store
+              your preferences or data. We will not use Cookies for any purposes other than those
               described in this Privacy Policy. You can manage or delete Cookies according to your
               preferences. You can clear all Cookies saved on your computer. Most web browsers
               automatically accept Cookies, but you can usually modify your browser settings to
@@ -639,8 +639,8 @@ export const PrivacyEN: React.FC = () => {
                   contact us through the contact information agreed at the bottom of this privacy
                   policy. If you find that your personal information has been leaked, especially if
                   your account has been compromised, please immediately contact us through the
-                  contact information agreed in Article 8 "How to Contact Us" of this privacy
-                  policy, so that we can take corresponding measures.
+                  contact information agreed in Article 8 &quot;How to Contact Us&quot; of this
+                  privacy policy, so that we can take corresponding measures.
                 </p>
               </div>
             </div>
@@ -774,14 +774,14 @@ export const PrivacyEN: React.FC = () => {
 
         <section>
           <h2 className="text-xl font-bold mt-12 mb-6 border-b border-gray-300 pb-2">
-            6. Protection of Minors' Personal Information
+            6. Protection of Minors&apos; Personal Information
           </h2>
 
           <div className="space-y-4">
             <div className="border-l-4 border-gray-400 pl-4">
               <p className="text-sm">
-                We attach great importance to the protection of minors' personal information. When
-                using our products or services, we presume that you have the appropriate legal
+                We attach great importance to the protection of minors&apos; personal information.
+                When using our products or services, we presume that you have the appropriate legal
                 capacity. If you are under the age of majority in your jurisdiction (typically 18
                 years old), you should obtain the written consent of your parent or legal guardian
                 in advance before using our products or services. We will protect the personal
@@ -793,10 +793,10 @@ export const PrivacyEN: React.FC = () => {
             <div className="border border-gray-300 p-4">
               <h4 className="font-semibold mb-2">Parental Consent</h4>
               <p className="text-sm">
-                For the collection of minors' personal information with the consent of parents or
-                legal guardians, we will only use, share, transfer or disclose this information when
-                it is permitted by law, explicitly agreed by parents or guardians, or necessary to
-                protect minors.
+                For the collection of minors&apos; personal information with the consent of parents
+                or legal guardians, we will only use, share, transfer or disclose this information
+                when it is permitted by law, explicitly agreed by parents or guardians, or necessary
+                to protect minors.
               </p>
             </div>
 
@@ -806,7 +806,7 @@ export const PrivacyEN: React.FC = () => {
                 If we find that a minor has registered and used our products or services without
                 actually obtaining the consent of parents or legal guardians, we will temporarily
                 freeze the account, and it will not be able to use our products or services. At the
-                same time, we will try to contact the guardian and strive to delete the minor's
+                same time, we will try to contact the guardian and strive to delete the minor&apos;s
                 personal information as soon as possible.
               </p>
             </div>
@@ -848,7 +848,7 @@ export const PrivacyEN: React.FC = () => {
               <ul className="space-y-1 text-sm">
                 <li>• Significant changes in our business model</li>
                 <li>
-                  • Significant changes in our company's ownership structure and organizational
+                  • Significant changes in our company&apos;s ownership structure and organizational
                   structure
                 </li>
                 <li>

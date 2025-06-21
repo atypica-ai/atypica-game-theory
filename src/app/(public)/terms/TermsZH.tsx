@@ -10,11 +10,12 @@ export const TermsZH: React.FC = () => {
       </header>
 
       <div className="space-y-8 leading-relaxed">
-        <p>欢迎使用 atypica.AI（以下简称"本服务"）！</p>
+        <p>欢迎使用 atypica.AI（以下简称&quot;本服务&quot;）！</p>
 
         <p>
-          atypica.AI 是由 BMRLab（以下简称"我们"）独立开发，主要提供基于语言模型的商业研究服务，通过
-          "Creative Reasoning"
+          atypica.AI 是由
+          BMRLab（以下简称&quot;我们&quot;）独立开发，主要提供基于语言模型的商业研究服务，通过
+          &quot;Creative Reasoning&quot;
           智能体框架理解和模拟消费者的主观决策过程，帮助企业洞察那些难以量化的因素（如情绪、认知和偏好），从而优化商业决策和策略制定。任何单位或个人使用本服务之前，应当认真阅读并严格遵守本协议的全部内容（尤其是加粗和/或下划线的内容）。本协议同样适用于您使用本服务任何后续升级或更新的版本。我们有权在法律范围内不定期修订本协议的内容，如果您不同意本协议的内容，您有权停止使用本服务。
           <strong>
             <u>
@@ -250,7 +251,7 @@ export const TermsZH: React.FC = () => {
             <div className="border-l-4 border-gray-400 pl-4">
               <h4 className="font-semibold mb-2">特别提醒</h4>
               <p className="text-sm">
-                您向本服务提交的文本内容合称"输入"，本服务通过AI等技术能力接收或响应您的输入而生成的内容合称"输出"。
+                您向本服务提交的文本内容合称&quot;输入&quot;，本服务通过AI等技术能力接收或响应您的输入而生成的内容合称&quot;输出&quot;。
                 <strong>
                   您基于本服务对输入和/或输出内容的使用独立承担法律责任。为避免疑问，如输入和/或输出本身包含了第三方享有知识产权或其他合法权益的内容，则前述输入和/或输出的相应权利仍由该第三方享有，不改变其权属关系。
                 </strong>
