@@ -3,255 +3,228 @@ import React from "react";
 
 export const TermsZH: React.FC = () => {
   return (
-    <div className="px-6 py-12 container mx-auto max-w-4xl">
-      <div className="mb-8 text-center">
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">atypica.AI 用户协议</h1>
-        <p className="text-lg text-gray-600">版本日期：2025年04月01日</p>
-      </div>
-      <div className="prose prose-lg max-w-none">
-        <p className="text-lg leading-relaxed text-gray-700 mb-6">
-          欢迎使用 atypica.AI（以下简称&ldquo;本服务&rdquo;）！
-        </p>
-        <p className="mb-6 leading-relaxed text-gray-700">
-          atypica.AI 是由
-          BMRLab（以下简称&ldquo;我们&rdquo;）独立开发，主要提供基于语言模型的商业研究服务，通过
-          &ldquo;Creative Reasoning&rdquo;
-          智能体框架理解和模拟消费者的主观决策过程，帮助企业洞察那些难以量化的因素（如情绪、认知和偏好），从而优化商业决策和策略制定。任何单位或个人使用本服务之前，应当认真阅读并严格遵守本协议的全部内容（尤其是加粗和/或下划线的内容）。本协议同样适用于您使用本服务任何后续升级或更新的版本。我们有权在法律范围内不定期修订本协议的内容，如果您不同意本协议的内容，您有权停止使用本服务，
-          <strong className="text-blue-700 bg-blue-50 px-2 py-1 rounded">
+    <div className="max-w-4xl mx-auto px-6 py-12">
+      <header className="text-center mb-12">
+        <h1 className="text-2xl font-bold mb-2">atypica.AI 用户协议</h1>
+        <p className="text-gray-600">版本日期：2025年04月01日</p>
+      </header>
+
+      <div className="space-y-8 leading-relaxed">
+        <p>欢迎使用 atypica.AI（以下简称"本服务"）！</p>
+
+        <p>
+          atypica.AI 是由 BMRLab（以下简称"我们"）独立开发，主要提供基于语言模型的商业研究服务，通过
+          "Creative Reasoning"
+          智能体框架理解和模拟消费者的主观决策过程，帮助企业洞察那些难以量化的因素（如情绪、认知和偏好），从而优化商业决策和策略制定。任何单位或个人使用本服务之前，应当认真阅读并严格遵守本协议的全部内容（尤其是加粗和/或下划线的内容）。本协议同样适用于您使用本服务任何后续升级或更新的版本。我们有权在法律范围内不定期修订本协议的内容，如果您不同意本协议的内容，您有权停止使用本服务。
+          <strong>
             <u>
               您一旦勾选 atypica.AI 用户协议或使用 atypica.AI，即视为您同意遵守本协议中的全部内容。
             </u>
           </strong>
         </p>
-        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-8">
-          <p className="text-yellow-800 font-semibold">
+
+        <div className="border-l-4 border-gray-400 pl-4">
+          <p className="font-medium">
             <u>
               若您未满18周岁，请在您的法定监护人陪同下阅读本协议，并在征得您法定监护人同意的前提下使用本产品。
             </u>
           </p>
         </div>
-        <h2 className="text-2xl font-bold text-gray-900 mt-10 mb-6 pb-2 border-b-2 border-gray-200">
-          1. 账号管理
-        </h2>
-        <div className="mb-8">
-          <h3 className="text-xl font-semibold text-gray-800 mb-4">账号注册及登录使用</h3>
-          <ul className="space-y-3 text-gray-700 ml-4">
-            <li className="flex items-start">
-              <span className="text-blue-500 mr-2 mt-1">•</span>
-              <span>
-                您首次使用本服务时需要按页面提示完成账号注册程序。您可以选择手机号、邮箱完成注册；我们为企业客户提供SSO登录配置服务。
-              </span>
-            </li>
-            <li className="flex items-start">
-              <span className="text-blue-500 mr-2 mt-1">•</span>
-              <span>
-                在您完成注册程序或以其他方式使用本服务时，您应当是具备完全民事权利能力和完全民事行为能力的自然人、法人或其他组织。
-              </span>
-            </li>
-            <li className="flex items-start">
-              <span className="text-blue-500 mr-2 mt-1">•</span>
-              <span>
-                您应妥善保管您的登录账号、密码、验证码等账号信息，我们不会主动问您索要您的账号登录密码、手机验证码。所有通过该账号执行的操作均视为您本人的行为，由此产生的后果（包括但不限于账号被盗、密码泄露等）由您自行承担。
-              </span>
-            </li>
-            <li className="flex items-start">
-              <span className="text-blue-500 mr-2 mt-1">•</span>
-              <span>
-                通常情况下，一个用户账号对应唯一的用户ID，您的用户ID是您进行一切活动的唯一身份标识，您应当对您账号项下进行的所有活动和事件负法律责任。若您为企业用户，您账号项下的全部行为视为企业的行为。
-              </span>
-            </li>
-          </ul>
+
+        <div className="border-l-4 border-gray-400 pl-4">
+          <p className="font-medium">
+            <u>
+              特别提醒：您使用本服务在直接涉及个人切身利益的高风险领域提供建议、推荐意见或作出主观决策时，您应当邀请相关领域的专业人员在内容传播或决策最终确定前对其进行审查。高风险用例包括但不限于法律咨询、医疗保健、金融、保险、就业、住房、择校、专业新闻内容等。
+            </u>
+          </p>
         </div>
-        <div className="mb-8">
-          <h3 className="text-xl font-semibold text-gray-800 mb-4">账号冻结、注销及申诉</h3>
+
+        <section>
+          <h2 className="text-xl font-bold mt-12 mb-6 border-b border-gray-300 pb-2">
+            1. 账号管理
+          </h2>
+
           <div className="space-y-6">
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <h4 className="font-semibold text-red-800 mb-2">【冻结】</h4>
-              <p className="text-red-700 text-sm leading-relaxed">
-                当发生如下情况时，我们有权冻结您的账号，我们将通过邮件、网页弹窗或其他方式通知您：（1）您违反本协议或本服务其他协议/条款/产品使用规则的；（2）我们根据合理分析及判断您的账户操作行为存在异常的；（3）您的行为遭到他人投诉或举报，且对方已经提供了相关证据，您未按照我们的要求在指定期限内提供相反证据的；（4）政府/司法机关要求进行冻结的；（5）其他违反国家法律、法规、政策规定的。
-              </p>
+            <div>
+              <h3 className="text-lg font-semibold mb-3">账号注册及登录使用</h3>
+              <ul className="space-y-2 ml-4">
+                <li>
+                  •
+                  您首次使用本服务时需要按页面提示完成账号注册程序。您可以选择手机号、邮箱完成注册；我们为企业客户提供SSO登录配置服务。
+                </li>
+                <li>
+                  •
+                  在您完成注册程序或以其他方式使用本服务时，您应当是具备完全民事权利能力和完全民事行为能力的自然人、法人或其他组织。
+                </li>
+                <li>
+                  •
+                  您应妥善保管您的登录账号、密码、验证码等账号信息，我们不会主动问您索要您的账号登录密码、手机验证码。所有通过该账号执行的操作均视为您本人的行为，由此产生的后果（包括但不限于账号被盗、密码泄露等）由您自行承担。
+                </li>
+                <li>
+                  •
+                  通常情况下，一个用户账号对应唯一的用户ID，您的用户ID是您进行一切活动的唯一身份标识，您应当对您账号项下进行的所有活动和事件负法律责任。若您为企业用户，您账号项下的全部行为视为企业的行为。
+                </li>
+              </ul>
             </div>
 
-            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-              <h4 className="font-semibold text-orange-800 mb-2">【注销】</h4>
-              <p className="text-orange-700 text-sm leading-relaxed mb-2">
-                您可以向我们的邮箱发送账号注销申请，
-                <strong className="bg-orange-100 px-1 rounded">
+            <div>
+              <h3 className="text-lg font-semibold mb-3">账号冻结、注销及申诉</h3>
+
+              <div className="space-y-4">
+                <div className="border border-gray-300 p-4">
+                  <h4 className="font-semibold mb-2">冻结</h4>
+                  <p className="text-sm">
+                    当发生如下情况时，我们有权冻结您的账号，我们将通过邮件、网页弹窗或其他方式通知您：（1）您违反本协议或本服务其他协议/条款/产品使用规则的；（2）我们根据合理分析及判断您的账户操作行为存在异常的；（3）您的行为遭到他人投诉或举报，且对方已经提供了相关证据，您未按照我们的要求在指定期限内提供相反证据的；（4）政府/司法机关要求进行冻结的；（5）其他违反国家法律、法规、政策规定的。
+                  </p>
+                </div>
+
+                <div className="border border-gray-300 p-4">
+                  <h4 className="font-semibold mb-2">注销</h4>
+                  <p className="text-sm">
+                    您可以向我们的邮箱发送账号注销申请。
+                    <strong>
+                      <u>
+                        请您注意，一旦注销了账号，您在本服务上的全部内容（包括但不限于账号信息、历史对话等）将会被永久删除。您仍应对注销账号前使用本服务期间的行为承担相应责任。
+                      </u>
+                    </strong>
+                  </p>
+                  <p className="text-sm mt-2">
+                    当发生如下情况时，您的账号将被注销：（1）国家权力机关强制要求的；（2）您个人申请/操作注销程序的；（3）您违反本协议或本服务其他协议/条款/规则，您的账号被冻结，我们在向您发送书面通知后的30日内您未作出任何明确反馈的；（4）您的账号已经连续24个月未登录，且不存在任何未到期/未使用的服务的，我们有权给您发送书面通知后的15个工作日内对您的账号完成注销程序。
+                  </p>
+                </div>
+
+                <div className="border border-gray-300 p-4">
+                  <h4 className="font-semibold mb-2">申诉</h4>
+                  <p className="text-sm">
+                    发生上述账号冻结或注销情况，您应及时予以关注，若您有异议的，您可以按照本协议第十条的联系方式向我们进行申诉，为了您的账户安全，您应配合我们如实提供身份证明及相关材料，以便我们进行核实。在接到您的申诉申请后，我们将15个工作日内进行处理，您充分理解，我们有权按照合理的判断同意或驳回您的申诉请求。
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h2 className="text-xl font-bold mt-12 mb-6 border-b border-gray-300 pb-2">
+            2. 订阅服务
+          </h2>
+
+          <div className="space-y-4">
+            <p>
+              您应当确保具备签订及履行订阅服务项下权利义务的主体资格，且始终拥有完全民事权利能力与完全民事行为能力。
+            </p>
+            <p>
+              您可选择您需要开通的付费内容，按页面展示价格进行支付操作。随着市场变化、业务调整、产品升级等因素，我们可能会调整服务的具体内容及相关费用，具体调整以公示信息为准。
+            </p>
+            <p>
+              您可按照页面展示的价格，依约支付。若您在支付后需要发票的，您可与我们单独联系。发票的抬头需要和付款主体相一致。
+            </p>
+            <p>我们提供的服务均为虚拟服务，除法律法规另有规定外，订阅费用一经支付，不予退还。</p>
+            <p>
+              您应当妥善保管自己的账号和密码，不得将账号和密码泄露给第三方。如因您自身原因导致账号和密码被泄露，造成的一切损失由您自行承担。
+            </p>
+          </div>
+        </section>
+
+        <section>
+          <h2 className="text-xl font-bold mt-12 mb-6 border-b border-gray-300 pb-2">
+            3. 服务使用规范
+          </h2>
+
+          <div className="space-y-6">
+            <p>
+              您在使用本服务时应遵守国家有关法律、法规和行政规章制度。您使用本服务不得侵害他人权益（包括但不限于著作权、专利权、商标权等知识产权与其他权益）。您应当保证使用本服务所提供、使用的文本内容
+              <strong>
+                <u>已获得了充分、必要且有效的合法许可及授权</u>
+              </strong>
+              。您不应当通过本服务生成现实生活中的特定人物、角色或品牌，因为这可能会侵犯第三方（包括但不限于自然人、公司、社会团体等）的合法权利。
+            </p>
+
+            <div className="border border-gray-300 p-4">
+              <p className="text-sm">
+                本服务本身不直接上传、不提供任何内容，对您传输和/或收集的内容无法做任何修改和/或编辑。
+                <strong>
                   <u>
-                    请您注意，一旦注销了账号，您在本服务上的全部内容（包括但不限于账号信息、历史对话等）将会被永久删除。您仍应对注销账号前使用本服务期间的行为承担相应责任。
+                    我们在此郑重提请您注意，任何经由您上传的文字内容，无论系公开还是私下传送，无论是否发布及获取收益，均由内容提供者、使用者对其上传、使用的行为自行承担责任。
                   </u>
                 </strong>
               </p>
-              <p className="text-orange-700 text-sm leading-relaxed">
-                当发生如下情况时，您的账号将被注销：（1）国家权力机关强制要求的；（2）您个人申请/操作注销程序的；（3）您违反本协议或本服务其他协议/条款/规则，您的账号被冻结，我们在向您发送书面通知后的30日内您未作出任何明确反馈的；（4）您的账号已经连续【24】个月未登录，且不存在任何未到期/未使用的服务的，我们有权给您发送书面通知后的15个工作日内对您的账号完成注销程序。
+            </div>
+
+            <div className="border border-gray-300 p-4">
+              <p className="text-sm">
+                您理解，本服务之外与相关网络服务有关的设备（如个人电脑、手机、及其他与接入互联网或移动网有关的装置）及所需的费用（如为接入互联网而支付的电话费及上网费、为使用移动网而支付的手机费）均应由您自行负担。本
+                <strong>
+                  <u>
+                    服务无法控制经由本服务传送之内容，也无法对您的使用行为进行全面控制，因此不能保证内容的合法性、正确性、完整性、真实性或品质；您已预知使用本服务时，可能会接触到不合法、不适当等内容，并同意将自行加以判断并承担所有风险。
+                  </u>
+                </strong>
               </p>
             </div>
 
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h4 className="font-semibold text-blue-800 mb-2">【申诉】</h4>
-              <p className="text-blue-700 text-sm leading-relaxed">
-                发生上述账号冻结或注销情况，您应及时予以关注，若您有异议的，您可以按照本协议第九条的联系方式向我们进行申诉，为了您的账户安全，您应配合我们如实提供身份证明及相关材料，以便我们进行核实。在接到您的申诉申请后，我们将15个工作日内进行处理，您充分理解，我们有权按照合理的判断同意或驳回您的申诉请求。
+            <div>
+              <h4 className="font-semibold mb-3">
+                您上传、输入、发布、传输、分享或以其他方式使用的内容中不应当包含以下内容：
+              </h4>
+              <ul className="grid grid-cols-1 md:grid-cols-2 gap-1 text-sm ml-4">
+                <li>• 反对宪法所确定的基本原则的</li>
+                <li>• 泄露国家秘密，危害国家安全的</li>
+                <li>• 颠覆国家政权，危害国家统一的</li>
+                <li>• 煽动民族仇恨、种族歧视的</li>
+                <li>• 歪曲、丑化英雄烈士的</li>
+                <li>• 宣扬恐怖主义、极端主义的</li>
+                <li>• 散布谣言，扰乱社会秩序的</li>
+                <li>• 虚假诈骗、侵犯隐私的</li>
+                <li>• 宣传淫秽、色情、暴力的</li>
+                <li>• 恶意广告、垃圾信息</li>
+                <li>• 非法经营活动</li>
+                <li>• 法律法规禁止的其他内容</li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="font-semibold mb-3">您不得实施以下行为：</h4>
+              <ul className="space-y-1 text-sm ml-4">
+                <li>• 未经授权使用他人信息，以他人名义输入内容</li>
+                <li>• 未经授权输入侵犯第三方权利的内容</li>
+                <li>• 侵犯第三方商标、商号、外观设计等</li>
+                <li>• 未经授权披露保密信息</li>
+                <li>• 未经授权将本服务接入其他软件或租赁给他人</li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="font-semibold mb-3">
+                您在使用本服务时，应当特别注意，不允许实施以下行为：
+              </h4>
+              <ul className="space-y-1 text-sm ml-4">
+                <li>• 删除、篡改本服务的知识产权声明</li>
+                <li>• 干扰本服务的正常运行</li>
+                <li>• 避开内容保护机制</li>
+                <li>• 未经同意使用我们的商标、LOGO等</li>
+                <li>• 超出许可范围使用服务成果</li>
+              </ul>
+            </div>
+
+            <div className="border border-gray-300 p-4">
+              <p className="text-sm">
+                您同意并接受，我们有权按照法律法规及相关政府文件的规定，对您通过本服务产生的文本内容，进行主动的监测，对于监测结果，我们有权作出独立的判断，若您违反本服务协议任何一条，我们有权视情节严重程度作出处置措施，包括但不限于发送警告邮件、限制该违规您使用本服务功能、暂停为您提供本服务、关闭或注销相关账号等。
               </p>
             </div>
           </div>
-        </div>
-        <h2 className="text-2xl font-bold text-gray-900 mt-10 mb-6 pb-2 border-b-2 border-gray-200">
-          2. 服务使用规范
-        </h2>
-        <div className="space-y-6 text-gray-700">
-          <p className="leading-relaxed">
-            您在使用本服务时应遵守国家有关法律、法规和行政规章制度。您使用本服务不得侵害他人权益（包括但不限于著作权、专利权、商标权等知识产权与其他权益）。您应当保证使用本服务所提供、使用的文本内容
-            <strong className="text-blue-700 bg-blue-50 px-2 py-1 rounded">
-              <u>已获得了充分、必要且有效的合法许可及授权</u>
-            </strong>
-            。您不应当通过本服务生成现实生活中的特定人物、角色或品牌，因为这可能会侵犯第三方（包括但不限于自然人、公司、社会团体等）的合法权利。
-          </p>
+        </section>
 
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <p className="text-blue-800 text-sm leading-relaxed">
-              本服务本身不直接上传、不提供任何内容，对您传输和/或收集的内容无法做任何修改和/或编辑。
-              <strong className="bg-blue-100 px-1 rounded">
-                <u>
-                  我们在此郑重提请您注意，任何经由您上传的文字内容，无论系公开还是私下传送，无论是否发布及获取收益，均由内容提供者、使用者对其上传、使用的行为自行承担责任。
-                </u>
-              </strong>
-            </p>
-          </div>
-
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <p className="text-yellow-800 text-sm leading-relaxed">
-              您理解，本服务之外与相关网络服务有关的设备（如个人电脑、手机、及其他与接入互联网或移动网有关的装置）及所需的费用（如为接入互联网而支付的电话费及上网费、为使用移动网而支付的手机费）均应由您自行负担。本
-              <strong className="bg-yellow-100 px-1 rounded">
-                <u>
-                  服务无法控制经由本服务传送之内容，也无法对您的使用行为进行全面控制，因此不能保证内容的合法性、正确性、完整性、真实性或品质；您已预知使用本服务时，可能会接触到不合法、不适当等内容，并同意将自行加以判断并承担所有风险。
-                </u>
-              </strong>
-            </p>
-          </div>
-          <div>
-            <h4 className="font-semibold text-gray-800 mb-3">
-              您上传、输入、发布、传输、分享或以其他方式使用的内容中不应当包含以下内容：
-            </h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-              <div className="flex items-start">
-                <span className="text-red-500 mr-2 mt-1">•</span>
-                <span>反对宪法所确定的基本原则的</span>
-              </div>
-              <div className="flex items-start">
-                <span className="text-red-500 mr-2 mt-1">•</span>
-                <span>泄露国家秘密，危害国家安全的</span>
-              </div>
-              <div className="flex items-start">
-                <span className="text-red-500 mr-2 mt-1">•</span>
-                <span>颠覆国家政权，危害国家统一的</span>
-              </div>
-              <div className="flex items-start">
-                <span className="text-red-500 mr-2 mt-1">•</span>
-                <span>煽动民族仇恨、种族歧视的</span>
-              </div>
-              <div className="flex items-start">
-                <span className="text-red-500 mr-2 mt-1">•</span>
-                <span>歪曲、丑化英雄烈士的</span>
-              </div>
-              <div className="flex items-start">
-                <span className="text-red-500 mr-2 mt-1">•</span>
-                <span>宣扬恐怖主义、极端主义的</span>
-              </div>
-              <div className="flex items-start">
-                <span className="text-red-500 mr-2 mt-1">•</span>
-                <span>散布谣言，扰乱社会秩序的</span>
-              </div>
-              <div className="flex items-start">
-                <span className="text-red-500 mr-2 mt-1">•</span>
-                <span>虚假诈骗、侵犯隐私的</span>
-              </div>
-              <div className="flex items-start">
-                <span className="text-red-500 mr-2 mt-1">•</span>
-                <span>宣传淫秽、色情、暴力的</span>
-              </div>
-              <div className="flex items-start">
-                <span className="text-red-500 mr-2 mt-1">•</span>
-                <span>恶意广告、垃圾信息</span>
-              </div>
-              <div className="flex items-start">
-                <span className="text-red-500 mr-2 mt-1">•</span>
-                <span>非法经营活动</span>
-              </div>
-              <div className="flex items-start">
-                <span className="text-red-500 mr-2 mt-1">•</span>
-                <span>法律法规禁止的其他内容</span>
-              </div>
-            </div>
-          </div>
-          <div>
-            <h4 className="font-semibold text-gray-800 mb-3">您不得实施以下行为：</h4>
-            <ul className="space-y-2 text-sm">
-              <li className="flex items-start">
-                <span className="text-orange-500 mr-2 mt-1">•</span>
-                <span>未经授权使用他人信息，以他人名义输入内容</span>
-              </li>
-              <li className="flex items-start">
-                <span className="text-orange-500 mr-2 mt-1">•</span>
-                <span>未经授权输入侵犯第三方权利的内容</span>
-              </li>
-              <li className="flex items-start">
-                <span className="text-orange-500 mr-2 mt-1">•</span>
-                <span>侵犯第三方商标、商号、外观设计等</span>
-              </li>
-              <li className="flex items-start">
-                <span className="text-orange-500 mr-2 mt-1">•</span>
-                <span>未经授权披露保密信息</span>
-              </li>
-              <li className="flex items-start">
-                <span className="text-orange-500 mr-2 mt-1">•</span>
-                <span>未经授权将本服务接入其他软件或租赁给他人</span>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="font-semibold text-gray-800 mb-3">
-              您在使用本服务时，应当特别注意，不允许实施以下行为：
-            </h4>
-            <ul className="space-y-2 text-sm">
-              <li className="flex items-start">
-                <span className="text-purple-500 mr-2 mt-1">•</span>
-                <span>删除、篡改本服务的知识产权声明</span>
-              </li>
-              <li className="flex items-start">
-                <span className="text-purple-500 mr-2 mt-1">•</span>
-                <span>干扰本服务的正常运行</span>
-              </li>
-              <li className="flex items-start">
-                <span className="text-purple-500 mr-2 mt-1">•</span>
-                <span>避开内容保护机制</span>
-              </li>
-              <li className="flex items-start">
-                <span className="text-purple-500 mr-2 mt-1">•</span>
-                <span>未经同意使用我们的商标、LOGO等</span>
-              </li>
-              <li className="flex items-start">
-                <span className="text-purple-500 mr-2 mt-1">•</span>
-                <span>超出许可范围使用服务成果</span>
-              </li>
-            </ul>
-          </div>
-
-          <div className="bg-gray-100 border border-gray-300 rounded-lg p-4">
-            <p className="text-gray-800 text-sm leading-relaxed">
-              您同意并接受，我们有权按照法律法规及相关政府文件的规定，对您通过本服务产生的文本内容，进行主动的监测，对于监测结果，我们有权作出独立的判断，若您违反本服务协议任何一条，我们有权视情节严重程度作出处置措施，包括但不限于发送警告邮件、限制该违规您使用本服务功能、暂停为您提供本服务、关闭或注销相关账号等。
-            </p>
-          </div>
-        </div>
-        <div className="bg-gray-50 border border-gray-300 rounded-lg p-4 mb-6">
-          <p className="text-gray-800 font-semibold">
+        <div className="border border-gray-300 p-4">
+          <p className="font-semibold">
             <u>
               在任何情况下，我们均不就因本服务所发生的任何直接性、间接性、后果性、惩戒性、偶然性、特殊性的损害（包括但不限于：您使用本服务而遭受的利润损失），承担任何责任（即使您已事先被告知该等损害发生的可能性）。
             </u>
           </p>
         </div>
-        <div className="bg-indigo-50 border-l-4 border-indigo-400 p-4 mb-8">
-          <h4 className="font-semibold text-indigo-800 mb-2">【特别提醒-AI 标识义务】</h4>
-          <p className="text-indigo-700 text-sm leading-relaxed">
+
+        <div className="border-l-4 border-gray-400 pl-4">
+          <h4 className="font-semibold mb-2">特别提醒 - AI 标识义务</h4>
+          <p className="text-sm">
             <u>
               依据《人工智能生成合成内容标识办法》规定，为了确保 AI 内容的来源可追溯，保障 AI
               内容的合规性和透明度，您通过运用本服务所生成的各类内容，无论其形式和用途如何，您应当主动声明并使用我们提供的标识功能进行标识。任何组织和个人不得恶意删除、篡改、伪造、隐匿
@@ -259,242 +232,251 @@ export const TermsZH: React.FC = () => {
             </u>
           </p>
         </div>
-        <h2 className="text-2xl font-bold text-gray-900 mt-10 mb-6 pb-2 border-b-2 border-gray-200">
-          3. 所有权及知识产权
-        </h2>
-        <div className="space-y-6 text-gray-700">
-          <p className="leading-relaxed">
-            我们保留本服务产品及产品所有元素（包括但不限于商标、logo、产品界面、内容、数据、技术、算法、代码等）的所有权及知识产权（包括但不限于著作权、商标权、专利权及相关邻接权）。我们授予您对本服务的使用权，该项授权为
-            <strong className="text-blue-700 bg-blue-50 px-2 py-1 rounded">
-              <u>非独占、不可转让、不可分许可</u>
-            </strong>
-            的有限许可。未经我们书面许可，您不得对本服务实施任何的反向工程、反向编译或反汇编的行为，不得以任何形式对本服务产品进行出租、出借、修改、汇编、二次开发等。
-          </p>
 
-          <div className="bg-amber-50 border-l-4 border-amber-400 p-4">
-            <h4 className="font-semibold text-amber-800 mb-2">【特别提醒】</h4>
-            <p className="text-amber-700 text-sm leading-relaxed">
-              您向本服务提交的文本内容合称&ldquo;输入&rdquo;，本服务通过AI等技术能力接收或响应您的输入而生成的内容合称&ldquo;输出&rdquo;，
+        <section>
+          <h2 className="text-xl font-bold mt-12 mb-6 border-b border-gray-300 pb-2">
+            4. 所有权及知识产权
+          </h2>
+
+          <div className="space-y-4">
+            <p>
+              我们保留本服务产品及产品所有元素（包括但不限于商标、logo、产品界面、内容、数据、技术、算法、代码等）的所有权及知识产权（包括但不限于著作权、商标权、专利权及相关邻接权）。我们授予您对本服务的使用权，该项授权为
               <strong>
-                您基于本服务对输入和/或输出内容的使用独立承担法律责任。为避免疑问，如输入和/或输出本身包含了第三方享有知识产权或其他合法权益的内容，则前述输入和/或输出的相应权利仍由该第三方享有，不改变其权属关系。
+                <u>非独占、不可转让、不可分许可</u>
               </strong>
+              的有限许可。未经我们书面许可，您不得对本服务实施任何的反向工程、反向编译或反汇编的行为，不得以任何形式对本服务产品进行出租、出借、修改、汇编、二次开发等。
+            </p>
+
+            <div className="border-l-4 border-gray-400 pl-4">
+              <h4 className="font-semibold mb-2">特别提醒</h4>
+              <p className="text-sm">
+                您向本服务提交的文本内容合称"输入"，本服务通过AI等技术能力接收或响应您的输入而生成的内容合称"输出"。
+                <strong>
+                  您基于本服务对输入和/或输出内容的使用独立承担法律责任。为避免疑问，如输入和/或输出本身包含了第三方享有知识产权或其他合法权益的内容，则前述输入和/或输出的相应权利仍由该第三方享有，不改变其权属关系。
+                </strong>
+              </p>
+            </div>
+
+            <p>
+              为持续改善及优化本服务，除非双方另有约定，您使用本服务输入和/或输出的内容即代表了您有权且同意在
+              <strong>全世界范围内，永久性的、不可撤销的、免费</strong>
+              的许可我们和/或关联方的全部产品或服务对该内容的使用权利，前述许可是可以转让的，也是可以进行分许可或再许可。
+            </p>
+
+            <p>
+              如果第三方对您输入和/或输出内容的知识产权归属提出质疑或投诉，您有责任出具相关知识产权证明材料，并配合我们相关投诉处理工作，若经证实，您输入和/或输出的内容违法或侵犯第三方合法权利的，我们有权将此内容从服务器内删除，停止您对本服务的访问，并保留对您追究法律责任的权利。
+            </p>
+
+            <p>
+              本协议其他条款未明示授权的其他一切权利仍由我们保留，您在行使这些权利时须另外取得我们的书面许可。我们若未行使前述任何权利，并不构成对该权利的放弃。
             </p>
           </div>
+        </section>
 
-          <p className="leading-relaxed">
-            为持续改善及优化本服务，除非双方另有约定，您使用本服务输入和/或输出的内容即代表了您有权且同意在
-            <strong>全世界范围内，永久性的、不可撤销的、免费</strong>
-            的许可我们和/或关联方的全部产品或服务对该内容的使用权利，前述许可是可以转让的，也是可以进行分许可或再许可。
-          </p>
+        <section>
+          <h2 className="text-xl font-bold mt-12 mb-6 border-b border-gray-300 pb-2">
+            5. 隐私信息数据保护
+          </h2>
 
-          <p className="leading-relaxed">
-            如果第三方对您输入和/或输出内容的知识产权归属提出质疑或投诉，您有责任出具相关知识产权证明材料，并配合我们相关投诉处理工作，若经证实，您输入和/或输出的内容违法或侵犯第三方合法权利的，我们有权将此内容从服务器内删除，停止您对本服务的访问，并保留对您追究法律责任的权利。
-          </p>
+          <div className="space-y-6">
+            <div className="border border-gray-300 p-4">
+              <h4 className="font-semibold mb-2">安全认证</h4>
+              <p className="text-sm">
+                我们已经取得ISO/IEC 27001信息安全管理体系、ISO/IEC
+                27017云服务安全管理体系认证。ISO/IEC 27001与ISO/IEC
+                27017是被广泛采用的全球安全标准，该认证充分证明本服务产品安全管理符合国际公认的标准，可以为您提供一个系统的、持续的方法来管理信息安全，以保障自身及您数据信息的私密性、完整性和可用性。
+              </p>
+            </div>
 
-          <p className="leading-relaxed">
-            本协议其他条款未明示授权的其他一切权利仍由我们保留，您在行使这些权利时须另外取得我们的书面许可。我们若未行使前述任何权利，并不构成对该权利的放弃。
-          </p>
-        </div>
-        <h2 className="text-2xl font-bold text-gray-900 mt-10 mb-6 pb-2 border-b-2 border-gray-200">
-          4. 隐私信息数据保护
-        </h2>
-        <div className="space-y-6 text-gray-700">
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-            <h4 className="font-semibold text-green-800 mb-2">安全认证</h4>
-            <p className="text-green-700 text-sm leading-relaxed">
-              我们已经取得ISO/IEC 27001信息安全管理体系、ISO/IEC
-              27017云服务安全管理体系认证。ISO/IEC 27001与ISO/IEC
-              27017是被广泛采用的全球安全标准，该认证充分证明本服务产品安全管理符合国际公认的标准，可以为您提供一个系统的、持续的方法来管理信息安全，以保障自身及您数据信息的私密性、完整性和可用性。
+            <p>
+              本服务产品保障您传输的文件安全性、私密性。我们努力采用符合业界标准的安全防护措施，包括建立合理的制度规范、安全技术、定期进行安全漏洞扫描来防止您的信息数据遭到未经授权的访问、使用、修改，避免数据的损坏或丢失。
+            </p>
+
+            <div>
+              <h4 className="font-semibold mb-3">
+                我们不会公开或向第三方提供您存储在本服务产品上的所有内容，除非有下列情况：
+              </h4>
+              <ul className="space-y-1 text-sm ml-4">
+                <li>• 实现产品功能所需</li>
+                <li>• 经您书面同意</li>
+                <li>• 有关法律、法规规定或经政府机关依法要求公开</li>
+                <li>• 其他依法需要公开、披露的情况</li>
+              </ul>
+            </div>
+
+            <p>
+              我们十分重视您个人信息的安全性及保密性，我们将运用各种安全技术和程序建立完善的管理制度来保护您的个人信息。
+              <Link href="/privacy" className="text-blue-600 underline hover:text-blue-800">
+                <strong>
+                  <u>《atypica.AI 隐私政策》</u>
+                </strong>
+              </Link>
+              介绍了您在使用我们的服务过程中，我们将如何收集、使用、共享、转让、披露您的个人信息。除法律法规规定、
+              <Link href="/privacy" className="text-blue-600 underline hover:text-blue-800">
+                《atypica.AI 隐私政策》
+              </Link>
+              约定或另有约定的情形外，未经您书面许可，我们不会获取、存储或向第三方公开、透露您的个人信息。
+            </p>
+
+            <p>
+              您应对通过本服务了解、接收或可接触到的包括但不限于其他用户在内的任何人的个人信息予以充分尊重，您不应以搜集、复制、存储、传播或以其他任何方式使用其他用户的个人信息，否则，由此产生的后果由您自行承担。
             </p>
           </div>
+        </section>
 
-          <p className="leading-relaxed">
-            本服务产品保障您传输的文件安全性、私密性。我们努力采用符合业界标准的安全防护措施，包括建立合理的制度规范、安全技术、定期进行安全漏洞扫描来防止您的信息数据遭到未经授权的访问、使用、修改，避免数据的损坏或丢失。
-          </p>
+        <section>
+          <h2 className="text-xl font-bold mt-12 mb-6 border-b border-gray-300 pb-2">
+            6. 不可抗力
+          </h2>
 
-          <div>
-            <h4 className="font-semibold text-gray-800 mb-3">
-              我们不会公开或向第三方提供您存储在本服务产品上的所有内容，除非有下列情况：
-            </h4>
-            <ul className="space-y-2 text-sm">
-              <li className="flex items-start">
-                <span className="text-blue-500 mr-2 mt-1">•</span>
-                <span>实现产品功能所需</span>
-              </li>
-              <li className="flex items-start">
-                <span className="text-blue-500 mr-2 mt-1">•</span>
-                <span>经您书面同意</span>
-              </li>
-              <li className="flex items-start">
-                <span className="text-blue-500 mr-2 mt-1">•</span>
-                <span>有关法律、法规规定或经政府机关依法要求公开</span>
-              </li>
-              <li className="flex items-start">
-                <span className="text-blue-500 mr-2 mt-1">•</span>
-                <span>其他依法需要公开、披露的情况</span>
-              </li>
-            </ul>
-          </div>
-
-          <p className="leading-relaxed">
-            我们十分重视您个人信息的安全性及保密性，我们将运用各种安全技术和程序建立完善的管理制度来保护您的个人信息。
-            <Link href="/privacy" className="text-blue-600 underline hover:text-blue-800">
-              <strong className="text-blue-700 bg-blue-50 px-2 py-1 rounded">
-                <u>《atypica.AI 隐私政策》</u>
-              </strong>
-            </Link>
-            介绍了您在使用我们的服务过程中，我们将如何收集、使用、共享、转让、披露您的个人信息。除法律法规规定、
-            <Link href="/privacy" className="text-blue-600 underline hover:text-blue-800">
-              《atypica.AI 隐私政策》
-            </Link>
-            约定或另有约定的情形外，未经您书面许可，我们不会获取、存储或向第三方公开、透露您的个人信息。
-          </p>
-
-          <p className="leading-relaxed">
-            您应对通过本服务了解、接收或可接触到的包括但不限于其他用户在内的任何人的个人信息予以充分尊重，您不应以搜集、复制、存储、传播或以其他任何方式使用其他用户的个人信息，否则，由此产生的后果由您自行承担。
-          </p>
-        </div>
-        <h2 className="text-2xl font-bold text-gray-900 mt-10 mb-6 pb-2 border-b-2 border-gray-200">
-          5. 不可抗力
-        </h2>
-        <div className="space-y-6 text-gray-700">
-          <p className="leading-relaxed">
-            由于不能预见并且发生的后果不能克服、不可避免的不可抗力，致使一方遭受经济损失或致使本服务产品不能履行或不能完全履行时，一方对另一方的损失不承担责任。遇有上述不可抗力事件的一方，应立即将事件情况书面通知对方，并应于15日内提出事件详情及协议不能履行或不能完全履行、或需要延期履行的理由和有效证明文件。
-          </p>
-
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-            <p className="text-gray-800 text-sm leading-relaxed">
-              按照事件对协议的履行的影响程度，由双方协商决定是否继续履行本协议或终止协议。不可抗力包括但不限于暴雨、洪水、海啸、风暴潮、风暴、台风、飓风、暴风雪、地震、火山喷发、泥石流、火灾、干旱、爆炸、雷电、瘟疫、停电、网络中断、移动网关出错、战争或武装冲突、恐怖袭击、动乱、骚乱、罢工、政府干预或政府管制、法律政策变化等自然灾害、社会异常事件和国家政府行为，以及根据适用法律或商务惯例被认为是不可抗力的其他客观情况。
+          <div className="space-y-4">
+            <p>
+              由于不能预见并且发生的后果不能克服、不可避免的不可抗力，致使一方遭受经济损失或致使本服务产品不能履行或不能完全履行时，一方对另一方的损失不承担责任。遇有上述不可抗力事件的一方，应立即将事件情况书面通知对方，并应于15日内提出事件详情及协议不能履行或不能完全履行、或需要延期履行的理由和有效证明文件。
             </p>
+
+            <div className="border border-gray-300 p-4">
+              <p className="text-sm">
+                按照事件对协议的履行的影响程度，由双方协商决定是否继续履行本协议或终止协议。不可抗力包括但不限于暴雨、洪水、海啸、风暴潮、风暴、台风、飓风、暴风雪、地震、火山喷发、泥石流、火灾、干旱、爆炸、雷电、瘟疫、停电、网络中断、移动网关出错、战争或武装冲突、恐怖袭击、动乱、骚乱、罢工、政府干预或政府管制、法律政策变化等自然灾害、社会异常事件和国家政府行为，以及根据适用法律或商务惯例被认为是不可抗力的其他客观情况。
+              </p>
+            </div>
           </div>
-        </div>
-        <h2 className="text-2xl font-bold text-gray-900 mt-10 mb-6 pb-2 border-b-2 border-gray-200">
-          6. 未成年人使用
-        </h2>
-        <div className="space-y-6 text-gray-700">
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <p className="text-yellow-800 text-sm leading-relaxed">
-              若您未满18周岁，请在您的法定监护人陪同下阅读本协议，并在征得您法定监护人同意的前提下使用本服务，您应当在合理范围内正确学习使用网络，避免沉迷虚拟的网络空间，养成良好上网习惯。您及其监护人理解并确认，如您违反法律法规、本协议内容，则您及您的监护人应依照法律规定承担因此而可能导致的全部法律责任。
+        </section>
+
+        <section>
+          <h2 className="text-xl font-bold mt-12 mb-6 border-b border-gray-300 pb-2">
+            7. 未成年人使用
+          </h2>
+
+          <div className="space-y-4">
+            <div className="border border-gray-300 p-4">
+              <p className="text-sm">
+                若您未满18周岁，请在您的法定监护人陪同下阅读本协议，并在征得您法定监护人同意的前提下使用本服务，您应当在合理范围内正确学习使用网络，避免沉迷虚拟的网络空间，养成良好上网习惯。您及其监护人理解并确认，如您违反法律法规、本协议内容，则您及您的监护人应依照法律规定承担因此而可能导致的全部法律责任。
+              </p>
+            </div>
+
+            <p>
+              为更好地保护未成年人隐私权益，我们特别提醒您慎重发布包含未成年人的内容，一经发布，即视为您已获得权利人同意在本服务展示未成年人的肖像等个人信息，且允许我们依据本协议使用、处理该等与未成年人相关的内容。
             </p>
-          </div>
 
-          <p className="leading-relaxed">
-            为更好地保护未成年人隐私权益，我们特别提醒您慎重发布包含未成年人的内容，一经发布，即视为您已获得权利人同意在本服务展示未成年人的肖像等个人信息，且允许我们依据本协议使用、处理该等与未成年人相关的内容。
-          </p>
-
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <h4 className="font-semibold text-blue-800 mb-3">监护人特别提示</h4>
-            <ul className="space-y-2 text-blue-700 text-sm">
-              <li className="flex items-start">
-                <span className="text-blue-500 mr-2 mt-1">•</span>
-                <span>
+            <div className="border border-gray-300 p-4">
+              <h4 className="font-semibold mb-3">监护人特别提示</h4>
+              <ul className="space-y-1 text-sm">
+                <li>
+                  •
                   如您的被监护人使用本服务的，您作为监护人应指导并监督被监护人的注册和使用行为，如您的被监护人申请本服务账号，我们将有权认为其已取得您的同意。
-                </span>
-              </li>
-              <li className="flex items-start">
-                <span className="text-blue-500 mr-2 mt-1">•</span>
-                <span>
+                </li>
+                <li>
+                  •
                   您的被监护人在使用本服务时可能使用充值功能。您作为监护人，请保管好您的支付设备、支付账户及支付密码等，以避免被监护人在未取得您同意的情况下通过您的账号使用充值功能。
-                </span>
-              </li>
-            </ul>
+                </li>
+              </ul>
+            </div>
           </div>
-        </div>
-        <h2 className="text-2xl font-bold text-gray-900 mt-10 mb-6 pb-2 border-b-2 border-gray-200">
-          7. 免责声明
-        </h2>
-        <div className="space-y-6 text-gray-700">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-            <p className="text-red-800 font-semibold text-sm leading-relaxed">
-              <u>
-                您理解，本服务生成的所有内容都是由人工智能模型生成，仅供您参考，我们对其生成内容的准确性、完整性和功能性不做任何保证，并且其生成的内容不代表我们的态度或观点，任何由
-                AI 工具或技术能力输出的结果，均无法替代您基于自身独特的经验、知识和判断力做出决策。
-              </u>
-            </p>
-          </div>
+        </section>
 
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-            <p className="text-amber-800 text-sm leading-relaxed">
-              我们的服务来自于法律法规允许的包括但不限于公开互联网等信息积累，并已经经过不断的自动及人工敏感数据过滤，但仍不排除其中部分信息具有瑕疵、不合理或引发不快。遇有此情形的，欢迎并感谢您随时通过官方渠道反馈给我们。
-              <strong className="bg-amber-100 px-1 rounded">
+        <section>
+          <h2 className="text-xl font-bold mt-12 mb-6 border-b border-gray-300 pb-2">
+            8. 免责声明
+          </h2>
+
+          <div className="space-y-4">
+            <div className="border border-gray-300 p-4">
+              <p className="font-semibold text-sm">
                 <u>
-                  您应理解并同意，本服务尚存在不完备性，我们不对任何服务可用性、可靠性做出任何承诺。我们不对您使用本服务输出的任何结果承担任何责任，且本服务的输出结果不代表我们立场。
+                  您理解，本服务生成的所有内容都是由人工智能模型生成，仅供您参考，我们对其生成内容的准确性、完整性和功能性不做任何保证，并且其生成的内容不代表我们的态度或观点，任何由
+                  AI
+                  工具或技术能力输出的结果，均无法替代您基于自身独特的经验、知识和判断力做出决策。
                 </u>
+              </p>
+            </div>
+
+            <div className="border border-gray-300 p-4">
+              <p className="text-sm">
+                我们的服务来自于法律法规允许的包括但不限于公开互联网等信息积累，并已经经过不断的自动及人工敏感数据过滤，但仍不排除其中部分信息具有瑕疵、不合理或引发不快。遇有此情形的，欢迎并感谢您随时通过官方渠道反馈给我们。
+                <strong>
+                  <u>
+                    您应理解并同意，本服务尚存在不完备性，我们不对任何服务可用性、可靠性做出任何承诺。我们不对您使用本服务输出的任何结果承担任何责任，且本服务的输出结果不代表我们立场。
+                  </u>
+                </strong>
+              </p>
+            </div>
+
+            <p>
+              您理解，
+              <strong>
+                <u>您应对输入的内容承担保证责任，</u>
               </strong>
+              我们无审核的义务，若由于上述内容导致的任何责任纠纷，由您自行承担。您应积极地采取一切可能采取的措施，以保证我们免受上述索赔、诉讼的影响。同时您对我们因此遭受的直接及间接经济损失负有全部的赔偿责任。
+            </p>
+
+            <p>
+              您理解，我们有权对本服务产品进行定期或不定期的更新升级，或对提供网络服务的平台或相关的设备进行检修或者维护，如因此类情况而造成服务在合理时间内的中断，我们无需为此承担任何责任，我们会尽合理努力事先进行通告并及时恢复服务的运行。
             </p>
           </div>
+        </section>
 
-          <p className="leading-relaxed">
-            您理解，
-            <strong className="text-blue-700 bg-blue-50 px-2 py-1 rounded">
-              <u>您应对输入的内容承担保证责任，</u>
-            </strong>
-            我们无审核的义务，若由于上述内容导致的任何责任纠纷，由您自行承担。您应积极地采取一切可能采取的措施，以保证我们免受上述索赔、诉讼的影响。同时您对我们因此遭受的直接及间接经济损失负有全部的赔偿责任。
-          </p>
+        <section>
+          <h2 className="text-xl font-bold mt-12 mb-6 border-b border-gray-300 pb-2">
+            9. 适用法律及争议解决
+          </h2>
 
-          <p className="leading-relaxed">
-            您理解，我们有权对本服务产品进行定期或不定期的更新升级，或对提供网络服务的平台或相关的设备进行检修或者维护，如因此类情况而造成服务在合理时间内的中断，我们无需为此承担任何责任，我们会尽合理努力事先进行通告并及时恢复服务的运行。
-          </p>
-        </div>
-        <h2 className="text-2xl font-bold text-gray-900 mt-10 mb-6 pb-2 border-b-2 border-gray-200">
-          8. 适用法律及争议解决
-        </h2>
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <p className="text-blue-800 leading-relaxed">
-            为本协议目的，本协议的制定、有效性、解释、执行、修改、终止及因上述事项引起的争议受
-            <strong className="bg-blue-100 px-1 rounded">中华人民共和国大陆地区法律</strong>
-            管辖。如双方就本协议内容或其执行发生任何争议，双方应尽量友好协商解决；协商不成时，任何一方均可向
-            <strong className="bg-blue-100 px-1 rounded">我们办公所在地</strong>
-            的人民法院提起诉讼。
-          </p>
-        </div>
-        <h2 className="text-2xl font-bold text-gray-900 mt-10 mb-6 pb-2 border-b-2 border-gray-200">
-          9. 投诉、举报及处理
-        </h2>
-        <div className="space-y-6 text-gray-700">
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-            <h4 className="font-semibold text-green-800 mb-3">联系方式</h4>
-            <div className="space-y-2 text-green-700">
+          <div className="border border-gray-300 p-4">
+            <p>
+              为本协议目的，本协议的制定、有效性、解释、执行、修改、终止及因上述事项引起的争议受
+              <strong>中华人民共和国大陆地区法律</strong>
+              管辖。如双方就本协议内容或其执行发生任何争议，双方应尽量友好协商解决；协商不成时，任何一方均可向
+              <strong>我们公司所在地</strong>
+              的人民法院提起诉讼。
+            </p>
+          </div>
+        </section>
+
+        <section>
+          <h2 className="text-xl font-bold mt-12 mb-6 border-b border-gray-300 pb-2">
+            10. 投诉、举报及处理
+          </h2>
+
+          <div className="space-y-4">
+            <div className="border border-gray-300 p-4">
+              <h4 className="font-semibold mb-3">联系方式</h4>
               <p>
                 <strong>邮箱：</strong>
                 <a
                   href="mailto:hi@atypica.ai"
-                  className="text-green-600 underline hover:text-green-800"
+                  className="text-blue-600 underline hover:text-blue-800"
                 >
                   hi@atypica.ai
                 </a>
               </p>
-              {/* <p>
-                <strong>联系地址：</strong>
-                <span className="italic">BMRLab，研究机构</span>
-              </p> */}
             </div>
+
+            <p>
+              如您发现本服务产品内存在任何违法违规或侵犯您权利的内容，您可以按照本条的联系方式书面通知我们。您应当按照我们的要求提供相关的证据/证明材料，我们将会根据法律规定及时处理您的投诉/举报。
+            </p>
+
+            <p>
+              如您在使用本服务时被相关权利人投诉侵权，您也可以通过本条的联系方式向我们提交相反证据/证明材料进行申诉，我们会根据法律规定及时处理您的申诉。为处置投诉所需，我们有权依照法律规定向您披露权利人的信息，也有权将您的信息披露给权利人，以助于您与相关权利人建立沟通渠道，公平保护相关方的权益。
+            </p>
+
+            <p>
+              如您对本协议或服务的相关事宜有任何问题、意见或建议，请随时联系我们。收到您的反馈后，我们将在法律规定的时限内予以回复，并根据法律法规和本协议的规定在合理时限内给予处理。
+            </p>
           </div>
+        </section>
 
-          <p className="leading-relaxed">
-            如您发现本服务产品内存在任何违法违规或侵犯您权利的内容，您可以按照本条的联系方式书面通知我们。您应当按照我们的要求提供相关的证据/证明材料，我们将会根据法律规定及时处理您的投诉/举报。
-          </p>
+        <section>
+          <h2 className="text-xl font-bold mt-12 mb-6 border-b border-gray-300 pb-2">11. 其他</h2>
 
-          <p className="leading-relaxed">
-            如您在使用本服务时被相关权利人投诉侵权，您也可以通过本条的联系方式向我们提交相反证据/证明材料进行申诉，我们会根据法律规定及时处理您的申诉。为处置投诉所需，我们有权依照法律规定向您披露权利人的信息，也有权将您的信息披露给权利人，以助于您与相关权利人建立沟通渠道，公平保护相关方的权益。
-          </p>
+          <div className="space-y-4">
+            <p>
+              我们对于您所有的通知均可通过网页公告、网页弹窗、电子邮件等方式进行（联系方式以您在平台注册或预留的为准），该等通知于发送之日视为已送达收件人。
+            </p>
 
-          <p className="leading-relaxed">
-            如您对本协议或服务的相关事宜有任何问题、意见或建议，请联系随时联系我们。收到您的反馈后，我们将在法律规定的时限内予以回复，并根据法律法规和本协议的规定在合理时限内给予处理。
-          </p>
-        </div>
-        <h2 className="text-2xl font-bold text-gray-900 mt-10 mb-6 pb-2 border-b-2 border-gray-200">
-          10. 其他
-        </h2>
-        <div className="space-y-6 text-gray-700">
-          <p className="leading-relaxed">
-            我们对于您所有的通知均可通过网页公告、网页弹窗、电子邮件等方式进行（联系方式以您在平台注册或预留的为准），该等通知于发送之日视为已送达收件人。
-          </p>
-
-          <p className="leading-relaxed">
-            基于网络服务的及时性、复杂性、高效性等特性及响应监管要求和政策规范等原因，我们有权对本协议及相关服务规则进行调整，并通过网站公示、网站公告、网页弹窗、邮件通知、系统消息、站内信等方式中的一种或多种予以公布。若您在调整后继续使用本服务的，表示您已经充分阅读、理解并接受调整后的协议及规则。如果您不同意调整后的协议及规则的，您应当停止使用本服务。
-          </p>
-        </div>
+            <p>
+              基于网络服务的及时性、复杂性、高效性等特性及响应监管要求和政策规范等原因，我们有权对本协议及相关服务规则进行调整，并通过网站公示、网站公告、网页弹窗、邮件通知、系统消息、站内信等方式中的一种或多种予以公布。若您在调整后继续使用本服务的，表示您已经充分阅读、理解并接受调整后的协议及规则。如果您不同意调整后的协议及规则的，您应当停止使用本服务。
+            </p>
+          </div>
+        </section>
       </div>
     </div>
   );
