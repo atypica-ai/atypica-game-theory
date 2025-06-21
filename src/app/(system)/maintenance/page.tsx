@@ -1,11 +1,11 @@
 "use client";
+import { checkMaintenanceStatus } from "@/app/admin/maintenance/actions";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/utils";
 import { WrenchIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { checkMaintenanceStatus } from "../admin/maintenance/actions";
 
 type TMaintenanceStatus = NonNullable<
   Awaited<ReturnType<typeof checkMaintenanceStatus>>
