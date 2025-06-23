@@ -48,12 +48,9 @@ export function FeaturedStudies() {
           <h2 className="text-2xl font-bold tracking-tight leading-tight">{t("title")}</h2>
           <p className="text-muted-foreground">{t("description")}</p>
         </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3].map((i) => (
-            <Card
-              key={i}
-              className="bg-background border border-border transition-colors hover:border-primary"
-            >
+        <div className="max-w-6xl mx-auto grid gap-4 md:grid-cols-2">
+          {[1, 2].map((i) => (
+            <Card key={i} className="bg-background border">
               <CardHeader className="space-y-3">
                 <div className="flex items-center gap-3">
                   <Skeleton className="h-8 w-8 rounded-full" />
@@ -110,7 +107,7 @@ export function FeaturedStudies() {
                 {study.analyst.topic}
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex-1">
               <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed">
                 {study.analyst.studySummary}
               </p>

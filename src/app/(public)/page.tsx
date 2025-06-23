@@ -1,6 +1,6 @@
 import { authOptions } from "@/lib/auth";
 import { getServerSession } from "next-auth/next";
-import HomePageClient from "./home/HomePageClient";
+import HomePageClient from "./home-v2/HomePageClient";
 
 export default async function Home() {
   const session = await getServerSession(authOptions);
