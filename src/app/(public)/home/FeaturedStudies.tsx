@@ -5,9 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ExtractServerActionData } from "@/lib/serverAction";
+import { proxiedImageLoader } from "@/lib/utils";
 import { ExternalLinkIcon, FileTextIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
+import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 type FeaturedStudy = ExtractServerActionData<typeof fetchPublicFeaturedStudies>[number];
@@ -15,6 +18,7 @@ type FeaturedStudy = ExtractServerActionData<typeof fetchPublicFeaturedStudies>[
 export function FeaturedStudies() {
   const locale = useLocale();
   const t = useTranslations("HomePage.FeaturedStudies");
+  const router = useRouter();
   const [studies, setStudies] = useState<FeaturedStudy[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -96,7 +100,7 @@ export function FeaturedStudies() {
 
       <div className="max-w-6xl mx-auto grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {studies.map((study) => (
-          <Card key={study.id} className="group">
+          <Card key={study.id} className="group relative overflow-hidden pb-0">
             <CardHeader className="space-y-3">
               <div className="flex items-center gap-3 overflow-hidden">
                 <HippyGhostAvatar seed={study.id} className="shrink-0 size-8" />
@@ -111,24 +115,32 @@ export function FeaturedStudies() {
                 {study.analyst.studySummary}
               </p>
             </CardContent>
-            <CardFooter className="mt-auto">
+            {study.analyst.latestReport?.coverUrl ? (
+              <div className="relative aspect-video rounded-t-xl overflow-hidden mt-4 mx-12 border">
+                <Image
+                  loader={proxiedImageLoader} // mainland 加载 us s3 的资源需要 proxy
+                  src={study.analyst.latestReport?.coverUrl}
+                  alt={`Cover for ${study.analyst.topic}`}
+                  fill
+                  sizes="100%"
+                  className="object-cover"
+                />
+              </div>
+            ) : null}
+            <div
+              className="absolute inset-0 bg-background/30 backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center rounded-xl cursor-pointer"
+              onClick={() => router.push(`/study/${study.studyUserChat.token}/share?replay=1`)}
+            >
               <Button
-                variant="ghost"
+                variant="secondary"
                 size="sm"
-                className="w-full group-hover:bg-muted transition-colors"
-                asChild
+                className="bg-transparent hover:bg-transparent rounded-full"
               >
-                <Link
-                  href={`/study/${study.studyUserChat.token}/share?replay=1`}
-                  target="_blank"
-                  className="flex items-center gap-2"
-                >
-                  <FileTextIcon className="h-3 w-3" />
-                  <span>{t("viewStudy")}</span>
-                  <ExternalLinkIcon className="h-3 w-3" />
-                </Link>
+                <FileTextIcon className="h-3 w-3" />
+                <span>{t("viewStudy")}</span>
+                <ExternalLinkIcon className="h-3 w-3" />
               </Button>
-            </CardFooter>
+            </div>
           </Card>
         ))}
       </div>

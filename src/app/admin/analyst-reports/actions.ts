@@ -13,6 +13,7 @@ export async function fetchAnalystReportsAction(
   page: number = 1,
   pageSize: number = 10,
   searchQuery?: string,
+  featuredOnly?: boolean,
 ): Promise<
   ServerActionResult<
     (AnalystReport & {
@@ -26,7 +27,17 @@ export async function fetchAnalystReportsAction(
   await checkAdminAuth([AdminPermission.MANAGE_STUDIES]);
 
   const skip = (page - 1) * pageSize;
-  const where = searchQuery
+  const where: {
+    OR?: Array<{
+      token?: { contains: string };
+      analyst?: {
+        topic?: { contains: string };
+        brief?: { contains: string };
+        user?: { email?: { contains: string } };
+      };
+    }>;
+    analyst?: { featuredStudy: { isNot: null } };
+  } = searchQuery
     ? {
         OR: [
           { token: { contains: searchQuery } },
@@ -36,6 +47,14 @@ export async function fetchAnalystReportsAction(
         ],
       }
     : {};
+
+  if (featuredOnly) {
+    where.analyst = {
+      featuredStudy: {
+        isNot: null,
+      },
+    };
+  }
 
   const analystReports = await prisma.analystReport.findMany({
     where,

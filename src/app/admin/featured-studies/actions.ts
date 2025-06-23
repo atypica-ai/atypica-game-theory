@@ -1,6 +1,7 @@
 "use server";
 import { AnalystKind } from "@/app/(public)/featured-studies/data";
 import { checkAdminAuth } from "@/app/admin/actions";
+import { s3SignedUrl } from "@/lib/attachments/s3";
 import { ServerActionResult } from "@/lib/serverAction";
 import { Analyst, FeaturedStudy, User, UserChat } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
@@ -8,6 +9,16 @@ import { Locale } from "next-intl";
 import { getLocale } from "next-intl/server";
 import { revalidatePath } from "next/cache";
 import { AdminPermission } from "../types";
+
+type TFeaturedStudyResult = Pick<FeaturedStudy, "id" | "displayOrder"> & {
+  analyst: Pick<Analyst, "id" | "role" | "topic" | "studySummary" | "kind">;
+  studyUserChat: Pick<UserChat, "id" | "token" | "title">;
+};
+
+type TReportInfo = {
+  token: string;
+  coverUrl: string | null;
+};
 
 // Public action for fetching featured studies (no auth check needed)
 export async function fetchPublicFeaturedStudies({
@@ -22,80 +33,141 @@ export async function fetchPublicFeaturedStudies({
   random?: boolean;
 }): Promise<
   ServerActionResult<
-    (Pick<FeaturedStudy, "id" | "displayOrder"> & {
+    (Omit<TFeaturedStudyResult, "analyst"> & {
       analyst: Pick<Analyst, "id" | "role" | "topic" | "studySummary"> & {
-        kind: AnalystKind | null;
+        kind: AnalystKind;
+        latestReport: TReportInfo | null;
       };
-      studyUserChat: Pick<UserChat, "id" | "token" | "title">;
     })[]
   >
 > {
   locale = locale || (await getLocale());
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let where: any =
-    kind && kind !== "all"
-      ? {
-          analyst: { locale: locale, kind: kind },
-        }
-      : {
-          analyst: { locale: locale },
-        };
-  if (random && limit) {
-    // 如果有 random，一定要有 limit，并且忽略 category
-    const result = (await prisma.$queryRaw`
-      SELECT "FeaturedStudy".id
-      FROM "FeaturedStudy"
-      INNER JOIN "Analyst" ON "Analyst".id = "FeaturedStudy"."analystId"
-      WHERE "Analyst".locale = ${locale}
-      ORDER BY RANDOM()
-      LIMIT ${limit}
-    `) as {
-      id: number;
-    }[];
-    where = {
-      id: {
-        in: result.map((item) => item.id),
+  let featuredStudies: TFeaturedStudyResult[];
+
+  const selectClause = {
+    id: true,
+    displayOrder: true,
+    studyUserChat: {
+      select: {
+        id: true,
+        token: true,
+        title: true,
       },
-    };
+    },
+    analyst: {
+      select: {
+        id: true,
+        kind: true,
+        role: true,
+        topic: true,
+        studySummary: true,
+      },
+    },
+  };
+
+  if (random && limit) {
+    let result: { id: number }[];
+    if (kind && kind !== "all") {
+      result = (await prisma.$queryRaw`
+        SELECT "FeaturedStudy".id
+        FROM "FeaturedStudy"
+        INNER JOIN "Analyst" ON "Analyst".id = "FeaturedStudy"."analystId"
+        WHERE "Analyst".locale = ${locale} AND "Analyst".kind = ${kind}
+        ORDER BY RANDOM()
+        LIMIT ${limit}
+      `) as { id: number }[];
+    } else {
+      result = (await prisma.$queryRaw`
+        SELECT "FeaturedStudy".id
+        FROM "FeaturedStudy"
+        INNER JOIN "Analyst" ON "Analyst".id = "FeaturedStudy"."analystId"
+        WHERE "Analyst".locale = ${locale}
+        ORDER BY RANDOM()
+        LIMIT ${limit}
+      `) as { id: number }[];
+    }
+    const studyIds = result.map((item) => item.id);
+
+    if (studyIds.length > 0) {
+      const studies = await prisma.featuredStudy.findMany({
+        where: { id: { in: studyIds } },
+        select: selectClause,
+      });
+      // Re-sort to maintain random order from the raw query
+      const studyMap = new Map(studies.map((s) => [s.id, s]));
+      featuredStudies = studyIds
+        .map((id) => studyMap.get(id))
+        .filter((s): s is NonNullable<typeof s> => s != null);
+    } else {
+      featuredStudies = [];
+    }
+  } else {
+    const where =
+      kind && kind !== "all"
+        ? { analyst: { locale: locale, kind: kind } }
+        : { analyst: { locale: locale } };
+
+    featuredStudies = await prisma.featuredStudy.findMany({
+      where,
+      select: selectClause,
+      // orderBy: { displayOrder: "asc" },
+      orderBy: {
+        analyst: { id: "desc" },
+        // displayOrder: "asc",
+      },
+      take: limit,
+    });
   }
 
-  const featuredStudies = await prisma.featuredStudy.findMany({
-    where,
+  if (!featuredStudies || featuredStudies.length === 0) {
+    return { success: true, data: [] };
+  }
+
+  const analystIds = featuredStudies.map((study) => study.analyst.id);
+
+  const latestReports = await prisma.analystReport.findMany({
+    where: { analystId: { in: analystIds } },
+    distinct: ["analystId"],
+    orderBy: [{ analystId: "desc" }, { createdAt: "desc" }],
     select: {
-      id: true,
-      displayOrder: true,
-      studyUserChat: {
-        select: {
-          id: true,
-          token: true,
-          title: true,
-        },
-      },
+      analystId: true,
+      token: true,
+      extra: true,
+    },
+  });
+
+  const reportsMap = Object.fromEntries(
+    await Promise.all(
+      latestReports.map(async (report) => {
+        const { analystId, token, extra } = report;
+        if (extra && typeof extra === "object" && "coverObjectUrl" in extra) {
+          const coverObjectUrl = extra.coverObjectUrl as string;
+          if (coverObjectUrl) {
+            try {
+              const coverUrl = await s3SignedUrl(coverObjectUrl);
+              return [analystId, { token, coverUrl }] as [number, TReportInfo];
+            } catch {}
+          }
+        }
+        return [analystId, { token, coverUrl: null }] as [number, TReportInfo];
+      }),
+    ),
+  );
+
+  const data = featuredStudies.map((study) => {
+    return {
+      ...study,
       analyst: {
-        select: {
-          id: true,
-          kind: true,
-          role: true,
-          topic: true,
-          studySummary: true,
-        },
+        ...study.analyst,
+        kind: study.analyst.kind ? (study.analyst.kind as AnalystKind) : AnalystKind.misc,
+        latestReport: reportsMap[study.analyst.id.toString()] || null,
       },
-    },
-    orderBy: {
-      displayOrder: "asc",
-    },
-    take: limit,
+    };
   });
 
   return {
     success: true,
-    data: featuredStudies.map((study) => ({
-      ...study,
-      analyst: {
-        ...study.analyst,
-        kind: study.analyst.kind as AnalystKind | null,
-      },
-    })),
+    data,
   };
 }
 

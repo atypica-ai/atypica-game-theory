@@ -35,6 +35,7 @@ export default function AnalystReportsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [featuredOnly, setFeaturedOnly] = useState(false);
   const [generatingScreenshots, setGeneratingScreenshots] = useState<Set<number>>(new Set());
   const [expandedInstructions, setExpandedInstructions] = useState<Set<number>>(new Set());
   const [expandedTopics, setExpandedTopics] = useState<Set<number>>(new Set());
@@ -46,11 +47,15 @@ export default function AnalystReportsPage() {
       const url = new URL(window.location.href);
       const pageParam = url.searchParams.get("page");
       const searchParam = url.searchParams.get("search");
+      const featuredParam = url.searchParams.get("featured");
       if (pageParam) {
         setCurrentPage(parseInt(pageParam, 10));
       }
       if (searchParam) {
         setSearchQuery(searchParam);
+      }
+      if (featuredParam === "true") {
+        setFeaturedOnly(true);
       }
     }
   }, []);
@@ -75,7 +80,7 @@ export default function AnalystReportsPage() {
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
-    const result = await fetchAnalystReportsAction(currentPage, 12, searchQuery);
+    const result = await fetchAnalystReportsAction(currentPage, 12, searchQuery, featuredOnly);
     if (!result.success) {
       setError(result.message);
     } else {
@@ -83,7 +88,7 @@ export default function AnalystReportsPage() {
       if (result.pagination) setPagination(result.pagination);
     }
     setIsLoading(false);
-  }, [currentPage, searchQuery]);
+  }, [currentPage, searchQuery, featuredOnly]);
 
   useEffect(() => {
     if (status === "unauthenticated") {
