@@ -160,7 +160,7 @@ async function backgroundGenerateImage({
   // 不返回 promise，立即 resolve，调用者可以继续，imagegen 在后台运行，直到结束
 }
 
-async function generateMidjourney({
+export async function generateMidjourney({
   prompt,
   ratio,
   promptHash,
@@ -247,7 +247,7 @@ async function generateMidjourney({
 /**
  * gemini 总是出现 Error [AI_NoImageGeneratedError]: No image generated.，可用性还需要多测试
  */
-async function generateGPTImage({
+export async function generateGPTImage({
   prompt,
   ratio,
   promptHash,
