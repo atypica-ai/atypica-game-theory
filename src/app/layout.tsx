@@ -10,7 +10,15 @@ import { cn } from "@/lib/utils";
 import type { Metadata, Viewport } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale } from "next-intl/server";
+import { Instrument_Serif } from "next/font/google";
 import "./globals.css";
+
+// 配置字体
+const instrumentSerif = Instrument_Serif({
+  subsets: ["latin"],
+  variable: "--font-InstrumentSerif",
+  weight: ["400"],
+});
 
 export const viewport: Viewport = {
   themeColor: "black",
@@ -68,7 +76,8 @@ export default async function RootLayout({
       <body
         className={cn(
           "font-sans antialiased",
-          // "font-IBMPlexMonoRegular antialiased",
+          instrumentSerif.variable,
+          // "font-IBMPlexMono antialiased",
           // "h-dvh flex flex-col items-stretch justify-start",
         )}
       >

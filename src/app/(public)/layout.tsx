@@ -6,7 +6,7 @@ import { LeftMenus } from "./LeftMenu";
 export default async function PublicPagesLayout({ children }: { children: ReactNode }) {
   return (
     <div className="pt-12 min-h-dvh flex flex-col items-stretch justify-start overflow-y-auto scrollbar-thin">
-      <GlobalHeader className="fixed top-0 left-0 right-0 z-10" leftMenus={<LeftMenus />} />
+      <GlobalHeader className="fixed top-0 left-0 right-0 z-10 h-12" leftMenus={<LeftMenus />} />
       {children}
       <GlobalFooter />
     </div>
