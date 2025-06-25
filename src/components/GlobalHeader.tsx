@@ -18,13 +18,15 @@ export default function GlobalHeader({
     <>
       <header
         className={cn(
-          "shrink-0 h-12 px-4 flex items-center justify-between gap-2 bg-background/80 backdrop-blur-sm border-b border-border",
+          "relative shrink-0 h-16 px-4 flex items-center justify-between gap-2 bg-background/80 backdrop-blur-sm border-b border-border",
           className,
         )}
       >
         <div className="flex items-center gap-2 sm:gap-6">
-          <Link href="/" className="block h-4 w-24 mb-0.5 relative">
-            <div className="font-EuclidCircularA font-bold text-lg leading-none">atypica.AI</div>
+          <Link href="/" className={cn("block h-4 w-24 mb-0.5 relative")}>
+            <div className="font-EuclidCircularA font-medium tracking-tight text-xl leading-none">
+              atypica.AI
+            </div>
             {/* <Image
             src="/_public/atypica.svg"
             alt="atypica Logo"
@@ -35,11 +37,9 @@ export default function GlobalHeader({
           </Link>
           {leftMenus}
         </div>
-
         <div className="flex items-center gap-2 sm:gap-4">
           {/* additional menus */}
           {children ? children : <UserTokensBalance />}
-
           <UserMenu />
         </div>
       </header>
