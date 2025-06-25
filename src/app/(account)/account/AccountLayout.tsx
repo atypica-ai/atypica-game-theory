@@ -130,9 +130,11 @@ export function AccountLayout({
                     {t("subscriptionSection.currentPlan")}
                   </div>
                   <div className="font-medium">
-                    {activeSubscription
-                      ? `${t("subscriptionSection.proPlan")}` //(${subscription.plan})
-                      : t("subscriptionSection.notSubscribed")}
+                    {activeSubscription?.plan === "pro"
+                      ? `${t("subscriptionSection.proPlan")}`
+                      : activeSubscription?.plan === "max"
+                        ? `${t("subscriptionSection.maxPlan")}`
+                        : t("subscriptionSection.notSubscribed")}
                   </div>
                 </div>
 

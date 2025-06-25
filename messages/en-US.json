@@ -885,6 +885,7 @@
       "status": "Status",
       "active": "Active",
       "proPlan": "Pro Subscription",
+      "maxPlan": "Max Subscription",
       "notSubscribed": "Not Subscribed",
       "cancelSubscription": "Cancel Auto-Renewal",
       "confirmCancel": "Cancel Auto-Renewal",

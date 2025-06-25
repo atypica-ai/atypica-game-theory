@@ -83,7 +83,7 @@ export function TestimonialSection() {
                   ) : (
                     <>
                       <blockquote className="text-lg md:text-xl leading-relaxed flex-1 mb-6">
-                        "{testimonial.quote}"
+                        &ldquo;{testimonial.quote}&rdquo;
                       </blockquote>
 
                       {testimonial.image && (

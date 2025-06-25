@@ -1,10 +1,10 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { getDeployRegion } from "@/lib/request/deployRegion";
 import { ChevronRightIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { reginalS3Url } from "./actions";
 
 const testimonials = [
   {
@@ -40,19 +40,16 @@ const testimonials = [
 ];
 
 export function HeroSection() {
-  const [videoSrc, setVideoSrc] = useState("");
+  const [videoSrc, setVideoSrc] = useState<string | null>(null);
+  const [posterSrc, setPosterSrc] = useState<string | null>(null);
 
   useEffect(() => {
-    const region = getDeployRegion();
-    if (region === "mainland") {
-      setVideoSrc(
-        "https://bmrlab-prod.s3.cn-north-1.amazonaws.com.cn/atypica/public/atypica20250617u4c28s67xnla53d0.mp4",
-      );
-    } else {
-      setVideoSrc(
-        "https://bmrlab-prod.s3.us-east-1.amazonaws.com/atypica/public/atypica20250617u4c28s67xnla53d0.mp4",
-      );
-    }
+    reginalS3Url("atypica/public/atypica20250617u4c28s67xnla53d0.mp4").then((res) => {
+      setVideoSrc(res);
+    });
+    reginalS3Url("atypica/public/atypica-promo-video-poster-20250624.jpeg").then((res) => {
+      setPosterSrc(res);
+    });
   }, []);
 
   return (
@@ -121,10 +118,10 @@ export function HeroSection() {
         {/* Video Section */}
         <div className="relative max-w-5xl mx-auto">
           <div className="aspect-video rounded-xl bg-zinc-900 shadow-2xl shadow-black/10 overflow-hidden">
-            {videoSrc ? (
+            {videoSrc && posterSrc ? (
               <video
                 key={videoSrc}
-                poster="/_public/videos/atypica-promo-video-poster-20250624.jpeg"
+                poster={posterSrc}
                 className="w-full h-full object-cover"
                 autoPlay
                 muted

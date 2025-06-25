@@ -5,7 +5,7 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { getDeployRegion } from "../request/deployRegion";
 import { S3UploadCredentials } from "./types";
 
-const AWS_S3_CONFIG: {
+export const AWS_S3_CONFIG: {
   origin: string;
   bucketName: string;
   region: "cn-north-1" | "us-east-1";

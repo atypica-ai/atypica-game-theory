@@ -1,14 +1,15 @@
 "use client";
 import { PlayIcon } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import { useCallback, useState } from "react";
+import { reginalS3Url } from "./actions";
 
 const useCases = [
   {
     title: "Testing",
     description:
       "Interview AI personas to test marketing messages, product concepts, and campaign ideas with authentic reactions.",
-    videoSrc: "/_public/videos/atypica-showcase-testing-20250624.mp4",
+    videoS3Key: "atypica/public/atypica-showcase-testing-20250624.mp4",
     coverImagePrompt:
       "An artistic visualization of consumer decision-making in action. A central figure represents a consumer, surrounded by floating decision factors - emotions, logic, social influences, and past experiences - each glowing with different intensities. These factors flow and interact, gradually converging toward a moment of choice. The composition captures the complex psychology behind how people make purchasing decisions. The palette uses soft blues and whites, emphasizing the clarity of understanding consumer thought processes.",
   },
@@ -16,7 +17,7 @@ const useCases = [
     title: "Planning",
     description:
       "Create strategic frameworks by interviewing AI personas about preferences and priorities to inform roadmaps.",
-    videoSrc: "/_public/videos/atypica-showcase-planning-a-20250624.mp4",
+    videoS3Key: "atypica/public/atypica-showcase-planning-a-20250624.mp4",
     coverImagePrompt:
       "A simple visualization of strategic prioritization. Scattered planning elements gradually organize themselves into a clear, layered hierarchy. The transformation shows consumer preferences shaping strategic choices into an orderly framework. The composition uses calming greens and whites, emphasizing clarity in planning.",
   },
@@ -24,7 +25,7 @@ const useCases = [
     title: "Insights",
     description:
       "Uncover behavioral patterns and motivations through interviews with AI personas representing target audiences.",
-    videoSrc: "/_public/videos/atypica-showcase-insights-20250624.mp4",
+    videoS3Key: "atypica/public/atypica-showcase-insights-20250624.mp4",
     coverImagePrompt:
       "A captivating visualization of market intelligence emergence. Scattered data points representing consumer behaviors, trends, and market signals gradually coalesce into clear, glowing insights that reveal deeper market truths. The transformation shows the journey from fragmented market data to profound understanding of consumer needs and market dynamics. Each insight pulses with clarity as it crystallizes. The composition uses deep purples and lavenders, emphasizing the revelation of hidden market opportunities.",
   },
@@ -32,18 +33,29 @@ const useCases = [
     title: "Creation",
     description:
       "Brainstorm and co-create with AI personas to generate innovative ideas and validate creative concepts.",
-    videoSrc: "/_public/videos/atypica-showcase-creation-20250624.mp4",
+    videoS3Key: "atypica/public/atypica-showcase-creation-20250624.mp4",
     coverImagePrompt:
       "A clean representation of product development. Individual consumer needs float as simple, glowing elements that gradually connect and form the outline of a new product concept. The composition shows the moment when understanding transforms into innovation. Warm oranges and soft whites create an atmosphere of creative breakthrough.",
   },
 ];
 
 export function UseCaseScenarios() {
-  const [activeVideo, setActiveVideo] = useState<string | null>(null);
+  const [activeVideoTitle, setActiveVideoTitle] = useState<string | null>(null);
+  const [activeVideoSrc, setActiveVideoSrc] = useState<string | null>(null);
 
-  const handlePlayVideo = (title: string) => {
-    setActiveVideo(activeVideo === title ? null : title);
-  };
+  const handlePlayVideo = useCallback(
+    async ({ title, videoS3Key }: (typeof useCases)[number]) => {
+      if (activeVideoTitle === title) {
+        setActiveVideoTitle(null);
+        setActiveVideoSrc(null);
+      } else {
+        const videoSrc = await reginalS3Url(videoS3Key);
+        setActiveVideoTitle(title);
+        setActiveVideoSrc(videoSrc);
+      }
+    },
+    [activeVideoTitle],
+  );
 
   return (
     <section className="bg-zinc-50 dark:bg-black py-20 md:py-28">
@@ -69,15 +81,15 @@ export function UseCaseScenarios() {
               className="group rounded-2xl overflow-hidden flex flex-col border transition-all duration-300 hover:-translate-y-1 "
             >
               <div className="aspect-video bg-zinc-900 relative overflow-hidden">
-                {activeVideo === useCase.title ? (
+                {activeVideoTitle === useCase.title && activeVideoSrc ? (
                   <video
-                    key={useCase.videoSrc}
+                    key={activeVideoSrc}
                     className="w-full h-full object-cover"
                     controls
                     autoPlay
                     playsInline
                   >
-                    <source src={useCase.videoSrc} type="video/mp4" />
+                    <source src={activeVideoSrc} type="video/mp4" />
                     Your browser does not support the video tag.
                   </video>
                 ) : (
@@ -91,7 +103,7 @@ export function UseCaseScenarios() {
                     />
                     <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                       <button
-                        onClick={() => handlePlayVideo(useCase.title)}
+                        onClick={() => handlePlayVideo(useCase)}
                         className="text-white/80 hover:text-white transition-colors"
                         aria-label={`Play video for ${useCase.title}`}
                       >
