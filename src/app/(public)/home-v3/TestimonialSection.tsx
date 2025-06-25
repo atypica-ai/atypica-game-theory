@@ -16,8 +16,8 @@ const testimonials = [
   },
   {
     category: "Time Saved",
-    stat: "90%",
-    description: "Reduction in research time, from weeks to hours.",
+    stat: "< 1 Hr",
+    description: "Get insights in minutes, not weeks of research.",
     bgColor: "bg-yellow-300",
     textColor: "text-zinc-900",
     className: "md:col-span-1",
@@ -25,7 +25,7 @@ const testimonials = [
   {
     category: "Customer stories",
     quote:
-      "The behavioral digital twins were incredibly realistic in their responses. We tested multiple campaign messages through persona interviews and identified the most effective approach before spending on actual ads.",
+      "The Real Person Agents were incredibly realistic in their responses. We tested multiple campaign messages through persona interviews and identified the most effective approach before spending on actual ads.",
     author: "Ben Carter",
     title: "Marketing Director",
     image:

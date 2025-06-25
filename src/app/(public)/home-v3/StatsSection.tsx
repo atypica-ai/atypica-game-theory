@@ -1,9 +1,80 @@
 "use client";
+import { useEffect, useRef, useState } from "react";
+
 const stats = [
-  { id: 1, value: "50K", label: "AI Personas Created" },
-  { id: 2, value: "100K", label: "Interviews Conducted" },
-  { id: 3, value: "10", label: "Minutes Average Study Time" },
+  { id: 1, value: "50K", label: "AI Personas Created", numericValue: 50000, suffix: "K" },
+  { id: 2, value: "100K", label: "Interviews Conducted", numericValue: 100000, suffix: "K" },
+  { id: 3, value: "81%", label: "Human-like Accuracy", numericValue: 81, suffix: "%" },
 ];
+
+function AnimatedCounter({
+  targetValue,
+  suffix,
+  duration,
+}: {
+  targetValue: number;
+  suffix: string;
+  duration: number;
+}) {
+  const [count, setCount] = useState(targetValue);
+  const [isVisible, setIsVisible] = useState(false);
+  const elementRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !isVisible) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.3 },
+    );
+
+    if (elementRef.current) {
+      observer.observe(elementRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [isVisible]);
+
+  useEffect(() => {
+    if (!isVisible) return;
+
+    // Reset to 0 and start animation
+    setCount(0);
+
+    const startTime = Date.now();
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+
+      // Easing function for more natural animation
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const current = Math.floor(eased * targetValue);
+
+      setCount(current);
+
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      }
+    };
+
+    animate();
+  }, [isVisible, targetValue, duration]);
+
+  const formatValue = (value: number) => {
+    if (suffix === "K") {
+      return `${(value / 1000).toFixed(0)}K`;
+    }
+    return `${value}${suffix}`;
+  };
+
+  return (
+    <div ref={elementRef} className="text-6xl md:text-7xl font-bold mb-2">
+      {formatValue(count)}
+    </div>
+  );
+}
 
 export function StatsSection() {
   return (
@@ -14,7 +85,7 @@ export function StatsSection() {
             AI Persona Research at Scale
           </h2>
           <p className="font-EuclidCircularA font-medium text-3xl md:text-4xl">
-            Building digital twins to understand{" "}
+            Building Real Person Agents to understand{" "}
             <span className="italic font-InstrumentSerif">human decisions</span> through
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4 mt-8">
@@ -33,10 +104,11 @@ export function StatsSection() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
           {stats.map((stat) => (
             <div key={stat.id} className="text-center">
-              <div className="text-6xl md:text-7xl font-bold mb-2">
-                <span className="text-4xl md:text-5xl align-top">+</span>
-                {stat.value}
-              </div>
+              <AnimatedCounter
+                targetValue={stat.numericValue}
+                suffix={stat.suffix}
+                duration={1500}
+              />
               <div className="text-zinc-600 dark:text-zinc-400 text-sm font-medium uppercase tracking-wider">
                 {stat.label}
               </div>

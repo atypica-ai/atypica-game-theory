@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn, proxiedImageLoader } from "@/lib/utils";
-import { FileTextIcon } from "lucide-react";
+import { PlayIcon } from "lucide-react";
 import { useLocale } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
@@ -63,7 +63,7 @@ export function UseCases() {
             AI Persona Research Studies
           </h2>
           <p className="max-w-3xl mx-auto mt-5 text-lg text-zinc-600 dark:text-zinc-400">
-            Explore real case studies showcasing how behavioral digital twins and expert interviews
+            Explore real case studies showcasing how Real Person Agents and expert interviews
             provide deep consumer insights for better business decisions.
           </p>
         </div>
@@ -112,7 +112,15 @@ export function UseCases() {
                     />
                   ) : (
                     <div className="w-full h-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
-                      <FileTextIcon className="w-12 h-12 text-zinc-400 dark:text-zinc-600" />
+                      <div className="relative">
+                        <div className="w-12 h-12 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center">
+                          <PlayIcon
+                            className="w-4 h-4 text-zinc-500 dark:text-zinc-400 ml-0.5"
+                            fill="currentColor"
+                          />
+                        </div>
+                        <div className="absolute inset-0 rounded-full bg-zinc-300/20 dark:bg-zinc-600/20 animate-pulse"></div>
+                      </div>
                     </div>
                   )}
                 </div>

@@ -1,7 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { getDeployRegion } from "@/lib/request/deployRegion";
-import { ArrowRightIcon } from "lucide-react";
+import { ChevronRightIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -59,8 +59,8 @@ export function HeroSection() {
     <section className="bg-zinc-50 dark:bg-zinc-950 py-20 md:py-32">
       <div className="container mx-auto px-4 text-center">
         <h1 className="font-EuclidCircularA font-medium text-5xl md:text-7xl tracking-tight leading-tight max-w-5xl mx-auto mb-6">
-          The First AI Market Research{" "}
-          <span className="italic font-InstrumentSerif">Multi-Agent System</span>
+          The AI Research Agent <br />
+          <span className="italic font-InstrumentSerif">Simulating Consumers</span>
         </h1>
         <p className="max-w-3xl mx-auto text-lg md:text-xl text-zinc-600 dark:text-zinc-400 mb-10">
           Atypica automatically builds personas, conducts interviews, and analyzes patterns to
@@ -72,7 +72,7 @@ export function HeroSection() {
           <Button size="lg" className="rounded-full has-[>svg]:px-8 px-8 h-12" asChild>
             <Link href="/study">
               Start Your Study
-              <ArrowRightIcon className="h-4 w-4" />
+              <ChevronRightIcon className="h-3 w-3" />
             </Link>
           </Button>
 

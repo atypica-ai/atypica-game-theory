@@ -1,51 +1,51 @@
 "use client";
-import { BotMessageSquareIcon, BrainCircuitIcon, UsersIcon, ZapIcon } from "lucide-react";
+import { BrainIcon, MessageCircleIcon, SparklesIcon, TrendingUpIcon } from "lucide-react";
 import Image from "next/image";
 
 const processSteps = [
   {
     step: "01",
-    title: "Behavioral Data Collection",
+    title: "Persona Generation",
     description:
-      "Analyze social platforms and real-world behavior patterns to gather comprehensive data on how different groups think, decide, and express themselves",
-    icon: UsersIcon,
-    colorClasses: "bg-violet-50 dark:bg-violet-900/30 border-violet-100 dark:border-violet-900",
-    iconColorClasses: "text-violet-600 dark:text-violet-400",
-    imagePlaceholder:
-      "A diverse group of abstract, glowing digital avatars materializing from a stream of social media icons. Style: ethereal, data-driven, vibrant.",
+      "Generate diverse AI personas based on real behavioral patterns and demographic insights from social platforms.",
+    icon: SparklesIcon,
+    colorClasses: "bg-sky-50 dark:bg-sky-900/30 border-sky-100 dark:border-sky-900",
+    iconColorClasses: "text-sky-600 dark:text-sky-400",
+    text2ImagePrompt:
+      "An artistic visualization of persona synthesis. On the left, a scattered cloud of small, elegant icons and keywords represent diverse consumer traits (like demographics, behaviors, and values). Glowing lines connect these individual traits, drawing them towards the center where they seamlessly merge into a single, minimalist, and cohesive AI avatar on the right. The color palette is a sophisticated beige and cream, illustrating the process of creating a unified agent from many distinct data points.",
   },
   {
     step: "02",
-    title: "AI Persona Construction",
+    title: "AI-Led Interviews",
     description:
-      "Build sophisticated digital twins with consistent personality traits, decision-making logic, and cognitive frameworks that simulate real human responses",
-    icon: BotMessageSquareIcon,
-    colorClasses: "bg-sky-50 dark:bg-sky-900/30 border-sky-100 dark:border-sky-900",
-    iconColorClasses: "text-sky-600 dark:text-sky-400",
-    imagePlaceholder:
-      "An AI bot icon having a one-on-one conversation with a digital avatar, with sound waves and thought bubbles flowing between them. Style: clean, professional, focused.",
+      "Conduct natural conversations with AI personas to uncover deep motivations and key decision drivers.",
+    icon: MessageCircleIcon,
+    colorClasses: "bg-emerald-50 dark:bg-emerald-900/30 border-emerald-100 dark:border-emerald-900",
+    iconColorClasses: "text-emerald-600 dark:text-emerald-400",
+    text2ImagePrompt:
+      "A minimalist conversational UI, capturing the moment an AI is speaking. The screen has a soft, ambient gradient background in warm beige tones. In the center, clean white text says, 'I will now ask a few questions to understand your perspective.' Below the text, a subtle, glowing microphone icon and a soft progress bar indicate an ongoing, intelligent interaction. The overall feeling is calm, focused, and futuristic.",
   },
   {
     step: "03",
-    title: "Expert Interview Process",
+    title: "Behavior Analysis",
     description:
-      "Conduct structured interviews between research experts and AI personas to uncover motivations, preferences, and decision-making patterns",
-    icon: BrainCircuitIcon,
-    colorClasses: "bg-emerald-50 dark:bg-emerald-900/30 border-emerald-100 dark:border-emerald-900",
-    iconColorClasses: "text-emerald-600 dark:text-emerald-400",
-    imagePlaceholder:
-      "A brain-like neural network with glowing nodes representing emotions, thoughts, and cultural symbols being analyzed by a magnifying glass. Style: analytical, intricate, technical.",
+      "Identify emotional triggers, cognitive biases, and cultural factors that influence purchasing decisions.",
+    icon: BrainIcon,
+    colorClasses: "bg-violet-50 dark:bg-violet-900/30 border-violet-100 dark:border-violet-900",
+    iconColorClasses: "text-violet-600 dark:text-violet-400",
+    text2ImagePrompt:
+      "Over-the-shoulder view of a person looking at a large, floating transparent screen with simple, abstract data visualizations. The overall color scheme is soft beige and off-white. The focus is on the data, with the person providing a sense of scale and purpose.",
   },
   {
     step: "04",
-    title: "Insights & Analysis",
+    title: "Instant Insights",
     description:
-      "Generate comprehensive research reports analyzing behavioral patterns, emotional triggers, and decision factors in minutes instead of weeks",
-    icon: ZapIcon,
+      "Generate comprehensive insights in minutes instead of traditional weeks-long research processes.",
+    icon: TrendingUpIcon,
     colorClasses: "bg-amber-50 dark:bg-amber-900/30 border-amber-100 dark:border-amber-900",
     iconColorClasses: "text-amber-600 dark:text-amber-400",
-    imagePlaceholder:
-      "A sleek, interactive dashboard materializing instantly from raw data, showing charts and key insights with a glowing, fast-moving effect. Style: modern, dynamic, results-oriented.",
+    text2ImagePrompt:
+      "An abstract visualization of insight generation. A cloud of messy, jumbled data points gracefully resolves and crystallizes into a single, perfectly formed, minimalist donut chart. The color palette is a serene beige, emphasizing the moment of instant clarity emerging from complexity.",
   },
 ];
 
@@ -58,12 +58,8 @@ export function HowItWorks() {
             Subjective world modeling in action
           </p>
           <h2 className="font-EuclidCircularA font-medium text-4xl md:text-5xl tracking-tight mt-4">
-            How AI Persona Research Works
+            From question to insights in minutes
           </h2>
-          <p className="max-w-3xl mx-auto mt-5 text-lg text-zinc-600 dark:text-zinc-400">
-            Our methodology creates behavioral digital twins that think, feel, and make decisions
-            like real people, then conducts expert interviews to uncover deep consumer insights.
-          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -72,10 +68,10 @@ export function HowItWorks() {
               key={step.step}
               className={`rounded-3xl transition-all duration-300 hover:-translate-y-1 flex flex-col border ${step.colorClasses} overflow-hidden`}
             >
-              <div className="aspect-video bg-white/50 dark:bg-zinc-950/50 relative">
+              <div className="aspect-[4/3] bg-white/50 dark:bg-zinc-950/50 relative">
                 <Image
-                  src={`/api/imagegen/dev/${step.imagePlaceholder}`}
-                  alt={step.imagePlaceholder}
+                  src={`/api/imagegen/dev/${step.text2ImagePrompt}`}
+                  alt={step.text2ImagePrompt}
                   className="object-cover"
                   sizes="100%"
                   fill
@@ -87,9 +83,9 @@ export function HowItWorks() {
                     {step.step}
                   </span>
                   <div
-                    className={`p-3 rounded-full bg-white/50 dark:bg-zinc-950/50 ${step.iconColorClasses}`}
+                    className={`p-2 rounded-full bg-white/50 dark:bg-zinc-950/50 ${step.iconColorClasses}`}
                   >
-                    <step.icon className="w-7 h-7" />
+                    <step.icon className="w-5 h-5" />
                   </div>
                 </div>
                 <div className="flex-grow flex flex-col justify-start">

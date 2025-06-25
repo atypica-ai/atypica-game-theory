@@ -1,6 +1,5 @@
 "use client";
-
-import { PlayCircleIcon } from "lucide-react";
+import { PlayIcon } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 
@@ -8,34 +7,34 @@ const useCases = [
   {
     title: "Testing",
     description:
-      "Interview AI personas to test marketing messages, product concepts, and campaign ideas. Get authentic reactions and feedback from diverse behavioral digital twins",
+      "Interview AI personas to test marketing messages, product concepts, and campaign ideas with authentic reactions.",
     videoSrc: "/_public/videos/atypica-showcase-testing-20250624.mp4",
-    coverImage:
-      "Digital AI personas reviewing and evaluating marketing content on screens, diverse avatars providing feedback with thumbs up down ratings and emotional reactions, content evaluation interface with sentiment analysis. Style: modern, engaging, persona-focused evaluation.",
+    coverImagePrompt:
+      "An artistic visualization of consumer decision-making in action. A central figure represents a consumer, surrounded by floating decision factors - emotions, logic, social influences, and past experiences - each glowing with different intensities. These factors flow and interact, gradually converging toward a moment of choice. The composition captures the complex psychology behind how people make purchasing decisions. The palette uses soft blues and whites, emphasizing the clarity of understanding consumer thought processes.",
   },
   {
     title: "Planning",
     description:
-      "Create strategic frameworks by interviewing AI personas about preferences, priorities, and decision factors to inform your roadmaps",
+      "Create strategic frameworks by interviewing AI personas about preferences and priorities to inform roadmaps.",
     videoSrc: "/_public/videos/atypica-showcase-planning-a-20250624.mp4",
-    coverImage:
-      "Marketing strategist working with insights from AI personas, strategy board with consumer behavior patterns feeding into campaign plans, persona-driven recommendations shaping marketing roadmaps. Style: strategic, insightful, modern business planning.",
+    coverImagePrompt:
+      "A simple visualization of strategic prioritization. Scattered planning elements gradually organize themselves into a clear, layered hierarchy. The transformation shows consumer preferences shaping strategic choices into an orderly framework. The composition uses calming greens and whites, emphasizing clarity in planning.",
   },
   {
     title: "Insights",
     description:
-      "Uncover behavioral patterns and motivations through in-depth interviews with AI personas representing your target audiences",
+      "Uncover behavioral patterns and motivations through interviews with AI personas representing target audiences.",
     videoSrc: "/_public/videos/atypica-showcase-insights-20250624.mp4",
-    coverImage:
-      "Analytics dashboard displaying consumer behavior patterns, trend analysis graphs, demographic insights, and market intelligence visualizations with glowing data points. Style: sophisticated, data-rich, analytical interface with modern charts.",
+    coverImagePrompt:
+      "A captivating visualization of market intelligence emergence. Scattered data points representing consumer behaviors, trends, and market signals gradually coalesce into clear, glowing insights that reveal deeper market truths. The transformation shows the journey from fragmented market data to profound understanding of consumer needs and market dynamics. Each insight pulses with clarity as it crystallizes. The composition uses deep purples and lavenders, emphasizing the revelation of hidden market opportunities.",
   },
   {
     title: "Creation",
     description:
-      "Brainstorm and co-create with AI personas to generate innovative ideas, explore possibilities, and validate creative concepts",
+      "Brainstorm and co-create with AI personas to generate innovative ideas and validate creative concepts.",
     videoSrc: "/_public/videos/atypica-showcase-creation-20250624.mp4",
-    coverImage:
-      "Collaborative workspace showing AI personas and human designers co-creating products, ideation boards with sketches and prototypes, innovation process visualization. Style: creative, collaborative, modern design studio aesthetic.",
+    coverImagePrompt:
+      "A clean representation of product development. Individual consumer needs float as simple, glowing elements that gradually connect and form the outline of a new product concept. The composition shows the moment when understanding transforms into innovation. Warm oranges and soft whites create an atmosphere of creative breakthrough.",
   },
 ];
 
@@ -57,9 +56,9 @@ export function UseCaseScenarios() {
             AI Persona Research in Action
           </h2>
           <p className="max-w-3xl mx-auto mt-5 text-lg text-zinc-600 dark:text-zinc-400">
-            See how behavioral digital twins transform research across different scenarios. From
-            testing concepts to uncovering insights, our AI personas provide authentic responses
-            through structured interview processes.
+            See how Real Person Agents transform research across different scenarios. From testing
+            concepts to uncovering insights, our AI personas provide authentic responses through
+            structured interview processes.
           </p>
         </div>
 
@@ -84,7 +83,7 @@ export function UseCaseScenarios() {
                 ) : (
                   <>
                     <Image
-                      src={`/api/imagegen/dev/${useCase.coverImage}`}
+                      src={`/api/imagegen/dev/${useCase.coverImagePrompt}`}
                       alt={`${useCase.title} use case cover`}
                       className="object-cover transition-transform duration-200 group-hover:scale-105"
                       sizes="100%"
@@ -96,7 +95,12 @@ export function UseCaseScenarios() {
                         className="text-white/80 hover:text-white transition-colors"
                         aria-label={`Play video for ${useCase.title}`}
                       >
-                        <PlayCircleIcon className="w-20 h-20" />
+                        <div className="relative">
+                          <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30">
+                            <PlayIcon className="w-5 h-5 ml-0.5" fill="currentColor" />
+                          </div>
+                          <div className="absolute inset-0 rounded-full bg-white/10 animate-pulse"></div>
+                        </div>
                       </button>
                     </div>
                   </>

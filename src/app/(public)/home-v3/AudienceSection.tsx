@@ -1,5 +1,5 @@
 "use client";
-import { MicIcon, PackageIcon, StoreIcon, TargetIcon } from "lucide-react";
+import { MessageSquareIcon, PackageIcon, SearchIcon, TrendingUpIcon } from "lucide-react";
 import Image from "next/image";
 
 const audiences = [
@@ -7,8 +7,8 @@ const audiences = [
     name: "Alex Chen",
     role: "Marketer",
     description:
-      "Test campaign messaging and creative concepts by interviewing diverse AI personas that represent your target audiences.",
-    icon: TargetIcon,
+      "Test campaign messaging and creative concepts through interviews with diverse AI personas.",
+    icon: TrendingUpIcon,
     bgColor: "bg-purple-600",
     imagePlaceholder:
       "Professional portrait of a young Asian male marketer in modern business attire, confident smile, creative studio background with marketing materials. Style: modern, professional, creative energy.",
@@ -17,7 +17,7 @@ const audiences = [
     name: "Maria Garcia",
     role: "Product Manager",
     description:
-      "Discover user needs and feature gaps through in-depth interviews with AI personas representing your user base.",
+      "Discover user needs and feature gaps through interviews with AI personas representing users.",
     icon: PackageIcon,
     bgColor: "bg-orange-500",
     imagePlaceholder:
@@ -27,8 +27,8 @@ const audiences = [
     name: "Sam Taylor",
     role: "UX Researcher",
     description:
-      "Map user journeys and uncover pain points by conducting research interviews with behavioral AI agents.",
-    icon: StoreIcon,
+      "Map user journeys and uncover critical pain points through research interviews with behavioral AI agents.",
+    icon: SearchIcon,
     bgColor: "bg-yellow-500",
     imagePlaceholder:
       "Professional portrait of a middle-aged man small business owner, confident expression, wearing hoodie, cozy coffee shop or small business background. Style: authentic, entrepreneurial, warm.",
@@ -37,8 +37,8 @@ const audiences = [
     name: "Jasmine Lee",
     role: "Startup Founder",
     description:
-      "Validate market opportunities and refine target audiences through AI persona research and behavioral modeling.",
-    icon: MicIcon,
+      "Validate market opportunities and refine target audiences using AI persona research and behavioral modeling.",
+    icon: MessageSquareIcon,
     bgColor: "bg-sky-500",
     imagePlaceholder:
       "Professional portrait of a young woman influencer, bright smile, wearing trendy casual attire, content creation setup background. Style: vibrant, engaging, modern social media aesthetic.",
