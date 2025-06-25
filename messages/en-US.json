@@ -584,8 +584,8 @@
       "researchTopic": "Research Topic",
       "interviewing": "Interviewing with {count} people",
       "reportBeingGenerated": "Report being generated...",
-      "realPersonDigitalTwin": "Real Person Digital Twin",
-      "highPrecisionDigitalTwin": "High-Precision Digital Twin",
+      "realPersonAgent": "Real Person Agent",
+      "highPrecisionAgent": "High-Precision Agent",
       "learnMore": "Learn More",
       "realPersonCount": "including {count} real person agent",
       "realPersonCountPlural": "including {count} real person agents"

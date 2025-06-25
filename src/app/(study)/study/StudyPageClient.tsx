@@ -93,7 +93,7 @@ const Agent = () => {
     useStudyContext();
   return (
     <section className="h-full w-1/2 max-lg:w-full pb-4 max-lg:pb-0 pl-2 max-lg:pl-0 flex flex-col items-stretch justify-start">
-      <GlobalHeader className="border-border/50">
+      <GlobalHeader className="h-12 border-border/50">
         {!replay ? (
           <>
             <ReportsListPanel />

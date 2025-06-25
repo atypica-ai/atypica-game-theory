@@ -61,7 +61,7 @@ export const RealPersonAgentsMethodology: FC = () => {
       cardDescription: "Next-generation consumer modeling for complex business challenges",
       coreValue: "Core Value",
       coreDesc:
-        "Real Person Agents create complete consumer 'digital twins' through in-depth interviews, capable of exhibiting consistent personality traits and decision logic in new contexts, providing new possibilities for solving complex problems in business and social domains.",
+        "Real Person Agents create complete consumer 'Real Person Agents' through in-depth interviews, capable of exhibiting consistent personality traits and decision logic in new contexts, providing new possibilities for solving complex problems in business and social domains.",
       advantageTitle: "Technical Advantages",
       advantages: [
         {

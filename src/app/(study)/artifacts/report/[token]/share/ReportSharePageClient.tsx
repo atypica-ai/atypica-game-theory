@@ -46,7 +46,7 @@ export default function ReportSharePageClient({
 
   return (
     <div className="h-dvh flex flex-col items-stretch justify-start bg-muted/20">
-      <GlobalHeader>
+      <GlobalHeader className="h-12">
         <div className="flex gap-2">
           <Button variant="outline" size="sm" className="h-8 gap-1" asChild>
             <Link href={studyReplayUrl}>
