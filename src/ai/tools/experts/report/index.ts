@@ -8,11 +8,11 @@ import {
 } from "@/ai/prompt";
 import { llm, LLMModelName, providerOptions } from "@/ai/provider";
 import { PlainTextToolResult, StatReporter } from "@/ai/tools/types";
-import { AnalystKind } from "@/app/(public)/featured-studies/data";
 import { triggerImagegenInReport } from "@/app/(study)/artifacts/lib/imagegen";
 import { generateReportScreenshot } from "@/app/(study)/artifacts/lib/screenshot";
 import { fileUrlToDataUrl } from "@/lib/attachments/actions";
 import { ChatMessageAttachment } from "@/lib/attachments/types";
+import { AnalystKind } from "@/lib/userChat/data";
 import { fixMalformedUnicodeString, generateToken } from "@/lib/utils";
 import { Analyst, AnalystReport, AnalystReportExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
@@ -373,7 +373,9 @@ export async function generateCover({
     messages: [{ role: "user", content: reportCoverPrologue({ locale, analyst, instruction }) }],
     maxSteps: 1,
     maxTokens: 10000,
-    onError: ({ error }) => reportLog.error(`Cover SVG error: ${(error as Error).message}`),
+    onError: ({ error }) => {
+      reportLog.warn(`Cover SVG error: ${(error as Error).message}`);
+    },
     onFinish: async ({ text, usage }) => {
       reportLog.info("Report cover SVG generated");
       await prisma.analystReport.update({

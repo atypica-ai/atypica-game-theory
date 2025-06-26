@@ -1,7 +1,7 @@
 "use server";
-import { AnalystKind } from "@/app/(public)/featured-studies/data";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
+import { AnalystKind } from "@/lib/userChat/data";
 import { prisma } from "@/prisma/prisma";
 
 export async function fetchUserStudies({

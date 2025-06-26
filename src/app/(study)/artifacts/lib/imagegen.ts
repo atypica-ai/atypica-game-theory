@@ -128,7 +128,7 @@ async function backgroundGenerateImage({
       const errorMsg = (error as Error).message;
       if (errorMsg.includes("No image generated")) {
         // 一个还不知道什么原因的 imagen-4.0-ultra 的错误
-        genLog.error(`generateGPTImage error: ${errorMsg}, fallback to generateMidjourney`);
+        genLog.warn(`generateGPTImage error: ${errorMsg}, fallback to generateMidjourney`);
         result = await generateMidjourney({ prompt, ratio, promptHash, genLog });
       } else {
         await prisma.imageGeneration.update({

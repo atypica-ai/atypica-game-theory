@@ -1,10 +1,10 @@
 import { reportHTMLSystem } from "@/ai/prompt";
-import { AnalystKind } from "@/app/(public)/featured-studies/data";
 import { TokenAlertDialog } from "@/components/TokenAlertDialog";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { ExtractServerActionData } from "@/lib/serverAction";
+import { AnalystKind } from "@/lib/userChat/data";
 import { formatDistanceToNow } from "@/lib/utils";
 import { Analyst } from "@/prisma/client";
 import { Loader2Icon } from "lucide-react";

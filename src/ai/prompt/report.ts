@@ -1,4 +1,4 @@
-import { AnalystKind } from "@/app/(public)/featured-studies/data";
+import { AnalystKind } from "@/lib/userChat/data";
 import { Analyst, AnalystReport } from "@/prisma/client";
 import { Locale } from "next-intl";
 import { reportHTMLSystemCreation } from "./report/creation";

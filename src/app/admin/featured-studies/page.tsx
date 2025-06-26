@@ -1,5 +1,4 @@
 "use client";
-import { AnalystKind } from "@/app/(public)/featured-studies/data";
 import { PaginationInfo } from "@/app/admin/types";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { ExtractServerActionData } from "@/lib/serverAction";
+import { AnalystKind } from "@/lib/userChat/data";
 import { formatDate } from "@/lib/utils";
 import { Analyst, UserChatExtra } from "@/prisma/client";
 import {
