@@ -3,5 +3,6 @@ export enum AnalystKind {
   planning = "planning",
   insights = "insights",
   creation = "creation",
+  productRnD = "productRnD",
   misc = "misc",
 }

@@ -716,7 +716,10 @@
       "placeholder": "Ask any business question about human behavior and decision-making. We'll model the subjective factors that drive real choices.",
       "sendLabel": "Study",
       "enterToSend": "Enter to start",
-      "tapToSend": "Tap to start"
+      "tapToSend": "Tap to start",
+      "studyType": "Study Type",
+      "generalStudy": "General Study",
+      "productRnDStudy": "Product R&D"
     },
     "UserTokensBalance": {
       "balance": "{balance} available tokens",

@@ -1,5 +1,5 @@
 "use client";
-import { createStudyUserChat } from "@/app/(study)/study/actions";
+import { createProductRnDStudyUserChat, createStudyUserChat } from "@/app/(study)/study/actions";
 import { FileAttachment } from "@/components/chat/FileAttachment";
 import {
   FileUploadButton,
@@ -15,6 +15,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { cn, useDevice } from "@/lib/utils";
 import { ArrowRightIcon, NotebookTextIcon, RotateCwIcon } from "lucide-react";
@@ -31,6 +33,7 @@ export function NewStudyInputBox({ className }: { className?: string }) {
   const [input, setInput] = useState("");
   const [uploadedFiles, setUploadedFiles] = useState<FileUploadInfo[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [studyType, setStudyType] = useState<"general" | "product-rnd">("general");
 
   // Create a properly memoized debounced function
   const debouncedSaveToLocalStorage = useDebouncedCallback((value: string) => {
@@ -57,18 +60,16 @@ export function NewStudyInputBox({ className }: { className?: string }) {
     if (!input.trim()) return;
     setIsLoading(true);
     try {
-      const result = await createStudyUserChat(
-        {
-          role: "user",
-          content: input,
-        },
-        uploadedFiles.map((file) => ({
-          objectUrl: file.objectUrl,
-          name: file.name,
-          mimeType: file.mimeType,
-          size: file.size,
-        })),
-      );
+      const attachments = uploadedFiles.map((file) => ({
+        objectUrl: file.objectUrl,
+        name: file.name,
+        mimeType: file.mimeType,
+        size: file.size,
+      }));
+      const result =
+        studyType === "product-rnd"
+          ? await createProductRnDStudyUserChat({ role: "user", content: input }, attachments)
+          : await createStudyUserChat({ role: "user", content: input }, attachments);
       if (!result.success) {
         throw result;
       }
@@ -87,10 +88,30 @@ export function NewStudyInputBox({ className }: { className?: string }) {
       onSubmit={handleSubmit}
       className={cn(
         "relative group border border-border bg-background transition-colors",
-        // "hover:border-primary focus-within:border-primary",
         className,
       )}
     >
+      {/* Study Type Selector */}
+      <div className="px-4 pt-3 pb-2 border-b border-border">
+        <RadioGroup
+          value={studyType}
+          onValueChange={(value) => setStudyType(value as "general" | "product-rnd")}
+          className="flex gap-4"
+        >
+          <div className="flex items-center space-x-1.5">
+            <RadioGroupItem value="general" id="general" className="h-3 w-3" />
+            <Label htmlFor="general" className="text-xs cursor-pointer">
+              {t("generalStudy")}
+            </Label>
+          </div>
+          <div className="flex items-center space-x-1.5">
+            <RadioGroupItem value="product-rnd" id="product-rnd" className="h-3 w-3" />
+            <Label htmlFor="product-rnd" className="text-xs cursor-pointer">
+              {t("productRnDStudy")}
+            </Label>
+          </div>
+        </RadioGroup>
+      </div>
       <Textarea
         value={input}
         onChange={(e) => {

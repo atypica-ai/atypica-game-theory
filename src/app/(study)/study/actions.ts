@@ -5,6 +5,7 @@ import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { truncateForTitle } from "@/lib/textUtils";
+import { AnalystKind } from "@/lib/userChat/data";
 import { createUserChat } from "@/lib/userChat/lib";
 import {
   Analyst,
@@ -71,6 +72,29 @@ export async function createStudyUserChat(
       },
     };
   });
+}
+
+export async function createProductRnDStudyUserChat(
+  {
+    role,
+    content,
+  }: {
+    role: "user" | "assistant";
+    content: string;
+  },
+  attachments?: ChatMessageAttachment[],
+): Promise<ServerActionResult<Omit<UserChat, "kind"> & { kind: "study" }>> {
+  const result = await createStudyUserChat({ role, content }, attachments);
+  if (result.success) {
+    const studyUserChatId = result.data.id;
+    await prisma.analyst.update({
+      where: { studyUserChatId },
+      data: {
+        kind: AnalystKind.productRnD,
+      },
+    });
+  }
+  return result;
 }
 
 export async function fetchUserChatByToken<Tkind extends UserChat["kind"]>(
