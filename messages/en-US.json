@@ -805,7 +805,11 @@
       "alipay": "Alipay",
       "wechatPay": "WeChat Pay",
       "creditCard": "Credit Card",
-      "redirectToStripe": "You'll be redirected to our secure payment page"
+      "redirectToStripe": "You'll be redirected to our secure payment page",
+      "upgradeNotice": {
+        "title": "Pro Plan Upgrade",
+        "description": "You are currently subscribed to the Pro plan. When you upgrade, any unused tokens from your Pro plan will be credited towards the cost of the Max plan, and your new Max plan will start immediately."
+      }
     },
     "UserChatSession": {
       "continue": "Continue"

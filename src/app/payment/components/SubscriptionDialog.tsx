@@ -11,12 +11,13 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getDeployRegion } from "@/lib/request/deployRegion";
 import { cn } from "@/lib/utils";
-import { SubscriptionPlan } from "@/prisma/client";
+import { SubscriptionPlan, UserSubscription, UserSubscriptionExtra } from "@/prisma/client";
 import {
   CalendarIcon,
   CoinsIcon,
   CreditCardIcon,
   GiftIcon,
+  InfoIcon,
   LoaderCircle,
   StarIcon,
 } from "lucide-react";
@@ -31,6 +32,11 @@ interface SubscriptionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
+  activeSubscription?:
+    | (Omit<UserSubscription, "extra"> & {
+        extra: UserSubscriptionExtra;
+      })
+    | null;
 }
 
 export const SubscriptionDialog = ({
@@ -38,6 +44,7 @@ export const SubscriptionDialog = ({
   open,
   onOpenChange,
   onSuccess,
+  activeSubscription,
 }: SubscriptionDialogProps & { plan?: SubscriptionPlan }) => {
   if (open && !plan) {
     throw new Error("SubscriptionDialog requires a plan");
@@ -102,6 +109,10 @@ export const SubscriptionDialog = ({
     return "-";
   }, [paymentProvider, plan]);
 
+  const isUpgradeFromPro = useMemo(() => {
+    return activeSubscription?.plan === SubscriptionPlan.pro && plan === SubscriptionPlan.max;
+  }, [activeSubscription, plan]);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
@@ -140,6 +151,18 @@ export const SubscriptionDialog = ({
           </>
         ) : (
           <>
+            {isUpgradeFromPro && (
+              <div className="p-3 border rounded-lg mb-1 bg-blue-50 border-blue-200">
+                <div className="flex items-start gap-2">
+                  <InfoIcon className="size-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <div className="text-blue-800">
+                    <div className="text-sm font-medium mb-1">{t("upgradeNotice.title")}</div>
+                    <div className="text-xs text-blue-700">{t("upgradeNotice.description")}</div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="p-4 border rounded-lg mb-4 bg-secondary/30">
               <div className="flex justify-between items-center">
                 <div>
@@ -183,7 +206,7 @@ export const SubscriptionDialog = ({
               value={paymentProvider}
               onValueChange={(value) => setPaymentProvider(value as PaymentProvider)}
             >
-              <TabsList className="grid grid-cols-2 mb-4">
+              <TabsList className="grid grid-cols-2 mb-4 w-full">
                 {/* <TabsTrigger
                   value={PaymentProvider.Pingxx}
                   disabled={loading}

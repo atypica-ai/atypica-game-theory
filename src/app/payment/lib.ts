@@ -8,6 +8,13 @@ import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import Stripe from "stripe";
 
+export const ONCE_RECHARGE_TOKENS = 1_000_000;
+export const ONCE_RECHARGE_GIFT = 1_000_000;
+export const PRO_MONTHLY_TOKENS = 2_000_000;
+export const PRO_MONTHLY_GIFT = 1_000_000;
+export const MAX_MONTHLY_TOKENS = 5_000_000;
+export const MAX_MONTHLY_GIFT = 3_000_000;
+
 const globalForStripe = global as unknown as {
   stripe: Stripe | undefined;
 };
@@ -28,8 +35,8 @@ async function recharge1MTokens({
   userId: number;
   paymentRecordId: number;
 }) {
-  const rechargeAmount = 1_000_000;
-  const giftAmount = 1_000_000;
+  const rechargeAmount = ONCE_RECHARGE_TOKENS;
+  const giftAmount = ONCE_RECHARGE_GIFT;
   await prisma.$transaction(async (tx) => {
     await tx.userTokensLog.create({
       data: {
@@ -91,15 +98,22 @@ export async function resetMonthlyTokens({ userId }: { userId: number }) {
           value: -rest,
         },
       });
+      userTokens = await tx.userTokens.update({
+        where: { userId },
+        data: {
+          monthlyBalance: { decrement: rest },
+          monthlyResetAt: null,
+        },
+      });
+    } else {
+      // 如果 monthlyBalance < 0，保留
+      userTokens = await tx.userTokens.update({
+        where: { userId },
+        data: {
+          monthlyResetAt: null,
+        },
+      });
     }
-    // 如果 monthlyBalance < 0，保留
-    userTokens = await tx.userTokens.update({
-      where: { userId },
-      data: {
-        monthlyBalance: { decrement: rest },
-        monthlyResetAt: null,
-      },
-    });
   });
 
   // now 在 [startsAt, endsAt) 的区间内，理应只有一个，所以 orderBy 和 findFirst 都其实没意义
@@ -117,11 +131,11 @@ export async function resetMonthlyTokens({ userId }: { userId: number }) {
   let rechargeAmount;
   let giftAmount;
   if (activeSubscription.plan === SubscriptionPlan.pro) {
-    rechargeAmount = 2_000_000;
-    giftAmount = 1_000_000;
+    rechargeAmount = PRO_MONTHLY_TOKENS; // 2_000_000
+    giftAmount = PRO_MONTHLY_GIFT; // 1_000_000
   } else if (activeSubscription.plan === SubscriptionPlan.max) {
-    rechargeAmount = 5_000_000;
-    giftAmount = 3_000_000;
+    rechargeAmount = MAX_MONTHLY_TOKENS; // 5_000_000
+    giftAmount = MAX_MONTHLY_GIFT; // 3_000_000
   } else {
     return;
   }
@@ -219,7 +233,7 @@ export async function handlePaymentSuccess({
   invoiceData?: Stripe.Invoice;
 }) {
   const userId = paymentRecord.userId;
-  await prisma.userTokens.upsert({
+  let userTokens = await prisma.userTokens.upsert({
     where: { userId },
     create: { userId }, // 默认 permanentBalance 和 monthlyBalance 都是 0
     update: {},
@@ -247,6 +261,38 @@ export async function handlePaymentSuccess({
     // reset monthly tokens
     await resetMonthlyTokens({ userId });
   } else if (productName === ProductName.MAX1MONTH) {
+    const { activeSubscription, stripeSubscriptionId } = await fetchActiveUserSubscription({
+      userId,
+    });
+    // 如果当前套餐是 pro，则升级，否则只是简单的延长套餐
+    if (activeSubscription && activeSubscription.plan === SubscriptionPlan.pro) {
+      if (!userTokens.monthlyResetAt) {
+        throw new Error(`Active subscription found, but monthlyResetAt value is not set`);
+      }
+      if (stripeSubscriptionId) {
+        const stripe = stripeClient();
+        try {
+          await stripe.subscriptions.cancel(stripeSubscriptionId);
+        } catch (error) {
+          rootLogger.error(
+            `Failed to cancel Stripe subscription during upgrade. The process will continue and this error will be ignored, but further investigation is required: ${error}`,
+          );
+        }
+      }
+      const now = new Date();
+      now.setMilliseconds(0);
+      await prisma.userSubscription.update({
+        where: { id: activeSubscription.id },
+        data: { endsAt: now },
+      });
+      // subscription 取消以后，把 monthlyResetAt 设置成当前时间，resetMonthlyTokens 里面会进一步重置
+      userTokens = await prisma.userTokens.update({
+        where: { userId },
+        data: { monthlyResetAt: now },
+      });
+    }
+    // 注意，一定要在前面先取消当前 pro 套餐，然后下面再创建新的 userSubscription，否则 fetchActiveUserSubscription 会返回新创建的记录
+    // 现在一定是 stripe，所以就算是 pro 到 max 的 upgrade，新的套餐时间也是从当前时间开始的，不是从之前的 pro 套餐结束后开始，这符合预期
     const { planStartsAt, planEndsAt } = await calculatePlanStartEnd({
       userId,
       invoice: invoiceData,

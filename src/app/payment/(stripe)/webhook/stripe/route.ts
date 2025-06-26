@@ -110,12 +110,18 @@ export async function POST(req: Request) {
           return new Response("Duplicate webhook received", { status: 400 });
         }
       }
-      await handlePaymentSuccess({
-        paymentRecord,
-        productName: metadata.productName,
-        invoiceData,
-      });
-      return NextResponse.json({ received: true }, { status: 200 });
+      try {
+        await handlePaymentSuccess({
+          paymentRecord,
+          productName: metadata.productName,
+          invoiceData,
+        });
+        return NextResponse.json({ received: true }, { status: 200 });
+      } catch (error) {
+        const errorMsg = `Failed to handle payment success: ${(error as Error).message}`;
+        rootLogger.error(errorMsg);
+        return new Response(errorMsg, { status: 500 });
+      }
     }
     // case "checkout.session.completed": {
     //   const sessionData = event.data.object;

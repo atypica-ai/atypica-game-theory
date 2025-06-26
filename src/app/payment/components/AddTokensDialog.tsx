@@ -134,7 +134,7 @@ export const AddTokensDialog = ({ open, onOpenChange, onSuccess }: AddTokensDial
               value={paymentProvider}
               onValueChange={(value) => setPaymentProvider(value as PaymentProvider)}
             >
-              <TabsList className="grid grid-cols-2 mb-4">
+              <TabsList className="grid grid-cols-2 mb-4 w-full">
                 {/* <TabsTrigger
                   value={PaymentProvider.Pingxx}
                   disabled={loading}

@@ -197,7 +197,7 @@ export default function PricingPageClient({
             </div>
           </CardHeader>
           <CardContent className="flex-grow space-y-4">
-            {!activeSubscription ? (
+            {!activeSubscription || activeSubscription.plan === SubscriptionPlan.pro ? (
               <Button
                 className="w-full mb-6"
                 onClick={() => setIsSubscriptionDialogOpen({ plan: SubscriptionPlan.max })}
@@ -271,6 +271,7 @@ export default function PricingPageClient({
         onOpenChange={(open) => {
           if (!open) setIsSubscriptionDialogOpen(null);
         }}
+        activeSubscription={activeSubscription}
       />
     </div>
   );
