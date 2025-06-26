@@ -166,7 +166,7 @@ export async function createStripeSession({
 
   // const clientIp = await getRequestClientIp();
   const paymentMethod: PaymentMethod = PaymentMethod.stripe;
-  const finalPrice = Math.floor((amountInCents - discountAmountInCents) / 100);
+  const finalPrice = (amountInCents - discountAmountInCents) / 100;
   const lines = [
     {
       productId: product.id,
