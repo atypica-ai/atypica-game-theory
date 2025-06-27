@@ -1,5 +1,6 @@
 import "server-only";
 
+export { audienceCallTool } from "./experts/audienceCall";
 export { buildPersonaTool } from "./experts/buildPersona";
 export { interviewChatTool } from "./experts/interviewChat";
 export { reasoningThinkingTool } from "./experts/reasoning";

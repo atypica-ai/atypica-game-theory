@@ -43,6 +43,7 @@ export enum ToolName {
   scoutTaskChat = "scoutTaskChat",
   buildPersona = "buildPersona",
   scoutSocialTrends = "scoutSocialTrends",
+  audienceCall = "audienceCall",
 
   saveAnalyst = "saveAnalyst",
   saveAnalystStudySummary = "saveAnalystStudySummary",

@@ -6,6 +6,7 @@ import {
   WebSearchResultMessage,
 } from "@/ai/tools/experts/ToolMessage";
 import { InterviewChatResultMessage } from "@/ai/tools/experts/ToolMessage/SaveAnalystToolResultMessage";
+import { ScoutSocialTrendsResultMessage } from "@/ai/tools/experts/ToolMessage/ScoutSocialTrendsResultMessage";
 import { SearchPersonasResultMessage } from "@/ai/tools/experts/ToolMessage/SearchPersonasResultMessage";
 import {
   SocialPostCommentsResultMessage,
@@ -63,6 +64,10 @@ export const ToolInvocationDisplay = ({
       return <GenerateReportResultMessage toolInvocation={toolInvocation} />;
     case ToolName.scoutTaskChat:
       return <ScoutTaskChatResultMessage toolInvocation={toolInvocation} />;
+    case ToolName.scoutSocialTrends:
+      return <ScoutSocialTrendsResultMessage toolInvocation={toolInvocation} />;
+    case ToolName.audienceCall:
+      return <ReasoningThinkingResultMessage toolInvocation={toolInvocation} />;
     case ToolName.buildPersona:
       return <BuildPersonaResultMessage toolInvocation={toolInvocation} />;
     case ToolName.searchPersonas:
