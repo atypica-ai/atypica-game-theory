@@ -6,7 +6,6 @@ import {
   audienceCallTool,
   generateReportTool,
   handleToolCallError,
-  reasoningThinkingTool,
   saveAnalystStudySummaryTool,
   saveAnalystTool,
   scoutSocialTrendsTool,
@@ -64,7 +63,6 @@ export async function productRnDAgentRequest({
   const agentToolArgs = { locale, abortSignal, statReport, studyLog };
   const allTools = {
     [ToolName.saveAnalyst]: saveAnalystTool({ userId, studyUserChatId }),
-    [ToolName.reasoningThinking]: reasoningThinkingTool({ ...agentToolArgs }),
     [ToolName.audienceCall]: audienceCallTool({ ...agentToolArgs }),
     [ToolName.scoutSocialTrends]: scoutSocialTrendsTool({ userId, ...agentToolArgs }),
     [ToolName.saveAnalystStudySummary]: saveAnalystStudySummaryTool({
@@ -87,7 +85,6 @@ export async function productRnDAgentRequest({
         [
           // ToolName.requestInteraction,
           ToolName.saveAnalyst,
-          ToolName.reasoningThinking,
           ToolName.toolCallError,
         ].includes(key as ToolName),
       ),
@@ -100,7 +97,6 @@ export async function productRnDAgentRequest({
       Object.entries(allTools).filter(([key]) =>
         [
           // ToolName.saveAnalyst,
-          ToolName.reasoningThinking,
           ToolName.scoutSocialTrends,
           ToolName.audienceCall,
           ToolName.saveAnalystStudySummary,
@@ -119,7 +115,6 @@ export async function productRnDAgentRequest({
         [
           // ToolName.requestInteraction,
           ToolName.generateReport,
-          ToolName.reasoningThinking,
           ToolName.toolCallError,
         ].includes(key as ToolName),
       ),
