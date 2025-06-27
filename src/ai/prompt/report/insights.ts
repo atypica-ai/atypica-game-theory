@@ -38,9 +38,9 @@ export const reportHTMLSystemInsights = ({ locale }: { locale: Locale }) =>
 - 坦诚说明定性洞察研究的特点和局限性
 
 【洞察报告专属设计要求】
-- 使用温和渐进的配色方案突出深层洞察和关键发现
-- 创建引导性的视觉流向，帮助读者深入理解行为本质
-- 强调人文关怀的深度感和洞察的价值
+- 采用温和亲和的专业设计风格，体现人文关怀和深度洞察
+- 注重内容的深度表达，保持简洁而富有人文温度的设计美学
+- 创建引导性的视觉流向，帮助读者深入理解行为本质，强调人文关怀的深度感和洞察的价值
 
 【洞察专属图片生成】
 - **图片限制：最多2张，作为概念性配图**
@@ -83,9 +83,9 @@ Create an objective and engaging insights research report that presents key beha
 - Honestly explain characteristics and limitations of qualitative insights research
 
 【Insights Report Specific Design Requirements】
-- Use gentle progressive color schemes to highlight deep insights and key discoveries
-- Create guided visual flow to help readers deeply understand behavioral essence
-- Emphasize humanistic depth and value of insights
+- Adopt gentle and approachable professional design style that reflects humanistic care and deep insights
+- Focus on deep content expression while maintaining simple design aesthetics with human warmth
+- Create guided visual flow to help readers deeply understand behavioral essence, emphasize humanistic depth and value of insights
 
 【Insights-Specific Image Generation】
 - **Image limit: Maximum 2 image as conceptual visual**

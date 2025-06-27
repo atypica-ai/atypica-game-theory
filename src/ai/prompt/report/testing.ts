@@ -38,9 +38,9 @@ export const reportHTMLSystemTesting = ({ locale }: { locale: Locale }) =>
 - 坦诚说明定性研究的特点和局限性
 
 【测试报告专属设计要求】
-- 使用对比鲜明的配色方案突出优胜选项和关键差异
-- 创建清晰的对比视觉结构，引导读者高效获取测试结果
-- 强调数据驱动的专业感和可信度
+- 采用清晰分析性的专业设计风格，体现测试结果的客观性和可信度
+- 注重对比和分析的视觉呈现，突出测试结果的差异性和关键发现
+- 创建清晰的对比视觉结构，引导读者高效获取测试结果，强调数据驱动的专业感和可信度
 
 【测试专属图片生成】
 - **图片限制：最多2张，作为概念性配图**
@@ -83,9 +83,9 @@ Create an objective and engaging testing research report that presents key testi
 - Honestly explain characteristics and limitations of qualitative research
 
 【Testing Report Specific Design Requirements】
-- Use high-contrast color schemes to highlight winning options and key differences
-- Create clear comparative visual structure to guide readers to efficiently obtain testing results
-- Emphasize data-driven professionalism and credibility
+- Adopt clear analytical professional design style that reflects objectivity and credibility of testing results
+- Focus on visual presentation of comparisons and analysis, highlighting differences in testing results and key findings
+- Create clear comparative visual structure to guide readers to efficiently obtain testing results, emphasize data-driven professionalism and credibility
 
 【Testing-Specific Image Generation】
 - **Image limit: Maximum 2 image as conceptual visual**

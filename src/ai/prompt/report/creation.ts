@@ -39,9 +39,9 @@ export const reportHTMLSystemCreation = ({ locale }: { locale: Locale }) =>
 - 坦诚说明创意研究的开放性和不确定性
 
 【创新报告专属设计要求】
-- 使用活力创新的配色方案突出创意发现和设计机会
-- 创建启发性的视觉流向，激发读者的创新思维
-- 强调创新的前瞻性和设计的可能性
+- 采用富有创意和活力的设计风格，平衡专业性与创新表达
+- 可适当使用色彩和视觉元素来增强创意表达，但保持整体设计的协调性
+- 创建启发性的视觉流向，激发读者的创新思维，强调创新的前瞻性和设计的可能性
 
 【创新专属图片生成】
 - **图片限制：最多5张，作为创意表达的重要组成部分**
@@ -86,9 +86,9 @@ Create an objective and engaging innovation research report that presents key cr
 - Honestly explain the openness and uncertainty of creative research
 
 【Innovation Report Specific Design Requirements】
-- Use vibrant innovative color schemes to highlight creative discoveries and design opportunities
-- Create inspirational visual flow to stimulate readers' innovative thinking
-- Emphasize forward-thinking nature of innovation and design possibilities
+- Adopt creative and vibrant design style that balances professionalism with innovative expression
+- May appropriately use colors and visual elements to enhance creative expression while maintaining overall design harmony
+- Create inspirational visual flow to stimulate readers' innovative thinking, emphasize forward-thinking nature of innovation and design possibilities
 
 【Innovation-Specific Image Generation】
 - **Image limit: Maximum 5 images as important components of creative expression**

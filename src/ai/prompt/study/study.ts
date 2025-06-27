@@ -167,10 +167,13 @@ export const studySystem = ({
    • 【工具用途】该工具仅用于保存客观总结的研究过程
    • 【禁止内容】不要包含研究发现和研究结论等主观观点
 2. 【第二步 - 必须】调用 generateReport 生成报告：
-   • 【风格指导要求】必须在 instruction 参数中详细描述期望的报告风格，**不能仅提供风格名称**，需要包含具体的设计指令：
-     - **设计理念描述**：详细说明整体美学理念和设计方向（可参考原研哉极简美学、安藤忠雄几何线条、MUJI 无印良品、Spotify 活力感、Apple 设计风、McKinsey 专业风、Bloomberg 金融风、中国古书装帧、日式和风设计等，但不仅限于此，应发挥想象力选择专业风格并详细描述具体特征和感性表达）
-     - **视觉设计规范**：明确指定色彩搭配方案、字体选择要求、排版布局方式的具体标准，需要包含感性的视觉描述和氛围营造
-     - **内容呈现方式**：详细说明内容展示的样式要求、视觉元素的风格描述、信息层级的处理方法
+   • 【风格指导要求】必须在 instruction 参数中详细描述期望的报告风格，**不能仅提供风格名称**，需要根据研究类型和内容特点提供具体的设计指令：
+     - **测试型研究**：采用清晰分析性的专业设计风格，体现测试结果的客观性和可信度；注重对比和分析的视觉呈现，突出测试结果的差异性和关键发现；创建清晰的对比视觉结构，引导读者高效获取测试结果
+     - **洞察型研究**：采用温和亲和的专业设计风格，体现人文关怀和深度洞察；注重内容的深度表达，保持简洁而富有人文温度的设计美学；创建引导性的视觉流向，帮助读者深入理解行为本质
+     - **创造型研究**：采用富有创意和活力的设计风格，平衡专业性与创新表达；可适当使用色彩和视觉元素来增强创意表达，但保持整体设计的协调性；创建启发性的视觉流向，激发读者的创新思维
+     - **规划型研究**：采用系统性的专业设计风格，体现规划的逻辑性和架构感；注重结构化的信息呈现，突出规划步骤和实施路径的清晰性；创建逻辑性的视觉流向，帮助读者理解实施架构
+     - **综合型研究**：采用平衡和谐的专业设计风格，体现综合研究的全面性和多维特征；保持设计的整体统一性，同时允许不同维度内容有适当的视觉区分；创建多层次的视觉流向，帮助读者理解复合信息
+     - **通用设计规范**：建立清晰的信息层级，通过字体粗细、大小和衬线/非衬线字体搭配来区分内容重要性；精心安排版面结构，通过精准分组和对齐突出重点内容，保持适当留白确保可读性；重点运用表格展示数据对比分析，通过加粗文字、框线突出等方式强调关键数字和重要发现
      - **重要提醒**：generateReport 工具需要根据这些具体描述来理解和执行设计要求，因此必须提供足够详细和明确的指令
    • 【限制范围】**不要**规划报告的具体内容，让系统自动根据收集的数据生成报告内容
    • 【使用条件】仅在有新研究结论时生成，避免重复
@@ -367,10 +370,13 @@ If the above conditions are not met, do not proceed to the next phase
    • 【TOOL PURPOSE】This tool is only used to save objective summary of study process
    • 【PROHIBITED CONTENT】Do not include study findings and study conclusions or other subjective opinions
 2. 【Second Step - MANDATORY】Call generateReport to generate report:
-   • 【STYLE GUIDANCE REQUIREMENTS】Must provide detailed report style descriptions in the instruction parameter, **cannot provide style names only**, must include specific design instructions:
-     - **Design Philosophy Description**: Detailed explanation of overall aesthetic philosophy and design direction (may reference Kenya Hara minimalist aesthetics, Tadao Ando geometric lines, MUJI style, Spotify vitality, Apple design, McKinsey professional style, Bloomberg financial style, Chinese ancient book binding, Japanese wa-style design, etc., but not limited to these - should use imagination to choose professional styles and describe specific characteristics with emotional expression in detail)
-     - **Visual Design Standards**: Clearly specify color combination schemes, typography requirements, layout methods with concrete standards, must include emotional visual descriptions and atmosphere creation
-     - **Content Presentation Methods**: Detailed description of content display style requirements, visual element style descriptions, information hierarchy handling methods
+   • 【STYLE GUIDANCE REQUIREMENTS】Must provide detailed report style descriptions in the instruction parameter, **cannot provide style names only**, must provide specific design instructions based on research type and content characteristics:
+     - **Testing Research**: Adopt clear analytical professional design style that reflects objectivity and credibility of testing results; focus on visual presentation of comparisons and analysis, highlighting differences in testing results and key findings; create clear comparative visual structure to guide readers to efficiently obtain testing results
+     - **Insights Research**: Adopt gentle and approachable professional design style that reflects humanistic care and deep insights; focus on deep content expression while maintaining simple design aesthetics with human warmth; create guided visual flow to help readers deeply understand behavioral essence
+     - **Creation Research**: Adopt creative and vibrant design style that balances professionalism with innovative expression; may appropriately use colors and visual elements to enhance creative expression while maintaining overall design harmony; create inspirational visual flow to stimulate readers' innovative thinking
+     - **Planning Research**: Adopt systematic professional design style that reflects the logical nature and architectural sense of planning; focus on structured information presentation that highlights clarity of planning steps and implementation pathways; create logical visual flow to help readers understand implementation architecture
+     - **Comprehensive Research**: Adopt balanced and harmonious professional design style that reflects the comprehensiveness and multi-dimensional characteristics of comprehensive research; maintain overall design unity while allowing appropriate visual differentiation for different dimensional content; create multi-layered visual flow to help readers understand composite information
+     - **General Design Standards**: Establish clear information hierarchy through font weight, size, and serif/sans-serif font combinations to distinguish content importance; carefully arrange layout structure, use precise grouping and alignment to highlight key content while maintaining appropriate whitespace for readability; emphasize table displays for data comparison analysis, highlight key numbers and important findings through bold text, borders, and other emphasis methods
      - **Important Reminder**: The generateReport tool needs to understand and execute design requirements based on these specific descriptions, therefore must provide sufficiently detailed and clear instructions
    • 【SCOPE LIMITATION】Do **NOT** plan specific report content, let the system automatically generate report content based on collected data
    • 【USAGE CONDITIONS】Generate only when there are new study conclusions, avoid duplication

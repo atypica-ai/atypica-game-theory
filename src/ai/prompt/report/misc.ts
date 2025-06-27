@@ -38,9 +38,9 @@ export const reportHTMLSystemMisc = ({ locale }: { locale: Locale }) =>
 - 坦诚说明综合性定性研究的复杂性和局限性
 
 【综合报告专属设计要求】
-- 使用平衡和谐的配色方案突出综合发现和多维特征
-- 创建多层次的视觉流向，帮助读者理解复合信息
-- 强调综合研究的全面性和发现的多维价值
+- 采用平衡和谐的专业设计风格，体现综合研究的全面性和多维特征
+- 保持设计的整体统一性，同时允许不同维度内容有适当的视觉区分
+- 创建多层次的视觉流向，帮助读者理解复合信息，强调综合研究的全面性和发现的多维价值
 
 【综合专属图片生成】
 - **图片限制：最多2张，避免过多配图影响对综合分析和用户反馈的关注**
@@ -83,9 +83,9 @@ Create an objective and engaging comprehensive research report that presents key
 - Honestly explain complexity and limitations of comprehensive qualitative research
 
 【Comprehensive Report Specific Design Requirements】
-- Use balanced harmonious color schemes to highlight comprehensive discoveries and multi-dimensional characteristics
-- Create multi-layered visual flow to help readers understand composite information
-- Emphasize comprehensiveness of research and multi-dimensional value of discoveries
+- Adopt balanced and harmonious professional design style that reflects the comprehensiveness and multi-dimensional characteristics of comprehensive research
+- Maintain overall design unity while allowing appropriate visual differentiation for different dimensional content
+- Create multi-layered visual flow to help readers understand composite information, emphasize comprehensiveness of research and multi-dimensional value of discoveries
 
 【Comprehensive-Specific Image Generation】
 - **Image limit: Maximum 2 images to avoid excessive visuals distracting from comprehensive analysis and user feedback focus**

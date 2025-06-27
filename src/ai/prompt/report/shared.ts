@@ -5,15 +5,12 @@ export const sharedTechnicalSpecs = ({ locale }: { locale: Locale }) =>
     ? `
 【技术实现要求】
 - 使用 Tailwind CSS 构建响应式布局
-- 选择易读的字体系统
 - 为不同屏幕尺寸优化布局
-- 重要发现和数据应突出显示
-- 通过合理的留白和间距确保报告易于浏览
 
-【风格实现原则】
-- 严格按照指定的风格要求进行设计
-- 如果未明确指定风格，使用简洁专业的默认样式
-- 确保所选风格与报告内容和目标受众匹配
+【专业设计标准】
+- 采用专业的字体系统，确保内容清晰易读
+- 避免使用过多颜色卡片和高亮颜色边框
+- 保持专业的整体设计风格
 
 【视觉内容增强】
 - 仅在特定场景下生成配图：创意设计、产品概念、包装设计、品牌视觉概念等
@@ -60,15 +57,12 @@ export const sharedTechnicalSpecs = ({ locale }: { locale: Locale }) =>
     : `
 【Technical Implementation Requirements】
 - Use Tailwind CSS for responsive layouts
-- Choose readable font systems
 - Optimize layouts for different screen sizes
-- Important findings and data should be prominently displayed
-- Ensure report is easy to browse through proper whitespace and spacing
 
-【Style Implementation Guidelines】
-- Strictly follow the style requirements specified in the instruction
-- If the style is not specified, use a clean and professional default style
-- Ensure the selected style matches the report content and target audience
+【Professional Design Standards】
+- Use professional font systems to ensure clear and readable content
+- Avoid using excessive colored cards and highlighted color borders
+- Maintain professional overall design style
 
 【Visual Content Enhancement】
 - Generate illustrations only in specific scenarios: creative design, product concepts, packaging design, brand visual concepts, etc.

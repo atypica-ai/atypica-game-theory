@@ -39,9 +39,9 @@ export const reportHTMLSystemPlanning = ({ locale }: { locale: Locale }) =>
 - 坦诚说明定性规划研究的特点和不确定性
 
 【规划报告专属设计要求】
-- 使用稳重专业的配色方案突出规划发现和实施框架
-- 创建逻辑性的视觉流向，帮助读者理解实施架构
-- 强调规划的系统性和实施的可操作性
+- 采用系统性的专业设计风格，体现规划的逻辑性和架构感
+- 注重结构化的信息呈现，突出规划步骤和实施路径的清晰性
+- 创建逻辑性的视觉流向，帮助读者理解实施架构，强调规划的系统性和实施的可操作性
 
 【规划专属图片生成】
 - **图片限制：最多2张，作为概念性配图**
@@ -85,9 +85,9 @@ Create an objective and engaging planning research report that presents key plan
 - Honestly explain characteristics and uncertainties of qualitative planning research
 
 【Planning Report Specific Design Requirements】
-- Use stable professional color schemes to highlight planning discoveries and implementation frameworks
-- Create logical visual flow to help readers understand implementation architecture
-- Emphasize systematic nature of planning and actionability of implementation
+- Adopt systematic professional design style that reflects the logical nature and architectural sense of planning
+- Focus on structured information presentation that highlights clarity of planning steps and implementation pathways
+- Create logical visual flow to help readers understand implementation architecture, emphasize systematic nature of planning and actionability of implementation
 
 【Planning-Specific Image Generation】
 - **Image limit: Maximum 2 image as conceptual visual**
