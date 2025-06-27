@@ -1,11 +1,13 @@
 import { persistentAIMessageToDB, prepareMessagesForStreaming } from "@/ai/messageUtils";
 import { authOptions } from "@/lib/auth";
 import { rootLogger } from "@/lib/logging";
+import { AnalystKind } from "@/lib/userChat/data";
 import { prisma } from "@/prisma/prisma";
 import { CreateMessage, generateId, Message } from "ai";
 import { getServerSession } from "next-auth/next";
 import { NextResponse } from "next/server";
 import { noQuotaAgentRequest } from "./noQuotaAgentRequest";
+import { productRnDAgentRequest } from "./productRnDAgentRequest";
 import { studyAgentRequest } from "./studyAgentRequest";
 
 export async function POST(req: Request) {
@@ -24,6 +26,9 @@ export async function POST(req: Request) {
   // 找到有效的 userChat，并确保有权限
   const userChat = await prisma.userChat.findUnique({
     where: { id: studyUserChatId, kind: "study" },
+    include: {
+      analyst: true,
+    },
   });
   if (!userChat) {
     return NextResponse.json({ error: "UserChat not found" }, { status: 404 });
@@ -34,8 +39,12 @@ export async function POST(req: Request) {
       { status: 403 },
     );
   }
-
   const studyLog = rootLogger.child({ studyUserChatId, studyUserChatToken: userChat.token });
+  if (!userChat.analyst) {
+    const msg = `UserChat ${userChat.id} does not have an analyst`;
+    studyLog.error(msg);
+    return NextResponse.json({ error: msg }, { status: 500 });
+  }
 
   // 首先要把新提交的消息保存
   // 如果是 user message，会新建一条，
@@ -63,6 +72,8 @@ export async function POST(req: Request) {
   const balance = permanentBalance + monthlyBalance;
   if (balance <= 0) {
     return await noQuotaAgentRequest(params);
+  } else if (userChat.analyst.kind === AnalystKind.productRnD) {
+    return await productRnDAgentRequest(params);
   } else {
     return await studyAgentRequest(params);
   }
