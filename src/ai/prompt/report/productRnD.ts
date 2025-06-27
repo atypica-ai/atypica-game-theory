@@ -81,12 +81,12 @@ export const reportHTMLSystemProductRnD = ({ locale }: { locale: Locale }) =>
 - 每个板块内容的长度需要根据排版的需求平衡
 
 【产品创新专属设计要求】
-- 使用1页横版PPT格式，信息一目了然
-- 活力创新的配色方案突出创意发现
-- 明显的信息层级，凸显关键信息模块
-- 合理安排空间，减少留白，提供更多信息
-- 包含表格展示和高亮数字/数据体现专业度
-- 避免花哨颜色组合，使用专业感配色
+- 使用商务PPT演示格式（16:9宽屏横版布局），信息紧凑高效呈现，可为单页或多页结构
+- 采用黑白灰专业配色方案，体现咨询公司级别的严肃性和权威感
+- 建立清晰的信息层级：通过字体粗细、大小和衬线/非衬线字体搭配来区分内容重要性
+- 精心安排版面结构：信息密度较高，减少不必要留白，通过精准分组和对齐突出重点内容
+- 重点运用表格展示数据对比分析，通过加粗文字、框线突出等方式强调关键数字和重要发现
+- 禁止使用多种颜色、彩色卡片色块或装饰性边框，保持简洁克制的专业美学
 
 【报告特点】
 1. 问题导向，直击痛点
@@ -180,12 +180,12 @@ Each section's content should be extracted only from <Related Information> (such
 - The length of each section's content needs to be balanced according to layout requirements
 
 【Product Innovation Specific Design Requirements】
-- Use 1-page landscape PPT format for at-a-glance information
-- Vibrant innovative color schemes highlighting creative discoveries
-- Clear information hierarchy emphasizing key information modules
-- Reasonable space arrangement, reduced whitespace, more information provided
-- Include table displays and highlighted numbers/data demonstrating professionalism
-- Avoid flashy color combinations, use professionally appealing color schemes
+- Use business PPT presentation format (16:9 widescreen landscape layout), compact and efficient information presentation, can be single or multi-page structure
+- Adopt black-white-gray professional color scheme, reflecting consulting-level seriousness and authority
+- Establish clear information hierarchy: distinguish content importance through font weight, size, and serif/sans-serif font combinations
+- Carefully arrange layout structure: higher information density, reduce unnecessary whitespace, use precise grouping and alignment to highlight key content
+- Emphasize table displays for data comparison analysis, highlight key numbers and important findings through bold text, borders, and other emphasis methods
+- Prohibit use of multiple colors, colored card blocks, or decorative borders, maintain simple and restrained professional aesthetics
 
 【Report Characteristics】
 1. Problem-oriented, directly addressing pain points

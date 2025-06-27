@@ -489,7 +489,8 @@ async function runScoutSocialTrendsSummarize({
   // Create a simple system prompt for summarization
   const summarizationSystemPrompt = scoutSocialTrendsSummarySystem({ locale });
 
-  let [reduceTokens, llmOptions]: [TReduceTokens, any] = [
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [reduceTokens, llmOptions]: [TReduceTokens, any] = [
     { model: "gemini-2.5-flash", ratio: 10 },
     {
       // useSearchGrounding: true,
