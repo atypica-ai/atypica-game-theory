@@ -20,12 +20,14 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { cn, useDevice } from "@/lib/utils";
 import { ArrowRightIcon, NotebookTextIcon, RotateCwIcon } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 
 export function NewStudyInputBox({ className }: { className?: string }) {
+  const { data: session } = useSession();
   const locale = useLocale();
   const t = useTranslations("Components.NewStudyInputBox");
   const router = useRouter();
@@ -92,26 +94,28 @@ export function NewStudyInputBox({ className }: { className?: string }) {
       )}
     >
       {/* Study Type Selector */}
-      <div className="px-4 pt-3 pb-2 border-b border-border">
-        <RadioGroup
-          value={studyType}
-          onValueChange={(value) => setStudyType(value as "general" | "product-rnd")}
-          className="flex gap-4"
-        >
-          <div className="flex items-center space-x-1.5">
-            <RadioGroupItem value="general" id="general" className="h-3 w-3" />
-            <Label htmlFor="general" className="text-xs cursor-pointer">
-              {t("generalStudy")}
-            </Label>
-          </div>
-          <div className="flex items-center space-x-1.5">
-            <RadioGroupItem value="product-rnd" id="product-rnd" className="h-3 w-3" />
-            <Label htmlFor="product-rnd" className="text-xs cursor-pointer">
-              {t("productRnDStudy")}
-            </Label>
-          </div>
-        </RadioGroup>
-      </div>
+      {session?.user?.email?.endsWith("@tezign.com") && (
+        <div className="px-4 pt-3 pb-2 border-b border-border">
+          <RadioGroup
+            value={studyType}
+            onValueChange={(value) => setStudyType(value as "general" | "product-rnd")}
+            className="flex gap-4"
+          >
+            <div className="flex items-center space-x-1.5">
+              <RadioGroupItem value="general" id="general" className="h-3 w-3" />
+              <Label htmlFor="general" className="text-xs cursor-pointer">
+                {t("generalStudy")}
+              </Label>
+            </div>
+            <div className="flex items-center space-x-1.5">
+              <RadioGroupItem value="product-rnd" id="product-rnd" className="h-3 w-3" />
+              <Label htmlFor="product-rnd" className="text-xs cursor-pointer">
+                {t("productRnDStudy")}
+              </Label>
+            </div>
+          </RadioGroup>
+        </div>
+      )}
       <Textarea
         value={input}
         onChange={(e) => {

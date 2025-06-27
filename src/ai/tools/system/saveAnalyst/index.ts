@@ -30,9 +30,9 @@ export const saveAnalystTool = ({
         )
         .transform(fixMalformedUnicodeString),
       kind: z
-        .enum(["testing", "planning", "insights", "creation", "misc"])
+        .enum(["testing", "planning", "insights", "creation", "productRnD", "misc"])
         .describe(
-          "Study type: 'testing' for comparing options, validating hypotheses, measuring effectiveness, and testing user reactions or preferences; 'insights' for understanding current situations, discovering problems, and analyzing behaviors; 'creation' for generating new ideas, designing innovative solutions, and creative exploration; 'planning' for developing frameworks, designing solution architectures, and creating structured implementation plans; 'misc' for general study that doesn't fit the other categories",
+          "Study type: 'testing' for comparing options, validating hypotheses, measuring effectiveness, and testing user reactions or preferences; 'insights' for understanding current situations, discovering problems, and analyzing behaviors; 'creation' for generating new ideas, designing innovative solutions, and creative exploration; 'planning' for developing frameworks, designing solution architectures, and creating structured implementation plans; 'productRnD' for product research and development studies focused on technical feasibility, product design, feature development, and innovation exploration; 'misc' for general study that doesn't fit the other categories",
         ),
       locale: z
         .enum(["zh-CN", "en-US", "misc"])
@@ -51,12 +51,19 @@ export const saveAnalystTool = ({
             select: {
               id: true,
               topic: true,
+              kind: true,
             },
           },
         },
       });
       if (!analyst) {
         throw new Error("Something went wrong, analyst does not exist on studyUserChat");
+      }
+      if (analyst.kind && analyst.kind !== analystKind) {
+        return {
+          analystId: analyst.id,
+          plainText: `Analyst kind has already been determined and cannot be changed. You can only update the topic or role.`,
+        };
       }
       const analystId = analyst.id;
       const isUpdate = !!analyst.topic;
@@ -87,7 +94,13 @@ export interface SaveAnalystStudySummaryToolResult extends PlainTextToolResult {
   plainText: string;
 }
 
-export const saveAnalystStudySummaryTool = ({ studyUserChatId }: { studyUserChatId: number }) =>
+export const saveAnalystStudySummaryTool = ({
+  studyUserChatId,
+  summaryInstruction,
+}: {
+  studyUserChatId: number;
+  summaryInstruction?: string;
+}) =>
   tool({
     description:
       "Save an objective summary of the completed study methodology and process workflow for report generation",
@@ -95,7 +108,8 @@ export const saveAnalystStudySummaryTool = ({ studyUserChatId }: { studyUserChat
       studySummary: z
         .string()
         .describe(
-          "Objective documentation of study design, methodology steps, data collection process, and workflow execution (exclude conclusions or findings)",
+          summaryInstruction ||
+            "Objective documentation of study design, methodology steps, data collection process, and workflow execution (exclude conclusions or findings)",
         )
         .transform(fixMalformedUnicodeString),
     }),
