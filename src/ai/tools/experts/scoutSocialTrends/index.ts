@@ -14,6 +14,9 @@ import {
 } from "@/ai/prompt/scout/socialTrends";
 import { llm, LLMModelName, providerOptions } from "@/ai/provider";
 import {
+  dyPostCommentsTool,
+  dySearchTool,
+  dyUserPostsTool,
   handleToolCallError,
   insPostCommentsTool,
   insSearchTool,
@@ -21,6 +24,9 @@ import {
   tiktokPostCommentsTool,
   tiktokSearchTool,
   tiktokUserPostsTool,
+  twitterPostCommentsTool,
+  twitterSearchTool,
+  twitterUserPostsTool,
   xhsNoteCommentsTool,
   xhsSearchTool,
   xhsUserNotesTool,
@@ -216,9 +222,9 @@ async function runScoutSocialTrendsStream({
   };
 
   const allTools = {
-    // [ToolName.dySearch]: dySearchTool,
-    // [ToolName.dyPostComments]: dyPostCommentsTool,
-    // [ToolName.dyUserPosts]: dyUserPostsTool,
+    [ToolName.dySearch]: dySearchTool,
+    [ToolName.dyPostComments]: dyPostCommentsTool,
+    [ToolName.dyUserPosts]: dyUserPostsTool,
     [ToolName.tiktokSearch]: tiktokSearchTool,
     [ToolName.tiktokPostComments]: tiktokPostCommentsTool,
     [ToolName.tiktokUserPosts]: tiktokUserPostsTool,
@@ -228,6 +234,9 @@ async function runScoutSocialTrendsStream({
     [ToolName.xhsSearch]: xhsSearchTool,
     [ToolName.xhsUserNotes]: xhsUserNotesTool,
     [ToolName.xhsNoteComments]: xhsNoteCommentsTool,
+    [ToolName.twitterSearch]: twitterSearchTool,
+    [ToolName.twitterUserPosts]: twitterUserPostsTool,
+    [ToolName.twitterPostComments]: twitterPostCommentsTool,
     // [ToolName.toolCallError]: toolCallError,
   };
   const systemPrompt = scoutSocialTrendsSystem({ locale });
