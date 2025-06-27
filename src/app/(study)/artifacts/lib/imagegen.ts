@@ -261,6 +261,7 @@ export async function generateGPTImage({
 }) {
   const { image } = await new Promise<Awaited<ReturnType<typeof generateImage>>>(
     async (resolve, reject) => {
+      let stop = false;
       generateImage({
         model: imageModel("imagen-4.0-ultra"),
         aspectRatio: ratio === "square" ? "1:1" : ratio === "landscape" ? "16:9" : "9:16",
@@ -271,16 +272,20 @@ export async function generateGPTImage({
         abortSignal: AbortSignal.timeout(300 * 1000),
       })
         .then((res) => resolve(res))
-        .catch((error) => reject(error));
-
+        .catch((error) => reject(error))
+        .finally(() => {
+          stop = true;
+        });
       const startTime = Date.now();
       let elapsedSeconds = 0;
       const checkJob = async () => {
+        if (stop) return;
         elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
-        if (elapsedSeconds > 300) {
-          reject(new Error("generateGPTImage request timeout"));
-          return;
-        }
+        // 加了 abortSignal，说一其实不需要这里的判断了
+        // if (elapsedSeconds > 300) {
+        //   reject(new Error("generateGPTImage request timeout"));
+        //   return;
+        // }
         genLog.info(`generateGPTImage ${promptHash}, ${elapsedSeconds} seconds`);
         setTimeout(checkJob, 5000);
       };

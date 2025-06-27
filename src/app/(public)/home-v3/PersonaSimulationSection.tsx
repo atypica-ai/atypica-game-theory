@@ -1,9 +1,11 @@
 "use client";
-import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { ChevronRightIcon } from "lucide-react";
+import Link from "next/link";
 
 export function PersonaSimulationSection() {
   return (
-    <section className="bg-white dark:bg-zinc-950 py-20 md:py-28">
+    <section className="bg-zinc-50 dark:bg-zinc-900 py-20 md:py-28">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12 md:mb-16">
           <p className="text-sm font-semibold text-blue-600 dark:text-blue-400 tracking-widest uppercase">
@@ -18,65 +20,115 @@ export function PersonaSimulationSection() {
             behavioral frameworks to provide realistic interview responses.
           </p>
         </div>
-        {/* Content Section with Background Image */}
-        <div className="max-w-6xl mx-auto relative rounded-2xl overflow-hidden">
-          {/* Background Image */}
-          <div className="absolute inset-0">
-            <Image
-              src={`/api/imagegen/dev/An elegant visualization of persona development. On the left, diverse human characteristics flow as gentle, abstract patterns - personality traits, emotional responses, and behavioral tendencies represented through flowing organic shapes and subtle data visualizations. These elements gracefully merge in the center, forming cohesive persona silhouettes. On the right, complete AI agents are depicted as refined, humanistic illustrations with soft shadows. The composition uses a sophisticated palette of warm grays, soft blues, and cream tones, creating a professional yet approachable aesthetic that balances technical precision with human warmth.`}
-              alt="An elegant visualization of persona development"
-              className="object-cover opacity-30 dark:opacity-20"
-              sizes="100%"
-              fill
-            />
+
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto mb-6">
+          {/* Technology Overview - Spans 2 columns */}
+          <div className="md:col-span-2 bg-zinc-700 dark:bg-zinc-800 text-white rounded-2xl p-8 flex flex-col">
+            <div className="flex-1">
+              <p className="text-xs uppercase tracking-wider opacity-60 mb-4">
+                Technology Deep Dive
+              </p>
+              <blockquote className="text-lg md:text-xl leading-relaxed mb-6">
+                "Real Person Agents are high-precision consumer simulation technology designed
+                specifically to solve complex business problems. Through AI-conducted in-depth
+                interviews lasting 1-2 hours with real consumers, we generate an average of 5,000
+                words of transcript for each person."
+              </blockquote>
+              <p className="text-sm opacity-80 mb-6">
+                These agents maintain consistent cognitive patterns, emotional responses, and
+                decision-making frameworks that enable authentic research conversations - achieving
+                85% human-like accuracy in behavioral simulation.
+              </p>
+            </div>
+            <div className="mt-auto">
+              <Link
+                href="/persona-simulation"
+                className="inline-flex items-center gap-2 text-sm font-medium text-blue-300 hover:text-blue-200 transition-colors"
+              >
+                Learn more about Real Person Agents
+                <ChevronRightIcon className="h-3 w-3" />
+              </Link>
+            </div>
           </div>
-          {/* Content Overlay */}
-          <div className="relative bg-background/70 backdrop-blur-xs p-8 md:p-12">
-            <div className="text-center mb-8">
-              <h3 className="text-3xl font-EuclidCircularA font-medium mb-6 text-zinc-900 dark:text-zinc-100">
-                What are Real Person Agents?
-              </h3>
-            </div>
 
-            <div className="grid md:grid-cols-2 gap-12 items-start">
-              <div className="space-y-6">
-                <p className="text-lg text-zinc-700 dark:text-zinc-300 leading-relaxed">
-                  Unlike traditional survey data or statistical models, our AI personas are
-                  sophisticated behavioral simulations that go far beyond demographics.
-                </p>
-                <p className="text-lg text-zinc-700 dark:text-zinc-300 leading-relaxed">
-                  They maintain consistent cognitive patterns, emotional responses, and
-                  decision-making frameworks that enable authentic research conversations and
-                  insights.
-                </p>
+          {/* Stats Card */}
+          <div className="bg-yellow-300 text-zinc-900 rounded-2xl p-8 flex flex-col justify-center text-center">
+            <p className="text-xs uppercase tracking-wider opacity-60 mb-4">Simulation Accuracy</p>
+            <div className="text-6xl md:text-7xl font-bold mb-2">85%</div>
+            <p className="text-lg">Human-like behavioral consistency in AI persona responses</p>
+          </div>
+        </div>
+
+        {/* Feature Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto mb-16">
+          {/* What Makes Them Different */}
+          <div className="bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-white rounded-2xl p-8">
+            <p className="text-xs uppercase tracking-wider opacity-60 mb-4">Core Differentiator</p>
+            <h3 className="text-xl font-semibold mb-4">Beyond Demographics</h3>
+            <p className="text-sm opacity-80 mb-6">
+              Unlike traditional survey data or statistical models, our AI personas are
+              sophisticated behavioral simulations that maintain consistent personality traits and
+              decision-making logic in new contexts.
+            </p>
+            <div className="space-y-3">
+              <div className="flex items-start gap-3">
+                <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 flex-shrink-0"></div>
+                <span className="text-sm">Consistent personality across conversations</span>
               </div>
-
-              <div className="bg-gradient-to-br from-zinc-50/90 to-zinc-100/90 dark:from-zinc-900/70 dark:to-zinc-800/70 rounded-2xl p-8 border border-zinc-200/50 dark:border-zinc-700/50 backdrop-blur-sm">
-                <h4 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-zinc-100">
-                  Key Capabilities
-                </h4>
-                <ul className="space-y-3">
-                  <li className="flex items-start gap-3">
-                    <div className="w-2 h-2 rounded-full bg-blue-500 mt-3 flex-shrink-0"></div>
-                    <span className="text-zinc-700 dark:text-zinc-300">
-                      Consistent personality traits across conversations
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <div className="w-2 h-2 rounded-full bg-blue-500 mt-3 flex-shrink-0"></div>
-                    <span className="text-zinc-700 dark:text-zinc-300">
-                      Authentic emotional responses and biases
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <div className="w-2 h-2 rounded-full bg-blue-500 mt-3 flex-shrink-0"></div>
-                    <span className="text-zinc-700 dark:text-zinc-300">
-                      Realistic decision-making patterns
-                    </span>
-                  </li>
-                </ul>
+              <div className="flex items-start gap-3">
+                <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 flex-shrink-0"></div>
+                <span className="text-sm">Authentic emotional responses and biases</span>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 flex-shrink-0"></div>
+                <span className="text-sm">Realistic decision-making patterns</span>
               </div>
             </div>
+          </div>
+
+          {/* Agent Ecosystem */}
+          <div className="bg-zinc-900 dark:bg-zinc-600 text-white rounded-2xl p-8">
+            <p className="text-xs uppercase tracking-wider opacity-60 mb-4">Agent Ecosystem</p>
+            <h3 className="text-xl font-semibold mb-4">Scale & Coverage</h3>
+            <div className="space-y-4">
+              <div className="bg-blue-900/30 p-3 rounded">
+                <div className="text-blue-400 font-semibold">300,000 Synthetic Agents</div>
+                <div className="text-xs opacity-80">Based on social media data analysis</div>
+              </div>
+              <div className="bg-green-900/30 p-3 rounded">
+                <div className="text-green-400 font-semibold">10,000 Real Person Agents</div>
+                <div className="text-xs opacity-80">Based on in-depth interview data</div>
+              </div>
+              <div className="bg-purple-900/30 p-3 rounded">
+                <div className="text-purple-400 font-semibold">Multi-dimensional Coverage</div>
+                <div className="text-xs opacity-80">Diverse consumer group ecosystem</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* CTA Section */}
+        <div className="text-center">
+          <div className="max-w-3xl mx-auto mb-8">
+            <h3 className="text-2xl font-EuclidCircularA font-medium mb-4">
+              Ready to Experience Real Person Agents?
+            </h3>
+            <p className="text-zinc-600 dark:text-zinc-400">
+              Start your first AI persona research study and discover deep consumer insights in
+              minutes, not weeks.
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Button size="lg" className="rounded-full has-[>svg]:px-8 px-8 h-12" asChild>
+              <Link href="/study">
+                Start Your Research
+                <ChevronRightIcon className="h-3 w-3" />
+              </Link>
+            </Button>
+            <Button variant="outline" size="lg" className="rounded-full h-12 px-8" asChild>
+              <Link href="/persona-simulation">Learn More About the Technology</Link>
+            </Button>
           </div>
         </div>
       </div>

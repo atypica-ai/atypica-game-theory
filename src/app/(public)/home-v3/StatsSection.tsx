@@ -2,9 +2,9 @@
 import { useEffect, useRef, useState } from "react";
 
 const stats = [
-  { id: 1, value: "50K", label: "AI Personas Created", numericValue: 50000, suffix: "K" },
-  { id: 2, value: "100K", label: "Interviews Conducted", numericValue: 100000, suffix: "K" },
-  { id: 3, value: "81%", label: "Human-like Accuracy", numericValue: 81, suffix: "%" },
+  { id: 1, value: "300K", label: "AI Personas Created", numericValue: 300_000, suffix: "K" },
+  { id: 2, value: "+1M", label: "Interviews Conducted", numericValue: 1_000_000, suffix: "M" },
+  { id: 3, value: "<30m", label: "Minutes per Research", numericValue: 30, suffix: "" },
 ];
 
 function AnimatedCounter({
@@ -64,7 +64,13 @@ function AnimatedCounter({
 
   const formatValue = (value: number) => {
     if (suffix === "K") {
-      return `${(value / 1000).toFixed(0)}K`;
+      return `${(value / 1_000).toFixed(0)}K`;
+    }
+    if (suffix === "M") {
+      return `${(value / 1_000_000).toFixed(0)}M`;
+    }
+    if (suffix === "") {
+      return `${value}`;
     }
     return `${value}${suffix}`;
   };
@@ -78,7 +84,7 @@ function AnimatedCounter({
 
 export function StatsSection() {
   return (
-    <section className="bg-zinc-50 dark:bg-zinc-950 py-20">
+    <section className="pb-20 md:pb-28">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="font-EuclidCircularA font-medium text-3xl md:text-4xl mb-4">
@@ -104,11 +110,12 @@ export function StatsSection() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
           {stats.map((stat) => (
             <div key={stat.id} className="text-center">
-              <AnimatedCounter
+              {/* <AnimatedCounter
                 targetValue={stat.numericValue}
                 suffix={stat.suffix}
                 duration={1500}
-              />
+              /> */}
+              <div className="text-6xl md:text-7xl font-bold mb-2">{stat.value}</div>
               <div className="text-zinc-600 dark:text-zinc-400 text-sm font-medium uppercase tracking-wider">
                 {stat.label}
               </div>

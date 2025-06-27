@@ -44,7 +44,7 @@ export function HeroSection() {
   const [posterSrc, setPosterSrc] = useState<string | null>(null);
 
   useEffect(() => {
-    reginalS3Url("atypica/public/atypica20250617u4c28s67xnla53d0.mp4").then((res) => {
+    reginalS3Url("atypica/public/atypica-promo-20250627.mp4").then((res) => {
       setVideoSrc(res);
     });
     reginalS3Url("atypica/public/atypica-promo-video-poster-20250624.jpeg").then((res) => {
@@ -53,7 +53,7 @@ export function HeroSection() {
   }, []);
 
   return (
-    <section className="bg-zinc-50 dark:bg-zinc-950 py-20 md:py-32">
+    <section className="py-20 md:py-32">
       <div className="container mx-auto px-4 text-center">
         <h1 className="font-EuclidCircularA font-medium text-5xl md:text-7xl tracking-tight leading-tight max-w-5xl mx-auto mb-6">
           The AI Research Agent <br />

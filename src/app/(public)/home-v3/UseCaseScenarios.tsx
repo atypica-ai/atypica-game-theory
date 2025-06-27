@@ -1,64 +1,71 @@
 "use client";
 import { PlayIcon } from "lucide-react";
 import Image from "next/image";
-import { useCallback, useState } from "react";
-import { reginalS3Url } from "./actions";
+import { useCallback, useEffect, useState } from "react";
+import { reginalS3Origin } from "./actions";
 
 const useCases = [
   {
     title: "Testing",
     description:
       "Interview AI personas to test marketing messages, product concepts, and campaign ideas with authentic reactions.",
-    videoS3Key: "atypica/public/atypica-showcase-testing-20250624.mp4",
-    coverImagePrompt:
-      "An artistic visualization of consumer decision-making in action. A central figure represents a consumer, surrounded by floating decision factors - emotions, logic, social influences, and past experiences - each glowing with different intensities. These factors flow and interact, gradually converging toward a moment of choice. The composition captures the complex psychology behind how people make purchasing decisions. The palette uses soft blues and whites, emphasizing the clarity of understanding consumer thought processes.",
+    videoS3Key: "atypica/public/atypica-showcase-testing-20250627.mp4",
+    videoPosterS3Key: "atypica/public/atypica-showcase-testing-poster-20250627.png",
+    // coverImagePrompt: "Clean modern design on black background. Medium-sized white text 'atypica.AI for Testing' centered. Simple geometric shapes and subtle lines. Professional minimal aesthetic.",
   },
   {
     title: "Planning",
     description:
       "Create strategic frameworks by interviewing AI personas about preferences and priorities to inform roadmaps.",
-    videoS3Key: "atypica/public/atypica-showcase-planning-a-20250624.mp4",
-    coverImagePrompt:
-      "A simple visualization of strategic prioritization. Scattered planning elements gradually organize themselves into a clear, layered hierarchy. The transformation shows consumer preferences shaping strategic choices into an orderly framework. The composition uses calming greens and whites, emphasizing clarity in planning.",
+    videoS3Key: "atypica/public/atypica-atypica-showcase-planning-20250627.mp4",
+    videoPosterS3Key: "atypica/public/atypica-showcase-planning-poster-20250627.png",
+    // coverImagePrompt: "Clean modern design on black background. Medium-sized white text 'atypica.AI for Planning' centered. Simple geometric shapes and subtle lines. Professional minimal aesthetic.",
   },
   {
     title: "Insights",
     description:
       "Uncover behavioral patterns and motivations through interviews with AI personas representing target audiences.",
-    videoS3Key: "atypica/public/atypica-showcase-insights-20250624.mp4",
-    coverImagePrompt:
-      "A captivating visualization of market intelligence emergence. Scattered data points representing consumer behaviors, trends, and market signals gradually coalesce into clear, glowing insights that reveal deeper market truths. The transformation shows the journey from fragmented market data to profound understanding of consumer needs and market dynamics. Each insight pulses with clarity as it crystallizes. The composition uses deep purples and lavenders, emphasizing the revelation of hidden market opportunities.",
+    videoS3Key: "atypica/public/atypica-showcase-insights-20250627.mp4",
+    videoPosterS3Key: "atypica/public/atypica-showcase-insights-poster-20250627.png",
+    // coverImagePrompt: "Clean modern design on black background. Medium-sized white text 'atypica.AI for Insights' centered. Simple geometric shapes and subtle lines. Professional minimal aesthetic.",
   },
   {
     title: "Creation",
     description:
       "Brainstorm and co-create with AI personas to generate innovative ideas and validate creative concepts.",
-    videoS3Key: "atypica/public/atypica-showcase-creation-20250624.mp4",
-    coverImagePrompt:
-      "A clean representation of product development. Individual consumer needs float as simple, glowing elements that gradually connect and form the outline of a new product concept. The composition shows the moment when understanding transforms into innovation. Warm oranges and soft whites create an atmosphere of creative breakthrough.",
+    videoS3Key: "atypica/public/atypica-showcase-creation-20250627.mp4",
+    videoPosterS3Key: "atypica/public/atypica-showcase-creation-poster-20250627.png",
+    // coverImagePrompt: "Clean modern design on black background. Medium-sized white text 'atypica.AI for Creation' centered. Simple geometric shapes and subtle lines. Professional minimal aesthetic.",
   },
 ];
 
 export function UseCaseScenarios() {
+  const [s3Origin, setS3Origin] = useState<string | null>(null);
   const [activeVideoTitle, setActiveVideoTitle] = useState<string | null>(null);
-  const [activeVideoSrc, setActiveVideoSrc] = useState<string | null>(null);
+
+  useEffect(() => {
+    reginalS3Origin().then((origin) => {
+      setS3Origin(origin);
+    });
+  }, []);
 
   const handlePlayVideo = useCallback(
-    async ({ title, videoS3Key }: (typeof useCases)[number]) => {
+    async ({ title }: (typeof useCases)[number]) => {
       if (activeVideoTitle === title) {
         setActiveVideoTitle(null);
-        setActiveVideoSrc(null);
       } else {
-        const videoSrc = await reginalS3Url(videoS3Key);
         setActiveVideoTitle(title);
-        setActiveVideoSrc(videoSrc);
       }
     },
     [activeVideoTitle],
   );
 
+  if (!s3Origin) {
+    return null;
+  }
+
   return (
-    <section className="bg-zinc-50 dark:bg-black py-20 md:py-28">
+    <section className="bg-zinc-50 dark:bg-zinc-900 py-20 md:py-28">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12 md:mb-16">
           <p className="text-sm font-semibold text-blue-600 dark:text-blue-400 tracking-widest uppercase">
@@ -81,21 +88,22 @@ export function UseCaseScenarios() {
               className="group rounded-2xl overflow-hidden flex flex-col border transition-all duration-300 hover:-translate-y-1 "
             >
               <div className="aspect-video bg-zinc-900 relative overflow-hidden">
-                {activeVideoTitle === useCase.title && activeVideoSrc ? (
+                {activeVideoTitle === useCase.title ? (
                   <video
-                    key={activeVideoSrc}
+                    key={useCase.title}
                     className="w-full h-full object-cover"
                     controls
                     autoPlay
                     playsInline
+                    muted
                   >
-                    <source src={activeVideoSrc} type="video/mp4" />
+                    <source src={`${s3Origin}${useCase.videoS3Key}`} type="video/mp4" />
                     Your browser does not support the video tag.
                   </video>
                 ) : (
                   <>
                     <Image
-                      src={`/api/imagegen/dev/${useCase.coverImagePrompt}`}
+                      src={`${s3Origin}${useCase.videoPosterS3Key}`}
                       alt={`${useCase.title} use case cover`}
                       className="object-cover transition-transform duration-200 group-hover:scale-105"
                       sizes="100%"
@@ -104,7 +112,7 @@ export function UseCaseScenarios() {
                     <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                       <button
                         onClick={() => handlePlayVideo(useCase)}
-                        className="text-white/80 hover:text-white transition-colors"
+                        className="text-white/80 hover:text-white transition-colors cursor-pointer"
                         aria-label={`Play video for ${useCase.title}`}
                       >
                         <div className="relative">

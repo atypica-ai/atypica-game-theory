@@ -12,7 +12,8 @@ const processSteps = [
     colorClasses: "bg-sky-50 dark:bg-sky-900/30 border-sky-100 dark:border-sky-900",
     iconColorClasses: "text-sky-600 dark:text-sky-400",
     text2ImagePrompt:
-      "An artistic visualization of persona synthesis. On the left, a scattered cloud of small, elegant icons and keywords represent diverse consumer traits (like demographics, behaviors, and values). Glowing lines connect these individual traits, drawing them towards the center where they seamlessly merge into a single, minimalist, and cohesive AI avatar on the right. The color palette is a sophisticated beige and cream, illustrating the process of creating a unified agent from many distinct data points.",
+      "A sky blue 'Generate AI Personas' button with sparkle icon on warm cream background. Frosted glass effect with subtle transparency and blur.",
+    // text2ImagePrompt: "A muted sky blue 'Create Personas' button with sparkle icon on warm cream background. Frosted matte glass effect with subtle transparency and diffused blur.",
   },
   {
     step: "02",
@@ -23,7 +24,8 @@ const processSteps = [
     colorClasses: "bg-emerald-50 dark:bg-emerald-900/30 border-emerald-100 dark:border-emerald-900",
     iconColorClasses: "text-emerald-600 dark:text-emerald-400",
     text2ImagePrompt:
-      "A minimalist conversational UI, capturing the moment an AI is speaking. The screen has a soft, ambient gradient background in warm beige tones. In the center, clean white text says, 'I will now ask a few questions to understand your perspective.' Below the text, a subtle, glowing microphone icon and a soft progress bar indicate an ongoing, intelligent interaction. The overall feeling is calm, focused, and futuristic.",
+      "An emerald green 'Start Interview' button with microphone icon and simple chat bubbles on warm cream background. Frosted glass effect with subtle transparency and blur.",
+    // text2ImagePrompt: "An emerald green 'Start Interview' button with microphone icon on warm cream background. Frosted matte glass effect with subtle transparency and diffused blur.",
   },
   {
     step: "03",
@@ -34,7 +36,8 @@ const processSteps = [
     colorClasses: "bg-violet-50 dark:bg-violet-900/30 border-violet-100 dark:border-violet-900",
     iconColorClasses: "text-violet-600 dark:text-violet-400",
     text2ImagePrompt:
-      "Over-the-shoulder view of a person looking at a large, floating transparent screen with simple, abstract data visualizations. The overall color scheme is soft beige and off-white. The focus is on the data, with the person providing a sense of scale and purpose.",
+      "A violet 'Analyze Behavior' button with brain icon and simple insight cards on warm cream background. Frosted glass effect with subtle transparency and blur.",
+    // text2ImagePrompt: "A violet 'Analyze Behavior' button with brain icon and simple insight cards on warm cream background. Frosted matte glass effect with subtle transparency and diffused blur.",
   },
   {
     step: "04",
@@ -45,13 +48,14 @@ const processSteps = [
     colorClasses: "bg-amber-50 dark:bg-amber-900/30 border-amber-100 dark:border-amber-900",
     iconColorClasses: "text-amber-600 dark:text-amber-400",
     text2ImagePrompt:
-      "An abstract visualization of insight generation. A cloud of messy, jumbled data points gracefully resolves and crystallizes into a single, perfectly formed, minimalist donut chart. The color palette is a serene beige, emphasizing the moment of instant clarity emerging from complexity.",
+      "An amber 'Download Report' button with download icon and report preview card on warm cream background. Frosted glass effect with subtle transparency and blur.",
+    // text2ImagePrompt: "A muted amber 'Download Report' button with download icon and report preview card on warm cream background. Frosted matte glass effect with subtle transparency and diffused blur.",
   },
 ];
 
 export function HowItWorks() {
   return (
-    <section className="bg-white dark:bg-zinc-950 py-20 md:py-28">
+    <section className="py-20 md:py-28">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12 md:mb-16">
           <p className="text-sm font-semibold text-blue-600 dark:text-blue-400 tracking-widest uppercase">
