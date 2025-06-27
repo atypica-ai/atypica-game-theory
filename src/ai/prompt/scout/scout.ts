@@ -1,6 +1,6 @@
 import { CONTINUE_ASSISTANT_STEPS } from "@/ai/messageUtils";
 import { Locale } from "next-intl";
-import { promptSystemConfig } from "./systemConfig";
+import { promptSystemConfig } from "../systemConfig";
 
 export const scoutSystem = ({ locale }: { locale: Locale }) =>
   locale === "zh-CN"

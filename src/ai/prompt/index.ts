@@ -6,5 +6,5 @@ export * from "./interviewSession";
 export * from "./personaAgent";
 export * from "./reasoning";
 export * from "./report";
-export * from "./scout";
-export * from "./study";
+export * from "./scout/scout";
+export * from "./study/study";
