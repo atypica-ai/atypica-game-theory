@@ -879,6 +879,173 @@
     "expectedCompletion": "Expected completion:",
     "tryAgain": "Try again"
   },
+  "HomePageV3": {
+    "HeroSection": {
+      "title": "The AI Research Agent",
+      "titleHighlight": "Simulating Consumers",
+      "subtitle": "Atypica automatically builds personas, conducts interviews, and analyzes patterns to reveal the emotional and cognitive factors behind human choices.",
+      "startStudyButton": "Start Your Study",
+      "trustIndicator": "Trusted by individuals from leading organizations",
+      "loadingVideo": "Loading Video..."
+    },
+    "StatsSection": {
+      "title": "AI Persona Research at Scale",
+      "subtitle": "Building Real Person Agents to understand",
+      "subtitleHighlight": "human decisions",
+      "subtitleEnd": "through",
+      "badges": {
+        "aiPersonas": "🤖 AI Personas",
+        "expertInterviews": "💬 Expert Interviews",
+        "behavioralInsights": "📊 Behavioral Insights"
+      },
+      "stats": {
+        "personasCreated": "AI Personas Created",
+        "interviewsConducted": "Interviews Conducted",
+        "minutesPerResearch": "Minutes per Research"
+      }
+    },
+    "UseCaseScenarios": {
+      "badge": "Research Applications",
+      "title": "AI Persona Research in Action",
+      "description": "See how Real Person Agents transform research across different scenarios. From testing concepts to uncovering insights, our AI personas provide authentic responses through structured interview processes.",
+      "useCases": {
+        "testing": {
+          "title": "Testing",
+          "description": "Interview AI personas to test marketing messages, product concepts, and campaign ideas with authentic reactions."
+        },
+        "planning": {
+          "title": "Planning",
+          "description": "Create strategic frameworks by interviewing AI personas about preferences and priorities to inform roadmaps."
+        },
+        "insights": {
+          "title": "Insights",
+          "description": "Uncover behavioral patterns and motivations through interviews with AI personas representing target audiences."
+        },
+        "creation": {
+          "title": "Creation",
+          "description": "Brainstorm and co-create with AI personas to generate innovative ideas and validate creative concepts."
+        }
+      }
+    },
+    "UseCases": {
+      "badge": "Our Work",
+      "title": "AI Persona Research Studies",
+      "description": "Explore real case studies showcasing how Real Person Agents and expert interviews provide deep consumer insights for better business decisions.",
+      "viewAllStudies": "View All Studies",
+      "errorMessage": "Something went wrong.",
+      "noStudiesTitle": "No Featured Studies Available",
+      "noStudiesDescription": "Please check back later to see our work in action."
+    },
+    "HowItWorks": {
+      "badge": "Subjective world modeling in action",
+      "title": "From question to insights in minutes",
+      "steps": {
+        "personaGeneration": {
+          "title": "Persona Generation",
+          "description": "Generate diverse AI personas based on real behavioral patterns and demographic insights from social platforms."
+        },
+        "aiInterviews": {
+          "title": "AI-Led Interviews",
+          "description": "Conduct natural conversations with AI personas to uncover deep motivations and key decision drivers."
+        },
+        "behaviorAnalysis": {
+          "title": "Behavior Analysis",
+          "description": "Identify emotional triggers, cognitive biases, and cultural factors that influence purchasing decisions."
+        },
+        "instantInsights": {
+          "title": "Instant Insights",
+          "description": "Generate comprehensive insights in minutes instead of traditional weeks-long research processes."
+        }
+      }
+    },
+    "AudienceSection": {
+      "title": "Built for Research Professionals",
+      "description": "Atypica transforms how professionals understand consumer behavior through AI-powered persona interviews and subjective world modeling.",
+      "audiences": {
+        "marketer": {
+          "name": "Alex Chen",
+          "role": "Marketer",
+          "description": "Test campaign messaging and creative concepts through interviews with diverse AI personas."
+        },
+        "productManager": {
+          "name": "Maria Garcia",
+          "role": "Product Manager",
+          "description": "Discover user needs and feature gaps through interviews with AI personas representing users."
+        },
+        "uxResearcher": {
+          "name": "Sam Taylor",
+          "role": "UX Researcher",
+          "description": "Map user journeys and uncover critical pain points through research interviews with behavioral AI agents."
+        },
+        "startupFounder": {
+          "name": "Jasmine Lee",
+          "role": "Startup Founder",
+          "description": "Validate market opportunities and refine target audiences using AI persona research and behavioral modeling."
+        }
+      }
+    },
+    "PersonaSimulationSection": {
+      "badge": "Core Technology",
+      "title": "Real Person Agents",
+      "description": "Advanced AI agents that simulate authentic human cognition and decision-making patterns. Our Real Person Agents maintain consistent personalities, cognitive biases, and behavioral frameworks to provide realistic interview responses.",
+      "technologyQuote": "Real Person Agents are high-precision consumer simulation technology designed specifically to solve complex business problems. Through AI-conducted in-depth interviews lasting 1-2 hours with real consumers, we generate an average of 5,000 words of transcript for each person.",
+      "technologyDescription": "These agents maintain consistent cognitive patterns, emotional responses, and decision-making frameworks that enable authentic research conversations - achieving 85% human-like accuracy in behavioral simulation.",
+      "learnMoreLink": "Learn more about Real Person Agents",
+      "accuracyLabel": "Simulation Accuracy",
+      "accuracyDescription": "Human-like behavioral consistency in AI persona responses",
+      "differentiatorTitle": "Beyond Demographics",
+      "differentiatorDescription": "Unlike traditional survey data or statistical models, our AI personas are sophisticated behavioral simulations that maintain consistent personality traits and decision-making logic in new contexts.",
+      "differentiatorFeatures": {
+        "consistency": "Consistent personality across conversations",
+        "authenticity": "Authentic emotional responses and biases",
+        "realism": "Realistic decision-making patterns"
+      },
+      "ecosystemTitle": "Scale & Coverage",
+      "ecosystemFeatures": {
+        "syntheticAgents": {
+          "title": "300,000 Synthetic Agents",
+          "description": "Based on social media data analysis"
+        },
+        "realPersonAgents": {
+          "title": "10,000 Real Person Agents",
+          "description": "Based on in-depth interview data"
+        },
+        "multiDimensional": {
+          "title": "Multi-dimensional Coverage",
+          "description": "Diverse consumer group ecosystem"
+        }
+      },
+      "ctaTitle": "Ready to Experience Real Person Agents?",
+      "ctaDescription": "Start your first AI persona research study and discover deep consumer insights in minutes, not weeks.",
+      "startResearchButton": "Start Your Research",
+      "learnTechnologyButton": "Learn More About the Technology"
+    },
+    "TestimonialSection": {
+      "title": "Research Teams Love Our Results",
+      "description": "See how professionals use AI persona research to understand consumer behavior and make better decisions faster.",
+      "timeCategory": "Time Saved",
+      "timeStat": "< 1 Hr",
+      "timeDescription": "Get insights in minutes, not weeks of research.",
+      "customerStoryCategory": "Customer stories",
+      "testimonials": {
+        "productManager": {
+          "quote": "We needed to understand how different user segments would react to our new feature. Atypica's AI personas provided authentic feedback through detailed interviews, giving us insights in hours that would have taken weeks of traditional user research.",
+          "author": "Elena Rodriguez",
+          "title": "Senior Product Manager"
+        },
+        "marketingDirector": {
+          "quote": "The Real Person Agents were incredibly realistic in their responses. We tested multiple campaign messages through persona interviews and identified the most effective approach before spending on actual ads.",
+          "author": "Ben Carter",
+          "title": "Marketing Director"
+        },
+        "founder": {
+          "quote": "As a startup, we couldn't afford traditional focus groups or extensive user interviews. Atypica's AI persona research gave us deep behavioral insights and validated our assumptions at a fraction of the cost.",
+          "author": "Sophie Chen",
+          "title": "Founder & CEO"
+        }
+      }
+    }
+  },
   "AccountPage": {
     "title": "Account",
     "subscriptionSection": {

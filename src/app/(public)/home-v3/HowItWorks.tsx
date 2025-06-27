@@ -1,13 +1,12 @@
 "use client";
 import { BrainIcon, MessageCircleIcon, SparklesIcon, TrendingUpIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 
 const processSteps = [
   {
     step: "01",
-    title: "Persona Generation",
-    description:
-      "Generate diverse AI personas based on real behavioral patterns and demographic insights from social platforms.",
+    id: "personaGeneration",
     icon: SparklesIcon,
     colorClasses: "bg-sky-50 dark:bg-sky-900/30 border-sky-100 dark:border-sky-900",
     iconColorClasses: "text-sky-600 dark:text-sky-400",
@@ -17,9 +16,7 @@ const processSteps = [
   },
   {
     step: "02",
-    title: "AI-Led Interviews",
-    description:
-      "Conduct natural conversations with AI personas to uncover deep motivations and key decision drivers.",
+    id: "aiInterviews",
     icon: MessageCircleIcon,
     colorClasses: "bg-emerald-50 dark:bg-emerald-900/30 border-emerald-100 dark:border-emerald-900",
     iconColorClasses: "text-emerald-600 dark:text-emerald-400",
@@ -29,9 +26,7 @@ const processSteps = [
   },
   {
     step: "03",
-    title: "Behavior Analysis",
-    description:
-      "Identify emotional triggers, cognitive biases, and cultural factors that influence purchasing decisions.",
+    id: "behaviorAnalysis",
     icon: BrainIcon,
     colorClasses: "bg-violet-50 dark:bg-violet-900/30 border-violet-100 dark:border-violet-900",
     iconColorClasses: "text-violet-600 dark:text-violet-400",
@@ -41,9 +36,7 @@ const processSteps = [
   },
   {
     step: "04",
-    title: "Instant Insights",
-    description:
-      "Generate comprehensive insights in minutes instead of traditional weeks-long research processes.",
+    id: "instantInsights",
     icon: TrendingUpIcon,
     colorClasses: "bg-amber-50 dark:bg-amber-900/30 border-amber-100 dark:border-amber-900",
     iconColorClasses: "text-amber-600 dark:text-amber-400",
@@ -54,15 +47,16 @@ const processSteps = [
 ];
 
 export function HowItWorks() {
+  const t = useTranslations("HomePageV3.HowItWorks");
   return (
     <section className="py-20 md:py-28">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12 md:mb-16">
           <p className="text-sm font-semibold text-blue-600 dark:text-blue-400 tracking-widest uppercase">
-            Subjective world modeling in action
+            {t("badge")}
           </p>
           <h2 className="font-EuclidCircularA font-medium text-4xl md:text-5xl tracking-tight mt-4">
-            From question to insights in minutes
+            {t("title")}
           </h2>
         </div>
 
@@ -93,9 +87,17 @@ export function HowItWorks() {
                   </div>
                 </div>
                 <div className="flex-grow flex flex-col justify-start">
-                  <h3 className="text-2xl font-bold mt-4">{step.title}</h3>
+                  <h3 className="text-2xl font-bold mt-4">
+                    {step.id === "personaGeneration" && t("steps.personaGeneration.title")}
+                    {step.id === "aiInterviews" && t("steps.aiInterviews.title")}
+                    {step.id === "behaviorAnalysis" && t("steps.behaviorAnalysis.title")}
+                    {step.id === "instantInsights" && t("steps.instantInsights.title")}
+                  </h3>
                   <p className="mt-3 text-zinc-600 dark:text-zinc-400 text-base">
-                    {step.description}
+                    {step.id === "personaGeneration" && t("steps.personaGeneration.description")}
+                    {step.id === "aiInterviews" && t("steps.aiInterviews.description")}
+                    {step.id === "behaviorAnalysis" && t("steps.behaviorAnalysis.description")}
+                    {step.id === "instantInsights" && t("steps.instantInsights.description")}
                   </p>
                 </div>
               </div>

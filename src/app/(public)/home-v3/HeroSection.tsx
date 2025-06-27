@@ -1,6 +1,8 @@
 "use client";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { ChevronRightIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -40,6 +42,7 @@ const testimonials = [
 ];
 
 export function HeroSection() {
+  const t = useTranslations("HomePageV3.HeroSection");
   const [videoSrc, setVideoSrc] = useState<string | null>(null);
   const [posterSrc, setPosterSrc] = useState<string | null>(null);
 
@@ -55,20 +58,24 @@ export function HeroSection() {
   return (
     <section className="py-20 md:py-32">
       <div className="container mx-auto px-4 text-center">
-        <h1 className="font-EuclidCircularA font-medium text-5xl md:text-7xl tracking-tight leading-tight max-w-5xl mx-auto mb-6">
-          The AI Research Agent <br />
-          <span className="italic font-InstrumentSerif">Simulating Consumers</span>
+        <h1
+          className={cn(
+            "font-EuclidCircularA font-medium tracking-tight leading-tight max-w-5xl mx-auto mb-6",
+            "text-5xl md:text-7xl",
+          )}
+        >
+          {t("title")} <br />
+          <span className="italic font-InstrumentSerif">{t("titleHighlight")}</span>
         </h1>
-        <p className="max-w-3xl mx-auto text-lg md:text-xl text-zinc-600 dark:text-zinc-400 mb-10">
-          Atypica automatically builds personas, conducts interviews, and analyzes patterns to
-          reveal the emotional and cognitive factors behind human choices.
+        <p className="max-w-4xl mx-auto text-lg md:text-xl text-zinc-600 dark:text-zinc-400 mb-12">
+          {t("subtitle")}
         </p>
 
         {/* CTA Section */}
         <div className="flex flex-col md:flex-row items-center justify-center gap-8 mb-16">
           <Button size="lg" className="rounded-full has-[>svg]:px-8 px-8 h-12" asChild>
             <Link href="/study">
-              Start Your Study
+              {t("startStudyButton")}
               <ChevronRightIcon className="h-3 w-3" />
             </Link>
           </Button>
@@ -109,7 +116,7 @@ export function HeroSection() {
                 ))}
               </div>
               <span className="text-xs text-zinc-500 dark:text-zinc-500 whitespace-nowrap">
-                Trusted by individuals from leading organizations
+                {t("trustIndicator")}
               </span>
             </div>
           </div>
@@ -133,7 +140,7 @@ export function HeroSection() {
               </video>
             ) : (
               <div className="w-full h-full bg-zinc-100 dark:bg-zinc-900/50 flex items-center justify-center">
-                <div className="text-zinc-400 dark:text-zinc-600">Loading Video...</div>
+                <div className="text-zinc-400 dark:text-zinc-600">{t("loadingVideo")}</div>
               </div>
             )}
           </div>

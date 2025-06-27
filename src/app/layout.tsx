@@ -18,6 +18,7 @@ const instrumentSerif = Instrument_Serif({
   subsets: ["latin"],
   variable: "--font-InstrumentSerif",
   weight: ["400"],
+  fallback: ["serif"],
 });
 
 export const viewport: Viewport = {

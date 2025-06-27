@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn, proxiedImageLoader } from "@/lib/utils";
 import { PlayIcon } from "lucide-react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -15,6 +15,7 @@ type FeaturedStudy = ExtractServerActionData<typeof fetchPublicFeaturedStudies>[
 
 export function UseCases() {
   const locale = useLocale();
+  const t = useTranslations("HomePageV3.UseCases");
   const [studies, setStudies] = useState<FeaturedStudy[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -57,14 +58,13 @@ export function UseCases() {
       <div className="container mx-auto px-4">
         <div className="text-center mb-12 md:mb-16">
           <p className="text-sm font-semibold text-blue-600 dark:text-blue-400 tracking-widest uppercase">
-            Our Work
+            {t("badge")}
           </p>
           <h2 className="font-EuclidCircularA font-medium text-4xl md:text-5xl tracking-tight mt-4">
-            AI Persona Research Studies
+            {t("title")}
           </h2>
-          <p className="max-w-3xl mx-auto mt-5 text-lg text-zinc-600 dark:text-zinc-400">
-            Explore real case studies showcasing how Real Person Agents and expert interviews
-            provide deep consumer insights for better business decisions.
+          <p className="max-w-4xl mx-auto mt-5 text-lg text-zinc-600 dark:text-zinc-400">
+            {t("description")}
           </p>
         </div>
 
@@ -72,15 +72,15 @@ export function UseCases() {
           renderSkeletons()
         ) : error ? (
           <div className="text-center text-red-500 bg-red-50 dark:bg-red-900/20 p-8 rounded-lg">
-            <p className="font-semibold text-lg">Something went wrong.</p>
+            <p className="font-semibold text-lg">{t("errorMessage")}</p>
             <p className="text-sm mt-2">{error}</p>
           </div>
         ) : studies.length === 0 ? (
           <div className="text-center text-zinc-500 dark:text-zinc-400 py-16 bg-zinc-50 dark:bg-zinc-900/50 rounded-2xl">
             <h3 className="text-xl font-semibold text-zinc-800 dark:text-white">
-              No Featured Studies Available
+              {t("noStudiesTitle")}
             </h3>
-            <p className="mt-2">Please check back later to see our work in action.</p>
+            <p className="mt-2">{t("noStudiesDescription")}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -144,7 +144,7 @@ export function UseCases() {
             asChild
             className="rounded-lg h-12 px-8 text-base border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-900"
           >
-            <Link href="/featured-studies">View All Studies</Link>
+            <Link href="/featured-studies">{t("viewAllStudies")}</Link>
           </Button>
         </div>
       </div>

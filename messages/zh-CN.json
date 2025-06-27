@@ -879,6 +879,173 @@
     "expectedCompletion": "预计完成时间：",
     "tryAgain": "重试"
   },
+  "HomePageV3": {
+    "HeroSection": {
+      "title": "商业研究多智能体",
+      "titleHighlight": "",
+      "subtitle": "Atypica 模拟消费者决策，全自动访谈和分析，并产出报告。",
+      "startStudyButton": "开始您的研究",
+      "trustIndicator": "受到各大机构用户信赖",
+      "loadingVideo": "视频加载中..."
+    },
+    "StatsSection": {
+      "title": "大规模AI用户画像研究",
+      "subtitle": "构建真人智能体以理解",
+      "subtitleHighlight": "人类决策",
+      "subtitleEnd": "",
+      "badges": {
+        "aiPersonas": "🤖 AI用户画像",
+        "expertInterviews": "💬 专家访谈",
+        "behavioralInsights": "📊 行为洞察"
+      },
+      "stats": {
+        "personasCreated": "AI用户画像创建",
+        "interviewsConducted": "访谈已完成",
+        "minutesPerResearch": "每次研究用时"
+      }
+    },
+    "UseCaseScenarios": {
+      "badge": "研究应用",
+      "title": "AI用户画像研究实践",
+      "description": "了解真人智能体如何在不同场景中转换研究方式。从概念测试到洞察发现，我们的AI用户画像通过结构化访谈流程提供真实反馈。",
+      "useCases": {
+        "testing": {
+          "title": "测试",
+          "description": "访谈AI用户画像以测试产品概念和活动创意，获得真实反馈。"
+        },
+        "planning": {
+          "title": "规划",
+          "description": "通过访谈AI用户画像了解偏好和优先级，创建框架以指导路线图制定。"
+        },
+        "insights": {
+          "title": "洞察",
+          "description": "通过访谈代表目标受众的AI用户画像，揭示行为模式和动机。"
+        },
+        "creation": {
+          "title": "创意",
+          "description": "与AI用户画像头脑风暴和共创，产生创新想法并验证创意概念。"
+        }
+      }
+    },
+    "UseCases": {
+      "badge": "我们的工作",
+      "title": "AI用户画像研究案例",
+      "description": "探索真实案例研究，了解真人智能体和专家访谈如何提供深入的消费者洞察，助力更好的商业决策。",
+      "viewAllStudies": "查看所有研究",
+      "errorMessage": "出现错误。",
+      "noStudiesTitle": "暂无精选研究",
+      "noStudiesDescription": "请稍后回来查看我们的实际工作。"
+    },
+    "HowItWorks": {
+      "badge": "主观世界建模实践",
+      "title": "从问题到洞察，数分钟内完成",
+      "steps": {
+        "personaGeneration": {
+          "title": "用户画像生成",
+          "description": "基于社交平台的真实行为模式和人口统计洞察，生成多样化的AI用户画像。"
+        },
+        "aiInterviews": {
+          "title": "AI主导访谈",
+          "description": "与AI用户画像进行自然对话，挖掘深层动机和关键决策驱动因素。"
+        },
+        "behaviorAnalysis": {
+          "title": "行为分析",
+          "description": "识别影响购买决策的情感触发点、认知偏见和文化因素。"
+        },
+        "instantInsights": {
+          "title": "即时洞察",
+          "description": "在数分钟内生成全面洞察，而非传统研究流程的数周时间。"
+        }
+      }
+    },
+    "AudienceSection": {
+      "title": "为研究专业人士打造",
+      "description": "Atypica通过AI驱动的用户画像访谈和主观世界建模，改变专业人士理解消费者行为的方式。",
+      "audiences": {
+        "marketer": {
+          "name": "陈亚历",
+          "role": "营销专员",
+          "description": "通过与多样化AI用户画像的访谈，测试活动信息和创意概念。"
+        },
+        "productManager": {
+          "name": "玛丽亚·加西亚",
+          "role": "产品经理",
+          "description": "通过与代表用户的AI用户画像访谈，发现用户需求和功能缺口。"
+        },
+        "uxResearcher": {
+          "name": "山姆·泰勒",
+          "role": "用户体验研究员",
+          "description": "通过与行为AI智能体的研究访谈，绘制用户旅程并发现关键痛点。"
+        },
+        "startupFounder": {
+          "name": "李茉莉",
+          "role": "创业创始人",
+          "description": "使用AI用户画像研究和行为建模验证市场机会并完善目标受众。"
+        }
+      }
+    },
+    "PersonaSimulationSection": {
+      "badge": "核心技术",
+      "title": "真人智能体",
+      "description": "模拟真实人类认知和决策模式的高级AI智能体。我们的真人智能体保持一致的个性、认知偏见和行为框架，提供逼真的访谈回应。",
+      "technologyQuote": "真人智能体是专门为解决复杂商业问题而设计的高精度消费者模拟技术。通过AI进行1-2小时的深度访谈，我们为每个人平均生成5000字的访谈记录。",
+      "technologyDescription": "这些智能体保持一致的认知模式、情感反应和决策框架，实现真实的研究对话——在行为模拟中达到85%的人类相似度准确性。",
+      "learnMoreLink": "了解更多关于真人智能体",
+      "accuracyLabel": "模拟准确度",
+      "accuracyDescription": "AI用户画像回应中的人类行为一致性",
+      "differentiatorTitle": "超越人口统计学",
+      "differentiatorDescription": "与传统调研数据或统计模型不同，我们的AI用户画像是复杂的行为模拟，在新情境中保持一致的个性特征和决策逻辑。",
+      "differentiatorFeatures": {
+        "consistency": "跨对话的一致个性",
+        "authenticity": "真实的情感反应和偏见",
+        "realism": "逼真的决策模式"
+      },
+      "ecosystemTitle": "规模与覆盖",
+      "ecosystemFeatures": {
+        "syntheticAgents": {
+          "title": "30万合成智能体",
+          "description": "基于社交媒体数据分析"
+        },
+        "realPersonAgents": {
+          "title": "1万真人智能体",
+          "description": "基于深度访谈数据"
+        },
+        "multiDimensional": {
+          "title": "多维度覆盖",
+          "description": "多样化消费者群体生态系统"
+        }
+      },
+      "ctaTitle": "准备体验真人智能体了吗？",
+      "ctaDescription": "开始您的首次AI用户画像研究，在数分钟而非数周内发现深入的消费者洞察。",
+      "startResearchButton": "开始您的研究",
+      "learnTechnologyButton": "了解更多技术信息"
+    },
+    "TestimonialSection": {
+      "title": "研究团队喜爱我们的成果",
+      "description": "了解专业人士如何使用AI用户画像研究来理解消费者行为并更快做出更好的决策。",
+      "timeCategory": "节省时间",
+      "timeStat": "< 1小时",
+      "timeDescription": "在数分钟而非数周内获得洞察。",
+      "customerStoryCategory": "客户故事",
+      "testimonials": {
+        "productManager": {
+          "quote": "我们需要了解不同用户群体对我们新功能的反应。Atypica的AI用户画像通过详细访谈提供了真实反馈，让我们在几小时内获得了传统用户研究需要数周才能得到的洞察。",
+          "author": "埃琳娜·罗德里格斯",
+          "title": "高级产品经理"
+        },
+        "marketingDirector": {
+          "quote": "真人智能体的回应令人难以置信地逼真。我们通过用户画像访谈测试了多个活动信息，在实际投放广告之前就确定了最有效的方法。",
+          "author": "本·卡特",
+          "title": "营销总监"
+        },
+        "founder": {
+          "quote": "作为一家初创公司，我们负担不起传统的焦点小组或大规模用户访谈。Atypica的AI用户画像研究以极低的成本为我们提供了深入的行为洞察并验证了我们的假设。",
+          "author": "陈苏菲",
+          "title": "创始人兼CEO"
+        }
+      }
+    }
+  },
   "AccountPage": {
     "title": "账户中心",
     "subscriptionSection": {

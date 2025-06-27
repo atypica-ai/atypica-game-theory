@@ -1,43 +1,32 @@
 "use client";
 import { MessageSquareIcon, PackageIcon, SearchIcon, TrendingUpIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 
 const audiences = [
   {
-    name: "Alex Chen",
-    role: "Marketer",
-    description:
-      "Test campaign messaging and creative concepts through interviews with diverse AI personas.",
+    id: "marketer",
     icon: TrendingUpIcon,
     bgColor: "bg-purple-600",
     imagePlaceholder:
       "Professional portrait of a young Asian male marketer in modern business attire, confident smile, creative studio background with marketing materials. Style: modern, professional, creative energy.",
   },
   {
-    name: "Maria Garcia",
-    role: "Product Manager",
-    description:
-      "Discover user needs and feature gaps through interviews with AI personas representing users.",
+    id: "productManager",
     icon: PackageIcon,
     bgColor: "bg-orange-500",
     imagePlaceholder:
       "Professional portrait of a young woman product manager, warm smile, wearing casual business attire, tech office background with product sketches. Style: approachable, strategic, modern.",
   },
   {
-    name: "Sam Taylor",
-    role: "UX Researcher",
-    description:
-      "Map user journeys and uncover critical pain points through research interviews with behavioral AI agents.",
+    id: "uxResearcher",
     icon: SearchIcon,
     bgColor: "bg-yellow-500",
     imagePlaceholder:
       "Professional portrait of a middle-aged man small business owner, confident expression, wearing hoodie, cozy coffee shop or small business background. Style: authentic, entrepreneurial, warm.",
   },
   {
-    name: "Jasmine Lee",
-    role: "Startup Founder",
-    description:
-      "Validate market opportunities and refine target audiences using AI persona research and behavioral modeling.",
+    id: "startupFounder",
     icon: MessageSquareIcon,
     bgColor: "bg-sky-500",
     imagePlaceholder:
@@ -46,23 +35,23 @@ const audiences = [
 ];
 
 export function AudienceSection() {
+  const t = useTranslations("HomePageV3.AudienceSection");
   return (
     <section className="bg-zinc-50 dark:bg-black py-20 md:py-28">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12 md:mb-16">
           <h2 className="font-EuclidCircularA font-medium text-4xl md:text-5xl tracking-tight">
-            Built for Research Professionals
+            {t("title")}
           </h2>
           <p className="max-w-3xl mx-auto mt-5 text-lg text-zinc-600 dark:text-zinc-400">
-            Atypica transforms how professionals understand consumer behavior through AI-powered
-            persona interviews and subjective world modeling.
+            {t("description")}
           </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
           {audiences.map((audience) => (
             <div
-              key={audience.name}
+              key={audience.id}
               className="group relative flex flex-col items-center text-center"
             >
               {/* Profile Image with Background Shape */}
@@ -73,7 +62,23 @@ export function AudienceSection() {
                 <div className="relative w-48 h-60 rounded-[3rem] overflow-hidden bg-white dark:bg-zinc-900 shadow-xl">
                   <Image
                     src={`/api/imagegen/dev/${audience.imagePlaceholder}`}
-                    alt={`${audience.name} - ${audience.role}`}
+                    alt={`${
+                      audience.id === "marketer"
+                        ? t("audiences.marketer.name")
+                        : audience.id === "productManager"
+                          ? t("audiences.productManager.name")
+                          : audience.id === "uxResearcher"
+                            ? t("audiences.uxResearcher.name")
+                            : t("audiences.startupFounder.name")
+                    } - ${
+                      audience.id === "marketer"
+                        ? t("audiences.marketer.role")
+                        : audience.id === "productManager"
+                          ? t("audiences.productManager.role")
+                          : audience.id === "uxResearcher"
+                            ? t("audiences.uxResearcher.role")
+                            : t("audiences.startupFounder.role")
+                    }`}
                     className="object-cover"
                     sizes="100%"
                     fill
@@ -83,12 +88,23 @@ export function AudienceSection() {
 
               {/* Content */}
               <div className="space-y-2">
-                <h3 className="text-xl font-bold">{audience.role}</h3>
+                <h3 className="text-xl font-bold">
+                  {audience.id === "marketer" && t("audiences.marketer.role")}
+                  {audience.id === "productManager" && t("audiences.productManager.role")}
+                  {audience.id === "uxResearcher" && t("audiences.uxResearcher.role")}
+                  {audience.id === "startupFounder" && t("audiences.startupFounder.role")}
+                </h3>
                 <p className="text-sm text-zinc-500 dark:text-zinc-400 font-medium">
-                  {audience.name}
+                  {audience.id === "marketer" && t("audiences.marketer.name")}
+                  {audience.id === "productManager" && t("audiences.productManager.name")}
+                  {audience.id === "uxResearcher" && t("audiences.uxResearcher.name")}
+                  {audience.id === "startupFounder" && t("audiences.startupFounder.name")}
                 </p>
                 <p className="text-sm text-zinc-600 dark:text-zinc-400 max-w-xs">
-                  {audience.description}
+                  {audience.id === "marketer" && t("audiences.marketer.description")}
+                  {audience.id === "productManager" && t("audiences.productManager.description")}
+                  {audience.id === "uxResearcher" && t("audiences.uxResearcher.description")}
+                  {audience.id === "startupFounder" && t("audiences.startupFounder.description")}
                 </p>
               </div>
 

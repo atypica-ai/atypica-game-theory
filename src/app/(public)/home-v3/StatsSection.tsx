@@ -1,12 +1,14 @@
 "use client";
+import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 
 const stats = [
-  { id: 1, value: "300K", label: "AI Personas Created", numericValue: 300_000, suffix: "K" },
-  { id: 2, value: "+1M", label: "Interviews Conducted", numericValue: 1_000_000, suffix: "M" },
-  { id: 3, value: "<30m", label: "Minutes per Research", numericValue: 30, suffix: "" },
+  { id: "personasCreated", value: "300K", numericValue: 300_000, suffix: "K" },
+  { id: "interviewsConducted", value: "+1M", numericValue: 1_000_000, suffix: "M" },
+  { id: "minutesPerResearch", value: "<30m", numericValue: 30, suffix: "" },
 ];
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function AnimatedCounter({
   targetValue,
   suffix,
@@ -83,26 +85,28 @@ function AnimatedCounter({
 }
 
 export function StatsSection() {
+  const t = useTranslations("HomePageV3.StatsSection");
   return (
     <section className="pb-20 md:pb-28">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="font-EuclidCircularA font-medium text-3xl md:text-4xl mb-4">
-            AI Persona Research at Scale
+            {t("title")}
           </h2>
           <p className="font-EuclidCircularA font-medium text-3xl md:text-4xl">
-            Building Real Person Agents to understand{" "}
-            <span className="italic font-InstrumentSerif">human decisions</span> through
+            {t("subtitle")}{" "}
+            <span className="italic font-InstrumentSerif">{t("subtitleHighlight")}</span>{" "}
+            {t("subtitleEnd")}
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4 mt-8">
             <span className="bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 px-4 py-2 rounded-full text-sm font-medium">
-              🤖 AI Personas
+              {t("badges.aiPersonas")}
             </span>
             <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-4 py-2 rounded-full text-sm font-medium">
-              💬 Expert Interviews
+              {t("badges.expertInterviews")}
             </span>
             <span className="bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 px-4 py-2 rounded-full text-sm font-medium">
-              📊 Behavioral Insights
+              {t("badges.behavioralInsights")}
             </span>
           </div>
         </div>
@@ -117,7 +121,9 @@ export function StatsSection() {
               /> */}
               <div className="text-6xl md:text-7xl font-bold mb-2">{stat.value}</div>
               <div className="text-zinc-600 dark:text-zinc-400 text-sm font-medium uppercase tracking-wider">
-                {stat.label}
+                {stat.id === "personasCreated" && t("stats.personasCreated")}
+                {stat.id === "interviewsConducted" && t("stats.interviewsConducted")}
+                {stat.id === "minutesPerResearch" && t("stats.minutesPerResearch")}
               </div>
             </div>
           ))}

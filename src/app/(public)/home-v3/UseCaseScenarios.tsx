@@ -1,38 +1,31 @@
 "use client";
 import { PlayIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import { reginalS3Origin } from "./actions";
 
 const useCases = [
   {
-    title: "Testing",
-    description:
-      "Interview AI personas to test marketing messages, product concepts, and campaign ideas with authentic reactions.",
+    id: "testing",
     videoS3Key: "atypica/public/atypica-showcase-testing-20250627.mp4",
     videoPosterS3Key: "atypica/public/atypica-showcase-testing-poster-20250627.png",
     // coverImagePrompt: "Clean modern design on black background. Medium-sized white text 'atypica.AI for Testing' centered. Simple geometric shapes and subtle lines. Professional minimal aesthetic.",
   },
   {
-    title: "Planning",
-    description:
-      "Create strategic frameworks by interviewing AI personas about preferences and priorities to inform roadmaps.",
+    id: "planning",
     videoS3Key: "atypica/public/atypica-atypica-showcase-planning-20250627.mp4",
     videoPosterS3Key: "atypica/public/atypica-showcase-planning-poster-20250627.png",
     // coverImagePrompt: "Clean modern design on black background. Medium-sized white text 'atypica.AI for Planning' centered. Simple geometric shapes and subtle lines. Professional minimal aesthetic.",
   },
   {
-    title: "Insights",
-    description:
-      "Uncover behavioral patterns and motivations through interviews with AI personas representing target audiences.",
+    id: "insights",
     videoS3Key: "atypica/public/atypica-showcase-insights-20250627.mp4",
     videoPosterS3Key: "atypica/public/atypica-showcase-insights-poster-20250627.png",
     // coverImagePrompt: "Clean modern design on black background. Medium-sized white text 'atypica.AI for Insights' centered. Simple geometric shapes and subtle lines. Professional minimal aesthetic.",
   },
   {
-    title: "Creation",
-    description:
-      "Brainstorm and co-create with AI personas to generate innovative ideas and validate creative concepts.",
+    id: "creation",
     videoS3Key: "atypica/public/atypica-showcase-creation-20250627.mp4",
     videoPosterS3Key: "atypica/public/atypica-showcase-creation-poster-20250627.png",
     // coverImagePrompt: "Clean modern design on black background. Medium-sized white text 'atypica.AI for Creation' centered. Simple geometric shapes and subtle lines. Professional minimal aesthetic.",
@@ -40,6 +33,7 @@ const useCases = [
 ];
 
 export function UseCaseScenarios() {
+  const t = useTranslations("HomePageV3.UseCaseScenarios");
   const [s3Origin, setS3Origin] = useState<string | null>(null);
   const [activeVideoTitle, setActiveVideoTitle] = useState<string | null>(null);
 
@@ -50,11 +44,11 @@ export function UseCaseScenarios() {
   }, []);
 
   const handlePlayVideo = useCallback(
-    async ({ title }: (typeof useCases)[number]) => {
-      if (activeVideoTitle === title) {
+    async ({ id }: (typeof useCases)[number]) => {
+      if (activeVideoTitle === id) {
         setActiveVideoTitle(null);
       } else {
-        setActiveVideoTitle(title);
+        setActiveVideoTitle(id);
       }
     },
     [activeVideoTitle],
@@ -69,28 +63,26 @@ export function UseCaseScenarios() {
       <div className="container mx-auto px-4">
         <div className="text-center mb-12 md:mb-16">
           <p className="text-sm font-semibold text-blue-600 dark:text-blue-400 tracking-widest uppercase">
-            Research Applications
+            {t("badge")}
           </p>
           <h2 className="font-EuclidCircularA font-medium text-4xl md:text-5xl tracking-tight mt-4">
-            AI Persona Research in Action
+            {t("title")}
           </h2>
           <p className="max-w-3xl mx-auto mt-5 text-lg text-zinc-600 dark:text-zinc-400">
-            See how Real Person Agents transform research across different scenarios. From testing
-            concepts to uncovering insights, our AI personas provide authentic responses through
-            structured interview processes.
+            {t("description")}
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
           {useCases.map((useCase) => (
             <div
-              key={useCase.title}
+              key={useCase.id}
               className="group rounded-2xl overflow-hidden flex flex-col border transition-all duration-300 hover:-translate-y-1 "
             >
               <div className="aspect-video bg-zinc-900 relative overflow-hidden">
-                {activeVideoTitle === useCase.title ? (
+                {activeVideoTitle === useCase.id ? (
                   <video
-                    key={useCase.title}
+                    key={useCase.id}
                     className="w-full h-full object-cover"
                     controls
                     autoPlay
@@ -104,7 +96,15 @@ export function UseCaseScenarios() {
                   <>
                     <Image
                       src={`${s3Origin}${useCase.videoPosterS3Key}`}
-                      alt={`${useCase.title} use case cover`}
+                      alt={`${
+                        useCase.id === "testing"
+                          ? t("useCases.testing.title")
+                          : useCase.id === "planning"
+                            ? t("useCases.planning.title")
+                            : useCase.id === "insights"
+                              ? t("useCases.insights.title")
+                              : t("useCases.creation.title")
+                      } use case cover`}
                       className="object-cover transition-transform duration-200 group-hover:scale-105"
                       sizes="100%"
                       fill
@@ -113,7 +113,15 @@ export function UseCaseScenarios() {
                       <button
                         onClick={() => handlePlayVideo(useCase)}
                         className="text-white/80 hover:text-white transition-colors cursor-pointer"
-                        aria-label={`Play video for ${useCase.title}`}
+                        aria-label={`Play video for ${
+                          useCase.id === "testing"
+                            ? t("useCases.testing.title")
+                            : useCase.id === "planning"
+                              ? t("useCases.planning.title")
+                              : useCase.id === "insights"
+                                ? t("useCases.insights.title")
+                                : t("useCases.creation.title")
+                        }`}
                       >
                         <div className="relative">
                           <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30">
@@ -127,8 +135,18 @@ export function UseCaseScenarios() {
                 )}
               </div>
               <div className="p-6 flex-grow">
-                <h3 className="text-xl font-EuclidCircularA font-medium">{useCase.title}</h3>
-                <p className="mt-2 text-zinc-600 dark:text-zinc-400">{useCase.description}</p>
+                <h3 className="text-xl font-EuclidCircularA font-medium">
+                  {useCase.id === "testing" && t("useCases.testing.title")}
+                  {useCase.id === "planning" && t("useCases.planning.title")}
+                  {useCase.id === "insights" && t("useCases.insights.title")}
+                  {useCase.id === "creation" && t("useCases.creation.title")}
+                </h3>
+                <p className="mt-2 text-zinc-600 dark:text-zinc-400">
+                  {useCase.id === "testing" && t("useCases.testing.description")}
+                  {useCase.id === "planning" && t("useCases.planning.description")}
+                  {useCase.id === "insights" && t("useCases.insights.description")}
+                  {useCase.id === "creation" && t("useCases.creation.description")}
+                </p>
               </div>
             </div>
           ))}
