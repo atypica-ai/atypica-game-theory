@@ -5,6 +5,7 @@ import { reportHTMLSystemCreation } from "./report/creation";
 import { reportHTMLSystemInsights } from "./report/insights";
 import { reportHTMLSystemMisc } from "./report/misc";
 import { reportHTMLSystemPlanning } from "./report/planning";
+import { reportHTMLSystemProductRnD } from "./report/productRnD";
 import { reportHTMLSystemTesting } from "./report/testing";
 import { promptSystemConfig } from "./systemConfig";
 
@@ -24,6 +25,8 @@ export const reportHTMLSystem = ({
       return reportHTMLSystemCreation({ locale });
     case AnalystKind.planning:
       return reportHTMLSystemPlanning({ locale });
+    case AnalystKind.productRnD:
+      return reportHTMLSystemProductRnD({ locale });
     case AnalystKind.misc:
     default:
       return reportHTMLSystemMisc({ locale });
@@ -61,11 +64,15 @@ ${analyst.brief}
 ${analyst.topic}
 </topic>
 
-以下是我们的访谈总结：
+${
+  analyst.interviews.length > 0
+    ? `以下是我们的访谈总结：
 
-${analyst.interviews.map((interview) => `<conclusion>\n${interview.conclusion}\n</conclusion>`).join("\n\n")}
+${analyst.interviews.map((interview) => `<conclusion>\n${interview.conclusion}\n</conclusion>`).join("\n\n")}`
+    : ""
+}
 
-以下是研究过程总结：
+以下是研究总结：
 
 <studySummary>
 ${analyst.studySummary}
@@ -114,9 +121,13 @@ Clarified study topic:
 ${analyst.topic}
 </topic>
 
-Here are our interview summaries:
+${
+  analyst.interviews.length > 0
+    ? `Here are our interview summaries:
 
-${analyst.interviews.map((interview) => `<conclusion>\n${interview.conclusion}\n</conclusion>`).join("\n\n")}
+${analyst.interviews.map((interview) => `<conclusion>\n${interview.conclusion}\n</conclusion>`).join("\n\n")}`
+    : ""
+}
 
 Here is the study process summary:
 
