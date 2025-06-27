@@ -159,7 +159,7 @@ export async function studyAgentRequest({
       ),
     ) as typeof allTools;
     // 同时 maxSteps 设小，方便限制 webSearch 的次数
-    maxSteps = 2;
+    maxSteps = 3;
     if ((toolUseCount[ToolName.webSearch] ?? 0) >= 1) {
       delete tools[ToolName.webSearch];
     }

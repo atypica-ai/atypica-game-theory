@@ -78,36 +78,6 @@ export async function productRnDAgentRequest({
   const maxTokens: number | undefined = undefined;
   let maxSteps = MAX_STEPS_EACH_ROUND;
 
-  if ((toolUseCount[ToolName.saveAnalyst] ?? 0) < 1) {
-    // 明确问题之前，必须先明确问题，直到 saveAnalyst 调用了。
-    tools = Object.fromEntries(
-      Object.entries(allTools).filter(([key]) =>
-        [
-          // ToolName.requestInteraction,
-          ToolName.saveAnalyst,
-          ToolName.toolCallError,
-        ].includes(key as ToolName),
-      ),
-    ) as typeof allTools;
-  }
-
-  if ((toolUseCount[ToolName.saveAnalyst] ?? 0) >= 1) {
-    // 明确主题以后，不能再更新 analyst，或者搜索互联网了，并且 maxSteps 恢复到最大
-    tools = Object.fromEntries(
-      Object.entries(allTools).filter(([key]) =>
-        [
-          // ToolName.saveAnalyst,
-          ToolName.scoutSocialTrends,
-          ToolName.audienceCall,
-          ToolName.saveAnalystStudySummary,
-          ToolName.generateReport,
-          ToolName.toolCallError,
-        ].includes(key as ToolName),
-      ),
-    ) as typeof allTools;
-    maxSteps = MAX_STEPS_EACH_ROUND;
-  }
-
   if ((toolUseCount[ToolName.generateReport] ?? 0) >= 1) {
     // ⚠️ 一旦报告生成，后面就不允许构建人设和搜索等其他操作了，但是可以继续和报告进行问答，也可以重新生成报告
     tools = Object.fromEntries(
