@@ -2,6 +2,7 @@ export * from "./experts/buildPersona/types";
 export * from "./experts/interviewChat/types";
 export * from "./experts/reasoning/types";
 export * from "./experts/report/types";
+export * from "./experts/scoutSocialTrends/types";
 export * from "./experts/scoutTaskChat/types";
 export * from "./experts/searchPersonas/types";
 
@@ -41,6 +42,7 @@ export enum ToolName {
   searchPersonas = "searchPersonas",
   scoutTaskChat = "scoutTaskChat",
   buildPersona = "buildPersona",
+  scoutSocialTrends = "scoutSocialTrends",
 
   saveAnalyst = "saveAnalyst",
   saveAnalystStudySummary = "saveAnalystStudySummary",

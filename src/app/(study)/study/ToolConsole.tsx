@@ -18,6 +18,7 @@ export function ToolConsole() {
 
   switch (activeTool?.toolName) {
     case ToolName.scoutTaskChat:
+    case ToolName.scoutSocialTrends:
       return <ScoutTaskChatConsole toolInvocation={activeTool} />;
     case ToolName.interviewChat:
       return <InterviewChatConsole toolInvocation={activeTool} />;

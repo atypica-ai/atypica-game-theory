@@ -4,6 +4,7 @@ export { buildPersonaTool } from "./experts/buildPersona";
 export { interviewChatTool } from "./experts/interviewChat";
 export { reasoningThinkingTool } from "./experts/reasoning";
 export { generateReportTool } from "./experts/report";
+export { scoutSocialTrendsTool } from "./experts/scoutSocialTrends";
 export { scoutTaskChatTool } from "./experts/scoutTaskChat";
 export { searchPersonasTool } from "./experts/searchPersonas";
 export { webSearchTool } from "./experts/webSearch";
