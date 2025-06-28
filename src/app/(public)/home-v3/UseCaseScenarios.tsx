@@ -59,7 +59,7 @@ export function UseCaseScenarios() {
   }
 
   return (
-    <section className="bg-zinc-50 dark:bg-zinc-900 py-20 md:py-28">
+    <section className="bg-zinc-100 dark:bg-zinc-800 py-20 md:py-28">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12 md:mb-16">
           <p className="text-sm font-semibold text-blue-600 dark:text-blue-400 tracking-widest uppercase">

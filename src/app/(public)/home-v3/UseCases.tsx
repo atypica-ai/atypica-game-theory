@@ -54,7 +54,7 @@ export function UseCases() {
   );
 
   return (
-    <section className="py-20 md:py-28">
+    <section className="bg-zinc-100 dark:bg-zinc-800 py-20 md:py-28">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12 md:mb-16">
           <p className="text-sm font-semibold text-blue-600 dark:text-blue-400 tracking-widest uppercase">
@@ -77,9 +77,7 @@ export function UseCases() {
           </div>
         ) : studies.length === 0 ? (
           <div className="text-center text-zinc-500 dark:text-zinc-400 py-16 bg-zinc-50 dark:bg-zinc-900/50 rounded-2xl">
-            <h3 className="text-xl font-semibold text-zinc-800 dark:text-white">
-              {t("noStudiesTitle")}
-            </h3>
+            <h3 className="text-xl font-semibold">{t("noStudiesTitle")}</h3>
             <p className="mt-2">{t("noStudiesDescription")}</p>
           </div>
         ) : (
@@ -88,7 +86,7 @@ export function UseCases() {
               <Card
                 key={study.id}
                 className={cn(
-                  "group relative overflow-hidden rounded-2xl shadow-none",
+                  "group relative overflow-hidden rounded-2xl shadow-none bg-zinc-50 dark:bg-zinc-900",
                   "transition-all duration-300 hover:-translate-y-1",
                   "flex flex-col py-0",
                 )}
@@ -108,7 +106,7 @@ export function UseCases() {
                       fill
                       // sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       sizes="100%"
-                      className="object-contain transition-transform duration-200 group-hover:scale-105"
+                      className="object-contain transition-transform duration-200 group-hover:scale-105 dark:opacity-80"
                     />
                   ) : (
                     <div className="w-full h-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
@@ -138,12 +136,7 @@ export function UseCases() {
         )}
 
         <div className="text-center mt-16">
-          <Button
-            variant="outline"
-            size="lg"
-            asChild
-            className="rounded-lg h-12 px-8 text-base border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-900"
-          >
+          <Button variant="outline" size="lg" asChild className="rounded-lg h-12 px-8">
             <Link href="/featured-studies">{t("viewAllStudies")}</Link>
           </Button>
         </div>

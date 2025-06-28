@@ -1,4 +1,5 @@
 "use client";
+import { cn } from "@/lib/utils";
 import { BrainIcon, MessageCircleIcon, SparklesIcon, TrendingUpIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
@@ -64,36 +65,45 @@ export function HowItWorks() {
           {processSteps.map((step) => (
             <div
               key={step.step}
-              className={`rounded-3xl transition-all duration-300 hover:-translate-y-1 flex flex-col border ${step.colorClasses} overflow-hidden`}
+              className={cn(
+                "rounded-3xl transition-all duration-300 hover:-translate-y-1 border overflow-hidden",
+                step.colorClasses,
+                "flex flex-col max-md:flex-row",
+              )}
             >
-              <div className="aspect-[4/3] bg-white/50 dark:bg-zinc-950/50 relative">
+              <div
+                className={cn(
+                  "bg-white/50 dark:bg-zinc-950/50 relative",
+                  "w-full h-auto aspect-[4/3] max-md:w-auto max-md:h-40 max-md:aspect-square",
+                )}
+              >
                 <Image
                   src={`/api/imagegen/dev/${step.text2ImagePrompt}`}
                   alt={step.text2ImagePrompt}
-                  className="object-cover"
+                  className="object-cover dark:opacity-90"
                   sizes="100%"
                   fill
                 />
               </div>
-              <div className="p-8 flex flex-col flex-grow">
-                <div className="flex justify-between items-start mb-6">
-                  <span className="text-5xl font-bold text-zinc-300 dark:text-zinc-700">
+              <div className="p-8 max-md:py-3 max-md:px-4 flex flex-col flex-grow">
+                <div className="flex justify-between items-start mb-6 max-md:mb-2">
+                  <span className="text-5xl max-md:text-xl font-bold text-zinc-300 dark:text-zinc-700">
                     {step.step}
                   </span>
                   <div
                     className={`p-2 rounded-full bg-white/50 dark:bg-zinc-950/50 ${step.iconColorClasses}`}
                   >
-                    <step.icon className="w-5 h-5" />
+                    <step.icon className="size-5 max-md:size-3" />
                   </div>
                 </div>
                 <div className="flex-grow flex flex-col justify-start">
-                  <h3 className="text-2xl font-bold mt-4">
+                  <h3 className="text-2xl max-md:text-lg font-bold mt-4 max-md:mt-0">
                     {step.id === "personaGeneration" && t("steps.personaGeneration.title")}
                     {step.id === "aiInterviews" && t("steps.aiInterviews.title")}
                     {step.id === "behaviorAnalysis" && t("steps.behaviorAnalysis.title")}
                     {step.id === "instantInsights" && t("steps.instantInsights.title")}
                   </h3>
-                  <p className="mt-3 text-zinc-600 dark:text-zinc-400 text-base">
+                  <p className="text-zinc-600 dark:text-zinc-400 max-md:text-sm max-md:mt-0">
                     {step.id === "personaGeneration" && t("steps.personaGeneration.description")}
                     {step.id === "aiInterviews" && t("steps.aiInterviews.description")}
                     {step.id === "behaviorAnalysis" && t("steps.behaviorAnalysis.description")}

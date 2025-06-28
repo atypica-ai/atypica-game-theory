@@ -1,5 +1,5 @@
 {
-  "tagline": "Modeling the Subjective World with AI",
+  "tagline": "AI-Powered Intelligence for Subjective Reality",
   "HomePage": {
     "title": "Home",
     "HistoryDrawer": {
@@ -942,7 +942,7 @@
       "steps": {
         "personaGeneration": {
           "title": "Persona Generation",
-          "description": "Generate diverse AI personas based on real behavioral patterns and demographic insights from social platforms."
+          "description": "Generate diverse AI personas based on real behavioral patterns and demographic insights."
         },
         "aiInterviews": {
           "title": "AI-Led Interviews",

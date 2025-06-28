@@ -60,12 +60,12 @@ export function HeroSection() {
       <div className="container mx-auto px-4 text-center">
         <h1
           className={cn(
-            "font-EuclidCircularA font-medium tracking-tight leading-tight max-w-5xl mx-auto mb-6",
-            "text-5xl md:text-7xl",
+            "font-EuclidCircularA max-w-5xl mx-auto mb-6",
+            "font-medium tracking-tight leading-tight text-5xl md:text-7xl zh:tracking-wide zh:text-4xl zh:md:text-6xl",
           )}
         >
           {t("title")} <br />
-          <span className="italic font-InstrumentSerif">{t("titleHighlight")}</span>
+          <span className="italic font-InstrumentSerif tracking-normal">{t("titleHighlight")}</span>
         </h1>
         <p className="max-w-4xl mx-auto text-lg md:text-xl text-zinc-600 dark:text-zinc-400 mb-12">
           {t("subtitle")}

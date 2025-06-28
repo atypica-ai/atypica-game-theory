@@ -27,15 +27,11 @@ export const viewport: Viewport = {
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
-  const title =
-    locale === "zh-CN"
-      ? "atypica.AI - 为「主观世界」建模"
-      : "atypica.AI - AI-Powered Intelligence for Subjective Reality";
-  const pageMetadata = generatePageMetadata({ title, locale });
+  const pageMetadata = generatePageMetadata({ locale });
 
   return {
     title: {
-      default: title,
+      default: pageMetadata.title,
       template: "%s | atypica.AI",
     },
     description: pageMetadata.description,

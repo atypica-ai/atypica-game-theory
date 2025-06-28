@@ -9,15 +9,15 @@ import "./home.css";
 
 export default function HomePageClient() {
   return (
-    <div className="bg-white dark:bg-black">
+    <>
       <HeroSection />
       <StatsSection />
       <UseCaseScenarios />
-      <UseCases />
       <HowItWorks />
+      <UseCases />
       {/* <AudienceSection /> */}
       {/* <TestimonialSection /> */}
       <PersonaSimulationSection />
-    </div>
+    </>
   );
 }

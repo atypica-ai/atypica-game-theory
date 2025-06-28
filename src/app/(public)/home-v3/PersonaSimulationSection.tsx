@@ -7,7 +7,7 @@ import Link from "next/link";
 export function PersonaSimulationSection() {
   const t = useTranslations("HomePageV3.PersonaSimulationSection");
   return (
-    <section className="bg-zinc-50 dark:bg-zinc-900 py-20 md:py-28">
+    <section className="py-20 md:py-28">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12 md:mb-16">
           <p className="text-sm font-semibold text-blue-600 dark:text-blue-400 tracking-widest uppercase">
@@ -56,7 +56,7 @@ export function PersonaSimulationSection() {
         {/* Feature Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto mb-16">
           {/* What Makes Them Different */}
-          <div className="bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-white rounded-2xl p-8">
+          <div className="bg-zinc-100 dark:bg-zinc-800 rounded-2xl p-8">
             <p className="text-xs uppercase tracking-wider opacity-60 mb-4">Core Differentiator</p>
             <h3 className="text-xl font-semibold mb-4">{t("differentiatorTitle")}</h3>
             <p className="text-sm opacity-80 mb-6">{t("differentiatorDescription")}</p>
@@ -77,7 +77,7 @@ export function PersonaSimulationSection() {
           </div>
 
           {/* Agent Ecosystem */}
-          <div className="bg-zinc-900 dark:bg-zinc-600 text-white rounded-2xl p-8">
+          <div className="bg-zinc-900 dark:bg-zinc-950 text-zinc-50 rounded-2xl p-8">
             <p className="text-xs uppercase tracking-wider opacity-60 mb-4">Agent Ecosystem</p>
             <h3 className="text-xl font-semibold mb-4">{t("ecosystemTitle")}</h3>
             <div className="space-y-4">
