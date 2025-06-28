@@ -46,6 +46,7 @@ export default function StatisticsPage() {
   const [dateRange, setDateRange] = useState<DateRange | undefined>(initialDateRange);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isSelectingRange, setIsSelectingRange] = useState(false);
 
   const fetchData = useCallback(async () => {
     if (!dateRange?.from || !dateRange?.to) return;
@@ -155,15 +156,88 @@ export default function StatisticsPage() {
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="end">
-              <Calendar
-                initialFocus
-                mode="range"
-                defaultMonth={dateRange?.from}
-                selected={dateRange}
-                onSelect={setDateRange}
-                numberOfMonths={2}
-                max={365} // Limit date range to avoid heavy queries
-              />
+              <div className="flex items-start">
+                <div className="flex flex-col gap-1 border-r p-2">
+                  <Button
+                    onClick={() => setDateRange({ from: addDays(new Date(), -7), to: new Date() })}
+                    variant="ghost"
+                    className="justify-start text-left font-normal"
+                  >
+                    Last 7 days
+                  </Button>
+                  <Button
+                    onClick={() => setDateRange({ from: addDays(new Date(), -30), to: new Date() })}
+                    variant="ghost"
+                    className="justify-start text-left font-normal"
+                  >
+                    Last 30 days
+                  </Button>
+                  <Button
+                    onClick={() => setDateRange({ from: addDays(new Date(), -90), to: new Date() })}
+                    variant="ghost"
+                    className="justify-start text-left font-normal"
+                  >
+                    Last 90 days
+                  </Button>
+                </div>
+                <div className="relative">
+                  {isSelectingRange && (
+                    <div className="absolute top-0 left-0 right-0 z-10 p-2 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-t-lg">
+                      <p className="text-sm text-blue-700 dark:text-blue-300">
+                        选择结束日期来完成日期范围选择
+                      </p>
+                    </div>
+                  )}
+                  <Calendar
+                    mode="range"
+                    defaultMonth={dateRange?.from}
+                    selected={dateRange}
+                    onSelect={(range, selectedDay, activeModifiers, e) => {
+                      if (!range) {
+                        setDateRange(undefined);
+                        setIsSelectingRange(false);
+                        return;
+                      }
+
+                      // If we have a complete range and user clicks outside the range, start fresh
+                      if (dateRange?.from && dateRange?.to && selectedDay && !isSelectingRange) {
+                        const isClickingOutsideRange =
+                          selectedDay < dateRange.from || selectedDay > dateRange.to;
+                        if (isClickingOutsideRange) {
+                          setDateRange({ from: selectedDay, to: undefined });
+                          setIsSelectingRange(true);
+                          return;
+                        }
+                      }
+
+                      if (range?.from && range?.to) {
+                        // Complete range selected
+                        const diffTime = Math.abs(range.to.getTime() - range.from.getTime());
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                        if (diffDays > 365) {
+                          // If range is too large, limit to 365 days
+                          const limitedTo = addDays(range.from, 365);
+                          setDateRange({ from: range.from, to: limitedTo });
+                        } else {
+                          setDateRange(range);
+                        }
+                        setIsSelectingRange(false);
+                      } else if (range?.from && !range?.to) {
+                        // Only start date selected
+                        setDateRange(range);
+                        setIsSelectingRange(true);
+                      } else {
+                        setDateRange(range);
+                        setIsSelectingRange(false);
+                      }
+                    }}
+                    numberOfMonths={2}
+                    disabled={(date) => date > new Date() || date < addDays(new Date(), -730)}
+                    className={cn(isSelectingRange && "mt-12")}
+                  />
+                </div>
+              </div>
             </PopoverContent>
           </Popover>
           <Button onClick={fetchData} disabled={isLoading}>
