@@ -192,7 +192,7 @@ export default function StatisticsPage() {
                     mode="range"
                     defaultMonth={dateRange?.from}
                     selected={dateRange}
-                    onSelect={(range, selectedDay, activeModifiers, e) => {
+                    onSelect={(range, selectedDay) => {
                       if (!range) {
                         setDateRange(undefined);
                         setIsSelectingRange(false);
