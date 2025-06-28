@@ -206,12 +206,13 @@ export default function InvitationCodesPage() {
       </div>
 
       {pagination && pagination.totalPages > 1 && (
-        <div className="mt-6 flex justify-center">
+        <div className="mt-6 flex justify-center items-center gap-4">
           <Pagination
             currentPage={pagination.page}
             totalPages={pagination.totalPages}
             onPageChange={setCurrentPage}
           />
+          <div className="text-sm">Total: {pagination.totalCount.toLocaleString()}</div>
         </div>
       )}
     </div>

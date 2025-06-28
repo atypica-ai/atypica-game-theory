@@ -364,12 +364,15 @@ export default function AnalystReportsPage() {
       </div>
 
       {pagination && pagination.totalPages > 1 && (
-        <div className="mt-6 flex justify-center">
+        <div className="mt-6 flex items-center justify-center gap-x-4">
           <Pagination
             currentPage={pagination.page}
             totalPages={pagination.totalPages}
             onPageChange={setCurrentPage}
           />
+          {pagination.totalCount > 0 && (
+            <div className="text-sm">Total: {pagination.totalCount.toLocaleString()}</div>
+          )}
         </div>
       )}
     </div>
