@@ -369,7 +369,9 @@ CREATE UNIQUE INDEX "AdminUser_userId_key" ON "AdminUser"("userId");
 CREATE UNIQUE INDEX "InvitationCode_code_key" ON "InvitationCode"("code");
 
 -- CreateIndex
-CREATE INDEX "Persona_embedding_idx" ON "Persona"("embedding");
+-- CREATE INDEX "Persona_embedding_idx" ON "Persona"("embedding");
+-- 人工修改索引，Prisma 生成的是上面那样的，不对
+CREATE INDEX "Persona_embedding_idx" on "Persona" USING hnsw ("embedding" vector_cosine_ops);
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Analyst_studyUserChatId_key" ON "Analyst"("studyUserChatId");
@@ -502,4 +504,3 @@ ALTER TABLE "InterviewSession" ADD CONSTRAINT "InterviewSession_projectId_fkey" 
 
 -- AddForeignKey
 ALTER TABLE "InterviewSession" ADD CONSTRAINT "InterviewSession_userChatId_fkey" FOREIGN KEY ("userChatId") REFERENCES "UserChat"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
