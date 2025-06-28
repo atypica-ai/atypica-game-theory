@@ -1,10 +1,11 @@
-1. Delete all contents of the ./prisma/migrations directory
+1. Delete all migration folders in the ./prisma/migrations directory (but keep migration_lock.toml)
 
 ```bash
-rm -rf ./prisma/migrations/
+# Delete all migration folders but preserve migration_lock.toml
+find ./prisma/migrations -mindepth 1 -maxdepth 1 -type d -exec rm -rf {} +
 ```
 
-2. **For test environments only:** Clean up the migration history in the database by deleting all records from the `_prisma_migrations` table. This is because `migrate dev` (used in development/testing) checks for consistency between migration files and database records. Since we've deleted the old migration files, `migrate dev` would fail if it finds orphaned migration records in the database.
+2. **For dev environments only:** Clean up the migration history in the database by deleting all records from the `_prisma_migrations` table. This is because `migrate dev` (used in development/testing) checks for consistency between migration files and database records. Since we've deleted the old migration files, `migrate dev` would fail if it finds orphaned migration records in the database.
 
 ```sql
 -- Connect to your test database and run:
