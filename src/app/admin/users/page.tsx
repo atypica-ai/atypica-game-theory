@@ -516,6 +516,8 @@ export default function UsersPage() {
                   AdminPermission.MANAGE_INVITATION_CODES,
                   AdminPermission.VIEW_ENTERPRISE_LEADS,
                   AdminPermission.VIEW_TOKEN_CONSUMPTION,
+                  AdminPermission.VIEW_STATISTICS,
+                  AdminPermission.MANAGE_MAINTENANCE,
                 ].map((permission) => (
                   <div className="flex items-center space-x-2" key={permission}>
                     <input
