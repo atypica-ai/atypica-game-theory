@@ -37,6 +37,11 @@ export default async function AdminLayout({ children }: AdminLayoutProps) {
     permissions = (adminUser?.permissions || []) as AdminPermission[];
   }
 
+  // A regular admin must have at least one permission to access the admin panel.
+  if (user.adminUser.role === "REGULAR_ADMIN" && permissions.length === 0) {
+    forbidden();
+  }
+
   return (
     <div className="h-dvh flex flex-col md:flex-row items-stretch justify-start overflow-hidden font-sans">
       {/* Mobile Header */}

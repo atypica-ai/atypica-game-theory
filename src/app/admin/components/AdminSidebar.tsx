@@ -4,6 +4,7 @@ import UserMenu from "@/components/UserMenu";
 import { AdminRole } from "@/prisma/client";
 import {
   AlertTriangle,
+  BarChart,
   CreditCard,
   Database,
   FileText,
@@ -58,6 +59,12 @@ export default function AdminSidebar({ adminRole, permissions = [] }: AdminSideb
         href: "/admin/token-consumption",
         icon: <MonitorPlay className="mr-2 h-4 w-4" />,
         permission: AdminPermission.VIEW_TOKEN_CONSUMPTION,
+      },
+      {
+        label: "Statistics",
+        href: "/admin/statistics",
+        icon: <BarChart className="mr-2 h-4 w-4" />,
+        permission: AdminPermission.VIEW_STATISTICS,
       },
       {
         label: "Users",
