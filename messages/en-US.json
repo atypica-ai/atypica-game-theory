@@ -110,7 +110,8 @@
       "testing": "Testing",
       "planning": "Planning",
       "insights": "Insights",
-      "creation": "Creation"
+      "creation": "Creation",
+      "productRnD": "Product R&D"
     },
     "noStudies": "No studies found in this category.",
     "viewStudy": "View Study"
@@ -293,6 +294,7 @@
       "planning": "Planning",
       "insights": "Insights",
       "creation": "Creation",
+      "productRnD": "Product R&D",
       "misc": "Misc"
     }
   },

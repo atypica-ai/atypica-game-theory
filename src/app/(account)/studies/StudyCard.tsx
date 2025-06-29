@@ -47,6 +47,8 @@ export function StudyCard({ study: { studyUserChat, analyst } }: { study: TStudy
                 return <span>{tRoot("AnalystListPage.kinds.insights")}</span>;
               case "creation":
                 return <span>{tRoot("AnalystListPage.kinds.creation")}</span>;
+              case "productRnD":
+                return <span>{tRoot("AnalystListPage.kinds.productRnD")}</span>;
               case "misc":
                 return <span>{tRoot("AnalystListPage.kinds.misc")}</span>;
               default:

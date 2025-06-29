@@ -229,6 +229,7 @@ export default function FeaturedStudiesPage() {
               <SelectItem value={AnalystKind.planning}>Planning</SelectItem>
               <SelectItem value={AnalystKind.insights}>Insights</SelectItem>
               <SelectItem value={AnalystKind.creation}>Creation</SelectItem>
+              <SelectItem value={AnalystKind.productRnD}>Product R&D</SelectItem>
               <SelectItem value={AnalystKind.misc}>Misc</SelectItem>
             </SelectContent>
           </Select>
@@ -425,9 +426,11 @@ export default function FeaturedStudiesPage() {
                               ? "bg-purple-100 text-purple-800"
                               : analyst.kind === "creation"
                                 ? "bg-orange-100 text-orange-800"
-                                : analyst.kind === "misc"
-                                  ? "bg-gray-100 text-gray-800"
-                                  : "bg-gray-100 text-gray-500"
+                                : analyst.kind === "productRnD"
+                                  ? "bg-cyan-100 text-cyan-800"
+                                  : analyst.kind === "misc"
+                                    ? "bg-gray-100 text-gray-800"
+                                    : "bg-gray-100 text-gray-500"
                       }`}
                     >
                       {analyst.kind || "N/A"}

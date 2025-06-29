@@ -110,7 +110,8 @@
       "testing": "测试",
       "planning": "规划",
       "insights": "洞察",
-      "creation": "创意"
+      "creation": "创意",
+      "productRnD": "产品研发"
     },
     "noStudies": "该类别下暂无研究。",
     "viewStudy": "查看研究"
@@ -293,6 +294,7 @@
       "planning": "规划",
       "insights": "洞察",
       "creation": "创意",
+      "productRnD": "产品研发",
       "misc": "其他"
     }
   },
