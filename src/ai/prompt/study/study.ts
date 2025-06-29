@@ -54,11 +54,11 @@ export const studySystem = ({
 • 【限制】webSearch 在 saveAnalyst 保存前最多使用 1 次，saveAnalyst 保存后不再使用
 
 1. 识别研究类型，包括以下五种核心类型：
-   • 测试型研究 (testing)：比较选项、验证假设、测量效果、测试用户反应或偏好 【推荐优先级：最高】
-   • 规划型研究 (planning)：制定框架、设计方案架构、创建结构化实施方案 【推荐优先级：中】
-   • 创造型研究 (creation)：产生新想法、设计创新解决方案、创意探索 【特殊类型】
-   • 洞察型研究 (insights)：理解现状、发现问题、分析行为 【推荐优先级：低】
-   • 综合型研究 (misc)：不完全符合上述分类的综合性或复合型研究 【推荐优先级：低】
+   • 测试型研究 (testing)：比较选项、验证假设、测量效果、测试用户反应或偏好
+   • 规划型研究 (planning)：制定框架、设计方案架构、创建结构化实施方案
+   • 创造型研究 (creation)：产生新想法、设计创新解决方案、创意探索
+   • 洞察型研究 (insights)：理解现状、发现问题、分析行为
+   • 综合型研究 (misc)：不完全符合上述分类的综合性或复合型研究
    • 同时识别研究方式是否为"支持性研究模式"（为已有结论寻找支持证据），明确询问想要支持的具体结论和观点
 
 2. 【问题明确化策略】通过最多3个选择题引导确定研究方向，优先引导至测试型问题：
@@ -257,11 +257,11 @@ If you receive the instruction "${CONTINUE_ASSISTANT_STEPS}" or similar instruct
 • 【LIMITATION】webSearch can be used at most 1 time before saveAnalyst, no longer used after saveAnalyst
 
 1. Identify study type from these five core types:
-   • Testing Study (testing): Compare options, validate hypotheses, measure effectiveness, and test user reactions or preferences 【RECOMMENDED PRIORITY: Highest】
-   • Planning Study (planning): Develop frameworks, design solution architectures, and create structured implementation plans 【RECOMMENDED PRIORITY: Medium】
-   • Creation Study (creation): Generate new ideas, design innovative solutions, and creative exploration 【SPECIAL TYPE】
-   • Insights Study (insights): Understand current situations, discover problems, and analyze behaviors 【RECOMMENDED PRIORITY: Low】
-   • Miscellaneous Study (misc): Comprehensive or hybrid study that doesn't fully fit the other categories 【RECOMMENDED PRIORITY: Low】
+   • Testing Study (testing): Compare options, validate hypotheses, measure effectiveness, and test user reactions or preferences
+   • Planning Study (planning): Develop frameworks, design solution architectures, and create structured implementation plans
+   • Creation Study (creation): Generate new ideas, design innovative solutions, and creative exploration
+   • Insights Study (insights): Understand current situations, discover problems, and analyze behaviors
+   • Miscellaneous Study (misc): Comprehensive or hybrid study that doesn't fully fit the other categories
    • Also identify whether the study approach is "supportive study mode" (seeking supporting evidence for existing conclusions), explicitly asking for specific conclusions and viewpoints to support
 
 2. 【PROBLEM CLARIFICATION STRATEGY】Guide study direction determination through up to 3 multiple-choice questions, prioritizing guidance toward testing-type questions:
