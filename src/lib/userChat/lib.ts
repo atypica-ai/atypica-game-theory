@@ -2,7 +2,7 @@ import "server-only";
 
 import { getRequestClientIp, getRequestUserAgent } from "@/lib/request/headers";
 import { generateToken } from "@/lib/utils";
-import { PrismaClient, UserChat, UserChatExtra, UserChatKind } from "@/prisma/client";
+import { UserChat, UserChatExtra, UserChatKind } from "@/prisma/client";
 import { ITXClientDenyList } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import { getLocale } from "next-intl/server";
@@ -18,7 +18,7 @@ export async function createUserChat<TKind extends UserChatKind>({
   kind: TKind;
   token?: string;
   title: string;
-  tx?: Omit<PrismaClient, ITXClientDenyList>;
+  tx?: Omit<typeof prisma, ITXClientDenyList>;
 }): Promise<Omit<UserChat, "kind" | "extra"> & { kind: TKind; extra: UserChatExtra }> {
   if (!tx) {
     tx = prisma;
