@@ -40,7 +40,8 @@ export default function PaymentTestPage() {
   const { status, data: session } = useSession();
   const locale = useLocale();
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isRecordsLoading, setIsRecordsLoading] = useState(true);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [error, setError] = useState("");
   const [records, setRecords] = useState<PaymentRecord[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -87,7 +88,7 @@ export default function PaymentTestPage() {
 
   // Fetch payment records on load
   const fetchRecords = useCallback(async () => {
-    setIsLoading(true);
+    setIsRecordsLoading(true);
     const result = await getPaymentRecords(currentPage, searchQuery, showAllStatuses);
     if (!result.success) {
       setError(result.message);
@@ -95,7 +96,7 @@ export default function PaymentTestPage() {
       setRecords(result.data);
       if (result.pagination) setPagination(result.pagination);
     }
-    setIsLoading(false);
+    setIsRecordsLoading(false);
   }, [currentPage, searchQuery, showAllStatuses]);
 
   useEffect(() => {
@@ -118,7 +119,7 @@ export default function PaymentTestPage() {
     productName: ProductName,
     currency: Currency,
   ) => {
-    setIsLoading(true);
+    setIsProcessingPayment(true);
     setError("");
 
     try {
@@ -145,16 +146,16 @@ export default function PaymentTestPage() {
             // User cancelled the payment
             setError("Payment was cancelled");
           }
-          setIsLoading(false);
+          setIsProcessingPayment(false);
         });
       } else {
         setError("Ping++ SDK not loaded");
-        setIsLoading(false);
+        setIsProcessingPayment(false);
       }
     } catch (err) {
       console.error("Payment error:", err);
       setError((err as Error).message);
-      setIsLoading(false);
+      setIsProcessingPayment(false);
     }
   };
 
@@ -191,17 +192,17 @@ export default function PaymentTestPage() {
                 onClick={() =>
                   handlePayment(PaymentMethod.alipay_pc_direct, ProductName.TEST_A, Currency.CNY)
                 }
-                disabled={isLoading}
+                disabled={isProcessingPayment}
               >
-                Pay 0.01 CNY
+                {isProcessingPayment ? "Processing..." : "Pay 0.01 CNY"}
               </Button>
               <Button
                 onClick={() =>
                   handlePayment(PaymentMethod.alipay_pc_direct, ProductName.TEST_B, Currency.CNY)
                 }
-                disabled={isLoading}
+                disabled={isProcessingPayment}
               >
-                Pay 0.1 CNY
+                {isProcessingPayment ? "Processing..." : "Pay 0.1 CNY"}
               </Button>
             </CardContent>
           </Card>
@@ -220,17 +221,17 @@ export default function PaymentTestPage() {
                 onClick={() =>
                   handlePayment(PaymentMethod.alipay_wap, ProductName.TEST_A, Currency.CNY)
                 }
-                disabled={isLoading}
+                disabled={isProcessingPayment}
               >
-                Pay 0.01 CNY
+                {isProcessingPayment ? "Processing..." : "Pay 0.01 CNY"}
               </Button>
               <Button
                 onClick={() =>
                   handlePayment(PaymentMethod.alipay_wap, ProductName.TEST_B, Currency.CNY)
                 }
-                disabled={isLoading}
+                disabled={isProcessingPayment}
               >
-                Pay 0.1 CNY
+                {isProcessingPayment ? "Processing..." : "Pay 0.1 CNY"}
               </Button>
             </CardContent>
           </Card>
@@ -251,8 +252,8 @@ export default function PaymentTestPage() {
                   name="successUrl"
                   value={typeof window !== "undefined" ? window.location.href : ""}
                 />
-                <Button type="submit" role="link">
-                  Checkout 1 USD
+                <Button type="submit" role="link" disabled={isProcessingPayment}>
+                  {isProcessingPayment ? "Processing..." : "Checkout 1 USD"}
                 </Button>
               </form>
               <form action="/payment/stripe" method="POST">
@@ -264,8 +265,8 @@ export default function PaymentTestPage() {
                   name="successUrl"
                   value={typeof window !== "undefined" ? window.location.href : ""}
                 />
-                <Button type="submit" role="link">
-                  Checkout 2 USD
+                <Button type="submit" role="link" disabled={isProcessingPayment}>
+                  {isProcessingPayment ? "Processing..." : "Checkout 2 USD"}
                 </Button>
               </form>
             </CardContent>
@@ -348,9 +349,15 @@ export default function PaymentTestPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide">
-              {records.length === 0 ? (
+              {isRecordsLoading ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-4 text-center text-sm">
+                  <td colSpan={7} className="h-24 text-center">
+                    Loading records...
+                  </td>
+                </tr>
+              ) : records.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="px-6 py-4 text-center text-sm">
                     No payment records found
                   </td>
                 </tr>
