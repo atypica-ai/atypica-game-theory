@@ -62,13 +62,16 @@ export async function productRnDAgentRequest({
 
   const agentToolArgs = { locale, abortSignal, statReport, studyLog };
   const allTools = {
-    [ToolName.saveAnalyst]: saveAnalystTool({ userId, studyUserChatId }),
+    [ToolName.saveAnalyst]: saveAnalystTool({
+      userId,
+      studyUserChatId,
+      productRnD: true,
+    }),
     [ToolName.audienceCall]: audienceCallTool({ ...agentToolArgs }),
     [ToolName.scoutSocialTrends]: scoutSocialTrendsTool({ userId, ...agentToolArgs }),
     [ToolName.saveAnalystStudySummary]: saveAnalystStudySummaryTool({
       studyUserChatId,
-      summaryInstruction:
-        "Comprehensively and thoroughly save the complete innovation research process, providing as detailed and comprehensive information as possible: original product key information, innovative product solutions, innovation sources and processes, consumer demand insights, target customer profiles, demand gap analysis, competitive analysis of original products, innovation solution uniqueness validation, and user feedback citations",
+      productRnD: true,
     }),
     [ToolName.generateReport]: generateReportTool({ studyUserChatId, ...agentToolArgs }),
     [ToolName.toolCallError]: toolCallError,

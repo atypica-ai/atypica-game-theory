@@ -10,9 +10,11 @@ import { SaveAnalystToolResult } from "./types";
 export const saveAnalystTool = ({
   // userId,
   studyUserChatId,
+  productRnD,
 }: {
   userId: number;
   studyUserChatId: number;
+  productRnD?: boolean;
 }) =>
   tool({
     description:
@@ -29,11 +31,16 @@ export const saveAnalystTool = ({
           "Comprehensive and detailed study topic description that MUST include: 1) Complete background context and problem description provided by the study initiator; 2) All relevant industry information, market trends, concepts, and data obtained through webSearch (even if not directly mentioned in conversations, integrate all webSearch findings into the topic); 3) Specific study objectives and goals; 4) Target audience and user groups; 5) Key study questions and hypotheses to be tested; 6) Any constraints, requirements, or scope limitations; 7) Expected outcomes and deliverables. Format as a well-structured, comprehensive description that provides complete context for all subsequent study activities. This topic will serve as the foundation for the entire study, so include ALL available information and context.",
         )
         .transform(fixMalformedUnicodeString),
-      kind: z
-        .enum(["testing", "planning", "insights", "creation", "productRnD", "misc"])
-        .describe(
-          "Study type: 'testing' for comparing options, validating hypotheses, measuring effectiveness, and testing user reactions or preferences; 'insights' for understanding current situations, discovering problems, and analyzing behaviors; 'creation' for generating new ideas, designing innovative solutions, and creative exploration; 'planning' for developing frameworks, designing solution architectures, and creating structured implementation plans; 'productRnD' for product research and development studies focused on technical feasibility, product design, feature development, and innovation exploration; 'misc' for general study that doesn't fit the other categories",
-        ),
+      kind: productRnD
+        ? z
+            .enum(["productRnD"])
+            .describe("This value is fixed to 'productRnD'")
+            .transform(() => "productRnD")
+        : z
+            .enum(["testing", "planning", "insights", "creation", "misc"])
+            .describe(
+              "Study type: 'testing' for comparing options, validating hypotheses, measuring effectiveness, and testing user reactions or preferences; 'insights' for understanding current situations, discovering problems, and analyzing behaviors; 'creation' for generating new ideas, designing innovative solutions, and creative exploration; 'planning' for developing frameworks, designing solution architectures, and creating structured implementation plans; 'misc' for general study that doesn't fit the other categories",
+            ),
       locale: z
         .enum(["zh-CN", "en-US", "misc"])
         .describe(
@@ -96,10 +103,10 @@ export interface SaveAnalystStudySummaryToolResult extends PlainTextToolResult {
 
 export const saveAnalystStudySummaryTool = ({
   studyUserChatId,
-  summaryInstruction,
+  productRnD,
 }: {
   studyUserChatId: number;
-  summaryInstruction?: string;
+  productRnD?: boolean;
 }) =>
   tool({
     description:
@@ -108,8 +115,9 @@ export const saveAnalystStudySummaryTool = ({
       studySummary: z
         .string()
         .describe(
-          summaryInstruction ||
-            "Objective documentation of study design, methodology steps, data collection process, and workflow execution (exclude conclusions or findings)",
+          productRnD
+            ? "Comprehensively and thoroughly save the complete innovation research process, providing as detailed and comprehensive information as possible: original product key information, innovative product solutions, innovation sources and processes, consumer demand insights, target customer profiles, demand gap analysis, competitive analysis of original products, innovation solution uniqueness validation, and user feedback citations"
+            : "Objective documentation of study design, methodology steps, data collection process, and workflow execution (exclude conclusions or findings)",
         )
         .transform(fixMalformedUnicodeString),
     }),
