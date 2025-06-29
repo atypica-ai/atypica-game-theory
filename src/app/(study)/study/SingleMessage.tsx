@@ -1,4 +1,4 @@
-import { CONTINUE_ASSISTANT_STEPS } from "@/ai/messageUtils";
+import { CONTINUE_ASSISTANT_STEPS } from "@/ai/messageUtilsClient";
 import { PlainTextToolResult } from "@/ai/tools/types";
 import { FileAttachment } from "@/components/chat/FileAttachment";
 import ToolArgsTable, { ExpandableText } from "@/components/chat/ToolArgsTable";

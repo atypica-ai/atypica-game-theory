@@ -1,3 +1,5 @@
+import "server-only";
+
 import { CONTINUE_ASSISTANT_STEPS } from "@/ai/messageUtils";
 import { Locale } from "next-intl";
 import { promptSystemConfig } from "../../../ai/prompt/systemConfig";

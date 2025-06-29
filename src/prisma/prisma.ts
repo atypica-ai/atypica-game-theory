@@ -1,3 +1,5 @@
+import "server-only";
+
 import { readReplicas } from "@prisma/extension-read-replicas";
 import { Prisma, PrismaClient } from "./client";
 

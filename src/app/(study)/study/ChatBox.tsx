@@ -1,4 +1,4 @@
-import { CONTINUE_ASSISTANT_STEPS } from "@/ai/messageUtils";
+import { CONTINUE_ASSISTANT_STEPS } from "@/ai/messageUtilsClient";
 import { ToolName } from "@/ai/tools/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { NewStudyButton } from "@/components/NewStudyInputBox";

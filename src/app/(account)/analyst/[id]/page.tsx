@@ -1,6 +1,9 @@
+import { reportHTMLSystem } from "@/ai/prompt";
 import { fetchAnalystInterviews } from "@/app/(agents)/interview/actions";
 import { checkTezignAuth } from "@/app/admin/actions";
 import { throwServerActionError } from "@/lib/serverAction";
+import { AnalystKind } from "@/lib/userChat/data";
+import { getLocale } from "next-intl/server";
 import { fetchAnalystById } from "../actions";
 import { AnalystDetail } from "./AnalystDetail";
 import { fetchAnalystReports } from "./actions";
@@ -29,5 +32,18 @@ export default async function AnalystPage({ params }: { params: Promise<{ id: st
   }
   const reports = reportsResult.data;
 
-  return <AnalystDetail analyst={analyst} interviews={interviews} reports={reports} />;
+  const locale = await getLocale();
+  const defaultReportHTMLSystem = reportHTMLSystem({
+    locale,
+    analystKind: (analyst.kind as AnalystKind) || AnalystKind.misc,
+  });
+
+  return (
+    <AnalystDetail
+      analyst={analyst}
+      interviews={interviews}
+      reports={reports}
+      defaultReportHTMLSystem={defaultReportHTMLSystem}
+    />
+  );
 }

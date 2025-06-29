@@ -1,5 +1,5 @@
 "use client";
-import { CONTINUE_ASSISTANT_STEPS } from "@/ai/messageUtils";
+import { CONTINUE_ASSISTANT_STEPS } from "@/ai/messageUtilsClient";
 import { StatusDisplay } from "@/components/chat/StatusDisplay";
 import { VoiceInputButton } from "@/components/chat/VoiceInputButton";
 import { Button } from "@/components/ui/button";

@@ -1,9 +1,12 @@
+import "server-only";
+
 import { ToolName } from "@/ai/tools/types";
 import { fileUrlToDataUrl } from "@/lib/attachments/actions";
 import { ChatMessageAttachment } from "@/lib/attachments/types";
 import { ChatMessage } from "@/prisma/client";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
+
 import {
   convertToCoreMessages,
   generateId,
@@ -14,8 +17,6 @@ import {
   ToolSet,
 } from "ai";
 import { Logger } from "pino";
-
-export const CONTINUE_ASSISTANT_STEPS = "[CONTINUE ASSISTANT STEPS]";
 
 function fixChatMessages(messages: Message[]) {
   let fixed = messages.map((message) => {
@@ -438,3 +439,5 @@ export async function prepareMessagesForStreaming(
     toolUseCount,
   };
 }
+
+export { CONTINUE_ASSISTANT_STEPS } from "./messageUtilsClient";

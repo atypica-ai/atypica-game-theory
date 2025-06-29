@@ -16,10 +16,12 @@ export function AnalystDetail({
   analyst,
   interviews,
   reports,
+  defaultReportHTMLSystem,
 }: {
   analyst: Analyst;
   interviews: AnalystInterview[];
   reports: AnalystReport[];
+  defaultReportHTMLSystem: string;
 }) {
   const t = useTranslations("AnalystPage");
   const router = useRouter();
@@ -72,7 +74,11 @@ export function AnalystDetail({
         </section>
 
         <section className="col-span-2 space-y-8">
-          <AnalystReportsSection analyst={analyst} reports={reports} />
+          <AnalystReportsSection
+            analyst={analyst}
+            reports={reports}
+            defaultReportHTMLSystem={defaultReportHTMLSystem}
+          />
           <AnalystInterviewsSection
             analystId={analyst.id}
             interviews={interviews}

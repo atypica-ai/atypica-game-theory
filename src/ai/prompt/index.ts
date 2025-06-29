@@ -1,3 +1,5 @@
+import "server-only";
+
 export * from "./buildPersona";
 export * from "./hello";
 export * from "./interview";
