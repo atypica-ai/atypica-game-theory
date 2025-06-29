@@ -167,14 +167,14 @@ export const studySystem = ({
    • 【工具用途】该工具仅用于保存客观总结的研究过程
    • 【禁止内容】不要包含研究发现和研究结论等主观观点
 2. 【第二步 - 必须】调用 generateReport 生成报告：
-   • 【风格指导要求】必须在 instruction 参数中详细描述期望的报告风格，**不能仅提供风格名称**，需要根据研究类型和内容特点提供具体的设计指令：
-     - **测试型研究**：采用清晰分析性的专业设计风格，体现测试结果的客观性和可信度；注重对比和分析的视觉呈现，突出测试结果的差异性和关键发现；创建清晰的对比视觉结构，引导读者高效获取测试结果
-     - **洞察型研究**：采用温和亲和的专业设计风格，体现人文关怀和深度洞察；注重内容的深度表达，保持简洁而富有人文温度的设计美学；创建引导性的视觉流向，帮助读者深入理解行为本质
-     - **创造型研究**：采用富有创意和活力的设计风格，平衡专业性与创新表达；可适当使用色彩和视觉元素来增强创意表达，但保持整体设计的协调性；创建启发性的视觉流向，激发读者的创新思维
-     - **规划型研究**：采用系统性的专业设计风格，体现规划的逻辑性和架构感；注重结构化的信息呈现，突出规划步骤和实施路径的清晰性；创建逻辑性的视觉流向，帮助读者理解实施架构
-     - **综合型研究**：采用平衡和谐的专业设计风格，体现综合研究的全面性和多维特征；保持设计的整体统一性，同时允许不同维度内容有适当的视觉区分；创建多层次的视觉流向，帮助读者理解复合信息
-     - **通用设计规范**：建立清晰的信息层级，通过字体粗细、大小和衬线/非衬线字体搭配来区分内容重要性；精心安排版面结构，通过精准分组和对齐突出重点内容，保持适当留白确保可读性；重点运用表格展示数据对比分析，通过加粗文字、框线突出等方式强调关键数字和重要发现
-     - **重要提醒**：generateReport 工具需要根据这些具体描述来理解和执行设计要求，因此必须提供足够详细和明确的指令
+   • 【风格指导要求】必须在 instruction 参数中详细描述期望的报告风格，**不能仅提供风格名称**，需要根据研究类型和内容特点提供具体、丰富、且带有美学追求的设计指令：
+     - **测试型研究**：设计要追求极致的简约与清晰，用最少的视觉元素呈现明确的对比分析。核心是客观与可信，通过对称、对齐等严谨的版式设计、清晰的字体系统、明确的视觉分组，来构建测试结果的公正性和说服力。色彩仅作为对比或高亮工具，用于凸显关键差异或重要数据，主色调应保持中立、客观。
+     - **洞察型研究**：设计要追求极致的简约与专业，用最少的视觉元素承载深刻的洞察。核心是深度与人文关怀，通过严谨的版式设计、清晰的字体系统、合适的字号与间距，来构建信息的信任感和易读性。色彩仅作为辅助，用于引导视线或区分信息层次，主色调应保持中性、沉稳。
+     - **创造型研究**：设计要追求极致的简约与优雅，用最少的视觉元素表达丰富的创意层次。核心是创造力，但绝不花哨，通过富有表现力的版式设计、字体选择、字号大小对比、行间距和区块间距的呼吸感，来构建视觉的韵律和重点。色彩仅作为点睛之笔，用于极少数关键信息的强调，主色调应保持克制、高级。
+     - **规划型研究**：设计要追求极致的简约与逻辑，用最少的视觉元素构建清晰的实施路径。核心是系统性与可操作性，通过高度结构化的版式设计、严谨的字体系统、明确的层级对比，来构建规划的秩序感和权威性。色彩仅作为功能性提示，用于标注关键节点或状态，主色调应保持高度统一、专业。
+     - **综合型研究**：设计要追求极致的简约与均衡，用最少的视觉元素整合多维度信息。核心是全面与和谐，通过结构化的版式设计、清晰的字体系统、得体的字号与间距，来构建信息的秩序感和整体性。色彩仅作为轻微区分，用于不同维度的视觉提示，主色调应保持统一、专业。
+     - **通用设计原则**：所有报告都必须遵循“少即是多”的原则，严禁使用大面积的彩色卡片、背景色块或粗大的彩色边框。设计的重点是通过排版、字体、间距和结构来构建视觉美感和信息层次，而非依赖颜色。
+     - **重要提醒**：你提供的指令越具体，报告的美学效果就越好。请将这些设计原则内化为你自己的设计语言，并用丰富的、描述性的词汇来指导报告生成。
    • 【限制范围】**不要**规划报告的具体内容，让系统自动根据收集的数据生成报告内容
    • 【使用条件】仅在有新研究结论时生成，避免重复
 
@@ -370,14 +370,14 @@ If the above conditions are not met, do not proceed to the next phase
    • 【TOOL PURPOSE】This tool is only used to save objective summary of study process
    • 【PROHIBITED CONTENT】Do not include study findings and study conclusions or other subjective opinions
 2. 【Second Step - MANDATORY】Call generateReport to generate report:
-   • 【STYLE GUIDANCE REQUIREMENTS】Must provide detailed report style descriptions in the instruction parameter, **cannot provide style names only**, must provide specific design instructions based on research type and content characteristics:
-     - **Testing Research**: Adopt clear analytical professional design style that reflects objectivity and credibility of testing results; focus on visual presentation of comparisons and analysis, highlighting differences in testing results and key findings; create clear comparative visual structure to guide readers to efficiently obtain testing results
-     - **Insights Research**: Adopt gentle and approachable professional design style that reflects humanistic care and deep insights; focus on deep content expression while maintaining simple design aesthetics with human warmth; create guided visual flow to help readers deeply understand behavioral essence
-     - **Creation Research**: Adopt creative and vibrant design style that balances professionalism with innovative expression; may appropriately use colors and visual elements to enhance creative expression while maintaining overall design harmony; create inspirational visual flow to stimulate readers' innovative thinking
-     - **Planning Research**: Adopt systematic professional design style that reflects the logical nature and architectural sense of planning; focus on structured information presentation that highlights clarity of planning steps and implementation pathways; create logical visual flow to help readers understand implementation architecture
-     - **Comprehensive Research**: Adopt balanced and harmonious professional design style that reflects the comprehensiveness and multi-dimensional characteristics of comprehensive research; maintain overall design unity while allowing appropriate visual differentiation for different dimensional content; create multi-layered visual flow to help readers understand composite information
-     - **General Design Standards**: Establish clear information hierarchy through font weight, size, and serif/sans-serif font combinations to distinguish content importance; carefully arrange layout structure, use precise grouping and alignment to highlight key content while maintaining appropriate whitespace for readability; emphasize table displays for data comparison analysis, highlight key numbers and important findings through bold text, borders, and other emphasis methods
-     - **Important Reminder**: The generateReport tool needs to understand and execute design requirements based on these specific descriptions, therefore must provide sufficiently detailed and clear instructions
+   • 【STYLE GUIDANCE REQUIREMENTS】Must provide detailed report style descriptions in the instruction parameter, **cannot provide style names only**, you need to provide specific, rich, and aesthetically driven design instructions based on the research type and content:
+     - **Testing Research**: Strive for ultimate simplicity and clarity. The design must use minimal visual elements to present a clear comparative analysis. The core is objectivity and credibility, built through rigorous layout (symmetry, alignment), a clear font system, and distinct visual grouping to establish fairness and persuasiveness. Color is only a tool for comparison or highlighting key differences, with a neutral and objective main palette.
+     - **Insights Research**: Strive for ultimate simplicity and professionalism, using minimal visual elements to convey profound insights. The core is depth and humanistic care, building trust and readability through rigorous typography, a clear font system, and appropriate spacing. Color is only for support, with a neutral and calm main palette, creating a high-level consulting report that is both warm and analytically deep.
+     - **Creation Research**: Strive for ultimate simplicity and elegance, using minimal visual elements to express rich creative layers. The core is creativity, but never flashy. Build visual rhythm and emphasis through expressive typography, font choices, size contrasts, and breathing room. Color is only for accent, with a restrained and sophisticated main palette, aiming for an artisanal quality report.
+     - **Planning Research**: Strive for ultimate simplicity and logic, using minimal visual elements to construct a clear implementation path. The core is systemization and actionability, building a sense of order and authority through a highly structured layout, a rigorous font system, and clear hierarchical contrasts. Color is only for functional cues, with a highly unified and professional main palette.
+     - **Comprehensive Research**: Strive for ultimate simplicity and balance, using minimal visual elements to integrate multi-dimensional information. The core is comprehensiveness and harmony, building a sense of order and cohesion through structured typography, a clear font system, and appropriate spacing. Color is only for subtle differentiation, with a unified and professional main palette.
+     - **General Design Principles**: All reports must follow the "less is more" principle. Strictly prohibit large colored cards, background blocks, or thick, colored borders. The focus of the design is to build visual aesthetics and information hierarchy through typography, spacing, and structure, not color.
+     - **Important Reminder**: The more specific your instructions, the better the aesthetic outcome of the report will be. Internalize these design principles into your own design language and use rich, descriptive vocabulary to guide report generation.
    • 【SCOPE LIMITATION】Do **NOT** plan specific report content, let the system automatically generate report content based on collected data
    • 【USAGE CONDITIONS】Generate only when there are new study conclusions, avoid duplication
 

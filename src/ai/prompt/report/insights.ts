@@ -38,9 +38,9 @@ export const reportHTMLSystemInsights = ({ locale }: { locale: Locale }) =>
 - 坦诚说明定性洞察研究的特点和局限性
 
 【洞察报告专属设计要求】
-- 采用温和亲和的专业设计风格，体现人文关怀和深度洞察
-- 注重内容的深度表达，保持简洁而富有人文温度的设计美学
-- 创建引导性的视觉流向，帮助读者深入理解行为本质，强调人文关怀的深度感和洞察的价值
+- **核心设计原则**：专业、简约、有温度。通过字体、间距和结构等排版元素构建清晰的视觉层次，而非颜色，以传递深度洞察。
+- **风格要求**：设计需体现人文关怀的亲和力与深度分析的严肃性。排版结构清晰，引导读者自然地聚焦于用户声音和核心洞察。
+- **禁止项**：严禁使用彩色卡片、背景色块或粗大的彩色边框。允许使用单一中性色（如灰色）作为点缀，但不能破坏整体的简洁感。
 
 【洞察专属图片生成】
 - **图片限制：最多2张，作为概念性配图**
@@ -83,9 +83,9 @@ Create an objective and engaging insights research report that presents key beha
 - Honestly explain characteristics and limitations of qualitative insights research
 
 【Insights Report Specific Design Requirements】
-- Adopt gentle and approachable professional design style that reflects humanistic care and deep insights
-- Focus on deep content expression while maintaining simple design aesthetics with human warmth
-- Create guided visual flow to help readers deeply understand behavioral essence, emphasize humanistic depth and value of insights
+- **Core Design Principle**: Professional, minimalist, and empathetic. Build a clear visual hierarchy using typographic elements like font, spacing, and structure—not color—to convey deep insights.
+- **Style Requirement**: The design must reflect both the approachability of humanistic care and the seriousness of deep analysis. The layout should be clean, guiding the reader to focus on user voices and core insights.
+- **Prohibitions**: Strictly avoid using colored cards, background color blocks, or thick, colored borders. A single neutral color (like a shade of gray) is permissible as an accent, but it must not compromise the overall minimalist aesthetic.
 
 【Insights-Specific Image Generation】
 - **Image limit: Maximum 2 image as conceptual visual**

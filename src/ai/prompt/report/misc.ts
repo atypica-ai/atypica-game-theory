@@ -38,9 +38,9 @@ export const reportHTMLSystemMisc = ({ locale }: { locale: Locale }) =>
 - 坦诚说明综合性定性研究的复杂性和局限性
 
 【综合报告专属设计要求】
-- 采用平衡和谐的专业设计风格，体现综合研究的全面性和多维特征
-- 保持设计的整体统一性，同时允许不同维度内容有适当的视觉区分
-- 创建多层次的视觉流向，帮助读者理解复合信息，强调综合研究的全面性和发现的多维价值
+- **核心设计原则**：专业、简约、平衡。通过字体、间距和结构等排版元素构建清晰的视觉层次，而非颜色，以呈现多维度信息。
+- **风格要求**：设计需体现综合研究的全面性与逻辑性。排版结构清晰，视觉流向自然，帮助读者轻松理解复合信息。
+- **禁止项**：严禁使用彩色卡片、背景色块或粗大的彩色边框。允许通过细微的视觉线索（如分隔线）来区分不同维度，但需保持整体设计的统一与简洁。
 
 【综合专属图片生成】
 - **图片限制：最多2张，避免过多配图影响对综合分析和用户反馈的关注**
@@ -83,9 +83,9 @@ Create an objective and engaging comprehensive research report that presents key
 - Honestly explain complexity and limitations of comprehensive qualitative research
 
 【Comprehensive Report Specific Design Requirements】
-- Adopt balanced and harmonious professional design style that reflects the comprehensiveness and multi-dimensional characteristics of comprehensive research
-- Maintain overall design unity while allowing appropriate visual differentiation for different dimensional content
-- Create multi-layered visual flow to help readers understand composite information, emphasize comprehensiveness of research and multi-dimensional value of discoveries
+- **Core Design Principle**: Professional, minimalist, and balanced. Build a clear visual hierarchy using typographic elements like font, spacing, and structure—not color—to present multi-dimensional information.
+- **Style Requirement**: The design must reflect the comprehensiveness and logical nature of the research. The layout should be structured and the visual flow clear to help readers easily understand complex information.
+- **Prohibitions**: Strictly avoid using colored cards, background color blocks, or thick, colored borders. Subtle visual cues (like dividers) are permissible to distinguish between dimensions, but the overall design must remain unified and clean.
 
 【Comprehensive-Specific Image Generation】
 - **Image limit: Maximum 2 images to avoid excessive visuals distracting from comprehensive analysis and user feedback focus**

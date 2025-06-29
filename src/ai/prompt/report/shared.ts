@@ -7,10 +7,10 @@ export const sharedTechnicalSpecs = ({ locale }: { locale: Locale }) =>
 - 使用 Tailwind CSS 构建响应式布局
 - 为不同屏幕尺寸优化布局
 
-【专业设计标准】
-- 采用专业的字体系统，确保内容清晰易读
-- 避免使用过多颜色卡片和高亮颜色边框
-- 保持专业的整体设计风格
+【核心设计原则】
+- **设计哲学**：追求极致简约，用最少的视觉元素（字体、间距、结构）表达最丰富的信息层次，而非依赖颜色。
+- **专业美学**：报告应体现出高端、专业、可信的美学标准。无论是创意报告的优雅，还是分析报告的严谨，都应保持克制与精致。
+- **色彩使用**：色彩仅用作点缀或功能性高亮，严禁使用大面积色块、彩色卡片或抢眼的边框，以确保读者专注于内容本身。
 
 【视觉内容增强】
 - 仅在特定场景下生成配图：创意设计、产品概念、包装设计、品牌视觉概念等
@@ -59,10 +59,10 @@ export const sharedTechnicalSpecs = ({ locale }: { locale: Locale }) =>
 - Use Tailwind CSS for responsive layouts
 - Optimize layouts for different screen sizes
 
-【Professional Design Standards】
-- Use professional font systems to ensure clear and readable content
-- Avoid using excessive colored cards and highlighted color borders
-- Maintain professional overall design style
+【Core Design Principles】
+- **Design Philosophy**: Strive for ultimate simplicity, using the fewest visual elements (typography, spacing, structure) to convey the richest information hierarchy, rather than relying on color.
+- **Professional Aesthetics**: Reports must adhere to a high-end, professional, and credible aesthetic standard. Whether it's the elegance of a creative report or the rigor of an analytical one, the design should remain restrained and refined.
+- **Use of Color**: Color is to be used only as an accent or for functional highlighting. Strictly prohibit large color blocks, colored cards, or distracting borders to ensure the reader remains focused on the content itself.
 
 【Visual Content Enhancement】
 - Generate illustrations only in specific scenarios: creative design, product concepts, packaging design, brand visual concepts, etc.

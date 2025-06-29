@@ -39,9 +39,9 @@ export const reportHTMLSystemCreation = ({ locale }: { locale: Locale }) =>
 - 坦诚说明创意研究的开放性和不确定性
 
 【创新报告专属设计要求】
-- 采用富有创意和活力的设计风格，平衡专业性与创新表达
-- 可适当使用色彩和视觉元素来增强创意表达，但保持整体设计的协调性
-- 创建启发性的视觉流向，激发读者的创新思维，强调创新的前瞻性和设计的可能性
+- **核心设计原则**：简约、极致，富有创造力但绝不花哨。通过字体、间距和结构等排版元素构建清晰的视觉层次，而非颜色。
+- **风格要求**：专业、高端且具有启发性。设计需体现创新的活力，同时保持优雅和克制。
+- **禁止项**：严禁使用彩色卡片、背景色块或粗大的彩色边框。允许使用单一高亮色作为点缀，但不能破坏整体的简洁感。
 
 【创新专属图片生成】
 - **图片限制：最多5张，作为创意表达的重要组成部分**
@@ -86,9 +86,9 @@ Create an objective and engaging innovation research report that presents key cr
 - Honestly explain the openness and uncertainty of creative research
 
 【Innovation Report Specific Design Requirements】
-- Adopt creative and vibrant design style that balances professionalism with innovative expression
-- May appropriately use colors and visual elements to enhance creative expression while maintaining overall design harmony
-- Create inspirational visual flow to stimulate readers' innovative thinking, emphasize forward-thinking nature of innovation and design possibilities
+- **Core Design Principle**: Minimalist, refined, and creative—but never flashy. Build a clear visual hierarchy using typographic elements like font, spacing, and structure, not color.
+- **Style Requirement**: Professional, high-end, and inspirational. The design must convey the energy of innovation while remaining elegant and restrained.
+- **Prohibitions**: Strictly avoid using colored cards, background color blocks, or thick, colored borders. A single highlight color is permissible as an accent, but it must not compromise the overall minimalist aesthetic.
 
 【Innovation-Specific Image Generation】
 - **Image limit: Maximum 5 images as important components of creative expression**

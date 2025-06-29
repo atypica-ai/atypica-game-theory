@@ -38,9 +38,9 @@ export const reportHTMLSystemTesting = ({ locale }: { locale: Locale }) =>
 - 坦诚说明定性研究的特点和局限性
 
 【测试报告专属设计要求】
-- 采用清晰分析性的专业设计风格，体现测试结果的客观性和可信度
-- 注重对比和分析的视觉呈现，突出测试结果的差异性和关键发现
-- 创建清晰的对比视觉结构，引导读者高效获取测试结果，强调数据驱动的专业感和可信度
+- **核心设计原则**：专业、简约、客观。通过字体、间距和结构等排版元素构建清晰的视觉层次，而非颜色，以呈现清晰的对比分析。
+- **风格要求**：设计需体现测试的严谨性与结果的客观性。排版结构清晰，对比关系明确，帮助读者快速定位关键差异。
+- **禁止项**：严禁使用彩色卡片、背景色块或粗大的彩色边框。允许使用细微的视觉线索（如分隔线、标签）来区分对比项，并可使用单一颜色作为点缀，但不能破坏整体的客观感。
 
 【测试专属图片生成】
 - **图片限制：最多2张，作为概念性配图**
@@ -83,9 +83,9 @@ Create an objective and engaging testing research report that presents key testi
 - Honestly explain characteristics and limitations of qualitative research
 
 【Testing Report Specific Design Requirements】
-- Adopt clear analytical professional design style that reflects objectivity and credibility of testing results
-- Focus on visual presentation of comparisons and analysis, highlighting differences in testing results and key findings
-- Create clear comparative visual structure to guide readers to efficiently obtain testing results, emphasize data-driven professionalism and credibility
+- **Core Design Principle**: Professional, minimalist, and objective. Build a clear visual hierarchy using typographic elements like font, spacing, and structure—not color—to present a clear comparative analysis.
+- **Style Requirement**: The design must reflect the rigor of the testing and the objectivity of the results. The layout should be highly structured with clear comparisons, helping the reader quickly identify key differences.
+- **Prohibitions**: Strictly avoid using colored cards, background color blocks, or thick, colored borders. Subtle visual cues (like dividers or labels) are permissible for distinguishing between items being compared, and a single accent color may be used, but it must not compromise the overall sense of objectivity.
 
 【Testing-Specific Image Generation】
 - **Image limit: Maximum 2 image as conceptual visual**

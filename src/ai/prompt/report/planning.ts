@@ -39,9 +39,9 @@ export const reportHTMLSystemPlanning = ({ locale }: { locale: Locale }) =>
 - 坦诚说明定性规划研究的特点和不确定性
 
 【规划报告专属设计要求】
-- 采用系统性的专业设计风格，体现规划的逻辑性和架构感
-- 注重结构化的信息呈现，突出规划步骤和实施路径的清晰性
-- 创建逻辑性的视觉流向，帮助读者理解实施架构，强调规划的系统性和实施的可操作性
+- **核心设计原则**：专业、简约、逻辑清晰。通过字体、间距和结构等排版元素构建清晰的视觉层次，而非颜色，以呈现规划的系统性。
+- **风格要求**：设计需体现规划的严谨性与可操作性。排版结构清晰，信息层级分明，使实施路径一目了然。
+- **禁止项**：严禁使用彩色卡片、背景色块或粗大的彩色边框。允许使用细微的视觉线索（如数字编号、项目符号）来组织信息，并可使用单一颜色作为点缀，但不能破坏整体的专业感。
 
 【规划专属图片生成】
 - **图片限制：最多2张，作为概念性配图**
@@ -85,9 +85,9 @@ Create an objective and engaging planning research report that presents key plan
 - Honestly explain characteristics and uncertainties of qualitative planning research
 
 【Planning Report Specific Design Requirements】
-- Adopt systematic professional design style that reflects the logical nature and architectural sense of planning
-- Focus on structured information presentation that highlights clarity of planning steps and implementation pathways
-- Create logical visual flow to help readers understand implementation architecture, emphasize systematic nature of planning and actionability of implementation
+- **Core Design Principle**: Professional, minimalist, and logical. Build a clear visual hierarchy using typographic elements like font, spacing, and structure—not color—to convey a systematic plan.
+- **Style Requirement**: The design must reflect the rigor and actionability of the plan. The layout should be highly structured with a clear information hierarchy, making the implementation path self-evident.
+- **Prohibitions**: Strictly avoid using colored cards, background color blocks, or thick, colored borders. Subtle visual cues (like numbering or bullet points) are encouraged for organization, and a single accent color is permissible, but it must not compromise the overall professional aesthetic.
 
 【Planning-Specific Image Generation】
 - **Image limit: Maximum 2 image as conceptual visual**
