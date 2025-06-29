@@ -1,6 +1,7 @@
 "use client";
 import {
   AlertTriangle,
+  BarChart,
   CreditCard,
   Database,
   FileText,
@@ -65,6 +66,17 @@ export default function AdminDashboard() {
             <h2 className="text-xl font-semibold">Token Consumption</h2>
           </div>
           <p className="text-sm text-muted-foreground">Monitor token usage across chats</p>
+        </Link>
+
+        <Link
+          href="/admin/statistics"
+          className="rounded-lg border bg-card p-4 shadow-sm hover:shadow-md transition-shadow"
+        >
+          <div className="flex items-center mb-2">
+            <BarChart className="h-5 w-5 mr-2" />
+            <h2 className="text-xl font-semibold">Statistics</h2>
+          </div>
+          <p className="text-sm text-muted-foreground">View platform analytics and insights</p>
         </Link>
 
         <Link

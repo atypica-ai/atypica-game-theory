@@ -316,13 +316,15 @@ export default function TokenConsumptionPage() {
         </div>
 
         {pagination && pagination.totalPages > 1 && (
-          <div className="mt-4 flex justify-center items-center gap-4">
+          <div className="mt-4 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4">
             <Pagination
               currentPage={pagination.page}
               totalPages={pagination.totalPages}
               onPageChange={handlePageChange}
             />
-            <div className="text-sm">Total: {pagination.totalCount.toLocaleString()}</div>
+            <div className="text-sm text-muted-foreground">
+              Total: {pagination.totalCount.toLocaleString()}
+            </div>
           </div>
         )}
       </div>
