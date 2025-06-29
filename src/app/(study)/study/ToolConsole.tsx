@@ -7,6 +7,7 @@ import { InterviewChatConsole } from "./console/InterviewChatConsole";
 import { ReasoningThinkingConsole } from "./console/ReasoningThinkingConsole";
 import { ScoutTaskChatConsole } from "./console/ScoutTaskChatConsole";
 import { SearchPersonasConsole } from "./console/SearchPersonasConsole";
+import { WebSearchConsole } from "./console/WebSearchConsole";
 import { useStudyContext } from "./hooks/StudyContext";
 
 export function ToolConsole() {
@@ -30,6 +31,8 @@ export function ToolConsole() {
       return <BuildPersonaConsole toolInvocation={activeTool} />;
     case ToolName.searchPersonas:
       return <SearchPersonasConsole toolInvocation={activeTool} />;
+    case ToolName.webSearch:
+      return <WebSearchConsole toolInvocation={activeTool} />;
     default:
       return activeTool ? <ToolInvocationMessage toolInvocation={activeTool} /> : null;
   }
