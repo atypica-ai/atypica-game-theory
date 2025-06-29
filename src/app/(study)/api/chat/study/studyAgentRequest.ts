@@ -32,7 +32,8 @@ import { createAbortSignals } from "./abortSignal";
 import { backgroundChatUntilCancel, raceForUserChat } from "./background";
 import { notifyReportCompletion, notifyStudyInterruption } from "./notify";
 
-const MAX_STEPS_EACH_ROUND = 15; // streamText 默认 15 步
+// autopolot 模式默认 15 步，webSearch 2 + saveAnalyst 1 + searchPersonas 1 + scoutTaskChat 2 + buildPersona 2 + interviewChat 2 + saveAnalystStudySummary 1 + generateReport 1
+const MAX_STEPS_EACH_ROUND = 15;
 // const TOOL_USE_LIMIT = {
 //   [ToolName.scoutTaskChat]: 1,
 //   [ToolName.generateReport]: 2,
@@ -144,48 +145,6 @@ export async function studyAgentRequest({
   const toolChoice: ToolChoice<typeof allTools> = "auto";
   const maxTokens: number | undefined = undefined;
   let maxSteps = MAX_STEPS_EACH_ROUND;
-
-  if ((toolUseCount[ToolName.saveAnalyst] ?? 0) < 1) {
-    // 明确问题之前，必须先明确问题，直到 saveAnalyst 调用了。
-    tools = Object.fromEntries(
-      Object.entries(allTools).filter(([key]) =>
-        [
-          ToolName.requestInteraction,
-          ToolName.webSearch,
-          ToolName.saveAnalyst,
-          ToolName.reasoningThinking,
-          ToolName.toolCallError,
-        ].includes(key as ToolName),
-      ),
-    ) as typeof allTools;
-    // 同时 maxSteps 设小，方便限制 webSearch 的次数
-    maxSteps = 3;
-    if ((toolUseCount[ToolName.webSearch] ?? 0) >= 1) {
-      delete tools[ToolName.webSearch];
-    }
-  }
-
-  if ((toolUseCount[ToolName.saveAnalyst] ?? 0) >= 1) {
-    // 明确主题以后，不能再更新 analyst，或者搜索互联网了，并且 maxSteps 恢复到最大
-    tools = Object.fromEntries(
-      Object.entries(allTools).filter(([key]) =>
-        [
-          // ToolName.requestInteraction,
-          // ToolName.webSearch,
-          // ToolName.saveAnalyst,
-          ToolName.reasoningThinking,
-          ToolName.searchPersonas,
-          ToolName.scoutTaskChat,
-          ToolName.buildPersona,
-          ToolName.interviewChat,
-          ToolName.saveAnalystStudySummary,
-          ToolName.generateReport,
-          ToolName.toolCallError,
-        ].includes(key as ToolName),
-      ),
-    ) as typeof allTools;
-    maxSteps = MAX_STEPS_EACH_ROUND;
-  }
 
   if ((toolUseCount[ToolName.generateReport] ?? 0) >= 1) {
     // ⚠️ 一旦报告生成，后面就不允许构建人设和搜索等其他操作了，但是可以继续和报告进行问答，也可以重新生成报告
