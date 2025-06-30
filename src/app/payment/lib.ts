@@ -265,7 +265,13 @@ export async function handlePaymentSuccess({
       userId,
     });
     // 如果当前套餐是 pro，则升级，否则只是简单的延长套餐
-    if (activeSubscription && activeSubscription.plan === SubscriptionPlan.pro) {
+    if (
+      activeSubscription &&
+      activeSubscription.plan === SubscriptionPlan.pro &&
+      !(activeSubscription.createdAt < new Date(1749865000000))
+      // TODO: 这个在一个月以后（2025-07-15）去掉，即 2025-06-14 09:30 之前的 subscription 都已经过期了
+      // 在 2025-06-14 09:30 之前的 tokens 都被加到了 permanentBalance 里，在此时间之后的才加入到 monthlyBalance
+    ) {
       if (!userTokens.monthlyResetAt) {
         throw new Error(`Active subscription found, but monthlyResetAt value is not set`);
       }
