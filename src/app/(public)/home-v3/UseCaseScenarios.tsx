@@ -14,7 +14,7 @@ const useCases = [
   },
   {
     id: "planning",
-    videoS3Key: "atypica/public/atypica-atypica-showcase-planning-20250627.mp4",
+    videoS3Key: "atypica/public/atypica-showcase-planning-20250627.mp4",
     videoPosterS3Key: "atypica/public/atypica-showcase-planning-poster-20250627.png",
     // coverImagePrompt: "Clean modern design on black background. Medium-sized white text 'atypica.AI for Planning' centered. Simple geometric shapes and subtle lines. Professional minimal aesthetic.",
   },
