@@ -1,4 +1,3 @@
-import { resetMonthlyTokens } from "@/app/payment/lib";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/prisma/prisma";
 import { getServerSession } from "next-auth";
@@ -30,7 +29,8 @@ export default async function AccountLayoutPage({ children }: { children: React.
   // TODO: 现在比较粗糙的在每次打开 account 页面的时候 reset 一下
   // 需要改成定时调用
   // 同时注意下 reset 操作和研究过程中的 consume 操作的写冲突可能性
-  await resetMonthlyTokens({ userId });
+  // await resetMonthlyTokens({ userId });
+  // 先注释，可能会导致 subscription add monthly tokens 被计算两次
 
   const userTokens = await fetchUserTokens();
   const result = await fetchActiveUserSubscription({ userId });
