@@ -135,17 +135,26 @@ export function appendStepToStreamingMessage<T extends ToolSet>(
   step: StepResult<T>,
 ) {
   const parts: Message["parts"] = streamingMessage.parts ?? [];
-  const contents = [streamingMessage.content ?? ""];
+  const contents = streamingMessage.content ? [streamingMessage.content] : [];
   // 这三步其实是可以合并的
   if (step.stepType === "initial") {
-    contents.push(step.text);
-    parts.push({ type: "text", text: step.text });
+    const text = step.text.trim();
+    contents.push(text || "[initial]"); // 确保 content 一定有内容
+    if (text) {
+      parts.push({ type: "text", text });
+    }
   } else if (step.stepType === "continue") {
-    contents.push(step.text);
-    parts.push({ type: "text", text: step.text });
+    const text = step.text.trim();
+    contents.push(text || "[continue]");
+    if (text) {
+      parts.push({ type: "text", text });
+    }
   } else if (step.stepType === "tool-result") {
-    contents.push(step.text);
-    parts.push({ type: "text", text: step.text });
+    const text = step.text.trim();
+    contents.push(text || "[tool-result]");
+    if (text) {
+      parts.push({ type: "text", text });
+    }
   }
   // 不管是哪个 step，都有可能有 toolCalls，所以要放在外面。
   // 另外，text part 要放在 toolCalls part 的前面，规则是这样的，先文本再执行。
@@ -171,7 +180,7 @@ export function appendStepToStreamingMessage<T extends ToolSet>(
       toolInvocation,
     });
   }
-  streamingMessage.content = contents.join("\n");
+  streamingMessage.content = contents.join("\n").trimStart();
   streamingMessage.parts = parts;
 }
 
