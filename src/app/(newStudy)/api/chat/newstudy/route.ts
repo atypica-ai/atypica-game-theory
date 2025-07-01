@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
   const chatLogger = rootLogger.child({
     userChatId,
     userChatToken: userChat.token,
-    kind: "newStudyPlanning",
+    kind: "misc",
   });
 
   const streamTextResult = streamText({

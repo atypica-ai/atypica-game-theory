@@ -2,6 +2,7 @@ import { persistentAIMessageToDB, prepareMessagesForStreaming } from "@/ai/messa
 import { authOptions } from "@/lib/auth";
 import { rootLogger } from "@/lib/logging";
 import { AnalystKind } from "@/lib/userChat/data";
+import { UserChatExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { CreateMessage, generateId, Message } from "ai";
 import { getServerSession } from "next-auth/next";
@@ -56,8 +57,13 @@ export async function POST(req: Request) {
   const { coreMessages, streamingMessage, toolUseCount } =
     await prepareMessagesForStreaming(studyUserChatId);
 
+  const briefStatus: "CLARIFIED" | "DRAFT" = (userChat.extra as UserChatExtra)?.briefUserChatId
+    ? "CLARIFIED"
+    : "DRAFT";
+
   const reqSignal = req.signal;
   const params = {
+    briefStatus,
     studyUserChatId,
     coreMessages,
     toolUseCount,

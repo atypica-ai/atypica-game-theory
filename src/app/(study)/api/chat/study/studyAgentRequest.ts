@@ -92,6 +92,7 @@ export function setBedrockCache(model: `claude-${string}`, coreMessages: CoreMes
 
 // 参考了 https://sdk.vercel.ai/docs/ai-sdk-ui/chatbot-message-persistence#storing-messages 的设计来实现
 export async function studyAgentRequest({
+  briefStatus = "DRAFT",
   studyUserChatId,
   coreMessages,
   streamingMessage,
@@ -100,6 +101,7 @@ export async function studyAgentRequest({
   reqSignal,
   studyLog,
 }: {
+  briefStatus?: "CLARIFIED" | "DRAFT";
   studyUserChatId: number;
   coreMessages: CoreMessage[];
   streamingMessage: Omit<Message, "role"> & {
@@ -161,6 +163,10 @@ export async function studyAgentRequest({
     maxSteps = 2;
   }
 
+  if (briefStatus === "CLARIFIED") {
+    delete tools[ToolName.requestInteraction];
+  }
+
   // if ((toolUseCount[ToolName.scoutTaskChat] ?? 0) >= TOOL_USE_LIMIT[ToolName.scoutTaskChat]) {
   //   // 这个限制拿掉了，现在指令遵循还行其实，不要增加复杂度了
   //   delete tools[ToolName.scoutTaskChat];
@@ -191,6 +197,7 @@ export async function studyAgentRequest({
   const { clearBackgroundToken, backgroundToken } = await raceForUserChat(studyUserChatId);
   const system = studySystem({
     locale,
+    briefStatus,
     // 为了 prompt cache 生效，需要一个固定的 system prompt，这部分先去掉
     // tokensStat: { used: tokensConsumed, limit: TOKENS_COMSUME_LIMIT * 0.5 }, // 限制是 1M，告诉模型限制是 0.6M
     // toolUseStat: {

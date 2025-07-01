@@ -16,12 +16,14 @@ TokenUsage (used/limit): ${tokensStat.used}/${tokensStat.limit}
 
 export const studySystem = ({
   locale,
+  briefStatus = "DRAFT",
   // toolUseStat,
   // tokensStat,
 }: {
   locale: Locale;
-  toolUseStat?: Record<string, { used: number; limit: number }>;
-  tokensStat?: { used: number; limit: number };
+  briefStatus?: "CLARIFIED" | "DRAFT";
+  // toolUseStat?: Record<string, { used: number; limit: number }>;
+  // tokensStat?: { used: number; limit: number };
 }) =>
   locale === "zh-CN"
     ? `${promptSystemConfig({ locale })}
@@ -50,7 +52,15 @@ export const studySystem = ({
 
 <阶段1：主题明确>
 【战略性信息收集】
+${
+  briefStatus === "CLARIFIED"
+    ? `
+• 【使用时机】webSearch 可根据研究主题需要适当使用，了解相关领域最新动态、概念、趋势、竞品分析、用户反馈、技术细节等
+`
+    : `
 • 【使用时机】webSearch 需要在对问题有足够了解后使用，如果用户问题描述不清晰，需要先通过问答明确问题再考虑使用 webSearch
+`
+}
 • 【内容聚焦】根据明确的问题使用 webSearch 了解相关领域最新动态、概念、趋势、竞品分析、用户反馈、技术细节等，收集的信息必须全部整合到后续的研究主题中
 • 【信息整合要求】webSearch 获得的所有有价值信息都必须详细记录并在 saveAnalyst 时完整纳入研究主题，不能遗漏或简化任何重要发现
 • 【限制】webSearch 在 saveAnalyst 保存前最多使用 1 次，saveAnalyst 保存后不再使用
@@ -63,6 +73,10 @@ export const studySystem = ({
    • 综合型研究 (misc)：不完全符合上述分类的综合性或复合型研究
    • 同时识别研究方式是否为"支持性研究模式"（为已有结论寻找支持证据），明确询问想要支持的具体结论和观点
 
+${
+  briefStatus === "CLARIFIED"
+    ? ""
+    : `
 2. 【问题明确化策略】通过最多3个选择题引导确定研究方向，优先引导至测试型问题：
    • 【必须】每个问题都使用 requestInteraction 工具，提供清晰选项
    • 【必须】优先理解研究的背景和上下文，避免直接询问"需求"
@@ -78,14 +92,25 @@ export const studySystem = ({
    ✓ 有效提问："能分享这个场景的更多背景吗？"
    ✓ 引导测试化："基于您的描述，是否想要比较A方案vs B方案的用户接受度？"
    ✗ 避免提问："您期望在哪些方面有差异化？"
+`
+}
 
 <验证检查点>
 在进入阶段2前，确保已完成：
 1. 已明确识别研究类型，优先考虑测试型研究
+${
+  briefStatus === "CLARIFIED"
+    ? `
+2. 研究发起者的问题已经明确，可以开始规划研究
+3. 【信息时效性】如研究主题需要，可适当使用 webSearch 获取相关领域最新信息，并确保所有搜索结果都将整合到研究主题中
+`
+    : `
 2. 已使用 requestInteraction 工具收集关键信息
 3. 已获得研究发起者提供的足够背景信息开始规划
 4. 【问题明确度】确保问题具有可测试性和明确的比较维度
 5. 【信息时效性】如问题已明确且需要，应使用 webSearch 获取相关领域最新信息，并确保所有搜索结果都将整合到研究主题中
+`
+}
 如未满足上述条件，继续阶段1的工作直至完成
 </验证检查点>
 </阶段1：主题明确>
@@ -253,7 +278,15 @@ If you receive the instruction "${CONTINUE_ASSISTANT_STEPS}" or similar instruct
 
 <PHASE_1_TOPIC_CLARIFICATION>
 【STRATEGIC INFORMATION GATHERING】
+${
+  briefStatus === "CLARIFIED"
+    ? `
+• 【TIMING】webSearch can be used appropriately based on research topic needs to understand latest trends, concepts, dynamics, competitive analysis, user feedback, technical details, etc. in relevant fields
+`
+    : `
 • 【TIMING】webSearch should be used after having sufficient understanding of the problem. If the user's problem description is unclear, first clarify the problem through Q&A before considering webSearch
+`
+}
 • 【CONTENT FOCUS】Use webSearch to understand latest trends, concepts, dynamics, competitive analysis, user feedback, technical details, etc. in relevant fields based on clarified problems. All collected information must be fully integrated into the subsequent study topic
 • 【INFORMATION INTEGRATION REQUIREMENT】All valuable information obtained through webSearch must be detailed recorded and completely included in the study topic when using saveAnalyst, cannot omit or simplify any important findings
 • 【LIMITATION】webSearch can be used at most 1 time before saveAnalyst, no longer used after saveAnalyst
@@ -266,6 +299,10 @@ If you receive the instruction "${CONTINUE_ASSISTANT_STEPS}" or similar instruct
    • Miscellaneous Study (misc): Comprehensive or hybrid study that doesn't fully fit the other categories
    • Also identify whether the study approach is "supportive study mode" (seeking supporting evidence for existing conclusions), explicitly asking for specific conclusions and viewpoints to support
 
+${
+  briefStatus === "CLARIFIED"
+    ? ""
+    : `
 2. 【PROBLEM CLARIFICATION STRATEGY】Guide study direction determination through up to 3 multiple-choice questions, prioritizing guidance toward testing-type questions:
    • 【MANDATORY】Use the requestInteraction tool for each question, providing clear options
    • 【MANDATORY】Prioritize understanding study background and context, avoid directly asking about "needs"
@@ -281,14 +318,25 @@ If you receive the instruction "${CONTINUE_ASSISTANT_STEPS}" or similar instruct
    ✓ Effective question: "Could you share more background about this scenario?"
    ✓ Testing guidance: "Based on your description, would you like to compare user acceptance of Solution A vs Solution B?"
    ✗ Avoid asking: "In which aspects do you expect differentiation?"
+`
+}
 
 <VALIDATION_CHECKPOINT>
 Before entering Phase 2, ensure completion of:
 1. Study type has been clearly identified, with priority consideration for testing study
+${
+  briefStatus === "CLARIFIED"
+    ? `
+2. The study initiator's problem has been clarified and research planning can begin
+3. 【INFORMATION TIMELINESS】If needed for the research topic, webSearch can be appropriately used to obtain latest information in relevant fields, and ensure all search results will be integrated into the study topic
+`
+    : `
 2. requestInteraction tool has been used to collect key information
 3. Sufficient background information has been obtained from the study initiator to begin planning
 4. 【PROBLEM CLARITY】Ensure the problem has testability and clear comparison dimensions
 5. 【INFORMATION TIMELINESS】If the problem is clarified and needed, should use webSearch to obtain latest information in relevant fields, and ensure all search results will be integrated into the study topic
+`
+}
 If the above conditions are not met, continue Phase 1 work until completion
 </VALIDATION_CHECKPOINT>
 </PHASE_1_TOPIC_CLARIFICATION>
