@@ -35,7 +35,7 @@ export function CountdownRedirect({ studyBrief, userChatId }: CountdownRedirectP
         hasStarted.current = false; // Allow retrying if it fails
       }
     });
-  }, [isPending, router, startTransition, studyBrief, userChatId]);
+  }, [isPending, router, startTransition, studyBrief, userChatId, t]);
 
   useEffect(() => {
     if (countdown <= 0) {

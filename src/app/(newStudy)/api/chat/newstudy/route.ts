@@ -4,6 +4,9 @@ import {
   prepareMessagesForStreaming,
 } from "@/ai/messageUtils";
 import { llm, providerOptions } from "@/ai/provider";
+import { newStudySystem } from "@/app/(newStudy)/prompt";
+import { newStudyTools } from "@/app/(newStudy)/tools";
+import { NewStudyBodySchema } from "@/app/(newStudy)/types";
 import { authOptions } from "@/lib/auth";
 import { rootLogger } from "@/lib/logging";
 import { prisma } from "@/prisma/prisma";
@@ -11,18 +14,6 @@ import { generateId, smoothStream, streamText } from "ai";
 import { getServerSession } from "next-auth";
 import { getLocale } from "next-intl/server";
 import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
-import { newStudySystem } from "../../../prompt";
-import { newStudyTools } from "../../../tools";
-
-const NewStudyBodySchema = z.object({
-  message: z.object({
-    id: z.string().optional(),
-    role: z.enum(["user", "assistant", "system", "data"]),
-    content: z.string(),
-  }),
-  userChatId: z.number(),
-});
 
 export async function POST(req: NextRequest) {
   const locale = await getLocale();
@@ -72,7 +63,13 @@ export async function POST(req: NextRequest) {
   });
 
   const streamTextResult = streamText({
-    model: llm("claude-3-7-sonnet"),
+    // model: llm("claude-3-7-sonnet"),
+    model: llm("gemini-2.5-flash", {
+      useSearchGrounding: true,
+      dynamicRetrievalConfig: {
+        mode: "MODE_DYNAMIC",
+      },
+    }),
     providerOptions,
     system: newStudySystem({ locale }),
     messages: coreMessages,

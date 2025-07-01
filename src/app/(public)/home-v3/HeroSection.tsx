@@ -61,13 +61,13 @@ export function HeroSection() {
         <h1
           className={cn(
             "font-EuclidCircularA max-w-5xl mx-auto mb-6",
-            "font-medium tracking-tight leading-tight text-5xl md:text-7xl zh:tracking-wide zh:text-4xl zh:md:text-6xl",
+            "font-medium tracking-tight leading-tight text-3xl sm:text-5xl md:text-6xl zh:tracking-wide zh:text-4xl zh:md:text-6xl",
           )}
         >
           {t("title")} <br />
-          <span className="italic font-InstrumentSerif tracking-normal">{t("titleHighlight")}</span>
+          <div className="italic font-InstrumentSerif tracking-normal">{t("titleHighlight")}</div>
         </h1>
-        <p className="max-w-4xl mx-auto text-lg md:text-xl text-zinc-600 dark:text-zinc-400 mb-12">
+        <p className="max-w-4xl mx-auto text-sm sm:text-base md:text-lg text-zinc-600 dark:text-zinc-400 mb-12">
           {t("subtitle")}
         </p>
 
@@ -115,9 +115,9 @@ export function HeroSection() {
                   </svg>
                 ))}
               </div>
-              <span className="text-xs text-zinc-500 dark:text-zinc-500 whitespace-nowrap">
+              <div className="text-xs text-zinc-500 dark:text-zinc-500 text-left">
                 {t("trustIndicator")}
-              </span>
+              </div>
             </div>
           </div>
         </div>

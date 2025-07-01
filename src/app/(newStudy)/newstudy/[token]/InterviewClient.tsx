@@ -1,4 +1,5 @@
 "use client";
+import { NewStudyBodySchema } from "@/app/(newStudy)/types";
 import { VoiceInputButton } from "@/components/chat/VoiceInputButton";
 import { Button } from "@/components/ui/button";
 import { useDevice } from "@/lib/utils";
@@ -8,24 +9,18 @@ import { generateId, Message } from "ai";
 import { AnimatePresence, motion } from "framer-motion";
 import { Ear, Loader2Icon, Send, XIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 import { CountdownRedirect } from "./CountdownRedirect";
 
 const DEFAULT_TIME_LEFT = 300; // seconds
 
-const NewStudyBodySchema = z.object({
-  message: z.object({
-    id: z.string().optional(),
-    role: z.enum(["user", "assistant", "system", "data"]),
-    content: z.string(),
-  }),
-  userChatId: z.number(),
-});
-
 // Custom textarea component with forwardRef support
-const CustomTextarea = React.forwardRef<HTMLTextAreaElement, any>(
+interface CustomTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+  className?: string;
+  onInput?: (e: React.FormEvent<HTMLTextAreaElement>) => void;
+}
+const CustomTextarea = React.forwardRef<HTMLTextAreaElement, CustomTextareaProps>(
   ({ className = "", onInput, ...props }, ref) => {
     return (
       <textarea
@@ -33,7 +28,7 @@ const CustomTextarea = React.forwardRef<HTMLTextAreaElement, any>(
         className={className}
         onInput={(e) => {
           // Auto-resize textarea
-          const target = e.target as HTMLTextAreaElement;
+          const target = e.currentTarget;
           target.style.height = "auto";
           target.style.height = Math.min(target.scrollHeight, 128) + "px";
           onInput?.(e);
@@ -54,7 +49,6 @@ export function InterviewClient({
   initialMessages: Message[];
   user: { id: number; email: string };
 }) {
-  const router = useRouter();
   const locale = useLocale();
   const { isMobile } = useDevice();
   const t = useTranslations("NewStudyPage");
@@ -72,7 +66,7 @@ export function InterviewClient({
   const useChatHelpers = useChat({
     id: userChat.id.toString(),
     api: `/api/chat/newstudy`,
-    experimental_throttle: 30,
+    // experimental_throttle: 30,
     initialMessages,
     body: initialRequestBody,
     experimental_prepareRequestBody({ messages, requestBody: _requestBody }) {
@@ -99,7 +93,7 @@ export function InterviewClient({
     append: useChatHelpers.append,
   });
 
-  const { messages, input, setInput, handleSubmit, status, error, stop } = useChatHelpers;
+  const { messages, input, setInput, handleSubmit, status, stop } = useChatHelpers;
 
   // Determine planning state based on messages content
   const planningState = useMemo(() => {
@@ -135,7 +129,7 @@ export function InterviewClient({
       }
     }
     return "";
-  }, [messages]);
+  }, [messages, t]);
 
   // Enhanced handleSubmit with refocus
   const handleSubmitWithFocus = useCallback(
@@ -207,14 +201,12 @@ export function InterviewClient({
     return messages.findLast((m) => m.role === "assistant");
   }, [messages]);
 
-  const isLoading = status === "streaming" || status === "submitted";
-
   // When a new assistant message is being generated, clear the last user message
   useEffect(() => {
-    if (isLoading) {
+    if (status === "streaming") {
       setLastUserMessage(null);
     }
-  }, [isLoading]);
+  }, [status]);
 
   const handleStop = useCallback(() => {
     stop();
@@ -250,20 +242,22 @@ export function InterviewClient({
 
   const chatWithAIArea = (
     <div className="w-full h-full flex flex-col relative bg-zinc-50 dark:bg-zinc-900">
-      <div className="absolute top-4 right-4 z-10">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="rounded-full text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200 dark:hover:bg-zinc-700"
-          onClick={handleStop}
-        >
-          <XIcon className="h-5 w-5" />
-        </Button>
-      </div>
+      {status === "streaming" && (
+        <div className="absolute top-4 right-4 z-10">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="rounded-full text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200 dark:hover:bg-zinc-700"
+            onClick={handleStop}
+          >
+            <XIcon className="h-5 w-5" />
+          </Button>
+        </div>
+      )}
       {/* Main content area */}
       <div className="flex-1 flex flex-col items-center justify-center text-center max-w-4xl w-full mx-auto px-4">
         <AnimatePresence mode="wait">
-          {isLoading ? (
+          {status === "submitted" ? (
             <motion.div
               key="thinking"
               initial={{ opacity: 0, y: -10 }}
@@ -327,21 +321,21 @@ export function InterviewClient({
           <VoiceInputButton
             onTranscript={(text) => setInput((current) => (current ? `${current} ${text}` : text))}
             language={locale}
-            disabled={isLoading}
+            disabled={status === "streaming" || status === "submitted"}
             className="ml-2 p-3 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 flex-shrink-0 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors bg-zinc-50 dark:bg-zinc-800"
           />
           <CustomTextarea
             ref={textareaRef}
             value={input}
-            onInput={(e: any) => setInput(e.target.value)}
+            onInput={(e) => setInput(e.currentTarget.value)}
             placeholder={t("shareThoughts")}
             rows={1}
-            disabled={isLoading}
+            disabled={status === "streaming" || status === "submitted"}
             className="flex min-h-[48px] w-full resize-none bg-transparent border-none
             focus-visible:ring-0 focus-visible:ring-offset-0 outline-none
             text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-500 dark:placeholder:text-zinc-400 py-3 px-3 max-h-32
             text-base leading-relaxed overflow-hidden"
-            onKeyDown={(e: any) => {
+            onKeyDown={(e) => {
               if (!isMobile && e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
                 e.preventDefault();
                 if (input.trim()) {
@@ -354,10 +348,10 @@ export function InterviewClient({
             type="submit"
             variant="ghost"
             size="icon"
-            disabled={isLoading || !input.trim()}
+            disabled={status === "streaming" || status === "submitted" || !input.trim()}
             className="rounded-xl text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-700 flex-shrink-0 w-12 h-12 transition-colors"
           >
-            {isLoading ? (
+            {status === "submitted" ? (
               <Loader2Icon className="h-6 w-6 animate-spin" />
             ) : (
               <Send className="h-6 w-6" />
