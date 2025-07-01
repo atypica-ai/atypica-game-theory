@@ -1116,5 +1116,33 @@
       "noRecords": "暂无交易记录",
       "loadMore": "加载更多"
     }
+  },
+  "NewStudyPage": {
+    "studyHelper": "研究助手",
+    "title": "让我们一起明确您的研究想法和学习目标。",
+    "description": "我将帮助您整理思路并制定清晰的研究计划。您的回答越详细，我能提供的指导就越好。",
+    "startPlanning": "开始规划",
+    "starting": "启动中...",
+    "aiPreparing": "正在为您准备研究",
+    "secondsRemaining": "秒",
+    "startingNow": "现在开始...",
+    "startImmediately": "立即开始",
+    "studyBriefReady": "您的研究问题已准备好",
+    "studyBriefDescription": "这是您的个性化研究问题。这将用于为您进行详细的研究。",
+    "shareThoughts": "分享您的想法...",
+    "theMoreDetailed": "您的回答越详细，计划就越好。",
+    "timeRemaining": "{time}剩余",
+    "thinking": "思考中...",
+    "gettingReady": "准备开始...",
+    "createChatError": "创建新研究聊天失败：",
+    "createChatErrorGeneric": "启动面试失败。请重试。",
+    "unexpectedError": "发生意外错误。请重试。",
+    "continueStudyError": "继续研究聊天失败：",
+    "couldNotStartStudy": "无法开始研究。请重试。",
+    "newStudyPlanningTitle": "新研究规划",
+    "userChatNotFound": "未找到用户聊天或访问被拒绝",
+    "chatNotFound": "未找到聊天。",
+    "studyPlanningComplete": "您的研究规划已完成。",
+    "execTool": "执行 {toolName}"
   }
 }

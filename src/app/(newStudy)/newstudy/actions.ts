@@ -8,17 +8,19 @@ import { UserChat, UserChatExtra } from "@/prisma/client";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import { generateId } from "ai";
+import { getTranslations } from "next-intl/server";
 
 export async function createNewStudyChat(): Promise<
   ServerActionResult<Omit<UserChat, "kind"> & { kind: "misc" }>
 > {
   return withAuth(async (user) => {
+    const t = await getTranslations("NewStudyPage");
     const content = "[READY]";
     const parts = [{ type: "text", text: content }];
     const userChat = await prisma.$transaction(async (tx) => {
       const userChat = await createUserChat({
         userId: user.id,
-        title: "New Study Planning",
+        title: t("newStudyPlanningTitle"),
         kind: "misc",
         tx,
       });
@@ -47,6 +49,7 @@ export async function createNewStudyChat(): Promise<
 
 export async function fetchMiscUserChat(token: string): Promise<ServerActionResult<UserChat>> {
   return withAuth(async (user) => {
+    const t = await getTranslations("NewStudyPage");
     const userChat = await prisma.userChat.findUnique({
       where: { token, userId: user.id, kind: "misc" },
     });
@@ -55,7 +58,7 @@ export async function fetchMiscUserChat(token: string): Promise<ServerActionResu
       return {
         success: false,
         code: "not_found",
-        message: "UserChat not found or access denied",
+        message: t("userChatNotFound"),
       };
     }
 
@@ -71,12 +74,13 @@ export async function continueToStudyUserChat(
   studyBrief: string,
 ): Promise<ServerActionResult<{ token: string }>> {
   return withAuth(async (user) => {
+    const t = await getTranslations("NewStudyPage");
     const userChat = await prisma.userChat.findUnique({
       where: { id: userChatId, userId: user.id },
     });
 
     if (!userChat) {
-      return { success: false, message: "Chat not found." };
+      return { success: false, message: t("chatNotFound") };
     }
 
     const extra = userChat.extra as UserChatExtra;

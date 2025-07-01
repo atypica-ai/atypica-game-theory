@@ -1116,5 +1116,33 @@
       "noRecords": "No payment records",
       "loadMore": "Load More"
     }
+  },
+  "NewStudyPage": {
+    "studyHelper": "Study Helper",
+    "title": "Let's clarify your research ideas and study goals together.",
+    "description": "I'll help you organize your thoughts and develop a clear study plan. The more detailed your responses, the better guidance I can provide.",
+    "startPlanning": "Start planning",
+    "starting": "Starting...",
+    "aiPreparing": "AI is preparing your study",
+    "secondsRemaining": "seconds",
+    "startingNow": "Starting now...",
+    "startImmediately": "Start immediately",
+    "studyBriefReady": "Your Study Brief is Ready",
+    "studyBriefDescription": "Here's your personalized study brief. This will be used to conduct detailed research for you.",
+    "shareThoughts": "Share your thoughts...",
+    "theMoreDetailed": "The more detailed your answers, the better the plan.",
+    "timeRemaining": "{time} left",
+    "thinking": "Thinking...",
+    "gettingReady": "Getting ready to start...",
+    "createChatError": "Failed to create new study chat:",
+    "createChatErrorGeneric": "Failed to start interview. Please try again.",
+    "unexpectedError": "An unexpected error occurred. Please try again.",
+    "continueStudyError": "Failed to continue to study chat:",
+    "couldNotStartStudy": "Could not start study. Please try again.",
+    "newStudyPlanningTitle": "New Study Planning",
+    "userChatNotFound": "UserChat not found or access denied",
+    "chatNotFound": "Chat not found.",
+    "studyPlanningComplete": "Your study planning is complete.",
+    "execTool": "exec {toolName}"
   }
 }

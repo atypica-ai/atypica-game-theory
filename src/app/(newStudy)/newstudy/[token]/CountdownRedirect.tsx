@@ -1,11 +1,12 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { BrainCircuitIcon, RotateCwIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { continueToStudyUserChat } from "../actions";
 
-const COUNTDOWN_SECONDS = 1000;
+const COUNTDOWN_SECONDS = 5;
 
 interface CountdownRedirectProps {
   studyBrief: string;
@@ -14,6 +15,7 @@ interface CountdownRedirectProps {
 
 export function CountdownRedirect({ studyBrief, userChatId }: CountdownRedirectProps) {
   const router = useRouter();
+  const t = useTranslations("NewStudyPage");
   const [countdown, setCountdown] = useState(COUNTDOWN_SECONDS);
   const [isPending, startTransition] = useTransition();
   const hasStarted = useRef(false);
@@ -28,8 +30,8 @@ export function CountdownRedirect({ studyBrief, userChatId }: CountdownRedirectP
         router.push(`/study/${result.data.token}`);
       } else {
         // TODO: Better error handling, maybe show a toast
-        console.error("Failed to continue to study chat:", result.message);
-        alert("Could not start study. Please try again.");
+        console.error(t("continueStudyError"), result.message);
+        alert(t("couldNotStartStudy"));
         hasStarted.current = false; // Allow retrying if it fails
       }
     });
@@ -68,7 +70,7 @@ export function CountdownRedirect({ studyBrief, userChatId }: CountdownRedirectP
         <div className="flex items-center justify-center space-x-2 mb-4">
           <BrainCircuitIcon className="h-5 w-5 text-zinc-600 dark:text-zinc-400 animate-pulse" />
           <div className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            AI is preparing your study
+            {t("aiPreparing")}
           </div>
         </div>
 
@@ -78,7 +80,7 @@ export function CountdownRedirect({ studyBrief, userChatId }: CountdownRedirectP
             {countdown > 0 ? countdown : "0"}
           </div>
           <div className="text-sm text-zinc-600 dark:text-zinc-400 mb-3">
-            {countdown > 0 ? "seconds remaining" : "Starting now..."}
+            {countdown > 0 ? t("secondsRemaining") : t("startingNow")}
           </div>
 
           {/* Progress Animation */}
@@ -99,7 +101,7 @@ export function CountdownRedirect({ studyBrief, userChatId }: CountdownRedirectP
           className="text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200 text-xs hover:bg-[#1bff1b]/10"
         >
           {isPending && <RotateCwIcon className="h-3 w-3 animate-spin mr-1" />}
-          {isPending ? "Starting..." : "Start immediately"}
+          {isPending ? t("starting") : t("startImmediately")}
         </Button>
       </div>
     </div>

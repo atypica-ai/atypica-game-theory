@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Ear, RotateCwIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { createNewStudyChat } from "./actions";
@@ -9,6 +10,7 @@ import { createNewStudyChat } from "./actions";
 export default function NewStudyPage() {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const t = useTranslations("NewStudyPage");
 
   const handleStartInterview = async () => {
     try {
@@ -17,12 +19,12 @@ export default function NewStudyPage() {
         router.push(`/newstudy/${result.data.token}`);
       } else {
         // TODO: Better error handling, maybe show a toast
-        console.error("Failed to create new study chat:", result.message);
-        alert("Failed to start interview. Please try again.");
+        console.error(t("createChatError"), result.message);
+        alert(t("createChatErrorGeneric"));
       }
     } catch (error) {
       console.error("Error starting interview:", error);
-      alert("An unexpected error occurred. Please try again.");
+      alert(t("unexpectedError"));
     }
   };
 
@@ -37,15 +39,12 @@ export default function NewStudyPage() {
       <div className="relative z-10 text-center p-8 max-w-md">
         <div className="flex justify-center items-center mb-6">
           <Ear className="w-6 h-6 text-zinc-500 dark:text-zinc-400" />
-          <span className="ml-2 text-zinc-500 dark:text-zinc-400">Study Helper</span>
+          <span className="ml-2 text-zinc-500 dark:text-zinc-400">{t("studyHelper")}</span>
         </div>
         <h1 className="text-xl font-EuclidCircularA font-medium text-zinc-900 dark:text-zinc-100 mb-4">
-          Let's clarify your research ideas and study goals together.
+          {t("title")}
         </h1>
-        <p className="text-zinc-600 dark:text-zinc-400 mb-8">
-          I'll help you organize your thoughts and develop a clear study plan. The more detailed
-          your responses, the better guidance I can provide.
-        </p>
+        <p className="text-zinc-600 dark:text-zinc-400 mb-8">{t("description")}</p>
         <Button
           onClick={() => {
             startTransition(handleStartInterview);
@@ -56,7 +55,7 @@ export default function NewStudyPage() {
           className="hover:bg-[#1bff1b]/10 rounded-full"
         >
           {isPending && <RotateCwIcon className="h-4 w-4 animate-spin" />}
-          {isPending ? "Starting..." : "Start planning"}
+          {isPending ? t("starting") : t("startPlanning")}
         </Button>
       </div>
     </div>

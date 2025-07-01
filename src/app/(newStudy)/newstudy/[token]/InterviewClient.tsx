@@ -7,13 +7,13 @@ import { useChat } from "@ai-sdk/react";
 import { generateId, Message } from "ai";
 import { AnimatePresence, motion } from "framer-motion";
 import { Ear, Loader2Icon, Send, XIcon } from "lucide-react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 import { CountdownRedirect } from "./CountdownRedirect";
 
-const DEFAULT_TIME_LEFT = 300; // 20 seconds
+const DEFAULT_TIME_LEFT = 300; // seconds
 
 const NewStudyBodySchema = z.object({
   message: z.object({
@@ -57,6 +57,7 @@ export function InterviewClient({
   const router = useRouter();
   const locale = useLocale();
   const { isMobile } = useDevice();
+  const t = useTranslations("NewStudyPage");
 
   const [timeLeft, setTimeLeft] = useState(DEFAULT_TIME_LEFT);
   const [hasTimedOut, setHasTimedOut] = useState(false);
@@ -128,7 +129,7 @@ export function InterviewClient({
             part.toolInvocation.toolName === "endInterview" &&
             part.toolInvocation.state === "result"
           ) {
-            return part.toolInvocation.result.studyBrief || "Your study planning is complete.";
+            return part.toolInvocation.result.studyBrief || t("studyPlanningComplete");
           }
         }
       }
@@ -242,7 +243,9 @@ export function InterviewClient({
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
-    return `${minutes}m ${String(remainingSeconds).padStart(2, "0")}s left`;
+    return t("timeRemaining", {
+      time: `${minutes}m ${String(remainingSeconds).padStart(2, "0")}s`,
+    });
   };
 
   const chatWithAIArea = (
@@ -270,7 +273,7 @@ export function InterviewClient({
             >
               <div className="flex items-center gap-2">
                 <Ear className="w-4 h-4 text-primary" />
-                <span>Thinking...</span>
+                <span>{t("thinking")}</span>
               </div>
               {lastUserMessage && (
                 <p className="text-sm text-zinc-500 dark:text-zinc-500 italic max-w-md truncate">
@@ -288,14 +291,14 @@ export function InterviewClient({
               className="text-xl sm:text-2xl font-EuclidCircularA font-medium text-zinc-900 dark:text-zinc-100 leading-relaxed"
             >
               {!lastAssistantMessage
-                ? "Getting ready to start..."
+                ? t("gettingReady")
                 : lastAssistantMessage.parts.map((part, index) => (
                     <div key={index}>
                       {part.type === "text"
                         ? part.text
                         : part.type === "tool-invocation"
-                          ? `exec ${part.toolInvocation.toolName}`
-                          : JSON.stringify(part)}
+                          ? t("execTool", { toolName: part.toolInvocation.toolName })
+                          : ""}
                     </div>
                   ))}
             </motion.div>
@@ -307,8 +310,8 @@ export function InterviewClient({
       <div className="w-full max-w-3xl mx-auto p-4 sm:p-8 pt-0">
         <div className="w-full text-zinc-600 dark:text-zinc-400 text-sm mb-3 px-2">
           <div className="flex justify-between items-center mb-2">
-            <span>The more detailed your answers, the better the plan.</span>
-            <span>{formatTime(timeLeft)} remaining</span>
+            <span>{t("theMoreDetailed")}</span>
+            <span>{formatTime(timeLeft)}</span>
           </div>
           <div className="w-full bg-zinc-200 dark:bg-zinc-700 rounded-full h-1.5">
             <div
@@ -331,7 +334,7 @@ export function InterviewClient({
             ref={textareaRef}
             value={input}
             onInput={(e: any) => setInput(e.target.value)}
-            placeholder="Share your thoughts..."
+            placeholder={t("shareThoughts")}
             rows={1}
             disabled={isLoading}
             className="flex min-h-[48px] w-full resize-none bg-transparent border-none
@@ -373,11 +376,10 @@ export function InterviewClient({
         className="text-left max-w-2xl text-zinc-900 dark:text-zinc-100 w-full"
       >
         <h1 className="text-xl font-EuclidCircularA font-medium mb-6 text-center">
-          Your Study Brief is Ready
+          {t("studyBriefReady")}
         </h1>
         <div className="mb-3 text-xs text-zinc-600 dark:text-zinc-400 text-center">
-          Here's your personalized study brief. This will be used to conduct detailed research for
-          you.
+          {t("studyBriefDescription")}
         </div>
         <div className="max-h-96 overflow-y-auto bg-zinc-100 dark:bg-zinc-800 p-4 rounded mb-12 whitespace-pre-wrap text-zinc-700 dark:text-zinc-300 leading-relaxed text-xs">
           {summary}
