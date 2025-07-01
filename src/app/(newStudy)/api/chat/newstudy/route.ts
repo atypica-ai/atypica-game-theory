@@ -62,20 +62,24 @@ export async function POST(req: NextRequest) {
     kind: "misc",
   });
 
+  const shouldEndInterview = coreMessages.length > 24;
+
   const streamTextResult = streamText({
     // model: llm("claude-3-7-sonnet"),
-    model: llm("gemini-2.5-flash", {
-      useSearchGrounding: true,
-      dynamicRetrievalConfig: {
-        mode: "MODE_DYNAMIC",
-      },
-    }),
+    // model: llm(
+    //   "gemini-2.5-flash",
+    //   shouldEndInterview
+    //     ? {} //必须去掉，否则 toolChoice: "required" 会调用 searchTool 最终还是没有调用 endInterview
+    //     : { useSearchGrounding: true, dynamicRetrievalConfig: { mode: "MODE_DYNAMIC" } },
+    // ),
+    model: llm("gpt-4.1-mini"),
     providerOptions,
     system: newStudySystem({ locale }),
     messages: coreMessages,
     tools: newStudyTools,
-    maxSteps: 1,
-    temperature: 0.5,
+    toolChoice: shouldEndInterview ? "required" : "auto",
+    maxSteps: 2,
+    temperature: 0,
     experimental_generateMessageId: () => streamingMessage.id,
     experimental_transform: smoothStream({
       delayInMs: 30,

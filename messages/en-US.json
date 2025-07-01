@@ -1123,7 +1123,7 @@
     "description": "I'll help you organize your thoughts and develop a clear study plan. The more detailed your responses, the better guidance I can provide.",
     "startPlanning": "Start planning",
     "starting": "Starting...",
-    "aiPreparing": "AI is preparing your study",
+    "aiPreparing": "Your study is about to begin",
     "secondsRemaining": "seconds",
     "startingNow": "Starting now...",
     "startImmediately": "Start immediately",
@@ -1143,6 +1143,6 @@
     "userChatNotFound": "UserChat not found or access denied",
     "chatNotFound": "Chat not found.",
     "studyPlanningComplete": "Your study planning is complete.",
-    "execTool": "exec {toolName}"
+    "execEndInterviewTool": "Summarizing the study brief"
   }
 }

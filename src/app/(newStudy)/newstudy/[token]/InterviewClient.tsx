@@ -286,15 +286,16 @@ export function InterviewClient({
             >
               {!lastAssistantMessage
                 ? t("gettingReady")
-                : lastAssistantMessage.parts.map((part, index) => (
-                    <div key={index}>
-                      {part.type === "text"
-                        ? part.text
-                        : part.type === "tool-invocation"
-                          ? t("execTool", { toolName: part.toolInvocation.toolName })
-                          : ""}
-                    </div>
-                  ))}
+                : lastAssistantMessage.parts.map((part, index) =>
+                    part.type === "text" ? (
+                      <div key={index}>{part.text}</div>
+                    ) : part.type === "tool-invocation" &&
+                      part.toolInvocation.toolName === "endInterview" ? (
+                      <div key={index} className="mt-8 text-sm text-muted-foreground">
+                        {t("execEndInterviewTool")}
+                      </div>
+                    ) : null,
+                  )}
             </motion.div>
           )}
         </AnimatePresence>

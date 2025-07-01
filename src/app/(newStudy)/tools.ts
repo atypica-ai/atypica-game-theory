@@ -18,6 +18,8 @@ export const newStudyTools = {
       return [{ type: "text", text: result.plainText }];
     },
     execute: async ({ studyBrief }) => {
+      // 故意等10s，这样前端可以感觉到工具正在被执行。
+      await new Promise((resolve) => setTimeout(resolve, 10_000));
       return {
         studyBrief,
         plainText: "",

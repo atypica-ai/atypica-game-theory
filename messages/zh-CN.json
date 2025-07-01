@@ -1119,11 +1119,11 @@
   },
   "NewStudyPage": {
     "studyHelper": "研究助手",
-    "title": "让我们一起明确您的研究想法和学习目标。",
+    "title": "让我们一起明确您的研究想法和目标。",
     "description": "我将帮助您整理思路并制定清晰的研究计划。您的回答越详细，我能提供的指导就越好。",
     "startPlanning": "开始规划",
     "starting": "启动中...",
-    "aiPreparing": "正在为您准备研究",
+    "aiPreparing": "即将开始研究",
     "secondsRemaining": "秒",
     "startingNow": "现在开始...",
     "startImmediately": "立即开始",
@@ -1143,6 +1143,6 @@
     "userChatNotFound": "未找到用户聊天或访问被拒绝",
     "chatNotFound": "未找到聊天。",
     "studyPlanningComplete": "您的研究规划已完成。",
-    "execTool": "执行 {toolName}"
+    "execEndInterviewTool": "正在总结研究问题"
   }
 }
