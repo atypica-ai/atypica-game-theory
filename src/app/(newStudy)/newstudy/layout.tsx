@@ -5,8 +5,8 @@ import { ReactNode } from "react";
 export default async function NewStudyLayout({ children }: { children: ReactNode }) {
   return (
     <div className="flex flex-col h-screen">
-      <GlobalHeader className="h-16 fixed top-0 left-0 right-0 z-20" leftMenus={<LeftMenus />} />
-      <main className="flex-1 flex flex-col pt-16">{children}</main>
+      <GlobalHeader leftMenus={<LeftMenus />} />
+      <main className="flex-1 flex flex-col">{children}</main>
     </div>
   );
 }

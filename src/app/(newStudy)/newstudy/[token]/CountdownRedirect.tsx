@@ -1,10 +1,11 @@
 "use client";
-
 import { Button } from "@/components/ui/button";
-import { RotateCwIcon } from "lucide-react";
+import { BrainCircuitIcon, RotateCwIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { continueToStudyUserChat } from "../actions";
+
+const COUNTDOWN_SECONDS = 1000;
 
 interface CountdownRedirectProps {
   studyBrief: string;
@@ -13,11 +14,11 @@ interface CountdownRedirectProps {
 
 export function CountdownRedirect({ studyBrief, userChatId }: CountdownRedirectProps) {
   const router = useRouter();
-  const [countdown, setCountdown] = useState(5);
+  const [countdown, setCountdown] = useState(COUNTDOWN_SECONDS);
   const [isPending, startTransition] = useTransition();
   const hasStarted = useRef(false);
 
-  const startResearch = useCallback(() => {
+  const startStudy = useCallback(() => {
     if (hasStarted.current || isPending) return;
     hasStarted.current = true;
 
@@ -28,7 +29,7 @@ export function CountdownRedirect({ studyBrief, userChatId }: CountdownRedirectP
       } else {
         // TODO: Better error handling, maybe show a toast
         console.error("Failed to continue to study chat:", result.message);
-        alert("Could not start research. Please try again.");
+        alert("Could not start study. Please try again.");
         hasStarted.current = false; // Allow retrying if it fails
       }
     });
@@ -36,7 +37,7 @@ export function CountdownRedirect({ studyBrief, userChatId }: CountdownRedirectP
 
   useEffect(() => {
     if (countdown <= 0) {
-      startResearch();
+      startStudy();
       return;
     }
 
@@ -45,27 +46,62 @@ export function CountdownRedirect({ studyBrief, userChatId }: CountdownRedirectP
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [countdown, startResearch]);
+  }, [countdown, startStudy]);
 
-  const handleStartResearchClick = () => {
+  const handleStartStudyClick = () => {
     // Stop the timer and start immediately by triggering the useEffect
     setCountdown(0);
   };
 
   return (
-    <div className="text-center">
-      <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
-        Starting research in {countdown > 0 ? `${countdown}s` : "a moment"}...
-      </p>
-      <Button
-        onClick={handleStartResearchClick}
-        disabled={isPending || countdown === 0}
-        size="lg"
-        className="rounded-xl"
-      >
-        {isPending && <RotateCwIcon className="mr-2 h-4 w-4 animate-spin" />}
-        {isPending ? "Starting..." : "Start Research Now"}
-      </Button>
+    <div className="relative text-center space-y-4 p-6">
+      {/* Background Glow */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <div
+          className="w-48 h-48 rounded-full blur-[60px] opacity-30 dark:opacity-40"
+          style={{ backgroundColor: "oklch(0.87 0.29 142.57)" }}
+        />
+      </div>
+
+      <div className="relative z-10 space-y-4">
+        {/* AI Working Indicator */}
+        <div className="flex items-center justify-center space-x-2 mb-4">
+          <BrainCircuitIcon className="h-5 w-5 text-zinc-600 dark:text-zinc-400 animate-pulse" />
+          <div className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+            AI is preparing your study
+          </div>
+        </div>
+
+        {/* Countdown Display */}
+        <div className="relative">
+          <div className="text-4xl font-bold text-zinc-800 dark:text-zinc-200 mb-1 font-mono">
+            {countdown > 0 ? countdown : "0"}
+          </div>
+          <div className="text-sm text-zinc-600 dark:text-zinc-400 mb-3">
+            {countdown > 0 ? "seconds remaining" : "Starting now..."}
+          </div>
+
+          {/* Progress Animation */}
+          <div className="w-24 h-0.5 bg-zinc-200 dark:bg-zinc-700 rounded-full mx-auto mb-4 overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500 dark:from-green-400 dark:via-emerald-400 dark:to-cyan-400 rounded-full transition-all duration-1000 ease-linear"
+              style={{ width: `${((COUNTDOWN_SECONDS - countdown) / COUNTDOWN_SECONDS) * 100}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Secondary Action Button */}
+        <Button
+          onClick={handleStartStudyClick}
+          disabled={isPending || countdown === 0}
+          variant="ghost"
+          size="sm"
+          className="text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200 text-xs hover:bg-[#1bff1b]/10"
+        >
+          {isPending && <RotateCwIcon className="h-3 w-3 animate-spin mr-1" />}
+          {isPending ? "Starting..." : "Start immediately"}
+        </Button>
+      </div>
     </div>
   );
 }
