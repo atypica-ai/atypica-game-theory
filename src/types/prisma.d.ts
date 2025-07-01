@@ -7,15 +7,17 @@ declare module "@/prisma/client" {
     pdfObjectUrl?: string;
   } | null;
 
-  export type UserChatExtra = {
-    clientIp: string;
-    userAgent: string;
-    locale: string;
-    feedback?: {
-      rating: string;
-      submittedAt: string;
-    };
-  } | null;
+  export type UserChatExtra =
+    | ({
+        clientIp: string;
+        userAgent: string;
+        locale: string;
+        feedback?: {
+          rating: string;
+          submittedAt: string;
+        };
+      } & Record<string, string | number>)
+    | null;
 
   export type UserSubscriptionExtra = {
     // ... pingxx invoice data tbd

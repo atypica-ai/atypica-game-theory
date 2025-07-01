@@ -23,11 +23,14 @@ export async function createStudyUserChat(
   {
     role,
     content,
+    attachments,
   }: {
     role: "user" | "assistant";
     content: string;
+    attachments?: ChatMessageAttachment[];
   },
-  attachments?: ChatMessageAttachment[],
+  // 任何额外要存储的信息
+  extra?: Record<string, string | number>,
 ): Promise<ServerActionResult<Omit<UserChat, "kind"> & { kind: "study" }>> {
   return withAuth(async (user) => {
     const parts = [{ type: "text", text: content }];
@@ -40,6 +43,7 @@ export async function createStudyUserChat(
         }),
         kind: "study",
         tx,
+        extra,
       });
       await tx.chatMessage.create({
         data: {
@@ -74,17 +78,16 @@ export async function createStudyUserChat(
   });
 }
 
-export async function createProductRnDStudyUserChat(
-  {
-    role,
-    content,
-  }: {
-    role: "user" | "assistant";
-    content: string;
-  },
-  attachments?: ChatMessageAttachment[],
-): Promise<ServerActionResult<Omit<UserChat, "kind"> & { kind: "study" }>> {
-  const result = await createStudyUserChat({ role, content }, attachments);
+export async function createProductRnDStudyUserChat({
+  role,
+  content,
+  attachments,
+}: {
+  role: "user" | "assistant";
+  content: string;
+  attachments?: ChatMessageAttachment[];
+}): Promise<ServerActionResult<Omit<UserChat, "kind"> & { kind: "study" }>> {
+  const result = await createStudyUserChat({ role, content, attachments });
   if (result.success) {
     const studyUserChatId = result.data.id;
     await prisma.analyst.update({

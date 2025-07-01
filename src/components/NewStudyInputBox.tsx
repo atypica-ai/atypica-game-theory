@@ -70,8 +70,8 @@ export function NewStudyInputBox({ className }: { className?: string }) {
       }));
       const result =
         studyType === "product-rnd"
-          ? await createProductRnDStudyUserChat({ role: "user", content: input }, attachments)
-          : await createStudyUserChat({ role: "user", content: input }, attachments);
+          ? await createProductRnDStudyUserChat({ role: "user", content: input, attachments })
+          : await createStudyUserChat({ role: "user", content: input, attachments });
       if (!result.success) {
         throw result;
       }

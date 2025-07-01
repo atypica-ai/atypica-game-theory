@@ -13,12 +13,14 @@ export async function createUserChat<TKind extends UserChatKind>({
   token,
   title,
   tx,
+  extra: _extra,
 }: {
   userId: number;
   kind: TKind;
   token?: string;
   title: string;
   tx?: Omit<typeof prisma, ITXClientDenyList>;
+  extra?: Record<string, string | number>;
 }): Promise<Omit<UserChat, "kind" | "extra"> & { kind: TKind; extra: UserChatExtra }> {
   if (!tx) {
     tx = prisma;
@@ -29,7 +31,10 @@ export async function createUserChat<TKind extends UserChatKind>({
   if (!token) {
     token = generateToken();
   }
-  const extra = { clientIp, userAgent, locale }; // 发起 chat 时候的客户端信息，不用于后续逻辑判断
+  const extra = {
+    ..._extra,
+    ...{ clientIp, userAgent, locale }, // 发起 chat 时候的客户端信息，不用于后续逻辑判断
+  };
   const userChat = await tx.userChat.create({
     data: { userId, title, kind, token, extra },
   });

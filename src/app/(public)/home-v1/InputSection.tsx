@@ -50,18 +50,16 @@ export function InputSection() {
     if (!input.trim()) return;
     setIsLoading(true);
     try {
-      const result = await createStudyUserChat(
-        {
-          role: "user",
-          content: input,
-        },
-        uploadedFiles.map((file) => ({
+      const result = await createStudyUserChat({
+        role: "user",
+        content: input,
+        attachments: uploadedFiles.map((file) => ({
           objectUrl: file.objectUrl,
           name: file.name,
           mimeType: file.mimeType,
           size: file.size,
         })),
-      );
+      });
       if (!result.success) {
         throw result;
       }
