@@ -11,6 +11,7 @@ import { useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
+import { CountdownRedirect } from "./CountdownRedirect";
 
 const DEFAULT_TIME_LEFT = 300; // 20 seconds
 
@@ -263,11 +264,7 @@ export function InterviewClient({
             <div className="max-h-96 overflow-y-auto bg-zinc-100 dark:bg-zinc-800 p-6 rounded-xl mb-8 whitespace-pre-wrap text-zinc-700 dark:text-zinc-300 leading-relaxed text-sm">
               {summary}
             </div>
-            <div className="text-center">
-              <Button onClick={() => router.push("/study")} size="lg" className="rounded-xl">
-                Start Research
-              </Button>
-            </div>
+            <CountdownRedirect studyBrief={summary} userChatId={userChat.id} />
           </motion.div>
         </div>
       );
