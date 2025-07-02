@@ -2,7 +2,7 @@ const { PrismaClient } = require("../src/prisma/client");
 
 const prisma = new PrismaClient();
 
-const dateBefore = new Date("2025-06-01T00:00:00+08:00");
+const dateBefore = new Date("2025-07-01T00:00:00+08:00");
 const pad12 = (n) => n.toLocaleString().padStart(12, " ");
 const fdate = (d) =>
   new Intl.DateTimeFormat("zh-CN", {
@@ -56,17 +56,43 @@ async function main() {
     let payable = giftedTokensTotal + consumedTokensTotal;
     console.log(`Free,,,${giftedTokensTotal},${consumedTokensTotal},${payable},,,${user.email}`);
     for (const log of tokensLogs.filter((log) => log.verb === "subscription")) {
-      if (log.resourceType !== "PaymentRecord") {
+      if (log.resourceType === "PaymentRecord") {
+        const paymentRecord = await prisma.paymentRecord.findUniqueOrThrow({
+          where: { id: log.resourceId },
+        });
+        const used = Math.min(0, Math.max(payable, -log.value));
+        payable = payable - used;
+        console.log(
+          `${paymentRecord.orderNo},${paymentRecord.paymentMethod},${paymentRecord.amount},${log.value},${used},${payable},Pro,${fdate(paymentRecord.paidAt)},${user.email}`,
+        );
+      } else if (log.resourceType === "UserSubscription") {
+        const userSubscription = await prisma.userSubscription.findUniqueOrThrow({
+          where: { id: log.resourceId },
+        });
+        const paymentRecordId = userSubscription.extra.paymentRecordId;
+        if (paymentRecordId) {
+          const paymentRecord = await prisma.paymentRecord.findUniqueOrThrow({
+            where: { id: paymentRecordId },
+          });
+          const used = Math.min(0, Math.max(payable, -log.value));
+          payable = payable - used;
+          console.log(
+            `${paymentRecord.orderNo},${paymentRecord.paymentMethod},${paymentRecord.amount},${log.value},${used},${payable},Pro,${fdate(paymentRecord.paidAt)},${user.email}`,
+          );
+        } else {
+          // 一般是人工添加的 subscription 可以跳过
+          // throw new Error(
+          //   `Payment record ID not found in user subscription ${userSubscription.id}`,
+          // );
+        }
+      } else if (log.resourceType === null) {
+        // subscription 月末清零，应该是完全不需要处理:
+        // consumedTokensTotal 里面已经把这个扣减掉了
+        // paymentRecord 是依次把待扣减的 tokens 依次抵消，似乎也没问题
+      } else {
+        console.log(log);
         throw new Error("Something went wrong");
       }
-      const paymentRecord = await prisma.paymentRecord.findUniqueOrThrow({
-        where: { id: log.resourceId },
-      });
-      const used = Math.min(0, Math.max(payable, -log.value));
-      payable = payable - used;
-      console.log(
-        `${paymentRecord.orderNo},${paymentRecord.paymentMethod},${paymentRecord.amount},${log.value},${used},${payable},Pro,${fdate(paymentRecord.paidAt)},${user.email}`,
-      );
     }
     for (const log of tokensLogs.filter((log) => log.verb === "recharge")) {
       if (log.resourceType !== "PaymentRecord") {
