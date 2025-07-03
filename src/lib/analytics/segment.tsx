@@ -2,6 +2,7 @@
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { AnalyticsBrowser } from "@segment/analytics-next";
 import { useSession } from "next-auth/react";
+import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { cn } from "../utils";
 import { calcIntercomUserHash, segmentAnalyticsWriteKey } from "./config";
@@ -48,6 +49,7 @@ export async function trackEvent(event: string, properties?: Record<string, any>
 }
 
 export function SegmentAnalytics() {
+  const pathname = usePathname();
   const { status, data: session } = useSession();
   const [isSegmentLoaded, setIsSegmentLoaded] = useState(false);
   const isMediaSm = useMediaQuery("sm");
@@ -81,6 +83,12 @@ export function SegmentAnalytics() {
       setIsSegmentLoaded(false);
     }
   }, [status, isSegmentLoaded, session?.user]);
+
+  useEffect(() => {
+    // 页面切换时候，上报 page view
+    console.debug(`[trackPage] pathname changed to ${pathname}`);
+    trackPage();
+  }, [pathname]);
 
   useEffect(() => {
     if (typeof window === "undefined") {

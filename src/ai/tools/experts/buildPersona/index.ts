@@ -186,8 +186,9 @@ export async function runBuildPersona({
           await Promise.all(promises);
         }
       },
-      onFinish: async ({ steps, usage }) => {
-        studyLog.info({ msg: "Persona building stream completed", usage });
+      onFinish: async ({ steps, usage, providerMetadata }) => {
+        const cache = providerMetadata?.bedrock?.usage;
+        studyLog.info({ msg: "Persona building stream completed", usage, cache });
         const message = convertStepsToAIMessage(steps);
         resolve(message);
       },
