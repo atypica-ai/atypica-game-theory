@@ -1,6 +1,6 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { Ear, RotateCwIcon } from "lucide-react";
+import { EarIcon, RotateCwIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useCallback, useTransition } from "react";
@@ -35,7 +35,7 @@ export default function NewStudyPage() {
       </div>
       <div className="relative z-10 text-center p-8 max-w-md">
         <div className="flex justify-center items-center mb-6">
-          <Ear className="w-6 h-6 text-zinc-500 dark:text-zinc-400" />
+          <EarIcon className="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
           <span className="ml-2 text-zinc-500 dark:text-zinc-400">{t("studyHelper")}</span>
         </div>
         <h1 className="text-xl font-EuclidCircularA font-medium text-zinc-900 dark:text-zinc-100 mb-4">

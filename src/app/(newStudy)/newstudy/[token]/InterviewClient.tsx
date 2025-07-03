@@ -2,6 +2,7 @@
 import { NewStudyBodySchema } from "@/app/(newStudy)/types";
 import { VoiceInputButton } from "@/components/chat/VoiceInputButton";
 import { Button } from "@/components/ui/button";
+import { useDocumentVisibility } from "@/hooks/use-document-visibility";
 import { useDevice } from "@/lib/utils";
 import { UserChat } from "@/prisma/client";
 import { useChat } from "@ai-sdk/react";
@@ -212,8 +213,16 @@ export function InterviewClient({
     stop();
   }, [stop]);
 
+  const { isDocumentVisible } = useDocumentVisibility();
+
   useEffect(() => {
-    if (planningState !== "active" || !isTimerActive) return;
+    if (
+      planningState !== "active" ||
+      !isTimerActive ||
+      !isDocumentVisible // Only run timer when document is visible
+    ) {
+      return;
+    }
 
     if (timeLeft <= 0 && !hasTimedOut) {
       setHasTimedOut(true);
@@ -225,12 +234,12 @@ export function InterviewClient({
       return;
     }
 
-    const timer = setInterval(() => {
+    const timer = setTimeout(() => {
       setTimeLeft((prevTime) => (prevTime > 0 ? prevTime - 1 : 0));
     }, 1000);
 
-    return () => clearInterval(timer);
-  }, [planningState, timeLeft, hasTimedOut, isTimerActive]);
+    return () => clearTimeout(timer);
+  }, [planningState, timeLeft, hasTimedOut, isTimerActive, isDocumentVisible]);
 
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
