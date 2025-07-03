@@ -1,9 +1,9 @@
 import { persistentAIMessageToDB, prepareMessagesForStreaming } from "@/ai/messageUtils";
 import { authOptions } from "@/lib/auth";
 import { rootLogger } from "@/lib/logging";
-import { AnalystKind } from "@/lib/userChat/data";
 import { UserChatExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
+import { AnalystKind } from "@/prisma/types";
 import { CreateMessage, generateId, Message } from "ai";
 import { getServerSession } from "next-auth/next";
 import { NextResponse } from "next/server";

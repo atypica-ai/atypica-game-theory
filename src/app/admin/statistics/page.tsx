@@ -12,8 +12,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AnalystKind } from "@/lib/userChat/data";
 import { cn } from "@/lib/utils";
+import { AnalystKind } from "@/prisma/types";
 import { addDays, format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { useSession } from "next-auth/react";

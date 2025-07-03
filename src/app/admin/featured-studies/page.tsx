@@ -21,9 +21,9 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { ExtractServerActionData } from "@/lib/serverAction";
-import { AnalystKind } from "@/lib/userChat/data";
 import { formatDate } from "@/lib/utils";
 import { Analyst, UserChatExtra } from "@/prisma/client";
+import { AnalystKind } from "@/prisma/types";
 import {
   ChevronDown,
   ChevronUp,

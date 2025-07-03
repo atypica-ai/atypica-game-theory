@@ -5,7 +5,6 @@ import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { truncateForTitle } from "@/lib/textUtils";
-import { AnalystKind } from "@/lib/userChat/data";
 import { createUserChat } from "@/lib/userChat/lib";
 import {
   Analyst,
@@ -17,6 +16,7 @@ import {
 } from "@/prisma/client";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
+import { AnalystKind } from "@/prisma/types";
 import { generateId, Message } from "ai";
 
 export async function createStudyUserChat(

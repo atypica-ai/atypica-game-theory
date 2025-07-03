@@ -2,9 +2,9 @@
 import { checkAdminAuth } from "@/app/admin/actions";
 import { s3SignedUrl } from "@/lib/attachments/s3";
 import { ServerActionResult } from "@/lib/serverAction";
-import { AnalystKind } from "@/lib/userChat/data";
 import { Analyst, FeaturedStudy, User, UserChat } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
+import { AnalystKind } from "@/prisma/types";
 import { Locale } from "next-intl";
 import { getLocale } from "next-intl/server";
 import { revalidatePath } from "next/cache";

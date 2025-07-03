@@ -1,5 +1,5 @@
-import { AnalystKind } from "@/lib/userChat/data";
 import { Analyst, AnalystReport } from "@/prisma/client";
+import { AnalystKind } from "@/prisma/types";
 import { Locale } from "next-intl";
 import { reportHTMLSystemCreation } from "./report/creation";
 import { reportHTMLSystemInsights } from "./report/insights";

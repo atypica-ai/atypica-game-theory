@@ -2,7 +2,7 @@ import { reportHTMLSystem } from "@/ai/prompt";
 import { fetchAnalystInterviews } from "@/app/(agents)/interview/actions";
 import { checkTezignAuth } from "@/app/admin/actions";
 import { throwServerActionError } from "@/lib/serverAction";
-import { AnalystKind } from "@/lib/userChat/data";
+import { AnalystKind } from "@/prisma/types";
 import { getLocale } from "next-intl/server";
 import { fetchAnalystById } from "../actions";
 import { AnalystDetail } from "./AnalystDetail";

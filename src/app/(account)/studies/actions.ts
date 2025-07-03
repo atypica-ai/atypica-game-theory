@@ -1,8 +1,8 @@
 "use server";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
-import { AnalystKind } from "@/lib/userChat/data";
 import { prisma } from "@/prisma/prisma";
+import { AnalystKind } from "@/prisma/types";
 
 export async function fetchUserStudies({
   page = 1,

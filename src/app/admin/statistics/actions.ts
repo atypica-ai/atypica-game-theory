@@ -2,8 +2,8 @@
 import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
 import { ServerActionResult } from "@/lib/serverAction";
-import { AnalystKind } from "@/lib/userChat/data";
 import { prisma } from "@/prisma/prisma";
+import { AnalystKind } from "@/prisma/types";
 
 /**
  * Defines the structure for daily statistics
