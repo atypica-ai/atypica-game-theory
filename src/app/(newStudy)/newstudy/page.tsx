@@ -20,7 +20,7 @@ export default function NewStudyPage() {
       } else {
         toast.error(t("createChatErrorGeneric"));
       }
-    } catch (error) {
+    } catch {
       toast.error(t("unexpectedError"));
     }
   }, [router, t]);
