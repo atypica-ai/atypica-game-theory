@@ -716,12 +716,14 @@
     "NewStudyInputBox": {
       "startNewStudy": "Start New Study",
       "placeholder": "Ask any business question about human behavior and decision-making. We'll model the subjective factors that drive real choices.",
+      "productRnDPlaceholder": "Describe a product idea you'd like to explore.",
       "sendLabel": "Study",
       "enterToSend": "Enter to start",
       "tapToSend": "Tap to start",
-      "studyType": "Study Type",
+      "studyType": "Select Study Type",
       "generalStudy": "General Study",
-      "productRnDStudy": "Product R&D"
+      "productRnDStudy": "Product R&D",
+      "needHelpToClarify": "Need help to clarify your thoughts?"
     },
     "UserTokensBalance": {
       "balance": "{balance} available tokens",
@@ -1134,7 +1136,6 @@
     "timeRemaining": "{time} left",
     "thinking": "Thinking...",
     "gettingReady": "Getting ready to start...",
-    "createChatError": "Failed to create new study chat:",
     "createChatErrorGeneric": "Failed to start interview. Please try again.",
     "unexpectedError": "An unexpected error occurred. Please try again.",
     "continueStudyError": "Failed to continue to study chat:",

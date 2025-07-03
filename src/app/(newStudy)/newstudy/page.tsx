@@ -1,10 +1,10 @@
 "use client";
-
 import { Button } from "@/components/ui/button";
 import { Ear, RotateCwIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useTransition } from "react";
+import { useCallback, useTransition } from "react";
+import { toast } from "sonner";
 import { createNewStudyChat } from "./actions";
 
 export default function NewStudyPage() {
@@ -12,21 +12,18 @@ export default function NewStudyPage() {
   const [isPending, startTransition] = useTransition();
   const t = useTranslations("NewStudyPage");
 
-  const handleStartInterview = async () => {
+  const handleStartInterview = useCallback(async () => {
     try {
       const result = await createNewStudyChat();
       if (result.success) {
         router.push(`/newstudy/${result.data.token}`);
       } else {
-        // TODO: Better error handling, maybe show a toast
-        console.error(t("createChatError"), result.message);
-        alert(t("createChatErrorGeneric"));
+        toast.error(t("createChatErrorGeneric"));
       }
     } catch (error) {
-      console.error("Error starting interview:", error);
-      alert(t("unexpectedError"));
+      toast.error(t("unexpectedError"));
     }
-  };
+  }, [router, t]);
 
   return (
     <div className="flex-1 relative flex flex-col items-center justify-center w-full overflow-hidden bg-zinc-50 dark:bg-black">

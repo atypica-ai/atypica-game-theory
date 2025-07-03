@@ -716,12 +716,14 @@
     "NewStudyInputBox": {
       "startNewStudy": "开始新研究",
       "placeholder": "提出任何关于人类行为和决策的商业问题。我们将为驱动真实选择的主观因素建模。",
+      "productRnDPlaceholder": "描述一个你想探索的产品想法。",
       "sendLabel": "研究",
       "enterToSend": "按回车开始",
       "tapToSend": "点击开始",
-      "studyType": "研究类型",
+      "studyType": "选择研究类型",
       "generalStudy": "常规研究",
-      "productRnDStudy": "产品研发"
+      "productRnDStudy": "产品研发",
+      "needHelpToClarify": "需要灵感或梳理思路？"
     },
     "UserTokensBalance": {
       "balance": "{balance}个Token可用",
@@ -1134,7 +1136,6 @@
     "timeRemaining": "{time}剩余",
     "thinking": "思考中...",
     "gettingReady": "准备开始...",
-    "createChatError": "创建新研究聊天失败：",
     "createChatErrorGeneric": "启动面试失败。请重试。",
     "unexpectedError": "发生意外错误。请重试。",
     "continueStudyError": "继续研究聊天失败：",
