@@ -838,6 +838,7 @@
       "helpText": "Click the X button to close",
       "recordingHelpText": "Recording will automatically stop when you finish speaking",
       "finish": "Finish",
+      "finishRecordingHelpText": "Click the finish button when you're done speaking.",
       "statusProcessing": "PROCESSING",
       "statusListening": "LISTENING",
       "statusReady": "READY",
