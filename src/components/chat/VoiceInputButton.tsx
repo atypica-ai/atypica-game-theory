@@ -17,7 +17,7 @@ export function VoiceInputButton({
   language,
   disabled = false,
   className,
-  contextText,
+  // contextText,  // TODO: 现在这个没用上，但最好用上
 }: VoiceInputButtonProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalKey, setModalKey] = useState(0);
@@ -39,7 +39,7 @@ export function VoiceInputButton({
         className={className}
         disabled={disabled}
         onClick={() => {
-          setModalKey(prev => prev + 1);
+          setModalKey((prev) => prev + 1);
           setIsModalOpen(true);
         }}
         aria-label="Start voice input"
@@ -53,7 +53,7 @@ export function VoiceInputButton({
         onClose={() => setIsModalOpen(false)}
         onTranscript={onTranscript}
         language={language}
-        contextText={contextText}
+        // contextText={contextText}
       />
     </>
   );

@@ -360,8 +360,7 @@ export function InterviewClient({
           <Button
             type="button"
             variant="ghost"
-            size="icon"
-            className={`rounded-full transition-all duration-200 ${
+            className={`rounded-full transition-all duration-200 w-10 h-10 flex items-center justify-center ${
               showTextInput
                 ? "bg-zinc-200 dark:bg-zinc-600 text-zinc-800 dark:text-zinc-200"
                 : "bg-zinc-100 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-600"
