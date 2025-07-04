@@ -269,7 +269,13 @@
       "thankYou": "Thank You!",
       "thankYouMessage": "Your responses have been recorded. Thank you for participating in this interview and sharing your valuable insights.",
       "builtWith": "Built with",
-      "projectDetails": "Project Details"
+      "projectDetails": "Project Details",
+      "projectDetailsDescription": "View detailed information about this interview project",
+      "thinking": "Thinking...",
+      "gettingReady": "Getting ready to start...",
+      "shareThoughts": "Share your thoughts...",
+      "interviewCompleted": "Interview completed successfully",
+      "savingInterview": "Saving interview summary..."
     }
   },
   "AnalystListPage": {

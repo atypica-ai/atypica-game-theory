@@ -269,7 +269,13 @@
       "thankYou": "谢谢您!",
       "thankYouMessage": "您的回答已记录。感谢您参与此次访谈并分享您的宝贵见解。",
       "builtWith": "由以下技术构建",
-      "projectDetails": "项目详情"
+      "projectDetails": "项目详情",
+      "projectDetailsDescription": "查看此访谈项目的详细信息",
+      "thinking": "思考中...",
+      "gettingReady": "准备开始...",
+      "shareThoughts": "分享您的想法...",
+      "interviewCompleted": "访谈成功完成",
+      "savingInterview": "正在保存访谈摘要..."
     }
   },
   "AnalystListPage": {
