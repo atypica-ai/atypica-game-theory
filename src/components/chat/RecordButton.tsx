@@ -9,7 +9,6 @@ interface RecordButtonProps {
   language: Locale;
   disabled?: boolean;
   className?: string;
-  autoStart?: boolean;
 }
 
 // Simple recording indicator
@@ -27,7 +26,6 @@ export function RecordButton({
   language,
   disabled = false,
   className,
-  autoStart = false,
 }: RecordButtonProps) {
   const t = useTranslations("Components.RecordButton");
   const [isRecording, setIsRecording] = useState(false);
@@ -110,13 +108,6 @@ export function RecordButton({
       startRecording();
     }
   }, [isRecording, startRecording, stopRecording]);
-
-  // Auto start recording when autoStart prop is true
-  useEffect(() => {
-    if (autoStart && !isRecording && !isProcessing && !disabled) {
-      startRecording();
-    }
-  }, [autoStart, isRecording, isProcessing, disabled, startRecording]);
 
   // Cleanup on unmount
   useEffect(() => {

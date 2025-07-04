@@ -60,7 +60,6 @@ export function InterviewClient({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [lastUserMessage, setLastUserMessage] = useState<Message | null>(null);
   const [showTextInput, setShowTextInput] = useState(false);
-  const [autoStartRecording, setAutoStartRecording] = useState(false);
 
   const initialRequestBody = {
     userChatId: userChat.id,
@@ -83,14 +82,6 @@ export function InterviewClient({
     onFinish() {
       // Logic to run when the AI finishes its response.
       setIsTimerActive(true);
-
-      // Auto start recording if text input is not shown
-      setTimeout(() => {
-        if (!showTextInput) {
-          setAutoStartRecording(true);
-          setTimeout(() => setAutoStartRecording(false), 100); // Reset after trigger
-        }
-      }, 500); // Small delay to ensure UI state is stable
     },
     onError(err) {
       console.error("Chat error:", err);
@@ -363,7 +354,6 @@ export function InterviewClient({
             onTranscript={handleTranscript}
             language={locale}
             disabled={status === "streaming" || status === "submitted"}
-            autoStart={autoStartRecording}
           />
 
           {/* Text Input Toggle Button */}
@@ -376,14 +366,7 @@ export function InterviewClient({
                 ? "bg-zinc-200 dark:bg-zinc-600 text-zinc-800 dark:text-zinc-200"
                 : "bg-zinc-100 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-600"
             }`}
-            onClick={() => {
-              const newShowTextInput = !showTextInput;
-              setShowTextInput(newShowTextInput);
-              // Reset auto recording when switching to text input
-              if (newShowTextInput) {
-                setAutoStartRecording(false);
-              }
-            }}
+            onClick={() => setShowTextInput(!showTextInput)}
             disabled={status === "streaming" || status === "submitted"}
           >
             <Keyboard className="h-5 w-5" />
