@@ -51,6 +51,7 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "framer-motion": "^12.4.10",
+    "groq-sdk": "^0.26.0",
     "https-proxy-agent": "^5",
     "js-cookie": "^3.0.5",
     "js-yaml": "^4.1.0",

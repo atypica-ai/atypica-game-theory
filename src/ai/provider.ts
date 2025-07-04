@@ -39,6 +39,12 @@ const azure = createAzure({
   fetch: proxiedFetch,
 });
 
+// const azureEastUS2 = createAzure({
+//   resourceName: process.env.AZURE_EASTUS2_RESOURCE_NAME,
+//   apiKey: process.env.AZURE_EASTUS2_API_KEY,
+//   fetch: proxiedFetch,
+// });
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
 const google = (modelId: string, settings?: any) => {
   const apiKeys: string[] = (process.env.GOOGLE_GENERATIVE_AI_API_KEYS ?? "")

@@ -1,6 +1,6 @@
 "use client";
 import { NewStudyBodySchema } from "@/app/(newStudy)/types";
-import { VoiceInputButton } from "@/components/chat/VoiceInputButton";
+import { RecordButton } from "@/components/chat/RecordButton";
 import { Button } from "@/components/ui/button";
 import { useDocumentVisibility } from "@/hooks/use-document-visibility";
 import { useDevice } from "@/lib/utils";
@@ -8,7 +8,7 @@ import { UserChat } from "@/prisma/client";
 import { useChat } from "@ai-sdk/react";
 import { generateId, Message } from "ai";
 import { AnimatePresence, motion } from "framer-motion";
-import { Ear, Loader2Icon, Send, XIcon } from "lucide-react";
+import { Ear, Keyboard, Loader2Icon, Send, XIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
@@ -59,6 +59,8 @@ export function InterviewClient({
   const [isTimerActive, setIsTimerActive] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [lastUserMessage, setLastUserMessage] = useState<Message | null>(null);
+  const [showTextInput, setShowTextInput] = useState(false);
+  const [autoStartRecording, setAutoStartRecording] = useState(false);
 
   const initialRequestBody = {
     userChatId: userChat.id,
@@ -81,6 +83,14 @@ export function InterviewClient({
     onFinish() {
       // Logic to run when the AI finishes its response.
       setIsTimerActive(true);
+
+      // Auto start recording if text input is not shown
+      setTimeout(() => {
+        if (!showTextInput) {
+          setAutoStartRecording(true);
+          setTimeout(() => setAutoStartRecording(false), 100); // Reset after trigger
+        }
+      }, 500); // Small delay to ensure UI state is stable
     },
     onError(err) {
       console.error("Chat error:", err);
@@ -154,33 +164,50 @@ export function InterviewClient({
       setIsTimerActive(false);
       // Re-focus after a short delay to account for state updates
       setTimeout(() => {
-        if (textareaRef.current && planningState === "active") {
+        if (textareaRef.current && planningState === "active" && showTextInput) {
           textareaRef.current.focus();
         }
       }, 50);
     },
-    [handleSubmit, planningState, input],
+    [handleSubmit, planningState, input, showTextInput],
   );
+
+  const handleTranscript = useCallback((text: string) => {
+    if (text.trim()) {
+      const messageToSend = {
+        role: "user" as const,
+        content: text,
+        id: generateId(),
+      };
+      setLastUserMessage(messageToSend);
+      useChatRef.current.append(messageToSend);
+      // setInput(text);
+      // Reset timeout state when user responds
+      setHasTimedOut(false);
+      setTimeLeft(DEFAULT_TIME_LEFT);
+      setIsTimerActive(false);
+    }
+  }, []);
 
   // Auto focus input after AI streaming ends
   useEffect(() => {
-    if (status === "ready" && planningState === "active" && textareaRef.current) {
+    if (status === "ready" && planningState === "active" && textareaRef.current && showTextInput) {
       // Small delay to ensure rendering is complete
       setTimeout(() => {
         textareaRef.current?.focus();
       }, 100);
     }
-  }, [status, planningState]);
+  }, [status, planningState, showTextInput]);
 
-  // Auto focus input on initial load
+  // Auto focus input when text input is shown
   useEffect(() => {
-    if (planningState === "active" && textareaRef.current) {
+    if (showTextInput && textareaRef.current) {
       // Delay to ensure component is fully mounted
       setTimeout(() => {
         textareaRef.current?.focus();
-      }, 500);
+      }, 300);
     }
-  }, [planningState]);
+  }, [showTextInput]);
 
   // Automatically start the conversation when the component mounts.
   const requestSentRef = useRef(false);
@@ -250,9 +277,15 @@ export function InterviewClient({
   };
 
   const chatWithAIArea = (
-    <div className="w-full h-full flex flex-col relative bg-zinc-50 dark:bg-zinc-900">
+    <div className="w-full h-full flex flex-col relative bg-zinc-50 dark:bg-zinc-900 pb-8">
+      {/* Top bar with language indicator and controls */}
+      <div className="absolute top-6 left-1/2 -translate-x-1/2">
+        <div className="text-xs text-zinc-500 dark:text-zinc-400 font-mono bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded">
+          {locale === "zh-CN" ? "中文" : "English"}
+        </div>
+      </div>
       {status === "streaming" && (
-        <div className="absolute top-4 right-4 z-10">
+        <div className="absolute top-4 right-4">
           <Button
             variant="ghost"
             size="icon"
@@ -311,63 +344,108 @@ export function InterviewClient({
       </div>
 
       {/* Bottom input area - fixed to bottom */}
-      <div className="w-full max-w-3xl mx-auto p-4 sm:p-8 pt-0">
-        <div className="w-full text-zinc-600 dark:text-zinc-400 text-sm mb-3 px-2">
-          <div className="flex justify-between items-center mb-2">
-            <span>{t("theMoreDetailed")}</span>
-            <span>{formatTime(timeLeft)}</span>
-          </div>
-          <div className="w-full bg-zinc-200 dark:bg-zinc-700 rounded-full h-1.5">
+      <div className="w-full max-w-3xl mx-auto p-4 sm:p-8 pt-0 space-y-6">
+        {/* Subtle progress indicator */}
+        <div className="flex items-center justify-center gap-3 text-xs text-zinc-400 dark:text-zinc-500">
+          <div className="w-20 bg-zinc-200 dark:bg-zinc-700 rounded-full h-0.5">
             <div
-              className="bg-primary h-1.5 rounded-full transition-all duration-300"
+              className="bg-zinc-400 dark:bg-zinc-500 h-0.5 rounded-full transition-all duration-300"
               style={{ width: `${(1 - timeLeft / DEFAULT_TIME_LEFT) * 100}%` }}
             />
           </div>
+          <span className="font-mono">{formatTime(timeLeft)}</span>
         </div>
-        <form
-          onSubmit={handleSubmitWithFocus}
-          className="relative flex items-center bg-white dark:bg-zinc-800 backdrop-blur-sm rounded-2xl p-2 w-full border border-zinc-200 dark:border-zinc-700"
-        >
-          <VoiceInputButton
-            onTranscript={(text) => setInput((current) => (current ? `${current} ${text}` : text))}
+
+        {/* Bottom buttons area */}
+        <div className="flex items-center justify-center gap-4">
+          {/* Record Button */}
+          <RecordButton
+            onTranscript={handleTranscript}
             language={locale}
             disabled={status === "streaming" || status === "submitted"}
-            className="ml-2 p-3 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 flex-shrink-0 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors bg-zinc-50 dark:bg-zinc-800"
+            autoStart={autoStartRecording}
           />
-          <CustomTextarea
-            ref={textareaRef}
-            value={input}
-            onInput={(e) => setInput(e.currentTarget.value)}
-            placeholder={t("shareThoughts")}
-            rows={1}
-            disabled={status === "streaming" || status === "submitted"}
-            className="flex min-h-[48px] w-full resize-none bg-transparent border-none
-            focus-visible:ring-0 focus-visible:ring-offset-0 outline-none
-            text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-500 dark:placeholder:text-zinc-400 py-3 px-3 max-h-32
-            text-base leading-relaxed overflow-hidden"
-            onKeyDown={(e) => {
-              if (!isMobile && e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
-                e.preventDefault();
-                if (input.trim()) {
-                  handleSubmitWithFocus(e);
-                }
-              }
-            }}
-          />
+
+          {/* Text Input Toggle Button */}
           <Button
-            type="submit"
+            type="button"
             variant="ghost"
             size="icon"
-            disabled={status === "streaming" || status === "submitted" || !input.trim()}
-            className="rounded-xl text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-700 flex-shrink-0 w-12 h-12 transition-colors"
+            className={`rounded-full transition-all duration-200 ${
+              showTextInput
+                ? "bg-zinc-200 dark:bg-zinc-600 text-zinc-800 dark:text-zinc-200"
+                : "bg-zinc-100 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-600"
+            }`}
+            onClick={() => {
+              const newShowTextInput = !showTextInput;
+              setShowTextInput(newShowTextInput);
+              // Reset auto recording when switching to text input
+              if (newShowTextInput) {
+                setAutoStartRecording(false);
+              }
+            }}
+            disabled={status === "streaming" || status === "submitted"}
           >
-            {status === "submitted" ? (
-              <Loader2Icon className="h-6 w-6 animate-spin" />
-            ) : (
-              <Send className="h-6 w-6" />
-            )}
+            <Keyboard className="h-5 w-5" />
           </Button>
-        </form>
+        </div>
+
+        {/* Text Input Area - Only shown when toggled */}
+        <AnimatePresence>
+          {showTextInput && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.1 }}
+              className="overflow-hidden"
+            >
+              <form
+                onSubmit={handleSubmitWithFocus}
+                className="relative flex items-center bg-white dark:bg-zinc-800 backdrop-blur-sm rounded-2xl p-2 w-full border border-zinc-200 dark:border-zinc-700"
+              >
+                <CustomTextarea
+                  ref={textareaRef}
+                  value={input}
+                  onInput={(e) => setInput(e.currentTarget.value)}
+                  placeholder={t("shareThoughts")}
+                  rows={1}
+                  disabled={status === "streaming" || status === "submitted"}
+                  className="flex min-h-[48px] w-full resize-none bg-transparent border-none
+                  focus-visible:ring-0 focus-visible:ring-offset-0 outline-none
+                  text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-500 dark:placeholder:text-zinc-400 py-3 px-3 max-h-32
+                  text-base leading-relaxed overflow-hidden"
+                  onKeyDown={(e) => {
+                    if (
+                      !isMobile &&
+                      e.key === "Enter" &&
+                      !e.shiftKey &&
+                      !e.nativeEvent.isComposing
+                    ) {
+                      e.preventDefault();
+                      if (input.trim()) {
+                        handleSubmitWithFocus(e);
+                      }
+                    }
+                  }}
+                />
+                <Button
+                  type="submit"
+                  variant="ghost"
+                  size="icon"
+                  disabled={status === "streaming" || status === "submitted" || !input.trim()}
+                  className="rounded-xl text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-700 flex-shrink-0 w-12 h-12 transition-colors"
+                >
+                  {status === "submitted" ? (
+                    <Loader2Icon className="h-6 w-6 animate-spin" />
+                  ) : (
+                    <Send className="h-6 w-6" />
+                  )}
+                </Button>
+              </form>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

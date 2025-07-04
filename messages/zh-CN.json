@@ -850,6 +850,13 @@
       "audioDetected": "检测到音频",
       "currentLanguage": "语言：中文"
     },
+    "RecordButton": {
+      "startRecording": "开始录音",
+      "stopRecording": "停止录音",
+      "recording": "录音中",
+      "processing": "处理中",
+      "tapToRecord": "点击录音"
+    },
     "GenerateReportResultMessage": {
       "reportGenerated": "报告已生成，点击查看"
     },
@@ -1133,7 +1140,7 @@
     "studyBriefDescription": "这是您的个性化研究问题。这将用于为您进行详细的研究。",
     "shareThoughts": "分享您的想法...",
     "theMoreDetailed": "您的回答越详细，计划就越好。",
-    "timeRemaining": "{time}剩余",
+    "timeRemaining": "{time} 剩余",
     "thinking": "思考中...",
     "gettingReady": "准备开始...",
     "createChatErrorGeneric": "启动面试失败。请重试。",
