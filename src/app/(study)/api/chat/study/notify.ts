@@ -1,6 +1,7 @@
 import { sendReportCompletionEmail } from "@/email/reportCompletion";
 import { sendStudyInterruptionEmail } from "@/email/studyInterruption";
 import { getRequestOrigin } from "@/lib/request/headers";
+import { truncateForTitle } from "@/lib/textUtils";
 import { prisma } from "@/prisma/prisma";
 import { Logger } from "pino";
 
@@ -47,7 +48,10 @@ export async function notifyReportCompletion({
   const siteOrigin = await getRequestOrigin();
   await sendReportCompletionEmail({
     email: studyUserChat.user.email,
-    topic: report.analyst.topic,
+    topic: truncateForTitle(report.analyst.topic, {
+      maxDisplayWidth: 100,
+      suffix: "...",
+    }),
     studyUrl: `${siteOrigin}/study/${studyUserChat.token}`,
   });
 }
@@ -84,7 +88,10 @@ export async function notifyStudyInterruption({
   const siteOrigin = await getRequestOrigin();
   await sendStudyInterruptionEmail({
     email: studyUserChat.user.email,
-    topic: studyUserChat.analyst?.topic ?? "",
+    topic: truncateForTitle(studyUserChat.analyst?.topic ?? "", {
+      maxDisplayWidth: 100,
+      suffix: "...",
+    }),
     studyUrl: `${siteOrigin}/study/${studyUserChat.token}`,
   });
 }
