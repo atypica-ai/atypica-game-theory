@@ -1,5 +1,6 @@
 "use client";
 import { PaginationInfo } from "@/app/admin/types";
+import { ChatMessage } from "@/components/chat/ChatMessage";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -9,6 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Pagination } from "@/components/ui/pagination";
@@ -24,9 +26,11 @@ import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDate } from "@/lib/utils";
 import { Analyst, UserChatExtra } from "@/prisma/client";
 import { AnalystKind } from "@/prisma/types";
+import { Message } from "ai";
 import {
   ChevronDown,
   ChevronUp,
+  FileText,
   SearchIcon,
   Star,
   ThumbsDownIcon,
@@ -37,7 +41,7 @@ import { useLocale } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
-import { fetchAnalysts, toggleFeaturedStatus } from "./actions";
+import { fetchAnalysts, fetchBriefChatMessages, toggleFeaturedStatus } from "./actions";
 
 type AnalystWithFeature = ExtractServerActionData<typeof fetchAnalysts>[number];
 
@@ -55,6 +59,9 @@ export default function FeaturedStudiesPage() {
   const [featuredOnly, setFeaturedOnly] = useState(false);
   const [expandedTopics, setExpandedTopics] = useState<Set<number>>(new Set());
   const [expandedSummaries, setExpandedSummaries] = useState<Set<number>>(new Set());
+  const [briefDialogOpen, setBriefDialogOpen] = useState(false);
+  const [briefMessages, setBriefMessages] = useState<Message[]>([]);
+  const [loadingBrief, setLoadingBrief] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Initialize page from URL on load
@@ -193,10 +200,55 @@ export default function FeaturedStudiesPage() {
   };
 
   if (status === "loading" || isLoading) {
-    return <div className="container mt-8">Loading...</div>;
+    return <div className="container">Loading...</div>;
   }
 
   const hasActiveFilters = searchQuery || selectedKind !== "all" || featuredOnly;
+
+  const handleShowBrief = async (analyst: AnalystWithFeature) => {
+    const extra = analyst.studyUserChat?.extra as UserChatExtra;
+    const briefUserChatId = extra?.briefUserChatId;
+
+    if (!briefUserChatId) return;
+
+    // Ensure briefUserChatId is a number
+    const chatId =
+      typeof briefUserChatId === "string" ? parseInt(briefUserChatId, 10) : briefUserChatId;
+    if (isNaN(chatId)) return;
+
+    setLoadingBrief(true);
+    setBriefDialogOpen(true);
+
+    const result = await fetchBriefChatMessages(chatId);
+    if (result.success) {
+      setBriefMessages(result.data);
+    } else {
+      setBriefMessages([]);
+    }
+    setLoadingBrief(false);
+  };
+
+  const renderBriefConversation = (messages: Message[]) => {
+    return (
+      <div className="h-full overflow-hidden flex flex-col">
+        <div className="flex-1 overflow-y-auto space-y-4 p-4 border rounded-lg bg-muted/30">
+          {messages.map((message) => (
+            <div
+              key={message.id}
+              className="border-b border-muted-foreground/10 last:border-b-0 pb-3 last:pb-0"
+            >
+              <ChatMessage
+                role={message.role}
+                nickname={message.role}
+                content={message.content}
+                parts={message.parts}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div>
@@ -291,19 +343,36 @@ export default function FeaturedStudiesPage() {
                         {analyst.studyUserChat?.title || "Untitled Study"}
                       </div>
                     </div>
-                    <button
-                      onClick={() => handleToggleFeatured(analyst)}
-                      className="flex-shrink-0 p-1 hover:bg-gray-100 rounded transition-colors ml-2"
-                      title={analyst.featuredStudy ? "Remove from featured" : "Add to featured"}
-                    >
-                      <Star
-                        className={`h-5 w-5 ${
-                          analyst.featuredStudy
-                            ? "fill-yellow-400 text-yellow-400"
-                            : "text-gray-400 hover:text-yellow-400"
-                        } transition-colors`}
-                      />
-                    </button>
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      {(() => {
+                        const extra = analyst.studyUserChat?.extra as UserChatExtra;
+                        const briefUserChatId = extra?.briefUserChatId;
+                        return briefUserChatId ? (
+                          <div className="relative m-1">
+                            <Button
+                              onClick={() => handleShowBrief(analyst)}
+                              className="p-0 has-[>svg]:p-0 size-8 hover:bg-blue-50 rounded-md bg-blue-100 border border-blue-300"
+                            >
+                              <FileText className="h-5 w-5 text-blue-700" />
+                            </Button>
+                            <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                          </div>
+                        ) : null;
+                      })()}
+                      <button
+                        onClick={() => handleToggleFeatured(analyst)}
+                        className="p-1 hover:bg-gray-100 rounded transition-colors"
+                        title={analyst.featuredStudy ? "Remove from featured" : "Add to featured"}
+                      >
+                        <Star
+                          className={`h-5 w-5 ${
+                            analyst.featuredStudy
+                              ? "fill-yellow-400 text-yellow-400"
+                              : "text-gray-400 hover:text-yellow-400"
+                          } transition-colors`}
+                        />
+                      </button>
+                    </div>
                   </CardTitle>
                   <CardDescription>
                     <span className="text-xs text-muted-foreground">Role: </span>
@@ -450,6 +519,28 @@ export default function FeaturedStudiesPage() {
           </div>
         )}
       </div>
+
+      {/* Brief Chat Dialog */}
+      <Dialog open={briefDialogOpen} onOpenChange={setBriefDialogOpen}>
+        <DialogContent className="max-w-7xl sm:max-w-5xl w-[90vw] h-[80vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle>Brief Chat</DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-hidden min-h-0">
+            {loadingBrief ? (
+              <div className="flex justify-center items-center h-full">
+                <div className="text-muted-foreground">Loading brief conversation...</div>
+              </div>
+            ) : briefMessages.length === 0 ? (
+              <div className="flex justify-center items-center h-full">
+                <div className="text-muted-foreground">No messages found in brief conversation</div>
+              </div>
+            ) : (
+              renderBriefConversation(briefMessages)
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {pagination && pagination.totalPages > 1 && (
         <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4">

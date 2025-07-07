@@ -1,10 +1,12 @@
 "use server";
+import { convertDBMessageToAIMessage } from "@/ai/messageUtils";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { s3SignedUrl } from "@/lib/attachments/s3";
 import { ServerActionResult } from "@/lib/serverAction";
 import { Analyst, FeaturedStudy, User, UserChat } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { AnalystKind } from "@/prisma/types";
+import { Message } from "ai";
 import { Locale } from "next-intl";
 import { getLocale } from "next-intl/server";
 import { revalidatePath } from "next/cache";
@@ -506,5 +508,33 @@ export async function updatePositionDirect(
   return {
     success: true,
     data: undefined,
+  };
+}
+
+// Fetch brief chat messages by chat ID
+export async function fetchBriefChatMessages(
+  briefUserChatId: number,
+): Promise<ServerActionResult<Message[]>> {
+  await checkAdminAuth([AdminPermission.MANAGE_STUDIES]);
+
+  const briefChat = await prisma.userChat.findUnique({
+    where: { id: briefUserChatId },
+    include: {
+      messages: {
+        orderBy: { id: "asc" },
+      },
+    },
+  });
+
+  if (!briefChat) {
+    return {
+      success: false,
+      message: "Brief chat not found",
+    };
+  }
+
+  return {
+    success: true,
+    data: briefChat.messages.map(convertDBMessageToAIMessage),
   };
 }
