@@ -143,7 +143,7 @@ export default function AnalystReportsPage() {
   };
 
   if (status === "loading" || isLoading) {
-    return <div className="container mt-8">Loading...</div>;
+    return <div className="container">Loading...</div>;
   }
 
   return (
