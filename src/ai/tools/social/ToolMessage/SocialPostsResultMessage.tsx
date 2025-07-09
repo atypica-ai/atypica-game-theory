@@ -27,10 +27,10 @@ export const SocialPostsResultMessage: FC<{
       {(notes || posts || []).slice(0, 10).map((post) => (
         <div key={post.id} className="flex flex-col items-center w-[160px]">
           <div className="relative w-[160px] h-[160px] rounded-lg overflow-hidden">
-            {post.images_list[0]?.url && (
+            {post.images_list?.[0]?.url && (
               <Image
                 loader={proxiedImageLoader}
-                src={post.images_list[0]?.url}
+                src={post.images_list[0].url}
                 alt="Note image"
                 fill
                 sizes="100%"

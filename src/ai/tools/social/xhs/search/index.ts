@@ -40,7 +40,7 @@ function parseXHSSearchResult(data: {
         image: note.user?.images,
       },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      images_list: note.images_list?.slice(0, 1).map((image: any) => ({
+      images_list: (note.images_list || note.image_list)?.slice(0, 1).map((image: any) => ({
         url: image.url,
         // width: image.width,
         // height: image.height,
