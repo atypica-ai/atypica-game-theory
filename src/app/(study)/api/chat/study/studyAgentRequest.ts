@@ -17,6 +17,7 @@ import {
   webSearchTool,
 } from "@/ai/tools/tools";
 import { ToolName } from "@/ai/tools/types";
+import { setUserChatError } from "@/lib/userChat/lib";
 import {
   CoreMessage,
   Message,
@@ -222,6 +223,9 @@ export async function studyAgentRequest({
   let streamStartTime = Date.now();
   const cachedCoreMessages = setBedrockCache("claude-3-7-sonnet", coreMessages);
 
+  // 清除之前的错误信息（如果有的话）
+  await setUserChatError(studyUserChatId, null);
+
   const streamTextResult = streamText({
     // model: llm("claude-sonnet-4"),
     model: fixFileNameInMessageToUsePromptCache(llm("claude-3-7-sonnet")),
@@ -309,6 +313,12 @@ export async function studyAgentRequest({
     onError: async ({ error }) => {
       // 这里也包括 tool calling 里面直接 throw 的异常
       studyLog.error(`studyAgentRequest streamText onError: ${(error as Error).message}`);
+      try {
+        // 记录错误信息到数据库
+        await setUserChatError(studyUserChatId, (error as Error).message);
+      } catch (dbError) {
+        studyLog.error(`Error saving error to database: ${(dbError as Error).message}`);
+      }
       try {
         // @IMPORTANT 这很重要, 中断所有的 tool calling 里可能还在运行的 streamText
         abortController.abort();

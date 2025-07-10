@@ -8,7 +8,7 @@ declare module "@/prisma/client" {
   } | null;
 
   export type UserChatExtra =
-    | ({
+    | {
         clientIp: string;
         userAgent: string;
         locale: string;
@@ -16,7 +16,10 @@ declare module "@/prisma/client" {
           rating: string;
           submittedAt: string;
         };
-      } & Record<string, string | number>)
+        newStudyUserChatToken: string;
+        briefUserChatId?: number;
+        error?: string;
+      } // & Record<string, string | number>)
     | null;
 
   export type UserSubscriptionExtra = {

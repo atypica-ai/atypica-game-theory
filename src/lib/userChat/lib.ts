@@ -45,6 +45,32 @@ export async function createUserChat<TKind extends UserChatKind>({
   };
 }
 
+/**
+ * 设置或删除 UserChat 的错误信息到 extra.error 字段
+ * 使用 PostgreSQL JSON 操作符直接更新，避免并发问题
+ * @param userChatId - UserChat ID
+ * @param error - 错误信息，如果为 null 则删除 error 字段
+ */
+export async function setUserChatError(userChatId: number, error: string | null) {
+  if (error === null) {
+    // 删除 error 字段
+    await prisma.$executeRaw`
+      UPDATE "UserChat"
+      SET "extra" = COALESCE("extra", '{}') - 'error',
+          "updatedAt" = NOW()
+      WHERE "id" = ${userChatId}
+    `;
+  } else {
+    // 设置 error 字段
+    await prisma.$executeRaw`
+      UPDATE "UserChat"
+      SET "extra" = COALESCE("extra", '{}') || ${{ error }}::jsonb,
+          "updatedAt" = NOW()
+      WHERE "id" = ${userChatId}
+    `;
+  }
+}
+
 // export async function deleteMessageFromUserChat(
 //   userChatId: number,
 //   messageId: string,
