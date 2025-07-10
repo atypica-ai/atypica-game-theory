@@ -8,7 +8,7 @@ import { studyAgentRequest } from "@/app/(study)/api/chat/study/studyAgentReques
 import { checkAdminAuth } from "@/app/admin/actions";
 import { rootLogger } from "@/lib/logging";
 import { ServerActionResult } from "@/lib/serverAction";
-import { PaymentRecord, User, UserChat, UserTokens } from "@/prisma/client";
+import { PaymentRecord, User, UserChat, UserChatExtra, UserTokens } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { generateId } from "ai";
 import { revalidatePath } from "next/cache";
@@ -78,6 +78,96 @@ export async function fetchIssueStudies(
       pageSize,
       totalCount,
       totalPages: Math.ceil(totalCount / pageSize),
+    },
+  };
+}
+
+// Fetch studies with errors in the last 14 days
+export async function fetchErrorStudies(
+  page: number = 1,
+  pageSize: number = 10,
+): Promise<
+  ServerActionResult<
+    (Omit<UserChat, "messages"> & {
+      user: Pick<User, "id" | "email"> & {
+        tokens: UserTokens | null;
+        paymentRecords: PaymentRecord[];
+      };
+      errorMessage: string;
+    })[]
+  >
+> {
+  // Only Super Admins can access this page
+  await checkAdminAuth("SUPER_ADMIN");
+
+  const skip = (page - 1) * pageSize;
+  const fourteenDaysAgo = new Date();
+  fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
+
+  // Find UserChats that have extra.error in the last 14 days
+  const studies = await prisma.$queryRaw<
+    (UserChat & {
+      user: Pick<User, "id" | "email"> & {
+        tokens: UserTokens | null;
+        paymentRecords: PaymentRecord[];
+      };
+    })[]
+  >`
+    SELECT
+      uc.*,
+      json_build_object(
+        'id', u.id,
+        'email', u.email,
+        'tokens', ut.*,
+        'paymentRecords', COALESCE(
+          json_agg(
+            json_build_object(
+              'id', pr.id,
+              'amount', pr.amount,
+              'currency', pr.currency,
+              'status', pr.status,
+              'paidAt', pr."paidAt"
+            )
+          ) FILTER (WHERE pr.id IS NOT NULL), '[]'::json
+        )
+      ) as user
+    FROM "UserChat" uc
+    JOIN "User" u ON uc."userId" = u.id
+    LEFT JOIN "UserTokens" ut ON u.id = ut."userId"
+    LEFT JOIN "PaymentRecord" pr ON u.id = pr."userId" AND pr.status = 'succeeded'
+    WHERE uc.kind = 'study'
+      AND uc.extra ? 'error'
+      AND uc.extra->>'error' IS NOT NULL
+      AND uc.extra->>'error' != ''
+      AND uc."updatedAt" >= ${fourteenDaysAgo}
+    GROUP BY uc.id, u.id, ut.id
+    ORDER BY uc."updatedAt" DESC
+    LIMIT ${pageSize} OFFSET ${skip}
+  `;
+
+  const totalCount = await prisma.$queryRaw<[{ count: bigint }]>`
+    SELECT COUNT(*)::int as count
+    FROM "UserChat" uc
+    WHERE uc.kind = 'study'
+      AND uc.extra ? 'error'
+      AND uc.extra->>'error' IS NOT NULL
+      AND uc.extra->>'error' != ''
+      AND uc."updatedAt" >= ${fourteenDaysAgo}
+  `;
+
+  const studiesWithError = studies.map((study) => ({
+    ...study,
+    errorMessage: (study.extra as UserChatExtra)?.error || "",
+  }));
+
+  return {
+    success: true,
+    data: studiesWithError,
+    pagination: {
+      page,
+      pageSize,
+      totalCount: Number(totalCount[0].count),
+      totalPages: Math.ceil(Number(totalCount[0].count) / pageSize),
     },
   };
 }
