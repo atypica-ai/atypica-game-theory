@@ -20,6 +20,7 @@ import {
   reasoningThinkingTool,
   saveInterviewConclusionTool,
   tiktokSearchTool,
+  twitterSearchTool,
 } from "@/ai/tools/tools";
 import { InterviewChatResult, PlainTextToolResult, StatReporter, ToolName } from "@/ai/tools/types";
 import { fileUrlToDataUrl } from "@/lib/attachments/actions";
@@ -370,7 +371,11 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: Message[]) {
         resolve(message);
       },
       onError: ({ error }) => {
-        interviewLog.error(`chatWithInterviewer streamText onError: ${(error as Error).message}`);
+        if ((error as Error).name === "AbortError") {
+          interviewLog.warn(`chatWithInterviewer streamText aborted: ${(error as Error).message}`);
+        } else {
+          interviewLog.error(`chatWithInterviewer streamText onError: ${(error as Error).message}`);
+        }
         reject(error);
       },
       abortSignal,
@@ -428,6 +433,7 @@ async function chatWithPersona(chatProps: ChatProps, messages: Message[]) {
         [ToolName.tiktokSearch]: tiktokSearchTool,
         [ToolName.dySearch]: dySearchTool,
         [ToolName.insSearch]: insSearchTool,
+        [ToolName.twitterSearch]: twitterSearchTool,
         // [ToolName.xhsSearch]: xhsSearchTool, // 因为有 grounding 了，tools 可以去掉一些
       },
       maxSteps: 2,
@@ -460,7 +466,11 @@ async function chatWithPersona(chatProps: ChatProps, messages: Message[]) {
         resolve(message);
       },
       onError: ({ error }) => {
-        interviewLog.error(`chatWithPersona streamText onError: ${(error as Error).message}`);
+        if ((error as Error).name === "AbortError") {
+          interviewLog.warn(`chatWithPersona streamText aborted: ${(error as Error).message}`);
+        } else {
+          interviewLog.error(`chatWithPersona streamText onError: ${(error as Error).message}`);
+        }
         reject(error);
       },
       abortSignal,
