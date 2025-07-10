@@ -128,10 +128,12 @@ export async function runBuildPersona({
     //  但是不能太多 steps，虽然有 cache，savePersona 的 tool message 会被重复传给 llm
     // 如果是批量调用 savePersona，目前支持最好的是 gemini-2.5-pro，但是这样太慢
     // const reduceTokens = { model: "gemini-2.5-pro", ratio: 2 } as TReduceTokens | null;
-    const reduceTokens = null as TReduceTokens | null;
+    const reduceTokens = { model: "gemini-2.5-flash", ratio: 10 } as TReduceTokens | null;
+    const llmOptions = undefined;
     const maxSteps = 5;
     const response = streamText({
-      model: reduceTokens ? llm(reduceTokens.model) : llm("claude-3-7-sonnet"),
+      // claude-3-7-sonnet 目前会遇到 input tokens context 不够大的问题，但 gpt 4.1 mini 和 gemini 2.5 flash 没问题
+      model: reduceTokens ? llm(reduceTokens.model, llmOptions) : llm("claude-3-7-sonnet"),
       providerOptions: providerOptions,
       system: buildPersonaSystem({
         locale,
@@ -164,6 +166,7 @@ export async function runBuildPersona({
           toolCalls,
           usage,
           cache,
+          providerMetadata: step.providerMetadata,
         });
         if (statReport) {
           const reportedBy = "buildPersona tool";

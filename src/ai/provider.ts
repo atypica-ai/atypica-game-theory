@@ -151,9 +151,9 @@ export function llm(modelName: LLMModelName, options?: any) {
     // case "gemini-2.5-pro":
     //   return google("gemini-2.5-pro-preview-03-25", options);
     case "gemini-2.5-flash":
-      return vertex("gemini-2.5-flash-preview-05-20", options);
+      return vertex("gemini-2.5-flash", options);
     case "gemini-2.5-pro":
-      return vertex("gemini-2.5-pro-preview-05-06", options);
+      return vertex("gemini-2.5-pro", options);
     case "deepseek-v3":
       return deepseek("Pro/deepseek-ai/DeepSeek-V3", options);
     case "deepseek-r1":
