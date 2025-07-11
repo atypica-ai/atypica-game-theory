@@ -99,7 +99,7 @@ export async function batchBackgroundInterview({
           locale,
           abortSignal,
           statReport,
-          interviewLog,
+          logger: interviewLog,
         }),
         interviewLog,
       );
@@ -211,7 +211,7 @@ export async function backgroundGenerateReport({
           locale,
           abortSignal,
           statReport,
-          reportLog,
+          logger: reportLog,
           systemPrompt,
         });
         await generateReportScreenshot({
@@ -226,7 +226,7 @@ export async function backgroundGenerateReport({
           locale,
           abortSignal,
           statReport,
-          reportLog,
+          logger: reportLog,
         });
       })(),
       reportLog,

@@ -4,26 +4,12 @@ import { CONTINUE_ASSISTANT_STEPS } from "@/ai/messageUtils";
 import { Locale } from "next-intl";
 import { promptSystemConfig } from "../systemConfig";
 
-/*
-<usage>
-ToolUsage (used/limit):
-${Object.entries(toolUseStat)
-  .map(([tool, { used, limit }]) => `  ${tool}: ${used}/${limit}`)
-  .join("\n")}
-TokenUsage (used/limit): ${tokensStat.used}/${tokensStat.limit}
-</usage>
-*/
-
 export const studySystem = ({
   locale,
   briefStatus = "DRAFT",
-  // toolUseStat,
-  // tokensStat,
 }: {
   locale: Locale;
   briefStatus?: "CLARIFIED" | "DRAFT";
-  // toolUseStat?: Record<string, { used: number; limit: number }>;
-  // tokensStat?: { used: number; limit: number };
 }) =>
   locale === "zh-CN"
     ? `${promptSystemConfig({ locale })}

@@ -2,6 +2,7 @@ import { rootLogger } from "@/lib/logging";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
 import { StreamTextResult, ToolSet } from "ai";
+import { Logger } from "pino";
 
 export async function raceForUserChat(studyUserChatId: number) {
   const logger = rootLogger.child({ studyUserChatId });
@@ -15,7 +16,7 @@ export async function raceForUserChat(studyUserChatId: number) {
         data: { backgroundToken: null },
       });
     } catch (error) {
-      logger.error(`Failed to clear background token ${(error as Error).message}`);
+      logger.warn(`Failed to clear background token ${(error as Error).message}`);
     }
   };
 
@@ -29,107 +30,75 @@ export async function raceForUserChat(studyUserChatId: number) {
 }
 
 export function backgroundChatUntilCancel<TOOLS extends ToolSet, PARTIAL_OUTPUT>({
-  userId,
+  studyLog,
   studyUserChatId,
   backgroundToken,
-  abortController,
+  toolAbortController,
+  studyAbortController,
   streamTextResult,
-  clearBackgroundToken,
 }: {
-  userId: number;
+  studyLog: Logger;
   studyUserChatId: number;
   backgroundToken: string;
-  abortController: AbortController;
+  toolAbortController: AbortController;
+  studyAbortController: AbortController;
   streamTextResult: StreamTextResult<TOOLS, PARTIAL_OUTPUT>;
-  clearBackgroundToken: () => Promise<void>;
 }) {
-  const logger = rootLogger.child({ studyUserChatId });
-  let stop = false;
-
-  waitUntil(
-    new Promise((resolve) => {
-      async function checkBackgroundToken() {
-        const userChat = await prisma.userChat.findUniqueOrThrow({
-          where: { id: studyUserChatId },
-          select: { backgroundToken: true },
-        });
-        if (stop) {
-          logger.info(`stopped, quit checkBackgroundToken`);
-        } else if (userChat.backgroundToken !== backgroundToken) {
-          logger.warn(`background token cleared or changed, aborting background running`);
-          try {
-            abortController.abort();
-          } catch (error) {
-            logger.error(`Error during abort: ${(error as Error).message}`);
-          }
-          resolve(null);
-        } else {
-          setTimeout(() => checkBackgroundToken(), 1000);
-        }
+  const abortToolsAndStudy = () => {
+    const safeAbort = (abortController: AbortController) => {
+      try {
+        abortController.abort();
+      } catch (error) {
+        rootLogger.error(`Error during abort: ${(error as Error).message}`);
       }
-      checkBackgroundToken();
-    }),
-  );
+    };
+    setTimeout(() => safeAbort(toolAbortController), 0);
+    // 要先等 tool 都 abort 最后再 abort StudyChat，否则 StudyChat 提前中断会取消它后续调用的所有 promise，导致他们自己在调用 toolAbortController.abort() 方法时失败
+    setTimeout(() => safeAbort(studyAbortController), 1000);
+  };
 
   // https://nextjs.org/docs/app/api-reference/functions/after#alternatives
   waitUntil(
     new Promise((resolve, reject) => {
       const start = Date.now();
+      let timeoutTick: NodeJS.Timeout;
       const tick = () => {
-        const now = Date.now();
-        const elapsedSeconds = Math.floor((now - start) / 1000);
+        const elapsedSeconds = Math.floor((Date.now() - start) / 1000);
         if (elapsedSeconds > 3600) {
-          // 60 mins
-          logger.warn(`timeout`);
-          stop = true;
-          reject(new Error("StudyChat timeout"));
+          studyLog.warn(`timeout`);
+          abortToolsAndStudy();
+          return;
         }
-        if (stop) {
-          logger.info(`stopped`);
-        } else {
-          logger.info(`ongoing, ${elapsedSeconds} seconds`);
-          setTimeout(() => tick(), 5000);
-        }
+        prisma.userChat
+          .findUniqueOrThrow({
+            where: { id: studyUserChatId },
+            select: { backgroundToken: true },
+          })
+          .then((userChat) => {
+            if (userChat.backgroundToken !== backgroundToken) {
+              studyLog.warn(`background token cleared or changed, aborting background running`);
+              abortToolsAndStudy();
+            }
+          });
+        studyLog.info(`ongoing, ${elapsedSeconds} seconds`);
+        timeoutTick = setTimeout(() => tick(), 5000);
       };
-      tick();
-      // consume the stream to ensure it runs to completion & triggers onFinish
-      // even when the client response is aborted:
+
+      timeoutTick = setTimeout(() => tick(), 0);
+
+      // consume the stream to ensure it runs to completion & triggers onFinish even when the client response is aborted:
       streamTextResult
         .consumeStream()
         .then(() => {
-          stop = true;
           resolve(null);
         })
         .catch((error) => {
-          stop = true;
           reject(error);
+        })
+        .finally(() => {
+          studyLog.info(`stopped`);
+          if (timeoutTick) clearTimeout(timeoutTick);
         });
-    }),
-  );
-
-  waitUntil(
-    new Promise((resolve) => {
-      async function checkUserTokensBalance() {
-        const userTokens = await prisma.userTokens.findUniqueOrThrow({
-          where: { userId },
-        });
-        if (stop) {
-          logger.info(`stopped, quit checkUserTokensBalance`);
-        } else if (userTokens.permanentBalance + userTokens.monthlyBalance <= 0) {
-          logger.warn(`user is out of balance, aborting background running`);
-          try {
-            abortController.abort(); // stop streamText
-            clearBackgroundToken(); // stop checkBackgroundToken
-            stop = true; // stop tick
-          } catch (error) {
-            logger.error(`Error during abort: ${(error as Error).message}`);
-          }
-          resolve(null);
-        } else {
-          setTimeout(() => checkUserTokensBalance(), 1000);
-        }
-      }
-      checkUserTokensBalance();
     }),
   );
 

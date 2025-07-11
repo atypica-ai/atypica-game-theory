@@ -28,7 +28,8 @@ import {
   xhsSearchTool,
   xhsUserNotesTool,
 } from "@/ai/tools/tools";
-import { PlainTextToolResult, StatReporter, ToolName } from "@/ai/tools/types";
+import { AgentToolConfigArgs, PlainTextToolResult, ToolName } from "@/ai/tools/types";
+import { truncateForTitle } from "@/lib/textUtils";
 import { createUserChat } from "@/lib/userChat/lib";
 import { generateToken } from "@/lib/utils";
 import { prisma } from "@/prisma/prisma";
@@ -42,10 +43,45 @@ import {
   tool,
   ToolChoice,
 } from "ai";
-import { Locale } from "next-intl";
 import { Logger } from "pino";
 import { z } from "zod";
 import { type ScoutTaskChatResult, type TPlatform } from "./types";
+
+export const createBackgroundToken = async ({
+  scoutUserChatId,
+  scoutLog,
+}: {
+  scoutUserChatId: number;
+  scoutLog: Logger;
+}) => {
+  const backgroundToken = new Date().valueOf().toString();
+  try {
+    await prisma.userChat.update({
+      where: { id: scoutUserChatId, kind: "scout" },
+      data: { backgroundToken },
+    });
+  } catch (error) {
+    scoutLog.error(
+      `Error setting background token ${backgroundToken}: ${(error as Error).message}`,
+    );
+    throw error;
+  }
+  const clearBackgroundToken = async () => {
+    try {
+      // mark as background running end
+      await prisma.userChat.update({
+        where: { id: scoutUserChatId, backgroundToken },
+        data: { backgroundToken: null },
+      });
+    } catch (error) {
+      scoutLog.warn(
+        `Error clearing background token ${backgroundToken}: ${(error as Error).message}`,
+      );
+    }
+  };
+
+  return { clearBackgroundToken };
+};
 
 const TOKENS_COMSUME_LIMIT = 150_000; // 限制 15w token 消耗量
 const SCOUT_TOOLS_LIMIT = 15; // 进行 15 次搜索，结束以后保存画像
@@ -81,14 +117,10 @@ export const scoutTaskChatTool = ({
   locale,
   abortSignal,
   statReport,
-  studyLog,
+  logger,
 }: {
   userId: number;
-  locale: Locale;
-  abortSignal: AbortSignal;
-  statReport: StatReporter;
-  studyLog: Logger;
-}) =>
+} & AgentToolConfigArgs) =>
   tool({
     description:
       "Conduct comprehensive social media research to discover user behavioral patterns, decision-making processes, and cognitive frameworks across multiple platforms for building representative user personas",
@@ -113,38 +145,40 @@ export const scoutTaskChatTool = ({
       return [{ type: "text", text: result.plainText }];
     },
     execute: async ({ scoutUserChatToken, description }) => {
-      const title = description.substring(0, 50);
       // 现在不需要复用一个 scoutTask 了，因为可以随时对一个 scoutTask 构建人设 buildPersona，所以每次都创建新的
       const scoutUserChat = await createUserChat({
         userId,
-        title,
+        title: truncateForTitle(description, {
+          maxDisplayWidth: 100,
+          suffix: "...",
+        }),
         kind: "scout",
         token: scoutUserChatToken,
       });
       const scoutUserChatId = scoutUserChat.id;
-      const scoutLog = studyLog.child({ scoutUserChatId, scoutUserChatToken });
+      const scoutLog = logger.child({ scoutUserChatId, scoutUserChatToken });
       // 插入一条新的消息
       await persistentAIMessageToDB(scoutUserChatId, {
         id: generateId(),
         role: "user",
         content: description,
       });
-      // let hasError = false;
+      const { clearBackgroundToken } = await createBackgroundToken({ scoutUserChatId, scoutLog });
       try {
         await runScoutTaskChatStream({
           locale,
           scoutUserChatId,
           abortSignal,
           statReport,
-          scoutLog,
+          logger: scoutLog,
         });
       } catch (error) {
-        scoutLog.error(`runScoutTaskChatStream failed: ${(error as Error).message}`);
         throw error;
-        // hasError = true;
         // 出错的保持没有 result 的状态，抛出错误让 study 停止，
         // - study 不会因为错误而过度消耗，进而需要人为介入
-        // - toolUseCount 不统计没有 result 的 tool
+        // - toolUseCount 不会统计没有 result 的 tool
+      } finally {
+        await clearBackgroundToken();
       }
       const messages = await prisma.chatMessage.findMany({
         where: { userChatId: scoutUserChatId },
@@ -178,43 +212,12 @@ export async function runScoutTaskChatStream({
   locale,
   abortSignal,
   statReport,
-  scoutLog,
+  logger,
   streamWriter,
 }: {
   scoutUserChatId: number;
-  locale: Locale;
-  abortSignal: AbortSignal;
-  statReport: StatReporter;
-  scoutLog: Logger;
   streamWriter?: DataStreamWriter;
-}): Promise<void> {
-  const backgroundToken = new Date().valueOf().toString();
-  try {
-    await prisma.userChat.update({
-      where: { id: scoutUserChatId, kind: "scout" },
-      data: { backgroundToken },
-    });
-  } catch (error) {
-    scoutLog.error(
-      `Error setting background token ${backgroundToken}: ${(error as Error).message}`,
-    );
-    throw error;
-  }
-
-  const clearBackgroundToken = async () => {
-    try {
-      // mark as background running end
-      await prisma.userChat.update({
-        where: { id: scoutUserChatId, backgroundToken },
-        data: { backgroundToken: null },
-      });
-    } catch (error) {
-      scoutLog.error(
-        `Error clearing background token ${backgroundToken}: ${(error as Error).message}`,
-      );
-    }
-  };
-
+} & AgentToolConfigArgs): Promise<void> {
   const allTools = {
     [ToolName.dySearch]: dySearchTool,
     [ToolName.dyPostComments]: dyPostCommentsTool,
@@ -248,7 +251,7 @@ export async function runScoutTaskChatStream({
 
     if (tokensConsumed > TOKENS_COMSUME_LIMIT) {
       // 达到了离谱的 token 消耗，无条件退出
-      scoutLog.error(
+      logger.error(
         `Token consumption ${tokensConsumed} exceeds limit ${TOKENS_COMSUME_LIMIT}, ending scout`,
       );
       break;
@@ -256,14 +259,12 @@ export async function runScoutTaskChatStream({
     const scoutToolsCount = Object.values(toolUseCount).reduce((acc, value) => acc + value, 0);
     if (scoutToolsCount >= SCOUT_TOOLS_LIMIT) {
       // 达到了工具使用次数限制，无条件退出
-      scoutLog.info(
-        `Tool usage ${scoutToolsCount} exceeds limit ${SCOUT_TOOLS_LIMIT}, ending scout`,
-      );
+      logger.info(`Tool usage ${scoutToolsCount} exceeds limit ${SCOUT_TOOLS_LIMIT}, ending scout`);
       break;
     }
     if (coreMessages.length >= SCOUT_MESSAGES_LIMIT) {
       // 达到了消息数量限制，无条件退出，有时候模型会不调用工具反复输出文本消息，所以这个限制需要加上
-      scoutLog.info(
+      logger.info(
         `Message count ${coreMessages.length} exceeds limit ${SCOUT_MESSAGES_LIMIT}, ending scout`,
       );
       break;
@@ -294,7 +295,7 @@ export async function runScoutTaskChatStream({
       maxSteps = 1;
     }
     const { debouncePersistentMessage, immediatePersistentMessage } =
-      createDebouncePersistentMessage(scoutUserChatId, 5000, scoutLog); // 5000 debounce
+      createDebouncePersistentMessage(scoutUserChatId, 5000, logger); // 5000 debounce
     const streamTextPromise = new Promise<Omit<Message, "role">>((resolve, reject) => {
       const response = streamText({
         model: reduceTokens ? llm(reduceTokens.model, llmOptions) : llm("claude-3-7-sonnet"),
@@ -328,7 +329,7 @@ export async function runScoutTaskChatStream({
           // - assistant 消息还不完整，新一轮对话拿到的 messages 不完整
           const toolCalls = step.toolCalls.map((call) => call.toolName);
           const usage = step.usage;
-          scoutLog.info({
+          logger.info({
             msg: "runScoutTaskChatStream streamText onStepFinish",
             stepType: step.stepType,
             toolCalls,
@@ -358,37 +359,46 @@ export async function runScoutTaskChatStream({
           // }
         },
         onFinish: async ({ steps, usage }) => {
-          scoutLog.info({ msg: "runScoutTaskChatStream streamText onFinish", usage });
+          logger.info({ msg: "runScoutTaskChatStream streamText onFinish", usage });
           const message = convertStepsToAIMessage(steps);
           resolve(message);
         },
         onError: ({ error }) => {
-          scoutLog.error(`runScoutTaskChatStream streamText onError: ${(error as Error).message}`);
-          reject(error);
+          if ((error as Error).name === "AbortError") {
+            logger.warn(`runScoutTaskChatStream streamText aborted: ${(error as Error).message}`);
+          } else {
+            logger.error(`runScoutTaskChatStream streamText onError: ${(error as Error).message}`);
+            reject(error);
+          }
         },
         abortSignal,
       });
       if (streamWriter) {
         response.mergeIntoDataStream(streamWriter);
       }
+      // abortSignal 发生了以后，可能会进 consumeStream 的 then 也可能进 catch，搞不明白
+      // 由于 abort 了以后就不会触发 onFinish，如果这里不 resolve/reject 就会导致 promise 一直不退出
+      // 所以对于放进 promise 里的 streamText，除了设置 abortSignal 还需要单独监听 abortSignal 并 reject
+      abortSignal.addEventListener("abort", () => {
+        reject(new Error("runScoutTaskChatStream abortSignal received"));
+      });
       // 这里不要 await 而是用 then，否则会出现一系列嵌套的 await new promise 最终导致 abortController.abort() 操作被取消
       // 可能是 studychat 先断了，await 结束了，后面的 abort 就失败了
-      response.consumeStream().catch((error) => reject(error));
+      response
+        .consumeStream()
+        .then(() => {})
+        .catch((error) => reject(error));
     });
 
     try {
-      const message = await streamTextPromise;
-      scoutLog.info(`runScoutTaskChatStream stream complete: ${message.content.substring(0, 20)}`);
+      await streamTextPromise;
     } catch (error) {
-      const errMsg = (error as Error).message;
-      scoutLog.error(`runScoutTaskChatStream stream error: ${errMsg}`);
-      if (errMsg.includes("RESOURCE_EXHAUSTED")) {
+      if ((error as Error).message?.includes("RESOURCE_EXHAUSTED")) {
         // 如果遇到了用量限制，不报错，换个模型
-        scoutLog.warn(`Resource exhausted, switching to alternative model without token reduction`);
+        logger.warn(`Resource exhausted, switching to alternative model without token reduction`);
         reduceTokens = null;
         llmOptions = null;
       } else {
-        await clearBackgroundToken();
         throw error;
       }
     }
@@ -401,8 +411,6 @@ export async function runScoutTaskChatStream({
     });
   }
   // while loop end
-  // 完全结束以后，清理 backgroundToken
-  await clearBackgroundToken();
 }
 
 // const LIMIT_SOCIAL_TOOLS_USE = 20; // 最多使用 20 次 social 搜索

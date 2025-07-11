@@ -11,7 +11,9 @@ import {
   scoutSocialTrendsTool,
   toolCallError,
 } from "@/ai/tools/tools";
-import { ToolName } from "@/ai/tools/types";
+import { AgentToolConfigArgs, ToolName } from "@/ai/tools/types";
+import { setUserChatError } from "@/lib/userChat/lib";
+import { safeAbort } from "@/lib/utils";
 import {
   CoreMessage,
   Message,
@@ -23,10 +25,9 @@ import {
 } from "ai";
 import { getLocale } from "next-intl/server";
 import { Logger } from "pino";
-import { createAbortSignals } from "./abortSignal";
 import { backgroundChatUntilCancel, raceForUserChat } from "./background";
 import { notifyReportCompletion, notifyStudyInterruption } from "./notify";
-import { setBedrockCache } from "./studyAgentRequest";
+import { outOfBalance, setBedrockCache } from "./studyAgentRequest";
 
 const MAX_STEPS_EACH_ROUND = 15; // streamText 默认 15 步
 
@@ -37,7 +38,7 @@ export async function productRnDAgentRequest({
   streamingMessage,
   toolUseCount,
   userId,
-  reqSignal,
+  // reqSignal,
   studyLog,
 }: {
   studyUserChatId: number;
@@ -52,7 +53,6 @@ export async function productRnDAgentRequest({
   studyLog: Logger;
 }) {
   const locale = await getLocale();
-  const { abortController, abortSignal, delayedAbortSignal } = createAbortSignals(reqSignal);
   const { statReport } = initStudyStatReporter({ userId, studyUserChatId, studyLog });
   const { debouncePersistentMessage, immediatePersistentMessage } = createDebouncePersistentMessage(
     studyUserChatId,
@@ -60,13 +60,17 @@ export async function productRnDAgentRequest({
     studyLog,
   );
 
-  const agentToolArgs = { locale, abortSignal, statReport, studyLog };
+  const toolAbortController = new AbortController();
+  const studyAbortController = new AbortController();
+
+  const agentToolArgs: AgentToolConfigArgs = {
+    locale,
+    abortSignal: toolAbortController.signal,
+    statReport,
+    logger: studyLog,
+  };
   const allTools = {
-    [ToolName.saveAnalyst]: saveAnalystTool({
-      userId,
-      studyUserChatId,
-      productRnD: true,
-    }),
+    [ToolName.saveAnalyst]: saveAnalystTool({ studyUserChatId, productRnD: true }),
     [ToolName.audienceCall]: audienceCallTool({ ...agentToolArgs }),
     [ToolName.scoutSocialTrends]: scoutSocialTrendsTool({ userId, ...agentToolArgs }),
     [ToolName.saveAnalystStudySummary]: saveAnalystStudySummaryTool({
@@ -99,6 +103,9 @@ export async function productRnDAgentRequest({
   const system = productRnDSystem({ locale });
   let streamStartTime = Date.now();
   const cachedCoreMessages = setBedrockCache("claude-3-7-sonnet", coreMessages);
+
+  // 清除之前的错误信息（如果有的话）
+  await setUserChatError(studyUserChatId, null);
 
   const streamTextResult = streamText({
     // model: llm("claude-sonnet-4"),
@@ -164,6 +171,11 @@ export async function productRnDAgentRequest({
         }
         await Promise.all(promises);
       }
+      if (await outOfBalance({ userId })) {
+        // 用完 tokens 以后，只要停止 streamText 就行，不需要做其他事情
+        // 到 onStepFinish 的时候，所有 tool 肯定都已经停止，只需要 abort study
+        safeAbort(studyAbortController);
+      }
       {
         const generateReportTool = step.toolResults.find(
           (tool) => tool.toolName === ToolName.generateReport,
@@ -187,32 +199,37 @@ export async function productRnDAgentRequest({
     onError: async ({ error }) => {
       // 这里也包括 tool calling 里面直接 throw 的异常
       studyLog.error(`studyAgentRequest streamText onError: ${(error as Error).message}`);
-      try {
-        // @IMPORTANT 这很重要, 中断所有的 tool calling 里可能还在运行的 streamText
-        abortController.abort();
-      } catch (error) {
-        studyLog.error(`Error during abort: ${(error as Error).message}`);
-      }
-      // 出错了以后没必要继续在后台执行了
+      // @IMPORTANT 这很重要, 中断所有的 tool calling 里可能还在运行的 streamText
+      safeAbort(toolAbortController);
       await clearBackgroundToken();
+      try {
+        // 记录错误信息到数据库
+        await setUserChatError(studyUserChatId, (error as Error).message);
+      } catch (dbError) {
+        studyLog.error(`Error saving error to database: ${(dbError as Error).message}`);
+      }
       {
-        // 因为 token 不足 abort 不会触发 onError，如果要通知 token 不足，需要在 backgroundChatUntilCancel 里面触发
+        // 因为 token 不足 abort 不会触发 onError，如果要通知 token 不足，需要单独触发
         notifyStudyInterruption({
           studyUserChatId,
           studyLog,
         }).catch(() => {}); //不 await
       }
     },
-    abortSignal: delayedAbortSignal,
+    abortSignal: studyAbortController.signal,
+  });
+
+  studyAbortController.signal.addEventListener("abort", async () => {
+    await clearBackgroundToken();
   });
 
   backgroundChatUntilCancel({
-    userId,
+    studyLog,
     studyUserChatId,
     backgroundToken,
     streamTextResult,
-    abortController,
-    clearBackgroundToken,
+    toolAbortController,
+    studyAbortController,
   });
 
   return streamTextResult.toDataStreamResponse();

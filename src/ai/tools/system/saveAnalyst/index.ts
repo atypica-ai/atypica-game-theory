@@ -8,11 +8,9 @@ import { z } from "zod";
 import { SaveAnalystToolResult } from "./types";
 
 export const saveAnalystTool = ({
-  // userId,
   studyUserChatId,
   productRnD,
 }: {
-  userId: number;
   studyUserChatId: number;
   productRnD?: boolean;
 }) =>

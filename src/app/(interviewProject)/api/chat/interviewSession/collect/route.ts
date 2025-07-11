@@ -115,6 +115,7 @@ export async function POST(req: NextRequest) {
         locale,
         abortSignal,
         statReport,
+        logger: projectLogger,
       }),
       [ToolName.saveInterviewSessionSummary]: saveInterviewSessionSummaryTool({
         sessionId: interviewSession.id,

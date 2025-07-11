@@ -1,7 +1,7 @@
 import "server-only";
 
 import { createTextEmbedding } from "@/ai/embedding";
-import { PlainTextToolResult, StatReporter, TPersonaForStudy } from "@/ai/tools/types";
+import { AgentToolConfigArgs, PlainTextToolResult, TPersonaForStudy } from "@/ai/tools/types";
 import { prisma } from "@/prisma/prisma";
 import { tool } from "ai";
 import { Locale } from "next-intl";
@@ -9,15 +9,7 @@ import { Logger } from "pino";
 import { z } from "zod";
 import { type SearchPersonasToolResult } from "./types";
 
-export const searchPersonasTool = ({
-  locale,
-  statReport,
-  // studyLog,
-}: {
-  locale: Locale;
-  statReport: StatReporter;
-  studyLog: Logger;
-}) =>
+export const searchPersonasTool = ({ locale, statReport, logger }: AgentToolConfigArgs) =>
   tool({
     description:
       "Search existing user persona database using semantic similarity matching to find relevant user profiles that match research criteria",
@@ -35,7 +27,7 @@ export const searchPersonasTool = ({
     },
     execute: async ({ searchQueries }): Promise<SearchPersonasToolResult> => {
       const searchResults = await Promise.all(
-        searchQueries.map((searchQuery) => searchPersonas(locale, searchQuery)),
+        searchQueries.map((searchQuery) => searchPersonas({ locale, searchQuery, logger })),
       );
       let personas: TPersonaForStudy[] = [];
       const seenPersonaIds = new Set<number>();
@@ -72,19 +64,31 @@ export const searchPersonasTool = ({
     },
   });
 
-async function searchPersonas(locale: Locale, searchQuery: string) {
-  const embedding = await createTextEmbedding(searchQuery, "retrieval.query");
-  const personas = await prisma.$queryRaw<TPersonaForStudy[]>`
-      SELECT
-        "id" as "personaId",
-        "name",
-        "source",
-        "tags"
-      FROM "Persona"
-      WHERE "embedding" <=> ${JSON.stringify(embedding)}::vector < 0.9 AND locale = ${locale}
-      ORDER BY "embedding" <=> ${JSON.stringify(embedding)}::vector ASC
-      LIMIT 5
-    `;
-
-  return { searchQuery, personas };
+async function searchPersonas({
+  locale,
+  searchQuery,
+  logger,
+}: {
+  locale: Locale;
+  searchQuery: string;
+  logger: Logger;
+}) {
+  try {
+    const embedding = await createTextEmbedding(searchQuery, "retrieval.query");
+    const personas = await prisma.$queryRaw<TPersonaForStudy[]>`
+        SELECT
+          "id" as "personaId",
+          "name",
+          "source",
+          "tags"
+        FROM "Persona"
+        WHERE "embedding" <=> ${JSON.stringify(embedding)}::vector < 0.9 AND locale = ${locale}
+        ORDER BY "embedding" <=> ${JSON.stringify(embedding)}::vector ASC
+        LIMIT 5
+      `;
+    return { searchQuery, personas };
+  } catch (error) {
+    logger.error(`Error searching personas with query "${searchQuery}": ${error}`);
+    return { searchQuery, personas: [] };
+  }
 }

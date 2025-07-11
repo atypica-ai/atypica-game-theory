@@ -16,8 +16,10 @@ import {
   toolCallError,
   webSearchTool,
 } from "@/ai/tools/tools";
-import { ToolName } from "@/ai/tools/types";
+import { AgentToolConfigArgs, ToolName } from "@/ai/tools/types";
 import { setUserChatError } from "@/lib/userChat/lib";
+import { safeAbort } from "@/lib/utils";
+import { prisma } from "@/prisma/prisma";
 import {
   CoreMessage,
   Message,
@@ -29,20 +31,19 @@ import {
 } from "ai";
 import { getLocale } from "next-intl/server";
 import { Logger } from "pino";
-import { createAbortSignals } from "./abortSignal";
 import { backgroundChatUntilCancel, raceForUserChat } from "./background";
 import { notifyReportCompletion, notifyStudyInterruption } from "./notify";
 
 // autopolot 模式默认 15 步，webSearch 2 + saveAnalyst 1 + searchPersonas 1 + scoutTaskChat 2 + buildPersona 2 + interviewChat 2 + saveAnalystStudySummary 1 + generateReport 1
 const MAX_STEPS_EACH_ROUND = 15;
-// const TOOL_USE_LIMIT = {
-//   [ToolName.scoutTaskChat]: 1,
-//   [ToolName.generateReport]: 2,
-//   [ToolName.buildPersona]: 1,
-//   [ToolName.searchPersonas]: 1,
-//   [ToolName.webSearch]: 2,
-// };
 // const TOKENS_COMSUME_LIMIT = 1_000_000; // 最新统计来看，100 万 tokens 足够
+
+export async function outOfBalance({ userId }: { userId: number }) {
+  const userTokens = await prisma.userTokens.findUniqueOrThrow({
+    where: { userId },
+  });
+  return userTokens.permanentBalance + userTokens.monthlyBalance <= 0;
+}
 
 /**
  * claude 模型支持 cache https://docs.aws.amazon.com/bedrock/latest/userguide/prompt-caching.html
@@ -99,7 +100,7 @@ export async function studyAgentRequest({
   streamingMessage,
   toolUseCount,
   userId,
-  reqSignal,
+  // reqSignal,
   studyLog,
 }: {
   briefStatus?: "CLARIFIED" | "DRAFT";
@@ -115,26 +116,26 @@ export async function studyAgentRequest({
   studyLog: Logger;
 }) {
   const locale = await getLocale();
-  const { abortController, abortSignal, delayedAbortSignal } = createAbortSignals(reqSignal);
   const { statReport } = initStudyStatReporter({ userId, studyUserChatId, studyLog });
   const { debouncePersistentMessage, immediatePersistentMessage } = createDebouncePersistentMessage(
     studyUserChatId,
     5000,
     studyLog,
-  ); // 5000 debounce
+  ); // 5s debounce
 
-  // const tokensConsumed =
-  //   (
-  //     await prisma.chatStatistics.aggregate({
-  //       where: { userChatId: studyUserChatId, dimension: "tokens" },
-  //       _sum: { value: true },
-  //     })
-  //   )._sum.value ?? 0;
-  const agentToolArgs = { locale, abortSignal, statReport, studyLog };
+  const toolAbortController = new AbortController();
+  const studyAbortController = new AbortController();
+
+  const agentToolArgs: AgentToolConfigArgs = {
+    locale,
+    abortSignal: toolAbortController.signal,
+    statReport,
+    logger: studyLog,
+  };
   const allTools = {
     [ToolName.requestInteraction]: requestInteractionTool,
     [ToolName.webSearch]: webSearchTool({ studyUserChatId, ...agentToolArgs }),
-    [ToolName.saveAnalyst]: saveAnalystTool({ userId, studyUserChatId }),
+    [ToolName.saveAnalyst]: saveAnalystTool({ studyUserChatId }),
     [ToolName.reasoningThinking]: reasoningThinkingTool({ ...agentToolArgs }),
     [ToolName.searchPersonas]: searchPersonasTool({ ...agentToolArgs }),
     [ToolName.scoutTaskChat]: scoutTaskChatTool({ userId, ...agentToolArgs }),
@@ -168,15 +169,13 @@ export async function studyAgentRequest({
     delete tools[ToolName.requestInteraction];
   }
 
-  // if ((toolUseCount[ToolName.scoutTaskChat] ?? 0) >= TOOL_USE_LIMIT[ToolName.scoutTaskChat]) {
-  //   // 这个限制拿掉了，现在指令遵循还行其实，不要增加复杂度了
-  //   delete tools[ToolName.scoutTaskChat];
-  //   maxSteps = 10;
-  // }
-  // if ((toolUseCount[ToolName.generateReport] ?? 0) >= TOOL_USE_LIMIT[ToolName.generateReport]) {
-  //   delete tools[ToolName.generateReport];
-  //   maxSteps = 2;
-  // }
+  // const tokensConsumed =
+  //   (
+  //     await prisma.chatStatistics.aggregate({
+  //       where: { userChatId: studyUserChatId, dimension: "tokens" },
+  //       _sum: { value: true },
+  //     })
+  //   )._sum.value ?? 0;
   // 超出 tokens 限制以后，这时候每 chat 一次，就是一个很大的 input tokens 数量，所以，不能再继续发送消息，直接返回一个特定的消息
   // 不过现在做了 prompt cache，是不是不大容易超出了？要留意一段日子
   // if (tokensConsumed >= TOKENS_COMSUME_LIMIT) {
@@ -199,26 +198,7 @@ export async function studyAgentRequest({
   const system = studySystem({
     locale,
     briefStatus,
-    // 为了 prompt cache 生效，需要一个固定的 system prompt，这部分先去掉
-    // tokensStat: { used: tokensConsumed, limit: TOKENS_COMSUME_LIMIT * 0.5 }, // 限制是 1M，告诉模型限制是 0.6M
-    // toolUseStat: {
-    //   [ToolName.scoutTaskChat]: {
-    //     used: toolUseCount[ToolName.scoutTaskChat] ?? 0,
-    //     limit: TOOL_USE_LIMIT[ToolName.scoutTaskChat],
-    //   },
-    //   [ToolName.generateReport]: {
-    //     used: toolUseCount[ToolName.generateReport] ?? 0,
-    //     limit: TOOL_USE_LIMIT[ToolName.generateReport],
-    //   },
-    //   [ToolName.buildPersona]: {
-    //     used: toolUseCount[ToolName.buildPersona] ?? 0,
-    //     limit: TOOL_USE_LIMIT[ToolName.buildPersona],
-    //   },
-    //   [ToolName.searchPersonas]: {
-    //     used: toolUseCount[ToolName.searchPersonas] ?? 0,
-    //     limit: TOOL_USE_LIMIT[ToolName.searchPersonas],
-    //   },
-    // },
+    // 为了 prompt cache 生效，需要一个固定的 system prompt，之前放在 system prompt 里面的 tokensStat, toolUseStat 现在去掉了
   });
   let streamStartTime = Date.now();
   const cachedCoreMessages = setBedrockCache("claude-3-7-sonnet", coreMessages);
@@ -290,6 +270,11 @@ export async function studyAgentRequest({
         }
         await Promise.all(promises);
       }
+      if (await outOfBalance({ userId })) {
+        // 用完 tokens 以后，只要停止 streamText 就行，不需要做其他事情
+        // 到 onStepFinish 的时候，所有 tool 肯定都已经停止，只需要 abort study
+        safeAbort(studyAbortController);
+      }
       {
         const generateReportTool = step.toolResults.find(
           (tool) => tool.toolName === ToolName.generateReport,
@@ -313,38 +298,37 @@ export async function studyAgentRequest({
     onError: async ({ error }) => {
       // 这里也包括 tool calling 里面直接 throw 的异常
       studyLog.error(`studyAgentRequest streamText onError: ${(error as Error).message}`);
+      // @IMPORTANT 这很重要, 中断所有的 tool calling 里可能还在运行的 streamText
+      safeAbort(toolAbortController);
+      await clearBackgroundToken();
       try {
         // 记录错误信息到数据库
         await setUserChatError(studyUserChatId, (error as Error).message);
       } catch (dbError) {
         studyLog.error(`Error saving error to database: ${(dbError as Error).message}`);
       }
-      try {
-        // @IMPORTANT 这很重要, 中断所有的 tool calling 里可能还在运行的 streamText
-        abortController.abort();
-      } catch (error) {
-        studyLog.error(`Error during abort: ${(error as Error).message}`);
-      }
-      // 出错了以后没必要继续在后台执行了
-      await clearBackgroundToken();
       {
-        // 因为 token 不足 abort 不会触发 onError，如果要通知 token 不足，需要在 backgroundChatUntilCancel 里面触发
+        // 因为 token 不足 abort 不会触发 onError，如果要通知 token 不足，需要单独触发
         notifyStudyInterruption({
           studyUserChatId,
           studyLog,
         }).catch(() => {}); //不 await
       }
     },
-    abortSignal: delayedAbortSignal,
+    abortSignal: studyAbortController.signal,
+  });
+
+  studyAbortController.signal.addEventListener("abort", async () => {
+    await clearBackgroundToken();
   });
 
   backgroundChatUntilCancel({
-    userId,
+    studyLog,
     studyUserChatId,
     backgroundToken,
     streamTextResult,
-    abortController,
-    clearBackgroundToken,
+    toolAbortController,
+    studyAbortController,
   });
 
   return streamTextResult.toDataStreamResponse();

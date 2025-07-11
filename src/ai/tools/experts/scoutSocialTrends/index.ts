@@ -31,7 +31,7 @@ import {
   xhsSearchTool,
   xhsUserNotesTool,
 } from "@/ai/tools/tools";
-import { PlainTextToolResult, StatReporter, ToolName, TPlatform } from "@/ai/tools/types";
+import { AgentToolConfigArgs, PlainTextToolResult, ToolName, TPlatform } from "@/ai/tools/types";
 import { createUserChat } from "@/lib/userChat/lib";
 import { generateToken } from "@/lib/utils";
 import { prisma } from "@/prisma/prisma";
@@ -46,9 +46,8 @@ import {
   tool,
   ToolChoice,
 } from "ai";
-import { Locale } from "next-intl";
-import { Logger } from "pino";
 import { z } from "zod";
+import { createBackgroundToken } from "../scoutTaskChat";
 import { ScoutSocialTrendsResult } from "./types";
 
 const TOKENS_COMSUME_LIMIT = 250_000; // 限制 15w token 消耗量
@@ -85,14 +84,10 @@ export const scoutSocialTrendsTool = ({
   locale,
   abortSignal,
   statReport,
-  studyLog,
+  logger,
 }: {
   userId: number;
-  locale: Locale;
-  abortSignal: AbortSignal;
-  statReport: StatReporter;
-  studyLog: Logger;
-}) =>
+} & AgentToolConfigArgs) =>
   tool({
     description:
       "Conduct comprehensive social media research to discover emerging trends, learn about emerging products, and listen to user preferences across multiple platforms.",
@@ -124,30 +119,32 @@ export const scoutSocialTrendsTool = ({
         token: scoutUserChatToken,
       });
       const scoutUserChatId = scoutUserChat.id;
-      const scoutLog = studyLog.child({ scoutUserChatId, scoutUserChatToken });
+      const scoutLog = logger.child({ scoutUserChatId, scoutUserChatToken });
       // 插入一条新的消息
       await persistentAIMessageToDB(scoutUserChatId, {
         id: generateId(),
         role: "user",
         content: description,
       });
+      const { clearBackgroundToken } = await createBackgroundToken({ scoutUserChatId, scoutLog });
       // let hasError = false;
-      let summary: string | undefined;
+      let summary: string;
       try {
         summary = await runScoutSocialTrendsStream({
           locale,
           scoutUserChatId,
           abortSignal,
           statReport,
-          scoutLog,
+          logger: scoutLog,
         });
       } catch (error) {
-        scoutLog.error(`runScoutSocialTrendsStream failed: ${(error as Error).message}`);
         throw error;
         // hasError = true;
         // 出错的保持没有 result 的状态，抛出错误让 study 停止，
         // - study 不会因为错误而过度消耗，进而需要人为介入
         // - toolUseCount 不统计没有 result 的 tool
+      } finally {
+        await clearBackgroundToken();
       }
       const messages = await prisma.chatMessage.findMany({
         where: { userChatId: scoutUserChatId },
@@ -172,9 +169,7 @@ export const scoutSocialTrendsTool = ({
       return {
         stats,
         summary,
-        plainText:
-          summary ||
-          `Social media research completed successfully. Data collected from multiple platforms ready for persona building.\n\nPlatform Coverage:\n${JSON.stringify(stats)}`,
+        plainText: `${summary}\n\nSocial media research completed successfully.\n\nPlatform Coverage:\n${JSON.stringify(stats)}`,
       };
     },
   });
@@ -184,43 +179,12 @@ async function runScoutSocialTrendsStream({
   locale,
   abortSignal,
   statReport,
-  scoutLog,
+  logger,
   streamWriter,
 }: {
   scoutUserChatId: number;
-  locale: Locale;
-  abortSignal: AbortSignal;
-  statReport: StatReporter;
-  scoutLog: Logger;
   streamWriter?: DataStreamWriter;
-}): Promise<string | undefined> {
-  const backgroundToken = new Date().valueOf().toString();
-  try {
-    await prisma.userChat.update({
-      where: { id: scoutUserChatId, kind: "scout" },
-      data: { backgroundToken },
-    });
-  } catch (error) {
-    scoutLog.error(
-      `Error setting background token ${backgroundToken}: ${(error as Error).message}`,
-    );
-    throw error;
-  }
-
-  const clearBackgroundToken = async () => {
-    try {
-      // mark as background running end
-      await prisma.userChat.update({
-        where: { id: scoutUserChatId, backgroundToken },
-        data: { backgroundToken: null },
-      });
-    } catch (error) {
-      scoutLog.error(
-        `Error clearing background token ${backgroundToken}: ${(error as Error).message}`,
-      );
-    }
-  };
-
+} & AgentToolConfigArgs): Promise<string> {
   const allTools = {
     [ToolName.dySearch]: dySearchTool,
     [ToolName.dyPostComments]: dyPostCommentsTool,
@@ -248,7 +212,6 @@ async function runScoutSocialTrendsStream({
         ) as typeof allTools);
 
   let tokensConsumed = 0;
-  let shouldSummarize = true;
   let breakReason = "";
 
   while (true) {
@@ -257,29 +220,24 @@ async function runScoutSocialTrendsStream({
 
     if (tokensConsumed > TOKENS_COMSUME_LIMIT) {
       // 达到了离谱的 token 消耗，无条件退出
-      scoutLog.error(
+      logger.error(
         `Token consumption ${tokensConsumed} exceeds limit ${TOKENS_COMSUME_LIMIT}, ending scout`,
       );
-      shouldSummarize = true;
       breakReason = "token_limit";
       break;
     }
     const scoutToolsCount = Object.values(toolUseCount).reduce((acc, value) => acc + value, 0);
     if (scoutToolsCount >= SCOUT_TOOLS_LIMIT) {
       // 达到了工具使用次数限制，无条件退出
-      scoutLog.info(
-        `Tool usage ${scoutToolsCount} exceeds limit ${SCOUT_TOOLS_LIMIT}, ending scout`,
-      );
-      shouldSummarize = true;
+      logger.info(`Tool usage ${scoutToolsCount} exceeds limit ${SCOUT_TOOLS_LIMIT}, ending scout`);
       breakReason = "tool_limit";
       break;
     }
     if (coreMessages.length >= SCOUT_MESSAGES_LIMIT) {
       // 达到了消息数量限制，无条件退出，有时候模型会不调用工具反复输出文本消息，所以这个限制需要加上
-      scoutLog.info(
+      logger.info(
         `Message count ${coreMessages.length} exceeds limit ${SCOUT_MESSAGES_LIMIT}, ending scout`,
       );
-      shouldSummarize = true;
       breakReason = "message_limit";
       break;
     }
@@ -309,7 +267,7 @@ async function runScoutSocialTrendsStream({
       maxSteps = 1;
     }
     const { debouncePersistentMessage, immediatePersistentMessage } =
-      createDebouncePersistentMessage(scoutUserChatId, 5000, scoutLog); // 5000 debounce
+      createDebouncePersistentMessage(scoutUserChatId, 5000, logger); // 5000 debounce
     const streamTextPromise = new Promise<Omit<Message, "role">>((resolve, reject) => {
       const response = streamText({
         model: reduceTokens ? llm(reduceTokens.model, llmOptions) : llm("claude-3-7-sonnet"),
@@ -343,7 +301,7 @@ async function runScoutSocialTrendsStream({
           // - assistant 消息还不完整，新一轮对话拿到的 messages 不完整
           const toolCalls = step.toolCalls.map((call) => call.toolName);
           const usage = step.usage;
-          scoutLog.info({
+          logger.info({
             msg: "runScoutSocialTrendsStream streamText onStepFinish",
             stepType: step.stepType,
             toolCalls,
@@ -373,41 +331,46 @@ async function runScoutSocialTrendsStream({
           // }
         },
         onFinish: async ({ steps, usage }) => {
-          scoutLog.info({ msg: "runScoutSocialTrendsStream streamText onFinish", usage });
+          logger.info({ msg: "runScoutSocialTrendsStream streamText onFinish", usage });
           const message = convertStepsToAIMessage(steps);
           resolve(message);
         },
         onError: ({ error }) => {
-          scoutLog.error(
-            `runScoutSocialTrendsStream streamText onError: ${(error as Error).message}`,
-          );
-          reject(error);
+          if ((error as Error).name === "AbortError") {
+            logger.warn(
+              `runScoutSocialTrendsStream streamText aborted: ${(error as Error).message}`,
+            );
+          } else {
+            logger.error(
+              `runScoutSocialTrendsStream streamText onError: ${(error as Error).message}`,
+            );
+            reject(error);
+          }
         },
         abortSignal,
       });
       if (streamWriter) {
         response.mergeIntoDataStream(streamWriter);
       }
-      // 这里不要 await 而是用 then，否则会出现一系列嵌套的 await new promise 最终导致 abortController.abort() 操作被取消
-      // 可能是 studychat 先断了，await 结束了，后面的 abort 就失败了
-      response.consumeStream().catch((error) => reject(error));
+      abortSignal.addEventListener("abort", () => {
+        reject(new Error("runScoutSocialTrendsStream abortSignal received"));
+      });
+      response
+        .consumeStream()
+        .then(() => {})
+        .catch((error) => reject(error));
     });
 
     try {
-      const message = await streamTextPromise;
-      scoutLog.info(
-        `runScoutSocialTrendsStream stream complete: ${message.content.substring(0, 20)}`,
-      );
+      await streamTextPromise;
     } catch (error) {
       const errMsg = (error as Error).message;
-      scoutLog.error(`runScoutSocialTrendsStream stream error: ${errMsg}`);
       if (errMsg.includes("RESOURCE_EXHAUSTED")) {
         // 如果遇到了用量限制，不报错，换个模型
-        scoutLog.warn(`Resource exhausted, switching to alternative model without token reduction`);
+        logger.warn(`Resource exhausted, switching to alternative model without token reduction`);
         reduceTokens = null;
         llmOptions = null;
       } else {
-        await clearBackgroundToken();
         throw error;
       }
     }
@@ -419,35 +382,18 @@ async function runScoutSocialTrendsStream({
       content: CONTINUE_ASSISTANT_STEPS,
     });
   }
-
-  // Handle summarization if needed
-  if (shouldSummarize) {
-    scoutLog.info(`Ending search due to ${breakReason}, requesting summarization`);
-
-    try {
-      const summaryText = await runScoutSocialTrendsSummarize({
-        scoutUserChatId,
-        locale,
-        abortSignal,
-        statReport,
-        scoutLog,
-        streamWriter,
-      });
-      scoutLog.info(`Summarization complete: ${summaryText.substring(0, 50)}...`);
-      // Clean up and return the summary
-      await clearBackgroundToken();
-      return summaryText;
-    } catch (error) {
-      scoutLog.error(`Summarization error: ${(error as Error).message}`);
-      await clearBackgroundToken();
-      throw error;
-    }
-  }
-
   // while loop end
-  // 完全结束以后，清理 backgroundToken
-  await clearBackgroundToken();
-  return undefined;
+
+  logger.info(`Ending search due to ${breakReason}, requesting summarization`);
+  const summaryText = await runScoutSocialTrendsSummarize({
+    scoutUserChatId,
+    locale,
+    abortSignal,
+    statReport,
+    logger,
+    streamWriter,
+  });
+  return summaryText;
 }
 
 async function runScoutSocialTrendsSummarize({
@@ -455,16 +401,12 @@ async function runScoutSocialTrendsSummarize({
   locale,
   abortSignal,
   statReport,
-  scoutLog,
+  logger,
   streamWriter,
 }: {
   scoutUserChatId: number;
-  locale: Locale;
-  abortSignal: AbortSignal;
-  statReport: StatReporter;
-  scoutLog: Logger;
   streamWriter?: DataStreamWriter;
-}) {
+} & AgentToolConfigArgs) {
   // Use the same message preparation as the main loop
   const { coreMessages } = await prepareMessagesForStreaming(scoutUserChatId);
 
@@ -480,7 +422,7 @@ async function runScoutSocialTrendsSummarize({
 
   // Ensure we have at least one message
   if (filteredMessages.length === 0) {
-    scoutLog.warn("No valid messages found for summarization, using fallback");
+    logger.warn("No valid messages found for summarization, using fallback");
     return "No search results available to summarize.";
   }
 
@@ -523,12 +465,12 @@ async function runScoutSocialTrendsSummarize({
       experimental_repairToolCall: handleToolCallError,
       maxSteps: 1,
       onChunk: async ({ chunk }) => {
-        scoutLog.debug({ chunk });
+        logger.debug({ chunk });
       },
       onStepFinish: async (step) => {
         const toolCalls = step.toolCalls.map((call) => call.toolName);
         const usage = step.usage;
-        scoutLog.info({
+        logger.info({
           msg: "runScoutSocialTrendsSummarize streamText onStepFinish",
           stepType: step.stepType,
           toolCalls,
@@ -562,23 +504,33 @@ async function runScoutSocialTrendsSummarize({
         // }
       },
       onFinish: async ({ usage, text }) => {
-        scoutLog.info({ msg: "runScoutSocialTrendsSummarize streamText onFinish", usage });
+        logger.info({ msg: "runScoutSocialTrendsSummarize streamText onFinish", usage });
         resolve(text);
       },
       onError: ({ error }) => {
-        scoutLog.error(
-          `runScoutSocialTrendsSummarize streamText onError: ${(error as Error).message}`,
-        );
-        reject(error);
+        if ((error as Error).name === "AbortError") {
+          logger.warn(
+            `runScoutSocialTrendsSummarize streamText aborted: ${(error as Error).message}`,
+          );
+        } else {
+          logger.error(
+            `runScoutSocialTrendsSummarize streamText onError: ${(error as Error).message}`,
+          );
+          reject(error);
+        }
       },
       abortSignal,
     });
     if (streamWriter) {
       response.mergeIntoDataStream(streamWriter);
     }
-    // 这里不要 await 而是用 then，否则会出现一系列嵌套的 await new promise 最终导致 abortController.abort() 操作被取消
-    // 可能是 studychat 先断了，await 结束了，后面的 abort 就失败了
-    response.consumeStream().catch((error) => reject(error));
+    abortSignal.addEventListener("abort", () => {
+      reject(new Error("runScoutSocialTrendsSummarize abortSignal received"));
+    });
+    response
+      .consumeStream()
+      .then(() => {})
+      .catch((error) => reject(error));
   });
 
   const summaryText = await streamTextPromise;

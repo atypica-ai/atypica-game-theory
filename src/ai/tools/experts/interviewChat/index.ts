@@ -22,7 +22,12 @@ import {
   tiktokSearchTool,
   twitterSearchTool,
 } from "@/ai/tools/tools";
-import { InterviewChatResult, PlainTextToolResult, StatReporter, ToolName } from "@/ai/tools/types";
+import {
+  AgentToolConfigArgs,
+  InterviewChatResult,
+  PlainTextToolResult,
+  ToolName,
+} from "@/ai/tools/types";
 import { fileUrlToDataUrl } from "@/lib/attachments/actions";
 import { ChatMessageAttachment } from "@/lib/attachments/types";
 import { createUserChat } from "@/lib/userChat/lib";
@@ -55,15 +60,11 @@ export const interviewChatTool = ({
   locale,
   abortSignal,
   statReport,
-  studyLog,
+  logger,
 }: {
   userId: number;
   studyUserChatId: number;
-  locale: Locale;
-  abortSignal: AbortSignal;
-  statReport: StatReporter;
-  studyLog: Logger;
-}) =>
+} & AgentToolConfigArgs) =>
   tool({
     description:
       "Conduct in-depth user interviews by having expert agents interview user persona agents to understand decision-making patterns, preferences, and behavioral insights for the study topic",
@@ -124,7 +125,7 @@ export const interviewChatTool = ({
               instruction,
               locale,
             });
-          const interviewLog = studyLog.child({ interviewUserChatId, analystInterviewId });
+          const interviewLog = logger.child({ interviewUserChatId, analystInterviewId });
           const mergedAbortSignal = AbortSignal.any([
             abortSignal,
             AbortSignal.timeout(10 * 60 * 1000), // 10 分钟超时
@@ -137,7 +138,7 @@ export const interviewChatTool = ({
             attachments,
             abortSignal: mergedAbortSignal,
             statReport,
-            interviewLog,
+            logger: interviewLog,
           });
           const updatedInterview = await prisma.analystInterview.findUniqueOrThrow({
             where: { id: analystInterviewId },
@@ -245,7 +246,6 @@ export async function prepareDBForInterview({
 }
 
 type ChatProps = {
-  locale: Locale;
   analystInterviewId: number;
   interviewUserChatId: number;
   prompt: {
@@ -255,10 +255,7 @@ type ChatProps = {
     interviewerAttachmentPrompt: string;
   };
   attachments?: ChatMessageAttachment[];
-  abortSignal: AbortSignal;
-  statReport: StatReporter;
-  interviewLog: Logger;
-};
+} & AgentToolConfigArgs;
 
 function setBedrockCache(model: `claude-${string}`, coreMessages: CoreMessage[]) {
   if (!model) return coreMessages; // 这句话没意义，只是为了用一下 model
@@ -298,9 +295,9 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: Message[]) {
     prompt: { interviewerPrompt },
     abortSignal,
     statReport,
-    interviewLog,
+    logger,
   } = chatProps;
-  const result = await new Promise<Omit<Message, "role">>(async (resolve, reject) => {
+  const streamTextPromise = new Promise<Omit<Message, "role">>(async (resolve, reject) => {
     // const hasAttachments = !!messages.find((message) => (message.experimental_attachments ?? []).length > 0);
     const reduceTokens: TReduceTokens = null as TReduceTokens;
     // hasAttachments
@@ -319,7 +316,12 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: Message[]) {
       temperature: 0.3,
       messages: coreMessages,
       tools: {
-        [ToolName.reasoningThinking]: reasoningThinkingTool({ locale, abortSignal, statReport }),
+        [ToolName.reasoningThinking]: reasoningThinkingTool({
+          locale,
+          abortSignal,
+          statReport,
+          logger,
+        }),
         [ToolName.saveInterviewConclusion]: saveInterviewConclusionTool(analystInterviewId),
       },
       ...(coreMessages.length < MAX_MESSAGES_LIMIT
@@ -338,7 +340,7 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: Message[]) {
         const cache = step.providerMetadata?.bedrock?.usage as
           | { cacheReadInputTokens: number; cacheWriteInputTokens: number }
           | undefined;
-        interviewLog.info({
+        logger.info({
           msg: "chatWithInterviewer streamText onStepFinish",
           stepType: stepType,
           toolCalls: toolCalls.map((call) => call.toolName),
@@ -366,17 +368,17 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: Message[]) {
         }
       },
       onFinish: async ({ steps, usage }) => {
-        interviewLog.info({ msg: "chatWithInterviewer streamText onFinish", usage });
+        logger.info({ msg: "chatWithInterviewer streamText onFinish", usage });
         const message = convertStepsToAIMessage(steps);
         resolve(message);
       },
       onError: ({ error }) => {
         if ((error as Error).name === "AbortError") {
-          interviewLog.warn(`chatWithInterviewer streamText aborted: ${(error as Error).message}`);
+          logger.warn(`chatWithInterviewer streamText aborted: ${(error as Error).message}`);
         } else {
-          interviewLog.error(`chatWithInterviewer streamText onError: ${(error as Error).message}`);
+          logger.error(`chatWithInterviewer streamText onError: ${(error as Error).message}`);
+          reject(error);
         }
-        reject(error);
       },
       abortSignal,
     });
@@ -385,7 +387,7 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: Message[]) {
     // 所以对于放进 promise 里的 streamText，除了设置 abortSignal 还需要单独监听 abortSignal 并 reject
     abortSignal.addEventListener("abort", () => {
       // 如果前面已经 resolve 了，这里 eventListener 不需要取消，reject 会被忽略
-      reject(new Error("Interview aborted"));
+      reject(new Error("chatWithInterviewer abortSignal received"));
     });
     // 这里不要 await 而是用 then，否则会出现一系列嵌套的 await new promise 最终导致 abortController.abort() 操作被取消
     // 可能是 studychat 先断了，await 结束了，后面的 abort 就失败了
@@ -396,7 +398,8 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: Message[]) {
     // 必须写这个 await for loop，把 stream 消费完，也可以使用 consumeStream 方法
     // for await (const textPart of response.textStream) { console.log(textPart); }
   });
-  return result;
+  const message = await streamTextPromise;
+  return message;
 }
 
 async function chatWithPersona(chatProps: ChatProps, messages: Message[]) {
@@ -405,10 +408,9 @@ async function chatWithPersona(chatProps: ChatProps, messages: Message[]) {
     prompt: { personaPrompt },
     abortSignal,
     statReport,
-    interviewLog,
+    logger,
   } = chatProps;
-
-  const result = await new Promise<Omit<Message, "role">>(async (resolve, reject) => {
+  const streamTextPromise = new Promise<Omit<Message, "role">>(async (resolve, reject) => {
     // const hasAttachments = !!messages.find((message) => (message.experimental_attachments ?? []).length > 0);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [reduceTokens, options]: [TReduceTokens, any] = [
@@ -438,7 +440,7 @@ async function chatWithPersona(chatProps: ChatProps, messages: Message[]) {
       },
       maxSteps: 2,
       onStepFinish: async (step) => {
-        interviewLog.info({
+        logger.info({
           msg: "chatWithPersona streamText onStepFinish",
           stepType: step.stepType,
           toolCalls: step.toolCalls.map((call) => call.toolName),
@@ -461,25 +463,30 @@ async function chatWithPersona(chatProps: ChatProps, messages: Message[]) {
         }
       },
       onFinish: ({ steps, usage }) => {
-        interviewLog.info({ msg: "chatWithPersona streamText onFinish", usage });
+        logger.info({ msg: "chatWithPersona streamText onFinish", usage });
         const message = convertStepsToAIMessage(steps);
         resolve(message);
       },
       onError: ({ error }) => {
         if ((error as Error).name === "AbortError") {
-          interviewLog.warn(`chatWithPersona streamText aborted: ${(error as Error).message}`);
+          logger.warn(`chatWithPersona streamText aborted: ${(error as Error).message}`);
         } else {
-          interviewLog.error(`chatWithPersona streamText onError: ${(error as Error).message}`);
+          logger.error(`chatWithPersona streamText onError: ${(error as Error).message}`);
+          reject(error);
         }
-        reject(error);
       },
       abortSignal,
     });
-    // 这里不要 await 而是用 then，否则会出现一系列嵌套的 await new promise 最终导致 abortController.abort() 操作被取消
-    // 可能是 studychat 先断了，await 结束了，后面的 abort 就失败了
-    response.consumeStream().catch((error) => reject(error));
+    abortSignal.addEventListener("abort", () => {
+      reject(new Error("chatWithPersona abortSignal received"));
+    });
+    response
+      .consumeStream()
+      .then(() => {})
+      .catch((error) => reject(error));
   });
-  return result;
+  const message = await streamTextPromise;
+  return message;
 }
 
 async function saveMessage({
@@ -487,13 +494,13 @@ async function saveMessage({
   // analystInterviewId,
   interviewUserChatId,
   backgroundToken,
-  interviewLog,
+  logger,
 }: {
   message: Message;
   analystInterviewId: number;
   interviewUserChatId: number;
   backgroundToken: string;
-  interviewLog: Logger;
+  logger: Logger;
 }) {
   try {
     const { id: messageId, role, content, parts: _parts } = message;
@@ -514,14 +521,14 @@ async function saveMessage({
       });
     });
   } catch (error) {
-    interviewLog.error(
+    logger.error(
       `Error saving interview messages with token ${backgroundToken}: ${(error as Error).message}`,
     );
   }
 }
 
 export async function runInterview(chatProps: ChatProps) {
-  const { analystInterviewId, interviewUserChatId, prompt, attachments, interviewLog } = chatProps;
+  const { analystInterviewId, interviewUserChatId, prompt, attachments, logger } = chatProps;
   const backgroundToken = new Date().valueOf().toString();
   await prisma.userChat.update({
     where: { id: interviewUserChatId, kind: "interview" },
@@ -557,19 +564,19 @@ export async function runInterview(chatProps: ChatProps) {
         ]
       : []) as Message[],
   };
-  const saveParams = { analystInterviewId, interviewUserChatId, backgroundToken, interviewLog };
+  const saveParams = { analystInterviewId, interviewUserChatId, backgroundToken, logger };
 
   while (true) {
     const personaReply = await chatWithPersona(chatProps, personaAgent.messages);
     fixEmptyTextIssue(personaReply);
-    // interviewLog.info(`Persona:\n${message.content}\n`);
+    // logger.info(`Persona:\n${message.content}\n`);
     await saveMessage({ message: { ...personaReply, role: "assistant" }, ...saveParams });
     personaAgent.messages.push({ ...personaReply, role: "assistant" });
     interviewer.messages.push({ ...personaReply, role: "user" });
 
     const interviewerReply = await chatWithInterviewer(chatProps, interviewer.messages);
     fixEmptyTextIssue(interviewerReply);
-    // interviewLog.info(`Interviewer:\n${message.content}\n`);
+    // logger.info(`Interviewer:\n${message.content}\n`);
     await saveMessage({ message: { ...interviewerReply, role: "user" }, ...saveParams });
     interviewer.messages.push({ ...interviewerReply, role: "assistant" });
     personaAgent.messages.push({ ...interviewerReply, role: "user" });
@@ -591,7 +598,7 @@ export async function runInterview(chatProps: ChatProps) {
       data: { backgroundToken: null },
     });
   } catch (error) {
-    interviewLog.error(
+    logger.error(
       `Error clearing interview session token ${backgroundToken}: ${(error as Error).message}`,
     );
   }

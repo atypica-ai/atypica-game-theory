@@ -47,7 +47,7 @@ export async function POST(req: Request) {
         locale: await getLocale(),
         statReport,
         abortSignal: req.signal,
-        studyLog: scoutLog,
+        logger: scoutLog,
         streamWriter: dataStream,
       });
     },

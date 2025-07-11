@@ -1,3 +1,6 @@
+import { Locale } from "next-intl";
+import { Logger } from "pino";
+
 export * from "./experts/buildPersona/types";
 export * from "./experts/interviewChat/types";
 export * from "./experts/reasoning/types";
@@ -82,3 +85,10 @@ export type StatReporter = (
   value: number,
   extra: { reportedBy: string } & Record<string, unknown>,
 ) => Promise<void>;
+
+export type AgentToolConfigArgs = {
+  locale: Locale;
+  abortSignal: AbortSignal;
+  statReport: StatReporter;
+  logger: Logger;
+};

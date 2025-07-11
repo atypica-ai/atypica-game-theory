@@ -2,6 +2,7 @@ import { clsx, type ClassValue } from "clsx";
 import { Locale } from "next-intl";
 import { ImageLoader } from "next/image";
 import { twMerge } from "tailwind-merge";
+import { rootLogger } from "./logging";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -122,4 +123,12 @@ export function useDevice() {
         )
       : false;
   return { isMobile };
+}
+
+export function safeAbort(abortController: AbortController) {
+  try {
+    abortController.abort();
+  } catch (error) {
+    rootLogger.error(`Error during abort: ${(error as Error).message}`);
+  }
 }

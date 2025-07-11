@@ -46,7 +46,7 @@ export async function POST(req: Request) {
         locale: await getLocale(),
         abortSignal: req.signal,
         statReport: async () => {},
-        scoutLog,
+        logger: scoutLog,
         streamWriter: dataStream,
       });
     },

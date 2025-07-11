@@ -91,6 +91,7 @@ export async function POST(req: NextRequest) {
         locale,
         abortSignal,
         statReport,
+        logger: projectLogger,
       }),
       [ToolName.updateInterviewProject]: updateInterviewProjectTool({
         projectId: interviewSession.projectId,

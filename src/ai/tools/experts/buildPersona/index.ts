@@ -4,11 +4,9 @@ import { convertStepsToAIMessage, prepareMessagesForStreaming } from "@/ai/messa
 import { buildPersonaSystem } from "@/ai/prompt";
 import { llm, LLMModelName, providerOptions } from "@/ai/provider";
 import { handleToolCallError, savePersonaTool } from "@/ai/tools/tools";
-import { PlainTextToolResult, StatReporter, ToolName } from "@/ai/tools/types";
+import { AgentToolConfigArgs, PlainTextToolResult, ToolName } from "@/ai/tools/types";
 import { prisma } from "@/prisma/prisma";
 import { DataStreamWriter, Message, streamText, tool } from "ai";
-import { Locale } from "next-intl";
-import { Logger } from "pino";
 import { z } from "zod";
 import { BuildPersonaToolResult } from "./types";
 
@@ -22,14 +20,10 @@ export const buildPersonaTool = ({
   locale,
   abortSignal,
   statReport,
-  studyLog,
+  logger,
 }: {
   userId: number;
-  locale: Locale;
-  abortSignal: AbortSignal;
-  statReport: StatReporter;
-  studyLog: Logger;
-}) =>
+} & AgentToolConfigArgs) =>
   tool({
     description:
       "Analyze social media data from user profile search tasks, create detailed user personas, and build AI agents that simulate realistic user behavior and decision-making patterns",
@@ -58,18 +52,13 @@ export const buildPersonaTool = ({
         abortSignal,
         AbortSignal.timeout(10 * 60 * 1000), // 10 分钟超时
       ]);
-      try {
-        await runBuildPersona({
-          locale,
-          scoutUserChatId,
-          abortSignal: mergedAbortSignal,
-          statReport,
-          studyLog,
-        });
-      } catch (error) {
-        studyLog.error(`runBuildPersona failed: ${(error as Error).message}`);
-        throw error;
-      }
+      await runBuildPersona({
+        locale,
+        scoutUserChatId,
+        abortSignal: mergedAbortSignal,
+        statReport,
+        logger,
+      });
       const personas = (
         await prisma.persona.findMany({
           where: { scoutUserChatId },
@@ -81,7 +70,8 @@ export const buildPersonaTool = ({
         source: persona.source,
       }));
       if (personas.length === 0) {
-        studyLog.error("No persona built");
+        // 遇到这个情况，有一种可能是用了 gemini 2.5 flash 模型，一次工具都没调用最后结束了 streamText，这个情况还是先抛出错误
+        logger.error("No persona built");
         throw new Error("No persona built");
       }
       if (statReport) {
@@ -100,19 +90,15 @@ export const buildPersonaTool = ({
 
 export async function runBuildPersona({
   locale,
-  scoutUserChatId,
   statReport,
   abortSignal,
-  studyLog,
+  logger,
+  scoutUserChatId,
   streamWriter,
 }: {
-  locale: Locale;
   scoutUserChatId: number;
-  statReport: StatReporter;
-  abortSignal: AbortSignal;
-  studyLog: Logger;
   streamWriter?: DataStreamWriter;
-}) {
+} & AgentToolConfigArgs) {
   const { coreMessages } = await prepareMessagesForStreaming(scoutUserChatId);
   const lastAssistantMessage = coreMessages.findLast((message) => message.role === "assistant");
   if (lastAssistantMessage) {
@@ -152,7 +138,7 @@ export async function runBuildPersona({
       // toolCallStreaming: true,  // gemini 这个会有问题，会出现所有字段值都是 placeholder
       experimental_repairToolCall: handleToolCallError, // claude-3-7-sonnet 需要这个，savePersona 有时候会用 json 字符串作为参数
       onChunk: async ({ chunk }) => {
-        studyLog.debug({ chunk });
+        logger.debug({ chunk });
       },
       onStepFinish: async (step) => {
         const cache = step.providerMetadata?.bedrock?.usage as
@@ -160,8 +146,8 @@ export async function runBuildPersona({
           | undefined;
         const toolCalls = step.toolCalls.map((call) => call.toolName);
         const usage = step.usage;
-        studyLog.info({
-          msg: "Persona building step completed",
+        logger.info({
+          msg: "runBuildPersona streamText onStepFinish",
           stepType: step.stepType,
           toolCalls,
           usage,
@@ -191,34 +177,31 @@ export async function runBuildPersona({
       },
       onFinish: async ({ steps, usage, providerMetadata }) => {
         const cache = providerMetadata?.bedrock?.usage;
-        studyLog.info({ msg: "Persona building stream completed", usage, cache });
+        logger.info({ msg: "runBuildPersona streamText onFinish", usage, cache });
         const message = convertStepsToAIMessage(steps);
         resolve(message);
       },
       onError: ({ error }) => {
-        studyLog.error(`Persona building stream error: ${(error as Error).message}`);
-        reject(error);
+        if ((error as Error).name === "AbortError") {
+          logger.warn(`runBuildPersona streamText aborted: ${(error as Error).message}`);
+        } else {
+          logger.error(`runBuildPersona streamText onError: ${(error as Error).message}`);
+          reject(error);
+        }
       },
       abortSignal,
-    });
-    abortSignal.addEventListener("abort", () => {
-      reject(new Error("building persona aborted"));
     });
     if (streamWriter) {
       response.mergeIntoDataStream(streamWriter);
     }
+    abortSignal.addEventListener("abort", () => {
+      reject(new Error("runBuildPersona abortSignal received"));
+    });
     response
       .consumeStream()
       .then(() => {})
       .catch((error) => reject(error));
   });
 
-  try {
-    const message = await streamTextPromise;
-    studyLog.info(`Persona building stream complete: ${message.content.substring(0, 20)}`);
-  } catch (error) {
-    const errMsg = (error as Error).message;
-    studyLog.error(`Persona building stream error: ${errMsg}`);
-    throw error;
-  }
+  await streamTextPromise;
 }

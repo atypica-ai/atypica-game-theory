@@ -1,10 +1,8 @@
 import "server-only";
 
-import { PlainTextToolResult, StatReporter, ToolName } from "@/ai/tools/types";
+import { AgentToolConfigArgs, PlainTextToolResult, ToolName } from "@/ai/tools/types";
 import { tavily, TavilyClient } from "@tavily/core";
 import { tool } from "ai";
-import { Locale } from "next-intl";
-import { Logger } from "pino";
 import { z } from "zod";
 import { WebSearchToolResult } from "./types";
 
@@ -52,17 +50,10 @@ async function webSearch({ query }: { query: string }): Promise<WebSearchToolRes
 
 export const webSearchTool = ({
   // studyUserChatId,
-  // locale,
-  // abortSignal,
   statReport,
-  // studyLog,
 }: {
   studyUserChatId: number;
-  locale: Locale;
-  abortSignal: AbortSignal;
-  statReport: StatReporter;
-  studyLog: Logger;
-}) =>
+} & AgentToolConfigArgs) =>
   tool({
     description:
       "Search the internet for current information, facts, or data that might be relevant to the study topic",

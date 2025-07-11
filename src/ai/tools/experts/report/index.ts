@@ -7,7 +7,7 @@ import {
   reportHTMLSystem,
 } from "@/ai/prompt";
 import { llm, LLMModelName, providerOptions } from "@/ai/provider";
-import { PlainTextToolResult, StatReporter } from "@/ai/tools/types";
+import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
 import { triggerImagegenInReport } from "@/app/(study)/artifacts/lib/imagegen";
 import { generateReportScreenshot } from "@/app/(study)/artifacts/lib/screenshot";
 import { fileUrlToDataUrl } from "@/lib/attachments/actions";
@@ -17,8 +17,6 @@ import { Analyst, AnalystReport, AnalystReportExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { AnalystKind } from "@/prisma/types";
 import { FinishReason, Message, streamText, tool } from "ai";
-import { Locale } from "next-intl";
-import { Logger } from "pino";
 import { z } from "zod";
 import { type GenerateReportResult } from "./types";
 
@@ -27,14 +25,10 @@ export const generateReportTool = ({
   locale,
   abortSignal,
   statReport,
-  studyLog,
+  logger,
 }: {
   studyUserChatId: number;
-  locale: Locale;
-  abortSignal: AbortSignal;
-  statReport: StatReporter;
-  studyLog: Logger;
-}) =>
+} & AgentToolConfigArgs) =>
   tool({
     description:
       "Generate a comprehensive study report synthesizing all interview data, user insights, and findings from the completed study.",
@@ -89,7 +83,7 @@ export const generateReportTool = ({
       //     plainText: `为调研主题 ${analystId} 生成报告失败：你提供的 reportToken ${reportToken} 已经存在，无法使用，请重试。你可以忽略提供这个字段，系统会自动生成 token。`,
       //   };
       // }
-      const reportLog = studyLog.child({ analystId, reportToken });
+      const reportLog = logger.child({ analystId, reportToken });
       let report = await prisma.analystReport.findFirst({
         where: { analystId },
         orderBy: { createdAt: "desc" },
@@ -124,7 +118,7 @@ export const generateReportTool = ({
           locale,
           abortSignal,
           statReport,
-          reportLog,
+          logger: reportLog,
         });
         // 更新一下 report 的数据
         report = await prisma.analystReport.findUniqueOrThrow({
@@ -144,7 +138,7 @@ export const generateReportTool = ({
           extra: report.extra as AnalystReportExtra,
           analyst,
         }).catch((error) => {
-          reportLog.error(`Error generating screenshot for report ${report.token}: ${error}`); // cover 生成失败就算了
+          reportLog.error(`Error generating screenshot for report ${report.token}: ${error}`); // screenshot 生成失败就算了
         }),
         generateCover({
           analyst,
@@ -153,7 +147,7 @@ export const generateReportTool = ({
           locale,
           abortSignal,
           statReport,
-          reportLog,
+          logger: reportLog,
         }).catch((error) => {
           reportLog.error(`Error generating cover for analyst ${analystId}: ${error}`); // cover 生成失败就算了
         }),
@@ -174,7 +168,7 @@ export async function generateReport({
   locale,
   abortSignal,
   statReport,
-  reportLog,
+  logger,
   systemPrompt,
 }: {
   analyst: Analyst & {
@@ -185,12 +179,8 @@ export async function generateReport({
   report: AnalystReport;
   lastReport?: AnalystReport;
   instruction: string;
-  locale: Locale;
-  abortSignal: AbortSignal;
-  statReport: StatReporter;
-  reportLog: Logger;
   systemPrompt?: string;
-}) {
+} & AgentToolConfigArgs) {
   let onePageHtml = report.onePageHtml; // 如果 report 有内容，就继续使用 report 的 onePageHtml
 
   const throttleSaveHTML = (() => {
@@ -224,9 +214,9 @@ export async function generateReport({
             data: { onePageHtml },
           });
           await triggerImagegenInReport(onePageHtml, report.token);
-          reportLog.info("HTML persisted successfully");
+          logger.info("HTML persisted successfully");
         } catch (error) {
-          reportLog.error(`Error persisting HTML: ${(error as Error).message}`);
+          logger.error(`Error persisting HTML: ${(error as Error).message}`);
         }
       }
     };
@@ -234,10 +224,7 @@ export async function generateReport({
 
   let modelName: LLMModelName = "claude-sonnet-4";
   while (true) {
-    const {
-      finishReason,
-      // content,
-    } = await new Promise<{
+    const streamTextPromise = new Promise<{
       finishReason: FinishReason | "Too many tokens";
       content: string;
     }>(async (resolve, reject) => {
@@ -294,7 +281,7 @@ export async function generateReport({
             finishReason: finishReason,
             content: text,
           });
-          reportLog.info({ msg: "HTML generated", finishReason, usage });
+          logger.info({ msg: "generateReport streamText onFinish", finishReason, usage });
           // svg 生成耗费的 output tokens 比较多，不能和 input tokens 一样计算
           const totalTokens =
             (usage.completionTokens ?? 0) * 3 + (usage.promptTokens ?? 0) || usage.totalTokens;
@@ -309,7 +296,7 @@ export async function generateReport({
         onError: ({ error }) => {
           const msg = (error as Error).message;
           if (msg.includes("Too many tokens")) {
-            reportLog.warn(
+            logger.warn(
               `HTML generation hit token limit, cooling down and switching model: ${msg}`,
             );
             // claude 有时候会遇到 quota 不够，这时候不报错，随机等待1~2min，换个模型继续
@@ -317,17 +304,26 @@ export async function generateReport({
               () => resolve({ finishReason: "Too many tokens", content: "" }),
               Math.floor(Math.random() * (120_000 - 60_000 + 1)) + 60_000,
             );
+          } else if ((error as Error).name === "AbortError") {
+            logger.warn(`generateReport streamText aborted: ${(error as Error).message}`);
           } else {
-            reportLog.error(`HTML generation Error: ${msg}`);
+            logger.error(`generateReport streamText onError: ${msg}`);
             reject(error);
           }
         },
         abortSignal,
       });
-
-      response.consumeStream().catch((error) => reject(error));
+      abortSignal.addEventListener("abort", () => {
+        reject(new Error("generateReport abortSignal received"));
+      });
+      response
+        .consumeStream()
+        .then(() => {})
+        .catch((error) => reject(error));
     });
 
+    const { finishReason } = await streamTextPromise;
+    // finish 了以后，再保存一次
     await throttleSaveHTML(report.id, onePageHtml, { immediate: true });
 
     if (finishReason === "length") {
@@ -352,7 +348,7 @@ export async function generateCover({
   locale,
   abortSignal,
   statReport,
-  reportLog,
+  logger,
 }: {
   analyst: Analyst & {
     interviews: {
@@ -361,11 +357,7 @@ export async function generateCover({
   };
   report: AnalystReport;
   instruction: string;
-  locale: Locale;
-  abortSignal: AbortSignal;
-  statReport: StatReporter;
-  reportLog: Logger;
-}) {
+} & AgentToolConfigArgs) {
   const response = streamText({
     model: llm("claude-3-7-sonnet"),
     providerOptions: providerOptions,
@@ -373,11 +365,8 @@ export async function generateCover({
     messages: [{ role: "user", content: reportCoverPrologue({ locale, analyst, instruction }) }],
     maxSteps: 1,
     maxTokens: 10000,
-    onError: ({ error }) => {
-      reportLog.warn(`Cover SVG error: ${(error as Error).message}`);
-    },
     onFinish: async ({ text, usage }) => {
-      reportLog.info("Report cover SVG generated");
+      logger.info("Report cover SVG generated");
       await prisma.analystReport.update({
         where: { id: report.id },
         data: { coverSvg: text },
@@ -392,6 +381,9 @@ export async function generateCover({
           usage,
         });
       }
+    },
+    onError: ({ error }) => {
+      logger.warn(`Cover SVG error: ${(error as Error).message}`);
     },
     abortSignal,
   });
