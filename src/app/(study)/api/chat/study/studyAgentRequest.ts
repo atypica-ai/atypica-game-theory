@@ -298,7 +298,14 @@ export async function studyAgentRequest({
       await clearBackgroundToken();
     },
     onError: async ({ error }) => {
-      // 这里也包括 tool calling 里面直接 throw 的异常
+      // 如果 tool calling 里面直接 throw 异常，会进入这里的 onError
+      if (/Error executing tool.*abortSignal received/.test((error as Error).message)) {
+        studyLog.warn(`studyAgentRequest tool call aborted: ${(error as Error).message}`);
+        // 不需要 abort study，发起 abort tool 的地方一定会 abort study
+        // 不需要 clear background token，因为发起 abort tool 的原因就是 background token 被清空，就算不是，也会在接下来 abort study 以后被清空
+        // 不需要记录错误信息或者 notifyStudyInterruption
+        return;
+      }
       studyLog.error(`studyAgentRequest streamText onError: ${(error as Error).message}`);
       // @IMPORTANT 这很重要, 中断所有的 tool calling 里可能还在运行的 streamText
       safeAbort(toolAbortController);
@@ -309,13 +316,11 @@ export async function studyAgentRequest({
       } catch (dbError) {
         studyLog.error(`Error saving error to database: ${(dbError as Error).message}`);
       }
-      {
-        // 因为 token 不足 abort 不会触发 onError，如果要通知 token 不足，需要单独触发
-        notifyStudyInterruption({
-          studyUserChatId,
-          studyLog,
-        }).catch(() => {}); //不 await
-      }
+      // 因为 token 不足 abort 不会触发 onError，如果要通知 token 不足，需要单独触发
+      notifyStudyInterruption({
+        studyUserChatId,
+        studyLog,
+      }).catch(() => {}); //不 await
     },
     abortSignal: studyAbortController.signal,
   });

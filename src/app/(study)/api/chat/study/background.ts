@@ -10,9 +10,10 @@ export async function raceForUserChat(studyUserChatId: number) {
   const backgroundToken = new Date().valueOf().toString();
 
   const clearBackgroundToken = async () => {
+    // 加上 OR backgroundToken: null 条件是为了忽略 backgroundToken 已经被清空的情况（比如用户手动停止）
     try {
       await prisma.userChat.update({
-        where: { id: studyUserChatId, backgroundToken },
+        where: { id: studyUserChatId, OR: [{ backgroundToken }, { backgroundToken: null }] },
         data: { backgroundToken: null },
       });
     } catch (error) {
