@@ -129,7 +129,9 @@ export async function fetchUserChatByToken<Tkind extends UserChat["kind"]>(
     data: {
       ...userChat,
       kind: userChat.kind as Tkind,
-      messages: await convertDBMessagesToAIMessages(userChat.messages),
+      messages: await convertDBMessagesToAIMessages(userChat.messages, {
+        convertObjectUrl: "HttpUrl",
+      }),
     },
   };
 }

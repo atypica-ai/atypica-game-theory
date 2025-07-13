@@ -7,6 +7,7 @@ import { ChatMessage } from "@/prisma/client";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 
+import { s3SignedUrl } from "@/lib/attachments/s3";
 import {
   convertToCoreMessages,
   generateId,
@@ -246,7 +247,7 @@ export const persistentAIMessageToDB = async (
     parts: _parts,
     createdAt,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    experimental_attachments, // 忽略，用不到，不用保存，而且里面会有 base64 file content, 保存下来太大了
+    experimental_attachments: _experimental_attachments, // 忽略，用不到，不用保存，而且里面会有 base64 file content, 保存下来太大了
     ...extra
   } = message;
   const parts: NonNullable<Message["parts"]> = _parts?.length
@@ -347,7 +348,16 @@ export function convertDBMessageToAIMessage({
   return message;
 }
 
-export async function convertDBMessagesToAIMessages(dbMessages: ChatMessage[]): Promise<Message[]> {
+export async function convertDBMessagesToAIMessages(
+  dbMessages: ChatMessage[],
+  options: {
+    convertObjectUrl?: "HttpUrl" | "DataUrl";
+  } = {},
+): Promise<Message[]> {
+  const {
+    // 默认会把文件转换为 DataUrl，一般是服务端要给 LLM 的时候用 DataUrl，但是客户端读取消息的时候，用 FileUrl 就行
+    convertObjectUrl = "DataUrl",
+  } = options;
   const aiMessages = await Promise.all(
     dbMessages.map(
       async ({
@@ -368,7 +378,12 @@ export async function convertDBMessagesToAIMessages(dbMessages: ChatMessage[]): 
         if (attachments) {
           message["experimental_attachments"] = await Promise.all(
             attachments.map(async ({ name, objectUrl, mimeType, size }: ChatMessageAttachment) => {
-              const url = await fileUrlToDataUrl({ objectUrl, mimeType });
+              const url =
+                convertObjectUrl === "HttpUrl"
+                  ? await s3SignedUrl(objectUrl)
+                  : convertObjectUrl === "DataUrl"
+                    ? await fileUrlToDataUrl({ objectUrl, mimeType })
+                    : "";
               const extra = { objectUrl, size }; // 不管3721，都放进去，但不要依赖这个值
               return { extra, url, name, contentType: mimeType };
             }),
