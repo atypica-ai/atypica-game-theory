@@ -11,6 +11,8 @@ import { ServerActionResult } from "@/lib/serverAction";
 import { PaymentRecord, User, UserChat, UserChatExtra, UserTokens } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { generateId } from "ai";
+import { Locale } from "next-intl";
+import { getLocale } from "next-intl/server";
 import { revalidatePath } from "next/cache";
 
 // Fetch studies that might be having issues (have an active backgroundToken)
@@ -183,6 +185,7 @@ export async function retryStudy(studyUserChatId: number): Promise<ServerActionR
       where: { id: studyUserChatId },
       include: {
         user: true,
+        analyst: true,
       },
     });
 
@@ -190,6 +193,12 @@ export async function retryStudy(studyUserChatId: number): Promise<ServerActionR
       return {
         success: false,
         message: "Study not found",
+      };
+    }
+    if (!studyUserChat.analyst) {
+      return {
+        success: false,
+        message: `UserChat ${studyUserChat.id} does not have an analyst`,
       };
     }
 
@@ -207,8 +216,16 @@ export async function retryStudy(studyUserChatId: number): Promise<ServerActionR
       data: { backgroundToken: null },
     });
 
+    const locale: Locale =
+      studyUserChat.analyst.locale === "zh-CN"
+        ? "zh-CN"
+        : studyUserChat.analyst.locale === "en-US"
+          ? "en-US"
+          : await getLocale();
+
     // Start the study agent request in the background
     studyAgentRequest({
+      locale,
       studyUserChatId,
       coreMessages,
       streamingMessage,

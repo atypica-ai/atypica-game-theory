@@ -29,7 +29,7 @@ import {
   TextStreamPart,
   ToolChoice,
 } from "ai";
-import { getLocale } from "next-intl/server";
+import { Locale } from "next-intl";
 import { Logger } from "pino";
 import { backgroundChatUntilCancel, raceForUserChat } from "./background";
 import { notifyReportCompletion, notifyStudyInterruption } from "./notify";
@@ -102,6 +102,7 @@ export async function studyAgentRequest({
   userId,
   // reqSignal,
   studyLog,
+  locale,
 }: {
   briefStatus?: "CLARIFIED" | "DRAFT";
   studyUserChatId: number;
@@ -114,8 +115,8 @@ export async function studyAgentRequest({
   userId: number;
   reqSignal: AbortSignal | null;
   studyLog: Logger;
+  locale: Locale;
 }) {
-  const locale = await getLocale();
   const { statReport } = initStudyStatReporter({ userId, studyUserChatId, studyLog });
   const { debouncePersistentMessage, immediatePersistentMessage } = createDebouncePersistentMessage(
     studyUserChatId,

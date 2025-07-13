@@ -6,6 +6,8 @@ import { prisma } from "@/prisma/prisma";
 import { AnalystKind } from "@/prisma/types";
 import { CreateMessage, generateId, Message } from "ai";
 import { getServerSession } from "next-auth/next";
+import { Locale } from "next-intl";
+import { getLocale } from "next-intl/server";
 import { NextResponse } from "next/server";
 import { noQuotaAgentRequest } from "./noQuotaAgentRequest";
 import { productRnDAgentRequest } from "./productRnDAgentRequest";
@@ -61,8 +63,18 @@ export async function POST(req: Request) {
     ? "CLARIFIED"
     : "DRAFT";
 
+  // 如果 analyst 语言已经定了，后面始终使用这个语言
+  const locale: Locale =
+    userChat.analyst.locale === "zh-CN"
+      ? "zh-CN"
+      : userChat.analyst.locale === "en-US"
+        ? "en-US"
+        : await getLocale();
+
   const reqSignal = req.signal;
+
   const params = {
+    locale,
     briefStatus,
     studyUserChatId,
     coreMessages,

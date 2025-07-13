@@ -5,7 +5,6 @@ import { Pagination } from "@/components/ui/pagination";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDate, formatTokensNumber } from "@/lib/utils";
 import { useLocale } from "next-intl";
-import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { fetchIssueStudies, retryStudy } from "./actions";
 import ErrorStudiesList from "./ErrorStudiesList";
@@ -14,7 +13,6 @@ type IssueStudy = ExtractServerActionData<typeof fetchIssueStudies>[number];
 
 export default function IssueStudiesPage() {
   const locale = useLocale();
-  const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [studies, setStudies] = useState<IssueStudy[]>([]);
   const [error, setError] = useState("");
