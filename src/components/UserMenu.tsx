@@ -22,11 +22,11 @@ import {
   UserIcon,
 } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import HippyGhostAvatar from "./HippyGhostAvatar";
 import { Button } from "./ui/button";
 
@@ -35,28 +35,24 @@ export default function UserMenu() {
   const t = useTranslations("Components.GlobalHeader");
   const { setTheme } = useTheme();
   const router = useRouter();
-  const [locale, setLocale] = useState<string>("zh-CN");
+  const locale = useLocale();
 
   const searchParams = useSearchParams();
   const [signinCallbackUrl, setSigninCallbackUrl] = useState<string>("/");
 
   useEffect(() => {
-    // Read locale from cookie when component mounts
-    const savedLocale = Cookies.get("locale") || "zh-CN";
-    setLocale(savedLocale);
     // Get path and search parameters without the origin
     const pathWithParams = window.location.href.replace(window.location.origin, "");
     setSigninCallbackUrl(searchParams.get("callbackUrl") || pathWithParams || "/");
   }, [searchParams]);
 
-  const toggleLocale = () => {
+  const toggleLocale = useCallback(() => {
     const newLocale = locale === "zh-CN" ? "en-US" : "zh-CN";
     // Save to cookie
     Cookies.set("locale", newLocale, { expires: 365 });
-    setLocale(newLocale);
     // Refresh the page to apply changes
     router.refresh();
-  };
+  }, [locale, router]);
 
   const Menus = () => {
     return (

@@ -2,24 +2,17 @@
 import { Button } from "@/components/ui/button";
 import Cookies from "js-cookie";
 import { GlobeIcon } from "lucide-react";
+import { useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 
 export default function LanguageToggle() {
   const router = useRouter();
-  const [locale, setLocale] = useState<string>("zh-CN");
-
-  useEffect(() => {
-    // Read locale from cookie when component mounts
-    const savedLocale = Cookies.get("locale") || "zh-CN";
-    setLocale(savedLocale);
-  }, []);
+  const locale = useLocale();
 
   const toggleLocale = () => {
     const newLocale = locale === "zh-CN" ? "en-US" : "zh-CN";
     // Save to cookie
     Cookies.set("locale", newLocale, { expires: 365 });
-    setLocale(newLocale);
     // Refresh the page to apply changes
     router.refresh();
   };

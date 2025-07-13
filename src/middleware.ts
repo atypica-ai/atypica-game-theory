@@ -34,7 +34,6 @@ function handleLocale(req: NextRequest) {
   const localeCookie = req.cookies.get("locale");
   const defaultLocale = getDeployRegion() === "mainland" ? "zh-CN" : "en-US";
   const locale = (localeCookie?.value || defaultLocale) as Locale;
-
   // Create a response object from the request
   const response = NextResponse.next();
   // Set the locale in a header to be accessible in server components
