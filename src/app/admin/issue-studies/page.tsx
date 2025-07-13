@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Pagination } from "@/components/ui/pagination";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDate, formatTokensNumber } from "@/lib/utils";
-import { useSession } from "next-auth/react";
 import { useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -14,7 +13,6 @@ import ErrorStudiesList from "./ErrorStudiesList";
 type IssueStudy = ExtractServerActionData<typeof fetchIssueStudies>[number];
 
 export default function IssueStudiesPage() {
-  const { status } = useSession();
   const locale = useLocale();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
@@ -53,6 +51,9 @@ export default function IssueStudiesPage() {
   }, [currentPage, showErrorStudies]);
 
   const fetchData = useCallback(async () => {
+    if (showErrorStudies) {
+      return;
+    }
     setIsLoading(true);
     const result = await fetchIssueStudies(currentPage);
     if (!result.success) {
@@ -62,15 +63,11 @@ export default function IssueStudiesPage() {
       if (result.pagination) setPagination(result.pagination);
     }
     setIsLoading(false);
-  }, [currentPage]);
+  }, [currentPage, showErrorStudies]);
 
   useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/auth/signin?callbackUrl=/admin/issue-studies");
-    } else if (status === "authenticated") {
-      fetchData();
-    }
-  }, [status, router, fetchData]);
+    fetchData();
+  }, [fetchData]);
 
   const handleRetry = async (study: IssueStudy) => {
     // Add confirmation dialog with warning
@@ -118,10 +115,6 @@ export default function IssueStudiesPage() {
     return durationMinutes > 30;
   };
 
-  if (status === "loading" || isLoading) {
-    return <div className="flex justify-center items-center h-64">Loading...</div>;
-  }
-
   return (
     <div>
       <h1 className="mb-6 text-2xl font-bold">Issue Studies Management</h1>
@@ -156,6 +149,8 @@ export default function IssueStudiesPage() {
             onPageChange={setCurrentPage}
           />
         </div>
+      ) : isLoading ? (
+        <div className="flex justify-center items-center h-64">Loading...</div>
       ) : (
         <div>
           <p className="mb-6 text-muted-foreground">

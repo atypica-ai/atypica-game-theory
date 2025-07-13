@@ -119,7 +119,7 @@ export default function ErrorStudiesList({
               <div key={study.id} className="p-4 bg-destructive/5">
                 <div className="flex flex-col gap-4">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div className="flex-1">
+                    <div className="flex-1 overflow-hidden">
                       <div className="flex items-center gap-2">
                         <span className="font-medium truncate">
                           {study.title || "Untitled Study"}

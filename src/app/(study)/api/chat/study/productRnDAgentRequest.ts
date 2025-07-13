@@ -172,6 +172,7 @@ export async function productRnDAgentRequest({
         await Promise.all(promises);
       }
       if (await outOfBalance({ userId })) {
+        studyLog.warn("User out of balance, aborting study agent");
         // 用完 tokens 以后，只要停止 streamText 就行，不需要做其他事情
         // 到 onStepFinish 的时候，所有 tool 肯定都已经停止，只需要 abort study
         safeAbort(studyAbortController);
