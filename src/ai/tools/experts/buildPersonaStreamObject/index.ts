@@ -3,25 +3,21 @@ import "server-only";
 import { CONTINUE_ASSISTANT_STEPS, prepareMessagesForStreaming } from "@/ai/messageUtils";
 import { buildPersonaSystem } from "@/ai/prompt";
 import { llm, providerOptions } from "@/ai/provider";
-import { PlainTextToolResult, StatReporter } from "@/ai/tools/types";
+import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
 import { prisma } from "@/prisma/prisma";
 import { streamObject, tool } from "ai";
-import { getLocale } from "next-intl/server";
-import { Logger } from "pino";
 import { z } from "zod";
 import { BuildPersonaToolResult, personaBuildSchemaStreamObject } from "./types";
 
 export const buildPersonaStreamObjectTool = ({
   userId,
+  locale,
   abortSignal,
   statReport,
-  studyLog,
+  logger,
 }: {
   userId: number;
-  abortSignal: AbortSignal;
-  statReport: StatReporter;
-  studyLog: Logger;
-}) =>
+} & AgentToolConfigArgs) =>
   tool({
     description:
       "Analyze social media research data and build detailed user personas with AI agent simulation capabilities using streaming object generation",
@@ -47,17 +43,18 @@ export const buildPersonaStreamObjectTool = ({
       }
       const scoutUserChatId = scoutUserChat.id;
       const response = await runBuildPersonaStreamObject({
+        locale,
         scoutUserChatId,
         abortSignal,
         statReport,
-        studyLog,
+        logger,
       });
       const object = await response.object;
       const personas: BuildPersonaToolResult["personas"] = [];
       // for (const [key, data] of Object.entries(object)) {
-      //   studyLog.info(`Persona ${key} generated, ${data.name}`);
+      //   logger.info(`Persona ${key} generated, ${data.name}`);
       for (const data of object) {
-        studyLog.info(`Persona generated, ${data.name}`);
+        logger.info(`Persona generated, ${data.name}`);
         if (data.personaPrompt.length < 20) {
           continue; // 如果字太少，忽略
         }
@@ -68,11 +65,11 @@ export const buildPersonaStreamObjectTool = ({
           });
           personas.push({ personaId: persona.id, name, tags, source });
         } catch (error) {
-          studyLog.error(`Failed to create persona ${JSON.stringify(data)}: ${error}`);
+          logger.error(`Failed to create persona ${JSON.stringify(data)}: ${error}`);
         }
       }
       if (personas.length === 0) {
-        studyLog.error("No valid personas generated");
+        logger.error("No valid personas generated");
         throw new Error("No valid personas generated");
       }
       if (statReport) {
@@ -91,15 +88,13 @@ export const buildPersonaStreamObjectTool = ({
 
 export async function runBuildPersonaStreamObject({
   scoutUserChatId,
+  locale,
   statReport,
   abortSignal,
-  studyLog,
+  logger,
 }: {
   scoutUserChatId: number;
-  statReport: StatReporter;
-  abortSignal: AbortSignal;
-  studyLog: Logger;
-}) {
+} & AgentToolConfigArgs) {
   const { coreMessages } = await prepareMessagesForStreaming(scoutUserChatId);
   let messages = coreMessages.filter(
     (message) => !(message.role === "user" && message.content === CONTINUE_ASSISTANT_STEPS),
@@ -125,7 +120,7 @@ export async function runBuildPersonaStreamObject({
     // temperature: 0,
     providerOptions: providerOptions,
     system: buildPersonaSystem({
-      locale: await getLocale(),
+      locale,
       parallel: true,
     }),
     messages,
@@ -133,7 +128,7 @@ export async function runBuildPersonaStreamObject({
     schema: personaBuildSchemaStreamObject(),
     // schema,
     onFinish: async (result) => {
-      studyLog.info({
+      logger.info({
         msg: "Persona generation stream completed",
         // object: result.object,
         usage: result.usage,
