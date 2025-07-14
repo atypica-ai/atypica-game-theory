@@ -130,10 +130,11 @@ export async function runBuildPersona({
         [ToolName.savePersona]: savePersonaTool({ scoutUserChatId, statReport }),
         // [ToolName.toolCallError]: toolCallError,
       },
-      toolChoice: {
-        type: "tool",
-        toolName: ToolName.savePersona,
-      },
+      toolChoice: "required",
+      // toolChoice: {
+      //   type: "tool",
+      //   toolName: ToolName.savePersona,
+      // },
       maxSteps,
       // toolCallStreaming: true,  // gemini 这个会有问题，会出现所有字段值都是 placeholder
       experimental_repairToolCall: handleToolCallError, // claude-3-7-sonnet 需要这个，savePersona 有时候会用 json 字符串作为参数
