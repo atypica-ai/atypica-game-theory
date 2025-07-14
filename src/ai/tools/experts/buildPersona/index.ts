@@ -153,7 +153,7 @@ export async function runBuildPersona({
           toolCalls,
           usage,
           cache,
-          providerMetadata: step.providerMetadata,
+          // providerMetadata: step.providerMetadata,
         });
         if (statReport) {
           const reportedBy = "buildPersona tool";

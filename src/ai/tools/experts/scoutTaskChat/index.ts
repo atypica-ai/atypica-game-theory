@@ -237,13 +237,13 @@ export async function runScoutTaskChatStream({
     // [ToolName.toolCallError]: toolCallError,
   };
   const systemPrompt = scoutSystem({ locale });
-  const tools =
-    locale === "zh-CN"
-      ? allTools
-      : (Object.fromEntries(
-          Object.entries(allTools).filter(([key]) => !/^(xhs|dy)/.test(key)),
-        ) as typeof allTools);
-
+  const tools = allTools;
+  // const tools =
+  //   locale === "zh-CN"
+  //     ? allTools
+  //     : (Object.fromEntries(
+  //         Object.entries(allTools).filter(([key]) => !/^(xhs|dy)/.test(key)),
+  //       ) as typeof allTools);
   let tokensConsumed = 0;
   while (true) {
     const { coreMessages, streamingMessage, toolUseCount } =
