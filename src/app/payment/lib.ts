@@ -86,11 +86,14 @@ export async function resetMonthlyTokens({ userId }: { userId: number }) {
 
   // 此时满足 userTokens.monthlyResetAt === null || userTokens.monthlyResetAt && userTokens.monthlyResetAt <= now
   // 重置 monthlyBalance 和 monthlyResetAt
-
   await prisma.$transaction(async (tx) => {
     // 如果余额大于 0，创建一个 userTokensLog 记录，扣除剩余余额
     const rest = userTokens.monthlyBalance;
+
     if (rest > 0) {
+      rootLogger.info(
+        `User ${userId} needs monthly token reset, monthlyBalance=${rest}, monthlyResetAt=${userTokens.monthlyResetAt}`,
+      );
       await tx.userTokensLog.create({
         data: {
           userId: userId,
@@ -107,12 +110,18 @@ export async function resetMonthlyTokens({ userId }: { userId: number }) {
       });
     } else {
       // 如果 monthlyBalance < 0，保留
-      userTokens = await tx.userTokens.update({
-        where: { userId },
-        data: {
-          monthlyResetAt: null,
-        },
-      });
+      // 只有当 monthlyResetAt 不是 null 时才需要更新
+      if (userTokens.monthlyResetAt !== null) {
+        rootLogger.info(
+          `User ${userId} needs monthly token reset, monthlyBalance=${rest}, monthlyResetAt=${userTokens.monthlyResetAt}`,
+        );
+        userTokens = await tx.userTokens.update({
+          where: { userId },
+          data: {
+            monthlyResetAt: null,
+          },
+        });
+      }
     }
   });
 
@@ -122,9 +131,11 @@ export async function resetMonthlyTokens({ userId }: { userId: number }) {
     // 当前没有生效中的订阅
     return;
   }
+
   if (activeSubscription.createdAt < new Date(1749865000000)) {
     // TODO: 这个在一个月以后（2025-07-15）去掉，即 2025-06-14 09:30 之前的 subscription 都已经过期了
     // 在 2025-06-14 09:30 之前的 tokens 都被加到了 permanentBalance 里，在此时间之后的才加入到 monthlyBalance
+    rootLogger.info(`User ${userId} subscription before cutoff date, skipping`);
     return;
   }
 
@@ -137,8 +148,13 @@ export async function resetMonthlyTokens({ userId }: { userId: number }) {
     rechargeAmount = MAX_MONTHLY_TOKENS; // 5_000_000
     giftAmount = MAX_MONTHLY_GIFT; // 3_000_000
   } else {
+    rootLogger.error(`User ${userId} has unknown subscription plan: ${activeSubscription.plan}`);
     return;
   }
+
+  rootLogger.info(
+    `User ${userId} allocating monthly tokens: plan=${activeSubscription.plan}, recharge=${rechargeAmount}, gift=${giftAmount}`,
+  );
 
   await prisma.$transaction(async (tx) => {
     await tx.userTokensLog.create({
@@ -170,6 +186,10 @@ export async function resetMonthlyTokens({ userId }: { userId: number }) {
       },
     });
   });
+
+  rootLogger.info(
+    `User ${userId} monthly tokens reset completed successfully. New monthlyResetAt: ${activeSubscription.endsAt.toISOString()}`,
+  );
 }
 
 async function calculatePlanStartEnd({

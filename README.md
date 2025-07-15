@@ -165,6 +165,14 @@ docker run -p 3000:3000 --env-file ./.env atypica-llm-app
 - [ ] 支持更多行业特定研究模板
 - [ ] 优化团队协作功能
 
+## 运维功能
+
+### 月度Token重置
+
+自动重置用户月度tokens，每分钟运行一次，只在global集群执行。
+
+详细说明：[Monthly Tokens Reset](./docs/monthly-tokens-reset.md)
+
 ## 贡献指南
 
 欢迎提交Issue和PR，一起改进atypica.AI！
