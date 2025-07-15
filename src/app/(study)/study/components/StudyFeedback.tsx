@@ -77,7 +77,12 @@ export function StudyFeedback({
   }
 
   return (
-    <Card className={cn("py-3 px-8 border-blue-200 bg-blue-50/30 gap-3", className)}>
+    <Card
+      className={cn(
+        "py-3 px-8 border-blue-200 bg-blue-50/30 dark:border-blue-200/40 dark:bg-blue-950/10 gap-3",
+        className,
+      )}
+    >
       <div className="text-center text-sm font-medium text-foreground/80">{t("title")}</div>
       <div className="flex items-center justify-center gap-2 mb-1">
         <Button
