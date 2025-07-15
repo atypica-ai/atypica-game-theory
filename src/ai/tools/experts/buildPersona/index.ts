@@ -100,14 +100,14 @@ export async function runBuildPersona({
   streamWriter?: DataStreamWriter;
 } & AgentToolConfigArgs) {
   const { coreMessages } = await prepareMessagesForStreaming(scoutUserChatId);
-  const lastAssistantMessage = coreMessages.findLast((message) => message.role === "assistant");
-  if (lastAssistantMessage) {
-    lastAssistantMessage.providerOptions = {
-      bedrock: {
-        cachePoint: { type: "default" },
-      },
-    };
-  }
+  // const lastAssistantMessage = coreMessages.findLast((message) => message.role === "assistant");
+  // if (lastAssistantMessage) {
+  //   lastAssistantMessage.providerOptions = {
+  //     bedrock: {
+  //       cachePoint: { type: "default" },
+  //     },
+  //   };
+  // }
   const stopController = new AbortController();
   const mergedAbortSignal = AbortSignal.any([abortSignal, stopController.signal]);
   const streamTextPromise = new Promise((resolve, reject) => {
@@ -118,8 +118,8 @@ export async function runBuildPersona({
     // const reduceTokens = { model: "gemini-2.5-pro", ratio: 2 } as TReduceTokens | null;
     const reduceTokens = { model: "gemini-2.5-flash", ratio: 10 } as TReduceTokens | null;
     const llmOptions = undefined;
-    const maxSteps = 10;
-    const toolChoice = "auto";
+    const maxSteps = 5;
+    const toolChoice = "required";
     // gemini 不支持指定 tool 只能用 required，但是这里有另一个问题，
     // 如果 gemini 觉得只能保存 4 个 persona，这里用 required 会导致生成重复的，问题更大，
     // 所以索性就不强制 gemini 调用 tool，通过提示词控制它尽可能的生成人设，相应的，maxSteps 可以长一点
