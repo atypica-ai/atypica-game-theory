@@ -1,12 +1,12 @@
 import "server-only";
 
-import { convertStepsToAIMessage, prepareMessagesForStreaming } from "@/ai/messageUtils";
+import { prepareMessagesForStreaming } from "@/ai/messageUtils";
 import { buildPersonaSystem } from "@/ai/prompt";
 import { llm, LLMModelName, providerOptions } from "@/ai/provider";
 import { handleToolCallError, savePersonaTool } from "@/ai/tools/tools";
 import { AgentToolConfigArgs, PlainTextToolResult, ToolName } from "@/ai/tools/types";
 import { prisma } from "@/prisma/prisma";
-import { DataStreamWriter, Message, streamText, tool } from "ai";
+import { DataStreamWriter, streamText, tool } from "ai";
 import { z } from "zod";
 import { BuildPersonaToolResult } from "./types";
 
@@ -108,7 +108,9 @@ export async function runBuildPersona({
       },
     };
   }
-  const streamTextPromise = new Promise<Omit<Message, "role">>((resolve, reject) => {
+  const stopController = new AbortController();
+  const mergedAbortSignal = AbortSignal.any([abortSignal, stopController.signal]);
+  const streamTextPromise = new Promise((resolve, reject) => {
     // 如果是一个个调用 savePersona，
     //  需要 maxSteps 调大，并且设置 parallel: false，模型只能用 claude，因为需要 cache
     //  但是不能太多 steps，虽然有 cache，savePersona 的 tool message 会被重复传给 llm
@@ -116,7 +118,13 @@ export async function runBuildPersona({
     // const reduceTokens = { model: "gemini-2.5-pro", ratio: 2 } as TReduceTokens | null;
     const reduceTokens = { model: "gemini-2.5-flash", ratio: 10 } as TReduceTokens | null;
     const llmOptions = undefined;
-    const maxSteps = 5;
+    const maxSteps = 10;
+    const toolChoice = "auto";
+    // gemini 不支持指定 tool 只能用 required，但是这里有另一个问题，
+    // 如果 gemini 觉得只能保存 4 个 persona，这里用 required 会导致生成重复的，问题更大，
+    // 所以索性就不强制 gemini 调用 tool，通过提示词控制它尽可能的生成人设，相应的，maxSteps 可以长一点
+    // const toolChoice = "required";
+    // const toolChoice = { type: "tool", toolName: ToolName.savePersona };
     const response = streamText({
       // claude-3-7-sonnet 目前会遇到 input tokens context 不够大的问题，但 gpt 4.1 mini 和 gemini 2.5 flash 没问题
       model: reduceTokens ? llm(reduceTokens.model, llmOptions) : llm("claude-3-7-sonnet"),
@@ -130,11 +138,7 @@ export async function runBuildPersona({
         [ToolName.savePersona]: savePersonaTool({ scoutUserChatId, statReport }),
         // [ToolName.toolCallError]: toolCallError,
       },
-      toolChoice: "required",
-      // toolChoice: {
-      //   type: "tool",
-      //   toolName: ToolName.savePersona,
-      // },
+      toolChoice,
       maxSteps,
       // toolCallStreaming: true,  // gemini 这个会有问题，会出现所有字段值都是 placeholder
       experimental_repairToolCall: handleToolCallError, // claude-3-7-sonnet 需要这个，savePersona 有时候会用 json 字符串作为参数
@@ -175,12 +179,28 @@ export async function runBuildPersona({
           }
           await Promise.all(promises);
         }
+
+        // 限制 personas 数量
+        if (
+          (await prisma.persona.count({
+            where: { scoutUserChatId },
+          })) >= 5
+        ) {
+          logger.warn(`runBuildPersona streamText safely aborted: 5 personas limit reached`);
+          // abort 会产生一条 error 的 stream 消息，下面的 streamWriter 会收到并在前端显示 error
+          // 但是，作为 tool 调用的时候，这个没影响
+          //   streamText 没有任何需要返回的信息
+          //   savePersona 已经在 是进入 onStepFinish 之前成功执行了
+          //   abort 了以后 streamTextPromise 会正常 resolve
+          stopController.abort();
+          // 下面没有监听 stopController.signal，只监听了 abortSignal，所以这里要单独 resolve
+          resolve(null);
+        }
       },
-      onFinish: async ({ steps, usage, providerMetadata }) => {
+      onFinish: async ({ usage, providerMetadata }) => {
         const cache = providerMetadata?.bedrock?.usage;
         logger.info({ msg: "runBuildPersona streamText onFinish", usage, cache });
-        const message = convertStepsToAIMessage(steps);
-        resolve(message);
+        resolve(null);
       },
       onError: ({ error }) => {
         if ((error as Error).name === "AbortError") {
@@ -190,11 +210,12 @@ export async function runBuildPersona({
           reject(error);
         }
       },
-      abortSignal,
+      abortSignal: mergedAbortSignal,
     });
     if (streamWriter) {
       response.mergeIntoDataStream(streamWriter);
     }
+    // 这里没有监听 stopController.signal，只监听了 abortSignal，只有 abortSignal abort 了才是 reject
     abortSignal.addEventListener("abort", () => {
       reject(new Error("runBuildPersona abortSignal received"));
     });
