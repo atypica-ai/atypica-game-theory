@@ -6,7 +6,8 @@ import { llm, LLMModelName, providerOptions } from "@/ai/provider";
 import { handleToolCallError, savePersonaTool } from "@/ai/tools/tools";
 import { AgentToolConfigArgs, PlainTextToolResult, ToolName } from "@/ai/tools/types";
 import { prisma } from "@/prisma/prisma";
-import { DataStreamWriter, streamText, tool } from "ai";
+import { CoreMessage, DataStreamWriter, streamText, tool } from "ai";
+import { Locale } from "next-intl";
 import { z } from "zod";
 import { BuildPersonaToolResult } from "./types";
 
@@ -88,6 +89,23 @@ export const buildPersonaTool = ({
     },
   });
 
+function appendBuildPersonaPrologue(_coreMessages: CoreMessage[], locale: Locale) {
+  let i = _coreMessages.length - 1;
+  while (i >= 0 && _coreMessages[i].role === "user") {
+    i--;
+  }
+  const coreMessages = _coreMessages.slice(0, i + 1);
+  const prologue =
+    locale === "zh-CN"
+      ? "请分析所有收集到的信息并开始构建用户画像。根据您观察到的帖子、评论和用户行为，创建3-5个不同的用户画像及其对应的AI代理系统提示。请记住使用savePersona函数将每个画像保存到数据库中。"
+      : "Please analyze all the collected information and begin building user personas. Based on the posts, comments, and user behaviors you've observed, create 3-5 distinct user personas with their corresponding AI agent system prompts. Remember to use the savePersona function to save each persona to the database.";
+  coreMessages.push({
+    role: "user",
+    content: [{ type: "text", text: prologue }],
+  });
+  return coreMessages;
+}
+
 export async function runBuildPersona({
   locale,
   statReport,
@@ -99,7 +117,8 @@ export async function runBuildPersona({
   scoutUserChatId: number;
   streamWriter?: DataStreamWriter;
 } & AgentToolConfigArgs) {
-  const { coreMessages } = await prepareMessagesForStreaming(scoutUserChatId);
+  const { coreMessages: _coreMessages } = await prepareMessagesForStreaming(scoutUserChatId);
+  const coreMessages = appendBuildPersonaPrologue(_coreMessages, locale);
   // const lastAssistantMessage = coreMessages.findLast((message) => message.role === "assistant");
   // if (lastAssistantMessage) {
   //   lastAssistantMessage.providerOptions = {
@@ -119,7 +138,7 @@ export async function runBuildPersona({
     const reduceTokens = { model: "gemini-2.5-flash", ratio: 10 } as TReduceTokens | null;
     const llmOptions = undefined;
     const maxSteps = 5;
-    const toolChoice = "required";
+    const toolChoice = "auto";
     // gemini 不支持指定 tool 只能用 required，但是这里有另一个问题，
     // 如果 gemini 觉得只能保存 4 个 persona，这里用 required 会导致生成重复的，问题更大，
     // 所以索性就不强制 gemini 调用 tool，通过提示词控制它尽可能的生成人设，相应的，maxSteps 可以长一点
