@@ -56,7 +56,12 @@ export async function notifyReportCompletion({
   });
 }
 
-export async function notifyStudyInterruption({
+export async function notifyStudyInterruption({}: { studyUserChatId: number; studyLog: Logger }) {
+  // 暂停发送错误邮件
+  return;
+}
+
+export async function _notifyStudyInterruption({
   studyUserChatId,
   studyLog,
 }: {
