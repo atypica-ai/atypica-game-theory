@@ -3,9 +3,9 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDistanceToNow } from "@/lib/utils";
-import { ClipboardListIcon, FileType2Icon } from "lucide-react";
+import { ClipboardListIcon, FileType2Icon, Loader2Icon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { fetchAnalystReportsOfStudyUserChat } from "../actions";
 import { useStudyContext } from "../hooks/StudyContext";
 import { AnalystReportShareButton } from "./AnalystReportShareButton";
@@ -14,23 +14,42 @@ export default function ReportsListPanel() {
   const t = useTranslations("Components.ReportsListPanel");
   const { studyUserChat } = useStudyContext();
   const [isOpen, setIsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [reports, setReports] = useState<
     ExtractServerActionData<typeof fetchAnalystReportsOfStudyUserChat>
   >([]);
 
-  useEffect(() => {
-    fetchAnalystReportsOfStudyUserChat({ studyUserChatToken: studyUserChat.token })
+  const fetchReports = useCallback(() => {
+    setIsLoading(true);
+    fetchAnalystReportsOfStudyUserChat({
+      studyUserChatToken: studyUserChat.token,
+    })
       .then((result) => {
         if (!result.success) throw result;
         setReports(result.data);
       })
       .catch((error) => {
         console.error(error);
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
   }, [studyUserChat.token]);
 
+  useEffect(() => {
+    fetchReports();
+  }, [fetchReports]);
+
   return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
+    <Popover
+      open={isOpen}
+      onOpenChange={(open) => {
+        setIsOpen(open);
+        if (open) {
+          fetchReports();
+        }
+      }}
+    >
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger>
@@ -56,7 +75,11 @@ export default function ReportsListPanel() {
           <ClipboardListIcon className="size-4 text-muted-foreground" />
           <div className="text-sm font-medium">{t("title")}</div>
         </div>
-        {reports.length === 0 ? (
+        {isLoading ? (
+          <div className="p-6 flex items-center justify-center">
+            <Loader2Icon className="size-4 animate-spin" />
+          </div>
+        ) : reports.length === 0 ? (
           <div className="p-6 text-center text-sm text-muted-foreground">
             {t("noReportsYet") || "No reports available yet"}
           </div>
