@@ -9,7 +9,7 @@ import { prisma } from "@/prisma/prisma";
 import { CoreMessage, DataStreamWriter, streamText, tool } from "ai";
 import { Locale } from "next-intl";
 import { z } from "zod";
-import { BuildPersonaToolResult } from "./types";
+import { BuildPersonaToolResult, TPersonaForStudy } from "./types";
 
 type TReduceTokens = {
   model: LLMModelName;
@@ -53,27 +53,38 @@ export const buildPersonaTool = ({
         abortSignal,
         AbortSignal.timeout(10 * 60 * 1000), // 10 分钟超时
       ]);
-      await runBuildPersona({
-        locale,
-        scoutUserChatId,
-        abortSignal: mergedAbortSignal,
-        statReport,
-        logger,
-      });
-      const personas = (
-        await prisma.persona.findMany({
-          where: { scoutUserChatId },
-        })
-      ).map((persona) => ({
-        personaId: persona.id,
-        name: persona.name,
-        tags: persona.tags as string[],
-        source: persona.source,
-      }));
-      if (personas.length === 0) {
-        // 遇到这个情况，有一种可能是用了 gemini 2.5 flash 模型，一次工具都没调用最后结束了 streamText，这个情况还是先抛出错误
-        logger.error("No persona built");
-        throw new Error("No persona built");
+      let personas: TPersonaForStudy[] = [];
+      let noPersonaFallback = false; // gemini 搞不定，改用 claude
+      while (true) {
+        await runBuildPersona({
+          locale,
+          scoutUserChatId,
+          abortSignal: mergedAbortSignal,
+          statReport,
+          logger,
+          noPersonaFallback,
+        });
+        personas = (await prisma.persona.findMany({ where: { scoutUserChatId } })).map(
+          (persona) => ({
+            personaId: persona.id,
+            name: persona.name,
+            tags: persona.tags as string[],
+            source: persona.source,
+          }),
+        );
+        if (personas.length === 0) {
+          // 遇到这个情况，有一种可能是用了 gemini 2.5 flash 模型，一次工具都没调用最后结束了 streamText，这个情况是再试一次，使用 claude
+          // see https://github.com/bmrlab/atypica-llm-app/issues/96
+          if (!noPersonaFallback) {
+            noPersonaFallback = true;
+            logger.warn("No persona built, retrying with claude-3-7-sonnet");
+          } else {
+            logger.error("No persona built");
+            throw new Error("No persona built");
+          }
+        } else {
+          break;
+        }
       }
       if (statReport) {
         await statReport("personas", personas.length, {
@@ -113,37 +124,48 @@ export async function runBuildPersona({
   logger,
   scoutUserChatId,
   streamWriter,
+  noPersonaFallback,
 }: {
   scoutUserChatId: number;
   streamWriter?: DataStreamWriter;
+  noPersonaFallback?: boolean;
 } & AgentToolConfigArgs) {
   const { coreMessages: _coreMessages } = await prepareMessagesForStreaming(scoutUserChatId);
   const coreMessages = appendBuildPersonaPrologue(_coreMessages, locale);
-  // const lastAssistantMessage = coreMessages.findLast((message) => message.role === "assistant");
-  // if (lastAssistantMessage) {
-  //   lastAssistantMessage.providerOptions = {
-  //     bedrock: {
-  //       cachePoint: { type: "default" },
-  //     },
-  //   };
-  // }
+  // set prompt cache checkpoint for bedrock claude 3.7 sonnet
+  const lastAssistantMessage = coreMessages.findLast((message) => message.role === "assistant");
+  if (lastAssistantMessage) {
+    lastAssistantMessage.providerOptions = {
+      bedrock: {
+        cachePoint: { type: "default" },
+      },
+    };
+  }
   const stopController = new AbortController();
   const mergedAbortSignal = AbortSignal.any([abortSignal, stopController.signal]);
   const streamTextPromise = new Promise((resolve, reject) => {
-    // 如果是一个个调用 savePersona，
-    //  需要 maxSteps 调大，并且设置 parallel: false，模型只能用 claude，因为需要 cache
-    //  但是不能太多 steps，虽然有 cache，savePersona 的 tool message 会被重复传给 llm
-    // 如果是批量调用 savePersona，目前支持最好的是 gemini-2.5-pro，但是这样太慢
-    // const reduceTokens = { model: "gemini-2.5-pro", ratio: 2 } as TReduceTokens | null;
-    const reduceTokens = { model: "gemini-2.5-flash", ratio: 10 } as TReduceTokens | null;
+    /**
+     * 模型选择：
+     * - 如果是一个个调用 savePersona，
+     *   需要 maxSteps 调大，并且设置 parallel: false，模型只能用 claude，因为需要 cache
+     *   但是不能太多 steps，虽然有 cache，savePersona 的 tool message 会被重复传给 llm
+     * - 如果是批量调用 savePersona，目前支持最好的是 gemini-2.5-pro，但是这样太慢
+     */
+    // const reduceTokens = { model: "gemini-2.5-pro", ratio: 2 } as TReduceTokens;
+    const reduceTokens = noPersonaFallback
+      ? (null as TReduceTokens)
+      : ({ model: "gemini-2.5-flash", ratio: 10 } as TReduceTokens);
     const llmOptions = undefined;
     const maxSteps = 5;
-    const toolChoice = "auto";
-    // gemini 不支持指定 tool 只能用 required，但是这里有另一个问题，
-    // 如果 gemini 觉得只能保存 4 个 persona，这里用 required 会导致生成重复的，问题更大，
-    // 所以索性就不强制 gemini 调用 tool，通过提示词控制它尽可能的生成人设，相应的，maxSteps 可以长一点
+    /**
+     * 给 gemini 2.5 flash 设置 toolChoice 时要注意:
+     * gemini 不支持指定 tool 只能用 required
+     * 但有个问题，如果 gemini 觉得只能保存 4 个 persona，这里用 required 会导致生成重复的，问题更大，
+     * 所以索性就不强制 gemini 调用 tool，通过提示词控制它尽可能的生成人设，相应的，maxSteps 可以长一点
+     */
     // const toolChoice = "required";
     // const toolChoice = { type: "tool", toolName: ToolName.savePersona };
+    const toolChoice = "auto";
     const response = streamText({
       // claude-3-7-sonnet 目前会遇到 input tokens context 不够大的问题，但 gpt 4.1 mini 和 gemini 2.5 flash 没问题
       model: reduceTokens ? llm(reduceTokens.model, llmOptions) : llm("claude-3-7-sonnet"),
