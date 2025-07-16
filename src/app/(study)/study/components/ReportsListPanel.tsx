@@ -1,9 +1,10 @@
+import { ToolName } from "@/ai/tools/types";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDistanceToNow } from "@/lib/utils";
-import { ClipboardListIcon, FileType2Icon, Loader2Icon } from "lucide-react";
+import { ClipboardListIcon, FileType2Icon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { fetchAnalystReportsOfStudyUserChat } from "../actions";
@@ -14,13 +15,13 @@ export default function ReportsListPanel() {
   const t = useTranslations("Components.ReportsListPanel");
   const { studyUserChat } = useStudyContext();
   const [isOpen, setIsOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [reports, setReports] = useState<
     ExtractServerActionData<typeof fetchAnalystReportsOfStudyUserChat>
   >([]);
 
+  const { lastToolInvocation } = useStudyContext();
+
   const fetchReports = useCallback(() => {
-    setIsLoading(true);
     fetchAnalystReportsOfStudyUserChat({
       studyUserChatToken: studyUserChat.token,
     })
@@ -30,26 +31,27 @@ export default function ReportsListPanel() {
       })
       .catch((error) => {
         console.error(error);
-      })
-      .finally(() => {
-        setIsLoading(false);
       });
   }, [studyUserChat.token]);
 
+  // 进来先获取一次
   useEffect(() => {
     fetchReports();
   }, [fetchReports]);
 
+  useEffect(() => {
+    // 在 lastToolInvocation 变化时，是个合理的时间点重新获取报告
+    if (
+      lastToolInvocation?.toolName === ToolName.generateReport &&
+      lastToolInvocation.state === "result"
+    ) {
+      fetchReports();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetchReports, lastToolInvocation]);
+
   return (
-    <Popover
-      open={isOpen}
-      onOpenChange={(open) => {
-        setIsOpen(open);
-        if (open) {
-          fetchReports();
-        }
-      }}
-    >
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger>
@@ -75,11 +77,7 @@ export default function ReportsListPanel() {
           <ClipboardListIcon className="size-4 text-muted-foreground" />
           <div className="text-sm font-medium">{t("title")}</div>
         </div>
-        {isLoading ? (
-          <div className="p-6 flex items-center justify-center">
-            <Loader2Icon className="size-4 animate-spin" />
-          </div>
-        ) : reports.length === 0 ? (
+        {reports.length === 0 ? (
           <div className="p-6 text-center text-sm text-muted-foreground">
             {t("noReportsYet") || "No reports available yet"}
           </div>
