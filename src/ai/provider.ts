@@ -39,11 +39,11 @@ const azure = createAzure({
   fetch: proxiedFetch,
 });
 
-// const azureEastUS2 = createAzure({
-//   resourceName: process.env.AZURE_EASTUS2_RESOURCE_NAME,
-//   apiKey: process.env.AZURE_EASTUS2_API_KEY,
-//   fetch: proxiedFetch,
-// });
+const azureEastUS2 = createAzure({
+  resourceName: process.env.AZURE_EASTUS2_RESOURCE_NAME,
+  apiKey: process.env.AZURE_EASTUS2_API_KEY,
+  fetch: proxiedFetch,
+});
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
 const google = (modelId: string, settings?: any) => {
@@ -105,6 +105,7 @@ export const providerOptions = {
 };
 
 export type LLMModelName =
+  | "gpt-4o"
   | "gpt-4.1"
   | "gpt-4.1-mini"
   | "gpt-4.1-nano"
@@ -128,6 +129,8 @@ export function llm(modelName: LLMModelName, options?: any) {
     }
   }
   switch (modelName) {
+    case "gpt-4o":
+      return azureEastUS2("gpt-4o", options); // gpt-4o 自动支持 prompt cache，gpt-4.1 还不支持
     case "gpt-4.1":
       return azure("gpt-4.1", options); // options 支持 parallelToolCalls 参数
     case "gpt-4.1-mini":
