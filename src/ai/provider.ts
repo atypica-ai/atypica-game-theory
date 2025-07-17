@@ -8,6 +8,7 @@ import { createDeepSeek } from "@ai-sdk/deepseek";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createVertex } from "@ai-sdk/google-vertex";
 import { createOpenAI } from "@ai-sdk/openai";
+import { createXai } from "@ai-sdk/xai";
 import { LanguageModelV1 } from "ai";
 
 const openai = createOpenAI({
@@ -73,6 +74,11 @@ const vertex = createVertex({
   fetch: proxiedFetch,
 });
 
+const xai = createXai({
+  apiKey: process.env.XAI_API_KEY,
+  fetch: proxiedFetch,
+});
+
 // export const bedrock = (model: "claude-3-7-sonnet" = "claude-3-7-sonnet") => {
 //   if (model === "claude-3-7-sonnet") {
 //     return _bedrock("us.anthropic.claude-3-7-sonnet-20250219-v1:0", {
@@ -114,6 +120,9 @@ export type LLMModelName =
   | "claude-sonnet-4"
   | "gemini-2.5-flash"
   | "gemini-2.5-pro"
+  | "grok-4"
+  | "grok-3"
+  | "grok-3-mini"
   | "deepseek-v3"
   | "deepseek-r1"
   | "qwen3-235b-a22b";
@@ -157,6 +166,12 @@ export function llm(modelName: LLMModelName, options?: any) {
       return vertex("gemini-2.5-flash", options);
     case "gemini-2.5-pro":
       return vertex("gemini-2.5-pro", options);
+    case "grok-4":
+      return xai("grok-3-mini", options);
+    case "grok-3":
+      return xai("grok-3-mini", options);
+    case "grok-3-mini":
+      return xai("grok-3-mini", options);
     case "deepseek-v3":
       return deepseek("Pro/deepseek-ai/DeepSeek-V3", options);
     case "deepseek-r1":
