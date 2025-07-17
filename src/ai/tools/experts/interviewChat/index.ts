@@ -42,6 +42,7 @@ import {
   Message,
   streamText,
   tool,
+  ToolChoice,
 } from "ai";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
@@ -257,6 +258,7 @@ type ChatProps = {
   attachments?: ChatMessageAttachment[];
 } & AgentToolConfigArgs;
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function setBedrockCache(model: `claude-${string}`, coreMessages: CoreMessage[]) {
   if (!model) return coreMessages; // 这句话没意义，只是为了用一下 model
   const checkpoints = {
@@ -297,45 +299,55 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: Message[]) {
     statReport,
     logger,
   } = chatProps;
+  const hasAttachments = !!messages.find(
+    (message) => (message.experimental_attachments ?? []).length > 0,
+  );
+  const reduceTokens: TReduceTokens = hasAttachments
+    ? { model: "gemini-2.5-flash", ratio: 10 }
+    : { model: "gemini-2.5-flash", ratio: 10 };
+  // : { model: "gpt-4.1-mini", ratio: 10 }; // 总结的不好
+  // : { model: "grok-3-mini", ratio: 10 }; // 总结的不好
+
+  // gpt 无法使用 pdf 文件，claude 和 gemini 可以, 并且，3.7 比较消耗 tokens，改用 gemini 和 gpt 吧
+  // null as TReduceTokens;
+  // const coreMessages = setBedrockCache("claude-3-7-sonnet", convertToCoreMessages(messages));
+  const coreMessages = convertToCoreMessages(messages);
+  const tools = {
+    [ToolName.reasoningThinking]: reasoningThinkingTool({
+      locale,
+      abortSignal,
+      statReport,
+      logger,
+    }),
+    [ToolName.saveInterviewConclusion]: saveInterviewConclusionTool(analystInterviewId),
+  };
+  let toolChoice: ToolChoice<typeof tools> = "auto";
+  let maxSteps = 2;
+  if (coreMessages.length >= MAX_MESSAGES_LIMIT) {
+    toolChoice = {
+      type: "tool",
+      toolName: ToolName.saveInterviewConclusion,
+    };
+    maxSteps = 1;
+  }
+  if (coreMessages.length >= MAX_MESSAGES_LIMIT + 4) {
+    // LLM 始终没有 saveInterviewConclusion, 强制退出
+    throw new Error("Interview exceeded maximum message limit and failed to conclude properly");
+  }
   const streamTextPromise = new Promise<Omit<Message, "role">>(async (resolve, reject) => {
-    // const hasAttachments = !!messages.find((message) => (message.experimental_attachments ?? []).length > 0);
-    const reduceTokens: TReduceTokens = null as TReduceTokens;
-    // hasAttachments
-    // ? { model: "gemini-2.5-pro", ratio: 2 }
-    // : { model: "gpt-4.1", ratio: 2 };  // gpt 无法使用 pdf 文件，claude 和 gemini 可以
-    const coreMessages = setBedrockCache("claude-3-7-sonnet", convertToCoreMessages(messages));
     const response = streamText({
       model: reduceTokens
         ? llm(reduceTokens.model)
         : // gpt-4.1 系列都不支持 pdf，目前只有 gemini 和 claude 支持
-          // 不能用 gpt-4o，指令遵循的比较差，会结束不了
           fixFileNameInMessageToUsePromptCache(llm("claude-3-7-sonnet")),
       providerOptions: providerOptions,
       // maxRetries: 0, // 不要自动重试？不，gemini 偶尔连不上，还是得自动重试，慢是慢了点
       system: interviewerPrompt,
       temperature: 0.3,
       messages: coreMessages,
-      tools: {
-        [ToolName.reasoningThinking]: reasoningThinkingTool({
-          locale,
-          abortSignal,
-          statReport,
-          logger,
-        }),
-        [ToolName.saveInterviewConclusion]: saveInterviewConclusionTool(analystInterviewId),
-      },
-      ...(coreMessages.length < MAX_MESSAGES_LIMIT
-        ? {
-            toolChoice: "auto",
-            maxSteps: 2,
-          }
-        : {
-            toolChoice: {
-              type: "tool",
-              toolName: ToolName.saveInterviewConclusion,
-            },
-            maxSteps: 1,
-          }),
+      tools,
+      toolChoice,
+      maxSteps,
       onStepFinish: async ({ usage, stepType, toolCalls, ...step }) => {
         const cache = step.providerMetadata?.bedrock?.usage as
           | { cacheReadInputTokens: number; cacheWriteInputTokens: number }
