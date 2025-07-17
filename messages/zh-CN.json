@@ -246,7 +246,9 @@
       "generate": "生成摘要",
       "regenerate": "重新生成",
       "generating": "生成中...",
-      "close": "关闭"
+      "close": "关闭",
+      "copied": "摘要已复制到剪贴板",
+      "copyFailed": "复制摘要失败"
     },
     "clarifySession": {
       "interviewInProgress": "与 atypica.AI 交流以明确项目需求",
@@ -626,7 +628,10 @@
   },
   "PaymentPage": {
     "successTitle": "支付成功!",
-    "successContent": "您可以在电脑上继续和 atypica.AI 对话开展研究。"
+    "successContent": "您可以在电脑上继续和 atypica.AI 对话开展研究。",
+    "paymentSuccessful": "支付成功",
+    "paymentFailed": "支付失败",
+    "paymentCancelled": "支付已取消"
   },
   "Artifacts": {
     "ReportSharePage": {

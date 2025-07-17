@@ -246,7 +246,9 @@
       "generate": "Generate Digest",
       "regenerate": "Regenerate Digest",
       "generating": "Generating...",
-      "close": "Close"
+      "close": "Close",
+      "copied": "Digest copied to clipboard",
+      "copyFailed": "Failed to copy digest"
     },
     "clarifySession": {
       "interviewInProgress": "Chat with atypica.AI to clarify project requirements",
@@ -626,7 +628,10 @@
   },
   "PaymentPage": {
     "successTitle": "Payment successful!",
-    "successContent": "You can continue your conversation with atypica.AI on your computer to conduct research."
+    "successContent": "You can continue your conversation with atypica.AI on your computer to conduct research.",
+    "paymentSuccessful": "Payment successful",
+    "paymentFailed": "Payment failed",
+    "paymentCancelled": "Payment cancelled"
   },
   "Artifacts": {
     "ReportSharePage": {

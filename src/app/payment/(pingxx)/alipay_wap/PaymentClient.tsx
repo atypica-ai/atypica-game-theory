@@ -1,6 +1,7 @@
 "use client";
 import { createPingxxCharge } from "@/app/payment/(pingxx)/actions";
 import { PaymentMethod, PingxxNewPaymentParams } from "@/app/payment/data";
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect } from "react";
 import { toast } from "sonner";
 
@@ -10,6 +11,8 @@ export default function PaymentClient({
   currency,
   successUrl,
 }: PingxxNewPaymentParams) {
+  const t = useTranslations("PaymentPage");
+
   const handlePayment = useCallback(async () => {
     const { charge } = await createPingxxCharge({
       userId,
@@ -21,15 +24,15 @@ export default function PaymentClient({
     if (window.pingpp) {
       window.pingpp.createPayment(charge, function (result) {
         if (result.status === "success") {
-          toast.success("Payment successful");
+          toast.success(t("paymentSuccessful"));
         } else if (result.status === "fail") {
-          toast.error("Payment failed");
+          toast.error(t("paymentFailed"));
         } else if (result.status === "cancel") {
-          toast.error("Payment cancelled");
+          toast.error(t("paymentCancelled"));
         }
       });
     }
-  }, [productName, successUrl, currency, userId]);
+  }, [productName, successUrl, currency, userId, t]);
 
   useEffect(() => {
     handlePayment();

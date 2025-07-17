@@ -82,14 +82,14 @@ export function DigestDialog({
     try {
       await navigator.clipboard.writeText(displayContent);
       setIsCopied(true);
-      toast.info("Digest copied to clipboard");
+      toast.info(t("copied"));
       // Reset the copied status after 2 seconds
       setTimeout(() => {
         setIsCopied(false);
       }, 2000);
     } catch (err) {
       console.error("Failed to copy text: ", err);
-      toast.error("Failed to copy digest");
+      toast.error(t("copyFailed"));
     }
   };
 
