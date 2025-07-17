@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDate } from "@/lib/utils";
-import { CalendarDaysIcon } from "lucide-react";
+import { CalendarDaysIcon, PaperclipIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { fetchUserStudies } from "./actions";
@@ -32,8 +32,8 @@ export function StudyCard({ study: { studyUserChat, analyst } }: { study: TStudy
   return (
     <Card className="flex flex-col h-full transition-shadow hover:shadow-md">
       <CardHeader className="flex flex-row items-top">
-        <HippyGhostAvatar seed={studyUserChat.id} className="size-6 mr-2 shrink-0" />
-        <CardTitle className="text-base font-semibold line-clamp-2">
+        <HippyGhostAvatar seed={studyUserChat.id} className="size-8 mr-2 shrink-0" />
+        <CardTitle className="text-base font-semibold line-clamp-2 leading-5 h-10">
           {studyUserChat.title}
         </CardTitle>
         <div className="shrink-0 ml-auto px-2 py-1 text-xs font-semibold">
@@ -62,9 +62,17 @@ export function StudyCard({ study: { studyUserChat, analyst } }: { study: TStudy
           {analyst?.topic || t("noTopic")}
         </div>
         <div className="flex items-center justify-between mt-auto">
-          <div className="flex items-center text-xs text-muted-foreground">
-            <CalendarDaysIcon className="mr-1 h-4 w-4" />
-            <div>{formatDate(studyUserChat.updatedAt, locale)}</div>
+          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+            <div className="flex items-center">
+              <CalendarDaysIcon className="mr-1 h-4 w-4" />
+              <div>{formatDate(studyUserChat.updatedAt, locale)}</div>
+            </div>
+            {analyst?.attachments && analyst.attachments.length > 0 && (
+              <div className="flex items-center">
+                <PaperclipIcon className="mr-1 h-4 w-4" />
+                <div>{analyst.attachments.length}</div>
+              </div>
+            )}
           </div>
           <div className="flex items-center">
             <span

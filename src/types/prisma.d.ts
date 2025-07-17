@@ -28,6 +28,13 @@ declare module "@/prisma/client" {
     invoice?: Stripe.Invoice;
   } | null;
 
+  export type ChatMessageAttachment = {
+    objectUrl: string; // s3 object url without signature
+    name: string;
+    mimeType: string;
+    size: number; // bytes
+  };
+
   // import { AnalystReport as AnalystReportPrisma } from "@/prisma/client/index";
   // // 只覆盖这个不够，findUnique 返回的类型还是原来的
   // export type AnalystReport = Omit<AnalystReportPrisma, "extra"> & {

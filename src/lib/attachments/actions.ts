@@ -3,11 +3,12 @@ import { rootLogger } from "@/lib/logging";
 import { proxiedFetch } from "@/lib/proxy/fetch";
 import { getDeployRegion } from "@/lib/request/deployRegion";
 import { ServerActionResult } from "@/lib/serverAction";
+import { ChatMessageAttachment } from "@/prisma/client";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { s3SignedUrl, s3UploadCredentials } from "./s3";
-import { ChatMessageAttachment, S3UploadCredentials } from "./types";
+import { S3UploadCredentials } from "./types";
 
 /**
  * Gets a presigned URL for direct frontend upload to S3

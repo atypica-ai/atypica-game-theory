@@ -29,9 +29,9 @@ import {
   ToolName,
 } from "@/ai/tools/types";
 import { fileUrlToDataUrl } from "@/lib/attachments/actions";
-import { ChatMessageAttachment } from "@/lib/attachments/types";
 import { createUserChat } from "@/lib/userChat/lib";
 import { fixMalformedUnicodeString } from "@/lib/utils";
+import { ChatMessageAttachment } from "@/prisma/client";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import {

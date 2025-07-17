@@ -1,6 +1,5 @@
 "use server";
 import { convertDBMessagesToAIMessages, convertDBMessageToAIMessage } from "@/ai/messageUtils";
-import { ChatMessageAttachment } from "@/lib/attachments/types";
 import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
@@ -10,6 +9,7 @@ import {
   Analyst,
   AnalystInterview,
   AnalystReport,
+  ChatMessageAttachment,
   Persona,
   UserChat,
   UserChatExtra,

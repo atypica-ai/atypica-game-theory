@@ -2,8 +2,7 @@ import "server-only";
 
 import { ToolName } from "@/ai/tools/types";
 import { fileUrlToDataUrl } from "@/lib/attachments/actions";
-import { ChatMessageAttachment } from "@/lib/attachments/types";
-import { ChatMessage } from "@/prisma/client";
+import { ChatMessage, ChatMessageAttachment } from "@/prisma/client";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 

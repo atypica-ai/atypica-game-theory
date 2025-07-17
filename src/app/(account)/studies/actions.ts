@@ -1,6 +1,7 @@
 "use server";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
+import { ChatMessageAttachment } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { AnalystKind } from "@/prisma/types";
 
@@ -30,6 +31,7 @@ export async function fetchUserStudies({
           id: number;
           token: string;
         }[];
+        attachments: ChatMessageAttachment[];
         id: number;
       } | null;
     }[]
@@ -77,6 +79,7 @@ export async function fetchUserStudies({
               where: { generatedAt: { not: null } },
               select: { id: true, token: true },
             },
+            attachments: true,
           },
         },
       },
@@ -93,6 +96,7 @@ export async function fetchUserStudies({
           analyst: analyst
             ? {
                 ...analyst,
+                attachments: analyst.attachments as ChatMessageAttachment[],
                 kind: analyst.kind as AnalystKind | null,
               }
             : null,
