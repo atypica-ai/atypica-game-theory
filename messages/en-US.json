@@ -1164,5 +1164,18 @@
     "chatNotFound": "Chat not found.",
     "studyPlanningComplete": "Your study planning is complete.",
     "execEndInterviewTool": "Summarizing the study brief"
+  },
+  "FileUploadLimits": {
+    "maxImages": "Maximum 5 images allowed",
+    "maxDocuments": "Maximum 3 documents allowed",
+    "maxTotalSize": "Total file size limit exceeded",
+    "unsupportedType": "Unsupported file type, only images and documents are allowed",
+    "status": "{{imageCount}}/5 images, {{documentCount}}/3 documents",
+    "images": "images",
+    "documents": "documents",
+    "sizeLimit": "Size limit exceeded",
+    "fileSizeExceeds3MB": "File size exceeds 3MB limit",
+    "fileUploadedSuccessfully": "File uploaded successfully",
+    "failedToUploadFile": "Failed to upload file"
   }
 }

@@ -1,11 +1,8 @@
 "use client";
 import { createProductRnDStudyUserChat, createStudyUserChat } from "@/app/(study)/study/actions";
 import { FileAttachment } from "@/components/chat/FileAttachment";
-import {
-  FileUploadButton,
-  FileUploadInfo,
-  MAX_TOTAL_FILE_SIZE,
-} from "@/components/chat/FileUploadButton";
+import { FileUploadButton } from "@/components/chat/FileUploadButton";
+import { FileUploadStatus } from "@/components/chat/FileUploadStatus";
 import { VoiceInputButton } from "@/components/chat/VoiceInputButton";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,6 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useFileUploadManager } from "@/hooks/use-file-upload-manager";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { cn, useDevice } from "@/lib/utils";
 import { ArrowRightIcon, NotebookTextIcon, RotateCwIcon, SparklesIcon } from "lucide-react";
@@ -32,7 +30,7 @@ import { useSession } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 
 export function NewStudyInputBox({ className }: { className?: string }) {
@@ -43,9 +41,10 @@ export function NewStudyInputBox({ className }: { className?: string }) {
   const { isMobile } = useDevice();
   const isSM = useMediaQuery("sm");
   const [input, setInput] = useState("");
-  const [uploadedFiles, setUploadedFiles] = useState<FileUploadInfo[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [studyType, setStudyType] = useState<"general" | "product-rnd">("general");
+  const { uploadedFiles, handleFileUploaded, handleRemoveFile, clearFiles, isUploadDisabled } =
+    useFileUploadManager();
 
   // Create a properly memoized debounced function
   const debouncedSaveToLocalStorage = useDebouncedCallback((value: string) => {
@@ -57,14 +56,6 @@ export function NewStudyInputBox({ className }: { className?: string }) {
     if (savedInput) {
       setInput(savedInput);
     }
-  }, []);
-
-  const handleFileUploaded = useCallback((fileInfo: FileUploadInfo) => {
-    setUploadedFiles((prev) => [...prev, fileInfo]);
-  }, []);
-
-  const handleRemoveFile = useCallback((index: number) => {
-    setUploadedFiles((prev) => prev.filter((_, i) => i !== index));
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -101,7 +92,6 @@ export function NewStudyInputBox({ className }: { className?: string }) {
       className={cn("relative border border-border bg-background transition-colors", className)}
     >
       {/* Study Type Selector */}
-
       <div className="h-12 p-2 border-b border-border flex items-center justify-between">
         {session?.user?.email?.endsWith("@tezign.com") ? (
           isSM ? (
@@ -160,7 +150,10 @@ export function NewStudyInputBox({ className }: { className?: string }) {
           debouncedSaveToLocalStorage(value);
         }}
         placeholder={studyType === "product-rnd" ? t("productRnDPlaceholder") : t("placeholder")}
-        className="min-h-48 resize-none border-0 bg-transparent pt-4 px-4 pb-18 focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/60 w-full"
+        className={cn(
+          "min-h-48 resize-none border-0 bg-transparent pt-4 px-4 focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/60 w-full",
+          uploadedFiles.length > 0 ? "pb-28" : "pb-18",
+        )}
         enterKeyHint="enter"
         disabled={isLoading}
         onKeyDown={(e) => {
@@ -175,29 +168,32 @@ export function NewStudyInputBox({ className }: { className?: string }) {
       />
 
       {/* Bottom toolbar */}
-      <div className="absolute left-0 bottom-0 right-0 flex items-center justify-between p-3 border-t border-border">
-        <div className="flex items-center gap-2">
+      <div className="absolute left-0 bottom-0 right-0">
+        {uploadedFiles.length > 0 && (
+          <div className="flex items-center px-3 overflow-hidden w-full">
+            <div className="flex-1 flex items-center gap-2 py-2 overflow-auto scrollbar-thin">
+              {uploadedFiles.map((file, index) => (
+                <FileAttachment
+                  key={index}
+                  attachment={{
+                    url: file.url,
+                    name: file.name,
+                    contentType: file.mimeType,
+                  }}
+                  onRemove={() => handleRemoveFile(index)}
+                />
+              ))}
+            </div>
+            <FileUploadStatus files={uploadedFiles} className="ml-2 shrink-0" />
+          </div>
+        )}
+        <div className="flex items-center gap-2 p-3 border-t border-border">
           <FileUploadButton
             onFileUploadedAction={handleFileUploaded}
-            disabled={
-              isLoading ||
-              uploadedFiles.reduce((acc, file) => acc + file.size, 0) > MAX_TOTAL_FILE_SIZE
-            }
+            disabled={isLoading || isUploadDisabled()}
+            existingFiles={uploadedFiles}
           />
-          {uploadedFiles.map((file, index) => (
-            <FileAttachment
-              key={index}
-              attachment={{
-                url: file.url,
-                name: file.name,
-                contentType: file.mimeType,
-              }}
-              onRemove={() => handleRemoveFile(index)}
-            />
-          ))}
-        </div>
-
-        <div className="flex items-center gap-2">
+          <div className="ml-auto" />
           <VoiceInputButton
             onTranscript={(text) => {
               setInput((current) => (current ? `${current} ${text}` : text));

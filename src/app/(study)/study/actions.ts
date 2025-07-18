@@ -1,5 +1,6 @@
 "use server";
 import { convertDBMessagesToAIMessages, convertDBMessageToAIMessage } from "@/ai/messageUtils";
+import { categorizeFiles, FILE_UPLOAD_LIMITS } from "@/lib/fileUploadLimits";
 import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
@@ -33,6 +34,41 @@ export async function createStudyUserChat(
   extra?: Record<string, string | number>,
 ): Promise<ServerActionResult<Omit<UserChat, "kind"> & { kind: "study" }>> {
   return withAuth(async (user) => {
+    // Validate file upload limits
+    if (attachments && attachments.length > 0) {
+      const fileInfos = attachments.map((att) => ({
+        name: att.name,
+        size: att.size,
+        mimeType: att.mimeType,
+        url: "", // Not needed for validation
+        objectUrl: att.objectUrl,
+      }));
+
+      const { images, documents } = categorizeFiles(fileInfos);
+
+      if (images.length > FILE_UPLOAD_LIMITS.MAX_IMAGES) {
+        return {
+          success: false,
+          message: `Maximum ${FILE_UPLOAD_LIMITS.MAX_IMAGES} images allowed`,
+        };
+      }
+
+      if (documents.length > FILE_UPLOAD_LIMITS.MAX_DOCUMENTS) {
+        return {
+          success: false,
+          message: `Maximum ${FILE_UPLOAD_LIMITS.MAX_DOCUMENTS} documents allowed`,
+        };
+      }
+
+      const totalSize = attachments.reduce((acc, att) => acc + att.size, 0);
+      if (totalSize > FILE_UPLOAD_LIMITS.MAX_TOTAL_SIZE) {
+        return {
+          success: false,
+          message: "Total file size limit exceeded",
+        };
+      }
+    }
+
     const parts = [{ type: "text", text: content }];
     const userChat = await prisma.$transaction(async (tx) => {
       const userChat = await createUserChat({

@@ -1,7 +1,13 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { getS3UploadCredentials } from "@/lib/attachments/actions";
+import {
+  checkFileUploadLimits,
+  DOCUMENT_MIME_TYPES,
+  IMAGE_MIME_TYPES,
+} from "@/lib/fileUploadLimits";
 import { Loader2, PaperclipIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -19,30 +25,57 @@ export type FileUploadInfo = {
 interface FileUploadButtonProps {
   onFileUploadedAction: (fileInfo: FileUploadInfo) => void;
   disabled?: boolean;
+  existingFiles?: FileUploadInfo[];
+  showLimitsCheck?: boolean;
 }
 
-export function FileUploadButton({ onFileUploadedAction, disabled }: FileUploadButtonProps) {
+export function FileUploadButton({
+  onFileUploadedAction,
+  disabled,
+  existingFiles = [],
+  showLimitsCheck = true,
+}: FileUploadButtonProps) {
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const t = useTranslations("FileUploadLimits");
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Check if file is an image or PDF
-    if (
-      !file.type.startsWith("image/") &&
-      file.type !== "application/pdf" &&
-      file.type !== "text/plain"
-    ) {
-      toast.error("Only images, PDF, and text files are allowed");
+    // Check if file type is supported
+    const supportedTypes = [...IMAGE_MIME_TYPES, ...DOCUMENT_MIME_TYPES];
+    if (!supportedTypes.includes(file.type as any)) {
+      toast.error(t("unsupportedType"));
       return;
     }
 
     // Check file size (max 3MB)
     if (file.size > MAX_SINGLE_FILE_SIZE) {
-      toast.error("File size exceeds 3MB limit");
+      toast.error(t("fileSizeExceeds3MB"));
       return;
+    }
+
+    // Check upload limits if enabled
+    if (showLimitsCheck) {
+      const limitCheck = checkFileUploadLimits(existingFiles, {
+        mimeType: file.type,
+        size: file.size,
+      });
+      if (!limitCheck.canUpload) {
+        let message = "";
+        if (limitCheck.reason === "max-images") {
+          message = t("maxImages");
+        } else if (limitCheck.reason === "max-documents") {
+          message = t("maxDocuments");
+        } else if (limitCheck.reason === "max-total-size") {
+          message = t("maxTotalSize");
+        } else if (limitCheck.reason === "unsupported-type") {
+          message = t("unsupportedType");
+        }
+        toast.error(message);
+        return;
+      }
     }
 
     setIsUploading(true);
@@ -79,10 +112,10 @@ export function FileUploadButton({ onFileUploadedAction, disabled }: FileUploadB
         size: file.size,
       });
 
-      toast.success("File uploaded successfully");
+      toast.success(t("fileUploadedSuccessfully"));
     } catch (error) {
       console.error("Error uploading file:", error);
-      toast.error(error instanceof Error ? error.message : "Failed to upload file");
+      toast.error(error instanceof Error ? error.message : t("failedToUploadFile"));
     } finally {
       setIsUploading(false);
       // Clear the input value to allow uploading the same file again
@@ -102,7 +135,7 @@ export function FileUploadButton({ onFileUploadedAction, disabled }: FileUploadB
         type="file"
         ref={fileInputRef}
         onChange={handleFileChange}
-        accept="image/jpeg,image/png,image/gif,image/webp,application/pdf,text/plain"
+        accept={[...IMAGE_MIME_TYPES, ...DOCUMENT_MIME_TYPES].join(",")}
         className="hidden"
         disabled={disabled || isUploading}
       />

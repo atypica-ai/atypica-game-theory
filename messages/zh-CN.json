@@ -1164,5 +1164,18 @@
     "chatNotFound": "未找到聊天。",
     "studyPlanningComplete": "您的研究规划已完成。",
     "execEndInterviewTool": "正在总结研究问题"
+  },
+  "FileUploadLimits": {
+    "maxImages": "最多只能上传 5 张图片",
+    "maxDocuments": "最多只能上传 3 个文档",
+    "maxTotalSize": "文件总大小超出限制",
+    "unsupportedType": "不支持的文件类型，仅支持图片和文档",
+    "status": "{{imageCount}}/5 张图片，{{documentCount}}/3 个文档",
+    "images": "图片",
+    "documents": "文档",
+    "sizeLimit": "文件大小超限",
+    "fileSizeExceeds3MB": "文件大小超过 3MB 限制",
+    "fileUploadedSuccessfully": "文件上传成功",
+    "failedToUploadFile": "文件上传失败"
   }
 }

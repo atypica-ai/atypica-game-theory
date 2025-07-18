@@ -4,13 +4,14 @@ import { StatusDisplay } from "@/components/chat/StatusDisplay";
 import { VoiceInputButton } from "@/components/chat/VoiceInputButton";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { useFileUploadManager } from "@/hooks/use-file-upload-manager";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
 import { fileUrlToDataUrl } from "@/lib/attachments/actions";
 import { cn, useDevice } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
 import { ArrowRightIcon, PlayIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { ReactNode, RefObject, useCallback, useState } from "react";
+import { ReactNode, RefObject, useCallback } from "react";
 import { ChatMessage } from "./ChatMessage";
 import { FileAttachment } from "./FileAttachment";
 import { FileUploadButton, FileUploadInfo } from "./FileUploadButton";
@@ -38,7 +39,8 @@ export function UserChatSession({
 }) {
   const t = useTranslations("Components.UserChatSession");
   const locale = useLocale();
-  const [uploadedFiles, setUploadedFiles] = useState<FileUploadInfo[]>([]);
+  const { uploadedFiles, handleFileUploaded, handleRemoveFile, clearFiles, isUploadDisabled } =
+    useFileUploadManager();
 
   const handleContinueChat = useCallback(() => {
     if (messages.length > 0 && messages[messages.length - 1].role === "user") {
@@ -49,14 +51,6 @@ export function UserChatSession({
     // 不要监听 reload, append
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messages.length]);
-
-  const handleFileUploaded = useCallback((fileInfo: FileUploadInfo) => {
-    setUploadedFiles((prev) => [...prev, fileInfo]);
-  }, []);
-
-  const handleRemoveFile = useCallback((index: number) => {
-    setUploadedFiles((prev) => prev.filter((_, i) => i !== index));
-  }, []);
 
   const handleFormSubmit = useCallback(
     async (e: React.FormEvent<HTMLFormElement>) => {
@@ -78,11 +72,11 @@ export function UserChatSession({
           throw new Error("Not implemented");
         }
         setInput("");
-        setUploadedFiles([]);
+        clearFiles();
       } else {
         // No files, just submit the text message normally
         handleSubmit(e);
-        setUploadedFiles([]);
+        clearFiles();
       }
     },
     [handleSubmit, uploadedFiles, useChatRef, input, setInput, persistMessages],
@@ -188,7 +182,8 @@ export function UserChatSession({
               {!inputDisabled && (
                 <FileUploadButton
                   onFileUploadedAction={handleFileUploaded}
-                  disabled={inputDisabled}
+                  disabled={inputDisabled || isUploadDisabled()}
+                  existingFiles={uploadedFiles}
                 />
               )}
               <VoiceInputButton

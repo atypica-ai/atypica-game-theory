@@ -1,19 +1,17 @@
 "use client";
 import { createStudyUserChat } from "@/app/(study)/study/actions";
 import { FileAttachment } from "@/components/chat/FileAttachment";
-import {
-  FileUploadButton,
-  FileUploadInfo,
-  MAX_TOTAL_FILE_SIZE,
-} from "@/components/chat/FileUploadButton";
+import { FileUploadButton } from "@/components/chat/FileUploadButton";
+import { FileUploadStatus } from "@/components/chat/FileUploadStatus";
 import { VoiceInputButton } from "@/components/chat/VoiceInputButton";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { useFileUploadManager } from "@/hooks/use-file-upload-manager";
 import { useDevice } from "@/lib/utils";
 import { ArrowRightIcon, RotateCwIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 
 export function InputSection() {
@@ -22,8 +20,9 @@ export function InputSection() {
   const router = useRouter();
   const { isMobile } = useDevice();
   const [input, setInput] = useState("");
-  const [uploadedFiles, setUploadedFiles] = useState<FileUploadInfo[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const { uploadedFiles, handleFileUploaded, handleRemoveFile, clearFiles, isUploadDisabled } =
+    useFileUploadManager();
 
   // Create a properly memoized debounced function
   const debouncedSaveToLocalStorage = useDebouncedCallback((value: string) => {
@@ -35,14 +34,6 @@ export function InputSection() {
     if (savedInput) {
       setInput(savedInput);
     }
-  }, []);
-
-  const handleFileUploaded = useCallback((fileInfo: FileUploadInfo) => {
-    setUploadedFiles((prev) => [...prev, fileInfo]);
-  }, []);
-
-  const handleRemoveFile = useCallback((index: number) => {
-    setUploadedFiles((prev) => prev.filter((_, i) => i !== index));
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -100,10 +91,8 @@ export function InputSection() {
         <div className="absolute left-0 bottom-0 right-0 flex items-center justify-start gap-2 p-4">
           <FileUploadButton
             onFileUploadedAction={handleFileUploaded}
-            disabled={
-              isLoading ||
-              uploadedFiles.reduce((acc, file) => acc + file.size, 0) > MAX_TOTAL_FILE_SIZE
-            }
+            disabled={isLoading || isUploadDisabled()}
+            existingFiles={uploadedFiles}
           />
           {uploadedFiles.map((file, index) => (
             <FileAttachment
@@ -116,6 +105,7 @@ export function InputSection() {
               onRemove={() => handleRemoveFile(index)}
             />
           ))}
+          {uploadedFiles.length > 0 && <FileUploadStatus files={uploadedFiles} className="ml-2" />}
           <div className="ml-auto" />
           <VoiceInputButton
             onTranscript={(text) => {
