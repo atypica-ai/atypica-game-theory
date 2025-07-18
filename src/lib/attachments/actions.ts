@@ -7,6 +7,7 @@ import { ChatMessageAttachment } from "@/prisma/client";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
+import { resizeImageToWebP } from "./image";
 import { s3SignedUrl, s3UploadCredentials } from "./s3";
 import { S3UploadCredentials } from "./types";
 
@@ -62,13 +63,12 @@ export async function fileUrlToDataUrl({
   // if (!fs.existsSync(cacheDir)) {
   const hash = createHash("sha256").update(objectUrl).digest("hex");
   await fs.promises.mkdir(path.join(cacheDir, hash), { recursive: true });
-
   let buffer: Buffer;
   const url = await s3SignedUrl(objectUrl);
   const fileName = objectUrl.split("/").pop() as string;
-  const fileFullPath = path.join(cacheDir, hash, fileName);
-  if (fs.existsSync(fileFullPath)) {
-    buffer = await fs.promises.readFile(fileFullPath);
+  const cacheFileFullPath = path.join(cacheDir, hash, fileName);
+  if (fs.existsSync(cacheFileFullPath)) {
+    buffer = await fs.promises.readFile(cacheFileFullPath);
   } else {
     let response;
     if (getDeployRegion() === "mainland" && !/amazonaws\.com\.cn/.test(objectUrl)) {
@@ -82,7 +82,11 @@ export async function fileUrlToDataUrl({
       throw new Error(errorMsg);
     }
     buffer = Buffer.from(await response.arrayBuffer());
-    await fs.promises.writeFile(fileFullPath, buffer);
+    buffer = await resizeImageToWebP(buffer, {
+      minShortSide: 800,
+      maxLongSide: 4000,
+    });
+    await fs.promises.writeFile(cacheFileFullPath, buffer);
   }
 
   const base64 = Buffer.from(buffer).toString("base64");
