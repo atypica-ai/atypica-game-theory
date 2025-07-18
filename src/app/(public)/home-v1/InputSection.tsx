@@ -21,7 +21,7 @@ export function InputSection() {
   const { isMobile } = useDevice();
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { uploadedFiles, handleFileUploaded, handleRemoveFile, clearFiles, isUploadDisabled } =
+  const { uploadedFiles, handleFileUploaded, handleRemoveFile, isUploadDisabled } =
     useFileUploadManager();
 
   // Create a properly memoized debounced function

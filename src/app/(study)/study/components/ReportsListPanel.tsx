@@ -47,7 +47,6 @@ export default function ReportsListPanel() {
     ) {
       fetchReports();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchReports, lastToolInvocation]);
 
   return (

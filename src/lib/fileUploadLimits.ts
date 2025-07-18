@@ -35,10 +35,12 @@ export interface FileUploadLimitsResult {
 }
 
 export function isImageFile(mimeType: string): boolean {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return IMAGE_MIME_TYPES.includes(mimeType as any);
 }
 
 export function isDocumentFile(mimeType: string): boolean {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return DOCUMENT_MIME_TYPES.includes(mimeType as any);
 }
 

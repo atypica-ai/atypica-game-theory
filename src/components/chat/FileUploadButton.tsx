@@ -45,6 +45,7 @@ export function FileUploadButton({
 
     // Check if file type is supported
     const supportedTypes = [...IMAGE_MIME_TYPES, ...DOCUMENT_MIME_TYPES];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (!supportedTypes.includes(file.type as any)) {
       toast.error(t("unsupportedType"));
       return;

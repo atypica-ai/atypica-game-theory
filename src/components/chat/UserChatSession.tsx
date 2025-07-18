@@ -79,7 +79,7 @@ export function UserChatSession({
         clearFiles();
       }
     },
-    [handleSubmit, uploadedFiles, useChatRef, input, setInput, persistMessages],
+    [handleSubmit, uploadedFiles, useChatRef, input, setInput, clearFiles, persistMessages],
   );
 
   const [messagesContainerRef, messagesEndRef] = useScrollToBottom<HTMLDivElement>();

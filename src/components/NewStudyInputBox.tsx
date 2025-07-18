@@ -43,7 +43,7 @@ export function NewStudyInputBox({ className }: { className?: string }) {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [studyType, setStudyType] = useState<"general" | "product-rnd">("general");
-  const { uploadedFiles, handleFileUploaded, handleRemoveFile, clearFiles, isUploadDisabled } =
+  const { uploadedFiles, handleFileUploaded, handleRemoveFile, isUploadDisabled } =
     useFileUploadManager();
 
   // Create a properly memoized debounced function
