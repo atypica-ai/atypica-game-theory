@@ -1,8 +1,8 @@
 import { convertDBMessageToAIMessage } from "@/ai/messageUtils";
 import { ToolName } from "@/ai/tools/types";
+import authOptions from "@/app/(auth)/authOptions";
 import { fetchClarifyInterviewSession } from "@/app/(interviewProject)/interviewProject/actions";
 import UserTokensBalance from "@/components/UserTokensBalance";
-import { authOptions } from "@/lib/auth";
 import { generatePageMetadata } from "@/lib/request/metadata";
 import { prisma } from "@/prisma/prisma";
 import { Message } from "ai";

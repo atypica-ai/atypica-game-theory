@@ -1,7 +1,7 @@
 import { fetchUserChatByIdAction } from "@/app/(agents)/agents/actions";
 import { AgentChatPage } from "@/app/(agents)/agents/AgentChatPage";
+import authOptions from "@/app/(auth)/authOptions";
 import { checkTezignAuth } from "@/app/admin/actions";
-import { authOptions } from "@/lib/auth";
 import { getServerSession } from "next-auth/next";
 import { forbidden, notFound, redirect } from "next/navigation";
 

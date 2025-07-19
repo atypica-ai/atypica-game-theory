@@ -1,5 +1,5 @@
 import { runBuildPersonaStreamObject } from "@/ai/tools/experts/buildPersonaStreamObject";
-import { authOptions } from "@/lib/auth";
+import authOptions from "@/app/(auth)/authOptions";
 import { rootLogger } from "@/lib/logging";
 import { prisma } from "@/prisma/prisma";
 import { getServerSession } from "next-auth";

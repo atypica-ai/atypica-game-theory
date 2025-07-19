@@ -1,7 +1,7 @@
 import { interviewSessionSystem } from "@/ai/prompt";
+import authOptions from "@/app/(auth)/authOptions";
 import { fetchInterviewProjectByToken } from "@/app/(interviewProject)/interviewProject/actions";
 import UserTokensBalance from "@/components/UserTokensBalance";
-import { authOptions } from "@/lib/auth";
 import { generatePageMetadata } from "@/lib/request/metadata";
 import { Metadata } from "next";
 import { getServerSession } from "next-auth/next";

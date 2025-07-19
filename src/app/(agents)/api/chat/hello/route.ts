@@ -7,7 +7,7 @@ import { helloSystem } from "@/ai/prompt";
 import { llm, providerOptions } from "@/ai/provider";
 import { thanksTool } from "@/ai/tools/tools";
 import { ToolName } from "@/ai/tools/types";
-import { authOptions } from "@/lib/auth";
+import authOptions from "@/app/(auth)/authOptions";
 import { prisma } from "@/prisma/prisma";
 import { Message, smoothStream, streamText } from "ai";
 import { getServerSession } from "next-auth/next";

@@ -1,4 +1,4 @@
-import { authOptions } from "@/lib/auth";
+import authOptions from "@/app/(auth)/authOptions";
 import { proxiedFetch } from "@/lib/proxy/fetch";
 import Groq from "groq-sdk";
 import { getServerSession } from "next-auth";

@@ -1,5 +1,5 @@
 "use server";
-import { authOptions } from "@/lib/auth";
+import authOptions from "@/app/(auth)/authOptions";
 import { AdminRole } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { getServerSession } from "next-auth";

@@ -215,7 +215,7 @@
       <div class="absolute top-0 right-0 opacity-20 text-xs overflow-hidden h-full w-1/2">
         <pre class="text-gray-500">
 import { fetchUserChatById } from "@/data";
-import { authOptions } from "@/lib/auth";
+import authOptions from "@/app/(auth)/authOptions";
 import { getServerSession } from "next-auth/next";
 import { forbidden, redirect } from "next/navigation";
 import { Metadata } from "next/types";

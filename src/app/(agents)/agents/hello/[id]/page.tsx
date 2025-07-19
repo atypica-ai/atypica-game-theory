@@ -1,6 +1,6 @@
 import { fetchUserChatByIdAction } from "@/app/(agents)/agents/actions";
+import authOptions from "@/app/(auth)/authOptions";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
-import { authOptions } from "@/lib/auth";
 import { throwServerActionError } from "@/lib/serverAction";
 import { getServerSession } from "next-auth/next";
 import { forbidden, redirect } from "next/navigation";

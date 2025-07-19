@@ -1,6 +1,6 @@
 import { runBuildPersona } from "@/ai/tools/experts/buildPersona";
 import { StatReporter } from "@/ai/tools/types";
-import { authOptions } from "@/lib/auth";
+import authOptions from "@/app/(auth)/authOptions";
 import { rootLogger } from "@/lib/logging";
 import { prisma } from "@/prisma/prisma";
 import { createDataStreamResponse } from "ai";

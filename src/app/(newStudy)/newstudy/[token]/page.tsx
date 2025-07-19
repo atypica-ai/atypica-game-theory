@@ -1,5 +1,5 @@
 import { convertDBMessageToAIMessage } from "@/ai/messageUtils";
-import { authOptions } from "@/lib/auth";
+import authOptions from "@/app/(auth)/authOptions";
 import { prisma } from "@/prisma/prisma";
 import { Message } from "ai";
 import { getServerSession } from "next-auth/next";

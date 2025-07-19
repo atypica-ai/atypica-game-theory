@@ -1,5 +1,5 @@
+import authOptions from "@/app/(auth)/authOptions";
 import { StudyPageClient } from "@/app/(study)/study/StudyPageClient";
-import { authOptions } from "@/lib/auth";
 import { generatePageMetadata } from "@/lib/request/metadata";
 import { throwServerActionError } from "@/lib/serverAction";
 import { getServerSession } from "next-auth/next";

@@ -1,5 +1,5 @@
 "use server";
-import { authOptions } from "@/lib/auth";
+import authOptions from "@/app/(auth)/authOptions";
 import { Session } from "next-auth";
 import { getServerSession } from "next-auth/next";
 import { headers } from "next/headers";

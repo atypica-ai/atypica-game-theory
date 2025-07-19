@@ -5,10 +5,10 @@ import {
 } from "@/ai/messageUtils";
 import { llm, providerOptions } from "@/ai/provider";
 import { initGenericUserChatStatReporter } from "@/ai/tools/stats";
+import authOptions from "@/app/(auth)/authOptions";
 import { newStudySystem } from "@/app/(newStudy)/prompt";
 import { newStudyTools } from "@/app/(newStudy)/tools";
 import { NewStudyBodySchema } from "@/app/(newStudy)/types";
-import { authOptions } from "@/lib/auth";
 import { rootLogger } from "@/lib/logging";
 import { prisma } from "@/prisma/prisma";
 import {

@@ -1,14 +1,14 @@
 import "server-only";
 
 import { sendVerificationCode } from "@/app/(auth)/auth/verify/lib";
+import { verifyImpersonationLoginToken } from "@/lib/impersonationLogin";
+import { rootLogger } from "@/lib/logging";
 import { getRequestClientIp, getRequestUserAgent } from "@/lib/request/headers";
 import { prisma } from "@/prisma/prisma";
 import { compare, hash } from "bcryptjs";
 import { type NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
-import { verifyImpersonationLoginToken } from "./impersonationLogin";
-import { rootLogger } from "./logging";
 
 export const authClientInfo = async () => {
   const lastLogin = {
@@ -22,7 +22,7 @@ export const authClientInfo = async () => {
 
 const authLogger = rootLogger.child({ api: "next-auth" });
 
-export const authOptions: NextAuthOptions = {
+const authOptions: NextAuthOptions = {
   logger: {
     error(code, metadata) {
       if (metadata instanceof Error) {
@@ -200,6 +200,8 @@ export const authOptions: NextAuthOptions = {
     },
   },
 };
+
+export default authOptions;
 
 export async function createUser({
   email,

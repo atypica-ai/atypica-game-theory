@@ -1,4 +1,4 @@
-import { authOptions } from "@/lib/auth";
+import authOptions from "@/app/(auth)/authOptions";
 import { getServerSession } from "next-auth/next";
 import { redirect } from "next/navigation";
 import { StudyListPageClient } from "./StudyListPageClient";

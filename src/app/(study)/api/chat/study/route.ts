@@ -1,5 +1,5 @@
 import { persistentAIMessageToDB, prepareMessagesForStreaming } from "@/ai/messageUtils";
-import { authOptions } from "@/lib/auth";
+import authOptions from "@/app/(auth)/authOptions";
 import { rootLogger } from "@/lib/logging";
 import { UserChatExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
