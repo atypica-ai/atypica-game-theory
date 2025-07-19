@@ -1,6 +1,7 @@
 import "server-only";
 
 // import { readReplicas } from "@prisma/extension-read-replicas";
+// import { withAccelerate } from "@prisma/extension-accelerate";
 import { Prisma, PrismaClient } from "./client";
 
 // export const prisma = new PrismaClient();
@@ -12,6 +13,7 @@ const log: Prisma.LogLevel[] =
 
 function newPrismaClient() {
   return new PrismaClient({ log });
+  // return new PrismaClient({ log }).$extends(withAccelerate());
   // const databaseUrl = process.env.DATABASE_URL
   //   ? process.env.DATABASE_URL
   //   : "postgres://user:password@localhost:5432/dbname"; // 仅用于 pnpm build 环境，类型不报错
