@@ -1,4 +1,4 @@
-import { decryptText, encryptText } from "./cipher";
+import { decryptText, encryptText } from "@/lib/cipher";
 
 export interface ImpersonationLoginPayload {
   userId: number;

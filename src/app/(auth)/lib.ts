@@ -1,8 +1,12 @@
 import "server-only";
 
+import { rootLogger } from "@/lib/logging";
 import { getRequestClientIp, getRequestGeo, getRequestUserAgent } from "@/lib/request/headers";
 import { prisma } from "@/prisma/prisma";
+import { waitUntil } from "@vercel/functions";
 import { hash } from "bcryptjs";
+
+export const authLogger = rootLogger.child({ api: "next-auth" });
 
 export const authClientInfo = async () => {
   const timestamp = Date.now();
@@ -19,6 +23,24 @@ export const authClientInfo = async () => {
   };
 };
 
+export function recordLastLogin(userId: number) {
+  // 后台运行，不要 await
+  waitUntil(
+    new Promise(async (resolve) => {
+      try {
+        const lastLogin = await authClientInfo();
+        await prisma.user.update({
+          where: { id: userId },
+          data: { lastLogin },
+        });
+      } catch (error) {
+        authLogger.error(`Error updating user last login: ${(error as Error).message}`);
+      }
+      resolve(null);
+    }),
+  );
+}
+
 export async function createUser({
   email,
   password,
@@ -31,13 +53,12 @@ export async function createUser({
   email = email.toLowerCase();
 
   const hashedPassword = password ? await hash(password, 10) : "";
-  const lastLogin = await authClientInfo();
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { password: _, ...user } = await prisma.user.create({
     data: {
       email,
       password: hashedPassword,
-      lastLogin,
       emailVerified: emailVerified ?? null,
     },
   });
@@ -59,6 +80,8 @@ export async function createUser({
       },
     });
   });
+
+  recordLastLogin(user.id);
 
   return user;
 }

@@ -1,7 +1,6 @@
 import "server-only";
 
 import { sendVerificationCode } from "@/app/(auth)/auth/verify/lib";
-import { verifyImpersonationLoginToken } from "@/lib/impersonationLogin";
 import { rootLogger } from "@/lib/logging";
 import { User } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
@@ -9,9 +8,8 @@ import { compare } from "bcryptjs";
 import { type NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
-import { authClientInfo, createUser } from "./lib";
-
-const authLogger = rootLogger.child({ api: "next-auth" });
+import { verifyImpersonationLoginToken } from "./impersonationLogin";
+import { authLogger, createUser, recordLastLogin } from "./lib";
 
 const authOptions: NextAuthOptions = {
   logger: {
@@ -64,6 +62,10 @@ const authOptions: NextAuthOptions = {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
+      /**
+       * 前端需要调用 signin/actions.ts 里的 signInWithEmail 方法不要直接调用 next-auth/react 自带的 signIn
+       * signInWithEmail 可以更好的处理错误，并且在 EMAIL_NOT_VERIFIED 的时候跳转
+       */
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
           throw new Error("INVALID_CREDENTIALS");
@@ -85,18 +87,13 @@ const authOptions: NextAuthOptions = {
         }
         if (!user.emailVerified) {
           try {
-            await sendVerificationCode(user.email);
+            await sendVerificationCode(email);
           } catch {
             // 无法做任何处理，通知了用户也没用，前端直接处理接下来的 EMAIL_NOT_VERIFIED 错误就行，然后去邮箱验证页面
           }
           throw new Error("EMAIL_NOT_VERIFIED");
         }
-        try {
-          const lastLogin = await authClientInfo();
-          await prisma.user.update({ where: { id: user.id }, data: { lastLogin } });
-        } catch (error) {
-          authLogger.error(`Error updating user last login: ${(error as Error).message}`);
-        }
+        recordLastLogin(user.id);
         return {
           id: user.id,
           email: user.email,
@@ -130,12 +127,7 @@ const authOptions: NextAuthOptions = {
         if (!user.emailVerified) {
           throw new Error("EMAIL_NOT_VERIFIED");
         }
-        try {
-          const lastLogin = await authClientInfo();
-          await prisma.user.update({ where: { id: user.id }, data: { lastLogin } });
-        } catch (error) {
-          authLogger.error(`Error updating user last login: ${(error as Error).message}`);
-        }
+        // 不要 recordLastLogin，因为可能是 admin 登录的
         return {
           id: user.id,
           email: user.email,

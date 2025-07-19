@@ -1,8 +1,8 @@
 "use server";
+import { generateImpersonationLoginUrl } from "@/app/(auth)/impersonationLogin";
 import { authClientInfo } from "@/app/(auth)/lib";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
-import { generateImpersonationLoginUrl } from "@/lib/impersonationLogin";
 import { getRequestOrigin } from "@/lib/request/headers";
 import { ServerActionResult } from "@/lib/serverAction";
 import { AdminRole, Currency, User } from "@/prisma/client";

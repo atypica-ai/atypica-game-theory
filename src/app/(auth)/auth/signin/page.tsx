@@ -10,7 +10,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
-import { recordLastLogin } from "./actions";
+import { signInWithEmail } from "./client";
 
 export default function SignInPage() {
   return (
@@ -33,29 +33,29 @@ function SignIn() {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
+    setError("");
     try {
-      setIsLoading(true);
-      setError("");
-      const result = await signIn("credentials", {
+      // const result = await signIn("credentials", {
+      //   email,
+      //   password,
+      //   redirect: false,
+      // });
+      await signInWithEmail({
         email,
         password,
-        redirect: false,
       });
-      if (!result?.error) {
-        await recordLastLogin();
-        // router.replace(callbackUrl);
-        window.location.replace(callbackUrl);
-      } else {
-        if (result.error === "EMAIL_NOT_VERIFIED") {
-          setError(result.error);
-          router.push(`/auth/verify?email=${email}&callbackUrl=${encodeURIComponent(callbackUrl)}`);
-        } else {
-          console.error(result);
-          setError(t("errorMessage"));
-        }
-      }
+      // router.replace(callbackUrl);
+      window.location.replace(callbackUrl);
     } catch (error) {
-      setError((error as Error).message);
+      const errMsg = (error as Error).message;
+      if (errMsg === "EMAIL_NOT_VERIFIED") {
+        router.push(`/auth/verify?email=${email}&callbackUrl=${encodeURIComponent(callbackUrl)}`);
+      } else if (["INVALID_CREDENTIALS", "USER_NOT_FOUND", "INVALID_PASSWORD"].includes(errMsg)) {
+        setError(t("errorMessage"));
+      } else {
+        setError(errMsg);
+      }
     } finally {
       setIsLoading(false);
     }

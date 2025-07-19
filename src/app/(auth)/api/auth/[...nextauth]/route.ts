@@ -1,5 +1,5 @@
 import authOptions from "@/app/(auth)/authOptions";
-import { rootLogger } from "@/lib/logging";
+import { authLogger } from "@/app/(auth)/lib";
 import {
   getRequestClientIp,
   getRequestGeo,
@@ -20,8 +20,7 @@ async function handler(req: NextRequest, context: any) {
   ]);
   const headersList = await headers();
   const referer = headersList.get("referer");
-  rootLogger.info({
-    api: "next-auth",
+  authLogger.info({
     method: req.method,
     pathname: req.nextUrl.pathname,
     referer,
