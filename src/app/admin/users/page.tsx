@@ -330,6 +330,9 @@ export default function UsersPage() {
                       <>
                         <div>{formatDate(new Date(user.lastLogin.timestamp), locale)}</div>
                         <div>{user.lastLogin.clientIp}</div>
+                        <div>
+                          {user.lastLogin.geo?.city},{user.lastLogin.geo?.countryCode}
+                        </div>
                       </>
                     ) : (
                       <span className="text-muted-foreground">-</span>

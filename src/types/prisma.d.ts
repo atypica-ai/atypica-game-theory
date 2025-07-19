@@ -9,13 +9,18 @@ declare module "@/prisma/client" {
 
   export type UserChatExtra =
     | {
-        clientIp: string;
-        userAgent: string;
+        clientIp: string | null;
+        userAgent: string | null;
         locale: string;
         feedback?: {
           rating: string;
           submittedAt: string;
         };
+        geo?: {
+          country: string | null;
+          countryCode: string | null;
+          city: string | null;
+        } | null;
         newStudyUserChatToken: string;
         briefUserChatId?: number;
         error?: string;

@@ -477,10 +477,20 @@ export default function FeaturedStudiesPage() {
                       <span className="text-xs">Token:</span>{" "}
                       {analyst.studyUserChat?.token || "N/A"}
                     </p>
-                    <p>
-                      <span className="text-xs">Created:</span>{" "}
-                      {formatDate(analyst.createdAt, locale)}
-                    </p>
+                    {(() => {
+                      const extra = analyst.studyUserChat?.extra as UserChatExtra;
+                      return (
+                        <p>
+                          <span className="text-xs">Created:</span>{" "}
+                          {formatDate(analyst.createdAt, locale)}
+                          {extra?.geo && (
+                            <span>
+                              (📍{extra.geo.city},{extra.geo.country})
+                            </span>
+                          )}
+                        </p>
+                      );
+                    })()}
                   </div>
                 </CardContent>
                 <CardFooter className="gap-2 items-center justify-between mt-auto">
