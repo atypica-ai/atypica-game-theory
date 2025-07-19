@@ -1,18 +1,34 @@
 import authOptions from "@/app/(auth)/authOptions";
 import { rootLogger } from "@/lib/logging";
+import {
+  getRequestClientIp,
+  getRequestGeo,
+  getRequestOrigin,
+  getRequestUserAgent,
+} from "@/lib/request/headers";
 import NextAuth from "next-auth";
 import { headers } from "next/headers";
 import { NextRequest } from "next/server";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function handler(req: NextRequest, context: any) {
+  const [origin, userAgent, clientIp, geo] = await Promise.all([
+    getRequestOrigin(),
+    getRequestUserAgent(),
+    getRequestClientIp(),
+    getRequestGeo(),
+  ]);
   const headersList = await headers();
+  const referer = headersList.get("referer");
   rootLogger.info({
     api: "next-auth",
     method: req.method,
-    url: req.url,
-    referer: headersList.get("referer"),
-    userAgent: headersList.get("user-agent"),
+    pathname: req.nextUrl.pathname,
+    referer,
+    origin,
+    userAgent,
+    clientIp,
+    geo,
   });
   return await NextAuth(req, context, authOptions);
 }
