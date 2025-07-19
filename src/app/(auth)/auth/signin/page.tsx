@@ -50,6 +50,7 @@ function SignIn() {
           setError(result.error);
           router.push(`/auth/verify?email=${email}&callbackUrl=${encodeURIComponent(callbackUrl)}`);
         } else {
+          console.error(result);
           setError(t("errorMessage"));
         }
       }

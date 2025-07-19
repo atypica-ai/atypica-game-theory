@@ -25,10 +25,18 @@ const authLogger = rootLogger.child({ api: "next-auth" });
 export const authOptions: NextAuthOptions = {
   logger: {
     error(code, metadata) {
-      authLogger.error({
-        code,
-        msg: metadata instanceof Error ? metadata.message : JSON.stringify(metadata),
-      });
+      if (metadata instanceof Error) {
+        authLogger.error({ code, msg: metadata.message });
+      } else {
+        const { error, ...rest } = metadata;
+        authLogger.error({
+          code,
+          msg: JSON.stringify({
+            error: error.message,
+            ...rest,
+          }),
+        });
+      }
     },
     warn(code) {
       authLogger.warn({ code });

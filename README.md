@@ -146,7 +146,7 @@ pnpm dev
 
 ```bash
 docker buildx build --platform linux/amd64 . -t atypica-llm-app -f Dockerfile
-docker run -p 3000:3000 --env-file ./.env atypica-llm-app
+docker run -p 3000:3000 --env-file ./.env.docker atypica-llm-app
 ```
 
 ## 特色与优势
