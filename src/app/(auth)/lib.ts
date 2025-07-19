@@ -1,17 +1,22 @@
 import "server-only";
 
-import { getRequestClientIp, getRequestUserAgent } from "@/lib/request/headers";
+import { getRequestClientIp, getRequestGeo, getRequestUserAgent } from "@/lib/request/headers";
 import { prisma } from "@/prisma/prisma";
 import { hash } from "bcryptjs";
 
 export const authClientInfo = async () => {
-  const lastLogin = {
-    timestamp: Date.now(),
-    clientIp: await getRequestClientIp(),
-    userAgent: await getRequestUserAgent(),
+  const timestamp = Date.now();
+  const [clientIp, userAgent, geo] = await Promise.all([
+    getRequestClientIp(),
+    getRequestUserAgent(),
+    getRequestGeo(),
+  ]);
+  return {
+    timestamp,
+    clientIp,
+    userAgent,
+    geo,
   };
-
-  return lastLogin;
 };
 
 export async function createUser({

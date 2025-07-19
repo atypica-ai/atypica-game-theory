@@ -1,6 +1,6 @@
 import "server-only";
 
-import { getRequestClientIp, getRequestUserAgent } from "@/lib/request/headers";
+import { getRequestClientIp, getRequestGeo, getRequestUserAgent } from "@/lib/request/headers";
 import { generateToken } from "@/lib/utils";
 import { UserChat, UserChatExtra, UserChatKind } from "@/prisma/client";
 import { ITXClientDenyList } from "@/prisma/client/runtime/library";
@@ -25,15 +25,18 @@ export async function createUserChat<TKind extends UserChatKind>({
   if (!tx) {
     tx = prisma;
   }
-  const clientIp = await getRequestClientIp();
-  const userAgent = await getRequestUserAgent();
+  const [clientIp, userAgent, geo] = await Promise.all([
+    getRequestClientIp(),
+    getRequestUserAgent(),
+    getRequestGeo(),
+  ]);
   const locale = await getLocale();
   if (!token) {
     token = generateToken();
   }
   const extra = {
     ..._extra,
-    ...{ clientIp, userAgent, locale }, // 发起 chat 时候的客户端信息，不用于后续逻辑判断
+    ...{ clientIp, userAgent, geo, locale }, // 发起 chat 时候的客户端信息，不用于后续逻辑判断
   };
   const userChat = await tx.userChat.create({
     data: { userId, title, kind, token, extra },

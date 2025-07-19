@@ -3,6 +3,7 @@ import "server-only";
 import { sendVerificationCode } from "@/app/(auth)/auth/verify/lib";
 import { verifyImpersonationLoginToken } from "@/lib/impersonationLogin";
 import { rootLogger } from "@/lib/logging";
+import { User } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { compare } from "bcryptjs";
 import { type NextAuthOptions } from "next-auth";
@@ -68,9 +69,13 @@ const authOptions: NextAuthOptions = {
           throw new Error("INVALID_CREDENTIALS");
         }
         const email = credentials.email.toLowerCase().trim();
-        const user = await prisma.user.findUnique({
-          where: { email },
-        });
+        let user: User | null;
+        try {
+          user = await prisma.user.findUnique({ where: { email } });
+        } catch (error) {
+          authLogger.error(`Error fetching user: ${(error as Error).message}`);
+          throw new Error("SERVER_ERROR");
+        }
         if (!user) {
           throw new Error("USER_NOT_FOUND");
         }
@@ -85,6 +90,12 @@ const authOptions: NextAuthOptions = {
             // 无法做任何处理，通知了用户也没用，前端直接处理接下来的 EMAIL_NOT_VERIFIED 错误就行，然后去邮箱验证页面
           }
           throw new Error("EMAIL_NOT_VERIFIED");
+        }
+        try {
+          const lastLogin = await authClientInfo();
+          await prisma.user.update({ where: { id: user.id }, data: { lastLogin } });
+        } catch (error) {
+          authLogger.error(`Error updating user last login: ${(error as Error).message}`);
         }
         return {
           id: user.id,
@@ -106,22 +117,25 @@ const authOptions: NextAuthOptions = {
         if (!payload) {
           throw new Error("INVALID_TOKEN");
         }
-        // Find the user
-        const user = await prisma.user.findUnique({
-          where: { id: payload.userId },
-        });
+        let user: User | null;
+        try {
+          user = await prisma.user.findUnique({ where: { id: payload.userId } });
+        } catch (error) {
+          authLogger.error(`Error fetching user: ${(error as Error).message}`);
+          throw new Error("SERVER_ERROR");
+        }
         if (!user) {
           throw new Error("USER_NOT_FOUND");
         }
         if (!user.emailVerified) {
           throw new Error("EMAIL_NOT_VERIFIED");
         }
-        // Update user's last login info
-        const lastLogin = await authClientInfo();
-        await prisma.user.update({
-          where: { id: user.id },
-          data: { lastLogin },
-        });
+        try {
+          const lastLogin = await authClientInfo();
+          await prisma.user.update({ where: { id: user.id }, data: { lastLogin } });
+        } catch (error) {
+          authLogger.error(`Error updating user last login: ${(error as Error).message}`);
+        }
         return {
           id: user.id,
           email: user.email,
