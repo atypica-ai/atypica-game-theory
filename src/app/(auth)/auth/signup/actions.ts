@@ -1,6 +1,6 @@
 "use server";
 import { sendVerificationCode } from "@/app/(auth)/auth/verify/lib";
-import { createUser } from "@/lib/auth";
+import { createUser } from "@/app/(auth)/lib";
 import { ServerActionResult } from "@/lib/serverAction";
 import { prisma } from "@/prisma/prisma";
 import { getTranslations } from "next-intl/server";

@@ -3,22 +3,12 @@ import "server-only";
 import { sendVerificationCode } from "@/app/(auth)/auth/verify/lib";
 import { verifyImpersonationLoginToken } from "@/lib/impersonationLogin";
 import { rootLogger } from "@/lib/logging";
-import { getRequestClientIp, getRequestUserAgent } from "@/lib/request/headers";
 import { prisma } from "@/prisma/prisma";
-import { compare, hash } from "bcryptjs";
+import { compare } from "bcryptjs";
 import { type NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
-
-export const authClientInfo = async () => {
-  const lastLogin = {
-    timestamp: Date.now(),
-    clientIp: await getRequestClientIp(),
-    userAgent: await getRequestUserAgent(),
-  };
-
-  return lastLogin;
-};
+import { authClientInfo, createUser } from "./lib";
 
 const authLogger = rootLogger.child({ api: "next-auth" });
 
@@ -202,47 +192,3 @@ const authOptions: NextAuthOptions = {
 };
 
 export default authOptions;
-
-export async function createUser({
-  email,
-  password,
-  emailVerified,
-}: {
-  email: string;
-  password?: string;
-  emailVerified?: Date;
-}) {
-  email = email.toLowerCase();
-
-  const hashedPassword = password ? await hash(password, 10) : "";
-  const lastLogin = await authClientInfo();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { password: _, ...user } = await prisma.user.create({
-    data: {
-      email,
-      password: hashedPassword,
-      lastLogin,
-      emailVerified: emailVerified ?? null,
-    },
-  });
-
-  // 注册赠送 1_000_000 tokens
-  const signupAmount = 1_000_000;
-  await prisma.$transaction(async (tx) => {
-    await tx.userTokensLog.create({
-      data: {
-        userId: user.id,
-        verb: "signup",
-        value: signupAmount,
-      },
-    });
-    await tx.userTokens.create({
-      data: {
-        userId: user.id,
-        permanentBalance: signupAmount,
-      },
-    });
-  });
-
-  return user;
-}

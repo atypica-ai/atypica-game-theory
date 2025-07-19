@@ -1,7 +1,7 @@
 "use server";
+import { authClientInfo } from "@/app/(auth)/lib";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
-import { authClientInfo } from "@/lib/auth";
 import { generateImpersonationLoginUrl } from "@/lib/impersonationLogin";
 import { getRequestOrigin } from "@/lib/request/headers";
 import { ServerActionResult } from "@/lib/serverAction";
