@@ -14,9 +14,11 @@ export interface SavePersonaToolResult extends PlainTextToolResult {
 
 export const savePersonaTool = ({
   scoutUserChatId,
+  personaImportId,
   statReport,
 }: {
-  scoutUserChatId: number;
+  scoutUserChatId?: number;
+  personaImportId?: number;
   statReport?: StatReporter;
 }) =>
   tool({
@@ -68,24 +70,42 @@ export const savePersonaTool = ({
       locale,
     }): Promise<SavePersonaToolResult> => {
       const samples = [] as string[];
+      const personaData: any = {
+        name: name.slice(0, 50),
+        source: source.slice(0, 200), // 为了数据库不报错，防御性的截断一下
+        tags: tags.map((tag) => tag.slice(0, 50)),
+        samples,
+        prompt,
+        locale,
+      };
+
+      if (scoutUserChatId !== undefined) {
+        personaData.scoutUserChatId = scoutUserChatId;
+      }
+
+      if (personaImportId !== undefined) {
+        personaData.personaImportId = personaImportId;
+      }
+
       const persona = await prisma.persona.create({
-        data: {
-          name: name.slice(0, 50),
-          source: source.slice(0, 200), // 为了数据库不报错，防御性的截断一下
-          tags: tags.map((tag) => tag.slice(0, 50)),
-          samples,
-          prompt,
-          locale,
-          scoutUserChatId,
-        },
+        data: personaData,
       });
       waitUntil(createPersonaEmbedding(persona));
       if (statReport) {
-        await statReport("personas", 1, {
+        const reportData: any = {
           reportedBy: "savePersona tool",
-          scoutUserChatId,
           personaId: persona.id,
-        });
+        };
+
+        if (scoutUserChatId !== undefined) {
+          reportData.scoutUserChatId = scoutUserChatId;
+        }
+
+        if (personaImportId !== undefined) {
+          reportData.personaImportId = personaImportId;
+        }
+
+        await statReport("personas", 1, reportData);
       }
       return {
         personaId: persona.id,

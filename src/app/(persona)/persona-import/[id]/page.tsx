@@ -34,6 +34,12 @@ export default async function PersonaImportDetailPage({
     notFound();
   }
 
+  // Fetch associated personas
+  const personas = await prisma.persona.findMany({
+    where: { personaImportId: id },
+    orderBy: { createdAt: "asc" },
+  });
+
   return (
     <PersonaImportView
       personaImport={{
@@ -41,6 +47,7 @@ export default async function PersonaImportDetailPage({
         analysis: personaImport.analysis as unknown as Partial<PersonaImportAnalysis> | null,
         extra: personaImport.extra as unknown as PersonaImportExtra,
       }}
+      personas={personas}
     />
   );
 }

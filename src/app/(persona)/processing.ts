@@ -1,13 +1,16 @@
 import "server-only";
 
+import { buildPersonaSystem } from "@/ai/prompt";
 import { llm, providerOptions } from "@/ai/provider";
+import { savePersonaTool } from "@/ai/tools/tools";
+import { ToolName } from "@/ai/tools/types";
 import { s3SignedUrl } from "@/lib/attachments/s3";
 import { proxiedFetch } from "@/lib/proxy/fetch";
 import { getDeployRegion } from "@/lib/request/deployRegion";
 import { ChatMessageAttachment, PersonaImport } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
-import { generateObject, generateText } from "ai";
-import { personaAnalysisPrompt, personaGenerationPrompt } from "./prompts";
+import { generateObject, generateText, streamText } from "ai";
+import { personaAnalysisPrompt, personaSummaryPrompt } from "./prompts";
 import { analysisSchema } from "./types";
 
 async function attachmentToDataUrl(attachment: ChatMessageAttachment) {
@@ -38,19 +41,21 @@ export async function buildPersonaSummary(
     const attachment = personaImport.attachments[0];
     const { name: fileName, mimeType } = attachment;
     const dataUrl = await attachmentToDataUrl(attachment);
-    const prompt = personaGenerationPrompt({ locale: "zh-CN" });
 
-    const result = await generateText({
+    // Step 1: Generate summary only (without system prompts)
+    const summaryPrompt = personaSummaryPrompt({ locale: "zh-CN" });
+
+    const summaryResult = await generateText({
       model: llm("claude-3-7-sonnet"),
       providerOptions: providerOptions,
-      system: prompt,
+      system: summaryPrompt,
       messages: [
         {
           role: "user",
           content: [
             {
               type: "text",
-              text: `请基于以下PDF文件内容生成一个详细的人格画像总结和系统提示词。文件名：${fileName}`,
+              text: `请基于以下PDF文件内容生成详细的人格画像总结。文件名：${fileName}`,
             },
             { type: "file", filename: fileName, data: dataUrl, mimeType },
           ],
@@ -61,7 +66,47 @@ export async function buildPersonaSummary(
     // Update PersonaImport with the generated summary
     await prisma.personaImport.update({
       where: { id: personaImport.id },
-      data: { summary: result.text },
+      data: { summary: summaryResult.text },
+    });
+
+    // Step 2: Generate personas using savePersona tool
+    const personaMessages = [
+      {
+        role: "user" as const,
+        content: [
+          {
+            type: "text" as const,
+            text: `请基于以下PDF文件内容生成详细的人格画像总结。文件名：${fileName}`,
+          },
+          { type: "file" as const, filename: fileName, data: dataUrl, mimeType },
+        ],
+      },
+      {
+        role: "assistant" as const,
+        content: summaryResult.text,
+      },
+      {
+        role: "user" as const,
+        content:
+          "请基于上述分析，构建3-5个不同的用户画像，并为每个画像创建对应的智能体系统提示词。请使用savePersona函数将每个画像保存到数据库中。",
+      },
+    ];
+
+    await streamText({
+      model: llm("claude-3-7-sonnet"),
+      providerOptions: providerOptions,
+      system: buildPersonaSystem({
+        locale: "zh-CN",
+        parallel: false,
+      }),
+      messages: personaMessages,
+      tools: {
+        [ToolName.savePersona]: savePersonaTool({
+          personaImportId: personaImport.id,
+        }),
+      },
+      toolChoice: "auto",
+      maxSteps: 10,
     });
   } catch (error) {
     console.error("Error building persona summary:", error);
