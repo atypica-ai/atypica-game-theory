@@ -326,25 +326,22 @@ export default function PaymentTestPage() {
             <thead>
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                  Order ID
+                  Order
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                   User
+                </th>
+                <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider">
+                  Amount
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                   Product
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                  Amount
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                  Method
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                   Status
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                  Created At
+                  Method
                 </th>
               </tr>
             </thead>
@@ -365,20 +362,25 @@ export default function PaymentTestPage() {
                 records.map((record) => (
                   <tr key={record.id}>
                     <td className="whitespace-nowrap px-6 py-4 text-sm font-mono">
-                      {record.orderNo}
+                      <div className="text-muted-foreground">{record.orderNo}</div>
+                      <div className="text-xs mt-1">{formatDate(record.createdAt, locale)}</div>
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm font-mono">
                       {record.user.email}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm text-right font-medium">
+                      {record.currency === "CNY"
+                        ? "¥"
+                        : record.currency === "USD"
+                          ? "$"
+                          : record.currency}
+                      {record.amount.toFixed(2)}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
                       {record.paymentLines.map((line) => (
                         <div key={line.id}>{line.description}</div>
                       ))}
                     </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm">
-                      {record.amount.toFixed(2)} {record.currency}
-                    </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm">{record.paymentMethod}</td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
                       <span
                         className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
@@ -392,9 +394,7 @@ export default function PaymentTestPage() {
                         {record.status}
                       </span>
                     </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm">
-                      {formatDate(record.createdAt, locale)}
-                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">{record.paymentMethod}</td>
                   </tr>
                 ))
               )}
