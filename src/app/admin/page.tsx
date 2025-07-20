@@ -133,20 +133,6 @@ export default function AdminDashboard() {
           </div>
           <p className="text-sm text-muted-foreground">Toggle site maintenance mode</p>
         </Link>
-
-        {/* <Link
-          href="/admin/invitation-codes"
-          className="rounded-lg border bg-card p-4 shadow-sm hover:shadow-md transition-shadow"
-        >
-          <div className="flex items-center mb-2">
-            <Key className="h-5 w-5 mr-2" />
-            <h2 className="text-xl font-semibold">Invitation Codes</h2>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Manage invitation codes for new user registration
-          </p>
-        </Link> */}
-
         <Link
           href="/"
           className="rounded-lg border bg-card p-4 shadow-sm hover:shadow-md transition-shadow"

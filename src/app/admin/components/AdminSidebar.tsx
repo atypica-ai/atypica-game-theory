@@ -97,11 +97,6 @@ export default function AdminSidebar({ adminRole, permissions = [] }: AdminSideb
         icon: <AlertTriangle className="mr-2 h-4 w-4" />,
         role: "SUPER_ADMIN",
       },
-      // {
-      //   label: "Invitation Codes",
-      //   href: "/admin/invitation-codes",
-      //   icon: <Key className="mr-2 h-4 w-4" />,
-      // },
       {
         label: "View Site",
         href: "/",

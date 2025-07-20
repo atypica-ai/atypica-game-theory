@@ -424,8 +424,6 @@
       "title": "Sign Up",
       "subtitle": "Create your account",
       "emailPlaceholder": "Your email address",
-      "invitationCodePlaceholder": "Invitation code",
-      "invitationCodeHelp": "Non-tezign.com email addresses require an invitation code",
       "passwordPlaceholder": "Set your password",
       "confirmPasswordPlaceholder": "Confirm your password",
       "passwordMismatch": "Passwords do not match",

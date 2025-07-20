@@ -70,16 +70,6 @@ model VerificationCode {
   expiresAt DateTime? @db.Timestamptz(6)
 }
 
-model InvitationCode {
-  id        Int     @id @default(autoincrement())
-  code      String  @unique @db.VarChar(16)
-  usedBy    String?
-  createdBy String?
-
-  createdAt DateTime  @default(now()) @db.Timestamptz(6)
-  usedAt    DateTime? @db.Timestamptz(6)
-}
-
 model Persona {
   id              Int       @id @default(autoincrement())
   name            String    @db.VarChar(255)

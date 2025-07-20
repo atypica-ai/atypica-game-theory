@@ -19,19 +19,8 @@ export default function SignUpPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [invitationCode, setInvitationCode] = useState("");
-  const [showInvitationField, setShowInvitationField] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-
-  // Check if the email requires an invitation code
-  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newEmail = e.target.value;
-    setEmail(newEmail);
-    // setShowInvitationField(!newEmail.endsWith("@tezign.com") && newEmail.includes("@"));
-    // 始终不显示邀请码
-    setShowInvitationField(false);
-  };
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,7 +34,6 @@ export default function SignUpPage() {
       const result = await signUp({
         email,
         password,
-        invitationCode: showInvitationField ? invitationCode : undefined,
       });
       if (!result.success) {
         throw result;
@@ -83,7 +71,7 @@ export default function SignUpPage() {
                 placeholder={t("emailPlaceholder")}
                 type="email"
                 value={email}
-                onChange={handleEmailChange}
+                onChange={(e) => setEmail(e.target.value)}
                 className="h-10"
                 required
               />
@@ -126,22 +114,6 @@ export default function SignUpPage() {
                 {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
-            {showInvitationField && (
-              <div className="space-y-1">
-                <Input
-                  id="invitationCode"
-                  placeholder={t("invitationCodePlaceholder")}
-                  type="text"
-                  value={invitationCode}
-                  onChange={(e) => setInvitationCode(e.target.value)}
-                  className="h-10"
-                  required={showInvitationField}
-                />
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  {t("invitationCodeHelp")}
-                </p>
-              </div>
-            )}
             <Button
               variant="default"
               className="w-full h-10 font-medium"
