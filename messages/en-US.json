@@ -1174,6 +1174,12 @@
     "sizeLimit": "Size limit exceeded",
     "fileSizeExceeds3MB": "File size exceeds 3MB limit",
     "fileUploadedSuccessfully": "File uploaded successfully",
-    "failedToUploadFile": "Failed to upload file"
+    "failedToUploadFile": "Failed to upload file",
+    "uploadNew": "Upload New",
+    "selectFromLibrary": "Select from Library",
+    "searchPlaceholder": "Search files...",
+    "noFilesFound": "No files found.",
+    "fileSelectedSuccessfully": "File selected successfully",
+    "failedToSelectFile": "Failed to select file"
   }
 }

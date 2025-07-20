@@ -1,6 +1,7 @@
 export const FILE_UPLOAD_LIMITS = {
   MAX_IMAGES: 5,
   MAX_DOCUMENTS: 3,
+  MAX_SINGLE_FILE_SIZE: 3 * 1024 * 1024, // 3MB
   MAX_TOTAL_SIZE: 50 * 1024 * 1024, // 50MB
 } as const;
 
@@ -31,7 +32,12 @@ import { FileUploadInfo } from "@/components/chat/FileUploadButton";
 
 export interface FileUploadLimitsResult {
   canUpload: boolean;
-  reason?: "max-images" | "max-documents" | "max-total-size" | "unsupported-type";
+  reason?:
+    | "max-images"
+    | "max-documents"
+    | "max-total-size"
+    | "unsupported-type"
+    | "max-single-file-size";
 }
 
 export function isImageFile(mimeType: string): boolean {
@@ -60,6 +66,14 @@ export function checkFileUploadLimits(
 ): FileUploadLimitsResult {
   const { images, documents } = categorizeFiles(existingFiles);
   const totalSize = existingFiles.reduce((acc, file) => acc + file.size, 0);
+
+  // Check single file size limit
+  if (newFile.size > FILE_UPLOAD_LIMITS.MAX_SINGLE_FILE_SIZE) {
+    return {
+      canUpload: false,
+      reason: "max-single-file-size",
+    };
+  }
 
   // Check if new file type is supported
   if (!isImageFile(newFile.mimeType) && !isDocumentFile(newFile.mimeType)) {

@@ -1174,6 +1174,12 @@
     "sizeLimit": "文件大小超限",
     "fileSizeExceeds3MB": "文件大小超过 3MB 限制",
     "fileUploadedSuccessfully": "文件上传成功",
-    "failedToUploadFile": "文件上传失败"
+    "failedToUploadFile": "文件上传失败",
+    "uploadNew": "上传新文件",
+    "selectFromLibrary": "从库中选择",
+    "searchPlaceholder": "搜索文件...",
+    "noFilesFound": "未找到文件。",
+    "fileSelectedSuccessfully": "文件选择成功",
+    "failedToSelectFile": "选择文件失败"
   }
 }

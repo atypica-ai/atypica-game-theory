@@ -3,7 +3,7 @@ import { rootLogger } from "@/lib/logging";
 import { proxiedFetch } from "@/lib/proxy/fetch";
 import { getDeployRegion } from "@/lib/request/deployRegion";
 import { ServerActionResult } from "@/lib/serverAction";
-import { ChatMessageAttachment } from "@/prisma/client";
+import { AttachmentFile, ChatMessageAttachment } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
@@ -108,6 +108,68 @@ export async function fileUrlToDataUrl({
 
   const base64 = Buffer.from(buffer).toString("base64");
   return `data:${mimeType};base64,${base64}`;
+}
+
+export async function getAttachmentFiles(): Promise<ServerActionResult<AttachmentFile[]>> {
+  return withAuth(async (user) => {
+    try {
+      const files = await prisma.attachmentFile.findMany({
+        where: {
+          userId: user.id,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+      return {
+        success: true,
+        data: files,
+      };
+    } catch (error) {
+      rootLogger.error(`Error fetching attachment files: ${(error as Error).message}`);
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : "Unknown error occurred",
+        data: [],
+      };
+    }
+  });
+}
+
+export async function getSignedUrlForAttachment({
+  objectUrl,
+}: {
+  objectUrl: string;
+}): Promise<ServerActionResult<string>> {
+  return withAuth(async (user) => {
+    try {
+      const file = await prisma.attachmentFile.findFirst({
+        where: {
+          objectUrl,
+          userId: user.id,
+        },
+      });
+
+      if (!file) {
+        return {
+          success: false,
+          message: "File not found or access denied.",
+        };
+      }
+
+      const url = await s3SignedUrl(objectUrl);
+      return {
+        success: true,
+        data: url,
+      };
+    } catch (error) {
+      rootLogger.error(`Error getting signed URL for ${objectUrl}: ${(error as Error).message}`);
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : "Unknown error occurred",
+      };
+    }
+  });
 }
 
 /**
