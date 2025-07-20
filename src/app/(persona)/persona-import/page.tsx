@@ -1,188 +1,270 @@
 "use client";
-
+import { FileUploadButton } from "@/components/chat/FileUploadButton";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useFileUploadManager } from "@/hooks/use-file-upload-manager";
-import { useChat, experimental_useObject as useObject } from "@ai-sdk/react";
-import { BrainIcon } from "lucide-react";
-import { useMemo, useState } from "react";
+import { ChatMessageAttachment } from "@/prisma/client";
+import { FileText, MessageCircle, Target, Upload, Users } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { toast } from "sonner";
-import {
-  AnalysisResult as AnalysisResultType,
-  analysisSchema,
-  PersonaAnalysisData,
-} from "../types";
-import { AnalysisResult } from "./AnalysisResult";
-import { PersonaSummary } from "./PersonaSummary";
-import { ProcessingStatus } from "./ProcessingStatus";
-import { SupplementaryQuestions } from "./SupplementaryQuestions";
-import { UploadSection } from "./UploadSection";
+import { createPersonaImport } from "../persona-import/actions";
 
-export default function PersonaImportPage() {
-  const { uploadedFiles, handleFileUploaded, handleRemoveFile, clearFiles } =
-    useFileUploadManager();
+export default function PersonaHomePage() {
+  const router = useRouter();
+  const { uploadedFiles, handleFileUploaded, clearFiles } = useFileUploadManager();
+  const [isCreating, setIsCreating] = useState(false);
 
-  const [analysisData, setAnalysisData] = useState<PersonaAnalysisData | null>(null);
-  const [isStarted, setIsStarted] = useState(false);
+  const handleStartAnalysis = async () => {
+    if (uploadedFiles.length === 0) {
+      toast.error("请先上传PDF文件");
+      return;
+    }
 
-  // Hook for persona generation streaming
-  const {
-    messages: personaMessages,
-    isLoading: isProcessing,
-    error: processError,
-    append: submitPersonaSummary,
-  } = useChat({
-    api: "/api/persona/build-persona",
-    onFinish: (message) => {
-      if (message.content) {
-        toast.success("人格画像生成成功");
-        setAnalysisData((prev) => ({
-          ...prev!,
-          personaSummary: message.content,
-        }));
-      }
-    },
-    onError: (error) => toast.error(`人格画像生成失败: ${error.message}`),
-  });
-
-  // Hook for analysis object streaming
-  const {
-    object: analysisObject,
-    submit: submitAnalysis,
-    isLoading: isAnalyzing,
-    error: analysisError,
-  } = useObject<AnalysisResultType>({
-    api: "/api/persona/analyze-interview",
-    schema: analysisSchema,
-    onFinish: (result) => {
-      toast.success("内容分析成功");
-      setAnalysisData((prev) => ({
-        ...prev!,
-        analysis: result.object?.analysis,
-        supplementaryQuestions: result.object?.supplementaryQuestions,
-      }));
-    },
-    onError: (error) => toast.error(`内容分析失败: ${error.message}`),
-  });
-
-  const personaSummary = useMemo(() => {
-    const lastAssistantMessage = personaMessages.findLast(
-      (message) => message.role === "assistant",
-    );
-    return lastAssistantMessage?.content || "";
-  }, [personaMessages]);
-
-  const analysis = analysisData?.analysis;
-  const supplementaryQuestions = analysisData?.supplementaryQuestions;
-
-  const startProcessingAction = () => {
     const file = uploadedFiles[0];
-    if (!file) return;
+    if (!file.mimeType.includes("pdf")) {
+      toast.error("请上传PDF文件");
+      return;
+    }
 
-    setIsStarted(true);
-
-    const commonData = {
-      fileUrl: file.url,
-      fileName: file.name,
-      mimeType: file.mimeType,
-    };
-
-    setAnalysisData({
-      fileName: file.name,
-      fileUrl: file.url,
-      mimeType: file.mimeType,
-    });
-
-    submitPersonaSummary({ role: "user", content: "[READY]" }, { data: commonData });
-
-    submitAnalysis(commonData);
+    setIsCreating(true);
+    try {
+      const attachments: ChatMessageAttachment[] = uploadedFiles.map((file) => ({
+        objectUrl: file.url,
+        name: file.name,
+        mimeType: file.mimeType,
+        size: file.size,
+      }));
+      const result = await createPersonaImport(attachments);
+      if (!result.success) throw result;
+      const personaImport = result.data;
+      router.push(`/persona-import/${personaImport.id}`);
+    } catch (error) {
+      console.error("Error creating persona import:", error);
+      toast.error("创建失败，请重试");
+      setIsCreating(false);
+    }
   };
 
-  if (processError || analysisError) {
-    console.error("Processing error:", processError);
-    console.error("Analysis error:", analysisError);
-  }
-
   return (
-    <div className="bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-100/50 relative">
-      {/* 左侧装饰 */}
-      <div className="absolute left-0 top-0 bottom-0 w-2 bg-gradient-to-b from-blue-500 via-purple-500 to-cyan-500 opacity-60" />
-      <div className="fixed left-8 top-1/2 -translate-y-1/2 space-y-4 opacity-20 z-10">
-        <div className="w-12 h-12 rounded-full bg-blue-400/30 animate-pulse" />
-        <div className="w-8 h-8 rounded-full bg-purple-400/30 animate-pulse delay-300" />
-        <div className="w-10 h-10 rounded-full bg-cyan-400/30 animate-pulse delay-700" />
-        <div className="w-6 h-6 rounded-full bg-indigo-400/30 animate-pulse delay-1000" />
-      </div>
+    <div className="container mx-auto p-8 max-w-4xl">
+      <div className="space-y-8">
+        {/* Header */}
+        <div className="text-center space-y-4">
+          <h1 className="text-4xl font-bold">Persona Management</h1>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            Import interview records, analyze completeness, and generate interactive personas for
+            your research and analysis needs.
+          </p>
+        </div>
 
-      <div className="container mx-auto px-8 py-12 max-w-5xl">
-        <div className="space-y-12">
-          {/* Header */}
-          <div className="text-center space-y-6">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 mb-6">
-              <BrainIcon className="w-8 h-8 text-white" />
-            </div>
-            <h1 className="text-5xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 bg-clip-text text-transparent">
-              智能人格画像生成
-            </h1>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
-              上传访谈PDF，AI将并行生成人格画像并进行深度分析，助您快速洞察用户心理
-            </p>
-          </div>
-
-          {/* Upload Section */}
-          <div className="bg-white/60 backdrop-blur-sm rounded-3xl border border-white/40 shadow-xl p-8">
-            <UploadSection
-              uploadedFiles={uploadedFiles}
-              onFileUploadedAction={handleFileUploaded}
-              onRemoveFileAction={handleRemoveFile}
-              onClearFilesAction={() => {
-                clearFiles();
-                setIsStarted(false);
-                setAnalysisData(null);
-              }}
-              startProcessingAction={startProcessingAction}
-              isProcessing={isProcessing}
-              isAnalyzing={isAnalyzing}
-            />
-          </div>
-
-          {isStarted && (
-            <div className="space-y-8">
-              {/* Processing Status */}
-              <div className="bg-white/60 backdrop-blur-sm rounded-3xl border border-white/40 shadow-xl p-8">
-                <ProcessingStatus
-                  isProcessing={isProcessing}
-                  isAnalyzing={isAnalyzing}
-                  personaSummary={personaSummary}
-                  analysis={analysis}
-                  supplementaryQuestions={supplementaryQuestions}
-                />
+        {/* Feature Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card className="border-2 hover:border-primary/50 transition-colors">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Upload className="size-5" />
+                Import Interview
+              </CardTitle>
+              <CardDescription>
+                Upload PDF interview records and convert them to structured, LLM-compatible format
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="text-sm text-muted-foreground space-y-2">
+                <div className="flex items-center gap-2">
+                  <FileText className="size-4" />
+                  <span>PDF to Markdown conversion</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Target className="size-4" />
+                  <span>4-dimension analysis & scoring</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <MessageCircle className="size-4" />
+                  <span>Supplementary question generation</span>
+                </div>
               </div>
 
-              {/* Persona Summary - 实时显示 */}
-              {(personaSummary || isProcessing) && (
-                <div className="bg-white/60 backdrop-blur-sm rounded-3xl border border-white/40 shadow-xl p-8">
-                  <PersonaSummary personaSummary={personaSummary} isProcessing={isProcessing} />
+              {uploadedFiles.length === 0 ? (
+                <FileUploadButton
+                  onFileUploadedAction={handleFileUploaded}
+                  existingFiles={uploadedFiles}
+                  showLimitsCheck={false}
+                  disabled={isCreating}
+                />
+              ) : (
+                <div className="space-y-2">
+                  <div className="p-3 bg-muted rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <FileText className="size-4" />
+                        <span className="text-sm font-medium">{uploadedFiles[0].name}</span>
+                      </div>
+                      <Button variant="ghost" size="sm" onClick={clearFiles} disabled={isCreating}>
+                        重新选择
+                      </Button>
+                    </div>
+                  </div>
+                  <Button onClick={handleStartAnalysis} disabled={isCreating} className="w-full">
+                    {isCreating ? "创建中..." : "开始分析"}
+                  </Button>
                 </div>
               )}
+            </CardContent>
+          </Card>
 
-              {/* Analysis Result */}
-              {!isAnalyzing && analysis && (
-                <div className="bg-white/60 backdrop-blur-sm rounded-3xl border border-white/40 shadow-xl p-8">
-                  <AnalysisResult analysis={analysis} />
+          <Card className="border-2 opacity-50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="size-5" />
+                Chat with Personas
+              </CardTitle>
+              <CardDescription>
+                Interact with generated personas based on your interview data
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="text-sm text-muted-foreground space-y-2">
+                <div className="flex items-center gap-2">
+                  <MessageCircle className="size-4" />
+                  <span>Natural conversation interface</span>
                 </div>
-              )}
-
-              {/* Supplementary Questions */}
-              {!isAnalyzing && supplementaryQuestions && (
-                <div className="bg-white/60 backdrop-blur-sm rounded-3xl border border-white/40 shadow-xl p-8">
-                  <SupplementaryQuestions
-                    supplementaryQuestions={supplementaryQuestions}
-                    fileName={analysisData?.fileName || "export"}
-                  />
+                <div className="flex items-center gap-2">
+                  <Target className="size-4" />
+                  <span>Behavior-driven responses</span>
                 </div>
-              )}
-            </div>
-          )}
+                <div className="flex items-center gap-2">
+                  <Users className="size-4" />
+                  <span>Multi-dimensional personality</span>
+                </div>
+              </div>
+              <Button className="w-full" disabled>
+                Coming Soon
+              </Button>
+            </CardContent>
+          </Card>
         </div>
+
+        {/* Analysis Dimensions */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Analysis Dimensions</CardTitle>
+            <CardDescription>
+              Our system evaluates interview completeness across four key socio-psychological
+              dimensions
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Users className="size-5 text-blue-500" />
+                  <h4 className="font-medium">Demographic</h4>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Social identity and growth trajectory analysis including age, education,
+                  occupation, and background.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <MessageCircle className="size-5 text-green-500" />
+                  <h4 className="font-medium">Psychological</h4>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Personality traits, emotional patterns, and internal motivations reflected in
+                  behavior.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Target className="size-5 text-orange-500" />
+                  <h4 className="font-medium">Behavioral Economics</h4>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Consumer behavior, decision preferences, and social influence patterns.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <FileText className="size-5 text-purple-500" />
+                  <h4 className="font-medium">Political Cognition</h4>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Cultural stance, information trust structures, and community belonging analysis.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Getting Started */}
+        <Card className="bg-muted">
+          <CardHeader>
+            <CardTitle>Getting Started</CardTitle>
+            <CardDescription>
+              Follow these simple steps to create your first persona
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-start gap-3">
+                <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground text-sm font-bold flex items-center justify-center mt-0.5">
+                  1
+                </div>
+                <div>
+                  <h4 className="font-medium">Upload Interview PDF</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Start by uploading a PDF containing your interview transcripts or records.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground text-sm font-bold flex items-center justify-center mt-0.5">
+                  2
+                </div>
+                <div>
+                  <h4 className="font-medium">Review Analysis</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Examine the completeness scores and identify areas that need additional
+                    information.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground text-sm font-bold flex items-center justify-center mt-0.5">
+                  3
+                </div>
+                <div>
+                  <h4 className="font-medium">Gather Additional Data</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Use the generated supplementary questions to collect missing information.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <div className="w-6 h-6 rounded-full bg-muted-foreground text-muted text-sm font-bold flex items-center justify-center mt-0.5">
+                  4
+                </div>
+                <div>
+                  <h4 className="font-medium text-muted-foreground">
+                    Generate Persona (Coming Soon)
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
+                    Create an interactive persona that embodies the analyzed characteristics.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

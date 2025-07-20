@@ -19,7 +19,7 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from "recharts";
-import type { AnalysisResult as AnalysisResultType } from "../types";
+import type { AnalysisResult as AnalysisResultType } from "../../types";
 
 interface AnalysisResultProps {
   analysis: AnalysisResultType["analysis"] | undefined;
@@ -73,10 +73,10 @@ export function AnalysisResult({ analysis }: AnalysisResultProps) {
   const radarData = useMemo(() => {
     if (!analysis) return [];
     return [
-      { subject: "人口背景", score: analysis.Demographic?.score || 0, fullMark: 3 },
-      { subject: "心理特征", score: analysis.Psychological?.score || 0, fullMark: 3 },
-      { subject: "消费行为", score: analysis.BehavioralEconomics?.score || 0, fullMark: 3 },
-      { subject: "文化立场", score: analysis.PoliticalCognition?.score || 0, fullMark: 3 },
+      { subject: "人口背景", score: analysis.Demographic?.score ?? 0, fullMark: 3 },
+      { subject: "心理特征", score: analysis.Psychological?.score ?? 0, fullMark: 3 },
+      { subject: "消费行为", score: analysis.BehavioralEconomics?.score ?? 0, fullMark: 3 },
+      { subject: "文化立场", score: analysis.PoliticalCognition?.score ?? 0, fullMark: 3 },
     ];
   }, [analysis]);
 
@@ -186,21 +186,21 @@ export function AnalysisResult({ analysis }: AnalysisResultProps) {
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-gray-800">整体分析评分</h3>
                 <Badge variant="outline" className="text-lg px-4 py-2 bg-white/70">
-                  {analysis.total_score} / 12
+                  {analysis.total_score ?? 0} / 12
                 </Badge>
               </div>
               <div className="w-full bg-white/70 rounded-full h-4 overflow-hidden">
                 <div
                   className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 transition-all duration-500"
-                  style={{ width: `${((analysis.total_score || 0) / 12) * 100}%` }}
+                  style={{ width: `${((analysis.total_score ?? 0) / 12) * 100}%` }}
                 />
               </div>
               <p className="text-sm text-gray-600">
-                {(analysis.total_score || 0) >= 9
+                {(analysis.total_score ?? 0) >= 9
                   ? "各维度覆盖度优秀，信息全面深入"
-                  : (analysis.total_score || 0) >= 6
+                  : (analysis.total_score ?? 0) >= 6
                     ? "覆盖度良好，部分维度可进一步优化"
-                    : (analysis.total_score || 0) >= 3
+                    : (analysis.total_score ?? 0) >= 3
                       ? "覆盖度一般，需要重点补充关键信息"
                       : "覆盖度不足，需要大量补充各维度信息"}
               </p>
@@ -212,10 +212,15 @@ export function AnalysisResult({ analysis }: AnalysisResultProps) {
             {Object.entries(analysis).map(([dimension, data]) => {
               if (dimension === "total_score") return null;
               const dimensionData = data as {
-                score: number;
-                reason: string;
+                score?: number;
+                reason?: string;
                 questions?: string[];
               };
+
+              // Skip if no data yet (streaming in progress)
+              if (!dimensionData || typeof dimensionData.score === "undefined") {
+                return null;
+              }
               return (
                 <div
                   key={dimension}
@@ -232,28 +237,30 @@ export function AnalysisResult({ analysis }: AnalysisResultProps) {
                         </h4>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className={`text-lg font-bold ${getScoreColor(dimensionData.score)}`}>
-                          {dimensionData.score}/3
+                        <span
+                          className={`text-lg font-bold ${getScoreColor(dimensionData.score ?? 0)}`}
+                        >
+                          {dimensionData.score ?? 0}/3
                         </span>
                         <Badge
                           variant={
-                            dimensionData.score >= 3
+                            (dimensionData.score ?? 0) >= 3
                               ? "default"
-                              : dimensionData.score === 2
+                              : (dimensionData.score ?? 0) === 2
                                 ? "secondary"
                                 : "destructive"
                           }
                           className={
-                            dimensionData.score === 2
+                            (dimensionData.score ?? 0) === 2
                               ? "bg-orange-100 text-orange-800"
                               : "bg-white/70"
                           }
                         >
-                          {getScoreLabel(dimensionData.score)}
+                          {getScoreLabel(dimensionData.score ?? 0)}
                         </Badge>
                       </div>
                     </div>
-                    <p className="text-sm text-gray-600">{dimensionData.reason}</p>
+                    <p className="text-sm text-gray-600">{dimensionData.reason || "分析中..."}</p>
                     {dimensionData.questions && dimensionData.questions.length > 0 && (
                       <div className="pt-3 border-t border-gray-200">
                         <h5 className="font-medium text-sm mb-2 text-gray-700">针对性补充问题</h5>

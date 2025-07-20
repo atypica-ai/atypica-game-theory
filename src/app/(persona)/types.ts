@@ -54,6 +54,9 @@ export const analysisSchema = z.object({
 // Inferred types
 export type AnalysisResult = z.infer<typeof analysisSchema>;
 
+// Type for PersonaImport analysis field (complete result from analyze-interview)
+export type PersonaImportAnalysis = AnalysisResult;
+
 // Additional types for the new workflow
 export interface PersonaAnalysisData {
   fileName: string;

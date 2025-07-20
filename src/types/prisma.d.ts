@@ -53,6 +53,10 @@ declare module "@/prisma/client" {
     s3SignedUrlExpiresAt?: number; // timestamp millis
   } | null;
 
+  export type PersonaImportExtra = {
+    error?: string;
+  } | null;
+
   // import { AnalystReport as AnalystReportPrisma } from "@/prisma/client/index";
   // // 只覆盖这个不够，findUnique 返回的类型还是原来的
   // export type AnalystReport = Omit<AnalystReportPrisma, "extra"> & {

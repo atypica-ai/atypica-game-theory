@@ -1,10 +1,14 @@
 import { llm, providerOptions } from "@/ai/provider";
+import {
+  updatePersonaImportExtra,
+  updatePersonaImportSummary,
+} from "@/app/(persona)/persona-import/actions";
 import { personaGenerationPrompt } from "@/app/(persona)/prompts";
 import { streamText } from "ai";
 
 export async function POST(req: Request) {
   const { data } = await req.json();
-  const { fileUrl, fileName, mimeType } = data || {};
+  const { fileUrl, fileName, mimeType, personaImportId } = data || {};
 
   if (!fileUrl || !fileName) {
     return new Response(JSON.stringify({ error: "fileUrl and fileName are required" }), {
@@ -44,8 +48,24 @@ export async function POST(req: Request) {
         ],
       },
     ],
+    onFinish: async ({ text }) => {
+      // Update PersonaImport with the generated summary
+      if (personaImportId) {
+        try {
+          await updatePersonaImportSummary(parseInt(personaImportId), text);
+        } catch (error) {
+          console.error("Error updating PersonaImport with summary:", error);
+        }
+      }
+    },
     onError: ({ error }) => {
       console.log("Error:", error);
+      // Update PersonaImport with error in extra field
+      if (personaImportId) {
+        updatePersonaImportExtra(parseInt(personaImportId), {
+          error: (error as Error).message,
+        }).catch(console.error);
+      }
     },
     abortSignal: req.signal,
   });

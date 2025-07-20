@@ -44,6 +44,7 @@ model User {
   subscriptions     UserSubscription[]
   interviewProjects InterviewProject[]
   attachmentFiles   AttachmentFile[]
+  personaImports    PersonaImport[]
 }
 
 enum AdminRole {
@@ -72,15 +73,17 @@ model VerificationCode {
 }
 
 model Persona {
-  id              Int       @id @default(autoincrement())
-  name            String    @db.VarChar(255)
-  source          String    @db.VarChar(255)
+  id              Int            @id @default(autoincrement())
+  name            String         @db.VarChar(255)
+  source          String         @db.VarChar(255)
   tags            Json // 存储标签数组
   samples         Json // 存储小红书用户主页链接作为参考样本
-  prompt          String    @db.Text
-  scoutUserChatId Int?      @db.Integer
-  scoutUserChat   UserChat? @relation(fields: [scoutUserChatId], references: [id])
-  locale          String?   @db.VarChar(16)
+  prompt          String         @db.Text
+  locale          String?        @db.VarChar(16)
+  scoutUserChatId Int?           @db.Integer
+  scoutUserChat   UserChat?      @relation(fields: [scoutUserChatId], references: [id])
+  personaImportId Int?           @db.Integer
+  personaImport   PersonaImport? @relation(fields: [personaImportId], references: [id])
 
   embedding Unsupported("vector(1024)")? // 使用 Unsupported 类型表示向量
 
@@ -449,4 +452,18 @@ model AttachmentFile {
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PersonaImport {
+  id          Int     @id @default(autoincrement())
+  userId      Int
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  attachments Json
+  summary     String? @db.Text
+  analysis    Json?
+  extra       Json?
+
+  createdAt DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime  @updatedAt @db.Timestamptz(6)
+  Persona   Persona[]
 }

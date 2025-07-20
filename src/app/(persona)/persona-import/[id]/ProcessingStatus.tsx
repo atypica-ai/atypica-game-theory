@@ -8,7 +8,7 @@ import {
   CheckCircleIcon,
   Loader2Icon,
 } from "lucide-react";
-import { AnalysisResult } from "../types";
+import { AnalysisResult } from "../../types";
 
 interface ProcessingStatusProps {
   isProcessing: boolean;
@@ -16,6 +16,8 @@ interface ProcessingStatusProps {
   personaSummary: string;
   analysis: AnalysisResult["analysis"] | undefined;
   supplementaryQuestions: AnalysisResult["supplementaryQuestions"] | undefined;
+  personaImportSummary?: string | null;
+  personaImportAnalysis?: any;
 }
 
 export function ProcessingStatus({
@@ -24,7 +26,12 @@ export function ProcessingStatus({
   personaSummary,
   analysis,
   supplementaryQuestions,
+  personaImportSummary,
+  personaImportAnalysis,
 }: ProcessingStatusProps) {
+  // Determine actual completion status
+  const summaryCompleted = Boolean(personaImportSummary || personaSummary);
+  const analysisCompleted = Boolean(personaImportAnalysis || analysis);
   return (
     <div className="space-y-6">
       <div className="space-y-2">
@@ -50,13 +57,13 @@ export function ProcessingStatus({
               <div className="flex items-center gap-3">
                 {isProcessing ? (
                   <Loader2Icon className="size-5 animate-spin text-blue-600" />
-                ) : personaSummary ? (
+                ) : summaryCompleted ? (
                   <CheckCircleIcon className="size-5 text-green-600" />
                 ) : (
                   <AlertCircleIcon className="size-5 text-gray-400" />
                 )}
                 <span className="text-sm font-medium">
-                  {isProcessing ? "生成中..." : personaSummary ? "已完成" : "等待中"}
+                  {isProcessing ? "生成中..." : summaryCompleted ? "已完成" : "等待中"}
                 </span>
               </div>
             </div>
@@ -64,7 +71,7 @@ export function ProcessingStatus({
               <div
                 className="h-full bg-gradient-to-r from-blue-500 to-purple-600 transition-all duration-500 rounded-full"
                 style={{
-                  width: `${isProcessing ? 50 : personaSummary ? 100 : 0}%`,
+                  width: `${isProcessing ? 50 : summaryCompleted ? 100 : 0}%`,
                 }}
               />
             </div>
@@ -89,40 +96,41 @@ export function ProcessingStatus({
               <div className="flex items-center gap-3">
                 {isAnalyzing ? (
                   <Loader2Icon className="size-5 animate-spin text-purple-600" />
-                ) : analysis ? (
+                ) : analysisCompleted ? (
                   <CheckCircleIcon className="size-5 text-green-600" />
                 ) : (
                   <AlertCircleIcon className="size-5 text-gray-400" />
                 )}
                 <span className="text-sm font-medium">
-                  {isAnalyzing ? "分析中..." : analysis ? "已完成" : "等待中"}
+                  {isAnalyzing ? "分析中..." : analysisCompleted ? "已完成" : "等待中"}
                 </span>
               </div>
             </div>
             <div className="w-full bg-white/70 rounded-full h-3 overflow-hidden">
               <div
                 className="h-full bg-gradient-to-r from-purple-500 to-cyan-600 transition-all duration-500 rounded-full"
-                style={{ width: `${isAnalyzing ? 50 : analysis ? 100 : 0}%` }}
+                style={{ width: `${isAnalyzing ? 50 : analysisCompleted ? 100 : 0}%` }}
               />
             </div>
             <div className="flex flex-wrap gap-2">
-              {analysis && (
+              {analysisCompleted && (
                 <div className="text-xs text-purple-700 bg-purple-100/50 px-3 py-1 rounded-full flex items-center gap-2">
                   <div className="w-2 h-2 bg-green-500 rounded-full" />
-                  维度分析完成，总分：{analysis.total_score || 0}/12
+                  维度分析完成，总分：
+                  {(personaImportAnalysis?.analysis || analysis)?.total_score ?? 0}/12
                 </div>
               )}
               {supplementaryQuestions && (
                 <div className="text-xs text-cyan-700 bg-cyan-100/50 px-3 py-1 rounded-full flex items-center gap-2">
                   <div className="w-2 h-2 bg-green-500 rounded-full" />
-                  已生成 {supplementaryQuestions.questions?.length || 0} 个补充问题
+                  已生成 {supplementaryQuestions.questions?.length ?? 0} 个补充问题
                 </div>
               )}
             </div>
           </div>
         </div>
 
-        {!isProcessing && !isAnalyzing && personaSummary && analysis && (
+        {!isProcessing && !isAnalyzing && summaryCompleted && analysisCompleted && (
           <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl border border-green-200/50">
             <div className="flex items-center gap-3">
               <CheckCircleIcon className="h-5 w-5 text-green-600" />
