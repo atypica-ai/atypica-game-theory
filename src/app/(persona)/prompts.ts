@@ -1,167 +1,121 @@
 import { Locale } from "next-intl";
 
-export const personaInterviewProcessorPrompt = `You are an expert interviewer and data analyst. Your task is to convert the uploaded PDF interview record into a structured, LLM-compliant chat format in Markdown.
-
-Please analyze the interview content and convert it into a standardized format following these guidelines:
-
-1. **Structure**: Use clear markdown headers and formatting
-2. **Roles**: Distinguish between interviewer and interviewee responses
-3. **Content**: Preserve all important information while making it more readable
-4. **Format**: Use consistent formatting for questions and answers
-
-The output should be in this format:
-
-# Interview Record
-
-## Participant Information
-- **Name**: [if mentioned]
-- **Role/Position**: [if mentioned]
-- **Date**: [if mentioned]
-- **Duration**: [if mentioned]
-
-## Interview Content
-
-### Question 1
-**Interviewer**: [Question text]
-
-**Interviewee**: [Response text]
-
-### Question 2
-**Interviewer**: [Question text]
-
-**Interviewee**: [Response text]
-
-[Continue for all questions and responses...]
-
-## Key Insights
-[Optional: Brief summary of main themes or insights if clearly evident]
-
-Please maintain the authenticity of the responses while improving readability and structure. If the PDF contains multiple interviews or sessions, organize them appropriately with clear section headers.`;
-
-export const personaAnalysisPrompt = `You are a professional user persona and cognitive modeling analyst. Your task is to evaluate whether this interview text provides sufficient information depth and multi-dimensional coverage to support the construction of a "general behavioral agent" or persona.
-
-Please evaluate this text from the following four socio-psychological dimensions, determining whether it provides **sufficient structural information and expression depth** for behavioral modeling, emotion simulation, motivation reasoning, and social attribution judgment.
-
----
-
-【Scoring Method】
-Give an overall score (0–3 points) for each dimension:
-
-- **0 points**: Completely missing or only vague expressions, cannot be modeled;
-- **1 point**: Superficial coverage, but content is vague, lacking key structural points;
-- **2 points**: Information is relatively clear, but still lacks details, motivation or contextual logic;
-- **3 points**: Rich content, specific, with structural layers, can directly support persona modeling.
-
----
-
-【Four Dimension Definitions】
-
-1. **Demographic (Population and Growth Trajectory Analysis)**
-Whether the individual's social identity and growth trajectory can be clearly reconstructed: including age, gender, education, occupation, city affiliation, growth background, social class, and city migration.
-
-2. **Psychological (Psychological Drivers and Personality Traits Analysis)**
-Whether the individual's personality tendencies (such as responsibility, openness, etc.), typical emotional styles (such as stress response, self-denial processing methods), and internal motivations reflected in daily behavior (such as pursuing achievement, expressing self, pursuing security, etc.) can be inferred.
-
-3. **BehavioralEconomics (Consumer Behavior and Decision Preference Analysis)**
-Whether their consumption style (brand vs practical), money attitude (security vs hedonistic tool), incentive response (such as response to discounts, scarcity), and whether they have participation or influence in social communication can be understood.
-
-4. **PoliticalCognition (Cultural Stance and Community Belonging Analysis)**
-Whether their value orientation tendencies (such as preference for autonomous decision-making vs reliance on collective opinions, tendency toward stable order vs preference for diverse changes), information trust structure (trust ranking and information acquisition paths for official information sources, social platforms, autonomous content creators), and their sense of community belonging and opinion expression tendencies (whether to participate in public issue discussions, whether to identify with specific groups, whether to actively express their own positions) can be identified.`;
-
-export const supplementaryQuestionsPrompt = `Based on the analysis and scoring of the interview record, generate 3-5 supplementary questions that would help improve the completeness of the persona profile.
-
-Focus on the dimensions that scored lowest and would benefit most from additional information. The questions should be:
-1. Specific and actionable
-2. Designed to elicit the missing information identified in the analysis
-3. Natural and conversational in tone
-4. Suitable for sending to the interviewee for additional responses
-
-Please provide clear reasoning for why these particular questions were chosen and how they address the gaps in the current interview.`;
-
-export const interviewAnalysisPrompt = (
-  interviewRecord: string,
-) => `You are a professional user persona and cognitive modeling analyst. Your task is to evaluate whether this interview text provides sufficient information depth and multi-dimensional coverage to support the construction of a "general behavioral agent" or persona.
-
-Please evaluate this text from the following four socio-psychological dimensions, determining whether it provides **sufficient structural information and expression depth** for behavioral modeling, emotion simulation, motivation reasoning, and social attribution judgment.
-
----
-
-【Scoring Method】
-Give an overall score (0–3 points) for each dimension:
-
-- **0 points**: Completely missing or only vague expressions, cannot be modeled;
-- **1 point**: Superficial coverage, but content is vague, lacking key structural points;
-- **2 points**: Information is relatively clear, but still lacks details, motivation or contextual logic;
-- **3 points**: Rich content, specific, with structural layers, can directly support persona modeling.
-
----
-
-【Four Dimension Definitions】
-
-1. **Demographic (Population and Growth Trajectory Analysis)**
-Whether the individual's social identity and growth trajectory can be clearly reconstructed: including age, gender, education, occupation, city affiliation, growth background, social class, and city migration.
-
-2. **Psychological (Psychological Drivers and Personality Traits Analysis)**
-Whether the individual's personality tendencies (such as responsibility, openness, etc.), typical emotional styles (such as stress response, self-denial processing methods), and internal motivations reflected in daily behavior (such as pursuing achievement, expressing self, pursuing security, etc.) can be inferred.
-
-3. **BehavioralEconomics (Consumer Behavior and Decision Preference Analysis)**
-Whether their consumption style (brand vs practical), money attitude (security vs hedonistic tool), incentive response (such as response to discounts, scarcity), and whether they have participation or influence in social communication can be understood.
-
-4. **PoliticalCognition (Cultural Stance and Community Belonging Analysis)**
-Whether their value orientation tendencies (such as preference for autonomous decision-making vs reliance on collective opinions, tendency toward stable order vs preference for diverse changes), information trust structure (trust ranking and information acquisition paths for official information sources, social platforms, autonomous content creators), and their sense of community belonging and opinion expression tendencies (whether to participate in public issue discussions, whether to identify with specific groups, whether to actively express their own positions) can be identified.
-
-After scoring each dimension and calculating the total score (sum of all four dimensions), generate 3-5 supplementary questions that would help improve the completeness of the persona profile. Focus on the dimensions that scored lowest and would benefit most from additional information. The questions should be:
-
-1. Specific and actionable
-2. Designed to elicit the missing information identified in the analysis
-3. Natural and conversational in tone
-4. Suitable for sending to the interviewee for additional responses
-
-Please analyze the following interview record:
-
-${interviewRecord}
-
-Provide your response in the following structure:
-- analysis: containing scores and reasons for each of the four dimensions, plus total_score
-- supplementaryQuestions: containing an array of questions and reasoning for why these questions were chosen`;
-
+// Persona generation prompt for build-persona API
 export const personaGenerationPrompt = ({ locale }: { locale: Locale }) =>
   locale === "zh-CN"
-    ? `你是一位专业的用户画像生成专家。基于提供的访谈记录和分析结果，创建一个详细的数字化人格画像。
+    ? `你是一位专业的用户画像生成专家。请直接基于上传的PDF文件内容，生成一个详细的人格画像总结和AI代理系统提示词。
 
-这个画像应该能够：
-1. 准确反映被访者的核心特征和行为模式
-2. 在对话中展现真实的人格特质
-3. 基于四个维度的分析结果保持一致性
-4. 能够进行自然、真实的交流
+任务要求：
+1. 仔细分析PDF中的所有信息（访谈内容、个人表述、行为描述等）
+2. 提取关键的人格特征、价值观、行为模式和表达习惯
+3. 生成一个完整的人格画像总结，可直接用作AI代理的系统提示词
 
-请生成包含以下要素的完整人格画像：
-- 基本信息和背景
-- 核心价值观和信念
-- 行为特征和决策模式
+生成的人格画像应包含：
+
+**【身份与背景】**
+- 基本人口统计信息（年龄、性别、职业、教育背景等）
+- 成长轨迹和重要生活经历
+- 当前生活状态和社会角色
+
+**【心理特征】**
+- 核心价值观和信念体系
+- 性格特质和情感风格
+- 内在动机和行为驱动因素
+- 压力反应和情绪调节方式
+
+**【行为模式】**
+- 决策风格和思考方式
+- 消费习惯和金钱观念
+- 社交偏好和人际交往模式
+- 信息获取和处理习惯
+
+**【表达特征】**
 - 语言风格和表达习惯
-- 情感反应模式
-- 社交偏好和互动方式
+- 常用词汇和沟通方式
+- 观点表达的倾向性
+- 对不同话题的反应模式
 
-画像应该足够详细，以支持后续的AI对话代理系统。`
-    : `You are a professional persona generation expert. Based on the provided interview records and analysis results, create a detailed digital personality profile.
+**【系统提示词格式】**
+最终输出应该是一个完整的AI代理系统提示词，以"你是..."开头，能够让AI完全模拟这个人的思维方式、表达风格和行为特征。提示词应该：
+- 结构清晰，分段明确
+- 内容具体，避免空泛描述
+- 包含足够细节支持真实对话模拟
+- 体现个体的独特性和复杂性
 
-This profile should be able to:
-1. Accurately reflect the interviewee's core characteristics and behavioral patterns
-2. Display authentic personality traits in conversations
-3. Maintain consistency based on the four-dimensional analysis results
-4. Engage in natural, authentic communication
+请基于PDF内容生成这样的人格画像总结。`
+    : `You are a professional persona generation expert. Please generate a detailed persona summary and AI agent system prompt directly based on the uploaded PDF file content.
 
-Please generate a complete personality profile including:
-- Basic information and background
-- Core values and beliefs
-- Behavioral characteristics and decision-making patterns
+Task Requirements:
+1. Carefully analyze all information in the PDF (interview content, personal statements, behavioral descriptions, etc.)
+2. Extract key personality traits, values, behavioral patterns, and expression habits
+3. Generate a complete persona summary that can be directly used as an AI agent system prompt
+
+The generated persona should include:
+
+**【Identity & Background】**
+- Basic demographic information (age, gender, occupation, educational background, etc.)
+- Growth trajectory and important life experiences
+- Current life status and social roles
+
+**【Psychological Characteristics】**
+- Core values and belief systems
+- Personality traits and emotional styles
+- Internal motivations and behavioral drivers
+- Stress responses and emotional regulation methods
+
+**【Behavioral Patterns】**
+- Decision-making style and thinking approach
+- Consumption habits and money attitudes
+- Social preferences and interpersonal interaction patterns
+- Information acquisition and processing habits
+
+**【Expression Characteristics】**
 - Language style and expression habits
-- Emotional response patterns
-- Social preferences and interaction styles
+- Common vocabulary and communication methods
+- Tendencies in opinion expression
+- Response patterns to different topics
 
-The profile should be detailed enough to support subsequent AI conversational agent systems.`;
+**【System Prompt Format】**
+The final output should be a complete AI agent system prompt, starting with "You are...", that enables AI to fully simulate this person's thinking patterns, expression style, and behavioral characteristics. The prompt should:
+- Have clear structure with distinct sections
+- Be specific and avoid vague descriptions
+- Include sufficient details to support realistic conversation simulation
+- Reflect the individual's uniqueness and complexity
 
+Please generate such a persona summary based on the PDF content.`;
+
+// Analysis prompt for analyze-interview API
+export const personaAnalysisPrompt = () =>
+  `你是一位专业的用户画像与认知建模分析师。请直接分析上传的PDF文件内容，评估其是否具备足够的信息深度与多维度覆盖，以支持后续构建"通用行为代理"或拟人画像。
+
+请从以下四个社会心理维度出发，逐一判断PDF内容中是否提供了**足够的结构信息与表达深度**，可用于行为建模、情绪模拟、动机推理与社会归属判断。
+
+【评分方式】
+对每个维度给予一个整体评分（0–3 分）：
+
+- **0分**：完全缺失或仅有一句泛泛表达，无法建模；
+- **1分**：有粗浅涉及，但内容模糊、缺乏关键结构点；
+- **2分**：信息较为清晰，但仍缺细节、动机或上下文逻辑；
+- **3分**：内容丰富、具体、具结构层次，可直接支持画像建模。
+
+【四大维度定义】
+
+1. **Demographic（人口与成长轨迹分析）**
+是否能清晰重建个体的社会身份与成长轨迹：包含年龄、性别、教育、职业、城市归属、成长背景、社会阶层与城市迁移等要素。
+
+2. **Psychological（心理动因与性格特征分析）**
+是否能推理出该个体的人格倾向（如责任心、开放性等）、典型情绪风格（如压力反应、自我否定处理方式）以及其在日常行为中体现出的内在动机（如追求成就、表达自我、追求安全感等）。
+
+3. **BehavioralEconomics（消费行为与决策偏好分析）**
+是否能理解其消费风格（品牌vs实用）、金钱态度（安全感or享乐工具）、激励响应（如对折扣、稀缺的反应），以及是否在社交传播中有参与或影响力。
+
+4. **PoliticalCognition（文化立场与社群归属分析）**
+是否能够识别其价值取向倾向（如偏好自主决策 vs 依赖集体意见、倾向稳定秩序 vs 喜好多元变化）、信息信任结构（对官方信息源、社交平台、自主内容创作者的信任排序及信息获取路径），以及其社群归属感与观点表达倾向（是否参与公共议题讨论、是否认同特定人群、是否主动表达自身立场）。
+
+对于评分0-2分的维度，请生成3-5个针对性的补充问题，帮助提升该维度的信息完备度。
+`;
+
+// Chat system prompt for persona conversations
 export const personaChatSystemPrompt = ({
   personaData,
   locale,

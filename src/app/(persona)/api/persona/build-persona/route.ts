@@ -1,10 +1,10 @@
 import { llm, providerOptions } from "@/ai/provider";
-import { personaInterviewProcessorPrompt } from "@/app/(persona)/prompts";
-import { processSchema } from "@/app/(persona)/types";
-import { streamObject } from "ai";
+import { personaGenerationPrompt } from "@/app/(persona)/prompts";
+import { streamText } from "ai";
 
 export async function POST(req: Request) {
-  const { fileUrl, fileName, mimeType } = await req.json();
+  const { data } = await req.json();
+  const { fileUrl, fileName, mimeType } = data || {};
 
   if (!fileUrl || !fileName) {
     return new Response(JSON.stringify({ error: "fileUrl and fileName are required" }), {
@@ -26,22 +26,29 @@ export async function POST(req: Request) {
   const base64Content = Buffer.from(fileBuffer).toString("base64");
   const dataUrl = `data:${mimeType};base64,${base64Content}`;
 
-  const result = streamObject({
-    model: llm("gemini-2.5-flash"),
+  const prompt = personaGenerationPrompt({ locale: "zh-CN" });
+
+  const result = streamText({
+    model: llm("claude-3-7-sonnet"),
     providerOptions: providerOptions,
-    system: personaInterviewProcessorPrompt,
-    schema: processSchema,
+    system: prompt,
     messages: [
       {
         role: "user",
         content: [
-          { type: "text", text: "Please process the following PDF file" },
-          { type: "file", data: dataUrl, mimeType },
+          {
+            type: "text",
+            text: `请基于以下PDF文件内容生成一个详细的人格画像总结和系统提示词。文件名：${fileName}`,
+          },
+          { type: "file", filename: fileName, data: dataUrl, mimeType },
         ],
       },
     ],
+    onError: ({ error }) => {
+      console.log("Error:", error);
+    },
     abortSignal: req.signal,
   });
 
-  return result.toTextStreamResponse();
+  return result.toDataStreamResponse();
 }
