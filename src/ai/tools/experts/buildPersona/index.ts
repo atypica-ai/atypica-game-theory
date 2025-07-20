@@ -151,12 +151,18 @@ export async function runBuildPersona({
      *   但是不能太多 steps，虽然有 cache，savePersona 的 tool message 会被重复传给 llm
      * - 如果是批量调用 savePersona，目前支持最好的是 gemini-2.5-pro，但是这样太慢
      */
+    // const reduceTokens = null as TReduceTokens;
     // const reduceTokens = { model: "gemini-2.5-pro", ratio: 2 } as TReduceTokens;
     const reduceTokens = noPersonaFallback
       ? (null as TReduceTokens)
       : ({ model: "gemini-2.5-flash", ratio: 10 } as TReduceTokens);
     const llmOptions = undefined;
     const maxSteps = 5;
+    const temperature = 0.5;
+    const tools = {
+      [ToolName.savePersona]: savePersonaTool({ scoutUserChatId, statReport }),
+      // [ToolName.toolCallError]: toolCallError,
+    };
     /**
      * 给 gemini 2.5 flash 设置 toolChoice 时要注意:
      * gemini 不支持指定 tool 只能用 required
@@ -164,7 +170,7 @@ export async function runBuildPersona({
      * 所以索性就不强制 gemini 调用 tool，通过提示词控制它尽可能的生成人设，相应的，maxSteps 可以长一点
      */
     // const toolChoice = "required";
-    // const toolChoice = { type: "tool", toolName: ToolName.savePersona };
+    // const toolChoice: ToolChoice<typeof tools> = { type: "tool", toolName: ToolName.savePersona };
     const toolChoice = "auto";
     const response = streamText({
       // claude-3-7-sonnet 目前会遇到 input tokens context 不够大的问题，但 gpt 4.1 mini 和 gemini 2.5 flash 没问题
@@ -174,11 +180,9 @@ export async function runBuildPersona({
         locale,
         parallel: false, // gemini 可以开启, claude 不支持
       }),
+      temperature,
       messages: coreMessages,
-      tools: {
-        [ToolName.savePersona]: savePersonaTool({ scoutUserChatId, statReport }),
-        // [ToolName.toolCallError]: toolCallError,
-      },
+      tools,
       toolChoice,
       maxSteps,
       // toolCallStreaming: true,  // gemini 这个会有问题，会出现所有字段值都是 placeholder

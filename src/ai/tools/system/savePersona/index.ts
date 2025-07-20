@@ -48,7 +48,7 @@ export const savePersonaTool = ({
         .string()
         // .max(2000) // 英文环境下，gemini 对这个 100 的理解不是 100 个字符，这里先去掉
         .describe(
-          "Comprehensive AI agent system prompt that enables realistic simulation of this persona's thinking patterns, decision-making, and communication style (300-500 words)",
+          "Comprehensive AI agent system prompt that enables realistic simulation of this persona's thinking patterns, decision-making, and communication style (recommended around 1000 words)",
         )
         .transform(fixMalformedUnicodeString),
       locale: z
