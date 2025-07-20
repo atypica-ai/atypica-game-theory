@@ -1,5 +1,5 @@
 "use client";
-import { FileUploadInfo } from "@/components/chat/FileUploadButton";
+import { type FileUploadInfo } from "@/components/chat/FileUploadButton";
 import {
   checkFileUploadLimits,
   FILE_UPLOAD_LIMITS,
@@ -8,6 +8,7 @@ import {
 import { useTranslations } from "next-intl";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
+export type { FileUploadInfo };
 
 export interface UseFileUploadManagerOptions {
   onFilesChange?: (files: FileUploadInfo[]) => void;
