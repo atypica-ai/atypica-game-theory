@@ -4,12 +4,40 @@ import { proxiedFetch } from "@/lib/proxy/fetch";
 import { getDeployRegion } from "@/lib/request/deployRegion";
 import { ServerActionResult } from "@/lib/serverAction";
 import { ChatMessageAttachment } from "@/prisma/client";
+import { prisma } from "@/prisma/prisma";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
+import { withAuth } from "../request/withAuth";
 import { resizeImageToWebP } from "./image";
 import { s3SignedUrl, s3UploadCredentials } from "./s3";
 import { S3UploadCredentials } from "./types";
+
+export async function recordAttachmentFile({
+  ...recordData
+}: {
+  objectUrl: string;
+  name: string;
+  mimeType: string;
+  size: number;
+}): Promise<ServerActionResult<null>> {
+  return withAuth(async (user) => {
+    try {
+      await prisma.attachmentFile.create({
+        data: {
+          userId: user.id,
+          ...recordData,
+        },
+      });
+    } catch (error) {
+      rootLogger.error(`Error recording attachment file:${(error as Error).message}`);
+    }
+    return {
+      success: true,
+      data: null,
+    };
+  });
+}
 
 /**
  * Gets a presigned URL for direct frontend upload to S3
@@ -21,21 +49,26 @@ export async function getS3UploadCredentials({
   fileType: string;
   fileName: string;
 }): Promise<ServerActionResult<S3UploadCredentials>> {
-  try {
-    const result = await s3UploadCredentials({ fileType, fileName });
-    return {
-      success: true,
-      data: result,
-    };
-  } catch (error) {
-    console.error("Error generating S3 upload credentials:", error);
-    return {
-      success: false,
-      message: error instanceof Error ? error.message : "Unknown error occurred",
-    };
-  }
+  return withAuth(async () => {
+    try {
+      const result = await s3UploadCredentials({ fileType, fileName });
+      return {
+        success: true,
+        data: result,
+      };
+    } catch (error) {
+      console.error("Error generating S3 upload credentials:", error);
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : "Unknown error occurred",
+      };
+    }
+  });
 }
 
+/**
+ * @todo 这个不应该是个 server action，不过现在有客户端在用，需要重构下
+ */
 export async function fileUrlToDataUrl({
   objectUrl,
   mimeType,

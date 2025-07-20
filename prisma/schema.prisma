@@ -43,6 +43,7 @@ model User {
   paymentRecords    PaymentRecord[]
   subscriptions     UserSubscription[]
   interviewProjects InterviewProject[]
+  attachmentFiles   AttachmentFile[]
 }
 
 enum AdminRole {
@@ -433,4 +434,19 @@ model ImageGeneration {
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
+}
+
+model AttachmentFile {
+  id        Int    @id @default(autoincrement())
+  userId    Int
+  name      String @db.VarChar(255)
+  mimeType  String @db.VarChar(255)
+  size      Int
+  objectUrl String @unique @db.VarChar(255) // s3 object url
+  extra     Json? // not useful for the moment
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

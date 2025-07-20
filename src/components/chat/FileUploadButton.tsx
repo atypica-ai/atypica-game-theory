@@ -1,6 +1,6 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { getS3UploadCredentials } from "@/lib/attachments/actions";
+import { clientUploadFileToS3 } from "@/lib/attachments/client";
 import {
   checkFileUploadLimits,
   DOCUMENT_MIME_TYPES,
@@ -82,29 +82,8 @@ export function FileUploadButton({
     setIsUploading(true);
 
     try {
-      const result = await getS3UploadCredentials({
-        fileType: file.type,
-        fileName: file.name,
-      });
-
-      if (!result.success) {
-        throw new Error(result.message);
-      }
-
-      const { putObjectUrl, getObjectUrl, objectUrl } = result.data;
-
-      const uploadResponse = await fetch(putObjectUrl, {
-        method: "PUT",
-        body: file,
-        headers: {
-          "Content-Type": file.type,
-        },
-      });
-
-      if (!uploadResponse.ok) {
-        throw new Error(`Failed to upload file: ${uploadResponse.statusText}`);
-      }
-
+      const { objectUrl, getObjectUrl } = await clientUploadFileToS3(file);
+      toast.success(t("fileUploadedSuccessfully"));
       onFileUploadedAction({
         objectUrl: objectUrl,
         url: getObjectUrl,
@@ -112,8 +91,6 @@ export function FileUploadButton({
         mimeType: file.type,
         size: file.size,
       });
-
-      toast.success(t("fileUploadedSuccessfully"));
     } catch (error) {
       console.error("Error uploading file:", error);
       toast.error(error instanceof Error ? error.message : t("failedToUploadFile"));
