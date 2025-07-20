@@ -40,6 +40,19 @@ declare module "@/prisma/client" {
     size: number; // bytes
   };
 
+  export type ImageGenerationExtra = {
+    ratio: string;
+    reportToken: string;
+    midjourney?: { urls: string[] };
+    s3SignedUrl?: string;
+    s3SignedUrlExpiresAt?: number; // timestamp millis
+  } | null;
+
+  export type AttachmentFileExtra = {
+    s3SignedUrl?: string;
+    s3SignedUrlExpiresAt?: number; // timestamp millis
+  } | null;
+
   // import { AnalystReport as AnalystReportPrisma } from "@/prisma/client/index";
   // // 只覆盖这个不够，findUnique 返回的类型还是原来的
   // export type AnalystReport = Omit<AnalystReportPrisma, "extra"> & {

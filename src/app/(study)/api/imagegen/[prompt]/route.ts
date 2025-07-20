@@ -1,18 +1,16 @@
-import { s3SignedUrl } from "@/lib/attachments/s3";
+import { imageGenerationObjectUrlToHttpUrl } from "@/app/(study)/artifacts/lib/imagegen";
 import { rootLogger } from "@/lib/logging";
 import { getDeployRegion } from "@/lib/request/deployRegion";
 import { getRequestOrigin } from "@/lib/request/headers";
+import { ImageGeneration } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { createHash } from "crypto";
 import { z } from "zod";
 
-/**
- * @todo 现在每次打开report都会生成一个新的 s3 url，这样会导致 next 的 image 缓存过多
- */
-async function optimizedImageUrl({ objectUrl }: { objectUrl: string }) {
-  const url = await s3SignedUrl(objectUrl);
+async function optimizedImageUrl(imageGeneration: ImageGeneration) {
+  const url = await imageGenerationObjectUrlToHttpUrl(imageGeneration);
   const siteOrigin = await getRequestOrigin();
-  if (getDeployRegion() === "mainland" && !/amazonaws\.com\.cn/.test(objectUrl)) {
+  if (getDeployRegion() === "mainland" && !/amazonaws\.com\.cn/.test(url)) {
     const proxiedUrl = `/api/proxy-image?url=${encodeURIComponent(url)}`;
     return `${siteOrigin}/_next/image?url=${encodeURIComponent(proxiedUrl)}&w=1920&q=100`;
   } else {

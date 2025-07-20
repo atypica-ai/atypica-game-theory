@@ -5,12 +5,48 @@ import { initStudyStatReporter } from "@/ai/tools/stats";
 import { uploadToS3 } from "@/lib/attachments/s3";
 import { rootLogger } from "@/lib/logging";
 import { getRequestOrigin } from "@/lib/request/headers";
+import { ImageGenerationExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
 import { experimental_generateImage as generateImage } from "ai";
 import { createHash } from "crypto";
 import { Logger } from "pino";
 import { z } from "zod";
+
+import { s3SignedUrl } from "@/lib/attachments/s3";
+import { ImageGeneration } from "@/prisma/client";
+
+export async function imageGenerationObjectUrlToHttpUrl(imageGeneration: ImageGeneration) {
+  const { id, objectUrl } = imageGeneration;
+  let extra = imageGeneration.extra as unknown as NonNullable<ImageGenerationExtra>;
+  let url: string;
+  if (
+    extra?.s3SignedUrl &&
+    extra?.s3SignedUrlExpiresAt &&
+    extra.s3SignedUrlExpiresAt > Date.now() + 60 * 60 * 1000
+  ) {
+    // s3SignedUrl exists and expires in the next hour
+    url = extra.s3SignedUrl;
+  } else {
+    const signingDate = new Date();
+    const expiresIn = 7 * 24 * 3600; // in seconds
+    url = await s3SignedUrl(objectUrl, { signingDate, expiresIn });
+    extra = {
+      ...extra,
+      s3SignedUrl: url,
+      s3SignedUrlExpiresAt: signingDate.valueOf() + expiresIn * 1000,
+    };
+    waitUntil(
+      new Promise((resolve) => {
+        prisma.imageGeneration
+          .update({ where: { id }, data: { extra } })
+          .finally(() => resolve(null));
+      }),
+    );
+  }
+
+  return url;
+}
 
 /**
  * 在 reportGenerationTool 的 throttleSaveHTML 方法里调用
@@ -102,7 +138,7 @@ async function backgroundGenerateImage({
   // }
 
   // 立即先插入记录
-  const recordExtra = { ratio, reportToken };
+  const recordExtra: ImageGenerationExtra = { ratio, reportToken };
   const { id } = await prisma.imageGeneration.create({
     data: {
       prompt,
@@ -150,7 +186,9 @@ async function backgroundGenerateImage({
       data: {
         objectUrl,
         generatedAt: new Date(),
-        extra: urls ? { ...recordExtra, midjourney: { urls } } : { ...recordExtra },
+        extra: urls
+          ? ({ ...recordExtra, midjourney: { urls } } as NonNullable<ImageGenerationExtra>)
+          : { ...recordExtra },
       },
     });
     resolve(getObjectUrl);

@@ -36,22 +36,6 @@ export async function getS3UploadCredentials({
   }
 }
 
-export async function getS3SignedUrl(url: string): Promise<ServerActionResult<string>> {
-  try {
-    const result = await s3SignedUrl(url);
-    return {
-      success: true,
-      data: result,
-    };
-  } catch (error) {
-    console.error("Error generating S3 signed URL:", error);
-    return {
-      success: false,
-      message: error instanceof Error ? error.message : "Unknown error occurred",
-    };
-  }
-}
-
 export async function fileUrlToDataUrl({
   objectUrl,
   mimeType,

@@ -36,14 +36,19 @@ function getDefaultSignedUrlParams() {
   signingDate.setHours(0, 0, 0, 0);
   return {
     signingDate,
-    expiresIn: 48 * 3600, // URL expires in 48 hours
+    expiresIn: 48 * 3600, // URL expires in 48 hours, in seconds
   };
 }
 
 /**
  * @todo 要从 objectUrl 里面识别和获取 s3 bucket 并判断是否支持签名
+ *
+ * @param expiresIn - The number of seconds until the signed URL expires
  */
-export async function s3SignedUrl(objectUrl: string): Promise<string> {
+export async function s3SignedUrl(
+  objectUrl: string,
+  options?: { signingDate: Date; expiresIn: number },
+): Promise<string> {
   const [origin, key] = (() => {
     if (objectUrl.includes("?")) {
       objectUrl = objectUrl.split("?")[0];
@@ -79,9 +84,11 @@ export async function s3SignedUrl(objectUrl: string): Promise<string> {
     Key: key,
   });
 
-  const signedUrl = await getSignedUrl(s3Client, getObjectCommand, {
-    ...getDefaultSignedUrlParams(),
-  });
+  const signedUrl = await getSignedUrl(
+    s3Client,
+    getObjectCommand,
+    options ?? getDefaultSignedUrlParams(),
+  );
 
   return signedUrl;
 }
