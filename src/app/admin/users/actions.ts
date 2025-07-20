@@ -3,6 +3,7 @@ import { generateImpersonationLoginUrl } from "@/app/(auth)/impersonationLogin";
 import { authClientInfo } from "@/app/(auth)/lib";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
+import { encryptText } from "@/lib/cipher";
 import { getRequestOrigin } from "@/lib/request/headers";
 import { ServerActionResult } from "@/lib/serverAction";
 import { AdminRole, Currency, User } from "@/prisma/client";
@@ -329,4 +330,41 @@ export async function generateImpersonationLoginForUser(
       message: "Failed to generate login token",
     };
   }
+}
+
+export async function generatePasswordResetLinkForUser(
+  userId: number,
+  expiryHours: number = 0.5,
+): Promise<ServerActionResult<string>> {
+  await checkAdminAuth([AdminPermission.MANAGE_USERS]);
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+
+  if (!user) {
+    return {
+      success: false,
+      message: "User not found",
+    };
+  }
+
+  // Create reset token payload with email and expiry
+  const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * expiryHours); // Default 30 minutes
+  const payload = JSON.stringify({
+    email: user.email,
+    expiresAt: expiresAt.toISOString(),
+  });
+
+  // Encrypt the payload as the reset token
+  const resetToken = encryptText(payload);
+
+  // Create reset URL
+  const siteOrigin = await getRequestOrigin();
+  const resetUrl = `${siteOrigin}/auth/reset-password?token=${resetToken}`;
+
+  return {
+    success: true,
+    data: resetUrl,
+  };
 }

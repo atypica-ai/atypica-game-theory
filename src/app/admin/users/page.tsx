@@ -34,6 +34,7 @@ import {
   deleteUserAccount,
   fetchUsers,
   generateImpersonationLoginForUser,
+  generatePasswordResetLinkForUser,
   updateAdminStatus,
   verifyUserEmail,
 } from "./actions";
@@ -64,6 +65,10 @@ export default function UsersPage() {
   const [loginUrl, setLoginUrl] = useState("");
   const [isGeneratingLogin, setIsGeneratingLogin] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
+  const [resetUrl, setResetUrl] = useState("");
+  const [isGeneratingReset, setIsGeneratingReset] = useState(false);
+  const [resetCopied, setResetCopied] = useState(false);
 
   // Initialize page from URL on load
   useEffect(() => {
@@ -190,6 +195,34 @@ export default function UsersPage() {
     }
   };
 
+  const generateResetUrl = async (user: User) => {
+    setSelectedUser(user);
+    setIsGeneratingReset(true);
+    setError("");
+    try {
+      const result = await generatePasswordResetLinkForUser(user.id, 0.5);
+      if (result.success) {
+        setResetUrl(result.data);
+        setIsResetDialogOpen(true);
+      } else {
+        setError(result.message || "Failed to generate reset URL");
+      }
+    } catch (err) {
+      setError((err as Error).message);
+    }
+    setIsGeneratingReset(false);
+  };
+
+  const copyResetToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(resetUrl);
+      setResetCopied(true);
+      setTimeout(() => setResetCopied(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy:", err);
+    }
+  };
+
   if (status === "loading" || isLoading) {
     return <div>Loading...</div>;
   }
@@ -258,6 +291,7 @@ export default function UsersPage() {
               <TableHead>Last Login</TableHead>
               <TableHead>Admin Role</TableHead>
               <TableHead>Impersonation Login</TableHead>
+              <TableHead>Password Reset</TableHead>
               <TableHead>Delete</TableHead>
             </TableRow>
           </TableHeader>
@@ -330,9 +364,11 @@ export default function UsersPage() {
                       <>
                         <div>{formatDate(new Date(user.lastLogin.timestamp), locale)}</div>
                         <div>{user.lastLogin.clientIp}</div>
-                        <div>
-                          {user.lastLogin.geo?.city},{user.lastLogin.geo?.countryCode}
-                        </div>
+                        {user.lastLogin.geo && (
+                          <div>
+                            {user.lastLogin.geo.city}, {user.lastLogin.geo.countryCode}
+                          </div>
+                        )}
                       </>
                     ) : (
                       <span className="text-muted-foreground">-</span>
@@ -382,6 +418,19 @@ export default function UsersPage() {
                     ) : (
                       <span className="text-xs text-muted-foreground">Email not verified</span>
                     )}
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap text-center">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7 gap-1"
+                      onClick={() => generateResetUrl(user)}
+                      disabled={isGeneratingReset}
+                      title="Generate password reset URL"
+                    >
+                      <LinkIcon className="size-3" />
+                      {isGeneratingReset ? "..." : "Reset"}
+                    </Button>
                   </TableCell>
                   <TableCell className="whitespace-nowrap text-center">
                     <ConfirmDialog
@@ -612,6 +661,51 @@ export default function UsersPage() {
                 setIsLoginDialogOpen(false);
                 setLoginUrl("");
                 setCopied(false);
+              }}
+            >
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isResetDialogOpen} onOpenChange={setIsResetDialogOpen}>
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Password Reset URL</DialogTitle>
+            <DialogDescription>
+              Generated password reset URL for {selectedUser?.email} (valid for 30 minutes)
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="grid gap-4 py-4">
+            <div className="space-y-2">
+              <Label>Reset URL</Label>
+              <div className="flex gap-2">
+                <Input value={resetUrl} readOnly className="font-mono text-xs" />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={copyResetToClipboard}
+                  className="gap-1"
+                >
+                  {resetCopied ? <CheckIcon className="size-4" /> : <CopyIcon className="size-4" />}
+                  {resetCopied ? "Copied!" : "Copy"}
+                </Button>
+              </div>
+              <div className="text-xs text-muted-foreground">
+                This URL will allow the user to reset their password and expires in 30 minutes.
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsResetDialogOpen(false);
+                setResetUrl("");
+                setResetCopied(false);
               }}
             >
               Close
