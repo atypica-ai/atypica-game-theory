@@ -3,14 +3,13 @@ import { FileUploadButton } from "@/components/chat/FileUploadButton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useFileUploadManager } from "@/hooks/use-file-upload-manager";
-import { ChatMessageAttachment } from "@/prisma/client";
 import { FileText, MessageCircle, Target, Upload, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import { createPersonaImport } from "../persona-import/actions";
+import { createPersonaImport } from "../actions";
 
-export default function PersonaHomePage() {
+export default function PersonaImportPage() {
   const router = useRouter();
   const { uploadedFiles, handleFileUploaded, clearFiles } = useFileUploadManager();
   const [isCreating, setIsCreating] = useState(false);
@@ -29,13 +28,13 @@ export default function PersonaHomePage() {
 
     setIsCreating(true);
     try {
-      const attachments: ChatMessageAttachment[] = uploadedFiles.map((file) => ({
-        objectUrl: file.url,
+      const result = await createPersonaImport({
+        // 确保只有这4个字段被保存
+        objectUrl: file.objectUrl,
         name: file.name,
-        mimeType: file.mimeType,
         size: file.size,
-      }));
-      const result = await createPersonaImport(attachments);
+        mimeType: file.mimeType,
+      });
       if (!result.success) throw result;
       const personaImport = result.data;
       router.push(`/persona-import/${personaImport.id}`);

@@ -5,7 +5,10 @@ import fs from "node:fs";
 import path from "node:path";
 
 /**
- * 这个暂时用不到了
+ * 这个功能其实挺好的，现在就暂时是 persona import 里查看文件用
+ *
+ * @todo 现在有了一个 AttachmentFile 表，所以可以把签名缓存在那里
+ * @todo 不一定要服务端下载内容，可以支持加一个参数是否能 redirect，如果是，直接 302 到签名后的 url
  */
 export async function GET(req: Request) {
   const requestUrl = new URL(req.url);

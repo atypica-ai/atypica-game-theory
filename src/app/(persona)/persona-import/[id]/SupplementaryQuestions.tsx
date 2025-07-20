@@ -1,6 +1,6 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { CopyIcon, DownloadIcon, LightbulbIcon } from "lucide-react";
+import { CopyIcon, LightbulbIcon } from "lucide-react";
 import { toast } from "sonner";
 import { AnalysisResult } from "../../types";
 
@@ -17,18 +17,6 @@ export function SupplementaryQuestions({
     navigator.clipboard.writeText(text).then(() => {
       toast.success("已复制到剪贴板");
     });
-  };
-
-  const exportQuestions = (questions: string[], title: string) => {
-    const validQuestions = questions.filter((q): q is string => Boolean(q));
-    const content = `补充问题 - ${title}\n\n${validQuestions.map((q, i) => `${i + 1}. ${q}`).join("\n\n")}\n\n导出时间: ${new Date().toLocaleString()}`;
-    const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `补充问题-${title}.txt`;
-    link.click();
-    URL.revokeObjectURL(url);
   };
 
   if (!supplementaryQuestions || !supplementaryQuestions.questions) return null;
@@ -48,51 +36,17 @@ export function SupplementaryQuestions({
         <div className="p-5 bg-gradient-to-br from-amber-50 to-yellow-50 rounded-2xl border border-amber-200/50">
           <h4 className="font-semibold mb-3 text-amber-800">生成理由</h4>
           <p className="text-sm text-amber-700 leading-relaxed">
-            {supplementaryQuestions.reasoning || "正在生成分析理由..."}
+            {supplementaryQuestions.reasoning}
           </p>
         </div>
 
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h4 className="font-semibold text-gray-800">建议追问问题</h4>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() =>
-                  exportQuestions(supplementaryQuestions.questions ?? [], fileName || "补充问题")
-                }
-                className="bg-white/70 hover:bg-white/90"
-                disabled={
-                  !supplementaryQuestions.questions || supplementaryQuestions.questions.length === 0
-                }
-              >
-                <DownloadIcon className="size-4 mr-2" />
-                导出问题
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() =>
-                  copyToClipboard(
-                    (supplementaryQuestions.questions ?? [])
-                      .filter((q): q is string => Boolean(q))
-                      .join("\n"),
-                  )
-                }
-                className="bg-white/70 hover:bg-white/90"
-                disabled={
-                  !supplementaryQuestions.questions || supplementaryQuestions.questions.length === 0
-                }
-              >
-                <CopyIcon className="size-4 mr-2" />
-                复制全部
-              </Button>
-            </div>
           </div>
           <div className="grid gap-3">
             {(supplementaryQuestions.questions ?? []).map((question, index) => {
-              // Skip empty or undefined questions (streaming in progress)
+              // Skip empty or undefined questions
               if (!question) return null;
 
               return (

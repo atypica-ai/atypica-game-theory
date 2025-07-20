@@ -41,20 +41,15 @@ export function PersonaSummary({ personaSummary, isProcessing }: PersonaSummaryP
 
       <div className="relative">
         <div className="text-sm whitespace-pre-wrap p-6 bg-gradient-to-br from-gray-50 to-slate-50 rounded-2xl border border-gray-200/50 min-h-[200px] leading-relaxed shadow-sm">
-          {personaSummary || "人格画像总结将在此处显示..."}
-          {isProcessing && personaSummary && (
-            <span className="inline-block w-2 h-5 bg-blue-500 animate-pulse ml-1" />
-          )}
+          {personaSummary ||
+            (isProcessing ? "正在生成人格画像总结..." : "人格画像总结将在此处显示...")}
         </div>
         {isProcessing && (
           <div className="mt-4 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200/50 rounded-2xl">
             <div className="flex items-center gap-3">
               <Loader2Icon className="size-5 animate-spin text-blue-600" />
               <div>
-                <span className="text-sm font-medium text-blue-800">
-                  正在实时生成人格画像总结...
-                </span>
-                <p className="text-xs text-blue-600 mt-1">已生成 {personaSummary.length} 字符</p>
+                <span className="text-sm font-medium text-blue-800">正在生成人格画像总结...</span>
               </div>
             </div>
           </div>

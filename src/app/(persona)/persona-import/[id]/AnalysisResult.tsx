@@ -260,7 +260,7 @@ export function AnalysisResult({ analysis }: AnalysisResultProps) {
                         </Badge>
                       </div>
                     </div>
-                    <p className="text-sm text-gray-600">{dimensionData.reason || "分析中..."}</p>
+                    <p className="text-sm text-gray-600">{dimensionData.reason}</p>
                     {dimensionData.questions && dimensionData.questions.length > 0 && (
                       <div className="pt-3 border-t border-gray-200">
                         <h5 className="font-medium text-sm mb-2 text-gray-700">针对性补充问题</h5>

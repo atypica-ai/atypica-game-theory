@@ -30,8 +30,8 @@ export function ProcessingStatus({
   personaImportAnalysis,
 }: ProcessingStatusProps) {
   // Determine actual completion status
-  const summaryCompleted = Boolean(personaImportSummary || personaSummary);
-  const analysisCompleted = Boolean(personaImportAnalysis || analysis);
+  const summaryCompleted = Boolean(personaImportSummary);
+  const analysisCompleted = Boolean(personaImportAnalysis);
   return (
     <div className="space-y-6">
       <div className="space-y-2">
@@ -41,7 +41,7 @@ export function ProcessingStatus({
           </div>
           处理进度
         </h2>
-        <p className="text-gray-600 ml-11">正在并行处理PDF文件：生成人格画像总结和完整性分析</p>
+        <p className="text-gray-600 ml-11">并行处理PDF文件：生成人格画像总结和完整性分析</p>
       </div>
       <div className="space-y-6">
         {/* 人格画像生成状态 */}
@@ -75,9 +75,9 @@ export function ProcessingStatus({
                 }}
               />
             </div>
-            {isProcessing && personaSummary && (
+            {isProcessing && (
               <div className="text-xs text-blue-700 bg-blue-100/50 px-3 py-1 rounded-full inline-block">
-                正在生成人格画像... {personaSummary?.length || 0} 字符
+                正在生成人格画像...
               </div>
             )}
           </div>
