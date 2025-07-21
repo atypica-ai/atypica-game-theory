@@ -80,6 +80,7 @@ model Persona {
   samples         Json // 存储小红书用户主页链接作为参考样本
   prompt          String         @db.Text
   locale          String?        @db.VarChar(16)
+  tier            Int            @default(0) @db.Integer
   scoutUserChatId Int?           @db.Integer
   scoutUserChat   UserChat?      @relation(fields: [scoutUserChatId], references: [id])
   personaImportId Int?           @db.Integer
@@ -455,15 +456,16 @@ model AttachmentFile {
 }
 
 model PersonaImport {
-  id          Int     @id @default(autoincrement())
-  userId      Int
-  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  attachments Json
-  summary     String? @db.Text
-  analysis    Json?
-  extra       Json?
+  id              Int   @id @default(autoincrement())
+  userId          Int
+  user            User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  attachments     Json
+  analysis        Json?
+  extra           Json?
+  extraUserChatId Int?  @unique // interview UserChat for follow up questions
 
-  createdAt DateTime  @default(now()) @db.Timestamptz(6)
-  updatedAt DateTime  @updatedAt @db.Timestamptz(6)
-  Persona   Persona[]
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  personas Persona[]
 }

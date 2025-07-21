@@ -5,7 +5,7 @@ import { BrainIcon } from "lucide-react";
 
 export function PersonaSummary({ personas }: { personas: Persona[] }) {
   return (
-    <div className="bg-white/60 backdrop-blur-sm rounded-3xl border border-white/40 shadow-xl p-8 space-y-6">
+    <div className="space-y-6">
       <div className="space-y-2">
         <h2 className="text-2xl font-semibold flex items-center gap-3 text-gray-800">
           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center">

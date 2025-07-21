@@ -70,7 +70,7 @@ export async function buildPersonaAgentPrompt(
         type: "tool",
         toolName: ToolName.savePersona,
       },
-      maxSteps: 2,
+      maxSteps: 1,
       // onStepFinish: async (step) => {
       //   console.log(step);
       // },

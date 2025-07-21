@@ -160,7 +160,7 @@ export async function runBuildPersona({
     const maxSteps = 5;
     const temperature = 0.5;
     const tools = {
-      [ToolName.savePersona]: savePersonaTool({ scoutUserChatId, statReport }),
+      [ToolName.savePersona]: savePersonaTool({ scoutUserChatId }),
       // [ToolName.toolCallError]: toolCallError,
     };
     /**

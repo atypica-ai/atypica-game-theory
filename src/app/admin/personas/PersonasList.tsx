@@ -259,24 +259,28 @@ export default function PersonasList({
                 <CardHeader>
                   <CardTitle className="flex items-center text-lg">
                     <span className="truncate">{persona.name}</span>
-                    <Badge variant="outline" className="ml-2 whitespace-nowrap text-xs">
-                      Tier: {persona.tier ?? "N/A"}
-                    </Badge>
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      className="text-xs h-6 ml-auto"
-                      disabled={rescoringId === persona.id}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleRescore(persona.id);
-                      }}
-                    >
-                      {rescoringId === persona.id ? "Scoring..." : "Re-score"}
-                    </Button>
                   </CardTitle>
                   <CardDescription className="text-xs text-muted-foreground">
-                    {t("source")}：{persona.source}
+                    <div>
+                      {t("source")}：{persona.source}
+                    </div>
+                    <div className="pt-2 flex gap-2">
+                      <Badge variant="secondary" className="whitespace-nowrap text-xs">
+                        Tier: {persona.tier ?? "N/A"}
+                      </Badge>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        className="text-xs h-5"
+                        disabled={rescoringId === persona.id}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRescore(persona.id);
+                        }}
+                      >
+                        {rescoringId === persona.id ? "Scoring..." : "Re-score"}
+                      </Button>
+                    </div>
                   </CardDescription>
                 </CardHeader>
                 <CardContent>

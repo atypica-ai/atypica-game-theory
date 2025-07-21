@@ -1,8 +1,8 @@
 "use server";
-import { analyzeInterviewCompleteness, buildPersonaSummary } from "@/app/(persona)/processing";
+import { analyzeInterviewCompleteness, buildPersonaAgentPrompt } from "@/app/(persona)/processing";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
-import { ChatMessageAttachment, PersonaImport, PersonaImportExtra } from "@/prisma/client";
+import { ChatMessageAttachment, Persona, PersonaImport, PersonaImportExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
 
@@ -33,7 +33,7 @@ export async function createPersonaImport({
     // Start processing immediately in the background using waitUntil
     waitUntil(
       Promise.all([
-        buildPersonaSummary(personaImport),
+        buildPersonaAgentPrompt(personaImport),
         analyzeInterviewCompleteness(personaImport),
       ]),
     );
@@ -64,7 +64,6 @@ export async function reAnalyzePersonaImport(
     await prisma.personaImport.update({
       where: { id: personaImportId },
       data: {
-        summary: null,
         analysis: {},
         extra: {},
       },
@@ -78,7 +77,7 @@ export async function reAnalyzePersonaImport(
     // Start processing again in the background
     waitUntil(
       Promise.all([
-        buildPersonaSummary(personaImportWithAttachments),
+        buildPersonaAgentPrompt(personaImportWithAttachments),
         analyzeInterviewCompleteness(personaImportWithAttachments),
       ]),
     );
@@ -88,4 +87,26 @@ export async function reAnalyzePersonaImport(
       data: undefined,
     };
   });
+}
+
+export async function fetchPersonaById(
+  personaId: number,
+): Promise<ServerActionResult<Omit<Persona, "tags"> & { tags: string[] }>> {
+  const persona = await prisma.persona.findUnique({
+    where: { id: personaId },
+  });
+  if (!persona) {
+    return {
+      success: false,
+      code: "not_found",
+      message: "Persona not found",
+    };
+  }
+  return {
+    success: true,
+    data: {
+      ...persona,
+      tags: persona.tags as string[],
+    },
+  };
 }

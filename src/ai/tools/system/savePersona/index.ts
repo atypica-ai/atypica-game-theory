@@ -15,7 +15,6 @@ export const savePersonaTool = ({
 }: {
   scoutUserChatId?: number;
   personaImportId?: number;
-  // statReport?: StatReporter;
 }) =>
   tool({
     description:
