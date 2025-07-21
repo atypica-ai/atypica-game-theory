@@ -1,9 +1,6 @@
-import { createTextEmbedding } from "@/ai/embedding";
-import { PlainTextToolResult, StatReporter } from "@/ai/tools/types";
+import { PlainTextToolResult } from "@/ai/tools/types";
+import { createPersonaWithPostProcess } from "@/app/(persona)/lib";
 import { fixMalformedUnicodeString } from "@/lib/utils";
-import { Persona } from "@/prisma/client";
-import { prisma } from "@/prisma/prisma";
-import { waitUntil } from "@vercel/functions";
 import { tool } from "ai";
 import { z } from "zod";
 
@@ -15,11 +12,10 @@ export interface SavePersonaToolResult extends PlainTextToolResult {
 export const savePersonaTool = ({
   scoutUserChatId,
   personaImportId,
-  statReport,
 }: {
   scoutUserChatId?: number;
   personaImportId?: number;
-  statReport?: StatReporter;
+  // statReport?: StatReporter;
 }) =>
   tool({
     description:
@@ -69,65 +65,18 @@ export const savePersonaTool = ({
       personaPrompt: prompt,
       locale,
     }): Promise<SavePersonaToolResult> => {
-      const samples = [] as string[];
-      const personaData: any = {
+      const persona = await createPersonaWithPostProcess({
         name: name.slice(0, 50),
         source: source.slice(0, 200), // 为了数据库不报错，防御性的截断一下
         tags: tags.map((tag) => tag.slice(0, 50)),
-        samples,
         prompt,
         locale,
-      };
-
-      if (scoutUserChatId !== undefined) {
-        personaData.scoutUserChatId = scoutUserChatId;
-      }
-
-      if (personaImportId !== undefined) {
-        personaData.personaImportId = personaImportId;
-      }
-
-      const persona = await prisma.persona.create({
-        data: personaData,
+        scoutUserChatId,
+        personaImportId,
       });
-      waitUntil(createPersonaEmbedding(persona));
-      if (statReport) {
-        const reportData: any = {
-          reportedBy: "savePersona tool",
-          personaId: persona.id,
-        };
-
-        if (scoutUserChatId !== undefined) {
-          reportData.scoutUserChatId = scoutUserChatId;
-        }
-
-        if (personaImportId !== undefined) {
-          reportData.personaImportId = personaImportId;
-        }
-
-        await statReport("personas", 1, reportData);
-      }
       return {
         personaId: persona.id,
         plainText: `User persona "${name}" saved successfully with ID: ${persona.id}`,
       };
     },
   });
-
-async function createPersonaEmbedding(persona: Persona) {
-  try {
-    // const text = persona.name + " " + (persona.tags as string[])?.join(" ");
-    const text = persona.prompt; // 使用 prompt 进行更精确的搜索
-    const embedding = await createTextEmbedding(text, "retrieval.passage");
-    await prisma.$executeRaw`
-      UPDATE "Persona"
-      SET "embedding" = ${JSON.stringify(embedding)}::vector
-      WHERE "id" = ${persona.id}
-    `;
-    console.log(`Updated semantic embedding for persona ${persona.id}`);
-  } catch (error) {
-    console.error(
-      `Failed to update semantic embedding for persona ${persona.id}: ${(error as Error).message}`,
-    );
-  }
-}
