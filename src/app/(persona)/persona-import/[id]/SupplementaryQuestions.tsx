@@ -1,22 +1,46 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { CopyIcon, LightbulbIcon } from "lucide-react";
+import { CopyIcon, LightbulbIcon, ShareIcon } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
+import { createFollowUpInterviewChat } from "../../actions";
 import { AnalysisResult } from "../../types";
 
 interface SupplementaryQuestionsProps {
   supplementaryQuestions: AnalysisResult["supplementaryQuestions"] | undefined;
   fileName: string;
+  personaImportId: number;
 }
 
 export function SupplementaryQuestions({
   supplementaryQuestions,
   // fileName,
+  personaImportId,
 }: SupplementaryQuestionsProps) {
+  const [isCreatingLink, setIsCreatingLink] = useState(false);
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text).then(() => {
       toast.success("已复制到剪贴板");
     });
+  };
+
+  const handleCreateShareLink = async () => {
+    setIsCreatingLink(true);
+    try {
+      const result = await createFollowUpInterviewChat(personaImportId);
+      if (!result.success) {
+        throw new Error(result.message || "创建分享链接失败");
+      }
+
+      const shareUrl = `${window.location.origin}/persona/followup/${result.data.token}`;
+      await copyToClipboard(shareUrl);
+      toast.success("分享链接已创建并复制到剪贴板");
+    } catch (error) {
+      console.error("Error creating share link:", error);
+      toast.error("创建分享链接失败，请重试");
+    } finally {
+      setIsCreatingLink(false);
+    }
   };
 
   if (!supplementaryQuestions || !supplementaryQuestions.questions) return null;
@@ -83,8 +107,11 @@ export function SupplementaryQuestions({
             <Button
               className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
               variant="outline"
+              onClick={handleCreateShareLink}
+              disabled={isCreatingLink}
             >
-              生成分享链接
+              <ShareIcon className="size-4 mr-2" />
+              {isCreatingLink ? "生成中..." : "生成分享链接"}
             </Button>
             <p className="text-xs text-green-700 mt-2 text-center">
               创建链接发送给受访者，用于收集补充回答

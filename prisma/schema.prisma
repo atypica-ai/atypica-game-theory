@@ -191,6 +191,7 @@ model UserChat {
   statistics       ChatStatistics[]
   messages         ChatMessage[]
   interviewSession InterviewSession?
+  PersonaImport    PersonaImport?
 }
 
 enum MessageRole {
@@ -456,13 +457,14 @@ model AttachmentFile {
 }
 
 model PersonaImport {
-  id              Int   @id @default(autoincrement())
+  id              Int       @id @default(autoincrement())
   userId          Int
-  user            User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   attachments     Json
   analysis        Json?
   extra           Json?
-  extraUserChatId Int?  @unique // interview UserChat for follow up questions
+  extraUserChatId Int?      @unique // interview UserChat for follow up questions
+  extraUserChat   UserChat? @relation(fields: [extraUserChatId], references: [id])
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)

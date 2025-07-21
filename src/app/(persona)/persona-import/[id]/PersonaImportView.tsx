@@ -243,6 +243,7 @@ export function PersonaImportView({
                 <SupplementaryQuestions
                   supplementaryQuestions={supplementaryQuestions}
                   fileName={fileName}
+                  personaImportId={personaImport.id}
                 />
               </div>
             )}

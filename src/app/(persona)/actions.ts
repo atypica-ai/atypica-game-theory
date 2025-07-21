@@ -2,9 +2,19 @@
 import { analyzeInterviewCompleteness, buildPersonaAgentPrompt } from "@/app/(persona)/processing";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
-import { ChatMessageAttachment, Persona, PersonaImport, PersonaImportExtra } from "@/prisma/client";
+import { createUserChat } from "@/lib/userChat/lib";
+import {
+  ChatMessageAttachment,
+  Persona,
+  PersonaImport,
+  PersonaImportExtra,
+  UserChat,
+} from "@/prisma/client";
+import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
+import { generateId } from "ai";
+import { getTranslations } from "next-intl/server";
 
 export async function createPersonaImport({
   objectUrl,
@@ -108,5 +118,99 @@ export async function fetchPersonaById(
       ...persona,
       tags: persona.tags as string[],
     },
+  };
+}
+
+export async function createFollowUpInterviewChat(
+  personaImportId: number,
+): Promise<ServerActionResult<{ token: string }>> {
+  return withAuth(async (user) => {
+    const t = await getTranslations("PersonaImport");
+
+    // Check if persona import exists and belongs to user
+    const personaImport = await prisma.personaImport.findUnique({
+      where: { id: personaImportId, userId: user.id },
+      include: {
+        extraUserChat: true,
+      },
+    });
+
+    if (!personaImport) {
+      return {
+        success: false,
+        code: "not_found",
+        message: "Persona import not found",
+      };
+    }
+
+    // Check if follow-up chat already exists
+    if (personaImport.extraUserChat) {
+      return {
+        success: true,
+        data: { token: personaImport.extraUserChat.token },
+      };
+    }
+
+    const content = "[READY]";
+    const parts = [{ type: "text", text: content }];
+
+    const userChat = await prisma.$transaction(async (tx) => {
+      const userChat = await createUserChat({
+        userId: user.id,
+        title: "Follow-up Interview",
+        kind: "interviewSession",
+        tx,
+      });
+
+      await tx.chatMessage.create({
+        data: {
+          messageId: generateId(),
+          userChatId: userChat.id,
+          role: "user",
+          content,
+          parts: parts as InputJsonValue,
+        },
+      });
+
+      // Update persona import with the chat reference
+      await tx.personaImport.update({
+        where: { id: personaImportId },
+        data: {
+          extraUserChatId: userChat.id,
+          extra: {
+            ...(personaImport.extra as PersonaImportExtra),
+            followUpChatToken: userChat.token,
+          },
+        },
+      });
+
+      return userChat;
+    });
+
+    return {
+      success: true,
+      data: { token: userChat.token },
+    };
+  });
+}
+
+export async function fetchFollowUpInterviewChat(
+  token: string,
+): Promise<ServerActionResult<UserChat>> {
+  const userChat = await prisma.userChat.findUnique({
+    where: { token, kind: "interviewSession" },
+  });
+
+  if (!userChat) {
+    return {
+      success: false,
+      code: "not_found",
+      message: "Follow-up interview not found",
+    };
+  }
+
+  return {
+    success: true,
+    data: userChat,
   };
 }

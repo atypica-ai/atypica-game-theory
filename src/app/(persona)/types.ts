@@ -64,3 +64,12 @@ export const personaScoringSchema = z.object({
   behavioralEconomics: z.number().min(0).max(1).describe("1 if present, 0 if not"),
   politicalCognition: z.number().min(0).max(1).describe("1 if present, 0 if not"),
 });
+
+export const FollowUpChatBodySchema = z.object({
+  message: z.object({
+    id: z.string().optional(),
+    role: z.enum(["user", "assistant", "system", "data"]),
+    content: z.string(),
+  }),
+  userChatId: z.number(),
+});
