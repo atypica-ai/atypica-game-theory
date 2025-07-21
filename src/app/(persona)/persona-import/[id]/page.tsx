@@ -6,12 +6,6 @@ import { getServerSession } from "next-auth";
 import { forbidden, notFound } from "next/navigation";
 import { PersonaImportView } from "./PersonaImportView";
 
-interface PersonaImportPageProps {
-  params: {
-    id: string;
-  };
-}
-
 export default async function PersonaImportDetailPage({
   params,
 }: {

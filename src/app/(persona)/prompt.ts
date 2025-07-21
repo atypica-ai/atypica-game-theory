@@ -2,7 +2,7 @@ import { Locale } from "next-intl";
 
 // Persona generation prompt for build-persona from PDF content
 
-const analysisDimensions = ({ locale }: { locale: Locale }) =>
+export const analysisDimensions = ({ locale }: { locale: Locale }) =>
   locale === "zh-CN"
     ? `
 # 分析维度
@@ -65,71 +65,24 @@ Please conduct in-depth analysis from the following four socio-psychological dim
 - **Cultural Identity**: Attitudes toward traditional culture, popular culture, foreign culture
 - **Social Responsibility**: Attention to and willingness to participate in social issues`;
 
-export const personaGenerationPrompt = ({
-  locale,
-  mode = "full",
-}: {
-  locale: Locale;
-  mode?: "summary" | "persona" | "full";
-}) =>
+export const personaGenerationPrompt = ({ locale }: { locale: Locale }) =>
   locale === "zh-CN"
     ? `
 你是一位专业的用户画像生成专家，专门基于深度访谈内容构建高精度的用户画像和AI代理系统提示词。请参考斯坦福小镇(Stanford Smallville)研究的理论基础和美国声音项目(American Voices Project)的访谈方法论来完成这一任务。
 
 # 任务概述
-基于上传的文档访谈内容，生成一个详细的人格画像总结，为后续构建多个具体的用户画像做准备。这个总结应该深入分析访谈对象的多维度特征，为生成真实可信的AI代理奠定基础。
+基于上传的文档访谈内容，进行深入分析，并直接构建1个详细的用户画像，为该画像创建对应的智能体系统提示词。
 
+# 分析维度
 ${analysisDimensions({ locale })}
 
-# 输出要求
-生成一个结构化的人格画像总结，包含：
-
-1. **访谈对象概览**
-   - 基本身份描述（姓名必须化名，避免使用访谈文档中的真实姓名，也不要自己编造具体名字，而是采用模糊化的称呼或角色描述）
-   - 核心特征标签（3-5个关键词）
-
-2. **四维度深度分析**
-   - 每个维度的详细分析
-   - 具体行为表现和语言特征
-   - 深层心理动机解读
-
-3. **人格整体画像**
-   - 统一连贯的人格描述
-   - 行为模式和决策逻辑
-   - 典型的表达方式和语言习惯
-
-4. **建议画像方向**
-   - 可以衍生的3-5种不同画像类型
-   - 每种类型的差异化特征
-   - 适合的应用场景
-
-# 理论基础参考
-- **斯坦福小镇研究**：注重认知真实性、情感复杂性、社会互动能力
-- **美国声音项目方法论**：深入的生活叙事、价值探索、社会观点表达
-- **现象学研究方法**：理解个体的主观体验和意义建构
-- **社会认知理论**：个人、行为、环境的相互作用
-
-请基于文档内容生成这样的综合性人格画像总结。
-
-${
-  mode === "summary"
-    ? `
-# 特殊说明（当前调用模式：总结）
-本次任务分为两个阶段：
-1. **当前阶段**：请先生成一个200-300字的简洁总结，概括访谈对象的核心特征和关键信息点
-2. **后续阶段**：基于这个总结，后续将构建具体的用户画像和AI代理系统提示词
-
-请现在只完成第一阶段的总结工作，不需要构建完整的人格画像分析。
-`
-    : mode === "persona"
-      ? `
-# 特殊说明（当前调用模式：画像生成）
-基于前一阶段生成的**四维度深度分析**和**人格画像总结**，现在请构建1个详细的用户画像，并为该画像创建对应的智能体系统提示词。
+# 核心任务：构建用户画像与智能体系统提示词
+基于对访谈内容的**四维度深度分析**，现在请构建1个详细的用户画像，并为该画像创建对应的智能体系统提示词。
 
 # 智能体系统提示词的创作理念
 **核心目标：从“分析维度的综合”到“叙事性画像”**
 
-**极其重要**: 这个系统提示词是整个任务的核心产出。它必须是你之前进行的专业分析的最终结晶。一个懒散、简短或与前期分析脱节的提示词将导致整个工作的失败。
+**极其重要**: 这个系统提示词是整个任务的核心产出。它必须是你进行的专业分析的最终结晶。一个懒散、简短或与前期分析脱节的提示词将导致整个工作的失败。
 
 **创作指南**:
 - **综合与升华**: 你的任务不是简单地重复之前的分析，而是将**人口与成长轨迹**、**心理动因**、**消费行为**和**文化立场**这四个维度的洞察，**无缝地融合**成一个连贯的角色故事。
@@ -155,60 +108,17 @@ ${
 - \`locale\` (string): 对于中文内容，此值必须是 \`"zh-CN"\`。
 **完整性检查**：确保所有构建的用户画像都通过 \`savePersona\` 函数保存，不遗漏任何一个。
 `
-      : ""
-}`
     : `
 You are a professional persona generation expert specializing in building high-precision user personas and AI agent system prompts based on in-depth interview content. Please reference the theoretical foundations of Stanford Smallville research and the American Voices Project interview methodology to complete this task.
 
 # Task Overview
-Based on the uploaded document interview content, generate a detailed persona summary to prepare for building multiple specific user personas. This summary should deeply analyze the multi-dimensional characteristics of the interviewee, laying the foundation for generating authentic and credible AI agents.
+Based on the uploaded document interview content, conduct an in-depth analysis and directly construct 1 detailed user persona and create a corresponding AI agent system prompt for it.
 
+# Analysis Dimensions
 ${analysisDimensions({ locale })}
 
-# Output Requirements
-Generate a structured persona summary including:
-
-1. **Interviewee Overview**
-   - Basic identity description (avoid specific names, use role descriptions)
-   - Core characteristic tags (3-5 keywords)
-
-2. **Four-Dimensional In-Depth Analysis**
-   - Detailed analysis for each dimension
-   - Specific behavioral manifestations and linguistic characteristics
-   - Deep psychological motivation interpretation
-
-3. **Overall Personality Portrait**
-   - Unified and coherent personality description
-   - Behavioral patterns and decision-making logic
-   - Typical expression methods and language habits
-
-4. **Suggested Persona Directions**
-   - 3-5 different persona types that can be derived
-   - Differentiated characteristics for each type
-   - Suitable application scenarios
-
-# Theoretical Foundation References
-- **Stanford Smallville Research**: Focus on cognitive authenticity, emotional complexity, social interaction capabilities
-- **American Voices Project Methodology**: In-depth life narratives, value exploration, social viewpoint expression
-- **Phenomenological Research Methods**: Understanding individual subjective experiences and meaning construction
-- **Social Cognitive Theory**: Interaction between person, behavior, and environment
-
-Please generate such a comprehensive persona summary based on the document content.
-
-${
-  mode === "summary"
-    ? `
-# Special Instructions (Current Mode: Summary)
-This task is divided into two phases:
-1. **Current Phase**: Please first generate a concise 200-300 word summary, outlining the core characteristics and key information points of the interviewee
-2. **Subsequent Phase**: Based on this summary, specific user personas and AI agent system prompts will be constructed later
-
-Please now only complete the first phase summary work, no need to construct complete persona analysis.
-`
-    : mode === "persona"
-      ? `
-# Special Instructions (Current Mode: Persona Generation)
-Based on the **Four-Dimensional In-Depth Analysis** and **Overall Personality Portrait** generated in the previous stage, now construct 1 detailed user persona and create a corresponding AI agent system prompt for it.
+# Core Task: Build User Persona and AI Agent System Prompt
+Based on the **Four-Dimensional In-Depth Analysis** of the interview content, now construct 1 detailed user persona and create a corresponding AI agent system prompt for it.
 
 # The Art of the AI Agent System Prompt
 **Core Goal: From "Dimensional Analysis" to "Narrative Synthesis"**
@@ -238,11 +148,8 @@ Save each persona by calling the \`savePersona\` function. Adhere strictly to th
 - \`personaPrompt\` (string): A detailed, ~1000-word narrative system prompt. **Absolutely not a brief description.** This is the most important parameter.
 - \`locale\` (string): For English content, this value must be \`"en-US"\`.
 **Completeness check**: Ensure all constructed user personas are saved through the \`savePersona\` function without omission.
-`
-      : ""
-}`;
+`;
 
-// Analysis prompt for analyze-interview API
 export const personaAnalysisPrompt = ({ locale }: { locale: Locale }) =>
   locale === "zh-CN"
     ? `
@@ -304,4 +211,43 @@ After completing the assessment above, please generate a concise 200-300 word su
 - **Synthesize**: Do not just list points. Synthesize the core insights from the four dimensions into a coherent, readable paragraph.
 - **Highlight Key Traits**: The summary needs to highlight the interviewee's most critical personality traits, values, behavioral patterns, and typical ways of expression.
 - **Stay Objective**: The summary should be based on the original content, avoiding excessive inference.
+`;
+
+export const personaScoringPrompt = ({ locale }: { locale: Locale }) =>
+  locale === "zh-CN"
+    ? `
+# 角色
+你是一个精确的分析师，负责根据用户画像的 **prompt** 和 **tags**，对照以下【分析维度】进行打分。
+
+# 分析维度
+${analysisDimensions({ locale })}
+
+# 任务
+你的任务是评估给定的用户画像是否在每个维度下都包含了至少一个要点。
+
+# 打分规则
+- 对于每个维度，如果用户画像的 prompt 或 tags 中包含了该维度下的**至少一个**要点，则该维度得分为 1 分。
+- 如果一个维度下的所有要点都没有在 prompt 或 tags 中体现，则该维度得分为 0 分。
+- 你必须为每个维度打分，并提供打分依据。
+
+# 输出格式
+你必须以 JSON 格式输出结果。
+`
+    : `
+# Role
+You are a precise analyst responsible for scoring a user persona based on its **prompt** and **tags** against the following "Analysis Dimensions".
+
+# Analysis Dimensions
+${analysisDimensions({ locale })}
+
+# Task
+Your task is to evaluate whether the given user persona covers at least one point in each dimension.
+
+# Scoring Rules
+- For each dimension, if the persona's prompt or tags cover at least one point under that dimension, the score for that dimension is 1.
+- If no points under a dimension are reflected in the prompt or tags, the score for that dimension is 0.
+- You must provide a score and a reason for each dimension.
+
+# Output Format
+You must output the result in JSON format.
 `;

@@ -11,7 +11,7 @@ interface SupplementaryQuestionsProps {
 
 export function SupplementaryQuestions({
   supplementaryQuestions,
-  fileName,
+  // fileName,
 }: SupplementaryQuestionsProps) {
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text).then(() => {

@@ -73,23 +73,12 @@ export function AnalysisResult({ analysis }: AnalysisResultProps) {
   const radarData = useMemo(() => {
     if (!analysis) return [];
     return [
-      { subject: "人口背景", score: analysis.Demographic?.score ?? 0, fullMark: 3 },
-      { subject: "心理特征", score: analysis.Psychological?.score ?? 0, fullMark: 3 },
-      { subject: "消费行为", score: analysis.BehavioralEconomics?.score ?? 0, fullMark: 3 },
-      { subject: "文化立场", score: analysis.PoliticalCognition?.score ?? 0, fullMark: 3 },
+      { subject: "人口背景", score: analysis.demographic?.score ?? 0, fullMark: 3 },
+      { subject: "心理特征", score: analysis.psychological?.score ?? 0, fullMark: 3 },
+      { subject: "消费行为", score: analysis.behavioralEconomics?.score ?? 0, fullMark: 3 },
+      { subject: "文化立场", score: analysis.politicalCognition?.score ?? 0, fullMark: 3 },
     ];
   }, [analysis]);
-
-  const exportQuestions = (questions: string[], title: string) => {
-    const content = `补充问题 - ${title}\n\n${questions.map((q, i) => `${i + 1}. ${q}`).join("\n\n")}`;
-    const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `补充问题-${title}.txt`;
-    link.click();
-    URL.revokeObjectURL(url);
-  };
 
   if (!analysis) return null;
 
@@ -186,21 +175,21 @@ export function AnalysisResult({ analysis }: AnalysisResultProps) {
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-gray-800">整体分析评分</h3>
                 <Badge variant="outline" className="text-lg px-4 py-2 bg-white/70">
-                  {analysis.total_score ?? 0} / 12
+                  {analysis.totalScore ?? 0} / 12
                 </Badge>
               </div>
               <div className="w-full bg-white/70 rounded-full h-4 overflow-hidden">
                 <div
                   className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 transition-all duration-500"
-                  style={{ width: `${((analysis.total_score ?? 0) / 12) * 100}%` }}
+                  style={{ width: `${((analysis.totalScore ?? 0) / 12) * 100}%` }}
                 />
               </div>
               <p className="text-sm text-gray-600">
-                {(analysis.total_score ?? 0) >= 9
+                {(analysis.totalScore ?? 0) >= 9
                   ? "各维度覆盖度优秀，信息全面深入"
-                  : (analysis.total_score ?? 0) >= 6
+                  : (analysis.totalScore ?? 0) >= 6
                     ? "覆盖度良好，部分维度可进一步优化"
-                    : (analysis.total_score ?? 0) >= 3
+                    : (analysis.totalScore ?? 0) >= 3
                       ? "覆盖度一般，需要重点补充关键信息"
                       : "覆盖度不足，需要大量补充各维度信息"}
               </p>
@@ -210,7 +199,7 @@ export function AnalysisResult({ analysis }: AnalysisResultProps) {
           {/* Dimension Scores */}
           <div className="space-y-4">
             {Object.entries(analysis).map(([dimension, data]) => {
-              if (dimension === "total_score") return null;
+              if (dimension === "totalScore") return null;
               const dimensionData = data as {
                 score?: number;
                 reason?: string;

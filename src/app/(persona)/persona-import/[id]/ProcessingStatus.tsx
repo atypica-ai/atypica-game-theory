@@ -1,5 +1,7 @@
 "use client";
 
+import { AnalysisResult, PersonaImportAnalysis } from "@/app/(persona)/types";
+import { Persona } from "@/prisma/client";
 import {
   ActivityIcon,
   AlertCircleIcon,
@@ -8,29 +10,26 @@ import {
   CheckCircleIcon,
   Loader2Icon,
 } from "lucide-react";
-import { AnalysisResult } from "../../types";
 
 interface ProcessingStatusProps {
   isProcessing: boolean;
   isAnalyzing: boolean;
-  personaSummary: string;
   analysis: AnalysisResult["analysis"] | undefined;
   supplementaryQuestions: AnalysisResult["supplementaryQuestions"] | undefined;
-  personaImportSummary?: string | null;
-  personaImportAnalysis?: any;
+  personas?: Persona[];
+  personaImportAnalysis?: Partial<PersonaImportAnalysis> | null;
 }
 
 export function ProcessingStatus({
   isProcessing,
   isAnalyzing,
-  personaSummary,
   analysis,
   supplementaryQuestions,
-  personaImportSummary,
+  personas,
   personaImportAnalysis,
 }: ProcessingStatusProps) {
   // Determine actual completion status
-  const summaryCompleted = Boolean(personaImportSummary);
+  const personaAgentCompleted = Boolean(personas?.length);
   const analysisCompleted = Boolean(personaImportAnalysis);
   return (
     <div className="space-y-6">
@@ -57,13 +56,13 @@ export function ProcessingStatus({
               <div className="flex items-center gap-3">
                 {isProcessing ? (
                   <Loader2Icon className="size-5 animate-spin text-blue-600" />
-                ) : summaryCompleted ? (
+                ) : personaAgentCompleted ? (
                   <CheckCircleIcon className="size-5 text-green-600" />
                 ) : (
                   <AlertCircleIcon className="size-5 text-gray-400" />
                 )}
                 <span className="text-sm font-medium">
-                  {isProcessing ? "生成中..." : summaryCompleted ? "已完成" : "等待中"}
+                  {isProcessing ? "生成中..." : personaAgentCompleted ? "已完成" : "等待中"}
                 </span>
               </div>
             </div>
@@ -71,7 +70,7 @@ export function ProcessingStatus({
               <div
                 className="h-full bg-gradient-to-r from-blue-500 to-purple-600 transition-all duration-500 rounded-full"
                 style={{
-                  width: `${isProcessing ? 50 : summaryCompleted ? 100 : 0}%`,
+                  width: `${isProcessing ? 50 : personaAgentCompleted ? 100 : 0}%`,
                 }}
               />
             </div>
@@ -117,7 +116,7 @@ export function ProcessingStatus({
                 <div className="text-xs text-purple-700 bg-purple-100/50 px-3 py-1 rounded-full flex items-center gap-2">
                   <div className="w-2 h-2 bg-green-500 rounded-full" />
                   维度分析完成，总分：
-                  {(personaImportAnalysis?.analysis || analysis)?.total_score ?? 0}/12
+                  {(personaImportAnalysis?.analysis || analysis)?.totalScore ?? 0}/12
                 </div>
               )}
               {supplementaryQuestions && (
@@ -130,7 +129,7 @@ export function ProcessingStatus({
           </div>
         </div>
 
-        {!isProcessing && !isAnalyzing && summaryCompleted && analysisCompleted && (
+        {!isProcessing && !isAnalyzing && personaAgentCompleted && analysisCompleted && (
           <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl border border-green-200/50">
             <div className="flex items-center gap-3">
               <CheckCircleIcon className="h-5 w-5 text-green-600" />

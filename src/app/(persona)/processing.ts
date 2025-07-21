@@ -9,7 +9,7 @@ import { proxiedFetch } from "@/lib/proxy/fetch";
 import { getDeployRegion } from "@/lib/request/deployRegion";
 import { ChatMessageAttachment, PersonaImport } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
-import { CoreMessage, generateObject, generateText, streamText } from "ai";
+import { CoreMessage, generateObject, streamText } from "ai";
 import { getLocale } from "next-intl/server";
 import { personaAnalysisPrompt, personaGenerationPrompt } from "./prompt";
 import { analysisSchema } from "./types";
@@ -32,8 +32,7 @@ async function attachmentToDataUrl(attachment: ChatMessageAttachment) {
   return dataUrl;
 }
 
-// Build persona summary from PDF
-export async function buildPersonaSummary(
+export async function buildPersonaAgentPrompt(
   personaImport: Omit<PersonaImport, "attachments"> & {
     attachments: ChatMessageAttachment[];
   },
@@ -45,32 +44,7 @@ export async function buildPersonaSummary(
     const { name: fileName, mimeType } = attachment;
     const dataUrl = await attachmentToDataUrl(attachment);
 
-    // Step 1: Generate summary using personaGenerationPrompt with summary mode
-    const summarySystemPrompt = personaGenerationPrompt({ locale, mode: "summary" });
-
-    const summaryResult = await generateText({
-      model: llm("claude-3-7-sonnet"),
-      providerOptions: providerOptions,
-      system: summarySystemPrompt,
-      messages: [
-        {
-          role: "user",
-          content: [
-            { type: "text", text: "[READY]" },
-            { type: "file", filename: fileName, data: dataUrl, mimeType },
-          ],
-        },
-      ],
-    });
-
-    // Update PersonaImport with the generated summary
-    await prisma.personaImport.update({
-      where: { id: personaImport.id },
-      data: { summary: summaryResult.text },
-    });
-
-    // Step 2: Generate single persona using savePersona tool
-    const personaSystemPrompt = personaGenerationPrompt({ locale, mode: "persona" });
+    const personaSystemPrompt = personaGenerationPrompt({ locale });
 
     const personaMessages: CoreMessage[] = [
       {
@@ -79,10 +53,6 @@ export async function buildPersonaSummary(
           { type: "text", text: "[READY]" },
           { type: "file", filename: fileName, data: dataUrl, mimeType },
         ],
-      },
-      {
-        role: "assistant",
-        content: summaryResult.text,
       },
     ];
 
@@ -101,9 +71,9 @@ export async function buildPersonaSummary(
         toolName: ToolName.savePersona,
       },
       maxSteps: 2,
-      onStepFinish: async (step) => {
-        // console.log(step);
-      },
+      // onStepFinish: async (step) => {
+      //   console.log(step);
+      // },
       onError: ({ error }) => {
         rootLogger.error((error as Error).message);
       },
@@ -116,7 +86,7 @@ export async function buildPersonaSummary(
         throw error;
       });
   } catch (error) {
-    console.error("Error building persona summary:", error);
+    console.error("Error building persona agent prompt:", error);
     // Update PersonaImport with error in extra field
     await prisma.personaImport.update({
       where: { id: personaImport.id },
@@ -129,7 +99,6 @@ export async function buildPersonaSummary(
   }
 }
 
-// Analyze interview completeness from PDF
 export async function analyzeInterviewCompleteness(
   personaImport: Omit<PersonaImport, "attachments"> & {
     attachments: ChatMessageAttachment[];
