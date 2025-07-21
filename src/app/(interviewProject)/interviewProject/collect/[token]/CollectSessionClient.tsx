@@ -2,7 +2,7 @@
 import { ToolName } from "@/ai/tools/types";
 import { CollectSessionBodySchema } from "@/app/(interviewProject)/api/chat/interviewSession/lib";
 import { fetchCollectInterviewSession } from "@/app/(interviewProject)/interviewProject/actions";
-import { RecordButton } from "@/components/chat/RecordButton";
+import { FocusedInterviewChat } from "@/components/chat/FocusedInterviewChat";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -14,52 +14,15 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { ExtractServerActionData } from "@/lib/serverAction";
-import { cn, useDevice } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
-import { generateId, Message } from "ai";
-import { AnimatePresence, motion } from "framer-motion";
-import {
-  BadgeCheck,
-  Ear,
-  Info,
-  Keyboard,
-  Loader2Icon,
-  Send,
-  Shield,
-  ThumbsUpIcon,
-  XIcon,
-} from "lucide-react";
-import { useLocale, useTranslations } from "next-intl";
+import { Message } from "ai";
+import { motion } from "framer-motion";
+import { BadgeCheck, Info, Shield, ThumbsUpIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
-
-// Custom textarea component with forwardRef support
-interface CustomTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
-  className?: string;
-  onInput?: (e: React.FormEvent<HTMLTextAreaElement>) => void;
-}
-
-const CustomTextarea = React.forwardRef<HTMLTextAreaElement, CustomTextareaProps>(
-  ({ className = "", onInput, ...props }, ref) => {
-    return (
-      <textarea
-        ref={ref}
-        className={className}
-        onInput={(e) => {
-          // Auto-resize textarea
-          const target = e.currentTarget;
-          target.style.height = "auto";
-          target.style.height = Math.min(target.scrollHeight, 128) + "px";
-          onInput?.(e);
-        }}
-        {...props}
-      />
-    );
-  },
-);
-
-CustomTextarea.displayName = "CustomTextarea";
 
 const ProjectDetailsCard = ({
   interviewSession,
@@ -131,17 +94,12 @@ export function CollectSessionClient({
   interviewSession: ExtractServerActionData<typeof fetchCollectInterviewSession>;
   initialMessages?: Message[];
 }) {
-  const locale = useLocale();
-  const { isMobile } = useDevice();
   const t = useTranslations("InterviewProject.collectSession");
 
   const [interviewCompleted, setInterviewCompleted] = useState(
     interviewSession.status === "completed",
   );
   const [projectDetailsOpen, setProjectDetailsOpen] = useState(false);
-  const [lastUserMessage, setLastUserMessage] = useState<Message | null>(null);
-  const [showTextInput, setShowTextInput] = useState(false);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const initialRequestBody = {
     sessionToken: interviewSession.token,
@@ -167,7 +125,7 @@ export function CollectSessionClient({
     },
   });
 
-  const { messages, input, setInput, handleSubmit, status, stop } = useChatHelpers;
+  const { messages } = useChatHelpers;
   const useChatRef = useRef({
     reload: useChatHelpers.reload,
     setMessages: useChatHelpers.setMessages,
@@ -200,60 +158,6 @@ export function CollectSessionClient({
     return "";
   }, [messages, t]);
 
-  // Enhanced handleSubmit with refocus
-  const handleSubmitWithFocus = useCallback(
-    (e: React.FormEvent) => {
-      const messageToSend = {
-        role: "user" as const,
-        content: input,
-        id: generateId(),
-      };
-      setLastUserMessage(messageToSend);
-      handleSubmit(e, {
-        data: {
-          message: messageToSend,
-        },
-      });
-      // Re-focus after a short delay to account for state updates
-      setTimeout(() => {
-        if (textareaRef.current && interviewState === "active" && showTextInput) {
-          textareaRef.current.focus();
-        }
-      }, 50);
-    },
-    [handleSubmit, interviewState, input, showTextInput],
-  );
-
-  const handleTranscript = useCallback((text: string) => {
-    if (text.trim()) {
-      const messageToSend = {
-        role: "user" as const,
-        content: text,
-        id: generateId(),
-      };
-      setLastUserMessage(messageToSend);
-      useChatRef.current.append(messageToSend);
-    }
-  }, []);
-
-  // Auto focus input after AI streaming ends
-  useEffect(() => {
-    if (status === "ready" && interviewState === "active" && textareaRef.current && showTextInput) {
-      setTimeout(() => {
-        textareaRef.current?.focus();
-      }, 100);
-    }
-  }, [status, interviewState, showTextInput]);
-
-  // Auto focus input when text input is shown
-  useEffect(() => {
-    if (showTextInput && textareaRef.current) {
-      setTimeout(() => {
-        textareaRef.current?.focus();
-      }, 300);
-    }
-  }, [showTextInput]);
-
   // Initialize conversation
   const requestSentRef = useRef(false);
   useEffect(() => {
@@ -266,227 +170,39 @@ export function CollectSessionClient({
     }
   }, [initialMessages]);
 
-  const lastAssistantMessage = useMemo(() => {
-    return messages.findLast((m) => m.role === "assistant");
-  }, [messages]);
-
-  // When a new assistant message is being generated, clear the last user message
-  useEffect(() => {
-    if (status === "streaming") {
-      setLastUserMessage(null);
-    }
-  }, [status]);
-
-  const handleStop = useCallback(() => {
-    stop();
-  }, [stop]);
+  const projectInfoButton = (
+    <Dialog open={projectDetailsOpen} onOpenChange={setProjectDetailsOpen}>
+      <DialogTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="rounded-full text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200 dark:hover:bg-zinc-700"
+        >
+          <Info className="h-5 w-5" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-2xl max-h-[80vh] overflow-auto">
+        <DialogHeader>
+          <DialogTitle>{t("projectDetails")}</DialogTitle>
+          <DialogDescription>{t("projectDetailsDescription")}</DialogDescription>
+        </DialogHeader>
+        <ProjectDetailsCard interviewSession={interviewSession} />
+      </DialogContent>
+    </Dialog>
+  );
 
   const chatWithAIArea = (
-    <div className="w-full h-full flex flex-col relative bg-zinc-50 dark:bg-zinc-900 pb-8">
-      {/* Top bar with language indicator and controls */}
-      <div className="absolute top-6 left-1/2 -translate-x-1/2">
-        <div className="text-xs text-zinc-500 dark:text-zinc-400 font-mono bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded">
-          {locale === "zh-CN" ? "中文" : "English"}
-        </div>
-      </div>
-
-      {/* Project info button */}
-      <div className="absolute top-4 right-4 z-10">
-        <Dialog open={projectDetailsOpen} onOpenChange={setProjectDetailsOpen}>
-          <DialogTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="rounded-full text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200 dark:hover:bg-zinc-700"
-            >
-              <Info className="h-5 w-5" />
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[80vh] overflow-auto">
-            <DialogHeader>
-              <DialogTitle>{t("projectDetails")}</DialogTitle>
-              <DialogDescription>{t("projectDetailsDescription")}</DialogDescription>
-            </DialogHeader>
-            <ProjectDetailsCard interviewSession={interviewSession} />
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      {/* Stop button when streaming */}
-      {status === "streaming" && (
-        <div className="absolute top-4 right-16 z-10">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="rounded-full text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200 dark:hover:bg-zinc-700"
-            onClick={handleStop}
-          >
-            <XIcon className="h-5 w-5" />
-          </Button>
-        </div>
-      )}
-
-      {/* Main content area */}
-      <div className="flex-1 flex flex-col items-center justify-center text-center max-w-4xl w-full mx-auto px-4">
-        <AnimatePresence mode="wait">
-          {status === "submitted" ? (
-            <motion.div
-              key="thinking"
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="flex flex-col items-center gap-4 text-zinc-600 dark:text-zinc-400"
-            >
-              <div className="flex items-center gap-2">
-                <Ear className="w-4 h-4 text-primary" />
-                <span>{t("thinking")}</span>
-              </div>
-              {lastUserMessage && (
-                <p className="text-sm text-zinc-500 dark:text-zinc-500 italic max-w-md truncate">
-                  &quot;{lastUserMessage.content}&quot;
-                </p>
-              )}
-            </motion.div>
-          ) : (
-            <motion.div
-              key={lastAssistantMessage?.id ?? "initial"}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.4, ease: "circOut" }}
-              className="text-xl sm:text-2xl font-EuclidCircularA font-medium text-zinc-900 dark:text-zinc-100 leading-relaxed"
-            >
-              {!lastAssistantMessage
-                ? t("gettingReady")
-                : lastAssistantMessage.parts.map((part, index) =>
-                    part.type === "text" ? (
-                      <div key={index}>{part.text}</div>
-                    ) : part.type === "tool-invocation" ? (
-                      part.toolInvocation.toolName === ToolName.saveInterviewSessionSummary ? (
-                        <div key={index} className="mt-8 text-sm text-muted-foreground">
-                          {t("savingInterview")}
-                        </div>
-                      ) : (
-                        <div key={index} className="mt-8 font-mono text-sm text-muted-foreground">
-                          exec {part.toolInvocation.toolName}
-                        </div>
-                      )
-                    ) : null,
-                  )}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* Bottom input area - fixed to bottom */}
-      <div className="w-full max-w-3xl mx-auto p-4 sm:p-8 pt-0 space-y-6">
-        {/* Bottom buttons area */}
-        <div className="flex items-center justify-center gap-4">
-          {/* Record Button */}
-          <RecordButton
-            onTranscript={handleTranscript}
-            language={locale}
-            disabled={status === "streaming" || status === "submitted"}
-          />
-
-          {/* Text Input Toggle Button */}
-          <Button
-            type="button"
-            variant="ghost"
-            className={`rounded-full transition-all duration-200 w-10 h-10 flex items-center justify-center ${
-              showTextInput
-                ? "bg-zinc-200 dark:bg-zinc-600 text-zinc-800 dark:text-zinc-200"
-                : "bg-zinc-100 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-600"
-            }`}
-            onClick={() => setShowTextInput(!showTextInput)}
-            disabled={status === "streaming" || status === "submitted"}
-          >
-            <Keyboard className="h-5 w-5" />
-          </Button>
-        </div>
-
-        {/* Text Input Area - Only shown when toggled */}
-        <AnimatePresence>
-          {showTextInput && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.1 }}
-              className="overflow-hidden"
-            >
-              <form
-                onSubmit={handleSubmitWithFocus}
-                className="relative flex items-center bg-white dark:bg-zinc-800 backdrop-blur-sm rounded-2xl p-2 w-full border border-zinc-200 dark:border-zinc-700"
-              >
-                <CustomTextarea
-                  ref={textareaRef}
-                  value={input}
-                  onInput={(e) => setInput(e.currentTarget.value)}
-                  placeholder={t("shareThoughts")}
-                  rows={1}
-                  disabled={status === "streaming" || status === "submitted"}
-                  className="flex min-h-[48px] w-full resize-none bg-transparent border-none
-                  focus-visible:ring-0 focus-visible:ring-offset-0 outline-none
-                  text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-500 dark:placeholder:text-zinc-400 py-3 px-3 max-h-32
-                  text-base leading-relaxed overflow-hidden"
-                  onKeyDown={(e) => {
-                    if (
-                      !isMobile &&
-                      e.key === "Enter" &&
-                      !e.shiftKey &&
-                      !e.nativeEvent.isComposing
-                    ) {
-                      e.preventDefault();
-                      if (input.trim()) {
-                        handleSubmitWithFocus(e);
-                      }
-                    }
-                  }}
-                />
-                <Button
-                  type="submit"
-                  variant="ghost"
-                  size="icon"
-                  disabled={status === "streaming" || status === "submitted" || !input.trim()}
-                  className="rounded-xl text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-700 flex-shrink-0 w-12 h-12 transition-colors"
-                >
-                  {status === "submitted" ? (
-                    <Loader2Icon className="h-6 w-6 animate-spin" />
-                  ) : (
-                    <Send className="h-6 w-6" />
-                  )}
-                </Button>
-              </form>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    </div>
+    <FocusedInterviewChat
+      useChatHelpers={useChatHelpers}
+      useChatRef={useChatRef}
+      showTimer={false}
+      topRightButton={projectInfoButton}
+    />
   );
 
   const completedInterviewArea = (
     <div className="w-full h-full flex flex-col relative bg-zinc-50 dark:bg-zinc-900">
-      <div className="absolute top-4 right-4 z-10">
-        <Dialog open={projectDetailsOpen} onOpenChange={setProjectDetailsOpen}>
-          <DialogTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="rounded-full text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200 dark:hover:bg-zinc-700"
-            >
-              <Info className="h-5 w-5" />
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[80vh] overflow-auto">
-            <DialogHeader>
-              <DialogTitle>{t("projectDetails")}</DialogTitle>
-              <DialogDescription>{t("projectDetailsDescription")}</DialogDescription>
-            </DialogHeader>
-            <ProjectDetailsCard interviewSession={interviewSession} />
-          </DialogContent>
-        </Dialog>
-      </div>
+      <div className="absolute top-4 right-4 z-10">{projectInfoButton}</div>
 
       {/* Main content */}
       <div className="flex-1 flex items-center justify-center px-6 py-18">

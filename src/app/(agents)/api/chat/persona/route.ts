@@ -1,5 +1,5 @@
 import { personaAgentSystem } from "@/ai/prompt";
-import { fixFileNameInMessageToUsePromptCache, llm, providerOptions } from "@/ai/provider";
+import { llm, providerOptions } from "@/ai/provider";
 import { fetchPersonaById } from "@/app/(agents)/personas/actions";
 import authOptions from "@/app/(auth)/authOptions";
 import { convertToCoreMessages, Message, smoothStream, streamText } from "ai";
@@ -47,15 +47,15 @@ export async function POST(req: Request) {
   });
 
   const streamTextResult = streamText({
-    model: fixFileNameInMessageToUsePromptCache(llm("claude-3-7-sonnet")),
+    // model: fixFileNameInMessageToUsePromptCache(llm("claude-3-7-sonnet")),
     // model: llm("gpt-4.1-mini"),
-    // model: llm("gemini-2.5-flash", {
-    //   useSearchGrounding: true,
-    //   dynamicRetrievalConfig: {
-    //     mode: "MODE_DYNAMIC",
-    //     dynamicThreshold: 0.3, // threshold 越小，使用搜索的可能性就越高
-    //   },
-    // }),
+    model: llm("gemini-2.5-flash", {
+      useSearchGrounding: true,
+      dynamicRetrievalConfig: {
+        mode: "MODE_DYNAMIC",
+        dynamicThreshold: 0.3, // threshold 越小，使用搜索的可能性就越高
+      },
+    }),
     providerOptions: {
       ...providerOptions,
       // google: {

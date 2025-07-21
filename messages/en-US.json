@@ -830,6 +830,13 @@
     "UserChatSession": {
       "continue": "Continue"
     },
+    "FocusedInterviewChat": {
+      "thinking": "Thinking...",
+      "gettingReady": "Getting ready to start...",
+      "shareThoughts": "Share your thoughts...",
+      "processing": "Processing...",
+      "timeRemaining": "{time} left"
+    },
     "VoiceInputButton": {
       "startListening": "Start voice input",
       "stopListening": "Stop voice input",

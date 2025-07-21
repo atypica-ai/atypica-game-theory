@@ -1,18 +1,15 @@
 "use client";
-import { NewStudyBodySchema } from "@/app/(newStudy)/types";
+
 import { RecordButton } from "@/components/chat/RecordButton";
 import { Button } from "@/components/ui/button";
 import { useDocumentVisibility } from "@/hooks/use-document-visibility";
 import { useDevice } from "@/lib/utils";
-import { UserChat } from "@/prisma/client";
 import { useChat } from "@ai-sdk/react";
-import { generateId, Message } from "ai";
+import { generateId } from "ai";
 import { AnimatePresence, motion } from "framer-motion";
 import { Ear, Keyboard, Loader2Icon, Send, XIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { z } from "zod";
-import { CountdownRedirect } from "./CountdownRedirect";
 
 const DEFAULT_TIME_LEFT = 300; // seconds
 
@@ -21,6 +18,7 @@ interface CustomTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaE
   className?: string;
   onInput?: (e: React.FormEvent<HTMLTextAreaElement>) => void;
 }
+
 const CustomTextarea = React.forwardRef<HTMLTextAreaElement, CustomTextareaProps>(
   ({ className = "", onInput, ...props }, ref) => {
     return (
@@ -42,179 +40,113 @@ const CustomTextarea = React.forwardRef<HTMLTextAreaElement, CustomTextareaProps
 
 CustomTextarea.displayName = "CustomTextarea";
 
-export function InterviewClient({
-  userChat,
-  initialMessages,
-}: {
-  userChat: UserChat;
-  initialMessages: Message[];
-  user: { id: number; email: string };
-}) {
+interface FocusedInterviewChatProps {
+  useChatHelpers: Omit<ReturnType<typeof useChat>, "append" | "reload" | "setMessages">;
+  useChatRef: React.RefObject<
+    Pick<ReturnType<typeof useChat>, "append" | "reload" | "setMessages">
+  >;
+  showTimer?: boolean;
+  topRightButton?: React.ReactNode;
+  className?: string;
+}
+
+export function FocusedInterviewChat({
+  useChatHelpers,
+  useChatRef,
+  showTimer = true,
+  topRightButton,
+  className = "",
+}: FocusedInterviewChatProps) {
   const locale = useLocale();
   const { isMobile } = useDevice();
-  const t = useTranslations("NewStudyPage");
+  const t = useTranslations("Components.FocusedInterviewChat");
 
   const [timeLeft, setTimeLeft] = useState(DEFAULT_TIME_LEFT);
   const [hasTimedOut, setHasTimedOut] = useState(false);
   const [isTimerActive, setIsTimerActive] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const [lastUserMessage, setLastUserMessage] = useState<Message | null>(null);
+  const [lastUserMessage, setLastUserMessage] = useState<{ id: string; content: string } | null>(
+    null,
+  );
   const [showTextInput, setShowTextInput] = useState(false);
-
-  const initialRequestBody = {
-    userChatId: userChat.id,
-  };
-
-  const useChatHelpers = useChat({
-    id: userChat.id.toString(),
-    api: `/api/chat/newstudy`,
-    // experimental_throttle: 30,
-    initialMessages,
-    body: initialRequestBody,
-    experimental_prepareRequestBody({ messages, requestBody: _requestBody }) {
-      const requestBody: typeof initialRequestBody = { ...initialRequestBody, ..._requestBody };
-      const body: z.infer<typeof NewStudyBodySchema> = {
-        message: messages[messages.length - 1],
-        ...requestBody,
-      };
-      return body;
-    },
-    onFinish() {
-      // Logic to run when the AI finishes its response.
-      setIsTimerActive(true);
-    },
-    onError(err) {
-      console.error("Chat error:", err);
-      // TODO: Implement user-facing error feedback (e.g., a toast notification).
-    },
-  });
-
-  const useChatRef = useRef({
-    reload: useChatHelpers.reload,
-    setMessages: useChatHelpers.setMessages,
-    append: useChatHelpers.append,
-  });
 
   const { messages, input, setInput, handleSubmit, status, stop } = useChatHelpers;
 
-  // Determine planning state based on messages content
-  const planningState = useMemo(() => {
-    // Check if any message has endInterview tool result
-    const hasEndInterviewResult = messages.some((message) =>
-      message.parts?.some(
-        (part) =>
-          part.type === "tool-invocation" &&
-          part.toolInvocation.toolName === "endInterview" &&
-          part.toolInvocation.state === "result",
-      ),
-    );
-
-    if (hasEndInterviewResult) {
-      return "summary";
-    }
-
-    return "active";
-  }, [messages]);
-
-  const summary = useMemo(() => {
-    for (const message of messages) {
-      if (message.parts) {
-        for (const part of message.parts) {
-          if (
-            part.type === "tool-invocation" &&
-            part.toolInvocation.toolName === "endInterview" &&
-            part.toolInvocation.state === "result"
-          ) {
-            return part.toolInvocation.result.studyBrief || t("studyPlanningComplete");
-          }
-        }
-      }
-    }
-    return "";
-  }, [messages, t]);
+  const { isDocumentVisible } = useDocumentVisibility();
 
   // Enhanced handleSubmit with refocus
   const handleSubmitWithFocus = useCallback(
     (e: React.FormEvent) => {
+      const messageContent = input.trim();
+      if (!messageContent) return;
+
       const messageToSend = {
         role: "user" as const,
-        content: input,
+        content: messageContent,
         id: generateId(),
       };
+
       setLastUserMessage(messageToSend);
+
       handleSubmit(e, {
         data: {
           message: messageToSend,
         },
       });
+
       // Reset timeout state when user responds
       setHasTimedOut(false);
       setTimeLeft(DEFAULT_TIME_LEFT);
       setIsTimerActive(false);
-      setIsTimerActive(false);
-      setIsTimerActive(false);
+
       // Re-focus after a short delay to account for state updates
       setTimeout(() => {
-        if (textareaRef.current && planningState === "active" && showTextInput) {
+        if (textareaRef.current && showTextInput) {
           textareaRef.current.focus();
         }
       }, 50);
     },
-    [handleSubmit, planningState, input, showTextInput],
+    [handleSubmit, input, showTextInput],
   );
 
-  const handleTranscript = useCallback((text: string) => {
-    if (text.trim()) {
-      const messageToSend = {
-        role: "user" as const,
-        content: text,
-        id: generateId(),
-      };
-      setLastUserMessage(messageToSend);
-      useChatRef.current.append(messageToSend);
-      // setInput(text);
-      // Reset timeout state when user responds
-      setHasTimedOut(false);
-      setTimeLeft(DEFAULT_TIME_LEFT);
-      setIsTimerActive(false);
-    }
-  }, []);
+  const handleTranscriptInternal = useCallback(
+    (text: string) => {
+      if (text.trim()) {
+        const messageToSend = {
+          role: "user" as const,
+          content: text,
+          id: generateId(),
+        };
+        setLastUserMessage(messageToSend);
+
+        useChatRef.current?.append(messageToSend);
+
+        // Reset timeout state when user responds
+        setHasTimedOut(false);
+        setTimeLeft(DEFAULT_TIME_LEFT);
+        setIsTimerActive(false);
+      }
+    },
+    [useChatRef],
+  );
 
   // Auto focus input after AI streaming ends
   useEffect(() => {
-    if (status === "ready" && planningState === "active" && textareaRef.current && showTextInput) {
-      // Small delay to ensure rendering is complete
+    if (status === "ready" && textareaRef.current && showTextInput) {
       setTimeout(() => {
         textareaRef.current?.focus();
       }, 100);
     }
-  }, [status, planningState, showTextInput]);
+  }, [status, showTextInput]);
 
   // Auto focus input when text input is shown
   useEffect(() => {
     if (showTextInput && textareaRef.current) {
-      // Delay to ensure component is fully mounted
       setTimeout(() => {
         textareaRef.current?.focus();
       }, 300);
     }
   }, [showTextInput]);
-
-  // Automatically start the conversation when the component mounts.
-  const requestSentRef = useRef(false);
-  useEffect(() => {
-    if (requestSentRef.current) return;
-    requestSentRef.current = true;
-    if (initialMessages.length === 0) {
-      // If no initial message, start the conversation with AI
-      useChatRef.current.append({ role: "user", content: "[READY]" });
-    } else if (initialMessages[initialMessages.length - 1]?.role === "user") {
-      useChatRef.current.reload();
-    } else if (initialMessages[initialMessages.length - 1]?.role === "assistant") {
-      // If the last message is from the assistant, start the timer.
-      setIsTimerActive(true);
-    }
-  }, [initialMessages]);
 
   const lastAssistantMessage = useMemo(() => {
     return messages.findLast((m) => m.role === "assistant");
@@ -227,25 +159,27 @@ export function InterviewClient({
     }
   }, [status]);
 
+  // Start timer when AI finishes response
+  useEffect(() => {
+    if (status === "ready" && lastAssistantMessage && showTimer) {
+      setIsTimerActive(true);
+    }
+  }, [status, lastAssistantMessage, showTimer]);
+
   const handleStop = useCallback(() => {
     stop();
   }, [stop]);
 
-  const { isDocumentVisible } = useDocumentVisibility();
-
+  // Timer effect
   useEffect(() => {
-    if (
-      planningState !== "active" ||
-      !isTimerActive ||
-      !isDocumentVisible // Only run timer when document is visible
-    ) {
+    if (!isTimerActive || !isDocumentVisible || !showTimer) {
       return;
     }
 
     if (timeLeft <= 0 && !hasTimedOut) {
       setHasTimedOut(true);
       // Send special message to AI indicating user hesitation
-      useChatRef.current.append({ role: "user", content: "[USER_HESITATED]" });
+      useChatRef.current?.append({ role: "user", content: "[USER_HESITATED]" });
       // Reset timer for next question
       setTimeLeft(DEFAULT_TIME_LEFT);
       setIsTimerActive(false);
@@ -257,7 +191,7 @@ export function InterviewClient({
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [planningState, timeLeft, hasTimedOut, isTimerActive, isDocumentVisible]);
+  }, [timeLeft, hasTimedOut, isTimerActive, isDocumentVisible, showTimer, useChatRef]);
 
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -267,16 +201,23 @@ export function InterviewClient({
     });
   };
 
-  const chatWithAIArea = (
-    <div className="w-full h-full flex flex-col relative bg-zinc-50 dark:bg-zinc-900 pb-8">
+  return (
+    <div
+      className={`w-full h-full flex flex-col relative bg-zinc-50 dark:bg-zinc-900 pb-8 ${className}`}
+    >
       {/* Top bar with language indicator and controls */}
       <div className="absolute top-6 left-1/2 -translate-x-1/2">
         <div className="text-xs text-zinc-500 dark:text-zinc-400 font-mono bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded">
           {locale === "zh-CN" ? "中文" : "English"}
         </div>
       </div>
+
+      {/* Top right button */}
+      {topRightButton && <div className="absolute top-4 right-4 z-10">{topRightButton}</div>}
+
+      {/* Stop button when streaming */}
       {status === "streaming" && (
-        <div className="absolute top-4 right-4">
+        <div className={`absolute top-4 z-10 ${topRightButton ? "right-16" : "right-4"}`}>
           <Button
             variant="ghost"
             size="icon"
@@ -287,6 +228,7 @@ export function InterviewClient({
           </Button>
         </div>
       )}
+
       {/* Main content area */}
       <div className="flex-1 flex flex-col items-center justify-center text-center max-w-4xl w-full mx-auto px-4">
         <AnimatePresence mode="wait">
@@ -319,16 +261,15 @@ export function InterviewClient({
             >
               {!lastAssistantMessage
                 ? t("gettingReady")
-                : lastAssistantMessage.parts.map((part, index) =>
+                : lastAssistantMessage.parts?.map((part, index) =>
                     part.type === "text" ? (
                       <div key={index}>{part.text}</div>
-                    ) : part.type === "tool-invocation" &&
-                      part.toolInvocation.toolName === "endInterview" ? (
+                    ) : part.type === "tool-invocation" ? (
                       <div key={index} className="mt-8 text-sm text-muted-foreground">
-                        {t("execEndInterviewTool")}
+                        {t("processing")}
                       </div>
                     ) : null,
-                  )}
+                  ) || lastAssistantMessage.content}
             </motion.div>
           )}
         </AnimatePresence>
@@ -336,22 +277,24 @@ export function InterviewClient({
 
       {/* Bottom input area - fixed to bottom */}
       <div className="w-full max-w-3xl mx-auto p-4 sm:p-8 pt-0 space-y-6">
-        {/* Subtle progress indicator */}
-        <div className="flex items-center justify-center gap-3 text-xs text-zinc-400 dark:text-zinc-500">
-          <div className="w-20 bg-zinc-200 dark:bg-zinc-700 rounded-full h-0.5">
-            <div
-              className="bg-zinc-400 dark:bg-zinc-500 h-0.5 rounded-full transition-all duration-300"
-              style={{ width: `${(1 - timeLeft / DEFAULT_TIME_LEFT) * 100}%` }}
-            />
+        {/* Timer progress indicator */}
+        {showTimer && (
+          <div className="flex items-center justify-center gap-3 text-xs text-zinc-400 dark:text-zinc-500">
+            <div className="w-20 bg-zinc-200 dark:bg-zinc-700 rounded-full h-0.5">
+              <div
+                className="bg-zinc-400 dark:bg-zinc-500 h-0.5 rounded-full transition-all duration-300"
+                style={{ width: `${(1 - timeLeft / DEFAULT_TIME_LEFT) * 100}%` }}
+              />
+            </div>
+            <span className="font-mono">{formatTime(timeLeft)}</span>
           </div>
-          <span className="font-mono">{formatTime(timeLeft)}</span>
-        </div>
+        )}
 
         {/* Bottom buttons area */}
         <div className="flex items-center justify-center gap-4">
           {/* Record Button */}
           <RecordButton
-            onTranscript={handleTranscript}
+            onTranscript={handleTranscriptInternal}
             language={locale}
             disabled={status === "streaming" || status === "submitted"}
           />
@@ -431,27 +374,4 @@ export function InterviewClient({
       </div>
     </div>
   );
-
-  const briefCountdownArea = (
-    <div className="flex items-center justify-center px-6 py-18">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="text-left max-w-2xl text-zinc-900 dark:text-zinc-100 w-full"
-      >
-        <h1 className="text-xl font-EuclidCircularA font-medium mb-6 text-center">
-          {t("studyBriefReady")}
-        </h1>
-        <div className="mb-3 text-xs text-zinc-600 dark:text-zinc-400 text-center">
-          {t("studyBriefDescription")}
-        </div>
-        <div className="max-h-96 overflow-y-auto bg-zinc-100 dark:bg-zinc-800 p-4 rounded mb-12 whitespace-pre-wrap text-zinc-700 dark:text-zinc-300 leading-relaxed text-xs">
-          {summary}
-        </div>
-        <CountdownRedirect studyBrief={summary} userChatId={userChat.id} />
-      </motion.div>
-    </div>
-  );
-
-  return planningState === "summary" ? briefCountdownArea : chatWithAIArea;
 }

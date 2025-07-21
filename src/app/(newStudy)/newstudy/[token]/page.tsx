@@ -5,7 +5,7 @@ import { Message } from "ai";
 import { getServerSession } from "next-auth/next";
 import { notFound, redirect } from "next/navigation";
 import { fetchMiscUserChat } from "../actions";
-import { InterviewClient } from "./InterviewClient";
+import { NewStudyChatClient } from "./NewStudyChatClient";
 
 export const dynamic = "force-dynamic";
 
@@ -39,6 +39,6 @@ export default async function NewStudyPlanningPage({
   const initialMessages: Message[] = dbMessages.map(convertDBMessageToAIMessage);
 
   return (
-    <InterviewClient userChat={userChat} initialMessages={initialMessages} user={session.user} />
+    <NewStudyChatClient userChat={userChat} initialMessages={initialMessages} user={session.user} />
   );
 }
