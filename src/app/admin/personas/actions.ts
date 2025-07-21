@@ -1,13 +1,31 @@
 "use server";
+
 import { createTextEmbedding } from "@/ai/embedding";
+import { scorePersona } from "@/app/(persona)/lib";
+import { checkAdminAuth } from "@/app/admin/actions";
 import { ServerActionResult } from "@/lib/serverAction";
 import { Persona } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { Locale } from "next-intl";
 import { getLocale } from "next-intl/server";
-// import withAuth from "./withAuth";
+import { AdminPermission } from "../types";
 
-type TPersona = Pick<Persona, "id" | "name" | "source" | "prompt"> & { tags: string[] };
+type TPersona = Pick<Persona, "id" | "name" | "source" | "prompt" | "tier"> & { tags: string[] };
+
+export async function rescorePersona(personaId: number): Promise<ServerActionResult<void>> {
+  await checkAdminAuth([AdminPermission.MANAGE_PERSONAS]);
+
+  const persona = await prisma.persona.findUniqueOrThrow({
+    where: { id: personaId },
+  });
+
+  await scorePersona(persona);
+
+  return {
+    success: true,
+    data: undefined,
+  };
+}
 
 export async function fetchPersonas({
   locale,
@@ -22,6 +40,8 @@ export async function fetchPersonas({
   page?: number;
   pageSize?: number;
 } = {}): Promise<ServerActionResult<TPersona[]>> {
+  await checkAdminAuth([AdminPermission.MANAGE_PERSONAS]);
+
   locale = locale || (await getLocale());
   const skip = (page - 1) * pageSize;
 
@@ -30,7 +50,7 @@ export async function fetchPersonas({
     try {
       const embedding = await createTextEmbedding(searchQuery, "retrieval.query");
       const personas = await prisma.$queryRaw<TPersona[]>`
-        SELECT id, name, source, prompt, tags
+        SELECT id, name, source, prompt, tags, tier
         FROM "Persona"
         WHERE "embedding" <=> ${JSON.stringify(embedding)}::vector < 0.9 AND locale = ${locale}
         ORDER BY "embedding" <=> ${JSON.stringify(embedding)}::vector ASC
@@ -82,6 +102,7 @@ export async function fetchPersonas({
         source: true,
         prompt: true,
         tags: true,
+        tier: true,
       },
       skip,
       take: pageSize,
@@ -102,28 +123,6 @@ export async function fetchPersonas({
       pageSize,
       totalCount,
       totalPages: Math.ceil(totalCount / pageSize),
-    },
-  };
-}
-
-export async function fetchPersonaById(
-  personaId: number,
-): Promise<ServerActionResult<Omit<Persona, "tags"> & { tags: string[] }>> {
-  const persona = await prisma.persona.findUnique({
-    where: { id: personaId },
-  });
-  if (!persona) {
-    return {
-      success: false,
-      code: "not_found",
-      message: "Persona not found",
-    };
-  }
-  return {
-    success: true,
-    data: {
-      ...persona,
-      tags: persona.tags as string[],
     },
   };
 }

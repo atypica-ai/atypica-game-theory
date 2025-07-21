@@ -1,5 +1,5 @@
 import { upsertAnalystInterview } from "@/app/(agents)/interview/actions";
-import { fetchPersonas } from "@/app/(agents)/personas/actions";
+import { fetchPersonas } from "@/app/admin/personas/actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";

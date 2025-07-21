@@ -1,4 +1,4 @@
-import { fetchPersonaById } from "@/app/(agents)/personas/actions";
+import { fetchPersonaById } from "@/app/(persona)/actions";
 import { checkTezignAuth } from "@/app/admin/actions";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { notFound } from "next/navigation";

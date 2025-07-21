@@ -1,5 +1,5 @@
 import { ToolName } from "@/ai/tools/types";
-import { fetchPersonaById } from "@/app/(agents)/personas/actions";
+import { fetchPersonaById } from "@/app/(persona)/actions";
 import {
   fetchAnalystByStudyUserChatToken,
   fetchInterviewOfStudyUserChatByPersonaId,

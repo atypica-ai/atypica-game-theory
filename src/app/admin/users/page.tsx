@@ -565,6 +565,7 @@ export default function UsersPage() {
               <div className="col-span-3 space-y-2">
                 {[
                   AdminPermission.MANAGE_STUDIES,
+                  AdminPermission.MANAGE_PERSONAS,
                   AdminPermission.MANAGE_USERS,
                   AdminPermission.MANAGE_PAYMENTS,
                   AdminPermission.MANAGE_INVITATION_CODES,

@@ -27,7 +27,7 @@ import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
-import { fetchPersonas } from "./actions";
+import { fetchPersonas, rescorePersona } from "./actions";
 
 type PaginationInfo = {
   page: number;
@@ -54,6 +54,7 @@ export default function PersonasList({
   const [currentPage, setCurrentPage] = useState<number>(initialParams.page || 1);
   const [searchQuery, setSearchQuery] = useState<string>(initialParams.search || "");
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [rescoringId, setRescoringId] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Initialize page and search query from URL on load
@@ -133,6 +134,23 @@ export default function PersonasList({
     }
     setSearchQuery("");
     setCurrentPage(1);
+  };
+
+  const handleRescore = async (personaId: number) => {
+    setRescoringId(personaId);
+    try {
+      const result = await rescorePersona(personaId);
+      if (result.success) {
+        // Refresh the list after a successful rescore
+        await fetchPersonasForPage();
+      } else {
+        alert(`Rescoring failed: ${result.message}`);
+      }
+    } catch (error) {
+      alert(`An error occurred: ${(error as Error).message}`);
+    } finally {
+      setRescoringId(null);
+    }
   };
 
   return (
@@ -239,7 +257,24 @@ export default function PersonasList({
                 onClick={() => setSelectedPersona(persona)}
               >
                 <CardHeader>
-                  <CardTitle className="text-lg line-clamp-1">{persona.name}</CardTitle>
+                  <CardTitle className="flex items-center text-lg">
+                    <span className="truncate">{persona.name}</span>
+                    <Badge variant="outline" className="ml-2 whitespace-nowrap text-xs">
+                      Tier: {persona.tier ?? "N/A"}
+                    </Badge>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      className="text-xs h-6 ml-auto"
+                      disabled={rescoringId === persona.id}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRescore(persona.id);
+                      }}
+                    >
+                      {rescoringId === persona.id ? "Scoring..." : "Re-score"}
+                    </Button>
+                  </CardTitle>
                   <CardDescription className="text-xs text-muted-foreground">
                     {t("source")}：{persona.source}
                   </CardDescription>
@@ -247,7 +282,7 @@ export default function PersonasList({
                 <CardContent>
                   <div className="line-clamp-2 text-sm">{persona.prompt}</div>
                 </CardContent>
-                <CardFooter>
+                <CardFooter className="flex justify-between items-center">
                   <div className="flex flex-wrap gap-1.5">
                     {(persona.tags as string[])?.map((tag, index) => (
                       <Badge key={index} variant="outline" className="text-xs">

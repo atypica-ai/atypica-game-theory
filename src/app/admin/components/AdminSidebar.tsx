@@ -3,16 +3,17 @@ import { Button } from "@/components/ui/button";
 import UserMenu from "@/components/UserMenu";
 import { AdminRole } from "@/prisma/client";
 import {
-  AlertTriangle,
-  BarChart,
-  CreditCard,
-  Database,
-  FileText,
-  Home,
-  MessageCircle,
-  MonitorPlay,
-  Star,
-  Users,
+  AlertTriangleIcon,
+  BarChartIcon,
+  CreditCardIcon,
+  DatabaseIcon,
+  FileTextIcon,
+  HomeIcon,
+  MessageCircleIcon,
+  MonitorPlayIcon,
+  StarIcon,
+  UserIcon,
+  UsersIcon,
   X,
 } from "lucide-react";
 
@@ -39,68 +40,74 @@ export default function AdminSidebar({ adminRole, permissions = [] }: AdminSideb
       {
         label: "Dashboard",
         href: "/admin",
-        icon: <Home className="mr-2 h-4 w-4" />,
+        icon: <HomeIcon className="mr-2 h-4 w-4" />,
         // Dashboard accessible to all admins
       },
       {
         label: "Analyst Reports",
         href: "/admin/analyst-reports",
-        icon: <FileText className="mr-2 h-4 w-4" />,
+        icon: <FileTextIcon className="mr-2 h-4 w-4" />,
         permission: AdminPermission.MANAGE_STUDIES,
       },
       {
         label: "Featured Studies",
         href: "/admin/featured-studies",
-        icon: <Star className="mr-2 h-4 w-4" />,
+        icon: <StarIcon className="mr-2 h-4 w-4" />,
         permission: AdminPermission.MANAGE_STUDIES,
       },
       {
         label: "Token Consumption",
         href: "/admin/token-consumption",
-        icon: <MonitorPlay className="mr-2 h-4 w-4" />,
+        icon: <MonitorPlayIcon className="mr-2 h-4 w-4" />,
         permission: AdminPermission.VIEW_TOKEN_CONSUMPTION,
       },
       {
         label: "Statistics",
         href: "/admin/statistics",
-        icon: <BarChart className="mr-2 h-4 w-4" />,
+        icon: <BarChartIcon className="mr-2 h-4 w-4" />,
         permission: AdminPermission.VIEW_STATISTICS,
       },
       {
         label: "Users",
         href: "/admin/users",
-        icon: <Users className="mr-2 h-4 w-4" />,
+        icon: <UsersIcon className="mr-2 h-4 w-4" />,
         permission: AdminPermission.MANAGE_USERS,
       },
       {
         label: "Payments",
         href: "/admin/payments",
-        icon: <CreditCard className="mr-2 h-4 w-4" />,
+        icon: <CreditCardIcon className="mr-2 h-4 w-4" />,
         permission: AdminPermission.MANAGE_PAYMENTS,
       },
       {
         label: "Enterprise Leads",
         href: "/admin/enterprise-leads",
-        icon: <MessageCircle className="mr-2 h-4 w-4" />,
+        icon: <MessageCircleIcon className="mr-2 h-4 w-4" />,
         permission: AdminPermission.VIEW_ENTERPRISE_LEADS,
+      },
+      {
+        label: "Personas",
+        href: "/admin/personas",
+        icon: <UserIcon className="mr-2 h-4 w-4" />,
+        permission: AdminPermission.MANAGE_PERSONAS,
       },
       {
         label: "Issue Studies",
         href: "/admin/issue-studies",
-        icon: <AlertTriangle className="mr-2 h-4 w-4" />,
+        icon: <AlertTriangleIcon className="mr-2 h-4 w-4" />,
         // Only for super admins
         role: "SUPER_ADMIN",
       },
       {
         label: "Maintenance Mode",
         href: "/admin/maintenance",
-        icon: <AlertTriangle className="mr-2 h-4 w-4" />,
+        icon: <AlertTriangleIcon className="mr-2 h-4 w-4" />,
         role: "SUPER_ADMIN",
       },
       {
         label: "View Site",
         href: "/",
-        icon: <Database className="mr-2 h-4 w-4" />,
+        icon: <DatabaseIcon className="mr-2 h-4 w-4" />,
         // View site accessible to all
       },
     ],

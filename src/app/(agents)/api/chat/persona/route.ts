@@ -1,7 +1,7 @@
 import { personaAgentSystem } from "@/ai/prompt";
 import { llm, providerOptions } from "@/ai/provider";
-import { fetchPersonaById } from "@/app/(agents)/personas/actions";
 import authOptions from "@/app/(auth)/authOptions";
+import { fetchPersonaById } from "@/app/(persona)/actions";
 import { convertToCoreMessages, Message, smoothStream, streamText } from "ai";
 import { getServerSession } from "next-auth/next";
 import { getLocale } from "next-intl/server";
