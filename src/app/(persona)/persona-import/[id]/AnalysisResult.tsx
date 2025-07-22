@@ -28,7 +28,7 @@ interface AnalysisResultProps {
 export function AnalysisResult({ analysis }: AnalysisResultProps) {
   const getScoreColor = (score: number) => {
     if (score >= 3) return "text-green-600";
-    if (score >= 2) return "text-yellow-600";
+    if (score >= 2) return "text-blue-600";
     if (score >= 1) return "text-orange-600";
     return "text-red-600";
   };
@@ -43,15 +43,15 @@ export function AnalysisResult({ analysis }: AnalysisResultProps) {
   const getDimensionIcon = (dimension: string) => {
     switch (dimension) {
       case "Demographic":
-        return <UsersIcon className="size-5" />;
+        return <UsersIcon className="size-4" />;
       case "Psychological":
-        return <BrainIcon className="size-5" />;
+        return <BrainIcon className="size-4" />;
       case "BehavioralEconomics":
-        return <TargetIcon className="size-5" />;
+        return <TargetIcon className="size-4" />;
       case "PoliticalCognition":
-        return <ScaleIcon className="size-5" />;
+        return <ScaleIcon className="size-4" />;
       default:
-        return <FileTextIcon className="size-5" />;
+        return <FileTextIcon className="size-4" />;
     }
   };
 
@@ -85,49 +85,30 @@ export function AnalysisResult({ analysis }: AnalysisResultProps) {
   return (
     <div className="space-y-6">
       <div className="space-y-2">
-        <h2 className="text-2xl font-semibold flex items-center gap-3 text-gray-800">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center">
-            <BarChart3Icon className="size-4 text-white" />
+        <h2 className="text-xl font-semibold flex items-center gap-3 text-slate-900">
+          <div className="w-6 h-6 rounded bg-slate-900 flex items-center justify-center">
+            <BarChart3Icon className="size-3 text-white" />
           </div>
           完整性分析结果
         </h2>
-        <p className="text-gray-600 ml-11">
+        <p className="text-slate-600 ml-9 text-sm">
           基于四大社会心理维度的结构化分析与评分，评估信息完备度
         </p>
       </div>
-      <div className="space-y-8">
+
+      <div className="space-y-6">
         {/* Radar Chart */}
         <div className="flex justify-center">
-          <div className="w-full max-w-lg p-6 bg-gradient-to-br from-blue-50/50 to-purple-50/50 rounded-2xl border border-blue-100/50">
-            <div className="h-80 w-full relative">
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 rounded-xl" />
+          <div className="w-full max-w-lg p-6 bg-slate-50 rounded-lg border border-slate-200">
+            <div className="h-80 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <RadarChart cx="50%" cy="50%" outerRadius="75%" data={radarData}>
-                  <defs>
-                    <linearGradient id="radarGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.8} />
-                      <stop offset="50%" stopColor="#8b5cf6" stopOpacity={0.6} />
-                      <stop offset="100%" stopColor="#06b6d4" stopOpacity={0.4} />
-                    </linearGradient>
-                    <filter id="glow">
-                      <feGaussianBlur stdDeviation="2" result="coloredBlur" />
-                      <feMerge>
-                        <feMergeNode in="coloredBlur" />
-                        <feMergeNode in="SourceGraphic" />
-                      </feMerge>
-                    </filter>
-                  </defs>
-                  <PolarGrid
-                    gridType="polygon"
-                    stroke="#e2e8f0"
-                    strokeWidth={0.5}
-                    strokeDasharray="2,2"
-                  />
+                  <PolarGrid gridType="polygon" stroke="#e2e8f0" strokeWidth={1} />
                   <PolarAngleAxis
                     dataKey="subject"
                     tick={{
                       fill: "#64748b",
-                      fontSize: 13,
+                      fontSize: 12,
                       fontWeight: 500,
                     }}
                   />
@@ -135,31 +116,29 @@ export function AnalysisResult({ analysis }: AnalysisResultProps) {
                   <Radar
                     name="评分"
                     dataKey="score"
-                    stroke="#3b82f6"
-                    fill="url(#radarGradient)"
-                    fillOpacity={0.25}
-                    strokeWidth={1.5}
-                    filter="url(#glow)"
-                    dot={{ fill: "#3b82f6", strokeWidth: 1, r: 4 }}
+                    stroke="#1e293b"
+                    fill="#1e293b"
+                    fillOpacity={0.1}
+                    strokeWidth={2}
+                    dot={{ fill: "#1e293b", strokeWidth: 0, r: 3 }}
                   />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: "rgba(255, 255, 255, 0.95)",
+                      backgroundColor: "white",
                       border: "1px solid #e2e8f0",
-                      borderRadius: "12px",
-                      boxShadow: "0 10px 40px rgba(0, 0, 0, 0.1)",
-                      backdropFilter: "blur(10px)",
-                      padding: "12px 16px",
+                      borderRadius: "6px",
+                      boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                      padding: "8px 12px",
                     }}
                     labelStyle={{
                       color: "#1e293b",
-                      fontWeight: "600",
-                      marginBottom: "4px",
+                      fontWeight: "500",
+                      fontSize: "12px",
                     }}
                     itemStyle={{
-                      color: "#3b82f6",
-                      fontWeight: "bold",
-                      fontSize: "14px",
+                      color: "#1e293b",
+                      fontWeight: "500",
+                      fontSize: "12px",
                     }}
                   />
                 </RadarChart>
@@ -168,109 +147,100 @@ export function AnalysisResult({ analysis }: AnalysisResultProps) {
           </div>
         </div>
 
-        <div className="space-y-6">
-          {/* Overall Score */}
-          <div className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border border-blue-200/50">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-800">整体分析评分</h3>
-                <Badge variant="outline" className="text-lg px-4 py-2 bg-white/70">
-                  {analysis.totalScore ?? 0} / 12
-                </Badge>
-              </div>
-              <div className="w-full bg-white/70 rounded-full h-4 overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 transition-all duration-500"
-                  style={{ width: `${((analysis.totalScore ?? 0) / 12) * 100}%` }}
-                />
-              </div>
-              <p className="text-sm text-gray-600">
-                {(analysis.totalScore ?? 0) >= 9
-                  ? "各维度覆盖度优秀，信息全面深入"
-                  : (analysis.totalScore ?? 0) >= 6
-                    ? "覆盖度良好，部分维度可进一步优化"
-                    : (analysis.totalScore ?? 0) >= 3
-                      ? "覆盖度一般，需要重点补充关键信息"
-                      : "覆盖度不足，需要大量补充各维度信息"}
-              </p>
+        {/* Overall Score */}
+        <div className="p-4 bg-white rounded-lg border border-slate-200">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-medium text-slate-900">整体分析评分</h3>
+              <Badge variant="outline" className="text-sm px-3 py-1">
+                {analysis.totalScore ?? 0} / 12
+              </Badge>
             </div>
+            <div className="w-full bg-slate-100 rounded-full h-2">
+              <div
+                className="h-full bg-slate-900 rounded-full transition-all duration-500"
+                style={{ width: `${((analysis.totalScore ?? 0) / 12) * 100}%` }}
+              />
+            </div>
+            <p className="text-xs text-slate-600">
+              {(analysis.totalScore ?? 0) >= 9
+                ? "各维度覆盖度优秀，信息全面深入"
+                : (analysis.totalScore ?? 0) >= 6
+                  ? "覆盖度良好，部分维度可进一步优化"
+                  : (analysis.totalScore ?? 0) >= 3
+                    ? "覆盖度一般，需要重点补充关键信息"
+                    : "覆盖度不足，需要大量补充各维度信息"}
+            </p>
           </div>
+        </div>
 
-          {/* Dimension Scores */}
-          <div className="space-y-4">
-            {Object.entries(analysis).map(([dimension, data]) => {
-              if (dimension === "totalScore") return null;
-              const dimensionData = data as {
-                score?: number;
-                reason?: string;
-                questions?: string[];
-              };
+        {/* Dimension Scores */}
+        <div className="space-y-3">
+          {Object.entries(analysis).map(([dimension, data]) => {
+            if (dimension === "totalScore") return null;
+            const dimensionData = data as {
+              score?: number;
+              reason?: string;
+              questions?: string[];
+            };
 
-              // Skip if no data yet (streaming in progress)
-              if (!dimensionData || typeof dimensionData.score === "undefined") {
-                return null;
-              }
-              return (
-                <div
-                  key={dimension}
-                  className="p-5 bg-gradient-to-br from-slate-50 to-gray-50 rounded-2xl border border-gray-200/50"
-                >
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-500 to-slate-600 flex items-center justify-center">
-                          {getDimensionIcon(dimension)}
-                        </div>
-                        <h4 className="font-semibold text-gray-800 text-sm">
-                          {getDimensionName(dimension)}
-                        </h4>
+            // Skip if no data yet (streaming in progress)
+            if (!dimensionData || typeof dimensionData.score === "undefined") {
+              return null;
+            }
+            return (
+              <div key={dimension} className="p-4 bg-white rounded-lg border border-slate-200">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-6 h-6 rounded bg-slate-100 flex items-center justify-center">
+                        {getDimensionIcon(dimension)}
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={`text-lg font-bold ${getScoreColor(dimensionData.score ?? 0)}`}
-                        >
-                          {dimensionData.score ?? 0}/3
-                        </span>
-                        <Badge
-                          variant={
-                            (dimensionData.score ?? 0) >= 3
-                              ? "default"
-                              : (dimensionData.score ?? 0) === 2
-                                ? "secondary"
-                                : "destructive"
-                          }
-                          className={
-                            (dimensionData.score ?? 0) === 2
-                              ? "bg-orange-100 text-orange-800"
-                              : "bg-white/70"
-                          }
-                        >
-                          {getScoreLabel(dimensionData.score ?? 0)}
-                        </Badge>
+                      <h4 className="font-medium text-slate-900 text-sm">
+                        {getDimensionName(dimension)}
+                      </h4>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`text-sm font-medium ${getScoreColor(dimensionData.score ?? 0)}`}
+                      >
+                        {dimensionData.score ?? 0}/3
+                      </span>
+                      <Badge
+                        variant={
+                          (dimensionData.score ?? 0) >= 3
+                            ? "default"
+                            : (dimensionData.score ?? 0) === 2
+                              ? "secondary"
+                              : "destructive"
+                        }
+                        className="text-xs"
+                      >
+                        {getScoreLabel(dimensionData.score ?? 0)}
+                      </Badge>
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-600">{dimensionData.reason}</p>
+                  {dimensionData.questions && dimensionData.questions.length > 0 && (
+                    <div className="pt-3 border-t border-slate-100">
+                      <h5 className="font-medium text-xs mb-2 text-slate-700">针对性补充问题</h5>
+                      <div className="space-y-2">
+                        {dimensionData.questions.map((question, index) => (
+                          <div
+                            key={index}
+                            className="text-xs p-2 bg-slate-50 rounded border-l-2 border-slate-300"
+                          >
+                            <span className="font-medium text-slate-900">Q{index + 1}:</span>{" "}
+                            <span className="text-slate-600">{question}</span>
+                          </div>
+                        ))}
                       </div>
                     </div>
-                    <p className="text-sm text-gray-600">{dimensionData.reason}</p>
-                    {dimensionData.questions && dimensionData.questions.length > 0 && (
-                      <div className="pt-3 border-t border-gray-200">
-                        <h5 className="font-medium text-sm mb-2 text-gray-700">针对性补充问题</h5>
-                        <div className="space-y-1.5">
-                          {dimensionData.questions.map((question, index) => (
-                            <div
-                              key={index}
-                              className="text-xs p-2 bg-white/70 rounded-md border-l-2 border-blue-400"
-                            >
-                              <span className="font-medium text-blue-600">Q{index + 1}:</span>{" "}
-                              <span className="text-gray-700">{question}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                  )}
                 </div>
-              );
-            })}
-          </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

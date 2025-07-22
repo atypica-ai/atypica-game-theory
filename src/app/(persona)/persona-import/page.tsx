@@ -49,8 +49,8 @@ export default function PersonaImportPage() {
     <div className="container mx-auto p-8 max-w-4xl space-y-8">
       {/* Header */}
       <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold">Persona Management</h1>
-        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+        <h1 className="text-3xl font-bold text-slate-900">Persona Management</h1>
+        <p className="text-lg text-slate-600 max-w-2xl mx-auto">
           Import interview records, analyze completeness, and generate interactive personas for your
           research and analysis needs.
         </p>
@@ -58,18 +58,18 @@ export default function PersonaImportPage() {
 
       {/* Feature Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="border-2 hover:border-primary/50 transition-colors">
+        <Card className="border border-slate-200 hover:border-slate-300 transition-colors">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-slate-900">
               <Upload className="size-5" />
               Import Interview
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-slate-600">
               Upload PDF interview records and convert them to structured, LLM-compatible format
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="text-sm text-muted-foreground space-y-2">
+            <div className="text-sm text-slate-600 space-y-2">
               <div className="flex items-center gap-2">
                 <FileText className="size-4" />
                 <span>PDF to Markdown conversion</span>
@@ -93,7 +93,7 @@ export default function PersonaImportPage() {
               />
             ) : (
               <div className="space-y-2">
-                <div className="p-3 bg-muted rounded-lg">
+                <div className="p-3 bg-slate-100 rounded">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <FileText className="size-4" />
@@ -112,18 +112,18 @@ export default function PersonaImportPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-2 opacity-50">
+        <Card className="border border-slate-200 opacity-60">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-slate-900">
               <Users className="size-5" />
               Chat with Personas
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-slate-600">
               Interact with generated personas based on your interview data
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="text-sm text-muted-foreground space-y-2">
+            <div className="text-sm text-slate-600 space-y-2">
               <div className="flex items-center gap-2">
                 <MessageCircle className="size-4" />
                 <span>Natural conversation interface</span>
@@ -137,7 +137,7 @@ export default function PersonaImportPage() {
                 <span>Multi-dimensional personality</span>
               </div>
             </div>
-            <Button className="w-full" disabled>
+            <Button className="w-full" disabled variant="outline">
               Coming Soon
             </Button>
           </CardContent>
@@ -145,10 +145,10 @@ export default function PersonaImportPage() {
       </div>
 
       {/* Analysis Dimensions */}
-      <Card>
+      <Card className="border border-slate-200">
         <CardHeader>
-          <CardTitle>Analysis Dimensions</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-slate-900">Analysis Dimensions</CardTitle>
+          <CardDescription className="text-slate-600">
             Our system evaluates interview completeness across four key socio-psychological
             dimensions
           </CardDescription>
@@ -157,10 +157,10 @@ export default function PersonaImportPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <Users className="size-5 text-blue-500" />
-                <h4 className="font-medium">Demographic</h4>
+                <Users className="size-4 text-slate-600" />
+                <h4 className="font-medium text-slate-900">Demographic</h4>
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-slate-600">
                 Social identity and growth trajectory analysis including age, education, occupation,
                 and background.
               </p>
@@ -168,10 +168,10 @@ export default function PersonaImportPage() {
 
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <MessageCircle className="size-5 text-green-500" />
-                <h4 className="font-medium">Psychological</h4>
+                <MessageCircle className="size-4 text-slate-600" />
+                <h4 className="font-medium text-slate-900">Psychological</h4>
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-slate-600">
                 Personality traits, emotional patterns, and internal motivations reflected in
                 behavior.
               </p>
@@ -179,20 +179,20 @@ export default function PersonaImportPage() {
 
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <Target className="size-5 text-orange-500" />
-                <h4 className="font-medium">Behavioral Economics</h4>
+                <Target className="size-4 text-slate-600" />
+                <h4 className="font-medium text-slate-900">Behavioral Economics</h4>
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-slate-600">
                 Consumer behavior, decision preferences, and social influence patterns.
               </p>
             </div>
 
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <FileText className="size-5 text-purple-500" />
-                <h4 className="font-medium">Political Cognition</h4>
+                <FileText className="size-4 text-slate-600" />
+                <h4 className="font-medium text-slate-900">Political Cognition</h4>
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-slate-600">
                 Cultural stance, information trust structures, and community belonging analysis.
               </p>
             </div>
@@ -201,32 +201,34 @@ export default function PersonaImportPage() {
       </Card>
 
       {/* Getting Started */}
-      <Card>
+      <Card className="border border-slate-200">
         <CardHeader>
-          <CardTitle>Getting Started</CardTitle>
-          <CardDescription>Follow these simple steps to create your first persona</CardDescription>
+          <CardTitle className="text-slate-900">Getting Started</CardTitle>
+          <CardDescription className="text-slate-600">
+            Follow these simple steps to create your first persona
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             <div className="flex items-start gap-3">
-              <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground text-sm font-bold flex items-center justify-center mt-0.5">
+              <div className="w-6 h-6 rounded bg-slate-900 text-white text-sm font-medium flex items-center justify-center mt-0.5">
                 1
               </div>
               <div>
-                <h4 className="font-medium">Upload Interview PDF</h4>
-                <p className="text-sm text-muted-foreground">
+                <h4 className="font-medium text-slate-900">Upload Interview PDF</h4>
+                <p className="text-sm text-slate-600">
                   Start by uploading a PDF containing your interview transcripts or records.
                 </p>
               </div>
             </div>
 
             <div className="flex items-start gap-3">
-              <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground text-sm font-bold flex items-center justify-center mt-0.5">
+              <div className="w-6 h-6 rounded bg-slate-900 text-white text-sm font-medium flex items-center justify-center mt-0.5">
                 2
               </div>
               <div>
-                <h4 className="font-medium">Review Analysis</h4>
-                <p className="text-sm text-muted-foreground">
+                <h4 className="font-medium text-slate-900">Review Analysis</h4>
+                <p className="text-sm text-slate-600">
                   Examine the completeness scores and identify areas that need additional
                   information.
                 </p>
@@ -234,26 +236,24 @@ export default function PersonaImportPage() {
             </div>
 
             <div className="flex items-start gap-3">
-              <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground text-sm font-bold flex items-center justify-center mt-0.5">
+              <div className="w-6 h-6 rounded bg-slate-900 text-white text-sm font-medium flex items-center justify-center mt-0.5">
                 3
               </div>
               <div>
-                <h4 className="font-medium">Gather Additional Data</h4>
-                <p className="text-sm text-muted-foreground">
+                <h4 className="font-medium text-slate-900">Gather Additional Data</h4>
+                <p className="text-sm text-slate-600">
                   Use the generated supplementary questions to collect missing information.
                 </p>
               </div>
             </div>
 
             <div className="flex items-start gap-3">
-              <div className="w-6 h-6 rounded-full bg-muted-foreground text-muted text-sm font-bold flex items-center justify-center mt-0.5">
+              <div className="w-6 h-6 rounded bg-slate-300 text-slate-500 text-sm font-medium flex items-center justify-center mt-0.5">
                 4
               </div>
               <div>
-                <h4 className="font-medium text-muted-foreground">
-                  Generate Persona (Coming Soon)
-                </h4>
-                <p className="text-sm text-muted-foreground">
+                <h4 className="font-medium text-slate-500">Generate Persona (Coming Soon)</h4>
+                <p className="text-sm text-slate-500">
                   Create an interactive persona that embodies the analyzed characteristics.
                 </p>
               </div>
