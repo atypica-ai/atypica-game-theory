@@ -1,5 +1,4 @@
 "use client";
-
 import { FollowUpChatBodySchema } from "@/app/(persona)/types";
 import { FocusedInterviewChat } from "@/components/chat/FocusedInterviewChat";
 import { UserChat } from "@/prisma/client";
@@ -20,7 +19,7 @@ export function FollowUpInterviewClient({
   };
 
   const useChatHelpers = useChat({
-    api: "/api/chat/persona/followup",
+    api: "/api/persona/followup",
     id: userChat.token,
     initialMessages,
     body: {

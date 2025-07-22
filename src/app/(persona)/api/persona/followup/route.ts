@@ -6,14 +6,22 @@ import {
 import { llm, providerOptions } from "@/ai/provider";
 import { reasoningThinkingTool } from "@/ai/tools/experts/reasoning";
 import { ToolName } from "@/ai/tools/types";
+import authOptions from "@/app/(auth)/authOptions";
 import { FollowUpChatBodySchema } from "@/app/(persona)/types";
 import { rootLogger } from "@/lib/logging";
 import { prisma } from "@/prisma/prisma";
 import { generateId, smoothStream, streamText } from "ai";
+import { getServerSession } from "next-auth";
 import { getLocale } from "next-intl/server";
 import { after, NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
+  // Check authentication
+  const session = await getServerSession(authOptions);
+  if (!session?.user) {
+    return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+  }
+
   const payload = await req.json();
   const parseResult = FollowUpChatBodySchema.safeParse(payload);
   if (!parseResult.success) {
@@ -36,6 +44,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Follow-up interview not found" }, { status: 404 });
   }
 
+  // Check if user owns this chat
+  if (userChat.userId !== session.user.id) {
+    return NextResponse.json({ error: "Access denied" }, { status: 403 });
+  }
+
   // Find the associated PersonaImport to get the supplementary questions context
   const personaImport = await prisma.personaImport.findFirst({
     where: { extraUserChatId: userChatId },
@@ -43,6 +56,11 @@ export async function POST(req: NextRequest) {
 
   if (!personaImport) {
     return NextResponse.json({ error: "Associated persona import not found" }, { status: 404 });
+  }
+
+  // Double check that the persona import belongs to the same user
+  if (personaImport.userId !== session.user.id) {
+    return NextResponse.json({ error: "Access denied" }, { status: 403 });
   }
 
   // Save the user message

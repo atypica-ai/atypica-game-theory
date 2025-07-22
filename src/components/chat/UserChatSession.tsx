@@ -25,6 +25,7 @@ export function UserChatSession({
   limit,
   useChatHelpers: { messages, status, error, handleSubmit, input, setInput },
   useChatRef,
+  acceptAttachments,
   persistMessages = true,
 }: {
   chatId?: string;
@@ -35,6 +36,7 @@ export function UserChatSession({
   limit?: number; // 向前保留的消息数量
   useChatHelpers: Omit<ReturnType<typeof useChat>, "append" | "reload" | "setMessages">;
   useChatRef: RefObject<Pick<ReturnType<typeof useChat>, "append" | "reload" | "setMessages">>;
+  acceptAttachments: boolean;
   persistMessages?: boolean;
 }) {
   const t = useTranslations("Components.UserChatSession");
@@ -95,8 +97,9 @@ export function UserChatSession({
           "pt-16 pb-80 px-3",
         )}
       >
-        {(limit ? messages.slice(-limit) : messages).map(
-          ({ id, role, content, parts, ...extra }) => (
+        {(limit ? messages.slice(-limit) : messages)
+          .filter(({ role, content }) => !(role === "user" && content === CONTINUE_ASSISTANT_STEPS))
+          .map(({ id, role, content, parts, ...extra }) => (
             <ChatMessage
               key={id}
               role={role}
@@ -106,8 +109,7 @@ export function UserChatSession({
               parts={parts}
               extra={extra}
             ></ChatMessage>
-          ),
-        )}
+          ))}
         {error && (
           <div className="flex justify-center items-center text-red-500 dark:text-red-400 text-sm">
             {error.toString()}
@@ -147,7 +149,7 @@ export function UserChatSession({
             )}
             <Textarea
               className={cn(
-                "block min-h-24 max-lg:min-h-20 resize-none focus-visible:border-primary/50 transition-colors",
+                "block min-h-24 max-lg:min-h-20 resize-none focus-visible:border-primary/20 transition-colors",
                 "px-4 pt-3 pb-11",
                 "text-[15px] placeholder:text-[15px]", // "text-sm placeholder:text-sm",
               )}
@@ -179,7 +181,7 @@ export function UserChatSession({
                   <span>{t("continue")}</span>
                 </Button>
               )}
-              {!inputDisabled && (
+              {acceptAttachments && !inputDisabled && (
                 <FileUploadButton
                   onFileUploadedAction={handleFileUploaded}
                   disabled={inputDisabled || isUploadDisabled()}

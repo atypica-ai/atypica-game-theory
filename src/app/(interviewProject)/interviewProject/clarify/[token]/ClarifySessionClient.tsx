@@ -196,6 +196,7 @@ export function ClarifySessionClient({
               useChatRef={useChatRef}
               readOnly={clarifyCompleted}
               limit={10}
+              acceptAttachments={false}
             />
           </div>
           {clarifyCompleted && (

@@ -333,7 +333,7 @@ export default function PersonasList({
           </div>
           <DialogFooter className="justify-between sm:justify-between">
             <Button asChild size="sm">
-              <Link href={`/agents/persona/${selectedPersona?.id}`}>chat</Link>
+              <Link href={`/personas/${selectedPersona?.id}`}>chat</Link>
             </Button>
             <div className="flex flex-wrap gap-2">
               {(selectedPersona?.tags as string[])?.map((tag, index) => (

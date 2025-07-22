@@ -1,32 +1,29 @@
 import { personaAgentSystem } from "@/ai/prompt";
 import { llm, providerOptions } from "@/ai/provider";
-import authOptions from "@/app/(auth)/authOptions";
-import { fetchPersonaById } from "@/app/(persona)/actions";
+import { checkPersonaAccess } from "@/app/(persona)/actions";
 import { convertToCoreMessages, Message, smoothStream, streamText } from "ai";
-import { getServerSession } from "next-auth/next";
 import { getLocale } from "next-intl/server";
-import { notFound } from "next/navigation";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
-  // 需要登录，但是没有其他特别权限
-  const session = await getServerSession(authOptions);
-  if (!session?.user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
   const payload = await req.json();
   const personaId = parseInt(payload["id"]);
   const messages = payload["messages"] as Message[];
+
   if (!personaId || !messages) {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
 
-  const result = await fetchPersonaById(personaId);
-  if (!result.success) {
-    notFound();
+  // Check access permission
+  const accessResult = await checkPersonaAccess(personaId);
+  if (!accessResult.success) {
+    return NextResponse.json(
+      { error: accessResult.message },
+      { status: accessResult.code === "unauthorized" ? 401 : accessResult.code === "not_found" ? 404 : 403 }
+    );
   }
-  const persona = result.data;
+
+  const persona = accessResult.data;
 
   const coreMessages = convertToCoreMessages(messages);
   const firstAssistantMessage = coreMessages.find((message) => message.role === "assistant");

@@ -59,6 +59,7 @@ export function AgentChatPage({
         useChatHelpers={useChatHelpers}
         useChatRef={useChatRef}
         persistMessages={persistMessages}
+        acceptAttachments={false}
       />
     </div>
   );

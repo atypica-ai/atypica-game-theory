@@ -1,5 +1,7 @@
 "use server";
 import { analyzeInterviewCompleteness, buildPersonaAgentPrompt } from "@/app/(persona)/processing";
+import { checkAdminAuth } from "@/app/admin/actions";
+import { AdminPermission } from "@/app/admin/types";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { createUserChat } from "@/lib/userChat/lib";
@@ -14,7 +16,9 @@ import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
 import { generateId } from "ai";
+import { getServerSession } from "next-auth";
 import { getTranslations } from "next-intl/server";
+import authOptions from "../(auth)/authOptions";
 
 export async function createPersonaImport({
   objectUrl,
@@ -213,4 +217,93 @@ export async function fetchFollowUpInterviewChat(
     success: true,
     data: userChat,
   };
+}
+
+export async function checkPersonaAccess(
+  personaId: number,
+): Promise<ServerActionResult<Persona & { personaImport: PersonaImport | null }>> {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) {
+    return {
+      success: false,
+      code: "unauthorized",
+      message: "Authentication required",
+    };
+  }
+
+  const persona = await prisma.persona.findUnique({
+    where: { id: personaId },
+    include: {
+      personaImport: true,
+    },
+  });
+
+  if (!persona) {
+    return {
+      success: false,
+      code: "not_found",
+      message: "Persona not found",
+    };
+  }
+
+  // Check if user has admin permission
+  try {
+    await checkAdminAuth([AdminPermission.MANAGE_PERSONAS]);
+    return {
+      success: true,
+      data: persona,
+    };
+  } catch (error) {
+    // User doesn't have admin permission, check if they own the persona
+    if (persona.personaImport && persona.personaImport.userId === session.user.id) {
+      return {
+        success: true,
+        data: persona,
+      };
+    }
+
+    return {
+      success: false,
+      code: "forbidden",
+      message: "Access denied",
+    };
+  }
+}
+
+export async function fetchUserPersonas(): Promise<
+  ServerActionResult<
+    Array<
+      Pick<Persona, "id" | "name" | "source" | "prompt" | "tier" | "createdAt"> & { tags: string[] }
+    >
+  >
+> {
+  return withAuth(async (user) => {
+    const personas = await prisma.persona.findMany({
+      where: {
+        personaImport: {
+          userId: user.id,
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      select: {
+        id: true,
+        name: true,
+        source: true,
+        prompt: true,
+        tags: true,
+        tier: true,
+        createdAt: true,
+      },
+    });
+
+    return {
+      success: true,
+      data: personas.map((persona) => ({
+        ...persona,
+        tags: persona.tags as string[],
+      })),
+    };
+  });
 }

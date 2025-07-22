@@ -31,9 +31,8 @@ export function SupplementaryQuestions({
       if (!result.success) {
         throw new Error(result.message || "创建分享链接失败");
       }
-
-      const shareUrl = `${window.location.origin}/persona/followup/${result.data.token}`;
-      await copyToClipboard(shareUrl);
+      const shareUrl = `${window.location.origin}/persona-followup/${result.data.token}`;
+      copyToClipboard(shareUrl);
       toast.success("分享链接已创建并复制到剪贴板");
     } catch (error) {
       console.error("Error creating share link:", error);
