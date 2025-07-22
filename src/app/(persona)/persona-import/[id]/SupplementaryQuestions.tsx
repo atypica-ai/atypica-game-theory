@@ -1,6 +1,15 @@
 "use client";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { CopyIcon, LightbulbIcon, ShareIcon } from "lucide-react";
+import { ClipboardCopyIcon, CopyIcon, LightbulbIcon, ShareIcon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { createFollowUpInterviewChat } from "../../actions";
@@ -17,7 +26,10 @@ export function SupplementaryQuestions({
   // fileName,
   personaImportId,
 }: SupplementaryQuestionsProps) {
+  const [open, setOpen] = useState(false);
+  const [shareUrl, setShareUrl] = useState("");
   const [isCreatingLink, setIsCreatingLink] = useState(false);
+
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text).then(() => {
       toast.success("已复制到剪贴板");
@@ -31,15 +43,20 @@ export function SupplementaryQuestions({
       if (!result.success) {
         throw new Error(result.message || "创建分享链接失败");
       }
-      const shareUrl = `${window.location.origin}/persona-followup/${result.data.token}`;
-      copyToClipboard(shareUrl);
-      toast.success("分享链接已创建并复制到剪贴板");
+      const url = `${window.location.origin}/persona-followup/${result.data.token}`;
+      setShareUrl(url);
+      setOpen(true);
     } catch (error) {
       console.error("Error creating share link:", error);
       toast.error("创建分享链接失败，请重试");
     } finally {
       setIsCreatingLink(false);
     }
+  };
+
+  const handleCopyUrl = () => {
+    copyToClipboard(shareUrl);
+    toast.success("分享链接已复制到剪贴板");
   };
 
   if (!supplementaryQuestions || !supplementaryQuestions.questions) return null;
@@ -100,12 +117,51 @@ export function SupplementaryQuestions({
         </div>
 
         <div className="pt-4 border-t border-slate-200">
-          <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-            <Button className="w-full" onClick={handleCreateShareLink} disabled={isCreatingLink}>
-              <ShareIcon className="size-4 mr-2" />
-              {isCreatingLink ? "生成中..." : "生成分享链接"}
-            </Button>
-            <p className="text-xs text-green-700 mt-2 text-center">
+          <div className="space-y-2">
+            <AlertDialog
+              open={open}
+              onOpenChange={(open) => {
+                if (!open) setOpen(false);
+              }}
+            >
+              <Button className="w-full" onClick={handleCreateShareLink} disabled={isCreatingLink}>
+                <ShareIcon className="size-4 mr-2" />
+                {isCreatingLink ? "生成中..." : "生成分享链接"}
+              </Button>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>分享补充问题链接</AlertDialogTitle>
+                  <AlertDialogDescription></AlertDialogDescription>
+                </AlertDialogHeader>
+                <div className="mt-3 space-y-3 overflow-hidden">
+                  <p className="text-sm text-muted-foreground mb-2">
+                    将此链接发送给受访者，用于收集补充问题的回答
+                  </p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <div className="bg-muted p-2 rounded-md text-xs flex-1 overflow-hidden break-words">
+                      {shareUrl}
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={handleCopyUrl}
+                      className="shrink-0"
+                    >
+                      <ClipboardCopyIcon className="size-4 mr-1" />
+                      复制
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    受访者可以通过此链接查看问题并提供回答
+                  </p>
+                </div>
+                <AlertDialogFooter>
+                  <AlertDialogCancel onClick={() => setOpen(false)}>关闭</AlertDialogCancel>
+                  <Button onClick={() => window.open(shareUrl, "_blank")}>打开链接</Button>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+            <p className="text-xs text-slate-600 text-center">
               创建链接发送给受访者，用于收集补充回答
             </p>
           </div>

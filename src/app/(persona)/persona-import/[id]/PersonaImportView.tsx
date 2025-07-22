@@ -1,7 +1,6 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { BrainIcon, FileTextIcon, RefreshCwIcon, UsersIcon } from "lucide-react";
-import Link from "next/link";
+import { BrainIcon, FileTextIcon, RefreshCwIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -203,16 +202,6 @@ export function PersonaImportView({
         {personas.length > 0 && (
           <div className="bg-white rounded-lg border border-slate-200 p-6">
             <PersonaSummary personas={personas} />
-            <div className="mt-6 pt-6 border-t border-slate-200">
-              <div className="flex justify-center">
-                <Button asChild variant="outline">
-                  <Link href="/personas" className="flex items-center gap-2">
-                    <UsersIcon className="size-4" />
-                    View All Personas
-                  </Link>
-                </Button>
-              </div>
-            </div>
           </div>
         )}
 

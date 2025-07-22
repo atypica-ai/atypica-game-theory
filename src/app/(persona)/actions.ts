@@ -273,7 +273,9 @@ export async function checkPersonaAccess(
 export async function fetchUserPersonas(): Promise<
   ServerActionResult<
     Array<
-      Pick<Persona, "id" | "name" | "source" | "prompt" | "tier" | "createdAt"> & { tags: string[] }
+      Pick<Persona, "id" | "name" | "source" | "personaImportId" | "tier" | "createdAt"> & {
+        tags: string[];
+      }
     >
   >
 > {
@@ -291,7 +293,7 @@ export async function fetchUserPersonas(): Promise<
         id: true,
         name: true,
         source: true,
-        prompt: true,
+        personaImportId: true,
         tags: true,
         tier: true,
         createdAt: true,

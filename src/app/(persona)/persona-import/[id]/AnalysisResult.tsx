@@ -57,13 +57,13 @@ export function AnalysisResult({ analysis }: AnalysisResultProps) {
 
   const getDimensionName = (dimension: string) => {
     switch (dimension) {
-      case "Demographic":
+      case "demographic":
         return "人口与成长轨迹分析";
-      case "Psychological":
+      case "psychological":
         return "心理动因与性格特征分析";
-      case "BehavioralEconomics":
+      case "behavioralEconomics":
         return "消费行为与决策偏好分析";
-      case "PoliticalCognition":
+      case "politicalCognition":
         return "文化立场与社群归属分析";
       default:
         return dimension;
