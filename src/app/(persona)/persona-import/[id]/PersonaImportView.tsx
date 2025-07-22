@@ -141,113 +141,111 @@ export function PersonaImportView({
         <div className="w-6 h-6 rounded-full bg-indigo-400/30 animate-pulse delay-1000" />
       </div>
 
-      <div className="container mx-auto px-8 py-12 max-w-5xl">
-        <div className="space-y-12">
-          {/* Header */}
-          <div className="text-center space-y-6">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 mb-6">
-              <BrainIcon className="w-8 h-8 text-white" />
+      <div className="container mx-auto px-8 py-12 max-w-5xl space-y-12">
+        {/* Header */}
+        <div className="text-center space-y-6">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 mb-6">
+            <BrainIcon className="w-8 h-8 text-white" />
+          </div>
+          <h1 className="text-5xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 bg-clip-text text-transparent">
+            智能人格画像生成
+          </h1>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
+            {isProcessingComplete ? "处理完成：" : "正在处理文件："}
+            {fileName}
+          </p>
+          {isProcessingComplete && (
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              所有任务已完成
             </div>
-            <h1 className="text-5xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 bg-clip-text text-transparent">
-              智能人格画像生成
-            </h1>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
-              {isProcessingComplete ? "处理完成：" : "正在处理文件："}
-              {fileName}
-            </p>
-            {isProcessingComplete && (
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-100 text-green-800 rounded-full text-sm font-medium">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                所有任务已完成
-              </div>
-            )}
+          )}
+        </div>
+
+        <div className="space-y-8">
+          {/* Processing Status */}
+          <div className="bg-white/60 backdrop-blur-sm rounded-3xl border border-white/40 shadow-xl p-8">
+            <ProcessingStatus
+              isProcessing={!personaAgentCompleted}
+              isAnalyzing={!analysisCompleted}
+              analysis={analysis}
+              supplementaryQuestions={supplementaryQuestions}
+              personas={personas}
+              personaImportAnalysis={personaImport.analysis}
+            />
           </div>
 
-          <div className="space-y-8">
-            {/* Processing Status */}
+          {/* File Information and Re-analyze */}
+          <div className="bg-white/60 backdrop-blur-sm rounded-3xl border border-white/40 shadow-xl p-8">
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <h2 className="text-2xl font-semibold flex items-center gap-3 text-gray-800">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+                    <FileTextIcon className="size-4 text-white" />
+                  </div>
+                  上传文件信息
+                </h2>
+                <p className="text-gray-600 ml-11">查看原始文件或重新进行分析</p>
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border border-blue-200/50">
+                <div className="flex items-center gap-3">
+                  <FileTextIcon className="size-5 text-blue-600" />
+                  <div>
+                    <p className="font-medium text-gray-800">{fileName}</p>
+                    <p className="text-sm text-gray-600">PDF 文件</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleViewFile}
+                    className="bg-white/70 hover:bg-white/90"
+                  >
+                    查看文件
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleReAnalyze}
+                    disabled={isReAnalyzing}
+                    className="bg-white/70 hover:bg-white/90"
+                  >
+                    <RefreshCwIcon
+                      className={`size-4 mr-2 ${isReAnalyzing ? "animate-spin" : ""}`}
+                    />
+                    {isReAnalyzing ? "重新分析中..." : "重新分析"}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Persona Summary - only show if summary exists */}
+          {personas.length > 0 && (
             <div className="bg-white/60 backdrop-blur-sm rounded-3xl border border-white/40 shadow-xl p-8">
-              <ProcessingStatus
-                isProcessing={!personaAgentCompleted}
-                isAnalyzing={!analysisCompleted}
-                analysis={analysis}
+              <PersonaSummary personas={personas} />
+            </div>
+          )}
+
+          {/* Analysis Result - only show if analysis exists */}
+          {analysis && (
+            <div className="bg-white/60 backdrop-blur-sm rounded-3xl border border-white/40 shadow-xl p-8">
+              <AnalysisResult analysis={analysis} />
+            </div>
+          )}
+
+          {/* Supplementary Questions - only show if exists */}
+          {supplementaryQuestions && (
+            <div className="bg-white/60 backdrop-blur-sm rounded-3xl border border-white/40 shadow-xl p-8">
+              <SupplementaryQuestions
                 supplementaryQuestions={supplementaryQuestions}
-                personas={personas}
-                personaImportAnalysis={personaImport.analysis}
+                fileName={fileName}
+                personaImportId={personaImport.id}
               />
             </div>
-
-            {/* File Information and Re-analyze */}
-            <div className="bg-white/60 backdrop-blur-sm rounded-3xl border border-white/40 shadow-xl p-8">
-              <div className="space-y-6">
-                <div className="space-y-2">
-                  <h2 className="text-2xl font-semibold flex items-center gap-3 text-gray-800">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
-                      <FileTextIcon className="size-4 text-white" />
-                    </div>
-                    上传文件信息
-                  </h2>
-                  <p className="text-gray-600 ml-11">查看原始文件或重新进行分析</p>
-                </div>
-
-                <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border border-blue-200/50">
-                  <div className="flex items-center gap-3">
-                    <FileTextIcon className="size-5 text-blue-600" />
-                    <div>
-                      <p className="font-medium text-gray-800">{fileName}</p>
-                      <p className="text-sm text-gray-600">PDF 文件</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleViewFile}
-                      className="bg-white/70 hover:bg-white/90"
-                    >
-                      查看文件
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleReAnalyze}
-                      disabled={isReAnalyzing}
-                      className="bg-white/70 hover:bg-white/90"
-                    >
-                      <RefreshCwIcon
-                        className={`size-4 mr-2 ${isReAnalyzing ? "animate-spin" : ""}`}
-                      />
-                      {isReAnalyzing ? "重新分析中..." : "重新分析"}
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Persona Summary - only show if summary exists */}
-            {personas.length > 0 && (
-              <div className="bg-white/60 backdrop-blur-sm rounded-3xl border border-white/40 shadow-xl p-8">
-                <PersonaSummary personas={personas} />
-              </div>
-            )}
-
-            {/* Analysis Result - only show if analysis exists */}
-            {analysis && (
-              <div className="bg-white/60 backdrop-blur-sm rounded-3xl border border-white/40 shadow-xl p-8">
-                <AnalysisResult analysis={analysis} />
-              </div>
-            )}
-
-            {/* Supplementary Questions - only show if exists */}
-            {supplementaryQuestions && (
-              <div className="bg-white/60 backdrop-blur-sm rounded-3xl border border-white/40 shadow-xl p-8">
-                <SupplementaryQuestions
-                  supplementaryQuestions={supplementaryQuestions}
-                  fileName={fileName}
-                  personaImportId={personaImport.id}
-                />
-              </div>
-            )}
-          </div>
+          )}
         </div>
       </div>
     </div>
