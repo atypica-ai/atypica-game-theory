@@ -12,15 +12,18 @@ import {
   UploadIcon,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { fetchUserPersonas } from "../actions";
+import { createOrGetUserPersonaChat, fetchUserPersonas } from "../actions";
 
 type TPersona = ExtractServerActionData<typeof fetchUserPersonas>[number];
 
 export default function UserPersonasPage() {
+  const router = useRouter();
   const [personas, setPersonas] = useState<TPersona[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [chatCreating, setChatCreating] = useState<Record<number, boolean>>({});
 
   useEffect(() => {
     const loadPersonas = async () => {
@@ -47,6 +50,22 @@ export default function UserPersonasPage() {
       month: "short",
       day: "numeric",
     }).format(new Date(date));
+  };
+
+  const handleStartChat = async (personaId: number) => {
+    setChatCreating((prev) => ({ ...prev, [personaId]: true }));
+    try {
+      const result = await createOrGetUserPersonaChat(personaId);
+      if (!result.success) {
+        throw new Error(result.message);
+      }
+      router.push(`/persona-chat/${result.data.token}`);
+    } catch (error) {
+      console.error("Failed to start chat:", error);
+      toast.error("Failed to start chat");
+    } finally {
+      setChatCreating((prev) => ({ ...prev, [personaId]: false }));
+    }
   };
 
   if (isLoading) {
@@ -132,15 +151,14 @@ export default function UserPersonasPage() {
                     )}
                   </div>
                   <div className="flex gap-2 pt-2">
-                    <Button asChild size="sm" className="flex-1">
-                      <Link
-                        href={`/personas/${persona.id}`}
-                        target="_blank"
-                        className="flex items-center gap-2"
-                      >
-                        <MessageCircleIcon className="size-3" />
-                        Start Chat
-                      </Link>
+                    <Button
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => handleStartChat(persona.id)}
+                      disabled={chatCreating[persona.id]}
+                    >
+                      <MessageCircleIcon className="size-3 mr-2" />
+                      {chatCreating[persona.id] ? "Starting..." : "Start Chat"}
                     </Button>
                     <Button asChild variant="outline" size="sm" className="flex-1">
                       <Link

@@ -1,5 +1,6 @@
 "use client";
 
+import { personaChatBodySchema } from "@/app/(persona)/types";
 import { UserChatSession } from "@/components/chat/UserChatSession";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Badge } from "@/components/ui/badge";
@@ -11,29 +12,45 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Persona, PersonaImport } from "@/prisma/client";
+import { Persona } from "@/prisma/client";
 import { useChat } from "@ai-sdk/react";
+import { Message } from "ai";
 import { BotIcon, CalendarIcon, FileTextIcon, InfoIcon, TagIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRef, useState } from "react";
-import { toast } from "sonner";
+import { z } from "zod";
 
-interface PersonaChatPageProps {
-  persona: Persona & { personaImport: PersonaImport | null };
-}
-
-export function PersonaChatPage({ persona }: PersonaChatPageProps) {
+export function PersonaChatClient({
+  userChatToken,
+  persona,
+  initialMessages = [],
+}: {
+  userChatToken: string;
+  persona: Persona;
+  initialMessages?: Message[];
+}) {
   const { data: session } = useSession();
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+
+  const initialRequestBody = {
+    userChatToken,
+  };
 
   // Chat hooks
   const useChatHelpers = useChat({
     api: "/api/persona/chat",
-    body: { id: persona.id },
-    onError: (error) => {
-      console.error("Chat error:", error);
-      toast.error("聊天出现错误，请重试");
+    initialMessages,
+    body: {
+      userChatToken: userChatToken,
+    },
+    experimental_prepareRequestBody({ messages, requestBody: _requestBody }) {
+      const requestBody: typeof initialRequestBody = { ...initialRequestBody, ..._requestBody };
+      const body: z.infer<typeof personaChatBodySchema> = {
+        message: messages[messages.length - 1],
+        ...requestBody,
+      };
+      return body;
     },
   });
 
@@ -135,26 +152,17 @@ export function PersonaChatPage({ persona }: PersonaChatPageProps) {
                       </div>
                     </div>
 
-                    {persona.personaImport && (
-                      <div>
-                        <div className="text-xs font-medium text-slate-500 mb-1">
-                          Import Created
-                        </div>
-                        <div className="text-sm text-slate-700">
-                          {formatDate(persona.personaImport.createdAt)}
-                        </div>
-                      </div>
+                    {persona.personaImportId && (
+                      <Button asChild variant="outline" size="sm" className="w-full">
+                        <Link
+                          href={`/persona-import/${persona.personaImportId}`}
+                          className="flex items-center gap-2"
+                        >
+                          <FileTextIcon className="w-4 h-4" />
+                          View Analysis
+                        </Link>
+                      </Button>
                     )}
-
-                    <Button asChild variant="outline" size="sm" className="w-full">
-                      <Link
-                        href={`/persona-import/${persona.personaImportId}`}
-                        className="flex items-center gap-2"
-                      >
-                        <FileTextIcon className="w-4 h-4" />
-                        View Analysis
-                      </Link>
-                    </Button>
                   </div>
                 </div>
               </div>
@@ -164,7 +172,7 @@ export function PersonaChatPage({ persona }: PersonaChatPageProps) {
       </div>
 
       {/* Centered Chat Area */}
-      <div className="flex-1">
+      <div className="flex-1 overflow-hidden">
         <div className="max-w-4xl mx-auto h-full">
           <UserChatSession
             nickname={{ assistant: persona.name, user: session?.user?.email ?? "You" }}

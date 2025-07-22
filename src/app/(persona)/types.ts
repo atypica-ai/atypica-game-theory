@@ -65,11 +65,20 @@ export const personaScoringSchema = z.object({
   politicalCognition: z.number().min(0).max(1).describe("1 if present, 0 if not"),
 });
 
-export const FollowUpChatBodySchema = z.object({
+export const followUpChatBodySchema = z.object({
   message: z.object({
     id: z.string().optional(),
     role: z.enum(["user", "assistant", "system", "data"]),
     content: z.string(),
   }),
-  userChatId: z.number(),
+  userChatToken: z.string(),
+});
+
+export const personaChatBodySchema = z.object({
+  message: z.object({
+    id: z.string().optional(),
+    role: z.enum(["user", "assistant", "system", "data"]),
+    content: z.string(),
+  }),
+  userChatToken: z.string(),
 });

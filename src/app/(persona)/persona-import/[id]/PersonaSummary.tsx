@@ -3,9 +3,30 @@
 import { Button } from "@/components/ui/button";
 import { Persona } from "@/prisma/client";
 import { BrainIcon, MessageCircleIcon } from "lucide-react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
+import { createOrGetUserPersonaChat } from "../../actions";
 
 export function PersonaSummary({ personas }: { personas: Persona[] }) {
+  const router = useRouter();
+  const [chatCreating, setChatCreating] = useState<Record<number, boolean>>({});
+
+  const handleStartChat = async (personaId: number) => {
+    setChatCreating((prev) => ({ ...prev, [personaId]: true }));
+    try {
+      const result = await createOrGetUserPersonaChat(personaId);
+      if (!result.success) {
+        throw new Error(result.message);
+      }
+      router.push(`/persona-chat/${result.data.token}`);
+    } catch (error) {
+      console.error("Failed to start chat:", error);
+      toast.error("Failed to start chat");
+    } finally {
+      setChatCreating((prev) => ({ ...prev, [personaId]: false }));
+    }
+  };
   return (
     <div className="space-y-4">
       <div className="space-y-2">
@@ -21,7 +42,7 @@ export function PersonaSummary({ personas }: { personas: Persona[] }) {
       </div>
 
       <div className="grid gap-3">
-        {personas.map((persona, index) => (
+        {personas.map((persona) => (
           <div
             key={persona.id}
             className="p-4 bg-slate-50 rounded-lg border border-slate-200 hover:bg-slate-100 transition-colors"
@@ -32,15 +53,15 @@ export function PersonaSummary({ personas }: { personas: Persona[] }) {
                   <h4 className="font-medium text-slate-900">{persona.name}</h4>
                   <div className="text-sm text-slate-600">{persona.source}</div>
                 </div>
-                <Button asChild size="sm" variant="default">
-                  <Link
-                    href={`/personas/${persona.id}`}
-                    target="_blank"
-                    className="flex items-center gap-2"
-                  >
-                    <MessageCircleIcon className="size-3" />
-                    开始对话
-                  </Link>
+                <Button
+                  size="sm"
+                  variant="default"
+                  onClick={() => handleStartChat(persona.id)}
+                  disabled={chatCreating[persona.id]}
+                  className="flex items-center gap-2"
+                >
+                  <MessageCircleIcon className="size-3" />
+                  {chatCreating[persona.id] ? "启动中..." : "开始对话"}
                 </Button>
               </div>
 

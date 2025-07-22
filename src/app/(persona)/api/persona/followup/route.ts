@@ -6,38 +6,35 @@ import {
 import { llm, providerOptions } from "@/ai/provider";
 import { reasoningThinkingTool } from "@/ai/tools/experts/reasoning";
 import { ToolName } from "@/ai/tools/types";
-import authOptions from "@/app/(auth)/authOptions";
 import { personaFollowUpSystemPrompt } from "@/app/(persona)/prompt";
-import { FollowUpChatBodySchema, PersonaImportAnalysis } from "@/app/(persona)/types";
+import { followUpChatBodySchema, PersonaImportAnalysis } from "@/app/(persona)/types";
 import { rootLogger } from "@/lib/logging";
 import { prisma } from "@/prisma/prisma";
 import { generateId, smoothStream, streamText } from "ai";
-import { getServerSession } from "next-auth";
 import { getLocale } from "next-intl/server";
 import { after, NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
-  // Check authentication
-  const session = await getServerSession(authOptions);
-  if (!session?.user) {
-    return NextResponse.json({ error: "Authentication required" }, { status: 401 });
-  }
-
   const payload = await req.json();
-  const parseResult = FollowUpChatBodySchema.safeParse(payload);
+  const parseResult = followUpChatBodySchema.safeParse(payload);
   if (!parseResult.success) {
     const error = { message: "Invalid request", details: parseResult.error.format() };
     return NextResponse.json({ error }, { status: 400 });
   }
-
-  const locale = await getLocale();
-  const { message: newMessage, userChatId } = parseResult.data;
+  const { message: newMessage, userChatToken } = parseResult.data;
 
   // Verify the UserChat exists and is of the correct type
   const userChat = await prisma.userChat.findUnique({
-    where: { id: userChatId, kind: "interviewSession" },
+    where: {
+      token: userChatToken,
+      kind: "interviewSession",
+      personaImport: {
+        isNot: null,
+      },
+    },
     include: {
       user: true,
+      personaImport: true,
     },
   });
 
@@ -45,39 +42,28 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Follow-up interview not found" }, { status: 404 });
   }
 
-  // Check if user owns this chat
-  if (userChat.userId !== session.user.id) {
-    return NextResponse.json({ error: "Access denied" }, { status: 403 });
-  }
-
-  // Find the associated PersonaImport to get the supplementary questions context
-  const personaImport = await prisma.personaImport.findFirst({
-    where: { extraUserChatId: userChatId },
+  const chatLogger = rootLogger.child({
+    userChatId: userChat.id,
+    userChatToken: userChat.token,
+    intent: "PersonaFollowUpInterview",
   });
 
-  if (!personaImport) {
-    return NextResponse.json({ error: "Associated persona import not found" }, { status: 404 });
-  }
-
-  // Double check that the persona import belongs to the same user
-  if (personaImport.userId !== session.user.id) {
-    return NextResponse.json({ error: "Access denied" }, { status: 403 });
+  if (!userChat.personaImport) {
+    chatLogger.error(`PersonaImport not found for follow-up interview chat ${userChat.id}`);
+    return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
   }
 
   // Save the user message
-  await persistentAIMessageToDB(userChatId, {
+  await persistentAIMessageToDB(userChat.id, {
     ...newMessage,
     id: newMessage.id ?? generateId(),
   });
 
-  const { coreMessages, streamingMessage } = await prepareMessagesForStreaming(userChatId);
-
+  const locale = await getLocale();
   const abortSignal = req.signal;
-  const chatLogger = rootLogger.child({
-    userChatId,
-    personaImportId: personaImport.id,
-    chatKind: "followUpInterview",
-  });
+
+  const { personaImport } = userChat;
+  const { coreMessages, streamingMessage } = await prepareMessagesForStreaming(userChat.id);
 
   // Generate system prompt for follow-up interview
   const systemPrompt = await personaFollowUpSystemPrompt({
@@ -89,7 +75,7 @@ export async function POST(req: NextRequest) {
 
   // Generate response from LLM
   const streamTextResult = streamText({
-    model: llm("claude-3-7-sonnet"),
+    model: llm("gpt-4.1-mini"),
     providerOptions,
     system: systemPrompt,
     messages: coreMessages,
@@ -112,7 +98,7 @@ export async function POST(req: NextRequest) {
     onStepFinish: async (step) => {
       appendStepToStreamingMessage(streamingMessage, step);
       if (streamingMessage.parts?.length && streamingMessage.content.trim()) {
-        await persistentAIMessageToDB(userChatId, streamingMessage);
+        await persistentAIMessageToDB(userChat.id, streamingMessage);
       }
       chatLogger.info({
         msg: "follow-up interview streamText onStepFinish",
@@ -127,14 +113,15 @@ export async function POST(req: NextRequest) {
     abortSignal,
   });
 
-  after(
-    new Promise((resolve, reject) => {
-      streamTextResult
-        .consumeStream()
-        .then(() => resolve(null))
-        .catch((error) => reject(error));
-    }),
-  );
+  // after(
+  //   new Promise((resolve, reject) => {
+  //     streamTextResult
+  //       .consumeStream()
+  //       .then(() => resolve(null))
+  //       .catch((error) => reject(error));
+  //   }),
+  // );
+  after(streamTextResult.consumeStream());
 
   return streamTextResult.toDataStreamResponse();
 }

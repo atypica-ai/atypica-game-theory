@@ -1,33 +1,31 @@
 "use client";
-import { FollowUpChatBodySchema } from "@/app/(persona)/types";
+import { followUpChatBodySchema } from "@/app/(persona)/types";
 import { FocusedInterviewChat } from "@/components/chat/FocusedInterviewChat";
-import { UserChat } from "@/prisma/client";
 import { useChat } from "@ai-sdk/react";
 import { Message } from "ai";
 import { useEffect, useRef } from "react";
 import { z } from "zod";
 
 export function FollowUpInterviewClient({
-  userChat,
+  userChatToken,
   initialMessages = [],
 }: {
-  userChat: UserChat;
+  userChatToken: string;
   initialMessages?: Message[];
 }) {
   const initialRequestBody = {
-    userChatId: userChat.id,
+    userChatToken,
   };
 
   const useChatHelpers = useChat({
     api: "/api/persona/followup",
-    id: userChat.token,
     initialMessages,
     body: {
-      userChatId: userChat.id,
+      userChatToken: userChatToken,
     },
     experimental_prepareRequestBody({ messages, requestBody: _requestBody }) {
       const requestBody: typeof initialRequestBody = { ...initialRequestBody, ..._requestBody };
-      const body: z.infer<typeof FollowUpChatBodySchema> = {
+      const body: z.infer<typeof followUpChatBodySchema> = {
         message: messages[messages.length - 1],
         ...requestBody,
       };

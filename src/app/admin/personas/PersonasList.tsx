@@ -27,6 +27,8 @@ import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
+import { createOrGetUserPersonaChat } from "../../(persona)/actions";
 import { fetchPersonas, rescorePersona } from "./actions";
 
 type PaginationInfo = {
@@ -55,6 +57,7 @@ export default function PersonasList({
   const [searchQuery, setSearchQuery] = useState<string>(initialParams.search || "");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [rescoringId, setRescoringId] = useState<number | null>(null);
+  const [chatCreating, setChatCreating] = useState<Record<number, boolean>>({});
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Initialize page and search query from URL on load
@@ -153,8 +156,24 @@ export default function PersonasList({
     }
   };
 
+  const handleStartChat = async (personaId: number) => {
+    setChatCreating((prev) => ({ ...prev, [personaId]: true }));
+    try {
+      const result = await createOrGetUserPersonaChat(personaId);
+      if (!result.success) {
+        throw new Error(result.message);
+      }
+      router.push(`/persona-chat/${result.data.token}`);
+    } catch (error) {
+      console.error("Failed to start chat:", error);
+      toast.error("Failed to start chat");
+    } finally {
+      setChatCreating((prev) => ({ ...prev, [personaId]: false }));
+    }
+  };
+
   return (
-    <div className={cn("flex-1 overflow-y-auto scrollbar-thin space-y-6 py-10 px-3")}>
+    <div className={cn("flex-1 overflow-y-auto scrollbar-thin space-y-6")}>
       <div className="container mx-auto">
         <h1 className="sm:text-lg font-medium px-18 text-center truncate">{t("title")}</h1>
       </div>
@@ -308,7 +327,7 @@ export default function PersonasList({
       </div>
 
       {pagination && pagination.totalPages > 1 ? (
-        <div className="flex justify-center mt-4">
+        <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4">
           <Pagination
             currentPage={currentPage}
             totalPages={pagination.totalPages}
@@ -317,6 +336,9 @@ export default function PersonasList({
               window.scrollTo(0, 0);
             }}
           />
+          <div className="text-sm text-muted-foreground">
+            Total: {pagination.totalCount.toLocaleString()}
+          </div>
         </div>
       ) : null}
 
@@ -332,8 +354,12 @@ export default function PersonasList({
             <pre className="text-sm whitespace-pre-wrap font-mono">{selectedPersona?.prompt}</pre>
           </div>
           <DialogFooter className="justify-between sm:justify-between">
-            <Button asChild size="sm">
-              <Link href={`/personas/${selectedPersona?.id}`}>chat</Link>
+            <Button
+              size="sm"
+              onClick={() => selectedPersona && handleStartChat(selectedPersona.id)}
+              disabled={selectedPersona ? chatCreating[selectedPersona.id] : false}
+            >
+              {selectedPersona && chatCreating[selectedPersona.id] ? "Starting..." : "chat"}
             </Button>
             <div className="flex flex-wrap gap-2">
               {(selectedPersona?.tags as string[])?.map((tag, index) => (

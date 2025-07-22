@@ -16,11 +16,12 @@ The persona chat feature enables users to:
 ```
 (persona)/
 ├── personas/
-│   ├── [id]/
-│   │   ├── page.tsx                  # Persona detail & chat page
-│   │   ├── PersonaChatPage.tsx       # Chat interface component
-│   │   └── layout.tsx                # Layout for persona chat pages
 │   └── page.tsx                      # User's personas list page
+├── persona-chat/
+│   ├── [userchattoken]/
+│   │   ├── page.tsx                  # Token-based persona chat page
+│   │   └── PersonaChatClient.tsx     # Chat interface component
+│   └── layout.tsx                    # Layout for persona chat pages
 ├── persona-import/                   # Existing persona import functionality
 ├── persona-followup/                 # Follow-up interview functionality
 │   └── [userChatToken]/
@@ -34,8 +35,8 @@ The persona chat feature enables users to:
 
 ```
 /api/persona/
-├── chat/route.ts                     # Secure chat API with permission checks
-└── followup/route.ts                 # Follow-up interview API
+├── chat/route.ts                     # Token-based chat API with message persistence
+└── followup/route.ts                 # Follow-up interview API using tokens
 ```
 
 ## Key Features
@@ -47,28 +48,29 @@ The persona chat feature enables users to:
 - Implemented via `checkPersonaAccess()` function in `actions.ts`
 - Follow-up interviews are also protected by user ownership
 
-### 2. Persona Chat Interface (`/personas/[id]`)
+### 2. Persona Chat Interface (`/persona-chat/[userchattoken]`)
 
+- Token-based chat sessions with message persistence
 - Real-time chat with AI personas
-- Collapsible sidebar showing persona details
-- Persona metadata display (tags, tier, source, etc.)
+- Persona details modal with metadata display
 - Full persona prompt visibility
-- Navigation back to personas list
+- Chat history preservation across sessions
 
 ### 3. Personas Management (`/personas`)
 
 - Grid view of user's personas
 - Persona cards with key information
-- Detail modal with full persona data
-- Quick access to chat with each persona
-- Empty state with call-to-action
+- One-click chat creation with automatic UserPersonaChat management
+- Import new interview action card
+- Links to original analysis for each persona
 
-### 4. API Security
+### 4. Token-Based Chat System
 
-- **Chat API**: `/api/persona/chat` - Secure chat API with permission checks
-- **Follow-up API**: `/api/persona/followup` - Protected follow-up interview API
-- Both endpoints validate user ownership and authentication
-- Proper error handling and authorization
+- **UserPersonaChatRelation Management**: Automatic creation of chat sessions via `createOrGetUserPersonaChat`
+- **Message Persistence**: All chat messages stored in database via UserChat
+- **Chat API**: `/api/persona/chat` - Token-based chat with message history
+- **Follow-up API**: `/api/persona/followup` - Token-based follow-up interviews
+- Secure token validation and user ownership verification
 
 ## Usage
 
@@ -76,8 +78,9 @@ The persona chat feature enables users to:
 
 1. Import interview data via `/persona-import`
 2. View generated personas at `/personas`
-3. Click on any persona to start chatting at `/personas/[id]`
+3. Click "Start Chat" to automatically create a chat session at `/persona-chat/[token]`
 4. Access follow-up interviews via generated share links
+5. Chat history is automatically preserved across sessions
 
 ### For Developers
 
@@ -94,7 +97,8 @@ The implementation follows these patterns:
 
 ```typescript
 // Access is granted if:
-user.hasPermission(MANAGE_PERSONAS) || persona.personaImport.userId === user.id;
+userChat.userId === user.id && userPersonaChatRelation.userId === user.id;
+// OR user.hasPermission(MANAGE_PERSONAS)
 ```
 
 ### Follow-up Interview Access
@@ -106,11 +110,12 @@ userChat.userId === user.id && personaImport.userId === user.id;
 
 ## Integration Points
 
-- Integrates with existing persona import workflow
-- Links added to `PersonaSummary` component for chat access
-- Updated admin personas list to use new chat URLs
-- Maintains compatibility with existing persona generation system
+- Integrates with existing persona import workflow via UserPersonaChatRelation
+- Automatic chat session creation through `createOrGetUserPersonaChat`
+- Updated all persona access points to use token-based routing
+- Message persistence through existing UserChat system
 - Follow-up interviews use secure token-based access
+- Admin interface supports chat creation for any persona
 
 ## Technical Notes
 
@@ -131,8 +136,9 @@ userChat.userId === user.id && personaImport.userId === user.id;
 
 ## Migration Notes
 
-- Original `/api/chat/persona` route has been replaced with `/api/persona/chat`
-- Follow-up interviews moved from `/api/chat/persona/followup` to `/api/persona/followup`
-- Persona chat pages moved from `/persona/[id]` to `/personas/[id]`
-- Follow-up interviews moved from `/persona/followup/[token]` to `/persona-followup/[token]`
-- Layout file moved to specific chat page to prevent conflicts
+- Persona chat moved from `/personas/[id]` to `/persona-chat/[userchattoken]`
+- Chat API now uses `userChatToken` instead of `personaId`
+- Follow-up API updated to use `userChatToken` instead of `userChatId`
+- All persona access points now create UserPersonaChatRelation and UserChat automatically
+- Chat messages are now persisted to database via UserChat system
+- Existing personas can be accessed through new token-based system

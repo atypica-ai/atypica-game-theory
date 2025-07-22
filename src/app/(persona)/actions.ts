@@ -17,7 +17,6 @@ import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
 import { generateId } from "ai";
 import { getServerSession } from "next-auth";
-import { getTranslations } from "next-intl/server";
 import authOptions from "../(auth)/authOptions";
 
 export async function createPersonaImport({
@@ -129,8 +128,6 @@ export async function createFollowUpInterviewChat(
   personaImportId: number,
 ): Promise<ServerActionResult<{ token: string }>> {
   return withAuth(async (user) => {
-    const t = await getTranslations("PersonaImport");
-
     // Check if persona import exists and belongs to user
     const personaImport = await prisma.personaImport.findUnique({
       where: { id: personaImportId, userId: user.id },
@@ -177,16 +174,19 @@ export async function createFollowUpInterviewChat(
       });
 
       // Update persona import with the chat reference
-      await tx.personaImport.update({
-        where: { id: personaImportId },
+      const x = await tx.personaImport.updateMany({
+        where: {
+          id: personaImportId,
+          extraUserChatId: { equals: null },
+        },
         data: {
           extraUserChatId: userChat.id,
-          extra: {
-            ...(personaImport.extra as PersonaImportExtra),
-            followUpChatToken: userChat.token,
-          },
         },
       });
+
+      if (x.count !== 1) {
+        throw new Error("Failed to update persona import");
+      }
 
       return userChat;
     });
@@ -253,7 +253,7 @@ export async function checkPersonaAccess(
       success: true,
       data: persona,
     };
-  } catch (error) {
+  } catch {
     // User doesn't have admin permission, check if they own the persona
     if (persona.personaImport && persona.personaImport.userId === session.user.id) {
       return {
@@ -261,7 +261,6 @@ export async function checkPersonaAccess(
         data: persona,
       };
     }
-
     return {
       success: false,
       code: "forbidden",
@@ -306,6 +305,116 @@ export async function fetchUserPersonas(): Promise<
         ...persona,
         tags: persona.tags as string[],
       })),
+    };
+  });
+}
+
+export async function createOrGetUserPersonaChat(
+  personaId: number,
+): Promise<ServerActionResult<{ token: string }>> {
+  return withAuth(async (user) => {
+    // Check if persona exists and user has access
+    const accessResult = await checkPersonaAccess(personaId);
+    if (!accessResult.success) {
+      return {
+        success: false,
+        code: accessResult.code,
+        message: accessResult.message,
+      };
+    }
+
+    const persona = accessResult.data;
+
+    // Check if UserPersonaChat already exists
+    const existingUserPersonaChat = await prisma.userPersonaChatRelation.findUnique({
+      where: {
+        userId_personaId: {
+          userId: user.id,
+          personaId: personaId,
+        },
+      },
+      include: {
+        userChat: true,
+      },
+    });
+
+    if (existingUserPersonaChat) {
+      return {
+        success: true,
+        data: { token: existingUserPersonaChat.userChat.token },
+      };
+    }
+
+    // Create new UserChat and UserPersonaChat
+    const userChat = await prisma.$transaction(async (tx) => {
+      const userChat = await createUserChat({
+        userId: user.id,
+        title: `Chat with ${persona.name}`,
+        kind: "misc",
+        tx,
+      });
+
+      await tx.userPersonaChatRelation.create({
+        data: {
+          userId: user.id,
+          personaId: personaId,
+          userChatId: userChat.id,
+        },
+      });
+
+      return userChat;
+    });
+
+    return {
+      success: true,
+      data: { token: userChat.token },
+    };
+  });
+}
+
+export async function fetchUserPersonaChatByToken(token: string): Promise<
+  ServerActionResult<{
+    userChat: UserChat;
+    persona: Persona;
+  }>
+> {
+  return withAuth(async (user) => {
+    const userChat = await prisma.userChat.findUnique({
+      where: {
+        token: token,
+        userId: user.id, //如果不是当前用户，返回 404
+      },
+      include: {
+        userPersonaChatRelation: {
+          include: {
+            persona: true,
+          },
+        },
+      },
+    });
+
+    if (!userChat || !userChat.userPersonaChatRelation) {
+      return {
+        success: false,
+        code: "not_found",
+        message: "Persona chat not found",
+      };
+    }
+
+    // 这个其实不会触发，因为 where 过滤了 userId，但是这个判断还是留着
+    if (userChat.userId !== user.id) {
+      return {
+        success: false,
+        code: "forbidden",
+        message: "Access denied",
+      };
+    }
+
+    const persona = userChat.userPersonaChatRelation.persona;
+
+    return {
+      success: true,
+      data: { userChat, persona },
     };
   });
 }

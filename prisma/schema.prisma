@@ -35,16 +35,17 @@ model User {
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
-  tokens            UserTokens?
-  tokensLogs        UserTokensLog[]
-  adminUser         AdminUser?
-  analysts          Analyst[]
-  userChats         UserChat[]
-  paymentRecords    PaymentRecord[]
-  subscriptions     UserSubscription[]
-  interviewProjects InterviewProject[]
-  attachmentFiles   AttachmentFile[]
-  personaImports    PersonaImport[]
+  tokens                   UserTokens?
+  tokensLogs               UserTokensLog[]
+  adminUser                AdminUser?
+  analysts                 Analyst[]
+  userChats                UserChat[]
+  paymentRecords           PaymentRecord[]
+  subscriptions            UserSubscription[]
+  interviewProjects        InterviewProject[]
+  attachmentFiles          AttachmentFile[]
+  personaImports           PersonaImport[]
+  userPersonaChatRelations UserPersonaChatRelation[]
 }
 
 enum AdminRole {
@@ -91,7 +92,8 @@ model Persona {
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
-  interviews AnalystInterview[]
+  interviews               AnalystInterview[]
+  userPersonaChatRelations UserPersonaChatRelation[]
 
   @@index([embedding])
 }
@@ -184,14 +186,15 @@ model UserChat {
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
-  personas         Persona[]
-  analyst          Analyst?
-  analystInterview AnalystInterview?
-  featuredStudy    FeaturedStudy?
-  statistics       ChatStatistics[]
-  messages         ChatMessage[]
-  interviewSession InterviewSession?
-  PersonaImport    PersonaImport?
+  personas                Persona[]
+  analyst                 Analyst?
+  analystInterview        AnalystInterview?
+  featuredStudy           FeaturedStudy?
+  statistics              ChatStatistics[]
+  messages                ChatMessage[]
+  interviewSession        InterviewSession?
+  personaImport           PersonaImport?
+  userPersonaChatRelation UserPersonaChatRelation?
 }
 
 enum MessageRole {
@@ -470,4 +473,19 @@ model PersonaImport {
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
   personas Persona[]
+}
+
+model UserPersonaChatRelation {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  personaId  Int
+  persona    Persona  @relation(fields: [personaId], references: [id], onDelete: Cascade)
+  userChatId Int      @unique
+  userChat   UserChat @relation(fields: [userChatId], references: [id])
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  @@unique([userId, personaId])
 }

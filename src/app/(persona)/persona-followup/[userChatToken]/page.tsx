@@ -10,23 +10,8 @@ import { FollowUpInterviewClient } from "./FollowUpInterviewClient";
 
 export const dynamic = "force-dynamic";
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ userChatToken: string }>;
-}): Promise<Metadata> {
+export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
-  const { userChatToken } = await params;
-  if (!userChatToken) {
-    return {};
-  }
-
-  const result = await fetchFollowUpInterviewChat(userChatToken);
-  if (!result.success) {
-    return {};
-  }
-  const userChat = result.data;
-
   return generatePageMetadata({
     title: "Follow-up Interview",
     description: "Share your additional insights to improve your persona profile",
@@ -61,5 +46,5 @@ export default async function FollowUpInterviewPage({
     ).map(convertDBMessageToAIMessage);
   }
 
-  return <FollowUpInterviewClient userChat={userChat} initialMessages={messages} />;
+  return <FollowUpInterviewClient userChatToken={userChatToken} initialMessages={messages} />;
 }
