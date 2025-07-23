@@ -10,6 +10,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { withAuth } from "../request/withAuth";
 import { resizeImageToWebP } from "./image";
+import { attachmentFileObjectUrlToHttpUrl } from "./lib";
 import { s3SignedUrl, s3UploadCredentials } from "./s3";
 import { S3UploadCredentials } from "./types";
 
@@ -110,7 +111,9 @@ export async function fileUrlToDataUrl({
   return `data:${mimeType};base64,${base64}`;
 }
 
-export async function getAttachmentFiles(): Promise<ServerActionResult<AttachmentFile[]>> {
+export async function getAttachmentFiles(): Promise<
+  ServerActionResult<{ file: AttachmentFile; thumbnailHttpUrl?: string }[]>
+> {
   return withAuth(async (user) => {
     try {
       const files = await prisma.attachmentFile.findMany({
@@ -120,10 +123,20 @@ export async function getAttachmentFiles(): Promise<ServerActionResult<Attachmen
         orderBy: {
           createdAt: "desc",
         },
+        take: 20,
       });
       return {
         success: true,
-        data: files,
+        data: await Promise.all(
+          files.map(async (file) => {
+            return {
+              file,
+              thumbnailHttpUrl: file.mimeType.startsWith("image/")
+                ? await attachmentFileObjectUrlToHttpUrl(file)
+                : undefined,
+            };
+          }),
+        ),
       };
     } catch (error) {
       rootLogger.error(`Error fetching attachment files: ${(error as Error).message}`);
@@ -149,15 +162,13 @@ export async function getSignedUrlForAttachment({
           userId: user.id,
         },
       });
-
       if (!file) {
         return {
           success: false,
           message: "File not found or access denied.",
         };
       }
-
-      const url = await s3SignedUrl(objectUrl);
+      const url = await attachmentFileObjectUrlToHttpUrl(file);
       return {
         success: true,
         data: url,

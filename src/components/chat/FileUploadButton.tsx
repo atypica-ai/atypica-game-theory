@@ -18,6 +18,7 @@ import {
 import { AttachmentFile } from "@/prisma/client";
 import { FileText, ImageIcon, Library, Loader2, PaperclipIcon, Search, Upload } from "lucide-react";
 import { useTranslations } from "next-intl";
+import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -167,7 +168,9 @@ function SelectFromLibraryDialog({
   existingFiles: FileUploadInfo[];
   showLimitsCheck: boolean;
 }) {
-  const [attachmentFiles, setAttachmentFiles] = useState<AttachmentFile[]>([]);
+  const [attachmentFiles, setAttachmentFiles] = useState<
+    { file: AttachmentFile; thumbnailHttpUrl?: string }[]
+  >([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSelecting, setIsSelecting] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -191,7 +194,7 @@ function SelectFromLibraryDialog({
   }, [open, fetchFiles]);
 
   const filteredFiles = useMemo(() => {
-    return attachmentFiles.filter((file) =>
+    return attachmentFiles.filter(({ file }) =>
       file.name.toLowerCase().includes(searchTerm.toLowerCase()),
     );
   }, [attachmentFiles, searchTerm]);
@@ -277,7 +280,7 @@ function SelectFromLibraryDialog({
           ) : (
             <div className="max-h-60 overflow-y-auto">
               <ul className="flex flex-col gap-2 pr-2">
-                {filteredFiles.map((file) => (
+                {filteredFiles.map(({ file, thumbnailHttpUrl }) => (
                   <li key={file.id}>
                     <Button
                       variant="outline"
@@ -287,9 +290,21 @@ function SelectFromLibraryDialog({
                     >
                       <div className="flex items-center gap-3 w-full">
                         {file.mimeType.startsWith("image/") ? (
-                          <ImageIcon className="size-5 flex-shrink-0" />
+                          thumbnailHttpUrl ? (
+                            <div className="size-8 flex-shrink-0 relative">
+                              <Image
+                                src={thumbnailHttpUrl}
+                                alt="User Avatar"
+                                className="object-cover"
+                                sizes="100%"
+                                fill
+                              />
+                            </div>
+                          ) : (
+                            <ImageIcon className="size-8 flex-shrink-0" />
+                          )
                         ) : (
-                          <FileText className="size-5 flex-shrink-0" />
+                          <FileText className="size-8 flex-shrink-0" />
                         )}
                         <div className="flex-grow text-left overflow-hidden">
                           <p className="text-sm font-medium truncate" title={file.name}>
