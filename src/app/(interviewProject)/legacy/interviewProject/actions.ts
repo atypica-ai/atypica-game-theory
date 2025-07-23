@@ -4,9 +4,9 @@ import { ServerActionResult } from "@/lib/serverAction";
 import { createUserChat } from "@/lib/userChat/lib";
 import { generateToken } from "@/lib/utils";
 import {
-  InterviewProject,
-  InterviewSession,
+  InterviewProjectLegacy,
   InterviewSessionKind,
+  InterviewSessionLegacy,
   InterviewSessionStatus,
   UserChatKind,
 } from "@/prisma/client";
@@ -14,20 +14,20 @@ import { prisma } from "@/prisma/prisma";
 import { revalidatePath } from "next/cache";
 
 // Types for our frontend to use
-export type InterviewProjectWithSessions = InterviewProject & {
-  sessions: InterviewSession[];
+export type InterviewProjectWithSessions = InterviewProjectLegacy & {
+  sessions: InterviewSessionLegacy[];
 };
 
 // Create a new interview project
 export async function createInterviewProject(data: {
   title: string;
   category: string;
-}): Promise<ServerActionResult<InterviewProject>> {
+}): Promise<ServerActionResult<InterviewProjectLegacy>> {
   return withAuth(async (user) => {
     // Start a transaction to create project and chat together
     const result = await prisma.$transaction(async (tx) => {
       // Create the project with minimal fields
-      const project = await tx.interviewProject.create({
+      const project = await tx.interviewProjectLegacy.create({
         data: {
           userId: user.id,
           title: data.title,
@@ -47,7 +47,7 @@ export async function createInterviewProject(data: {
       });
 
       // Create the clarify session
-      await tx.interviewSession.create({
+      await tx.interviewSessionLegacy.create({
         data: {
           projectId: project.id,
           title: `Clarify: ${project.title}`,
@@ -75,7 +75,7 @@ export async function fetchInterviewProjects(): Promise<
   ServerActionResult<InterviewProjectWithSessions[]>
 > {
   return withAuth(async (user) => {
-    const projects = await prisma.interviewProject.findMany({
+    const projects = await prisma.interviewProjectLegacy.findMany({
       where: { userId: user.id },
       orderBy: { updatedAt: "desc" },
       include: {
@@ -96,10 +96,10 @@ export async function fetchInterviewProjects(): Promise<
 export async function fetchInterviewProjectByToken(
   token: string,
 ): Promise<
-  ServerActionResult<InterviewProjectWithSessions & { clarifySession?: InterviewSession }>
+  ServerActionResult<InterviewProjectWithSessions & { clarifySession?: InterviewSessionLegacy }>
 > {
   return withAuth(async (user) => {
-    const project = await prisma.interviewProject.findUnique({
+    const project = await prisma.interviewProjectLegacy.findUnique({
       where: { token },
       include: {
         sessions: {
@@ -148,9 +148,9 @@ export async function createCollectSession(
     notes?: string;
     expiresAt?: Date;
   },
-): Promise<ServerActionResult<InterviewSession>> {
+): Promise<ServerActionResult<InterviewSessionLegacy>> {
   return withAuth(async (user) => {
-    const project = await prisma.interviewProject.findUnique({
+    const project = await prisma.interviewProjectLegacy.findUnique({
       where: { token: projectToken },
     });
 
@@ -173,7 +173,7 @@ export async function createCollectSession(
     const sessionToken = generateToken();
 
     // Create the interview session
-    const session = await prisma.interviewSession.create({
+    const session = await prisma.interviewSessionLegacy.create({
       data: {
         projectId: project.id,
         title: data.title,
@@ -195,13 +195,13 @@ export async function createCollectSession(
 }
 
 export async function fetchClarifyInterviewSession<
-  T extends Omit<InterviewSession, "kind"> & {
+  T extends Omit<InterviewSessionLegacy, "kind"> & {
     kind: "clarify";
-    project: InterviewProject;
+    project: InterviewProjectLegacy;
   },
 >(sessionToken: string): Promise<ServerActionResult<T>> {
   return withAuth(async (user) => {
-    const session = (await prisma.interviewSession.findUnique({
+    const session = (await prisma.interviewSessionLegacy.findUnique({
       where: {
         token: sessionToken,
         kind: "clarify",
@@ -235,15 +235,15 @@ export async function fetchClarifyInterviewSession<
 }
 // Fetch a specific interview session
 export async function fetchCollectInterviewSession<
-  T extends Omit<InterviewSession, "kind"> & {
+  T extends Omit<InterviewSessionLegacy, "kind"> & {
     kind: "collect";
     project: Pick<
-      InterviewProject,
+      InterviewProjectLegacy,
       "id" | "title" | "category" | "brief" | "objectives" | "collectSystem"
     >;
   },
 >(sessionToken: string): Promise<ServerActionResult<T>> {
-  const interviewSession = (await prisma.interviewSession.findUnique({
+  const interviewSession = (await prisma.interviewSessionLegacy.findUnique({
     where: {
       token: sessionToken,
       kind: "collect",
@@ -283,7 +283,7 @@ export async function saveDigest(
   digest: string,
 ): Promise<ServerActionResult<null>> {
   return withAuth(async (user) => {
-    const project = await prisma.interviewProject.findUnique({
+    const project = await prisma.interviewProjectLegacy.findUnique({
       where: { token: projectToken },
     });
 
@@ -303,7 +303,7 @@ export async function saveDigest(
       };
     }
 
-    await prisma.interviewProject.update({
+    await prisma.interviewProjectLegacy.update({
       where: { token: projectToken },
       data: {
         digest,
@@ -326,7 +326,7 @@ export async function updateCollectSystem(
   collectSystem: string | null,
 ): Promise<ServerActionResult<null>> {
   return withAuth(async (user) => {
-    const project = await prisma.interviewProject.findUnique({
+    const project = await prisma.interviewProjectLegacy.findUnique({
       where: { token: projectToken },
     });
 
@@ -346,7 +346,7 @@ export async function updateCollectSystem(
       };
     }
 
-    await prisma.interviewProject.update({
+    await prisma.interviewProjectLegacy.update({
       where: { token: projectToken },
       data: {
         collectSystem: collectSystem || null,

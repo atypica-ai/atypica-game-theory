@@ -42,10 +42,12 @@ model User {
   userChats                UserChat[]
   paymentRecords           PaymentRecord[]
   subscriptions            UserSubscription[]
-  interviewProjects        InterviewProject[]
   attachmentFiles          AttachmentFile[]
   personaImports           PersonaImport[]
   userPersonaChatRelations UserPersonaChatRelation[]
+
+  // deprecated
+  interviewProjectsLegacy InterviewProjectLegacy[]
 }
 
 enum AdminRole {
@@ -192,9 +194,11 @@ model UserChat {
   featuredStudy           FeaturedStudy?
   statistics              ChatStatistics[]
   messages                ChatMessage[]
-  interviewSession        InterviewSession?
   personaImport           PersonaImport?
   userPersonaChatRelation UserPersonaChatRelation?
+
+  // deprecated
+  interviewSessionLegacy InterviewSessionLegacy?
 }
 
 enum MessageRole {
@@ -381,10 +385,12 @@ model SystemConfig {
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 }
 
-model InterviewProject {
+// deprecated
+model InterviewProjectLegacy {
   id            Int      @id @default(autoincrement())
   token         String   @unique
   userId        Int
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   title         String   @db.VarChar(255)
   category      String   @db.VarChar(64)
   brief         String?  @db.Text
@@ -395,26 +401,30 @@ model InterviewProject {
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
-  user     User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  sessions InterviewSession[]
+  sessions InterviewSessionLegacy[]
 }
 
+// deprecated
 enum InterviewSessionKind {
   clarify // Internal - helps clarify your needs/requirements
   collect // External - collects data from outside sources
 }
 
+// deprecated
 enum InterviewSessionStatus {
   pending
   active
   completed
 }
 
-model InterviewSession {
+// deprecated
+model InterviewSessionLegacy {
   id          Int                    @id @default(autoincrement())
   token       String                 @unique
   projectId   Int
+  project     InterviewProjectLegacy @relation(fields: [projectId], references: [id], onDelete: Cascade)
   userChatId  Int?                   @unique
+  userChat    UserChat?              @relation(fields: [userChatId], references: [id])
   title       String                 @db.VarChar(255)
   notes       String?                @db.VarChar(255) // 备注信息
   kind        InterviewSessionKind
@@ -427,9 +437,6 @@ model InterviewSession {
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
-
-  project  InterviewProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  userChat UserChat?        @relation(fields: [userChatId], references: [id])
 }
 
 model ImageGeneration {

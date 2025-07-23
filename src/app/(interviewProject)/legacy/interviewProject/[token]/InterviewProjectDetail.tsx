@@ -35,7 +35,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn, formatDate } from "@/lib/utils";
-import { InterviewSession, InterviewSessionStatus } from "@/prisma/client";
+import { InterviewSessionLegacy, InterviewSessionStatus } from "@/prisma/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   BookOpenCheckIcon,
@@ -56,7 +56,7 @@ import { z } from "zod";
 import { createCollectSession, updateCollectSystem } from "../actions";
 
 type ExtendedInterviewProject = InterviewProjectWithSessions & {
-  clarifySession?: (InterviewSession & { userChat?: { id: number } }) | null;
+  clarifySession?: (InterviewSessionLegacy & { userChat?: { id: number } }) | null;
   brief?: string | null;
 };
 

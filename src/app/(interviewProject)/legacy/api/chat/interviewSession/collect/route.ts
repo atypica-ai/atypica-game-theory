@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
     const error = { message: "Interview session has expired." };
     return Response.json({ error }, { status: 403 });
   }
-  const { userId } = await prisma.interviewProject.findUniqueOrThrow({
+  const { userId } = await prisma.interviewProjectLegacy.findUniqueOrThrow({
     where: { id: interviewSession.projectId },
   });
 
@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
         token: generateToken(),
         tx,
       });
-      await tx.interviewSession.update({
+      await tx.interviewSessionLegacy.update({
         where: { id: interviewSession.id },
         data: {
           userChatId: userChat.id,

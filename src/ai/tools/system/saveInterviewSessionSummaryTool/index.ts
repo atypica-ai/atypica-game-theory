@@ -27,7 +27,7 @@ export const saveInterviewSessionSummaryTool = ({ sessionId }: { sessionId: numb
     execute: async ({ summary, keyInsights, analysis }) => {
       try {
         // Update the interview session with the summary and insights
-        await prisma.interviewSession.update({
+        await prisma.interviewSessionLegacy.update({
           where: { id: sessionId },
           data: {
             summary,

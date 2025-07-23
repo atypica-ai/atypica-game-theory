@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
   const { projectToken } = parseResult.data;
   const userId = session.user.id;
 
-  const project = await prisma.interviewProject.findUnique({
+  const project = await prisma.interviewProjectLegacy.findUnique({
     where: {
       token: projectToken,
       userId: userId, // 确保获取用户自己的 project

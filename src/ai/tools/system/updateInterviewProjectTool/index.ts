@@ -36,7 +36,7 @@ export const updateInterviewProjectTool = ({ projectId }: { projectId: number })
     execute: async ({ brief, objectives }): Promise<UpdateInterviewProjectToolResult> => {
       try {
         // Update the project with the new brief and objectives
-        const interviewProject = await prisma.interviewProject.update({
+        const interviewProject = await prisma.interviewProjectLegacy.update({
           where: {
             id: projectId,
           },
