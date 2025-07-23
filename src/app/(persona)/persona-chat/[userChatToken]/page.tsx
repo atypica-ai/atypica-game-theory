@@ -13,22 +13,18 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ userchattoken: string }>;
+  params: Promise<{ userChatToken: string }>;
 }): Promise<Metadata> {
   const locale = await getLocale();
-  const { userchattoken } = await params;
-
-  if (!userchattoken) {
+  const { userChatToken } = await params;
+  if (!userChatToken) {
     return {};
   }
-
-  const result = await fetchUserPersonaChatByToken(userchattoken);
+  const result = await fetchUserPersonaChatByToken(userChatToken);
   if (!result.success) {
     return {};
   }
-
   const { persona } = result.data;
-
   return generatePageMetadata({
     title: `Chat with ${persona.name}`,
     description: `Have a conversation with ${persona.name} - ${persona.source}`,
