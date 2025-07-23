@@ -45,6 +45,9 @@ model User {
   attachmentFiles          AttachmentFile[]
   personaImports           PersonaImport[]
   userPersonaChatRelations UserPersonaChatRelation[]
+  interviewProjects        InterviewProject[]
+
+  interviewSessionsAsInterviewee InterviewSession[]
 
   // deprecated
   interviewProjectsLegacy InterviewProjectLegacy[]
@@ -96,6 +99,8 @@ model Persona {
 
   interviews               AnalystInterview[]
   userPersonaChatRelations UserPersonaChatRelation[]
+
+  interviewSessionsAsInterviewee InterviewSession[]
 
   @@index([embedding])
 }
@@ -196,6 +201,7 @@ model UserChat {
   messages                ChatMessage[]
   personaImport           PersonaImport?
   userPersonaChatRelation UserPersonaChatRelation?
+  interviewSession        InterviewSession?
 
   // deprecated
   interviewSessionLegacy InterviewSessionLegacy?
@@ -454,6 +460,7 @@ model ImageGeneration {
 model AttachmentFile {
   id        Int    @id @default(autoincrement())
   userId    Int
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   name      String @db.VarChar(255)
   mimeType  String @db.VarChar(255)
   size      Int
@@ -462,14 +469,12 @@ model AttachmentFile {
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model PersonaImport {
   id              Int       @id @default(autoincrement())
   userId          Int
-  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user            User      @relation(fields: [userId], references: [id])
   attachments     Json
   analysis        Json?
   extra           Json?
@@ -495,4 +500,32 @@ model UserPersonaChatRelation {
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
   @@unique([userId, personaId])
+}
+
+model InterviewProject {
+  id     Int    @id @default(autoincrement())
+  token  String @unique
+  userId Int
+  user   User   @relation(fields: [userId], references: [id])
+  brief  String @db.Text
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  sessions InterviewSession[]
+}
+
+model InterviewSession {
+  id                   Int              @id @default(autoincrement())
+  projectId            Int
+  project              InterviewProject @relation(fields: [projectId], references: [id])
+  userChatId           Int?             @unique
+  userChat             UserChat?        @relation(fields: [userChatId], references: [id])
+  intervieweeUserId    Int? // 受访的真人用户
+  intervieweeUser      User?            @relation(fields: [intervieweeUserId], references: [id], onDelete: SetNull)
+  intervieweePersonaId Int? // 受访的 AI 角色
+  intervieweePersona   Persona?         @relation(fields: [intervieweePersonaId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
 }
