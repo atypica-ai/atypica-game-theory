@@ -1,6 +1,6 @@
 "use client";
-import { InterviewProjectWithSessions } from "@/app/(interviewProject)/interviewProject/actions";
-import { DigestDialog } from "@/app/(interviewProject)/interviewProject/DigestDialog";
+import { InterviewProjectWithSessions } from "@/app/(interviewProject)/legacy/interviewProject/actions";
+import { DigestDialog } from "@/app/(interviewProject)/legacy/interviewProject/DigestDialog";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -68,7 +68,7 @@ export function InterviewProjectDetail({
   defaultCollectSystem: string;
 }) {
   const router = useRouter();
-  const t = useTranslations("InterviewProject.projectDetail");
+  const t = useTranslations("InterviewProjectLegacy.projectDetail");
   const locale = useLocale();
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   const [isDigestDialogOpen, setIsDigestDialogOpen] = useState(false);
@@ -77,7 +77,7 @@ export function InterviewProjectDetail({
   // If there's no clarify session yet, we should redirect to create one (shouldn't happen with new design)
   const handleStartClarifySession = () => {
     if (project.clarifySession) {
-      router.push(`/interviewProject/clarify/${project.clarifySession.token}`);
+      router.push(`/legacy/interviewProject/clarify/${project.clarifySession.token}`);
     } else {
       toast.error(t("noClarifySessionError"));
     }
@@ -245,7 +245,7 @@ function EditCollectSystemDialog({
   onOpenChange: (open: boolean) => void;
   initialCollectSystem?: string | null;
 }) {
-  const t = useTranslations("InterviewProject.editCollectSystem");
+  const t = useTranslations("InterviewProjectLegacy.editCollectSystem");
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<CollectSystemFormData>({
@@ -334,7 +334,7 @@ function EditCollectSystemDialog({
 }
 
 function SessionStatusBadge({ status }: { status: InterviewSessionStatus }) {
-  const t = useTranslations("InterviewProject.projectDetail");
+  const t = useTranslations("InterviewProjectLegacy.projectDetail");
   switch (status) {
     case "active":
       return (
@@ -367,14 +367,14 @@ function SessionStatusBadge({ status }: { status: InterviewSessionStatus }) {
 }
 
 function CollectSessionCard({ session }: { session: InterviewProjectWithSessions["sessions"][0] }) {
-  const t = useTranslations("InterviewProject.projectDetail");
+  const t = useTranslations("InterviewProjectLegacy.projectDetail");
   const locale = useLocale();
   const [copySuccess, setCopySuccess] = useState(false);
   const [showInsights, setShowInsights] = useState(false);
   const [collectLink, setCollectLink] = useState<string | null>(null);
 
   useEffect(() => {
-    setCollectLink(`${window.location.origin}/interviewProject/collect/${session.token}`);
+    setCollectLink(`${window.location.origin}/legacy/interviewProject/collect/${session.token}`);
   }, [session.token]);
 
   const handleCopyLink = useCallback(() => {
@@ -455,7 +455,7 @@ function CollectSessionCard({ session }: { session: InterviewProjectWithSessions
           variant="outline"
           size="sm"
           className="flex-1"
-          onClick={() => window.open(`/interviewProject/collect/${session.token}`, "_blank")}
+          onClick={() => window.open(`/legacy/interviewProject/collect/${session.token}`, "_blank")}
         >
           {t("viewSession")}
         </Button>
@@ -474,7 +474,7 @@ function CreateCollectSessionDialog({
   onOpenChange: (open: boolean) => void;
 }) {
   const [isCreating, setIsCreating] = useState(false);
-  const t = useTranslations("InterviewProject.createCollectSession");
+  const t = useTranslations("InterviewProjectLegacy.createCollectSession");
 
   const collectSessionSchema = z.object({
     title: z.string().min(3, t("validation.titleMin")),

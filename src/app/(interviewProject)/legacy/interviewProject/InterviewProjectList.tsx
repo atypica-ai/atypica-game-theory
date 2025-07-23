@@ -17,14 +17,14 @@ import { useRouter } from "next/navigation";
 import { InterviewProjectWithSessions } from "./actions";
 
 export function InterviewProjectList({ projects }: { projects: InterviewProjectWithSessions[] }) {
-  const t = useTranslations("InterviewProject");
+  const t = useTranslations("InterviewProjectLegacy");
 
   return (
     <main className="flex-1 overflow-y-auto scrollbar-thin">
       <div className="flex flex-col space-y-6 container mx-auto py-8 px-6">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold">{t("title")}</h1>
-          {/* <Button onClick={() => router.push("/interviewProject/create")}>
+          {/* <Button onClick={() => router.push("/legacy/interviewProject/create")}>
             <FolderPlus className="mr-2 h-4 w-4" />
             {t("newProject")}
           </Button> */}
@@ -45,7 +45,7 @@ export function InterviewProjectList({ projects }: { projects: InterviewProjectW
 
 function EmptyProjectState() {
   const router = useRouter();
-  const t = useTranslations("InterviewProject");
+  const t = useTranslations("InterviewProjectLegacy");
 
   return (
     <div className="flex flex-col items-center justify-center text-center p-12 border border-dashed rounded-lg space-y-6">
@@ -56,7 +56,7 @@ function EmptyProjectState() {
         <h3 className="text-xl font-semibold">{t("emptyState.title")}</h3>
         <p className="text-muted-foreground max-w-md">{t("emptyState.description")}</p>
       </div>
-      <Button onClick={() => router.push("/interviewProject/create")}>
+      <Button onClick={() => router.push("/legacy/interviewProject/create")}>
         <FolderPlus className="mr-2 h-4 w-4" />
         {t("createFirstProject")}
       </Button>
@@ -65,7 +65,7 @@ function EmptyProjectState() {
 }
 
 function ProjectCard({ project }: { project: InterviewProjectWithSessions }) {
-  const t = useTranslations("InterviewProject.projectCard");
+  const t = useTranslations("InterviewProjectLegacy.projectCard");
   const locale = useLocale();
   const activeSessionsCount = project.sessions.filter(
     (s) => s.kind === "collect" && s.status === InterviewSessionStatus.active,
@@ -119,7 +119,7 @@ function ProjectCard({ project }: { project: InterviewProjectWithSessions }) {
         </div>
         <div className="flex space-x-2 w-full">
           <Button size="sm" className="flex-1" asChild>
-            <Link href={`/interviewProject/${project.token}`}>{t("viewProject")}</Link>
+            <Link href={`/legacy/interviewProject/${project.token}`}>{t("viewProject")}</Link>
           </Button>
         </div>
       </CardFooter>

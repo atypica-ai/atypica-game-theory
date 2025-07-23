@@ -49,7 +49,7 @@ const projectCategories = [
 export default function CreateInterviewProjectPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const t = useTranslations("InterviewProject.create");
+  const t = useTranslations("InterviewProjectLegacy.create");
 
   const projectSchema = z.object({
     title: z.string().min(3, t("validation.titleMin")),
@@ -70,7 +70,7 @@ export default function CreateInterviewProjectPage() {
       const result = await createInterviewProject(data);
       if (result.success) {
         toast.success(t("toast.createSuccess"));
-        router.push(`/interviewProject/${result.data.token}`);
+        router.push(`/legacy/interviewProject/${result.data.token}`);
       } else {
         toast.error(`${t("toast.createError")}: ${result.message}`);
       }

@@ -1,7 +1,7 @@
 "use client";
 import { ToolName } from "@/ai/tools/types";
-import { CollectSessionBodySchema } from "@/app/(interviewProject)/api/chat/interviewSession/lib";
-import { fetchCollectInterviewSession } from "@/app/(interviewProject)/interviewProject/actions";
+import { CollectSessionBodySchema } from "@/app/(interviewProject)/legacy/api/chat/interviewSession/lib";
+import { fetchCollectInterviewSession } from "@/app/(interviewProject)/legacy/interviewProject/actions";
 import { FocusedInterviewChat } from "@/components/chat/FocusedInterviewChat";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,7 +29,7 @@ const ProjectDetailsCard = ({
 }: {
   interviewSession: ExtractServerActionData<typeof fetchCollectInterviewSession>;
 }) => {
-  const t = useTranslations("InterviewProject.collectSession");
+  const t = useTranslations("InterviewProjectLegacy.collectSession");
   return (
     <Card className="overflow-hidden border-primary/20 py-0 h-full flex flex-col">
       <CardHeader className="bg-primary/5 pt-6 border-b border-primary/10">
@@ -61,7 +61,7 @@ const ProjectDetailsCard = ({
 };
 
 function VerifyBadge({ type, className }: { type: "verified" | "info"; className?: string }) {
-  const t = useTranslations("InterviewProject.collectSession");
+  const t = useTranslations("InterviewProjectLegacy.collectSession");
   return (
     <div
       className={cn(
@@ -94,7 +94,7 @@ export function CollectSessionClient({
   interviewSession: ExtractServerActionData<typeof fetchCollectInterviewSession>;
   initialMessages?: Message[];
 }) {
-  const t = useTranslations("InterviewProject.collectSession");
+  const t = useTranslations("InterviewProjectLegacy.collectSession");
 
   const [interviewCompleted, setInterviewCompleted] = useState(
     interviewSession.status === "completed",

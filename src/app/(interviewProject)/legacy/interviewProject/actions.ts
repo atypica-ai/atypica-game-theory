@@ -185,7 +185,7 @@ export async function createCollectSession(
       },
     });
 
-    revalidatePath(`/interviewProject/${projectToken}`);
+    revalidatePath(`/legacy/interviewProject/${projectToken}`);
 
     return {
       success: true,
@@ -311,7 +311,7 @@ export async function saveDigest(
       },
     });
 
-    revalidatePath(`/interviewProject/${projectToken}`);
+    revalidatePath(`/legacy/interviewProject/${projectToken}`);
 
     return {
       success: true,

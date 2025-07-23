@@ -1,7 +1,7 @@
 import { convertDBMessageToAIMessage } from "@/ai/messageUtils";
 import { ToolName } from "@/ai/tools/types";
 import authOptions from "@/app/(auth)/authOptions";
-import { fetchClarifyInterviewSession } from "@/app/(interviewProject)/interviewProject/actions";
+import { fetchClarifyInterviewSession } from "@/app/(interviewProject)/legacy/interviewProject/actions";
 import UserTokensBalance from "@/components/UserTokensBalance";
 import { generatePageMetadata } from "@/lib/request/metadata";
 import { prisma } from "@/prisma/prisma";
@@ -52,7 +52,7 @@ export default async function ClarifySessionPage({
 
   const session = await getServerSession(authOptions);
   if (!session?.user) {
-    const callbackUrl = `/interviewProject/clarify/${token}`;
+    const callbackUrl = `/legacy/interviewProject/clarify/${token}`;
     redirect(`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`);
   }
 

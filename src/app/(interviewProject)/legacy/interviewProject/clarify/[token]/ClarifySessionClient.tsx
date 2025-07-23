@@ -1,6 +1,6 @@
 "use client";
 import { ToolName } from "@/ai/tools/types";
-import { ClarifySessionBodySchema } from "@/app/(interviewProject)/api/chat/interviewSession/lib";
+import { ClarifySessionBodySchema } from "@/app/(interviewProject)/legacy/api/chat/interviewSession/lib";
 import { UserChatSession } from "@/components/chat/UserChatSession";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import {
@@ -39,7 +39,7 @@ type ProjectDetails = {
 };
 
 const ProjectDetailsPanel = ({ projectDetails }: { projectDetails: ProjectDetails }) => {
-  const t = useTranslations("InterviewProject.clarifySession");
+  const t = useTranslations("InterviewProjectLegacy.clarifySession");
   return (
     <div className="border rounded-lg h-full flex flex-col overflow-auto">
       <div className="p-4 flex-grow overflow-auto">
@@ -96,7 +96,7 @@ export function ClarifySessionClient({
   initialMessages: Message[];
   checkpointId?: number;
 }) {
-  const t = useTranslations("InterviewProject.clarifySession");
+  const t = useTranslations("InterviewProjectLegacy.clarifySession");
   const isMediaLg = useMediaQuery("lg"); // (min-width: 1024px)
   const [projectDetailsOpen, setProjectDetailsOpen] = useState(false);
   const [projectDetails, setProjectDetails] = useState<ProjectDetails>(interviewSession.project);
@@ -207,7 +207,10 @@ export function ClarifySessionClient({
                 <AlertDescription>{t("clarifyCompletionDescription")}</AlertDescription>
               </Alert>
               <Button asChild>
-                <Link href={`/interviewProject/${interviewSession.project.token}`} replace={true}>
+                <Link
+                  href={`/legacy/interviewProject/${interviewSession.project.token}`}
+                  replace={true}
+                >
                   {t("backToProject")}
                 </Link>
               </Button>

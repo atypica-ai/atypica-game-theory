@@ -3,7 +3,7 @@ import { generateDigestSystem } from "@/ai/prompt";
 import { llm, providerOptions } from "@/ai/provider";
 import { initInterviewProjectStatReporter } from "@/ai/tools/stats";
 import authOptions from "@/app/(auth)/authOptions";
-import { saveDigest } from "@/app/(interviewProject)/interviewProject/actions";
+import { saveDigest } from "@/app/(interviewProject)/legacy/interviewProject/actions";
 import { rootLogger } from "@/lib/logging";
 import { prisma } from "@/prisma/prisma";
 import { convertToCoreMessages, smoothStream, streamText } from "ai";

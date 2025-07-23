@@ -1,6 +1,6 @@
 import { interviewSessionSystem } from "@/ai/prompt";
 import authOptions from "@/app/(auth)/authOptions";
-import { fetchInterviewProjectByToken } from "@/app/(interviewProject)/interviewProject/actions";
+import { fetchInterviewProjectByToken } from "@/app/(interviewProject)/legacy/interviewProject/actions";
 import UserTokensBalance from "@/components/UserTokensBalance";
 import { generatePageMetadata } from "@/lib/request/metadata";
 import { Metadata } from "next";
@@ -49,7 +49,7 @@ export default async function InterviewProjectPage({
 
   const session = await getServerSession(authOptions);
   if (!session?.user) {
-    const callbackUrl = `/interviewProject/${token}`;
+    const callbackUrl = `/legacy/interviewProject/${token}`;
     redirect(`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`);
   }
 

@@ -116,7 +116,7 @@
     "noStudies": "No studies found in this category.",
     "viewStudy": "View Study"
   },
-  "InterviewProject": {
+  "InterviewProjectLegacy": {
     "title": "Interview Projects",
     "newProject": "New Project",
     "backToProjects": "Back to Projects",

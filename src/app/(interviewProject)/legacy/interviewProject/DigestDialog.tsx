@@ -16,7 +16,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 function StreamingText({ text }: { text: string | null }) {
-  const t = useTranslations("InterviewProject.digestDialog");
+  const t = useTranslations("InterviewProjectLegacy.digestDialog");
   const [messagesContainerRef, messagesEndRef] = useScrollToBottom<HTMLDivElement>();
   return (
     <div ref={messagesContainerRef} className="overflow-y-auto scrollbar-thin h-full p-4">
@@ -45,7 +45,7 @@ export function DigestDialog({
   onOpenChange,
   initialDigest,
 }: DigestDialogProps) {
-  const t = useTranslations("InterviewProject.digestDialog");
+  const t = useTranslations("InterviewProjectLegacy.digestDialog");
   const [digest, setDigest] = useState<string | null>(initialDigest || null);
   const [isCopied, setIsCopied] = useState(false);
 
@@ -55,7 +55,7 @@ export function DigestDialog({
     isLoading: isGenerating,
     stop,
   } = useCompletion({
-    api: "/api/chat/interviewProject/digest",
+    api: "/api/chat/legacy/interviewProject/digest",
     body: {
       projectToken: projectToken,
     },

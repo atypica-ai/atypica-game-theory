@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import Link from "next/link";
 
 export function BackToProjectsButton() {
-  const t = useTranslations("InterviewProject");
+  const t = useTranslations("InterviewProjectLegacy");
 
   return (
     <Button variant="ghost" asChild>
@@ -18,11 +18,11 @@ export function BackToProjectsButton() {
 }
 
 export function BackToProjectButton({ projectToken }: { projectToken: string }) {
-  const t = useTranslations("InterviewProject");
+  const t = useTranslations("InterviewProjectLegacy");
 
   return (
     <Button variant="ghost" asChild>
-      <Link href={`/interviewProject/${projectToken}`} replace>
+      <Link href={`/legacy/interviewProject/${projectToken}`} replace>
         <ArrowLeftIcon className="h-4 w-4" />
         {t("backToProject")}
       </Link>

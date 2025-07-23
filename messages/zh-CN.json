@@ -116,7 +116,7 @@
     "noStudies": "该类别下暂无研究。",
     "viewStudy": "查看研究"
   },
-  "InterviewProject": {
+  "InterviewProjectLegacy": {
     "title": "访谈项目",
     "newProject": "新建项目",
     "backToProjects": "返回项目列表",

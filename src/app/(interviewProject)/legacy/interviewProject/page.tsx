@@ -53,10 +53,10 @@ export default async function InterviewProjectListPage() {
 }
 
 function NewProjectButton() {
-  const t = useTranslations("InterviewProject");
+  const t = useTranslations("InterviewProjectLegacy");
   return (
     <Button variant="ghost" asChild>
-      <Link href="/interviewProject/create">
+      <Link href="/legacy/interviewProject/create">
         <FolderPlusIcon className="mr-2 h-4 w-4" />
         {t("newProject")}
       </Link>
