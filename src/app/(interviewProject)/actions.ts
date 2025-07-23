@@ -1,4 +1,5 @@
 "use server";
+import { createTextEmbedding } from "@/ai/embedding";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { createUserChat } from "@/lib/userChat/lib";
@@ -228,6 +229,29 @@ export async function createHumanInterviewSession(
     };
   }
 
+  // Check if user already has a session for this project
+  const existingSession = await prisma.interviewSession.findFirst({
+    where: {
+      projectId: input.projectId,
+      intervieweeUserId: userId,
+    },
+    include: {
+      userChat: {
+        select: { token: true },
+      },
+    },
+  });
+
+  if (existingSession && existingSession.userChat) {
+    return {
+      success: true,
+      data: {
+        sessionId: existingSession.id,
+        chatToken: existingSession.userChat.token,
+      },
+    };
+  }
+
   // Create session and user chat in transaction
   const result = await prisma.$transaction(async (tx) => {
     // Create user chat for the interview
@@ -272,7 +296,7 @@ export async function createHumanInterviewSession(
  */
 export async function createPersonaInterviewSession(
   input: CreatePersonaInterviewSessionInput,
-): Promise<ServerActionResult<{ sessionId: number; chatToken: string }>> {
+): Promise<ServerActionResult<{ sessionId: number; chatToken: string; autoStart?: boolean }>> {
   return withAuth(async (user) => {
     // Verify project ownership
     const project = await prisma.interviewProject.findUnique({
@@ -331,7 +355,7 @@ export async function createPersonaInterviewSession(
         },
       });
 
-      return { sessionId: interviewSession.id, chatToken: userChat.token };
+      return { sessionId: interviewSession.id, chatToken: userChat.token, autoStart: true };
     });
 
     return {
@@ -484,23 +508,149 @@ export async function deleteInterviewProject(projectId: number): Promise<ServerA
 /**
  * Fetch available personas for interview
  */
-export async function fetchAvailablePersonas(): Promise<
-  ServerActionResult<Array<{ id: number; name: string; prompt: string; source: string }>>
+export async function fetchAvailablePersonas({
+  searchQuery,
+  page = 1,
+  pageSize = 12,
+}: {
+  searchQuery?: string;
+  page?: number;
+  pageSize?: number;
+} = {}): Promise<
+  ServerActionResult<
+    Array<{ id: number; name: string; prompt: string; source: string; tags: string[] }>
+  >
 > {
-  return withAuth(async () => {
-    const personas = await prisma.persona.findMany({
-      select: {
-        id: true,
-        name: true,
-        prompt: true,
-        source: true,
-      },
-      orderBy: { name: "asc" },
+  return withAuth(async (user) => {
+    // Check if user is admin
+    const adminUser = await prisma.adminUser.findUnique({
+      where: { userId: user.id },
     });
+
+    const isAdmin = !!adminUser;
+    const skip = (page - 1) * pageSize;
+
+    // If there's a search query, use vector search
+    if (searchQuery && searchQuery.trim()) {
+      try {
+        const embedding = await createTextEmbedding(searchQuery, "retrieval.query");
+
+        // Build the vector search query with user permissions
+        const personas = isAdmin
+          ? await prisma.$queryRaw<
+              Array<{
+                id: number;
+                name: string;
+                prompt: string;
+                source: string;
+                tags: unknown;
+                tier: number;
+              }>
+            >`
+              SELECT p.id, p.name, p.source, p.prompt, p.tags, p.tier
+              FROM "Persona" p
+              WHERE p."embedding" <=> ${JSON.stringify(embedding)}::vector < 0.9
+              ORDER BY p."embedding" <=> ${JSON.stringify(embedding)}::vector ASC
+              LIMIT ${pageSize}
+              OFFSET ${skip}
+            `
+          : await prisma.$queryRaw<
+              Array<{
+                id: number;
+                name: string;
+                prompt: string;
+                source: string;
+                tags: unknown;
+                tier: number;
+              }>
+            >`
+              SELECT p.id, p.name, p.source, p.prompt, p.tags, p.tier
+              FROM "Persona" p
+              WHERE p."embedding" <=> ${JSON.stringify(embedding)}::vector < 0.9
+              AND p."personaImportId" IN (SELECT id FROM "PersonaImport" WHERE "userId" = ${user.id})
+              ORDER BY p."embedding" <=> ${JSON.stringify(embedding)}::vector ASC
+              LIMIT ${pageSize}
+              OFFSET ${skip}
+            `;
+
+        const totalCountResult = isAdmin
+          ? await prisma.$queryRaw<{ count: number }[]>`
+              SELECT COUNT(*) as count
+              FROM "Persona" p
+              WHERE p."embedding" <=> ${JSON.stringify(embedding)}::vector < 0.9
+            `
+          : await prisma.$queryRaw<{ count: number }[]>`
+              SELECT COUNT(*) as count
+              FROM "Persona" p
+              WHERE p."embedding" <=> ${JSON.stringify(embedding)}::vector < 0.9
+              AND p."personaImportId" IN (SELECT id FROM "PersonaImport" WHERE "userId" = ${user.id})
+            `;
+
+        const totalCount = Math.min(40, Number(totalCountResult[0].count));
+
+        return {
+          success: true,
+          data: personas.map((persona) => ({
+            ...persona,
+            tags: persona.tags as string[],
+          })),
+          pagination: {
+            page,
+            pageSize,
+            totalCount,
+            totalPages: Math.ceil(totalCount / pageSize),
+          },
+        };
+      } catch (error) {
+        console.log(`Vector search error: ${(error as Error).message}`);
+        return {
+          success: false,
+          message: "Persona search error",
+        };
+      }
+    }
+
+    // Regular search with user permissions
+    const where = isAdmin
+      ? {}
+      : {
+          personaImport: {
+            userId: user.id,
+          },
+        };
+
+    const [personas, totalCount] = await Promise.all([
+      prisma.persona.findMany({
+        where,
+        orderBy: {
+          createdAt: "desc",
+        },
+        select: {
+          id: true,
+          name: true,
+          source: true,
+          prompt: true,
+          tags: true,
+          tier: true,
+        },
+        skip,
+        take: pageSize,
+      }),
+      prisma.persona.count({ where }),
+    ]);
 
     return {
       success: true,
-      data: personas,
+      data: personas.map((persona) => ({
+        ...persona,
+        tags: persona.tags as string[],
+      })),
+      pagination: {
+        page,
+        pageSize,
+        totalCount,
+        totalPages: Math.ceil(totalCount / pageSize),
+      },
     };
   });
 }

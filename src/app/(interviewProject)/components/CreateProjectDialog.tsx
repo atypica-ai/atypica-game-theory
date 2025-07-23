@@ -1,3 +1,5 @@
+import { createInterviewProject } from "@/app/(interviewProject)/actions";
+import { createInterviewProjectSchema } from "@/app/(interviewProject)/types";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,8 +14,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { createInterviewProject } from "../actions";
-import { createInterviewProjectSchema } from "../types";
 
 interface CreateProjectDialogProps {
   open: boolean;

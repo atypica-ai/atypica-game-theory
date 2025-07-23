@@ -1,17 +1,19 @@
+import { fetchInterviewProjectById } from "@/app/(interviewProject)/actions";
 import { ProjectDetails } from "@/app/(interviewProject)/components/ProjectDetails";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { fetchInterviewProjectById } from "../../actions";
 
-interface ProjectPageProps {
-  params: {
-    projectId: string;
-  };
-}
-
-export async function generateMetadata({ params }: ProjectPageProps): Promise<Metadata> {
-  const projectId = parseInt(params.projectId, 10);
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ projectId: string }>;
+}): Promise<Metadata> {
+  const { projectId: projectIdStr } = await params;
+  if (!projectIdStr) {
+    return {};
+  }
+  const projectId = parseInt(projectIdStr, 10);
 
   if (isNaN(projectId)) {
     return {
@@ -33,8 +35,12 @@ export async function generateMetadata({ params }: ProjectPageProps): Promise<Me
   };
 }
 
-export default async function ProjectPage({ params }: ProjectPageProps) {
-  const projectId = parseInt(params.projectId, 10);
+export default async function ProjectPage({ params }: { params: Promise<{ projectId: string }> }) {
+  const { projectId: projectIdStr } = await params;
+  if (!projectIdStr) {
+    notFound();
+  }
+  const projectId = parseInt(projectIdStr, 10);
 
   if (isNaN(projectId)) {
     notFound();

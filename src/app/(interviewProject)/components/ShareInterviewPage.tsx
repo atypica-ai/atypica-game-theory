@@ -1,12 +1,13 @@
 "use client";
+import { createHumanInterviewSession } from "@/app/(interviewProject)/actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { ArrowRight, CheckCircle, MessageSquare, Shield, Users } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import { createHumanInterviewSession } from "../actions";
 
 interface ShareInterviewPageProps {
   shareToken: string;
@@ -23,6 +24,7 @@ interface ShareInterviewPageProps {
 }
 
 export function ShareInterviewPage({ shareToken, projectInfo, user }: ShareInterviewPageProps) {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   const handleStartInterview = async () => {
@@ -36,7 +38,7 @@ export function ShareInterviewPage({ shareToken, projectInfo, user }: ShareInter
       if (result.success) {
         toast.success("Interview session created successfully");
         // Navigate to the chat session
-        window.location.href = `/chat/${result.data.chatToken}`;
+        router.push(`/chat/${result.data.chatToken}`);
       } else {
         toast.error(result.message || "Failed to start interview");
       }

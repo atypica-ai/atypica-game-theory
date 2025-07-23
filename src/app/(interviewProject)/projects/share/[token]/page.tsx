@@ -1,19 +1,23 @@
 import authOptions from "@/app/(auth)/authOptions";
+import { validateShareToken } from "@/app/(interviewProject)/actions";
 import { ShareInterviewPage } from "@/app/(interviewProject)/components/ShareInterviewPage";
 import { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
-import { validateShareToken } from "../../../actions";
 
 interface SharePageProps {
-  params: {
+  params: Promise<{
     token: string;
-  };
+  }>;
 }
 
 export async function generateMetadata({ params }: SharePageProps): Promise<Metadata> {
-  const result = await validateShareToken(params.token);
+  const { token } = await params;
+  if (!token) {
+    return {};
+  }
+  const result = await validateShareToken(token);
 
   if (!result.success) {
     return {
@@ -29,16 +33,20 @@ export async function generateMetadata({ params }: SharePageProps): Promise<Meta
 }
 
 export default async function SharePage({ params }: SharePageProps) {
+  const { token } = await params;
+  if (!token) {
+    notFound();
+  }
   const session = await getServerSession(authOptions);
 
   // Redirect to login if not authenticated
   if (!session?.user) {
-    const returnUrl = encodeURIComponent(`/projects/share/${params.token}`);
+    const returnUrl = encodeURIComponent(`/projects/share/${token}`);
     redirect(`/auth/signin?callbackUrl=${returnUrl}`);
   }
 
   // Validate the share token
-  const result = await validateShareToken(params.token);
+  const result = await validateShareToken(token);
 
   if (!result.success) {
     notFound();
@@ -57,11 +65,7 @@ export default async function SharePage({ params }: SharePageProps) {
           </div>
         }
       >
-        <ShareInterviewPage
-          shareToken={params.token}
-          projectInfo={result.data}
-          user={session.user}
-        />
+        <ShareInterviewPage shareToken={token} projectInfo={result.data} user={session.user} />
       </Suspense>
     </div>
   );

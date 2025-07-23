@@ -1,5 +1,10 @@
 "use client";
+import {
+  deleteInterviewProject,
+  fetchUserInterviewProjects,
+} from "@/app/(interviewProject)/actions";
 import { CreateProjectDialog } from "@/app/(interviewProject)/components/CreateProjectDialog";
+import { InterviewProjectWithSessions } from "@/app/(interviewProject)/types";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,8 +23,6 @@ import { Bot, Calendar, ExternalLink, Plus, Trash2, Users } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { deleteInterviewProject, fetchUserInterviewProjects } from "../actions";
-import { InterviewProjectWithSessions } from "../types";
 
 export function InterviewProjectsList() {
   const [projects, setProjects] = useState<InterviewProjectWithSessions[]>([]);

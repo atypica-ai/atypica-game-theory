@@ -1,4 +1,6 @@
 "use client";
+import { generateProjectShareToken } from "@/app/(interviewProject)/actions";
+import { InterviewProjectWithSessions } from "@/app/(interviewProject)/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,44 +15,24 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { ArrowLeft, Bot, Copy, ExternalLink, MessageSquare, Share2, Users } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import {
-  createPersonaInterviewSession,
-  fetchAvailablePersonas,
-  generateProjectShareToken,
-} from "../actions";
-import { InterviewProjectWithSessions } from "../types";
+import { SelectPersonaDialog } from "./SelectPersonaDialog";
 
 interface ProjectDetailsProps {
   project: InterviewProjectWithSessions;
 }
 
-interface Persona {
-  id: number;
-  name: string;
-  prompt: string;
-  source: string;
-}
-
 export function ProjectDetails({ project }: ProjectDetailsProps) {
+  const router = useRouter();
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [personaDialogOpen, setPersonaDialogOpen] = useState(false);
   const [shareToken, setShareToken] = useState("");
   const [shareUrl, setShareUrl] = useState("");
   const [loading, setLoading] = useState(false);
-  const [personas, setPersonas] = useState<Persona[]>([]);
-  const [selectedPersonaId, setSelectedPersonaId] = useState<string>("");
-  const [personaLoading, setPersonaLoading] = useState(false);
 
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat("en-US", {
@@ -95,46 +77,9 @@ export function ProjectDetails({ project }: ProjectDetailsProps) {
     }
   };
 
-  const loadPersonas = async () => {
-    try {
-      const result = await fetchAvailablePersonas();
-      if (result.success) {
-        setPersonas(result.data);
-      } else {
-        toast.error(result.message || "Failed to load personas");
-      }
-    } catch (error) {
-      toast.error("Failed to load personas");
-    }
-  };
-
-  const handleCreatePersonaInterview = async () => {
-    if (!selectedPersonaId) {
-      toast.error("Please select a persona");
-      return;
-    }
-
-    setPersonaLoading(true);
-    try {
-      const result = await createPersonaInterviewSession({
-        projectId: project.id,
-        personaId: parseInt(selectedPersonaId, 10),
-      });
-
-      if (result.success) {
-        toast.success("Interview session created successfully");
-        setPersonaDialogOpen(false);
-        setSelectedPersonaId("");
-        // Navigate to the interview session
-        window.location.href = `/chat/${result.data.chatToken}`;
-      } else {
-        toast.error(result.message || "Failed to create interview session");
-      }
-    } catch (error) {
-      toast.error("Failed to create interview session");
-    } finally {
-      setPersonaLoading(false);
-    }
+  const handlePersonaInterviewSuccess = () => {
+    // Refresh the page to show new sessions
+    router.refresh();
   };
 
   const stats = getSessionStats();
@@ -200,60 +145,10 @@ export function ProjectDetails({ project }: ProjectDetailsProps) {
             </DialogContent>
           </Dialog>
 
-          <Dialog open={personaDialogOpen} onOpenChange={setPersonaDialogOpen}>
-            <DialogTrigger asChild>
-              <Button onClick={loadPersonas}>
-                <Bot className="h-4 w-4 mr-2" />
-                Interview AI
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px]">
-              <DialogHeader>
-                <DialogTitle>Interview AI Persona</DialogTitle>
-                <DialogDescription>
-                  Select an AI persona to conduct an interview with. The interview will start
-                  automatically.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="persona-select">Select Persona</Label>
-                  <Select value={selectedPersonaId} onValueChange={setSelectedPersonaId}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Choose a persona to interview" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {personas.map((persona) => (
-                        <SelectItem key={persona.id} value={persona.id.toString()}>
-                          <div className="flex flex-col items-start">
-                            <span className="font-medium">{persona.name}</span>
-                            <span className="text-xs text-gray-500 truncate max-w-[300px]">
-                              {persona.prompt.slice(0, 100)}...
-                            </span>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <DialogFooter>
-                <Button
-                  variant="outline"
-                  onClick={() => setPersonaDialogOpen(false)}
-                  disabled={personaLoading}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleCreatePersonaInterview}
-                  disabled={!selectedPersonaId || personaLoading}
-                >
-                  {personaLoading ? "Creating..." : "Start Interview"}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+          <Button onClick={() => setPersonaDialogOpen(true)}>
+            <Bot className="h-4 w-4 mr-2" />
+            Interview AI
+          </Button>
         </div>
       </div>
 
@@ -349,7 +244,14 @@ export function ProjectDetails({ project }: ProjectDetailsProps) {
                       <p className="text-xs text-gray-500">{formatDate(session.createdAt)}</p>
                     </div>
                   </div>
-                  <Button variant="ghost" size="sm">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      // Navigate to chat session
+                      router.push(`/projects/${project.id}/sessions/${session.id}`);
+                    }}
+                  >
                     <ExternalLink className="h-4 w-4" />
                   </Button>
                 </div>
@@ -358,6 +260,13 @@ export function ProjectDetails({ project }: ProjectDetailsProps) {
           )}
         </CardContent>
       </Card>
+
+      <SelectPersonaDialog
+        open={personaDialogOpen}
+        onOpenChange={setPersonaDialogOpen}
+        projectId={project.id}
+        onSuccess={handlePersonaInterviewSuccess}
+      />
     </div>
   );
 }

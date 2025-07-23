@@ -1,6 +1,6 @@
 import authOptions from "@/app/(auth)/authOptions";
-import { fetchInterviewSessionByToken } from "@/app/(interviewProject)/actions";
-import { InterviewChat } from "@/app/(interviewProject)/components/InterviewChat";
+import { fetchInterviewSession } from "@/app/(interviewProject)/actions";
+import { InterviewSessionViewer } from "@/app/(interviewProject)/components/InterviewSessionViewer";
 import { prisma } from "@/prisma/prisma";
 import { Metadata } from "next";
 import { getServerSession } from "next-auth";
@@ -10,17 +10,26 @@ import { Suspense } from "react";
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ token: string }>;
+  params: Promise<{ projectId: string; sessionId: string }>;
 }): Promise<Metadata> {
-  const { token } = await params;
-  if (!token) {
+  const { sessionId: sessionIdStr } = await params;
+  if (!sessionIdStr) {
     return {};
   }
-  const result = await fetchInterviewSessionByToken(token);
+  const sessionId = parseInt(sessionIdStr, 10);
+
+  if (isNaN(sessionId)) {
+    return {
+      title: "Session Not Found",
+      description: "This interview session is not available.",
+    };
+  }
+
+  const result = await fetchInterviewSession(sessionId);
 
   if (!result.success) {
     return {
-      title: "Interview Session Not Found",
+      title: "Session Not Found",
       description: "This interview session is not available.",
     };
   }
@@ -34,9 +43,13 @@ export async function generateMetadata({
   };
 }
 
-export default async function ChatPage({ params }: { params: Promise<{ token: string }> }) {
-  const { token } = await params;
-  if (!token) {
+export default async function SessionPage({
+  params,
+}: {
+  params: Promise<{ projectId: string; sessionId: string }>;
+}) {
+  const { projectId: projectIdStr, sessionId: sessionIdStr } = await params;
+  if (!projectIdStr || !sessionIdStr) {
     notFound();
   }
 
@@ -44,14 +57,20 @@ export default async function ChatPage({ params }: { params: Promise<{ token: st
 
   // Redirect to login if not authenticated
   if (!authSession?.user) {
-    const returnUrl = encodeURIComponent(`/chat/${token}`);
+    const returnUrl = encodeURIComponent(`/projects/${projectIdStr}/sessions/${sessionIdStr}`);
     redirect(`/auth/signin?callbackUrl=${returnUrl}`);
   }
 
-  const userId = authSession.user.id;
+  const sessionId = parseInt(sessionIdStr, 10);
+  const projectId = parseInt(projectIdStr, 10);
+
+  // Validate IDs
+  if (isNaN(sessionId) || isNaN(projectId)) {
+    notFound();
+  }
 
   // Get interview session details
-  const result = await fetchInterviewSessionByToken(token);
+  const result = await fetchInterviewSession(sessionId);
 
   if (!result.success) {
     if (result.code === "not_found") {
@@ -62,12 +81,20 @@ export default async function ChatPage({ params }: { params: Promise<{ token: st
 
   const session = result.data;
 
-  // Check access permission
-  const hasAccess =
-    session.project.userId === userId || // Project owner
-    session.intervieweeUserId === userId; // Interviewee
+  // Verify the session belongs to the correct project
+  if (session.projectId !== projectId) {
+    notFound();
+  }
 
-  if (!hasAccess) {
+  // Check if user has access to this session (only project owner can view in readonly mode)
+  const userId = authSession.user.id;
+  const isProjectOwner = session.project.userId === userId;
+
+  if (!isProjectOwner) {
+    // If not project owner, redirect to the interactive chat page instead
+    if (session.userChat?.token) {
+      redirect(`/chat/${session.userChat.token}`);
+    }
     redirect("/projects");
   }
 
@@ -107,7 +134,7 @@ export default async function ChatPage({ params }: { params: Promise<{ token: st
         </div>
       }
     >
-      <InterviewChat session={session} initialMessages={initialMessages} />
+      <InterviewSessionViewer session={session} initialMessages={initialMessages} />
     </Suspense>
   );
 }
