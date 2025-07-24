@@ -16,6 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Bot, Copy, ExternalLink, MessageSquare, Share2, Users } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -99,8 +100,8 @@ export function ProjectDetails({ project }: ProjectDetailsProps) {
           <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" onClick={handleGenerateShareLink}>
-                <Share2 className="h-4 w-4 mr-2" />
-                Share
+                <Share2 className="h-4 w-4" />
+                Interview Human
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[500px]">
@@ -135,9 +136,8 @@ export function ProjectDetails({ project }: ProjectDetailsProps) {
               </DialogFooter>
             </DialogContent>
           </Dialog>
-
-          <Button onClick={() => setPersonaDialogOpen(true)}>
-            <Bot className="h-4 w-4 mr-2" />
+          <Button variant="outline" onClick={() => setPersonaDialogOpen(true)}>
+            <Bot className="h-4 w-4" />
             Interview AI
           </Button>
         </div>
@@ -235,15 +235,13 @@ export function ProjectDetails({ project }: ProjectDetailsProps) {
                       <p className="text-xs text-gray-500">{formatDate(session.createdAt)}</p>
                     </div>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      // Navigate to chat session
-                      router.push(`/interview/projects/${project.id}/sessions/${session.id}`);
-                    }}
-                  >
-                    <ExternalLink className="h-4 w-4" />
+                  <Button variant="ghost" size="sm" asChild>
+                    <Link
+                      href={`/interview/projects/${project.id}/sessions/${session.id}`}
+                      target="_blank"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                    </Link>
                   </Button>
                 </div>
               ))}

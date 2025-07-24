@@ -53,22 +53,6 @@ export function decryptInterviewShareToken(token: string): InterviewSharePayload
 }
 
 /**
- * Generate a share URL for an interview project
- * @param projectId - The project ID
- * @param baseUrl - The base URL of the application
- * @param expiryHours - Token expiry time in hours (default: 24 hours)
- * @returns Complete share URL
- */
-export function generateInterviewShareUrl(
-  projectId: number,
-  baseUrl: string,
-  expiryHours: number = 24,
-): string {
-  const token = generateInterviewShareToken(projectId, expiryHours);
-  return `${baseUrl}/projects/share/${token}`;
-}
-
-/**
  * Generate interview session prompt based on project brief and context
  * @param brief - The interview project brief
  * @param isPersonaInterview - Whether this is a persona interview

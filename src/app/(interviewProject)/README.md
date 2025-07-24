@@ -5,22 +5,26 @@ A comprehensive interview management system that allows researchers to create pr
 ## Features
 
 ### 1. Interview Project Management
+
 - Create interview projects with detailed research briefs
 - Manage project lists and view project details
 - Delete projects and associated sessions
 
 ### 2. Human Interview Sessions
+
 - Generate secure, encrypted share links for interview projects
 - Participants can join interviews through shared links
 - Real-time chat interface for conducting interviews
 - Automatic session management and persistence
 
 ### 3. AI Persona Interviews
+
 - Select from available AI personas for interviews
 - Automated interview sessions with AI responses
 - Persona-specific interview prompts and behaviors
 
 ### 4. Secure Access Control
+
 - User authentication required for all operations
 - Project ownership validation
 - Encrypted share tokens with expiration
@@ -29,6 +33,7 @@ A comprehensive interview management system that allows researchers to create pr
 ## Architecture
 
 ### File Structure
+
 ```
 src/app/(interviewProject)/
 ├── actions.ts                    # Server actions for CRUD operations
@@ -64,6 +69,7 @@ src/app/(interviewProject)/
 The system uses the following Prisma models:
 
 #### InterviewProject
+
 ```prisma
 model InterviewProject {
   id     Int    @id @default(autoincrement())
@@ -80,6 +86,7 @@ model InterviewProject {
 ```
 
 #### InterviewSession
+
 ```prisma
 model InterviewSession {
   id                   Int              @id @default(autoincrement())
@@ -102,6 +109,7 @@ model InterviewSession {
 ### Server Actions
 
 #### Project Management
+
 - `createInterviewProject(input)` - Create a new interview project
 - `fetchUserInterviewProjects()` - Get user's interview projects
 - `fetchInterviewProjectById(id)` - Get specific project details
@@ -109,18 +117,22 @@ model InterviewSession {
 - `generateProjectShareToken(id, expiry?)` - Generate share link
 
 #### Share Token Management
+
 - `validateShareToken(token)` - Validate and decode share token
 - `createHumanInterviewSession(input)` - Create session for human participant
 
 #### Session Management
+
 - `createPersonaInterviewSession(input)` - Create session for AI persona
 - `fetchInterviewSession(id)` - Get session details
-- `fetchInterviewSessionByToken(token)` - Get session by chat token
+- `fetchInterviewSessionByChatToken(token)` - Get session by chat token
 
 #### Persona Management
+
 - `fetchAvailablePersonas()` - Get list of available AI personas
 
 ### Chat API
+
 - `POST /api/chat/interviewSession` - Handle interview chat messages
 
 ## Usage Examples
@@ -129,7 +141,8 @@ model InterviewSession {
 
 ```typescript
 const result = await createInterviewProject({
-  brief: "Research on user experience with mobile apps. We want to understand how users navigate through different features and what challenges they face."
+  brief:
+    "Research on user experience with mobile apps. We want to understand how users navigate through different features and what challenges they face.",
 });
 
 if (result.success) {
@@ -153,7 +166,7 @@ if (shareResult.success) {
 ```typescript
 const sessionResult = await createPersonaInterviewSession({
   projectId: 123,
-  personaId: 456
+  personaId: 456,
 });
 
 if (sessionResult.success) {
@@ -165,16 +178,19 @@ if (sessionResult.success) {
 ## Security Features
 
 ### Encrypted Share Tokens
+
 - Share tokens are encrypted using AES-256-CBC
 - Tokens include expiration timestamps
 - Automatic validation and cleanup of expired tokens
 
 ### Access Control
+
 - Project owners can manage their projects
 - Interview participants can only access sessions they're part of
 - Authentication required for all operations
 
 ### Data Privacy
+
 - Interview conversations are stored securely
 - Access logs for audit trails
 - Privacy notices displayed to participants
@@ -182,16 +198,19 @@ if (sessionResult.success) {
 ## Chat Interface Features
 
 ### Real-time Communication
+
 - Uses AI SDK for streaming responses
 - Smooth text rendering with chunking
 - Auto-scroll to latest messages
 
 ### Interview Flow
+
 - Automated conversation initialization
 - Context-aware prompting based on project brief
 - Support for both human and AI interviews
 
 ### UI Components
+
 - Professional chat interface
 - Project information sidebar
 - Session status indicators
@@ -200,18 +219,23 @@ if (sessionResult.success) {
 ## Development
 
 ### Testing
+
 Use the test page at `/test` to verify functionality:
+
 - Basic component rendering
 - Navigation between pages
 - Link generation and validation
 
 ### Environment Variables
+
 Ensure these are set in your environment:
+
 - `CIPHER_PASSWORD` - For token encryption
 - Database connection variables
 - NextAuth configuration
 
 ### Dependencies
+
 - Next.js 14+ with App Router
 - Prisma for database operations
 - AI SDK for chat functionality

@@ -1,7 +1,10 @@
 "use client";
-import { InterviewSessionWithDetails } from "@/app/(interviewProject)/types";
-import { UserChatSession } from "@/components/chat/UserChatSession";
-import HippyGhostAvatar from "@/components/HippyGhostAvatar";
+import {
+  interviewSessionChatBodySchema,
+  InterviewSessionWithDetails,
+} from "@/app/(interviewProject)/types";
+import { FocusedInterviewChat } from "@/components/chat/FocusedInterviewChat";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,38 +16,65 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { cn } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
 import { Message } from "ai";
-import { ArrowLeft, Bot, Info, Shield, Users } from "lucide-react";
-import Link from "next/link";
-import { useRef } from "react";
+import { Bot, Info, Shield, Users } from "lucide-react";
+import { useEffect, useRef } from "react";
+import { z } from "zod";
 
-interface InterviewSessionViewerProps {
+interface InterviewChatProps {
   session: InterviewSessionWithDetails;
   initialMessages?: Message[];
-  className?: string;
 }
 
-export function InterviewSessionViewer({
-  session,
-  initialMessages = [],
-  className,
-}: InterviewSessionViewerProps) {
+export function InterviewSessionClient({ session, initialMessages = [] }: InterviewChatProps) {
   const isPersonaInterview = !!session.intervieweePersona;
   const interviewTarget = isPersonaInterview ? session.intervieweePersona : session.intervieweeUser;
 
-  // Use a dummy useChat for readonly viewing (no API calls)
+  const initialRequestBody = {
+    sessionToken: session.userChat?.token,
+  };
+
   const useChatHelpers = useChat({
-    api: "/api/dummy", // This won't be called since we're readonly
+    api: "/api/chat/interviewSession",
     initialMessages,
+    body: {
+      sessionToken: session.userChat?.token,
+    },
+    experimental_prepareRequestBody({ messages, requestBody: _requestBody }) {
+      const requestBody: typeof initialRequestBody = { ...initialRequestBody, ..._requestBody };
+      const lastMessage = messages[messages.length - 1];
+      const body: z.infer<typeof interviewSessionChatBodySchema> = {
+        message: {
+          id: lastMessage.id,
+          role: lastMessage.role as "user" | "assistant",
+          content: lastMessage.content,
+          parts: lastMessage.parts,
+        },
+        ...requestBody,
+      };
+      return body;
+    },
   });
 
   const useChatRef = useRef({
+    append: useChatHelpers.append,
     reload: useChatHelpers.reload,
     setMessages: useChatHelpers.setMessages,
-    append: useChatHelpers.append,
   });
+
+  // Automatically start the conversation when the component mounts.
+  const requestSentRef = useRef(false);
+  useEffect(() => {
+    if (requestSentRef.current) return;
+    requestSentRef.current = true;
+    if (initialMessages.length === 0) {
+      // If no initial message, start the conversation with AI
+      useChatRef.current.append({ role: "user", content: "[READY]" });
+    } else if (initialMessages[initialMessages.length - 1]?.role === "user") {
+      useChatRef.current.reload();
+    }
+  }, [initialMessages]);
 
   // Project info dialog content
   const projectInfoButton = (
@@ -95,7 +125,11 @@ export function InterviewSessionViewer({
             <div className="space-y-2">
               <h4 className="font-medium text-sm">Researcher</h4>
               <div className="flex items-center space-x-2">
-                <HippyGhostAvatar className="h-6 w-6" seed={session.project.user.id} />
+                <Avatar className="h-6 w-6">
+                  <AvatarFallback className="text-xs">
+                    {session.project.user.name?.charAt(0) || session.project.user.email.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
                 <span className="text-sm text-gray-600 dark:text-gray-400">
                   {session.project.user.name || session.project.user.email}
                 </span>
@@ -106,14 +140,15 @@ export function InterviewSessionViewer({
               <div className="space-y-2">
                 <h4 className="font-medium text-sm">Interview Participant</h4>
                 <div className="flex items-center space-x-2">
-                  <HippyGhostAvatar
-                    className="h-6 w-6"
-                    seed={
-                      isPersonaInterview
-                        ? session.intervieweePersonaId || 0
-                        : session.intervieweeUserId || 0
-                    }
-                  />
+                  <Avatar className="h-6 w-6">
+                    <AvatarFallback className="text-xs">
+                      {isPersonaInterview ? (
+                        <Bot className="h-3 w-3" />
+                      ) : (
+                        interviewTarget.name?.charAt(0) || "U"
+                      )}
+                    </AvatarFallback>
+                  </Avatar>
                   <span className="text-sm text-gray-600 dark:text-gray-400">
                     {interviewTarget.name || "Anonymous"}
                   </span>
@@ -128,8 +163,8 @@ export function InterviewSessionViewer({
               <div className="text-sm">
                 <p className="font-medium text-blue-900 dark:text-blue-100 mb-1">Privacy Notice</p>
                 <p className="text-blue-800 dark:text-blue-200">
-                  This conversation was recorded for research purposes. Privacy is protected
-                  according to our data policy.
+                  This conversation is being recorded for research purposes. Your privacy will be
+                  protected according to our data policy.
                 </p>
               </div>
             </div>
@@ -140,64 +175,14 @@ export function InterviewSessionViewer({
   );
 
   return (
-    <div className={cn("h-screen w-full flex flex-col", className)}>
-      {/* Header with project info */}
-      <div className="border-b bg-white dark:bg-gray-900 p-4 flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <Link href={`/projects/${session.projectId}`}>
-            <Button variant="ghost" size="sm">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Project
-            </Button>
-          </Link>
-          <Badge variant={isPersonaInterview ? "secondary" : "default"} className="text-xs">
-            {isPersonaInterview ? (
-              <>
-                <Bot className="h-3 w-3 mr-1" />
-                AI Interview
-              </>
-            ) : (
-              <>
-                <Users className="h-3 w-3 mr-1" />
-                Human Interview
-              </>
-            )}
-          </Badge>
-          <h1 className="text-lg font-medium">
-            Interview Session #{session.id} - {interviewTarget?.name || "Anonymous"}
-          </h1>
-        </div>
-        {projectInfoButton}
-      </div>
-
-      {/* Chat content */}
-      <div className="flex-1 overflow-hidden">
-        <UserChatSession
-          chatTitle={`Interview with ${interviewTarget?.name || "Anonymous"}`}
-          nickname={{
-            assistant: "Interviewer AI",
-            user: interviewTarget?.name || "Participant",
-          }}
-          avatar={{
-            assistant: <HippyGhostAvatar className="size-8" seed="interviewer" />,
-            user: (
-              <HippyGhostAvatar
-                className="size-8"
-                seed={
-                  isPersonaInterview
-                    ? session.intervieweePersonaId || 0
-                    : session.intervieweeUserId || 0
-                }
-              />
-            ),
-          }}
-          readOnly={true}
-          useChatHelpers={useChatHelpers}
-          useChatRef={useChatRef}
-          acceptAttachments={false}
-          persistMessages={false}
-        />
-      </div>
+    <div className="h-screen w-full">
+      <FocusedInterviewChat
+        useChatHelpers={useChatHelpers}
+        useChatRef={useChatRef}
+        showTimer={false} // Interviews don't need timer pressure
+        topRightButton={projectInfoButton}
+        className="h-full"
+      />
     </div>
   );
 }

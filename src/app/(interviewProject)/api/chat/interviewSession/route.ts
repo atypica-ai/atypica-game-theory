@@ -5,7 +5,7 @@ import {
 } from "@/ai/messageUtils";
 import { llm, providerOptions } from "@/ai/provider";
 import authOptions from "@/app/(auth)/authOptions";
-import { fetchInterviewSessionByToken } from "@/app/(interviewProject)/actions";
+import { fetchInterviewSessionByChatToken } from "@/app/(interviewProject)/actions";
 import { generateInterviewPrompt } from "@/app/(interviewProject)/lib";
 import { interviewSessionChatBodySchema } from "@/app/(interviewProject)/types";
 import { rootLogger } from "@/lib/logging";
@@ -34,7 +34,7 @@ export async function POST(req: Request) {
   }
 
   // Get interview session details
-  const sessionResult = await fetchInterviewSessionByToken(sessionToken);
+  const sessionResult = await fetchInterviewSessionByChatToken(sessionToken);
   if (!sessionResult.success) {
     return NextResponse.json(
       { error: sessionResult.message },

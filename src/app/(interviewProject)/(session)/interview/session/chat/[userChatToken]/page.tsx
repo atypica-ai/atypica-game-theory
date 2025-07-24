@@ -1,11 +1,11 @@
 import authOptions from "@/app/(auth)/authOptions";
-import { fetchInterviewSessionByToken } from "@/app/(interviewProject)/actions";
+import { fetchInterviewSessionByChatToken } from "@/app/(interviewProject)/actions";
 import { prisma } from "@/prisma/prisma";
 import { Metadata } from "next";
 import { getServerSession } from "next-auth";
-import { notFound, redirect } from "next/navigation";
-import { Suspense } from "react";
-import { InterviewChat } from "./InterviewChat";
+import { redirect } from "next/navigation";
+import { NextResponse } from "next/server";
+import { InterviewSessionClient } from "./InterviewSessionClient";
 
 export async function generateMetadata({
   params,
@@ -13,51 +13,39 @@ export async function generateMetadata({
   params: Promise<{ userChatToken: string }>;
 }): Promise<Metadata> {
   const { userChatToken } = await params;
-  if (!userChatToken) {
+  const result = await fetchInterviewSessionByChatToken(userChatToken);
+  if (!result.success) {
     return {};
   }
-  const result = await fetchInterviewSessionByToken(userChatToken);
-
-  if (!result.success) {
-    return {
-      title: "Interview Session Not Found",
-      description: "This interview session is not available.",
-    };
-  }
-
   const session = result.data;
   const isPersonaInterview = !!session.intervieweePersona;
-
   return {
     title: `Interview Session - ${isPersonaInterview ? session.intervieweePersona?.name : "Human Interview"}`,
     description: `Interview session for project: ${session.project.brief.slice(0, 160)}`,
   };
 }
 
-export default async function ChatPage({ params }: { params: Promise<{ token: string }> }) {
-  const { token } = await params;
-  if (!token) {
-    notFound();
-  }
+export default async function InterviewSessionChatPage({
+  params,
+}: {
+  params: Promise<{ userChatToken: string }>;
+}) {
+  const { userChatToken } = await params;
 
   const authSession = await getServerSession(authOptions);
 
   // Redirect to login if not authenticated
   if (!authSession?.user) {
-    const returnUrl = encodeURIComponent(`/chat/${token}`);
+    const returnUrl = encodeURIComponent(`/interview/session/chat/${userChatToken}`);
     redirect(`/auth/signin?callbackUrl=${returnUrl}`);
   }
 
   const userId = authSession.user.id;
 
-  // Get interview session details
-  const result = await fetchInterviewSessionByToken(token);
-
+  const result = await fetchInterviewSessionByChatToken(userChatToken);
   if (!result.success) {
-    if (result.code === "not_found") {
-      notFound();
-    }
-    throw new Error(result.message || "Failed to load interview session");
+    // 不管什么错误，统一返回 404
+    return NextResponse.json({ error: "Not Found" }, { status: 404 });
   }
 
   const session = result.data;
@@ -68,7 +56,8 @@ export default async function ChatPage({ params }: { params: Promise<{ token: st
     session.intervieweeUserId === userId; // Interviewee
 
   if (!hasAccess) {
-    redirect("/projects");
+    // redirect("/projects");
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   // Get existing messages for this chat
@@ -96,18 +85,5 @@ export default async function ChatPage({ params }: { params: Promise<{ token: st
         )
     : [];
 
-  return (
-    <Suspense
-      fallback={
-        <div className="h-screen flex items-center justify-center">
-          <div className="space-y-4 text-center">
-            <div className="h-8 w-48 bg-gray-200 dark:bg-gray-800 rounded animate-pulse mx-auto" />
-            <div className="h-4 w-64 bg-gray-200 dark:bg-gray-800 rounded animate-pulse mx-auto" />
-          </div>
-        </div>
-      }
-    >
-      <InterviewChat session={session} initialMessages={initialMessages} />
-    </Suspense>
-  );
+  return <InterviewSessionClient session={session} initialMessages={initialMessages} />;
 }

@@ -134,7 +134,7 @@ export async function generateProjectShareToken(
     const shareToken = generateInterviewShareToken(projectId, expiryHours);
 
     // Note: In a real application, you might want to get the base URL from environment variables
-    const shareUrl = `/projects/share/${shareToken}`;
+    const shareUrl = `/interview/invite/${shareToken}`;
 
     return {
       success: true,
@@ -368,12 +368,22 @@ export async function createPersonaInterviewSession(
 /**
  * Fetch interview session details
  */
-export async function fetchInterviewSession(
-  sessionId: number,
-): Promise<ServerActionResult<InterviewSessionWithDetails>> {
+export async function fetchInterviewSession({
+  projectId,
+  sessionId,
+}: {
+  projectId: number;
+  sessionId: number;
+}): Promise<ServerActionResult<InterviewSessionWithDetails>> {
   return withAuth(async (user) => {
     const session = await prisma.interviewSession.findUnique({
-      where: { id: sessionId },
+      where: {
+        project: {
+          userId: user.id,
+        },
+        projectId: projectId,
+        id: sessionId,
+      },
       include: {
         project: {
           include: {
@@ -425,7 +435,7 @@ export async function fetchInterviewSession(
 /**
  * Fetch interview session by chat token
  */
-export async function fetchInterviewSessionByToken(
+export async function fetchInterviewSessionByChatToken(
   chatToken: string,
 ): Promise<ServerActionResult<InterviewSessionWithDetails>> {
   const userChat = await prisma.userChat.findUnique({

@@ -9,7 +9,11 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
-interface ShareInterviewPageProps {
+export function ShareInterviewClient({
+  shareToken,
+  projectInfo,
+  user,
+}: {
   shareToken: string;
   projectInfo: {
     projectId: number;
@@ -21,9 +25,7 @@ interface ShareInterviewPageProps {
     name?: string | null;
     email?: string | null;
   };
-}
-
-export function ShareInterviewPage({ shareToken, projectInfo, user }: ShareInterviewPageProps) {
+}) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
@@ -38,7 +40,7 @@ export function ShareInterviewPage({ shareToken, projectInfo, user }: ShareInter
       if (result.success) {
         toast.success("Interview session created successfully");
         // Navigate to the chat session
-        router.push(`/chat/${result.data.chatToken}`);
+        router.push(`/interview/session/chat/${result.data.chatToken}`);
       } else {
         toast.error(result.message || "Failed to start interview");
       }
@@ -50,11 +52,11 @@ export function ShareInterviewPage({ shareToken, projectInfo, user }: ShareInter
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-8">
+    <div className="px-4 py-8">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-2xl"
+        className="w-full max-w-2xl mx-auto"
       >
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4">

@@ -263,7 +263,9 @@ export function FocusedInterviewChat({
                 ? t("gettingReady")
                 : lastAssistantMessage.parts?.map((part, index) =>
                     part.type === "text" ? (
-                      <div key={index}>{part.text}</div>
+                      <div key={index} className="whitespace-normal">
+                        {part.text}
+                      </div>
                     ) : part.type === "tool-invocation" ? (
                       <div key={index} className="mt-8 text-sm text-muted-foreground">
                         {t("processing")}
