@@ -1,10 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 
 export default async function InterviewProjectHomePage() {
-  const t = useTranslations("InterviewProject");
+  const t = await getTranslations("InterviewProject");
   return (
     <div className="container mx-auto px-6 py-16 max-w-4xl">
       <div className="space-y-16">

@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
-export function ShareInterviewClient({
+export function Invite({
   shareToken,
   projectInfo,
   user,

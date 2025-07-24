@@ -3,7 +3,7 @@ import { validateShareToken } from "@/app/(interviewProject)/actions";
 import { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { notFound, redirect } from "next/navigation";
-import { ShareInterviewClient } from "./ShareInterviewClient";
+import { InviteInterviewClient } from "./InviteInterviewClient";
 
 interface SharePageProps {
   params: Promise<{
@@ -52,6 +52,6 @@ export default async function SharePage({ params }: SharePageProps) {
   }
 
   return (
-    <ShareInterviewClient shareToken={shareToken} projectInfo={result.data} user={session.user} />
+    <InviteInterviewClient shareToken={shareToken} projectInfo={result.data} user={session.user} />
   );
 }

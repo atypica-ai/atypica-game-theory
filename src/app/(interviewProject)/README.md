@@ -133,7 +133,7 @@ model InterviewSession {
 
 ### Chat API
 
-- `POST /api/chat/interviewSession` - Handle interview chat messages
+- `POST /api/chat/interview-agent` - Handle interview chat messages
 
 ## Usage Examples
 

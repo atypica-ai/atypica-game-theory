@@ -10,7 +10,7 @@ import { waitUntil } from "@vercel/functions";
 import { generateId } from "ai";
 import { getServerSession } from "next-auth";
 import authOptions from "../(auth)/authOptions";
-import { runAutoPersonaInterview } from "./(session)/api/chat/interviewSession/auto-persona";
+import { runAutoPersonaInterview } from "./(session)/api/chat/interview-agent/auto-persona";
 import {
   decryptInterviewShareToken,
   generateInterviewShareToken,

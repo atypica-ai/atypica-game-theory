@@ -22,7 +22,7 @@ import { formatDate } from "@/lib/utils";
 import { Bot, Briefcase, Calendar, ExternalLink, Plus, Trash2, Users } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { CreateProjectDialog } from "./CreateProjectDialog";
 
@@ -30,13 +30,12 @@ export function InterviewProjectsClient() {
   const locale = useLocale();
   const t = useTranslations("InterviewProject.projectsList");
   const tRoot = useTranslations("InterviewProject");
-  const tDialog = useTranslations("InterviewProject.createProjectDialog");
   const tErrors = useTranslations("InterviewProject.errors");
   const [projects, setProjects] = useState<InterviewProjectWithSessions[]>([]);
   const [loading, setLoading] = useState(true);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
-  const loadProjects = async () => {
+  const loadProjects = useCallback(async () => {
     try {
       const result = await fetchUserInterviewProjects();
       if (result.success) {
@@ -49,11 +48,11 @@ export function InterviewProjectsClient() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [tErrors]);
 
   useEffect(() => {
     loadProjects();
-  }, []);
+  }, [loadProjects]);
 
   const handleDeleteProject = async (projectId: number) => {
     try {

@@ -43,7 +43,7 @@ export function InterviewSessionChatClient({
   };
 
   const useChatHelpers = useChat({
-    api: "/api/chat/interviewSession",
+    api: "/api/chat/interview-agent",
     initialMessages,
     body: {
       ...initialRequestBody,
