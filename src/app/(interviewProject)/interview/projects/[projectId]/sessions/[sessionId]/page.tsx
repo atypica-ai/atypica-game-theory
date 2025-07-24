@@ -1,11 +1,11 @@
 import authOptions from "@/app/(auth)/authOptions";
 import { fetchInterviewSession } from "@/app/(interviewProject)/actions";
-import { InterviewSessionViewer } from "@/app/(interviewProject)/components/InterviewSessionViewer";
 import { prisma } from "@/prisma/prisma";
 import { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
+import { InterviewSessionViewer } from "./InterviewSessionViewer";
 
 export async function generateMetadata({
   params,

@@ -1,6 +1,6 @@
-import { InterviewProjectsList } from "@/app/(interviewProject)/components/InterviewProjectsList";
 import { Metadata } from "next";
 import { Suspense } from "react";
+import { InterviewProjectsList } from "./InterviewProjectsList";
 
 export const metadata: Metadata = {
   title: "Interview Projects",

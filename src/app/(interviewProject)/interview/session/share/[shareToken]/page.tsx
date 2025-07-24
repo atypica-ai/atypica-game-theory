@@ -1,23 +1,23 @@
 import authOptions from "@/app/(auth)/authOptions";
 import { validateShareToken } from "@/app/(interviewProject)/actions";
-import { ShareInterviewPage } from "@/app/(interviewProject)/components/ShareInterviewPage";
 import { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
+import { ShareInterviewPage } from "./ShareInterviewPage";
 
 interface SharePageProps {
   params: Promise<{
-    token: string;
+    shareToken: string;
   }>;
 }
 
 export async function generateMetadata({ params }: SharePageProps): Promise<Metadata> {
-  const { token } = await params;
-  if (!token) {
+  const { shareToken } = await params;
+  if (!shareToken) {
     return {};
   }
-  const result = await validateShareToken(token);
+  const result = await validateShareToken(shareToken);
 
   if (!result.success) {
     return {
@@ -33,20 +33,20 @@ export async function generateMetadata({ params }: SharePageProps): Promise<Meta
 }
 
 export default async function SharePage({ params }: SharePageProps) {
-  const { token } = await params;
-  if (!token) {
+  const { shareToken } = await params;
+  if (!shareToken) {
     notFound();
   }
   const session = await getServerSession(authOptions);
 
   // Redirect to login if not authenticated
   if (!session?.user) {
-    const returnUrl = encodeURIComponent(`/projects/share/${token}`);
+    const returnUrl = encodeURIComponent(`/interview/session/share/${shareToken}`);
     redirect(`/auth/signin?callbackUrl=${returnUrl}`);
   }
 
   // Validate the share token
-  const result = await validateShareToken(token);
+  const result = await validateShareToken(shareToken);
 
   if (!result.success) {
     notFound();
@@ -65,7 +65,7 @@ export default async function SharePage({ params }: SharePageProps) {
           </div>
         }
       >
-        <ShareInterviewPage shareToken={token} projectInfo={result.data} user={session.user} />
+        <ShareInterviewPage shareToken={shareToken} projectInfo={result.data} user={session.user} />
       </Suspense>
     </div>
   );

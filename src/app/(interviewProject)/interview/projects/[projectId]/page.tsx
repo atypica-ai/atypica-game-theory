@@ -1,8 +1,8 @@
 import { fetchInterviewProjectById } from "@/app/(interviewProject)/actions";
-import { ProjectDetails } from "@/app/(interviewProject)/components/ProjectDetails";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { ProjectDetails } from "./ProjectDetails";
 
 export async function generateMetadata({
   params,

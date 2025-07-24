@@ -1,22 +1,22 @@
 import authOptions from "@/app/(auth)/authOptions";
 import { fetchInterviewSessionByToken } from "@/app/(interviewProject)/actions";
-import { InterviewChat } from "@/app/(interviewProject)/components/InterviewChat";
 import { prisma } from "@/prisma/prisma";
 import { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
+import { InterviewChat } from "./InterviewChat";
 
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ token: string }>;
+  params: Promise<{ userChatToken: string }>;
 }): Promise<Metadata> {
-  const { token } = await params;
-  if (!token) {
+  const { userChatToken } = await params;
+  if (!userChatToken) {
     return {};
   }
-  const result = await fetchInterviewSessionByToken(token);
+  const result = await fetchInterviewSessionByToken(userChatToken);
 
   if (!result.success) {
     return {
