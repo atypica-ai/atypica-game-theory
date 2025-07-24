@@ -52,7 +52,7 @@ export function ProjectDetails({ project }: ProjectDetailsProps) {
   const handleGenerateShareLink = async () => {
     // setLoading(true);
     try {
-      const result = await generateProjectShareToken(project.id, 24);
+      const result = await generateProjectShareToken(project.id, 72);
       if (result.success) {
         setShareUrl(`${window.location.origin}${result.data.shareUrl}`);
         toast.success("Share link generated successfully");

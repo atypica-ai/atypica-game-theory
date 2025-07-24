@@ -1,4 +1,5 @@
 "use client";
+import { restartPersonaInterviewSession } from "@/app/(interviewProject)/actions";
 import { InterviewSessionWithDetails } from "@/app/(interviewProject)/types";
 import { UserChatSession } from "@/components/chat/UserChatSession";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
@@ -16,8 +17,9 @@ import {
 import { cn } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
 import { Message } from "ai";
-import { BotIcon, InfoIcon, ShieldIcon, UsersIcon } from "lucide-react";
-import { useRef } from "react";
+import { BotIcon, InfoIcon, RefreshCwIcon, ShieldIcon, UsersIcon } from "lucide-react";
+import { useRef, useState, useTransition } from "react";
+import { toast } from "sonner";
 
 export function InterviewSessionViewer({
   interviewSession,
@@ -33,6 +35,9 @@ export function InterviewSessionViewer({
     ? interviewSession.intervieweePersona
     : interviewSession.intervieweeUser;
 
+  const [isPending, startTransition] = useTransition();
+  const [isRestartDialogOpen, setIsRestartDialogOpen] = useState(false);
+
   // Use a dummy useChat for readonly viewing (no API calls)
   const useChatHelpers = useChat({
     api: "/api/dummy", // This won't be called since we're readonly
@@ -44,6 +49,31 @@ export function InterviewSessionViewer({
     setMessages: useChatHelpers.setMessages,
     append: useChatHelpers.append,
   });
+
+  const handleRestartChat = () => {
+    startTransition(async () => {
+      try {
+        const result = await restartPersonaInterviewSession({
+          projectId: interviewSession.projectId,
+          sessionId: interviewSession.id,
+        });
+        if (result.success) {
+          // Clear messages in the UI
+          useChatHelpers.setMessages([]);
+          toast.success("Interview chat restarted successfully");
+          setIsRestartDialogOpen(false);
+          if (isPersonaInterview) {
+            toast.info("Auto-conversation will begin shortly...");
+          }
+        } else {
+          toast.error(result.message || "Failed to restart chat");
+        }
+      } catch (error) {
+        toast.error("Failed to restart chat");
+        console.error("Error restarting chat:", error);
+      }
+    });
+  };
 
   // Project info dialog content
   const projectInfoButton = (
@@ -175,7 +205,39 @@ export function InterviewSessionViewer({
               (interviewTarget && "email" in interviewTarget ? interviewTarget.email : "Anonymous")}
           </h1>
         </div>
-        {projectInfoButton}
+        <div className="flex items-center space-x-2">
+          <Dialog open={isRestartDialogOpen} onOpenChange={setIsRestartDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm" disabled={isPending}>
+                <RefreshCwIcon className={cn("h-4 w-4 mr-2", isPending && "animate-spin")} />
+                Restart Chat
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Restart Interview Chat</DialogTitle>
+                <DialogDescription>
+                  This will clear all existing messages and restart the interview from the
+                  beginning.
+                  {isPersonaInterview && " The AI conversation will automatically begin again."}
+                </DialogDescription>
+              </DialogHeader>
+              <div className="flex justify-end space-x-2 pt-4">
+                <Button variant="outline" onClick={() => setIsRestartDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleRestartChat}
+                  disabled={isPending}
+                  className="bg-red-600 hover:bg-red-700"
+                >
+                  {isPending ? "Restarting..." : "Restart Chat"}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+          {projectInfoButton}
+        </div>
       </div>
 
       {/* Chat content */}

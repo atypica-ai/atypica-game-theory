@@ -22,7 +22,7 @@ import { Bot, Info, Shield, Users } from "lucide-react";
 import { useEffect, useMemo, useRef } from "react";
 import { z } from "zod";
 
-export function InterviewSessionClient({
+export function InterviewSessionChatClient({
   interviewSession,
   initialMessages = [],
 }: {

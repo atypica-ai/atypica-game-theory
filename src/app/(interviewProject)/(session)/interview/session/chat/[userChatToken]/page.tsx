@@ -6,7 +6,7 @@ import { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import { NextResponse } from "next/server";
-import { InterviewSessionClient } from "./InterviewSessionClient";
+import { InterviewSessionChatClient } from "./InterviewSessionChatClient";
 
 export async function generateMetadata({
   params,
@@ -86,6 +86,9 @@ export default async function InterviewSessionChatPage({
         })),
     );
   return (
-    <InterviewSessionClient interviewSession={interviewSession} initialMessages={initialMessages} />
+    <InterviewSessionChatClient
+      interviewSession={interviewSession}
+      initialMessages={initialMessages}
+    />
   );
 }

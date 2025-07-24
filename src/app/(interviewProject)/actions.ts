@@ -1,13 +1,16 @@
 "use server";
 import { createTextEmbedding } from "@/ai/embedding";
+import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { createUserChat } from "@/lib/userChat/lib";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
+import { waitUntil } from "@vercel/functions";
 import { generateId } from "ai";
 import { getServerSession } from "next-auth";
 import authOptions from "../(auth)/authOptions";
+import { runAutoPersonaInterview } from "./(session)/api/chat/interviewSession/auto-persona";
 import {
   decryptInterviewShareToken,
   generateInterviewShareToken,
@@ -344,23 +347,120 @@ export async function createPersonaInterviewSession(
         },
       });
 
-      // Add initial message to start the conversation
-      await tx.chatMessage.create({
-        data: {
-          messageId: generateId(),
-          userChatId: userChat.id,
-          role: "user",
-          content: "[READY]",
-          parts: [{ type: "text", text: "[READY]" }] as InputJsonValue,
-        },
-      });
-
-      return { sessionId: interviewSession.id, chatToken: userChat.token, autoStart: true };
+      return {
+        sessionId: interviewSession.id,
+        chatToken: userChat.token,
+        userChatId: userChat.id,
+        autoStart: true,
+      };
     });
+
+    // Start auto persona interview in the background
+    waitUntil(
+      runAutoPersonaInterview({
+        sessionId: result.sessionId,
+        userChatId: result.userChatId,
+        projectBrief: project.brief,
+        personaId: input.personaId,
+      }).catch((error) => {
+        rootLogger
+          .child({ sessionId: result.sessionId })
+          .error("Auto persona interview failed", { error: error.message });
+      }),
+    );
 
     return {
       success: true,
-      data: result,
+      data: {
+        sessionId: result.sessionId,
+        chatToken: result.chatToken,
+        autoStart: result.autoStart,
+      },
+    };
+  });
+}
+
+/**
+ * Restart interview session chat
+ */
+export async function restartPersonaInterviewSession({
+  projectId,
+  sessionId,
+}: {
+  projectId: number;
+  sessionId: number;
+}): Promise<ServerActionResult<{ chatToken: string }>> {
+  return withAuth(async (user) => {
+    // Verify session ownership
+    const session = await prisma.interviewSession.findUnique({
+      where: {
+        project: {
+          userId: user.id,
+        },
+        projectId: projectId,
+        id: sessionId,
+      },
+      include: {
+        userChat: true,
+        intervieweePersona: {
+          select: { id: true, name: true },
+        },
+        project: {
+          select: { brief: true },
+        },
+      },
+    });
+
+    if (!session) {
+      return {
+        success: false,
+        code: "not_found",
+        message: "Interview session not found",
+      };
+    }
+
+    if (!session.intervieweePersonaId) {
+      return {
+        success: false,
+        code: "not_found",
+        message: "Interview session is not associated with an interviewee persona",
+      };
+    }
+
+    if (!session.userChat) {
+      return {
+        success: false,
+        code: "not_found",
+        message: "User chat not found",
+      };
+    }
+
+    const { userChat } = session;
+
+    // Clear all existing chat messages
+    await prisma.chatMessage.deleteMany({
+      where: { userChatId: userChat.id },
+    });
+
+    // If it's a persona interview, restart auto conversation
+    if (session.intervieweePersona) {
+      waitUntil(
+        runAutoPersonaInterview({
+          sessionId: session.id,
+          userChatId: userChat.id,
+          projectBrief: session.project.brief,
+          personaId: session.intervieweePersona.id,
+        }).catch((error) => {
+          rootLogger
+            .child({ sessionId: session.id })
+            .error("Auto persona interview restart failed", { error: error.message });
+        }),
+      );
+    }
+
+    return {
+      success: true,
+      data: { chatToken: userChat.token },
     };
   });
 }
