@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 
-function _InterviewProjectHomePage() {
+export default async function InterviewProjectHomePage() {
   return (
     <div className="container mx-auto px-6 py-16 max-w-4xl">
       <div className="space-y-16">
@@ -107,20 +107,6 @@ function _InterviewProjectHomePage() {
           </Link>
         </div>
       </div>
-    </div>
-  );
-}
-
-import { LeftMenus } from "@/app/(public)/LeftMenu";
-import GlobalFooter from "@/components/GlobalFooter";
-import GlobalHeader from "@/components/GlobalHeader";
-
-export default async function InterviewProjectHomePage() {
-  return (
-    <div className="pt-16 min-h-dvh flex flex-col items-stretch justify-start overflow-y-auto scrollbar-thin">
-      <GlobalHeader className="h-16 fixed top-0 left-0 right-0 z-10" leftMenus={<LeftMenus />} />
-      <_InterviewProjectHomePage />
-      <GlobalFooter />
     </div>
   );
 }

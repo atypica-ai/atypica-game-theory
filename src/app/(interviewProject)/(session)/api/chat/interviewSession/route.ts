@@ -6,9 +6,11 @@ import {
 import { llm, providerOptions } from "@/ai/provider";
 import authOptions from "@/app/(auth)/authOptions";
 import { fetchInterviewSessionByChatToken } from "@/app/(interviewProject)/actions";
-import { generateInterviewPrompt } from "@/app/(interviewProject)/lib";
+import { interviewSessionSystemPrompt } from "@/app/(interviewProject)/prompt";
+import { interviewSessionTools } from "@/app/(interviewProject)/tools";
 import { interviewSessionChatBodySchema } from "@/app/(interviewProject)/types";
 import { rootLogger } from "@/lib/logging";
+import { throwServerActionError } from "@/lib/serverAction";
 import { generateId, smoothStream, streamText } from "ai";
 import { getServerSession } from "next-auth";
 import { getLocale } from "next-intl/server";
@@ -27,45 +29,21 @@ export async function POST(req: Request) {
     return NextResponse.json({ error }, { status: 400 });
   }
 
-  const { message: newMessage, sessionToken } = parseResult.data;
-
-  if (!sessionToken || !newMessage) {
-    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
-  }
+  const { message: newMessage, userChatToken } = parseResult.data;
 
   // Get interview session details
-  const sessionResult = await fetchInterviewSessionByChatToken(sessionToken);
+  const sessionResult = await fetchInterviewSessionByChatToken(userChatToken);
   if (!sessionResult.success) {
-    return NextResponse.json(
-      { error: sessionResult.message },
-      {
-        status:
-          sessionResult.code === "unauthorized"
-            ? 401
-            : sessionResult.code === "forbidden"
-              ? 403
-              : sessionResult.code === "not_found"
-                ? 404
-                : 500,
-      },
-    );
+    throwServerActionError(sessionResult);
   }
 
   const interviewSession = sessionResult.data;
-  const { project, userChat, intervieweePersona } = interviewSession;
 
-  if (!userChat) {
-    return NextResponse.json({ error: "No chat session found" }, { status: 400 });
-  }
-
-  // Check access permission
-  const hasAccess =
-    project.userId === session.user.id || // Project owner
-    interviewSession.intervieweeUserId === session.user.id; // Interviewee
-
-  if (!hasAccess) {
+  if (interviewSession.intervieweeUserId !== session.user.id) {
     return NextResponse.json({ error: "Access denied" }, { status: 403 });
   }
+
+  const { project, userChat, intervieweePersona } = interviewSession;
 
   const chatLogger = rootLogger.child({
     userChatId: userChat.id,
@@ -85,25 +63,25 @@ export async function POST(req: Request) {
 
   // Generate system prompt based on interview context
   const isPersonaInterview = !!intervieweePersona;
-  const systemPrompt = generateInterviewPrompt(
-    project.brief,
-    isPersonaInterview,
-    intervieweePersona?.name,
-  );
+  const systemPrompt = interviewSessionSystemPrompt({
+    brief: project.brief,
+    isPersonaInterview: isPersonaInterview,
+    personaName: intervieweePersona?.name,
+    locale,
+  });
 
   const mergedAbortSignal = AbortSignal.any([req.signal]);
 
   const streamTextResult = streamText({
-    model: llm("gemini-2.5-flash", {
-      useSearchGrounding: false, // Disable search for interviews to keep focus
-    }),
+    model: llm("claude-3-7-sonnet"),
     providerOptions: {
       ...providerOptions,
     },
     system: systemPrompt,
     messages: coreMessages,
+    toolChoice: coreMessages.length < 19 ? "auto" : { type: "tool", toolName: "endInterview" },
     tools: {
-      // No tools needed for basic interview functionality
+      ...interviewSessionTools,
     },
     maxSteps: 1, // Keep it simple for interviews
     experimental_generateMessageId: () => streamingMessage.id,
@@ -121,6 +99,7 @@ export async function POST(req: Request) {
         msg: "interview session streamText onStepFinish",
         stepType: step.stepType,
         usage: step.usage,
+        toolCalls: step.toolCalls.map((call) => call.toolName),
         isPersonaInterview,
       });
     },

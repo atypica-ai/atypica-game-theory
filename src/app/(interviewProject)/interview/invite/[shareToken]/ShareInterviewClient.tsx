@@ -44,7 +44,7 @@ export function ShareInterviewClient({
       } else {
         toast.error(result.message || "Failed to start interview");
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to start interview");
     } finally {
       setLoading(false);
@@ -63,7 +63,7 @@ export function ShareInterviewClient({
             <MessageSquare className="h-8 w-8 text-blue-600 dark:text-blue-400" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-            You're Invited to an Interview
+            You&apos;re Invited to an Interview
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
             {projectInfo.ownerName ? `${projectInfo.ownerName} has` : "Someone has"} invited you to
@@ -111,7 +111,8 @@ export function ShareInterviewClient({
                   <div>
                     <p className="font-medium text-sm">Open-ended Questions</p>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      You'll be asked thoughtful questions to share your experiences and insights
+                      You&apos;ll be asked thoughtful questions to share your experiences and
+                      insights
                     </p>
                   </div>
                 </div>
@@ -120,7 +121,7 @@ export function ShareInterviewClient({
                   <div>
                     <p className="font-medium text-sm">Your Pace</p>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Take your time to think and respond - there's no rush
+                      Take your time to think and respond - there&apos;s no rush
                     </p>
                   </div>
                 </div>

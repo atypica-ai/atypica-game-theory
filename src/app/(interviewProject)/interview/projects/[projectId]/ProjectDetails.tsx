@@ -30,9 +30,8 @@ export function ProjectDetails({ project }: ProjectDetailsProps) {
   const router = useRouter();
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [personaDialogOpen, setPersonaDialogOpen] = useState(false);
-  const [shareToken, setShareToken] = useState("");
   const [shareUrl, setShareUrl] = useState("");
-  const [loading, setLoading] = useState(false);
+  // const [loading, setLoading] = useState(false);
 
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat("en-US", {
@@ -51,20 +50,19 @@ export function ProjectDetails({ project }: ProjectDetailsProps) {
   };
 
   const handleGenerateShareLink = async () => {
-    setLoading(true);
+    // setLoading(true);
     try {
       const result = await generateProjectShareToken(project.id, 24);
       if (result.success) {
-        setShareToken(result.data.shareToken);
         setShareUrl(`${window.location.origin}${result.data.shareUrl}`);
         toast.success("Share link generated successfully");
       } else {
         toast.error(result.message || "Failed to generate share link");
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to generate share link");
     } finally {
-      setLoading(false);
+      // setLoading(false);
     }
   };
 
@@ -72,7 +70,7 @@ export function ProjectDetails({ project }: ProjectDetailsProps) {
     try {
       await navigator.clipboard.writeText(shareUrl);
       toast.success("Link copied to clipboard");
-    } catch (error) {
+    } catch {
       toast.error("Failed to copy link");
     }
   };

@@ -64,7 +64,7 @@ export function CreateProjectDialog({
           setErrors([result.message]);
         }
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to create project");
       setErrors(["An unexpected error occurred"]);
     } finally {

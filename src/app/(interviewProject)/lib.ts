@@ -1,3 +1,5 @@
+import "server-only";
+
 import { decryptText, encryptText } from "@/lib/cipher";
 import { truncateForTitle } from "@/lib/textUtils";
 import { InterviewSharePayload } from "./types";
@@ -47,53 +49,9 @@ export function decryptInterviewShareToken(token: string): InterviewSharePayload
     }
 
     return payload;
-  } catch (error) {
+  } catch {
     return null;
   }
-}
-
-/**
- * Generate interview session prompt based on project brief and context
- * @param brief - The interview project brief
- * @param isPersonaInterview - Whether this is a persona interview
- * @param personaName - Name of the persona (if applicable)
- * @returns System prompt for the interview
- */
-export function generateInterviewPrompt(
-  brief: string,
-  isPersonaInterview: boolean = false,
-  personaName?: string,
-): string {
-  const basePrompt = `You are conducting a research interview based on the following brief:
-
-${brief}
-
-Your role is to be a professional interviewer who:
-- Asks thoughtful, open-ended questions
-- Follows up on interesting responses with deeper questions
-- Maintains a conversational but focused tone
-- Helps the interviewee feel comfortable sharing their thoughts
-- Guides the conversation to gather insights relevant to the research brief
-
-Guidelines:
-- Start with introductory questions to build rapport
-- Ask one question at a time
-- Listen actively and ask follow-up questions based on responses
-- Avoid leading questions that might bias the responses
-- Keep questions clear and easy to understand
-- Adapt your questioning style to the interviewee's responses
-
-Remember: Your goal is to gather authentic insights and understanding, not to validate any particular hypothesis.`;
-
-  if (isPersonaInterview && personaName) {
-    return `${basePrompt}
-
-You are interviewing an AI persona named "${personaName}". Treat them as you would a real person, asking questions that would help you understand their perspective, experiences, and thoughts related to the research topic.`;
-  }
-
-  return `${basePrompt}
-
-You are interviewing a real person. Be respectful, empathetic, and create a safe space for them to share their genuine thoughts and experiences.`;
 }
 
 /**

@@ -19,17 +19,15 @@ import { Message } from "ai";
 import { BotIcon, InfoIcon, ShieldIcon, UsersIcon } from "lucide-react";
 import { useRef } from "react";
 
-interface InterviewSessionViewerProps {
-  interviewSession: InterviewSessionWithDetails;
-  initialMessages?: Message[];
-  className?: string;
-}
-
 export function InterviewSessionViewer({
   interviewSession,
   initialMessages = [],
   className,
-}: InterviewSessionViewerProps) {
+}: {
+  interviewSession: InterviewSessionWithDetails;
+  initialMessages?: Message[];
+  className?: string;
+}) {
   const isPersonaInterview = !!interviewSession.intervieweePersona;
   const interviewTarget = isPersonaInterview
     ? interviewSession.intervieweePersona

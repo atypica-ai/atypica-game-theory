@@ -42,19 +42,19 @@ export interface InterviewSessionWithDetails {
     };
   };
   userChatId: number | null;
-  userChat?: {
+  userChat: {
     id: number;
     token: string;
     title: string;
-  } | null;
+  };
   intervieweeUserId: number | null;
-  intervieweeUser?: {
+  intervieweeUser: {
     id: number;
     name: string | null;
     email: string;
   } | null;
   intervieweePersonaId: number | null;
-  intervieweePersona?: {
+  intervieweePersona: {
     id: number;
     name: string;
     prompt: string;
@@ -78,8 +78,7 @@ export const interviewSessionChatBodySchema = z.object({
     content: z.string(),
     parts: z.array(z.any()).optional(),
   }),
-  sessionToken: z.string().optional(),
-  shareToken: z.string().optional(),
+  userChatToken: z.string(),
 });
 
 export type InterviewSessionChatBody = z.infer<typeof interviewSessionChatBodySchema>;

@@ -439,7 +439,10 @@ export async function fetchInterviewSessionByChatToken(
   chatToken: string,
 ): Promise<ServerActionResult<InterviewSessionWithDetails>> {
   const userChat = await prisma.userChat.findUnique({
-    where: { token: chatToken, kind: "interviewSession" },
+    where: {
+      token: chatToken,
+      kind: "interviewSession",
+    },
     include: {
       interviewSession: {
         include: {
@@ -477,8 +480,8 @@ export async function fetchInterviewSessionByChatToken(
       token: userChat.token,
       title: userChat.title,
     },
-    intervieweeUser: session.intervieweeUser || undefined,
-    intervieweePersona: session.intervieweePersona || undefined,
+    intervieweeUser: session.intervieweeUser,
+    intervieweePersona: session.intervieweePersona,
   };
 
   return {

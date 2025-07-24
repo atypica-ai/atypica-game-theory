@@ -19,27 +19,30 @@ import {
 import { useChat } from "@ai-sdk/react";
 import { Message } from "ai";
 import { Bot, Info, Shield, Users } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { z } from "zod";
 
-interface InterviewChatProps {
-  session: InterviewSessionWithDetails;
+export function InterviewSessionClient({
+  interviewSession,
+  initialMessages = [],
+}: {
+  interviewSession: InterviewSessionWithDetails;
   initialMessages?: Message[];
-}
-
-export function InterviewSessionClient({ session, initialMessages = [] }: InterviewChatProps) {
-  const isPersonaInterview = !!session.intervieweePersona;
-  const interviewTarget = isPersonaInterview ? session.intervieweePersona : session.intervieweeUser;
+}) {
+  const isPersonaInterview = !!interviewSession.intervieweePersona;
+  const interviewTarget = isPersonaInterview
+    ? interviewSession.intervieweePersona
+    : interviewSession.intervieweeUser;
 
   const initialRequestBody = {
-    sessionToken: session.userChat?.token,
+    userChatToken: interviewSession.userChat.token,
   };
 
   const useChatHelpers = useChat({
     api: "/api/chat/interviewSession",
     initialMessages,
     body: {
-      sessionToken: session.userChat?.token,
+      ...initialRequestBody,
     },
     experimental_prepareRequestBody({ messages, requestBody: _requestBody }) {
       const requestBody: typeof initialRequestBody = { ...initialRequestBody, ..._requestBody };
@@ -62,6 +65,24 @@ export function InterviewSessionClient({ session, initialMessages = [] }: Interv
     reload: useChatHelpers.reload,
     setMessages: useChatHelpers.setMessages,
   });
+
+  const { messages } = useChatHelpers;
+  // Determine planning state based on messages content
+  const interviewState = useMemo(() => {
+    // Check if any message has endInterview tool result
+    const hasEndInterviewResult = messages.some((message) =>
+      message.parts?.some(
+        (part) =>
+          part.type === "tool-invocation" &&
+          part.toolInvocation.toolName === "endInterview" &&
+          part.toolInvocation.state === "result",
+      ),
+    );
+    if (hasEndInterviewResult) {
+      return "summary";
+    }
+    return "active";
+  }, [messages]);
 
   // Automatically start the conversation when the component mounts.
   const requestSentRef = useRef(false);
@@ -116,7 +137,7 @@ export function InterviewSessionClient({ session, initialMessages = [] }: Interv
             </CardHeader>
             <CardContent>
               <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">
-                {session.project.brief}
+                {interviewSession.project.brief}
               </p>
             </CardContent>
           </Card>
@@ -127,11 +148,12 @@ export function InterviewSessionClient({ session, initialMessages = [] }: Interv
               <div className="flex items-center space-x-2">
                 <Avatar className="h-6 w-6">
                   <AvatarFallback className="text-xs">
-                    {session.project.user.name?.charAt(0) || session.project.user.email.charAt(0)}
+                    {interviewSession.project.user.name?.charAt(0) ||
+                      interviewSession.project.user.email.charAt(0)}
                   </AvatarFallback>
                 </Avatar>
                 <span className="text-sm text-gray-600 dark:text-gray-400">
-                  {session.project.user.name || session.project.user.email}
+                  {interviewSession.project.user.name || interviewSession.project.user.email}
                 </span>
               </div>
             </div>
@@ -174,15 +196,44 @@ export function InterviewSessionClient({ session, initialMessages = [] }: Interv
     </Dialog>
   );
 
+  if (interviewState === "summary") {
+    return (
+      <div className="flex flex-col items-center justify-center h-full p-8 text-center">
+        <div className="max-w-md space-y-6">
+          <div className="space-y-4">
+            <div className="w-16 h-16 mx-auto bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
+              <Shield className="h-8 w-8 text-green-600 dark:text-green-400" />
+            </div>
+            <div className="space-y-2">
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
+                Interview Complete
+              </h2>
+              <p className="text-gray-600 dark:text-gray-400">
+                Thank you for participating in this interview session. Your responses have been
+                recorded and will be used for research purposes.
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-lg">
+            <p className="text-sm text-gray-700 dark:text-gray-300">
+              The interview summary and analysis will be available to the researcher shortly.
+            </p>
+          </div>
+
+          {projectInfoButton}
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="h-screen w-full">
-      <FocusedInterviewChat
-        useChatHelpers={useChatHelpers}
-        useChatRef={useChatRef}
-        showTimer={false} // Interviews don't need timer pressure
-        topRightButton={projectInfoButton}
-        className="h-full"
-      />
-    </div>
+    <FocusedInterviewChat
+      useChatHelpers={useChatHelpers}
+      useChatRef={useChatRef}
+      showTimer={false} // Interviews don't need timer pressure
+      topRightButton={projectInfoButton}
+      className="h-full"
+    />
   );
 }

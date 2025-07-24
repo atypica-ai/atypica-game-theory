@@ -40,7 +40,7 @@ export function InterviewProjectsClient() {
       } else {
         toast.error(result.message || "Failed to load projects");
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to load projects");
     } finally {
       setLoading(false);
@@ -60,7 +60,7 @@ export function InterviewProjectsClient() {
       } else {
         toast.error(result.message || "Failed to delete project");
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to delete project");
     }
   };

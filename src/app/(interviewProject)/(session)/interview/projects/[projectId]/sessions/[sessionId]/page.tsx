@@ -51,7 +51,7 @@ export async function generateMetadata({
       title: `Interview Session - ${isPersonaInterview ? session.intervieweePersona?.name : "Human Interview"}`,
       description: `Interview session for project: ${session.project.brief.slice(0, 160)}`,
     };
-  } catch (error) {
+  } catch {
     return {
       title: "Session Not Found",
       description: "This interview session is not available.",
@@ -68,7 +68,7 @@ export default async function SessionPage({
   let validatedParams;
   try {
     validatedParams = paramsSchema.parse(await params);
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Invalid parameters" }, { status: 400 });
   }
 

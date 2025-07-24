@@ -1,6 +1,7 @@
 import authOptions from "@/app/(auth)/authOptions";
 import { fetchInterviewSessionByChatToken } from "@/app/(interviewProject)/actions";
 import { prisma } from "@/prisma/prisma";
+import { Message } from "ai";
 import { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
@@ -48,12 +49,12 @@ export default async function InterviewSessionChatPage({
     return NextResponse.json({ error: "Not Found" }, { status: 404 });
   }
 
-  const session = result.data;
+  const interviewSession = result.data;
 
   // Check access permission
   const hasAccess =
-    session.project.userId === userId || // Project owner
-    session.intervieweeUserId === userId; // Interviewee
+    interviewSession.project.userId === userId || // Project owner
+    interviewSession.intervieweeUserId === userId; // Interviewee
 
   if (!hasAccess) {
     // redirect("/projects");
@@ -61,29 +62,30 @@ export default async function InterviewSessionChatPage({
   }
 
   // Get existing messages for this chat
-  const initialMessages = session.userChat
-    ? await prisma.chatMessage
-        .findMany({
-          where: { userChatId: session.userChat.id },
-          orderBy: { createdAt: "asc" },
-          select: {
-            messageId: true,
-            role: true,
-            content: true,
-            createdAt: true,
-          },
-        })
-        .then((messages) =>
-          messages
-            .filter((msg) => msg.content !== "[READY]") // Filter out initialization message
-            .map((msg) => ({
-              id: msg.messageId,
-              role: msg.role as "user" | "assistant",
-              content: msg.content,
-              createdAt: msg.createdAt,
-            })),
-        )
-    : [];
-
-  return <InterviewSessionClient session={session} initialMessages={initialMessages} />;
+  const initialMessages = await prisma.chatMessage
+    .findMany({
+      where: { userChatId: interviewSession.userChat.id },
+      orderBy: { createdAt: "asc" },
+      select: {
+        messageId: true,
+        role: true,
+        content: true,
+        parts: true,
+        createdAt: true,
+      },
+    })
+    .then((messages) =>
+      messages
+        // .filter((msg) => msg.content !== "[READY]") // Filter out initialization message
+        .map((msg) => ({
+          id: msg.messageId,
+          role: msg.role as "user" | "assistant",
+          content: msg.content,
+          parts: msg.parts as Message["parts"],
+          createdAt: msg.createdAt,
+        })),
+    );
+  return (
+    <InterviewSessionClient interviewSession={interviewSession} initialMessages={initialMessages} />
+  );
 }
