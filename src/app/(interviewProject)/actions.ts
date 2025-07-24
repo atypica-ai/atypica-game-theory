@@ -4,12 +4,11 @@ import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { createUserChat } from "@/lib/userChat/lib";
+import { generateToken } from "@/lib/utils";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
 import { generateId } from "ai";
-import { getServerSession } from "next-auth";
-import authOptions from "../(auth)/authOptions";
 import { runAutoPersonaInterview } from "./(session)/api/chat/interview-agent/auto-persona";
 import {
   decryptInterviewShareToken,
@@ -35,10 +34,9 @@ export async function createInterviewProject(
       data: {
         userId: user.id,
         brief: input.brief.trim(),
-        token: generateId(),
+        token: generateToken(), // TODO: 暂时用不到
       },
     });
-
     return {
       success: true,
       data: { id: project.id, token: project.token },
@@ -151,7 +149,7 @@ export async function generateProjectShareToken(
  */
 export async function validateShareToken(
   shareToken: string,
-): Promise<ServerActionResult<{ projectId: number; brief: string; ownerName: string | null }>> {
+): Promise<ServerActionResult<{ projectId: number; ownerName: string }>> {
   const payload = decryptInterviewShareToken(shareToken);
 
   if (!payload) {
@@ -164,9 +162,13 @@ export async function validateShareToken(
 
   const project = await prisma.interviewProject.findUnique({
     where: { id: payload.projectId },
-    include: {
+    select: {
+      id: true,
       user: {
-        select: { name: true },
+        select: {
+          name: true,
+          email: true,
+        },
       },
     },
   });
@@ -183,8 +185,7 @@ export async function validateShareToken(
     success: true,
     data: {
       projectId: project.id,
-      brief: project.brief,
-      ownerName: project.user.name,
+      ownerName: project.user.email,
     },
   };
 }
@@ -195,103 +196,96 @@ export async function validateShareToken(
 export async function createHumanInterviewSession(
   input: CreateHumanInterviewSessionInput,
 ): Promise<ServerActionResult<{ sessionId: number; chatToken: string }>> {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) {
-    return {
-      success: false,
-      code: "unauthorized",
-      message: "Authentication required",
-    };
-  }
+  return withAuth(async (user) => {
+    const userId = user.id;
 
-  const userId = session.user.id;
+    // Validate share token
+    const payload = decryptInterviewShareToken(input.shareToken);
+    if (!payload || payload.projectId !== input.projectId) {
+      return {
+        success: false,
+        code: "not_found",
+        message: "Invalid or expired share token",
+      };
+    }
 
-  // Validate share token
-  const payload = decryptInterviewShareToken(input.shareToken);
-  if (!payload || payload.projectId !== input.projectId) {
-    return {
-      success: false,
-      code: "not_found",
-      message: "Invalid or expired share token",
-    };
-  }
-
-  // Get project details
-  const project = await prisma.interviewProject.findUnique({
-    where: { id: input.projectId },
-    include: {
-      user: { select: { name: true } },
-    },
-  });
-
-  if (!project) {
-    return {
-      success: false,
-      code: "not_found",
-      message: "Interview project not found",
-    };
-  }
-
-  // Check if user already has a session for this project
-  const existingSession = await prisma.interviewSession.findFirst({
-    where: {
-      projectId: input.projectId,
-      intervieweeUserId: userId,
-    },
-    include: {
-      userChat: {
-        select: { token: true },
+    // Get project details
+    const project = await prisma.interviewProject.findUnique({
+      where: { id: input.projectId },
+      include: {
+        user: { select: { name: true } },
       },
-    },
-  });
-
-  if (existingSession && existingSession.userChat) {
-    return {
-      success: true,
-      data: {
-        sessionId: existingSession.id,
-        chatToken: existingSession.userChat.token,
-      },
-    };
-  }
-
-  // Create session and user chat in transaction
-  const result = await prisma.$transaction(async (tx) => {
-    // Create user chat for the interview
-    const userChat = await createUserChat({
-      userId: project.userId, // Chat belongs to project owner
-      title: generateInterviewTitle(project.brief, false),
-      kind: "interviewSession",
-      tx,
     });
 
-    // Create interview session
-    const interviewSession = await tx.interviewSession.create({
-      data: {
+    if (!project) {
+      return {
+        success: false,
+        code: "not_found",
+        message: "Interview project not found",
+      };
+    }
+
+    // Check if user already has a session for this project
+    const existingSession = await prisma.interviewSession.findFirst({
+      where: {
         projectId: input.projectId,
-        userChatId: userChat.id,
         intervieweeUserId: userId,
       },
-    });
-
-    // Add initial message to start the conversation
-    await tx.chatMessage.create({
-      data: {
-        messageId: generateId(),
-        userChatId: userChat.id,
-        role: "user",
-        content: "[READY]",
-        parts: [{ type: "text", text: "[READY]" }] as InputJsonValue,
+      include: {
+        userChat: {
+          select: { token: true },
+        },
       },
     });
 
-    return { sessionId: interviewSession.id, chatToken: userChat.token };
-  });
+    if (existingSession && existingSession.userChat) {
+      return {
+        success: true,
+        data: {
+          sessionId: existingSession.id,
+          chatToken: existingSession.userChat.token,
+        },
+      };
+    }
 
-  return {
-    success: true,
-    data: result,
-  };
+    // Create session and user chat in transaction
+    const result = await prisma.$transaction(async (tx) => {
+      // Create user chat for the interview
+      const userChat = await createUserChat({
+        userId: project.userId, // Chat belongs to project owner
+        title: generateInterviewTitle(project.brief, false),
+        kind: "interviewSession",
+        tx,
+      });
+
+      // Create interview session
+      const interviewSession = await tx.interviewSession.create({
+        data: {
+          projectId: input.projectId,
+          userChatId: userChat.id,
+          intervieweeUserId: userId,
+        },
+      });
+
+      // Add initial message to start the conversation
+      await tx.chatMessage.create({
+        data: {
+          messageId: generateId(),
+          userChatId: userChat.id,
+          role: "user",
+          content: "[READY]",
+          parts: [{ type: "text", text: "[READY]" }] as InputJsonValue,
+        },
+      });
+
+      return { sessionId: interviewSession.id, chatToken: userChat.token };
+    });
+
+    return {
+      success: true,
+      data: result,
+    };
+  });
 }
 
 /**

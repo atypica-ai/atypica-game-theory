@@ -1302,7 +1302,9 @@
       "startingInterview": "启动访谈中...",
       "agreementText": "开始访谈即表示您同意参与此研究",
       "poweredBy": "技术支持",
-      "humanInterview": "真人"
+      "humanInterview": "真人",
+      "loginDescription": "请登录以参与此次访谈",
+      "loginButton": "登录参与"
     },
     "errors": {
       "loadProjectsFailed": "加载项目失败",

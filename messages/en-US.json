@@ -1302,7 +1302,9 @@
       "startingInterview": "Starting Interview...",
       "agreementText": "By starting the interview, you agree to participate in this research study",
       "poweredBy": "Powered by",
-      "humanInterview": "Human"
+      "humanInterview": "Human",
+      "loginDescription": "Please log in to participate in this interview",
+      "loginButton": "Login to Participate"
     },
     "errors": {
       "loadProjectsFailed": "Failed to load projects",

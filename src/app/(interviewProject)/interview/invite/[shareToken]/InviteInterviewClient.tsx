@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
-export function Invite({
+export function InviteInterviewClient({
   shareToken,
   projectInfo,
   user,
@@ -18,14 +18,13 @@ export function Invite({
   shareToken: string;
   projectInfo: {
     projectId: number;
-    brief: string;
     ownerName: string | null;
   };
   user: {
     id: number;
     name?: string | null;
-    email?: string | null;
-  };
+    email: string;
+  } | null;
 }) {
   const t = useTranslations("InterviewProject.shareInvite");
   const router = useRouter();
@@ -38,11 +37,10 @@ export function Invite({
         projectId: projectInfo.projectId,
         shareToken,
       });
-
       if (result.success) {
-        toast.success(t("startInterview"));
         // Navigate to the chat session
         router.push(`/interview/session/chat/${result.data.chatToken}`);
+        toast.success(t("startInterview"));
       } else {
         toast.error(result.message || t("startingInterview"));
       }
@@ -51,6 +49,12 @@ export function Invite({
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleLogin = () => {
+    const currentUrl = window.location.href;
+    const callbackUrl = encodeURIComponent(currentUrl);
+    router.push(`/auth/signin?callbackUrl=${callbackUrl}`);
   };
 
   return (
@@ -83,7 +87,7 @@ export function Invite({
             <CardDescription>{t("description")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div>
+            {/* <div>
               <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-3">
                 {t("researchBrief")}
               </h3>
@@ -92,7 +96,7 @@ export function Invite({
                   {projectInfo.brief}
                 </p>
               </div>
-            </div>
+            </div> */}
 
             <div className="space-y-4">
               <h3 className="font-medium text-gray-900 dark:text-gray-100">{t("whatToExpect")}</h3>
@@ -143,38 +147,53 @@ export function Invite({
           </CardContent>
         </Card>
 
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border text-center">
-          <div className="mb-4">
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{t("participatingAs")}</p>
-            <div className="inline-flex items-center space-x-2 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">
-              <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
-                <span className="text-white text-xs font-medium">
-                  {user.name
-                    ? user.name.charAt(0).toUpperCase()
-                    : user.email?.charAt(0).toUpperCase()}
-                </span>
+        <div className="text-center">
+          {user ? (
+            <>
+              <div className="mb-4">
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                  {t("participatingAs")}
+                </p>
+                <div className="inline-flex items-center space-x-2 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">
+                  <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
+                    <span className="text-white text-xs font-medium">
+                      {user?.name
+                        ? user.name.charAt(0).toUpperCase()
+                        : user?.email?.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                  <span className="text-sm font-medium">{user?.name || user?.email}</span>
+                </div>
               </div>
-              <span className="text-sm font-medium">{user.name || user.email}</span>
-            </div>
-          </div>
+              <Button
+                onClick={handleStartInterview}
+                disabled={loading}
+                size="lg"
+                className="w-full sm:w-auto"
+              >
+                {loading ? (
+                  t("startingInterview")
+                ) : (
+                  <>
+                    {t("startInterview")}
+                    <ArrowRight className="h-4 w-4" />
+                  </>
+                )}
+              </Button>
 
-          <Button
-            onClick={handleStartInterview}
-            disabled={loading}
-            size="lg"
-            className="w-full sm:w-auto"
-          >
-            {loading ? (
-              t("startingInterview")
-            ) : (
-              <>
-                {t("startInterview")}
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </>
-            )}
-          </Button>
-
-          <p className="text-xs text-gray-500 mt-3">{t("agreementText")}</p>
+              <p className="text-xs text-gray-500 mt-3">{t("agreementText")}</p>
+            </>
+          ) : (
+            <>
+              <div className="mt-12 mb-4">
+                <p className="text-sm text-gray-600 dark:text-gray-400">{t("loginDescription")}</p>
+              </div>
+              <Button onClick={handleLogin} size="lg" className="w-full sm:w-auto">
+                {t("loginButton")}
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </>
+          )}
         </div>
 
         <div className="text-center mt-6">
