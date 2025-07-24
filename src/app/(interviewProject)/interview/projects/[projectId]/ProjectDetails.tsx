@@ -15,8 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Bot, Copy, ExternalLink, MessageSquare, Share2, Users } from "lucide-react";
-import Link from "next/link";
+import { Bot, Copy, ExternalLink, MessageSquare, Share2, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -89,14 +88,6 @@ export function ProjectDetails({ project }: ProjectDetailsProps) {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="space-y-2">
-          <div className="flex items-center space-x-3">
-            <Link href="/projects">
-              <Button variant="ghost" size="sm">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Projects
-              </Button>
-            </Link>
-          </div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
             Interview Project #{project.id}
           </h1>
@@ -161,7 +152,7 @@ export function ProjectDetails({ project }: ProjectDetailsProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">
+          <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed text-sm max-h-64 overflow-scroll scrollbar-thin">
             {project.brief}
           </p>
         </CardContent>
@@ -229,13 +220,13 @@ export function ProjectDetails({ project }: ProjectDetailsProps) {
                 >
                   <div className="flex items-center space-x-3">
                     {session.intervieweeUserId ? (
-                      <Badge variant="default" className="text-xs">
-                        <Users className="h-3 w-3 mr-1" />
+                      <Badge variant="default" className="text-xs w-20 flex">
+                        <Users className="h-3 w-3" />
                         Human
                       </Badge>
                     ) : (
-                      <Badge variant="secondary" className="text-xs">
-                        <Bot className="h-3 w-3 mr-1" />
+                      <Badge variant="secondary" className="text-xs w-20 flex">
+                        <Bot className="h-3 w-3" />
                         AI
                       </Badge>
                     )}
@@ -249,7 +240,7 @@ export function ProjectDetails({ project }: ProjectDetailsProps) {
                     size="sm"
                     onClick={() => {
                       // Navigate to chat session
-                      router.push(`/projects/${project.id}/sessions/${session.id}`);
+                      router.push(`/interview/projects/${project.id}/sessions/${session.id}`);
                     }}
                   >
                     <ExternalLink className="h-4 w-4" />

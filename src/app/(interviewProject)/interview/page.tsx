@@ -1,123 +1,126 @@
-"use client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Bot, MessageSquare, Plus, Users } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 
-export default function InterviewProjectHomePage() {
+function _InterviewProjectHomePage() {
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <div className="space-y-8">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-            Interview Project System Test
+    <div className="container mx-auto px-6 py-16 max-w-4xl">
+      <div className="space-y-16">
+        {/* Hero Section */}
+        <div className="text-center space-y-6">
+          <h1 className="text-3xl font-medium text-gray-900 dark:text-gray-100 tracking-tight">
+            AI 访谈研究平台
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Test the new interview project functionality
+          <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed">
+            创建研究项目，设定访谈问题，邀请真人参与或选择 AI
+            智能体进行自动化访谈，获得专业的分析报告
           </p>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <MessageSquare className="h-5 w-5 mr-2" />
-                Interview Projects
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Create and manage research interview projects
-              </p>
-              <Link href="/projects">
-                <Button className="w-full">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Go to Projects
-                </Button>
-              </Link>
-              <div className="mt-2 text-xs text-gray-500">Create and manage interview projects</div>
-            </CardContent>
-          </Card>
+        {/* Timeline Process */}
+        <div className="relative max-w-3xl mx-auto">
+          <div className="absolute left-6 top-0 bottom-0 w-px bg-gray-200 dark:bg-gray-700"></div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Users className="h-5 w-5 mr-2" />
-                Human Interviews
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Share links for real people to participate in interviews
-              </p>
-              <Link href="/projects">
-                <Button variant="outline" className="w-full">
-                  <Users className="h-4 w-4 mr-2" />
-                  Create Share Link
-                </Button>
-              </Link>
-              <div className="mt-2 text-xs text-gray-500">Available after creating a project</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Bot className="h-5 w-5 mr-2" />
-                AI Interviews
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Interview AI personas to gather insights
-              </p>
-              <Link href="/projects">
-                <Button variant="outline" className="w-full">
-                  <Bot className="h-4 w-4 mr-2" />
-                  Start AI Interview
-                </Button>
-              </Link>
-              <div className="mt-2 text-xs text-gray-500">
-                Select a persona from project details
+          <div className="space-y-12">
+            {/* Step 1 */}
+            <div className="relative flex items-start">
+              <div className="flex-shrink-0 w-12 h-12 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-full flex items-center justify-center shadow-sm">
+                <span className="text-sm text-gray-600 dark:text-gray-400">01</span>
               </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="text-sm text-gray-600 dark:text-gray-400 space-y-2">
-                <p>• Create interview projects with research briefs</p>
-                <p>• Generate secure share links for participants</p>
-                <p>• Interview AI personas automatically</p>
-                <p>• Manage all sessions in one place</p>
+              <div className="ml-8 flex-1 pt-2">
+                <div className="space-y-3">
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                    研究简报 + 预设问题
+                  </h3>
+                  <p className="text-base text-gray-600 dark:text-gray-400 leading-relaxed">
+                    上传您的研究简报，明确访谈目标。系统会根据研究需求，帮助您构建结构化的访谈问题框架，确保每次访谈都能获得有价值的信息。
+                  </p>
+                </div>
               </div>
-            </CardContent>
-          </Card>
-        </div>
+            </div>
 
-        <div className="bg-blue-50 dark:bg-blue-950/20 p-6 rounded-lg">
-          <h3 className="font-medium text-blue-900 dark:text-blue-100 mb-2">How it works:</h3>
-          <ol className="text-sm text-blue-800 dark:text-blue-200 space-y-1 list-decimal list-inside">
-            <li>Create an interview project with your research brief</li>
-            <li>Share a secure link with participants or select an AI persona</li>
-            <li>Conduct interviews through our chat interface</li>
-            <li>Manage and review all sessions from your project dashboard</li>
-          </ol>
+            {/* Step 2 */}
+            <div className="relative flex items-start">
+              <div className="flex-shrink-0 w-12 h-12 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-full flex items-center justify-center shadow-sm">
+                <span className="text-sm text-gray-600 dark:text-gray-400">02</span>
+              </div>
+              <div className="ml-8 flex-1 pt-2">
+                <div className="space-y-3">
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                    真人访谈 + AI 智能体访谈
+                  </h3>
+                  <p className="text-base text-gray-600 dark:text-gray-400 leading-relaxed">
+                    灵活选择访谈对象：生成安全分享链接邀请真实用户参与，或从丰富的人物库中选择符合目标画像的
+                    AI 智能体进行深度模拟访谈。
+                  </p>
+                </div>
+              </div>
+            </div>
 
-          <div className="mt-4 pt-4 border-t border-blue-200 dark:border-blue-800">
-            <div className="flex justify-center">
-              <Link href="/projects">
-                <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
-                  Get Started Now
-                </Button>
-              </Link>
+            {/* Step 3 */}
+            <div className="relative flex items-start">
+              <div className="flex-shrink-0 w-12 h-12 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-full flex items-center justify-center shadow-sm">
+                <span className="text-sm text-gray-600 dark:text-gray-400">03</span>
+              </div>
+              <div className="ml-8 flex-1 pt-2">
+                <div className="space-y-3">
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                    AI 专家主导访谈过程
+                  </h3>
+                  <p className="text-base text-gray-600 dark:text-gray-400 leading-relaxed">
+                    专业的 AI
+                    访谈员根据研究目标自动进行深度对话，智能追问关键信息，确保访谈质量和深度，全程无需人工干预。
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Step 4 */}
+            <div className="relative flex items-start">
+              <div className="flex-shrink-0 w-12 h-12 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-full flex items-center justify-center shadow-sm">
+                <span className="text-sm text-gray-600 dark:text-gray-400">04</span>
+              </div>
+              <div className="ml-8 flex-1 pt-2">
+                <div className="space-y-3">
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                    智能笔录 + 深度分析报告
+                  </h3>
+                  <p className="text-base text-gray-600 dark:text-gray-400 leading-relaxed">
+                    系统自动生成详细的访谈笔录，提取关键洞察，并为每个访谈生成独立分析。最终整合所有访谈数据，生成综合研究报告。
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
+
+        {/* CTA */}
+        <div className="text-center pt-12 space-y-4">
+          <Link href="/interview/projects">
+            <Button
+              size="lg"
+              className="px-8 py-3 bg-gray-900 hover:bg-gray-800 dark:bg-gray-100 dark:hover:bg-gray-200 dark:text-gray-900"
+            >
+              开始创建项目
+              <ArrowRight className="h-4 w-4 ml-2" />
+            </Button>
+          </Link>
+        </div>
       </div>
+    </div>
+  );
+}
+
+import { LeftMenus } from "@/app/(public)/LeftMenu";
+import GlobalFooter from "@/components/GlobalFooter";
+import GlobalHeader from "@/components/GlobalHeader";
+
+export default async function InterviewProjectHomePage() {
+  return (
+    <div className="pt-16 min-h-dvh flex flex-col items-stretch justify-start overflow-y-auto scrollbar-thin">
+      <GlobalHeader className="h-16 fixed top-0 left-0 right-0 z-10" leftMenus={<LeftMenus />} />
+      <_InterviewProjectHomePage />
+      <GlobalFooter />
     </div>
   );
 }
