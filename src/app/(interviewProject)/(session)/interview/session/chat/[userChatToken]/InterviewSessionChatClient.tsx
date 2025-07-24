@@ -19,6 +19,7 @@ import {
 import { useChat } from "@ai-sdk/react";
 import { Message } from "ai";
 import { Bot, Info, Shield, Users } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useRef } from "react";
 import { z } from "zod";
 
@@ -29,6 +30,9 @@ export function InterviewSessionChatClient({
   interviewSession: InterviewSessionWithDetails;
   initialMessages?: Message[];
 }) {
+  const t = useTranslations("InterviewProject.sessionChat");
+  const tDetails = useTranslations("InterviewProject.projectDetails");
+  const tSessionViewer = useTranslations("InterviewProject.sessionViewer");
   const isPersonaInterview = !!interviewSession.intervieweePersona;
   const interviewTarget = isPersonaInterview
     ? interviewSession.intervieweePersona
@@ -111,25 +115,25 @@ export function InterviewSessionChatClient({
       </DialogTrigger>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Interview Project Details</DialogTitle>
-          <DialogDescription>Information about this interview project</DialogDescription>
+          <DialogTitle>{t("interviewDetails")}</DialogTitle>
+          <DialogDescription>{t("detailsDescription")}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <Card>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-lg">Project Brief</CardTitle>
+                <CardTitle className="text-lg">{tDetails("projectBrief")}</CardTitle>
                 <Badge variant={isPersonaInterview ? "secondary" : "default"} className="text-xs">
                   {isPersonaInterview ? (
                     <>
                       <Bot className="h-3 w-3 mr-1" />
-                      AI Interview
+                      {tSessionViewer("aiInterview")}
                     </>
                   ) : (
                     <>
                       <Users className="h-3 w-3 mr-1" />
-                      Human Interview
+                      {tSessionViewer("humanInterview")}
                     </>
                   )}
                 </Badge>
@@ -144,7 +148,7 @@ export function InterviewSessionChatClient({
 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <h4 className="font-medium text-sm">Researcher</h4>
+              <h4 className="font-medium text-sm">{tDetails("researcher")}</h4>
               <div className="flex items-center space-x-2">
                 <Avatar className="h-6 w-6">
                   <AvatarFallback className="text-xs">
@@ -160,7 +164,7 @@ export function InterviewSessionChatClient({
 
             {interviewTarget && (
               <div className="space-y-2">
-                <h4 className="font-medium text-sm">Interview Participant</h4>
+                <h4 className="font-medium text-sm">{tDetails("interviewParticipant")}</h4>
                 <div className="flex items-center space-x-2">
                   <Avatar className="h-6 w-6">
                     <AvatarFallback className="text-xs">
@@ -183,11 +187,10 @@ export function InterviewSessionChatClient({
             <div className="flex items-start space-x-2">
               <Shield className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5" />
               <div className="text-sm">
-                <p className="font-medium text-blue-900 dark:text-blue-100 mb-1">Privacy Notice</p>
-                <p className="text-blue-800 dark:text-blue-200">
-                  This conversation is being recorded for research purposes. Your privacy will be
-                  protected according to our data policy.
+                <p className="font-medium text-blue-900 dark:text-blue-100 mb-1">
+                  {tDetails("privacyNotice")}
                 </p>
+                <p className="text-blue-800 dark:text-blue-200">{tDetails("privacyDescription")}</p>
               </div>
             </div>
           </div>
@@ -206,19 +209,14 @@ export function InterviewSessionChatClient({
             </div>
             <div className="space-y-2">
               <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
-                Interview Complete
+                {t("interviewComplete")}
               </h2>
-              <p className="text-gray-600 dark:text-gray-400">
-                Thank you for participating in this interview session. Your responses have been
-                recorded and will be used for research purposes.
-              </p>
+              <p className="text-gray-600 dark:text-gray-400">{t("thankYou")}</p>
             </div>
           </div>
 
           <div className="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-lg">
-            <p className="text-sm text-gray-700 dark:text-gray-300">
-              The interview summary and analysis will be available to the researcher shortly.
-            </p>
+            <p className="text-sm text-gray-700 dark:text-gray-300">{t("summaryAnalysis")}</p>
           </div>
 
           {projectInfoButton}

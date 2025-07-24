@@ -1,19 +1,20 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 
 export default async function InterviewProjectHomePage() {
+  const t = useTranslations("InterviewProject");
   return (
     <div className="container mx-auto px-6 py-16 max-w-4xl">
       <div className="space-y-16">
         {/* Hero Section */}
         <div className="text-center space-y-6">
           <h1 className="text-3xl font-medium text-gray-900 dark:text-gray-100 tracking-tight">
-            AI 访谈研究平台
+            {t("title")}
           </h1>
           <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed">
-            创建研究项目，设定访谈问题，邀请真人参与或选择 AI
-            智能体进行自动化访谈，获得专业的分析报告
+            {t("description")}
           </p>
         </div>
 
@@ -101,7 +102,7 @@ export default async function InterviewProjectHomePage() {
               size="lg"
               className="px-8 py-3 bg-gray-900 hover:bg-gray-800 dark:bg-gray-100 dark:hover:bg-gray-200 dark:text-gray-900"
             >
-              开始创建项目
+              {t("createProject")}
               <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
           </Link>

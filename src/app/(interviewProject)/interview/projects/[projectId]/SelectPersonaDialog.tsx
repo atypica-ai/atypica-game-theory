@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Pagination } from "@/components/ui/pagination";
 import { SearchIcon, XIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -33,6 +34,8 @@ export function SelectPersonaDialog({
   projectId,
   onSuccess,
 }: SelectPersonaDialogProps) {
+  const t = useTranslations("InterviewProject.selectPersona");
+  const tErrors = useTranslations("InterviewProject.errors");
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [personas, setPersonas] = useState<Persona[]>([]);
@@ -84,7 +87,7 @@ export function SelectPersonaDialog({
 
   const handleSubmit = async () => {
     if (selectedIds.length === 0) {
-      toast.error("Please select at least one persona");
+      toast.error(t("noPersonas"));
       return;
     }
 
@@ -100,7 +103,7 @@ export function SelectPersonaDialog({
         });
 
         if (!result.success) {
-          throw new Error(result.message || "Failed to create interview session");
+          throw new Error(result.message || tErrors("createInterviewFailed"));
         }
 
         lastSessionResult = result;
@@ -108,9 +111,7 @@ export function SelectPersonaDialog({
 
       // If only one persona selected, ask if user wants to start immediately
       if (selectedIds.length === 1 && lastSessionResult) {
-        const shouldStartNow = window.confirm(
-          "Interview session created successfully! Would you like to start the interview now?",
-        );
+        const shouldStartNow = window.confirm(t("startNow"));
 
         if (shouldStartNow) {
           onOpenChange(false);
@@ -121,13 +122,13 @@ export function SelectPersonaDialog({
 
       toast.success(
         selectedIds.length === 1
-          ? "Interview session created successfully"
-          : `${selectedIds.length} interview sessions created successfully`,
+          ? t("createInterview")
+          : `${selectedIds.length} ${t("multipleSuccess")}`,
       );
       onOpenChange(false);
       onSuccess();
     } catch (error) {
-      toast.error(`Failed to create interview sessions: ${error}`);
+      toast.error(`${t("creating")}: ${error}`);
     } finally {
       setCreating(false);
     }
@@ -154,7 +155,9 @@ export function SelectPersonaDialog({
     return (
       <div className="flex items-center justify-start gap-3 mt-4">
         <div className="flex items-center justify-center size-8 rounded-md border">🔍</div>
-        <p className="text-sm text-muted-foreground">Search results for「{searchQuery}」</p>
+        <p className="text-sm text-muted-foreground">
+          {t("searchResults")}「{searchQuery}」
+        </p>
         <Button variant="ghost" size="icon" onClick={handleClearSearch}>
           <XIcon className="size-3" />
         </Button>
@@ -166,18 +169,18 @@ export function SelectPersonaDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="md:max-w-3xl lg:max-w-5xl">
         <DialogHeader>
-          <DialogTitle>Select AI Personas to Interview</DialogTitle>
+          <DialogTitle>{t("title")}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSearch} className="flex gap-2 mt-4">
           <div className="flex-1 relative flex gap-2">
             <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search personas by name, description, or source..."
+              placeholder={t("searchPlaceholder")}
               defaultValue={searchQuery}
               ref={inputRef}
               className="pl-9 pr-9"
-              aria-label="Search personas by name or description"
+              aria-label={t("searchPlaceholder")}
             />
             {searchQuery && (
               <Button
@@ -191,7 +194,7 @@ export function SelectPersonaDialog({
               </Button>
             )}
           </div>
-          <Button type="submit">Search</Button>
+          <Button type="submit">{t("search")}</Button>
         </form>
 
         {renderSearchStatus()}
@@ -211,13 +214,11 @@ export function SelectPersonaDialog({
               {personas.length === 0 && !loading ? (
                 <div className="col-span-3 py-12 text-center">
                   <p className="text-muted-foreground">
-                    {searchQuery
-                      ? `No results found for "${searchQuery}"`
-                      : "No personas available"}
+                    {searchQuery ? `${t("noResults")} "${searchQuery}"` : t("noPersonas")}
                   </p>
                   {searchQuery && (
                     <Button variant="ghost" onClick={handleClearSearch} size="sm" className="mt-2">
-                      Clear search
+                      {t("clearSearch")}
                     </Button>
                   )}
                 </div>
@@ -240,7 +241,7 @@ export function SelectPersonaDialog({
                       <CardTitle className="truncate">{persona.name}</CardTitle>
                       {persona.source && (
                         <div className="text-xs text-muted-foreground">
-                          Source: {persona.source}
+                          {t("source")}: {persona.source}
                         </div>
                       )}
                     </CardHeader>
@@ -259,14 +260,14 @@ export function SelectPersonaDialog({
                         ))}
                         {persona.tags?.length > 3 && (
                           <span className="text-xs text-muted-foreground">
-                            +{persona.tags.length - 3} more
+                            +{persona.tags.length - 3} {t("tags")}
                           </span>
                         )}
                       </div>
                       <div className="flex items-center justify-between w-full">
-                        <span>Click to select</span>
+                        <span>{t("clickToSelect")}</span>
                         {selectedIds.includes(persona.id) && (
-                          <span className="text-primary font-medium">✓ Selected</span>
+                          <span className="text-primary font-medium">{t("selected")}</span>
                         )}
                       </div>
                     </CardFooter>
@@ -285,12 +286,12 @@ export function SelectPersonaDialog({
               )}
               <div className="flex space-x-2 ml-auto">
                 <Button variant="outline" onClick={() => onOpenChange(false)} disabled={creating}>
-                  Cancel
+                  {t("cancel")}
                 </Button>
                 <Button onClick={handleSubmit} disabled={selectedIds.length === 0 || creating}>
                   {creating
-                    ? "Creating..."
-                    : `Create Interview${selectedIds.length > 1 ? "s" : ""} (${selectedIds.length})`}
+                    ? t("creating")
+                    : `${selectedIds.length > 1 ? t("createInterviews") : t("createInterview")} (${selectedIds.length})`}
                 </Button>
               </div>
             </div>

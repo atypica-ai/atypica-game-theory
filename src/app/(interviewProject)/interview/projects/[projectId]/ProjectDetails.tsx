@@ -16,6 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Bot, Copy, ExternalLink, MessageSquare, Share2, Users } from "lucide-react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -27,6 +28,9 @@ interface ProjectDetailsProps {
 }
 
 export function ProjectDetails({ project }: ProjectDetailsProps) {
+  const t = useTranslations("InterviewProject.projectDetails");
+  const tList = useTranslations("InterviewProject.projectsList");
+  const tErrors = useTranslations("InterviewProject.errors");
   const router = useRouter();
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [personaDialogOpen, setPersonaDialogOpen] = useState(false);
@@ -55,12 +59,12 @@ export function ProjectDetails({ project }: ProjectDetailsProps) {
       const result = await generateProjectShareToken(project.id, 72);
       if (result.success) {
         setShareUrl(`${window.location.origin}${result.data.shareUrl}`);
-        toast.success("Share link generated successfully");
+        toast.success(t("generateShareLink"));
       } else {
-        toast.error(result.message || "Failed to generate share link");
+        toast.error(result.message || tErrors("generateShareLinkFailed"));
       }
     } catch {
-      toast.error("Failed to generate share link");
+      toast.error(tErrors("generateShareLinkFailed"));
     } finally {
       // setLoading(false);
     }
@@ -69,7 +73,7 @@ export function ProjectDetails({ project }: ProjectDetailsProps) {
   const handleCopyLink = async () => {
     try {
       await navigator.clipboard.writeText(shareUrl);
-      toast.success("Link copied to clipboard");
+      toast.success(t("copyLink"));
     } catch {
       toast.error("Failed to copy link");
     }
@@ -88,10 +92,10 @@ export function ProjectDetails({ project }: ProjectDetailsProps) {
       <div className="flex items-start justify-between">
         <div className="space-y-2">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-            Interview Project #{project.id}
+            {t("title")} #{project.id}
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
-            Created {formatDate(project.createdAt)}
+            {tList("created")} {formatDate(project.createdAt)}
           </p>
         </div>
         <div className="flex items-center space-x-2">
@@ -99,21 +103,18 @@ export function ProjectDetails({ project }: ProjectDetailsProps) {
             <DialogTrigger asChild>
               <Button variant="outline" onClick={handleGenerateShareLink}>
                 <Share2 className="h-4 w-4" />
-                Interview Human
+                {t("interviewHuman")}
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[500px]">
               <DialogHeader>
-                <DialogTitle>Share Interview Project</DialogTitle>
-                <DialogDescription>
-                  Generate a shareable link for others to participate in interviews for this
-                  project. The link will expire in 24 hours.
-                </DialogDescription>
+                <DialogTitle>{t("shareProject")}</DialogTitle>
+                <DialogDescription>{t("shareDescription")}</DialogDescription>
               </DialogHeader>
               {shareUrl && (
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="share-url">Share URL</Label>
+                    <Label htmlFor="share-url">{t("shareUrl")}</Label>
                     <div className="flex space-x-2">
                       <Input id="share-url" value={shareUrl} readOnly className="flex-1" />
                       <Button onClick={handleCopyLink} size="sm">
@@ -123,20 +124,19 @@ export function ProjectDetails({ project }: ProjectDetailsProps) {
                   </div>
                   <div className="bg-amber-50 dark:bg-amber-950/20 p-4 rounded-lg">
                     <p className="text-sm text-amber-800 dark:text-amber-200">
-                      <strong>Note:</strong> Anyone with this link can participate in an interview
-                      for this project. The link will expire in 24 hours for security.
+                      {t("securityNote")}
                     </p>
                   </div>
                 </div>
               )}
               <DialogFooter>
-                <Button onClick={() => setShareDialogOpen(false)}>Close</Button>
+                <Button onClick={() => setShareDialogOpen(false)}>{t("close")}</Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
           <Button variant="outline" onClick={() => setPersonaDialogOpen(true)}>
             <Bot className="h-4 w-4" />
-            Interview AI
+            {t("interviewAI")}
           </Button>
         </div>
       </div>
@@ -146,7 +146,7 @@ export function ProjectDetails({ project }: ProjectDetailsProps) {
         <CardHeader>
           <CardTitle className="flex items-center">
             <MessageSquare className="h-5 w-5 mr-2" />
-            Project Brief
+            {t("projectBrief")}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -160,34 +160,34 @@ export function ProjectDetails({ project }: ProjectDetailsProps) {
       <div className="grid gap-6 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Sessions</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("totalSessions")}</CardTitle>
             <MessageSquare className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.total}</div>
-            <p className="text-xs text-muted-foreground">Interview sessions conducted</p>
+            <p className="text-xs text-muted-foreground">{t("sessionsDescription")}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Human Interviews</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("humanInterviews")}</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.humanSessions}</div>
-            <p className="text-xs text-muted-foreground">Real people interviewed</p>
+            <p className="text-xs text-muted-foreground">{t("peopleInterviewed")}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">AI Interviews</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("aiInterviews")}</CardTitle>
             <Bot className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.personaSessions}</div>
-            <p className="text-xs text-muted-foreground">AI personas interviewed</p>
+            <p className="text-xs text-muted-foreground">{t("personasInterviewed")}</p>
           </CardContent>
         </Card>
       </div>
@@ -195,19 +195,17 @@ export function ProjectDetails({ project }: ProjectDetailsProps) {
       {/* Sessions List */}
       <Card>
         <CardHeader>
-          <CardTitle>Interview Sessions</CardTitle>
-          <CardDescription>All interview sessions conducted for this project</CardDescription>
+          <CardTitle>{t("interviewSessions")}</CardTitle>
+          <CardDescription>{t("sessionsDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           {project.sessions.length === 0 ? (
             <div className="text-center py-8">
               <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-                No interviews yet
+                {t("noInterviews")}
               </h3>
-              <p className="text-gray-600 dark:text-gray-400">
-                Share the project link or interview an AI persona to get started
-              </p>
+              <p className="text-gray-600 dark:text-gray-400">{t("noInterviewsDescription")}</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -229,7 +227,10 @@ export function ProjectDetails({ project }: ProjectDetailsProps) {
                       </Badge>
                     )}
                     <div>
-                      <p className="font-medium text-sm">Session #{session.id}</p>
+                      <p className="font-medium text-sm">
+                        {t("sessionId")}
+                        {session.id}
+                      </p>
                       <p className="text-xs text-gray-500">{formatDate(session.createdAt)}</p>
                     </div>
                   </div>

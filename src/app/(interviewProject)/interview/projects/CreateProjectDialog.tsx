@@ -12,6 +12,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -26,6 +27,7 @@ export function CreateProjectDialog({
   onOpenChange,
   onProjectCreated,
 }: CreateProjectDialogProps) {
+  const t = useTranslations("InterviewProject.createProjectDialog");
   const [brief, setBrief] = useState("");
   const [questions, setQuestions] = useState("");
   const [loading, setLoading] = useState(false);
@@ -53,20 +55,20 @@ export function CreateProjectDialog({
       const result = await createInterviewProject({ brief: combinedBrief });
 
       if (result.success) {
-        toast.success("Interview project created successfully");
+        toast.success(t("success"));
         setBrief("");
         setQuestions("");
         onOpenChange(false);
         onProjectCreated();
       } else {
-        toast.error(result.message || "Failed to create project");
+        toast.error(result.message || t("error"));
         if (result.message) {
           setErrors([result.message]);
         }
       }
     } catch {
-      toast.error("Failed to create project");
-      setErrors(["An unexpected error occurred"]);
+      toast.error(t("error"));
+      setErrors([t("error")]);
     } finally {
       setLoading(false);
     }
@@ -92,18 +94,16 @@ export function CreateProjectDialog({
       <DialogContent className="sm:max-w-[600px]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Create Interview Project</DialogTitle>
-            <DialogDescription>
-              Create a new interview project with a brief description and predefined questions.
-            </DialogDescription>
+            <DialogTitle>{t("title")}</DialogTitle>
+            <DialogDescription>{t("description")}</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="brief">Project Brief</Label>
+              <Label htmlFor="brief">{t("projectBrief")}</Label>
               <Textarea
                 id="brief"
-                placeholder="Describe your research objectives and target audience..."
+                placeholder={t("briefPlaceholder")}
                 value={brief}
                 onChange={(e) => setBrief(e.target.value)}
                 className="min-h-[100px] resize-none"
@@ -112,10 +112,10 @@ export function CreateProjectDialog({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="questions">Predefined Questions</Label>
+              <Label htmlFor="questions">{t("predefinedQuestions")}</Label>
               <Textarea
                 id="questions"
-                placeholder="Enter interview questions you want to ask..."
+                placeholder={t("questionsPlaceholder")}
                 value={questions}
                 onChange={(e) => setQuestions(e.target.value)}
                 className="min-h-[100px] resize-none"
@@ -134,7 +134,7 @@ export function CreateProjectDialog({
                 )}
               </div>
               <span className={`${isOverLimit ? "text-red-600" : "text-gray-500"}`}>
-                {totalCharacterCount}/{maxLength}
+                {totalCharacterCount}/{maxLength} {t("maxCharacters")}
               </span>
             </div>
           </div>
@@ -146,11 +146,11 @@ export function CreateProjectDialog({
               onClick={() => handleOpenChange(false)}
               disabled={loading}
             >
-              Cancel
+              {t("cancel")}
             </Button>
             <Button type="submit" disabled={loading || !brief.trim() || isOverLimit}>
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Create Project
+              {loading ? t("creating") : t("create")}
             </Button>
           </DialogFooter>
         </form>

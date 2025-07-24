@@ -20,7 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatDate } from "@/lib/utils";
 import { Bot, Briefcase, Calendar, ExternalLink, Plus, Trash2, Users } from "lucide-react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -28,6 +28,10 @@ import { CreateProjectDialog } from "./CreateProjectDialog";
 
 export function InterviewProjectsClient() {
   const locale = useLocale();
+  const t = useTranslations("InterviewProject.projectsList");
+  const tRoot = useTranslations("InterviewProject");
+  const tDialog = useTranslations("InterviewProject.createProjectDialog");
+  const tErrors = useTranslations("InterviewProject.errors");
   const [projects, setProjects] = useState<InterviewProjectWithSessions[]>([]);
   const [loading, setLoading] = useState(true);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -38,10 +42,10 @@ export function InterviewProjectsClient() {
       if (result.success) {
         setProjects(result.data);
       } else {
-        toast.error(result.message || "Failed to load projects");
+        toast.error(result.message || tErrors("loadProjectsFailed"));
       }
     } catch {
-      toast.error("Failed to load projects");
+      toast.error(tErrors("loadProjectsFailed"));
     } finally {
       setLoading(false);
     }
@@ -58,10 +62,10 @@ export function InterviewProjectsClient() {
         setProjects(projects.filter((p) => p.id !== projectId));
         toast.success("Project deleted successfully");
       } else {
-        toast.error(result.message || "Failed to delete project");
+        toast.error(result.message || tErrors("deleteProjectFailed"));
       }
     } catch {
-      toast.error("Failed to delete project");
+      toast.error(tErrors("deleteProjectFailed"));
     }
   };
 
@@ -91,10 +95,8 @@ export function InterviewProjectsClient() {
           <div className="inline-flex items-center justify-center w-10 h-10 rounded bg-slate-900 mb-2">
             <Briefcase className="w-5 h-5 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900">Interview Projects</h1>
-          <p className="text-slate-600 max-w-xl mx-auto">
-            Manage your interview projects and collect valuable insights
-          </p>
+          <h1 className="text-2xl font-bold text-slate-900">{t("title")}</h1>
+          <p className="text-slate-600 max-w-xl mx-auto">{t("description")}</p>
         </div>
 
         {/* Projects Grid */}
@@ -112,11 +114,11 @@ export function InterviewProjectsClient() {
               </CardHeader>
               <CardContent className="pt-0 mt-auto">
                 <div className="text-sm text-slate-600 text-center mb-4">
-                  Create a new interview project to start collecting insights
+                  {t("createFirstProject")}
                 </div>
                 <Button onClick={() => setCreateDialogOpen(true)} className="w-full" size="sm">
                   <Plus className="size-3 mr-2" />
-                  Create Project
+                  {tRoot("createProject")}
                 </Button>
               </CardContent>
             </Card>
@@ -129,11 +131,14 @@ export function InterviewProjectsClient() {
                     <div className="flex items-start justify-between">
                       <div className="flex-1 min-w-0">
                         <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100 line-clamp-2">
-                          Project #{project.id}
+                          {t("projectId")}
+                          {project.id}
                         </CardTitle>
                         <CardDescription className="flex items-center space-x-2 mt-1 text-xs text-muted-foreground">
                           <Calendar className="h-3 w-3" />
-                          <span>Created {formatDate(project.createdAt, locale)}</span>
+                          <span>
+                            {t("created")} {formatDate(project.createdAt, locale)}
+                          </span>
                         </CardDescription>
                       </div>
                       <AlertDialog>
@@ -148,19 +153,18 @@ export function InterviewProjectsClient() {
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
-                            <AlertDialogTitle>Delete Project</AlertDialogTitle>
+                            <AlertDialogTitle>{t("deleteConfirmTitle")}</AlertDialogTitle>
                             <AlertDialogDescription>
-                              Are you sure you want to delete this interview project? This action
-                              cannot be undone and will delete all associated interview sessions.
+                              {t("deleteConfirmDescription")}
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogCancel>{t("deleteConfirmCancel")}</AlertDialogCancel>
                             <AlertDialogAction
                               onClick={() => handleDeleteProject(project.id)}
                               className="bg-red-600 hover:bg-red-700"
                             >
-                              Delete
+                              {t("deleteConfirmDelete")}
                             </AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>
@@ -178,13 +182,13 @@ export function InterviewProjectsClient() {
                         {stats.humanSessions > 0 && (
                           <Badge variant="secondary" className="text-xs">
                             <Users className="h-3 w-3 mr-1" />
-                            {stats.humanSessions} Human
+                            {stats.humanSessions} {t("humanSessions")}
                           </Badge>
                         )}
                         {stats.personaSessions > 0 && (
                           <Badge variant="outline" className="text-xs">
                             <Bot className="h-3 w-3 mr-1" />
-                            {stats.personaSessions} AI
+                            {stats.personaSessions} {t("aiSessions")}
                           </Badge>
                         )}
                       </div>
@@ -192,12 +196,12 @@ export function InterviewProjectsClient() {
 
                     <div className="flex gap-2 pt-2">
                       <span className="text-xs text-gray-500 flex-1">
-                        {stats.total} session{stats.total !== 1 ? "s" : ""}
+                        {stats.total} {stats.total === 1 ? t("sessions") : t("sessionsPlural")}
                       </span>
                       <Link href={`/interview/projects/${project.id}`}>
                         <Button variant="outline" size="sm" className="flex-1">
                           <ExternalLink className="h-3 w-3 mr-1" />
-                          View
+                          {t("viewProject")}
                         </Button>
                       </Link>
                     </div>
@@ -220,11 +224,11 @@ export function InterviewProjectsClient() {
                 </CardHeader>
                 <CardContent className="pt-0 mt-auto">
                   <div className="text-sm text-slate-600 text-center mb-4">
-                    Create your first interview project to start collecting insights
+                    {t("createFirstProject")}
                   </div>
                   <Button onClick={() => setCreateDialogOpen(true)} className="w-full" size="sm">
                     <Plus className="size-3 mr-2" />
-                    Create Project
+                    {tRoot("createProject")}
                   </Button>
                 </CardContent>
               </Card>
