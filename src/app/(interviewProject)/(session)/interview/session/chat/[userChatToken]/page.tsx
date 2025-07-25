@@ -54,7 +54,7 @@ export default async function InterviewSessionChatPage({
   // Check access permission
   const hasAccess =
     interviewSession.project.userId === userId || // Project owner
-    interviewSession.intervieweeUserId === userId; // Interviewee
+    interviewSession.intervieweeUser?.id === userId; // Interviewee
 
   if (!hasAccess) {
     // redirect("/projects");

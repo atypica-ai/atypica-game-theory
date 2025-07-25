@@ -3,7 +3,7 @@ import "server-only";
 import { convertStepsToAIMessage } from "@/ai/messageUtils";
 import { personaAgentSystem } from "@/ai/prompt";
 import { llm, providerOptions } from "@/ai/provider";
-import { interviewSessionSystemPrompt } from "@/app/(interviewProject)/prompt";
+import { interviewAgentSystemPrompt } from "@/app/(interviewProject)/prompt";
 import { interviewSessionTools } from "@/app/(interviewProject)/tools";
 import { rootLogger } from "@/lib/logging";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
@@ -96,7 +96,7 @@ export async function runAutoPersonaInterview({
     data: { backgroundToken },
   });
 
-  const interviewerSystemPrompt = interviewSessionSystemPrompt({
+  const interviewerSystemPrompt = interviewAgentSystemPrompt({
     brief: projectBrief,
     isPersonaInterview: true,
     personaName: persona.name,
@@ -156,6 +156,7 @@ export async function runAutoPersonaInterview({
           systemPrompt: interviewerSystemPrompt,
           messages: interviewerAgent.messages,
           shouldEndInterview,
+          sessionId,
           logger,
         });
         fixEmptyTextIssue(messaage);
@@ -264,11 +265,13 @@ async function generateInterviewerResponse({
   systemPrompt,
   messages,
   shouldEndInterview,
+  sessionId,
   logger,
 }: {
   systemPrompt: string;
   messages: Message[];
   shouldEndInterview: boolean;
+  sessionId: number;
   logger: Logger;
 }) {
   const promise = new Promise<Omit<Message, "role">>((resolve, reject) => {
@@ -280,9 +283,9 @@ async function generateInterviewerResponse({
       system: systemPrompt,
       messages,
       toolChoice: shouldEndInterview ? { type: "tool", toolName: "endInterview" } : "auto",
-      tools: {
-        ...interviewSessionTools,
-      },
+      tools: interviewSessionTools({
+        interviewSessionId: sessionId,
+      }),
       maxSteps: 1,
       onFinish: ({ steps, usage }) => {
         logger.info({ msg: "generateInterviewerResponse streamText onFinish", usage });

@@ -10,8 +10,16 @@ export interface InterviewProjectWithSessions {
   updatedAt: Date;
   sessions: Array<{
     id: number;
-    intervieweeUserId: number | null;
-    intervieweePersonaId: number | null;
+    title: string;
+    intervieweeUser: {
+      id: number;
+      name: string | null;
+      email: string;
+    };
+    intervieweePersona: {
+      id: number;
+      name: string;
+    };
     createdAt: Date;
   }>;
   interviewReport?: Array<{
@@ -36,6 +44,7 @@ export type CreateInterviewProjectInput = z.infer<typeof createInterviewProjectS
 export interface InterviewSessionWithDetails {
   id: number;
   projectId: number;
+  title: string;
   project: {
     id: number;
     token: string;
@@ -53,17 +62,14 @@ export interface InterviewSessionWithDetails {
     token: string;
     title: string;
   };
-  intervieweeUserId: number | null;
   intervieweeUser: {
     id: number;
     name: string | null;
     email: string;
   } | null;
-  intervieweePersonaId: number | null;
   intervieweePersona: {
     id: number;
     name: string;
-    prompt: string;
   } | null;
   createdAt: Date;
   updatedAt: Date;

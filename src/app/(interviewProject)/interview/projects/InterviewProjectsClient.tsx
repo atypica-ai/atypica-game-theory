@@ -3,7 +3,6 @@ import {
   deleteInterviewProject,
   fetchUserInterviewProjects,
 } from "@/app/(interviewProject)/actions";
-import { InterviewProjectWithSessions } from "@/app/(interviewProject)/types";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,6 +17,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDate } from "@/lib/utils";
 import { Bot, Briefcase, Calendar, ExternalLink, Plus, Trash2, Users } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
@@ -31,7 +31,9 @@ export function InterviewProjectsClient() {
   const t = useTranslations("InterviewProject.projectsList");
   const tRoot = useTranslations("InterviewProject");
   const tErrors = useTranslations("InterviewProject.errors");
-  const [projects, setProjects] = useState<InterviewProjectWithSessions[]>([]);
+  const [projects, setProjects] = useState<
+    ExtractServerActionData<typeof fetchUserInterviewProjects>
+  >([]);
   const [loading, setLoading] = useState(true);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
@@ -68,7 +70,12 @@ export function InterviewProjectsClient() {
     }
   };
 
-  const getSessionStats = (sessions: InterviewProjectWithSessions["sessions"]) => {
+  const getSessionStats = (
+    sessions: {
+      intervieweeUserId: number | null;
+      intervieweePersonaId: number | null;
+    }[],
+  ) => {
     const humanSessions = sessions.filter((s) => s.intervieweeUserId).length;
     const personaSessions = sessions.filter((s) => s.intervieweePersonaId).length;
     return { humanSessions, personaSessions, total: sessions.length };

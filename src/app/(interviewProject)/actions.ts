@@ -49,7 +49,16 @@ export async function createInterviewProject(
  * Fetch user's interview projects
  */
 export async function fetchUserInterviewProjects(): Promise<
-  ServerActionResult<InterviewProjectWithSessions[]>
+  ServerActionResult<
+    (InterviewProject & {
+      sessions: {
+        id: number;
+        intervieweeUserId: number | null;
+        intervieweePersonaId: number | null;
+        createdAt: Date;
+      }[];
+    })[]
+  >
 > {
   return withAuth(async (user) => {
     const projects = await prisma.interviewProject.findMany({
@@ -67,10 +76,9 @@ export async function fetchUserInterviewProjects(): Promise<
       },
       orderBy: { createdAt: "desc" },
     });
-
     return {
       success: true,
-      data: projects as InterviewProjectWithSessions[],
+      data: projects,
     };
   });
 }
@@ -88,8 +96,13 @@ export async function fetchInterviewProjectById(
         sessions: {
           select: {
             id: true,
-            intervieweeUserId: true,
-            intervieweePersonaId: true,
+            title: true,
+            intervieweeUser: {
+              select: { id: true, name: true, email: true },
+            },
+            intervieweePersona: {
+              select: { id: true, name: true },
+            },
             createdAt: true,
           },
           orderBy: { createdAt: "desc" },
@@ -503,7 +516,7 @@ export async function fetchInterviewSession({
           select: { id: true, name: true, email: true },
         },
         intervieweePersona: {
-          select: { id: true, name: true, prompt: true },
+          select: { id: true, name: true },
         },
       },
     });
@@ -561,7 +574,7 @@ export async function fetchInterviewSessionByChatToken(
             select: { id: true, name: true, email: true },
           },
           intervieweePersona: {
-            select: { id: true, name: true, prompt: true },
+            select: { id: true, name: true },
           },
         },
       },

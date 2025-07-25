@@ -6,7 +6,7 @@ import {
 import { llm, providerOptions } from "@/ai/provider";
 import authOptions from "@/app/(auth)/authOptions";
 import { fetchInterviewSessionByChatToken } from "@/app/(interviewProject)/actions";
-import { interviewSessionSystemPrompt } from "@/app/(interviewProject)/prompt";
+import { interviewAgentSystemPrompt } from "@/app/(interviewProject)/prompt";
 import { interviewSessionTools } from "@/app/(interviewProject)/tools";
 import { interviewSessionChatBodySchema } from "@/app/(interviewProject)/types";
 import { rootLogger } from "@/lib/logging";
@@ -60,7 +60,7 @@ export async function POST(req: Request) {
 
   const interviewSession = sessionResult.data;
 
-  if (interviewSession.intervieweeUserId !== session.user.id) {
+  if (interviewSession.intervieweeUser?.id !== session.user.id) {
     return NextResponse.json({ error: "Access denied" }, { status: 403 });
   }
 
@@ -87,7 +87,7 @@ export async function POST(req: Request) {
 
   // Generate system prompt based on interview context
   const isPersonaInterview = !!intervieweePersona;
-  const systemPrompt = interviewSessionSystemPrompt({
+  const systemPrompt = interviewAgentSystemPrompt({
     brief: project.brief,
     isPersonaInterview: isPersonaInterview,
     personaName: intervieweePersona?.name,
@@ -104,9 +104,9 @@ export async function POST(req: Request) {
     system: systemPrompt,
     messages: coreMessages,
     toolChoice: coreMessages.length < 19 ? "auto" : { type: "tool", toolName: "endInterview" },
-    tools: {
-      ...interviewSessionTools,
-    },
+    tools: interviewSessionTools({
+      interviewSessionId: interviewSession.id,
+    }),
     maxSteps: 1, // Keep it simple for interviews
     experimental_generateMessageId: () => streamingMessage.id,
     experimental_transform: smoothStream({

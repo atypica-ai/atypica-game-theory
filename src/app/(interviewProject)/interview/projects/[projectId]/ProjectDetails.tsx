@@ -15,8 +15,9 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { formatDate } from "@/lib/utils";
 import { Bot, Copy, ExternalLink, MessageSquare, Share2, Users } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -36,6 +37,7 @@ interface ReportItem {
 }
 
 export function ProjectDetails({ project }: ProjectDetailsProps) {
+  const locale = useLocale();
   const t = useTranslations("InterviewProject.projectDetails");
   const tList = useTranslations("InterviewProject.projectsList");
   const tErrors = useTranslations("InterviewProject.errors");
@@ -73,19 +75,9 @@ export function ProjectDetails({ project }: ProjectDetailsProps) {
     loadReports();
   }, [project.id, project.interviewReport]);
 
-  const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    }).format(new Date(date));
-  };
-
   const getSessionStats = () => {
-    const humanSessions = project.sessions.filter((s) => s.intervieweeUserId).length;
-    const personaSessions = project.sessions.filter((s) => s.intervieweePersonaId).length;
+    const humanSessions = project.sessions.filter((s) => s.intervieweeUser).length;
+    const personaSessions = project.sessions.filter((s) => s.intervieweePersona).length;
     return { humanSessions, personaSessions, total: project.sessions.length };
   };
 
@@ -135,7 +127,7 @@ export function ProjectDetails({ project }: ProjectDetailsProps) {
             {t("title")} #{project.id}
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
-            {tList("created")} {formatDate(project.createdAt)}
+            {tList("created")} {formatDate(project.createdAt, locale)}
           </p>
         </div>
         <div className="flex items-center space-x-2">
@@ -249,13 +241,13 @@ export function ProjectDetails({ project }: ProjectDetailsProps) {
             </div>
           ) : (
             <div className="space-y-3">
-              {project.sessions.map((session) => (
+              {project.sessions.map((interviewSession) => (
                 <div
-                  key={session.id}
+                  key={interviewSession.id}
                   className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                 >
                   <div className="flex items-center space-x-3">
-                    {session.intervieweeUserId ? (
+                    {interviewSession.intervieweeUser ? (
                       <Badge variant="default" className="text-xs w-20 flex">
                         <Users className="h-3 w-3" />
                         Human
@@ -268,15 +260,22 @@ export function ProjectDetails({ project }: ProjectDetailsProps) {
                     )}
                     <div>
                       <p className="font-medium text-sm">
-                        {t("sessionId")}
-                        {session.id}
+                        {interviewSession.title || t("sessionId")}
+                        {" - "}
+                        {interviewSession.intervieweePersona
+                          ? interviewSession.intervieweePersona.name
+                          : interviewSession.intervieweeUser
+                            ? interviewSession.intervieweeUser.email
+                            : `#${interviewSession.id}`}
                       </p>
-                      <p className="text-xs text-gray-500">{formatDate(session.createdAt)}</p>
+                      <p className="text-xs text-gray-500">
+                        {formatDate(interviewSession.createdAt, locale)}
+                      </p>
                     </div>
                   </div>
                   <Button variant="ghost" size="sm" asChild>
                     <Link
-                      href={`/interview/projects/${project.id}/sessions/${session.id}`}
+                      href={`/interview/projects/${project.id}/sessions/${interviewSession.id}`}
                       target="_blank"
                     >
                       <ExternalLink className="h-4 w-4" />

@@ -142,8 +142,8 @@ export function InterviewSessionViewer({
                     className="h-6 w-6"
                     seed={
                       isPersonaInterview
-                        ? interviewSession.intervieweePersonaId || 0
-                        : interviewSession.intervieweeUserId || 0
+                        ? (interviewSession.intervieweePersona?.id ?? 0)
+                        : (interviewSession.intervieweeUser?.id ?? 0)
                     }
                   />
                   <span className="text-sm text-gray-600 dark:text-gray-400">
@@ -202,41 +202,44 @@ export function InterviewSessionViewer({
             )}
           </Badge>
           <h1 className="text-lg font-medium">
-            {t("sessionTitle")} #{interviewSession.id} -{" "}
+            {interviewSession.title || t("sessionTitle")}
+            {" - "}
             {interviewTarget?.name ||
               (interviewTarget && "email" in interviewTarget ? interviewTarget.email : "Anonymous")}
           </h1>
         </div>
         <div className="flex items-center space-x-2">
-          <Dialog open={isRestartDialogOpen} onOpenChange={setIsRestartDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline" size="sm" disabled={isPending}>
-                <RefreshCwIcon className={cn("h-4 w-4 mr-2", isPending && "animate-spin")} />
-                {tDetails("restartChat")}
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>{tDetails("restartChatTitle")}</DialogTitle>
-                <DialogDescription>
-                  {tDetails("restartChatDescription")}
-                  {isPersonaInterview && ` ${tDetails("autoConversationNote")}`}
-                </DialogDescription>
-              </DialogHeader>
-              <div className="flex justify-end space-x-2 pt-4">
-                <Button variant="outline" onClick={() => setIsRestartDialogOpen(false)}>
-                  {tDetails("restartChatCancel")}
+          {isPersonaInterview && (
+            <Dialog open={isRestartDialogOpen} onOpenChange={setIsRestartDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm" disabled={isPending}>
+                  <RefreshCwIcon className={cn("h-4 w-4 mr-2", isPending && "animate-spin")} />
+                  {tDetails("restartChat")}
                 </Button>
-                <Button
-                  onClick={handleRestartChat}
-                  disabled={isPending}
-                  className="bg-red-600 hover:bg-red-700"
-                >
-                  {isPending ? tDetails("restarting") : tDetails("restartChatConfirm")}
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>{tDetails("restartChatTitle")}</DialogTitle>
+                  <DialogDescription>
+                    {tDetails("restartChatDescription")}
+                    {isPersonaInterview && ` ${tDetails("autoConversationNote")}`}
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="flex justify-end space-x-2 pt-4">
+                  <Button variant="outline" onClick={() => setIsRestartDialogOpen(false)}>
+                    {tDetails("restartChatCancel")}
+                  </Button>
+                  <Button
+                    onClick={handleRestartChat}
+                    disabled={isPending}
+                    className="bg-red-600 hover:bg-red-700"
+                  >
+                    {isPending ? tDetails("restarting") : tDetails("restartChatConfirm")}
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          )}
           {projectInfoButton}
         </div>
       </div>
@@ -255,8 +258,8 @@ export function InterviewSessionViewer({
                 className="size-8"
                 seed={
                   isPersonaInterview
-                    ? interviewSession.intervieweePersonaId || 0
-                    : interviewSession.intervieweeUserId || 0
+                    ? (interviewSession.intervieweePersona?.id ?? 0)
+                    : (interviewSession.intervieweeUser?.id ?? 0)
                 }
               />
             ),

@@ -1,13 +1,19 @@
 import "server-only";
 
 import { PlainTextToolResult } from "@/ai/tools/types";
+import { prisma } from "@/prisma/prisma";
 import { tool } from "ai";
 import { z } from "zod";
 
-export const interviewSessionTools = {
+export const interviewSessionTools = ({ interviewSessionId }: { interviewSessionId: number }) => ({
   endInterview: tool({
-    description: "End the interview session and generate the interview summary",
+    description: "End the interview session and generate the interview summary and title",
     parameters: z.object({
+      title: z
+        .string()
+        .describe(
+          "A concise title for this interview session (maximum 20 characters) that helps identify and find this interview later.",
+        ),
       interviewSummary: z
         .string()
         .describe(
@@ -17,13 +23,20 @@ export const interviewSessionTools = {
     experimental_toToolResultContent: (result: PlainTextToolResult) => {
       return [{ type: "text", text: result.plainText }];
     },
-    execute: async ({ interviewSummary }) => {
-      // 故意等10s，这样前端可以感觉到工具正在被执行。
-      await new Promise((resolve) => setTimeout(resolve, 10_000));
+    execute: async ({ title, interviewSummary }) => {
+      await Promise.all([
+        // 故意等10s，这样前端可以感觉到工具正在被执行。
+        new Promise((resolve) => setTimeout(resolve, 10_000)),
+        prisma.interviewSession.update({
+          where: { id: interviewSessionId },
+          data: { title: (title ?? "").slice(0, 200) },
+        }),
+      ]);
       return {
+        title,
         interviewSummary,
         plainText: "",
       };
     },
   }),
-};
+});
