@@ -9,7 +9,7 @@ import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { signInWithEmail } from "./client";
 
 export default function SignInPage() {
@@ -30,6 +30,13 @@ function SignIn() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isWechat, setIsWechat] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setIsWechat(window.navigator.userAgent.toLowerCase().includes("micromessenger"));
+    }
+  }, []);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -121,23 +128,29 @@ function SignIn() {
             >
               {isLoading ? t("submittingButton") : t("submitButton")}
             </Button>
-            <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center">
-                <Separator className="w-full" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">{t("orContinueWith")}</span>
-              </div>
-            </div>
-            <Button
-              variant="outline"
-              className="w-full h-10"
-              onClick={() => signIn("google", { callbackUrl })}
-              type="button"
-            >
-              <Image src="/_public/icon-google.png" alt="Google" width={20} height={20} />
-              <span>{t("signInWithGoogle")}</span>
-            </Button>
+            {!isWechat && (
+              <>
+                <div className="relative my-6">
+                  <div className="absolute inset-0 flex items-center">
+                    <Separator className="w-full" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-card px-2 text-muted-foreground">
+                      {t("orContinueWith")}
+                    </span>
+                  </div>
+                </div>
+                <Button
+                  variant="outline"
+                  className="w-full h-10"
+                  onClick={() => signIn("google", { callbackUrl })}
+                  type="button"
+                >
+                  <Image src="/_public/icon-google.png" alt="Google" width={20} height={20} />
+                  <span>{t("signInWithGoogle")}</span>
+                </Button>
+              </>
+            )}
           </form>
           <div className="mt-6 text-center text-sm">
             {t("noAccountText")}{" "}
