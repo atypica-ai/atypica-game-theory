@@ -11,10 +11,31 @@ import { interviewSessionTools } from "@/app/(interviewProject)/tools";
 import { interviewSessionChatBodySchema } from "@/app/(interviewProject)/types";
 import { rootLogger } from "@/lib/logging";
 import { throwServerActionError } from "@/lib/serverAction";
-import { generateId, smoothStream, streamText } from "ai";
+import { CoreMessage, generateId, smoothStream, streamText } from "ai";
 import { getServerSession } from "next-auth";
 import { getLocale } from "next-intl/server";
 import { after, NextResponse } from "next/server";
+
+function setBedrockCache(model: `claude-${string}`, coreMessages: CoreMessage[]) {
+  if (!model) return coreMessages; // 这句话没意义，只是为了用一下 model
+  const checkpoints = {
+    ">=1": false,
+    ">=8": false,
+  };
+  const cachedCoreMessages = coreMessages.map((message, index) => {
+    const providerOptions = { bedrock: { cachePoint: { type: "default" } } };
+    if (message.role === "assistant" && index >= 1 && !checkpoints[">=1"]) {
+      checkpoints[">=1"] = true;
+      return { ...message, providerOptions };
+    }
+    if (message.role === "assistant" && index >= 8 && !checkpoints[">=8"]) {
+      checkpoints[">=8"] = true;
+      return { ...message, providerOptions };
+    }
+    return { ...message };
+  });
+  return cachedCoreMessages;
+}
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
@@ -59,7 +80,10 @@ export async function POST(req: Request) {
   });
 
   const locale = await getLocale();
-  const { coreMessages, streamingMessage } = await prepareMessagesForStreaming(userChat.id);
+  const { coreMessages: _coreMessages, streamingMessage } = await prepareMessagesForStreaming(
+    userChat.id,
+  );
+  const coreMessages = setBedrockCache("claude-3-7-sonnet", _coreMessages);
 
   // Generate system prompt based on interview context
   const isPersonaInterview = !!intervieweePersona;
@@ -91,6 +115,9 @@ export async function POST(req: Request) {
     }),
     abortSignal: mergedAbortSignal,
     onStepFinish: async (step) => {
+      const cache = step.providerMetadata?.bedrock?.usage as
+        | { cacheReadInputTokens: number; cacheWriteInputTokens: number }
+        | undefined;
       appendStepToStreamingMessage(streamingMessage, step);
       if (streamingMessage.parts?.length && streamingMessage.content.trim()) {
         await persistentAIMessageToDB(userChat.id, streamingMessage);
@@ -99,6 +126,7 @@ export async function POST(req: Request) {
         msg: "interview session streamText onStepFinish",
         stepType: step.stepType,
         usage: step.usage,
+        cache,
         toolCalls: step.toolCalls.map((call) => call.toolName),
         isPersonaInterview,
       });
