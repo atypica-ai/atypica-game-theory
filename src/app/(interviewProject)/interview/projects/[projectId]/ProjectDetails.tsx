@@ -1,5 +1,5 @@
 "use client";
-import { generateProjectShareToken } from "@/app/(interviewProject)/actions";
+import { fetchInterviewReports, generateProjectShareToken } from "@/app/(interviewProject)/actions";
 import { InterviewProjectWithSessions } from "@/app/(interviewProject)/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,12 +19,20 @@ import { Bot, Copy, ExternalLink, MessageSquare, Share2, Users } from "lucide-re
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { InterviewReportsSection } from "./InterviewReportsSection";
 import { SelectPersonaDialog } from "./SelectPersonaDialog";
 
 interface ProjectDetailsProps {
   project: InterviewProjectWithSessions;
+}
+
+interface ReportItem {
+  id: number;
+  token: string;
+  generatedAt: Date | null;
+  createdAt: Date;
 }
 
 export function ProjectDetails({ project }: ProjectDetailsProps) {
@@ -35,7 +43,35 @@ export function ProjectDetails({ project }: ProjectDetailsProps) {
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [personaDialogOpen, setPersonaDialogOpen] = useState(false);
   const [shareUrl, setShareUrl] = useState("");
+  const [reports, setReports] = useState<ReportItem[]>([]);
+  const [loadingReports, setLoadingReports] = useState(false);
   // const [loading, setLoading] = useState(false);
+
+  // Fetch reports on component mount and initialize from props
+  useEffect(() => {
+    // First set any reports that came with the project data
+    if (project.interviewReport && project.interviewReport.length > 0) {
+      setReports(project.interviewReport);
+    }
+
+    // Then fetch fresh data
+    const loadReports = async () => {
+      setLoadingReports(true);
+      try {
+        const result = await fetchInterviewReports(project.id);
+        if (result.success) {
+          setReports(result.data);
+        } else {
+          console.error("Failed to fetch reports:", result.message);
+        }
+      } catch (error) {
+        console.error("Failed to fetch reports:", error);
+      } finally {
+        setLoadingReports(false);
+      }
+    };
+    loadReports();
+  }, [project.id, project.interviewReport]);
 
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat("en-US", {
@@ -82,6 +118,10 @@ export function ProjectDetails({ project }: ProjectDetailsProps) {
   const handlePersonaInterviewSuccess = () => {
     // Refresh the page to show new sessions
     router.refresh();
+  };
+
+  const handleReportsUpdateAction = (newReports: ReportItem[]) => {
+    setReports(newReports);
   };
 
   const stats = getSessionStats();
@@ -245,6 +285,24 @@ export function ProjectDetails({ project }: ProjectDetailsProps) {
                 </div>
               ))}
             </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Reports Section */}
+      <Card>
+        <CardContent className="p-6">
+          {loadingReports ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-gray-100 mx-auto mb-4"></div>
+              <p className="text-gray-600 dark:text-gray-400">Loading reports...</p>
+            </div>
+          ) : (
+            <InterviewReportsSection
+              project={project}
+              reports={reports}
+              onReportsUpdateAction={handleReportsUpdateAction}
+            />
           )}
         </CardContent>
       </Card>

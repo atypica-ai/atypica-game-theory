@@ -5,6 +5,7 @@ import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { createUserChat } from "@/lib/userChat/lib";
 import { generateToken } from "@/lib/utils";
+import { ChatMessage, InterviewProject } from "@/prisma/client";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
@@ -89,6 +90,15 @@ export async function fetchInterviewProjectById(
             id: true,
             intervieweeUserId: true,
             intervieweePersonaId: true,
+            createdAt: true,
+          },
+          orderBy: { createdAt: "desc" },
+        },
+        reports: {
+          select: {
+            id: true,
+            token: true,
+            generatedAt: true,
             createdAt: true,
           },
           orderBy: { createdAt: "desc" },
@@ -758,6 +768,242 @@ export async function fetchAvailablePersonas({
         totalCount,
         totalPages: Math.ceil(totalCount / pageSize),
       },
+    };
+  });
+}
+
+/**
+ * Generate interview report
+ */
+export async function generateInterviewReport(
+  projectId: number,
+): Promise<ServerActionResult<{ token: string }>> {
+  return withAuth(async (user) => {
+    // Verify project ownership
+    const project = await prisma.interviewProject.findFirst({
+      where: { id: projectId, userId: user.id },
+      include: {
+        sessions: {
+          include: {
+            userChat: {
+              include: {
+                messages: {
+                  orderBy: { id: "asc" },
+                },
+              },
+            },
+            intervieweeUser: {
+              select: { name: true, email: true },
+            },
+            intervieweePersona: {
+              select: { name: true },
+            },
+          },
+        },
+      },
+    });
+
+    if (!project) {
+      return {
+        success: false,
+        message: "Project not found or access denied",
+      };
+    }
+
+    if (project.sessions.length === 0) {
+      return {
+        success: false,
+        message: "No interview sessions found for this project",
+      };
+    }
+
+    const reportToken = generateToken();
+
+    // Create report record
+    const report = await prisma.interviewReport.create({
+      data: {
+        projectId,
+        token: reportToken,
+        onePageHtml: "",
+      },
+    });
+
+    // Generate report in background
+    waitUntil(
+      (async () => {
+        try {
+          await generateReportContent(project, report.id);
+        } catch (error) {
+          rootLogger.error(`Failed to generate interview report ${reportToken}:`, error);
+        }
+      })(),
+    );
+
+    return {
+      success: true,
+      data: { token: reportToken },
+    };
+  });
+}
+
+async function generateReportContent(
+  project: InterviewProject & {
+    sessions: {
+      id: number;
+      userChat: {
+        id: number;
+        messages: ChatMessage[];
+      } | null;
+      intervieweeUser: {
+        name: string;
+        email: string;
+      } | null;
+      intervieweePersona: {
+        name: string;
+      } | null;
+    }[];
+  },
+  reportId: number,
+): Promise<void> {
+  const { llm, providerOptions } = await import("@/ai/provider");
+  const { streamText } = await import("ai");
+  const { interviewReportSystemPrompt, interviewReportPrologue } = await import("./prompt");
+  const { getLocale } = await import("next-intl/server");
+
+  const locale = await getLocale();
+
+  // Prepare conversation data
+  const conversations = project.sessions
+    .filter((session) => (session.userChat?.messages?.length ?? 0) > 0)
+    .map((session) => {
+      const participantName =
+        session.intervieweeUser?.name ||
+        session.intervieweePersona?.name ||
+        `Anonymous User ${session.id}`;
+      const messages = (session.userChat?.messages ?? [])
+        .filter((msg) => msg.content.trim() && !msg.content.includes("[READY]"))
+        .map((msg) => ({
+          role: msg.role as "user" | "assistant",
+          content: msg.content,
+          createdAt: msg.createdAt,
+        }));
+
+      return { participantName, messages };
+    });
+
+  let onePageHtml = "";
+
+  const response = streamText({
+    model: llm("claude-sonnet-4"),
+    providerOptions: providerOptions,
+    system: interviewReportSystemPrompt({ locale }),
+    messages: [
+      {
+        role: "user",
+        content: interviewReportPrologue({
+          locale,
+          projectBrief: project.brief,
+          conversations,
+        }),
+      },
+    ],
+    maxSteps: 1,
+    maxTokens: 30000,
+    onChunk: async ({ chunk }) => {
+      if (chunk.type === "text-delta") {
+        onePageHtml += chunk.textDelta.toString();
+        // Throttled save - save every 5 seconds
+        await prisma.interviewReport.update({
+          where: { id: reportId },
+          data: { onePageHtml },
+        });
+      }
+      rootLogger.info("Interview report generation progress");
+    },
+    onFinish: async () => {
+      // Final save with completion timestamp
+      await prisma.interviewReport.update({
+        where: { id: reportId },
+        data: {
+          onePageHtml,
+          generatedAt: new Date(),
+        },
+      });
+    },
+    onError: ({ error }) => {
+      rootLogger.error(`Interview report generation error:`, error);
+    },
+  });
+
+  await response.consumeStream();
+}
+
+/**
+ * Fetch interview reports for a project
+ */
+export async function fetchInterviewReports(
+  projectId: number,
+): Promise<
+  ServerActionResult<
+    Array<{ id: number; token: string; generatedAt: Date | null; createdAt: Date }>
+  >
+> {
+  return withAuth(async (user) => {
+    const project = await prisma.interviewProject.findFirst({
+      where: { id: projectId, userId: user.id },
+    });
+
+    if (!project) {
+      return {
+        success: false,
+        message: "Project not found or access denied",
+      };
+    }
+
+    const reports = await prisma.interviewReport.findMany({
+      where: { projectId },
+      select: {
+        id: true,
+        token: true,
+        generatedAt: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    return {
+      success: true,
+      data: reports,
+    };
+  });
+}
+
+/**
+ * Delete interview report
+ */
+export async function deleteInterviewReport(reportId: number): Promise<ServerActionResult<void>> {
+  return withAuth(async (user) => {
+    const report = await prisma.interviewReport.findFirst({
+      where: {
+        id: reportId,
+        project: { userId: user.id },
+      },
+    });
+
+    if (!report) {
+      return {
+        success: false,
+        message: "Report not found or access denied",
+      };
+    }
+
+    await prisma.interviewReport.delete({
+      where: { id: reportId },
+    });
+
+    return {
+      success: true,
+      data: undefined,
     };
   });
 }

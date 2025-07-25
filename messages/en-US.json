@@ -1340,6 +1340,22 @@
       "creating": "Creating...",
       "startNow": "Interview session created successfully! Would you like to start the interview now?",
       "multipleSuccess": "interview sessions created successfully"
+    },
+    "reportShare": {
+      "title": "Interview Report",
+      "description": "Professional analysis and insights from interview sessions",
+      "projectBrief": "Project Brief",
+      "briefDescription": "The research topic and objectives for this interview project",
+      "viewReport": "View Report",
+      "viewReportDescription": "Open the full report in a new tab",
+      "copyLink": "Copy Link",
+      "copyLinkDescription": "Share this report with others",
+      "downloadPDF": "Download PDF",
+      "downloadPDFDescription": "Save or print as PDF",
+      "reportPreview": "Report Preview",
+      "previewDescription": "Live preview of the interview report",
+      "poweredBy": "Report powered by atypica.AI",
+      "viewProject": "View Project"
     }
   }
 }

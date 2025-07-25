@@ -504,7 +504,7 @@ model UserPersonaChatRelation {
 
 model InterviewProject {
   id     Int    @id @default(autoincrement())
-  token  String @unique
+  token  String @unique //没用到
   userId Int
   user   User   @relation(fields: [userId], references: [id])
   brief  String @db.Text
@@ -513,10 +513,12 @@ model InterviewProject {
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
   sessions InterviewSession[]
+  reports  InterviewReport[]
 }
 
 model InterviewSession {
   id                   Int              @id @default(autoincrement())
+  title                String           @default("") @db.Text
   projectId            Int
   project              InterviewProject @relation(fields: [projectId], references: [id])
   userChatId           Int?             @unique
@@ -525,6 +527,19 @@ model InterviewSession {
   intervieweeUser      User?            @relation(fields: [intervieweeUserId], references: [id], onDelete: SetNull)
   intervieweePersonaId Int? // 受访的 AI 角色
   intervieweePersona   Persona?         @relation(fields: [intervieweePersonaId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+}
+
+model InterviewReport {
+  id          Int              @id @default(autoincrement())
+  token       String           @unique @db.VarChar(64)
+  projectId   Int              @db.Integer
+  project     InterviewProject @relation(fields: [projectId], references: [id])
+  onePageHtml String           @db.Text
+  generatedAt DateTime?        @db.Timestamptz(6)
+  extra       Json             @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)

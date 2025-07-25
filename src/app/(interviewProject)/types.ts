@@ -14,6 +14,12 @@ export interface InterviewProjectWithSessions {
     intervieweePersonaId: number | null;
     createdAt: Date;
   }>;
+  interviewReport?: Array<{
+    id: number;
+    token: string;
+    generatedAt: Date | null;
+    createdAt: Date;
+  }>;
 }
 
 // Create Interview Project schema
@@ -76,7 +82,7 @@ export const interviewSessionChatBodySchema = z.object({
     id: z.string().optional(),
     role: z.enum(["user", "assistant"]),
     content: z.string(),
-    parts: z.array(z.any()).optional(),
+    // parts: z.array(z.any()).optional(),
   }),
   userChatToken: z.string(),
 });
@@ -98,3 +104,22 @@ export type CreateHumanInterviewSessionInput = z.infer<typeof createHumanIntervi
 export type CreatePersonaInterviewSessionInput = z.infer<
   typeof createPersonaInterviewSessionSchema
 >;
+
+// Interview Report types
+export interface InterviewReport {
+  id: number;
+  token: string;
+  projectId: number;
+  onePageHtml: string;
+  generatedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface InterviewReportWithProject extends InterviewReport {
+  project: {
+    id: number;
+    brief: string;
+    userId: number;
+  };
+}

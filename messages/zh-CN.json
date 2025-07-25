@@ -1340,6 +1340,22 @@
       "creating": "创建中...",
       "startNow": "访谈会话创建成功！您想现在开始访谈吗？",
       "multipleSuccess": "个访谈会话创建成功"
+    },
+    "reportShare": {
+      "title": "访谈报告",
+      "description": "来自访谈会话的专业分析和洞察",
+      "projectBrief": "项目简介",
+      "briefDescription": "此访谈项目的研究主题和目标",
+      "viewReport": "查看报告",
+      "viewReportDescription": "在新标签页中打开完整报告",
+      "copyLink": "复制链接",
+      "copyLinkDescription": "与他人分享此报告",
+      "downloadPDF": "下载PDF",
+      "downloadPDFDescription": "保存或打印为PDF",
+      "reportPreview": "报告预览",
+      "previewDescription": "访谈报告的实时预览",
+      "poweredBy": "报告由 atypica.AI 提供技术支持",
+      "viewProject": "查看项目"
     }
   }
 }

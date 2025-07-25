@@ -56,7 +56,7 @@ export function InterviewSessionChatClient({
           id: lastMessage.id,
           role: lastMessage.role as "user" | "assistant",
           content: lastMessage.content,
-          parts: lastMessage.parts,
+          // parts: lastMessage.parts,
         },
         ...requestBody,
       };
