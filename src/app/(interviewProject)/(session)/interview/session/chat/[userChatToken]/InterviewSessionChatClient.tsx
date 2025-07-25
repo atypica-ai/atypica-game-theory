@@ -113,12 +113,11 @@ export function InterviewSessionChatClient({
           <Info className="h-5 w-5" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-auto scrollbar-thin">
         <DialogHeader>
           <DialogTitle>{t("interviewDetails")}</DialogTitle>
           <DialogDescription>{t("detailsDescription")}</DialogDescription>
         </DialogHeader>
-
         <div className="space-y-4">
           <Card>
             <CardHeader className="pb-3">

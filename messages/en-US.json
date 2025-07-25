@@ -835,7 +835,8 @@
       "gettingReady": "Getting ready to start...",
       "shareThoughts": "Share your thoughts...",
       "processing": "Processing...",
-      "timeRemaining": "{time} left"
+      "timeRemaining": "{time} left",
+      "listening": "Listening..."
     },
     "VoiceInputButton": {
       "startListening": "Start voice input",

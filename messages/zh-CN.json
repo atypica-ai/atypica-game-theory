@@ -835,7 +835,8 @@
       "gettingReady": "准备开始...",
       "shareThoughts": "分享您的想法...",
       "processing": "处理中...",
-      "timeRemaining": "{time} 剩余"
+      "timeRemaining": "{time} 剩余",
+      "listening": "聆听中..."
     },
     "VoiceInputButton": {
       "startListening": "开始语音输入",

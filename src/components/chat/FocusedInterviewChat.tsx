@@ -3,7 +3,7 @@
 import { RecordButton } from "@/components/chat/RecordButton";
 import { Button } from "@/components/ui/button";
 import { useDocumentVisibility } from "@/hooks/use-document-visibility";
-import { useDevice } from "@/lib/utils";
+import { cn, useDevice } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
 import { generateId } from "ai";
 import { AnimatePresence, motion } from "framer-motion";
@@ -69,6 +69,7 @@ export function FocusedInterviewChat({
     null,
   );
   const [showTextInput, setShowTextInput] = useState(false);
+  const [partialTranscript, setPartialTranscript] = useState("");
 
   const { messages, input, setInput, handleSubmit, status, stop } = useChatHelpers;
 
@@ -111,6 +112,7 @@ export function FocusedInterviewChat({
 
   const handleTranscriptInternal = useCallback(
     (text: string) => {
+      console.log("🎯 Final transcript received in FocusedInterviewChat:", text);
       if (text.trim()) {
         const messageToSend = {
           role: "user" as const,
@@ -119,16 +121,24 @@ export function FocusedInterviewChat({
         };
         setLastUserMessage(messageToSend);
 
+        console.log("📨 Sending transcript message to chat:", messageToSend.content);
         useChatRef.current?.append(messageToSend);
 
         // Reset timeout state when user responds
         setHasTimedOut(false);
         setTimeLeft(DEFAULT_TIME_LEFT);
         setIsTimerActive(false);
+        setPartialTranscript(""); // Clear partial transcript
+        console.log("✅ Transcript processing completed, chat updated");
       }
     },
     [useChatRef],
   );
+
+  const handlePartialTranscriptInternal = useCallback((text: string) => {
+    console.log("⚡ Partial transcript received in FocusedInterviewChat:", text);
+    setPartialTranscript(text);
+  }, []);
 
   // Auto focus input after AI streaming ends
   useEffect(() => {
@@ -203,7 +213,11 @@ export function FocusedInterviewChat({
 
   return (
     <div
-      className={`w-full h-full flex flex-col relative bg-zinc-50 dark:bg-zinc-900 pb-8 ${className}`}
+      className={cn(
+        "w-full h-full flex flex-col relative bg-zinc-50 dark:bg-zinc-900 pb-8",
+        "flex-1 overflow-auto",
+        className,
+      )}
     >
       {/* Top bar with language indicator and controls */}
       <div className="absolute top-6 left-1/2 -translate-x-1/2">
@@ -230,7 +244,12 @@ export function FocusedInterviewChat({
       )}
 
       {/* Main content area */}
-      <div className="flex-1 flex flex-col items-center justify-center text-center max-w-4xl w-full mx-auto px-4">
+      <div
+        className={cn(
+          "flex-1 flex flex-col items-center justify-center text-center max-w-4xl w-full mx-auto px-4",
+          "min-h-96",
+        )}
+      >
         <AnimatePresence mode="wait">
           {status === "submitted" ? (
             <motion.div
@@ -245,7 +264,7 @@ export function FocusedInterviewChat({
                 <span>{t("thinking")}</span>
               </div>
               {lastUserMessage && (
-                <p className="text-sm text-zinc-500 dark:text-zinc-500 italic max-w-md truncate">
+                <p className="text-sm text-zinc-500 dark:text-zinc-500 italic max-w-md">
                   &quot;{lastUserMessage.content}&quot;
                 </p>
               )}
@@ -278,7 +297,7 @@ export function FocusedInterviewChat({
       </div>
 
       {/* Bottom input area - fixed to bottom */}
-      <div className="w-full max-w-3xl mx-auto p-4 sm:p-8 pt-0 space-y-6">
+      <div className="w-full max-w-3xl mx-auto p-4 sm:p-8 pt-0 relative">
         {/* Timer progress indicator */}
         {showTimer && (
           <div className="flex items-center justify-center gap-3 text-xs text-zinc-400 dark:text-zinc-500">
@@ -297,6 +316,7 @@ export function FocusedInterviewChat({
           {/* Record Button */}
           <RecordButton
             onTranscript={handleTranscriptInternal}
+            onPartialTranscript={handlePartialTranscriptInternal}
             language={locale}
             disabled={status === "streaming" || status === "submitted"}
           />
@@ -325,7 +345,7 @@ export function FocusedInterviewChat({
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.1 }}
-              className="overflow-hidden"
+              className="overflow-hidden mt-6"
             >
               <form
                 onSubmit={handleSubmitWithFocus}
@@ -370,6 +390,25 @@ export function FocusedInterviewChat({
                   )}
                 </Button>
               </form>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Streaming transcript display - in bottom padding area */}
+        <AnimatePresence>
+          {partialTranscript && (
+            <motion.div
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -5 }}
+              className="absolute bottom-0 left-1/2 transform -translate-x-1/2 max-w-xs"
+            >
+              <div className="text-xs text-zinc-500 dark:text-zinc-400 text-center truncate px-2">
+                <span className="inline-block w-1 h-1 bg-blue-500 rounded-full animate-pulse mr-1"></span>
+                {partialTranscript.length > 30
+                  ? `...${partialTranscript.slice(-30)}`
+                  : partialTranscript}
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
