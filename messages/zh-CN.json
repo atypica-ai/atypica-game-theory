@@ -1263,7 +1263,7 @@
       "interviewSessions": "访谈会话",
       "noInterviews": "暂无访谈",
       "noInterviewsDescription": "分享项目链接或访谈AI画像以开始",
-      "sessionId": "会话 #",
+      "sessionId": "会话",
       "restartChat": "重启聊天",
       "restartChatTitle": "重启访谈聊天",
       "restartChatDescription": "这将清除所有现有消息并从头开始访谈。",

@@ -1263,7 +1263,7 @@
       "interviewSessions": "Interview Sessions",
       "noInterviews": "No interviews yet",
       "noInterviewsDescription": "Share the project link or interview an AI persona to get started",
-      "sessionId": "Session #",
+      "sessionId": "Session",
       "restartChat": "Restart Chat",
       "restartChatTitle": "Restart Interview Chat",
       "restartChatDescription": "This will clear all existing messages and restart the interview from the beginning.",
