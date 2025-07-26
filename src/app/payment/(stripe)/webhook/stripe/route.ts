@@ -36,9 +36,11 @@ async function cycleNewPaymentRecord(invoiceData: Stripe.Invoice, metadata: Stri
     data: {
       userId: initial.userId,
       orderNo: initial.orderNo + uniqueIdSuffix,
-      amount: initial.amount, // Convert cents to yuan
-      currency: initial.currency,
-      paymentMethod: initial.paymentMethod,
+      // amount: initial.amount, // Convert cents to yuan
+      // initial amount 可能是升级套餐折扣后的，不能直接复制过来，世纪金额要以 invoiceData 上的为准，一般就是套餐的原价
+      amount: invoiceData.total / 100,
+      currency: invoiceData.currency === "cny" ? "CNY" : "USD",
+      paymentMethod: "stripe",
       chargeId: initial.chargeId + uniqueIdSuffix,
       credential: {},
       description: initial.description,
@@ -50,17 +52,29 @@ async function cycleNewPaymentRecord(invoiceData: Stripe.Invoice, metadata: Stri
     },
   });
   await prisma.paymentLine.createMany({
-    data: initial.paymentLines.map(
-      ({ productId, productName, quantity, price, currency, description }) => ({
-        paymentRecordId: paymentRecord.id,
-        productId,
-        productName,
-        quantity,
-        price,
-        currency,
-        description,
-      }),
-    ),
+    data: invoiceData.lines.data
+      .map((line) => {
+        const productName = line.metadata.productName;
+        const paymentLine = initial.paymentLines.find((p) => p.productName === productName);
+        return paymentLine
+          ? {
+              paymentRecordId: paymentRecord.id,
+              productId: paymentLine.productId,
+              productName: line.metadata.productName,
+              quantity: line.quantity ?? paymentLine.quantity,
+              price: line.amount / 100,
+              currency: (line.currency === "cny" ? "CNY" : "USD") as "CNY" | "USD",
+              description: line.description ?? paymentLine.description,
+            }
+          : null;
+      })
+      .filter((item): item is NonNullable<typeof item> => item !== null),
+    // initial.paymentLines.map(
+    //   ({ productId, productName, quantity, price, currency, description }) => ({
+    //     paymentRecordId: paymentRecord.id,
+    //     productId, productName, quantity, price, currency, description,
+    //   }),
+    // ),
   });
   return paymentRecord;
 }
