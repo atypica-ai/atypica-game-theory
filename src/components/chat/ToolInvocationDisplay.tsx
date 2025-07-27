@@ -13,7 +13,6 @@ import {
   SocialPostsResultMessage,
 } from "@/ai/tools/social/ToolMessage";
 import { SaveAnalystToolResultMessage } from "@/ai/tools/system/ToolMessage";
-import { UpdateInterviewProjectToolResultMessage } from "@/ai/tools/system/ToolMessage/UpdateInterviewProjectToolResultMessage";
 import { PlainTextToolResult, ToolName } from "@/ai/tools/types";
 import {
   RequestInteractionMessage,
@@ -77,8 +76,6 @@ export const ToolInvocationDisplay = ({
 
     case ToolName.saveAnalyst:
       return <SaveAnalystToolResultMessage toolInvocation={toolInvocation} />;
-    case ToolName.updateInterviewProject:
-      return <UpdateInterviewProjectToolResultMessage toolInvocation={toolInvocation} />;
 
     case ToolName.xhsSearch:
     case ToolName.dySearch:

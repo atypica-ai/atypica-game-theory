@@ -11,9 +11,7 @@ export * from "./experts/searchPersonas/types";
 
 export * from "./system/saveAnalyst/types";
 export * from "./system/saveInterviewConclusion/types";
-export * from "./system/saveInterviewSessionSummaryTool/types";
 export * from "./system/savePersona/types";
-export * from "./system/updateInterviewProjectTool/types";
 
 export * from "./user/interaction/types";
 export * from "./user/payment/types";

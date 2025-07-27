@@ -3,8 +3,6 @@ import "server-only";
 export * from "./buildPersona";
 export * from "./hello";
 export * from "./interview";
-export * from "./interviewProject";
-export * from "./interviewSession";
 export * from "./personaAgent";
 export * from "./reasoning";
 export * from "./report";
