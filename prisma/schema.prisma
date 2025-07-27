@@ -30,7 +30,7 @@ model User {
   email         String    @unique
   password      String
   emailVerified DateTime? @db.Timestamptz(6)
-  lastLogin     Json?
+  lastLogin     Json      @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
@@ -112,7 +112,7 @@ model Analyst {
   studySummary    String    @db.Text
   studyUserChatId Int?      @unique @db.Integer
   studyUserChat   UserChat? @relation(fields: [studyUserChatId], references: [id])
-  attachments     Json?
+  attachments     Json      @default("{}")
   kind            String?   @db.VarChar(16)
   locale          String?   @db.VarChar(16)
 
@@ -146,7 +146,7 @@ model AnalystReport {
   coverSvg    String    @db.Text
   onePageHtml String    @db.Text
   generatedAt DateTime? @db.Timestamptz(6)
-  extra       Json?
+  extra       Json      @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
@@ -185,7 +185,7 @@ model UserChat {
   title           String       @db.VarChar(255)
   kind            UserChatKind
   backgroundToken String?      @db.VarChar(255)
-  extra           Json?
+  extra           Json         @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
@@ -216,8 +216,8 @@ model ChatMessage {
   role        MessageRole
   content     String      @db.Text
   parts       Json
-  extra       Json?
-  attachments Json?
+  extra       Json        @default("{}")
+  attachments Json        @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
@@ -239,7 +239,7 @@ model ChatStatistics {
   userChat   UserChat                @relation(fields: [userChatId], references: [id])
   dimension  ChatStatisticsDimension
   value      Int                     @default(0)
-  extra      Json?
+  extra      Json                    @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
@@ -285,7 +285,7 @@ model Product {
   price       Float
   description String   @db.VarChar(255)
   currency    Currency
-  extra       Json?
+  extra       Json     @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
@@ -325,7 +325,7 @@ model UserSubscription {
   plan     SubscriptionPlan
   startsAt DateTime         @db.Timestamptz(6)
   endsAt   DateTime         @db.Timestamptz(6)
-  extra    Json?
+  extra    Json             @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
@@ -390,7 +390,7 @@ model ImageGeneration {
   prompt      String    @db.Text
   promptHash  String    @unique // unique hash
   objectUrl   String    @db.VarChar(255) // s3 object url for generated image
-  extra       Json?
+  extra       Json      @default("{}")
   generatedAt DateTime? @db.Timestamptz(6)
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
@@ -405,7 +405,7 @@ model AttachmentFile {
   mimeType  String @db.VarChar(255)
   size      Int
   objectUrl String @unique @db.VarChar(255) // s3 object url
-  extra     Json? // not useful for the moment
+  extra     Json   @default("{}") // not useful for the moment
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
@@ -416,8 +416,8 @@ model PersonaImport {
   userId          Int
   user            User      @relation(fields: [userId], references: [id])
   attachments     Json
-  analysis        Json?
-  extra           Json?
+  analysis        Json      @default("{}")
+  extra           Json      @default("{}")
   extraUserChatId Int?      @unique // interview UserChat for follow up questions
   extraUserChat   UserChat? @relation(fields: [extraUserChatId], references: [id])
 
