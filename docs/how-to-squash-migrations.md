@@ -37,6 +37,15 @@ npx prisma migrate diff \
  --script > ./prisma/migrations/20250628000000_init/migration.sql
 ```
 
+**Important:** After generating the squashed migration, you may need to manually fix certain index types. For example, if you're using vector embeddings with pgvector, Prisma will generate standard indexes instead of the required HNSW indexes:
+
+```sql
+-- Prisma generates (incorrect):
+-- CREATE INDEX "Persona_embedding_idx" ON "Persona"("embedding");
+-- Manually replace with (correct):
+CREATE INDEX "Persona_embedding_idx" on "Persona" USING hnsw ("embedding" vector_cosine_ops);
+```
+
 5. Mark this migration as having been applied on production, to prevent it from being run there:
 
 **Execute the following command on all environments:**
