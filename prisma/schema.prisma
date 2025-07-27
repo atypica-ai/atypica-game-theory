@@ -60,7 +60,7 @@ model AdminUser {
   userId      Int       @unique
   user        User      @relation(fields: [userId], references: [id])
   role        AdminRole @default(REGULAR_ADMIN)
-  permissions Json
+  permissions Json      @default("[]")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
@@ -79,8 +79,8 @@ model Persona {
   id              Int            @id @default(autoincrement())
   name            String         @db.VarChar(255)
   source          String         @db.VarChar(255)
-  tags            Json // 存储标签数组
-  samples         Json // 存储小红书用户主页链接作为参考样本
+  tags            Json           @default("[]") // 存储标签数组
+  samples         Json           @default("[]") // 存储小红书用户主页链接作为参考样本
   prompt          String         @db.Text
   locale          String?        @db.VarChar(16)
   tier            Int            @default(0) @db.Integer
@@ -112,7 +112,7 @@ model Analyst {
   studySummary    String    @db.Text
   studyUserChatId Int?      @unique @db.Integer
   studyUserChat   UserChat? @relation(fields: [studyUserChatId], references: [id])
-  attachments     Json      @default("{}")
+  attachments     Json      @default("[]")
   kind            String?   @db.VarChar(16)
   locale          String?   @db.VarChar(16)
 
@@ -215,9 +215,9 @@ model ChatMessage {
   userChat    UserChat    @relation(fields: [userChatId], references: [id])
   role        MessageRole
   content     String      @db.Text
-  parts       Json
+  parts       Json        @default("[]")
   extra       Json        @default("{}")
-  attachments Json        @default("{}")
+  attachments Json        @default("[]")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
@@ -379,7 +379,7 @@ model UserTokensLog {
 model SystemConfig {
   id    Int    @id @default(autoincrement())
   key   String @unique @db.VarChar(255)
-  value Json
+  value Json   @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
@@ -415,7 +415,7 @@ model PersonaImport {
   id              Int       @id @default(autoincrement())
   userId          Int
   user            User      @relation(fields: [userId], references: [id])
-  attachments     Json
+  attachments     Json      @default("[]")
   analysis        Json      @default("{}")
   extra           Json      @default("{}")
   extraUserChatId Int?      @unique // interview UserChat for follow up questions
