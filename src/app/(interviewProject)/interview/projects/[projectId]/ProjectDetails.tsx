@@ -247,15 +247,15 @@ export function ProjectDetails({ project }: ProjectDetailsProps) {
                   className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                 >
                   <div className="flex items-center space-x-3">
-                    {interviewSession.intervieweeUser ? (
-                      <Badge variant="default" className="text-xs w-20 flex">
-                        <Users className="h-3 w-3" />
-                        Human
-                      </Badge>
-                    ) : (
+                    {interviewSession.intervieweePersona ? (
                       <Badge variant="secondary" className="text-xs w-20 flex">
                         <Bot className="h-3 w-3" />
                         AI
+                      </Badge>
+                    ) : (
+                      <Badge variant="default" className="text-xs w-20 flex">
+                        <Users className="h-3 w-3" />
+                        Human
                       </Badge>
                     )}
                     <div>
