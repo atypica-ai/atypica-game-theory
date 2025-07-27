@@ -1,12 +1,11 @@
 "use server";
 import { generateImpersonationLoginUrl } from "@/app/(auth)/impersonationLogin";
-import { authClientInfo } from "@/app/(auth)/lib";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
 import { encryptText } from "@/lib/cipher";
 import { getRequestOrigin } from "@/lib/request/headers";
 import { ServerActionResult } from "@/lib/serverAction";
-import { AdminRole, Currency, User } from "@/prisma/client";
+import { AdminRole, Currency, User, UserLastLogin } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { revalidatePath } from "next/cache";
 
@@ -21,7 +20,7 @@ export async function fetchUsers(
       tokens: { permanentBalance: number; monthlyBalance: number } | null;
       paymentRecords: { id: number; amount: number; currency: Currency }[];
       adminUser: { role: AdminRole; permissions: AdminPermission[] } | null;
-      lastLogin: Awaited<ReturnType<typeof authClientInfo>> | null;
+      lastLogin: UserLastLogin;
     })[]
   >
 > {
@@ -93,9 +92,7 @@ export async function fetchUsers(
             permissions: user.adminUser.permissions as AdminPermission[],
           }
         : null,
-      lastLogin: user.lastLogin
-        ? (user.lastLogin as Awaited<ReturnType<typeof authClientInfo>>)
-        : null,
+      lastLogin: user.lastLogin as UserLastLogin,
     })),
     pagination: {
       page,

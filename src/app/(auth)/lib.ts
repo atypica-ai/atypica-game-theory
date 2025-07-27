@@ -2,13 +2,14 @@ import "server-only";
 
 import { rootLogger } from "@/lib/logging";
 import { getRequestClientIp, getRequestGeo, getRequestUserAgent } from "@/lib/request/headers";
+import { UserLastLogin } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
 import { hash } from "bcryptjs";
 
 export const authLogger = rootLogger.child({ api: "next-auth" });
 
-export const authClientInfo = async () => {
+export const authClientInfo = async (): Promise<UserLastLogin> => {
   const timestamp = Date.now();
   const [clientIp, userAgent, geo] = await Promise.all([
     getRequestClientIp(),
@@ -18,8 +19,8 @@ export const authClientInfo = async () => {
   return {
     timestamp,
     clientIp,
-    userAgent,
-    geo,
+    ...(userAgent ? { userAgent } : {}),
+    ...(geo ? { geo } : {}),
   };
 };
 

@@ -360,7 +360,7 @@ export default function UsersPage() {
                     </div>
                   </TableCell>
                   <TableCell className="whitespace-nowrap text-xs">
-                    {user.lastLogin ? (
+                    {user.lastLogin?.timestamp ? (
                       <>
                         <div>{formatDate(new Date(user.lastLogin.timestamp), locale)}</div>
                         <div>{user.lastLogin.clientIp}</div>

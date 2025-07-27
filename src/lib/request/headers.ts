@@ -31,11 +31,11 @@ export async function getRequestUserAgent(): Promise<string | null> {
   return headersList.get("user-agent") || null;
 }
 
-export async function getRequestGeo(): Promise<{
-  country: string | null;
-  countryCode: string | null;
-  city: string | null;
-} | null> {
+export async function getRequestGeo(): Promise<Partial<{
+  country: string;
+  countryCode: string;
+  city: string;
+}> | null> {
   const headersList = await headers();
   const country = headersList.get("x-country");
   const countryCode = headersList.get("x-country-code");
@@ -44,8 +44,8 @@ export async function getRequestGeo(): Promise<{
     return null;
   }
   return {
-    country,
-    countryCode,
-    city,
+    ...(country ? { country } : {}),
+    ...(countryCode ? { countryCode } : {}),
+    ...(city ? { city } : {}),
   };
 }
