@@ -1,4 +1,4 @@
-import { ChatStatisticsExtra } from "@/prisma/client";
+import { AgentStatisticsExtra } from "@/prisma/client";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
 
@@ -82,7 +82,7 @@ export enum ToolName {
 export type StatReporter = (
   dimension: "tokens" | "duration" | "steps" | "personas",
   value: number,
-  extra: ChatStatisticsExtra,
+  extra: AgentStatisticsExtra,
 ) => Promise<void>;
 
 export type AgentToolConfigArgs = {

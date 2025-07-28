@@ -1,4 +1,8 @@
-import { UserTokensLogResourceType, UserTokensLogVerb } from "@/prisma/client";
+import {
+  AgentStatisticsExtra,
+  UserTokensLogResourceType,
+  UserTokensLogVerb,
+} from "@/prisma/client";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import { Logger } from "pino";
@@ -8,13 +12,15 @@ async function consumeUserTokens({
   userId,
   resourceType,
   resourceId,
-  value,
+  tokens,
+  extra,
   logger,
 }: {
   userId: number;
   resourceType: UserTokensLogResourceType;
   resourceId: number;
-  value: number;
+  tokens: number;
+  extra: AgentStatisticsExtra;
   logger: Logger;
 }) {
   try {
@@ -25,7 +31,8 @@ async function consumeUserTokens({
           verb: UserTokensLogVerb.consume,
           resourceType,
           resourceId,
-          value: -value,
+          value: -tokens,
+          extra: extra as InputJsonValue,
         },
       });
       const userTokens = await tx.userTokens.findUniqueOrThrow({
@@ -35,21 +42,21 @@ async function consumeUserTokens({
       if (userTokens.monthlyBalance > 0) {
         await tx.userTokens.update({
           where: { userId },
-          data: { monthlyBalance: { decrement: value } },
+          data: { monthlyBalance: { decrement: tokens } },
         });
       } else {
         await tx.userTokens.update({
           where: { userId },
-          data: { permanentBalance: { decrement: value } },
+          data: { permanentBalance: { decrement: tokens } },
         });
       }
     });
-    logger.info({ msg: "User tokens consumed successfully", userId, tokens: value });
+    logger.info({ msg: "User tokens consumed successfully", userId, tokens });
   } catch (error) {
     logger.error({
       msg: `Failed to consume user tokens: ${(error as Error).message}`,
       userId,
-      tokens: value,
+      tokens,
     });
   }
 }
@@ -77,7 +84,8 @@ export const initStudyStatReporter = ({
         userId,
         resourceType: "StudyUserChat",
         resourceId: studyUserChatId,
-        value,
+        tokens: value,
+        extra,
         logger: studyLog,
       });
     }
@@ -108,7 +116,8 @@ export const initGenericUserChatStatReporter = ({
         userId,
         resourceType: "GenericUserChat",
         resourceId: userChatId,
-        value,
+        tokens: value,
+        extra,
         logger,
       });
     }
@@ -143,7 +152,8 @@ export const initInterviewProjectStatReporter = ({
         userId,
         resourceType: "InterviewProject",
         resourceId: interviewProjectId,
-        value,
+        tokens: value,
+        extra,
         logger,
       });
     }

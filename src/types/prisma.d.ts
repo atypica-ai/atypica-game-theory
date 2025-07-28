@@ -36,7 +36,8 @@ declare module "@/prisma/client" {
     error: string;
   }>; // & Record<string, string | number>
 
-  export type ChatStatisticsExtra = {
+  // for extra field on ChatStatistics and UserTokensLog
+  export type AgentStatisticsExtra = {
     reportedBy: string;
   } & Record<string, unknown>;
 

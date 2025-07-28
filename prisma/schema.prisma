@@ -347,6 +347,7 @@ enum UserTokensLogVerb {
   recharge
   consume
   subscription
+  subscriptionReset
   gift
   signup
 }
@@ -356,6 +357,7 @@ enum UserTokensLogResourceType {
   ScoutUserChat // 没用到
   GenericUserChat
   InterviewProject
+  PersonaImport
   PaymentRecord
   UserSubscription
 }
@@ -368,6 +370,7 @@ model UserTokensLog {
   verb         UserTokensLogVerb
   resourceType UserTokensLogResourceType?
   resourceId   Int?
+  extra        Json                       @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)

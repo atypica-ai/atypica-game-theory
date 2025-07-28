@@ -154,12 +154,14 @@ export function TokensHistory() {
                             </Link>
                           );
                         case UserTokensLogVerb.subscription:
-                          return item.value > 0 ? (
+                          return (
                             <div className="flex items-center gap-2">
                               <CreditCardIcon className="size-4" />
                               <span>{t("tokensHistorySection.verbs.subscription")}</span>
                             </div>
-                          ) : (
+                          );
+                        case UserTokensLogVerb.subscriptionReset:
+                          return (
                             <div className="flex items-center gap-2">
                               <ClockIcon className="size-4" />
                               <span>{t("tokensHistorySection.verbs.subscriptionReset")}</span>

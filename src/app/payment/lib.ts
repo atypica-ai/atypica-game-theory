@@ -98,7 +98,7 @@ export async function resetMonthlyTokens({ userId }: { userId: number }) {
       await tx.userTokensLog.create({
         data: {
           userId: userId,
-          verb: UserTokensLogVerb.subscription,
+          verb: UserTokensLogVerb.subscriptionReset,
           value: -rest,
         },
       });
