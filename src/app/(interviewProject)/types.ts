@@ -110,22 +110,3 @@ export type CreateHumanInterviewSessionInput = z.infer<typeof createHumanIntervi
 export type CreatePersonaInterviewSessionInput = z.infer<
   typeof createPersonaInterviewSessionSchema
 >;
-
-// Interview Report types
-export interface InterviewReport {
-  id: number;
-  token: string;
-  projectId: number;
-  onePageHtml: string;
-  generatedAt: Date | null;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface InterviewReportWithProject extends InterviewReport {
-  project: {
-    id: number;
-    brief: string;
-    userId: number;
-  };
-}
