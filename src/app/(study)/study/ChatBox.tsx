@@ -1,4 +1,4 @@
-import { CONTINUE_ASSISTANT_STEPS } from "@/ai/messageUtilsClient";
+import { ClientMessagePayload, CONTINUE_ASSISTANT_STEPS } from "@/ai/messageUtilsClient";
 import { ToolName } from "@/ai/tools/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { NewStudyButton } from "@/components/NewStudyInputBox";
@@ -46,7 +46,9 @@ export function ChatBox() {
     },
   } = useStudyContext();
 
-  const chatRequestBody = useMemo(() => ({}), []); // 现在用不到了，之前用于区分是不是 hello chat
+  const initialRequestBody = {
+    userChatToken: studyUserChatToken,
+  };
   const {
     messages,
     setMessages,
@@ -65,13 +67,21 @@ export function ChatBox() {
     api: "/api/chat/study",
     experimental_throttle: 300,
     // maxSteps: 15,  // 后端 chat api 设置了 maxSteps 并且会控制，这里不能再设置，会覆盖后端的配置！
-    body: chatRequestBody,
+    body: {
+      ...initialRequestBody,
+    },
     // see https://sdk.vercel.ai/docs/ai-sdk-ui/chatbot-message-persistence#sending-only-the-last-message
-    experimental_prepareRequestBody({ messages, id, requestBody }) {
+    experimental_prepareRequestBody({ messages, id, requestBody: _requestBody }) {
       // requestBody 这个字段不靠谱，虽然上面配置了 body，首次提交的时候这里的 requestBody 却是空的
       // 只好专门修复下
-      const body = { ...chatRequestBody, ...requestBody };
-      return { message: messages[messages.length - 1], id, ...body };
+      const requestBody: typeof initialRequestBody = { ...initialRequestBody, ..._requestBody };
+      const body: ClientMessagePayload = {
+        message: messages[messages.length - 1],
+        ...requestBody,
+      };
+      // useChat 上的 id 也在参数里，不过这里没用到，只是 debug 一下
+      console.debug("study experimental_prepareRequestBody", messages, id, _requestBody);
+      return body;
     },
     onError(error) {
       if (/network error/.test(error?.message)) {
@@ -109,11 +119,11 @@ export function ChatBox() {
       }
       setLastSubmitTime(now);
       handleSubmit(event, {
-        body: chatRequestBody,
+        body: initialRequestBody,
       });
     },
     // handleSubmit 不能用 ref，要监听变化
-    [handleSubmit, lastSubmitTime, chatRequestBody],
+    [handleSubmit, lastSubmitTime, initialRequestBody],
   );
 
   const handleContinueChat = useCallback(() => {

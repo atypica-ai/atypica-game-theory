@@ -1,10 +1,11 @@
 import { persistentAIMessageToDB, prepareMessagesForStreaming } from "@/ai/messageUtils";
+import { clientMessagePayloadSchema } from "@/ai/messageUtilsClient";
 import authOptions from "@/app/(auth)/authOptions";
 import { rootLogger } from "@/lib/logging";
 import { UserChatExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { AnalystKind } from "@/prisma/types";
-import { CreateMessage, generateId, Message } from "ai";
+import { generateId } from "ai";
 import { getServerSession } from "next-auth/next";
 import { Locale } from "next-intl";
 import { getLocale } from "next-intl/server";
@@ -19,16 +20,28 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const userId = session.user.id;
+
+  // const payload = await req.json();
+  // const studyUserChatId = parseInt(payload["id"]);
+  // const newMessage = payload["message"] as Message | CreateMessage;
+  // if (!studyUserChatId || !newMessage) {
+  //   return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  // }
+
   const payload = await req.json();
-  const studyUserChatId = parseInt(payload["id"]);
-  const newMessage = payload["message"] as Message | CreateMessage;
-  if (!studyUserChatId || !newMessage) {
-    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  const parseResult = clientMessagePayloadSchema.safeParse(payload);
+  if (!parseResult.success) {
+    const error = { message: "Invalid request", details: parseResult.error.format() };
+    return NextResponse.json({ error }, { status: 400 });
   }
+  const { message: newMessage, userChatToken } = parseResult.data;
 
   // 找到有效的 userChat，并确保有权限
   const userChat = await prisma.userChat.findUnique({
-    where: { id: studyUserChatId, kind: "study" },
+    where: {
+      token: userChatToken,
+      kind: "study",
+    },
     include: {
       analyst: true,
     },
@@ -42,6 +55,8 @@ export async function POST(req: Request) {
       { status: 403 },
     );
   }
+  const studyUserChatId = userChat.id;
+
   const studyLog = rootLogger.child({ studyUserChatId, studyUserChatToken: userChat.token });
   if (!userChat.analyst) {
     const msg = `UserChat ${userChat.id} does not have an analyst`;

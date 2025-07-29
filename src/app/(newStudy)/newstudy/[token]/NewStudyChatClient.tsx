@@ -1,5 +1,5 @@
 "use client";
-import { NewStudyBodySchema } from "@/app/(newStudy)/types";
+import { ClientMessagePayload } from "@/ai/messageUtilsClient";
 import { FocusedInterviewChat } from "@/components/chat/FocusedInterviewChat";
 import { UserChat } from "@/prisma/client";
 import { useChat } from "@ai-sdk/react";
@@ -7,7 +7,6 @@ import { Message } from "ai";
 import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useRef } from "react";
-import { z } from "zod";
 import { CountdownRedirect } from "./CountdownRedirect";
 
 export function NewStudyChatClient({
@@ -21,7 +20,7 @@ export function NewStudyChatClient({
   const t = useTranslations("NewStudyPage");
 
   const initialRequestBody = {
-    userChatId: userChat.id,
+    userChatToken: userChat.token,
   };
 
   const useChatHelpers = useChat({
@@ -32,7 +31,7 @@ export function NewStudyChatClient({
     body: initialRequestBody,
     experimental_prepareRequestBody({ messages, requestBody: _requestBody }) {
       const requestBody: typeof initialRequestBody = { ...initialRequestBody, ..._requestBody };
-      const body: z.infer<typeof NewStudyBodySchema> = {
+      const body: ClientMessagePayload = {
         message: messages[messages.length - 1],
         ...requestBody,
       };

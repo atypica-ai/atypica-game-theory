@@ -3,12 +3,12 @@ import {
   persistentAIMessageToDB,
   prepareMessagesForStreaming,
 } from "@/ai/messageUtils";
+import { clientMessagePayloadSchema } from "@/ai/messageUtilsClient";
 import { llm, providerOptions } from "@/ai/provider";
 import authOptions from "@/app/(auth)/authOptions";
 import { fetchInterviewSessionByChatToken } from "@/app/(interviewProject)/actions";
 import { interviewAgentSystemPrompt } from "@/app/(interviewProject)/prompt";
 import { interviewSessionTools } from "@/app/(interviewProject)/tools";
-import { interviewSessionChatBodySchema } from "@/app/(interviewProject)/types";
 import { rootLogger } from "@/lib/logging";
 import { throwServerActionError } from "@/lib/serverAction";
 import { CoreMessage, generateId, smoothStream, streamText } from "ai";
@@ -44,7 +44,7 @@ export async function POST(req: Request) {
   }
 
   const payload = await req.json();
-  const parseResult = interviewSessionChatBodySchema.safeParse(payload);
+  const parseResult = clientMessagePayloadSchema.safeParse(payload);
   if (!parseResult.success) {
     const error = { message: "Invalid request", details: parseResult.error.format() };
     return NextResponse.json({ error }, { status: 400 });

@@ -3,11 +3,12 @@ import {
   persistentAIMessageToDB,
   prepareMessagesForStreaming,
 } from "@/ai/messageUtils";
+import { clientMessagePayloadSchema } from "@/ai/messageUtilsClient";
 import { llm, providerOptions } from "@/ai/provider";
 import { reasoningThinkingTool } from "@/ai/tools/experts/reasoning";
 import { ToolName } from "@/ai/tools/types";
 import { personaFollowUpSystemPrompt } from "@/app/(persona)/prompt";
-import { followUpChatBodySchema, PersonaImportAnalysis } from "@/app/(persona)/types";
+import { PersonaImportAnalysis } from "@/app/(persona)/types";
 import { rootLogger } from "@/lib/logging";
 import { prisma } from "@/prisma/prisma";
 import { generateId, smoothStream, streamText } from "ai";
@@ -16,7 +17,7 @@ import { after, NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   const payload = await req.json();
-  const parseResult = followUpChatBodySchema.safeParse(payload);
+  const parseResult = clientMessagePayloadSchema.safeParse(payload);
   if (!parseResult.success) {
     const error = { message: "Invalid request", details: parseResult.error.format() };
     return NextResponse.json({ error }, { status: 400 });

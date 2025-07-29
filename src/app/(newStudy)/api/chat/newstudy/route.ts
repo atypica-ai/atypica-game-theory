@@ -3,12 +3,12 @@ import {
   persistentAIMessageToDB,
   prepareMessagesForStreaming,
 } from "@/ai/messageUtils";
+import { clientMessagePayloadSchema } from "@/ai/messageUtilsClient";
 import { llm, providerOptions } from "@/ai/provider";
 import { initGenericUserChatStatReporter } from "@/ai/tools/stats";
 import authOptions from "@/app/(auth)/authOptions";
 import { newStudySystem } from "@/app/(newStudy)/prompt";
 import { newStudyTools } from "@/app/(newStudy)/tools";
-import { NewStudyBodySchema } from "@/app/(newStudy)/types";
 import { rootLogger } from "@/lib/logging";
 import { prisma } from "@/prisma/prisma";
 import {
@@ -33,18 +33,18 @@ export async function POST(req: NextRequest) {
   const userId = session.user.id;
 
   const payload = await req.json();
-  const parseResult = NewStudyBodySchema.safeParse(payload);
+  const parseResult = clientMessagePayloadSchema.safeParse(payload);
   if (!parseResult.success) {
     const error = { message: "Invalid request", details: parseResult.error.format() };
     return NextResponse.json({ error }, { status: 400 });
   }
 
-  const { message: newMessage, userChatId } = parseResult.data;
+  const { message: newMessage, userChatToken } = parseResult.data;
 
   // Verify user has access to this chat
   const userChat = await prisma.userChat.findUnique({
     where: {
-      id: userChatId,
+      token: userChatToken,
       userId,
       kind: "misc",
     },
@@ -53,6 +53,8 @@ export async function POST(req: NextRequest) {
   if (!userChat) {
     return NextResponse.json({ error: "Chat not found or access denied" }, { status: 404 });
   }
+
+  const userChatId = userChat.id;
 
   // Persist the new message
   await persistentAIMessageToDB(userChatId, {

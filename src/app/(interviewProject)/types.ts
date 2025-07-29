@@ -82,19 +82,6 @@ export interface InterviewSharePayload {
   expiresAt: number;
 }
 
-// API schemas
-export const interviewSessionChatBodySchema = z.object({
-  message: z.object({
-    id: z.string().optional(),
-    role: z.enum(["user", "assistant"]),
-    content: z.string(),
-    // parts: z.array(z.any()).optional(),
-  }),
-  userChatToken: z.string(),
-});
-
-export type InterviewSessionChatBody = z.infer<typeof interviewSessionChatBodySchema>;
-
 // Create session schemas
 export const createHumanInterviewSessionSchema = z.object({
   projectId: z.number(),

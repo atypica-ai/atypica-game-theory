@@ -1,6 +1,6 @@
 "use client";
 
-import { personaChatBodySchema } from "@/app/(persona)/types";
+import { ClientMessagePayload } from "@/ai/messageUtilsClient";
 import { UserChatSession } from "@/components/chat/UserChatSession";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Badge } from "@/components/ui/badge";
@@ -19,7 +19,6 @@ import { BotIcon, CalendarIcon, FileTextIcon, InfoIcon, TagIcon } from "lucide-r
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRef, useState } from "react";
-import { z } from "zod";
 
 export function PersonaChatClient({
   userChatToken,
@@ -42,11 +41,11 @@ export function PersonaChatClient({
     api: "/api/persona/chat",
     initialMessages,
     body: {
-      userChatToken: userChatToken,
+      ...initialRequestBody,
     },
     experimental_prepareRequestBody({ messages, requestBody: _requestBody }) {
       const requestBody: typeof initialRequestBody = { ...initialRequestBody, ..._requestBody };
-      const body: z.infer<typeof personaChatBodySchema> = {
+      const body: ClientMessagePayload = {
         message: messages[messages.length - 1],
         ...requestBody,
       };

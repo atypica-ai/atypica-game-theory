@@ -1,10 +1,9 @@
 "use client";
-import { followUpChatBodySchema } from "@/app/(persona)/types";
+import { ClientMessagePayload } from "@/ai/messageUtilsClient";
 import { FocusedInterviewChat } from "@/components/chat/FocusedInterviewChat";
 import { useChat } from "@ai-sdk/react";
 import { Message } from "ai";
 import { useEffect, useRef } from "react";
-import { z } from "zod";
 
 export function FollowUpInterviewClient({
   userChatToken,
@@ -21,11 +20,11 @@ export function FollowUpInterviewClient({
     api: "/api/persona/followup",
     initialMessages,
     body: {
-      userChatToken: userChatToken,
+      ...initialRequestBody,
     },
     experimental_prepareRequestBody({ messages, requestBody: _requestBody }) {
       const requestBody: typeof initialRequestBody = { ...initialRequestBody, ..._requestBody };
-      const body: z.infer<typeof followUpChatBodySchema> = {
+      const body: ClientMessagePayload = {
         message: messages[messages.length - 1],
         ...requestBody,
       };

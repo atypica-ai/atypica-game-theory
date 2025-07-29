@@ -1,8 +1,6 @@
 "use client";
-import {
-  interviewSessionChatBodySchema,
-  InterviewSessionWithDetails,
-} from "@/app/(interviewProject)/types";
+import { ClientMessagePayload } from "@/ai/messageUtilsClient";
+import { InterviewSessionWithDetails } from "@/app/(interviewProject)/types";
 import { FocusedInterviewChat } from "@/components/chat/FocusedInterviewChat";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -21,7 +19,6 @@ import { Message } from "ai";
 import { Bot, Info, Shield, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useRef } from "react";
-import { z } from "zod";
 
 export function InterviewSessionChatClient({
   interviewSession,
@@ -51,7 +48,7 @@ export function InterviewSessionChatClient({
     experimental_prepareRequestBody({ messages, requestBody: _requestBody }) {
       const requestBody: typeof initialRequestBody = { ...initialRequestBody, ..._requestBody };
       const lastMessage = messages[messages.length - 1];
-      const body: z.infer<typeof interviewSessionChatBodySchema> = {
+      const body: ClientMessagePayload = {
         message: {
           id: lastMessage.id,
           role: lastMessage.role as "user" | "assistant",
