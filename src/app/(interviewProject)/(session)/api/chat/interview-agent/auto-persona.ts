@@ -3,6 +3,8 @@ import "server-only";
 import { convertStepsToAIMessage } from "@/ai/messageUtils";
 import { personaAgentSystem } from "@/ai/prompt";
 import { llm, providerOptions } from "@/ai/provider";
+import { initInterviewProjectStatReporter } from "@/ai/tools/stats";
+import { StatReporter } from "@/ai/tools/types";
 import { interviewAgentSystemPrompt } from "@/app/(interviewProject)/prompt";
 import { interviewSessionTools } from "@/app/(interviewProject)/tools";
 import { rootLogger } from "@/lib/logging";
@@ -65,25 +67,23 @@ async function saveMessage({
 }
 
 export interface AutoPersonaInterviewParams {
+  project: {
+    id: number;
+    brief: string;
+    userId: number;
+  };
   sessionId: number;
   userChatId: number;
-  projectBrief: string;
   personaId: number;
 }
 
 export async function runAutoPersonaInterview({
   sessionId,
   userChatId,
-  projectBrief,
+  project,
   personaId,
 }: AutoPersonaInterviewParams): Promise<void> {
   const locale = await getLocale();
-  const logger = rootLogger.child({
-    sessionId,
-    userChatId,
-    personaId,
-    intent: "AutoPersonaInterview",
-  });
 
   const persona = await prisma.persona.findUniqueOrThrow({
     where: { id: personaId },
@@ -91,13 +91,26 @@ export async function runAutoPersonaInterview({
 
   // Set background token to prevent concurrent executions
   const backgroundToken = new Date().valueOf().toString();
-  await prisma.userChat.update({
+  const userChat = await prisma.userChat.update({
     where: { id: userChatId, kind: "interviewSession" },
     data: { backgroundToken },
   });
 
+  const logger = rootLogger.child({
+    userChatId,
+    userChatToken: userChat.token,
+    interviewSessionId: sessionId,
+  });
+
+  const { statReport } = initInterviewProjectStatReporter({
+    userId: project.userId, // ⚠️ 这里是 project owner 的 userId，不是正在被访谈的 userId
+    interviewProjectId: project.id,
+    sessionUserChatId: userChatId,
+    logger,
+  });
+
   const interviewerSystemPrompt = interviewAgentSystemPrompt({
-    brief: projectBrief,
+    brief: project.brief,
     isPersonaInterview: true,
     personaName: persona.name,
     locale,
@@ -143,6 +156,8 @@ export async function runAutoPersonaInterview({
         const messaage = await generatePersonaResponse({
           systemPrompt: personaSystemPrompt,
           messages: personaAgent.messages,
+          interviewSessionId: sessionId,
+          statReport,
           logger,
         });
         fixEmptyTextIssue(messaage);
@@ -156,7 +171,8 @@ export async function runAutoPersonaInterview({
           systemPrompt: interviewerSystemPrompt,
           messages: interviewerAgent.messages,
           shouldEndInterview,
-          sessionId,
+          interviewSessionId: sessionId,
+          statReport,
           logger,
         });
         fixEmptyTextIssue(messaage);
@@ -225,10 +241,14 @@ export async function runAutoPersonaInterview({
 async function generatePersonaResponse({
   systemPrompt,
   messages,
+  interviewSessionId,
+  statReport,
   logger,
 }: {
   systemPrompt: string;
   messages: Message[];
+  interviewSessionId: number;
+  statReport: StatReporter;
   logger: Logger;
 }) {
   const promise = new Promise<Omit<Message, "role">>((resolve, reject) => {
@@ -246,6 +266,25 @@ async function generatePersonaResponse({
       system: systemPrompt,
       messages,
       maxSteps: 1,
+      onStepFinish: async ({ usage, stepType, toolCalls, ...step }) => {
+        logger.info({
+          msg: "generatePersonaResponse streamText onStepFinish",
+          stepType,
+          toolCalls: toolCalls.map((call) => call.toolName),
+          usage: usage,
+        });
+        if (usage.totalTokens > 0) {
+          let tokens = usage.totalTokens;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const extra: any = {
+            reportedBy: "persona interview session",
+            interviewSessionId,
+            role: "interviewer",
+            usage: usage,
+          };
+          await statReport("tokens", tokens, extra);
+        }
+      },
       onFinish: ({ steps, usage }) => {
         logger.info({ msg: "generatePersonaResponse streamText onFinish", usage });
         const message = convertStepsToAIMessage(steps);
@@ -265,13 +304,15 @@ async function generateInterviewerResponse({
   systemPrompt,
   messages,
   shouldEndInterview,
-  sessionId,
+  interviewSessionId,
+  statReport,
   logger,
 }: {
   systemPrompt: string;
   messages: Message[];
   shouldEndInterview: boolean;
-  sessionId: number;
+  interviewSessionId: number;
+  statReport: StatReporter;
   logger: Logger;
 }) {
   const promise = new Promise<Omit<Message, "role">>((resolve, reject) => {
@@ -284,9 +325,28 @@ async function generateInterviewerResponse({
       messages,
       toolChoice: shouldEndInterview ? { type: "tool", toolName: "endInterview" } : "auto",
       tools: interviewSessionTools({
-        interviewSessionId: sessionId,
+        interviewSessionId,
       }),
       maxSteps: 1,
+      onStepFinish: async ({ usage, stepType, toolCalls, ...step }) => {
+        logger.info({
+          msg: "generateInterviewerResponse streamText onStepFinish",
+          stepType,
+          toolCalls: toolCalls.map((call) => call.toolName),
+          usage: usage,
+        });
+        if (usage.totalTokens > 0) {
+          let tokens = usage.totalTokens;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const extra: any = {
+            reportedBy: "persona interview session",
+            interviewSessionId,
+            role: "interviewer",
+            usage: usage,
+          };
+          await statReport("tokens", tokens, extra);
+        }
+      },
       onFinish: ({ steps, usage }) => {
         logger.info({ msg: "generateInterviewerResponse streamText onFinish", usage });
         const message = convertStepsToAIMessage(steps);

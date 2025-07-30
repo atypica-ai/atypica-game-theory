@@ -42,7 +42,7 @@ export async function fetchTokensHistory(
           SUM("value") as "value",
           MIN("id") as "id",
           MIN("createdAt") as "createdAt",
-          MIN("updatedAt") as "updatedAt"
+          MAX("updatedAt") as "updatedAt"
         FROM "UserTokensLog"
         WHERE "userId" = ${userId}
         GROUP BY
@@ -51,7 +51,7 @@ export async function fetchTokensHistory(
           "resourceId",
           "verb",
           CASE WHEN "resourceType" IS NULL THEN "id" ELSE NULL END
-        ORDER BY MIN("createdAt") DESC
+        ORDER BY MAX("updatedAt") DESC
         LIMIT ${pageSize} OFFSET ${skip}
       `;
         return result;

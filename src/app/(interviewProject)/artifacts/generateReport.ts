@@ -1,6 +1,7 @@
 import "server-only";
 
 import { llm, providerOptions } from "@/ai/provider";
+import { initInterviewProjectStatReporter } from "@/ai/tools/stats";
 import { rootLogger } from "@/lib/logging";
 import { ChatMessage } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
@@ -17,6 +18,7 @@ export async function generateInterviewReportContent({
 }: {
   project: {
     id: number;
+    userId: number;
     brief: string;
     sessions: {
       title: string;
@@ -31,6 +33,12 @@ export async function generateInterviewReportContent({
   };
 }): Promise<void> {
   const logger = rootLogger.child({ reportToken: report.token, projectId: project.id });
+
+  const { statReport } = initInterviewProjectStatReporter({
+    userId: project.userId, // ⚠️ 这里是 project owner 的 userId，不是正在被访谈的 userId
+    interviewProjectId: project.id,
+    logger,
+  });
 
   const throttleSaveHTML = (() => {
     let timerId: NodeJS.Timeout | null = null;
@@ -104,18 +112,28 @@ export async function generateInterviewReportContent({
         await throttleSaveHTML(report.id, onePageHtml);
       }
     },
-    onFinish: async () => {
-      // consume toikens
+    onFinish: async ({ finishReason, text, usage }) => {
+      logger.info({ msg: "Interview report generation streamText onFinish", finishReason, usage });
+      // svg 生成耗费的 output tokens 比较多，不能和 input tokens 一样计算
+      const totalTokens =
+        (usage.completionTokens ?? 0) * 3 + (usage.promptTokens ?? 0) || usage.totalTokens;
+      if (totalTokens > 0 && statReport) {
+        await statReport("tokens", totalTokens, {
+          reportedBy: "interview report",
+          part: "onePageHtml",
+          usage,
+        });
+      }
     },
     onError: ({ error }) => {
-      rootLogger.error(`Interview report generation error: ${(error as Error).message}`);
+      logger.error(`Interview report generation streamText onError: ${(error as Error).message}`);
     },
   });
 
   await response.consumeStream();
 
   await throttleSaveHTML(report.id, onePageHtml, { immediate: true });
-  await prisma.analystReport.update({
+  await prisma.interviewReport.update({
     where: { id: report.id },
     data: { generatedAt: new Date() },
   });

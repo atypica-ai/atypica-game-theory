@@ -125,33 +125,39 @@ export function TokensHistory() {
                           );
                         case UserTokensLogVerb.consume:
                           return (
-                            <Link href={`/study?id=${item.resourceId}`} target="_blank">
-                              <div className="flex items-center gap-2">
-                                <HippyGhostAvatar
-                                  className="size-5"
-                                  seed={item.resourceId ?? undefined}
-                                />
-                                {(() => {
-                                  switch (item.resourceType) {
-                                    case "StudyUserChat":
-                                      return (
-                                        <span>
-                                          {t("tokensHistorySection.consume.StudyUserChat")}
-                                        </span>
-                                      );
-                                    case "InterviewProject":
-                                      return (
-                                        <span>
-                                          {t("tokensHistorySection.consume.InterviewProject")}
-                                        </span>
-                                      );
-                                    default:
-                                      return <span>{t("tokensHistorySection.verbs.consume")}</span>;
-                                  }
-                                })()}
-                                <ExternalLinkIcon className="size-4" />
-                              </div>
-                            </Link>
+                            <div className="flex items-center gap-2">
+                              <HippyGhostAvatar
+                                className="size-5"
+                                seed={item.resourceId ?? undefined}
+                              />
+                              {(() => {
+                                switch (item.resourceType) {
+                                  case "StudyUserChat":
+                                    return (
+                                      <>
+                                        {t("tokensHistorySection.consume.StudyUserChat")}
+                                        <Link href={`/study?id=${item.resourceId}`} target="_blank">
+                                          <ExternalLinkIcon className="size-4" />
+                                        </Link>
+                                      </>
+                                    );
+                                  case "InterviewProject":
+                                    return (
+                                      <>
+                                        {t("tokensHistorySection.consume.InterviewProject")}
+                                        <Link
+                                          href={`/interview/projects/${item.resourceId}`}
+                                          target="_blank"
+                                        >
+                                          <ExternalLinkIcon className="size-4" />
+                                        </Link>
+                                      </>
+                                    );
+                                  default:
+                                    return t("tokensHistorySection.verbs.consume");
+                                }
+                              })()}
+                            </div>
                           );
                         case UserTokensLogVerb.subscription:
                           return (
@@ -195,7 +201,7 @@ export function TokensHistory() {
                     {item.value > 0 ? "+" : item.value < 0 ? "-" : ""}
                     {(item.value < 0 ? -item.value : item.value).toLocaleString()}
                   </TableCell>
-                  <TableCell className="text-right">{formatDate(item.createdAt, locale)}</TableCell>
+                  <TableCell className="text-right">{formatDate(item.updatedAt, locale)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

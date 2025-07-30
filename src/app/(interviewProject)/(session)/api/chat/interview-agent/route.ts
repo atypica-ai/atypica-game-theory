@@ -5,6 +5,7 @@ import {
 } from "@/ai/messageUtils";
 import { clientMessagePayloadSchema } from "@/ai/messageUtilsClient";
 import { llm, providerOptions } from "@/ai/provider";
+import { initInterviewProjectStatReporter } from "@/ai/tools/stats";
 import { fetchInterviewSessionByChatToken } from "@/app/(interviewProject)/actions";
 import { interviewAgentSystemPrompt } from "@/app/(interviewProject)/prompt";
 import { interviewSessionTools } from "@/app/(interviewProject)/tools";
@@ -36,7 +37,7 @@ function setBedrockCache(model: `claude-${string}`, coreMessages: CoreMessage[])
 }
 
 /**
- * ⚠️ fetchInterviewSessionByChatToken 会检查权限，所以这里无需另外检查权限f
+ * ⚠️ fetchInterviewSessionByChatToken 会检查权限，所以这里无需另外检查权限
  */
 export async function POST(req: Request) {
   const payload = await req.json();
@@ -61,7 +62,13 @@ export async function POST(req: Request) {
     userChatId,
     userChatToken,
     interviewSessionId,
-    intent: "InterviewSession",
+  });
+
+  const { statReport } = initInterviewProjectStatReporter({
+    userId: project.user.id, // ⚠️ 这里是 project owner 的 userId，不是正在被访谈的 userId
+    interviewProjectId: project.id,
+    sessionUserChatId: userChatId,
+    logger: chatLogger,
   });
 
   // Save the latest user message to database
@@ -103,23 +110,42 @@ export async function POST(req: Request) {
     }),
     abortSignal: mergedAbortSignal,
     onStepFinish: async (step) => {
-      const cache = step.providerMetadata?.bedrock?.usage as
-        | { cacheReadInputTokens: number; cacheWriteInputTokens: number }
-        | undefined;
       appendStepToStreamingMessage(streamingMessage, step);
       if (streamingMessage.parts?.length && streamingMessage.content.trim()) {
         await persistentAIMessageToDB(userChatId, streamingMessage);
       }
+      // 👆 persist message to db
+      const { usage, stepType, toolCalls } = step;
+      const cache = step.providerMetadata?.bedrock?.usage as
+        | { cacheReadInputTokens: number; cacheWriteInputTokens: number }
+        | undefined;
       chatLogger.info({
-        msg: "interview session streamText onStepFinish",
-        stepType: step.stepType,
-        usage: step.usage,
+        msg: "human interview session streamText onStepFinish",
+        stepType,
+        usage,
         cache,
-        toolCalls: step.toolCalls.map((call) => call.toolName),
+        toolCalls: toolCalls.map((call) => call.toolName),
       });
+      if (usage.totalTokens > 0) {
+        let tokens =
+          usage.totalTokens +
+          Math.floor((cache?.cacheReadInputTokens || 0) / 10) +
+          Math.floor((cache?.cacheWriteInputTokens || 0) * 1.25);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const extra: any = {
+          reportedBy: "human interview session",
+          interviewSessionId,
+          usage,
+          cache,
+        };
+        await statReport("tokens", tokens, extra);
+      }
+    },
+    onFinish: async () => {
+      chatLogger.info("human interview session streamText onFinish");
     },
     onError: ({ error }) => {
-      chatLogger.error(`interview session streamText onError: ${(error as Error).message}`);
+      chatLogger.error(`human interview session streamText onError: ${(error as Error).message}`);
     },
   });
 

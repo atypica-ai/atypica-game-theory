@@ -267,7 +267,11 @@ export async function createPersonaInterviewSession({
       runAutoPersonaInterview({
         sessionId: session.id,
         userChatId: userChat.id,
-        projectBrief: project.brief,
+        project: {
+          id: project.id,
+          brief: project.brief,
+          userId: project.userId,
+        },
         personaId: persona.id,
       }),
     );
@@ -366,7 +370,7 @@ export async function restartPersonaInterviewSession({
       },
       include: {
         userChat: { select: { id: true, token: true } },
-        project: { select: { brief: true } },
+        project: { select: { id: true, userId: true, brief: true } },
       },
     });
 
@@ -391,7 +395,11 @@ export async function restartPersonaInterviewSession({
       runAutoPersonaInterview({
         sessionId,
         userChatId: userChat.id,
-        projectBrief: project.brief,
+        project: {
+          id: project.id,
+          brief: project.brief,
+          userId: project.userId,
+        },
         personaId: intervieweePersonaId,
       }),
     );
@@ -476,8 +484,8 @@ export async function fetchInterviewSessionDetails({
 export async function fetchInterviewSessionByChatToken(chatToken: string): Promise<
   ServerActionResult<{
     interviewSessionId: number;
-    project: Pick<InterviewProject, "brief"> & {
-      user: Pick<User, "name" | "email">;
+    project: Pick<InterviewProject, "id" | "brief"> & {
+      user: Pick<User, "id" | "name" | "email">;
     };
     userChatId: number;
     intervieweeUser: Pick<User, "id" | "name" | "email">;
@@ -496,9 +504,10 @@ export async function fetchInterviewSessionByChatToken(chatToken: string): Promi
             id: true,
             project: {
               select: {
+                id: true,
                 brief: true,
                 user: {
-                  select: { name: true, email: true },
+                  select: { id: true, name: true, email: true },
                 },
               },
             },
@@ -594,7 +603,7 @@ export async function generateInterviewReport(projectId: number): Promise<
     const project = await prisma.interviewProject
       .findUniqueOrThrow({
         where: { id: projectId, userId: user.id },
-        select: { id: true, brief: true },
+        select: { id: true, userId: true, brief: true },
       })
       .catch(() => notFound());
 
@@ -646,6 +655,7 @@ export async function generateInterviewReport(projectId: number): Promise<
         },
         project: {
           id: project.id,
+          userId: project.userId,
           brief: project.brief,
           sessions: filteredSessions,
         },
