@@ -51,6 +51,7 @@ export async function fetchPersonas({
   let tiers: number[];
   try {
     const user = await checkAdminAuth([AdminPermission.MANAGE_PERSONAS]);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     userId = user.id;
     tiers = [0, 1, 2, 3];
   } catch {
@@ -58,7 +59,6 @@ export async function fetchPersonas({
     if (!session?.user) {
       forbidden();
     }
-    userId = session.user.id;
     tiers = [1, 2];
   }
 

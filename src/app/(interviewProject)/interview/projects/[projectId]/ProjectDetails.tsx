@@ -27,25 +27,28 @@ export function ProjectDetails({
   // const router = useRouter();
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [personaDialogOpen, setPersonaDialogOpen] = useState(false);
-  const [creatingPersonaSessions, setCreatingPersonaSessions] = useState(false);
+  const [, setCreatingPersonaSessions] = useState(false);
 
-  const onSelectPersonas = useCallback(async (selectedIds: number[]) => {
-    setCreatingPersonaSessions(true);
-    try {
-      for (const personaId of selectedIds) {
-        const result = await createPersonaInterviewSession({
-          projectId: project.id,
-          personaId,
-        });
-        if (!result.success) throw result;
+  const onSelectPersonas = useCallback(
+    async (selectedIds: number[]) => {
+      setCreatingPersonaSessions(true);
+      try {
+        for (const personaId of selectedIds) {
+          const result = await createPersonaInterviewSession({
+            projectId: project.id,
+            personaId,
+          });
+          if (!result.success) throw result;
+        }
+      } catch (error) {
+        toast.error((error as Error).message || t("createInterviewFailed"));
+      } finally {
+        setCreatingPersonaSessions(false);
+        window.location.reload();
       }
-    } catch (error) {
-      toast.error((error as Error).message || t("createInterviewFailed"));
-    } finally {
-      setCreatingPersonaSessions(false);
-      window.location.reload();
-    }
-  }, []);
+    },
+    [project.id, t],
+  );
 
   return (
     <div className="space-y-6 my-6 container mx-auto">

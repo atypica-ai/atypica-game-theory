@@ -57,7 +57,7 @@ export function InterviewReportsSection({ projectId }: { projectId: number }) {
     } finally {
       setGeneratingReport(false);
     }
-  }, [projectId, loadReports]);
+  }, [projectId, loadReports, t]);
 
   return (
     <>

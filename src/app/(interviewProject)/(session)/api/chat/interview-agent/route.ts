@@ -127,7 +127,7 @@ export async function POST(req: Request) {
         toolCalls: toolCalls.map((call) => call.toolName),
       });
       if (usage.totalTokens > 0) {
-        let tokens =
+        const tokens =
           usage.totalTokens +
           Math.floor((cache?.cacheReadInputTokens || 0) / 10) +
           Math.floor((cache?.cacheWriteInputTokens || 0) * 1.25);

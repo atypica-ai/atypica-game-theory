@@ -112,7 +112,7 @@ export async function generateInterviewReportContent({
         await throttleSaveHTML(report.id, onePageHtml);
       }
     },
-    onFinish: async ({ finishReason, text, usage }) => {
+    onFinish: async ({ finishReason, usage }) => {
       logger.info({ msg: "Interview report generation streamText onFinish", finishReason, usage });
       // svg 生成耗费的 output tokens 比较多，不能和 input tokens 一样计算
       const totalTokens =

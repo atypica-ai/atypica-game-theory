@@ -266,7 +266,7 @@ async function generatePersonaResponse({
       system: systemPrompt,
       messages,
       maxSteps: 1,
-      onStepFinish: async ({ usage, stepType, toolCalls, ...step }) => {
+      onStepFinish: async ({ usage, stepType, toolCalls }) => {
         logger.info({
           msg: "generatePersonaResponse streamText onStepFinish",
           stepType,
@@ -274,7 +274,7 @@ async function generatePersonaResponse({
           usage: usage,
         });
         if (usage.totalTokens > 0) {
-          let tokens = usage.totalTokens;
+          const tokens = usage.totalTokens;
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const extra: any = {
             reportedBy: "persona interview session",
@@ -328,7 +328,7 @@ async function generateInterviewerResponse({
         interviewSessionId,
       }),
       maxSteps: 1,
-      onStepFinish: async ({ usage, stepType, toolCalls, ...step }) => {
+      onStepFinish: async ({ usage, stepType, toolCalls }) => {
         logger.info({
           msg: "generateInterviewerResponse streamText onStepFinish",
           stepType,
@@ -336,7 +336,7 @@ async function generateInterviewerResponse({
           usage: usage,
         });
         if (usage.totalTokens > 0) {
-          let tokens = usage.totalTokens;
+          const tokens = usage.totalTokens;
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const extra: any = {
             reportedBy: "persona interview session",

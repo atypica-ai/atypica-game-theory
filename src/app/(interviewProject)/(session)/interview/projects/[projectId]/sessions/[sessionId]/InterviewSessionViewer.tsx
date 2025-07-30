@@ -70,7 +70,7 @@ export function InterviewSessionViewer({
         console.error("Error restarting chat:", error);
       }
     });
-  }, [interviewSession.projectId, interviewSession.id, useChatHelpers]);
+  }, [interviewSession.projectId, interviewSession.id, useChatHelpers, t]);
 
   const getSessionDisplayName = (session: InterviewSessionDetails) => {
     if (session.intervieweePersona) {
