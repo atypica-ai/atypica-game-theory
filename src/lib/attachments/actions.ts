@@ -100,10 +100,20 @@ export async function fileUrlToDataUrl({
       throw new Error(errorMsg);
     }
     buffer = Buffer.from(await response.arrayBuffer());
-    buffer = await resizeImageToWebP(buffer, {
-      minShortSide: 800,
-      maxLongSide: 4000,
-    });
+    // 只对图片文件进行图片处理
+    if (mimeType.startsWith("image/")) {
+      try {
+        buffer = await resizeImageToWebP(buffer, {
+          minShortSide: 800,
+          maxLongSide: 4000,
+        });
+        // 更新 mimeType 为 webp
+        mimeType = "image/webp";
+      } catch (error) {
+        rootLogger.error(`Failed to process image: ${error}`);
+        // 如果图片处理失败，使用原始文件
+      }
+    }
     await fs.promises.writeFile(cacheFileFullPath, buffer);
   }
 
