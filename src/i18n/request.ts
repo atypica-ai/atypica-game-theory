@@ -3,6 +3,17 @@ import { getRequestConfig } from "next-intl/server";
 import { cookies, headers } from "next/headers";
 import { locales } from "./routing";
 
+const getMessages = async (locale: string) => {
+  const [messages, interviewProject] = await Promise.all([
+    import(`../../messages/${locale}.json`),
+    import(`../app/(interviewProject)/messages/${locale}.json`),
+  ]);
+  return {
+    ...messages.default,
+    ...interviewProject.default,
+  };
+};
+
 export default getRequestConfig(async () => {
   // Get locale from cookie or header
   const [cookieLocale, headerLocale] = await Promise.all([cookies(), headers()]).then(
@@ -12,6 +23,6 @@ export default getRequestConfig(async () => {
   const locale = (cookieLocale || headerLocale || defaultLocale) as (typeof locales)[number];
   return {
     locale,
-    messages: (await import(`../../messages/${locale}.json`)).default,
+    messages: await getMessages(locale),
   };
 });
