@@ -236,6 +236,10 @@ export function imageModel(modelName: ImageModelName, options?: any) {
  * 这里简单修复下，固定文件名
  */
 export function fixFileNameInMessageToUsePromptCache(model: LanguageModelV1) {
+  if (!/\.anthropic\.claude/.test(model.modelId)) {
+    // 只修复使用 bedrock provider 时的 claude 模型
+    return model;
+  }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const originalGetArgs = (model as any).getArgs;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
