@@ -1,13 +1,16 @@
 "use server";
 
 import { createTextEmbedding } from "@/ai/embedding";
+import authOptions from "@/app/(auth)/authOptions";
 import { scorePersona } from "@/app/(persona)/lib";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { ServerActionResult } from "@/lib/serverAction";
 import { Persona } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
+import { getServerSession } from "next-auth";
 import { Locale } from "next-intl";
 import { getLocale } from "next-intl/server";
+import { forbidden } from "next/navigation";
 import { AdminPermission } from "../types";
 
 type TPersona = Pick<Persona, "id" | "name" | "source" | "prompt" | "tier"> & { tags: string[] };
@@ -27,6 +30,10 @@ export async function rescorePersona(personaId: number): Promise<ServerActionRes
   };
 }
 
+/**
+ * 管理员可以访问 tier 0,1,2,3 (所有personas)
+ * 普通用户可以访问 tier 1,2 (高质量的), 目前 tier3 的还不支持
+ */
 export async function fetchPersonas({
   locale,
   scoutUserChatId,
@@ -40,7 +47,20 @@ export async function fetchPersonas({
   page?: number;
   pageSize?: number;
 } = {}): Promise<ServerActionResult<TPersona[]>> {
-  await checkAdminAuth([AdminPermission.MANAGE_PERSONAS]);
+  let userId: number;
+  let tiers: number[];
+  try {
+    const user = await checkAdminAuth([AdminPermission.MANAGE_PERSONAS]);
+    userId = user.id;
+    tiers = [0, 1, 2, 3];
+  } catch {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      forbidden();
+    }
+    userId = session.user.id;
+    tiers = [1, 2];
+  }
 
   locale = locale || (await getLocale());
   const skip = (page - 1) * pageSize;
@@ -52,7 +72,7 @@ export async function fetchPersonas({
       const personas = await prisma.$queryRaw<TPersona[]>`
         SELECT id, name, source, prompt, tags, tier
         FROM "Persona"
-        WHERE "embedding" <=> ${JSON.stringify(embedding)}::vector < 0.9 AND locale = ${locale}
+        WHERE "embedding" <=> ${JSON.stringify(embedding)}::vector < 0.9 AND locale = ${locale} AND tier = ANY(${tiers})
         ORDER BY "embedding" <=> ${JSON.stringify(embedding)}::vector ASC
         LIMIT ${pageSize}
         OFFSET ${skip}
@@ -60,7 +80,7 @@ export async function fetchPersonas({
       const totalCountResult = await prisma.$queryRaw<{ count: number }[]>`
         SELECT COUNT(*) as count
         FROM "Persona"
-        WHERE "embedding" <=> ${JSON.stringify(embedding)}::vector < 0.5 AND locale = ${locale}
+        WHERE "embedding" <=> ${JSON.stringify(embedding)}::vector < 0.5 AND locale = ${locale} AND tier = ANY(${tiers})
       `;
       // 向量搜索的结果现在看起来最多就是 40，这个应该是索引的设置
       const totalCount = Math.min(40, Number(totalCountResult[0].count));
@@ -88,7 +108,15 @@ export async function fetchPersonas({
     }
   }
 
-  const where = scoutUserChatId ? { scoutUserChatId, locale } : { locale };
+  const where = scoutUserChatId
+    ? {
+        scoutUserChatId,
+        locale,
+      }
+    : {
+        tier: { in: tiers },
+        locale,
+      };
   // Regular search (no query or fallback from vector search error)
   const [personas, totalCount] = await Promise.all([
     prisma.persona.findMany({

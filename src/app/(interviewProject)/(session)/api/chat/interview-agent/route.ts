@@ -5,14 +5,12 @@ import {
 } from "@/ai/messageUtils";
 import { clientMessagePayloadSchema } from "@/ai/messageUtilsClient";
 import { llm, providerOptions } from "@/ai/provider";
-import authOptions from "@/app/(auth)/authOptions";
 import { fetchInterviewSessionByChatToken } from "@/app/(interviewProject)/actions";
 import { interviewAgentSystemPrompt } from "@/app/(interviewProject)/prompt";
 import { interviewSessionTools } from "@/app/(interviewProject)/tools";
 import { rootLogger } from "@/lib/logging";
 import { throwServerActionError } from "@/lib/serverAction";
 import { CoreMessage, generateId, smoothStream, streamText } from "ai";
-import { getServerSession } from "next-auth";
 import { getLocale } from "next-intl/server";
 import { after, NextResponse } from "next/server";
 
@@ -37,12 +35,10 @@ function setBedrockCache(model: `claude-${string}`, coreMessages: CoreMessage[])
   return cachedCoreMessages;
 }
 
+/**
+ * ⚠️ fetchInterviewSessionByChatToken 会检查权限，所以这里无需另外检查权限f
+ */
 export async function POST(req: Request) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) {
-    return NextResponse.json({ error: "Authentication required" }, { status: 401 });
-  }
-
   const payload = await req.json();
   const parseResult = clientMessagePayloadSchema.safeParse(payload);
   if (!parseResult.success) {
@@ -52,7 +48,6 @@ export async function POST(req: Request) {
 
   const { message: newMessage, userChatToken } = parseResult.data;
 
-  // Get interview session details
   const sessionResult = await fetchInterviewSessionByChatToken(userChatToken);
   if (!sessionResult.success) {
     throwServerActionError(sessionResult);
@@ -60,37 +55,30 @@ export async function POST(req: Request) {
 
   const interviewSession = sessionResult.data;
 
-  if (interviewSession.intervieweeUser?.id !== session.user.id) {
-    return NextResponse.json({ error: "Access denied" }, { status: 403 });
-  }
-
-  const { project, userChat, intervieweePersona } = interviewSession;
+  const { interviewSessionId, project, userChatId } = interviewSession;
 
   const chatLogger = rootLogger.child({
-    userChatId: userChat.id,
-    userChatToken: userChat.token,
-    interviewSessionId: interviewSession.id,
+    userChatId,
+    userChatToken,
+    interviewSessionId,
     intent: "InterviewSession",
   });
 
   // Save the latest user message to database
-  await persistentAIMessageToDB(userChat.id, {
+  await persistentAIMessageToDB(userChatId, {
     ...newMessage,
     id: newMessage.id ?? generateId(),
   });
 
   const locale = await getLocale();
-  const { coreMessages: _coreMessages, streamingMessage } = await prepareMessagesForStreaming(
-    userChat.id,
-  );
+  const { coreMessages: _coreMessages, streamingMessage } =
+    await prepareMessagesForStreaming(userChatId);
   const coreMessages = setBedrockCache("claude-3-7-sonnet", _coreMessages);
 
   // Generate system prompt based on interview context
-  const isPersonaInterview = !!intervieweePersona;
   const systemPrompt = interviewAgentSystemPrompt({
     brief: project.brief,
-    isPersonaInterview: isPersonaInterview,
-    personaName: intervieweePersona?.name,
+    isPersonaInterview: false,
     locale,
   });
 
@@ -105,7 +93,7 @@ export async function POST(req: Request) {
     messages: coreMessages,
     toolChoice: coreMessages.length < 19 ? "auto" : { type: "tool", toolName: "endInterview" },
     tools: interviewSessionTools({
-      interviewSessionId: interviewSession.id,
+      interviewSessionId,
     }),
     maxSteps: 1, // Keep it simple for interviews
     experimental_generateMessageId: () => streamingMessage.id,
@@ -120,7 +108,7 @@ export async function POST(req: Request) {
         | undefined;
       appendStepToStreamingMessage(streamingMessage, step);
       if (streamingMessage.parts?.length && streamingMessage.content.trim()) {
-        await persistentAIMessageToDB(userChat.id, streamingMessage);
+        await persistentAIMessageToDB(userChatId, streamingMessage);
       }
       chatLogger.info({
         msg: "interview session streamText onStepFinish",
@@ -128,7 +116,6 @@ export async function POST(req: Request) {
         usage: step.usage,
         cache,
         toolCalls: step.toolCalls.map((call) => call.toolName),
-        isPersonaInterview,
       });
     },
     onError: ({ error }) => {

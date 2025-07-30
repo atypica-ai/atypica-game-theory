@@ -18,7 +18,7 @@ export function InviteInterviewClient({
   shareToken: string;
   projectInfo: {
     projectId: number;
-    ownerName: string | null;
+    ownerName: string;
   };
   user: {
     id: number;
@@ -34,20 +34,18 @@ export function InviteInterviewClient({
     setLoading(true);
     try {
       const result = await createHumanInterviewSession({
-        projectId: projectInfo.projectId,
+        // projectId: projectInfo.projectId,
         shareToken,
       });
-      if (result.success) {
-        // Navigate to the chat session
-        router.push(`/interview/session/chat/${result.data.chatToken}`);
-        toast.success(t("startInterview"));
-      } else {
-        toast.error(result.message || t("startingInterview"));
-      }
-    } catch {
-      toast.error(t("startingInterview"));
+      if (!result.success) throw result;
+      router.push(`/interview/session/chat/${result.data.chatToken}`);
+      toast.success(t("startInterview"));
+    } catch (error) {
+      toast.error((error as Error).message || t("startingInterview"));
     } finally {
-      setLoading(false);
+      setTimeout(() => {
+        setLoading(false);
+      }, 1000);
     }
   };
 
@@ -70,7 +68,7 @@ export function InviteInterviewClient({
           </div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">{t("title")}</h1>
           <p className="text-gray-600 dark:text-gray-400">
-            {projectInfo.ownerName ? `${projectInfo.ownerName} ` : ""}
+            {projectInfo.ownerName}
             {t("subtitle")}
           </p>
         </div>

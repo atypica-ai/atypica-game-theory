@@ -35,11 +35,9 @@ export function CreateProjectDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     // Combine brief and questions
     const combinedBrief =
       brief.trim() + (questions.trim() ? `\n\n## Interview Questions\n\n${questions.trim()}` : "");
-
     // Validate input
     const validationResult = createInterviewProjectSchema.safeParse({ brief: combinedBrief });
     if (!validationResult.success) {
@@ -47,28 +45,19 @@ export function CreateProjectDialog({
       setErrors(fieldErrors);
       return;
     }
-
     setLoading(true);
     setErrors([]);
-
     try {
       const result = await createInterviewProject({ brief: combinedBrief });
-
-      if (result.success) {
-        toast.success(t("success"));
-        setBrief("");
-        setQuestions("");
-        onOpenChange(false);
-        onProjectCreated();
-      } else {
-        toast.error(result.message || t("error"));
-        if (result.message) {
-          setErrors([result.message]);
-        }
-      }
-    } catch {
-      toast.error(t("error"));
-      setErrors([t("error")]);
+      if (!result.success) throw result;
+      toast.success(t("success"));
+      setBrief("");
+      setQuestions("");
+      onOpenChange(false);
+      onProjectCreated();
+    } catch (error) {
+      toast.error((error as Error).message || t("error"));
+      setErrors([(error as Error).message || t("error")]);
     } finally {
       setLoading(false);
     }
@@ -97,7 +86,6 @@ export function CreateProjectDialog({
             <DialogTitle>{t("title")}</DialogTitle>
             <DialogDescription>{t("description")}</DialogDescription>
           </DialogHeader>
-
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="brief">{t("projectBrief")}</Label>
@@ -110,7 +98,6 @@ export function CreateProjectDialog({
                 disabled={loading}
               />
             </div>
-
             <div className="space-y-2">
               <Label htmlFor="questions">{t("predefinedQuestions")}</Label>
               <Textarea
@@ -122,7 +109,6 @@ export function CreateProjectDialog({
                 disabled={loading}
               />
             </div>
-
             <div className="flex justify-between items-center text-xs">
               <div className="space-y-1">
                 {errors.length > 0 && (
@@ -138,7 +124,6 @@ export function CreateProjectDialog({
               </span>
             </div>
           </div>
-
           <DialogFooter>
             <Button
               type="button"

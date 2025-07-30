@@ -1,4 +1,5 @@
-import { fetchAnalystInterviews } from "@/app/(agents)/interview/actions";
+import { fetchAnalystInterviews, upsertAnalystInterview } from "@/app/(agents)/interview/actions";
+import { SelectPersonaDialog } from "@/components/SelectPersonaDialog";
 import { TokenAlertDialog } from "@/components/TokenAlertDialog";
 import { Button } from "@/components/ui/button";
 import { ExtractServerActionData } from "@/lib/serverAction";
@@ -7,7 +8,6 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
 import { InterviewCard } from "./InterviewCard";
-import { SelectPersonaDialog } from "./SelectPersonaDialog";
 import { batchBackgroundInterview } from "./actions";
 
 type AnalystInterview = ExtractServerActionData<typeof fetchAnalystInterviews>[number];
@@ -29,6 +29,16 @@ export function AnalystInterviewsSection({
   const addPersona = useCallback(() => {
     setIsPersonaDialogOpen(true);
   }, [setIsPersonaDialogOpen]);
+
+  const onSelectPersonas = useCallback(
+    async (personaIds: number[]) => {
+      for (const personaId of personaIds) {
+        await upsertAnalystInterview({ analystId, personaId });
+      }
+      router.refresh();
+    },
+    [analystId, router],
+  );
 
   const pendingCount = interviews.filter(
     (i) => !i.conclusion && !i.interviewUserChat?.backgroundToken,
@@ -72,8 +82,7 @@ export function AnalystInterviewsSection({
       <SelectPersonaDialog
         open={isPersonaDialogOpen}
         onOpenChange={setIsPersonaDialogOpen}
-        analystId={analystId}
-        onSuccess={() => router.refresh()}
+        onSelect={onSelectPersonas}
       />
     </>
   );

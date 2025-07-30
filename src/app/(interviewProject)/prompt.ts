@@ -139,23 +139,22 @@ export const interviewReportPrologue = ({
   locale: Locale;
   projectBrief: string;
   conversations: Array<{
-    participantName: string;
+    sessionTitle: string;
     messages: Array<{
       role: "user" | "assistant";
       content: string;
-      createdAt: Date;
     }>;
   }>;
 }) => {
   const conversationText = conversations
-    .map((conv) => {
-      const messages = conv.messages
+    .map(({ sessionTitle, messages }) => {
+      const messagesText = messages
         .map((msg) => {
-          const speaker = msg.role === "user" ? conv.participantName : "访谈员";
+          const speaker = msg.role === "user" ? "Interviewee" : "Interviewer";
           return `${speaker}: ${msg.content}`;
         })
         .join("\n");
-      return `=== 与 ${conv.participantName} 的访谈 ===\n${messages}`;
+      return `=== ${sessionTitle} ===\n${messagesText}`;
     })
     .join("\n\n");
 
@@ -231,7 +230,7 @@ ${brief}
 **重要提醒**：\`[READY]\` 和 \`[USER_HESITATED]\` 是系统发送给你的状态消息。你只需要响应这些消息，绝对不要主动发送这些状态标识。
 
 ## 结束访谈
-访谈不应超过20轮对话。当接近20轮时（约17-18轮），开始准备收尾。当你收集到足够的信息后，首先礼貌地告知受访者访谈即将结束，感谢他们的参与。然后使用 endInterview 工具生成访谈总结和标题（标题不超过20字，用于帮助识别和查找此次访谈）。
+访谈不应超过20轮对话。当接近20轮时（约17-18轮），开始准备收尾。当你收集到足够的信息后，首先礼貌地告知受访者访谈即将结束，感谢他们的参与。然后使用 endInterview 工具生成访谈总结和标题（标题不超过20字，包含访谈者姓名和一句话总结）。
 
 ${
   isPersonaInterview
@@ -276,7 +275,7 @@ Remember: Your goal is to gather authentic insights and understanding, not to va
 **Important Note**: \`[READY]\` and \`[USER_HESITATED]\` are status messages sent to you by the system. You should only respond to these messages and must never actively send these status identifiers yourself.
 
 ## Ending the Interview
-The interview should not exceed 20 conversation turns. When approaching 20 turns (around 17-18 turns), start preparing to wrap up. After you have gathered sufficient information, first politely inform the interviewee that the interview is about to end and thank them for their participation. Then use the endInterview tool to generate an interview summary and title (title should not exceed 20 characters and helps identify and find this interview).
+The interview should not exceed 20 conversation turns. When approaching 20 turns (around 17-18 turns), start preparing to wrap up. After you have gathered sufficient information, first politely inform the interviewee that the interview is about to end and thank them for their participation. Then use the endInterview tool to generate an interview summary and title (title should not exceed 20 words, including interviewee's name and a one-sentence summary).
 
 ${
   isPersonaInterview

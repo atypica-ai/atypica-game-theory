@@ -1,6 +1,8 @@
 "use client";
-import { restartPersonaInterviewSession } from "@/app/(interviewProject)/actions";
-import { InterviewSessionWithDetails } from "@/app/(interviewProject)/types";
+import {
+  fetchInterviewSessionDetails,
+  restartPersonaInterviewSession,
+} from "@/app/(interviewProject)/actions";
 import { UserChatSession } from "@/components/chat/UserChatSession";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Badge } from "@/components/ui/badge";
@@ -14,36 +16,35 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
 import { Message } from "ai";
 import { BotIcon, InfoIcon, RefreshCwIcon, ShieldIcon, UsersIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useRef, useState, useTransition } from "react";
+import { useCallback, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
+
+type InterviewSessionDetails = ExtractServerActionData<typeof fetchInterviewSessionDetails>;
 
 export function InterviewSessionViewer({
   interviewSession,
   initialMessages = [],
   className,
 }: {
-  interviewSession: InterviewSessionWithDetails;
+  interviewSession: InterviewSessionDetails;
   initialMessages?: Message[];
   className?: string;
 }) {
   const t = useTranslations("InterviewProject.sessionViewer");
   const tDetails = useTranslations("InterviewProject.projectDetails");
-  const isPersonaInterview = !!interviewSession.intervieweePersona;
-  const interviewTarget = isPersonaInterview
-    ? interviewSession.intervieweePersona
-    : interviewSession.intervieweeUser;
 
   const [isPending, startTransition] = useTransition();
   const [isRestartDialogOpen, setIsRestartDialogOpen] = useState(false);
 
   // Use a dummy useChat for readonly viewing (no API calls)
   const useChatHelpers = useChat({
-    api: "/api/dummy", // This won't be called since we're readonly
+    // api: "/api/dummy", // This won't be called since we're readonly
     initialMessages,
   });
 
@@ -53,33 +54,36 @@ export function InterviewSessionViewer({
     append: useChatHelpers.append,
   });
 
-  const handleRestartChat = () => {
+  const handleRestartChat = useCallback(async () => {
     startTransition(async () => {
       try {
         const result = await restartPersonaInterviewSession({
           projectId: interviewSession.projectId,
           sessionId: interviewSession.id,
         });
-        if (result.success) {
-          // Clear messages in the UI
-          useChatHelpers.setMessages([]);
-          toast.success(tDetails("restartChatConfirm"));
-          setIsRestartDialogOpen(false);
-          if (isPersonaInterview) {
-            toast.info(tDetails("autoConversationNote"));
-          }
-        } else {
-          toast.error(result.message || tDetails("restartError"));
-        }
+        if (!result.success) throw result;
+        useChatHelpers.setMessages([]);
+        setIsRestartDialogOpen(false);
+        toast.info(t("autoConversationNote"));
       } catch (error) {
-        toast.error(tDetails("restartError"));
+        toast.error((error as Error).message || t("restartError"));
         console.error("Error restarting chat:", error);
       }
     });
+  }, [interviewSession.projectId, interviewSession.id, useChatHelpers]);
+
+  const getSessionDisplayName = (session: InterviewSessionDetails) => {
+    if (session.intervieweePersona) {
+      return session.intervieweePersona.name;
+    }
+    if (session.intervieweeUser) {
+      return session.intervieweeUser.email;
+    }
+    return `#${session.id}`;
   };
 
   // Project info dialog content
-  const projectInfoButton = (
+  const ProjectInfoButton = () => (
     <Dialog>
       <DialogTrigger asChild>
         <Button
@@ -95,25 +99,22 @@ export function InterviewSessionViewer({
           <DialogTitle>{t("interviewDetails")}</DialogTitle>
           <DialogDescription>{t("detailsDescription")}</DialogDescription>
         </DialogHeader>
-
         <div className="space-y-4">
           <Card>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">{tDetails("projectBrief")}</CardTitle>
-                <Badge variant={isPersonaInterview ? "secondary" : "default"} className="text-xs">
-                  {isPersonaInterview ? (
-                    <>
-                      <BotIcon className="h-3 w-3 mr-1" />
-                      {t("aiInterview")}
-                    </>
-                  ) : (
-                    <>
-                      <UsersIcon className="h-3 w-3 mr-1" />
-                      {t("humanInterview")}
-                    </>
-                  )}
-                </Badge>
+                {interviewSession.intervieweePersona ? (
+                  <Badge variant="secondary" className="text-xs">
+                    <BotIcon className="h-3 w-3 mr-1" />
+                    {t("aiInterview")}
+                  </Badge>
+                ) : interviewSession.intervieweeUser ? (
+                  <Badge variant="default" className="text-xs">
+                    <UsersIcon className="h-3 w-3 mr-1" />
+                    {t("humanInterview")}
+                  </Badge>
+                ) : null}
               </div>
             </CardHeader>
             <CardContent>
@@ -122,7 +123,6 @@ export function InterviewSessionViewer({
               </p>
             </CardContent>
           </Card>
-
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <h4 className="font-medium text-sm">{tDetails("researcher")}</h4>
@@ -134,25 +134,30 @@ export function InterviewSessionViewer({
               </div>
             </div>
 
-            {interviewTarget && (
-              <div className="space-y-2">
-                <h4 className="font-medium text-sm">{tDetails("interviewParticipant")}</h4>
+            <div className="space-y-2">
+              <h4 className="font-medium text-sm">{tDetails("interviewParticipant")}</h4>
+              {interviewSession.intervieweePersona ? (
                 <div className="flex items-center space-x-2">
                   <HippyGhostAvatar
                     className="h-6 w-6"
-                    seed={
-                      isPersonaInterview
-                        ? (interviewSession.intervieweePersona?.id ?? 0)
-                        : (interviewSession.intervieweeUser?.id ?? 0)
-                    }
+                    seed={interviewSession.intervieweePersona.id}
                   />
                   <span className="text-sm text-gray-600 dark:text-gray-400">
-                    {interviewTarget.name ||
-                      ("email" in interviewTarget ? interviewTarget.email : "Anonymous")}
+                    {interviewSession.intervieweePersona.name}
                   </span>
                 </div>
-              </div>
-            )}
+              ) : interviewSession.intervieweeUser ? (
+                <div className="flex items-center space-x-2">
+                  <HippyGhostAvatar
+                    className="h-6 w-6"
+                    seed={interviewSession.intervieweeUser.id}
+                  />
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                    {interviewSession.intervieweeUser.email}
+                  </span>
+                </div>
+              ) : null}
+            </div>
           </div>
 
           <div className="bg-blue-50 dark:bg-blue-950/20 p-4 rounded-lg">
@@ -166,6 +171,38 @@ export function InterviewSessionViewer({
               </div>
             </div>
           </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+
+  const ChatRestartButton = () => (
+    <Dialog open={isRestartDialogOpen} onOpenChange={setIsRestartDialogOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm" disabled={isPending}>
+          <RefreshCwIcon className={cn("h-4 w-4 mr-2", isPending && "animate-spin")} />
+          {t("restartChat")}
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{t("restartChatTitle")}</DialogTitle>
+          <DialogDescription>
+            {t("restartChatDescription")}
+            {t("autoConversationNote")}
+          </DialogDescription>
+        </DialogHeader>
+        <div className="flex justify-end space-x-2 pt-4">
+          <Button variant="outline" onClick={() => setIsRestartDialogOpen(false)}>
+            {t("restartChatCancel")}
+          </Button>
+          <Button
+            onClick={handleRestartChat}
+            disabled={isPending}
+            className="bg-red-600 hover:bg-red-700"
+          >
+            {isPending ? t("restarting") : t("restartChatConfirm")}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
@@ -188,59 +225,26 @@ export function InterviewSessionViewer({
               Back to Project
             </Button>
           </Link> */}
-          <Badge variant={isPersonaInterview ? "secondary" : "default"} className="text-xs">
-            {isPersonaInterview ? (
-              <>
-                <BotIcon className="h-3 w-3 mr-1" />
-                {t("aiInterview")}
-              </>
-            ) : (
-              <>
-                <UsersIcon className="h-3 w-3 mr-1" />
-                {t("humanInterview")}
-              </>
-            )}
-          </Badge>
+          {interviewSession.intervieweePersona ? (
+            <Badge variant="secondary" className="text-xs">
+              <BotIcon className="h-3 w-3 mr-1" />
+              {t("aiInterview")}
+            </Badge>
+          ) : interviewSession.intervieweeUser ? (
+            <Badge variant="default" className="text-xs">
+              <UsersIcon className="h-3 w-3 mr-1" />
+              {t("humanInterview")}
+            </Badge>
+          ) : null}
           <h1 className="text-lg font-medium">
-            {interviewSession.title || t("sessionTitle")}
-            {" - "}
-            {interviewTarget?.name ||
-              (interviewTarget && "email" in interviewTarget ? interviewTarget.email : "Anonymous")}
+            {interviewSession.title
+              ? `${interviewSession.title} (${getSessionDisplayName(interviewSession)})`
+              : getSessionDisplayName(interviewSession)}
           </h1>
         </div>
         <div className="flex items-center space-x-2">
-          {isPersonaInterview && (
-            <Dialog open={isRestartDialogOpen} onOpenChange={setIsRestartDialogOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline" size="sm" disabled={isPending}>
-                  <RefreshCwIcon className={cn("h-4 w-4 mr-2", isPending && "animate-spin")} />
-                  {tDetails("restartChat")}
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>{tDetails("restartChatTitle")}</DialogTitle>
-                  <DialogDescription>
-                    {tDetails("restartChatDescription")}
-                    {isPersonaInterview && ` ${tDetails("autoConversationNote")}`}
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="flex justify-end space-x-2 pt-4">
-                  <Button variant="outline" onClick={() => setIsRestartDialogOpen(false)}>
-                    {tDetails("restartChatCancel")}
-                  </Button>
-                  <Button
-                    onClick={handleRestartChat}
-                    disabled={isPending}
-                    className="bg-red-600 hover:bg-red-700"
-                  >
-                    {isPending ? tDetails("restarting") : tDetails("restartChatConfirm")}
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
-          )}
-          {projectInfoButton}
+          {interviewSession.intervieweePersona && <ChatRestartButton />}
+          <ProjectInfoButton />
         </div>
       </div>
 
@@ -249,17 +253,23 @@ export function InterviewSessionViewer({
         <UserChatSession
           nickname={{
             assistant: t("interviewer"),
-            user: interviewTarget?.name || t("participant"),
+            user: interviewSession.intervieweePersona
+              ? interviewSession.intervieweePersona.name
+              : interviewSession.intervieweeUser
+                ? interviewSession.intervieweeUser.email
+                : t("participant"),
           }}
           avatar={{
-            assistant: <HippyGhostAvatar className="size-8" seed="interviewer" />,
+            assistant: <HippyGhostAvatar className="size-8" seed={interviewSession.projectId} />,
             user: (
               <HippyGhostAvatar
                 className="size-8"
                 seed={
-                  isPersonaInterview
-                    ? (interviewSession.intervieweePersona?.id ?? 0)
-                    : (interviewSession.intervieweeUser?.id ?? 0)
+                  interviewSession.intervieweePersona
+                    ? interviewSession.intervieweePersona.id
+                    : interviewSession.intervieweeUser
+                      ? interviewSession.intervieweeUser.id
+                      : undefined
                 }
               />
             ),

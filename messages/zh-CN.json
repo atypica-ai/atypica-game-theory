@@ -162,11 +162,6 @@
       "interviewing": "正在访谈",
       "concluded": "已总结",
       "viewInterview": "查看访谈"
-    },
-    "SelectPersonaDialog": {
-      "title": "选择访谈对象",
-      "cancel": "取消",
-      "confirm": "确定"
     }
   },
   "PersonasPage": {
@@ -732,6 +727,11 @@
     },
     "ReasoningThinkingResultMessage": {
       "deepThinking": "深度思考"
+    },
+    "SelectPersonaDialog": {
+      "title": "选择访谈对象",
+      "cancel": "取消",
+      "confirm": "确定"
     }
   },
   "Maintenance": {

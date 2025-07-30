@@ -45,7 +45,7 @@
       "shareProject": "Share Interview Project",
       "shareDescription": "Generate a shareable link for others to participate in interviews for this project. The link will expire in 24 hours.",
       "shareUrl": "Share URL",
-      "copyLink": "Copy",
+      "copySuccess": "Link copied to clipboard",
       "securityNote": "Note: Anyone with this link can participate in an interview for this project. The link will expire in 24 hours for security.",
       "close": "Close",
       "totalSessions": "Total Sessions",
@@ -57,15 +57,8 @@
       "interviewSessions": "Interview Sessions",
       "noInterviews": "No interviews yet",
       "noInterviewsDescription": "Share the project link or interview an AI persona to get started",
-      "sessionId": "Session",
-      "restartChat": "Restart Chat",
-      "restartChatTitle": "Restart Interview Chat",
-      "restartChatDescription": "This will clear all existing messages and restart the interview from the beginning.",
-      "restartChatCancel": "Cancel",
-      "restartChatConfirm": "Restart Chat",
-      "restarting": "Restarting...",
-      "restartError": "Failed to restart chat",
-      "autoConversationNote": "The AI conversation will automatically begin again."
+      "completed": "Completed",
+      "inProgress": "In Progress"
     },
     "sessionViewer": {
       "officialInterview": "Official Interview",
@@ -75,7 +68,15 @@
       "interviewer": "Interviewer AI",
       "participant": "Participant",
       "interviewDetails": "Interview Project Details",
-      "detailsDescription": "Information about this interview project"
+      "detailsDescription": "Information about this interview project",
+      "restartChat": "Restart Chat",
+      "restartChatTitle": "Restart Interview Chat",
+      "restartChatDescription": "This will clear all existing messages and restart the interview from the beginning.",
+      "restartChatCancel": "Cancel",
+      "restartChatConfirm": "Restart Chat",
+      "restarting": "Restarting...",
+      "restartError": "Failed to restart chat",
+      "autoConversationNote": "The AI conversation will automatically begin again."
     },
     "shareInvite": {
       "title": "You're Invited to an Interview",
@@ -115,25 +116,6 @@
       "interviewComplete": "Interview Complete",
       "thankYou": "Thank you for participating in this interview session. Your responses have been recorded and will be used for research purposes.",
       "summaryAnalysis": "The interview summary and analysis will be available to the researcher shortly."
-    },
-    "selectPersona": {
-      "title": "Select AI Personas to Interview",
-      "searchPlaceholder": "Search personas by name, description, or source...",
-      "search": "Search",
-      "clearSearch": "Clear search",
-      "searchResults": "Search results for",
-      "noResults": "No results found for",
-      "noPersonas": "No personas available",
-      "source": "Source",
-      "clickToSelect": "Click to select",
-      "selected": "✓ Selected",
-      "tags": "more",
-      "cancel": "Cancel",
-      "createInterview": "Create Interview",
-      "createInterviews": "Create Interviews",
-      "creating": "Creating...",
-      "startNow": "Interview session created successfully! Would you like to start the interview now?",
-      "multipleSuccess": "interview sessions created successfully"
     },
     "reportShare": {
       "title": "Interview Report",

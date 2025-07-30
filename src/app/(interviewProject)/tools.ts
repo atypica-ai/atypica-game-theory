@@ -12,7 +12,7 @@ export const interviewSessionTools = ({ interviewSessionId }: { interviewSession
       title: z
         .string()
         .describe(
-          "A concise title for this interview session (maximum 20 characters) that helps identify and find this interview later.",
+          "A concise title for this interview session (maximum 20 words) that includes the interviewee's name and a one-sentence summary to help identify and find this interview later.",
         ),
       interviewSummary: z
         .string()

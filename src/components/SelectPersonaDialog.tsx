@@ -1,5 +1,5 @@
-import { upsertAnalystInterview } from "@/app/(agents)/interview/actions";
 import { fetchPersonas } from "@/app/admin/personas/actions";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -14,20 +14,14 @@ import { toast } from "sonner";
 interface SelectPersonaDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  analystId: number;
-  onSuccess: () => void;
+  onSelect: (personaIds: number[]) => void;
 }
 
 type TPersona = ExtractServerActionData<typeof fetchPersonas>[number];
 
-export function SelectPersonaDialog({
-  open,
-  onOpenChange,
-  analystId,
-  onSuccess,
-}: SelectPersonaDialogProps) {
+export function SelectPersonaDialog({ open, onOpenChange, onSelect }: SelectPersonaDialogProps) {
   const locale = useLocale();
-  const t = useTranslations("AnalystPage.SelectPersonaDialog");
+  const t = useTranslations("Components.SelectPersonaDialog");
   const [loading, setLoading] = useState(true);
   const [personas, setPersonas] = useState<TPersona[]>([]);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
@@ -77,11 +71,8 @@ export function SelectPersonaDialog({
 
   const handleSubmit = async () => {
     try {
-      for (const personaId of selectedIds) {
-        await upsertAnalystInterview({ analystId, personaId });
-      }
       onOpenChange(false);
-      onSuccess();
+      onSelect(selectedIds);
     } catch (error) {
       toast.error(`无法保存访谈对象 ${error}`);
     }
@@ -188,7 +179,12 @@ export function SelectPersonaDialog({
                     }}
                   >
                     <CardHeader>
-                      <CardTitle className="truncate">{persona.name}</CardTitle>
+                      <CardTitle className="flex items-center overflow-hidden gap-1">
+                        <div className="flex-1 truncate">{persona.name}</div>
+                        <Badge variant="secondary" className="whitespace-nowrap text-xs">
+                          Tier: {persona.tier ?? "N/A"}
+                        </Badge>
+                      </CardTitle>
                       {persona.source && (
                         <div className="text-xs text-muted-foreground">
                           Source：{persona.source}

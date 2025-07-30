@@ -1,6 +1,6 @@
 "use client";
 import { ClientMessagePayload } from "@/ai/messageUtilsClient";
-import { InterviewSessionWithDetails } from "@/app/(interviewProject)/types";
+import { fetchInterviewSessionByChatToken } from "@/app/(interviewProject)/actions";
 import { FocusedInterviewChat } from "@/components/chat/FocusedInterviewChat";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -14,29 +14,28 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { ExtractServerActionData } from "@/lib/serverAction";
 import { useChat } from "@ai-sdk/react";
 import { Message } from "ai";
-import { Bot, Info, Shield, Users } from "lucide-react";
+import { Info, Shield, UsersIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useRef } from "react";
 
 export function InterviewSessionChatClient({
-  interviewSession,
+  project,
+  intervieweeUser,
+  userChatToken,
   initialMessages = [],
-}: {
-  interviewSession: InterviewSessionWithDetails;
+}: ExtractServerActionData<typeof fetchInterviewSessionByChatToken> & {
+  userChatToken: string;
   initialMessages?: Message[];
 }) {
   const t = useTranslations("InterviewProject.sessionChat");
   const tDetails = useTranslations("InterviewProject.projectDetails");
   const tSessionViewer = useTranslations("InterviewProject.sessionViewer");
-  const isPersonaInterview = !!interviewSession.intervieweePersona;
-  const interviewTarget = isPersonaInterview
-    ? interviewSession.intervieweePersona
-    : interviewSession.intervieweeUser;
 
   const initialRequestBody = {
-    userChatToken: interviewSession.userChat.token,
+    userChatToken,
   };
 
   const useChatHelpers = useChat({
@@ -99,7 +98,7 @@ export function InterviewSessionChatClient({
   }, [initialMessages]);
 
   // Project info dialog content
-  const projectInfoButton = (
+  const ProjectInfoButton = () => (
     <Dialog>
       <DialogTrigger asChild>
         <Button
@@ -117,27 +116,18 @@ export function InterviewSessionChatClient({
         </DialogHeader>
         <div className="space-y-4">
           <Card>
-            <CardHeader className="pb-3">
+            <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">{tDetails("projectBrief")}</CardTitle>
-                <Badge variant={isPersonaInterview ? "secondary" : "default"} className="text-xs">
-                  {isPersonaInterview ? (
-                    <>
-                      <Bot className="h-3 w-3 mr-1" />
-                      {tSessionViewer("aiInterview")}
-                    </>
-                  ) : (
-                    <>
-                      <Users className="h-3 w-3 mr-1" />
-                      {tSessionViewer("humanInterview")}
-                    </>
-                  )}
+                <Badge variant="default" className="text-xs">
+                  <UsersIcon className="h-3 w-3 mr-1" />
+                  {tSessionViewer("humanInterview")}
                 </Badge>
               </div>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">
-                {interviewSession.project.brief}
+                {project.brief}
               </p>
             </CardContent>
           </Card>
@@ -148,35 +138,27 @@ export function InterviewSessionChatClient({
               <div className="flex items-center space-x-2">
                 <Avatar className="h-6 w-6">
                   <AvatarFallback className="text-xs">
-                    {interviewSession.project.user.name?.charAt(0) ||
-                      interviewSession.project.user.email.charAt(0)}
+                    {(project.user.name || project.user.email).charAt(0)}
                   </AvatarFallback>
                 </Avatar>
                 <span className="text-sm text-gray-600 dark:text-gray-400">
-                  {interviewSession.project.user.name || interviewSession.project.user.email}
+                  {project.user.name || project.user.email}
                 </span>
               </div>
             </div>
-
-            {interviewTarget && (
-              <div className="space-y-2">
-                <h4 className="font-medium text-sm">{tDetails("interviewParticipant")}</h4>
-                <div className="flex items-center space-x-2">
-                  <Avatar className="h-6 w-6">
-                    <AvatarFallback className="text-xs">
-                      {isPersonaInterview ? (
-                        <Bot className="h-3 w-3" />
-                      ) : (
-                        interviewTarget.name?.charAt(0) || "U"
-                      )}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
-                    {interviewTarget.name || "Anonymous"}
-                  </span>
-                </div>
+            <div className="space-y-2">
+              <h4 className="font-medium text-sm">{tDetails("interviewParticipant")}</h4>
+              <div className="flex items-center space-x-2">
+                <Avatar className="h-6 w-6">
+                  <AvatarFallback className="text-xs">
+                    {(intervieweeUser.name || intervieweeUser.email).charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="text-sm text-gray-600 dark:text-gray-400">
+                  {intervieweeUser.name || intervieweeUser.email}
+                </span>
               </div>
-            )}
+            </div>
           </div>
 
           <div className="bg-blue-50 dark:bg-blue-950/20 p-4 rounded-lg">
@@ -214,8 +196,7 @@ export function InterviewSessionChatClient({
           <div className="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-lg">
             <p className="text-sm text-gray-700 dark:text-gray-300">{t("summaryAnalysis")}</p>
           </div>
-
-          {projectInfoButton}
+          <ProjectInfoButton />
         </div>
       </div>
     );
@@ -226,7 +207,7 @@ export function InterviewSessionChatClient({
       useChatHelpers={useChatHelpers}
       useChatRef={useChatRef}
       showTimer={false} // Interviews don't need timer pressure
-      topRightButton={projectInfoButton}
+      topRightButton={<ProjectInfoButton />}
       className="h-full"
     />
   );

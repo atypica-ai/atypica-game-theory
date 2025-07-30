@@ -162,11 +162,6 @@
       "interviewing": "Interviewing",
       "concluded": "Concluded",
       "viewInterview": "View Interview"
-    },
-    "SelectPersonaDialog": {
-      "title": "Select Interview Subjects",
-      "cancel": "Cancel",
-      "confirm": "Confirm"
     }
   },
   "PersonasPage": {
@@ -732,6 +727,11 @@
     },
     "ReasoningThinkingResultMessage": {
       "deepThinking": "Deep Thinking"
+    },
+    "SelectPersonaDialog": {
+      "title": "Select Interview Subjects",
+      "cancel": "Cancel",
+      "confirm": "Confirm"
     }
   },
   "Maintenance": {

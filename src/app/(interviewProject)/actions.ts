@@ -1,49 +1,16 @@
 "use server";
-import { createTextEmbedding } from "@/ai/embedding";
-import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { createUserChat } from "@/lib/userChat/lib";
 import { generateToken } from "@/lib/utils";
-import { ChatMessage, InterviewProject } from "@/prisma/client";
-import { InputJsonValue } from "@/prisma/client/runtime/library";
+import { InterviewProject, InterviewSession, Persona, User } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
-import { generateId } from "ai";
+import { notFound } from "next/navigation";
 import { runAutoPersonaInterview } from "./(session)/api/chat/interview-agent/auto-persona";
-import {
-  decryptInterviewShareToken,
-  generateInterviewShareToken,
-  generateInterviewTitle,
-} from "./lib";
-import {
-  CreateHumanInterviewSessionInput,
-  CreateInterviewProjectInput,
-  CreatePersonaInterviewSessionInput,
-  InterviewProjectWithSessions,
-  InterviewSessionWithDetails,
-} from "./types";
-
-/**
- * Create a new interview project
- */
-export async function createInterviewProject(
-  input: CreateInterviewProjectInput,
-): Promise<ServerActionResult<{ id: number; token: string }>> {
-  return withAuth(async (user) => {
-    const project = await prisma.interviewProject.create({
-      data: {
-        userId: user.id,
-        brief: input.brief.trim(),
-        token: generateToken(), // TODO: 暂时用不到
-      },
-    });
-    return {
-      success: true,
-      data: { id: project.id, token: project.token },
-    };
-  });
-}
+import { generateInterviewReportContent } from "./artifacts/generateReport";
+import { generateInterviewShareToken, validateInterviewShareToken } from "./lib";
+import { CreateInterviewProjectInput, createInterviewProjectSchema } from "./types";
 
 /**
  * Fetch user's interview projects
@@ -51,12 +18,11 @@ export async function createInterviewProject(
 export async function fetchUserInterviewProjects(): Promise<
   ServerActionResult<
     (InterviewProject & {
-      sessions: {
-        id: number;
-        intervieweeUserId: number | null;
-        intervieweePersonaId: number | null;
-        createdAt: Date;
-      }[];
+      sessionStats: {
+        humanSessions: number;
+        personaSessions: number;
+        total: number;
+      };
     })[]
   >
 > {
@@ -78,166 +44,139 @@ export async function fetchUserInterviewProjects(): Promise<
     });
     return {
       success: true,
-      data: projects,
-    };
-  });
-}
-
-/**
- * Fetch interview project by ID
- */
-export async function fetchInterviewProjectById(
-  projectId: number,
-): Promise<ServerActionResult<InterviewProjectWithSessions>> {
-  return withAuth(async (user) => {
-    const project = await prisma.interviewProject.findUnique({
-      where: { id: projectId, userId: user.id },
-      include: {
-        sessions: {
-          select: {
-            id: true,
-            title: true,
-            intervieweeUser: {
-              select: { id: true, name: true, email: true },
-            },
-            intervieweePersona: {
-              select: { id: true, name: true },
-            },
-            createdAt: true,
+      data: projects.map(({ sessions, ...project }) => {
+        const humanSessions = sessions.filter((s) => s.intervieweeUserId).length;
+        const personaSessions = sessions.filter((s) => s.intervieweePersonaId).length;
+        return {
+          ...project,
+          sessionStats: {
+            humanSessions,
+            personaSessions,
+            total: sessions.length,
           },
-          orderBy: { createdAt: "desc" },
-        },
-        reports: {
-          select: {
-            id: true,
-            token: true,
-            generatedAt: true,
-            createdAt: true,
-          },
-          orderBy: { createdAt: "desc" },
-        },
-      },
-    });
-
-    if (!project) {
-      return {
-        success: false,
-        code: "not_found",
-        message: "Interview project not found",
-      };
-    }
-
-    return {
-      success: true,
-      data: project as InterviewProjectWithSessions,
+        };
+      }),
     };
   });
 }
 
 /**
- * Generate share token for interview project
+ * Create a new interview project
  */
-export async function generateProjectShareToken(
-  projectId: number,
-  expiryHours: number = 24,
-): Promise<ServerActionResult<{ shareToken: string; shareUrl: string }>> {
-  return withAuth(async (user) => {
-    // Verify project ownership
-    const project = await prisma.interviewProject.findUnique({
-      where: { id: projectId, userId: user.id },
-    });
-
-    if (!project) {
-      return {
-        success: false,
-        code: "not_found",
-        message: "Interview project not found",
-      };
-    }
-
-    const shareToken = generateInterviewShareToken(projectId, expiryHours);
-
-    // Note: In a real application, you might want to get the base URL from environment variables
-    const shareUrl = `/interview/invite/${shareToken}`;
-
-    return {
-      success: true,
-      data: { shareToken, shareUrl },
-    };
-  });
-}
-
-/**
- * Validate share token and get project info
- */
-export async function validateShareToken(
-  shareToken: string,
-): Promise<ServerActionResult<{ projectId: number; ownerName: string }>> {
-  const payload = decryptInterviewShareToken(shareToken);
-
-  if (!payload) {
-    return {
-      success: false,
-      code: "not_found",
-      message: "Invalid or expired share token",
-    };
-  }
-
-  const project = await prisma.interviewProject.findUnique({
-    where: { id: payload.projectId },
-    select: {
-      id: true,
-      user: {
-        select: {
-          name: true,
-          email: true,
-        },
-      },
-    },
-  });
-
-  if (!project) {
-    return {
-      success: false,
-      code: "not_found",
-      message: "Interview project not found",
-    };
-  }
-
-  return {
-    success: true,
-    data: {
-      projectId: project.id,
-      ownerName: project.user.email,
-    },
-  };
-}
-
-/**
- * Create interview session for human interviewee
- */
-export async function createHumanInterviewSession(
-  input: CreateHumanInterviewSessionInput,
-): Promise<ServerActionResult<{ sessionId: number; chatToken: string }>> {
+export async function createInterviewProject(
+  input: CreateInterviewProjectInput,
+): Promise<ServerActionResult<InterviewProject>> {
+  const { brief } = createInterviewProjectSchema.parse(input);
+  const token = generateToken();
   return withAuth(async (user) => {
     const userId = user.id;
+    const project = await prisma.interviewProject.create({
+      data: { brief, userId, token },
+    });
+    return {
+      success: true,
+      data: project,
+    };
+  });
+}
 
-    // Validate share token
-    const payload = decryptInterviewShareToken(input.shareToken);
-    if (!payload || payload.projectId !== input.projectId) {
-      return {
-        success: false,
-        code: "not_found",
-        message: "Invalid or expired share token",
-      };
-    }
+/**
+ * Fetch session statistics for a project
+ */
+export async function fetchInterviewSessionStats(projectId: number): Promise<
+  ServerActionResult<{
+    total: number;
+    completed: number;
+    incomplete: number;
+    humanSessions: {
+      total: number;
+      completed: number;
+      incomplete: number;
+    };
+    personaSessions: {
+      total: number;
+      completed: number;
+      incomplete: number;
+    };
+  }>
+> {
+  return withAuth(async (user) => {
+    const { sessions } = await prisma.interviewProject
+      .findUniqueOrThrow({
+        where: { id: projectId, userId: user.id },
+        select: {
+          id: true,
+          sessions: {
+            select: {
+              id: true,
+              title: true,
+              intervieweeUserId: true,
+              intervieweePersonaId: true,
+            },
+          },
+        },
+      })
+      .catch(() => notFound());
 
-    // Get project details
-    const project = await prisma.interviewProject.findUnique({
-      where: { id: input.projectId },
-      include: {
-        user: { select: { name: true } },
+    const total = sessions.length;
+    const completed = sessions.filter((s) => s.title && s.title.trim() !== "").length;
+    const incomplete = total - completed;
+
+    const humanSessions = sessions.filter((s) => s.intervieweeUserId);
+    const humanCompleted = humanSessions.filter((s) => s.title && s.title.trim() !== "").length;
+    const humanIncomplete = humanSessions.length - humanCompleted;
+
+    const personaSessions = sessions.filter((s) => s.intervieweePersonaId);
+    const personaCompleted = personaSessions.filter((s) => s.title && s.title.trim() !== "").length;
+    const personaIncomplete = personaSessions.length - personaCompleted;
+
+    return {
+      success: true,
+      data: {
+        total,
+        completed,
+        incomplete,
+        humanSessions: {
+          total: humanSessions.length,
+          completed: humanCompleted,
+          incomplete: humanIncomplete,
+        },
+        personaSessions: {
+          total: personaSessions.length,
+          completed: personaCompleted,
+          incomplete: personaIncomplete,
+        },
       },
+    };
+  });
+}
+
+/**
+ * Fetch interview sessions for a project
+ */
+export async function fetchInterviewSessions(projectId: number): Promise<
+  ServerActionResult<
+    Array<{
+      id: number;
+      title: string | null;
+      createdAt: Date;
+      intervieweeUser?: {
+        id: number;
+        name: string | null;
+        email: string;
+      } | null;
+      intervieweePersona?: {
+        id: number;
+        name: string;
+      } | null;
+    }>
+  >
+> {
+  return withAuth(async (user) => {
+    // First verify the project belongs to the user
+    const project = await prisma.interviewProject.findUnique({
+      where: { id: projectId, userId: user.id },
+      select: { id: true },
     });
 
     if (!project) {
@@ -248,20 +187,132 @@ export async function createHumanInterviewSession(
       };
     }
 
-    // Check if user already has a session for this project
-    const existingSession = await prisma.interviewSession.findFirst({
-      where: {
-        projectId: input.projectId,
-        intervieweeUserId: userId,
-      },
-      include: {
-        userChat: {
-          select: { token: true },
+    const sessions = await prisma.interviewSession.findMany({
+      where: { projectId: projectId },
+      select: {
+        id: true,
+        title: true,
+        intervieweeUser: {
+          select: { id: true, name: true, email: true },
         },
+        intervieweePersona: {
+          select: { id: true, name: true },
+        },
+        createdAt: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    return {
+      success: true,
+      data: sessions,
+    };
+  });
+}
+
+/**
+ * Generate project share token
+ */
+export async function generateInterviewShareTokenAction(
+  projectId: number,
+  expiryHours: number = 24,
+): Promise<ServerActionResult<{ shareToken: string }>> {
+  return withAuth(async (user) => {
+    // ensure project belongs to user
+    const project = await prisma.interviewProject
+      .findUniqueOrThrow({ where: { id: projectId, userId: user.id } })
+      .catch(() => notFound());
+    const shareToken = generateInterviewShareToken(project.id, expiryHours);
+    return {
+      success: true,
+      data: { shareToken },
+    };
+  });
+}
+
+/**
+ * Create persona interview session
+ */
+export async function createPersonaInterviewSession({
+  projectId,
+  personaId,
+}: {
+  projectId: number;
+  personaId: number;
+}): Promise<ServerActionResult<{ sessionId: number; chatToken: string }>> {
+  return withAuth(async (user) => {
+    const [project, persona] = await Promise.all([
+      prisma.interviewProject
+        .findUniqueOrThrow({ where: { id: projectId, userId: user.id } })
+        .catch(() => notFound()),
+      prisma.persona.findUniqueOrThrow({ where: { id: personaId } }).catch(() => notFound()),
+    ]);
+
+    const userChat = await createUserChat({
+      userId: user.id,
+      kind: "interviewSession",
+      title: "Persona Interview Session",
+    });
+
+    const session = await prisma.interviewSession.create({
+      data: {
+        projectId: project.id,
+        intervieweePersonaId: persona.id,
+        userChatId: userChat.id,
       },
     });
 
-    if (existingSession && existingSession.userChat) {
+    // Auto-run the persona interview in the background
+    waitUntil(
+      runAutoPersonaInterview({
+        sessionId: session.id,
+        userChatId: userChat.id,
+        projectBrief: project.brief,
+        personaId: persona.id,
+      }),
+    );
+
+    return {
+      success: true,
+      data: {
+        sessionId: session.id,
+        chatToken: userChat.token,
+      },
+    };
+  });
+}
+
+/**
+ * Create human interview session
+ */
+export async function createHumanInterviewSession({
+  // projectId,
+  shareToken,
+}: {
+  // projectId: number;
+  shareToken: string;
+}): Promise<ServerActionResult<{ sessionId: number; chatToken: string }>> {
+  return withAuth(async (user) => {
+    const tokenValidation = await validateInterviewShareToken(shareToken);
+    if (!tokenValidation) {
+      return {
+        success: false,
+        message: "Invalid share token",
+      };
+    }
+    const { projectId } = tokenValidation;
+
+    // Check if user has already created a session for this project
+    const existingSession = await prisma.interviewSession.findFirst({
+      where: { projectId, intervieweeUserId: user.id },
+      select: {
+        id: true,
+        userChat: { select: { id: true, token: true } },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    if (existingSession?.userChat) {
       return {
         success: true,
         data: {
@@ -271,134 +322,32 @@ export async function createHumanInterviewSession(
       };
     }
 
-    // Create session and user chat in transaction
-    const result = await prisma.$transaction(async (tx) => {
-      // Create user chat for the interview
-      const userChat = await createUserChat({
-        userId: project.userId, // Chat belongs to project owner
-        title: generateInterviewTitle(project.brief, false),
-        kind: "interviewSession",
-        tx,
-      });
-
-      // Create interview session
-      const interviewSession = await tx.interviewSession.create({
-        data: {
-          projectId: input.projectId,
-          userChatId: userChat.id,
-          intervieweeUserId: userId,
-        },
-      });
-
-      // Add initial message to start the conversation
-      await tx.chatMessage.create({
-        data: {
-          messageId: generateId(),
-          userChatId: userChat.id,
-          role: "user",
-          content: "[READY]",
-          parts: [{ type: "text", text: "[READY]" }] as InputJsonValue,
-        },
-      });
-
-      return { sessionId: interviewSession.id, chatToken: userChat.token };
+    const userChat = await createUserChat({
+      userId: user.id,
+      kind: "interviewSession",
+      title: "Interview Session",
     });
 
-    return {
-      success: true,
-      data: result,
-    };
-  });
-}
-
-/**
- * Create interview session for persona interviewee
- */
-export async function createPersonaInterviewSession(
-  input: CreatePersonaInterviewSessionInput,
-): Promise<ServerActionResult<{ sessionId: number; chatToken: string; autoStart?: boolean }>> {
-  return withAuth(async (user) => {
-    // Verify project ownership
-    const project = await prisma.interviewProject.findUnique({
-      where: { id: input.projectId, userId: user.id },
-    });
-
-    if (!project) {
-      return {
-        success: false,
-        code: "not_found",
-        message: "Interview project not found",
-      };
-    }
-
-    // Verify persona exists
-    const persona = await prisma.persona.findUnique({
-      where: { id: input.personaId },
-      select: { id: true, name: true, prompt: true },
-    });
-
-    if (!persona) {
-      return {
-        success: false,
-        code: "not_found",
-        message: "Persona not found",
-      };
-    }
-
-    // Create session and user chat in transaction
-    const result = await prisma.$transaction(async (tx) => {
-      // Create user chat for the interview
-      const userChat = await createUserChat({
-        userId: user.id,
-        title: generateInterviewTitle(project.brief, true, persona.name),
-        kind: "interviewSession",
-        tx,
-      });
-
-      // Create interview session
-      const interviewSession = await tx.interviewSession.create({
-        data: {
-          projectId: input.projectId,
-          userChatId: userChat.id,
-          intervieweePersonaId: input.personaId,
-        },
-      });
-
-      return {
-        sessionId: interviewSession.id,
-        chatToken: userChat.token,
+    const session = await prisma.interviewSession.create({
+      data: {
+        projectId,
+        intervieweeUserId: user.id,
         userChatId: userChat.id,
-        autoStart: true,
-      };
+      },
     });
-
-    // Start auto persona interview in the background
-    waitUntil(
-      runAutoPersonaInterview({
-        sessionId: result.sessionId,
-        userChatId: result.userChatId,
-        projectBrief: project.brief,
-        personaId: input.personaId,
-      }).catch((error) => {
-        rootLogger
-          .child({ sessionId: result.sessionId })
-          .error("Auto persona interview failed", { error: error.message });
-      }),
-    );
 
     return {
       success: true,
       data: {
-        sessionId: result.sessionId,
-        chatToken: result.chatToken,
-        autoStart: result.autoStart,
+        sessionId: session.id,
+        chatToken: userChat.token,
       },
     };
   });
 }
 
 /**
- * Restart interview session chat
+ * Restart persona interview session
  */
 export async function restartPersonaInterviewSession({
   projectId,
@@ -411,48 +360,26 @@ export async function restartPersonaInterviewSession({
     // Verify session ownership
     const session = await prisma.interviewSession.findUnique({
       where: {
-        project: {
-          userId: user.id,
-        },
+        project: { userId: user.id },
         projectId: projectId,
         id: sessionId,
       },
       include: {
-        userChat: true,
-        intervieweePersona: {
-          select: { id: true, name: true },
-        },
-        project: {
-          select: { brief: true },
-        },
+        userChat: { select: { id: true, token: true } },
+        project: { select: { brief: true } },
       },
     });
 
-    if (!session) {
+    if (!session?.intervieweePersonaId || !session?.userChat) {
       return {
         success: false,
         code: "not_found",
-        message: "Interview session not found",
+        message:
+          "Interview session not found, or either interviewee persona or user chat not found",
       };
     }
 
-    if (!session.intervieweePersonaId) {
-      return {
-        success: false,
-        code: "not_found",
-        message: "Interview session is not associated with an interviewee persona",
-      };
-    }
-
-    if (!session.userChat) {
-      return {
-        success: false,
-        code: "not_found",
-        message: "User chat not found",
-      };
-    }
-
-    const { userChat } = session;
+    const { project, intervieweePersonaId, userChat } = session;
 
     // Clear all existing chat messages
     await prisma.chatMessage.deleteMany({
@@ -460,57 +387,64 @@ export async function restartPersonaInterviewSession({
     });
 
     // If it's a persona interview, restart auto conversation
-    if (session.intervieweePersona) {
-      waitUntil(
-        runAutoPersonaInterview({
-          sessionId: session.id,
-          userChatId: userChat.id,
-          projectBrief: session.project.brief,
-          personaId: session.intervieweePersona.id,
-        }).catch((error) => {
-          rootLogger
-            .child({ sessionId: session.id })
-            .error("Auto persona interview restart failed", { error: error.message });
-        }),
-      );
-    }
+    waitUntil(
+      runAutoPersonaInterview({
+        sessionId,
+        userChatId: userChat.id,
+        projectBrief: project.brief,
+        personaId: intervieweePersonaId,
+      }),
+    );
 
     return {
       success: true,
-      data: { chatToken: userChat.token },
+      data: {
+        chatToken: userChat.token,
+      },
     };
   });
 }
 
 /**
- * Fetch interview session details
+ * Fetch interview session by project and session ID
  */
-export async function fetchInterviewSession({
+export async function fetchInterviewSessionDetails({
   projectId,
   sessionId,
 }: {
   projectId: number;
   sessionId: number;
-}): Promise<ServerActionResult<InterviewSessionWithDetails>> {
+}): Promise<
+  ServerActionResult<
+    Pick<InterviewSession, "id" | "projectId" | "title" | "userChatId"> & {
+      project: Pick<InterviewProject, "id" | "brief"> & {
+        user: Pick<User, "id" | "name" | "email">;
+      };
+      intervieweeUser: Pick<User, "id" | "name" | "email"> | null;
+      intervieweePersona: Pick<Persona, "id" | "name"> | null;
+    }
+  >
+> {
   return withAuth(async (user) => {
     const session = await prisma.interviewSession.findUnique({
       where: {
-        project: {
-          userId: user.id,
-        },
+        project: { userId: user.id },
         projectId: projectId,
         id: sessionId,
       },
-      include: {
+      select: {
+        id: true,
+        projectId: true,
+        title: true,
+        userChatId: true,
         project: {
-          include: {
+          select: {
+            id: true,
+            brief: true,
             user: {
               select: { id: true, name: true, email: true },
             },
           },
-        },
-        userChat: {
-          select: { id: true, token: true, title: true },
         },
         intervieweeUser: {
           select: { id: true, name: true, email: true },
@@ -529,22 +463,9 @@ export async function fetchInterviewSession({
       };
     }
 
-    // Check access permission
-    const hasAccess =
-      session.project.userId === user.id || // Project owner
-      session.intervieweeUserId === user.id; // Interviewee
-
-    if (!hasAccess) {
-      return {
-        success: false,
-        code: "forbidden",
-        message: "Access denied",
-      };
-    }
-
     return {
       success: true,
-      data: session as InterviewSessionWithDetails,
+      data: session,
     };
   });
 }
@@ -552,429 +473,96 @@ export async function fetchInterviewSession({
 /**
  * Fetch interview session by chat token
  */
-export async function fetchInterviewSessionByChatToken(
-  chatToken: string,
-): Promise<ServerActionResult<InterviewSessionWithDetails>> {
-  const userChat = await prisma.userChat.findUnique({
-    where: {
-      token: chatToken,
-      kind: "interviewSession",
-    },
-    include: {
-      interviewSession: {
-        include: {
-          project: {
-            include: {
-              user: {
-                select: { id: true, name: true, email: true },
-              },
-            },
-          },
-          intervieweeUser: {
-            select: { id: true, name: true, email: true },
-          },
-          intervieweePersona: {
-            select: { id: true, name: true },
-          },
-        },
-      },
-    },
-  });
-
-  if (!userChat?.interviewSession) {
-    return {
-      success: false,
-      code: "not_found",
-      message: "Interview session not found",
+export async function fetchInterviewSessionByChatToken(chatToken: string): Promise<
+  ServerActionResult<{
+    interviewSessionId: number;
+    project: Pick<InterviewProject, "brief"> & {
+      user: Pick<User, "name" | "email">;
     };
-  }
-
-  const session = userChat.interviewSession;
-  const sessionWithDetails: InterviewSessionWithDetails = {
-    ...session,
-    userChat: {
-      id: userChat.id,
-      token: userChat.token,
-      title: userChat.title,
-    },
-    intervieweeUser: session.intervieweeUser,
-    intervieweePersona: session.intervieweePersona,
-  };
-
-  return {
-    success: true,
-    data: sessionWithDetails,
-  };
-}
-
-/**
- * Delete interview project
- */
-export async function deleteInterviewProject(projectId: number): Promise<ServerActionResult<void>> {
-  return withAuth(async (user) => {
-    const project = await prisma.interviewProject.findUnique({
-      where: { id: projectId, userId: user.id },
-    });
-
-    if (!project) {
-      return {
-        success: false,
-        code: "not_found",
-        message: "Interview project not found",
-      };
-    }
-
-    await prisma.interviewProject.delete({
-      where: { id: projectId },
-    });
-
-    return {
-      success: true,
-      data: undefined,
-    };
-  });
-}
-
-/**
- * Fetch available personas for interview
- */
-export async function fetchAvailablePersonas({
-  searchQuery,
-  page = 1,
-  pageSize = 12,
-}: {
-  searchQuery?: string;
-  page?: number;
-  pageSize?: number;
-} = {}): Promise<
-  ServerActionResult<
-    Array<{ id: number; name: string; prompt: string; source: string; tags: string[] }>
-  >
+    userChatId: number;
+    intervieweeUser: Pick<User, "id" | "name" | "email">;
+  }>
 > {
   return withAuth(async (user) => {
-    // Check if user is admin
-    const adminUser = await prisma.adminUser.findUnique({
-      where: { userId: user.id },
-    });
-
-    const isAdmin = !!adminUser;
-    const skip = (page - 1) * pageSize;
-
-    // If there's a search query, use vector search
-    if (searchQuery && searchQuery.trim()) {
-      try {
-        const embedding = await createTextEmbedding(searchQuery, "retrieval.query");
-
-        // Build the vector search query with user permissions
-        const personas = isAdmin
-          ? await prisma.$queryRaw<
-              Array<{
-                id: number;
-                name: string;
-                prompt: string;
-                source: string;
-                tags: unknown;
-                tier: number;
-              }>
-            >`
-              SELECT p.id, p.name, p.source, p.prompt, p.tags, p.tier
-              FROM "Persona" p
-              WHERE p."embedding" <=> ${JSON.stringify(embedding)}::vector < 0.9
-              ORDER BY p."embedding" <=> ${JSON.stringify(embedding)}::vector ASC
-              LIMIT ${pageSize}
-              OFFSET ${skip}
-            `
-          : await prisma.$queryRaw<
-              Array<{
-                id: number;
-                name: string;
-                prompt: string;
-                source: string;
-                tags: unknown;
-                tier: number;
-              }>
-            >`
-              SELECT p.id, p.name, p.source, p.prompt, p.tags, p.tier
-              FROM "Persona" p
-              WHERE p."embedding" <=> ${JSON.stringify(embedding)}::vector < 0.9
-              AND p."personaImportId" IN (SELECT id FROM "PersonaImport" WHERE "userId" = ${user.id})
-              ORDER BY p."embedding" <=> ${JSON.stringify(embedding)}::vector ASC
-              LIMIT ${pageSize}
-              OFFSET ${skip}
-            `;
-
-        const totalCountResult = isAdmin
-          ? await prisma.$queryRaw<{ count: number }[]>`
-              SELECT COUNT(*) as count
-              FROM "Persona" p
-              WHERE p."embedding" <=> ${JSON.stringify(embedding)}::vector < 0.9
-            `
-          : await prisma.$queryRaw<{ count: number }[]>`
-              SELECT COUNT(*) as count
-              FROM "Persona" p
-              WHERE p."embedding" <=> ${JSON.stringify(embedding)}::vector < 0.9
-              AND p."personaImportId" IN (SELECT id FROM "PersonaImport" WHERE "userId" = ${user.id})
-            `;
-
-        const totalCount = Math.min(40, Number(totalCountResult[0].count));
-
-        return {
-          success: true,
-          data: personas.map((persona) => ({
-            ...persona,
-            tags: persona.tags as string[],
-          })),
-          pagination: {
-            page,
-            pageSize,
-            totalCount,
-            totalPages: Math.ceil(totalCount / pageSize),
-          },
-        };
-      } catch (error) {
-        console.log(`Vector search error: ${(error as Error).message}`);
-        return {
-          success: false,
-          message: "Persona search error",
-        };
-      }
-    }
-
-    // Regular search with user permissions
-    const where = isAdmin
-      ? {}
-      : {
-          personaImport: {
-            userId: user.id,
-          },
-        };
-
-    const [personas, totalCount] = await Promise.all([
-      prisma.persona.findMany({
-        where,
-        orderBy: {
-          createdAt: "desc",
-        },
-        select: {
-          id: true,
-          name: true,
-          source: true,
-          prompt: true,
-          tags: true,
-          tier: true,
-        },
-        skip,
-        take: pageSize,
-      }),
-      prisma.persona.count({ where }),
-    ]);
-
-    return {
-      success: true,
-      data: personas.map((persona) => ({
-        ...persona,
-        tags: persona.tags as string[],
-      })),
-      pagination: {
-        page,
-        pageSize,
-        totalCount,
-        totalPages: Math.ceil(totalCount / pageSize),
+    const userChat = await prisma.userChat.findUnique({
+      where: {
+        token: chatToken,
+        kind: "interviewSession",
       },
-    };
-  });
-}
-
-/**
- * Generate interview report
- */
-export async function generateInterviewReport(
-  projectId: number,
-): Promise<ServerActionResult<{ token: string }>> {
-  return withAuth(async (user) => {
-    // Verify project ownership
-    const project = await prisma.interviewProject.findFirst({
-      where: { id: projectId, userId: user.id },
-      include: {
-        sessions: {
-          include: {
-            userChat: {
-              include: {
-                messages: {
-                  orderBy: { id: "asc" },
+      select: {
+        id: true,
+        interviewSession: {
+          select: {
+            id: true,
+            project: {
+              select: {
+                brief: true,
+                user: {
+                  select: { name: true, email: true },
                 },
               },
             },
             intervieweeUser: {
-              select: { name: true, email: true },
-            },
-            intervieweePersona: {
-              select: { name: true },
+              select: { id: true, name: true, email: true },
             },
           },
         },
       },
     });
 
-    if (!project) {
+    if (!userChat?.interviewSession || !userChat.interviewSession.intervieweeUser) {
       return {
         success: false,
-        message: "Project not found or access denied",
+        code: "not_found",
+        message: "Interview session not found",
       };
     }
 
-    if (project.sessions.length === 0) {
+    const session = userChat.interviewSession;
+    if (session.intervieweeUser?.id !== user.id) {
       return {
         success: false,
-        message: "No interview sessions found for this project",
+        code: "forbidden",
+        message: "Interview session does not belong to user",
       };
     }
-
-    const reportToken = generateToken();
-
-    // Create report record
-    const report = await prisma.interviewReport.create({
-      data: {
-        projectId,
-        token: reportToken,
-        onePageHtml: "",
-      },
-    });
-
-    // Generate report in background
-    waitUntil(
-      (async () => {
-        try {
-          await generateReportContent(project, report.id);
-        } catch (error) {
-          rootLogger.error(`Failed to generate interview report ${reportToken}:`, error);
-        }
-      })(),
-    );
 
     return {
       success: true,
-      data: { token: reportToken },
+      data: {
+        interviewSessionId: session.id,
+        project: session.project,
+        userChatId: userChat.id,
+        intervieweeUser: session.intervieweeUser,
+      },
     };
   });
-}
-
-async function generateReportContent(
-  project: InterviewProject & {
-    sessions: {
-      id: number;
-      userChat: {
-        id: number;
-        messages: ChatMessage[];
-      } | null;
-      intervieweeUser: {
-        name: string;
-        email: string;
-      } | null;
-      intervieweePersona: {
-        name: string;
-      } | null;
-    }[];
-  },
-  reportId: number,
-): Promise<void> {
-  const { llm, providerOptions } = await import("@/ai/provider");
-  const { streamText } = await import("ai");
-  const { interviewReportSystemPrompt, interviewReportPrologue } = await import("./prompt");
-  const { getLocale } = await import("next-intl/server");
-
-  const locale = await getLocale();
-
-  // Prepare conversation data
-  const conversations = project.sessions
-    .filter((session) => (session.userChat?.messages?.length ?? 0) > 0)
-    .map((session) => {
-      const participantName =
-        session.intervieweeUser?.name ||
-        session.intervieweePersona?.name ||
-        `Anonymous User ${session.id}`;
-      const messages = (session.userChat?.messages ?? [])
-        .filter((msg) => msg.content.trim() && !msg.content.includes("[READY]"))
-        .map((msg) => ({
-          role: msg.role as "user" | "assistant",
-          content: msg.content,
-          createdAt: msg.createdAt,
-        }));
-
-      return { participantName, messages };
-    });
-
-  let onePageHtml = "";
-
-  const response = streamText({
-    model: llm("claude-sonnet-4"),
-    providerOptions: providerOptions,
-    system: interviewReportSystemPrompt({ locale }),
-    messages: [
-      {
-        role: "user",
-        content: interviewReportPrologue({
-          locale,
-          projectBrief: project.brief,
-          conversations,
-        }),
-      },
-    ],
-    maxSteps: 1,
-    maxTokens: 30000,
-    onChunk: async ({ chunk }) => {
-      if (chunk.type === "text-delta") {
-        onePageHtml += chunk.textDelta.toString();
-        // Throttled save - save every 5 seconds
-        await prisma.interviewReport.update({
-          where: { id: reportId },
-          data: { onePageHtml },
-        });
-      }
-      rootLogger.info("Interview report generation progress");
-    },
-    onFinish: async () => {
-      // Final save with completion timestamp
-      await prisma.interviewReport.update({
-        where: { id: reportId },
-        data: {
-          onePageHtml,
-          generatedAt: new Date(),
-        },
-      });
-    },
-    onError: ({ error }) => {
-      rootLogger.error(`Interview report generation error:`, error);
-    },
-  });
-
-  await response.consumeStream();
 }
 
 /**
  * Fetch interview reports for a project
  */
-export async function fetchInterviewReports(
-  projectId: number,
-): Promise<
+export async function fetchInterviewReports(projectId: number): Promise<
   ServerActionResult<
-    Array<{ id: number; token: string; generatedAt: Date | null; createdAt: Date }>
+    Array<{
+      id: number;
+      token: string;
+      generatedAt: Date | null;
+      createdAt: Date;
+    }>
   >
 > {
   return withAuth(async (user) => {
-    const project = await prisma.interviewProject.findFirst({
-      where: { id: projectId, userId: user.id },
-    });
-
-    if (!project) {
-      return {
-        success: false,
-        message: "Project not found or access denied",
-      };
-    }
-
+    // Ensure project belongs to user
+    const project = await prisma.interviewProject
+      .findUniqueOrThrow({
+        where: { id: projectId, userId: user.id },
+      })
+      .catch(() => notFound());
     const reports = await prisma.interviewReport.findMany({
-      where: { projectId },
+      where: {
+        projectId: project.id,
+      },
       select: {
         id: true,
         token: true,
@@ -983,7 +571,6 @@ export async function fetchInterviewReports(
       },
       orderBy: { createdAt: "desc" },
     });
-
     return {
       success: true,
       data: reports,
@@ -992,31 +579,87 @@ export async function fetchInterviewReports(
 }
 
 /**
- * Delete interview report
+ * Generate interview report
  */
-export async function deleteInterviewReport(reportId: number): Promise<ServerActionResult<void>> {
+export async function generateInterviewReport(projectId: number): Promise<
+  ServerActionResult<{
+    id: number;
+    token: string;
+    generatedAt: Date | null;
+    createdAt: Date;
+  }>
+> {
   return withAuth(async (user) => {
-    const report = await prisma.interviewReport.findFirst({
+    // Verify project ownership
+    const project = await prisma.interviewProject
+      .findUniqueOrThrow({
+        where: { id: projectId, userId: user.id },
+        select: { id: true, brief: true },
+      })
+      .catch(() => notFound());
+
+    const sessions = await prisma.interviewSession.findMany({
       where: {
-        id: reportId,
-        project: { userId: user.id },
+        projectId: project.id,
+        // filter completed sessions with a title
+        title: { not: "" },
+      },
+      select: {
+        title: true,
+        userChat: {
+          select: {
+            messages: {
+              select: {
+                role: true,
+                content: true,
+              },
+              orderBy: { createdAt: "asc" },
+            },
+          },
+        },
       },
     });
 
-    if (!report) {
-      return {
-        success: false,
-        message: "Report not found or access denied",
-      };
-    }
+    // Filter sessions to ensure userChat is not null
+    const filteredSessions = sessions.filter(
+      (session): session is typeof session & { userChat: NonNullable<typeof session.userChat> } =>
+        session.userChat !== null,
+    );
 
-    await prisma.interviewReport.delete({
-      where: { id: reportId },
+    // Generate a unique token for this report
+    const reportToken = generateToken();
+    // Create the report record
+    const report = await prisma.interviewReport.create({
+      data: {
+        token: reportToken,
+        projectId,
+        onePageHtml: "",
+      },
     });
+
+    // Generate report content in the background
+    waitUntil(
+      generateInterviewReportContent({
+        report: {
+          id: report.id,
+          token: report.token,
+        },
+        project: {
+          id: project.id,
+          brief: project.brief,
+          sessions: filteredSessions,
+        },
+      }),
+    );
 
     return {
       success: true,
-      data: undefined,
+      data: {
+        id: report.id,
+        token: report.token,
+        generatedAt: null,
+        createdAt: report.createdAt,
+      },
     };
   });
 }

@@ -2,6 +2,7 @@ import "server-only";
 
 import { decryptText, encryptText } from "@/lib/cipher";
 import { truncateForTitle } from "@/lib/textUtils";
+import { prisma } from "@/prisma/prisma";
 import { InterviewSharePayload } from "./types";
 
 /**
@@ -79,23 +80,35 @@ export function generateInterviewTitle(
 }
 
 /**
- * Validate interview project brief
- * @param brief - The brief to validate
- * @returns Validation result with any errors
+ * Validate share token
  */
-export function validateInterviewBrief(brief: string): { isValid: boolean; errors: string[] } {
-  const errors: string[] = [];
+export async function validateInterviewShareToken(
+  shareToken: string,
+): Promise<{ projectId: number; ownerName: string } | null> {
+  const payload = decryptInterviewShareToken(shareToken);
+  if (!payload) {
+    return null;
+  }
 
-  if (!brief || brief.trim().length === 0) {
-    errors.push("Brief is required");
-  } else if (brief.trim().length < 10) {
-    errors.push("Brief must be at least 10 characters long");
-  } else if (brief.length > 2000) {
-    errors.push("Brief must be less than 2000 characters");
+  const project = await prisma.interviewProject.findUnique({
+    where: { id: payload.projectId },
+    select: {
+      id: true,
+      user: {
+        select: {
+          name: true,
+          email: true,
+        },
+      },
+    },
+  });
+
+  if (!project) {
+    return null;
   }
 
   return {
-    isValid: errors.length === 0,
-    errors,
+    projectId: project.id,
+    ownerName: project.user.email,
   };
 }

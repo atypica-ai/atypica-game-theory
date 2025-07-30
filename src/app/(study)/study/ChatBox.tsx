@@ -46,9 +46,11 @@ export function ChatBox() {
     },
   } = useStudyContext();
 
-  const initialRequestBody = {
-    userChatToken: studyUserChatToken,
-  };
+  const initialRequestBody = useMemo(
+    () => ({ userChatToken: studyUserChatToken }),
+    [studyUserChatToken],
+  );
+
   const {
     messages,
     setMessages,
