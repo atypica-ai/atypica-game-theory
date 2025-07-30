@@ -6,50 +6,12 @@
 
 如果，「物理」为「客观世界」建模；那么，「语言模型」则为「主观世界」建模。
 
-## 核心功能
-
-### 研究助手 (Study)
-
-研究助手是平台的核心功能，它提供端到端的用户研究体验：
-
-- **对话式研究设计**：通过自然对话引导用户明确研究主题和关键问题
-- **自动化访谈**：基于研究需求自动寻找合适的受访者并执行访谈
-- **实时分析**：同步分析访谈数据，提取关键洞察
-- **报告生成**：自动汇总研究发现，生成结构化研究报告
-- **研究共享**：支持研究流程回放，方便团队协作与结果分享
-
-### 支持功能
-
-#### 1. 用户发掘 (Scout)
-
-- 基于小红书等社交媒体数据自动寻找目标用户
-- 分析用户生成内容，构建多维度用户画像
-- 动态生成符合研究需求的用户角色模型
-
-#### 2. 用户画像库 (Personas)
-
-- 维护丰富的用户画像数据库
-- 每个画像包含性格特征、消费习惯等多维度信息
-- 可直接用于访谈模拟或市场洞察
-
-#### 3. 研究主题管理 (Analyst)
-
-- 创建和管理多个研究主题和分析师角色
-- 设计针对特定主题的专业访谈问题
-- 跟踪多个研究项目的进展
-
-#### 4. 访谈模拟 (Interview)
-
-- 基于AI驱动的访谈模拟系统
-- 支持研究者观察或参与访谈过程
-- 自动记录和总结访谈内容
-
 ## 技术实现
 
 ### 架构
 
 - **前端**：Next.js 14 (App Router)
-- **数据库**：Prisma + PostgreSQL
+- **数据库**：Prisma + PostgreSQL 15 (包含 pgvector 扩展)
 - **AI模型**：Claude 3 + GPT-4o
 - **国际化**：next-intl
 - **认证**：NextAuth.js
@@ -117,23 +79,36 @@ pnpm install
 cp .env.example .env
 ```
 
-必要的环境变量包括：
-
-- AI模型API密钥（OpenAI、Anthropic等）
-- 数据库连接信息
-- 第三方API密钥（如小红书API）
+设置 `AUTH_SECRET`, read more: https://cli.authjs.dev
 
 ```bash
 npx auth secret
 ```
 
-设置 `AUTH_SECRET`, read more: https://cli.authjs.dev
-
 3. 初始化数据库
+
+新建本地数据库
+
+```bash
+psql -d postgres
+CREATE USER atypica WITH PASSWORD 'atypica' SUPERUSER;  # migration 执行时包含创建 vector extension, 需要 superuser 权限
+CREATE DATABASE atypica_dev OWNER atypica;
+CREATE DATABASE atypica_dev_shadow OWNER atypica;
+\q
+```
+
+向 .env 文件写入数据库配置：
+
+```env
+DATABASE_URL=postgresql://atypica:atypica@localhost:5432/atypica_dev
+SHADOW_DATABASE_URL=postgresql://atypica:atypica@localhost:5432/atypica_dev_shadow
+```
+
+执行 migrations
 
 ```bash
 npx prisma generate  # 生成必要的类型定义
-npx prisma migrate deploy  # 执行数据库迁移
+npx prisma migrate dev  # 执行数据库迁移
 ```
 
 4. 启动开发服务器
@@ -149,21 +124,42 @@ docker buildx build --platform linux/amd64 . -t atypica-llm-app -f Dockerfile
 docker run -p 3000:3000 --env-file ./.env.docker atypica-llm-app
 ```
 
-## 特色与优势
+## 安装 PostgreSQL 15 和 pgvector
 
-- **全流程自动化**：从研究设计到报告生成的端到端自动化
-- **协作多模态**：支持文本、图表等多种输入输出方式
-- **深度洞察**：基于大模型的深度分析和思考能力
-- **沉浸式体验**：直观友好的用户界面，降低研究门槛
-- **知识沉淀**：所有研究成果可保存、共享和复用
+### macOS 安装教程
 
-## 未来计划
+1. 安装 PostgreSQL 15
 
-- [ ] 集成更多数据源，包括问卷和定量数据分析
-- [ ] 优化访谈质量和深度
-- [ ] 增强数据可视化能力
-- [ ] 支持更多行业特定研究模板
-- [ ] 优化团队协作功能
+```bash
+brew install postgresql@15
+brew services start postgresql@15
+```
+
+由于 pgvector 扩展对 PostgreSQL 15 的兼容性问题，无法直接通过 Homebrew 安装，需要手动编译安装。
+
+2. 安装编译依赖
+
+```bash
+brew install git make gcc
+```
+
+3. 编译安装 pgvector
+
+```bash
+git clone --branch v0.5.1 https://github.com/pgvector/pgvector.git
+cd pgvector
+export PG_CONFIG=/opt/homebrew/bin/pg_config  # Apple Silicon
+# export PG_CONFIG=/usr/local/bin/pg_config   # Intel Mac
+make
+make install
+```
+
+4. 验证安装
+
+```bash
+psql -d postgres -c "CREATE EXTENSION vector;"
+psql -d postgres -c "SELECT * FROM pg_extension WHERE extname = 'vector';"
+```
 
 ## 运维功能
 
