@@ -2,12 +2,14 @@ import authOptions from "@/app/(auth)/authOptions";
 import { validateInterviewShareToken } from "@/app/(interviewProject)/lib";
 import { Metadata } from "next";
 import { getServerSession } from "next-auth";
+import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { InviteInterviewClient } from "./InviteInterviewClient";
 
 export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("InterviewProject.shareInvite");
   return {
-    title: "Join Interview",
+    title: t("title"),
   };
 }
 

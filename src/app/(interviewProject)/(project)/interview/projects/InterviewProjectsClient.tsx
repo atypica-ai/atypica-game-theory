@@ -16,7 +16,6 @@ export function InterviewProjectsClient() {
   const locale = useLocale();
   const router = useRouter();
   const t = useTranslations("InterviewProject.projectsList");
-  const tErrors = useTranslations("InterviewProject.errors");
   const [projects, setProjects] = useState<
     ExtractServerActionData<typeof fetchUserInterviewProjects>
   >([]);
@@ -29,11 +28,11 @@ export function InterviewProjectsClient() {
       if (!result.success) throw result;
       setProjects(result.data);
     } catch (error) {
-      toast.error((error as Error).message || tErrors("loadProjectsFailed"));
+      toast.error((error as Error).message || t("loadFailed"));
     } finally {
       setLoading(false);
     }
-  }, [tErrors]);
+  }, [t]);
 
   useEffect(() => {
     loadProjects();

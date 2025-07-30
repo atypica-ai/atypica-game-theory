@@ -3,6 +3,7 @@ import { fetchInterviewSessionDetails } from "@/app/(interviewProject)/actions";
 import { throwServerActionError } from "@/lib/serverAction";
 import { prisma } from "@/prisma/prisma";
 import { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { InterviewSessionViewer } from "./InterviewSessionViewer";
@@ -25,8 +26,9 @@ const paramsSchema = z.object({
 });
 
 export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("InterviewProject.sessionViewer");
   return {
-    title: "Interview Session",
+    title: t("sessionTitle"),
   };
 }
 

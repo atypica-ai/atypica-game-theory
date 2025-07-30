@@ -41,7 +41,7 @@ export function InviteInterviewClient({
       router.push(`/interview/session/chat/${result.data.chatToken}`);
       toast.success(t("startInterview"));
     } catch (error) {
-      toast.error((error as Error).message || t("startingInterview"));
+      toast.error((error as Error).message || t("startInterviewError"));
     } finally {
       setTimeout(() => {
         setLoading(false);

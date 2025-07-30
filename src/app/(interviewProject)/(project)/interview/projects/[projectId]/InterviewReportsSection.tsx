@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { formatDate, formatDistanceToNow } from "@/lib/utils";
 import { ExternalLinkIcon, FileTextIcon, Loader2Icon, PlusIcon, RefreshCwIcon } from "lucide-react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -19,7 +19,7 @@ interface ReportItem {
 
 export function InterviewReportsSection({ projectId }: { projectId: number }) {
   const locale = useLocale();
-  // const t = useTranslations("InterviewProject.projectDetails");
+  const t = useTranslations("InterviewProject.reports");
   const [reports, setReports] = useState<ReportItem[]>([]);
   const [loadingReports, setLoadingReports] = useState(false);
   const [isReportDialogOpen, setIsReportDialogOpen] = useState<ReportItem | null>(null);
@@ -53,7 +53,7 @@ export function InterviewReportsSection({ projectId }: { projectId: number }) {
       setIsReportDialogOpen(result.data);
       loadReports();
     } catch (error) {
-      toast.error((error as Error).message || "Failed to generate report");
+      toast.error((error as Error).message || t("generateReportError"));
     } finally {
       setGeneratingReport(false);
     }
@@ -66,7 +66,7 @@ export function InterviewReportsSection({ projectId }: { projectId: number }) {
           {loadingReports ? (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-gray-100 mx-auto mb-4"></div>
-              <p className="text-gray-600 dark:text-gray-400">Loading reports...</p>
+              <p className="text-gray-600 dark:text-gray-400">{t("loadingReports")}</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -74,11 +74,9 @@ export function InterviewReportsSection({ projectId }: { projectId: number }) {
                 <div>
                   <h3 className="text-lg font-medium flex items-center">
                     <FileTextIcon className="h-5 w-5 mr-2" />
-                    Reports
+                    {t("title")}
                   </h3>
-                  <p className="text-sm text-muted-foreground">
-                    Generated analysis reports from interview sessions
-                  </p>
+                  <p className="text-sm text-muted-foreground">{t("description")}</p>
                 </div>
                 <div className="flex gap-2">
                   <Button
@@ -88,7 +86,7 @@ export function InterviewReportsSection({ projectId }: { projectId: number }) {
                     size="sm"
                   >
                     <RefreshCwIcon className={`h-4 w-4 ${loadingReports ? "animate-spin" : ""}`} />
-                    Refresh
+                    {t("refresh")}
                   </Button>
                   <Button
                     onClick={() => setShowConfirmDialog(true)}
@@ -96,7 +94,7 @@ export function InterviewReportsSection({ projectId }: { projectId: number }) {
                     size="sm"
                   >
                     <PlusIcon className="h-4 w-4" />
-                    {generatingReport ? "Generating..." : "Generate Report"}
+                    {generatingReport ? t("generating") : t("generateReport")}
                   </Button>
                 </div>
               </div>
@@ -105,11 +103,9 @@ export function InterviewReportsSection({ projectId }: { projectId: number }) {
                 <div className="text-center py-12 bg-muted/20 rounded-lg border-2 border-dashed">
                   <FileTextIcon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                   <h4 className="text-lg font-medium text-muted-foreground mb-2">
-                    No Reports Generated
+                    {t("noReportsGenerated")}
                   </h4>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Generate your first report to analyze interview insights
-                  </p>
+                  <p className="text-sm text-muted-foreground mb-4">{t("noReportsDescription")}</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -135,7 +131,8 @@ export function InterviewReportsSection({ projectId }: { projectId: number }) {
                           </div>
                           <div>
                             <h4 className="font-medium text-sm">
-                              Report #{report.token.slice(-8)}
+                              {t("reportNumber")}
+                              {report.token.slice(-8)}
                             </h4>
                             <p className="text-xs text-muted-foreground">
                               {formatDate(report.createdAt, locale)}
@@ -151,11 +148,11 @@ export function InterviewReportsSection({ projectId }: { projectId: number }) {
                       <div className="text-xs text-muted-foreground mb-3">
                         {report.generatedAt ? (
                           <span className="text-green-600 dark:text-green-400">
-                            ✓ Generated {formatDistanceToNow(report.generatedAt)} ago
+                            ✓ {t("generated")} {formatDistanceToNow(report.generatedAt)} {t("ago")}
                           </span>
                         ) : (
                           <span className="text-amber-600 dark:text-amber-400">
-                            ⏳ Generating...
+                            ⏳ {t("generating")}
                           </span>
                         )}
                       </div>
@@ -185,12 +182,9 @@ export function InterviewReportsSection({ projectId }: { projectId: number }) {
           <DialogHeader>
             <DialogTitle className="flex items-center">
               <Loader2Icon className="h-4 w-4 animate-spin mr-2" />
-              Generating Interview Report
+              {t("generatingReportTitle")}
             </DialogTitle>
-            <p className="text-sm text-muted-foreground">
-              Your report is being generated. You can close this dialog and check back later by
-              refreshing the reports list.
-            </p>
+            <p className="text-sm text-muted-foreground">{t("generatingReportDescription")}</p>
           </DialogHeader>
           {isReportDialogOpen && (
             <div className="flex-1 overflow-hidden">
@@ -202,9 +196,7 @@ export function InterviewReportsSection({ projectId }: { projectId: number }) {
             </div>
           )}
           <div className="flex justify-between items-center pt-4">
-            <div className="text-xs text-muted-foreground">
-              💡 Tip: Use the refresh button to check if your report is ready
-            </div>
+            <div className="text-xs text-muted-foreground">{t("refreshTip")}</div>
             <div className="flex gap-2">
               {isReportDialogOpen && (
                 <Button variant="outline" size="sm" asChild>
@@ -214,12 +206,12 @@ export function InterviewReportsSection({ projectId }: { projectId: number }) {
                     rel="noopener noreferrer"
                   >
                     <ExternalLinkIcon className="h-4 w-4 mr-2" />
-                    Open in New Tab
+                    {t("openInNewTab")}
                   </Link>
                 </Button>
               )}
               <Button variant="outline" size="sm" onClick={() => setIsReportDialogOpen(null)}>
-                Close
+                {t("close")}
               </Button>
             </div>
           </div>
@@ -230,24 +222,21 @@ export function InterviewReportsSection({ projectId }: { projectId: number }) {
       <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Generate Interview Report</DialogTitle>
-            <p className="text-sm text-muted-foreground">
-              Are you sure you want to generate a new interview report? This process may take
-              several minutes to complete.
-            </p>
+            <DialogTitle>{t("generateReportConfirmTitle")}</DialogTitle>
+            <p className="text-sm text-muted-foreground">{t("generateReportConfirmDescription")}</p>
           </DialogHeader>
           <div className="flex justify-end gap-2 pt-4">
             <Button variant="outline" onClick={() => setShowConfirmDialog(false)}>
-              Cancel
+              {t("cancel")}
             </Button>
             <Button onClick={handleGenerateReport} disabled={generatingReport}>
               {generatingReport ? (
                 <>
                   <Loader2Icon className="h-4 w-4 animate-spin mr-2" />
-                  Generating...
+                  {t("generating")}
                 </>
               ) : (
-                "Generate Report"
+                t("generateReport")
               )}
             </Button>
           </div>

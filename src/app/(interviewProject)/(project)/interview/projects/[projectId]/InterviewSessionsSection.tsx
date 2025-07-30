@@ -23,6 +23,7 @@ type InterviewSessionItem = ExtractServerActionData<typeof fetchInterviewSession
 export function InterviewSessionsSection({ projectId }: { projectId: number }) {
   const locale = useLocale();
   const t = useTranslations("InterviewProject.projectDetails");
+  const tSessions = useTranslations("InterviewProject.sessions");
   const [sessions, setSessions] = useState<InterviewSessionItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -70,17 +71,17 @@ export function InterviewSessionsSection({ projectId }: { projectId: number }) {
         {loading ? (
           <div className="text-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-gray-100 mx-auto mb-4"></div>
-            <p className="text-gray-600 dark:text-gray-400">Loading sessions...</p>
+            <p className="text-gray-600 dark:text-gray-400">{tSessions("loadingSessions")}</p>
           </div>
         ) : error ? (
           <div className="text-center py-8">
             <MessageSquareIcon className="h-12 w-12 text-red-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-red-600 dark:text-red-400 mb-2">
-              Error Loading Sessions
+              {tSessions("loadingError")}
             </h3>
             <p className="text-gray-600 dark:text-gray-400 mb-4">{error}</p>
             <Button onClick={loadSessions} variant="outline" size="sm">
-              Retry
+              {tSessions("retryButton")}
             </Button>
           </div>
         ) : sessions.length === 0 ? (

@@ -3,11 +3,13 @@ import { fetchInterviewSessionByChatToken } from "@/app/(interviewProject)/actio
 import { throwServerActionError } from "@/lib/serverAction";
 import { prisma } from "@/prisma/prisma";
 import { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { InterviewSessionChatClient } from "./InterviewSessionChatClient";
 
 export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("InterviewProject.sessionChat");
   return {
-    title: "Interview Session Chat",
+    title: t("interviewDetails"),
   };
 }
 

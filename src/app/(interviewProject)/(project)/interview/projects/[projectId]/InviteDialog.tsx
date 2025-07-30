@@ -25,7 +25,6 @@ export function InviteDialog({
   projectId: number;
 }) {
   const t = useTranslations("InterviewProject.projectDetails");
-  const tErrors = useTranslations("InterviewProject.errors");
   const [shareUrl, setShareUrl] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -37,11 +36,11 @@ export function InviteDialog({
       setShareUrl(`${window.location.origin}/interview/invite/${result.data.shareToken}`);
       // toast.success(t("generateShareLink"));
     } catch {
-      toast.error(tErrors("generateShareLinkFailed"));
+      toast.error(t("generateShareLinkFailed"));
     } finally {
       setLoading(false);
     }
-  }, [projectId]);
+  }, [projectId, t]);
 
   useEffect(() => {
     if (open) {
@@ -54,9 +53,9 @@ export function InviteDialog({
       await navigator.clipboard.writeText(shareUrl);
       toast.success(t("copySuccess"));
     } catch {
-      toast.error("Failed to copy link");
+      toast.error(t("copyLinkFailed"));
     }
-  }, [shareUrl]);
+  }, [shareUrl, t]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -72,7 +71,7 @@ export function InviteDialog({
               <div className="flex space-x-2">
                 <Input
                   id="share-url"
-                  value={loading ? "Loading..." : shareUrl}
+                  value={loading ? t("loading") : shareUrl}
                   readOnly
                   className="flex-1"
                 />

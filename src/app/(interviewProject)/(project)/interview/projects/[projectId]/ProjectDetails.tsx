@@ -24,7 +24,6 @@ export function ProjectDetails({
 }) {
   const locale = useLocale();
   const t = useTranslations("InterviewProject.projectDetails");
-  const tErrors = useTranslations("InterviewProject.errors");
   // const router = useRouter();
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [personaDialogOpen, setPersonaDialogOpen] = useState(false);
@@ -41,7 +40,7 @@ export function ProjectDetails({
         if (!result.success) throw result;
       }
     } catch (error) {
-      toast.error((error as Error).message || tErrors("createInterviewFailed"));
+      toast.error((error as Error).message || t("createInterviewFailed"));
     } finally {
       setCreatingPersonaSessions(false);
       window.location.reload();

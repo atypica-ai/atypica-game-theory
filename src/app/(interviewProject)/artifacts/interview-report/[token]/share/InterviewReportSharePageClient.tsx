@@ -2,12 +2,13 @@
 import GlobalHeader from "@/components/GlobalHeader";
 import { Button } from "@/components/ui/button";
 import { Share2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 export default function InterviewReportSharePageClient({ reportToken }: { reportToken: string }) {
-  // const t = useTranslations("InterviewProject.reportShare");
+  const t = useTranslations("InterviewProject.reportShare");
   const pathname = usePathname();
   const [isLoading, setIsLoading] = useState(true);
 
@@ -18,9 +19,9 @@ export default function InterviewReportSharePageClient({ reportToken }: { report
   const copyShareLink = useCallback(() => {
     const url = window.location.origin + pathname;
     navigator.clipboard.writeText(url).then(() => {
-      toast.success("Link copied to clipboard");
+      toast.success(t("copyLinkToClipboard"));
     });
-  }, [pathname]);
+  }, [pathname, t]);
 
   const handleIframeLoad = useCallback(() => {
     setIsLoading(false);
@@ -40,7 +41,7 @@ export default function InterviewReportSharePageClient({ reportToken }: { report
         <div className="flex gap-2">
           <Button variant="outline" size="sm" className="h-8 gap-1" onClick={copyShareLink}>
             <Share2 size={14} />
-            <span className="hidden sm:inline">Copy Link</span>
+            <span className="hidden sm:inline">{t("copyLink")}</span>
           </Button>
         </div>
       </GlobalHeader>
@@ -50,7 +51,7 @@ export default function InterviewReportSharePageClient({ reportToken }: { report
           <div className="absolute inset-0 flex items-center justify-center bg-background">
             <div className="flex flex-col items-center gap-4">
               <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
-              <div className="text-sm text-muted-foreground">Interview Report</div>
+              <div className="text-sm text-muted-foreground">{t("title")}</div>
             </div>
           </div>
         )}
@@ -63,7 +64,7 @@ export default function InterviewReportSharePageClient({ reportToken }: { report
       </div>
 
       <footer className="py-2 px-4 text-center text-xs text-muted-foreground border-t border-border">
-        <span>Report powered by atypica.AI</span>
+        <span>{t("poweredBy")}</span>
       </footer>
     </div>
   );

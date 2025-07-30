@@ -9,6 +9,7 @@ import { useCallback, useEffect, useState } from "react";
 
 export function ProjectStatsSection({ projectId }: { projectId: number }) {
   const t = useTranslations("InterviewProject.projectDetails");
+  const tStats = useTranslations("InterviewProject.statistics");
   const [stats, setStats] = useState<ExtractServerActionData<
     typeof fetchInterviewSessionStats
   > | null>(null);
@@ -59,9 +60,9 @@ export function ProjectStatsSection({ projectId }: { projectId: number }) {
         <Card className="md:col-span-3">
           <CardContent className="pt-6">
             <div className="text-center">
-              <p className="text-red-600 dark:text-red-400 mb-2">Failed to load statistics</p>
+              <p className="text-red-600 dark:text-red-400 mb-2">{tStats("failedToLoadStats")}</p>
               <Button onClick={loadStats} variant="outline" size="sm">
-                Retry
+                {tStats("retry")}
               </Button>
             </div>
           </CardContent>
