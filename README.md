@@ -47,22 +47,18 @@
 ```
 src/
   ├── app/                   # Next.js 页面和API路由
-  │   ├── study/             # 研究助手核心功能
-  │   │   ├── hooks/         # 研究状态管理
-  │   │   └── ToolConsole/   # 工具控制台组件
-  │   ├── analyst/           # 研究主题管理
-  │   ├── personas/          # 用户画像库
-  │   ├── interview/         # 访谈模拟
-  │   ├── scout/             # 用户发掘
-  │   └── auth/              # 用户认证
+  │   ├── (study)/           # 研究助手核心功能
+  │   ├── (agents)/          # 多 agent answer
+  │   ├── (persona)/         # 用户画像库
+  │   ├── (interviewProject)/# 访谈模拟
+  │   ├── (newStudy)/        # 用户发掘
+  │   └── (auth)/            # 用户认证
+  ├── ai/                    # ai service
   ├── components/            # UI组件
-  ├── data/                  # 数据存取服务
+  ├── hooks/                 # custom hooks
+  ├── i18n/                  # 国际化
   ├── lib/                   # 工具函数和配置
-  ├── tools/                 # AI工具函数
-  │   ├── experts/           # 专家工具集
-  │   ├── system/            # 系统工具集
-  │   └── xhs/               # 小红书API集成
-  └── prompt/                # 提示词模板
+  └── prisma/                # prisma service
 ```
 
 ## 本地开发
