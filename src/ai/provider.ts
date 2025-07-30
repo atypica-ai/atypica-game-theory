@@ -132,8 +132,43 @@ export function llm(modelName: LLMModelName, options?: any) {
   const deployRegion = getDeployRegion();
   if (deployRegion === "mainland") {
     switch (modelName) {
+      case "gpt-4o":
+      case "gpt-4.1":
+      case "gpt-4.1-mini":
+      case "gpt-4.1-nano":
+        if (process.env.AZURE_API_KEY) {
+          break;
+        } else {
+          return openai(modelName, options);
+        }
+      case "claude-3-7-sonnet":
+      case "claude-sonnet-4":
+        if (process.env.AWS_BEDROCK_ACCESS_KEY_ID) {
+          break;
+        } else {
+          return openai(modelName, options);
+        }
+      case "gemini-2.5-flash":
+      case "gemini-2.5-pro":
+        if (process.env.GOOGLE_VERTEX_PRIVATE_KEY) {
+          break;
+        } else {
+          return openai(modelName, options);
+        }
+      case "grok-4":
+      case "grok-3":
+      case "grok-3-mini":
+        if (process.env.XAI_API_KEY) {
+          break;
+        } else {
+          return openai(modelName, options);
+        }
       case "deepseek-v3":
       case "deepseek-r1":
+      // if (process.env.SILICONFLOW_API_KEY) {
+      //   break;
+      // }
+      case "qwen3-235b-a22b":
         return openai(modelName, options); // options 支持 parallelToolCalls 参数
     }
   }
