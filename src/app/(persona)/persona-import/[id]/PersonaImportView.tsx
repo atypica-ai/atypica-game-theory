@@ -152,8 +152,6 @@ export function PersonaImportView({
           <ProcessingStatus
             isProcessing={!personaAgentCompleted}
             isAnalyzing={!analysisCompleted}
-            analysis={analysis}
-            supplementaryQuestions={supplementaryQuestions}
             personas={personas}
             personaImportAnalysis={personaImport.analysis}
           />

@@ -1,6 +1,6 @@
 "use client";
 
-import { AnalysisResult, PersonaImportAnalysis } from "@/app/(persona)/types";
+import { PersonaImportAnalysis } from "@/app/(persona)/types";
 import { Persona } from "@/prisma/client";
 import {
   ActivityIcon,
@@ -14,8 +14,6 @@ import {
 interface ProcessingStatusProps {
   isProcessing: boolean;
   isAnalyzing: boolean;
-  analysis: AnalysisResult["analysis"] | undefined;
-  supplementaryQuestions: AnalysisResult["supplementaryQuestions"] | undefined;
   personas?: Persona[];
   personaImportAnalysis?: Partial<PersonaImportAnalysis> | null;
 }
@@ -23,14 +21,16 @@ interface ProcessingStatusProps {
 export function ProcessingStatus({
   isProcessing,
   isAnalyzing,
-  analysis,
-  supplementaryQuestions,
   personas,
   personaImportAnalysis,
 }: ProcessingStatusProps) {
+  // Extract analysis data from personaImportAnalysis
+  const analysis = personaImportAnalysis?.analysis;
+  const supplementaryQuestions = personaImportAnalysis?.supplementaryQuestions;
+
   // Determine actual completion status
   const personaAgentCompleted = Boolean(personas?.length);
-  const analysisCompleted = Boolean(personaImportAnalysis);
+  const analysisCompleted = Boolean(analysis && supplementaryQuestions);
   return (
     <div className="space-y-6">
       <div className="space-y-2">
@@ -116,8 +116,8 @@ export function ProcessingStatus({
               {analysisCompleted && (
                 <div className="text-xs text-slate-700 bg-slate-100 px-3 py-1 rounded flex items-center gap-2">
                   <div className="w-2 h-2 bg-green-500 rounded-full" />
-                  维度分析完成，总分：
-                  {(personaImportAnalysis?.analysis || analysis)?.totalScore ?? 0}/12
+                  维度分析完成，完整度：
+                  {Math.round(((analysis?.totalScore ?? 0) / (7 * 3)) * 100)}%
                 </div>
               )}
               {supplementaryQuestions && (

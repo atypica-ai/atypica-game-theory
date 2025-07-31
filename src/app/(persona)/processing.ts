@@ -38,6 +38,7 @@ export async function buildPersonaAgentPrompt(
   },
 ): Promise<void> {
   const locale = await getLocale();
+  const logger = rootLogger.child({ personaImportId: personaImport.id });
 
   try {
     const attachment = personaImport.attachments[0];
@@ -75,18 +76,15 @@ export async function buildPersonaAgentPrompt(
       //   console.log(step);
       // },
       onError: ({ error }) => {
-        rootLogger.error((error as Error).message);
+        logger.error((error as Error).message);
       },
     });
 
-    await response
-      .consumeStream()
-      .then(() => {})
-      .catch((error) => {
-        throw error;
-      });
+    await response.consumeStream();
+
+    logger.info("buildPersonaAgentPrompt completed");
   } catch (error) {
-    console.error("Error building persona agent prompt:", error);
+    logger.error(`buildPersonaAgentPrompt error: ${(error as Error).message}`);
     // Update PersonaImport with error in extra field
     await prisma.personaImport.update({
       where: { id: personaImport.id },
@@ -105,25 +103,28 @@ export async function analyzeInterviewCompleteness(
   },
 ): Promise<void> {
   const locale = await getLocale();
+  const logger = rootLogger.child({ personaImportId: personaImport.id });
 
   try {
     const attachment = personaImport.attachments[0];
     const { name: fileName, mimeType } = attachment;
     const dataUrl = await attachmentToDataUrl(attachment);
 
+    const messages: CoreMessage[] = [
+      {
+        role: "user",
+        content: [
+          { type: "text", text: "[READY]" },
+          { type: "file", filename: fileName, data: dataUrl, mimeType },
+        ],
+      },
+    ];
+
     const result = await generateObject({
-      model: llm("gemini-2.5-flash"),
+      model: llm("gemini-2.5-pro"),
       system: personaAnalysisPrompt({ locale }),
       schema: analysisSchema,
-      messages: [
-        {
-          role: "user",
-          content: [
-            { type: "text", text: "请分析以下PDF文件内容" },
-            { type: "file", filename: fileName, data: dataUrl, mimeType },
-          ],
-        },
-      ],
+      messages: messages,
     });
 
     // Update PersonaImport with the analysis results
@@ -131,8 +132,10 @@ export async function analyzeInterviewCompleteness(
       where: { id: personaImport.id },
       data: { analysis: result.object },
     });
+
+    logger.info(`analyzeInterviewCompleteness completed`);
   } catch (error) {
-    console.error("Error analyzing interview:", error);
+    logger.error(`analyzeInterviewCompleteness error: ${(error as Error).message}`);
     // Update PersonaImport with error in extra field
     await prisma.personaImport.update({
       where: { id: personaImport.id },
