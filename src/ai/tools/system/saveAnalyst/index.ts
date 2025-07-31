@@ -99,13 +99,7 @@ export interface SaveAnalystStudySummaryToolResult extends PlainTextToolResult {
   plainText: string;
 }
 
-export const saveAnalystStudySummaryTool = ({
-  studyUserChatId,
-  productRnD,
-}: {
-  studyUserChatId: number;
-  productRnD?: boolean;
-}) =>
+export const saveAnalystStudySummaryTool = ({ studyUserChatId }: { studyUserChatId: number }) =>
   tool({
     description:
       "Save an objective summary of the completed study methodology and process workflow for report generation",
@@ -113,9 +107,7 @@ export const saveAnalystStudySummaryTool = ({
       studySummary: z
         .string()
         .describe(
-          productRnD
-            ? "Comprehensively and thoroughly save the complete innovation research process, providing as detailed and comprehensive information as possible: original product key information, innovative product solutions, innovation sources and processes, consumer demand insights, target customer profiles, demand gap analysis, competitive analysis of original products, innovation solution uniqueness validation, and user feedback citations"
-            : "Objective documentation of study design, methodology steps, data collection process, and workflow execution (exclude conclusions or findings)",
+          "Objective documentation of study design, methodology steps, data collection process, and workflow execution (exclude conclusions or findings)",
         )
         .transform(fixMalformedUnicodeString),
     }),
@@ -134,6 +126,49 @@ export const saveAnalystStudySummaryTool = ({
       await prisma.analyst.update({
         where: { id: analystId },
         data: { studySummary },
+      });
+      return {
+        // analystId,
+        plainText: `Study summary saved successfully for analyst ${analystId}`,
+      };
+    },
+  });
+
+export const saveInnovationSummaryTool = ({ studyUserChatId }: { studyUserChatId: number }) =>
+  tool({
+    description:
+      "Save an objective summary of the completed study methodology and process workflow for report generation",
+    parameters: z.object({
+      studySummary: z
+        .string()
+        .describe(
+          "Comprehensively and thoroughly save the complete innovation research process, providing as detailed and comprehensive information as possible: original product key information, innovative product solutions, innovation sources and processes, consumer demand insights, target customer profiles, demand gap analysis, competitive analysis of original products, innovation solution uniqueness validation, and user feedback citations",
+        )
+        .transform(fixMalformedUnicodeString),
+      searchLog: z
+        .string()
+        .describe(
+          "I'd like to include a dedicated section in the report that explains the entire innovation process logic. This will help readers better connect with the solution and be convinced by it. The section should include four parts: ## Innovation Process Logic ### 1. Starting Point Describe in one sentence what product the user wants to innovate and what type of innovation it is. ### 2. Search Strategy Describe in one sentence what inspiration search strategy the final solution is based on. ### 3. Inspiration Describe in one sentence what the final inspiration point or reference product is, and why this inspiration point was chosen. ### 4. Innovation Present the formula: 'Original Product + Inspiration Point = Final Innovation Product' This structure will provide readers with a clear understanding of how we arrived at the innovative solution, making the proposal more compelling and easier to follow. In MD format, no emojis.",
+        )
+        .transform(fixMalformedUnicodeString),
+    }),
+    experimental_toToolResultContent: (result: PlainTextToolResult) => {
+      return [{ type: "text", text: result.plainText }];
+    },
+    execute: async ({ studySummary, searchLog }): Promise<SaveAnalystStudySummaryToolResult> => {
+      const { analyst } = await prisma.userChat.findUniqueOrThrow({
+        where: { id: studyUserChatId, kind: "study" },
+        select: { analyst: { select: { id: true } } },
+      });
+      if (!analyst) {
+        throw new Error("Something went wrong, analyst does not exist on studyUserChat");
+      }
+      const analystId = analyst.id;
+
+      const studySummaryWithSearchLog = `${studySummary}\n\n## Innovation Reasoning Process:\n${searchLog}`;
+      await prisma.analyst.update({
+        where: { id: analystId },
+        data: { studySummary: studySummaryWithSearchLog },
       });
       return {
         // analystId,

@@ -32,8 +32,10 @@ export const reportHTMLSystemProductRnD = ({ locale }: { locale: Locale }) =>
      - 3条核心竞争优势
      - （可选）1条主要风险提示
 
-2. **创新来源**
-   - 记录这个创新方案从原产品关键信息到发散到收敛的曲折过程，包含一些巧妙的细节，目的是向用户展示整个创新过程的巧妙和魅力
+2. **创新推理**
+  - 目的是用简洁和强逻辑的方式描述整个创新的流程逻辑，让读者能够更好的和这个方案connect，从而被说服.
+  - 根据提供的创新推理逻辑，用简洁同时逻辑性强地方式，用以下格式展示：
+  <div class="mb-12"> <h3 class="text-xl font-bold mb-4 serif border-b border-gray-300 pb-2">创新推理</h3> <div class="relative"> <div class="absolute left-8 top-0 bottom-0 w-0.5 bg-slate-600"></div> <div class="space-y-8"> <div class="flex items-center"> <div class="w-16 h-16 bg-slate-600 rounded-full flex items-center justify-center text-white font-bold text-xl relative z-10">1</div> <div class="ml-6 flex-1"> <div class="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-sm"> <strong class="text-blue-600">起点</strong>： </div> </div> </div> <div class="flex items-center"> <div class="w-16 h-16 bg-slate-600 rounded-full flex items-center justify-center text-white font-bold text-xl relative z-10">2</div> <div class="ml-6 flex-1"> <div class="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-sm"> <strong class="text-blue-600">搜索策略</strong>：</div> </div> </div> <div class="flex items-center"> <div class="w-16 h-16 bg-slate-600 rounded-full flex items-center justify-center text-white font-bold text-xl relative z-10">3</div> <div class="ml-6 flex-1"> <div class="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-sm"> <strong class="text-blue-600">灵感点</strong>：</div> </div> </div> <div class="flex items-center"> <div class="w-16 h-16 bg-emerald-600 rounded-full flex items-center justify-center text-white font-bold text-lg relative z-10">★</div> <div class="ml-6 flex-1"> <div class="bg-emerald-600 text-white rounded-lg p-4 shadow-lg"> <strong>创新成果</strong>：冻干双汇火腿新品 </div> </div> </div> </div> </div></div>
 
 3. **市场机会分析：消费者需求洞察**
    - 目标客群画像
@@ -87,6 +89,7 @@ export const reportHTMLSystemProductRnD = ({ locale }: { locale: Locale }) =>
 - 精心安排版面结构：信息密度较高，减少不必要留白，通过精准分组和对齐突出重点内容
 - 重点运用表格展示数据对比分析，通过加粗文字、框线突出等方式强调关键数字和重要发现
 - 禁止使用多种颜色、彩色卡片色块或装饰性边框，保持简洁克制的专业美学
+- 代码需要考虑到对移动端的适配，允许在移动端上板块从并行排列变成垂直排列避免板块被挤压
 
 【报告特点】
 1. 问题导向，直击痛点

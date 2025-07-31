@@ -6,7 +6,6 @@ import {
   audienceCallTool,
   generateReportTool,
   handleToolCallError,
-  saveAnalystStudySummaryTool,
   saveAnalystTool,
   scoutSocialTrendsTool,
   toolCallError,
@@ -28,6 +27,7 @@ import { Logger } from "pino";
 import { backgroundChatUntilCancel, raceForUserChat } from "./background";
 import { notifyReportCompletion, notifyStudyInterruption } from "./notify";
 import { outOfBalance, setBedrockCache } from "./studyAgentRequest";
+import { saveInnovationSummaryTool } from "@/ai/tools/system/saveAnalyst";
 
 const MAX_STEPS_EACH_ROUND = 15; // streamText 默认 15 步
 
@@ -74,10 +74,7 @@ export async function productRnDAgentRequest({
     [ToolName.saveAnalyst]: saveAnalystTool({ studyUserChatId, productRnD: true }),
     [ToolName.audienceCall]: audienceCallTool({ ...agentToolArgs }),
     [ToolName.scoutSocialTrends]: scoutSocialTrendsTool({ userId, ...agentToolArgs }),
-    [ToolName.saveAnalystStudySummary]: saveAnalystStudySummaryTool({
-      studyUserChatId,
-      productRnD: true,
-    }),
+    [ToolName.saveAnalystStudySummary]: saveInnovationSummaryTool({ studyUserChatId }),
     [ToolName.generateReport]: generateReportTool({ studyUserChatId, ...agentToolArgs }),
     [ToolName.toolCallError]: toolCallError,
   };
@@ -92,6 +89,7 @@ export async function productRnDAgentRequest({
       Object.entries(allTools).filter(([key]) =>
         [
           // ToolName.requestInteraction,
+          // ToolName.saveAnalystStudySummary,
           ToolName.generateReport,
           ToolName.toolCallError,
         ].includes(key as ToolName),
