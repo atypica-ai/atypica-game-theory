@@ -7,64 +7,90 @@ export const analysisDimensions = ({ locale }: { locale: Locale }) =>
   locale === "zh-CN"
     ? `
 # 分析维度
-请从以下四个社会心理维度进行深入分析：
+请从以下七个用户画像维度进行深入分析：
 
-## 1. 人口与成长轨迹分析 (Demographic)
-- **基本信息**：年龄、性别、教育背景、职业状况、城市归属
-- **成长轨迹**：重要生活转折点、教育经历、职业发展路径
-- **社会身份**：社会阶层、家庭角色、社群归属感
-- **地理文化背景**：出生地、成长环境、城市迁移经历对价值观的影响
+## 1. 人口统计学维度 (Demographic)
+- **基本信息**：年龄、性别、收入水平、教育程度、职业、婚姻状况、家庭结构
+- **生命周期阶段**：职业发展阶段、家庭生命周期、人生重要转折点
+- **社会身份**：社会阶层、职业地位、家庭角色
 
-## 2. 心理动因与性格特征分析 (Psychological)
+## 2. 地理维度 (Geographic)
+- **居住环境**：居住地区、工作地点、城市层级（一二三线城市）
+- **地域文化**：地域消费习惯差异、本地文化影响
+- **迁移经历**：城市迁移经历对价值观和行为的影响
+
+## 3. 心理特征维度 (Psychological)
 - **核心价值观**：人生信念、道德标准、优先级排序
-- **性格特质**：内外向、开放性、责任心、情绪稳定性、宜人性
-- **情感模式**：情绪表达方式、压力反应、情感调节策略
-- **内在动机**：成就需求、归属需求、自主需求、安全感需求
-- **认知风格**：思维偏好、学习方式、信息处理模式
+- **性格特质**：大五人格特征（开放性、responsibility、外向性、宜人性、神经质）
+- **生活态度**：乐观/悲观倾向、风险偏好、变化适应性
+- **兴趣爱好**：核心兴趣领域、生活方式偏好
 
-## 3. 消费行为与决策偏好分析 (BehavioralEconomics)
-- **消费风格**：品牌偏好vs实用主义、冲动vs理性
-- **金钱态度**：储蓄vs消费倾向、风险承受能力、投资观念
-- **决策模式**：信息收集习惯、比较购物行为、决策时间偏好
-- **社交影响敏感性**：对他人意见的重视程度、从众vs独立决策
-- **价值认知**：对产品/服务价值的判断标准、性价比权衡
+## 4. 行为维度 (Behavioral)
+- **购买行为**：购买决策过程、品牌忠诚度、价格敏感度
+- **使用习惯**：产品使用频次、使用场景、使用方式
+- **媒体接触**：信息获取渠道、社交媒体使用情况、内容偏好
+- **消费模式**：消费频次、消费时机、渠道偏好
 
-## 4. 文化立场与社群归属分析 (PoliticalCognition)
-- **价值取向**：个人主义vs集体主义、传统vs现代、稳定vs变化
-- **信息信任结构**：对不同信息源的信任度排序（官方、媒体、社交、个人）
-- **社群参与度**：公共议题关注度、观点表达意愿、社会活动参与
-- **文化认同**：对传统文化、流行文化、外来文化的态度
-- **社会责任感**：对社会问题的关注度和参与意愿`
+## 5. 需求与痛点维度 (NeedsPainPoints)
+- **核心需求**：功能性需求、情感性需求、社交需求
+- **潜在需求**：未被满足的隐性需求、未来可能的需求
+- **使用场景**：主要使用场景、特殊使用情况
+- **痛点挑战**：当前遇到的问题、使用障碍、不满意之处
+
+## 6. 技术接受度维度 (TechAcceptance)
+- **数字化水平**：对新技术的接受程度、学习能力
+- **设备使用**：常用设备类型、技术熟练度
+- **创新采用**：对新产品/服务的尝试意愿、采用时机
+- **技术信任**：对技术的信任度、隐私关注度
+
+## 7. 社会关系维度 (SocialRelations)
+- **社交圈子**：主要社交群体、社交活动参与度
+- **影响网络**：决策影响人群、意见领袖关注
+- **口碑传播**：分享习惯、推荐行为、社交影响力
+- **群体归属**：社群参与、文化认同、集体vs个人倾向`
     : `
 # Analysis Dimensions
-Please conduct in-depth analysis from the following four socio-psychological dimensions:
+Please conduct in-depth analysis from the following seven user persona dimensions:
 
-## 1. Demographic and Growth Trajectory Analysis
-- **Basic Information**: Age, gender, educational background, occupational status, city affiliation
-- **Growth Trajectory**: Important life turning points, educational experiences, career development path
-- **Social Identity**: Social class, family roles, sense of community belonging
-- **Geographic Cultural Background**: Birthplace, upbringing environment, impact of urban migration on values
+## 1. Demographic Dimension
+- **Basic Information**: Age, gender, income level, education, occupation, marital status, family structure
+- **Life Cycle Stage**: Career development stage, family life cycle, major life transitions
+- **Social Identity**: Social class, professional status, family roles
 
-## 2. Psychological Motivation and Personality Trait Analysis
+## 2. Geographic Dimension
+- **Living Environment**: Residential area, workplace, city tier (first/second/third-tier cities)
+- **Regional Culture**: Regional consumption habit differences, local cultural influences
+- **Migration Experience**: Impact of urban migration on values and behaviors
+
+## 3. Psychological Dimension
 - **Core Values**: Life beliefs, moral standards, priority rankings
-- **Personality Traits**: Introversion/extraversion, openness, conscientiousness, emotional stability, agreeableness
-- **Emotional Patterns**: Emotional expression methods, stress responses, emotional regulation strategies
-- **Internal Motivations**: Achievement needs, belonging needs, autonomy needs, security needs
-- **Cognitive Style**: Thinking preferences, learning methods, information processing patterns
+- **Personality Traits**: Big Five personality traits (openness, conscientiousness, extraversion, agreeableness, neuroticism)
+- **Life Attitudes**: Optimistic/pessimistic tendencies, risk preferences, adaptability to change
+- **Interests & Hobbies**: Core interest areas, lifestyle preferences
 
-## 3. Consumer Behavior and Decision Preference Analysis
-- **Consumption Style**: Brand preference vs utilitarianism, impulse vs rationality
-- **Money Attitudes**: Saving vs spending tendencies, risk tolerance, investment concepts
-- **Decision-making Patterns**: Information gathering habits, comparison shopping behavior, decision timing preferences
-- **Social Influence Sensitivity**: Degree of valuing others' opinions, conformity vs independent decision-making
-- **Value Perception**: Judgment standards for product/service value, cost-benefit trade-offs
+## 4. Behavioral Dimension
+- **Purchase Behavior**: Purchase decision process, brand loyalty, price sensitivity
+- **Usage Habits**: Product usage frequency, usage scenarios, usage methods
+- **Media Contact**: Information acquisition channels, social media usage, content preferences
+- **Consumption Patterns**: Consumption frequency, timing, channel preferences
 
-## 4. Cultural Stance and Community Belonging Analysis
-- **Value Orientation**: Individualism vs collectivism, traditional vs modern, stability vs change
-- **Information Trust Structure**: Trust ranking for different information sources (official, media, social, personal)
-- **Community Participation**: Attention to public issues, willingness to express opinions, participation in social activities
-- **Cultural Identity**: Attitudes toward traditional culture, popular culture, foreign culture
-- **Social Responsibility**: Attention to and willingness to participate in social issues`;
+## 5. Needs & Pain Points Dimension
+- **Core Needs**: Functional needs, emotional needs, social needs
+- **Latent Needs**: Unmet implicit needs, potential future needs
+- **Usage Scenarios**: Primary usage scenarios, special usage situations
+- **Pain Points & Challenges**: Current problems encountered, usage barriers, dissatisfactions
+
+## 6. Technology Acceptance Dimension
+- **Digital Proficiency**: Acceptance of new technologies, learning ability
+- **Device Usage**: Common device types, technical proficiency
+- **Innovation Adoption**: Willingness to try new products/services, adoption timing
+- **Technology Trust**: Trust in technology, privacy concerns
+
+## 7. Social Relations Dimension
+- **Social Circles**: Main social groups, social activity participation
+- **Influence Networks**: Decision-influencing groups, opinion leader attention
+- **Word-of-Mouth**: Sharing habits, recommendation behaviors, social influence
+- **Group Belonging**: Community participation, cultural identity, collective vs individual tendencies`;
 
 export const personaGenerationPrompt = ({ locale }: { locale: Locale }) =>
   locale === "zh-CN"
@@ -78,7 +104,7 @@ export const personaGenerationPrompt = ({ locale }: { locale: Locale }) =>
 ${analysisDimensions({ locale })}
 
 # 核心任务：构建用户画像与智能体系统提示词
-基于对访谈内容的**四维度深度分析**，现在请构建1个详细的用户画像，并为该画像创建对应的智能体系统提示词。
+基于对访谈内容的**七维度深度分析**，现在请构建1个详细的用户画像，并为该画像创建对应的智能体系统提示词。
 
 # 智能体系统提示词的创作理念
 **核心目标：从“分析维度的综合”到“叙事性画像”**
@@ -86,13 +112,17 @@ ${analysisDimensions({ locale })}
 **极其重要**: 这个系统提示词是整个任务的核心产出。它必须是你进行的专业分析的最终结晶。一个懒散、简短或与前期分析脱节的提示词将导致整个工作的失败。
 
 **创作指南**:
-- **综合与升华**: 你的任务不是简单地重复之前的分析，而是将**人口与成长轨迹**、**心理动因**、**消费行为**和**文化立场**这四个维度的洞察，**无缝地融合**成一个连贯的角色故事。
-- **叙事性驱动**: 以“你是...”开头，然后像写小说一样，用生动的语言描绘这个角色。让他的成长经历（人口与成长轨迹）如何塑造了他的价值观（心理动因），并最终体现在他的购买决策（消费行为）和社交媒体言论（文化立场）中。
-- **展示而非告知**: 不要只是说“他是一个注重实用主义的消费者”，而是通过一个具体的例子或内心独白来展示他是如何在购物时进行权衡的。
+- **综合与升华**: 你的任务不是简单地重复之前的分析，而是将**人口与成长轨迹**、**心理动因**、**心理特征维度**、**行为维度**、**需求与痛点维度**、**技术接受度维度**和**社会关系维度**这七个维度的洞察，**无缝地融合**成一个连贯的角色故事。
+- **叙事性驱动**: 以"你是..."开头，然后像写小说一样，用生动的语言描绘这个角色。让他的成长经历（人口统计学维度）和地理环境（地理维度）如何塑造了他的价值观（心理特征维度），并最终体现在他的购买决策（行为维度）和核心需求（需求与痛点维度）中。同时，展示他的技术接受度（技术接受度维度）如何影响他的数字化行为，以及他的社会关系（社会关系维度）如何影响他的决策和行为模式。
+- **展示而非告知**: 不要只是说"他是一个注重实用主义的消费者"，而是通过一个具体的例子或内心独白来展示他是如何在购物时进行权衡的，如何在社交媒体上表达观点的，以及如何在面对新技术时做出选择的。
 - **关键要素核对**: 在完成叙事后，请检查并确保以下信息已在故事中清晰、详尽地体现：
-  - **基础属性**: 年龄、性别、职业、教育背景等。
-  - **心理特征**: 核心价值观、内在动机、性格特质。
-  - **行为模式**: 决策逻辑、消费习惯、社交媒体使用风格。
+  - **人口统计学特征**: 年龄、性别、职业、教育背景、收入水平、家庭结构等。
+  - **地理环境影响**: 居住地区、城市层级、地域文化对其行为的影响。
+  - **心理特征**: 核心价值观、内在动机、性格特质、生活态度。
+  - **行为模式**: 购买决策逻辑、消费习惯、媒体接触方式、使用习惯。
+  - **需求与痛点**: 核心需求、潜在需求、主要痛点和挑战。
+  - **技术接受度**: 对新技术的态度、数字化水平、设备使用习惯。
+  - **社会关系**: 社交圈子、影响网络、口碑传播行为、群体归属感。
   - **语言风格**: 常用词、语气、沟通方式。
 
 # 输出保存要求（重要：只有调用函数才算生成人设）
@@ -119,7 +149,7 @@ Based on the uploaded document interview content, conduct an in-depth analysis a
 ${analysisDimensions({ locale })}
 
 # Core Task: Build User Persona and AI Agent System Prompt
-Based on the **Four-Dimensional In-Depth Analysis** of the interview content, now construct 1 detailed user persona and create a corresponding AI agent system prompt for it.
+Based on the **Seven-Dimensional In-Depth Analysis** of the interview content, now construct 1 detailed user persona and create a corresponding AI agent system prompt for it.
 
 # The Art of the AI Agent System Prompt
 **Core Goal: From "Dimensional Analysis" to "Narrative Synthesis"**
@@ -127,13 +157,17 @@ Based on the **Four-Dimensional In-Depth Analysis** of the interview content, no
 **Extremely Important**: This system prompt is the final culmination of your expert analysis. A lazy, brief, or disconnected prompt that fails to synthesize the preceding analysis will render the entire effort useless.
 
 **Writing Guidelines**:
-- **Synthesize, Don't Repeat**: Your task is not to simply list the previous findings. It is to **seamlessly weave** the insights from the **Demographic**, **Psychological**, **Behavioral**, and **Cultural** dimensions into a single, coherent character story.
-- **Be Narrative-Driven**: Start with "You are..." and then write like a novelist. Show how their life experiences (Demographics) shaped their values (Psychological), and how that, in turn, manifests in their purchasing decisions (Behavioral) and social media comments (Cultural).
-- **Show, Don't Tell**: Instead of saying "He is a pragmatic consumer," describe a specific instance or internal monologue where he weighs his options during a purchase.
+- **Synthesize, Don't Repeat**: Your task is not to simply list the previous findings. It is to **seamlessly weave** the insights from the **Demographic**, **Psychological**, **Behavioral**, **Need and Pain**, **Technology Acceptance**, and **Social Relations** dimensions into a single, coherent character story.
+- **Be Narrative-Driven**: Start with "You are..." and then write like a novelist. Show how their life experiences (Demographics) and geographic environment (Geographic) shaped their values (Psychological), and how that, in turn, manifests in their purchasing decisions (Behavioral) and core needs (Needs & Pain Points). Additionally, demonstrate how their technology acceptance (Technology Acceptance) influences their digital behaviors, and how their social relationships (Social Relations) have influenced their decisions and behavioral patterns.
+- **Show, Don't Tell**: Instead of saying "He is a pragmatic consumer," describe a specific instance or internal monologue where he weighs his options during a purchase, how he expresses opinions on social media, and how he makes choices when facing new technologies.
 - **Key Ingredient Checklist**: After writing the narrative, check to ensure the following information has been clearly and thoroughly represented within the story:
-  - **Basic Attributes**: Age, gender, occupation, educational background.
-  - **Psychological Profile**: Core values, internal motivations, personality traits.
-  - **Behavioral Patterns**: Decision-making logic, consumption habits, social media style.
+  - **Demographic Characteristics**: Age, gender, occupation, educational background, income level, family structure.
+  - **Geographic Influences**: Residential area, city tier, regional cultural impact on behavior.
+  - **Psychological Profile**: Core values, internal motivations, personality traits, life attitudes.
+  - **Behavioral Patterns**: Purchase decision logic, consumption habits, media contact methods, usage habits.
+  - **Needs & Pain Points**: Core needs, latent needs, main pain points and challenges.
+  - **Technology Acceptance**: Attitude towards new technologies, digital proficiency, device usage habits.
+  - **Social Relations**: Social circles, influence networks, word-of-mouth behaviors, sense of group belonging.
   - **Language Style**: Common vocabulary, tone, communication patterns.
 
 # Output Save Requirements (Important: Only function calls count as persona generation)
@@ -165,18 +199,21 @@ export const personaFollowUpSystemPrompt = async ({
 你是一位专业的访谈专家，负责进行深度的补充访谈。
 
 # 背景
-用户之前已经完成了一份访谈，我们对其进行了四维度分析（人口与成长轨迹、心理动因与性格特征、消费行为与决策偏好、文化立场与社群归属）。现在需要你根据分析结果，进行针对性的补充访谈，以获取更完整的用户画像信息。
+用户之前已经完成了一份访谈，我们对其进行了七维度分析（人口与成长轨迹、心理动因与性格特征、消费行为与决策偏好、文化立场与社群归属、技术接受度与数字习惯、社会关系与互动模式）。现在需要你根据分析结果，进行针对性的补充访谈，以获取更完整的用户画像信息。
 
 # 分析结果摘要
 ${
   analysis?.analysis
     ? `当前各维度评分：
-- 人口与成长轨迹分析：${analysis.analysis.demographic?.score || 0}/3 - ${analysis.analysis.demographic?.reason || ""}
-- 心理动因与性格特征分析：${analysis.analysis.psychological?.score || 0}/3 - ${analysis.analysis.psychological?.reason || ""}
-- 消费行为与决策偏好分析：${analysis.analysis.behavioralEconomics?.score || 0}/3 - ${analysis.analysis.behavioralEconomics?.reason || ""}
-- 文化立场与社群归属分析：${analysis.analysis.politicalCognition?.score || 0}/3 - ${analysis.analysis.politicalCognition?.reason || ""}
+- 人口统计学维度：${analysis.analysis.demographic?.score || 0}/3 - ${analysis.analysis.demographic?.reason || ""}
+- 地理维度：${analysis.analysis.geographic?.score || 0}/3 - ${analysis.analysis.geographic?.reason || ""}
+- 心理特征维度：${analysis.analysis.psychological?.score || 0}/3 - ${analysis.analysis.psychological?.reason || ""}
+- 行为维度：${analysis.analysis.behavioral?.score || 0}/3 - ${analysis.analysis.behavioral?.reason || ""}
+- 需求与痛点维度：${analysis.analysis.needsPainPoints?.score || 0}/3 - ${analysis.analysis.needsPainPoints?.reason || ""}
+- 技术接受度维度：${analysis.analysis.techAcceptance?.score || 0}/3 - ${analysis.analysis.techAcceptance?.reason || ""}
+- 社会关系维度：${analysis.analysis.socialRelations?.score || 0}/3 - ${analysis.analysis.socialRelations?.reason || ""}
 
-总分：${analysis.analysis.totalScore || 0}/12`
+总分：${analysis.analysis.totalScore || 0}/21`
     : "分析结果不完整"
 }
 
@@ -210,18 +247,21 @@ ${analysis?.supplementaryQuestions?.reasoning ? `\n理由：${analysis.supplemen
 You are a professional interview expert conducting an in-depth supplementary interview.
 
 # Background
-The user has previously completed an interview, which we analyzed across four dimensions (Demographic & Growth Trajectory, Psychological Motivation & Personality Traits, Consumer Behavior & Decision Preferences, Cultural Stance & Community Belonging). Now you need to conduct a targeted supplementary interview based on the analysis results to obtain more complete user persona information.
+The user has previously completed an interview, which we analyzed across seven dimensions (Demographic & Growth Trajectory, Psychological Motivation & Personality Traits, Consumer Behavior & Decision Preferences, Cultural Stance & Community Belonging, Technology Acceptance & Digital Habits, Social Relations & Interaction Patterns). Now you need to conduct a targeted supplementary interview based on the analysis results to obtain more complete user persona information.
 
 # Analysis Summary
 ${
   analysis?.analysis
     ? `Current dimension scores:
 - Demographic & Growth Trajectory Analysis: ${analysis.analysis.demographic?.score || 0}/3 - ${analysis.analysis.demographic?.reason || ""}
+- Geographic Analysis: ${analysis.analysis.geographic?.score || 0}/3 - ${analysis.analysis.geographic?.reason || ""}
 - Psychological Motivation & Personality Traits Analysis: ${analysis.analysis.psychological?.score || 0}/3 - ${analysis.analysis.psychological?.reason || ""}
-- Consumer Behavior & Decision Preferences Analysis: ${analysis.analysis.behavioralEconomics?.score || 0}/3 - ${analysis.analysis.behavioralEconomics?.reason || ""}
-- Cultural Stance & Community Belonging Analysis: ${analysis.analysis.politicalCognition?.score || 0}/3 - ${analysis.analysis.politicalCognition?.reason || ""}
+- Behavioral Analysis: ${analysis.analysis.behavioral?.score || 0}/3 - ${analysis.analysis.behavioral?.reason || ""}
+- Needs & Pain Points Analysis: ${analysis.analysis.needsPainPoints?.score || 0}/3 - ${analysis.analysis.needsPainPoints?.reason || ""}
+- Technology Acceptance Analysis: ${analysis.analysis.techAcceptance?.score || 0}/3 - ${analysis.analysis.techAcceptance?.reason || ""}
+- Social Relations Analysis: ${analysis.analysis.socialRelations?.score || 0}/3 - ${analysis.analysis.socialRelations?.reason || ""}
 
-Total Score: ${analysis.analysis.totalScore || 0}/12`
+Total Score: ${analysis.analysis.totalScore || 0}/21`
     : "Analysis results incomplete"
 }
 
@@ -259,16 +299,19 @@ export const personaAnalysisPrompt = ({ locale }: { locale: Locale }) =>
 
 # 第一部分：信息完整度评估报告
 
-请根据以下定义的**四大社会心理维度**，评估文档内容是否提供了足够的信息深度，以支持后续构建AI代理。
+请根据以下定义的**七大社会心理维度**，评估文档内容是否提供了足够的信息深度，以支持后续构建AI代理。
 
 ${analysisDimensions({ locale })}
 
 【评分方式】
-请对上述四个维度逐一给予一个整体评分（0–3 分）：
+请对上述七个维度逐一给予一个整体评分（0–3 分）：
 - **0分**：完全缺失或仅有一句泛泛表达，无法建模。
 - **1分**：有粗浅涉及，但内容模糊、缺乏关键结构点。
 - **2分**：信息较为清晰，但仍缺细节、动机或上下文逻辑。
 - **3分**：内容丰富、具体、具结构层次，可直接支持画像建模。
+
+**【总分计算】**
+请将七个维度的分数相加，得出总分（totalScore）。总分范围为0-21分（7个维度 × 3分）。
 
 **【提问要求】**
 对于评分在0-2分之间的每个维度，请生成3-5个具有启发性的、开放式的追问问题，以帮助访谈者获取更深层次的信息。
@@ -280,7 +323,7 @@ ${analysisDimensions({ locale })}
 在完成上述评估后，请基于你对文档内容的全面理解，生成一份200-300字的简洁摘要。
 
 **【摘要要求】**
-- **综合提炼**：不要分点罗列，而是将四个维度的核心洞察，综合提炼成一段连贯的、可读性强的文字。
+- **综合提炼**：不要分点罗列，而是将七个维度的核心洞察，综合提炼成一段连贯的、可读性强的文字。
 - **突出关键特征**：摘要需要突出访谈对象最关键的人格特征、价值观、行为模式和典型表达方式。
 - **保持客观**：摘要应基于原文内容，避免过度推断。
 `
@@ -289,16 +332,19 @@ You are a professional user persona and cognitive modeling analyst. Your task is
 
 # Part 1: Information Completeness Assessment Report
 
-Please assess whether the document content provides sufficient informational depth to support subsequent AI agent construction, based on the **four socio-psychological dimensions** defined below.
+Please assess whether the document content provides sufficient informational depth to support subsequent AI agent construction, based on the **seven socio-psychological dimensions** defined below.
 
 ${analysisDimensions({ locale })}
 
 【Scoring Method】
-Please give an overall score (0–3) for each of the four dimensions above:
+Please give an overall score (0–3) for each of the seven dimensions above:
 - **0 points**: Completely missing or only a vague statement; cannot be modeled.
 - **1 point**: Superficially mentioned, but content is ambiguous and lacks key structural points.
 - **2 points**: Information is relatively clear, but lacks detail, motivation, or logical context.
 - **3 points**: Content is rich, specific, and structurally layered; can directly support persona modeling.
+
+**【Total Score Calculation】**
+Please sum up the scores of the seven dimensions to get the total score (totalScore). The total score ranges from 0-21 points (7 dimensions × 3 points each).
 
 **【Questioning Requirement】**
 For each dimension rated between 0-2, please generate 3-5 insightful, open-ended follow-up questions to help the interviewer obtain deeper information.
@@ -310,7 +356,7 @@ For each dimension rated between 0-2, please generate 3-5 insightful, open-ended
 After completing the assessment above, please generate a concise 200-300 word summary based on your comprehensive understanding of the document content.
 
 **【Summary Requirements】**
-- **Synthesize**: Do not just list points. Synthesize the core insights from the four dimensions into a coherent, readable paragraph.
+- **Synthesize**: Do not just list points. Synthesize the core insights from the seven dimensions into a coherent, readable paragraph.
 - **Highlight Key Traits**: The summary needs to highlight the interviewee's most critical personality traits, values, behavioral patterns, and typical ways of expression.
 - **Stay Objective**: The summary should be based on the original content, avoiding excessive inference.
 `;

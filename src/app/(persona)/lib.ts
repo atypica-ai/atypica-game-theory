@@ -9,7 +9,7 @@ import { generateObject } from "ai";
 import { Locale } from "next-intl";
 import { getLocale } from "next-intl/server";
 import { personaScoringPrompt } from "./prompt";
-import { personaScoringSchema } from "./types";
+import { personaScoringSchema, PersonaTier } from "./types";
 
 export async function createPersonaWithPostProcess({
   name,
@@ -85,9 +85,11 @@ export async function scorePersona(persona: Persona) {
     if (persona.personaImportId) {
       await prisma.persona.update({
         where: { id: persona.id },
-        data: { tier: 2 },
+        data: { tier: PersonaTier.Tier3 },
       });
-      rootLogger.info(`Persona ${persona.id} scored with tier 2 due to personaImportId.`);
+      rootLogger.info(
+        `Persona ${persona.id} scored with tier ${PersonaTier.Tier3} due to personaImportId.`,
+      );
       return;
     }
 
@@ -105,9 +107,20 @@ export async function scorePersona(persona: Persona) {
       ],
     });
 
-    const { demographic, psychological, behavioralEconomics, politicalCognition } = result.object;
-    const totalScore = demographic + psychological + behavioralEconomics + politicalCognition;
-    const tier = totalScore >= 4 ? 1 : 0;
+    const totalScore =
+      result.object.demographic +
+      result.object.geographic +
+      result.object.psychological +
+      result.object.behavioral +
+      result.object.needsPainPoints +
+      result.object.techAcceptance +
+      result.object.socialRelations;
+    const tier =
+      totalScore >= 6
+        ? PersonaTier.Tier2 // 接近真人，更高级的智能体
+        : totalScore >= 4
+          ? PersonaTier.Tier1 // 超出平均，高质量的合成智能体
+          : PersonaTier.Tier0;
 
     await prisma.persona.update({
       where: { id: persona.id },

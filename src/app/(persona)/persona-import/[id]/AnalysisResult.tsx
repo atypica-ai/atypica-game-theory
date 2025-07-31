@@ -2,11 +2,14 @@
 
 import { Badge } from "@/components/ui/badge";
 import {
+  AlertCircleIcon,
   BarChart3Icon,
   BrainIcon,
   FileTextIcon,
-  ScaleIcon,
+  MapPinIcon,
+  SmartphoneIcon,
   TargetIcon,
+  Users2Icon,
   UsersIcon,
 } from "lucide-react";
 import { useMemo } from "react";
@@ -42,14 +45,20 @@ export function AnalysisResult({ analysis }: AnalysisResultProps) {
 
   const getDimensionIcon = (dimension: string) => {
     switch (dimension) {
-      case "Demographic":
+      case "demographic":
         return <UsersIcon className="size-4" />;
-      case "Psychological":
+      case "geographic":
+        return <MapPinIcon className="size-4" />;
+      case "psychological":
         return <BrainIcon className="size-4" />;
-      case "BehavioralEconomics":
+      case "behavioral":
         return <TargetIcon className="size-4" />;
-      case "PoliticalCognition":
-        return <ScaleIcon className="size-4" />;
+      case "needsPainPoints":
+        return <AlertCircleIcon className="size-4" />;
+      case "techAcceptance":
+        return <SmartphoneIcon className="size-4" />;
+      case "socialRelations":
+        return <Users2Icon className="size-4" />;
       default:
         return <FileTextIcon className="size-4" />;
     }
@@ -58,13 +67,19 @@ export function AnalysisResult({ analysis }: AnalysisResultProps) {
   const getDimensionName = (dimension: string) => {
     switch (dimension) {
       case "demographic":
-        return "人口与成长轨迹分析";
+        return "人口统计学维度";
+      case "geographic":
+        return "地理维度";
       case "psychological":
-        return "心理动因与性格特征分析";
-      case "behavioralEconomics":
-        return "消费行为与决策偏好分析";
-      case "politicalCognition":
-        return "文化立场与社群归属分析";
+        return "心理特征维度";
+      case "behavioral":
+        return "行为维度";
+      case "needsPainPoints":
+        return "需求与痛点维度";
+      case "techAcceptance":
+        return "技术接受度维度";
+      case "socialRelations":
+        return "社会关系维度";
       default:
         return dimension;
     }
@@ -73,12 +88,21 @@ export function AnalysisResult({ analysis }: AnalysisResultProps) {
   const radarData = useMemo(() => {
     if (!analysis) return [];
     return [
-      { subject: "人口背景", score: analysis.demographic?.score ?? 0, fullMark: 3 },
+      { subject: "人口统计", score: analysis.demographic?.score ?? 0, fullMark: 3 },
+      { subject: "地理环境", score: analysis.geographic?.score ?? 0, fullMark: 3 },
       { subject: "心理特征", score: analysis.psychological?.score ?? 0, fullMark: 3 },
-      { subject: "消费行为", score: analysis.behavioralEconomics?.score ?? 0, fullMark: 3 },
-      { subject: "文化立场", score: analysis.politicalCognition?.score ?? 0, fullMark: 3 },
+      { subject: "行为模式", score: analysis.behavioral?.score ?? 0, fullMark: 3 },
+      { subject: "需求痛点", score: analysis.needsPainPoints?.score ?? 0, fullMark: 3 },
+      { subject: "技术接受", score: analysis.techAcceptance?.score ?? 0, fullMark: 3 },
+      { subject: "社会关系", score: analysis.socialRelations?.score ?? 0, fullMark: 3 },
     ];
   }, [analysis]);
+
+  // Calculate percentage score
+  const totalScore = analysis?.totalScore ?? 0;
+  const maxScore = 21; // 7 dimensions × 3 points each
+  const percentageScore = Math.round((totalScore / maxScore) * 100);
+  const baselinePercentage = 50;
 
   if (!analysis) return null;
 
@@ -151,26 +175,40 @@ export function AnalysisResult({ analysis }: AnalysisResultProps) {
         <div className="p-4 bg-white rounded-lg border border-slate-200">
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-medium text-slate-900">整体分析评分</h3>
+              <h3 className="text-sm font-medium text-slate-900">智能体完整度</h3>
               <Badge variant="outline" className="text-sm px-3 py-1">
-                {analysis.totalScore ?? 0} / 12
+                {percentageScore}%
               </Badge>
             </div>
-            <div className="w-full bg-slate-100 rounded-full h-2">
+            <div className="relative w-full bg-slate-100 rounded-full h-3">
+              {/* Baseline indicator */}
               <div
-                className="h-full bg-slate-900 rounded-full transition-all duration-500"
-                style={{ width: `${((analysis.totalScore ?? 0) / 12) * 100}%` }}
+                className="absolute top-0 w-0.5 h-3 bg-red-400 z-10"
+                style={{ left: `${baselinePercentage}%` }}
               />
+              <div
+                className="h-full bg-gradient-to-r from-slate-600 to-slate-900 rounded-full transition-all duration-500 relative"
+                style={{ width: `${percentageScore}%` }}
+              >
+                {/* Score indicator */}
+                <div className="absolute -top-1 -right-1 w-2 h-2 bg-slate-900 rounded-full" />
+              </div>
             </div>
-            <p className="text-xs text-slate-600">
-              {(analysis.totalScore ?? 0) >= 9
-                ? "各维度覆盖度优秀，信息全面深入"
-                : (analysis.totalScore ?? 0) >= 6
-                  ? "覆盖度良好，部分维度可进一步优化"
-                  : (analysis.totalScore ?? 0) >= 3
-                    ? "覆盖度一般，需要重点补充关键信息"
-                    : "覆盖度不足，需要大量补充各维度信息"}
-            </p>
+            <div className="flex justify-between items-center text-xs">
+              <span className="text-slate-600">
+                {percentageScore >= 80
+                  ? "各维度覆盖度优秀，信息全面深入"
+                  : percentageScore >= 65
+                    ? "覆盖度良好，部分维度可进一步优化"
+                    : percentageScore >= baselinePercentage
+                      ? "覆盖度达到基准线，需要重点补充关键信息"
+                      : "覆盖度低于基准线，需要大量补充各维度信息"}
+              </span>
+              <span className="text-red-500 text-xs flex items-center gap-1">
+                <div className="w-1 h-1 bg-red-400 rounded-full" />
+                基准线 {baselinePercentage}%
+              </span>
+            </div>
           </div>
         </div>
 

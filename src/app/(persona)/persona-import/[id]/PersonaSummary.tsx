@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Persona } from "@/prisma/client";
 import { BrainIcon, MessageCircleIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { createOrGetUserPersonaChat } from "../../actions";
 
@@ -12,21 +12,25 @@ export function PersonaSummary({ personas }: { personas: Persona[] }) {
   const router = useRouter();
   const [chatCreating, setChatCreating] = useState<Record<number, boolean>>({});
 
-  const handleStartChat = async (personaId: number) => {
-    setChatCreating((prev) => ({ ...prev, [personaId]: true }));
-    try {
-      const result = await createOrGetUserPersonaChat(personaId);
-      if (!result.success) {
-        throw new Error(result.message);
+  const handleStartChat = useCallback(
+    async (personaId: number) => {
+      setChatCreating((prev) => ({ ...prev, [personaId]: true }));
+      try {
+        const result = await createOrGetUserPersonaChat(personaId);
+        if (!result.success) {
+          throw new Error(result.message);
+        }
+        router.push(`/persona-chat/${result.data.token}`);
+      } catch (error) {
+        console.error("Failed to start chat:", error);
+        toast.error("Failed to start chat");
+      } finally {
+        setChatCreating((prev) => ({ ...prev, [personaId]: false }));
       }
-      router.push(`/persona-chat/${result.data.token}`);
-    } catch (error) {
-      console.error("Failed to start chat:", error);
-      toast.error("Failed to start chat");
-    } finally {
-      setChatCreating((prev) => ({ ...prev, [personaId]: false }));
-    }
-  };
+    },
+    [router],
+  );
+
   return (
     <div className="space-y-4">
       <div className="space-y-2">
@@ -36,17 +40,12 @@ export function PersonaSummary({ personas }: { personas: Persona[] }) {
           </div>
           生成的用户画像
         </h2>
-        <p className="text-slate-600 ml-9 text-sm">
-          基于内容生成的AI对话角色，共 {personas.length} 个
-        </p>
+        <p className="text-slate-600 ml-9 text-sm">基于内容生成的AI对话角色</p>
       </div>
 
       <div className="grid gap-3">
         {personas.map((persona) => (
-          <div
-            key={persona.id}
-            className="p-4 bg-slate-50 rounded-lg border border-slate-200 hover:bg-slate-100 transition-colors"
-          >
+          <div key={persona.id} className="p-4 bg-slate-50 rounded-lg border border-slate-200">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div>
@@ -64,7 +63,6 @@ export function PersonaSummary({ personas }: { personas: Persona[] }) {
                   {chatCreating[persona.id] ? "启动中..." : "开始对话"}
                 </Button>
               </div>
-
               <div className="flex flex-wrap gap-1">
                 {(persona.tags as string[]).map((tag, tagIndex) => (
                   <span
@@ -74,6 +72,11 @@ export function PersonaSummary({ personas }: { personas: Persona[] }) {
                     {tag}
                   </span>
                 ))}
+              </div>
+              <div className="mt-2">
+                <div className="border p-2 rounded-sm text-xs whitespace-pre-wrap">
+                  {persona.prompt}
+                </div>
               </div>
             </div>
           </div>
