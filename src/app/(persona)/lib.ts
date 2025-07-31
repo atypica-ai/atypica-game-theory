@@ -29,18 +29,34 @@ export async function createPersonaWithPostProcess({
   scoutUserChatId?: number;
   personaImportId?: number;
 }) {
-  const persona = await prisma.persona.create({
-    data: {
-      name,
-      source,
-      tags,
-      samples: [],
-      prompt,
-      locale,
-      scoutUserChatId,
-      personaImportId,
-    },
-  });
+  const data = {
+    name,
+    source,
+    tags,
+    samples: [],
+    prompt,
+    locale,
+    scoutUserChatId,
+    personaImportId,
+  };
+  let persona: Persona | null = null;
+  // 通过 personaImport 导入的 persona，只创建一个，只更新不重新创建
+  if (personaImportId) {
+    persona = await prisma.persona.findFirst({
+      where: { personaImportId },
+      orderBy: { id: "desc" },
+    });
+  }
+  if (persona) {
+    persona = await prisma.persona.update({
+      where: { id: persona.id },
+      data: data,
+    });
+  } else {
+    persona = await prisma.persona.create({
+      data: data,
+    });
+  }
   await Promise.all([createPersonaEmbedding(persona), scorePersona(persona)]);
 
   return persona;
