@@ -26,10 +26,17 @@ function parseXHSSearchResult(data: {
     .filter((item) => item.model_type === "note")
     .slice(0, 10);
   topNotes.forEach(({ note }) => {
+    // Extract the first image URL from the new image_list structure
+    const firstImageUrl =
+      note.image_list?.[0]?.info_list?.find(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (info: any) => info.image_scene === "WB_DFT",
+      )?.url || note.cover?.url_default;
+
     notes.push({
-      id: note.id,
-      title: note.title,
-      desc: note.desc,
+      id: note.id || note.note_id || "unknown", // fallback for missing id
+      title: note.display_title || note.title || "",
+      desc: note.desc || note.description || "", // fallback for missing desc
       type: note.type,
       liked_count: note.liked_count,
       collected_count: note.collected_count,
@@ -37,14 +44,16 @@ function parseXHSSearchResult(data: {
       user: {
         nickname: note.user?.nickname,
         userid: note.user?.userid,
-        image: note.user?.images,
+        image: note.user?.avatar || note.user?.images,
       },
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      images_list: (note.images_list || note.image_list)?.slice(0, 1).map((image: any) => ({
-        url: image.url,
-        // width: image.width,
-        // height: image.height,
-      })),
+      // Updated to handle new image structure
+      images_list: firstImageUrl
+        ? [
+            {
+              url: firstImageUrl,
+            },
+          ]
+        : [],
     });
   });
   // 这个方法返回的结果会发给 LLM 用来生成回复，只需要把 LLM 能够使用的文本给它就行，节省很多 tokens
