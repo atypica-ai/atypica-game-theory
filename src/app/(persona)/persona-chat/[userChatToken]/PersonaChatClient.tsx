@@ -1,6 +1,7 @@
 "use client";
 
 import { ClientMessagePayload } from "@/ai/messageUtilsClient";
+import { clearPersonaChatHistory } from "@/app/(persona)/actions";
 import { UserChatSession } from "@/components/chat/UserChatSession";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Badge } from "@/components/ui/badge";
@@ -15,10 +16,11 @@ import {
 import { Persona } from "@/prisma/client";
 import { useChat } from "@ai-sdk/react";
 import { Message } from "ai";
-import { BotIcon, CalendarIcon, FileTextIcon, InfoIcon, TagIcon } from "lucide-react";
+import { BotIcon, CalendarIcon, InfoIcon, RefreshCwIcon, TagIcon, TrashIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRef, useState } from "react";
+import { toast } from "sonner";
 
 export function PersonaChatClient({
   userChatToken,
@@ -31,6 +33,7 @@ export function PersonaChatClient({
 }) {
   const { data: session } = useSession();
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [isClearing, setIsClearing] = useState(false);
 
   const initialRequestBody = {
     userChatToken,
@@ -67,6 +70,31 @@ export function PersonaChatClient({
       hour: "2-digit",
       minute: "2-digit",
     }).format(date);
+  };
+
+  const handleClearHistory = async () => {
+    if (!confirm("确定要清理所有聊天记录吗？此操作不可撤销。")) {
+      return;
+    }
+
+    setIsClearing(true);
+    try {
+      const result = await clearPersonaChatHistory(userChatToken);
+
+      if (!result.success) {
+        throw new Error(result.message || "清理失败");
+      }
+
+      toast.success("聊天记录已清理");
+
+      // 清空当前聊天界面的消息
+      useChatHelpers.setMessages([]);
+    } catch (error) {
+      console.error("Error clearing history:", error);
+      toast.error("清理失败，请重试");
+    } finally {
+      setIsClearing(false);
+    }
   };
 
   return (
@@ -144,24 +172,47 @@ export function PersonaChatClient({
                 {/* Import Analysis */}
                 <div className="pt-4 border-t border-slate-100">
                   <div className="space-y-3">
-                    <div>
-                      <div className="text-sm font-medium text-slate-900 mb-1">Import Analysis</div>
-                      <div className="text-xs text-slate-500">
-                        View original analysis and questions
-                      </div>
-                    </div>
-
-                    {persona.personaImportId && (
-                      <Button asChild variant="outline" size="sm" className="w-full">
-                        <Link
-                          href={`/persona-import/${persona.personaImportId}`}
-                          className="flex items-center gap-2"
+                    <div className="flex gap-2">
+                      {/* 只有当有聊天记录时才显示清除按钮 */}
+                      {persona.personaImportId && useChatHelpers.messages.length > 0 && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1"
+                          onClick={handleClearHistory}
+                          disabled={isClearing}
                         >
-                          <FileTextIcon className="w-4 h-4" />
-                          View Analysis
-                        </Link>
-                      </Button>
-                    )}
+                          {isClearing ? (
+                            <>
+                              <RefreshCwIcon className="w-4 h-4 animate-spin" />
+                              清理中...
+                            </>
+                          ) : (
+                            <>
+                              <TrashIcon className="w-4 h-4" />
+                              清除聊天记录
+                            </>
+                          )}
+                        </Button>
+                      )}
+
+                      {persona.personaImportId && (
+                        <Button
+                          asChild
+                          variant="default"
+                          size="sm"
+                          className={useChatHelpers.messages.length > 0 ? "flex-1" : "w-full"}
+                        >
+                          <Link
+                            href={`/persona-import/${persona.personaImportId}`}
+                            className="flex items-center gap-2"
+                          >
+                            <BotIcon className="w-4 h-4" />
+                            返回人格建立
+                          </Link>
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>

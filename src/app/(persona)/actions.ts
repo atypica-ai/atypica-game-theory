@@ -1,4 +1,5 @@
 "use server";
+import authOptions from "@/app/(auth)/authOptions";
 import { analyzeInterviewCompleteness, buildPersonaAgentPrompt } from "@/app/(persona)/processing";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
@@ -17,7 +18,7 @@ import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
 import { generateId } from "ai";
 import { getServerSession } from "next-auth";
-import authOptions from "../(auth)/authOptions";
+import { notFound } from "next/navigation";
 
 export async function createPersonaImport({
   objectUrl,
@@ -415,6 +416,27 @@ export async function fetchUserPersonaChatByToken(token: string): Promise<
     return {
       success: true,
       data: { userChat, persona },
+    };
+  });
+}
+
+// 清理聊天记录
+export async function clearPersonaChatHistory(
+  userChatToken: string,
+): Promise<ServerActionResult<void>> {
+  return withAuth(async (user) => {
+    const userChat = await prisma.userChat
+      .findUniqueOrThrow({
+        where: { token: userChatToken, userId: user.id },
+      })
+      .catch(() => notFound());
+    // 删除所有聊天消息
+    await prisma.chatMessage.deleteMany({
+      where: { userChatId: userChat.id },
+    });
+    return {
+      success: true,
+      data: undefined,
     };
   });
 }
