@@ -4,13 +4,15 @@ import { cookies, headers } from "next/headers";
 import { locales } from "./routing";
 
 const getMessages = async (locale: string) => {
-  const [messages, interviewProject] = await Promise.all([
+  const [messages, interviewProject, persona] = await Promise.all([
     import(`../../messages/${locale}.json`),
     import(`../app/(interviewProject)/messages/${locale}.json`),
+    import(`../app/(persona)/messages/${locale}.json`),
   ]);
   return {
     ...messages.default,
     ...interviewProject.default,
+    ...persona.default,
   };
 };
 

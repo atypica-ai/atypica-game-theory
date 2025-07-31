@@ -1025,10 +1025,5 @@
     "noFilesFound": "No files found.",
     "fileSelectedSuccessfully": "File selected successfully",
     "failedToSelectFile": "Failed to select file"
-  },
-  "PersonaImport": {
-    "userChatNotFound": "User chat not found",
-    "followUpInterview": "Follow-up Interview",
-    "followUpInterviewDescription": "Conduct in-depth supplementary interview based on analysis results"
   }
 }

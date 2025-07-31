@@ -1025,10 +1025,5 @@
     "noFilesFound": "未找到文件。",
     "fileSelectedSuccessfully": "文件选择成功",
     "failedToSelectFile": "选择文件失败"
-  },
-  "PersonaImport": {
-    "userChatNotFound": "用户聊天未找到",
-    "followUpInterview": "补充访谈",
-    "followUpInterviewDescription": "基于分析结果进行深度补充访谈"
   }
 }
