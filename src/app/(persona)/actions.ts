@@ -420,6 +420,47 @@ export async function fetchUserPersonaChatByToken(token: string): Promise<
   });
 }
 
+export async function fetchPersonaChatStat(personaId: number): Promise<
+  ServerActionResult<
+    Array<{
+      messageCount: number;
+      lastMessageAt: Date | null;
+    }>
+  >
+> {
+  return withAuth(async (user) => {
+    // Fetch all chat sessions for this persona
+    const chatRelations = await prisma.userPersonaChatRelation.findMany({
+      where: { personaId: personaId, userId: user.id },
+      include: {
+        userChat: {
+          select: {
+            _count: { select: { messages: true } },
+            messages: {
+              select: { createdAt: true },
+              orderBy: { createdAt: "desc" },
+              take: 1,
+            },
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    const chatHistory = chatRelations.map((relation) => ({
+      messageCount: relation.userChat._count.messages,
+      lastMessageAt: relation.userChat.messages[0]?.createdAt || null,
+    }));
+
+    return {
+      success: true,
+      data: chatHistory,
+    };
+  });
+}
+
 // 清理聊天记录
 export async function clearPersonaChatHistory(
   userChatToken: string,

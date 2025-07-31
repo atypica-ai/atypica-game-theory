@@ -1,17 +1,47 @@
 "use client";
-
+import { createOrGetUserPersonaChat, fetchPersonaChatStat } from "@/app/(persona)/actions";
 import { Markdown } from "@/components/markdown";
 import { Button } from "@/components/ui/button";
 import { Persona } from "@/prisma/client";
 import { BrainIcon, MessageCircleIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { createOrGetUserPersonaChat } from "../../actions";
+
+type ChatSession = {
+  messageCount: number;
+  lastMessageAt: Date | null;
+};
 
 export function PersonaSummary({ personas }: { personas: Persona[] }) {
   const router = useRouter();
   const [chatCreating, setChatCreating] = useState<Record<number, boolean>>({});
+  const [personaChatStats, setPersonaChatStats] = useState<Record<number, ChatSession[]>>({});
+  const [loadingHistory, setLoadingHistory] = useState<Record<number, boolean>>({});
+
+  const loadChatHistory = useCallback(
+    async (personaId: number) => {
+      if (personaChatStats[personaId] || loadingHistory[personaId]) return;
+      setLoadingHistory((prev) => ({ ...prev, [personaId]: true }));
+      try {
+        const result = await fetchPersonaChatStat(personaId);
+        if (!result.success) throw result;
+        setPersonaChatStats((prev) => ({ ...prev, [personaId]: result.data }));
+      } catch (error) {
+        console.log("Failed to load chat history:", error);
+      } finally {
+        setLoadingHistory((prev) => ({ ...prev, [personaId]: false }));
+      }
+    },
+    [personaChatStats, loadingHistory],
+  );
+
+  // 预加载所有画像的聊天历史
+  useEffect(() => {
+    personas.forEach((persona) => {
+      loadChatHistory(persona.id);
+    });
+  }, [personas, loadChatHistory]);
 
   const handleStartChat = useCallback(
     async (personaId: number) => {
@@ -23,7 +53,7 @@ export function PersonaSummary({ personas }: { personas: Persona[] }) {
         }
         router.push(`/persona-chat/${result.data.token}`);
       } catch (error) {
-        console.error("Failed to start chat:", error);
+        console.log("Failed to start chat:", error);
         toast.error("Failed to start chat");
       } finally {
         setChatCreating((prev) => ({ ...prev, [personaId]: false }));
@@ -50,34 +80,47 @@ export function PersonaSummary({ personas }: { personas: Persona[] }) {
       </div>
 
       <div className="grid gap-3">
-        {personas.map((persona) => (
-          <div key={persona.id} className="p-4 bg-slate-50 rounded-lg border border-slate-200">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="font-medium text-slate-900">{persona.name}</h4>
-                  <div className="text-sm text-slate-600">{persona.source}</div>
-                </div>
-                <Button
-                  size="sm"
-                  variant="default"
-                  onClick={() => handleStartChat(persona.id)}
-                  disabled={chatCreating[persona.id]}
-                  className="flex items-center gap-2"
-                >
-                  <MessageCircleIcon className="size-3" />
-                  {chatCreating[persona.id] ? "启动中..." : "开始对话"}
-                </Button>
-              </div>
-              <div className="flex flex-wrap gap-1">
-                {(persona.tags as string[]).map((tag, tagIndex) => (
-                  <span
-                    key={tagIndex}
-                    className="px-2 py-1 bg-white text-slate-700 text-xs rounded border"
+        {personas.map((persona) => {
+          const personaChatHistory = personaChatStats[persona.id] || [];
+          const hasHistory =
+            personaChatHistory.length > 0 &&
+            personaChatHistory.some((chat) => chat.messageCount > 0);
+
+          return (
+            <div key={persona.id} className="p-4 bg-slate-50 rounded-lg border border-slate-200">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="font-medium text-slate-900">{persona.name}</h4>
+                    <div className="text-sm text-slate-600">{persona.source}</div>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="default"
+                    onClick={() => handleStartChat(persona.id)}
+                    disabled={chatCreating[persona.id] || loadingHistory[persona.id]}
+                    className="flex items-center gap-2"
                   >
-                    {tag}
-                  </span>
-                ))}
+                    <MessageCircleIcon className="size-3" />
+                    {chatCreating[persona.id]
+                      ? "启动中..."
+                      : loadingHistory[persona.id]
+                        ? "检查中..."
+                        : hasHistory
+                          ? "继续对话"
+                          : "开启对话"}
+                  </Button>
+                </div>
+                <div className="flex flex-wrap gap-1">
+                  {(persona.tags as string[]).map((tag, tagIndex) => (
+                    <span
+                      key={tagIndex}
+                      className="px-2 py-1 bg-white text-slate-700 text-xs rounded border"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
               </div>
               <div className="mt-2">
                 <div className="border p-2 rounded-sm text-xs">
@@ -85,8 +128,8 @@ export function PersonaSummary({ personas }: { personas: Persona[] }) {
                 </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
