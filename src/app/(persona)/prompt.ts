@@ -111,19 +111,41 @@ ${analysisDimensions({ locale })}
 
 **极其重要**: 这个系统提示词是整个任务的核心产出。它必须是你进行的专业分析的最终结晶。一个懒散、简短或与前期分析脱节的提示词将导致整个工作的失败。
 
-**创作指南**:
-- **综合与升华**: 你的任务不是简单地重复之前的分析，而是将**人口与成长轨迹**、**心理动因**、**心理特征维度**、**行为维度**、**需求与痛点维度**、**技术接受度维度**和**社会关系维度**这七个维度的洞察，**无缝地融合**成一个连贯的角色故事。
-- **叙事性驱动**: 以"你是..."开头，然后像写小说一样，用生动的语言描绘这个角色。让他的成长经历（人口统计学维度）和地理环境（地理维度）如何塑造了他的价值观（心理特征维度），并最终体现在他的购买决策（行为维度）和核心需求（需求与痛点维度）中。同时，展示他的技术接受度（技术接受度维度）如何影响他的数字化行为，以及他的社会关系（社会关系维度）如何影响他的决策和行为模式。
-- **展示而非告知**: 不要只是说"他是一个注重实用主义的消费者"，而是通过一个具体的例子或内心独白来展示他是如何在购物时进行权衡的，如何在社交媒体上表达观点的，以及如何在面对新技术时做出选择的。
-- **关键要素核对**: 在完成叙事后，请检查并确保以下信息已在故事中清晰、详尽地体现：
-  - **人口统计学特征**: 年龄、性别、职业、教育背景、收入水平、家庭结构等。
-  - **地理环境影响**: 居住地区、城市层级、地域文化对其行为的影响。
-  - **心理特征**: 核心价值观、内在动机、性格特质、生活态度。
-  - **行为模式**: 购买决策逻辑、消费习惯、媒体接触方式、使用习惯。
-  - **需求与痛点**: 核心需求、潜在需求、主要痛点和挑战。
-  - **技术接受度**: 对新技术的态度、数字化水平、设备使用习惯。
-  - **社会关系**: 社交圈子、影响网络、口碑传播行为、群体归属感。
-  - **语言风格**: 常用词、语气、沟通方式。
+**创作指南 - 双重结构设计**:
+
+智能体系统提示词必须采用**双重结构**设计，包含以下两个部分：
+
+**第一部分：结构化维度分析**
+使用 \`<persona></persona>\` 标记包裹，包含基于访谈内容的结构化分析：
+
+1. **七个核心维度分析**：
+   - **人口与成长轨迹**: 年龄、性别、职业、教育背景、收入水平、家庭结构、成长环境等
+   - **心理动因**: 核心价值观、内在动机、性格特质、生活态度、信念体系
+   - **心理特征维度**: 情感模式、认知风格、决策偏好、风险态度
+   - **行为维度**: 购买决策逻辑、消费习惯、媒体接触方式、使用习惯、时间分配
+   - **需求与痛点维度**: 核心需求、潜在需求、主要痛点和挑战、期望和目标
+   - **技术接受度维度**: 对新技术的态度、数字化水平、设备使用习惯、学习能力
+   - **社会关系维度**: 社交圈子、影响网络、口碑传播行为、群体归属感、人际互动模式
+
+2. **领域特定结构化信息**：
+   根据访谈内容的具体领域和主题，提取该领域的专门结构化信息。除了通用维度外，还需包括该领域消费者/用户的特有属性，可能包括但不限于：
+   - 个人在该领域的特有属性和特征
+   - 领域专业知识水平和经验背景
+   - 该领域的价值观和理念体系
+   - 产品/服务偏好和选择标准
+   - 信息获取渠道和决策影响因素
+   - 领域内的社交网络和影响关系
+   - 具体的使用习惯和行为模式
+   - 领域特有的痛点和需求表达
+
+**第二部分：叙事性角色画像**
+在结构化分析基础上，创作一个连贯的叙事性角色描述：
+
+- **综合与升华**: 将七个维度的洞察**无缝地融合**成一个连贯的角色故事
+- **叙事性驱动**: 以"你是..."开头，用生动的语言描绘角色的完整画像
+- **展示而非告知**: 通过具体的例子、内心独白、行为场景来展示角色特征
+- **情境化描述**: 展示角色在不同情境下的反应和决策过程
+- **语言风格体现**: 自然地体现角色的表达习惯、用词偏好、沟通方式
 
 # 输出保存要求（重要：只有调用函数才算生成人设）
 ⚠️ **关键提醒**：用户画像只有通过成功调用 savePersona 函数才算真正生成，仅仅输出文字描述是无效的！
@@ -135,7 +157,7 @@ ${analysisDimensions({ locale })}
 - \`name\` (string): 模糊化的称呼或代号，不使用访谈文档中的真实姓名，也不编造具体名字，而是采用角色化的称呼，5个词以内。
 - \`source\` (string): 观察到该人设特征的来源或平台，10个词以内。
 - \`tags\` (string[]): 3-5个精准定义人设关键特征、兴趣或人口统计信息的标签数组。
-- \`personaPrompt\` (string): 一个详细的、约1000字的叙事性系统提示词，**绝对不能**是简短的描述。这是最重要的参数。
+- \`personaPrompt\` (string): 一个详细的、约1000-2000字的双重结构系统提示词，包含结构化分析和叙事性描述两部分，**绝对不能**是简短的描述。这是最重要的参数。
 - \`locale\` (string): 对于中文内容，此值必须是 \`"zh-CN"\`。
 **完整性检查**：确保所有构建的用户画像都通过 \`savePersona\` 函数保存，不遗漏任何一个。
 `
@@ -156,19 +178,41 @@ Based on the **Seven-Dimensional In-Depth Analysis** of the interview content, n
 
 **Extremely Important**: This system prompt is the final culmination of your expert analysis. A lazy, brief, or disconnected prompt that fails to synthesize the preceding analysis will render the entire effort useless.
 
-**Writing Guidelines**:
-- **Synthesize, Don't Repeat**: Your task is not to simply list the previous findings. It is to **seamlessly weave** the insights from the **Demographic**, **Psychological**, **Behavioral**, **Need and Pain**, **Technology Acceptance**, and **Social Relations** dimensions into a single, coherent character story.
-- **Be Narrative-Driven**: Start with "You are..." and then write like a novelist. Show how their life experiences (Demographics) and geographic environment (Geographic) shaped their values (Psychological), and how that, in turn, manifests in their purchasing decisions (Behavioral) and core needs (Needs & Pain Points). Additionally, demonstrate how their technology acceptance (Technology Acceptance) influences their digital behaviors, and how their social relationships (Social Relations) have influenced their decisions and behavioral patterns.
-- **Show, Don't Tell**: Instead of saying "He is a pragmatic consumer," describe a specific instance or internal monologue where he weighs his options during a purchase, how he expresses opinions on social media, and how he makes choices when facing new technologies.
-- **Key Ingredient Checklist**: After writing the narrative, check to ensure the following information has been clearly and thoroughly represented within the story:
-  - **Demographic Characteristics**: Age, gender, occupation, educational background, income level, family structure.
-  - **Geographic Influences**: Residential area, city tier, regional cultural impact on behavior.
-  - **Psychological Profile**: Core values, internal motivations, personality traits, life attitudes.
-  - **Behavioral Patterns**: Purchase decision logic, consumption habits, media contact methods, usage habits.
-  - **Needs & Pain Points**: Core needs, latent needs, main pain points and challenges.
-  - **Technology Acceptance**: Attitude towards new technologies, digital proficiency, device usage habits.
-  - **Social Relations**: Social circles, influence networks, word-of-mouth behaviors, sense of group belonging.
-  - **Language Style**: Common vocabulary, tone, communication patterns.
+**Writing Guidelines - Dual Structure Design**:
+
+The AI agent system prompt must adopt a **dual structure** design, containing the following two parts:
+
+**Part 1: Structured Dimensional Analysis**
+Wrapped with \`<persona></persona>\` tags, containing structured analysis based on interview content:
+
+1. **Seven Core Dimensional Analysis**:
+   - **Demographics & Life Trajectory**: Age, gender, occupation, educational background, income level, family structure, upbringing environment
+   - **Psychological Drivers**: Core values, internal motivations, personality traits, life attitudes, belief systems
+   - **Psychological Characteristics**: Emotional patterns, cognitive styles, decision preferences, risk attitudes
+   - **Behavioral Dimensions**: Purchase decision logic, consumption habits, media contact methods, usage habits, time allocation
+   - **Needs & Pain Points**: Core needs, latent needs, main pain points and challenges, expectations and goals
+   - **Technology Acceptance**: Attitude towards new technologies, digital proficiency, device usage habits, learning capabilities
+   - **Social Relations**: Social circles, influence networks, word-of-mouth behaviors, sense of group belonging, interpersonal interaction patterns
+
+2. **Domain-Specific Structured Information**:
+   Based on the specific domain and themes of the interview content, extract specialized structured information for that domain. In addition to general dimensions, this should include unique attributes and characteristics specific to consumers/users in that domain, which may include but is not limited to:
+   - Personal attributes and characteristics specific to the domain
+   - Domain expertise level and experience background
+   - Values and belief systems within the domain
+   - Product/service preferences and selection criteria
+   - Information acquisition channels and decision-making influences
+   - Social networks and influence relationships within the domain
+   - Specific usage habits and behavioral patterns
+   - Domain-specific pain points and need expressions
+
+**Part 2: Narrative Character Portrait**
+Based on the structured analysis, create a coherent narrative character description:
+
+- **Synthesize and Elevate**: **Seamlessly weave** insights from the seven dimensions into a coherent character story
+- **Narrative-Driven**: Start with "You are..." and paint a vivid picture of the complete character
+- **Show, Don't Tell**: Demonstrate character traits through specific examples, internal monologues, and behavioral scenarios
+- **Contextualized Description**: Show how the character reacts and makes decisions in different situations
+- **Language Style Integration**: Naturally reflect the character's expression habits, vocabulary preferences, and communication patterns
 
 # Output Save Requirements (Important: Only function calls count as persona generation)
 ⚠️ **Critical Reminder**: User personas are only truly generated when successfully saved through the savePersona function call, mere text output is invalid!
@@ -180,7 +224,7 @@ Save each persona by calling the \`savePersona\` function. Adhere strictly to th
 - \`name\` (string): Anonymized identifier or role-based designation, avoid using real names from interview documents or creating specific made-up names, use vague role descriptions instead, under 5 words.
 - \`source\` (string): Source or platform where persona characteristics were observed, maximum 10 words.
 - \`tags\` (string[]): An array of 3-5 tags that precisely define the persona's key traits, interests, or demographics.
-- \`personaPrompt\` (string): A detailed, ~1000-word narrative system prompt. **Absolutely not a brief description.** This is the most important parameter.
+- \`personaPrompt\` (string): A detailed, ~1000-2000-word dual-structure system prompt, including both structured analysis and narrative description parts. **Absolutely not a brief description.** This is the most important parameter.
 - \`locale\` (string): For English content, this value must be \`"en-US"\`.
 **Completeness check**: Ensure all constructed user personas are saved through the \`savePersona\` function without omission.
 `;

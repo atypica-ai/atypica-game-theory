@@ -1,5 +1,6 @@
 "use client";
 
+import { Markdown } from "@/components/markdown";
 import { Button } from "@/components/ui/button";
 import { Persona } from "@/prisma/client";
 import { BrainIcon, MessageCircleIcon } from "lucide-react";
@@ -30,6 +31,11 @@ export function PersonaSummary({ personas }: { personas: Persona[] }) {
     },
     [router],
   );
+
+  const extractSummaryFromPrompt = (prompt: string) => {
+    const match = prompt.match(/<persona>([\s\S]*?)<\/persona>/);
+    return match ? match[1] : prompt;
+  };
 
   return (
     <div className="space-y-4">
@@ -74,8 +80,8 @@ export function PersonaSummary({ personas }: { personas: Persona[] }) {
                 ))}
               </div>
               <div className="mt-2">
-                <div className="border p-2 rounded-sm text-xs whitespace-pre-wrap">
-                  {persona.prompt}
+                <div className="border p-2 rounded-sm text-xs">
+                  <Markdown>{extractSummaryFromPrompt(persona.prompt)}</Markdown>
                 </div>
               </div>
             </div>
