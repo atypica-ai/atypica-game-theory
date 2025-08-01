@@ -261,21 +261,30 @@ export const persistentAIMessageToDB = async (
   };
   if (role === "user") {
     // 如果最后一条消息是 user，则覆盖
+    // 但如果消息是 [READY] 或者 [CONTINUE] 这种，则不覆盖，直接忽略
     const lastUserMessage = await prisma.chatMessage.findFirst({
       where: { userChatId },
       orderBy: { id: "desc" },
     });
     if (lastUserMessage?.role === "user") {
-      await prisma.chatMessage.update({
-        where: { id: lastUserMessage.id },
-        data: {
-          messageId,
-          createdAt, // 同时也覆盖 createdAt
-          ...dataToPersist,
-        },
-      });
-      // 结束，不再继续
-      return;
+      if (
+        content === "[CONTINUE ASSISTANT STEPS]" ||
+        content === "[READY]" ||
+        content === "[CONTINUE]"
+      ) {
+        return;
+      } else {
+        await prisma.chatMessage.update({
+          where: { id: lastUserMessage.id },
+          data: {
+            messageId,
+            createdAt, // 同时也覆盖 createdAt
+            ...dataToPersist,
+          },
+        });
+        // 结束，不再继续
+        return;
+      }
     }
   }
   await prisma.chatMessage.upsert({
