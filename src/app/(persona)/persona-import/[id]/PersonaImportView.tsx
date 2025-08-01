@@ -2,6 +2,7 @@
 import { processPersonaImportAction } from "@/app/(persona)/actions";
 import { PersonaImportAnalysis } from "@/app/(persona)/types";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { ChatMessageAttachment, Persona, PersonaImport, PersonaImportExtra } from "@/prisma/client";
 import { BrainIcon, FileTextIcon, RefreshCwIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -170,7 +171,7 @@ export function PersonaImportView({
                   onClick={handleReAnalyze}
                   disabled={isProcessing}
                 >
-                  <RefreshCwIcon className={`size-4 mr-2 ${isProcessing ? "animate-spin" : ""}`} />
+                  <RefreshCwIcon className={cn("size-4", isProcessing ? "animate-spin" : "")} />
                   {isProcessing ? t("reanalyzing") : t("reanalyze")}
                 </Button>
               </div>

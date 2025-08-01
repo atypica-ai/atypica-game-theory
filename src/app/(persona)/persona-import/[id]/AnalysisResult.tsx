@@ -1,5 +1,5 @@
 "use client";
-
+import type { AnalysisResult as AnalysisResultType } from "@/app/(persona)/types";
 import { Badge } from "@/components/ui/badge";
 import {
   AlertCircleIcon,
@@ -23,7 +23,6 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from "recharts";
-import type { AnalysisResult as AnalysisResultType } from "../../types";
 
 interface AnalysisResultProps {
   analysis: AnalysisResultType["analysis"] | undefined;
@@ -124,7 +123,7 @@ export function AnalysisResult({ analysis }: AnalysisResultProps) {
         <div className="space-y-6">
           {/* Radar Chart */}
           <div className="flex justify-center">
-            <div className="w-full max-w-lg p-6 bg-slate-50 rounded-lg border border-slate-200">
+            <div className="w-full p-6 bg-slate-50 rounded-lg border border-slate-200">
               <div className="h-80 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <RadarChart cx="50%" cy="50%" outerRadius="75%" data={radarData}>

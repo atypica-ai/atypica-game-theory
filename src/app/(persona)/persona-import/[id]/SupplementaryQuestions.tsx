@@ -90,7 +90,7 @@ export function SupplementaryQuestions({
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-start gap-3">
-                        <div className="w-5 h-5 rounded bg-slate-900 flex items-center justify-center text-white text-xs font-medium mt-0.5">
+                        <div className="shrink-0 w-5 h-5 rounded bg-slate-900 flex items-center justify-center text-white text-xs font-medium mt-0.5">
                           {index + 1}
                         </div>
                         <p className="text-sm text-slate-700 leading-relaxed">{question}</p>
