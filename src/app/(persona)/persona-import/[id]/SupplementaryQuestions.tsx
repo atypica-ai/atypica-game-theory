@@ -1,4 +1,6 @@
 "use client";
+import { createFollowUpInterviewChat } from "@/app/(persona)/actions";
+import { AnalysisResult } from "@/app/(persona)/types";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -12,8 +14,6 @@ import { Button } from "@/components/ui/button";
 import { ClipboardCopyIcon, CopyIcon, LightbulbIcon, ShareIcon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { createFollowUpInterviewChat } from "../../actions";
-import { AnalysisResult } from "../../types";
 
 interface SupplementaryQuestionsProps {
   supplementaryQuestions: AnalysisResult["supplementaryQuestions"] | undefined;

@@ -1,5 +1,6 @@
 "use client";
 import { Button } from "@/components/ui/button";
+import { ChatMessageAttachment, Persona, PersonaImport, PersonaImportExtra } from "@/prisma/client";
 import { BrainIcon, FileTextIcon, RefreshCwIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -7,11 +8,10 @@ import { toast } from "sonner";
 import { reAnalyzePersonaImport } from "../../actions";
 import { PersonaImportAnalysis } from "../../types";
 import { AnalysisResult } from "./AnalysisResult";
+import { FollowUpChatList } from "./FollowUpChatList";
 import { PersonaSummary } from "./PersonaSummary";
 import { ProcessingStatus } from "./ProcessingStatus";
 import { SupplementaryQuestions } from "./SupplementaryQuestions";
-
-import { ChatMessageAttachment, Persona, PersonaImport, PersonaImportExtra } from "@/prisma/client";
 
 export function PersonaImportView({
   personaImport: initialPersonaImport,
@@ -220,6 +220,9 @@ export function PersonaImportView({
             />
           </div>
         )}
+
+        {/* Follow Up Chat */}
+        <FollowUpChatList personaImportId={personaImport.id} />
       </div>
     </div>
   );

@@ -16,7 +16,7 @@ import {
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
-import { generateId } from "ai";
+import { generateId, Message } from "ai";
 import { getServerSession } from "next-auth";
 import { notFound } from "next/navigation";
 
@@ -478,6 +478,119 @@ export async function clearPersonaChatHistory(
     return {
       success: true,
       data: undefined,
+    };
+  });
+}
+
+// 获取后续访谈历史记录
+export async function fetchFollowUpInterviewHistory(personaImportId: number): Promise<
+  ServerActionResult<{
+    hasHistory: boolean;
+    userChatToken?: string;
+    messageCount?: number;
+    lastMessageAt?: Date;
+  }>
+> {
+  return withAuth(async (user) => {
+    // 查找PersonaImport及其关联的extraUserChat
+    const personaImport = await prisma.personaImport.findUnique({
+      where: { id: personaImportId, userId: user.id },
+      include: {
+        extraUserChat: {
+          include: {
+            messages: {
+              orderBy: { createdAt: "desc" },
+              take: 1, // 只获取最新的一条消息来获取时间
+            },
+          },
+        },
+      },
+    });
+
+    if (!personaImport) {
+      return {
+        success: false,
+        code: "not_found",
+        message: "Persona import not found",
+      };
+    }
+
+    if (!personaImport.extraUserChat) {
+      return {
+        success: true,
+        data: {
+          hasHistory: false,
+        },
+      };
+    }
+
+    // 获取消息总数
+    const messageCount = await prisma.chatMessage.count({
+      where: {
+        userChatId: personaImport.extraUserChat.id,
+        content: { not: "[READY]" }, // 排除系统消息
+      },
+    });
+
+    const lastMessage = personaImport.extraUserChat.messages[0];
+
+    return {
+      success: true,
+      data: {
+        hasHistory: messageCount > 0,
+        userChatToken: personaImport.extraUserChat.token,
+        messageCount,
+        lastMessageAt: lastMessage?.createdAt,
+      },
+    };
+  });
+}
+
+// 获取后续访谈聊天消息
+export async function fetchFollowUpInterviewChatMessages(
+  personaImportId: number,
+): Promise<ServerActionResult<{ messages: Message[] }>> {
+  return withAuth(async (user) => {
+    // 查找PersonaImport及其关联的extraUserChat
+    const personaImport = await prisma.personaImport.findUnique({
+      where: { id: personaImportId, userId: user.id },
+      include: {
+        extraUserChat: {
+          include: {
+            messages: {
+              orderBy: { createdAt: "asc" },
+            },
+          },
+        },
+      },
+    });
+
+    if (!personaImport) {
+      return {
+        success: false,
+        code: "not_found",
+        message: "Persona import not found",
+      };
+    }
+
+    if (!personaImport.extraUserChat) {
+      return {
+        success: true,
+        data: { messages: [] },
+      };
+    }
+
+    // 转换消息格式以匹配前端期望的格式
+    const messages = personaImport.extraUserChat.messages.map((msg) => ({
+      id: msg.messageId,
+      role: msg.role,
+      content: msg.content,
+      createdAt: msg.createdAt,
+    }));
+
+    return {
+      success: true,
+      data: { messages },
     };
   });
 }
