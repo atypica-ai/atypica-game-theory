@@ -15,17 +15,18 @@ export const IMAGE_MIME_TYPES = [
   "image/svg+xml",
 ] as const;
 
+// bedrock 虽然支持很多文件格式，但 gpt 和 gemini 只支持 pdf，所以这样 fix 也没用，只能限制上传的文件类型
 export const DOCUMENT_MIME_TYPES = [
   "application/pdf",
-  "application/msword",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  "application/vnd.ms-excel",
-  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  "application/vnd.ms-powerpoint",
-  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-  "text/plain",
-  "text/csv",
   "application/json",
+  // "application/msword",
+  // "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  // "application/vnd.ms-excel",
+  // "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  // "application/vnd.ms-powerpoint",
+  // "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  // "text/plain",
+  "text/csv",
 ] as const;
 
 import { FileUploadInfo } from "@/components/chat/FileUploadButton";

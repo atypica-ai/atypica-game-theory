@@ -13,12 +13,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { formatDate } from "@/lib/utils";
 import { Persona } from "@/prisma/client";
 import { useChat } from "@ai-sdk/react";
 import { Message } from "ai";
 import { BotIcon, CalendarIcon, InfoIcon, RefreshCwIcon, TagIcon, TrashIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
@@ -32,6 +33,7 @@ export function PersonaChatClient({
   persona: Persona;
   initialMessages?: Message[];
 }) {
+  const locale = useLocale();
   const t = useTranslations("PersonaImport.personaChat");
   const { data: session } = useSession();
   const [isDetailOpen, setIsDetailOpen] = useState(false);
@@ -63,16 +65,6 @@ export function PersonaChatClient({
     setMessages: useChatHelpers.setMessages,
     append: useChatHelpers.append,
   });
-
-  const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat("zh-CN", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    }).format(date);
-  };
 
   const handleClearHistory = async () => {
     if (!confirm(t("confirmClearHistory"))) {
@@ -138,7 +130,7 @@ export function PersonaChatClient({
                     <div className="text-xs font-medium text-slate-500 mb-1">{t("created")}</div>
                     <div className="text-sm text-slate-700 flex items-center gap-1">
                       <CalendarIcon className="w-3 h-3" />
-                      {formatDate(persona.createdAt)}
+                      {formatDate(persona.createdAt, locale)}
                     </div>
                   </div>
 

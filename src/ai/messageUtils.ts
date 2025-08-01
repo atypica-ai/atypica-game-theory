@@ -2,11 +2,10 @@ import "server-only";
 
 import { ToolName } from "@/ai/tools/types";
 import { fileUrlToDataUrl } from "@/lib/attachments/actions";
+import { s3SignedUrl } from "@/lib/attachments/s3";
 import { ChatMessage, ChatMessageAttachment } from "@/prisma/client";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
-
-import { s3SignedUrl } from "@/lib/attachments/s3";
 import {
   convertToCoreMessages,
   generateId,
@@ -17,6 +16,22 @@ import {
   ToolSet,
 } from "ai";
 import { Logger } from "pino";
+
+// 事实上，bedrock 虽然支持很多文件格式，但 gpt 和 gemini 只支持 pdf，所以这样 fix 也没用，只能限制上传的文件类型
+// https://github.com/vercel/ai/blob/2669f00b8e9acf8352bd07d930fbd181e5219500/packages/amazon-bedrock/src/convert-to-bedrock-chat-messages.ts#L114
+// function mimeTypeToAISDKContentType(mimeType: string): string {
+//   const convert: Record<string, string> = {
+//     "image/svg+xml": "image/svg",
+//     "application/msword": "application/doc",
+//     "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "application/docx",
+//     "application/vnd.ms-excel": "application/xls",
+//     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "application/xlsx",
+//     "application/vnd.ms-powerpoint": "application/ppt",
+//     "application/vnd.openxmlformats-officedocument.presentationml.presentation": "application/pptx",
+//     "text/plain": "application/txt",
+//   };
+//   return convert[mimeType] || mimeType;
+// }
 
 function fixChatMessages(messages: Message[]) {
   let fixed = messages.map((message) => {
