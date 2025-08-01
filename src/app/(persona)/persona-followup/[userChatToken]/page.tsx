@@ -6,7 +6,7 @@ import { Message } from "ai";
 import { Metadata } from "next";
 import { getLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
-import { FollowUpInterviewClient } from "./FollowUpInterviewClient";
+import FollowUpInterviewClient from "./FollowUpInterviewClient";
 
 export const dynamic = "force-dynamic";
 

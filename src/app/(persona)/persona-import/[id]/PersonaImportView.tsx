@@ -1,12 +1,12 @@
 "use client";
+import { processPersonaImportAction } from "@/app/(persona)/actions";
+import { PersonaImportAnalysis } from "@/app/(persona)/types";
 import { Button } from "@/components/ui/button";
 import { ChatMessageAttachment, Persona, PersonaImport, PersonaImportExtra } from "@/prisma/client";
 import { BrainIcon, FileTextIcon, RefreshCwIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { reAnalyzePersonaImport } from "../../actions";
-import { PersonaImportAnalysis } from "../../types";
 import { AnalysisResult } from "./AnalysisResult";
 import { FollowUpChatList } from "./FollowUpChatList";
 import { PersonaSummary } from "./PersonaSummary";
@@ -25,16 +25,8 @@ export function PersonaImportView({
 }) {
   const router = useRouter();
   const [personaImport, setPersonaImport] = useState(initialPersonaImport);
-  const [isReAnalyzing, setIsReAnalyzing] = useState(false);
 
-  // Check if processing is complete
-  const isProcessingComplete = Boolean(
-    personas.length > 0 &&
-      personaImport.analysis?.analysis &&
-      personaImport.analysis?.supplementaryQuestions,
-  );
-
-  // Check if there's an error
+  const isProcessing = Boolean(personaImport.extra?.processing);
   const hasError = Boolean(personaImport.extra?.error);
 
   // Check individual completion status
@@ -51,19 +43,6 @@ export function PersonaImportView({
   const attachments = personaImport.attachments as ChatMessageAttachment[];
   const fileName = attachments?.[0]?.name || "文件";
 
-  // Polling effect
-  useEffect(() => {
-    if (isProcessingComplete || hasError) {
-      return; // Stop polling if complete or error
-    }
-
-    const interval = setInterval(() => {
-      router.refresh(); // This will trigger a re-fetch from the server
-    }, 3000); // Poll every 3 seconds
-
-    return () => clearInterval(interval);
-  }, [isProcessingComplete, hasError, router]);
-
   // Update local state when props change (from server refresh)
   useEffect(() => {
     setPersonaImport(initialPersonaImport);
@@ -71,32 +50,32 @@ export function PersonaImportView({
 
   // Show completion message
   useEffect(() => {
-    if (isProcessingComplete && !hasError) {
+    if (!isProcessing && !hasError) {
       // Optional: Show success notification when processing completes
-      console.log("Processing completed successfully");
+      // console.log("Processing completed successfully");
     }
-  }, [isProcessingComplete, hasError]);
+  }, [isProcessing, hasError]);
 
-  const handleReAnalyze = async () => {
+  const handleReAnalyze = useCallback(async () => {
+    if (isProcessing) {
+      toast.error("人格画像更新中，暂时无法重新分析");
+      return;
+    }
     if (!confirm("确定要重新分析吗？这将覆盖现有的分析结果。")) {
       return;
     }
-
-    setIsReAnalyzing(true);
     try {
-      const result = await reAnalyzePersonaImport(personaImport.id);
-      if (!result.success) {
-        throw new Error(result.message || "重新分析失败");
-      }
+      const result = await processPersonaImportAction(personaImport.id);
+      if (!result.success) throw result;
       toast.success("重新分析已开始，请稍候...");
       router.refresh();
     } catch (error) {
-      console.error("Error re-analyzing:", error);
+      console.log("Error re-analyzing:", error);
       toast.error("重新分析失败，请重试");
     } finally {
-      setIsReAnalyzing(false);
+      router.refresh();
     }
-  };
+  }, [isProcessing, personaImport.id]);
 
   const handleViewFile = () => {
     const attachment = attachments[0];
@@ -135,10 +114,10 @@ export function PersonaImportView({
         </div>
         <h1 className="text-3xl font-bold text-slate-900">智能人格画像生成</h1>
         <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-          {isProcessingComplete ? "处理完成：" : "正在处理文件："}
+          {!isProcessing ? "处理完成：" : "正在处理文件："}
           {fileName}
         </p>
-        {isProcessingComplete && (
+        {!isProcessing && (
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-green-100 text-green-800 rounded text-sm font-medium">
             <div className="w-2 h-2 bg-green-500 rounded-full"></div>
             所有任务已完成
@@ -148,14 +127,12 @@ export function PersonaImportView({
 
       <div className="space-y-6">
         {/* Processing Status */}
-        <div className="bg-white rounded-lg border border-slate-200 p-6">
-          <ProcessingStatus
-            isProcessing={!personaAgentCompleted}
-            isAnalyzing={!analysisCompleted}
-            personas={personas}
-            personaImportAnalysis={personaImport.analysis}
-          />
-        </div>
+        <ProcessingStatus
+          isGenerating={!personaAgentCompleted || isProcessing}
+          isAnalyzing={!analysisCompleted || isProcessing}
+          personas={personas}
+          personaImportAnalysis={personaImport.analysis}
+        />
 
         {/* File Information and Re-analyze */}
         <div className="bg-white rounded-lg border border-slate-200 p-6">
@@ -186,10 +163,10 @@ export function PersonaImportView({
                   variant="outline"
                   size="sm"
                   onClick={handleReAnalyze}
-                  disabled={isReAnalyzing}
+                  disabled={isProcessing}
                 >
-                  <RefreshCwIcon className={`size-4 mr-2 ${isReAnalyzing ? "animate-spin" : ""}`} />
-                  {isReAnalyzing ? "重新分析中..." : "重新分析"}
+                  <RefreshCwIcon className={`size-4 mr-2 ${isProcessing ? "animate-spin" : ""}`} />
+                  {isProcessing ? "更新中，暂时无法操作" : "重新分析"}
                 </Button>
               </div>
             </div>
@@ -197,32 +174,22 @@ export function PersonaImportView({
         </div>
 
         {/* Persona Summary - only show if summary exists */}
-        {personas.length > 0 && (
-          <div className="bg-white rounded-lg border border-slate-200 p-6">
-            <PersonaSummary personas={personas} />
-          </div>
-        )}
+        {personas.length > 0 && !isProcessing && <PersonaSummary personas={personas} />}
 
         {/* Analysis Result - only show if analysis exists */}
-        {analysis && (
-          <div className="bg-white rounded-lg border border-slate-200 p-6">
-            <AnalysisResult analysis={analysis} />
-          </div>
-        )}
+        {analysis && !isProcessing && <AnalysisResult analysis={analysis} />}
 
         {/* Supplementary Questions - only show if exists */}
-        {supplementaryQuestions && (
-          <div className="bg-white rounded-lg border border-slate-200 p-6">
-            <SupplementaryQuestions
-              supplementaryQuestions={supplementaryQuestions}
-              fileName={fileName}
-              personaImportId={personaImport.id}
-            />
-          </div>
+        {supplementaryQuestions && !isProcessing && (
+          <SupplementaryQuestions
+            supplementaryQuestions={supplementaryQuestions}
+            fileName={fileName}
+            personaImportId={personaImport.id}
+          />
         )}
 
         {/* Follow Up Chat */}
-        <FollowUpChatList personaImportId={personaImport.id} />
+        {!isProcessing && <FollowUpChatList personaImportId={personaImport.id} />}
       </div>
     </div>
   );

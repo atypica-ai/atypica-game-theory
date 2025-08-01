@@ -1,6 +1,5 @@
 "use server";
 import authOptions from "@/app/(auth)/authOptions";
-import { analyzeInterviewCompleteness, buildPersonaAgentPrompt } from "@/app/(persona)/processing";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
 import { withAuth } from "@/lib/request/withAuth";
@@ -19,6 +18,8 @@ import { waitUntil } from "@vercel/functions";
 import { generateId, Message } from "ai";
 import { getServerSession } from "next-auth";
 import { notFound } from "next/navigation";
+import { processPersonaImport } from "./processing";
+import { PersonaImportAnalysis } from "./types";
 
 export async function createPersonaImport({
   objectUrl,
@@ -27,7 +28,8 @@ export async function createPersonaImport({
   mimeType,
 }: ChatMessageAttachment): Promise<
   ServerActionResult<
-    Omit<PersonaImport, "extra"> & {
+    Omit<PersonaImport, "extra" | "attachments"> & {
+      attachments: ChatMessageAttachment[];
       extra: PersonaImportExtra;
     }
   >
@@ -45,12 +47,7 @@ export async function createPersonaImport({
       extra: data.extra as unknown as PersonaImportExtra,
     };
     // Start processing immediately in the background using waitUntil
-    waitUntil(
-      Promise.all([
-        buildPersonaAgentPrompt(personaImport),
-        analyzeInterviewCompleteness(personaImport),
-      ]),
-    );
+    waitUntil(processPersonaImport(personaImport.id));
     return {
       success: true,
       data: { ...personaImport },
@@ -58,44 +55,21 @@ export async function createPersonaImport({
   });
 }
 
-export async function reAnalyzePersonaImport(
+export async function processPersonaImportAction(
   personaImportId: number,
 ): Promise<ServerActionResult<void>> {
   return withAuth(async (user) => {
-    // Find the existing PersonaImport
-    const personaImport = await prisma.personaImport.findUnique({
-      where: { id: personaImportId, userId: user.id },
-    });
-
-    if (!personaImport) {
-      return {
-        success: false,
-        message: "Persona import not found",
-      };
-    }
-
-    // Clear existing results and errors
-    await prisma.personaImport.update({
-      where: { id: personaImportId },
-      data: {
-        analysis: {},
-        extra: {},
-      },
-    });
-
-    const personaImportWithAttachments = {
-      ...personaImport,
-      attachments: personaImport.attachments as unknown as ChatMessageAttachment[],
-    };
-
-    // Start processing again in the background
-    waitUntil(
-      Promise.all([
-        buildPersonaAgentPrompt(personaImportWithAttachments),
-        analyzeInterviewCompleteness(personaImportWithAttachments),
-      ]),
-    );
-
+    // ensure personaImport belongs to user
+    const personaImport = await prisma.personaImport
+      .findUniqueOrThrow({
+        where: {
+          id: personaImportId,
+          userId: user.id,
+        },
+      })
+      .catch(() => notFound());
+    // process in background using waitUntil
+    waitUntil(processPersonaImport(personaImport.id));
     return {
       success: true,
       data: undefined,
@@ -153,7 +127,14 @@ export async function createFollowUpInterviewChat(
       };
     }
 
-    const content = "[READY]";
+    // 获取分析结果中的第一个补充问题
+    const analysis = personaImport.analysis as PersonaImportAnalysis | null;
+    const firstQuestion = analysis?.supplementaryQuestions?.questions?.[0];
+
+    // 如果有补充问题，使用第一个问题；否则使用默认开场白
+    const content =
+      "您好！我想了解一些额外的信息来完善您的用户画像。让我们开始吧！" + firstQuestion ||
+      "您好！我想了解一些额外的信息来完善您的用户画像。让我们开始吧！";
     const parts = [{ type: "text", text: content }];
 
     const userChat = await prisma.$transaction(async (tx) => {
@@ -168,7 +149,7 @@ export async function createFollowUpInterviewChat(
         data: {
           messageId: generateId(),
           userChatId: userChat.id,
-          role: "user",
+          role: "assistant", // 改为助手角色
           content,
           parts: parts as InputJsonValue,
         },
@@ -275,6 +256,7 @@ export async function fetchUserPersonas(): Promise<
     Array<
       Pick<Persona, "id" | "name" | "source" | "personaImportId" | "tier" | "createdAt"> & {
         tags: string[];
+        personaImportProcessing: boolean;
       }
     >
   >
@@ -293,18 +275,22 @@ export async function fetchUserPersonas(): Promise<
         id: true,
         name: true,
         source: true,
-        personaImportId: true,
         tags: true,
         tier: true,
         createdAt: true,
+        personaImportId: true,
+        personaImport: { select: { extra: true } },
       },
     });
 
     return {
       success: true,
-      data: personas.map((persona) => ({
+      data: personas.map(({ personaImport, tags, ...persona }) => ({
         ...persona,
-        tags: persona.tags as string[],
+        tags: tags as string[],
+        personaImportProcessing: Boolean(
+          personaImport?.extra && (personaImport.extra as PersonaImportExtra).processing,
+        ),
       })),
     };
   });

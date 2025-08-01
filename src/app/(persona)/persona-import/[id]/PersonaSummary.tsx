@@ -68,68 +68,70 @@ export function PersonaSummary({ personas }: { personas: Persona[] }) {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="space-y-2">
-        <h2 className="text-xl font-semibold flex items-center gap-3 text-slate-900">
-          <div className="w-6 h-6 rounded bg-slate-900 flex items-center justify-center">
-            <BrainIcon className="size-3 text-white" />
-          </div>
-          生成的用户画像
-        </h2>
-        <p className="text-slate-600 ml-9 text-sm">基于内容生成的AI对话角色</p>
-      </div>
-
-      <div className="grid gap-3">
-        {personas.map((persona) => {
-          const personaChatHistory = personaChatStats[persona.id] || [];
-          const hasHistory =
-            personaChatHistory.length > 0 &&
-            personaChatHistory.some((chat) => chat.messageCount > 0);
-
-          return (
-            <div key={persona.id} className="p-4 bg-slate-50 rounded-lg border border-slate-200">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-medium text-slate-900">{persona.name}</h4>
-                    <div className="text-sm text-slate-600">{persona.source}</div>
-                  </div>
-                  <Button
-                    size="sm"
-                    variant="default"
-                    onClick={() => handleStartChat(persona.id)}
-                    disabled={chatCreating[persona.id] || loadingHistory[persona.id]}
-                    className="flex items-center gap-2"
-                  >
-                    <MessageCircleIcon className="size-3" />
-                    {chatCreating[persona.id]
-                      ? "启动中..."
-                      : loadingHistory[persona.id]
-                        ? "检查中..."
-                        : hasHistory
-                          ? "继续对话"
-                          : "开启对话"}
-                  </Button>
-                </div>
-                <div className="flex flex-wrap gap-1">
-                  {(persona.tags as string[]).map((tag, tagIndex) => (
-                    <span
-                      key={tagIndex}
-                      className="px-2 py-1 bg-white text-slate-700 text-xs rounded border"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-              <div className="mt-2">
-                <div className="border p-2 rounded-sm text-xs">
-                  <Markdown>{extractSummaryFromPrompt(persona.prompt)}</Markdown>
-                </div>
-              </div>
+    <div className="bg-white rounded-lg border border-slate-200 p-6">
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <h2 className="text-xl font-semibold flex items-center gap-3 text-slate-900">
+            <div className="w-6 h-6 rounded bg-slate-900 flex items-center justify-center">
+              <BrainIcon className="size-3 text-white" />
             </div>
-          );
-        })}
+            生成的用户画像
+          </h2>
+          <p className="text-slate-600 ml-9 text-sm">基于内容生成的AI对话角色</p>
+        </div>
+
+        <div className="grid gap-3">
+          {personas.map((persona) => {
+            const personaChatHistory = personaChatStats[persona.id] || [];
+            const hasHistory =
+              personaChatHistory.length > 0 &&
+              personaChatHistory.some((chat) => chat.messageCount > 0);
+
+            return (
+              <div key={persona.id} className="p-4 bg-slate-50 rounded-lg border border-slate-200">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-medium text-slate-900">{persona.name}</h4>
+                      <div className="text-sm text-slate-600">{persona.source}</div>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="default"
+                      onClick={() => handleStartChat(persona.id)}
+                      disabled={chatCreating[persona.id] || loadingHistory[persona.id]}
+                      className="flex items-center gap-2"
+                    >
+                      <MessageCircleIcon className="size-3" />
+                      {chatCreating[persona.id]
+                        ? "启动中..."
+                        : loadingHistory[persona.id]
+                          ? "检查中..."
+                          : hasHistory
+                            ? "继续对话"
+                            : "开启对话"}
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap gap-1">
+                    {(persona.tags as string[]).map((tag, tagIndex) => (
+                      <span
+                        key={tagIndex}
+                        className="px-2 py-1 bg-white text-slate-700 text-xs rounded border"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <div className="mt-2">
+                  <div className="border p-2 rounded-sm text-xs">
+                    <Markdown>{extractSummaryFromPrompt(persona.prompt)}</Markdown>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

@@ -1,21 +1,30 @@
 "use client";
 import { ClientMessagePayload } from "@/ai/messageUtilsClient";
 import { FocusedInterviewChat } from "@/components/chat/FocusedInterviewChat";
+import { Button } from "@/components/ui/button";
 import { useChat } from "@ai-sdk/react";
 import { Message } from "ai";
-import { useEffect, useRef } from "react";
+import { ArrowLeft, ShieldIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 
-export function FollowUpInterviewClient({
-  userChatToken,
-  initialMessages = [],
-}: {
+interface FollowUpInterviewClientProps {
   userChatToken: string;
   initialMessages?: Message[];
-}) {
+}
+
+export default function FollowUpInterviewClient({
+  userChatToken,
+  initialMessages = [],
+}: FollowUpInterviewClientProps) {
+  const router = useRouter();
+  const [isInterviewComplete, setIsInterviewComplete] = useState(false);
+
   const initialRequestBody = {
     userChatToken,
   };
 
+  // 正确使用 useChat hook
   const useChatHelpers = useChat({
     api: "/api/persona/followup",
     initialMessages,
@@ -33,23 +42,74 @@ export function FollowUpInterviewClient({
   });
 
   const useChatRef = useRef({
-    append: useChatHelpers.append,
     reload: useChatHelpers.reload,
     setMessages: useChatHelpers.setMessages,
+    append: useChatHelpers.append,
   });
 
-  // Automatically start the conversation when the component mounts.
-  const requestSentRef = useRef(false);
+  // 检查访谈完成状态 - 从localStorage和服务器双重检查
   useEffect(() => {
-    if (requestSentRef.current) return;
-    requestSentRef.current = true;
-    if (initialMessages.length === 0) {
-      // If no initial message, start the conversation with AI
-      useChatRef.current.append({ role: "user", content: "[READY]" });
-    } else if (initialMessages[initialMessages.length - 1]?.role === "user") {
-      useChatRef.current.reload();
+    const checkInterviewStatus = async () => {
+      // 检查最后一条消息是否包含结束标识
+      const messages = useChatHelpers.messages || [];
+      const lastMessage = messages[messages.length - 1];
+      if (
+        lastMessage &&
+        (lastMessage.content.includes("访谈已完成") ||
+          lastMessage.content.includes("感谢您的参与") ||
+          lastMessage.parts?.some(
+            (part) =>
+              part.type === "tool-invocation" && part.toolInvocation.toolName === "endInterview",
+          ))
+      ) {
+        setIsInterviewComplete(true);
+      }
+    };
+    checkInterviewStatus();
+  }, [userChatToken, useChatHelpers.messages]);
+
+  // 监听消息变化，检测访谈完成
+  useEffect(() => {
+    const messages = useChatHelpers.messages || [];
+    const lastMessage = messages[messages.length - 1];
+    if (
+      lastMessage &&
+      (lastMessage.content.includes("访谈已完成") ||
+        lastMessage.content.includes("感谢您的参与") ||
+        lastMessage.parts?.some(
+          (part) =>
+            part.type === "tool-invocation" && part.toolInvocation.toolName === "endInterview",
+        ))
+    ) {
+      setIsInterviewComplete(true);
     }
-  }, [initialMessages]);
+  }, [useChatHelpers.messages, userChatToken]);
+
+  // 访谈完成后的界面
+  if (isInterviewComplete) {
+    return (
+      <div className="h-dvh w-dvw flex flex-col items-center justify-center p-8 text-center">
+        <div className="max-w-sm space-y-6">
+          <div className="space-y-4">
+            <div className="w-16 h-16 mx-auto bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
+              <ShieldIcon className="h-8 w-8 text-green-600 dark:text-green-400" />
+            </div>
+            <div className="space-y-2">
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">访谈完成</h2>
+              <p className="text-gray-600 dark:text-gray-400">
+                感谢您参与此次访谈会话。您的回答已被记录并将用于研究目的。
+              </p>
+            </div>
+          </div>
+          <div className="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-lg">
+            <p className="text-sm text-gray-700 dark:text-gray-300">
+              访谈摘要和分析将很快提供给研究人员。
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-screen w-full">
@@ -58,6 +118,17 @@ export function FollowUpInterviewClient({
         useChatRef={useChatRef}
         showTimer={false}
         className="h-full"
+        topRightButton={
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => router.push("/personas")}
+            className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+          >
+            <ArrowLeft className="h-4 w-4 mr-1" />
+            返回主页
+          </Button>
+        }
       />
     </div>
   );

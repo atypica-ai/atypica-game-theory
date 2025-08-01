@@ -229,7 +229,7 @@ Save each persona by calling the \`savePersona\` function. Adhere strictly to th
 **Completeness check**: Ensure all constructed user personas are saved through the \`savePersona\` function without omission.
 `;
 
-export const personaFollowUpSystemPrompt = async ({
+export const personaFollowUpSystemPrompt = ({
   personaImport: { analysis },
   locale,
 }: {
@@ -278,6 +278,7 @@ ${analysis?.supplementaryQuestions?.reasoning ? `\n理由：${analysis.supplemen
 3. **覆盖维度**：重点关注评分较低的维度，但要保持对话的自然流畅
 4. **个性化询问**：基于用户的具体回答，调整后续问题的方向和深度
 5. **耐心倾听**：给予用户充分的表达空间，鼓励分享真实的想法和经历
+6. **适时结束**：当获得足够的补充信息或达到访谈轮次限制时，使用 endInterview 工具总结访谈成果
 
 # 对话风格
 - 使用温和、专业但不失亲和力的语气
@@ -326,6 +327,7 @@ ${analysis?.supplementaryQuestions?.reasoning ? `\nReasoning: ${analysis.supplem
 3. **Dimension Coverage**: Focus on dimensions with lower scores while maintaining natural conversation flow
 4. **Personalized Inquiry**: Adjust the direction and depth of subsequent questions based on specific user responses
 5. **Patient Listening**: Give users ample space to express themselves and encourage sharing genuine thoughts and experiences
+6. **Timely Conclusion**: When sufficient supplementary information is obtained or interview round limits are reached, use the endInterview tool to summarize interview outcomes
 
 # Conversation Style
 - Use a gentle, professional yet approachable tone

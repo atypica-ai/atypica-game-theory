@@ -1,71 +1,85 @@
 "use client";
+import { createOrGetUserPersonaChat, fetchUserPersonas } from "@/app/(persona)/actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ExtractServerActionData } from "@/lib/serverAction";
+import { cn, formatDate } from "@/lib/utils";
 import {
   BotIcon,
   CalendarIcon,
   FileTextIcon,
+  LockIcon,
   MessageCircleIcon,
   PlusIcon,
+  RefreshCwIcon,
   UploadIcon,
 } from "lucide-react";
+import { useLocale } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { createOrGetUserPersonaChat, fetchUserPersonas } from "../actions";
 
-type TPersona = ExtractServerActionData<typeof fetchUserPersonas>[number];
+type PersonaWithStatus = ExtractServerActionData<typeof fetchUserPersonas>[number];
 
 export default function PersonasClient() {
+  const locale = useLocale();
   const router = useRouter();
-  const [personas, setPersonas] = useState<TPersona[]>([]);
+  const [personas, setPersonas] = useState<PersonaWithStatus[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [chatCreating, setChatCreating] = useState<Record<number, boolean>>({});
 
+  const loadPersonas = useCallback(async () => {
+    try {
+      const result = await fetchUserPersonas();
+      if (!result.success) throw result;
+      setPersonas(result.data);
+    } catch (error) {
+      console.log("Failed to fetch personas:", error);
+      toast.error("Failed to load personas");
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
-    const loadPersonas = async () => {
+    loadPersonas();
+    const interval = setInterval(() => {
+      loadPersonas();
+    }, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleStartChat = useCallback(
+    async (persona: PersonaWithStatus) => {
+      if (persona.personaImportProcessing) {
+        toast.warning("该人格画像正在更新中，请稍后再试");
+        return;
+      }
+      setChatCreating((prev) => ({ ...prev, [persona.id]: true }));
       try {
-        const result = await fetchUserPersonas();
+        const result = await createOrGetUserPersonaChat(persona.id);
         if (!result.success) {
           throw new Error(result.message);
         }
-        setPersonas(result.data);
+        router.push(`/persona-chat/${result.data.token}`);
       } catch (error) {
-        console.error("Failed to fetch personas:", error);
-        toast.error("Failed to load personas");
+        console.log("Failed to start chat:", error);
+        toast.error("Failed to start chat");
       } finally {
-        setIsLoading(false);
+        setChatCreating((prev) => ({ ...prev, [persona.id]: false }));
       }
-    };
+    },
+    [router],
+  );
 
-    loadPersonas();
-  }, []);
-
-  const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat("zh-CN", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    }).format(new Date(date));
-  };
-
-  const handleStartChat = async (personaId: number) => {
-    setChatCreating((prev) => ({ ...prev, [personaId]: true }));
-    try {
-      const result = await createOrGetUserPersonaChat(personaId);
-      if (!result.success) {
-        throw new Error(result.message);
-      }
-      router.push(`/persona-chat/${result.data.token}`);
-    } catch (error) {
-      console.error("Failed to start chat:", error);
-      toast.error("Failed to start chat");
-    } finally {
-      setChatCreating((prev) => ({ ...prev, [personaId]: false }));
+  const handleViewPersona = (persona: PersonaWithStatus) => {
+    if (persona.personaImportProcessing) {
+      toast.warning("该人格画像正在更新中，请稍后再试");
+      return;
     }
+    router.push(`/persona-import/${persona.personaImportId}`);
   };
 
   if (isLoading) {
@@ -119,20 +133,36 @@ export default function PersonasClient() {
             </Card>
 
             {personas.map((persona) => (
-              <Card key={persona.id} className="transition-all duration-300 hover:shadow-md">
+              <Card
+                key={persona.id}
+                className={cn(
+                  "transition-all duration-300",
+                  persona.personaImportProcessing
+                    ? "opacity-75 cursor-not-allowed border-amber-200 bg-amber-50/30"
+                    : "hover:shadow-md",
+                )}
+              >
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center justify-between">
                     <span className="truncate">{persona.name}</span>
-                    {persona.tier !== null && (
-                      <Badge variant="secondary" className="text-xs">
-                        T{persona.tier}
-                      </Badge>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {persona.personaImportProcessing && (
+                        <div className="flex items-center gap-1 px-2 py-1 bg-amber-100 text-amber-800 rounded text-xs">
+                          <RefreshCwIcon className="w-3 h-3 animate-spin" />
+                          更新中
+                        </div>
+                      )}
+                      {persona.tier !== null && (
+                        <Badge variant="secondary" className="text-xs">
+                          T{persona.tier}
+                        </Badge>
+                      )}
+                    </div>
                   </CardTitle>
                   <CardDescription className="text-xs text-muted-foreground">
                     <div className="flex items-center gap-1">
                       <CalendarIcon className="size-3" />
-                      {formatDate(persona.createdAt)}
+                      {formatDate(persona.createdAt, locale)}
                     </div>
                     <div className="mt-1">Source: {persona.source}</div>
                   </CardDescription>
@@ -151,25 +181,39 @@ export default function PersonasClient() {
                     )}
                   </div>
                   <div className="flex gap-2 pt-2">
-                    <Button
-                      size="sm"
-                      className="flex-1"
-                      onClick={() => handleStartChat(persona.id)}
-                      disabled={chatCreating[persona.id]}
-                    >
-                      <MessageCircleIcon className="size-3 mr-2" />
-                      {chatCreating[persona.id] ? "Starting..." : "Start Chat"}
-                    </Button>
-                    <Button asChild variant="outline" size="sm" className="flex-1">
-                      <Link
-                        href={`/persona-import/${persona.personaImportId}`}
-                        target="_blank"
-                        className="flex items-center gap-2"
-                      >
-                        <FileTextIcon className="size-3" />
-                        View Analysis
-                      </Link>
-                    </Button>
+                    {persona.personaImportProcessing ? (
+                      <>
+                        <Button size="sm" className="flex-1" disabled variant="outline">
+                          <LockIcon className="size-3 mr-2" />
+                          更新中...
+                        </Button>
+                        <Button size="sm" className="flex-1" disabled variant="outline">
+                          <RefreshCwIcon className="size-3 mr-2 animate-spin" />
+                          处理中
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <Button
+                          size="sm"
+                          className="flex-1"
+                          onClick={() => handleStartChat(persona)}
+                          disabled={chatCreating[persona.id]}
+                        >
+                          <MessageCircleIcon className="size-3 mr-2" />
+                          {chatCreating[persona.id] ? "Starting..." : "Start Chat"}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1"
+                          onClick={() => handleViewPersona(persona)}
+                        >
+                          <FileTextIcon className="size-3 mr-2" />
+                          View Analysis
+                        </Button>
+                      </>
+                    )}
                   </div>
                 </CardContent>
               </Card>

@@ -69,6 +69,7 @@ declare module "@/prisma/client" {
 
   export type PersonaImportExtra = Partial<{
     error: string;
+    processing: boolean;
   }>;
 
   // 只覆盖这个不够，findUnique 返回的类型还是原来的

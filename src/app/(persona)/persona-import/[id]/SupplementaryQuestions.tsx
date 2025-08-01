@@ -16,7 +16,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 interface SupplementaryQuestionsProps {
-  supplementaryQuestions: AnalysisResult["supplementaryQuestions"] | undefined;
+  supplementaryQuestions: AnalysisResult["supplementaryQuestions"];
   fileName: string;
   personaImportId: number;
 }
@@ -59,39 +59,34 @@ export function SupplementaryQuestions({
     toast.success("分享链接已复制到剪贴板");
   };
 
-  if (!supplementaryQuestions || !supplementaryQuestions.questions) return null;
-
   return (
-    <div className="space-y-6">
-      <div className="space-y-2">
-        <h2 className="text-xl font-semibold flex items-center gap-3 text-slate-900">
-          <div className="w-6 h-6 rounded bg-slate-900 flex items-center justify-center">
-            <LightbulbIcon className="size-3 text-white" />
-          </div>
-          综合补充问题
-        </h2>
-        <p className="text-slate-600 ml-9 text-sm">
-          基于分析结果生成的建议问题，用于改进人格画像的完整性
-        </p>
-      </div>
-
-      <div className="space-y-4">
-        <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
-          <h4 className="font-medium mb-2 text-amber-900">生成理由</h4>
-          <p className="text-sm text-amber-800 leading-relaxed">
-            {supplementaryQuestions.reasoning}
+    <div className="bg-white rounded-lg border border-slate-200 p-6">
+      <div className="space-y-6">
+        <div className="space-y-2">
+          <h2 className="text-xl font-semibold flex items-center gap-3 text-slate-900">
+            <div className="w-6 h-6 rounded bg-slate-900 flex items-center justify-center">
+              <LightbulbIcon className="size-3 text-white" />
+            </div>
+            综合补充问题
+          </h2>
+          <p className="text-slate-600 ml-9 text-sm">
+            基于分析结果生成的建议问题，用于改进人格画像的完整性
           </p>
         </div>
 
-        <div className="space-y-3">
-          <h4 className="font-medium text-slate-900">建议追问问题</h4>
-          <div className="grid gap-3">
-            {(supplementaryQuestions.questions ?? []).map((question, index) => {
-              // Skip empty or undefined questions
-              if (!question) return null;
+        <div className="space-y-4">
+          <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
+            <h4 className="font-medium mb-2 text-amber-900">生成理由</h4>
+            <p className="text-sm text-amber-800 leading-relaxed">
+              {supplementaryQuestions.reasoning}
+            </p>
+          </div>
 
-              return (
-                <div key={index} className="p-3 bg-white border border-slate-200 rounded-lg">
+          <div className="space-y-3">
+            <h4 className="font-medium text-slate-900">建议追问问题</h4>
+            <div className="grid gap-3">
+              {(supplementaryQuestions.questions ?? []).map((question, index) => (
+                <div key={index} className="p-3 border border-slate-200 rounded-lg bg-white">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-start gap-3">
@@ -105,65 +100,69 @@ export function SupplementaryQuestions({
                       variant="ghost"
                       size="sm"
                       onClick={() => copyToClipboard(question)}
-                      className="text-slate-400 hover:text-slate-600 px-2 py-1 h-auto"
+                      className="px-2 py-1 h-autotext-slate-400 hover:text-slate-600"
                     >
                       <CopyIcon className="size-3" />
                     </Button>
                   </div>
                 </div>
-              );
-            })}
+              ))}
+            </div>
           </div>
-        </div>
 
-        <div className="pt-4 border-t border-slate-200">
-          <div className="space-y-2">
-            <AlertDialog
-              open={open}
-              onOpenChange={(open) => {
-                if (!open) setOpen(false);
-              }}
-            >
-              <Button className="w-full" onClick={handleCreateShareLink} disabled={isCreatingLink}>
-                <ShareIcon className="size-4 mr-2" />
-                {isCreatingLink ? "生成中..." : "生成分享链接"}
-              </Button>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>分享补充问题链接</AlertDialogTitle>
-                  <AlertDialogDescription></AlertDialogDescription>
-                </AlertDialogHeader>
-                <div className="mt-3 space-y-3 overflow-hidden">
-                  <p className="text-sm text-muted-foreground mb-2">
-                    将此链接发送给受访者，用于收集补充问题的回答
-                  </p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <div className="bg-muted p-2 rounded-md text-xs flex-1 overflow-hidden break-words">
-                      {shareUrl}
+          <div className="pt-4 border-t border-slate-200">
+            <div className="space-y-2">
+              <AlertDialog
+                open={open}
+                onOpenChange={(open) => {
+                  if (!open) setOpen(false);
+                }}
+              >
+                <Button
+                  className="w-full"
+                  onClick={handleCreateShareLink}
+                  disabled={isCreatingLink}
+                >
+                  <ShareIcon className="size-4 mr-2" />
+                  {isCreatingLink ? "生成中..." : "生成分享链接"}
+                </Button>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>分享补充问题链接</AlertDialogTitle>
+                    <AlertDialogDescription></AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <div className="mt-3 space-y-3 overflow-hidden">
+                    <p className="text-sm text-muted-foreground mb-2">
+                      将此链接发送给受访者，用于收集补充问题的回答
+                    </p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <div className="bg-muted p-2 rounded-md text-xs flex-1 overflow-hidden break-words">
+                        {shareUrl}
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={handleCopyUrl}
+                        className="shrink-0"
+                      >
+                        <ClipboardCopyIcon className="size-4 mr-1" />
+                        复制
+                      </Button>
                     </div>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={handleCopyUrl}
-                      className="shrink-0"
-                    >
-                      <ClipboardCopyIcon className="size-4 mr-1" />
-                      复制
-                    </Button>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      受访者可以通过此链接查看问题并提供回答
+                    </p>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    受访者可以通过此链接查看问题并提供回答
-                  </p>
-                </div>
-                <AlertDialogFooter>
-                  <AlertDialogCancel onClick={() => setOpen(false)}>关闭</AlertDialogCancel>
-                  <Button onClick={() => window.open(shareUrl, "_blank")}>打开链接</Button>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-            <p className="text-xs text-slate-600 text-center">
-              创建链接发送给受访者，用于收集补充回答
-            </p>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel onClick={() => setOpen(false)}>关闭</AlertDialogCancel>
+                    <Button onClick={() => window.open(shareUrl, "_blank")}>打开链接</Button>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+              <p className="text-xs text-slate-600 text-center">
+                创建链接发送给受访者，用于收集补充回答
+              </p>
+            </div>
           </div>
         </div>
       </div>

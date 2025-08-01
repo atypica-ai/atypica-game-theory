@@ -8,6 +8,7 @@ import { llm, providerOptions } from "@/ai/provider";
 import { reasoningThinkingTool } from "@/ai/tools/experts/reasoning";
 import { ToolName } from "@/ai/tools/types";
 import { personaFollowUpSystemPrompt } from "@/app/(persona)/prompt";
+import { followUpInterviewTools } from "@/app/(persona)/tools";
 import { PersonaImportAnalysis } from "@/app/(persona)/types";
 import { rootLogger } from "@/lib/logging";
 import { prisma } from "@/prisma/prisma";
@@ -67,7 +68,7 @@ export async function POST(req: NextRequest) {
   const { coreMessages, streamingMessage } = await prepareMessagesForStreaming(userChat.id);
 
   // Generate system prompt for follow-up interview
-  const systemPrompt = await personaFollowUpSystemPrompt({
+  const systemPrompt = personaFollowUpSystemPrompt({
     personaImport: {
       analysis: personaImport.analysis as Partial<PersonaImportAnalysis> | null,
     },
@@ -87,8 +88,14 @@ export async function POST(req: NextRequest) {
         statReport: () => Promise.resolve(), // No-op for follow-up interviews
         logger: chatLogger,
       }),
+      ...followUpInterviewTools({
+        personaImportId: personaImport.id,
+        logger: chatLogger,
+      }),
     },
-    toolChoice: "auto",
+    experimental_toolCallStreaming: true,
+    // 关键修改：当消息数量达到19条时强制结束访谈
+    toolChoice: coreMessages.length < 19 ? "auto" : { type: "tool", toolName: "endInterview" },
     maxSteps: 3,
     temperature: 0.7,
     experimental_generateMessageId: () => streamingMessage.id,
@@ -101,16 +108,11 @@ export async function POST(req: NextRequest) {
       if (streamingMessage.parts?.length && streamingMessage.content.trim()) {
         await persistentAIMessageToDB(userChat.id, streamingMessage);
       }
-      chatLogger.info({
-        msg: "follow-up interview streamText onStepFinish",
-        stepType: step.stepType,
-        toolCalls: step.toolCalls.map((call) => call.toolName),
-        usage: step.usage,
-      });
     },
     onError: ({ error }) => {
       chatLogger.error(`follow-up interview streamText onError: ${(error as Error).message}`);
     },
+    onFinish: async () => {},
     abortSignal,
   });
 
