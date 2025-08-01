@@ -12,6 +12,7 @@ import {
   Users2Icon,
   UsersIcon,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useMemo } from "react";
 import {
   PolarAngleAxis,
@@ -29,6 +30,7 @@ interface AnalysisResultProps {
 }
 
 export function AnalysisResult({ analysis }: AnalysisResultProps) {
+  const t = useTranslations("PersonaImport.analysisResult");
   const getScoreColor = (score: number) => {
     if (score >= 3) return "text-green-600";
     if (score >= 2) return "text-blue-600";
@@ -37,10 +39,10 @@ export function AnalysisResult({ analysis }: AnalysisResultProps) {
   };
 
   const getScoreLabel = (score: number) => {
-    if (score >= 3) return "优秀";
-    if (score >= 2) return "良好";
-    if (score >= 1) return "基础";
-    return "不足";
+    if (score >= 3) return t("excellent");
+    if (score >= 2) return t("good");
+    if (score >= 1) return t("basic");
+    return t("insufficient");
   };
 
   const getDimensionIcon = (dimension: string) => {
@@ -67,19 +69,19 @@ export function AnalysisResult({ analysis }: AnalysisResultProps) {
   const getDimensionName = (dimension: string) => {
     switch (dimension) {
       case "demographic":
-        return "人口统计学维度";
+        return t("demographics");
       case "geographic":
-        return "地理维度";
+        return t("geographic");
       case "psychological":
-        return "心理特征维度";
+        return t("psychological");
       case "behavioral":
-        return "行为维度";
+        return t("behavioral");
       case "needsPainPoints":
-        return "需求与痛点维度";
+        return t("needsPainPoints");
       case "techAcceptance":
-        return "技术接受度维度";
+        return t("techAcceptance");
       case "socialRelations":
-        return "社会关系维度";
+        return t("socialRelations");
       default:
         return dimension;
     }
@@ -88,15 +90,15 @@ export function AnalysisResult({ analysis }: AnalysisResultProps) {
   const radarData = useMemo(() => {
     if (!analysis) return [];
     return [
-      { subject: "人口统计", score: analysis.demographic?.score ?? 0, fullMark: 3 },
-      { subject: "地理环境", score: analysis.geographic?.score ?? 0, fullMark: 3 },
-      { subject: "心理特征", score: analysis.psychological?.score ?? 0, fullMark: 3 },
-      { subject: "行为模式", score: analysis.behavioral?.score ?? 0, fullMark: 3 },
-      { subject: "需求痛点", score: analysis.needsPainPoints?.score ?? 0, fullMark: 3 },
-      { subject: "技术接受", score: analysis.techAcceptance?.score ?? 0, fullMark: 3 },
-      { subject: "社会关系", score: analysis.socialRelations?.score ?? 0, fullMark: 3 },
+      { subject: t("demographics"), score: analysis.demographic?.score ?? 0, fullMark: 3 },
+      { subject: t("geographic"), score: analysis.geographic?.score ?? 0, fullMark: 3 },
+      { subject: t("psychological"), score: analysis.psychological?.score ?? 0, fullMark: 3 },
+      { subject: t("behavioral"), score: analysis.behavioral?.score ?? 0, fullMark: 3 },
+      { subject: t("needsPainPoints"), score: analysis.needsPainPoints?.score ?? 0, fullMark: 3 },
+      { subject: t("techAcceptance"), score: analysis.techAcceptance?.score ?? 0, fullMark: 3 },
+      { subject: t("socialRelations"), score: analysis.socialRelations?.score ?? 0, fullMark: 3 },
     ];
-  }, [analysis]);
+  }, [analysis, t]);
 
   // Calculate percentage score
   const totalScore = analysis?.totalScore ?? 0;
@@ -114,11 +116,9 @@ export function AnalysisResult({ analysis }: AnalysisResultProps) {
             <div className="w-6 h-6 rounded bg-slate-900 flex items-center justify-center">
               <BarChart3Icon className="size-3 text-white" />
             </div>
-            完整性分析结果
+            {t("title")}
           </h2>
-          <p className="text-slate-600 ml-9 text-sm">
-            基于四大社会心理维度的结构化分析与评分，评估信息完备度
-          </p>
+          <p className="text-slate-600 ml-9 text-sm">{t("description")}</p>
         </div>
 
         <div className="space-y-6">
@@ -139,7 +139,7 @@ export function AnalysisResult({ analysis }: AnalysisResultProps) {
                     />
                     <PolarRadiusAxis angle={90} domain={[0, 3]} tick={false} axisLine={false} />
                     <Radar
-                      name="评分"
+                      name={t("score")}
                       dataKey="score"
                       stroke="#1e293b"
                       fill="#1e293b"
@@ -176,7 +176,7 @@ export function AnalysisResult({ analysis }: AnalysisResultProps) {
           <div className="p-4 bg-white rounded-lg border border-slate-200">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-medium text-slate-900">智能体完整度</h3>
+                <h3 className="text-sm font-medium text-slate-900">{t("agentCompleteness")}</h3>
                 <Badge variant="outline" className="text-sm px-3 py-1">
                   {percentageScore}%
                 </Badge>
@@ -198,16 +198,16 @@ export function AnalysisResult({ analysis }: AnalysisResultProps) {
               <div className="flex justify-between items-center text-xs">
                 <span className="text-slate-600">
                   {percentageScore >= 80
-                    ? "各维度覆盖度优秀，信息全面深入"
+                    ? t("excellentCoverage")
                     : percentageScore >= 65
-                      ? "覆盖度良好，部分维度可进一步优化"
+                      ? t("goodCoverage")
                       : percentageScore >= baselinePercentage
-                        ? "覆盖度达到基准线，需要重点补充关键信息"
-                        : "覆盖度低于基准线，需要大量补充各维度信息"}
+                        ? t("baselineCoverage")
+                        : t("belowBaseline")}
                 </span>
                 <span className="text-red-500 text-xs flex items-center gap-1">
                   <div className="w-1 h-1 bg-red-400 rounded-full" />
-                  基准线 {baselinePercentage}%
+                  {t("baseline")} {baselinePercentage}%
                 </span>
               </div>
             </div>
@@ -262,7 +262,9 @@ export function AnalysisResult({ analysis }: AnalysisResultProps) {
                     <p className="text-xs text-slate-600">{dimensionData.reason}</p>
                     {dimensionData.questions && dimensionData.questions.length > 0 && (
                       <div className="pt-3 border-t border-slate-100">
-                        <h5 className="font-medium text-xs mb-2 text-slate-700">针对性补充问题</h5>
+                        <h5 className="font-medium text-xs mb-2 text-slate-700">
+                          {t("targetedQuestions")}
+                        </h5>
                         <div className="space-y-2">
                           {dimensionData.questions.map((question, index) => (
                             <div

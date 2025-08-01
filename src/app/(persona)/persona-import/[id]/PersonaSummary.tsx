@@ -4,6 +4,7 @@ import { Markdown } from "@/components/markdown";
 import { Button } from "@/components/ui/button";
 import { Persona } from "@/prisma/client";
 import { BrainIcon, MessageCircleIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -14,6 +15,7 @@ type ChatSession = {
 };
 
 export function PersonaSummary({ personas }: { personas: Persona[] }) {
+  const t = useTranslations("PersonaImport.personaSummary");
   const router = useRouter();
   const [chatCreating, setChatCreating] = useState<Record<number, boolean>>({});
   const [personaChatStats, setPersonaChatStats] = useState<Record<number, ChatSession[]>>({});
@@ -75,9 +77,9 @@ export function PersonaSummary({ personas }: { personas: Persona[] }) {
             <div className="w-6 h-6 rounded bg-slate-900 flex items-center justify-center">
               <BrainIcon className="size-3 text-white" />
             </div>
-            生成的用户画像
+            {t("title")}
           </h2>
-          <p className="text-slate-600 ml-9 text-sm">基于内容生成的AI对话角色</p>
+          <p className="text-slate-600 ml-9 text-sm">{t("description")}</p>
         </div>
 
         <div className="grid gap-3">
@@ -104,12 +106,12 @@ export function PersonaSummary({ personas }: { personas: Persona[] }) {
                     >
                       <MessageCircleIcon className="size-3" />
                       {chatCreating[persona.id]
-                        ? "启动中..."
+                        ? t("starting")
                         : loadingHistory[persona.id]
-                          ? "检查中..."
+                          ? t("checking")
                           : hasHistory
-                            ? "继续对话"
-                            : "开启对话"}
+                            ? t("continueChat")
+                            : t("startChat")}
                     </Button>
                   </div>
                   <div className="flex flex-wrap gap-1">

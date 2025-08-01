@@ -9,6 +9,7 @@ import {
   CheckCircleIcon,
   Loader2Icon,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface ProcessingStatusProps {
   isGenerating: boolean;
@@ -23,6 +24,7 @@ export function ProcessingStatus({
   personas,
   personaImportAnalysis,
 }: ProcessingStatusProps) {
+  const t = useTranslations("PersonaImport.import");
   // Extract analysis data from personaImportAnalysis
   const analysis = personaImportAnalysis?.analysis;
   const supplementaryQuestions = personaImportAnalysis?.supplementaryQuestions;
@@ -39,9 +41,9 @@ export function ProcessingStatus({
             <div className="w-6 h-6 rounded bg-slate-900 flex items-center justify-center">
               <ActivityIcon className="size-3 text-white" />
             </div>
-            处理进度
+            {t("progress")}
           </h2>
-          <p className="text-slate-600 ml-9 text-sm">AI 正在分析您的访谈内容并生成人格画像</p>
+          <p className="text-slate-600 ml-9 text-sm">{t("progressDescription")}</p>
         </div>
 
         <div className="space-y-4">
@@ -53,7 +55,7 @@ export function ProcessingStatus({
                   <div className="w-8 h-8 rounded bg-slate-100 flex items-center justify-center">
                     <BotIcon className="size-4 text-slate-600" />
                   </div>
-                  <span className="font-medium text-slate-900">人格画像生成</span>
+                  <span className="font-medium text-slate-900">{t("personaGeneration")}</span>
                 </div>
                 <div className="flex items-center gap-3">
                   {isGenerating ? (
@@ -64,7 +66,11 @@ export function ProcessingStatus({
                     <AlertCircleIcon className="size-4 text-slate-400" />
                   )}
                   <span className="text-sm text-slate-600">
-                    {isGenerating ? "生成中..." : personaAgentCompleted ? "已完成" : "等待中"}
+                    {isGenerating
+                      ? t("generating")
+                      : personaAgentCompleted
+                        ? t("completed")
+                        : t("waiting")}
                   </span>
                 </div>
               </div>
@@ -78,7 +84,7 @@ export function ProcessingStatus({
               </div>
               {isGenerating && (
                 <div className="text-xs text-slate-700 bg-slate-100 px-3 py-1 rounded inline-block">
-                  正在生成人格画像...
+                  {t("generatingPersona")}
                 </div>
               )}
             </div>
@@ -92,7 +98,7 @@ export function ProcessingStatus({
                   <div className="w-8 h-8 rounded bg-slate-100 flex items-center justify-center">
                     <BarChart3Icon className="size-4 text-slate-600" />
                   </div>
-                  <span className="font-medium text-slate-900">完整性分析</span>
+                  <span className="font-medium text-slate-900">{t("completenessAnalysis")}</span>
                 </div>
                 <div className="flex items-center gap-3">
                   {isAnalyzing ? (
@@ -103,7 +109,11 @@ export function ProcessingStatus({
                     <AlertCircleIcon className="size-4 text-slate-400" />
                   )}
                   <span className="text-sm text-slate-600">
-                    {isAnalyzing ? "分析中..." : analysisCompleted ? "已完成" : "等待中"}
+                    {isAnalyzing
+                      ? t("analyzing")
+                      : analysisCompleted
+                        ? t("completed")
+                        : t("waiting")}
                   </span>
                 </div>
               </div>
@@ -119,20 +129,21 @@ export function ProcessingStatus({
                 {analysisCompleted && (
                   <div className="text-xs text-slate-700 bg-slate-100 px-3 py-1 rounded flex items-center gap-2">
                     <div className="w-2 h-2 bg-green-500 rounded-full" />
-                    维度分析完成，完整度：
+                    {t("dimensionAnalysisComplete")}
                     {Math.round(((analysis?.totalScore ?? 0) / (7 * 3)) * 100)}%
                   </div>
                 )}
                 {supplementaryQuestions && (
                   <div className="text-xs text-slate-700 bg-slate-100 px-3 py-1 rounded flex items-center gap-2">
                     <div className="w-2 h-2 bg-green-500 rounded-full" />
-                    已生成 {supplementaryQuestions.questions?.length ?? 0} 个补充问题
+                    {t("supplementaryQuestionsGenerated")}{" "}
+                    {supplementaryQuestions.questions?.length ?? 0} {t("supplementaryQuestions")}
                   </div>
                 )}
               </div>
               {isAnalyzing && (
                 <div className="text-xs text-slate-700 bg-slate-100 px-3 py-1 rounded inline-block">
-                  正在分析访谈完整性...
+                  {t("analyzingCompleteness")}
                 </div>
               )}
             </div>
@@ -141,7 +152,7 @@ export function ProcessingStatus({
         {/* 显示生成的人格画像 */}
         {personas && personas.length > 0 && (
           <div className="space-y-3">
-            <h3 className="font-medium text-slate-900">生成的人格画像</h3>
+            <h3 className="font-medium text-slate-900">{t("generatedPersonas")}</h3>
             <div className="grid gap-3">
               {personas.map((persona) => (
                 <div key={persona.id} className="p-3 bg-slate-50 rounded border">

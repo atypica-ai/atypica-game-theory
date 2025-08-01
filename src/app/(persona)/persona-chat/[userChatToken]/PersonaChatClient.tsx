@@ -18,6 +18,7 @@ import { useChat } from "@ai-sdk/react";
 import { Message } from "ai";
 import { BotIcon, CalendarIcon, InfoIcon, RefreshCwIcon, TagIcon, TrashIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
@@ -31,6 +32,7 @@ export function PersonaChatClient({
   persona: Persona;
   initialMessages?: Message[];
 }) {
+  const t = useTranslations("PersonaImport.personaChat");
   const { data: session } = useSession();
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
@@ -73,7 +75,7 @@ export function PersonaChatClient({
   };
 
   const handleClearHistory = async () => {
-    if (!confirm("确定要清理所有聊天记录吗？此操作不可撤销。")) {
+    if (!confirm(t("confirmClearHistory"))) {
       return;
     }
 
@@ -82,16 +84,16 @@ export function PersonaChatClient({
       const result = await clearPersonaChatHistory(userChatToken);
 
       if (!result.success) {
-        throw new Error(result.message || "清理失败");
+        throw new Error(result.message || t("clearFailed"));
       }
 
-      toast.success("聊天记录已清理");
+      toast.success(t("historyCleared"));
 
       // 清空当前聊天界面的消息
       useChatHelpers.setMessages([]);
     } catch (error) {
       console.error("Error clearing history:", error);
-      toast.error("清理失败，请重试");
+      toast.error(t("clearFailed"));
     } finally {
       setIsClearing(false);
     }
@@ -118,7 +120,7 @@ export function PersonaChatClient({
                 className="gap-2 text-slate-500 hover:text-slate-700"
               >
                 <InfoIcon className="w-4 h-4" />
-                <span className="hidden sm:inline text-xs">Details</span>
+                <span className="hidden sm:inline text-xs">{t("details")}</span>
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">
@@ -133,7 +135,7 @@ export function PersonaChatClient({
                 {/* Basic Info */}
                 <div className="space-y-3">
                   <div>
-                    <div className="text-xs font-medium text-slate-500 mb-1">Created</div>
+                    <div className="text-xs font-medium text-slate-500 mb-1">{t("created")}</div>
                     <div className="text-sm text-slate-700 flex items-center gap-1">
                       <CalendarIcon className="w-3 h-3" />
                       {formatDate(persona.createdAt)}
@@ -141,15 +143,15 @@ export function PersonaChatClient({
                   </div>
 
                   <div>
-                    <div className="text-xs font-medium text-slate-500 mb-1">Source</div>
+                    <div className="text-xs font-medium text-slate-500 mb-1">{t("source")}</div>
                     <div className="text-sm text-slate-700">{persona.source}</div>
                   </div>
 
                   {persona.tier !== null && (
                     <div>
-                      <div className="text-xs font-medium text-slate-500 mb-1">Tier</div>
+                      <div className="text-xs font-medium text-slate-500 mb-1">{t("tier")}</div>
                       <Badge variant="secondary" className="text-xs">
-                        Tier {persona.tier}
+                        {t("tier")} {persona.tier}
                       </Badge>
                     </div>
                   )}
@@ -157,7 +159,7 @@ export function PersonaChatClient({
                   <div>
                     <div className="text-xs font-medium text-slate-500 mb-2 flex items-center gap-1">
                       <TagIcon className="w-3 h-3" />
-                      Tags
+                      {t("tags")}
                     </div>
                     <div className="flex flex-wrap gap-1">
                       {(persona.tags as string[])?.map((tag, index) => (
@@ -185,12 +187,12 @@ export function PersonaChatClient({
                           {isClearing ? (
                             <>
                               <RefreshCwIcon className="w-4 h-4 animate-spin" />
-                              清理中...
+                              {t("clearing")}...
                             </>
                           ) : (
                             <>
                               <TrashIcon className="w-4 h-4" />
-                              清除聊天记录
+                              {t("clearChatHistory")}
                             </>
                           )}
                         </Button>
@@ -208,7 +210,7 @@ export function PersonaChatClient({
                             className="flex items-center gap-2"
                           >
                             <BotIcon className="w-4 h-4" />
-                            返回人格建立
+                            {t("returnToPersonaCreation")}
                           </Link>
                         </Button>
                       )}

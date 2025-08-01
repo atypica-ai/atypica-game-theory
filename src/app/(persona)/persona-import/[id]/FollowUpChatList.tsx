@@ -14,11 +14,13 @@ import {
 } from "@/components/ui/dialog";
 import { Message } from "ai";
 import { MessageSquareIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export function FollowUpChatList({ personaImportId }: { personaImportId: number }) {
+  const t = useTranslations("PersonaImport.followUpChat");
   const router = useRouter();
   const [followUpHistory, setFollowUpHistory] = useState<{
     hasHistory: boolean;
@@ -58,7 +60,7 @@ export function FollowUpChatList({ personaImportId }: { personaImportId: number 
       setFollowUpChatMessages(result.data.messages);
     } catch (error) {
       console.log("Failed to load follow-up chat messages:", error);
-      toast.error("获取聊天记录失败");
+      toast.error(t("loading"));
     } finally {
       setLoadingFollowUpChat(false);
     }
@@ -90,17 +92,17 @@ export function FollowUpChatList({ personaImportId }: { personaImportId: number 
             <div className="w-6 h-6 rounded bg-slate-900 flex items-center justify-center">
               <MessageSquareIcon className="size-3 text-white" />
             </div>
-            追加问题回答记录
+            {t("title")}
           </h2>
-          <p className="text-slate-600 ml-9 text-sm">查看后续访谈对话记录</p>
+          <p className="text-slate-600 ml-9 text-sm">{t("description")}</p>
         </div>
 
         <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200">
           <div className="flex items-center gap-3">
             <MessageSquareIcon className="size-4 text-slate-600" />
             <div>
-              <p className="font-medium text-slate-900">后续访谈对话</p>
-              <p className="text-sm text-slate-600">查看完整的对话记录</p>
+              <p className="font-medium text-slate-900">{t("followUpConversation")}</p>
+              <p className="text-sm text-slate-600">{t("viewCompleteRecord")}</p>
             </div>
           </div>
           <Dialog open={followUpChatOpen} onOpenChange={setFollowUpChatOpen}>
@@ -111,21 +113,21 @@ export function FollowUpChatList({ personaImportId }: { personaImportId: number 
                 onClick={handleViewFollowUpHistory}
                 disabled={loadingFollowUpHistory}
               >
-                {loadingFollowUpHistory ? "加载中..." : "查看记录"}
+                {loadingFollowUpHistory ? t("loading") : t("viewRecord")}
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden flex flex-col">
               <DialogHeader>
-                <DialogTitle>后续访谈对话记录</DialogTitle>
+                <DialogTitle>{t("conversationHistory")}</DialogTitle>
               </DialogHeader>
               <div className="flex-1 overflow-y-auto space-y-4 pr-2">
                 {loadingFollowUpChat ? (
                   <div className="flex items-center justify-center py-8">
-                    <div className="text-slate-500">加载中...</div>
+                    <div className="text-slate-500">{t("loading")}</div>
                   </div>
                 ) : followUpChatMessages.length === 0 ? (
                   <div className="flex items-center justify-center py-8">
-                    <div className="text-slate-500">暂无对话记录</div>
+                    <div className="text-slate-500">{t("noRecord")}</div>
                   </div>
                 ) : (
                   followUpChatMessages.map(({ id, role, content, parts, ...extra }) => (
@@ -141,10 +143,10 @@ export function FollowUpChatList({ personaImportId }: { personaImportId: number 
               </div>
               <div className="flex justify-end gap-3 pt-4 border-t">
                 <Button variant="outline" onClick={() => setFollowUpChatOpen(false)}>
-                  关闭
+                  {t("close")}
                 </Button>
                 <Button onClick={handleContinueChat} disabled={!followUpHistory?.userChatToken}>
-                  继续对话
+                  {t("continueConversation")}
                 </Button>
               </div>
             </DialogContent>

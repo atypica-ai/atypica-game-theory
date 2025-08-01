@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { ClipboardCopyIcon, CopyIcon, LightbulbIcon, ShareIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -26,13 +27,14 @@ export function SupplementaryQuestions({
   // fileName,
   personaImportId,
 }: SupplementaryQuestionsProps) {
+  const t = useTranslations("PersonaImport.supplementaryQuestions");
   const [open, setOpen] = useState(false);
   const [shareUrl, setShareUrl] = useState("");
   const [isCreatingLink, setIsCreatingLink] = useState(false);
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text).then(() => {
-      toast.success("已复制到剪贴板");
+      toast.success(t("copyLink"));
     });
   };
 
@@ -41,14 +43,14 @@ export function SupplementaryQuestions({
     try {
       const result = await createFollowUpInterviewChat(personaImportId);
       if (!result.success) {
-        throw new Error(result.message || "创建分享链接失败");
+        throw new Error(result.message || t("generating"));
       }
       const url = `${window.location.origin}/persona-followup/${result.data.token}`;
       setShareUrl(url);
       setOpen(true);
     } catch (error) {
       console.error("Error creating share link:", error);
-      toast.error("创建分享链接失败，请重试");
+      toast.error(t("generating"));
     } finally {
       setIsCreatingLink(false);
     }
@@ -56,7 +58,7 @@ export function SupplementaryQuestions({
 
   const handleCopyUrl = () => {
     copyToClipboard(shareUrl);
-    toast.success("分享链接已复制到剪贴板");
+    toast.success(t("copyLink"));
   };
 
   return (
@@ -67,23 +69,21 @@ export function SupplementaryQuestions({
             <div className="w-6 h-6 rounded bg-slate-900 flex items-center justify-center">
               <LightbulbIcon className="size-3 text-white" />
             </div>
-            综合补充问题
+            {t("title")}
           </h2>
-          <p className="text-slate-600 ml-9 text-sm">
-            基于分析结果生成的建议问题，用于改进人格画像的完整性
-          </p>
+          <p className="text-slate-600 ml-9 text-sm">{t("description")}</p>
         </div>
 
         <div className="space-y-4">
           <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
-            <h4 className="font-medium mb-2 text-amber-900">生成理由</h4>
+            <h4 className="font-medium mb-2 text-amber-900">{t("generationReason")}</h4>
             <p className="text-sm text-amber-800 leading-relaxed">
               {supplementaryQuestions.reasoning}
             </p>
           </div>
 
           <div className="space-y-3">
-            <h4 className="font-medium text-slate-900">建议追问问题</h4>
+            <h4 className="font-medium text-slate-900">{t("suggestedQuestions")}</h4>
             <div className="grid gap-3">
               {(supplementaryQuestions.questions ?? []).map((question, index) => (
                 <div key={index} className="p-3 border border-slate-200 rounded-lg bg-white">
@@ -124,17 +124,15 @@ export function SupplementaryQuestions({
                   disabled={isCreatingLink}
                 >
                   <ShareIcon className="size-4 mr-2" />
-                  {isCreatingLink ? "生成中..." : "生成分享链接"}
+                  {isCreatingLink ? t("generating") : t("generateShareLink")}
                 </Button>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>分享补充问题链接</AlertDialogTitle>
+                    <AlertDialogTitle>{t("shareTitle")}</AlertDialogTitle>
                     <AlertDialogDescription></AlertDialogDescription>
                   </AlertDialogHeader>
                   <div className="mt-3 space-y-3 overflow-hidden">
-                    <p className="text-sm text-muted-foreground mb-2">
-                      将此链接发送给受访者，用于收集补充问题的回答
-                    </p>
+                    <p className="text-sm text-muted-foreground mb-2">{t("shareDescription")}</p>
                     <div className="flex items-center gap-2 mt-1">
                       <div className="bg-muted p-2 rounded-md text-xs flex-1 overflow-hidden break-words">
                         {shareUrl}
@@ -146,22 +144,20 @@ export function SupplementaryQuestions({
                         className="shrink-0"
                       >
                         <ClipboardCopyIcon className="size-4 mr-1" />
-                        复制
+                        {t("copyLink")}
                       </Button>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      受访者可以通过此链接查看问题并提供回答
-                    </p>
+                    <p className="text-xs text-muted-foreground mt-2">{t("shareNote")}</p>
                   </div>
                   <AlertDialogFooter>
-                    <AlertDialogCancel onClick={() => setOpen(false)}>关闭</AlertDialogCancel>
-                    <Button onClick={() => window.open(shareUrl, "_blank")}>打开链接</Button>
+                    <AlertDialogCancel onClick={() => setOpen(false)}>
+                      {t("close")}
+                    </AlertDialogCancel>
+                    <Button onClick={() => window.open(shareUrl, "_blank")}>{t("openLink")}</Button>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
-              <p className="text-xs text-slate-600 text-center">
-                创建链接发送给受访者，用于收集补充回答
-              </p>
+              <p className="text-xs text-slate-600 text-center">{t("createShareNote")}</p>
             </div>
           </div>
         </div>

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useChat } from "@ai-sdk/react";
 import { Message } from "ai";
 import { ArrowLeft, ShieldIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
@@ -17,6 +18,7 @@ export default function FollowUpInterviewClient({
   userChatToken,
   initialMessages = [],
 }: FollowUpInterviewClientProps) {
+  const t = useTranslations("PersonaImport.followUpInterview");
   const router = useRouter();
   const [isInterviewComplete, setIsInterviewComplete] = useState(false);
 
@@ -47,7 +49,7 @@ export default function FollowUpInterviewClient({
     append: useChatHelpers.append,
   });
 
-  // 检查访谈完成状态 - 从localStorage和服务器双重检查
+  // Check interview completion status
   useEffect(() => {
     const checkInterviewStatus = async () => {
       // 检查最后一条消息是否包含结束标识
@@ -55,8 +57,8 @@ export default function FollowUpInterviewClient({
       const lastMessage = messages[messages.length - 1];
       if (
         lastMessage &&
-        (lastMessage.content.includes("访谈已完成") ||
-          lastMessage.content.includes("感谢您的参与") ||
+        (lastMessage.content.includes(t("interviewCompleted")) ||
+          lastMessage.content.includes(t("thankYouParticipation")) ||
           lastMessage.parts?.some(
             (part) =>
               part.type === "tool-invocation" && part.toolInvocation.toolName === "endInterview",
@@ -66,16 +68,16 @@ export default function FollowUpInterviewClient({
       }
     };
     checkInterviewStatus();
-  }, [userChatToken, useChatHelpers.messages]);
+  }, [userChatToken, useChatHelpers.messages, t]);
 
-  // 监听消息变化，检测访谈完成
+  // Monitor message changes to detect interview completion
   useEffect(() => {
     const messages = useChatHelpers.messages || [];
     const lastMessage = messages[messages.length - 1];
     if (
       lastMessage &&
-      (lastMessage.content.includes("访谈已完成") ||
-        lastMessage.content.includes("感谢您的参与") ||
+      (lastMessage.content.includes(t("interviewCompleted")) ||
+        lastMessage.content.includes(t("thankYouParticipation")) ||
         lastMessage.parts?.some(
           (part) =>
             part.type === "tool-invocation" && part.toolInvocation.toolName === "endInterview",
@@ -83,9 +85,9 @@ export default function FollowUpInterviewClient({
     ) {
       setIsInterviewComplete(true);
     }
-  }, [useChatHelpers.messages, userChatToken]);
+  }, [useChatHelpers.messages, userChatToken, t]);
 
-  // 访谈完成后的界面
+  // Interview completion interface
   if (isInterviewComplete) {
     return (
       <div className="h-dvh w-dvw flex flex-col items-center justify-center p-8 text-center">
@@ -95,16 +97,14 @@ export default function FollowUpInterviewClient({
               <ShieldIcon className="h-8 w-8 text-green-600 dark:text-green-400" />
             </div>
             <div className="space-y-2">
-              <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">访谈完成</h2>
-              <p className="text-gray-600 dark:text-gray-400">
-                感谢您参与此次访谈会话。您的回答已被记录并将用于研究目的。
-              </p>
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
+                {t("interviewComplete")}
+              </h2>
+              <p className="text-gray-600 dark:text-gray-400">{t("thankYou")}</p>
             </div>
           </div>
           <div className="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-lg">
-            <p className="text-sm text-gray-700 dark:text-gray-300">
-              访谈摘要和分析将很快提供给研究人员。
-            </p>
+            <p className="text-sm text-gray-700 dark:text-gray-300">{t("summaryNote")}</p>
           </div>
         </div>
       </div>
@@ -126,7 +126,7 @@ export default function FollowUpInterviewClient({
             className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
           >
             <ArrowLeft className="h-4 w-4 mr-1" />
-            返回主页
+            {t("backToHome")}
           </Button>
         }
       />

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useFileUploadManager } from "@/hooks/use-file-upload-manager";
 import { BookOpen, FileText, MessageCircle, Target, Upload, Users } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -14,19 +15,20 @@ interface PersonaImportClientProps {
 }
 
 export default function PersonaImportClient({ isUploadEnabled }: PersonaImportClientProps) {
+  const t = useTranslations("PersonaImport.personaImportClient");
   const router = useRouter();
   const { uploadedFiles, handleFileUploaded, clearFiles } = useFileUploadManager();
   const [isCreating, setIsCreating] = useState(false);
 
   const handleStartAnalysis = async () => {
     if (uploadedFiles.length === 0) {
-      toast.error("请先上传PDF文件");
+      toast.error(t("uploadFileFirst"));
       return;
     }
 
     const file = uploadedFiles[0];
     if (!file.mimeType.includes("pdf")) {
-      toast.error("请上传PDF文件");
+      toast.error(t("uploadPDFOnly"));
       return;
     }
 
@@ -44,7 +46,7 @@ export default function PersonaImportClient({ isUploadEnabled }: PersonaImportCl
       router.push(`/persona-import/${personaImport.id}`);
     } catch (error) {
       console.error("Error creating persona import:", error);
-      toast.error("创建失败，请重试");
+      toast.error(t("createFailed"));
       setIsCreating(false);
     }
   };
@@ -53,11 +55,8 @@ export default function PersonaImportClient({ isUploadEnabled }: PersonaImportCl
     <div className="container mx-auto p-8 max-w-4xl space-y-8">
       {/* Header */}
       <div className="text-center space-y-4">
-        <h1 className="text-3xl font-bold text-slate-900">Persona Management</h1>
-        <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-          Import interview records, analyze completeness, and generate interactive personas for your
-          research and analysis needs.
-        </p>
+        <h1 className="text-3xl font-bold text-slate-900">{t("title")}</h1>
+        <p className="text-lg text-slate-600 max-w-2xl mx-auto">{t("subtitle")}</p>
       </div>
 
       {/* Feature Cards */}
@@ -70,12 +69,12 @@ export default function PersonaImportClient({ isUploadEnabled }: PersonaImportCl
               className={`flex items-center gap-2 ${!isUploadEnabled ? "text-slate-500" : "text-slate-900"}`}
             >
               <Upload className="size-5" />
-              Import Interview
+              {t("importInterview")}
             </CardTitle>
             <CardDescription className={!isUploadEnabled ? "text-slate-500" : "text-slate-600"}>
-              Upload PDF interview records and convert them to structured, LLM-compatible format
+              {t("importDescription")}
               {!isUploadEnabled && (
-                <div className="mt-2 text-xs text-slate-400">(Admin access required)</div>
+                <div className="mt-2 text-xs text-slate-400">{t("adminAccessRequired")}</div>
               )}
             </CardDescription>
           </CardHeader>
@@ -85,15 +84,15 @@ export default function PersonaImportClient({ isUploadEnabled }: PersonaImportCl
             >
               <div className="flex items-center gap-2">
                 <FileText className="size-4" />
-                <span>PDF to Markdown conversion</span>
+                <span>{t("pdfConversion")}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Target className="size-4" />
-                <span>4-dimension analysis & scoring</span>
+                <span>{t("analysisScoring")}</span>
               </div>
               <div className="flex items-center gap-2">
                 <MessageCircle className="size-4" />
-                <span>Supplementary question generation</span>
+                <span>{t("questionGeneration")}</span>
               </div>
             </div>
 
@@ -114,18 +113,18 @@ export default function PersonaImportClient({ isUploadEnabled }: PersonaImportCl
                         <span className="text-sm font-medium">{uploadedFiles[0].name}</span>
                       </div>
                       <Button variant="ghost" size="sm" onClick={clearFiles} disabled={isCreating}>
-                        重新选择
+                        {t("reSelectFile")}
                       </Button>
                     </div>
                   </div>
                   <Button onClick={handleStartAnalysis} disabled={isCreating} className="w-full">
-                    {isCreating ? "创建中..." : "开始分析"}
+                    {isCreating ? t("creating") : t("startAnalysis")}
                   </Button>
                 </div>
               )
             ) : (
               <Button disabled className="w-full" variant="outline">
-                Upload Disabled
+                {t("uploadDisabled")}
               </Button>
             )}
           </CardContent>
@@ -135,29 +134,27 @@ export default function PersonaImportClient({ isUploadEnabled }: PersonaImportCl
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-slate-900">
               <MessageCircle className="size-5" />
-              Chat with Personas
+              {t("chatWithPersonas")}
             </CardTitle>
-            <CardDescription className="text-slate-600">
-              Interact with generated personas based on your interview data
-            </CardDescription>
+            <CardDescription className="text-slate-600">{t("chatDescription")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="text-sm text-slate-600 space-y-2">
               <div className="flex items-center gap-2">
                 <MessageCircle className="size-4" />
-                <span>Natural conversation interface</span>
+                <span>{t("naturalConversation")}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Target className="size-4" />
-                <span>Behavior-driven responses</span>
+                <span>{t("behaviorDriven")}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Users className="size-4" />
-                <span>Multi-dimensional personality</span>
+                <span>{t("multiDimensional")}</span>
               </div>
             </div>
             <Button className="w-full" onClick={() => router.push("/personas")}>
-              View My Personas
+              {t("viewMyPersonas")}
             </Button>
           </CardContent>
         </Card>
@@ -168,29 +165,27 @@ export default function PersonaImportClient({ isUploadEnabled }: PersonaImportCl
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-slate-900">
             <BookOpen className="size-5" />
-            Research with Personas
+            {t("researchWithPersonas")}
           </CardTitle>
-          <CardDescription className="text-slate-600">
-            Advanced research tools and analytics powered by persona data
-          </CardDescription>
+          <CardDescription className="text-slate-600">{t("researchDescription")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="text-sm text-slate-600 space-y-2">
             <div className="flex items-center gap-2">
               <Target className="size-4" />
-              <span>Market research simulations</span>
+              <span>{t("marketResearch")}</span>
             </div>
             <div className="flex items-center gap-2">
               <Users className="size-4" />
-              <span>User testing scenarios</span>
+              <span>{t("userTesting")}</span>
             </div>
             <div className="flex items-center gap-2">
               <FileText className="size-4" />
-              <span>Behavioral analytics</span>
+              <span>{t("behavioralAnalytics")}</span>
             </div>
           </div>
           <Button className="w-full" disabled variant="outline">
-            Coming Soon
+            {t("comingSoon")}
           </Button>
         </CardContent>
       </Card>
@@ -198,54 +193,41 @@ export default function PersonaImportClient({ isUploadEnabled }: PersonaImportCl
       {/* Analysis Dimensions */}
       <Card className="border border-slate-200">
         <CardHeader>
-          <CardTitle className="text-slate-900">Analysis Dimensions</CardTitle>
-          <CardDescription className="text-slate-600">
-            Our system evaluates interview completeness across four key socio-psychological
-            dimensions
-          </CardDescription>
+          <CardTitle className="text-slate-900">{t("analysisDimensions")}</CardTitle>
+          <CardDescription className="text-slate-600">{t("dimensionsDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <Users className="size-4 text-slate-600" />
-                <h4 className="font-medium text-slate-900">Demographic</h4>
+                <h4 className="font-medium text-slate-900">{t("demographic")}</h4>
               </div>
-              <p className="text-sm text-slate-600">
-                Social identity and growth trajectory analysis including age, education, occupation,
-                and background.
-              </p>
+              <p className="text-sm text-slate-600">{t("demographicDescription")}</p>
             </div>
 
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <MessageCircle className="size-4 text-slate-600" />
-                <h4 className="font-medium text-slate-900">Psychological</h4>
+                <h4 className="font-medium text-slate-900">{t("psychological")}</h4>
               </div>
-              <p className="text-sm text-slate-600">
-                Personality traits, emotional patterns, and internal motivations reflected in
-                behavior.
-              </p>
+              <p className="text-sm text-slate-600">{t("psychologicalDescription")}</p>
             </div>
 
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <Target className="size-4 text-slate-600" />
-                <h4 className="font-medium text-slate-900">Behavioral Economics</h4>
+                <h4 className="font-medium text-slate-900">{t("behavioralEconomics")}</h4>
               </div>
-              <p className="text-sm text-slate-600">
-                Consumer behavior, decision preferences, and social influence patterns.
-              </p>
+              <p className="text-sm text-slate-600">{t("behavioralDescription")}</p>
             </div>
 
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <FileText className="size-4 text-slate-600" />
-                <h4 className="font-medium text-slate-900">Political Cognition</h4>
+                <h4 className="font-medium text-slate-900">{t("politicalCognition")}</h4>
               </div>
-              <p className="text-sm text-slate-600">
-                Cultural stance, information trust structures, and community belonging analysis.
-              </p>
+              <p className="text-sm text-slate-600">{t("politicalDescription")}</p>
             </div>
           </div>
         </CardContent>
@@ -254,9 +236,9 @@ export default function PersonaImportClient({ isUploadEnabled }: PersonaImportCl
       {/* Getting Started */}
       <Card className="border border-slate-200">
         <CardHeader>
-          <CardTitle className="text-slate-900">Getting Started</CardTitle>
+          <CardTitle className="text-slate-900">{t("gettingStarted")}</CardTitle>
           <CardDescription className="text-slate-600">
-            Follow these simple steps to create your first persona
+            {t("gettingStartedDescription")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -266,10 +248,8 @@ export default function PersonaImportClient({ isUploadEnabled }: PersonaImportCl
                 1
               </div>
               <div>
-                <h4 className="font-medium text-slate-900">Upload Interview PDF</h4>
-                <p className="text-sm text-slate-600">
-                  Start by uploading a PDF containing your interview transcripts or records.
-                </p>
+                <h4 className="font-medium text-slate-900">{t("step1")}</h4>
+                <p className="text-sm text-slate-600">{t("step1Description")}</p>
               </div>
             </div>
 
@@ -278,11 +258,8 @@ export default function PersonaImportClient({ isUploadEnabled }: PersonaImportCl
                 2
               </div>
               <div>
-                <h4 className="font-medium text-slate-900">Review Analysis</h4>
-                <p className="text-sm text-slate-600">
-                  Examine the completeness scores and identify areas that need additional
-                  information.
-                </p>
+                <h4 className="font-medium text-slate-900">{t("step2")}</h4>
+                <p className="text-sm text-slate-600">{t("step2Description")}</p>
               </div>
             </div>
 
@@ -291,10 +268,8 @@ export default function PersonaImportClient({ isUploadEnabled }: PersonaImportCl
                 3
               </div>
               <div>
-                <h4 className="font-medium text-slate-900">Generate & Chat</h4>
-                <p className="text-sm text-slate-600">
-                  Create an interactive persona and start chatting with it to validate insights.
-                </p>
+                <h4 className="font-medium text-slate-900">{t("step3")}</h4>
+                <p className="text-sm text-slate-600">{t("step3Description")}</p>
               </div>
             </div>
 
@@ -303,10 +278,8 @@ export default function PersonaImportClient({ isUploadEnabled }: PersonaImportCl
                 4
               </div>
               <div>
-                <h4 className="font-medium text-slate-500">Use in Research (Coming Soon)</h4>
-                <p className="text-sm text-slate-500">
-                  Deploy personas in advanced research scenarios and analytics workflows.
-                </p>
+                <h4 className="font-medium text-slate-500">{t("step4")}</h4>
+                <p className="text-sm text-slate-500">{t("step4Description")}</p>
               </div>
             </div>
           </div>

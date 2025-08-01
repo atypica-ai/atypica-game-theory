@@ -15,7 +15,7 @@ import {
   RefreshCwIcon,
   UploadIcon,
 } from "lucide-react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -24,6 +24,7 @@ import { toast } from "sonner";
 type PersonaWithStatus = ExtractServerActionData<typeof fetchUserPersonas>[number];
 
 export default function PersonasClient() {
+  const t = useTranslations("PersonaImport.personas");
   const locale = useLocale();
   const router = useRouter();
   const [personas, setPersonas] = useState<PersonaWithStatus[]>([]);
@@ -37,11 +38,11 @@ export default function PersonasClient() {
       setPersonas(result.data);
     } catch (error) {
       console.log("Failed to fetch personas:", error);
-      toast.error("Failed to load personas");
+      toast.error(t("loadingFailed"));
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     loadPersonas();
@@ -49,12 +50,12 @@ export default function PersonasClient() {
       loadPersonas();
     }, 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, [loadPersonas]);
 
   const handleStartChat = useCallback(
     async (persona: PersonaWithStatus) => {
       if (persona.personaImportProcessing) {
-        toast.warning("该人格画像正在更新中，请稍后再试");
+        toast.warning(t("updating"));
         return;
       }
       setChatCreating((prev) => ({ ...prev, [persona.id]: true }));
@@ -71,12 +72,12 @@ export default function PersonasClient() {
         setChatCreating((prev) => ({ ...prev, [persona.id]: false }));
       }
     },
-    [router],
+    [router, t],
   );
 
   const handleViewPersona = (persona: PersonaWithStatus) => {
     if (persona.personaImportProcessing) {
-      toast.warning("该人格画像正在更新中，请稍后再试");
+      toast.warning(t("updating"));
       return;
     }
     router.push(`/persona-import/${persona.personaImportId}`);
@@ -100,10 +101,8 @@ export default function PersonasClient() {
           <div className="inline-flex items-center justify-center w-10 h-10 rounded bg-slate-900 mb-2">
             <BotIcon className="w-5 h-5 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900">My Personas</h1>
-          <p className="text-slate-600 max-w-xl mx-auto">
-            Manage and interact with your generated personas
-          </p>
+          <h1 className="text-2xl font-bold text-slate-900">{t("title")}</h1>
+          <p className="text-slate-600 max-w-xl mx-auto">{t("subtitle")}</p>
         </div>
 
         {/* Personas Grid */}
@@ -116,17 +115,17 @@ export default function PersonasClient() {
                   <div className="bg-primary/20 rounded-full p-1">
                     <UploadIcon className="size-4 text-primary" />
                   </div>
-                  Import Interview
+                  {t("importInterview")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-0 mt-auto">
                 <div className="text-sm text-slate-600 text-center mb-4">
-                  Create new personas from interview data
+                  {t("createNewPersonas")}
                 </div>
                 <Button asChild className="w-full" size="sm">
                   <Link href="/persona-import" className="flex items-center gap-2">
                     <PlusIcon className="size-3" />
-                    Import New Interview
+                    {t("importNewInterview")}
                   </Link>
                 </Button>
               </CardContent>
@@ -149,12 +148,13 @@ export default function PersonasClient() {
                       {persona.personaImportProcessing && (
                         <div className="flex items-center gap-1 px-2 py-1 bg-amber-100 text-amber-800 rounded text-xs">
                           <RefreshCwIcon className="w-3 h-3 animate-spin" />
-                          更新中
+                          {t("updating")}
                         </div>
                       )}
                       {persona.tier !== null && (
                         <Badge variant="secondary" className="text-xs">
-                          T{persona.tier}
+                          {t("tier")}
+                          {persona.tier}
                         </Badge>
                       )}
                     </div>
@@ -185,11 +185,11 @@ export default function PersonasClient() {
                       <>
                         <Button size="sm" className="flex-1" disabled variant="outline">
                           <LockIcon className="size-3 mr-2" />
-                          更新中...
+                          {t("updating")}...
                         </Button>
                         <Button size="sm" className="flex-1" disabled variant="outline">
                           <RefreshCwIcon className="size-3 mr-2 animate-spin" />
-                          处理中
+                          {t("processing")}
                         </Button>
                       </>
                     ) : (
@@ -201,7 +201,7 @@ export default function PersonasClient() {
                           disabled={chatCreating[persona.id]}
                         >
                           <MessageCircleIcon className="size-3 mr-2" />
-                          {chatCreating[persona.id] ? "Starting..." : "Start Chat"}
+                          {chatCreating[persona.id] ? t("starting") : t("startChat")}
                         </Button>
                         <Button
                           variant="outline"
@@ -210,7 +210,7 @@ export default function PersonasClient() {
                           onClick={() => handleViewPersona(persona)}
                         >
                           <FileTextIcon className="size-3 mr-2" />
-                          View Analysis
+                          {t("viewAnalysis")}
                         </Button>
                       </>
                     )}
@@ -228,17 +228,17 @@ export default function PersonasClient() {
                     <div className="bg-primary/20 rounded-full p-1">
                       <UploadIcon className="size-4 text-primary" />
                     </div>
-                    Import Interview
+                    {t("importInterview")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="pt-0 mt-auto">
                   <div className="text-sm text-slate-600 text-center mb-4">
-                    Create new personas from interview data
+                    {t("createNewPersonas")}
                   </div>
                   <Button asChild className="w-full" size="sm">
                     <Link href="/persona-import" className="flex items-center gap-2">
                       <PlusIcon className="size-3" />
-                      Import New Interview
+                      {t("importNewInterview")}
                     </Link>
                   </Button>
                 </CardContent>

@@ -4,7 +4,7 @@ import { generatePageMetadata } from "@/lib/request/metadata";
 import { prisma } from "@/prisma/prisma";
 import { Message } from "ai";
 import { Metadata } from "next";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import FollowUpInterviewClient from "./FollowUpInterviewClient";
 
@@ -12,9 +12,10 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
+  const t = await getTranslations("PersonaImport");
   return generatePageMetadata({
-    title: "Follow-up Interview",
-    description: "Share your additional insights to improve your persona profile",
+    title: t("followUpInterviewTitle"),
+    description: t("followUpInterviewDescription"),
     locale,
   });
 }

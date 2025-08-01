@@ -4,7 +4,7 @@ import { generatePageMetadata } from "@/lib/request/metadata";
 import { prisma } from "@/prisma/prisma";
 import { Message } from "ai";
 import { Metadata } from "next";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { PersonaChatClient } from "./PersonaChatClient";
 
@@ -16,6 +16,7 @@ export async function generateMetadata({
   params: Promise<{ userChatToken: string }>;
 }): Promise<Metadata> {
   const locale = await getLocale();
+  const t = await getTranslations("PersonaImport.personaChat");
   const { userChatToken } = await params;
   if (!userChatToken) {
     return {};
@@ -26,8 +27,8 @@ export async function generateMetadata({
   }
   const { persona } = result.data;
   return generatePageMetadata({
-    title: `Chat with ${persona.name}`,
-    description: `Have a conversation with ${persona.name} - ${persona.source}`,
+    title: `${t("chatWith")} ${persona.name}`,
+    description: `${t("haveConversation")} ${persona.name} - ${persona.source}`,
     locale,
   });
 }

@@ -4,6 +4,7 @@ import { PersonaImportAnalysis } from "@/app/(persona)/types";
 import { Button } from "@/components/ui/button";
 import { ChatMessageAttachment, Persona, PersonaImport, PersonaImportExtra } from "@/prisma/client";
 import { BrainIcon, FileTextIcon, RefreshCwIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -23,6 +24,7 @@ export function PersonaImportView({
   };
   personas: Persona[];
 }) {
+  const t = useTranslations("PersonaImport.import");
   const router = useRouter();
   const [personaImport, setPersonaImport] = useState(initialPersonaImport);
 
@@ -41,7 +43,7 @@ export function PersonaImportView({
 
   // Get file info
   const attachments = personaImport.attachments as ChatMessageAttachment[];
-  const fileName = attachments?.[0]?.name || "文件";
+  const fileName = attachments?.[0]?.name || t("file");
 
   // Update local state when props change (from server refresh)
   useEffect(() => {
@@ -58,24 +60,24 @@ export function PersonaImportView({
 
   const handleReAnalyze = useCallback(async () => {
     if (isProcessing) {
-      toast.error("人格画像更新中，暂时无法重新分析");
+      toast.error(t("reanalyzing"));
       return;
     }
-    if (!confirm("确定要重新分析吗？这将覆盖现有的分析结果。")) {
+    if (!confirm(t("confirmReanalyze"))) {
       return;
     }
     try {
       const result = await processPersonaImportAction(personaImport.id);
       if (!result.success) throw result;
-      toast.success("重新分析已开始，请稍候...");
+      toast.success(t("reanalyzeStarted"));
       router.refresh();
     } catch (error) {
       console.log("Error re-analyzing:", error);
-      toast.error("重新分析失败，请重试");
+      toast.error(t("reanalyzeFailed"));
     } finally {
       router.refresh();
     }
-  }, [isProcessing, personaImport.id]);
+  }, [isProcessing, personaImport.id, t, router]);
 
   const handleViewFile = () => {
     const attachment = attachments[0];
@@ -95,8 +97,11 @@ export function PersonaImportView({
           <div className="inline-flex items-center justify-center w-12 h-12 rounded bg-red-100 mb-6">
             <BrainIcon className="w-6 h-6 text-red-600" />
           </div>
-          <h1 className="text-3xl font-bold text-slate-900">处理失败</h1>
-          <p className="text-lg text-slate-600 max-w-2xl mx-auto">处理文件时出现错误：{fileName}</p>
+          <h1 className="text-3xl font-bold text-slate-900">{t("processingFailed")}</h1>
+          <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+            {t("processingError")}
+            {fileName}
+          </p>
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 max-w-2xl mx-auto">
             <p className="text-red-700 text-sm">{errorMessage}</p>
           </div>
@@ -112,15 +117,15 @@ export function PersonaImportView({
         <div className="inline-flex items-center justify-center w-12 h-12 rounded bg-slate-900 mb-4">
           <BrainIcon className="w-6 h-6 text-white" />
         </div>
-        <h1 className="text-3xl font-bold text-slate-900">智能人格画像生成</h1>
+        <h1 className="text-3xl font-bold text-slate-900">{t("title")}</h1>
         <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-          {!isProcessing ? "处理完成：" : "正在处理文件："}
+          {!isProcessing ? t("fileProcessed") : t("processingFile")}
           {fileName}
         </p>
         {!isProcessing && (
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-green-100 text-green-800 rounded text-sm font-medium">
             <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-            所有任务已完成
+            {t("allTasksCompleted")}
           </div>
         )}
       </div>
@@ -142,9 +147,9 @@ export function PersonaImportView({
                 <div className="w-6 h-6 rounded bg-slate-900 flex items-center justify-center">
                   <FileTextIcon className="size-3 text-white" />
                 </div>
-                上传文件信息
+                {t("fileInfo")}
               </h2>
-              <p className="text-slate-600 ml-9 text-sm">查看原始文件或重新进行分析</p>
+              <p className="text-slate-600 ml-9 text-sm">{t("fileInfoDescription")}</p>
             </div>
 
             <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200">
@@ -152,12 +157,12 @@ export function PersonaImportView({
                 <FileTextIcon className="size-4 text-slate-600" />
                 <div>
                   <p className="font-medium text-slate-900">{fileName}</p>
-                  <p className="text-sm text-slate-600">PDF 文件</p>
+                  <p className="text-sm text-slate-600">PDF</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
                 <Button variant="outline" size="sm" onClick={handleViewFile}>
-                  查看文件
+                  {t("viewFile")}
                 </Button>
                 <Button
                   variant="outline"
@@ -166,7 +171,7 @@ export function PersonaImportView({
                   disabled={isProcessing}
                 >
                   <RefreshCwIcon className={`size-4 mr-2 ${isProcessing ? "animate-spin" : ""}`} />
-                  {isProcessing ? "更新中，暂时无法操作" : "重新分析"}
+                  {isProcessing ? t("reanalyzing") : t("reanalyze")}
                 </Button>
               </div>
             </div>
