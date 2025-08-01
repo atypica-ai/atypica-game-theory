@@ -2,7 +2,7 @@ const { PrismaClient } = require("../src/prisma/client");
 
 const prisma = new PrismaClient();
 
-const dateBefore = new Date("2025-07-01T00:00:00+08:00");
+const dateBefore = new Date("2025-08-01T00:00:00+08:00");
 const pad12 = (n) => n.toLocaleString().padStart(12, " ");
 const fdate = (d) =>
   new Intl.DateTimeFormat("zh-CN", {
@@ -36,7 +36,9 @@ async function getPaidUsers() {
 
 async function main() {
   const users = await getPaidUsers();
-  console.log(`Order,PaymentMethod,Amount,Receibed,Used,Payable,Plan,Date,Email`);
+  console.log(
+    `Order,StripePaymentId,StripeCharge,PaymentMethod,Currency,Amount,Receibed,Used,Payable,Plan,Date,Email`,
+  );
   for (const user of users) {
     const tokensLogs = await prisma.userTokensLog.findMany({
       where: {
@@ -54,16 +56,17 @@ async function main() {
       .filter((log) => log.verb === "consume")
       .reduce((acc, log) => acc + log.value, 0);
     let payable = giftedTokensTotal + consumedTokensTotal;
-    console.log(`Free,,,${giftedTokensTotal},${consumedTokensTotal},${payable},,,${user.email}`);
+    console.log(`Free,,,,,,${giftedTokensTotal},${consumedTokensTotal},${payable},,,${user.email}`);
     for (const log of tokensLogs.filter((log) => log.verb === "subscription")) {
       if (log.resourceType === "PaymentRecord") {
         const paymentRecord = await prisma.paymentRecord.findUniqueOrThrow({
           where: { id: log.resourceId },
         });
+        const invoice = paymentRecord.charge?.invoice ?? {};
         const used = Math.min(0, Math.max(payable, -log.value));
         payable = payable - used;
         console.log(
-          `${paymentRecord.orderNo},${paymentRecord.paymentMethod},${paymentRecord.amount},${log.value},${used},${payable},Pro,${fdate(paymentRecord.paidAt)},${user.email}`,
+          `${paymentRecord.orderNo},${invoice.payment_intent},${invoice.charge},${paymentRecord.paymentMethod},${paymentRecord.currency},${paymentRecord.amount},${log.value},${used},${payable},Pro,${fdate(paymentRecord.paidAt)},${user.email}`,
         );
       } else if (log.resourceType === "UserSubscription") {
         const userSubscription = await prisma.userSubscription.findUniqueOrThrow({
@@ -74,10 +77,11 @@ async function main() {
           const paymentRecord = await prisma.paymentRecord.findUniqueOrThrow({
             where: { id: paymentRecordId },
           });
+          const invoice = paymentRecord.charge?.invoice ?? {};
           const used = Math.min(0, Math.max(payable, -log.value));
           payable = payable - used;
           console.log(
-            `${paymentRecord.orderNo},${paymentRecord.paymentMethod},${paymentRecord.amount},${log.value},${used},${payable},Pro,${fdate(paymentRecord.paidAt)},${user.email}`,
+            `${paymentRecord.orderNo},${invoice.payment_intent},${invoice.charge},${paymentRecord.paymentMethod},${paymentRecord.currency},${paymentRecord.amount},${log.value},${used},${payable},Pro,${fdate(paymentRecord.paidAt)},${user.email}`,
           );
         } else {
           // 一般是人工添加的 subscription 可以跳过
@@ -101,10 +105,11 @@ async function main() {
       const paymentRecord = await prisma.paymentRecord.findUniqueOrThrow({
         where: { id: log.resourceId },
       });
+      const invoice = paymentRecord.charge?.invoice ?? {};
       const used = Math.min(0, Math.max(payable, -log.value));
       payable = payable - used;
       console.log(
-        `${paymentRecord.orderNo},${paymentRecord.paymentMethod},${paymentRecord.amount},${log.value},${used},${payable},Recharge,${fdate(paymentRecord.paidAt)},${user.email}`,
+        `${paymentRecord.orderNo},${invoice.payment_intent},${invoice.charge},${paymentRecord.paymentMethod},${paymentRecord.currency},${paymentRecord.amount},${log.value},${used},${payable},Recharge,${fdate(paymentRecord.paidAt)},${user.email}`,
       );
     }
   }
