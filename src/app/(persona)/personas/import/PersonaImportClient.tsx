@@ -1,4 +1,5 @@
 "use client";
+import { createPersonaImport } from "@/app/(persona)/actions";
 import { FileUploadButton } from "@/components/chat/FileUploadButton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,7 +9,6 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import { createPersonaImport } from "../actions";
 
 interface PersonaImportClientProps {
   isUploadEnabled: boolean;
@@ -43,7 +43,7 @@ export default function PersonaImportClient({ isUploadEnabled }: PersonaImportCl
       });
       if (!result.success) throw result;
       const personaImport = result.data;
-      router.push(`/persona-import/${personaImport.id}`);
+      router.push(`/personas/import/${personaImport.id}`);
     } catch (error) {
       console.error("Error creating persona import:", error);
       toast.error(t("createFailed"));

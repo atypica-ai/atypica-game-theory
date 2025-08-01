@@ -53,7 +53,7 @@ export function PersonaSummary({ personas }: { personas: Persona[] }) {
         if (!result.success) {
           throw new Error(result.message);
         }
-        router.push(`/persona-chat/${result.data.token}`);
+        router.push(`/personas/chat/${result.data.token}`);
       } catch (error) {
         console.log("Failed to start chat:", error);
         toast.error("Failed to start chat");

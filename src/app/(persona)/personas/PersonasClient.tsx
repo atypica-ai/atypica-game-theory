@@ -64,7 +64,7 @@ export default function PersonasClient() {
         if (!result.success) {
           throw new Error(result.message);
         }
-        router.push(`/persona-chat/${result.data.token}`);
+        router.push(`/personas/chat/${result.data.token}`);
       } catch (error) {
         console.log("Failed to start chat:", error);
         toast.error("Failed to start chat");
@@ -80,7 +80,7 @@ export default function PersonasClient() {
       toast.warning(t("updating"));
       return;
     }
-    router.push(`/persona-import/${persona.personaImportId}`);
+    router.push(`/personas/import/${persona.personaImportId}`);
   };
 
   if (isLoading) {
@@ -123,7 +123,7 @@ export default function PersonasClient() {
                   {t("createNewPersonas")}
                 </div>
                 <Button asChild className="w-full" size="sm">
-                  <Link href="/persona-import" className="flex items-center gap-2">
+                  <Link href="/personas/import" className="flex items-center gap-2">
                     <PlusIcon className="size-3" />
                     {t("importNewInterview")}
                   </Link>
@@ -236,7 +236,7 @@ export default function PersonasClient() {
                     {t("createNewPersonas")}
                   </div>
                   <Button asChild className="w-full" size="sm">
-                    <Link href="/persona-import" className="flex items-center gap-2">
+                    <Link href="/personas/import" className="flex items-center gap-2">
                       <PlusIcon className="size-3" />
                       {t("importNewInterview")}
                     </Link>

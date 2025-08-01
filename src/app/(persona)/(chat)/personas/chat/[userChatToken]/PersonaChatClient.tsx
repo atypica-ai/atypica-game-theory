@@ -1,5 +1,4 @@
 "use client";
-
 import { ClientMessagePayload } from "@/ai/messageUtilsClient";
 import { clearPersonaChatHistory } from "@/app/(persona)/actions";
 import { UserChatSession } from "@/components/chat/UserChatSession";
@@ -45,7 +44,7 @@ export function PersonaChatClient({
 
   // Chat hooks
   const useChatHelpers = useChat({
-    api: "/api/persona/chat",
+    api: "/api/chat/persona",
     initialMessages,
     body: {
       ...initialRequestBody,
@@ -198,7 +197,7 @@ export function PersonaChatClient({
                           className={useChatHelpers.messages.length > 0 ? "flex-1" : "w-full"}
                         >
                           <Link
-                            href={`/persona-import/${persona.personaImportId}`}
+                            href={`/personas/import/${persona.personaImportId}`}
                             className="flex items-center gap-2"
                           >
                             <BotIcon className="w-4 h-4" />

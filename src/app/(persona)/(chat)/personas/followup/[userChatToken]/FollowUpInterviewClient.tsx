@@ -28,7 +28,7 @@ export default function FollowUpInterviewClient({
 
   // 正确使用 useChat hook
   const useChatHelpers = useChat({
-    api: "/api/persona/followup",
+    api: "/api/chat/persona-followup",
     initialMessages,
     body: {
       ...initialRequestBody,
