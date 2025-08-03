@@ -137,12 +137,10 @@ export function InterviewSessionChatClient({
               <h4 className="font-medium text-sm">{tDetails("researcher")}</h4>
               <div className="flex items-center space-x-2">
                 <Avatar className="h-6 w-6">
-                  <AvatarFallback className="text-xs">
-                    {(project.user.name || project.user.email).charAt(0)}
-                  </AvatarFallback>
+                  <AvatarFallback className="text-xs">{project.user.name.charAt(0)}</AvatarFallback>
                 </Avatar>
                 <span className="text-sm text-gray-600 dark:text-gray-400">
-                  {project.user.name || project.user.email}
+                  {project.user.name}
                 </span>
               </div>
             </div>
@@ -151,11 +149,11 @@ export function InterviewSessionChatClient({
               <div className="flex items-center space-x-2">
                 <Avatar className="h-6 w-6">
                   <AvatarFallback className="text-xs">
-                    {(intervieweeUser.name || intervieweeUser.email).charAt(0)}
+                    {intervieweeUser.name.charAt(0)}
                   </AvatarFallback>
                 </Avatar>
                 <span className="text-sm text-gray-600 dark:text-gray-400">
-                  {intervieweeUser.name || intervieweeUser.email}
+                  {intervieweeUser.name}
                 </span>
               </div>
             </div>

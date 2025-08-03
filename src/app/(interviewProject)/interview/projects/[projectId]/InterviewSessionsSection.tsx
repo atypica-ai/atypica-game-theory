@@ -56,7 +56,7 @@ export function InterviewSessionsSection({ projectId }: { projectId: number }) {
       return session.intervieweePersona.name;
     }
     if (session.intervieweeUser) {
-      return session.intervieweeUser.email;
+      return session.intervieweeUser.name;
     }
     return `#${session.id}`;
   };

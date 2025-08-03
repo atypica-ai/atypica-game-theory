@@ -77,7 +77,7 @@ export function InterviewSessionViewer({
       return session.intervieweePersona.name;
     }
     if (session.intervieweeUser) {
-      return session.intervieweeUser.email;
+      return session.intervieweeUser.name;
     }
     return `#${session.id}`;
   };
@@ -129,7 +129,7 @@ export function InterviewSessionViewer({
               <div className="flex items-center space-x-2">
                 <HippyGhostAvatar className="h-6 w-6" seed={interviewSession.project.user.id} />
                 <span className="text-sm text-gray-600 dark:text-gray-400">
-                  {interviewSession.project.user.name || interviewSession.project.user.email}
+                  {interviewSession.project.user.name}
                 </span>
               </div>
             </div>
@@ -153,7 +153,7 @@ export function InterviewSessionViewer({
                     seed={interviewSession.intervieweeUser.id}
                   />
                   <span className="text-sm text-gray-600 dark:text-gray-400">
-                    {interviewSession.intervieweeUser.email}
+                    {interviewSession.intervieweeUser.name}
                   </span>
                 </div>
               ) : null}
@@ -256,7 +256,7 @@ export function InterviewSessionViewer({
             user: interviewSession.intervieweePersona
               ? interviewSession.intervieweePersona.name
               : interviewSession.intervieweeUser
-                ? interviewSession.intervieweeUser.email
+                ? interviewSession.intervieweeUser.name
                 : t("participant"),
           }}
           avatar={{

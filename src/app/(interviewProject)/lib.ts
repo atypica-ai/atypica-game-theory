@@ -109,6 +109,6 @@ export async function validateInterviewShareToken(
 
   return {
     projectId: project.id,
-    ownerName: project.user.email,
+    ownerName: project.user.name,
   };
 }

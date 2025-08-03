@@ -74,6 +74,9 @@ export async function createStripeSession({
       id: userId,
     },
   });
+  if (!user.email || user.personalUserId || user.teamIdAsMember) {
+    throw new Error("Only personal users can purchase");
+  }
 
   const stripe = stripeClient();
 

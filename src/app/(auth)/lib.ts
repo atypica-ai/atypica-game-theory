@@ -52,12 +52,13 @@ export async function createPersonalUser({
   emailVerified?: Date;
 }) {
   email = email.toLowerCase();
-
+  const name = email.split("@")[0];
   const hashedPassword = password ? await hash(password, 10) : "";
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { password: _, ...user } = await prisma.user.create({
     data: {
+      name,
       email,
       password: hashedPassword,
       emailVerified: emailVerified ?? null,

@@ -162,8 +162,8 @@ export async function fetchInterviewSessions(projectId: number): Promise<
       createdAt: Date;
       intervieweeUser?: {
         id: number;
-        name: string | null;
-        email: string;
+        name: string;
+        email: string | null;
       } | null;
       intervieweePersona?: {
         id: number;

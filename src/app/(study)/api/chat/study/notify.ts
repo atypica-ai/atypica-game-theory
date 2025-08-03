@@ -46,6 +46,10 @@ export async function notifyReportCompletion({
   }
   // 请求一定是前端发起的，虽然 background 运行，上下文里依然有 req 的 headers 信息
   const siteOrigin = await getRequestOrigin();
+  if (!studyUserChat.user.email) {
+    // TODO: team user 没有邮箱，需要取出 personalUser 的 邮箱，目前先跳过
+    return;
+  }
   await sendReportCompletionEmail({
     email: studyUserChat.user.email,
     topic: truncateForTitle(report.analyst.topic, {
@@ -91,6 +95,10 @@ export async function _notifyStudyInterruption({
   }
   // 请求一定是前端发起的，虽然 background 运行，上下文里依然有 req 的 headers 信息
   const siteOrigin = await getRequestOrigin();
+  if (!studyUserChat.user.email) {
+    // TODO: team user 没有邮箱，需要取出 personalUser 的 邮箱，目前先跳过
+    return;
+  }
   await sendStudyInterruptionEmail({
     email: studyUserChat.user.email,
     topic: truncateForTitle(studyUserChat.analyst?.topic ?? "", {
