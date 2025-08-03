@@ -96,7 +96,7 @@ const authOptions: NextAuthOptions = {
         recordLastLogin(user.id);
         return {
           id: user.id,
-          email: user.email,
+          email: user.email!,
         };
       },
     }),
@@ -130,7 +130,77 @@ const authOptions: NextAuthOptions = {
         // 不要 recordLastLogin，因为可能是 admin 登录的
         return {
           id: user.id,
-          email: user.email,
+          email: user.email!,
+        };
+      },
+    }),
+    CredentialsProvider({
+      id: "team-switch",
+      credentials: {
+        targetUserId: { label: "Target User ID", type: "text" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.targetUserId) {
+          throw new Error("TARGET_USER_ID_REQUIRED");
+        }
+
+        const targetUserId = parseInt(credentials.targetUserId);
+        if (isNaN(targetUserId)) {
+          throw new Error("INVALID_TARGET_USER_ID");
+        }
+
+        let targetUser: User | null;
+        try {
+          targetUser = await prisma.user.findUnique({
+            where: { id: targetUserId },
+          });
+        } catch (error) {
+          authLogger.error(`Error fetching target user: ${(error as Error).message}`);
+          throw new Error("SERVER_ERROR");
+        }
+
+        if (!targetUser) {
+          throw new Error("TARGET_USER_NOT_FOUND");
+        }
+
+        // 验证目标用户是否有效
+        // 个人用户：有email且没有teamIdAsMember
+        // 团队用户：有personalUserId且有teamIdAsMember
+        const isPersonalUser = targetUser.email && !targetUser.teamIdAsMember;
+        const isTeamUser = targetUser.personalUserId && targetUser.teamIdAsMember;
+
+        if (!isPersonalUser && !isTeamUser) {
+          throw new Error("INVALID_TARGET_USER");
+        }
+
+        // 如果是团队用户，需要验证对应的个人用户email已验证
+        if (isTeamUser && targetUser.personalUserId) {
+          const personalUser = await prisma.user.findUnique({
+            where: { id: targetUser.personalUserId },
+          });
+          if (!personalUser?.emailVerified) {
+            throw new Error("EMAIL_NOT_VERIFIED");
+          }
+        }
+
+        // 如果是个人用户，直接验证email已验证
+        if (isPersonalUser && !targetUser.emailVerified) {
+          throw new Error("EMAIL_NOT_VERIFIED");
+        }
+
+        recordLastLogin(targetUser.id);
+        // 获取显示用的email
+        let displayEmail = targetUser.email;
+        if (!displayEmail && targetUser.personalUserId) {
+          const personalUser = await prisma.user.findUnique({
+            where: { id: targetUser.personalUserId },
+          });
+          displayEmail = personalUser?.email || null;
+        }
+
+        return {
+          id: targetUser.id,
+          email: displayEmail || "",
         };
       },
     }),

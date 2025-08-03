@@ -2,7 +2,7 @@ import "server-only";
 
 import { rootLogger } from "@/lib/logging";
 import { getRequestClientIp, getRequestGeo, getRequestUserAgent } from "@/lib/request/headers";
-import { UserLastLogin } from "@/prisma/client";
+import { Team, User, UserLastLogin } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
 import { hash } from "bcryptjs";
@@ -86,4 +86,34 @@ export async function createPersonalUser({
   recordLastLogin(user.id);
 
   return user;
+}
+
+export async function createTeamMemberUser({
+  personalUser,
+  teamAsMember,
+}: {
+  personalUser: User;
+  teamAsMember: Team;
+}) {
+  const teamUser = await prisma.user.create({
+    data: {
+      name: personalUser.name,
+      email: null,
+      password: "", // 没有密码
+      teamIdAsMember: teamAsMember.id,
+      personalUserId: personalUser.id,
+    },
+  });
+
+  await prisma.userTokens.create({
+    data: {
+      userId: teamUser.id,
+      permanentBalance: 0,
+      monthlyBalance: 0,
+    },
+  });
+
+  recordLastLogin(teamUser.id);
+
+  return teamUser;
 }
