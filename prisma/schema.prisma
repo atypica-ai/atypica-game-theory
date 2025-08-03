@@ -267,8 +267,8 @@ model PaymentRecord {
   currency      Currency
   status        PaymentStatus
   paymentMethod String        @db.VarChar(64)
-  charge        Json
-  chargeId      String        @unique @db.VarChar(255)
+  charge        Json // ping++ charge or stripe invoice
+  chargeId      String        @unique @db.VarChar(255) // ping++ chargeId or stripe invoiceId
   credential    Json
   description   String        @db.VarChar(255)
   paidAt        DateTime?     @db.Timestamptz(6)
@@ -325,6 +325,7 @@ model UserSubscription {
   plan     SubscriptionPlan
   startsAt DateTime         @db.Timestamptz(6)
   endsAt   DateTime         @db.Timestamptz(6)
+  // paymentRecordId Int? @unique //一个支付记录只能生成一条 UserSubscription
   extra    Json             @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
