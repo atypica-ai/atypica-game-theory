@@ -42,7 +42,7 @@ export function recordLastLogin(userId: number) {
   );
 }
 
-export async function createUser({
+export async function createPersonalUser({
   email,
   password,
   emailVerified,
@@ -78,6 +78,7 @@ export async function createUser({
       data: {
         userId: user.id,
         permanentBalance: signupAmount,
+        monthlyBalance: 0,
       },
     });
   });

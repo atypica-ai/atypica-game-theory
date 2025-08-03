@@ -9,7 +9,7 @@ import { type NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import { verifyImpersonationLoginToken } from "./impersonationLogin";
-import { authLogger, createUser, recordLastLogin } from "./lib";
+import { authLogger, createPersonalUser, recordLastLogin } from "./lib";
 
 const authOptions: NextAuthOptions = {
   logger: {
@@ -181,7 +181,7 @@ const authOptions: NextAuthOptions = {
           where: { email: user.email! },
         });
         if (!existingUser) {
-          const newUser = await createUser({
+          const newUser = await createPersonalUser({
             email: user.email,
             emailVerified: new Date(),
           });
