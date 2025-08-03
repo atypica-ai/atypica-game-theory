@@ -1,4 +1,8 @@
 "use client";
+import {
+  cancelSubscriptionAction,
+  stripeSubscriptionAction,
+} from "@/app/(account)/account/actions";
 import { AddTokensDialog } from "@/app/payment/components/AddTokensDialog";
 import {
   AlertDialog,
@@ -13,24 +17,21 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatDate } from "@/lib/utils";
 import { UserSubscription, UserSubscriptionExtra } from "@/prisma/client";
 import { CalendarIcon, CircleDollarSignIcon, CreditCardIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import Stripe from "stripe";
-import { cancelSubscriptionAction, stripeSubscriptionAction } from "./actions";
 
-export function AccountLayout({
+export function AccountPageClient({
   userTokens,
   activeSubscription,
   planExpiresAt,
   stripeSubscriptionId,
-  children,
 }: (
   | {
       activeSubscription: Omit<UserSubscription, "extra"> & { extra: UserSubscriptionExtra };
@@ -47,12 +48,10 @@ export function AccountLayout({
     monthlyBalance: number;
     monthlyResetAt: Date | null;
   } | null;
-  children: React.ReactNode;
 }) {
   const t = useTranslations("AccountPage");
   const locale = useLocale();
-  const pathname = usePathname();
-  const router = useRouter();
+
   const [isAddTokensOpen, setIsAddTokensOpen] = useState(false);
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
   const [isCanceling, setIsCanceling] = useState(false);
@@ -60,20 +59,6 @@ export function AccountLayout({
     Stripe.Subscription,
     "id" | "status"
   > | null>(null);
-
-  // Determine current tab based on pathname
-  const getCurrentTab = () => {
-    if (pathname.includes("/payment")) return "payment";
-    return "tokens"; // default to tokens
-  };
-
-  const handleTabChange = (value: string) => {
-    if (value === "tokens") {
-      router.push("/account/tokens");
-    } else if (value === "payment") {
-      router.push("/account/payment");
-    }
-  };
 
   useEffect(() => {
     if (stripeSubscriptionId) {
@@ -110,9 +95,9 @@ export function AccountLayout({
   }, [stripeSubscriptionId, t]);
 
   return (
-    <div className="flex-1 overflow-y-auto scrollbar-thin py-6">
-      <div className="container max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6">{t("title")}</h1>
+    <div className="flex-1 overflow-y-auto scrollbar-thin p-6">
+      <div className="max-w-6xl">
+        <h1 className="text-2xl font-bold mb-6">{t("title")}</h1>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           {/* Subscription Section */}
@@ -287,16 +272,6 @@ export function AccountLayout({
             </CardFooter>
           </Card>
         </div>
-
-        <Tabs value={getCurrentTab()} onValueChange={handleTabChange} className="mb-6">
-          <TabsList>
-            <TabsTrigger value="tokens">{t("tokensHistorySection.title")}</TabsTrigger>
-            <TabsTrigger value="payment">{t("paymentRecordsSection.title")}</TabsTrigger>
-          </TabsList>
-          <TabsContent value={getCurrentTab()} className="mt-4">
-            {children}
-          </TabsContent>
-        </Tabs>
       </div>
       {/* Dialogs */}
       <AddTokensDialog open={isAddTokensOpen} onOpenChange={setIsAddTokensOpen} />

@@ -1,6 +1,6 @@
 "use client";
+import { fetchTokensHistory } from "@/app/(account)/account/actions";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Pagination } from "@/components/ui/pagination";
 import {
   Table,
@@ -23,7 +23,6 @@ import {
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { fetchTokensHistory } from "./actions";
 
 export function TokensHistory() {
   const t = useTranslations("AccountPage");
@@ -89,12 +88,9 @@ export function TokensHistory() {
   }, [loadTokensHistory]);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t("tokensHistorySection.title")}</CardTitle>
-        {/* <CardDescription>Recent token transactions</CardDescription> */}
-      </CardHeader>
-      <CardContent>
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-6">{t("tokensHistorySection.title")}</h1>
+      <div>
         {historyIsLoading ? (
           <div className="text-center py-6 text-muted-foreground">Loading...</div>
         ) : tokensHistory.length === 0 ? (
@@ -207,19 +203,19 @@ export function TokensHistory() {
             </TableBody>
           </Table>
         )}
+      </div>
 
-        {pagination && pagination.totalPages > 1 && (
-          <div className="mt-4 flex justify-center">
-            <div className="mt-6 flex justify-center">
-              <Pagination
-                currentPage={pagination.page}
-                totalPages={pagination.totalPages}
-                onPageChange={setCurrentPage}
-              />
-            </div>
+      {pagination && pagination.totalPages > 1 && (
+        <div className="mt-4 flex justify-center">
+          <div className="mt-6 flex justify-center">
+            <Pagination
+              currentPage={pagination.page}
+              totalPages={pagination.totalPages}
+              onPageChange={setCurrentPage}
+            />
           </div>
-        )}
-      </CardContent>
-    </Card>
+        </div>
+      )}
+    </div>
   );
 }

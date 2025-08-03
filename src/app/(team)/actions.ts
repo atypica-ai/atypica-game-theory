@@ -5,13 +5,12 @@ import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { Team, User } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
-import { getLocale, getTranslations } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
 import { generateUserSwitchToken } from "./userSwitchToken";
 
 // 创建团队
 export async function createTeamAction(data: { name: string }): Promise<ServerActionResult<Team>> {
-  const locale = await getLocale();
-  const t = await getTranslations({ locale, namespace: "Team.Actions" });
+  const t = await getTranslations("Team.Actions");
 
   return withAuth(async (user) => {
     try {
@@ -83,8 +82,7 @@ export async function createTeamAction(data: { name: string }): Promise<ServerAc
 
 // 获取用户的团队列表
 export async function getUserTeamsAction(): Promise<ServerActionResult<Team[]>> {
-  const locale = await getLocale();
-  const t = await getTranslations({ locale, namespace: "Team.Actions" });
+  const t = await getTranslations("Team.Actions");
   return withAuth(async (user) => {
     try {
       const fullUser = await prisma.user.findUnique({
@@ -122,8 +120,7 @@ export async function addTeamMemberAction(data: {
   teamId: number;
   memberEmail: string;
 }): Promise<ServerActionResult<User>> {
-  const locale = await getLocale();
-  const t = await getTranslations({ locale, namespace: "Team.Actions" });
+  const t = await getTranslations("Team.Actions");
   return withAuth(async (user) => {
     try {
       // 检查团队是否存在且用户是否为团队拥有者
@@ -231,8 +228,7 @@ export async function getTeamMembersAction(teamId: number): Promise<
     >
   >
 > {
-  const locale = await getLocale();
-  const t = await getTranslations({ locale, namespace: "Team.Actions" });
+  const t = await getTranslations("Team.Actions");
   return withAuth(async (user) => {
     try {
       // 检查团队是否存在且用户是否为团队拥有者
@@ -299,8 +295,7 @@ export async function removeTeamMemberAction(data: {
   teamId: number;
   memberId: number;
 }): Promise<ServerActionResult<null>> {
-  const locale = await getLocale();
-  const t = await getTranslations({ locale, namespace: "Team.Actions" });
+  const t = await getTranslations("Team.Actions");
   return withAuth(async (user) => {
     try {
       // 检查团队是否存在且用户是否为团队拥有者
@@ -383,8 +378,7 @@ export async function getUserSwitchableIdentitiesAction(): Promise<
     teamUsers: Array<User & { team: Team }>;
   }>
 > {
-  const locale = await getLocale();
-  const t = await getTranslations({ locale, namespace: "Team.Actions" });
+  const t = await getTranslations("Team.Actions");
   return withAuth(async (user) => {
     try {
       const fullUser = await prisma.user.findUnique({
@@ -469,8 +463,7 @@ export async function getUserSwitchableIdentitiesAction(): Promise<
 export async function generateUserSwitchTokenAction(
   targetUserId: number,
 ): Promise<ServerActionResult<string>> {
-  const locale = await getLocale();
-  const t = await getTranslations({ locale, namespace: "Team.Actions" });
+  const t = await getTranslations("Team.Actions");
   return withAuth(async (user) => {
     try {
       const currentUserId = user.id;
@@ -524,8 +517,7 @@ export async function getUserTeamStatusAction(): Promise<
     canSwitchIdentity: boolean;
   }>
 > {
-  const locale = await getLocale();
-  const t = await getTranslations({ locale, namespace: "Team.Actions" });
+  const t = await getTranslations("Team.Actions");
   return withAuth(async (user) => {
     try {
       const currentUser = await prisma.user.findUnique({
@@ -590,8 +582,7 @@ export async function getUserTeamStatusAction(): Promise<
 
 // 获取单个团队信息
 export async function getTeamAction(teamId: number): Promise<ServerActionResult<Team>> {
-  const locale = await getLocale();
-  const t = await getTranslations({ locale, namespace: "Team.Actions" });
+  const t = await getTranslations("Team.Actions");
   return withAuth(async (user) => {
     try {
       const team = await prisma.team.findUnique({

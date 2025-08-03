@@ -51,6 +51,7 @@ export function verifyUserSwitchToken(token: string): UserSwitchPayload | null {
     return payload;
   } catch (error) {
     // 解密失败或无效JSON
+    console.error("Failed to verify user switch token:", error);
     return null;
   }
 }

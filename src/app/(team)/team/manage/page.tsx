@@ -7,7 +7,7 @@ import { Team } from "@/prisma/client";
 import { PlusIcon, SettingsIcon, UsersIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export default function TeamListPage() {
@@ -17,7 +17,7 @@ export default function TeamListPage() {
   const tActions = useTranslations("Team.Actions.getUserTeams");
 
   // 加载团队列表
-  const loadTeams = async () => {
+  const loadTeams = useCallback(async () => {
     try {
       const result = await getUserTeamsAction();
       if (result.success) {
@@ -26,15 +26,16 @@ export default function TeamListPage() {
         toast.error(result.message || tActions("failed"));
       }
     } catch (error) {
+      console.error("Failed to load teams:", error);
       toast.error(t("toast.networkError"));
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [t, tActions]);
 
   useEffect(() => {
     loadTeams();
-  }, []);
+  }, [loadTeams]);
 
   if (isLoading) {
     return (

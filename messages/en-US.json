@@ -980,6 +980,37 @@
       "downloadInvoice": "Invoice",
       "noRecords": "No payment records",
       "loadMore": "Load More"
+    },
+    "sidebar": {
+      "title": "Account",
+      "accountIndex": "Account",
+      "profile": "Profile",
+      "tokens": "Tokens History",
+      "paymentHistory": "Payment History"
+    },
+    "profile": {
+      "title": "Profile Settings",
+      "nameCard": {
+        "title": "Display Name",
+        "description": "This is your public display name.",
+        "nameLabel": "Name",
+        "namePlaceholder": "Your name"
+      },
+      "passwordCard": {
+        "title": "Password",
+        "description": "Update your password. Please choose a strong one.",
+        "currentPasswordLabel": "Current Password",
+        "newPasswordLabel": "New Password",
+        "confirmPasswordLabel": "Confirm New Password"
+      },
+      "saving": "Saving...",
+      "saveChanges": "Save Changes",
+      "updatePassword": "Update Password",
+      "nameUpdateSuccess": "Name updated successfully",
+      "nameUpdateError": "Failed to update name",
+      "passwordUpdateSuccess": "Password updated successfully",
+      "passwordUpdateError": "Failed to update password",
+      "passwordMismatch": "Passwords do not match"
     }
   },
   "NewStudyPage": {

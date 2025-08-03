@@ -33,7 +33,7 @@ import { ArrowLeftIcon, TrashIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export default function TeamManagePage() {
@@ -52,7 +52,7 @@ export default function TeamManagePage() {
   const [removingMemberId, setRemovingMemberId] = useState<number | null>(null);
 
   // 加载团队信息和成员
-  const loadTeamData = async () => {
+  const loadTeamData = useCallback(async () => {
     if (isNaN(teamId)) {
       toast.error(t("toast.invalidId"));
       router.push("/team/manage");
@@ -81,11 +81,12 @@ export default function TeamManagePage() {
         toast.error(membersResult.message);
       }
     } catch (error) {
+      console.error("Failed to load team data:", error);
       toast.error(t("toast.networkError"));
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [teamId, router, t]);
 
   // 添加成员
   const handleAddMember = async (e: React.FormEvent) => {
@@ -112,6 +113,7 @@ export default function TeamManagePage() {
         toast.error(result.message);
       }
     } catch (error) {
+      console.error("Failed to add team member:", error);
       toast.error(t("toast.networkError"));
     } finally {
       setIsAddingMember(false);
@@ -135,6 +137,7 @@ export default function TeamManagePage() {
         toast.error(result.message);
       }
     } catch (error) {
+      console.error("Failed to remove team member:", error);
       toast.error(t("toast.networkError"));
     } finally {
       setRemovingMemberId(null);
@@ -143,7 +146,7 @@ export default function TeamManagePage() {
 
   useEffect(() => {
     loadTeamData();
-  }, [teamId]);
+  }, [teamId, loadTeamData]);
 
   if (isLoading) {
     return (

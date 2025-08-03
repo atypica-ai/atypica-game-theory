@@ -11,7 +11,7 @@ import { CheckIcon, UserIcon, UsersIcon } from "lucide-react";
 import { signIn, useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export default function SwitchUserPage() {
@@ -28,7 +28,7 @@ export default function SwitchUserPage() {
   const router = useRouter();
 
   // 加载可切换的身份列表
-  const loadIdentities = async () => {
+  const loadIdentities = useCallback(async () => {
     try {
       const result = await getUserSwitchableIdentitiesAction();
       if (result.success) {
@@ -37,11 +37,12 @@ export default function SwitchUserPage() {
         toast.error(result.message);
       }
     } catch (error) {
+      console.error("Failed to load identities:", error);
       toast.error(t("toast.networkError"));
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [t]);
 
   // 切换到指定用户
   const handleSwitchUser = async (targetUserId: number) => {
@@ -99,6 +100,7 @@ export default function SwitchUserPage() {
         window.location.reload();
       }
     } catch (error) {
+      console.error("Failed to switch user:", error);
       toast.error(t("toast.networkError"));
     } finally {
       setSwitchingToUserId(null);
@@ -107,7 +109,7 @@ export default function SwitchUserPage() {
 
   useEffect(() => {
     loadIdentities();
-  }, []);
+  }, [loadIdentities]);
 
   if (isLoading) {
     return (

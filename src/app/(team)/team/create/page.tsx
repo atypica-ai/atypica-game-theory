@@ -50,6 +50,7 @@ export default function CreateTeamPage() {
         toast.error(errorMessage);
       }
     } catch (error) {
+      console.error("Failed to create team:", error);
       toast.error(t("toast.networkError"));
     } finally {
       setIsLoading(false);

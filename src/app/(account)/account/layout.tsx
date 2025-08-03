@@ -1,43 +1,17 @@
-import authOptions from "@/app/(auth)/authOptions";
-import { prisma } from "@/prisma/prisma";
-import { getServerSession } from "next-auth";
-import { redirect } from "next/navigation";
-import { AccountLayout } from "./AccountLayout";
-import { fetchActiveUserSubscription } from "./lib";
+import { LeftMenus } from "@/app/(public)/LeftMenu";
+import GlobalHeader from "@/components/GlobalHeader";
+import AccountSidebar from "./components/AccountSidebar";
 
-async function fetchUserTokens() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) {
-    return null;
-  }
-
-  const userId = session.user.id;
-  const userTokens = await prisma.userTokens.findUnique({
-    where: { userId },
-  });
-
-  return userTokens;
-}
-
-export default async function AccountLayoutPage({ children }: { children: React.ReactNode }) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) {
-    redirect("/auth/signin?callbackUrl=/account");
-  }
-  const userId = session.user.id;
-
-  // TODO: 现在比较粗糙的在每次打开 account 页面的时候 reset 一下
-  // 需要改成定时调用
-  // 同时注意下 reset 操作和研究过程中的 consume 操作的写冲突可能性
-  // await resetMonthlyTokens({ userId });
-  // 先注释，可能会导致 subscription add monthly tokens 被计算两次
-
-  const userTokens = await fetchUserTokens();
-  const result = await fetchActiveUserSubscription({ userId });
-
+export default async function AccountLayout({ children }: { children: React.ReactNode }) {
   return (
-    <AccountLayout userTokens={userTokens} {...result}>
-      {children}
-    </AccountLayout>
+    <div className="h-dvh flex flex-col items-stretch justify-start overflow-hidden">
+      <GlobalHeader leftMenus={<LeftMenus />} />
+      <div className="flex-1 overflow-hidden flex flex-col sm:flex-row items-stretch justify-start">
+        <AccountSidebar />
+        <main className="w-full sm:h-full sm:w-auto flex-1 overflow-y-auto scrollbar-thin">
+          {children}
+        </main>
+      </div>
+    </div>
   );
 }

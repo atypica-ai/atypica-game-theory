@@ -1,6 +1,6 @@
 "use client";
+import { fetchPaymentRecords } from "@/app/(account)/account/actions";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Pagination } from "@/components/ui/pagination";
 import {
   Table,
@@ -16,7 +16,6 @@ import { DownloadIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { fetchPaymentRecords } from "./actions";
 
 export function PaymentHistory() {
   const t = useTranslations("AccountPage.paymentRecordsSection");
@@ -84,12 +83,9 @@ export function PaymentHistory() {
   }, [loadPaymentHistory]);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t("title")}</CardTitle>
-        {/* <CardDescription>Recent token transactions</CardDescription> */}
-      </CardHeader>
-      <CardContent>
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-6">{t("title")}</h1>
+      <div>
         {historyIsLoading ? (
           <div className="text-center py-6 text-muted-foreground">Loading...</div>
         ) : paymentRecords.length === 0 ? (
@@ -143,19 +139,18 @@ export function PaymentHistory() {
             </TableBody>
           </Table>
         )}
-
-        {pagination && pagination.totalPages > 1 && (
-          <div className="mt-4 flex justify-center">
-            <div className="mt-6 flex justify-center">
-              <Pagination
-                currentPage={pagination.page}
-                totalPages={pagination.totalPages}
-                onPageChange={setCurrentPage}
-              />
-            </div>
+      </div>
+      {pagination && pagination.totalPages > 1 && (
+        <div className="mt-4 flex justify-center">
+          <div className="mt-6 flex justify-center">
+            <Pagination
+              currentPage={pagination.page}
+              totalPages={pagination.totalPages}
+              onPageChange={setCurrentPage}
+            />
           </div>
-        )}
-      </CardContent>
-    </Card>
+        </div>
+      )}
+    </div>
   );
 }
