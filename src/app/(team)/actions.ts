@@ -1,11 +1,11 @@
 "use server";
-
 import { createTeamMemberUser } from "@/app/(auth)/lib";
 import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { Team, User } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
+import { generateUserSwitchToken } from "./userSwitchToken";
 
 // 创建团队
 export async function createTeamAction(data: { name: string }): Promise<ServerActionResult<Team>> {
@@ -415,4 +415,78 @@ export async function getUserSwitchableIdentitiesAction(): Promise<
       };
     }
   });
+}
+
+// 生成安全的用户切换token
+export async function generateUserSwitchTokenAction(
+  targetUserId: number,
+): Promise<ServerActionResult<string>> {
+  return withAuth(async (user) => {
+    try {
+      const currentUserId = user.id;
+
+      // 获取当前用户和目标用户
+      const [currentUser, targetUser] = await Promise.all([
+        prisma.user.findUnique({ where: { id: currentUserId } }),
+        prisma.user.findUnique({ where: { id: targetUserId } }),
+      ]);
+
+      if (!currentUser || !targetUser) {
+        return {
+          success: false,
+          message: "用户不存在",
+          code: "not_found",
+        };
+      }
+
+      // 验证切换权限
+      const hasPermission = verifyUserSwitchPermission(currentUser, targetUser);
+      if (!hasPermission) {
+        return {
+          success: false,
+          message: "无权限切换到该身份",
+          code: "forbidden",
+        };
+      }
+
+      // 生成加密token（使用与impersonation-login相同的算法）
+      const switchToken = generateUserSwitchToken(currentUserId, targetUserId);
+
+      return {
+        success: true,
+        data: switchToken,
+      };
+    } catch (error) {
+      rootLogger.error(`生成切换token失败: ${(error as Error).message}`);
+      return {
+        success: false,
+        message: "生成切换token失败",
+        code: "internal_server_error",
+      };
+    }
+  });
+}
+
+function verifyUserSwitchPermission(currentUser: User, targetUser: User): boolean {
+  // 如果目标就是当前用户，允许
+  if (currentUser.id === targetUser.id) {
+    return true;
+  }
+
+  // 情况1：当前是个人用户，目标是其团队用户
+  if (currentUser.email && !currentUser.teamIdAsMember && !currentUser.personalUserId) {
+    return targetUser.personalUserId === currentUser.id;
+  }
+
+  // 情况2：当前是团队用户，目标是对应的个人用户
+  if (currentUser.personalUserId && currentUser.teamIdAsMember) {
+    return targetUser.id === currentUser.personalUserId;
+  }
+
+  // 情况3：当前是团队用户，目标是同一个人的其他团队用户
+  if (currentUser.personalUserId && targetUser.personalUserId) {
+    return currentUser.personalUserId === targetUser.personalUserId;
+  }
+
+  return false;
 }

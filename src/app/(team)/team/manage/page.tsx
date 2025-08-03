@@ -1,5 +1,10 @@
 "use client";
-
+import {
+  addTeamMemberAction,
+  getTeamMembersAction,
+  getUserTeamsAction,
+  removeTeamMemberAction,
+} from "@/app/(team)/actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -17,12 +22,6 @@ import { PlusIcon, TrashIcon, UsersIcon } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import {
-  addTeamMemberAction,
-  getTeamMembersAction,
-  getUserTeamsAction,
-  removeTeamMemberAction,
-} from "../actions";
 
 export default function ManageTeamPage() {
   const [teams, setTeams] = useState<Team[]>([]);

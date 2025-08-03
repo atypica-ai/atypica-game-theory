@@ -1,6 +1,7 @@
 import "server-only";
 
 import { sendVerificationCode } from "@/app/(auth)/auth/verify/lib";
+import { verifyUserSwitchToken } from "@/app/(team)/userSwitchToken";
 import { rootLogger } from "@/lib/logging";
 import { User } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
@@ -138,15 +139,27 @@ const authOptions: NextAuthOptions = {
       id: "team-switch",
       credentials: {
         targetUserId: { label: "Target User ID", type: "text" },
+        switchToken: { label: "Switch Token", type: "text" },
       },
       async authorize(credentials) {
-        if (!credentials?.targetUserId) {
-          throw new Error("TARGET_USER_ID_REQUIRED");
+        if (!credentials?.targetUserId || !credentials?.switchToken) {
+          throw new Error("MISSING_CREDENTIALS");
         }
 
         const targetUserId = parseInt(credentials.targetUserId);
         if (isNaN(targetUserId)) {
-          throw new Error("INVALID_TARGET_USER_ID");
+          throw new Error("INVALID_USER_ID");
+        }
+
+        // 验证切换token（使用与impersonation-login相同的加密算法）
+        const switchData = verifyUserSwitchToken(credentials.switchToken);
+        if (!switchData) {
+          throw new Error("INVALID_SWITCH_TOKEN");
+        }
+
+        // 验证targetUserId是否匹配
+        if (switchData.targetUserId !== targetUserId) {
+          throw new Error("TOKEN_USER_MISMATCH");
         }
 
         let targetUser: User | null;
@@ -164,8 +177,6 @@ const authOptions: NextAuthOptions = {
         }
 
         // 验证目标用户是否有效
-        // 个人用户：有email且没有teamIdAsMember
-        // 团队用户：有personalUserId且有teamIdAsMember
         const isPersonalUser = targetUser.email && !targetUser.teamIdAsMember;
         const isTeamUser = targetUser.personalUserId && targetUser.teamIdAsMember;
 

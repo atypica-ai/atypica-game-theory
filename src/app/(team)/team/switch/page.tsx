@@ -1,5 +1,8 @@
 "use client";
-
+import {
+  generateUserSwitchTokenAction,
+  getUserSwitchableIdentitiesAction,
+} from "@/app/(team)/actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,7 +12,6 @@ import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { getUserSwitchableIdentitiesAction } from "../actions";
 
 export default function SwitchUserPage() {
   const { data: session } = useSession();
@@ -43,19 +45,34 @@ export default function SwitchUserPage() {
     setSwitchingToUserId(targetUserId);
 
     try {
+      // 先生成安全的切换token
+      const tokenResult = await generateUserSwitchTokenAction(targetUserId);
+      if (!tokenResult.success) {
+        toast.error(tokenResult.message);
+        return;
+      }
+
+      // 使用token进行切换
       const result = await signIn("team-switch", {
         targetUserId: targetUserId.toString(),
+        switchToken: tokenResult.data,
         redirect: false,
       });
 
       if (result?.error) {
         let errorMessage = "切换失败";
         switch (result.error) {
-          case "TARGET_USER_ID_REQUIRED":
-            errorMessage = "目标用户ID缺失";
+          case "MISSING_CREDENTIALS":
+            errorMessage = "缺少必要的认证信息";
             break;
-          case "INVALID_TARGET_USER_ID":
+          case "INVALID_USER_ID":
             errorMessage = "无效的用户ID";
+            break;
+          case "INVALID_SWITCH_TOKEN":
+            errorMessage = "无效的切换令牌";
+            break;
+          case "TOKEN_USER_MISMATCH":
+            errorMessage = "令牌用户不匹配";
             break;
           case "TARGET_USER_NOT_FOUND":
             errorMessage = "目标用户不存在";
