@@ -24,13 +24,35 @@ datasource db {
   shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
+model Team {
+  id          Int    @id @default(autoincrement())
+  name        String @db.VarChar(255)
+  seats       Int
+  ownerUserId Int
+  ownerUser   User   @relation("TeamOwner", fields: [ownerUserId], references: [id])
+  members     User[] @relation("TeamMembership")
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+}
+
 model User {
   id            Int       @id @default(autoincrement())
   name          String    @default("") @db.VarChar(64)
-  email         String    @unique
+  email         String?   @unique // required for personal user
   password      String
   emailVerified DateTime? @db.Timestamptz(6)
   lastLogin     Json      @default("{}")
+
+  // teams owned by the user
+  teamsAsOwner      Team[] @relation("TeamOwner")
+  // If this is a team user, points to the team, required for team user, null for personal user
+  teamIdAsMember    Int?
+  teamAsMember      Team?  @relation("TeamMembership", fields: [teamIdAsMember], references: [id])
+  // If this is a team user, points to the corresponding personal user
+  personalUserId    Int?
+  personalUser      User?  @relation("PersonalToTeamMember", fields: [personalUserId], references: [id])
+  teamUsersAsMember User[] @relation("PersonalToTeamMember") // List of team users created by the personal user
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
