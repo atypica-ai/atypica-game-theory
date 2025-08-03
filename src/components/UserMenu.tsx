@@ -10,16 +10,17 @@ import {
 import { cn } from "@/lib/utils";
 import Cookies from "js-cookie";
 import {
+  ArrowLeftRightIcon,
   CreditCardIcon,
   GlobeIcon,
   HistoryIcon,
   LogInIcon,
   LogOutIcon,
   MailIcon,
-  Moon,
-  Sun,
-  User,
+  MoonIcon,
+  SunIcon,
   UserIcon,
+  UsersIcon,
 } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
@@ -70,11 +71,11 @@ export default function UserMenu() {
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => setTheme("light")}>
-          <Sun className="h-4 w-4 mr-2" />
+          <SunIcon className="h-4 w-4 mr-2" />
           {t("lightTheme")}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setTheme("dark")}>
-          <Moon className="h-4 w-4 mr-2" />
+          <MoonIcon className="h-4 w-4 mr-2" />
           {t("darkTheme")}
         </DropdownMenuItem>
       </>
@@ -91,8 +92,20 @@ export default function UserMenu() {
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <Link href="/account">
-            <User className="h-4 w-4 mr-2" />
+            <UserIcon className="h-4 w-4 mr-2" />
             <span>{t("viewAccount")}</span>
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/team/manage">
+            <UsersIcon className="h-4 w-4 mr-2" />
+            <span>团队管理</span>
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/team/switch">
+            <ArrowLeftRightIcon className="h-4 w-4 mr-2" />
+            <span>切换身份</span>
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
