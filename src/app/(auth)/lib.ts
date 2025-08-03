@@ -85,7 +85,7 @@ export async function createPersonalUser({
 
   recordLastLogin(user.id);
 
-  return user;
+  return { ...user, email } as Omit<User, "email"> & { email: string };
 }
 
 export async function createTeamMemberUser({

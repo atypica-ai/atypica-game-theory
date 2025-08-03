@@ -962,7 +962,8 @@
       },
       "consume": {
         "StudyUserChat": "AI Study Usage",
-        "InterviewProject": "Interview Project Usage"
+        "InterviewProject": "Interview Project Usage",
+        "PersonaImport": "Persona Building Usage"
       }
     },
     "paymentRecordsSection": {

@@ -1,6 +1,7 @@
 import "server-only";
 
 import { llm, providerOptions } from "@/ai/provider";
+import { initPersonaImportStatReporter } from "@/ai/tools/stats";
 import { savePersonaTool } from "@/ai/tools/tools";
 import { ToolName } from "@/ai/tools/types";
 import { s3SignedUrl } from "@/lib/attachments/s3";
@@ -100,6 +101,12 @@ async function buildPersonaAgentPrompt(
     followUpChat: Boolean(followUpChatContent),
   });
 
+  const { statReport } = initPersonaImportStatReporter({
+    userId: personaImport.userId,
+    personaImportId: personaImport.id,
+    logger: logger,
+  });
+
   try {
     const attachment = personaImport.attachments[0];
     const { name: fileName, mimeType } = attachment;
@@ -136,6 +143,24 @@ async function buildPersonaAgentPrompt(
         toolName: ToolName.savePersona,
       },
       maxSteps: 1,
+      onStepFinish: async (step) => {
+        const { usage, stepType, toolCalls } = step;
+        logger.info({
+          msg: "buildPersonaAgentPrompt streamText onStepFinish",
+          stepType,
+          usage,
+          toolCalls: toolCalls.map((call) => call.toolName),
+        });
+        if (usage.totalTokens > 0) {
+          const tokens = usage.totalTokens;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const extra: any = {
+            reportedBy: "build persona agent",
+            usage,
+          };
+          await statReport("tokens", tokens, extra);
+        }
+      },
       onError: ({ error }) => {
         logger.error((error as Error).message);
       },
@@ -160,6 +185,12 @@ async function analyzeInterviewCompleteness(
   const logger = rootLogger.child({
     personaImportId: personaImport.id,
     followUpChat: Boolean(followUpChatContent),
+  });
+
+  const { statReport } = initPersonaImportStatReporter({
+    userId: personaImport.userId,
+    personaImportId: personaImport.id,
+    logger: logger,
   });
 
   try {
@@ -195,7 +226,22 @@ async function analyzeInterviewCompleteness(
       data: { analysis: result.object },
     });
 
-    logger.info(`analyzeInterviewCompleteness completed`);
+    {
+      const { usage } = result;
+      logger.info({
+        msg: "analyzeInterviewCompleteness generateObject finish",
+        usage,
+      });
+      if (usage.totalTokens > 0) {
+        const tokens = usage.totalTokens;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const extra: any = {
+          reportedBy: "analyze interview completeness",
+          usage,
+        };
+        await statReport("tokens", tokens, extra);
+      }
+    }
   } catch (error) {
     logger.error(`analyzeInterviewCompleteness error: ${(error as Error).message}`);
     throw error;

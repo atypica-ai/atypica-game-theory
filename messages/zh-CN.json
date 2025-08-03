@@ -962,7 +962,8 @@
       },
       "consume": {
         "StudyUserChat": "atypica.AI 研究消耗",
-        "InterviewProject": "访谈项目消耗"
+        "InterviewProject": "访谈项目消耗",
+        "PersonaImport": "构建用户画像消耗"
       }
     },
     "paymentRecordsSection": {

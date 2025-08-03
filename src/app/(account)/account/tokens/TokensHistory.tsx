@@ -149,6 +149,18 @@ export function TokensHistory() {
                                         </Link>
                                       </>
                                     );
+                                  case "PersonaImport":
+                                    return (
+                                      <>
+                                        {t("tokensHistorySection.consume.PersonaImport")}
+                                        <Link
+                                          href={`/personas/import/${item.resourceId}`}
+                                          target="_blank"
+                                        >
+                                          <ExternalLinkIcon className="size-4" />
+                                        </Link>
+                                      </>
+                                    );
                                   default:
                                     return t("tokensHistorySection.verbs.consume");
                                 }

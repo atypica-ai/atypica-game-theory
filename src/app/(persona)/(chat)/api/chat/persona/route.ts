@@ -6,6 +6,7 @@ import {
 import { clientMessagePayloadSchema } from "@/ai/messageUtilsClient";
 import { personaAgentSystem } from "@/ai/prompt";
 import { llm, providerOptions } from "@/ai/provider";
+import { initGenericUserChatStatReporter } from "@/ai/tools/stats";
 import authOptions from "@/app/(auth)/authOptions";
 import { fetchUserPersonaChatByToken } from "@/app/(persona)/actions";
 import { rootLogger } from "@/lib/logging";
@@ -56,6 +57,13 @@ export async function POST(req: Request) {
     userChatId: userChat.id,
     userChatToken: userChat.token,
     intent: "UserPersonaChat",
+  });
+
+  // 和 persona 聊天消耗聊天人的额度，类型是 generic 不是 personaImport
+  const { statReport } = initGenericUserChatStatReporter({
+    userId: session.user.id,
+    userChatId: userChat.id,
+    logger: chatLogger,
   });
 
   // Save the latest user message to database
@@ -115,12 +123,21 @@ export async function POST(req: Request) {
       if (streamingMessage.parts?.length && streamingMessage.content.trim()) {
         await persistentAIMessageToDB(userChat.id, streamingMessage);
       }
+      const { usage, stepType } = step;
       chatLogger.info({
         msg: "persona user chat streamText onStepFinish",
-        stepType: step.stepType,
-        // toolCalls: step.toolCalls.map((call) => call.toolName),
-        usage: step.usage,
+        stepType,
+        usage,
       });
+      if (usage.totalTokens > 0) {
+        const tokens = usage.totalTokens;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const extra: any = {
+          reportedBy: "persona user chat",
+          usage,
+        };
+        await statReport("tokens", tokens, extra);
+      }
     },
     // onFinish: async () => {
     //   console.log("persona chat streamTextResult onFinish");

@@ -6,6 +6,7 @@ import {
 import { clientMessagePayloadSchema } from "@/ai/messageUtilsClient";
 import { llm, providerOptions } from "@/ai/provider";
 import { reasoningThinkingTool } from "@/ai/tools/experts/reasoning";
+import { initPersonaImportStatReporter } from "@/ai/tools/stats";
 import { ToolName } from "@/ai/tools/types";
 import { personaFollowUpSystemPrompt } from "@/app/(persona)/prompt";
 import { followUpInterviewTools } from "@/app/(persona)/tools";
@@ -36,7 +37,7 @@ export async function POST(req: NextRequest) {
     },
     include: {
       user: true,
-      personaImport: true,
+      personaImport: true, // related to extraUserChatId on personaImport
     },
   });
 
@@ -54,6 +55,13 @@ export async function POST(req: NextRequest) {
     chatLogger.error(`PersonaImport not found for follow-up interview chat ${userChat.id}`);
     return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
   }
+
+  const { statReport } = initPersonaImportStatReporter({
+    userId: userChat.user.id,
+    personaImportId: userChat.personaImport.id,
+    userChatId: userChat.id,
+    logger: chatLogger,
+  });
 
   // Save the user message
   await persistentAIMessageToDB(userChat.id, {
@@ -107,6 +115,22 @@ export async function POST(req: NextRequest) {
       appendStepToStreamingMessage(streamingMessage, step);
       if (streamingMessage.parts?.length && streamingMessage.content.trim()) {
         await persistentAIMessageToDB(userChat.id, streamingMessage);
+      }
+      const { usage, stepType, toolCalls } = step;
+      chatLogger.info({
+        msg: "follow-up interview streamText onStepFinish",
+        stepType,
+        usage,
+        toolCalls: toolCalls.map((call) => call.toolName),
+      });
+      if (usage.totalTokens > 0) {
+        const tokens = usage.totalTokens;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const extra: any = {
+          reportedBy: "persona follow-up interview",
+          usage,
+        };
+        await statReport("tokens", tokens, extra);
       }
     },
     onError: ({ error }) => {

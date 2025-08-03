@@ -160,3 +160,39 @@ export const initInterviewProjectStatReporter = ({
   };
   return { statReport };
 };
+
+export const initPersonaImportStatReporter = ({
+  userId,
+  personaImportId,
+  userChatId,
+  logger,
+}: {
+  userId: number;
+  personaImportId: number;
+  userChatId?: number; // followup chat or persona chat
+  logger: Logger;
+}): { statReport: StatReporter } => {
+  const statReport: StatReporter = async (dimension, value, extra) => {
+    if (userChatId) {
+      await prisma.chatStatistics.create({
+        data: {
+          userChatId: userChatId,
+          dimension,
+          value,
+          extra: extra as InputJsonValue,
+        },
+      });
+    }
+    if (dimension === "tokens") {
+      await consumeUserTokens({
+        userId,
+        resourceType: "PersonaImport",
+        resourceId: personaImportId,
+        tokens: value,
+        extra,
+        logger,
+      });
+    }
+  };
+  return { statReport };
+};
