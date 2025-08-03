@@ -9,12 +9,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Team, User } from "@/prisma/client";
 import { CheckIcon, UserIcon, UsersIcon } from "lucide-react";
 import { signIn, useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export default function SwitchUserPage() {
   const { data: session } = useSession();
+  const t = useTranslations("Team.SwitchPage");
+
   const [identities, setIdentities] = useState<{
     personalUser: User | null;
     teamUsers: Array<User & { team: Team }>;
@@ -34,7 +37,7 @@ export default function SwitchUserPage() {
         toast.error(result.message);
       }
     } catch (error) {
-      toast.error("网络错误，请重试");
+      toast.error(t("toast.networkError"));
     } finally {
       setIsLoading(false);
     }
@@ -49,6 +52,7 @@ export default function SwitchUserPage() {
       const tokenResult = await generateUserSwitchTokenAction(targetUserId);
       if (!tokenResult.success) {
         toast.error(tokenResult.message);
+        setSwitchingToUserId(null);
         return;
       }
 
@@ -60,28 +64,28 @@ export default function SwitchUserPage() {
       });
 
       if (result?.error) {
-        let errorMessage = "切换失败";
+        let errorMessage = t("toast.switchFailed");
         switch (result.error) {
           case "MISSING_CREDENTIALS":
-            errorMessage = "缺少必要的认证信息";
+            errorMessage = t("toast.missingCredentials");
             break;
           case "INVALID_USER_ID":
-            errorMessage = "无效的用户ID";
+            errorMessage = t("toast.invalidUserId");
             break;
           case "INVALID_SWITCH_TOKEN":
-            errorMessage = "无效的切换令牌";
+            errorMessage = t("toast.invalidSwitchToken");
             break;
           case "TOKEN_USER_MISMATCH":
-            errorMessage = "令牌用户不匹配";
+            errorMessage = t("toast.tokenUserMismatch");
             break;
           case "TARGET_USER_NOT_FOUND":
-            errorMessage = "目标用户不存在";
+            errorMessage = t("toast.targetUserNotFound");
             break;
           case "INVALID_TARGET_USER":
-            errorMessage = "无效的目标用户";
+            errorMessage = t("toast.invalidTargetUser");
             break;
           case "EMAIL_NOT_VERIFIED":
-            errorMessage = "邮箱未验证";
+            errorMessage = t("toast.emailNotVerified");
             break;
           default:
             errorMessage = result.error;
@@ -89,13 +93,13 @@ export default function SwitchUserPage() {
 
         toast.error(errorMessage);
       } else {
-        toast.success("身份切换成功");
+        toast.success(t("toast.switchSuccess"));
         // 刷新页面或跳转到首页
         router.push("/");
         window.location.reload();
       }
     } catch (error) {
-      toast.error("网络错误，请重试");
+      toast.error(t("toast.networkError"));
     } finally {
       setSwitchingToUserId(null);
     }
@@ -108,7 +112,7 @@ export default function SwitchUserPage() {
   if (isLoading) {
     return (
       <div className="container mx-auto max-w-2xl py-8">
-        <div className="text-center">加载中...</div>
+        <div className="text-center">{t("loading")}</div>
       </div>
     );
   }
@@ -118,7 +122,7 @@ export default function SwitchUserPage() {
       <div className="container mx-auto max-w-2xl py-8">
         <Card>
           <CardContent className="py-8 text-center">
-            <p className="text-muted-foreground">无法加载身份信息</p>
+            <p className="text-muted-foreground">{t("loadError")}</p>
           </CardContent>
         </Card>
       </div>
@@ -132,8 +136,8 @@ export default function SwitchUserPage() {
   return (
     <div className="container mx-auto max-w-2xl py-8 space-y-6">
       <div className="text-center">
-        <h1 className="text-2xl font-bold mb-2">切换身份</h1>
-        <p className="text-muted-foreground">选择要切换到的身份，切换后您将以该身份登录</p>
+        <h1 className="text-2xl font-bold mb-2">{t("title")}</h1>
+        <p className="text-muted-foreground">{t("description")}</p>
       </div>
 
       <div className="space-y-4">
@@ -143,7 +147,7 @@ export default function SwitchUserPage() {
             <CardHeader>
               <CardTitle className="flex items-center">
                 <UserIcon className="w-5 h-5 mr-2" />
-                个人用户
+                {t("personalAccountTitle")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -157,7 +161,7 @@ export default function SwitchUserPage() {
                     {currentUserId === identities.personalUser!.id && (
                       <Badge variant="secondary" className="text-xs">
                         <CheckIcon className="w-3 h-3 mr-1" />
-                        当前身份
+                        {t("currentBadge")}
                       </Badge>
                     )}
                   </div>
@@ -170,10 +174,10 @@ export default function SwitchUserPage() {
                   variant={currentUserId === identities.personalUser!.id ? "secondary" : "default"}
                 >
                   {switchingToUserId === identities.personalUser!.id
-                    ? "切换中..."
+                    ? t("switchingButton")
                     : currentUserId === identities.personalUser!.id
-                      ? "当前身份"
-                      : "切换"}
+                      ? t("currentButton")
+                      : t("switchButton")}
                 </Button>
               </div>
             </CardContent>
@@ -186,7 +190,7 @@ export default function SwitchUserPage() {
             <CardHeader>
               <CardTitle className="flex items-center">
                 <UsersIcon className="w-5 h-5 mr-2" />
-                团队身份
+                {t("teamIdentitiesTitle")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -197,12 +201,14 @@ export default function SwitchUserPage() {
                 >
                   <div>
                     <div className="font-medium">{teamUser.name}</div>
-                    <div className="text-sm text-muted-foreground">团队：{teamUser.team.name}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {t("teamLabel", { teamName: teamUser.team.name })}
+                    </div>
                     <div className="flex items-center mt-2">
                       {currentUserId === teamUser.id && (
                         <Badge variant="secondary" className="text-xs">
                           <CheckIcon className="w-3 h-3 mr-1" />
-                          当前身份
+                          {t("currentBadge")}
                         </Badge>
                       )}
                     </div>
@@ -213,10 +219,10 @@ export default function SwitchUserPage() {
                     variant={currentUserId === teamUser.id ? "secondary" : "default"}
                   >
                     {switchingToUserId === teamUser.id
-                      ? "切换中..."
+                      ? t("switchingButton")
                       : currentUserId === teamUser.id
-                        ? "当前身份"
-                        : "切换"}
+                        ? t("currentButton")
+                        : t("switchButton")}
                   </Button>
                 </div>
               ))}
@@ -227,7 +233,7 @@ export default function SwitchUserPage() {
         {!hasPersonalUser && !hasTeamUsers && (
           <Card>
             <CardContent className="py-8 text-center">
-              <p className="text-muted-foreground">没有可切换的身份</p>
+              <p className="text-muted-foreground">{t("noIdentities")}</p>
             </CardContent>
           </Card>
         )}
@@ -235,16 +241,16 @@ export default function SwitchUserPage() {
 
       <div className="text-center">
         <Button variant="outline" onClick={() => router.back()}>
-          返回
+          {t("backButton")}
         </Button>
       </div>
 
       <div className="text-sm text-muted-foreground space-y-2">
-        <h4 className="font-medium">说明：</h4>
+        <h4 className="font-medium">{t("notesTitle")}</h4>
         <ul className="space-y-1">
-          <li>• 个人身份：使用个人邮箱登录，管理个人数据和团队</li>
-          <li>• 团队身份：在团队环境中工作，访问团队共享资源</li>
-          <li>• 切换身份后需要重新加载页面以应用新的权限</li>
+          <li>{t("note1")}</li>
+          <li>{t("note2")}</li>
+          <li>{t("note3")}</li>
         </ul>
       </div>
     </div>

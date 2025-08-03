@@ -116,7 +116,7 @@ export default function UserMenu() {
           <DropdownMenuItem asChild>
             <Link href="/team/manage">
               <UsersIcon className="h-4 w-4 mr-2" />
-              <span>团队管理</span>
+              <span>{t("teamManagement")}</span>
             </Link>
           </DropdownMenuItem>
         )}
@@ -124,7 +124,7 @@ export default function UserMenu() {
           <DropdownMenuItem asChild>
             <Link href="/team/switch">
               <ArrowLeftRightIcon className="h-4 w-4 mr-2" />
-              <span>切换身份</span>
+              <span>{t("switchIdentity")}</span>
             </Link>
           </DropdownMenuItem>
         )}

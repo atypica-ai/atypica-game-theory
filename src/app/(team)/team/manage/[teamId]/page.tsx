@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/table";
 import { Team, User } from "@/prisma/client";
 import { ArrowLeftIcon, TrashIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -39,6 +40,9 @@ export default function TeamManagePage() {
   const params = useParams();
   const router = useRouter();
   const teamId = parseInt(params.teamId as string);
+
+  const t = useTranslations("Team.ManageDetailPage");
+  const tActions = useTranslations("Team.Actions");
 
   const [team, setTeam] = useState<Team | null>(null);
   const [members, setMembers] = useState<Array<User & { personalUser: User | null }>>([]);
@@ -50,7 +54,7 @@ export default function TeamManagePage() {
   // 加载团队信息和成员
   const loadTeamData = async () => {
     if (isNaN(teamId)) {
-      toast.error("无效的团队ID");
+      toast.error(t("toast.invalidId"));
       router.push("/team/manage");
       return;
     }
@@ -77,7 +81,7 @@ export default function TeamManagePage() {
         toast.error(membersResult.message);
       }
     } catch (error) {
-      toast.error("网络错误，请重试");
+      toast.error(t("toast.networkError"));
     } finally {
       setIsLoading(false);
     }
@@ -88,7 +92,7 @@ export default function TeamManagePage() {
     e.preventDefault();
 
     if (!newMemberEmail.trim()) {
-      toast.error("请输入成员邮箱");
+      toast.error(tActions("addMember.userNotExist")); // Re-using a relevant error
       return;
     }
 
@@ -101,14 +105,14 @@ export default function TeamManagePage() {
       });
 
       if (result.success) {
-        toast.success("成员添加成功");
+        toast.success(t("toast.addSuccess"));
         setNewMemberEmail("");
-        loadTeamData();
+        await loadTeamData();
       } else {
         toast.error(result.message);
       }
     } catch (error) {
-      toast.error("网络错误，请重试");
+      toast.error(t("toast.networkError"));
     } finally {
       setIsAddingMember(false);
     }
@@ -125,13 +129,13 @@ export default function TeamManagePage() {
       });
 
       if (result.success) {
-        toast.success("成员移除成功");
-        loadTeamData();
+        toast.success(t("toast.removeSuccess"));
+        await loadTeamData();
       } else {
         toast.error(result.message);
       }
     } catch (error) {
-      toast.error("网络错误，请重试");
+      toast.error(t("toast.networkError"));
     } finally {
       setRemovingMemberId(null);
     }
@@ -144,7 +148,7 @@ export default function TeamManagePage() {
   if (isLoading) {
     return (
       <div className="container mx-auto py-8">
-        <div className="text-center">加载中...</div>
+        <div className="text-center">{t("loading")}</div>
       </div>
     );
   }
@@ -153,14 +157,17 @@ export default function TeamManagePage() {
     return (
       <div className="container mx-auto py-8">
         <div className="text-center">
-          <p className="text-muted-foreground mb-4">团队不存在或无权访问</p>
+          <p className="text-muted-foreground mb-4">{t("notFound")}</p>
           <Link href="/team/manage">
-            <Button>返回团队列表</Button>
+            <Button>{t("backToListButton")}</Button>
           </Link>
         </div>
       </div>
     );
   }
+
+  const activeMembersCount = members.filter((m) => m.personalUserId).length;
+  const removedMembersCount = members.filter((m) => !m.personalUserId).length;
 
   return (
     <div className="container mx-auto py-8 space-y-6">
@@ -168,7 +175,7 @@ export default function TeamManagePage() {
         <Link href="/team/manage">
           <Button variant="ghost" size="sm">
             <ArrowLeftIcon className="w-4 h-4 mr-2" />
-            返回
+            {t("backButton")}
           </Button>
         </Link>
         <h1 className="text-2xl font-bold">{team.name}</h1>
@@ -178,20 +185,20 @@ export default function TeamManagePage() {
         {/* 团队信息 */}
         <Card>
           <CardHeader>
-            <CardTitle>团队信息</CardTitle>
+            <CardTitle>{t("infoTitle")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <div className="text-muted-foreground">总座位数</div>
+                <div className="text-muted-foreground">{t("totalSeats")}</div>
                 <div className="font-medium">{team.seats}</div>
               </div>
               <div>
-                <div className="text-muted-foreground">已使用</div>
-                <div className="font-medium">{members.filter((m) => m.personalUserId).length}</div>
+                <div className="text-muted-foreground">{t("usedSeats")}</div>
+                <div className="font-medium">{activeMembersCount}</div>
               </div>
               <div className="col-span-2">
-                <div className="text-muted-foreground">创建时间</div>
+                <div className="text-muted-foreground">{t("createdAt")}</div>
                 <div className="font-medium">{new Date(team.createdAt).toLocaleDateString()}</div>
               </div>
             </div>
@@ -203,31 +210,26 @@ export default function TeamManagePage() {
           {/* 添加成员 */}
           <Card>
             <CardHeader>
-              <CardTitle>添加成员</CardTitle>
+              <CardTitle>{t("addMemberTitle")}</CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleAddMember} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email">成员邮箱</Label>
+                  <Label htmlFor="email">{t("memberEmailLabel")}</Label>
                   <Input
                     id="email"
                     type="email"
-                    placeholder="输入已注册用户的邮箱"
+                    placeholder={t("memberEmailPlaceholder")}
                     value={newMemberEmail}
                     onChange={(e) => setNewMemberEmail(e.target.value)}
                     disabled={isAddingMember}
                   />
                 </div>
-                <Button
-                  type="submit"
-                  disabled={
-                    isAddingMember || members.filter((m) => m.personalUserId).length >= team.seats
-                  }
-                >
-                  {isAddingMember ? "添加中..." : "添加成员"}
+                <Button type="submit" disabled={isAddingMember || activeMembersCount >= team.seats}>
+                  {isAddingMember ? t("addingButton") : t("addButton")}
                 </Button>
-                {members.filter((m) => m.personalUserId).length >= team.seats && (
-                  <p className="text-sm text-muted-foreground">团队座位已满，无法添加更多成员</p>
+                {activeMembersCount >= team.seats && (
+                  <p className="text-sm text-muted-foreground">{t("seatsFull")}</p>
                 )}
               </form>
             </CardContent>
@@ -237,25 +239,25 @@ export default function TeamManagePage() {
           <Card>
             <CardHeader>
               <CardTitle>
-                团队成员 ({members.filter((m) => m.personalUserId).length}/{team.seats})
-                {members.filter((m) => !m.personalUserId).length > 0 && (
+                {t("membersTitle")} ({activeMembersCount}/{team.seats})
+                {removedMembersCount > 0 && (
                   <span className="text-sm text-muted-foreground ml-2">
-                    ({members.filter((m) => !m.personalUserId).length} 已移除)
+                    {t("removedCount", { count: removedMembersCount })}
                   </span>
                 )}
               </CardTitle>
             </CardHeader>
             <CardContent>
               {members.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">暂无团队成员</div>
+                <div className="text-center py-8 text-muted-foreground">{t("noMembers")}</div>
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>姓名</TableHead>
-                      <TableHead>邮箱</TableHead>
-                      <TableHead>加入时间</TableHead>
-                      <TableHead className="w-[100px]">操作</TableHead>
+                      <TableHead>{t("table.name")}</TableHead>
+                      <TableHead>{t("table.email")}</TableHead>
+                      <TableHead>{t("table.joinedAt")}</TableHead>
+                      <TableHead className="w-[100px]">{t("table.actions")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -271,12 +273,13 @@ export default function TeamManagePage() {
                             {member.name}
                             {isOwner && (
                               <span className="ml-2 text-xs bg-primary text-primary-foreground px-1 rounded">
-                                拥有者
+                                {t("table.ownerBadge")}
                               </span>
                             )}
                           </TableCell>
                           <TableCell className={isDeleted ? "text-muted-foreground" : ""}>
-                            {member.personalUser?.email || (isDeleted ? "已移除" : "无")}
+                            {member.personalUser?.email ||
+                              (isDeleted ? t("table.removedStatus") : t("table.noEmail"))}
                           </TableCell>
                           <TableCell className={isDeleted ? "text-muted-foreground" : ""}>
                             {new Date(member.createdAt).toLocaleDateString()}
@@ -296,36 +299,40 @@ export default function TeamManagePage() {
                                 </AlertDialogTrigger>
                                 <AlertDialogContent>
                                   <AlertDialogHeader>
-                                    <AlertDialogTitle>确认移除成员</AlertDialogTitle>
+                                    <AlertDialogTitle>{t("removeDialog.title")}</AlertDialogTitle>
                                   </AlertDialogHeader>
                                   <div className="text-sm">
-                                    你确定要移除成员 <strong>{member.name}</strong> 吗？
+                                    {t("removeDialog.confirmMessage", { memberName: member.name })}
                                     <br />
                                     <br />
-                                    移除后：
+                                    {t("removeDialog.afterRemovalTitle")}
                                     <ul className="list-disc list-inside mt-2 space-y-1 text-sm">
-                                      <li>该成员将无法访问团队资源</li>
-                                      <li>其历史数据和记录将被保留</li>
-                                      <li>可以释放一个团队座位给新成员</li>
+                                      <li>{t("removeDialog.note1")}</li>
+                                      <li>{t("removeDialog.note2")}</li>
+                                      <li>{t("removeDialog.note3")}</li>
                                     </ul>
                                   </div>
                                   <AlertDialogFooter>
                                     <AlertDialogCancel disabled={removingMemberId === member.id}>
-                                      取消
+                                      {t("removeDialog.cancelButton")}
                                     </AlertDialogCancel>
                                     <AlertDialogAction
                                       onClick={() => handleRemoveMember(member)}
                                       disabled={removingMemberId === member.id}
                                       className="bg-destructive hover:bg-destructive/90"
                                     >
-                                      {removingMemberId === member.id ? "移除中..." : "确认移除"}
+                                      {removingMemberId === member.id
+                                        ? t("removeDialog.removingButton")
+                                        : t("removeDialog.confirmButton")}
                                     </AlertDialogAction>
                                   </AlertDialogFooter>
                                 </AlertDialogContent>
                               </AlertDialog>
                             )}
                             {isDeleted && (
-                              <span className="text-xs text-muted-foreground">已移除</span>
+                              <span className="text-xs text-muted-foreground">
+                                {t("table.removedStatus")}
+                              </span>
                             )}
                           </TableCell>
                         </TableRow>

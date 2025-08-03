@@ -1,0 +1,161 @@
+{
+  "Team": {
+    "Layout": {
+      "title": "Team Management - Atypica",
+      "description": "Team management and collaboration"
+    },
+    "CreatePage": {
+      "title": "Create Team",
+      "teamNameLabel": "Team Name",
+      "teamNamePlaceholder": "Enter team name",
+      "cancelButton": "Cancel",
+      "creatingButton": "Creating...",
+      "createButton": "Create Team",
+      "notesTitle": "Notes:",
+      "note1": "• Teams come with 5 seats by default",
+      "note2": "• Only individual users can create teams",
+      "note3": "• You will become the team owner after creation",
+      "toast": {
+        "enterName": "Please enter a team name",
+        "createSuccess": "Team created successfully",
+        "networkError": "Network error, please try again"
+      }
+    },
+    "ManageListPage": {
+      "title": "Team Management",
+      "createButton": "Create Team",
+      "noTeams": "You don't have any teams yet",
+      "createFirstButton": "Create your first team",
+      "seatsLabel": "Seats:",
+      "createdAtLabel": "Created At:",
+      "manageButton": "Manage Team",
+      "loading": "Loading...",
+      "toast": {
+        "networkError": "Network error, please try again"
+      }
+    },
+    "ManageDetailPage": {
+      "loading": "Loading...",
+      "notFound": "Team not found or you don't have access",
+      "backToListButton": "Back to Team List",
+      "backButton": "Back",
+      "infoTitle": "Team Information",
+      "totalSeats": "Total Seats",
+      "usedSeats": "Used",
+      "createdAt": "Created At",
+      "addMemberTitle": "Add Member",
+      "memberEmailLabel": "Member Email",
+      "memberEmailPlaceholder": "Enter the email of a registered user",
+      "addingButton": "Adding...",
+      "addButton": "Add Member",
+      "seatsFull": "Team seats are full, cannot add more members",
+      "membersTitle": "Team Members",
+      "removedCount": "({count} removed)",
+      "noMembers": "No team members yet",
+      "table": {
+        "name": "Name",
+        "email": "Email",
+        "joinedAt": "Joined At",
+        "actions": "Actions",
+        "ownerBadge": "Owner",
+        "removedStatus": "Removed",
+        "noEmail": "N/A"
+      },
+      "removeDialog": {
+        "title": "Confirm Member Removal",
+        "confirmMessage": "Are you sure you want to remove member {memberName}?",
+        "afterRemovalTitle": "After removal:",
+        "note1": "The member will no longer be able to access team resources",
+        "note2": "Their historical data and records will be preserved",
+        "note3": "A team seat will be freed up for a new member",
+        "cancelButton": "Cancel",
+        "removingButton": "Removing...",
+        "confirmButton": "Confirm Removal"
+      },
+      "toast": {
+        "invalidId": "Invalid team ID",
+        "addSuccess": "Member added successfully",
+        "removeSuccess": "Member removed successfully",
+        "networkError": "Network error, please try again"
+      }
+    },
+    "SwitchPage": {
+      "loading": "Loading...",
+      "loadError": "Could not load identity information",
+      "title": "Switch Identity",
+      "description": "Select the identity to switch to. You will be logged in as that identity.",
+      "personalAccountTitle": "Personal Account",
+      "currentBadge": "Current",
+      "switchingButton": "Switching...",
+      "currentButton": "Current Identity",
+      "switchButton": "Switch",
+      "teamIdentitiesTitle": "Team Identities",
+      "teamLabel": "Team: {teamName}",
+      "noIdentities": "No switchable identities available",
+      "backButton": "Back",
+      "notesTitle": "Notes:",
+      "note1": "• Personal Identity: Log in with your personal email to manage personal data and teams",
+      "note2": "• Team Identity: Work in a team environment and access shared team resources",
+      "note3": "• After switching identity, the page needs to be reloaded to apply new permissions",
+      "toast": {
+        "switchSuccess": "Identity switched successfully",
+        "switchFailed": "Switch failed",
+        "missingCredentials": "Missing necessary authentication credentials",
+        "invalidUserId": "Invalid user ID",
+        "invalidSwitchToken": "Invalid switch token",
+        "tokenUserMismatch": "Token user mismatch",
+        "targetUserNotFound": "Target user not found",
+        "invalidTargetUser": "Invalid target user",
+        "emailNotVerified": "Email not verified",
+        "networkError": "Network error, please try again"
+      }
+    },
+    "Actions": {
+      "userNotFound": "User not found",
+      "createTeam": {
+        "forbidden": "Only individual users can create teams",
+        "nameExists": "Team name already exists",
+        "failed": "Failed to create team"
+      },
+      "getUserTeams": {
+        "failed": "Failed to get team list"
+      },
+      "addMember": {
+        "teamNotFound": "Team not found",
+        "forbidden": "Only the team owner can add members",
+        "seatsFull": "Team seats are full",
+        "userNotExist": "User with this email does not exist, please ensure the user is registered",
+        "notIndividualUser": "Only individual users can be added as team members",
+        "alreadyMember": "User is already a team member",
+        "failed": "Failed to add team member"
+      },
+      "getMembers": {
+        "teamNotFound": "Team not found",
+        "forbidden": "Only the team owner can view the member list",
+        "failed": "Failed to get team members"
+      },
+      "removeMember": {
+        "teamNotFound": "Team not found",
+        "forbidden": "Only the team owner can remove members",
+        "memberNotFound": "Member not found or does not belong to this team",
+        "ownerCannotBeRemoved": "The team owner cannot be removed",
+        "failed": "Failed to remove team member"
+      },
+      "getSwitchableIdentities": {
+        "failed": "Failed to get switchable identities"
+      },
+      "generateSwitchToken": {
+        "permissionDenied": "Permission denied to switch to this identity",
+        "failed": "Failed to generate switch token"
+      },
+      "getTeamStatus": {
+        "failed": "Failed to get user team status"
+      },
+      "getTeam": {
+        "teamNotFound": "Team not found",
+        "forbidden": "Only the team owner can view team information",
+        "failed": "Failed to get team information"
+      }
+    }
+  }
+}

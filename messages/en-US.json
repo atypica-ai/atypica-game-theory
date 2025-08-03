@@ -577,6 +577,8 @@
       "login": "Login",
       "logout": "Logout",
       "viewAccount": "View Account",
+      "teamManagement": "Team Management",
+      "switchIdentity": "Switch Identity",
       "lightTheme": "Light Theme",
       "darkTheme": "Dark Theme",
       "myStudies": "My Projects",

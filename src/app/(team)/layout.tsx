@@ -1,12 +1,16 @@
 import { LeftMenus } from "@/app/(public)/LeftMenu";
 import GlobalHeader from "@/components/GlobalHeader";
-import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { ReactNode } from "react";
 
-export const metadata: Metadata = {
-  title: "团队管理 - Atypica",
-  description: "团队管理和协作",
-};
+export async function generateMetadata({ params: { locale } }: { params: { locale: string } }) {
+  const t = await getTranslations("Team");
+
+  return {
+    title: t("Layout.title"),
+    description: t("Layout.description"),
+  };
+}
 
 export default async function TeamLayout({ children }: { children: ReactNode }) {
   return (

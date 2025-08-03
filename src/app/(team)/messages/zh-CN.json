@@ -1,0 +1,161 @@
+{
+  "Team": {
+    "Layout": {
+      "title": "团队管理 - Atypica",
+      "description": "团队管理和协作"
+    },
+    "CreatePage": {
+      "title": "创建团队",
+      "teamNameLabel": "团队名称",
+      "teamNamePlaceholder": "输入团队名称",
+      "cancelButton": "取消",
+      "creatingButton": "创建中...",
+      "createButton": "创建团队",
+      "notesTitle": "说明：",
+      "note1": "• 团队默认提供 5 个座位",
+      "note2": "• 只有个人用户可以创建团队",
+      "note3": "• 创建后您将成为团队的拥有者",
+      "toast": {
+        "enterName": "请输入团队名称",
+        "createSuccess": "团队创建成功",
+        "networkError": "网络错误，请重试"
+      }
+    },
+    "ManageListPage": {
+      "title": "团队管理",
+      "createButton": "创建团队",
+      "noTeams": "您还没有团队",
+      "createFirstButton": "创建第一个团队",
+      "seatsLabel": "座位数：",
+      "createdAtLabel": "创建时间：",
+      "manageButton": "管理团队",
+      "loading": "加载中...",
+      "toast": {
+        "networkError": "网络错误，请重试"
+      }
+    },
+    "ManageDetailPage": {
+      "loading": "加载中...",
+      "notFound": "团队不存在或无权访问",
+      "backToListButton": "返回团队列表",
+      "backButton": "返回",
+      "infoTitle": "团队信息",
+      "totalSeats": "总座位数",
+      "usedSeats": "已使用",
+      "createdAt": "创建时间",
+      "addMemberTitle": "添加成员",
+      "memberEmailLabel": "成员邮箱",
+      "memberEmailPlaceholder": "输入已注册用户的邮箱",
+      "addingButton": "添加中...",
+      "addButton": "添加成员",
+      "seatsFull": "团队座位已满，无法添加更多成员",
+      "membersTitle": "团队成员",
+      "removedCount": "({count} 已移除)",
+      "noMembers": "暂无团队成员",
+      "table": {
+        "name": "姓名",
+        "email": "邮箱",
+        "joinedAt": "加入时间",
+        "actions": "操作",
+        "ownerBadge": "拥有者",
+        "removedStatus": "已移除",
+        "noEmail": "无"
+      },
+      "removeDialog": {
+        "title": "确认移除成员",
+        "confirmMessage": "你确定要移除成员 {memberName} 吗？",
+        "afterRemovalTitle": "移除后：",
+        "note1": "该成员将无法访问团队资源",
+        "note2": "其历史数据和记录将被保留",
+        "note3": "可以释放一个团队座位给新成员",
+        "cancelButton": "取消",
+        "removingButton": "移除中...",
+        "confirmButton": "确认移除"
+      },
+      "toast": {
+        "invalidId": "无效的团队ID",
+        "addSuccess": "成员添加成功",
+        "removeSuccess": "成员移除成功",
+        "networkError": "网络错误，请重试"
+      }
+    },
+    "SwitchPage": {
+      "loading": "加载中...",
+      "loadError": "无法加载身份信息",
+      "title": "切换身份",
+      "description": "选择要切换到的身份，切换后您将以该身份登录",
+      "personalAccountTitle": "个人用户",
+      "currentBadge": "当前身份",
+      "switchingButton": "切换中...",
+      "currentButton": "当前身份",
+      "switchButton": "切换",
+      "teamIdentitiesTitle": "团队身份",
+      "teamLabel": "团队：{teamName}",
+      "noIdentities": "没有可切换的身份",
+      "backButton": "返回",
+      "notesTitle": "说明：",
+      "note1": "• 个人身份：使用个人邮箱登录，管理个人数据和团队",
+      "note2": "• 团队身份：在团队环境中工作，访问团队共享资源",
+      "note3": "• 切换身份后需要重新加载页面以应用新的权限",
+      "toast": {
+        "switchSuccess": "身份切换成功",
+        "switchFailed": "切换失败",
+        "missingCredentials": "缺少必要的认证信息",
+        "invalidUserId": "无效的用户ID",
+        "invalidSwitchToken": "无效的切换令牌",
+        "tokenUserMismatch": "令牌用户不匹配",
+        "targetUserNotFound": "目标用户不存在",
+        "invalidTargetUser": "无效的目标用户",
+        "emailNotVerified": "邮箱未验证",
+        "networkError": "网络错误，请重试"
+      }
+    },
+    "Actions": {
+      "userNotFound": "用户不存在",
+      "createTeam": {
+        "forbidden": "只有个人用户可以创建团队",
+        "nameExists": "团队名称已存在",
+        "failed": "创建团队失败"
+      },
+      "getUserTeams": {
+        "failed": "获取团队列表失败"
+      },
+      "addMember": {
+        "teamNotFound": "团队不存在",
+        "forbidden": "只有团队拥有者可以添加成员",
+        "seatsFull": "团队座位已满",
+        "userNotExist": "该邮箱用户不存在，请确保用户已注册",
+        "notIndividualUser": "只能添加个人用户为团队成员",
+        "alreadyMember": "用户已经是团队成员",
+        "failed": "添加团队成员失败"
+      },
+      "getMembers": {
+        "teamNotFound": "团队不存在",
+        "forbidden": "只有团队拥有者可以查看成员列表",
+        "failed": "获取团队成员失败"
+      },
+      "removeMember": {
+        "teamNotFound": "团队不存在",
+        "forbidden": "只有团队拥有者可以移除成员",
+        "memberNotFound": "成员不存在或不属于该团队",
+        "ownerCannotBeRemoved": "团队拥有者不能被移除",
+        "failed": "移除团队成员失败"
+      },
+      "getSwitchableIdentities": {
+        "failed": "获取可切换身份失败"
+      },
+      "generateSwitchToken": {
+        "permissionDenied": "无权限切换到该身份",
+        "failed": "生成切换token失败"
+      },
+      "getTeamStatus": {
+        "failed": "获取用户团队状态失败"
+      },
+      "getTeam": {
+        "teamNotFound": "团队不存在",
+        "forbidden": "只有团队拥有者可以查看团队信息",
+        "failed": "获取团队信息失败"
+      }
+    }
+  }
+}

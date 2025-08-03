@@ -5,10 +5,14 @@ import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { Team, User } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
+import { getLocale, getTranslations } from "next-intl/server";
 import { generateUserSwitchToken } from "./userSwitchToken";
 
 // 创建团队
 export async function createTeamAction(data: { name: string }): Promise<ServerActionResult<Team>> {
+  const locale = await getLocale();
+  const t = await getTranslations({ locale, namespace: "Team.Actions" });
+
   return withAuth(async (user) => {
     try {
       // 检查用户是否为个人用户（有email且没有teamId）
@@ -19,7 +23,7 @@ export async function createTeamAction(data: { name: string }): Promise<ServerAc
       if (!fullUser) {
         return {
           success: false,
-          message: "用户不存在",
+          message: t("userNotFound"),
           code: "not_found",
         };
       }
@@ -27,7 +31,7 @@ export async function createTeamAction(data: { name: string }): Promise<ServerAc
       if (!fullUser.email || fullUser.teamIdAsMember) {
         return {
           success: false,
-          message: "只有个人用户可以创建团队",
+          message: t("createTeam.forbidden"),
           code: "forbidden",
         };
       }
@@ -43,7 +47,7 @@ export async function createTeamAction(data: { name: string }): Promise<ServerAc
       if (existingTeam) {
         return {
           success: false,
-          message: "团队名称已存在",
+          message: t("createTeam.nameExists"),
         };
       }
 
@@ -70,7 +74,7 @@ export async function createTeamAction(data: { name: string }): Promise<ServerAc
       rootLogger.error(`创建团队失败: ${(error as Error).message}`);
       return {
         success: false,
-        message: "创建团队失败",
+        message: t("createTeam.failed"),
         code: "internal_server_error",
       };
     }
@@ -79,6 +83,8 @@ export async function createTeamAction(data: { name: string }): Promise<ServerAc
 
 // 获取用户的团队列表
 export async function getUserTeamsAction(): Promise<ServerActionResult<Team[]>> {
+  const locale = await getLocale();
+  const t = await getTranslations({ locale, namespace: "Team.Actions" });
   return withAuth(async (user) => {
     try {
       const fullUser = await prisma.user.findUnique({
@@ -91,7 +97,7 @@ export async function getUserTeamsAction(): Promise<ServerActionResult<Team[]>> 
       if (!fullUser) {
         return {
           success: false,
-          message: "用户不存在",
+          message: t("userNotFound"),
           code: "not_found",
         };
       }
@@ -104,7 +110,7 @@ export async function getUserTeamsAction(): Promise<ServerActionResult<Team[]>> 
       rootLogger.error(`获取团队列表失败: ${(error as Error).message}`);
       return {
         success: false,
-        message: "获取团队列表失败",
+        message: t("getUserTeams.failed"),
         code: "internal_server_error",
       };
     }
@@ -116,6 +122,8 @@ export async function addTeamMemberAction(data: {
   teamId: number;
   memberEmail: string;
 }): Promise<ServerActionResult<User>> {
+  const locale = await getLocale();
+  const t = await getTranslations({ locale, namespace: "Team.Actions" });
   return withAuth(async (user) => {
     try {
       // 检查团队是否存在且用户是否为团队拥有者
@@ -129,7 +137,7 @@ export async function addTeamMemberAction(data: {
       if (!team) {
         return {
           success: false,
-          message: "团队不存在",
+          message: t("addMember.teamNotFound"),
           code: "not_found",
         };
       }
@@ -137,7 +145,7 @@ export async function addTeamMemberAction(data: {
       if (team.ownerUserId !== user.id) {
         return {
           success: false,
-          message: "只有团队拥有者可以添加成员",
+          message: t("addMember.forbidden"),
           code: "forbidden",
         };
       }
@@ -153,7 +161,7 @@ export async function addTeamMemberAction(data: {
       if (activeMembersCount >= team.seats) {
         return {
           success: false,
-          message: "团队座位已满",
+          message: t("addMember.seatsFull"),
         };
       }
 
@@ -165,7 +173,7 @@ export async function addTeamMemberAction(data: {
       if (!targetUser) {
         return {
           success: false,
-          message: "该邮箱用户不存在，请确保用户已注册",
+          message: t("addMember.userNotExist"),
           code: "not_found",
         };
       }
@@ -173,7 +181,7 @@ export async function addTeamMemberAction(data: {
       if (!targetUser.email || targetUser.teamIdAsMember) {
         return {
           success: false,
-          message: "只能添加个人用户为团队成员",
+          message: t("addMember.notIndividualUser"),
         };
       }
 
@@ -188,7 +196,7 @@ export async function addTeamMemberAction(data: {
       if (existingMember) {
         return {
           success: false,
-          message: "用户已经是团队成员",
+          message: t("addMember.alreadyMember"),
         };
       }
 
@@ -206,7 +214,7 @@ export async function addTeamMemberAction(data: {
       rootLogger.error(`添加团队成员失败: ${(error as Error).message}`);
       return {
         success: false,
-        message: "添加团队成员失败",
+        message: t("addMember.failed"),
         code: "internal_server_error",
       };
     }
@@ -223,6 +231,8 @@ export async function getTeamMembersAction(teamId: number): Promise<
     >
   >
 > {
+  const locale = await getLocale();
+  const t = await getTranslations({ locale, namespace: "Team.Actions" });
   return withAuth(async (user) => {
     try {
       // 检查团队是否存在且用户是否为团队拥有者
@@ -233,7 +243,7 @@ export async function getTeamMembersAction(teamId: number): Promise<
       if (!team) {
         return {
           success: false,
-          message: "团队不存在",
+          message: t("getMembers.teamNotFound"),
           code: "not_found",
         };
       }
@@ -241,7 +251,7 @@ export async function getTeamMembersAction(teamId: number): Promise<
       if (team.ownerUserId !== user.id) {
         return {
           success: false,
-          message: "只有团队拥有者可以查看成员列表",
+          message: t("getMembers.forbidden"),
           code: "forbidden",
         };
       }
@@ -277,7 +287,7 @@ export async function getTeamMembersAction(teamId: number): Promise<
       rootLogger.error(`获取团队成员失败: ${(error as Error).message}`);
       return {
         success: false,
-        message: "获取团队成员失败",
+        message: t("getMembers.failed"),
         code: "internal_server_error",
       };
     }
@@ -289,6 +299,8 @@ export async function removeTeamMemberAction(data: {
   teamId: number;
   memberId: number;
 }): Promise<ServerActionResult<null>> {
+  const locale = await getLocale();
+  const t = await getTranslations({ locale, namespace: "Team.Actions" });
   return withAuth(async (user) => {
     try {
       // 检查团队是否存在且用户是否为团队拥有者
@@ -299,7 +311,7 @@ export async function removeTeamMemberAction(data: {
       if (!team) {
         return {
           success: false,
-          message: "团队不存在",
+          message: t("removeMember.teamNotFound"),
           code: "not_found",
         };
       }
@@ -307,7 +319,7 @@ export async function removeTeamMemberAction(data: {
       if (team.ownerUserId !== user.id) {
         return {
           success: false,
-          message: "只有团队拥有者可以移除成员",
+          message: t("removeMember.forbidden"),
           code: "forbidden",
         };
       }
@@ -320,7 +332,7 @@ export async function removeTeamMemberAction(data: {
       if (!member || member.teamIdAsMember !== data.teamId) {
         return {
           success: false,
-          message: "成员不存在或不属于该团队",
+          message: t("removeMember.memberNotFound"),
           code: "not_found",
         };
       }
@@ -329,7 +341,7 @@ export async function removeTeamMemberAction(data: {
       if (member.personalUserId === team.ownerUserId) {
         return {
           success: false,
-          message: "团队拥有者不能被移除",
+          message: t("removeMember.ownerCannotBeRemoved"),
         };
       }
 
@@ -345,7 +357,7 @@ export async function removeTeamMemberAction(data: {
         where: { id: data.memberId },
         data: {
           personalUserId: null,
-          name: `[Deleted] ${personalUser?.email || "未知用户"}`,
+          name: `[Deleted] ${personalUser?.email || "Unknown User"}`,
         },
       });
 
@@ -357,7 +369,7 @@ export async function removeTeamMemberAction(data: {
       rootLogger.error(`移除团队成员失败: ${(error as Error).message}`);
       return {
         success: false,
-        message: "移除团队成员失败",
+        message: t("removeMember.failed"),
         code: "internal_server_error",
       };
     }
@@ -371,6 +383,8 @@ export async function getUserSwitchableIdentitiesAction(): Promise<
     teamUsers: Array<User & { team: Team }>;
   }>
 > {
+  const locale = await getLocale();
+  const t = await getTranslations({ locale, namespace: "Team.Actions" });
   return withAuth(async (user) => {
     try {
       const fullUser = await prisma.user.findUnique({
@@ -380,7 +394,7 @@ export async function getUserSwitchableIdentitiesAction(): Promise<
       if (!fullUser) {
         return {
           success: false,
-          message: "用户不存在",
+          message: t("userNotFound"),
           code: "not_found",
         };
       }
@@ -444,7 +458,7 @@ export async function getUserSwitchableIdentitiesAction(): Promise<
       rootLogger.error(`获取可切换身份失败: ${(error as Error).message}`);
       return {
         success: false,
-        message: "获取可切换身份失败",
+        message: t("getSwitchableIdentities.failed"),
         code: "internal_server_error",
       };
     }
@@ -455,6 +469,8 @@ export async function getUserSwitchableIdentitiesAction(): Promise<
 export async function generateUserSwitchTokenAction(
   targetUserId: number,
 ): Promise<ServerActionResult<string>> {
+  const locale = await getLocale();
+  const t = await getTranslations({ locale, namespace: "Team.Actions" });
   return withAuth(async (user) => {
     try {
       const currentUserId = user.id;
@@ -468,7 +484,7 @@ export async function generateUserSwitchTokenAction(
       if (!currentUser || !targetUser) {
         return {
           success: false,
-          message: "用户不存在",
+          message: t("userNotFound"),
           code: "not_found",
         };
       }
@@ -478,7 +494,7 @@ export async function generateUserSwitchTokenAction(
       if (!hasPermission) {
         return {
           success: false,
-          message: "无权限切换到该身份",
+          message: t("generateSwitchToken.permissionDenied"),
           code: "forbidden",
         };
       }
@@ -494,7 +510,7 @@ export async function generateUserSwitchTokenAction(
       rootLogger.error(`生成切换token失败: ${(error as Error).message}`);
       return {
         success: false,
-        message: "生成切换token失败",
+        message: t("generateSwitchToken.failed"),
         code: "internal_server_error",
       };
     }
@@ -508,6 +524,8 @@ export async function getUserTeamStatusAction(): Promise<
     canSwitchIdentity: boolean;
   }>
 > {
+  const locale = await getLocale();
+  const t = await getTranslations({ locale, namespace: "Team.Actions" });
   return withAuth(async (user) => {
     try {
       const currentUser = await prisma.user.findUnique({
@@ -517,7 +535,7 @@ export async function getUserTeamStatusAction(): Promise<
       if (!currentUser) {
         return {
           success: false,
-          message: "用户不存在",
+          message: t("userNotFound"),
           code: "not_found",
         };
       }
@@ -563,7 +581,7 @@ export async function getUserTeamStatusAction(): Promise<
       rootLogger.error(`获取用户团队状态失败: ${(error as Error).message}`);
       return {
         success: false,
-        message: "获取用户团队状态失败",
+        message: t("getTeamStatus.failed"),
         code: "internal_server_error",
       };
     }
@@ -572,6 +590,8 @@ export async function getUserTeamStatusAction(): Promise<
 
 // 获取单个团队信息
 export async function getTeamAction(teamId: number): Promise<ServerActionResult<Team>> {
+  const locale = await getLocale();
+  const t = await getTranslations({ locale, namespace: "Team.Actions" });
   return withAuth(async (user) => {
     try {
       const team = await prisma.team.findUnique({
@@ -581,16 +601,15 @@ export async function getTeamAction(teamId: number): Promise<ServerActionResult<
       if (!team) {
         return {
           success: false,
-          message: "团队不存在",
+          message: t("getTeam.teamNotFound"),
           code: "not_found",
         };
       }
 
-      // 验证用户是否为团队拥有者
       if (team.ownerUserId !== user.id) {
         return {
           success: false,
-          message: "只有团队拥有者可以查看团队信息",
+          message: t("getTeam.forbidden"),
           code: "forbidden",
         };
       }
@@ -603,7 +622,7 @@ export async function getTeamAction(teamId: number): Promise<ServerActionResult<
       rootLogger.error(`获取团队信息失败: ${(error as Error).message}`);
       return {
         success: false,
-        message: "获取团队信息失败",
+        message: t("getTeam.failed"),
         code: "internal_server_error",
       };
     }

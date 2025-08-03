@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Team } from "@/prisma/client";
 import { PlusIcon, SettingsIcon, UsersIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -12,6 +13,8 @@ import { toast } from "sonner";
 export default function TeamListPage() {
   const [teams, setTeams] = useState<Team[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const t = useTranslations("Team.ManageListPage");
+  const tActions = useTranslations("Team.Actions.getUserTeams");
 
   // 加载团队列表
   const loadTeams = async () => {
@@ -20,10 +23,10 @@ export default function TeamListPage() {
       if (result.success) {
         setTeams(result.data);
       } else {
-        toast.error(result.message);
+        toast.error(result.message || tActions("failed"));
       }
     } catch (error) {
-      toast.error("网络错误，请重试");
+      toast.error(t("toast.networkError"));
     } finally {
       setIsLoading(false);
     }
@@ -36,7 +39,7 @@ export default function TeamListPage() {
   if (isLoading) {
     return (
       <div className="container mx-auto py-8">
-        <div className="text-center">加载中...</div>
+        <div className="text-center">{t("loading")}</div>
       </div>
     );
   }
@@ -44,11 +47,11 @@ export default function TeamListPage() {
   return (
     <div className="container mx-auto py-8 space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">团队管理</h1>
+        <h1 className="text-2xl font-bold">{t("title")}</h1>
         <Link href="/team/create">
           <Button>
             <PlusIcon className="w-4 h-4 mr-2" />
-            创建团队
+            {t("createButton")}
           </Button>
         </Link>
       </div>
@@ -57,9 +60,9 @@ export default function TeamListPage() {
         <Card>
           <CardContent className="py-8 text-center">
             <UsersIcon className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-            <p className="text-muted-foreground mb-4">您还没有团队</p>
+            <p className="text-muted-foreground mb-4">{t("noTeams")}</p>
             <Link href="/team/create">
-              <Button>创建第一个团队</Button>
+              <Button>{t("createFirstButton")}</Button>
             </Link>
           </CardContent>
         </Card>
@@ -80,18 +83,18 @@ export default function TeamListPage() {
               <CardContent>
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">座位数：</span>
+                    <span className="text-muted-foreground">{t("seatsLabel")}</span>
                     <span>{team.seats}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">创建时间：</span>
+                    <span className="text-muted-foreground">{t("createdAtLabel")}</span>
                     <span>{new Date(team.createdAt).toLocaleDateString()}</span>
                   </div>
                 </div>
                 <div className="mt-4">
                   <Link href={`/team/manage/${team.id}`}>
                     <Button className="w-full" variant="outline">
-                      管理团队
+                      {t("manageButton")}
                     </Button>
                   </Link>
                 </div>
