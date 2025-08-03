@@ -1,4 +1,5 @@
 "use client";
+import { getUserTeamStatusAction } from "@/app/(team)/actions";
 import { Avatar } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -40,12 +41,27 @@ export default function UserMenu() {
 
   const searchParams = useSearchParams();
   const [signinCallbackUrl, setSigninCallbackUrl] = useState<string>("/");
+  const [teamStatus, setTeamStatus] = useState<{
+    hasOwnedTeams: boolean;
+    canSwitchIdentity: boolean;
+  } | null>(null);
 
   useEffect(() => {
     // Get path and search parameters without the origin
     const pathWithParams = window.location.href.replace(window.location.origin, "");
     setSigninCallbackUrl(searchParams.get("callbackUrl") || pathWithParams || "/");
   }, [searchParams]);
+
+  // 加载用户团队状态
+  useEffect(() => {
+    if (session?.user) {
+      getUserTeamStatusAction().then((result) => {
+        if (result.success) {
+          setTeamStatus(result.data);
+        }
+      });
+    }
+  }, [session?.user]);
 
   const toggleLocale = useCallback(() => {
     const newLocale = locale === "zh-CN" ? "en-US" : "zh-CN";
@@ -96,18 +112,22 @@ export default function UserMenu() {
             <span>{t("viewAccount")}</span>
           </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href="/team/manage">
-            <UsersIcon className="h-4 w-4 mr-2" />
-            <span>团队管理</span>
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href="/team/switch">
-            <ArrowLeftRightIcon className="h-4 w-4 mr-2" />
-            <span>切换身份</span>
-          </Link>
-        </DropdownMenuItem>
+        {teamStatus?.hasOwnedTeams && (
+          <DropdownMenuItem asChild>
+            <Link href="/team/manage">
+              <UsersIcon className="h-4 w-4 mr-2" />
+              <span>团队管理</span>
+            </Link>
+          </DropdownMenuItem>
+        )}
+        {teamStatus?.canSwitchIdentity && (
+          <DropdownMenuItem asChild>
+            <Link href="/team/switch">
+              <ArrowLeftRightIcon className="h-4 w-4 mr-2" />
+              <span>切换身份</span>
+            </Link>
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem asChild>
           <Link href="/studies">
             <HistoryIcon className="h-4 w-4 mr-2" />

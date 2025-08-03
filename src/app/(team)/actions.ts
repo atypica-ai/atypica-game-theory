@@ -56,6 +56,12 @@ export async function createTeamAction(data: { name: string }): Promise<ServerAc
         },
       });
 
+      // 创建团队拥有者的团队用户身份
+      await createTeamMemberUser({
+        personalUser: fullUser,
+        teamAsMember: team,
+      });
+
       return {
         success: true,
         data: team,
@@ -136,8 +142,15 @@ export async function addTeamMemberAction(data: {
         };
       }
 
-      // 检查是否还有座位
-      if (team.members.length >= team.seats) {
+      // 检查活跃成员数量（只统计有 personalUserId 的成员）
+      const activeMembersCount = await prisma.user.count({
+        where: {
+          teamIdAsMember: data.teamId,
+          personalUserId: { not: null },
+        },
+      });
+
+      if (activeMembersCount >= team.seats) {
         return {
           success: false,
           message: "团队座位已满",
@@ -233,7 +246,7 @@ export async function getTeamMembersAction(teamId: number): Promise<
         };
       }
 
-      // 获取团队成员
+      // 获取团队成员（包括被删除的成员）
       const members = await prisma.user.findMany({
         where: {
           teamIdAsMember: teamId,
@@ -312,9 +325,28 @@ export async function removeTeamMemberAction(data: {
         };
       }
 
-      // 删除团队用户
-      await prisma.user.delete({
+      // 检查是否为团队拥有者，拥有者不能被删除
+      if (member.personalUserId === team.ownerUserId) {
+        return {
+          success: false,
+          message: "团队拥有者不能被移除",
+        };
+      }
+
+      // 获取 personalUser 信息用于显示
+      const personalUser = member.personalUserId
+        ? await prisma.user.findUnique({
+            where: { id: member.personalUserId },
+          })
+        : null;
+
+      // 断开关联而不是删除用户，保留历史数据
+      await prisma.user.update({
         where: { id: data.memberId },
+        data: {
+          personalUserId: null,
+          name: `[Deleted] ${personalUser?.email || "未知用户"}`,
+        },
       });
 
       return {
@@ -360,10 +392,11 @@ export async function getUserSwitchableIdentitiesAction(): Promise<
       if (fullUser.email && !fullUser.teamIdAsMember && !fullUser.personalUserId) {
         personalUser = fullUser;
 
-        // 获取团队用户
+        // 获取活跃的团队用户（只包含有 personalUserId 的）
         const teamUsersData = await prisma.user.findMany({
           where: {
             personalUserId: fullUser.id,
+            teamIdAsMember: { not: null },
           },
           include: {
             teamAsMember: true,
@@ -382,10 +415,11 @@ export async function getUserSwitchableIdentitiesAction(): Promise<
         });
 
         if (personalUser) {
-          // 获取所有团队用户
+          // 获取所有活跃的团队用户
           const teamUsersData = await prisma.user.findMany({
             where: {
               personalUserId: personalUser.id,
+              teamIdAsMember: { not: null },
             },
             include: {
               teamAsMember: true,
@@ -461,6 +495,115 @@ export async function generateUserSwitchTokenAction(
       return {
         success: false,
         message: "生成切换token失败",
+        code: "internal_server_error",
+      };
+    }
+  });
+}
+
+// 检查用户是否有团队（用于 UserMenu 条件显示）
+export async function getUserTeamStatusAction(): Promise<
+  ServerActionResult<{
+    hasOwnedTeams: boolean;
+    canSwitchIdentity: boolean;
+  }>
+> {
+  return withAuth(async (user) => {
+    try {
+      const currentUser = await prisma.user.findUnique({
+        where: { id: user.id },
+      });
+
+      if (!currentUser) {
+        return {
+          success: false,
+          message: "用户不存在",
+          code: "not_found",
+        };
+      }
+
+      let hasOwnedTeams = false;
+      let canSwitchIdentity = false;
+
+      // 检查是否为个人用户
+      if (currentUser.email && !currentUser.teamIdAsMember && !currentUser.personalUserId) {
+        // 个人用户，检查是否拥有团队
+        const ownedTeamsCount = await prisma.team.count({
+          where: { ownerUserId: user.id },
+        });
+        hasOwnedTeams = ownedTeamsCount > 0;
+
+        // 检查是否有活跃的团队用户可以切换
+        const teamUsersCount = await prisma.user.count({
+          where: {
+            personalUserId: user.id,
+            teamIdAsMember: { not: null },
+          },
+        });
+        canSwitchIdentity = teamUsersCount > 0;
+      } else if (currentUser.personalUserId && currentUser.teamIdAsMember) {
+        // 活跃的团队用户，总是可以切换回个人用户或其他团队
+        canSwitchIdentity = true;
+
+        // 检查对应的个人用户是否拥有团队
+        const ownedTeamsCount = await prisma.team.count({
+          where: { ownerUserId: currentUser.personalUserId },
+        });
+        hasOwnedTeams = ownedTeamsCount > 0;
+      }
+
+      return {
+        success: true,
+        data: {
+          hasOwnedTeams,
+          canSwitchIdentity,
+        },
+      };
+    } catch (error) {
+      rootLogger.error(`获取用户团队状态失败: ${(error as Error).message}`);
+      return {
+        success: false,
+        message: "获取用户团队状态失败",
+        code: "internal_server_error",
+      };
+    }
+  });
+}
+
+// 获取单个团队信息
+export async function getTeamAction(teamId: number): Promise<ServerActionResult<Team>> {
+  return withAuth(async (user) => {
+    try {
+      const team = await prisma.team.findUnique({
+        where: { id: teamId },
+      });
+
+      if (!team) {
+        return {
+          success: false,
+          message: "团队不存在",
+          code: "not_found",
+        };
+      }
+
+      // 验证用户是否为团队拥有者
+      if (team.ownerUserId !== user.id) {
+        return {
+          success: false,
+          message: "只有团队拥有者可以查看团队信息",
+          code: "forbidden",
+        };
+      }
+
+      return {
+        success: true,
+        data: team,
+      };
+    } catch (error) {
+      rootLogger.error(`获取团队信息失败: ${(error as Error).message}`);
+      return {
+        success: false,
+        message: "获取团队信息失败",
         code: "internal_server_error",
       };
     }
