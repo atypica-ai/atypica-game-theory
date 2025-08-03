@@ -3,7 +3,7 @@ import { fetchInterviewReports, generateInterviewReport } from "@/app/(interview
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { formatDate, formatDistanceToNow } from "@/lib/utils";
+import { cn, formatDate, formatDistanceToNow } from "@/lib/utils";
 import { ExternalLinkIcon, FileTextIcon, Loader2Icon, PlusIcon, RefreshCwIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
@@ -85,7 +85,7 @@ export function InterviewReportsSection({ projectId }: { projectId: number }) {
                     variant="outline"
                     size="sm"
                   >
-                    <RefreshCwIcon className={`h-4 w-4 ${loadingReports ? "animate-spin" : ""}`} />
+                    <RefreshCwIcon className={cn("h-4 w-4", loadingReports && "animate-spin")} />
                     {t("refresh")}
                   </Button>
                   <Button

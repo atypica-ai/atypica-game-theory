@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ExtractServerActionData } from "@/lib/serverAction";
-import { formatDate } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 import {
   BotIcon,
   CheckCircleIcon,
@@ -131,11 +131,11 @@ export function InterviewSessionsSection({ projectId }: { projectId: number }) {
                             <ClockIcon className="h-3 w-3 text-amber-500" />
                           )}
                           <span
-                            className={
+                            className={cn(
                               isCompleted
                                 ? "text-green-600 dark:text-green-400"
-                                : "text-amber-600 dark:text-amber-400"
-                            }
+                                : "text-amber-600 dark:text-amber-400",
+                            )}
                           >
                             {isCompleted ? t("completed") : t("inProgress")}
                           </span>

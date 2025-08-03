@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
@@ -119,7 +120,7 @@ export function CreateProjectDialog({
                   </div>
                 )}
               </div>
-              <span className={`${isOverLimit ? "text-red-600" : "text-gray-500"}`}>
+              <span className={cn(isOverLimit ? "text-red-600" : "text-gray-500")}>
                 {totalCharacterCount}/{maxLength} {t("maxCharacters")}
               </span>
             </div>

@@ -3,7 +3,7 @@ import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { ExtractServerActionData } from "@/lib/serverAction";
-import { formatDate } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 import { CalendarDaysIcon, PaperclipIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
@@ -76,13 +76,14 @@ export function StudyCard({ study: { studyUserChat, analyst } }: { study: TStudy
           </div>
           <div className="flex items-center">
             <span
-              className={`text-xs px-2 py-0.5 rounded-full ${
-                status === "backgroundRunning"
-                  ? "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-100"
-                  : status === "reportGenerated"
-                    ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100"
-                    : "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200"
-              }`}
+              className={cn("text-xs px-2 py-0.5 rounded-full", {
+                "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-100":
+                  status === "backgroundRunning",
+                "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100":
+                  status === "reportGenerated",
+                "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200":
+                  status === "notCompleted",
+              })}
             >
               {t(`status.${status}`)}
             </span>

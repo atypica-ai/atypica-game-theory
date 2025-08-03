@@ -4,6 +4,7 @@ import { FileUploadButton } from "@/components/chat/FileUploadButton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useFileUploadManager } from "@/hooks/use-file-upload-manager";
+import { cn } from "@/lib/utils";
 import { BookOpen, FileText, MessageCircle, Target, Upload, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
@@ -62,16 +63,22 @@ export default function PersonaImportClient({ isUploadEnabled }: PersonaImportCl
       {/* Feature Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card
-          className={`border border-slate-200 transition-colors ${!isUploadEnabled ? "opacity-60" : "hover:border-slate-300"}`}
+          className={cn(
+            "border border-slate-200 transition-colors",
+            isUploadEnabled ? "hover:border-slate-300" : "opacity-60",
+          )}
         >
           <CardHeader>
             <CardTitle
-              className={`flex items-center gap-2 ${!isUploadEnabled ? "text-slate-500" : "text-slate-900"}`}
+              className={cn(
+                "flex items-center gap-2",
+                isUploadEnabled ? "text-slate-900" : "text-slate-500",
+              )}
             >
               <Upload className="size-5" />
               {t("importInterview")}
             </CardTitle>
-            <CardDescription className={!isUploadEnabled ? "text-slate-500" : "text-slate-600"}>
+            <CardDescription className={cn(isUploadEnabled ? "text-slate-600" : "text-slate-500")}>
               {t("importDescription")}
               {!isUploadEnabled && (
                 <div className="mt-2 text-xs text-slate-400">{t("adminAccessRequired")}</div>
@@ -80,7 +87,10 @@ export default function PersonaImportClient({ isUploadEnabled }: PersonaImportCl
           </CardHeader>
           <CardContent className="space-y-4">
             <div
-              className={`text-sm space-y-2 ${!isUploadEnabled ? "text-slate-500" : "text-slate-600"}`}
+              className={cn(
+                "text-sm space-y-2",
+                isUploadEnabled ? "text-slate-600" : "text-slate-500",
+              )}
             >
               <div className="flex items-center gap-2">
                 <FileText className="size-4" />
