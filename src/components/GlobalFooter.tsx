@@ -89,12 +89,12 @@ export default function GlobalFooter({ className }: { className?: string }) {
               >
                 {t("about")}
               </Link>
-              <Link
+              {/*<Link
                 href="/pricing"
                 className="block text-muted-foreground hover:text-foreground transition-colors"
               >
                 {t("pricing")}
-              </Link>
+              </Link>*/}
               <Link
                 href="/persona-simulation"
                 className="block text-muted-foreground hover:text-foreground transition-colors"
