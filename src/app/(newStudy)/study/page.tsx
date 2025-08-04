@@ -4,6 +4,7 @@ import { prisma } from "@/prisma/prisma";
 import { CommandIcon } from "lucide-react";
 import { getServerSession } from "next-auth/next";
 import { getTranslations } from "next-intl/server";
+import Link from "next/link";
 import { forbidden, notFound, redirect } from "next/navigation";
 
 export default async function StudyPage({
@@ -44,6 +45,18 @@ export default async function StudyPage({
         </div>
         <div className="w-full">
           <NewStudyInputBox />
+        </div>
+        <div className="mt-8 text-center text-sm">
+          <Link
+            href="/featured-studies"
+            className="text-primary underline-offset-4 hover:underline"
+          >
+            {t("viewFeaturedStudies")}
+          </Link>
+          <span className="mx-2 text-muted-foreground">{t("or")}</span>
+          <Link href="/studies" className="text-primary underline-offset-4 hover:underline">
+            {t("viewMyProjects")}
+          </Link>
         </div>
         <div className="mt-2 text-xs text-muted-foreground text-center">{t("newStudyHint")}</div>
       </div>

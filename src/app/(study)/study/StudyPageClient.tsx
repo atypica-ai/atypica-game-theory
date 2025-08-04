@@ -1,6 +1,7 @@
 "use client";
 import GlobalHeader from "@/components/GlobalHeader";
 import { Button } from "@/components/ui/button";
+import UserMenu from "@/components/UserMenu";
 import UserTokensBalance from "@/components/UserTokensBalance";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
@@ -95,16 +96,19 @@ const Agent = () => {
     <section className="h-full w-1/2 max-lg:w-full pb-4 max-lg:pb-0 pl-2 max-lg:pl-0 flex flex-col items-stretch justify-start">
       <GlobalHeader className="h-12 border-border/50">
         {!replay ? (
-          <>
+          <div className="flex items-center gap-2 sm:gap-4">
             <ReportsListPanel />
             <ShareReplayButton studyUserChat={studyUserChat} />
             <UserTokensBalance />
-          </>
+            <UserMenu />
+          </div>
         ) : (
-          <>
+          <div className="flex items-center gap-2 sm:gap-4">
             <ReportsListPanel />
             <NerdStats />
-          </>
+            <UserTokensBalance />
+            <UserMenu />
+          </div>
         )}
       </GlobalHeader>
       {replay ? <ChatReplay /> : <ChatBox />}

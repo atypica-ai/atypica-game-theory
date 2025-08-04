@@ -331,7 +331,10 @@
   "StudyPage": {
     "NewStudy": {
       "startYourStudy": "开始您的研究",
-      "newStudyHint": "询问任何消费者决策问题——我们将访谈AI智能体来揭示真实动机"
+      "newStudyHint": "询问任何消费者决策问题——我们将访谈AI智能体来揭示真实动机",
+      "viewFeaturedStudies": "查看精选研究",
+      "viewMyProjects": "查看我的项目",
+      "or": "或"
     },
     "ShareReplayButton": {
       "shareReplay": "分享回放",
@@ -582,18 +585,15 @@
       "lightTheme": "浅色主题",
       "darkTheme": "深色主题",
       "myStudies": "我的项目",
-      "featuredStudies": "精选研究",
-      "pricing": "价格",
-      "changelog": "更新日志",
-      "about": "关于 atypica.AI",
-      "personaSimulation": "真人模拟",
-      "product": "产品"
+      "marketResearch": "商业研究",
+      "personaImport": "用户智能体",
+      "useCases": "案例",
+      "pricing": "价格"
     },
     "GlobalFooter": {
       "tagline": "为「主观世界」建模",
       "copyright": "© {year} BMRLab. 保留所有权利。",
       "product": "产品",
-      "featuredStudies": "精选研究",
       "personaSimulation": "真人模拟",
       "pricing": "价格",
       "company": "公司",

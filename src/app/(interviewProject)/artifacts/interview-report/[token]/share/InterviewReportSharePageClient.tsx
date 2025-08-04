@@ -1,6 +1,8 @@
 "use client";
 import GlobalHeader from "@/components/GlobalHeader";
 import { Button } from "@/components/ui/button";
+import UserMenu from "@/components/UserMenu";
+import UserTokensBalance from "@/components/UserTokensBalance";
 import { Share2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
@@ -38,11 +40,13 @@ export default function InterviewReportSharePageClient({ reportToken }: { report
   return (
     <div className="h-dvh flex flex-col items-stretch justify-start bg-muted/20">
       <GlobalHeader className="h-12">
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2 sm:gap-4">
           <Button variant="outline" size="sm" className="h-8 gap-1" onClick={copyShareLink}>
             <Share2 size={14} />
             <span className="hidden sm:inline">{t("copyLink")}</span>
           </Button>
+          <UserTokensBalance />
+          <UserMenu />
         </div>
       </GlobalHeader>
 

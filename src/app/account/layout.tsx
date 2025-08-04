@@ -1,11 +1,10 @@
-import { LeftMenus } from "@/app/(public)/LeftMenu";
 import GlobalHeader from "@/components/GlobalHeader";
 import AccountSidebar from "./components/AccountSidebar";
 
 export default async function AccountLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="h-dvh flex flex-col items-stretch justify-start overflow-hidden">
-      <GlobalHeader leftMenus={<LeftMenus />} />
+      <GlobalHeader />
       <div className="flex-1 overflow-hidden flex flex-col sm:flex-row items-stretch justify-start">
         <AccountSidebar />
         <main className="w-full sm:h-full sm:w-auto flex-1 overflow-y-auto scrollbar-thin">
