@@ -154,7 +154,7 @@ export function TokensHistory() {
                                       <>
                                         {t("tokensHistorySection.consume.PersonaImport")}
                                         <Link
-                                          href={`/personas/import/${item.resourceId}`}
+                                          href={`/persona/import/${item.resourceId}`}
                                           target="_blank"
                                         >
                                           <ExternalLinkIcon className="size-4" />

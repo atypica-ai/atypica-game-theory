@@ -79,7 +79,7 @@ export default function PersonasClient() {
       toast.warning(t("updating"));
       return;
     }
-    router.push(`/personas/import/${persona.personaImportId}`);
+    router.push(`/persona/import/${persona.personaImportId}`);
   };
 
   const NewPersonaCard = () => (

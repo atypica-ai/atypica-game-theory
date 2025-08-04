@@ -203,7 +203,7 @@ export function PersonaChatClient({
                           className={useChatHelpers.messages.length > 0 ? "flex-1" : "w-full"}
                         >
                           <Link
-                            href={`/personas/import/${persona.personaImportId}`}
+                            href={`/persona/import/${persona.personaImportId}`}
                             className="flex items-center gap-2"
                           >
                             <BotIcon className="w-4 h-4" />
