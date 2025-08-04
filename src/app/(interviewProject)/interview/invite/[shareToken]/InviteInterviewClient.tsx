@@ -63,11 +63,11 @@ export function InviteInterviewClient({
         className="w-full max-w-2xl mx-auto"
       >
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-            <MessageSquare className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+          <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+            <MessageSquare className="h-8 w-8 text-primary" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">{t("title")}</h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <h1 className="text-3xl font-bold mb-2">{t("title")}</h1>
+          <p className="text-muted-foreground">
             {projectInfo.ownerName}
             {t("subtitle")}
           </p>
@@ -97,48 +97,40 @@ export function InviteInterviewClient({
             </div> */}
 
             <div className="space-y-4">
-              <h3 className="font-medium text-gray-900 dark:text-gray-100">{t("whatToExpect")}</h3>
+              <h3 className="font-medium">{t("whatToExpect")}</h3>
               <div className="grid gap-3">
                 <div className="flex items-start space-x-3">
-                  <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
                   <div>
                     <p className="font-medium text-sm">{t("conversationalFormat")}</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                    <p className="text-sm text-muted-foreground">
                       {t("conversationalDescription")}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
-                  <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
                   <div>
                     <p className="font-medium text-sm">{t("openEndedQuestions")}</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {t("openEndedDescription")}
-                    </p>
+                    <p className="text-sm text-muted-foreground">{t("openEndedDescription")}</p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
-                  <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
                   <div>
                     <p className="font-medium text-sm">{t("yourPace")}</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {t("yourPaceDescription")}
-                    </p>
+                    <p className="text-sm text-muted-foreground">{t("yourPaceDescription")}</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="bg-blue-50 dark:bg-blue-950/20 p-4 rounded-lg">
+            <div className="bg-primary/10 p-4 rounded-lg">
               <div className="flex items-start space-x-3">
-                <Shield className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                <Shield className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
                 <div>
-                  <p className="font-medium text-blue-900 dark:text-blue-100 text-sm">
-                    {t("privacyTitle")}
-                  </p>
-                  <p className="text-sm text-blue-800 dark:text-blue-200 mt-1">
-                    {t("privacyDescription")}
-                  </p>
+                  <p className="font-medium text-primary text-sm">{t("privacyTitle")}</p>
+                  <p className="text-sm text-primary/80 mt-1">{t("privacyDescription")}</p>
                 </div>
               </div>
             </div>
@@ -149,12 +141,10 @@ export function InviteInterviewClient({
           {user ? (
             <>
               <div className="mb-4">
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                  {t("participatingAs")}
-                </p>
-                <div className="inline-flex items-center space-x-2 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">
-                  <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
-                    <span className="text-white text-xs font-medium">
+                <p className="text-sm text-muted-foreground mb-2">{t("participatingAs")}</p>
+                <div className="inline-flex items-center space-x-2 bg-muted px-3 py-1 rounded-full">
+                  <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center">
+                    <span className="text-primary-foreground text-xs font-medium">
                       {user?.name
                         ? user.name.charAt(0).toUpperCase()
                         : user?.email?.charAt(0).toUpperCase()}
@@ -179,12 +169,12 @@ export function InviteInterviewClient({
                 )}
               </Button>
 
-              <p className="text-xs text-gray-500 mt-3">{t("agreementText")}</p>
+              <p className="text-xs text-muted-foreground mt-3">{t("agreementText")}</p>
             </>
           ) : (
             <>
               <div className="mt-12 mb-4">
-                <p className="text-sm text-gray-600 dark:text-gray-400">{t("loginDescription")}</p>
+                <p className="text-sm text-muted-foreground">{t("loginDescription")}</p>
               </div>
               <Button onClick={handleLogin} size="lg" className="w-full sm:w-auto">
                 {t("loginButton")}
@@ -195,13 +185,13 @@ export function InviteInterviewClient({
         </div>
 
         <div className="text-center mt-6">
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-muted-foreground">
             {t("poweredBy")}{" "}
             <a
               href="https://atypica.ai"
               target="_blank"
               rel="noopener noreferrer"
-              className="underline hover:text-gray-700"
+              className="underline hover:text-foreground"
             >
               atypica.AI
             </a>

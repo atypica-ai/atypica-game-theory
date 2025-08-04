@@ -70,27 +70,25 @@ export function InterviewSessionsSection({ projectId }: { projectId: number }) {
       <CardContent>
         {loading ? (
           <div className="text-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-gray-100 mx-auto mb-4"></div>
-            <p className="text-gray-600 dark:text-gray-400">{tSessions("loadingSessions")}</p>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-foreground mx-auto mb-4"></div>
+            <p className="text-muted-foreground">{tSessions("loadingSessions")}</p>
           </div>
         ) : error ? (
           <div className="text-center py-8">
-            <MessageSquareIcon className="h-12 w-12 text-red-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-red-600 dark:text-red-400 mb-2">
+            <MessageSquareIcon className="h-12 w-12 text-destructive mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-destructive mb-2">
               {tSessions("loadingError")}
             </h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">{error}</p>
+            <p className="text-muted-foreground mb-4">{error}</p>
             <Button onClick={loadSessions} variant="outline" size="sm">
               {tSessions("retryButton")}
             </Button>
           </div>
         ) : sessions.length === 0 ? (
           <div className="text-center py-8">
-            <MessageSquareIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-              {t("noInterviews")}
-            </h3>
-            <p className="text-gray-600 dark:text-gray-400">{t("noInterviewsDescription")}</p>
+            <MessageSquareIcon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-medium mb-2">{t("noInterviews")}</h3>
+            <p className="text-muted-foreground">{t("noInterviewsDescription")}</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -99,17 +97,17 @@ export function InterviewSessionsSection({ projectId }: { projectId: number }) {
               return (
                 <div
                   key={session.id}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted transition-colors"
                 >
                   <div className="flex items-center space-x-3">
                     {session.intervieweePersona ? (
-                      <Badge variant="secondary" className="text-xs w-20 flex">
-                        <BotIcon className="h-3 w-3" />
+                      <Badge variant="secondary" className="text-xs w-20 flex-shrink-0">
+                        <BotIcon className="h-3 w-3 mr-1" />
                         AI
                       </Badge>
                     ) : session.intervieweeUser ? (
-                      <Badge variant="default" className="text-xs w-20 flex">
-                        <UsersIcon className="h-3 w-3" />
+                      <Badge variant="default" className="text-xs w-20 flex-shrink-0">
+                        <UsersIcon className="h-3 w-3 mr-1" />
                         Human
                       </Badge>
                     ) : (
@@ -122,9 +120,8 @@ export function InterviewSessionsSection({ projectId }: { projectId: number }) {
                             ? `${session.title} (${getSessionDisplayName(session)})`
                             : getSessionDisplayName(session)}
                         </p>
-                        <div className="flex items-center gap-1 text-xs text-gray-500">
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
                           <span className="mr-2">{formatDate(session.createdAt, locale)}</span>
-                          {/* <span>•</span> */}
                           {isCompleted ? (
                             <CheckCircleIcon className="h-3 w-3 text-green-500" />
                           ) : (

@@ -85,24 +85,24 @@ export function FollowUpChatList({ personaImportId }: { personaImportId: number 
   }
 
   return (
-    <div className="bg-white rounded-lg border border-slate-200 p-6">
+    <div className="bg-card text-card-foreground rounded-lg border p-6">
       <div className="space-y-4">
         <div className="space-y-2">
-          <h2 className="text-xl font-semibold flex items-center gap-3 text-slate-900">
-            <div className="w-6 h-6 rounded bg-slate-900 flex items-center justify-center">
-              <MessageSquareIcon className="size-3 text-white" />
+          <h2 className="text-xl font-semibold flex items-center gap-3">
+            <div className="w-6 h-6 rounded bg-primary text-primary-foreground flex items-center justify-center">
+              <MessageSquareIcon className="size-3" />
             </div>
             {t("title")}
           </h2>
-          <p className="text-slate-600 ml-9 text-sm">{t("description")}</p>
+          <p className="text-muted-foreground ml-9 text-sm">{t("description")}</p>
         </div>
 
-        <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200">
+        <div className="flex items-center justify-between p-4 bg-muted rounded-lg border">
           <div className="flex items-center gap-3">
-            <MessageSquareIcon className="size-4 text-slate-600" />
+            <MessageSquareIcon className="size-4 text-muted-foreground" />
             <div>
-              <p className="font-medium text-slate-900">{t("followUpConversation")}</p>
-              <p className="text-sm text-slate-600">{t("viewCompleteRecord")}</p>
+              <p className="font-medium">{t("followUpConversation")}</p>
+              <p className="text-sm text-muted-foreground">{t("viewCompleteRecord")}</p>
             </div>
           </div>
           <Dialog open={followUpChatOpen} onOpenChange={setFollowUpChatOpen}>
@@ -123,11 +123,11 @@ export function FollowUpChatList({ personaImportId }: { personaImportId: number 
               <div className="flex-1 overflow-y-auto space-y-4 pr-2">
                 {loadingFollowUpChat ? (
                   <div className="flex items-center justify-center py-8">
-                    <div className="text-slate-500">{t("loading")}</div>
+                    <div className="text-muted-foreground">{t("loading")}</div>
                   </div>
                 ) : followUpChatMessages.length === 0 ? (
                   <div className="flex items-center justify-center py-8">
-                    <div className="text-slate-500">{t("noRecord")}</div>
+                    <div className="text-muted-foreground">{t("noRecord")}</div>
                   </div>
                 ) : (
                   followUpChatMessages.map(({ id, role, content, parts, ...extra }) => (

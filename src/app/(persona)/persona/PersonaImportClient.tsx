@@ -55,22 +55,22 @@ export default function PersonaImportClient({ isUploadEnabled }: PersonaImportCl
     <div className="container mx-auto p-8 max-w-4xl space-y-8">
       {/* Header */}
       <div className="text-center space-y-4">
-        <h1 className="text-3xl font-bold text-slate-900">{t("title")}</h1>
-        <p className="text-lg text-slate-600 max-w-2xl mx-auto">{t("subtitle")}</p>
+        <h1 className="text-3xl font-bold">{t("title")}</h1>
+        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">{t("subtitle")}</p>
       </div>
 
       {/* Feature Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="border border-slate-200 hover:border-slate-300 transition-colors">
+        <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-slate-900">
+            <CardTitle className="flex items-center gap-2">
               <Upload className="size-5" />
               {t("importInterview")}
             </CardTitle>
-            <CardDescription className="text-slate-600">{t("importDescription")}</CardDescription>
+            <CardDescription>{t("importDescription")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="text-sm text-slate-600 space-y-2">
+            <div className="text-sm text-muted-foreground space-y-2">
               <div className="flex items-center gap-2">
                 <FileText className="size-4" />
                 <span>{t("pdfConversion")}</span>
@@ -95,7 +95,7 @@ export default function PersonaImportClient({ isUploadEnabled }: PersonaImportCl
                 />
               ) : (
                 <div className="space-y-2">
-                  <div className="p-3 bg-slate-100 rounded">
+                  <div className="p-3 bg-muted rounded">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <FileText className="size-4" />
@@ -116,7 +116,7 @@ export default function PersonaImportClient({ isUploadEnabled }: PersonaImportCl
                 <Button disabled className="w-full" variant="outline">
                   {t("uploadDisabled")}
                 </Button>
-                <div className="text-xs text-orange-600 font-medium text-center">
+                <div className="text-xs text-primary font-medium text-center">
                   {t("upgradeToMaxPlan")}
                 </div>
               </div>
@@ -124,16 +124,16 @@ export default function PersonaImportClient({ isUploadEnabled }: PersonaImportCl
           </CardContent>
         </Card>
 
-        <Card className="border border-slate-200 hover:border-slate-300 transition-colors">
+        <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-slate-900">
+            <CardTitle className="flex items-center gap-2">
               <MessageCircle className="size-5" />
               {t("chatWithPersonas")}
             </CardTitle>
-            <CardDescription className="text-slate-600">{t("chatDescription")}</CardDescription>
+            <CardDescription>{t("chatDescription")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="text-sm text-slate-600 space-y-2">
+            <div className="text-sm text-muted-foreground space-y-2">
               <div className="flex items-center gap-2">
                 <MessageCircle className="size-4" />
                 <span>{t("naturalConversation")}</span>
@@ -156,7 +156,7 @@ export default function PersonaImportClient({ isUploadEnabled }: PersonaImportCl
                 <Button disabled className="w-full" variant="outline">
                   {t("viewMyPersonas")}
                 </Button>
-                <div className="text-xs text-orange-600 font-medium text-center">
+                <div className="text-xs text-primary font-medium text-center">
                   {t("upgradeToMaxPlan")}
                 </div>
               </div>
@@ -166,16 +166,16 @@ export default function PersonaImportClient({ isUploadEnabled }: PersonaImportCl
       </div>
 
       {/* Coming Soon Card */}
-      <Card className="border border-slate-200 opacity-60">
+      <Card className="opacity-60">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-slate-900">
+          <CardTitle className="flex items-center gap-2">
             <BookOpen className="size-5" />
             {t("researchWithPersonas")}
           </CardTitle>
-          <CardDescription className="text-slate-600">{t("researchDescription")}</CardDescription>
+          <CardDescription>{t("researchDescription")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="text-sm text-slate-600 space-y-2">
+          <div className="text-sm text-muted-foreground space-y-2">
             <div className="flex items-center gap-2">
               <Target className="size-4" />
               <span>{t("marketResearch")}</span>
@@ -196,95 +196,93 @@ export default function PersonaImportClient({ isUploadEnabled }: PersonaImportCl
       </Card>
 
       {/* Analysis Dimensions */}
-      <Card className="border border-slate-200">
+      <Card>
         <CardHeader>
-          <CardTitle className="text-slate-900">{t("analysisDimensions")}</CardTitle>
-          <CardDescription className="text-slate-600">{t("dimensionsDescription")}</CardDescription>
+          <CardTitle>{t("analysisDimensions")}</CardTitle>
+          <CardDescription>{t("dimensionsDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <Users className="size-4 text-slate-600" />
-                <h4 className="font-medium text-slate-900">{t("demographic")}</h4>
+                <Users className="size-4 text-muted-foreground" />
+                <h4 className="font-medium">{t("demographic")}</h4>
               </div>
-              <p className="text-sm text-slate-600">{t("demographicDescription")}</p>
+              <p className="text-sm text-muted-foreground">{t("demographicDescription")}</p>
             </div>
 
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <MessageCircle className="size-4 text-slate-600" />
-                <h4 className="font-medium text-slate-900">{t("psychological")}</h4>
+                <MessageCircle className="size-4 text-muted-foreground" />
+                <h4 className="font-medium">{t("psychological")}</h4>
               </div>
-              <p className="text-sm text-slate-600">{t("psychologicalDescription")}</p>
+              <p className="text-sm text-muted-foreground">{t("psychologicalDescription")}</p>
             </div>
 
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <Target className="size-4 text-slate-600" />
-                <h4 className="font-medium text-slate-900">{t("behavioralEconomics")}</h4>
+                <Target className="size-4 text-muted-foreground" />
+                <h4 className="font-medium">{t("behavioralEconomics")}</h4>
               </div>
-              <p className="text-sm text-slate-600">{t("behavioralDescription")}</p>
+              <p className="text-sm text-muted-foreground">{t("behavioralDescription")}</p>
             </div>
 
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <FileText className="size-4 text-slate-600" />
-                <h4 className="font-medium text-slate-900">{t("politicalCognition")}</h4>
+                <FileText className="size-4 text-muted-foreground" />
+                <h4 className="font-medium">{t("politicalCognition")}</h4>
               </div>
-              <p className="text-sm text-slate-600">{t("politicalDescription")}</p>
+              <p className="text-sm text-muted-foreground">{t("politicalDescription")}</p>
             </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Getting Started */}
-      <Card className="border border-slate-200">
+      <Card>
         <CardHeader>
-          <CardTitle className="text-slate-900">{t("gettingStarted")}</CardTitle>
-          <CardDescription className="text-slate-600">
-            {t("gettingStartedDescription")}
-          </CardDescription>
+          <CardTitle>{t("gettingStarted")}</CardTitle>
+          <CardDescription>{t("gettingStartedDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             <div className="flex items-start gap-3">
-              <div className="w-6 h-6 rounded bg-slate-900 text-white text-sm font-medium flex items-center justify-center mt-0.5">
+              <div className="w-6 h-6 rounded bg-primary text-primary-foreground text-sm font-medium flex items-center justify-center mt-0.5">
                 1
               </div>
               <div>
-                <h4 className="font-medium text-slate-900">{t("step1")}</h4>
-                <p className="text-sm text-slate-600">{t("step1Description")}</p>
+                <h4 className="font-medium">{t("step1")}</h4>
+                <p className="text-sm text-muted-foreground">{t("step1Description")}</p>
               </div>
             </div>
 
             <div className="flex items-start gap-3">
-              <div className="w-6 h-6 rounded bg-slate-900 text-white text-sm font-medium flex items-center justify-center mt-0.5">
+              <div className="w-6 h-6 rounded bg-primary text-primary-foreground text-sm font-medium flex items-center justify-center mt-0.5">
                 2
               </div>
               <div>
-                <h4 className="font-medium text-slate-900">{t("step2")}</h4>
-                <p className="text-sm text-slate-600">{t("step2Description")}</p>
+                <h4 className="font-medium">{t("step2")}</h4>
+                <p className="text-sm text-muted-foreground">{t("step2Description")}</p>
               </div>
             </div>
 
             <div className="flex items-start gap-3">
-              <div className="w-6 h-6 rounded bg-slate-900 text-white text-sm font-medium flex items-center justify-center mt-0.5">
+              <div className="w-6 h-6 rounded bg-primary text-primary-foreground text-sm font-medium flex items-center justify-center mt-0.5">
                 3
               </div>
               <div>
-                <h4 className="font-medium text-slate-900">{t("step3")}</h4>
-                <p className="text-sm text-slate-600">{t("step3Description")}</p>
+                <h4 className="font-medium">{t("step3")}</h4>
+                <p className="text-sm text-muted-foreground">{t("step3Description")}</p>
               </div>
             </div>
 
             <div className="flex items-start gap-3">
-              <div className="w-6 h-6 rounded bg-slate-300 text-slate-500 text-sm font-medium flex items-center justify-center mt-0.5">
+              <div className="w-6 h-6 rounded bg-muted text-muted-foreground text-sm font-medium flex items-center justify-center mt-0.5">
                 4
               </div>
               <div>
-                <h4 className="font-medium text-slate-500">{t("step4")}</h4>
-                <p className="text-sm text-slate-500">{t("step4Description")}</p>
+                <h4 className="font-medium text-muted-foreground">{t("step4")}</h4>
+                <p className="text-sm text-muted-foreground">{t("step4Description")}</p>
               </div>
             </div>
           </div>

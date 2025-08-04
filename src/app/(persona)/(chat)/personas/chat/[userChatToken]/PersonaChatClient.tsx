@@ -98,7 +98,7 @@ export function PersonaChatClient({
           <div className="flex items-center gap-3">
             <HippyGhostAvatar className="w-7 h-7" seed={persona.id} />
             <div>
-              <h1 className="font-medium text-slate-700 text-sm">{persona.name}</h1>
+              <h1 className="font-medium text-sm">{persona.name}</h1>
             </div>
           </div>
 
@@ -108,7 +108,7 @@ export function PersonaChatClient({
               <Button
                 variant="ghost"
                 size="sm"
-                className="gap-2 text-slate-500 hover:text-slate-700"
+                className="gap-2 text-muted-foreground hover:text-foreground"
               >
                 <InfoIcon className="w-4 h-4" />
                 <span className="hidden sm:inline text-xs">{t("details")}</span>
@@ -126,21 +126,27 @@ export function PersonaChatClient({
                 {/* Basic Info */}
                 <div className="space-y-3">
                   <div>
-                    <div className="text-xs font-medium text-slate-500 mb-1">{t("created")}</div>
-                    <div className="text-sm text-slate-700 flex items-center gap-1">
+                    <div className="text-xs font-medium text-muted-foreground mb-1">
+                      {t("created")}
+                    </div>
+                    <div className="text-sm flex items-center gap-1">
                       <CalendarIcon className="w-3 h-3" />
                       {formatDate(persona.createdAt, locale)}
                     </div>
                   </div>
 
                   <div>
-                    <div className="text-xs font-medium text-slate-500 mb-1">{t("source")}</div>
-                    <div className="text-sm text-slate-700">{persona.source}</div>
+                    <div className="text-xs font-medium text-muted-foreground mb-1">
+                      {t("source")}
+                    </div>
+                    <div className="text-sm">{persona.source}</div>
                   </div>
 
                   {persona.tier !== null && (
                     <div>
-                      <div className="text-xs font-medium text-slate-500 mb-1">{t("tier")}</div>
+                      <div className="text-xs font-medium text-muted-foreground mb-1">
+                        {t("tier")}
+                      </div>
                       <Badge variant="secondary" className="text-xs">
                         {t("tier")} {persona.tier}
                       </Badge>
@@ -148,7 +154,7 @@ export function PersonaChatClient({
                   )}
 
                   <div>
-                    <div className="text-xs font-medium text-slate-500 mb-2 flex items-center gap-1">
+                    <div className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1">
                       <TagIcon className="w-3 h-3" />
                       {t("tags")}
                     </div>
@@ -163,7 +169,7 @@ export function PersonaChatClient({
                 </div>
 
                 {/* Import Analysis */}
-                <div className="pt-4 border-t border-slate-100">
+                <div className="pt-4 border-t">
                   <div className="space-y-3">
                     <div className="flex gap-2">
                       {/* 只有当有聊天记录时才显示清除按钮 */}

@@ -2,6 +2,7 @@
 import { fetchInterviewSessionStats } from "@/app/(interviewProject)/actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { Bot, CheckCircle, Clock, MessageSquare, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -41,12 +42,12 @@ export function ProjectStatsSection({ projectId }: { projectId: number }) {
         {[1, 2, 3].map((i) => (
           <Card key={i}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded animate-pulse w-24" />
-              <div className="h-4 w-4 bg-gray-200 dark:bg-gray-800 rounded animate-pulse" />
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-4 w-4" />
             </CardHeader>
             <CardContent>
-              <div className="h-8 bg-gray-200 dark:bg-gray-800 rounded animate-pulse mb-2" />
-              <div className="h-3 bg-gray-200 dark:bg-gray-800 rounded animate-pulse w-3/4" />
+              <Skeleton className="h-8 w-1/2 mb-2" />
+              <Skeleton className="h-3 w-3/4" />
             </CardContent>
           </Card>
         ))}
@@ -60,7 +61,7 @@ export function ProjectStatsSection({ projectId }: { projectId: number }) {
         <Card className="md:col-span-3">
           <CardContent className="pt-6">
             <div className="text-center">
-              <p className="text-red-600 dark:text-red-400 mb-2">{tStats("failedToLoadStats")}</p>
+              <p className="text-destructive mb-2">{tStats("failedToLoadStats")}</p>
               <Button onClick={loadStats} variant="outline" size="sm">
                 {tStats("retry")}
               </Button>

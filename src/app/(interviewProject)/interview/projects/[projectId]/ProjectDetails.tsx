@@ -55,12 +55,10 @@ export function ProjectDetails({
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+          <h1 className="text-3xl font-bold">
             {t("title")} #{project.id}
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            {formatDate(project.createdAt, locale)}
-          </p>
+          <p className="text-muted-foreground">{formatDate(project.createdAt, locale)}</p>
         </div>
         <div className="flex items-center space-x-2">
           <Button variant="outline" onClick={() => setInviteDialogOpen(true)}>
@@ -83,7 +81,7 @@ export function ProjectDetails({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed text-sm max-h-64 overflow-scroll scrollbar-thin">
+          <p className="whitespace-pre-wrap leading-relaxed text-sm max-h-64 overflow-scroll scrollbar-thin">
             {project.brief}
           </p>
         </CardContent>

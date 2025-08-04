@@ -62,11 +62,11 @@ export function InterviewReportsSection({ projectId }: { projectId: number }) {
   return (
     <>
       <Card>
-        <CardContent className="px-6">
+        <CardContent className="p-6">
           {loadingReports ? (
             <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-gray-100 mx-auto mb-4"></div>
-              <p className="text-gray-600 dark:text-gray-400">{t("loadingReports")}</p>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-foreground mx-auto mb-4"></div>
+              <p className="text-muted-foreground">{t("loadingReports")}</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -100,7 +100,7 @@ export function InterviewReportsSection({ projectId }: { projectId: number }) {
               </div>
 
               {reports.length === 0 ? (
-                <div className="text-center py-12 bg-muted/20 rounded-lg border-2 border-dashed">
+                <div className="text-center py-12 bg-muted/50 rounded-lg border-2 border-dashed">
                   <FileTextIcon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                   <h4 className="text-lg font-medium text-muted-foreground mb-2">
                     {t("noReportsGenerated")}
@@ -126,8 +126,8 @@ export function InterviewReportsSection({ projectId }: { projectId: number }) {
                     >
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex items-center space-x-2">
-                          <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
-                            <FileTextIcon className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                          <div className="p-2 bg-primary/10 rounded-lg">
+                            <FileTextIcon className="h-4 w-4 text-primary" />
                           </div>
                           <div>
                             <h4 className="font-medium text-sm">

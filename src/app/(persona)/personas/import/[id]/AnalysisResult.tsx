@@ -108,22 +108,22 @@ export function AnalysisResult({ analysis }: AnalysisResultProps) {
   if (!analysis) return null;
 
   return (
-    <div className="bg-white rounded-lg border border-slate-200 p-6">
+    <div className="bg-card rounded-lg border p-6">
       <div className="space-y-6">
         <div className="space-y-2">
-          <h2 className="text-xl font-semibold flex items-center gap-3 text-slate-900">
-            <div className="w-6 h-6 rounded bg-slate-900 flex items-center justify-center">
-              <BarChart3Icon className="size-3 text-white" />
+          <h2 className="text-xl font-semibold flex items-center gap-3 text-card-foreground">
+            <div className="w-6 h-6 rounded bg-primary flex items-center justify-center">
+              <BarChart3Icon className="size-3 text-primary-foreground" />
             </div>
             {t("title")}
           </h2>
-          <p className="text-slate-600 ml-9 text-sm">{t("description")}</p>
+          <p className="text-muted-foreground ml-9 text-sm">{t("description")}</p>
         </div>
 
         <div className="space-y-6">
           {/* Radar Chart */}
           <div className="flex justify-center">
-            <div className="w-full p-6 bg-slate-50 rounded-lg border border-slate-200">
+            <div className="w-full p-6 bg-white rounded-lg border">
               <div className="h-80 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <RadarChart cx="50%" cy="50%" outerRadius="75%" data={radarData}>
@@ -172,30 +172,30 @@ export function AnalysisResult({ analysis }: AnalysisResultProps) {
           </div>
 
           {/* Overall Score */}
-          <div className="p-4 bg-white rounded-lg border border-slate-200">
+          <div className="p-4 bg-card rounded-lg border">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-medium text-slate-900">{t("agentCompleteness")}</h3>
+                <h3 className="text-sm font-medium text-foreground">{t("agentCompleteness")}</h3>
                 <Badge variant="outline" className="text-sm px-3 py-1">
                   {percentageScore}%
                 </Badge>
               </div>
-              <div className="relative w-full bg-slate-100 rounded-full h-3">
+              <div className="relative w-full bg-muted rounded-full h-3">
                 {/* Baseline indicator */}
                 <div
                   className="absolute top-0 w-0.5 h-3 bg-red-400 z-10"
                   style={{ left: `${baselinePercentage}%` }}
                 />
                 <div
-                  className="h-full bg-gradient-to-r from-slate-600 to-slate-900 rounded-full transition-all duration-500 relative"
+                  className="h-full bg-primary rounded-full transition-all duration-500 relative"
                   style={{ width: `${percentageScore}%` }}
                 >
                   {/* Score indicator */}
-                  <div className="absolute -top-1 -right-1 w-2 h-2 bg-slate-900 rounded-full" />
+                  <div className="absolute -top-1 -right-1 w-2 h-2 bg-foreground rounded-full" />
                 </div>
               </div>
               <div className="flex justify-between items-center text-xs">
-                <span className="text-slate-600">
+                <span className="text-muted-foreground">
                   {percentageScore >= 80
                     ? t("excellentCoverage")
                     : percentageScore >= 65
@@ -227,14 +227,14 @@ export function AnalysisResult({ analysis }: AnalysisResultProps) {
                 return null;
               }
               return (
-                <div key={dimension} className="p-4 bg-white rounded-lg border border-slate-200">
+                <div key={dimension} className="p-4 bg-card rounded-lg border">
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-6 h-6 rounded bg-slate-100 flex items-center justify-center">
+                        <div className="w-6 h-6 rounded bg-muted flex items-center justify-center">
                           {getDimensionIcon(dimension)}
                         </div>
-                        <h4 className="font-medium text-slate-900 text-sm">
+                        <h4 className="font-medium text-card-foreground text-sm">
                           {getDimensionName(dimension)}
                         </h4>
                       </div>
@@ -258,20 +258,20 @@ export function AnalysisResult({ analysis }: AnalysisResultProps) {
                         </Badge>
                       </div>
                     </div>
-                    <p className="text-xs text-slate-600">{dimensionData.reason}</p>
+                    <p className="text-xs text-muted-foreground">{dimensionData.reason}</p>
                     {dimensionData.questions && dimensionData.questions.length > 0 && (
-                      <div className="pt-3 border-t border-slate-100">
-                        <h5 className="font-medium text-xs mb-2 text-slate-700">
+                      <div className="pt-3 border-t">
+                        <h5 className="font-medium text-xs mb-2 text-foreground">
                           {t("targetedQuestions")}
                         </h5>
                         <div className="space-y-2">
                           {dimensionData.questions.map((question, index) => (
                             <div
                               key={index}
-                              className="text-xs p-2 bg-slate-50 rounded border-l-2 border-slate-300"
+                              className="text-xs p-2 bg-muted rounded border-l-2 border-border"
                             >
-                              <span className="font-medium text-slate-900">Q{index + 1}:</span>{" "}
-                              <span className="text-slate-600">{question}</span>
+                              <span className="font-medium text-foreground">Q{index + 1}:</span>{" "}
+                              <span className="text-muted-foreground">{question}</span>
                             </div>
                           ))}
                         </div>

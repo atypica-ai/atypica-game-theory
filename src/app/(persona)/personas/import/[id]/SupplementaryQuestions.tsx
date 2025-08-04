@@ -62,45 +62,47 @@ export function SupplementaryQuestions({
   };
 
   return (
-    <div className="bg-white rounded-lg border border-slate-200 p-6">
+    <div className="bg-card text-card-foreground rounded-lg border p-6">
       <div className="space-y-6">
         <div className="space-y-2">
-          <h2 className="text-xl font-semibold flex items-center gap-3 text-slate-900">
-            <div className="w-6 h-6 rounded bg-slate-900 flex items-center justify-center">
-              <LightbulbIcon className="size-3 text-white" />
+          <h2 className="text-xl font-semibold flex items-center gap-3">
+            <div className="w-6 h-6 rounded bg-primary text-primary-foreground flex items-center justify-center">
+              <LightbulbIcon className="size-3" />
             </div>
             {t("title")}
           </h2>
-          <p className="text-slate-600 ml-9 text-sm">{t("description")}</p>
+          <p className="text-muted-foreground ml-9 text-sm">{t("description")}</p>
         </div>
 
         <div className="space-y-4">
-          <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
-            <h4 className="font-medium mb-2 text-amber-900">{t("generationReason")}</h4>
-            <p className="text-sm text-amber-800 leading-relaxed">
+          <div className="p-4 bg-amber-100/50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-900/30">
+            <h4 className="font-medium mb-2 text-amber-900 dark:text-amber-200">
+              {t("generationReason")}
+            </h4>
+            <p className="text-sm text-amber-800 dark:text-amber-300 leading-relaxed">
               {supplementaryQuestions.reasoning}
             </p>
           </div>
 
           <div className="space-y-3">
-            <h4 className="font-medium text-slate-900">{t("suggestedQuestions")}</h4>
+            <h4 className="font-medium">{t("suggestedQuestions")}</h4>
             <div className="grid gap-3">
               {(supplementaryQuestions.questions ?? []).map((question, index) => (
-                <div key={index} className="p-3 border border-slate-200 rounded-lg bg-white">
+                <div key={index} className="p-3 border rounded-lg bg-background">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-start gap-3">
-                        <div className="shrink-0 w-5 h-5 rounded bg-slate-900 flex items-center justify-center text-white text-xs font-medium mt-0.5">
+                        <div className="shrink-0 w-5 h-5 rounded bg-primary text-primary-foreground flex items-center justify-center text-xs font-medium mt-0.5">
                           {index + 1}
                         </div>
-                        <p className="text-sm text-slate-700 leading-relaxed">{question}</p>
+                        <p className="text-sm text-muted-foreground leading-relaxed">{question}</p>
                       </div>
                     </div>
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => copyToClipboard(question)}
-                      className="px-2 py-1 h-autotext-slate-400 hover:text-slate-600"
+                      className="px-2 py-1 h-auto text-muted-foreground hover:text-foreground"
                     >
                       <CopyIcon className="size-3" />
                     </Button>
@@ -110,7 +112,7 @@ export function SupplementaryQuestions({
             </div>
           </div>
 
-          <div className="pt-4 border-t border-slate-200">
+          <div className="pt-4 border-t">
             <div className="space-y-2">
               <AlertDialog
                 open={open}
@@ -157,7 +159,7 @@ export function SupplementaryQuestions({
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
-              <p className="text-xs text-slate-600 text-center">{t("createShareNote")}</p>
+              <p className="text-xs text-muted-foreground text-center">{t("createShareNote")}</p>
             </div>
           </div>
         </div>
