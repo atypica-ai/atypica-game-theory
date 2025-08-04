@@ -219,6 +219,7 @@ export default function PricingPageClient({
             <FeatureItem text={t("features.personas.curated")} />
             <FeatureItem text={t("features.analysisModel.superior")} />
             <FeatureItem text={t("features.reports.followUp")} />
+            <FeatureItemWithPreview text={t("features.personaPreview")} />
           </CardContent>
         </Card>
 
@@ -298,6 +299,21 @@ function FeatureItem({ text, className }: { text: string; className?: string }) 
     <div className={cn("flex items-start text-sm", className)}>
       <CheckIcon className="size-4 text-primary mr-2 mt-0.5" />
       <span className="flex-1">{text}</span>
+    </div>
+  );
+}
+
+function FeatureItemWithPreview({ text, className }: { text: string; className?: string }) {
+  const t = useTranslations("PricingPage.features");
+  return (
+    <div className={cn("flex items-start text-sm", className)}>
+      <div className="size-4 mr-2">✨</div>
+      <div className="flex-1">
+        <span className="align-middle inline-block text-xs mr-1 px-1 bg-muted rounded-sm">
+          {t("earlyAccess")}
+        </span>
+        <span className="align-middle">{text}</span>
+      </div>
     </div>
   );
 }

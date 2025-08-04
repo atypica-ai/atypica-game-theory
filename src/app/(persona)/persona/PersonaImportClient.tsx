@@ -4,7 +4,6 @@ import { FileUploadButton } from "@/components/chat/FileUploadButton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useFileUploadManager } from "@/hooks/use-file-upload-manager";
-import { cn } from "@/lib/utils";
 import { BookOpen, FileText, MessageCircle, Target, Upload, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
@@ -62,36 +61,16 @@ export default function PersonaImportClient({ isUploadEnabled }: PersonaImportCl
 
       {/* Feature Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card
-          className={cn(
-            "border border-slate-200 transition-colors",
-            isUploadEnabled ? "hover:border-slate-300" : "opacity-60",
-          )}
-        >
+        <Card className="border border-slate-200 hover:border-slate-300 transition-colors">
           <CardHeader>
-            <CardTitle
-              className={cn(
-                "flex items-center gap-2",
-                isUploadEnabled ? "text-slate-900" : "text-slate-500",
-              )}
-            >
+            <CardTitle className="flex items-center gap-2 text-slate-900">
               <Upload className="size-5" />
               {t("importInterview")}
             </CardTitle>
-            <CardDescription className={cn(isUploadEnabled ? "text-slate-600" : "text-slate-500")}>
-              {t("importDescription")}
-              {!isUploadEnabled && (
-                <div className="mt-2 text-xs text-slate-400">{t("adminAccessRequired")}</div>
-              )}
-            </CardDescription>
+            <CardDescription className="text-slate-600">{t("importDescription")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div
-              className={cn(
-                "text-sm space-y-2",
-                isUploadEnabled ? "text-slate-600" : "text-slate-500",
-              )}
-            >
+            <div className="text-sm text-slate-600 space-y-2">
               <div className="flex items-center gap-2">
                 <FileText className="size-4" />
                 <span>{t("pdfConversion")}</span>
@@ -133,9 +112,14 @@ export default function PersonaImportClient({ isUploadEnabled }: PersonaImportCl
                 </div>
               )
             ) : (
-              <Button disabled className="w-full" variant="outline">
-                {t("uploadDisabled")}
-              </Button>
+              <div className="space-y-2">
+                <Button disabled className="w-full" variant="outline">
+                  {t("uploadDisabled")}
+                </Button>
+                <div className="text-xs text-orange-600 font-medium text-center">
+                  {t("upgradeToMaxPlan")}
+                </div>
+              </div>
             )}
           </CardContent>
         </Card>
@@ -163,9 +147,20 @@ export default function PersonaImportClient({ isUploadEnabled }: PersonaImportCl
                 <span>{t("multiDimensional")}</span>
               </div>
             </div>
-            <Button className="w-full" onClick={() => router.push("/personas")}>
-              {t("viewMyPersonas")}
-            </Button>
+            {isUploadEnabled ? (
+              <Button className="w-full" onClick={() => router.push("/personas")}>
+                {t("viewMyPersonas")}
+              </Button>
+            ) : (
+              <div className="space-y-2">
+                <Button disabled className="w-full" variant="outline">
+                  {t("viewMyPersonas")}
+                </Button>
+                <div className="text-xs text-orange-600 font-medium text-center">
+                  {t("upgradeToMaxPlan")}
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

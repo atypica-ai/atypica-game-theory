@@ -9,6 +9,7 @@
       "importInterview": "导入访谈",
       "importDescription": "上传PDF访谈记录并转换为结构化的、LLM兼容的格式",
       "adminAccessRequired": "（需要管理员权限）",
+      "upgradeToMaxPlan": "请升级至 MAX 套餐以使用此功能",
       "pdfConversion": "PDF转Markdown转换",
       "analysisScoring": "四维度分析与评分",
       "questionGeneration": "补充问题生成",

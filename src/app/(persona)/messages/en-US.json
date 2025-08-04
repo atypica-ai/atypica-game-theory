@@ -9,6 +9,7 @@
       "importInterview": "Import Interview",
       "importDescription": "Upload PDF interview records and convert them to structured, LLM-compatible format",
       "adminAccessRequired": "(Admin access required)",
+      "upgradeToMaxPlan": "Please upgrade to MAX plan to use this feature",
       "pdfConversion": "PDF to Markdown conversion",
       "analysisScoring": "4-dimension analysis & scoring",
       "questionGeneration": "Supplementary question generation",

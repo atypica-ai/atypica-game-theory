@@ -552,7 +552,9 @@
       "tokenPurchase": {
         "available": "可随时购买更多Token（¥100每100万 + 100万赠送）",
         "notAvailable": "无法增购Token"
-      }
+      },
+      "earlyAccess": "抢先体验",
+      "personaPreview": "导入访谈记录并生成互动式用户智能体"
     }
   },
   "Components": {

@@ -552,7 +552,9 @@
       "tokenPurchase": {
         "available": "Purchase additional tokens anytime ($16 per 1M + 1M bonus)",
         "notAvailable": "Cannot purchase additional tokens"
-      }
+      },
+      "earlyAccess": "Early Access",
+      "personaPreview": "Import interviews & generate interactive AI personas"
     }
   },
   "Components": {
