@@ -62,71 +62,78 @@ export function InterviewProjectsClient() {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-8 py-12 max-w-6xl">
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-foreground"></div>
+      <div className="flex-1 overflow-y-auto scrollbar-thin">
+        <div className="container mx-auto px-8 py-12 max-w-6xl">
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-foreground"></div>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-8 py-8 max-w-6xl space-y-6">
-      {/* Header */}
-      <div className="text-center space-y-3">
-        <div className="inline-flex items-center justify-center w-10 h-10 rounded bg-primary text-primary-foreground mb-2">
-          <BriefcaseIcon className="w-5 h-5" />
+    <div className="flex-1 overflow-y-auto scrollbar-thin">
+      <div className="container mx-auto px-8 py-8 max-w-6xl space-y-6">
+        {/* Header */}
+        <div className="text-center space-y-3">
+          <div className="inline-flex items-center justify-center w-10 h-10 rounded bg-primary text-primary-foreground mb-2">
+            <BriefcaseIcon className="w-5 h-5" />
+          </div>
+          <h1 className="text-2xl font-bold">{t("title")}</h1>
+          <p className="text-muted-foreground max-w-xl mx-auto">{t("description")}</p>
         </div>
-        <h1 className="text-2xl font-bold">{t("title")}</h1>
-        <p className="text-muted-foreground max-w-xl mx-auto">{t("description")}</p>
-      </div>
-      {/* Projects Grid */}
-      {projects.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <NewProjectCard />
-          {projects.map((project) => (
-            <Card
-              key={project.id}
-              className="transition-all duration-300 hover:shadow-md cursor-pointer"
-              onClick={() => router.push(`/interview/projects/${project.id}`)}
-            >
-              <CardHeader>
-                <CardTitle>
-                  <div className="flex items-center text-xs gap-2 font-normal text-muted-foreground">
-                    <CalendarIcon className="h-3 w-3" />
-                    {formatDate(project.createdAt, locale)}
-                  </div>
-                </CardTitle>
-                <CardDescription className="mt-3">
-                  <div className="text-sm line-clamp-3 text-foreground">{project.brief}</div>
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pt-0 space-y-3">
-                <div className="flex flex-wrap gap-2">
-                  <Badge variant="default" className="text-xs">
-                    <UsersIcon className="h-3 w-3 mr-1" />
-                    {project.sessionStats.humanSessions} {t("humanSessions")}
-                  </Badge>
-                  <Badge variant="secondary" className="text-xs">
-                    <BotIcon className="h-3 w-3 mr-1" />
-                    {project.sessionStats.personaSessions} {t("aiSessions")}
-                  </Badge>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : (
-        <div className="flex justify-center">
-          <NewProjectCard />
-        </div>
-      )}
 
-      <CreateProjectDialog
-        open={createDialogOpen}
-        onOpenChange={setCreateDialogOpen}
-        onProjectCreated={loadProjects}
-      />
+        {/* Projects Grid */}
+        {projects.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <NewProjectCard />
+            {projects.map((project) => (
+              <Card
+                key={project.id}
+                className="transition-all duration-300 hover:shadow-md cursor-pointer"
+                onClick={() => router.push(`/interview/projects/${project.id}`)}
+              >
+                <CardHeader>
+                  <CardTitle>
+                    <div className="flex items-center text-xs gap-2 font-normal text-muted-foreground">
+                      <CalendarIcon className="h-3 w-3" />
+                      {formatDate(project.createdAt, locale)}
+                    </div>
+                  </CardTitle>
+                  <CardDescription className="mt-3">
+                    <div className="text-sm line-clamp-3 text-foreground font-medium">
+                      {project.brief}
+                    </div>
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="pt-0 space-y-3">
+                  <div className="flex flex-wrap gap-2">
+                    <Badge variant="default" className="text-xs">
+                      <UsersIcon className="h-3 w-3 mr-1" />
+                      {project.sessionStats.humanSessions} {t("humanSessions")}
+                    </Badge>
+                    <Badge variant="secondary" className="text-xs">
+                      <BotIcon className="h-3 w-3 mr-1" />
+                      {project.sessionStats.personaSessions} {t("aiSessions")}
+                    </Badge>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <div className="flex justify-center">
+            <NewProjectCard />
+          </div>
+        )}
+
+        <CreateProjectDialog
+          open={createDialogOpen}
+          onOpenChange={setCreateDialogOpen}
+          onProjectCreated={loadProjects}
+        />
+      </div>
     </div>
   );
 }

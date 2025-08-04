@@ -6,14 +6,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn, formatDate } from "@/lib/utils";
 import {
-  BotIcon,
   CalendarIcon,
   FileTextIcon,
   LockIcon,
   MessageCircleIcon,
   PlusIcon,
   RefreshCwIcon,
-  UploadIcon,
+  UsersIcon,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
@@ -83,11 +82,37 @@ export default function PersonasClient() {
     router.push(`/personas/import/${persona.personaImportId}`);
   };
 
+  const NewPersonaCard = () => (
+    <Card className="transition-all duration-300 hover:shadow-md border-dashed border-primary/30">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <div className="bg-primary/20 rounded-full p-1">
+            <PlusIcon className="size-4 text-primary" />
+          </div>
+          {t("importInterview")}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="mt-auto">
+        <div className="text-sm text-muted-foreground text-center mb-4">
+          {t("createNewPersonas")}
+        </div>
+        <Button asChild className="w-full" size="sm">
+          <Link href="/persona" className="flex items-center gap-2">
+            <PlusIcon className="size-3" />
+            {t("importNewInterview")}
+          </Link>
+        </Button>
+      </CardContent>
+    </Card>
+  );
+
   if (isLoading) {
     return (
-      <div className="container mx-auto px-8 py-12 max-w-6xl">
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-foreground"></div>
+      <div className="flex-1 overflow-y-auto scrollbar-thin">
+        <div className="container mx-auto px-8 py-12 max-w-6xl">
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-foreground"></div>
+          </div>
         </div>
       </div>
     );
@@ -95,11 +120,11 @@ export default function PersonasClient() {
 
   return (
     <div className="flex-1 overflow-y-auto scrollbar-thin">
-      <div className="container mx-auto px-8 py-8 max-w-6xl space-y-6 ">
+      <div className="container mx-auto px-8 py-8 max-w-6xl space-y-6">
         {/* Header */}
         <div className="text-center space-y-3">
-          <div className="inline-flex items-center justify-center w-10 h-10 rounded bg-primary mb-2">
-            <BotIcon className="w-5 h-5 text-primary-foreground" />
+          <div className="inline-flex items-center justify-center w-10 h-10 rounded bg-primary text-primary-foreground mb-2">
+            <UsersIcon className="w-5 h-5" />
           </div>
           <h1 className="text-2xl font-bold">{t("title")}</h1>
           <p className="text-muted-foreground max-w-xl mx-auto">{t("subtitle")}</p>
@@ -108,29 +133,7 @@ export default function PersonasClient() {
         {/* Personas Grid */}
         {personas.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Import Interview Quick Action Card */}
-            <Card className="transition-all duration-300 hover:shadow-md border-dashed border-primary/30">
-              <CardHeader className="pb-2">
-                <CardTitle className="flex items-center gap-2">
-                  <div className="bg-primary/20 rounded-full p-1">
-                    <UploadIcon className="size-4 text-primary" />
-                  </div>
-                  {t("importInterview")}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0 mt-auto">
-                <div className="text-sm text-muted-foreground text-center mb-4">
-                  {t("createNewPersonas")}
-                </div>
-                <Button asChild className="w-full" size="sm">
-                  <Link href="/personas/import" className="flex items-center gap-2">
-                    <PlusIcon className="size-3" />
-                    {t("importNewInterview")}
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
-
+            <NewPersonaCard />
             {personas.map((persona) => (
               <Card
                 key={persona.id}
@@ -138,45 +141,53 @@ export default function PersonasClient() {
                   "transition-all duration-300",
                   persona.personaImportProcessing
                     ? "opacity-75 cursor-not-allowed border-amber-500/30 bg-amber-500/10"
-                    : "hover:shadow-md",
+                    : "hover:shadow-md cursor-pointer",
                 )}
+                onClick={() => !persona.personaImportProcessing && handleViewPersona(persona)}
               >
-                <CardHeader className="pb-3">
-                  <CardTitle className="flex items-center justify-between">
-                    <span className="truncate">{persona.name}</span>
-                    <div className="flex items-center gap-2">
+                <CardHeader>
+                  <CardTitle>
+                    <div className="flex items-center text-xs gap-2 font-normal text-muted-foreground">
+                      <CalendarIcon className="h-3 w-3" />
+                      {formatDate(persona.createdAt, locale)}
                       {persona.personaImportProcessing && (
-                        <div className="flex items-center gap-1 px-2 py-1 bg-amber-500/20 text-amber-700 dark:text-amber-300 rounded text-xs">
+                        <div className="flex items-center gap-1 px-2 py-1 bg-amber-500/20 text-amber-700 dark:text-amber-300 rounded text-xs ml-auto">
                           <RefreshCwIcon className="w-3 h-3 animate-spin" />
                           {t("updating")}
                         </div>
                       )}
-                      {persona.tier !== null && (
-                        <Badge variant="secondary" className="text-xs">
-                          {t("tier")}
-                          {persona.tier}
-                        </Badge>
-                      )}
                     </div>
                   </CardTitle>
-                  <CardDescription className="text-xs text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <CalendarIcon className="size-3" />
-                      {formatDate(persona.createdAt, locale)}
+                  <CardDescription className="mt-3">
+                    <div className="text-sm line-clamp-3 text-foreground font-medium">
+                      {persona.name}
                     </div>
-                    <div className="mt-1">Source: {persona.source}</div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      Source: {persona.source}
+                    </div>
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="pt-0 space-y-3">
+                  <div className="flex flex-wrap gap-2">
+                    {persona.tier !== null && (
+                      <Badge variant="default" className="text-xs">
+                        {t("tier")} {persona.tier}
+                      </Badge>
+                    )}
+                    <Badge variant="secondary" className="text-xs">
+                      <MessageCircleIcon className="h-3 w-3 mr-1" />
+                      Persona
+                    </Badge>
+                  </div>
                   <div className="flex flex-wrap gap-1">
-                    {persona.tags.slice(0, 3).map((tag, index) => (
+                    {persona.tags.slice(0, 2).map((tag, index) => (
                       <Badge key={index} variant="outline" className="text-xs">
                         {tag}
                       </Badge>
                     ))}
-                    {persona.tags.length > 3 && (
+                    {persona.tags.length > 2 && (
                       <Badge variant="outline" className="text-xs">
-                        +{persona.tags.length - 3}
+                        +{persona.tags.length - 2}
                       </Badge>
                     )}
                   </div>
@@ -185,7 +196,7 @@ export default function PersonasClient() {
                       <>
                         <Button size="sm" className="flex-1" disabled variant="outline">
                           <LockIcon className="size-3 mr-2" />
-                          {t("updating")}...
+                          {t("updating")}
                         </Button>
                         <Button size="sm" className="flex-1" disabled variant="outline">
                           <RefreshCwIcon className="size-3 mr-2 animate-spin" />
@@ -197,7 +208,10 @@ export default function PersonasClient() {
                         <Button
                           size="sm"
                           className="flex-1"
-                          onClick={() => handleStartChat(persona)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleStartChat(persona);
+                          }}
                           disabled={chatCreating[persona.id]}
                         >
                           <MessageCircleIcon className="size-3 mr-2" />
@@ -207,7 +221,10 @@ export default function PersonasClient() {
                           variant="outline"
                           size="sm"
                           className="flex-1"
-                          onClick={() => handleViewPersona(persona)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleViewPersona(persona);
+                          }}
                         >
                           <FileTextIcon className="size-3 mr-2" />
                           {t("viewAnalysis")}
@@ -221,29 +238,7 @@ export default function PersonasClient() {
           </div>
         ) : (
           <div className="flex justify-center">
-            <div className="w-full max-w-sm">
-              <Card className="transition-all duration-300 hover:shadow-md border-dashed border-primary/30">
-                <CardHeader className="pb-2">
-                  <CardTitle className="flex items-center gap-2">
-                    <div className="bg-primary/20 rounded-full p-1">
-                      <UploadIcon className="size-4 text-primary" />
-                    </div>
-                    {t("importInterview")}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0 mt-auto">
-                  <div className="text-sm text-muted-foreground text-center mb-4">
-                    {t("createNewPersonas")}
-                  </div>
-                  <Button asChild className="w-full" size="sm">
-                    <Link href="/personas/import" className="flex items-center gap-2">
-                      <PlusIcon className="size-3" />
-                      {t("importNewInterview")}
-                    </Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
+            <NewPersonaCard />
           </div>
         )}
       </div>
