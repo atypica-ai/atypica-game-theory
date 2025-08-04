@@ -6,6 +6,7 @@ import { ServerActionResult } from "@/lib/serverAction";
 import { Team, User } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { getTranslations } from "next-intl/server";
+import { createTeam } from "./lib";
 import { generateUserSwitchToken } from "./userSwitchToken";
 
 // 创建团队
@@ -50,19 +51,9 @@ export async function createTeamAction(data: { name: string }): Promise<ServerAc
         };
       }
 
-      // 创建团队
-      const team = await prisma.team.create({
-        data: {
-          name: data.name,
-          seats: 5, // 默认5个座位
-          ownerUserId: user.id,
-        },
-      });
-
-      // 创建团队拥有者的团队用户身份
-      await createTeamMemberUser({
-        personalUser: fullUser,
-        teamAsMember: team,
+      const team = await createTeam({
+        name: data.name,
+        ownerUser: fullUser,
       });
 
       return {
