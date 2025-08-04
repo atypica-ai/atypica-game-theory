@@ -85,10 +85,21 @@ export default function AdminDashboard() {
           className="rounded-lg border bg-card p-4 shadow-sm hover:shadow-md transition-shadow"
         >
           <div className="flex items-center mb-2">
-            <UsersIcon className="h-5 w-5 mr-2" />
+            <UserIcon className="h-5 w-5 mr-2" />
             <h2 className="text-xl font-semibold">Users</h2>
           </div>
           <p className="text-sm text-muted-foreground">View and manage user accounts</p>
+        </Link>
+
+        <Link
+          href="/admin/teams"
+          className="rounded-lg border bg-card p-4 shadow-sm hover:shadow-md transition-shadow"
+        >
+          <div className="flex items-center mb-2">
+            <UsersIcon className="h-5 w-5 mr-2" />
+            <h2 className="text-xl font-semibold">Teams</h2>
+          </div>
+          <p className="text-sm text-muted-foreground">View and manage teams</p>
         </Link>
 
         <Link

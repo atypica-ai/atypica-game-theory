@@ -70,6 +70,12 @@ export default function AdminSidebar({ adminRole, permissions = [] }: AdminSideb
       {
         label: "Users",
         href: "/admin/users",
+        icon: <UserIcon className="mr-2 h-4 w-4" />,
+        permission: AdminPermission.MANAGE_USERS,
+      },
+      {
+        label: "Teams",
+        href: "/admin/teams",
         icon: <UsersIcon className="mr-2 h-4 w-4" />,
         permission: AdminPermission.MANAGE_USERS,
       },
