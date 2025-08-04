@@ -1,5 +1,5 @@
 "use client";
-import { getUserTokensBalance } from "@/app/(account)/account/actions";
+import { getUserTokensBalance } from "@/app/account/actions";
 import { useDocumentVisibility } from "@/hooks/use-document-visibility";
 import { formatTokensNumber } from "@/lib/utils";
 import { CoinsIcon, LoaderIcon } from "lucide-react";

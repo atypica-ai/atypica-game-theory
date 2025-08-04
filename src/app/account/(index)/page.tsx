@@ -1,5 +1,5 @@
-import { fetchActiveUserSubscription } from "@/app/(account)/account/lib";
 import authOptions from "@/app/(auth)/authOptions";
+import { fetchActiveUserSubscription } from "@/app/account/lib";
 import { prisma } from "@/prisma/prisma";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";

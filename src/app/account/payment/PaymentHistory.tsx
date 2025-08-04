@@ -1,5 +1,5 @@
 "use client";
-import { fetchPaymentRecords } from "@/app/(account)/account/actions";
+import { fetchPaymentRecords } from "@/app/account/actions";
 import { Button } from "@/components/ui/button";
 import { Pagination } from "@/components/ui/pagination";
 import {

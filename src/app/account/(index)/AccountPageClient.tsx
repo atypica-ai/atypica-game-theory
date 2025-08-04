@@ -1,8 +1,5 @@
 "use client";
-import {
-  cancelSubscriptionAction,
-  stripeSubscriptionAction,
-} from "@/app/(account)/account/actions";
+import { cancelSubscriptionAction, stripeSubscriptionAction } from "@/app/account/actions";
 import { AddTokensDialog } from "@/app/payment/components/AddTokensDialog";
 import {
   AlertDialog,

@@ -1,5 +1,5 @@
 "use client";
-import { fetchTokensHistory } from "@/app/(account)/account/actions";
+import { fetchTokensHistory } from "@/app/account/actions";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Pagination } from "@/components/ui/pagination";
 import {
