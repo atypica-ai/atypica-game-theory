@@ -5,7 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { FC } from "react";
 
-export const RealPersonAgentsMethodology: FC = () => {
+export const HighPrecisionPersonaMethodology: FC = () => {
   const t = useTranslations("StudyPage.ToolConsole");
   const locale = useLocale();
 

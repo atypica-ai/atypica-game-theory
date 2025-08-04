@@ -175,7 +175,7 @@ export function AnalysisResult({ analysis }: AnalysisResultProps) {
           <div className="p-4 bg-card rounded-lg border">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-medium text-foreground">{t("agentCompleteness")}</h3>
+                <h3 className="text-sm font-medium text-foreground">{t("personaCompleteness")}</h3>
                 <Badge variant="outline" className="text-sm px-3 py-1">
                   {percentageScore}%
                 </Badge>

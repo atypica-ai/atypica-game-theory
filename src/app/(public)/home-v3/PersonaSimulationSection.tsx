@@ -91,10 +91,10 @@ export function PersonaSimulationSection() {
               </div>
               <div className="bg-green-900/30 p-3 rounded">
                 <div className="text-green-400 font-semibold">
-                  {t("ecosystemFeatures.realPersonAgents.title")}
+                  {t("ecosystemFeatures.highPrecisionPersonas.title")}
                 </div>
                 <div className="text-xs opacity-80">
-                  {t("ecosystemFeatures.realPersonAgents.description")}
+                  {t("ecosystemFeatures.highPrecisionPersonas.description")}
                 </div>
               </div>
               <div className="bg-purple-900/30 p-3 rounded">

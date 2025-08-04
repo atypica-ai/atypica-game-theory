@@ -9,7 +9,7 @@ import { ToolInvocation } from "ai";
 import { LoaderIcon, UserCheckIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { FC, useCallback, useEffect, useState } from "react";
-import { RealPersonAgentsMethodology } from "./RealPersonAgentsMethodology";
+import { HighPrecisionPersonaMethodology } from "./HighPrecisionPersonaMethodology";
 import "./styles/RealPersonCard.css";
 
 type TPersonaDetail = ExtractServerActionData<typeof fetchPersonasByIds>[number];
@@ -97,14 +97,14 @@ const PersonaGrids: FC<{
         {tier2Count > 0 && (
           <span className="text-xs font-medium text-violet-700 dark:text-violet-300">
             (
-            {t(tier2Count > 1 ? "highPrecisionAgentCountPlural" : "highPrecisionAgentCount", {
+            {t(tier2Count > 1 ? "highPrecisionPersonaCountPlural" : "highPrecisionPersonaCount", {
               count: tier2Count,
             })}
             )
           </span>
         )}
       </h3>
-      {tier2Count > 0 && <RealPersonAgentsMethodology />}
+      {tier2Count > 0 && <HighPrecisionPersonaMethodology />}
       <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-2 2xl:grid-cols-3 gap-4">
         {personas.map(({ personaId, name, source, tags }) => (
           <Card
@@ -128,8 +128,8 @@ const PersonaGrids: FC<{
                   {personaTier(personaId) >= 2 ? (
                     <div className="text-xs text-violet-700 dark:text-violet-300 flex items-center gap-1 font-normal">
                       {personaTier(personaId) === 3
-                        ? t("realPersonAgent")
-                        : t("highPrecisionAgent")}
+                        ? t("humanPersonaPrivate")
+                        : t("highPrecisionPersona")}
                     </div>
                   ) : (
                     <div className="text-xs text-muted-foreground font-normal truncate">
@@ -175,8 +175,8 @@ const PersonaGrids: FC<{
                     >
                       <UserCheckIcon className="size-3 mr-1" />
                       {personaTier(promptPersona.id) === 3
-                        ? t("realPersonAgent")
-                        : t("highPrecisionAgent")}
+                        ? t("humanPersonaPrivate")
+                        : t("highPrecisionPersona")}
                     </Badge>
                   ) : null}
                 </div>

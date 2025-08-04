@@ -9,7 +9,7 @@
     "HeroSection": {
       "subtitle": "> AI-powered market research that understands what really drives human decisions",
       "startYourStudy": "Start Your Study",
-      "newStudyHint": "Ask about any consumer decision - we'll interview AI personas to uncover the real motivations",
+      "newStudyHint": "Ask about any consumer decision - we'll interview AI Personas to uncover the real motivations",
       "stats": {
         "personas": "AI Personas Created",
         "interviews": "Interviews Conducted",
@@ -27,7 +27,7 @@
       "features": {
         "personaConstruction": {
           "title": "AI Persona Generation",
-          "description": "Automatically create diverse AI personas based on real behavioral patterns and demographic insights"
+          "description": "Automatically create diverse AI Personas based on real behavioral patterns and demographic insights"
         },
         "agentInterviews": {
           "title": "Expert-Led Interviews",
@@ -46,7 +46,7 @@
     "DemoSection": {
       "badge": "Live Example",
       "title": "Real research in action",
-      "description": "See how AI personas reveal authentic insights about sustainable packaging preferences",
+      "description": "See how AI Personas reveal authentic insights about sustainable packaging preferences",
       "quote": {
         "text": "People don't choose between things, they choose between descriptions of things.",
         "author": "Daniel Kahneman"
@@ -56,14 +56,14 @@
         "command": "$ atypica research \"sustainable packaging preferences in European markets\"",
         "steps": {
           "scout": "→ Analyzing social conversations and market discussions",
-          "builder": "→ Building 8 distinct consumer personas with unique motivations",
+          "builder": "→ Building 8 distinct consumer AI Personas with unique motivations",
           "expert": "→ Conducting in-depth interviews about purchasing decisions",
           "analyst": "→ Identifying key emotional and practical decision factors",
-          "complete": "✓ Study complete: 12 minutes, 8 personas interviewed, 4 actionable insights"
+          "complete": "✓ Study complete: 12 minutes, 8 AI Personas interviewed, 4 actionable insights"
         }
       },
       "interview": {
-        "title": "Sample AI Interview",
+        "title": "Sample AI Persona Interview",
         "profile": {
           "label": "PERSONA PROFILE",
           "name": "Sarah",
@@ -83,7 +83,7 @@
     "InputSection": {
       "label": "Start Your Study",
       "placeholder": "Ask any business question about human behavior and decision-making. We'll model the subjective factors that drive real choices.",
-      "hint": "Ask about any consumer decision - we'll interview AI personas to uncover the real motivations",
+      "hint": "Ask about any consumer decision - we'll interview AI Personas to uncover the real motivations",
       "sendLabel": "Study",
       "enterToSend": "Enter to start",
       "tapToSend": "Tap to start"
@@ -165,7 +165,7 @@
     }
   },
   "PersonasPage": {
-    "title": "User Personas",
+    "title": "AI Personas",
     "guide": {
       "title": "Tips",
       "tip1": {
@@ -174,21 +174,21 @@
         "3": "page, atypica can help you find more potential target users"
       },
       "tip2": {
-        "1": "Each user persona can be used in",
+        "1": "Each AI Persona can be used in",
         "2": "🎯 Deep Interviews",
         "3": "to help you better understand user needs"
       },
-      "tip3": "Click on a user card to view complete persona information"
+      "tip3": "Click on a persona card to view complete persona information"
     },
-    "searchResult": "User personas found through search",
+    "searchResult": "AI Personas found through search",
     "source": "Source",
     "personaDialog": {
       "source": "Source"
     },
-    "searchPlaceholder": "Search user personas",
+    "searchPlaceholder": "Search AI Personas",
     "searchResultsFor": "Search results",
-    "noSearchResults": "No user personas match your search criteria",
-    "noPersonas": "No user personas yet"
+    "noSearchResults": "No AI Personas match your search criteria",
+    "noPersonas": "No AI Personas yet"
   },
   "Email": {
     "PasswordReset": {
@@ -331,7 +331,7 @@
   "StudyPage": {
     "NewStudy": {
       "startYourStudy": "Start Your Study",
-      "newStudyHint": "Ask about any consumer decision - we'll interview AI personas to uncover the real motivations",
+      "newStudyHint": "Ask about any consumer decision - we'll interview AI Personas to uncover the real motivations",
       "viewFeaturedStudies": "View Featured Studies",
       "viewMyProjects": "View My Projects",
       "or": "or"
@@ -417,20 +417,20 @@
       "viewConsole": "View console",
       "deepThinking": "Deep Thinking",
       "buildingPersona": "Building Persona",
-      "buildPersonaResult": "Built {count} persona agents",
-      "searchPersonasResult": "Matched {count} user persona agents",
+      "buildPersonaResult": "Built {count} AI Personas",
+      "searchPersonasResult": "Matched {count} AI Personas",
       "personaSource": "Source",
-      "personaPrompt": "Agent",
+      "personaPrompt": "AI Persona",
       "interviewStarting": "Interview starting..",
       "researchConclusion": "Research Conclusion",
       "researchTopic": "Research Topic",
       "interviewing": "Interviewing with {count} people",
       "reportBeingGenerated": "Report being generated...",
-      "realPersonAgent": "Real Person Agent (Private)",
-      "highPrecisionAgent": "High-Precision Agent",
+      "humanPersonaPrivate": "Human Persona (Private)",
+      "highPrecisionPersona": "High-Precision AI Persona",
       "learnMore": "Learn More",
-      "highPrecisionAgentCount": "including {count} high-precision agent",
-      "highPrecisionAgentCountPlural": "including {count} high-precision agents"
+      "highPrecisionPersonaCount": "including {count} High-Precision AI Persona",
+      "highPrecisionPersonaCountPlural": "including {count} High-Precision AI Personas"
     }
   },
   "ScoutPage": {
@@ -520,9 +520,9 @@
         "multiple": "Multi-Platform Social Intelligence (Instagram, X, TikTok, RedNote, Douyin, etc.)"
       },
       "personas": {
-        "limited": "Generate up to 10 personas for market research",
-        "unlimited": "Unlimited advanced custom personas for highly targeted research",
-        "curated": "Curated personas with authentic behavioral patterns and realistic traits"
+        "limited": "Generate up to 10 AI Personas for market research",
+        "unlimited": "Unlimited advanced custom AI Personas for highly targeted research",
+        "curated": "Curated AI Personas with authentic behavioral patterns and realistic traits"
       },
       "analysisModel": {
         "standard": "Standard analysis model",
@@ -546,7 +546,7 @@
       "multiModal": "Multi-modal input analysis and insights (text, images, etc.)",
       "customReports": "Customized enterprise report structures",
       "enterpriseData": "Integration with proprietary enterprise data",
-      "customPersonas": "Custom enterprise personas",
+      "customPersonas": "Custom enterprise AI Personas",
       "collaboration": "Team collaboration features (share, collaborate)",
       "security": "Data security controls (specified visibility, expiration dates)",
       "tokenPurchase": {
@@ -554,7 +554,7 @@
         "notAvailable": "Cannot purchase additional tokens"
       },
       "earlyAccess": "Early Access",
-      "personaPreview": "Import interviews & generate interactive AI personas"
+      "personaPreview": "Import interviews & generate interactive AI Personas"
     }
   },
   "Components": {
@@ -596,7 +596,7 @@
       "tagline": "Modeling the Subjective World with AI",
       "copyright": "© {year} BMRLab. All rights reserved.",
       "product": "Product",
-      "personaSimulation": "Persona Simulation",
+      "personaSimulation": "AI Persona Simulation",
       "pricing": "Pricing",
       "company": "Company",
       "about": "About atypica.AI",
@@ -718,11 +718,11 @@
       "searchStats": "Search Statistics"
     },
     "BuildPersonaResultMessage": {
-      "personaCreated": "Built {count} persona agents",
+      "personaCreated": "Built {count} AI Personas",
       "viewDetails": "Click to view"
     },
     "SearchPersonasResultMessage": {
-      "personasFound": "Found {count} persona agents",
+      "personasFound": "Found {count} AI Personas",
       "viewDetails": "Click to view"
     },
     "WebSearchResultMessage": {
@@ -777,30 +777,30 @@
     "UseCaseScenarios": {
       "badge": "Research Applications",
       "title": "AI Persona Research in Action",
-      "description": "See how Real Person Agents transform research across different scenarios. From testing concepts to uncovering insights, our AI personas provide authentic responses through structured interview processes.",
+      "description": "See how High-Precision AI Personas transform research across different scenarios. From testing concepts to uncovering insights, our AI Personas provide authentic responses through structured interview processes.",
       "useCases": {
         "testing": {
           "title": "Testing",
-          "description": "Interview AI personas to test marketing messages, product concepts, and campaign ideas with authentic reactions."
+          "description": "Interview AI Personas to test marketing messages, product concepts, and campaign ideas with authentic reactions."
         },
         "planning": {
           "title": "Planning",
-          "description": "Create strategic frameworks by interviewing AI personas about preferences and priorities to inform roadmaps."
+          "description": "Create strategic frameworks by interviewing AI Personas about preferences and priorities to inform roadmaps."
         },
         "insights": {
           "title": "Insights",
-          "description": "Uncover behavioral patterns and motivations through interviews with AI personas representing target audiences."
+          "description": "Uncover behavioral patterns and motivations through interviews with AI Personas representing target audiences."
         },
         "creation": {
           "title": "Creation",
-          "description": "Brainstorm and co-create with AI personas to generate innovative ideas and validate creative concepts."
+          "description": "Brainstorm and co-create with AI Personas to generate innovative ideas and validate creative concepts."
         }
       }
     },
     "UseCases": {
       "badge": "Our Work",
       "title": "AI Persona Research Studies",
-      "description": "Explore real case studies showcasing how Real Person Agents and expert interviews provide deep consumer insights for better business decisions.",
+      "description": "Explore real case studies showcasing how High-Precision AI Personas and expert interviews provide deep consumer insights for better business decisions.",
       "viewAllStudies": "View All Studies",
       "errorMessage": "Something went wrong.",
       "noStudiesTitle": "No Featured Studies Available",
@@ -835,36 +835,36 @@
         "marketer": {
           "name": "Alex Chen",
           "role": "Marketer",
-          "description": "Test campaign messaging and creative concepts through interviews with diverse AI personas."
+          "description": "Test campaign messaging and creative concepts through interviews with diverse AI Personas."
         },
         "productManager": {
           "name": "Maria Garcia",
           "role": "Product Manager",
-          "description": "Discover user needs and feature gaps through interviews with AI personas representing users."
+          "description": "Discover user needs and feature gaps through interviews with AI Personas representing users."
         },
         "uxResearcher": {
           "name": "Sam Taylor",
           "role": "UX Researcher",
-          "description": "Map user journeys and uncover critical pain points through research interviews with behavioral AI agents."
+          "description": "Map user journeys and uncover critical pain points through research interviews with behavioral AI Personas."
         },
         "startupFounder": {
           "name": "Jasmine Lee",
           "role": "Startup Founder",
-          "description": "Validate market opportunities and refine target audiences using AI persona research and behavioral modeling."
+          "description": "Validate market opportunities and refine target audiences using AI Persona research and behavioral modeling."
         }
       }
     },
     "PersonaSimulationSection": {
       "badge": "Core Technology",
-      "title": "Real Person Agents",
-      "description": "Advanced AI agents that simulate authentic human cognition and decision-making patterns. Our Real Person Agents maintain consistent personalities, cognitive biases, and behavioral frameworks to provide realistic interview responses.",
-      "technologyQuote": "Real Person Agents are high-precision consumer simulation technology designed specifically to solve complex business problems. Through AI-conducted in-depth interviews lasting 1-2 hours with real consumers, we generate an average of 5,000 words of transcript for each person.",
+      "title": "High-Precision AI Personas",
+      "description": "Advanced AI Personas that simulate authentic human cognition and decision-making patterns. Our High-Precision AI Personas maintain consistent personalities, cognitive biases, and behavioral frameworks to provide realistic interview responses.",
+      "technologyQuote": "High-Precision AI Personas are high-precision consumer simulation technology designed specifically to solve complex business problems. Through AI-conducted in-depth interviews lasting 1-2 hours with real consumers, we generate an average of 5,000 words of transcript for each person.",
       "technologyDescription": "These agents maintain consistent cognitive patterns, emotional responses, and decision-making frameworks that enable authentic research conversations - achieving 85% human-like accuracy in behavioral simulation.",
-      "learnMoreLink": "Learn more about Real Person Agents",
+      "learnMoreLink": "Learn more about High-Precision AI Personas",
       "accuracyLabel": "Simulation Accuracy",
       "accuracyDescription": "Human-like behavioral consistency in AI persona responses",
       "differentiatorTitle": "Beyond Demographics",
-      "differentiatorDescription": "Unlike traditional survey data or statistical models, our AI personas are sophisticated behavioral simulations that maintain consistent personality traits and decision-making logic in new contexts.",
+      "differentiatorDescription": "Unlike traditional survey data or statistical models, our AI Personas are sophisticated behavioral simulations that maintain consistent personality traits and decision-making logic in new contexts.",
       "differentiatorFeatures": {
         "consistency": "Consistent personality across conversations",
         "authenticity": "Authentic emotional responses and biases",
@@ -873,11 +873,11 @@
       "ecosystemTitle": "Scale & Coverage",
       "ecosystemFeatures": {
         "syntheticAgents": {
-          "title": "300,000 Synthetic Agents",
+          "title": "300,000 AI Personas",
           "description": "Based on social media data analysis"
         },
-        "realPersonAgents": {
-          "title": "10,000 Real Person Agents",
+        "highPrecisionPersonas": {
+          "title": "10,000 High-Precision AI Personas",
           "description": "Based on in-depth interview data"
         },
         "multiDimensional": {
@@ -885,7 +885,7 @@
           "description": "Diverse consumer group ecosystem"
         }
       },
-      "ctaTitle": "Ready to Experience Real Person Agents?",
+      "ctaTitle": "Ready to Experience High-Precision AI Personas?",
       "ctaDescription": "Start your first AI persona research study and discover deep consumer insights in minutes, not weeks.",
       "startResearchButton": "Start Your Study",
       "learnTechnologyButton": "Learn More About the Technology"
@@ -899,17 +899,17 @@
       "customerStoryCategory": "Customer stories",
       "testimonials": {
         "productManager": {
-          "quote": "We needed to understand how different user segments would react to our new feature. Atypica's AI personas provided authentic feedback through detailed interviews, giving us insights in hours that would have taken weeks of traditional user research.",
+          "quote": "We needed to understand how different user segments would react to our new feature. Atypica's AI Personas provided authentic feedback through detailed interviews, giving us insights in hours that would have taken weeks of traditional user research.",
           "author": "Elena Rodriguez",
           "title": "Senior Product Manager"
         },
         "marketingDirector": {
-          "quote": "The Real Person Agents were incredibly realistic in their responses. We tested multiple campaign messages through persona interviews and identified the most effective approach before spending on actual ads.",
+          "quote": "The High-Precision AI Personas were incredibly realistic in their responses. We tested multiple campaign messages through persona interviews and identified the most effective approach before spending on actual ads.",
           "author": "Ben Carter",
           "title": "Marketing Director"
         },
         "founder": {
-          "quote": "As a startup, we couldn't afford traditional focus groups or extensive user interviews. Atypica's AI persona research gave us deep behavioral insights and validated our assumptions at a fraction of the cost.",
+          "quote": "As a startup, we couldn't afford traditional focus groups or extensive user interviews. Atypica's AI Persona research gave us deep behavioral insights and validated our assumptions at a fraction of the cost.",
           "author": "Sophie Chen",
           "title": "Founder & CEO"
         }
