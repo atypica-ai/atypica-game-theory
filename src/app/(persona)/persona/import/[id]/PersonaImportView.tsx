@@ -114,14 +114,14 @@ export function PersonaImportView({
   }
 
   return (
-    <div className="container mx-auto px-8 py-12 max-w-4xl space-y-8">
+    <div className="container mx-auto px-3 sm:px-8 py-12 max-w-4xl space-y-8">
       {/* Header */}
       <div className="text-center space-y-4">
         <div className="inline-flex items-center justify-center w-12 h-12 rounded bg-primary text-primary-foreground mb-4">
           <BrainIcon className="w-6 h-6" />
         </div>
         <h1 className="text-3xl font-bold">{t("title")}</h1>
-        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+        <p className="text-muted-foreground max-w-2xl mx-auto">
           {!isProcessing ? t("fileProcessed") : t("processingFile")}
           {fileName}
         </p>
@@ -143,7 +143,7 @@ export function PersonaImportView({
         />
 
         {/* File Information and Re-analyze */}
-        <div className="bg-card text-card-foreground rounded-lg border p-6">
+        <div className="bg-card text-card-foreground rounded-lg border p-3 sm:p-6">
           <div className="space-y-4">
             <div className="space-y-2">
               <h2 className="text-xl font-semibold flex items-center gap-3">
@@ -155,9 +155,9 @@ export function PersonaImportView({
               <p className="text-muted-foreground ml-9 text-sm">{t("fileInfoDescription")}</p>
             </div>
 
-            <div className="flex items-center justify-between p-4 bg-muted rounded-lg border">
+            <div className="flex flex-wrap items-center justify-between p-4 bg-muted rounded-lg border">
               <div className="flex items-center gap-3">
-                <FileTextIcon className="size-4 text-muted-foreground" />
+                <FileTextIcon className="shrink-0 size-4 text-muted-foreground" />
                 <div>
                   <p className="font-medium">{fileName}</p>
                   <p className="text-sm text-muted-foreground">PDF</p>

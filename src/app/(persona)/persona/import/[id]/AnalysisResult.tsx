@@ -108,8 +108,8 @@ export function AnalysisResult({ analysis }: AnalysisResultProps) {
   if (!analysis) return null;
 
   return (
-    <div className="bg-card rounded-lg border p-6">
-      <div className="space-y-6">
+    <div className="bg-card rounded-lg border p-3 sm:p-6">
+      <div className="space-y-3">
         <div className="space-y-2">
           <h2 className="text-xl font-semibold flex items-center gap-3 text-card-foreground">
             <div className="w-6 h-6 rounded bg-primary flex items-center justify-center">
