@@ -44,6 +44,10 @@ export async function fetchUsers(
     where.adminUser = { isNot: null };
   }
 
+  // filter out team users
+  // where.personalUserId = { equals: null };  被删除以后 personalUserId 会不存在，但是 teamId 一定会有
+  where.teamIdAsMember = { equals: null };
+
   const [users, totalCount] = await Promise.all([
     prisma.user.findMany({
       where,
