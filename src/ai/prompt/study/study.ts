@@ -135,6 +135,7 @@ ${
 2. 【步骤2】使用 searchPersonas 工具查找现有用户画像智能体：
    • 【必须】提供与研究主题相关的 2-3 个详细描述作为搜索条件，每个描述应具体全面
    • 描述应该详细说明目标用户的特征、背景、行为模式、目标和使用场景，越具体越好
+   • 【私有画像优先】如果用户选择优先使用私有真人画像，调用 searchPersonas 时必须将 usePrivatePersonas 参数设置为 true。后续步骤（如使用 scoutTaskChat + buildPersona）将用于补充数量不足的画像。
    • 记住用户智能体具有泛化性，即使标签或名称不完全匹配，只要代表相关人群特征即可使用
    • 【执行规则】此步骤只执行一次，收集所有可用的预构建 persona
 3. 【步骤3】使用 scoutTaskChat + buildPersona 构建新的用户智能体作为补充：
@@ -361,6 +362,7 @@ If the above conditions are not met, do not proceed to the next phase
 2. 【Step 2】Use searchPersonas tool to find existing user persona agents:
    • 【MANDATORY】Provide 2-3 detailed descriptions related to the study topic as search criteria, each description should be specific and comprehensive
    • Descriptions should detail target user characteristics, backgrounds, behavioral patterns, goals, and usage scenarios - the more specific, the better
+   • 【PRIVATE PERSONA PRIORITY】If the user chooses to prioritize their private personas, you must set the usePrivatePersonas parameter to true when calling searchPersonas. Subsequent steps (like using scoutTaskChat + buildPersona) will be used to supplement if not enough personas are found.
    • Remember that user agents have generalizability - even if labels or names don't match exactly, they can be used as long as they represent relevant population characteristics
    • 【EXECUTION RULE】This step is executed only once to collect all available pre-built personas
 3. 【Step 3】Use scoutTaskChat + buildPersona to construct new user agents as supplements:

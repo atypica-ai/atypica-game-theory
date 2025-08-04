@@ -1,4 +1,8 @@
-import { appendChunkToStreamingMessage, createDebouncePersistentMessage } from "@/ai/messageUtils";
+import {
+  appendChunkToStreamingMessage,
+  createDebouncePersistentMessage,
+  persistentAIMessageToDB,
+} from "@/ai/messageUtils";
 import { studySystem } from "@/ai/prompt";
 import { fixFileNameInMessageToUsePromptCache, llm, providerOptions } from "@/ai/provider";
 import { initStudyStatReporter } from "@/ai/tools/stats";
@@ -22,12 +26,16 @@ import { safeAbort } from "@/lib/utils";
 import { prisma } from "@/prisma/prisma";
 import {
   CoreMessage,
+  createDataStreamResponse,
+  formatDataStreamPart,
+  generateId,
   Message,
   smoothStream,
   StepResult,
   streamText,
   TextStreamPart,
   ToolChoice,
+  ToolInvocation,
 } from "ai";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
@@ -92,6 +100,59 @@ export function setBedrockCache(model: `claude-${string}`, coreMessages: CoreMes
   return cachedCoreMessages;
 }
 
+async function shouldDecidePersonaTier({
+  locale,
+  studyUserChatId,
+  userId,
+}: {
+  locale: Locale;
+  studyUserChatId: number;
+  userId: number;
+}) {
+  const personaImportCount = await prisma.personaImport.count({
+    where: { userId },
+  });
+  if (!personaImportCount) {
+    return;
+  }
+  const messageId = generateId();
+  const toolCallId = generateId();
+  const toolInvocation: ToolInvocation = {
+    toolCallId,
+    toolName: ToolName.requestInteraction,
+    args:
+      locale === "zh-CN"
+        ? {
+            question: `我们发现您曾导入过 ${personaImportCount} 位真人画像。在本次研究中，您希望如何使用这些画像？`,
+            options: [
+              "优先使用我的真人画像（不足时由AI画像补充）",
+              "仅使用 Atypica 合成的 AI 画像",
+            ],
+          }
+        : {
+            question: `We've found ${personaImportCount} private personas you've imported. How would you like to use them in this study?`,
+            options: [
+              "Prioritize my private personas (supplemented with AI personas if needed)",
+              "Use only Atypica's synthesized AI personas",
+            ],
+          },
+    state: "call",
+  };
+  await persistentAIMessageToDB(studyUserChatId, {
+    id: messageId,
+    role: "assistant",
+    content: toolInvocation.args.question,
+    parts: [{ type: "tool-invocation", toolInvocation }],
+  });
+  return createDataStreamResponse({
+    execute: async (dataStream) => {
+      dataStream.write(formatDataStreamPart("start_step", { messageId }));
+      dataStream.write(formatDataStreamPart("tool_call", toolInvocation));
+      dataStream.write(formatDataStreamPart("finish_message", { finishReason: "stop" }));
+    },
+  });
+}
+
 // 参考了 https://sdk.vercel.ai/docs/ai-sdk-ui/chatbot-message-persistence#storing-messages 的设计来实现
 export async function studyAgentRequest({
   briefStatus = "DRAFT",
@@ -138,7 +199,7 @@ export async function studyAgentRequest({
     [ToolName.webSearch]: webSearchTool({ studyUserChatId, ...agentToolArgs }),
     [ToolName.saveAnalyst]: saveAnalystTool({ studyUserChatId }),
     [ToolName.reasoningThinking]: reasoningThinkingTool({ ...agentToolArgs }),
-    [ToolName.searchPersonas]: searchPersonasTool({ ...agentToolArgs }),
+    [ToolName.searchPersonas]: searchPersonasTool({ userId, ...agentToolArgs }),
     [ToolName.scoutTaskChat]: scoutTaskChatTool({ userId, ...agentToolArgs }),
     [ToolName.buildPersona]: buildPersonaTool({ userId, ...agentToolArgs }),
     [ToolName.interviewChat]: interviewChatTool({ userId, studyUserChatId, ...agentToolArgs }),
@@ -194,6 +255,13 @@ export async function studyAgentRequest({
   //     },
   //   });
   // }
+
+  if (coreMessages.length == 1) {
+    const shouldDecideResponse = await shouldDecidePersonaTier({ locale, userId, studyUserChatId });
+    if (shouldDecideResponse) {
+      return shouldDecideResponse;
+    }
+  }
 
   const { clearBackgroundToken, backgroundToken } = await raceForUserChat(studyUserChatId);
   const system = studySystem({

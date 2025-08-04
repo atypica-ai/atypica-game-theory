@@ -414,7 +414,7 @@ export async function fetchAnalystReportsOfStudyUserChat({
 
 export async function fetchPersonasByIds({ ids }: { ids: number[] }): Promise<
   ServerActionResult<
-    (Pick<Persona, "id" | "name" | "source" | "prompt"> & {
+    (Pick<Persona, "id" | "name" | "source" | "tier" | "prompt"> & {
       tags: string[];
       scoutUserChatToken: string | null;
     })[]
@@ -428,6 +428,7 @@ export async function fetchPersonasByIds({ ids }: { ids: number[] }): Promise<
       source: true,
       prompt: true,
       tags: true,
+      tier: true,
       scoutUserChat: {
         select: {
           token: true,

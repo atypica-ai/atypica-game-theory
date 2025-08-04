@@ -426,11 +426,11 @@
       "researchTopic": "Research Topic",
       "interviewing": "Interviewing with {count} people",
       "reportBeingGenerated": "Report being generated...",
-      "realPersonAgent": "Real Person Agent",
+      "realPersonAgent": "Real Person Agent (Private)",
       "highPrecisionAgent": "High-Precision Agent",
       "learnMore": "Learn More",
-      "realPersonCount": "including {count} real person agent",
-      "realPersonCountPlural": "including {count} real person agents"
+      "highPrecisionAgentCount": "including {count} high-precision agent",
+      "highPrecisionAgentCountPlural": "including {count} high-precision agents"
     }
   },
   "ScoutPage": {
@@ -587,7 +587,7 @@
       "lightTheme": "Light Theme",
       "darkTheme": "Dark Theme",
       "myStudies": "My Projects",
-      "marketResearch": "Market Research",
+      "marketResearch": "AI Research",
       "personaImport": "AI Persona",
       "useCases": "Use cases",
       "pricing": "Pricing"

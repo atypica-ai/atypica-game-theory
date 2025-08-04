@@ -15,7 +15,7 @@ export const SearchPersonasResultMessage: FC<{
   const { setViewToolInvocation, setConsoleOpen } = useStudyContext();
   const { personas } = toolInvocation.result;
   if (!personas?.length) {
-    return <div className="text-sm text-muted-foreground">No persona built</div>;
+    return <div className="text-sm text-muted-foreground">No persona found</div>;
   }
   return (
     <div className="p-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 rounded-lg text-sm">

@@ -25,11 +25,11 @@ export const RealPersonAgentsMethodology: FC = () => {
     }
   > = {
     "zh-CN": {
-      cardTitle: "真人智能体技术",
+      cardTitle: "高精度智能体技术",
       cardDescription: "解决复杂商业问题的新一代消费者建模技术",
       coreValue: "核心价值",
       coreDesc:
-        '真人智能体通过深度访谈构建完整的消费者"数字分身"，能够在新情境下表现出一致的人格特征和决策逻辑，为解决商业和社会领域的复杂问题提供全新可能性。',
+        '高精度智能体通过深度访谈构建完整的消费者"数字分身"，能够在新情境下表现出一致的人格特征和决策逻辑，为解决商业和社会领域的复杂问题提供全新可能性。',
       advantageTitle: "技术优势",
       advantages: [
         {
@@ -47,7 +47,7 @@ export const RealPersonAgentsMethodology: FC = () => {
       ],
       performanceTitle: "性能表现",
       performanceDesc:
-        "通过120份商业研究报告的用户满意度测试，真人智能体在洞察分析、营销策略等场景中表现优异，整体满意度达到4.0/5.0，与人工报告持平。",
+        "通过120份商业研究报告的用户满意度测试，高精度智能体在洞察分析、营销策略等场景中表现优异，整体满意度达到4.0/5.0，与人工报告持平。",
       comparisonTitle: "建模方法对比",
       comparison: [
         { method: "个人信息", score: "55分", desc: "基础人口统计信息" },
@@ -57,11 +57,11 @@ export const RealPersonAgentsMethodology: FC = () => {
       ],
     },
     "en-US": {
-      cardTitle: "Real Person Agent Technology",
+      cardTitle: "High-Precision Agent Technology",
       cardDescription: "Next-generation consumer modeling for complex business challenges",
       coreValue: "Core Value",
       coreDesc:
-        "Real Person Agents create complete consumer 'Real Person Agents' through in-depth interviews, capable of exhibiting consistent personality traits and decision logic in new contexts, providing new possibilities for solving complex problems in business and social domains.",
+        "High-Precision Agents create complete consumer 'digital twins' through in-depth interviews, capable of exhibiting consistent personality traits and decision logic in new contexts, providing new possibilities for solving complex problems in business and social domains.",
       advantageTitle: "Technical Advantages",
       advantages: [
         {
@@ -79,7 +79,7 @@ export const RealPersonAgentsMethodology: FC = () => {
       ],
       performanceTitle: "Performance Results",
       performanceDesc:
-        "Through satisfaction testing of 120 business research reports, Real Person Agents excel in insight analysis and marketing strategy scenarios, achieving overall 4.0/5.0 satisfaction, matching human-written reports.",
+        "Through satisfaction testing of 120 business research reports, High-Precision Agents excel in insight analysis and marketing strategy scenarios, achieving overall 4.0/5.0 satisfaction, matching human-written reports.",
       comparisonTitle: "Modeling Method Comparison",
       comparison: [
         { method: "Personal Info", score: "55pts", desc: "Basic demographic information" },

@@ -15,6 +15,7 @@ import {
   DOCUMENT_MIME_TYPES,
   IMAGE_MIME_TYPES,
 } from "@/lib/fileUploadLimits";
+import { cn } from "@/lib/utils";
 import { AttachmentFile } from "@/prisma/client";
 import { FileText, ImageIcon, Library, Loader2, PaperclipIcon, Search, Upload } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -35,6 +36,8 @@ interface FileUploadButtonProps {
   disabled?: boolean;
   existingFiles?: FileUploadInfo[];
   showLimitsCheck?: boolean;
+  children?: React.ReactNode;
+  className?: string;
 }
 
 export function FileUploadButton({
@@ -42,6 +45,8 @@ export function FileUploadButton({
   disabled,
   existingFiles = [],
   showLimitsCheck = true,
+  children,
+  className,
 }: FileUploadButtonProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [isLibraryOpen, setLibraryOpen] = useState(false);
@@ -112,7 +117,7 @@ export function FileUploadButton({
             type="button"
             variant="secondary"
             size="sm"
-            className="h-8 text-xs"
+            className={cn("h-8 text-xs", className)}
             disabled={disabled || isUploading}
           >
             {isUploading ? (
@@ -120,6 +125,7 @@ export function FileUploadButton({
             ) : (
               <PaperclipIcon className="size-3" />
             )}
+            {children}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>

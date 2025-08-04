@@ -2,7 +2,14 @@
 import { createPersonaImport } from "@/app/(persona)/actions";
 import { FileUploadButton } from "@/components/chat/FileUploadButton";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { useFileUploadManager } from "@/hooks/use-file-upload-manager";
 import { BookOpen, FileText, MessageCircle, Target, Upload, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -69,7 +76,7 @@ export default function PersonaImportClient({ isUploadEnabled }: PersonaImportCl
             </CardTitle>
             <CardDescription>{t("importDescription")}</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent>
             <div className="text-sm text-muted-foreground space-y-2">
               <div className="flex items-center gap-2">
                 <FileText className="size-4" />
@@ -84,7 +91,8 @@ export default function PersonaImportClient({ isUploadEnabled }: PersonaImportCl
                 <span>{t("questionGeneration")}</span>
               </div>
             </div>
-
+          </CardContent>
+          <CardFooter className="mt-auto">
             {isUploadEnabled ? (
               uploadedFiles.length === 0 ? (
                 <FileUploadButton
@@ -92,7 +100,10 @@ export default function PersonaImportClient({ isUploadEnabled }: PersonaImportCl
                   existingFiles={uploadedFiles}
                   showLimitsCheck={false}
                   disabled={isCreating}
-                />
+                  className="w-full"
+                >
+                  {t("uploadPDFFile")}
+                </FileUploadButton>
               ) : (
                 <div className="space-y-2">
                   <div className="p-3 bg-muted rounded">
@@ -121,7 +132,7 @@ export default function PersonaImportClient({ isUploadEnabled }: PersonaImportCl
                 </div>
               </div>
             )}
-          </CardContent>
+          </CardFooter>
         </Card>
 
         <Card>
@@ -132,7 +143,7 @@ export default function PersonaImportClient({ isUploadEnabled }: PersonaImportCl
             </CardTitle>
             <CardDescription>{t("chatDescription")}</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent>
             <div className="text-sm text-muted-foreground space-y-2">
               <div className="flex items-center gap-2">
                 <MessageCircle className="size-4" />
@@ -147,8 +158,14 @@ export default function PersonaImportClient({ isUploadEnabled }: PersonaImportCl
                 <span>{t("multiDimensional")}</span>
               </div>
             </div>
+          </CardContent>
+          <CardFooter className="mt-auto">
             {isUploadEnabled ? (
-              <Button className="w-full" onClick={() => router.push("/personas")}>
+              <Button
+                variant="outline"
+                className="w-full h-8"
+                onClick={() => router.push("/personas")}
+              >
                 {t("viewMyPersonas")}
               </Button>
             ) : (
@@ -161,12 +178,11 @@ export default function PersonaImportClient({ isUploadEnabled }: PersonaImportCl
                 </div>
               </div>
             )}
-          </CardContent>
+          </CardFooter>
         </Card>
       </div>
 
-      {/* Coming Soon Card */}
-      <Card className="opacity-60">
+      <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <BookOpen className="size-5" />
@@ -189,9 +205,9 @@ export default function PersonaImportClient({ isUploadEnabled }: PersonaImportCl
               <span>{t("behavioralAnalytics")}</span>
             </div>
           </div>
-          <Button className="w-full" disabled variant="outline">
+          {/*<Button className="w-full" disabled variant="outline">
             {t("comingSoon")}
-          </Button>
+          </Button>*/}
         </CardContent>
       </Card>
 
@@ -277,11 +293,11 @@ export default function PersonaImportClient({ isUploadEnabled }: PersonaImportCl
             </div>
 
             <div className="flex items-start gap-3">
-              <div className="w-6 h-6 rounded bg-muted text-muted-foreground text-sm font-medium flex items-center justify-center mt-0.5">
+              <div className="w-6 h-6 rounded bg-primary text-primary-foreground text-sm font-medium flex items-center justify-center mt-0.5">
                 4
               </div>
               <div>
-                <h4 className="font-medium text-muted-foreground">{t("step4")}</h4>
+                <h4 className="font-medium">{t("step4")}</h4>
                 <p className="text-sm text-muted-foreground">{t("step4Description")}</p>
               </div>
             </div>

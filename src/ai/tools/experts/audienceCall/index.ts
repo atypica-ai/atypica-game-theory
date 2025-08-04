@@ -179,17 +179,18 @@ export const audienceCallTool = ({
 async function searchPersonas(locale: Locale, searchQuery: string) {
   const embedding = await createTextEmbedding(searchQuery, "retrieval.query");
   const personas = await prisma.$queryRaw<TPersonaForStudy[]>`
-      SELECT
-        "id" as "personaId",
-        "name",
-        "source",
-        "tags",
-        "prompt"
-      FROM "Persona"
-      WHERE "embedding" <=> ${JSON.stringify(embedding)}::vector < 0.9 AND locale = ${locale}
-      ORDER BY "embedding" <=> ${JSON.stringify(embedding)}::vector ASC
-      LIMIT 5
-    `;
-
+SELECT
+  "id" as "personaId",
+  "name",
+  "source",
+  "tags",
+  "prompt"
+FROM "Persona"
+WHERE "embedding" <=> ${JSON.stringify(embedding)}::vector < 0.9
+  AND locale = ${locale}
+  AND tier in (1, 2)
+ORDER BY "embedding" <=> ${JSON.stringify(embedding)}::vector ASC
+LIMIT 5
+`;
   return { searchQuery, personas };
 }
