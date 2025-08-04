@@ -97,6 +97,7 @@ const authOptions: NextAuthOptions = {
         recordLastLogin(user.id);
         return {
           id: user.id,
+          name: user.name,
           email: user.email!,
         };
       },
@@ -128,9 +129,13 @@ const authOptions: NextAuthOptions = {
         if (!user.emailVerified) {
           throw new Error("EMAIL_NOT_VERIFIED");
         }
+        if (user.teamIdAsMember) {
+          throw new Error("TEAM_MEMBER_NOT_ALLOWED");
+        }
         // 不要 recordLastLogin，因为可能是 admin 登录的
         return {
           id: user.id,
+          name: user.name,
           email: user.email!,
         };
       },
@@ -211,7 +216,9 @@ const authOptions: NextAuthOptions = {
 
         return {
           id: targetUser.id,
-          email: displayEmail || "",
+          name: targetUser.name,
+          email: displayEmail!,
+          teamIdAsMember: targetUser.teamIdAsMember ?? undefined,
         };
       },
     }),
