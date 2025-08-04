@@ -111,17 +111,17 @@ export async function middleware(req: NextRequest) {
 
   // Handle locale-aware static pages
   const path = req.nextUrl.pathname;
-  if (path === "/about" || path === "/changelog" || path === "/persona-simulation") {
+  if (path === "/about" || path === "/persona-simulation" || path === "/changelog.html") {
     const url = req.nextUrl.clone();
     if (path === "/about") {
       url.pathname = locale === "zh-CN" ? "/_pages/about-zh.html" : "/_pages/about-en.html";
-    } else if (path === "/changelog") {
-      url.pathname = locale === "zh-CN" ? "/_pages/changelog-zh.html" : "/_pages/changelog-en.html";
     } else if (path === "/persona-simulation") {
       url.pathname =
         locale === "zh-CN"
           ? "/_pages/persona-simulation-zh.html"
           : "/_pages/persona-simulation-en.html";
+    } else if (path === "/changelog.html") {
+      url.pathname = locale === "zh-CN" ? "/_pages/changelog-zh.html" : "/_pages/changelog-en.html";
     }
     return NextResponse.rewrite(url);
   }
