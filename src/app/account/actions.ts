@@ -6,6 +6,7 @@ import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { UserTokensLog } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
+import { getUserTokens } from "@/tokens/lib";
 import { fetchActiveUserSubscription } from "./lib";
 
 export async function fetchTokensHistory(
@@ -147,14 +148,12 @@ export async function fetchPaymentRecords(
   });
 }
 
-export async function getUserTokensBalance(): Promise<ServerActionResult<number>> {
+export async function getUserTokensBalanceAction(): Promise<ServerActionResult<number>> {
   return withAuth(async ({ id: userId }) => {
-    const userTokens = await prisma.userTokens.findUniqueOrThrow({
-      where: { userId },
-    });
+    const { balance } = await getUserTokens({ userId });
     return {
       success: true,
-      data: userTokens.permanentBalance + userTokens.monthlyBalance,
+      data: balance,
     };
   });
 }

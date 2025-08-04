@@ -106,13 +106,14 @@ export async function createTeamMemberUser({
     },
   });
 
-  await prisma.userTokens.create({
-    data: {
-      userId: teamUser.id,
-      permanentBalance: 0,
-      monthlyBalance: 0,
-    },
-  });
+  // ⚠️ team user 没有 userTokens，而是关联 teamTokens
+  // await prisma.userTokens.create({
+  //   data: {
+  //     userId: teamUser.id,
+  //     permanentBalance: 0,
+  //     monthlyBalance: 0,
+  //   },
+  // });
 
   recordLastLogin(teamUser.id);
 

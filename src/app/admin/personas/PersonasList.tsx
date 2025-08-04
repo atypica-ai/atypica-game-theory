@@ -114,7 +114,7 @@ export default function PersonasList({
         setPagination(result.pagination);
       }
     } catch (error) {
-      console.error("Failed to fetch personas:", error);
+      console.log("Failed to fetch personas:", error);
     } finally {
       setIsLoading(false);
     }
@@ -165,7 +165,7 @@ export default function PersonasList({
       }
       router.push(`/personas/chat/${result.data.token}`);
     } catch (error) {
-      console.error("Failed to start chat:", error);
+      console.log("Failed to start chat:", error);
       toast.error("Failed to start chat");
     } finally {
       setChatCreating((prev) => ({ ...prev, [personaId]: false }));

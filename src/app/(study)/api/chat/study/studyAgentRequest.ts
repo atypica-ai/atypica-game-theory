@@ -24,6 +24,7 @@ import { AgentToolConfigArgs, ToolName } from "@/ai/tools/types";
 import { setUserChatError } from "@/lib/userChat/lib";
 import { safeAbort } from "@/lib/utils";
 import { prisma } from "@/prisma/prisma";
+import { getUserTokens } from "@/tokens/lib";
 import {
   CoreMessage,
   createDataStreamResponse,
@@ -47,10 +48,8 @@ const MAX_STEPS_EACH_ROUND = 15;
 // const TOKENS_COMSUME_LIMIT = 1_000_000; // 最新统计来看，100 万 tokens 足够
 
 export async function outOfBalance({ userId }: { userId: number }) {
-  const userTokens = await prisma.userTokens.findUniqueOrThrow({
-    where: { userId },
-  });
-  return userTokens.permanentBalance + userTokens.monthlyBalance <= 0;
+  const { balance } = await getUserTokens({ userId });
+  return balance <= 0;
 }
 
 /**

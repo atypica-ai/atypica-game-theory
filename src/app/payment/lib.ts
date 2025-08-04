@@ -74,10 +74,8 @@ export async function resetMonthlyTokens({ userId }: { userId: number }) {
   const logger = rootLogger.child({ api: "resetMonthlyTokens" });
   const now = new Date();
 
-  let userTokens = await prisma.userTokens.upsert({
+  let userTokens = await prisma.userTokens.findUniqueOrThrow({
     where: { userId },
-    create: { userId }, // 默认 permanentBalance 和 monthlyBalance 都是 0
-    update: {},
   });
 
   if (userTokens.monthlyResetAt && userTokens.monthlyResetAt > now) {
@@ -254,10 +252,8 @@ export async function handlePaymentSuccess({
   invoiceData?: Stripe.Invoice;
 }) {
   const userId = paymentRecord.userId;
-  let userTokens = await prisma.userTokens.upsert({
+  let userTokens = await prisma.userTokens.findUniqueOrThrow({
     where: { userId },
-    create: { userId }, // 默认 permanentBalance 和 monthlyBalance 都是 0
-    update: {},
   });
   if (productName === ProductName.TOKENS1M) {
     // recharge 1M tokens

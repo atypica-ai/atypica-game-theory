@@ -5,6 +5,7 @@ import { rootLogger } from "@/lib/logging";
 import { UserChatExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { AnalystKind } from "@/prisma/types";
+import { getUserTokens } from "@/tokens/lib";
 import { generateId } from "ai";
 import { getServerSession } from "next-auth/next";
 import { Locale } from "next-intl";
@@ -99,10 +100,7 @@ export async function POST(req: Request) {
     reqSignal,
     studyLog,
   };
-  const { permanentBalance, monthlyBalance } = await prisma.userTokens.findUniqueOrThrow({
-    where: { userId: userId },
-  });
-  const balance = permanentBalance + monthlyBalance;
+  const { balance } = await getUserTokens({ userId });
   if (balance <= 0) {
     return await noQuotaAgentRequest(params);
   } else if (userChat.analyst.kind === AnalystKind.productRnD) {

@@ -1,5 +1,5 @@
 "use client";
-import { getUserTokensBalance } from "@/app/account/actions";
+import { getUserTokensBalanceAction } from "@/app/account/actions";
 import { useDocumentVisibility } from "@/hooks/use-document-visibility";
 import { formatTokensNumber } from "@/lib/utils";
 import { CoinsIcon, LoaderIcon } from "lucide-react";
@@ -41,8 +41,8 @@ export default function UserTokensBalance() {
         timeoutId = setTimeout(poll, 10000);
         return;
       }
-      timeoutId = setTimeout(poll, 5000); // 要放在前面，不然下面 return () 的时候如果 getUserTokensBalance 还没完成就不会 clearTimeout 了
-      const result = await getUserTokensBalance();
+      timeoutId = setTimeout(poll, 5000); // 要放在前面，不然下面 return () 的时候如果 getUserTokensBalanceAction 还没完成就不会 clearTimeout 了
+      const result = await getUserTokensBalanceAction();
       if (result.success) {
         setBalance(result.data);
       }

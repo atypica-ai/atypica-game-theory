@@ -1,6 +1,6 @@
 import { RequestPaymentResult } from "@/ai/tools/types";
 import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
-import { getUserTokensBalance } from "@/app/account/actions";
+import { getUserTokensBalanceAction } from "@/app/account/actions";
 import { Button } from "@/components/ui/button";
 import { ToolInvocation } from "ai";
 import { CoinsIcon, MessageCircleQuestionIcon } from "lucide-react";
@@ -34,7 +34,7 @@ export const RequestPaymentMessage: FC<{
     let timeoutId: NodeJS.Timeout;
     const poll = async () => {
       timeoutId = setTimeout(poll, 1000);
-      const result = await getUserTokensBalance();
+      const result = await getUserTokensBalanceAction();
       if (!result.success) {
         throw new Error(result.message);
       }

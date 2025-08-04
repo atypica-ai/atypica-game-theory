@@ -11,6 +11,7 @@ import { newStudySystem } from "@/app/(newStudy)/prompt";
 import { newStudyTools } from "@/app/(newStudy)/tools";
 import { rootLogger } from "@/lib/logging";
 import { prisma } from "@/prisma/prisma";
+import { getUserTokens } from "@/tokens/lib";
 import {
   createDataStreamResponse,
   formatDataStreamPart,
@@ -81,10 +82,7 @@ export async function POST(req: NextRequest) {
 
   {
     // checkUserTokenBalance
-    const { permanentBalance, monthlyBalance } = await prisma.userTokens.findUniqueOrThrow({
-      where: { userId },
-    });
-    const balance = permanentBalance + monthlyBalance;
+    const { balance } = await getUserTokens({ userId });
     if (balance <= 0) {
       const message =
         locale === "zh-CN"

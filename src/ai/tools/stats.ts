@@ -1,65 +1,8 @@
-import {
-  AgentStatisticsExtra,
-  UserTokensLogResourceType,
-  UserTokensLogVerb,
-} from "@/prisma/client";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
+import { consumeUserTokens } from "@/tokens/lib";
 import { Logger } from "pino";
 import { StatReporter } from "./types";
-
-async function consumeUserTokens({
-  userId,
-  resourceType,
-  resourceId,
-  tokens,
-  extra,
-  logger,
-}: {
-  userId: number;
-  resourceType: UserTokensLogResourceType;
-  resourceId: number;
-  tokens: number;
-  extra: AgentStatisticsExtra;
-  logger: Logger;
-}) {
-  try {
-    await prisma.$transaction(async (tx) => {
-      await tx.userTokensLog.create({
-        data: {
-          userId: userId,
-          verb: UserTokensLogVerb.consume,
-          resourceType,
-          resourceId,
-          value: -tokens,
-          extra: extra as InputJsonValue,
-        },
-      });
-      const userTokens = await tx.userTokens.findUniqueOrThrow({
-        where: { userId },
-      });
-      // 优先扣除 monthlyBalance，并且不拆分，balance 可以是负数
-      if (userTokens.monthlyBalance > 0) {
-        await tx.userTokens.update({
-          where: { userId },
-          data: { monthlyBalance: { decrement: tokens } },
-        });
-      } else {
-        await tx.userTokens.update({
-          where: { userId },
-          data: { permanentBalance: { decrement: tokens } },
-        });
-      }
-    });
-    logger.info({ msg: "User tokens consumed successfully", userId, tokens });
-  } catch (error) {
-    logger.error({
-      msg: `Failed to consume user tokens: ${(error as Error).message}`,
-      userId,
-      tokens,
-    });
-  }
-}
 
 export const initStudyStatReporter = ({
   userId,
