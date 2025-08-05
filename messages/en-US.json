@@ -582,7 +582,6 @@
       "login": "Login",
       "logout": "Logout",
       "viewAccount": "View Account",
-      "teamManagement": "Team Management",
       "switchIdentity": "Switch Identity",
       "lightTheme": "Light Theme",
       "darkTheme": "Dark Theme",
@@ -990,7 +989,8 @@
       "accountIndex": "Account",
       "profile": "Profile",
       "tokens": "Tokens History",
-      "paymentHistory": "Payment History"
+      "paymentHistory": "Payment History",
+      "teamManagement": "Team Management"
     },
     "profile": {
       "title": "Profile Settings",

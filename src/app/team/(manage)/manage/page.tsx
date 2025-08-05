@@ -1,6 +1,5 @@
 "use client";
-
-import { getUserTeamsAction } from "@/app/(team)/actions";
+import { getUserTeamsAction } from "@/app/team/actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Team } from "@/prisma/client";
@@ -39,14 +38,14 @@ export default function TeamListPage() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto py-8">
+      <div className="container p-6">
         <div className="text-center">{t("loading")}</div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto py-8 space-y-6">
+    <div className="container p-6 space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">{t("title")}</h1>
         <Link href="/team/create">

@@ -1,11 +1,10 @@
 "use client";
-
 import {
   addTeamMemberAction,
   getTeamAction,
   getTeamMembersAction,
   removeTeamMemberAction,
-} from "@/app/(team)/actions";
+} from "@/app/team/actions";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -158,7 +157,7 @@ export default function TeamManagePage() {
 
   if (!team) {
     return (
-      <div className="container mx-auto py-8">
+      <div className="container p-6">
         <div className="text-center">
           <p className="text-muted-foreground mb-4">{t("notFound")}</p>
           <Link href="/team/manage">
@@ -173,7 +172,7 @@ export default function TeamManagePage() {
   const removedMembersCount = members.filter((m) => !m.personalUserId).length;
 
   return (
-    <div className="container mx-auto py-8 space-y-6">
+    <div className="container p-6 space-y-6">
       <div className="flex items-center gap-4">
         <Link href="/team/manage">
           <Button variant="ghost" size="sm">

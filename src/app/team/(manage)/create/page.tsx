@@ -1,5 +1,5 @@
 "use client";
-import { createTeamAction } from "@/app/(team)/actions";
+import { createTeamAction } from "@/app/team/actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -58,7 +58,7 @@ export default function CreateTeamPage() {
   };
 
   return (
-    <div className="container mx-auto max-w-2xl py-8">
+    <div className="container max-w-2xl p-6">
       <Card>
         <CardHeader>
           <CardTitle>{t("title")}</CardTitle>

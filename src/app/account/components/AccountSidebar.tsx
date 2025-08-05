@@ -1,4 +1,5 @@
 "use client";
+import { getUserTeamStatusAction } from "@/app/team/actions";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -7,10 +8,19 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useMediaQuery } from "@/hooks/use-media-query";
-import { CreditCardIcon, MenuIcon, SettingsIcon, User2Icon, WalletIcon } from "lucide-react";
+import {
+  CreditCardIcon,
+  MenuIcon,
+  SettingsIcon,
+  User2Icon,
+  UsersIcon,
+  WalletIcon,
+} from "lucide-react";
+import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 
 interface SidebarItem {
   label: string;
@@ -19,38 +29,61 @@ interface SidebarItem {
 }
 
 export default function AccountSidebar() {
+  const { data: session } = useSession();
   const t = useTranslations("AccountPage.sidebar");
   const pathname = usePathname();
-
   const isSM = useMediaQuery("sm");
 
-  const sidebarItems: SidebarItem[] = [
-    {
-      label: t("accountIndex"),
-      href: "/account",
-      icon: <User2Icon className="mr-2 h-4 w-4" />,
-    },
-    {
-      label: t("profile"),
-      href: "/account/profile",
-      icon: <SettingsIcon className="mr-2 h-4 w-4" />,
-    },
-    {
-      label: t("tokens"),
-      href: "/account/tokens",
-      icon: <WalletIcon className="mr-2 h-4 w-4" />,
-    },
-    {
-      label: t("paymentHistory"),
-      href: "/account/payment",
-      icon: <CreditCardIcon className="mr-2 h-4 w-4" />,
-    },
-    // {
-    //   label: t("team"),
-    //   href: "/team/manage",
-    //   icon: <Users className="mr-2 h-4 w-4" />,
-    // },
-  ];
+  const [teamStatus, setTeamStatus] = useState<{
+    hasOwnedTeams: boolean;
+    canSwitchIdentity: boolean;
+  } | null>(null);
+
+  // 加载用户团队状态
+  useEffect(() => {
+    if (session?.user) {
+      getUserTeamStatusAction().then((result) => {
+        if (result.success) {
+          setTeamStatus(result.data);
+        }
+      });
+    }
+  }, [session?.user]);
+
+  const sidebarItems = useMemo(() => {
+    const sidebarItems: SidebarItem[] = [
+      {
+        label: t("accountIndex"),
+        href: "/account",
+        icon: <User2Icon className="mr-2 h-4 w-4" />,
+      },
+      {
+        label: t("profile"),
+        href: "/account/profile",
+        icon: <SettingsIcon className="mr-2 h-4 w-4" />,
+      },
+      {
+        label: t("tokens"),
+        href: "/account/tokens",
+        icon: <WalletIcon className="mr-2 h-4 w-4" />,
+      },
+      {
+        label: t("paymentHistory"),
+        href: "/account/payment",
+        icon: <CreditCardIcon className="mr-2 h-4 w-4" />,
+      },
+    ];
+
+    if (teamStatus?.hasOwnedTeams) {
+      sidebarItems.push({
+        label: t("teamManagement"),
+        href: "/team/manage",
+        icon: <UsersIcon className="mr-2 h-4 w-4" />,
+      });
+    }
+
+    return sidebarItems;
+  }, [teamStatus, t]);
 
   return (
     <aside className="w-full md:w-64 border-r">

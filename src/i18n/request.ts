@@ -8,7 +8,7 @@ const getMessages = async (locale: string) => {
     import(`../../messages/${locale}.json`),
     import(`../app/(interviewProject)/messages/${locale}.json`),
     import(`../app/(persona)/messages/${locale}.json`),
-    import(`../app/(team)/messages/${locale}.json`),
+    import(`../app/team/messages/${locale}.json`),
   ]);
   return {
     ...messages.default,

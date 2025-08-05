@@ -2,7 +2,7 @@
 import {
   generateUserSwitchTokenAction,
   getUserSwitchableIdentitiesAction,
-} from "@/app/(team)/actions";
+} from "@/app/team/actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -113,7 +113,7 @@ export default function SwitchUserPage() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto max-w-2xl py-8">
+      <div className="container mx-auto max-w-2xl py-6">
         <div className="text-center">{t("loading")}</div>
       </div>
     );
@@ -121,7 +121,7 @@ export default function SwitchUserPage() {
 
   if (!identities) {
     return (
-      <div className="container mx-auto max-w-2xl py-8">
+      <div className="container mx-auto max-w-2xl py-6">
         <Card>
           <CardContent className="py-8 text-center">
             <p className="text-muted-foreground">{t("loadError")}</p>
@@ -136,7 +136,7 @@ export default function SwitchUserPage() {
   const hasTeamUsers = identities.teamUsers.length > 0;
 
   return (
-    <div className="container mx-auto max-w-2xl py-8 space-y-6">
+    <div className="container mx-auto max-w-2xl p-6 space-y-6">
       <div className="text-center">
         <h1 className="text-2xl font-bold mb-2">{t("title")}</h1>
         <p className="text-muted-foreground">{t("description")}</p>

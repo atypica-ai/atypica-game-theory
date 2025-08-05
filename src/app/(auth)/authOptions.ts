@@ -1,7 +1,7 @@
 import "server-only";
 
 import { sendVerificationCode } from "@/app/(auth)/auth/verify/lib";
-import { verifyUserSwitchToken } from "@/app/(team)/userSwitchToken";
+import { verifyUserSwitchToken } from "@/app/team/userSwitchToken";
 import { rootLogger } from "@/lib/logging";
 import { User } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";

@@ -1,7 +1,7 @@
 import messages from "../../messages/zh-CN.json";
 import interviewProject from "../app/(interviewProject)/messages/zh-CN.json";
 import persona from "../app/(persona)/messages/zh-CN.json";
-import team from "../app/(team)/messages/zh-CN.json";
+import team from "../app/team/messages/zh-CN.json";
 import { locales } from "./routing";
 
 declare module "next-intl" {

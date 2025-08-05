@@ -1,5 +1,5 @@
 "use client";
-import { getUserTeamStatusAction } from "@/app/(team)/actions";
+import { getUserTeamStatusAction } from "@/app/team/actions";
 import { Avatar } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -21,7 +21,6 @@ import {
   MoonIcon,
   SunIcon,
   UserIcon,
-  UsersIcon,
 } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
@@ -112,28 +111,23 @@ export default function UserMenu() {
             <span>{t("viewAccount")}</span>
           </Link>
         </DropdownMenuItem>
-        {teamStatus?.hasOwnedTeams && (
-          <DropdownMenuItem asChild>
-            <Link href="/team/manage">
-              <UsersIcon className="h-4 w-4 mr-2" />
-              <span>{t("teamManagement")}</span>
-            </Link>
-          </DropdownMenuItem>
-        )}
-        {teamStatus?.canSwitchIdentity && (
-          <DropdownMenuItem asChild>
-            <Link href="/team/switch">
-              <ArrowLeftRightIcon className="h-4 w-4 mr-2" />
-              <span>{t("switchIdentity")}</span>
-            </Link>
-          </DropdownMenuItem>
-        )}
         <DropdownMenuItem asChild>
           <Link href="/studies">
             <HistoryIcon className="h-4 w-4 mr-2" />
             {t("myStudies")}
           </Link>
         </DropdownMenuItem>
+        {teamStatus?.canSwitchIdentity && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Link href="/team/switch">
+                <ArrowLeftRightIcon className="h-4 w-4 mr-2" />
+                <span>{t("switchIdentity")}</span>
+              </Link>
+            </DropdownMenuItem>
+          </>
+        )}
       </>
     ) : null;
 
