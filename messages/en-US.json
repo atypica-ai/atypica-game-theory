@@ -582,6 +582,7 @@
       "login": "Login",
       "logout": "Logout",
       "viewAccount": "View Account",
+      "teamUser": "Team",
       "switchIdentity": "Switch Identity",
       "lightTheme": "Light Theme",
       "darkTheme": "Dark Theme",

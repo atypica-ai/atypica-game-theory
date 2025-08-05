@@ -5,14 +5,12 @@ declare module "next-auth" {
     id: number;
     name: string;
     email: string;
-    teamIdAsMember?: number;
   }
   interface Session {
     user?: {
       id: number;
       name: string;
       email: string;
-      teamIdAsMember?: number;
     };
     expires: ISODateString;
   }

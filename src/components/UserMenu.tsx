@@ -8,6 +8,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn } from "@/lib/utils";
 import Cookies from "js-cookie";
 import {
@@ -40,10 +41,9 @@ export default function UserMenu() {
 
   const searchParams = useSearchParams();
   const [signinCallbackUrl, setSigninCallbackUrl] = useState<string>("/");
-  const [teamStatus, setTeamStatus] = useState<{
-    hasOwnedTeams: boolean;
-    canSwitchIdentity: boolean;
-  } | null>(null);
+  const [teamStatus, setTeamStatus] = useState<ExtractServerActionData<
+    typeof getUserTeamStatusAction
+  > | null>(null);
 
   useEffect(() => {
     // Get path and search parameters without the origin
@@ -102,8 +102,24 @@ export default function UserMenu() {
       <>
         <DropdownMenuItem>
           <MailIcon className="h-4 w-4 mr-2" />
-          <span className="text-xs tracking-tight">{session.user.email}</span>
+          {teamStatus?.isTeamUser && (
+            <span className="text-xs px-1 rounded-xs bg-zinc-200 dark:bg-zinc-700">
+              {t("teamUser")}
+            </span>
+          )}
+          <span className="text-xs tracking-tight">{session.user.name}</span>
         </DropdownMenuItem>
+        {teamStatus?.canSwitchIdentity && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Link href="/team/switch">
+                <ArrowLeftRightIcon className="h-4 w-4 mr-2" />
+                <span>{t("switchIdentity")}</span>
+              </Link>
+            </DropdownMenuItem>
+          </>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <Link href="/account">
@@ -117,17 +133,6 @@ export default function UserMenu() {
             {t("myStudies")}
           </Link>
         </DropdownMenuItem>
-        {teamStatus?.canSwitchIdentity && (
-          <>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <Link href="/team/switch">
-                <ArrowLeftRightIcon className="h-4 w-4 mr-2" />
-                <span>{t("switchIdentity")}</span>
-              </Link>
-            </DropdownMenuItem>
-          </>
-        )}
       </>
     ) : null;
 

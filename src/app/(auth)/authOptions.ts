@@ -218,7 +218,6 @@ const authOptions: NextAuthOptions = {
           id: targetUser.id,
           name: targetUser.name,
           email: displayEmail!,
-          teamIdAsMember: targetUser.teamIdAsMember ?? undefined,
         };
       },
     }),

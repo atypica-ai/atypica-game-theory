@@ -504,6 +504,7 @@ export async function generateUserSwitchTokenAction(
 // 检查用户是否有团队（用于 UserMenu 条件显示）
 export async function getUserTeamStatusAction(): Promise<
   ServerActionResult<{
+    isTeamUser: boolean;
     hasOwnedTeams: boolean;
     canSwitchIdentity: boolean;
   }>
@@ -523,6 +524,7 @@ export async function getUserTeamStatusAction(): Promise<
         };
       }
 
+      let isTeamUser = false;
       let hasOwnedTeams = false;
       let canSwitchIdentity = false;
 
@@ -542,9 +544,11 @@ export async function getUserTeamStatusAction(): Promise<
           },
         });
         canSwitchIdentity = teamUsersCount > 0;
+        isTeamUser = false;
       } else if (currentUser.personalUserId && currentUser.teamIdAsMember) {
         // 活跃的团队用户，总是可以切换回个人用户或其他团队
         canSwitchIdentity = true;
+        isTeamUser = true;
 
         // 检查对应的个人用户是否拥有团队
         const ownedTeamsCount = await prisma.team.count({
@@ -556,6 +560,7 @@ export async function getUserTeamStatusAction(): Promise<
       return {
         success: true,
         data: {
+          isTeamUser,
           hasOwnedTeams,
           canSwitchIdentity,
         },
