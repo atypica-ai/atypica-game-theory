@@ -1,5 +1,6 @@
 "use client";
-import { fetchTokensHistory } from "@/app/account/actions";
+import { fetchTokensHistory, fetchTokensHistoryAsTeamOwner } from "@/app/account/actions";
+import { getUserTeamStatusAction } from "@/app/team/actions";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Pagination } from "@/components/ui/pagination";
 import {
@@ -10,6 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn, formatDate } from "@/lib/utils";
 import { UserTokensLog, UserTokensLogVerb } from "@/prisma/client";
 import {
@@ -20,16 +22,35 @@ import {
   GiftIcon,
   User2Icon,
 } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
 export function TokensHistory() {
+  const { data: session } = useSession();
   const t = useTranslations("AccountPage");
   const locale = useLocale();
-  const [tokensHistory, setTokensHistory] = useState<UserTokensLog[]>([]);
+  const [tokensHistory, setTokensHistory] = useState<(UserTokensLog & { consumedBy?: string })[]>(
+    [],
+  );
   const [historyIsLoading, setHistoryIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState<number | null>(null);
+
+  const [teamStatus, setTeamStatus] = useState<ExtractServerActionData<
+    typeof getUserTeamStatusAction
+  > | null>(null);
+
+  // 加载用户团队状态
+  useEffect(() => {
+    if (session?.user) {
+      getUserTeamStatusAction().then((result) => {
+        if (result.success) {
+          setTeamStatus(result.data);
+        }
+      });
+    }
+  }, [session?.user]);
 
   // Initialize page from URL on load
   useEffect(() => {
@@ -69,7 +90,10 @@ export function TokensHistory() {
     if (currentPage === null) return;
     setHistoryIsLoading(true);
     try {
-      const result = await fetchTokensHistory(currentPage, 10);
+      const result =
+        teamStatus?.teamRole === "owner"
+          ? await fetchTokensHistoryAsTeamOwner(currentPage, 10)
+          : await fetchTokensHistory(currentPage, 10);
       if (result.success) {
         setTokensHistory(result.data);
         if (result.pagination) {
@@ -81,7 +105,7 @@ export function TokensHistory() {
     } finally {
       setHistoryIsLoading(false);
     }
-  }, [currentPage]);
+  }, [currentPage, teamStatus]);
 
   useEffect(() => {
     loadTokensHistory();
@@ -103,6 +127,11 @@ export function TokensHistory() {
               <TableRow>
                 <TableHead>{t("tokensHistorySection.type")}</TableHead>
                 <TableHead className="text-right">{t("tokensHistorySection.amount")}</TableHead>
+                {teamStatus?.teamRole === "owner" && (
+                  <TableHead className="text-right">
+                    {t("tokensHistorySection.consumedBy")}
+                  </TableHead>
+                )}
                 <TableHead className="text-right">{t("tokensHistorySection.date")}</TableHead>
               </TableRow>
             </TableHeader>
@@ -209,6 +238,9 @@ export function TokensHistory() {
                     {item.value > 0 ? "+" : item.value < 0 ? "-" : ""}
                     {(item.value < 0 ? -item.value : item.value).toLocaleString()}
                   </TableCell>
+                  {teamStatus?.teamRole === "owner" && (
+                    <TableCell className="text-right">{item.consumedBy}</TableCell>
+                  )}
                   <TableCell className="text-right">{formatDate(item.updatedAt, locale)}</TableCell>
                 </TableRow>
               ))}

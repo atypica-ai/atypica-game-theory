@@ -102,7 +102,7 @@ export default function UserMenu() {
       <>
         <DropdownMenuItem>
           <MailIcon className="h-4 w-4 mr-2" />
-          {teamStatus?.isTeamUser && (
+          {teamStatus?.teamRole && (
             <span className="text-xs px-1 rounded-xs bg-zinc-200 dark:bg-zinc-700">
               {t("teamUser")}
             </span>

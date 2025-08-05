@@ -952,6 +952,7 @@
       "title": "Tokens History",
       "type": "Type",
       "amount": "Amount",
+      "consumedBy": "Consumed By",
       "date": "Date",
       "noRecords": "No tokens records",
       "loadMore": "Load More",

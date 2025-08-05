@@ -110,6 +110,100 @@ export async function fetchTokensHistory(
   });
 }
 
+export async function fetchTokensHistoryAsTeamOwner(
+  page: number = 1,
+  pageSize: number = 10,
+): Promise<ServerActionResult<(UserTokensLog & { consumedBy: string })[]>> {
+  return withAuth(async (user) => {
+    // const userId = user.id;
+    const skip = (page - 1) * pageSize;
+
+    const ownerUser = await prisma.user.findUnique({
+      where: { id: user.id },
+    });
+    if (!ownerUser?.teamIdAsMember) {
+      return {
+        success: false,
+        message: "User is not a team user",
+      };
+    }
+    const teamAsMember = await prisma.team.findUnique({
+      where: { id: ownerUser.teamIdAsMember },
+    });
+    if (teamAsMember?.ownerUserId !== ownerUser.personalUserId) {
+      return {
+        success: false,
+        message: "User is not the owner of the team",
+      };
+    }
+
+    const teamId = teamAsMember.id;
+
+    const [tokensLogs, totalCount] = await Promise.all([
+      (async () => {
+        const result = await prisma.$queryRaw<Array<UserTokensLog & { consumedBy: string }>>`
+        SELECT
+          "UserTokensLog"."userId" as "userId",
+          MIN("User"."name") as "consumedBy",
+          "resourceType",
+          "resourceId",
+          "verb",
+          SUM("value") as "value",
+          MIN("UserTokensLog"."id") as "id",
+          MIN("UserTokensLog"."createdAt") as "createdAt",
+          MAX("UserTokensLog"."updatedAt") as "updatedAt"
+        FROM "UserTokensLog"
+        INNER JOIN "User" ON "UserTokensLog"."userId" = "User"."id"
+        WHERE "User"."teamIdAsMember" = ${teamId}
+        GROUP BY
+          "UserTokensLog"."userId",
+          "resourceType",
+          "resourceId",
+          "verb",
+          CASE WHEN "resourceType" IS NULL THEN "UserTokensLog"."id" ELSE NULL END
+        ORDER BY MAX("UserTokensLog"."updatedAt") DESC
+        LIMIT ${pageSize} OFFSET ${skip}
+      `;
+        return result;
+      })(),
+      (async () => {
+        const result = await prisma.$queryRaw<Array<{ count: bigint }>>`
+        SELECT COUNT(*) as count
+        FROM (
+          SELECT
+            "UserTokensLog"."userId" as "userId",
+            "resourceType",
+            "resourceId",
+            "verb",
+            CASE WHEN "resourceType" IS NULL THEN "UserTokensLog"."id" ELSE NULL END
+          FROM "UserTokensLog"
+          INNER JOIN "User" ON "UserTokensLog"."userId" = "User"."id"
+          WHERE "User"."teamIdAsMember" = ${teamId}
+          GROUP BY
+            "UserTokensLog"."userId",
+            "resourceType",
+            "resourceId",
+            "verb",
+            CASE WHEN "resourceType" IS NULL THEN "UserTokensLog"."id" ELSE NULL END
+        ) as grouped_data
+      `;
+        return Number(result[0].count);
+      })(),
+    ]);
+
+    return {
+      success: true,
+      data: tokensLogs,
+      pagination: {
+        page,
+        pageSize,
+        totalCount,
+        totalPages: Math.ceil(totalCount / pageSize),
+      },
+    };
+  });
+}
+
 export async function fetchPaymentRecords(
   page: number = 1,
   pageSize: number = 10,

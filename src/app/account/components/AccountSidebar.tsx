@@ -8,6 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useMediaQuery } from "@/hooks/use-media-query";
+import { ExtractServerActionData } from "@/lib/serverAction";
 import {
   CreditCardIcon,
   MenuIcon,
@@ -34,10 +35,9 @@ export default function AccountSidebar() {
   const pathname = usePathname();
   const isSM = useMediaQuery("sm");
 
-  const [teamStatus, setTeamStatus] = useState<{
-    hasOwnedTeams: boolean;
-    canSwitchIdentity: boolean;
-  } | null>(null);
+  const [teamStatus, setTeamStatus] = useState<ExtractServerActionData<
+    typeof getUserTeamStatusAction
+  > | null>(null);
 
   // 加载用户团队状态
   useEffect(() => {

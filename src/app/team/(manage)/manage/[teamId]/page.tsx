@@ -1,7 +1,7 @@
 "use client";
 import {
   addTeamMemberAction,
-  getTeamAction,
+  getTeamDetailsAction,
   getTeamMembersAction,
   removeTeamMemberAction,
 } from "@/app/team/actions";
@@ -60,7 +60,7 @@ export default function TeamManagePage() {
 
     try {
       const [teamResult, membersResult] = await Promise.all([
-        getTeamAction(teamId),
+        getTeamDetailsAction(teamId),
         getTeamMembersAction(teamId),
       ]);
 
