@@ -47,6 +47,20 @@ async function createProducts() {
       description: "atypica.AI Max membership for 1 month",
       extra: { price_id: "price_1RbZkAGU0jUFYcrNGukQQlO3" }, // 测试环境 price_1RbZ6RGU0jUFYcrNBY6pI6kh
     },
+    {
+      name: "TEAMSEAT1M",
+      price: 329,
+      currency: "CNY",
+      description: "atypica.AI 团队席位 1 个月",
+      extra: {},
+    },
+    {
+      name: "TEAMSEAT1M",
+      price: 50,
+      currency: "USD",
+      description: "atypica.AI team seat for 1 month",
+      extra: {},
+    },
   ];
   // Create products
   for (const { name, price, currency, description, extra } of products) {
