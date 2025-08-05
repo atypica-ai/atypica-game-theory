@@ -976,6 +976,7 @@
       "active": "有效",
       "proPlan": "个人Pro版",
       "maxPlan": "个人Max版",
+      "teamPlan": "团队版",
       "notSubscribed": "未订阅",
       "cancelSubscription": "取消自动续费",
       "confirmCancel": "取消自动续费",

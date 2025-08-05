@@ -1,5 +1,5 @@
 "use server";
-import { fetchActiveUserSubscription } from "@/app/account/lib";
+import { fetchActiveSubscription } from "@/app/account/lib";
 import {
   PaymentMethod,
   ProductName,
@@ -26,7 +26,7 @@ export async function createStripeSession({
 
   let mode: "subscription" | "payment";
   let upgradeFrom: ProductName | null = null;
-  const { activeSubscription } = await fetchActiveUserSubscription({ userId });
+  const { activeSubscription } = await fetchActiveSubscription({ userId });
   if (productName === ProductName.TOKENS1M) {
     // 只有会员才能充值
     if (!activeSubscription) {

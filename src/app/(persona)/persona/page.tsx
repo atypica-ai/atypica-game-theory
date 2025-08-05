@@ -1,5 +1,5 @@
 import authOptions from "@/app/(auth)/authOptions";
-import { fetchActiveUserSubscription } from "@/app/account/lib";
+import { fetchActiveSubscription } from "@/app/account/lib";
 import { checkTezignAuth } from "@/app/admin/actions";
 import { getServerSession } from "next-auth";
 import PersonaImportClient from "./PersonaImportClient";
@@ -15,7 +15,7 @@ export default async function PersonaHomePage() {
     isUploadEnabled = false;
     const session = await getServerSession(authOptions);
     if (session?.user) {
-      const result = await fetchActiveUserSubscription({
+      const result = await fetchActiveSubscription({
         userId: session?.user?.id,
       });
       if (result.activeSubscription?.plan === "max") {

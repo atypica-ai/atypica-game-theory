@@ -1,6 +1,6 @@
 import "server-only";
 
-import { fetchActiveUserSubscription } from "@/app/account/lib";
+import { fetchActiveSubscription } from "@/app/account/lib";
 import { ProductName } from "@/app/payment/data";
 import { rootLogger } from "@/lib/logging";
 import { PaymentRecord, SubscriptionPlan, UserTokensLogVerb } from "@/prisma/client";
@@ -125,7 +125,7 @@ export async function resetMonthlyTokens({ userId }: { userId: number }) {
   });
 
   // now 在 [startsAt, endsAt) 的区间内，理应只有一个，所以 orderBy 和 findFirst 都其实没意义
-  const { activeSubscription } = await fetchActiveUserSubscription({ userId });
+  const { activeSubscription } = await fetchActiveSubscription({ userId });
   if (!activeSubscription) {
     // 当前没有生效中的订阅
     return;
@@ -278,7 +278,7 @@ export async function handlePaymentSuccess({
     // reset monthly tokens
     await resetMonthlyTokens({ userId });
   } else if (productName === ProductName.MAX1MONTH) {
-    const { activeSubscription, stripeSubscriptionId } = await fetchActiveUserSubscription({
+    const { activeSubscription, stripeSubscriptionId } = await fetchActiveSubscription({
       userId,
     });
     // 如果当前套餐是 pro，则升级，否则只是简单的延长套餐
@@ -314,7 +314,7 @@ export async function handlePaymentSuccess({
         data: { monthlyResetAt: now },
       });
     }
-    // 注意，一定要在前面先取消当前 pro 套餐，然后下面再创建新的 userSubscription，否则 fetchActiveUserSubscription 会返回新创建的记录
+    // 注意，一定要在前面先取消当前 pro 套餐，然后下面再创建新的 userSubscription，否则 fetchActiveSubscription 会返回新创建的记录
     // 现在一定是 stripe，所以就算是 pro 到 max 的 upgrade，新的套餐时间也是从当前时间开始的，不是从之前的 pro 套餐结束后开始，这符合预期
     const { planStartsAt, planEndsAt } = await calculatePlanStartEnd({
       userId,

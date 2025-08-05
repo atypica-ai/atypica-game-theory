@@ -1,5 +1,5 @@
 import authOptions from "@/app/(auth)/authOptions";
-import { fetchActiveUserSubscription } from "@/app/account/lib";
+import { fetchActiveSubscription } from "@/app/account/lib";
 import { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { getTranslations } from "next-intl/server";
@@ -17,7 +17,7 @@ export default async function PricingPage() {
   const session = await getServerSession(authOptions);
   if (session?.user) {
     const userId = session.user.id;
-    const { activeSubscription, stripeSubscriptionId } = await fetchActiveUserSubscription({
+    const { activeSubscription, stripeSubscriptionId } = await fetchActiveSubscription({
       userId,
     });
     return (

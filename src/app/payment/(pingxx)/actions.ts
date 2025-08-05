@@ -1,5 +1,5 @@
 "use server";
-import { fetchActiveUserSubscription } from "@/app/account/lib";
+import { fetchActiveSubscription } from "@/app/account/lib";
 import { PaymentMethod, ProductName } from "@/app/payment/data";
 import { getRequestClientIp, getRequestOrigin } from "@/lib/request/headers";
 import { Currency } from "@/prisma/client";
@@ -34,7 +34,7 @@ export async function createPingxxCharge({
   // }
   // 支付因为要换手机设备打开，不需要登录
 
-  const { activeSubscription, stripeSubscriptionId } = await fetchActiveUserSubscription({
+  const { activeSubscription, stripeSubscriptionId } = await fetchActiveSubscription({
     userId,
   });
   if (productName === ProductName.TOKENS1M) {

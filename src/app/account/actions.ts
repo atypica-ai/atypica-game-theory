@@ -7,7 +7,7 @@ import { ServerActionResult } from "@/lib/serverAction";
 import { UserTokensLog } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { getUserTokens } from "@/tokens/lib";
-import { fetchActiveUserSubscription } from "./lib";
+import { fetchActiveSubscription } from "./lib";
 
 export async function fetchTokensHistory(
   page: number = 1,
@@ -254,11 +254,11 @@ export async function getUserTokensBalanceAction(): Promise<ServerActionResult<n
 
 // 返回当前生效的订阅信息
 export async function activeUserSubscriptionAction(): Promise<
-  ServerActionResult<Awaited<ReturnType<typeof fetchActiveUserSubscription>>>
+  ServerActionResult<Awaited<ReturnType<typeof fetchActiveSubscription>>>
 > {
   return withAuth(async (user) => {
     try {
-      const result = await fetchActiveUserSubscription({ userId: user.id });
+      const result = await fetchActiveSubscription({ userId: user.id });
       return {
         success: true,
         data: result,
@@ -274,7 +274,7 @@ export async function activeUserSubscriptionAction(): Promise<
 
 export async function stripeSubscriptionAction() {
   return withAuth(async (user) => {
-    const { stripeSubscriptionId } = await fetchActiveUserSubscription({ userId: user.id });
+    const { stripeSubscriptionId } = await fetchActiveSubscription({ userId: user.id });
     const stripe = stripeClient();
     if (!stripeSubscriptionId) {
       return null;
@@ -293,7 +293,7 @@ export async function stripeSubscriptionAction() {
  */
 export async function cancelSubscriptionAction(): Promise<ServerActionResult<null>> {
   return withAuth(async (user) => {
-    const { activeSubscription, stripeSubscriptionId } = await fetchActiveUserSubscription({
+    const { activeSubscription, stripeSubscriptionId } = await fetchActiveSubscription({
       userId: user.id,
     });
     if (!activeSubscription || !stripeSubscriptionId) {

@@ -1,5 +1,5 @@
 import authOptions from "@/app/(auth)/authOptions";
-import { fetchActiveUserSubscription } from "@/app/account/lib";
+import { fetchActiveSubscription } from "@/app/account/lib";
 import { getUserTokens } from "@/tokens/lib";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
@@ -19,7 +19,7 @@ export default async function AccountPage() {
   // 先注释，可能会导致 subscription add monthly tokens 被计算两次
 
   const userTokens = await getUserTokens({ userId });
-  const result = await fetchActiveUserSubscription({ userId });
+  const result = await fetchActiveSubscription({ userId });
 
   return <AccountPageClient userTokens={userTokens} {...result}></AccountPageClient>;
 }

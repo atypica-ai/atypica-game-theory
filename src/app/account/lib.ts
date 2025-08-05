@@ -7,7 +7,7 @@ type UserSubscription = Omit<UserSubscriptionPrisma, "extra"> & {
   extra: UserSubscriptionExtra;
 };
 
-export async function fetchActiveUserSubscription({ userId }: { userId: number }): Promise<
+export async function fetchActiveSubscription({ userId }: { userId: number }): Promise<
   (
     | {
         activeSubscription: UserSubscription;
@@ -21,10 +21,24 @@ export async function fetchActiveUserSubscription({ userId }: { userId: number }
     stripeSubscriptionId: string | null;
   }
 > {
+  const user = await prisma.user.findUniqueOrThrow({
+    where: { id: userId },
+  });
+
+  const filterUserOrTeam = user.teamIdAsMember
+    ? {
+        user: {
+          teamIdAsMember: {
+            equals: user.teamIdAsMember,
+          },
+        },
+      }
+    : { userId };
+
   const now = new Date();
   const activeSubscription = (await prisma.userSubscription.findFirst({
     where: {
-      userId,
+      ...filterUserOrTeam,
       startsAt: { lte: now },
       endsAt: { gt: now },
     },
@@ -57,7 +71,7 @@ export async function fetchActiveUserSubscription({ userId }: { userId: number }
   // 如果 activeSubscription 存在，lastSubscription 一定存在，所以可以 throw
   const lastSubscription = (await prisma.userSubscription.findFirstOrThrow({
     where: {
-      userId,
+      ...filterUserOrTeam,
       // startsAt: { lte: now },
       endsAt: { gt: now },
     },

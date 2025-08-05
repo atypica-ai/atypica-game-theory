@@ -976,6 +976,7 @@
       "active": "Active",
       "proPlan": "Pro Subscription",
       "maxPlan": "Max Subscription",
+      "teamPlan": "Team Subscription",
       "notSubscribed": "Not Subscribed",
       "cancelSubscription": "Cancel Auto-Renewal",
       "confirmCancel": "Cancel Auto-Renewal",

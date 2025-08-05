@@ -113,10 +113,12 @@ export function AccountPageClient({
                   </div>
                   <div className="font-medium">
                     {activeSubscription?.plan === "pro"
-                      ? `${t("subscriptionSection.proPlan")}`
+                      ? t("subscriptionSection.proPlan")
                       : activeSubscription?.plan === "max"
-                        ? `${t("subscriptionSection.maxPlan")}`
-                        : t("subscriptionSection.notSubscribed")}
+                        ? t("subscriptionSection.maxPlan")
+                        : activeSubscription?.plan === "team"
+                          ? t("subscriptionSection.teamPlan")
+                          : t("subscriptionSection.notSubscribed")}
                   </div>
                 </div>
 
