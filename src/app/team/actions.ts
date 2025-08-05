@@ -112,7 +112,7 @@ export async function addTeamMemberAction(data: {
   memberEmail: string;
 }): Promise<ServerActionResult<User>> {
   const t = await getTranslations("Team.Actions");
-  return withAuth(async (user) => {
+  return withAuth(async ({ id: userId }) => {
     try {
       // 检查团队是否存在且用户是否为团队拥有者
       const team = await prisma.team.findUnique({
@@ -120,6 +120,9 @@ export async function addTeamMemberAction(data: {
         include: {
           members: true,
         },
+      });
+      const user = await prisma.user.findUniqueOrThrow({
+        where: { id: userId },
       });
 
       if (!team) {
@@ -130,7 +133,7 @@ export async function addTeamMemberAction(data: {
         };
       }
 
-      if (team.ownerUserId !== user.id) {
+      if (team.ownerUserId !== user.personalUserId) {
         return {
           success: false,
           message: t("addMember.forbidden"),
@@ -220,11 +223,14 @@ export async function getTeamMembersAction(teamId: number): Promise<
   >
 > {
   const t = await getTranslations("Team.Actions");
-  return withAuth(async (user) => {
+  return withAuth(async ({ id: userId }) => {
     try {
       // 检查团队是否存在且用户是否为团队拥有者
       const team = await prisma.team.findUnique({
         where: { id: teamId },
+      });
+      const user = await prisma.user.findUniqueOrThrow({
+        where: { id: userId },
       });
 
       if (!team) {
@@ -235,7 +241,7 @@ export async function getTeamMembersAction(teamId: number): Promise<
         };
       }
 
-      if (team.ownerUserId !== user.id) {
+      if (team.ownerUserId !== user.personalUserId) {
         return {
           success: false,
           message: t("getMembers.forbidden"),
@@ -287,11 +293,14 @@ export async function removeTeamMemberAction(data: {
   memberId: number;
 }): Promise<ServerActionResult<null>> {
   const t = await getTranslations("Team.Actions");
-  return withAuth(async (user) => {
+  return withAuth(async ({ id: userId }) => {
     try {
       // 检查团队是否存在且用户是否为团队拥有者
       const team = await prisma.team.findUnique({
         where: { id: data.teamId },
+      });
+      const user = await prisma.user.findUniqueOrThrow({
+        where: { id: userId },
       });
 
       if (!team) {
@@ -302,7 +311,7 @@ export async function removeTeamMemberAction(data: {
         };
       }
 
-      if (team.ownerUserId !== user.id) {
+      if (team.ownerUserId !== user.personalUserId) {
         return {
           success: false,
           message: t("removeMember.forbidden"),
@@ -584,10 +593,13 @@ export async function getUserTeamStatusAction(): Promise<
 // 获取单个团队信息
 export async function getTeamDetailsAction(teamId: number): Promise<ServerActionResult<Team>> {
   const t = await getTranslations("Team.Actions");
-  return withAuth(async (user) => {
+  return withAuth(async ({ id: userId }) => {
     try {
       const team = await prisma.team.findUnique({
         where: { id: teamId },
+      });
+      const user = await prisma.user.findUniqueOrThrow({
+        where: { id: userId },
       });
 
       if (!team) {
@@ -598,7 +610,7 @@ export async function getTeamDetailsAction(teamId: number): Promise<ServerAction
         };
       }
 
-      if (team.ownerUserId !== user.id) {
+      if (team.ownerUserId !== user.personalUserId) {
         return {
           success: false,
           message: t("getTeam.forbidden"),

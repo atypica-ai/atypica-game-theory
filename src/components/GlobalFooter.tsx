@@ -107,6 +107,12 @@ export default function GlobalFooter({ className }: { className?: string }) {
               >
                 {t("changelog")}
               </Link>
+              <Link
+                href="/glossary"
+                className="block text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {t("glossary")}
+              </Link>
             </div>
           </div>
 

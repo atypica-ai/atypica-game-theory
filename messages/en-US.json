@@ -602,6 +602,7 @@
       "about": "About atypica.AI",
       "blog": "Blog",
       "changelog": "Changelog",
+      "glossary": "Glossary",
       "terms": "Terms and Conditions",
       "privacy": "Privacy Policy"
     },
@@ -633,6 +634,41 @@
       "wechatPay": "WeChat Pay",
       "creditCard": "Credit Card",
       "redirectToStripe": "You'll be redirected to our secure payment page"
+    },
+    "TeamSubscriptionDialog": {
+      "title": "Purchase Team Seats",
+      "description": "Purchase monthly subscription seats for your team, each seat includes 5M tokens.",
+      "viewPricing": "View pricing",
+      "subscribe": "Subscribe Now",
+      "cancel": "Cancel",
+      "refreshPage": "Refresh Page",
+      "goToTeam": "Back to Team",
+      "paymentSuccess": "Subscription Successful!",
+      "teamSubscriptionFeatures": "Team plan features: 5M tokens/seat/month, minimum 3 seats",
+      "seatsLabel": "Number of seats",
+      "minimumSeats": "Minimum 3 seats",
+      "seats": "seats",
+      "monthlyBilling": "Monthly billing",
+      "tokensPerSeat": "{tokens} tokens/seat/month",
+      "notice": {
+        "title": "Subscription Notice",
+        "description": "Team subscription will auto-renew monthly. You can cancel anytime in your Stripe dashboard."
+      },
+      "processing": "Processing...",
+      "alipay": "Alipay",
+      "creditCard": "Credit Card",
+      "redirectToStripe": "You'll be redirected to our secure payment page",
+      "currentSubscription": "Current subscription: {seats} seats, expires {endDate}",
+      "upgradeNotice": {
+        "title": "Upgrade Subscription",
+        "description": "You will upgrade to more seats, the new subscription will take effect immediately."
+      },
+      "renewalNotice": {
+        "title": "Renew Subscription",
+        "description": "You will renew your current subscription, the new cycle will start after the current subscription expires."
+      },
+      "upgrade": "Upgrade Now",
+      "renew": "Renew Now"
     },
     "SubscriptionDialog": {
       "proTitle": "Subscribe to Pro Plan",

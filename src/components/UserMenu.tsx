@@ -107,7 +107,7 @@ export default function UserMenu() {
               {t("teamUser")}
             </span>
           )}
-          <span className="text-xs tracking-tight">{session.user.name}</span>
+          <span className="text-xs tracking-tight">{session.user.name || session.user.email}</span>
         </DropdownMenuItem>
         {teamStatus?.canSwitchIdentity && (
           <>

@@ -28,18 +28,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Team, User } from "@/prisma/client";
-import { ArrowLeftIcon, TrashIcon } from "lucide-react";
+import { TrashIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
-export default function TeamManagePage() {
-  const params = useParams();
-  const router = useRouter();
-  const teamId = parseInt(params.teamId as string);
-
+export function TeamDetailPageClient({ teamId }: { teamId: number }) {
   const t = useTranslations("Team.ManageDetailPage");
   const tActions = useTranslations("Team.Actions");
 
@@ -52,12 +47,6 @@ export default function TeamManagePage() {
 
   // 加载团队信息和成员
   const loadTeamData = useCallback(async () => {
-    if (isNaN(teamId)) {
-      toast.error(t("toast.invalidId"));
-      router.push("/team/manage");
-      return;
-    }
-
     try {
       const [teamResult, membersResult] = await Promise.all([
         getTeamDetailsAction(teamId),
@@ -68,10 +57,10 @@ export default function TeamManagePage() {
         setTeam(teamResult.data);
       } else {
         toast.error(teamResult.message);
-        if (teamResult.code === "forbidden" || teamResult.code === "not_found") {
-          router.push("/team/manage");
-          return;
-        }
+        // if (teamResult.code === "forbidden" || teamResult.code === "not_found") {
+        //   router.push("/team/manage");
+        //   return;
+        // }
       }
 
       if (membersResult.success) {
@@ -80,12 +69,12 @@ export default function TeamManagePage() {
         toast.error(membersResult.message);
       }
     } catch (error) {
-      console.error("Failed to load team data:", error);
+      console.log("Failed to load team data:", error);
       toast.error(t("toast.networkError"));
     } finally {
       setIsLoading(false);
     }
-  }, [teamId, router, t]);
+  }, [teamId, t]);
 
   // 添加成员
   const handleAddMember = async (e: React.FormEvent) => {
@@ -112,7 +101,7 @@ export default function TeamManagePage() {
         toast.error(result.message);
       }
     } catch (error) {
-      console.error("Failed to add team member:", error);
+      console.log("Failed to add team member:", error);
       toast.error(t("toast.networkError"));
     } finally {
       setIsAddingMember(false);
@@ -136,7 +125,7 @@ export default function TeamManagePage() {
         toast.error(result.message);
       }
     } catch (error) {
-      console.error("Failed to remove team member:", error);
+      console.log("Failed to remove team member:", error);
       toast.error(t("toast.networkError"));
     } finally {
       setRemovingMemberId(null);
@@ -174,12 +163,12 @@ export default function TeamManagePage() {
   return (
     <div className="container p-6 space-y-6">
       <div className="flex items-center gap-4">
-        <Link href="/team/manage">
+        {/*<Link href="/team/manage">
           <Button variant="ghost" size="sm">
             <ArrowLeftIcon className="w-4 h-4 mr-2" />
             {t("backButton")}
           </Button>
-        </Link>
+        </Link>*/}
         <h1 className="text-2xl font-bold">{team.name}</h1>
       </div>
 

@@ -602,6 +602,7 @@
       "about": "关于 atypica.AI",
       "blog": "博客",
       "changelog": "更新日志",
+      "glossary": "词汇表",
       "terms": "服务条款",
       "privacy": "隐私政策"
     },
@@ -633,6 +634,41 @@
       "wechatPay": "微信支付",
       "creditCard": "信用卡",
       "redirectToStripe": "您将被重定向至安全支付页面"
+    },
+    "TeamSubscriptionDialog": {
+      "title": "购买团队席位",
+      "description": "为您的团队购买月度订阅席位，每个席位包含500万Token。",
+      "viewPricing": "查看价格",
+      "subscribe": "立即订阅",
+      "cancel": "取消",
+      "refreshPage": "刷新页面",
+      "goToTeam": "返回团队",
+      "paymentSuccess": "订阅成功！",
+      "teamSubscriptionFeatures": "团队版功能：500万Token/席位/月，3个席位起订",
+      "seatsLabel": "席位数量",
+      "minimumSeats": "最少3个席位",
+      "seats": "席位",
+      "monthlyBilling": "月度计费",
+      "tokensPerSeat": "每席位{tokens}Token/月",
+      "notice": {
+        "title": "订阅说明",
+        "description": "团队订阅按月自动续费，您可以随时在Stripe后台取消订阅。"
+      },
+      "processing": "处理中...",
+      "alipay": "支付宝",
+      "creditCard": "信用卡",
+      "redirectToStripe": "您将被重定向至安全支付页面",
+      "currentSubscription": "当前订阅：{seats}席位，{endDate}到期",
+      "upgradeNotice": {
+        "title": "升级订阅",
+        "description": "您将升级到更多席位，新订阅将立即生效。"
+      },
+      "renewalNotice": {
+        "title": "续费订阅",
+        "description": "您将续费当前订阅，新周期将在当前订阅到期后开始。"
+      },
+      "upgrade": "立即升级",
+      "renew": "立即续费"
     },
     "SubscriptionDialog": {
       "proTitle": "订阅Pro版",
