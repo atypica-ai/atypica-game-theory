@@ -13,9 +13,10 @@ export async function fetchTeams(
   searchQuery?: string,
 ): Promise<
   ServerActionResult<
-    (Pick<Team, "id" | "name" | "createdAt"> & {
+    (Pick<Team, "id" | "name" | "createdAt" | "seats"> & {
       ownerUser: Pick<User, "id" | "email">;
       tokens: { permanentBalance: number; monthlyBalance: number } | null;
+      _count: { members: number };
     })[]
   >
 > {
@@ -39,6 +40,7 @@ export async function fetchTeams(
         id: true,
         name: true,
         createdAt: true,
+        seats: true,
         ownerUser: {
           select: {
             id: true,
@@ -51,6 +53,9 @@ export async function fetchTeams(
             monthlyBalance: true,
           },
         },
+        _count: {
+          select: { members: true },
+        },
       },
     }),
     prisma.team.count({ where }),
@@ -58,11 +63,7 @@ export async function fetchTeams(
 
   return {
     success: true,
-    data: teams.map((team) => ({
-      ...team,
-      ownerUser: team.ownerUser,
-      tokens: team.tokens,
-    })),
+    data: teams,
     pagination: {
       page,
       pageSize,
@@ -112,6 +113,57 @@ export async function addTokensToTeam(
         verb: "gift",
       },
     });
+  });
+
+  revalidatePath("/admin/teams");
+
+  return {
+    success: true,
+    data: undefined,
+  };
+}
+
+export async function updateTeamSeats(
+  teamId: number,
+  seats: number,
+): Promise<ServerActionResult<void>> {
+  await checkAdminAuth([AdminPermission.MANAGE_USERS]);
+
+  if (seats < 1) {
+    return {
+      success: false,
+      message: "Seats must be a positive number",
+    };
+  }
+
+  const team = await prisma.team.findUnique({
+    where: { id: teamId },
+    include: {
+      _count: {
+        select: { members: true },
+      },
+    },
+  });
+
+  if (!team) {
+    return {
+      success: false,
+      message: "Team not found",
+    };
+  }
+
+  if (seats < team._count.members) {
+    return {
+      success: false,
+      message: `New seats count cannot be less than the current number of members (${team._count.members}).`,
+    };
+  }
+
+  await prisma.team.update({
+    where: { id: teamId },
+    data: {
+      seats,
+    },
   });
 
   revalidatePath("/admin/teams");

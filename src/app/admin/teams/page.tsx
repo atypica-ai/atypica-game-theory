@@ -21,13 +21,13 @@ import {
 } from "@/components/ui/table";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDate, formatTokensNumber } from "@/lib/utils";
-import { CoinsIcon, PlusIcon, SearchIcon } from "lucide-react";
+import { CoinsIcon, PlusIcon, SearchIcon, UsersIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { PaginationInfo } from "../types";
-import { addTokensToTeam, fetchTeams } from "./actions";
+import { addTokensToTeam, fetchTeams, updateTeamSeats } from "./actions";
 
 type Team = ExtractServerActionData<typeof fetchTeams>[number];
 
@@ -39,9 +39,15 @@ export default function TeamsPage() {
   const [teams, setTeams] = useState<Team[]>([]);
   const [error, setError] = useState("");
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
-  const [tokensToAdd, setTokensToAdd] = useState<number | null>(1_000_000);
 
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  // State for tokens dialog
+  const [tokensToAdd, setTokensToAdd] = useState<number | null>(1_000_000);
+  const [isTokensDialogOpen, setIsTokensDialogOpen] = useState(false);
+
+  // State for seats dialog
+  const [seatsToUpdate, setSeatsToUpdate] = useState<number | null>(null);
+  const [isSeatsDialogOpen, setIsSeatsDialogOpen] = useState(false);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
@@ -80,6 +86,7 @@ export default function TeamsPage() {
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
+    setError("");
     const result = await fetchTeams(currentPage, 10, searchQuery);
     if (!result.success) {
       setError(result.message);
@@ -108,12 +115,26 @@ export default function TeamsPage() {
     if (!selectedTeam || !tokensToAdd) return;
     setIsSubmitting(true);
     setError("");
-    try {
-      await addTokensToTeam(selectedTeam.id, tokensToAdd);
-      setIsDialogOpen(false);
+    const result = await addTokensToTeam(selectedTeam.id, tokensToAdd);
+    if (!result.success) {
+      setError(result.message);
+    } else {
+      setIsTokensDialogOpen(false);
       fetchData(); // Refresh the list
-    } catch (err) {
-      setError((err as Error).message);
+    }
+    setIsSubmitting(false);
+  };
+
+  const handleUpdateSeats = async () => {
+    if (!selectedTeam || seatsToUpdate === null) return;
+    setIsSubmitting(true);
+    setError("");
+    const result = await updateTeamSeats(selectedTeam.id, seatsToUpdate);
+    if (!result.success) {
+      setError(result.message);
+    } else {
+      setIsSeatsDialogOpen(false);
+      fetchData(); // Refresh the list
     }
     setIsSubmitting(false);
   };
@@ -121,7 +142,15 @@ export default function TeamsPage() {
   const openTokensDialog = (team: Team) => {
     setSelectedTeam(team);
     setTokensToAdd(1_000_000);
-    setIsDialogOpen(true);
+    setError("");
+    setIsTokensDialogOpen(true);
+  };
+
+  const openSeatsDialog = (team: Team) => {
+    setSelectedTeam(team);
+    setSeatsToUpdate(team.seats);
+    setError("");
+    setIsSeatsDialogOpen(true);
   };
 
   if (status === "loading" || isLoading) {
@@ -131,7 +160,9 @@ export default function TeamsPage() {
   return (
     <div>
       <h1 className="mb-6 text-2xl font-bold">Teams Management</h1>
-      {error && <div className="mb-4 rounded-lg bg-red-50 p-4 text-red-500">{error}</div>}
+      {error && !isSeatsDialogOpen && !isTokensDialogOpen && (
+        <div className="mb-4 rounded-lg bg-red-50 p-4 text-red-500">{error}</div>
+      )}
 
       <div className="mb-6">
         <form onSubmit={handleSearch} className="flex gap-2">
@@ -170,15 +201,17 @@ export default function TeamsPage() {
               <TableHead>ID</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Owner</TableHead>
+              <TableHead className="text-right">Members / Seats</TableHead>
+              <TableHead>⚙️</TableHead>
               <TableHead className="text-right">Tokens</TableHead>
-              <TableHead></TableHead>
+              <TableHead>⚙️</TableHead>
               <TableHead>Created At</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {teams.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-sm">
+                <TableCell colSpan={7} className="text-center text-sm">
                   No teams found
                 </TableCell>
               </TableRow>
@@ -189,6 +222,21 @@ export default function TeamsPage() {
                   <TableCell className="whitespace-nowrap text-sm">{team.name}</TableCell>
                   <TableCell className="whitespace-nowrap text-sm">
                     {team.ownerUser.email}
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap text-sm text-right">
+                    {team._count.members} / {team.seats}
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap text-sm">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-6 gap-1 px-2 text-xs text-blue-500 hover:text-blue-500"
+                      onClick={() => openSeatsDialog(team)}
+                      title="Edit seats"
+                    >
+                      <PlusIcon className="size-3" />
+                      <UsersIcon className="size-3" />
+                    </Button>
                   </TableCell>
                   <TableCell className="whitespace-nowrap text-sm text-right">
                     {formatTokensNumber(
@@ -206,7 +254,7 @@ export default function TeamsPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="h-6 text-xs text-amber-500 hover:text-amber-500 gap-0"
+                      className="h-6 gap-0 px-1.5 text-xs text-amber-500 hover:text-amber-500"
                       onClick={() => openTokensDialog(team)}
                       title="Add tokens"
                     >
@@ -225,7 +273,7 @@ export default function TeamsPage() {
       </div>
 
       {pagination && pagination.totalPages > 1 && (
-        <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4">
+        <div className="mt-6 flex flex-col items-center justify-center gap-2 sm:flex-row sm:gap-4">
           <Pagination
             currentPage={pagination.page}
             totalPages={pagination.totalPages}
@@ -237,12 +285,17 @@ export default function TeamsPage() {
         </div>
       )}
 
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      {/* Tokens Dialog */}
+      <Dialog open={isTokensDialogOpen} onOpenChange={setIsTokensDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Add Tokens</DialogTitle>
             <DialogDescription>Add bonus tokens to {selectedTeam?.name}</DialogDescription>
           </DialogHeader>
+
+          {error && isTokensDialogOpen && (
+            <div className="rounded-lg bg-red-50 p-3 text-sm text-red-500">{error}</div>
+          )}
 
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
@@ -281,7 +334,7 @@ export default function TeamsPage() {
                   variant="outline"
                   size="sm"
                   onClick={() => setTokensToAdd(amount)}
-                  className="text-xs h-7"
+                  className="h-7 text-xs"
                 >
                   {formatTokensNumber(amount)}
                 </Button>
@@ -290,7 +343,7 @@ export default function TeamsPage() {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+            <Button variant="outline" onClick={() => setIsTokensDialogOpen(false)}>
               Cancel
             </Button>
             <Button
@@ -298,6 +351,64 @@ export default function TeamsPage() {
               disabled={isSubmitting || !tokensToAdd || tokensToAdd <= 0}
             >
               {isSubmitting ? "Adding..." : "Add Tokens"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Seats Dialog */}
+      <Dialog open={isSeatsDialogOpen} onOpenChange={setIsSeatsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Seats</DialogTitle>
+            <DialogDescription>
+              Modify the number of seats for {selectedTeam?.name}
+            </DialogDescription>
+          </DialogHeader>
+
+          {error && isSeatsDialogOpen && (
+            <div className="rounded-lg bg-red-50 p-3 text-sm text-red-500">{error}</div>
+          )}
+
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label className="text-right">Members</Label>
+              <div className="col-span-3 text-sm">
+                {selectedTeam?._count.members} current members
+              </div>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="admin-update-seats-input" className="text-right">
+                Seats
+              </Label>
+              <div className="col-span-3">
+                <Input
+                  id="admin-update-seats-input"
+                  type="number"
+                  min={selectedTeam?._count.members ?? 1}
+                  value={seatsToUpdate ?? ""}
+                  onChange={(e) =>
+                    setSeatsToUpdate(e.target.value ? parseInt(e.target.value) : null)
+                  }
+                  className="font-mono"
+                />
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsSeatsDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleUpdateSeats}
+              disabled={
+                isSubmitting ||
+                seatsToUpdate === null ||
+                seatsToUpdate < (selectedTeam?._count.members ?? 0)
+              }
+            >
+              {isSubmitting ? "Updating..." : "Update Seats"}
             </Button>
           </DialogFooter>
         </DialogContent>
