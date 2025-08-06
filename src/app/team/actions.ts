@@ -1,9 +1,10 @@
 "use server";
 import { createTeamMemberUser } from "@/app/(auth)/lib";
+import { fetchActiveSubscription } from "@/app/account/lib";
 import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
-import { Team, User } from "@/prisma/client";
+import { Team, User, UserSubscription, UserSubscriptionExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { getTranslations } from "next-intl/server";
 import { createTeam } from "./lib";
@@ -333,6 +334,43 @@ export async function removeTeamMemberAction(data: {
       return {
         success: false,
         message: t("removeMember.failed"),
+        code: "internal_server_error",
+      };
+    }
+  });
+}
+
+// 获取团队订阅信息
+export async function getTeamSubscriptionAction(teamId: number): Promise<
+  ServerActionResult<
+    | (Omit<UserSubscription, "extra"> & {
+        extra: UserSubscriptionExtra;
+      })
+    | null
+  >
+> {
+  const t = await getTranslations("Team.Actions");
+  return withAuth(async ({ id: userId }) => {
+    try {
+      // 检查团队是否存在且用户是否为团队拥有者
+      const ownershipCheck = await verifyTeamOwnership(teamId, userId);
+      if (!ownershipCheck.success) {
+        return ownershipCheck;
+      }
+
+      const { activeSubscription } = await fetchActiveSubscription({
+        userId,
+      });
+
+      return {
+        success: true,
+        data: activeSubscription,
+      };
+    } catch (error) {
+      rootLogger.error(`获取团队订阅失败: ${(error as Error).message}`);
+      return {
+        success: false,
+        message: t("getTeam.failed"),
         code: "internal_server_error",
       };
     }

@@ -659,7 +659,7 @@
       "minimumSeats": "Minimum 3 seats",
       "seats": "seats",
       "monthlyBilling": "Monthly billing",
-      "tokensPerSeat": "{tokens} tokens/seat/month",
+      "tokensPerSeat": "5M tokens/seat/month",
       "notice": {
         "title": "Subscription Notice",
         "description": "Team subscription will auto-renew monthly. You can cancel anytime in your Stripe dashboard."
@@ -667,18 +667,7 @@
       "processing": "Processing...",
       "alipay": "Alipay",
       "creditCard": "Credit Card",
-      "redirectToStripe": "You'll be redirected to our secure payment page",
-      "currentSubscription": "Current subscription: {seats} seats, expires {endDate}",
-      "upgradeNotice": {
-        "title": "Upgrade Subscription",
-        "description": "You will upgrade to more seats, the new subscription will take effect immediately."
-      },
-      "renewalNotice": {
-        "title": "Renew Subscription",
-        "description": "You will renew your current subscription, the new cycle will start after the current subscription expires."
-      },
-      "upgrade": "Upgrade Now",
-      "renew": "Renew Now"
+      "redirectToStripe": "You'll be redirected to our secure payment page"
     },
     "SubscriptionDialog": {
       "proTitle": "Subscribe to Pro Plan",

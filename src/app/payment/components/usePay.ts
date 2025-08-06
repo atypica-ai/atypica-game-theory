@@ -65,7 +65,7 @@ export function usePay() {
 
   // Stripe payment
   const submitForStripePayment = useCallback(
-    ({ productName, currency }: Omit<StripeSessionCreatePayload, "successUrl">) => {
+    ({ productName, currency, quantity }: Omit<StripeSessionCreatePayload, "successUrl">) => {
       try {
         setLoading(true);
         const params: StripeSessionCreatePayload = {
@@ -75,6 +75,9 @@ export function usePay() {
             ? `${window.location.origin}/account`
             : window.location.href,
         };
+        if (typeof quantity !== "undefined") {
+          params.quantity = quantity;
+        }
         const form = document.createElement("form");
         form.action = "/payment/stripe";
         form.method = "POST";
@@ -105,6 +108,7 @@ export function usePay() {
     async ({
       paymentProvider,
       productName,
+      quantity,
     }: {
       paymentProvider: PaymentProvider;
       productName:
@@ -112,6 +116,7 @@ export function usePay() {
         | ProductName.PRO1MONTH
         | ProductName.MAX1MONTH
         | ProductName.TEAMSEAT1MONTH;
+      quantity?: string;
     }) => {
       if (!session?.user) {
         setError("You must be logged in to make a purchase");
@@ -121,11 +126,13 @@ export function usePay() {
         submitForStripePayment({
           productName,
           currency: Currency.USD,
+          quantity,
         });
       } else if (paymentProvider === PaymentProvider.StripeCNY) {
         submitForStripePayment({
           productName,
           currency: Currency.CNY,
+          quantity,
         });
       } else {
         await createPingxxPaymentUrl({

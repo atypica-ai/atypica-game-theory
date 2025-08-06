@@ -1,8 +1,10 @@
 "use client";
+import { TeamSubscriptionDialog } from "@/app/payment/components/TeamSubscriptionDialog";
 import {
   addTeamMemberAction,
   getTeamDetailsAction,
   getTeamMembersAction,
+  getTeamSubscriptionAction,
   removeTeamMemberAction,
 } from "@/app/team/actions";
 import {
@@ -27,9 +29,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { ExtractServerActionData } from "@/lib/serverAction";
+import { formatDate } from "@/lib/utils";
 import { Team, User } from "@/prisma/client";
-import { TrashIcon } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { CreditCardIcon, TrashIcon } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -37,20 +41,25 @@ import { toast } from "sonner";
 export function TeamDetailPageClient({ teamId }: { teamId: number }) {
   const t = useTranslations("Team.ManageDetailPage");
   const tActions = useTranslations("Team.Actions");
-
+  const locale = useLocale();
   const [team, setTeam] = useState<Team | null>(null);
   const [members, setMembers] = useState<Array<User & { personalUser: User | null }>>([]);
+  const [teamSubscription, setTeamSubscription] = useState<ExtractServerActionData<
+    typeof getTeamSubscriptionAction
+  > | null>(null);
   const [newMemberEmail, setNewMemberEmail] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isAddingMember, setIsAddingMember] = useState(false);
   const [removingMemberId, setRemovingMemberId] = useState<number | null>(null);
+  const [isSubscriptionDialogOpen, setIsSubscriptionDialogOpen] = useState(false);
 
   // 加载团队信息和成员
   const loadTeamData = useCallback(async () => {
     try {
-      const [teamResult, membersResult] = await Promise.all([
+      const [teamResult, membersResult, subscriptionResult] = await Promise.all([
         getTeamDetailsAction(teamId),
         getTeamMembersAction(teamId),
+        getTeamSubscriptionAction(teamId),
       ]);
 
       if (teamResult.success) {
@@ -67,6 +76,13 @@ export function TeamDetailPageClient({ teamId }: { teamId: number }) {
         setMembers(membersResult.data);
       } else {
         toast.error(membersResult.message);
+      }
+
+      if (subscriptionResult.success) {
+        setTeamSubscription(subscriptionResult.data);
+      } else {
+        // Subscription error is not critical, just log it
+        console.log("Failed to load team subscription:", subscriptionResult.message);
       }
     } catch (error) {
       console.log("Failed to load team data:", error);
@@ -192,6 +208,38 @@ export function TeamDetailPageClient({ teamId }: { teamId: number }) {
                 <div className="text-muted-foreground">{t("createdAt")}</div>
                 <div className="font-medium">{new Date(team.createdAt).toLocaleDateString()}</div>
               </div>
+            </div>
+
+            {/* Subscription Status */}
+            {teamSubscription && (
+              <div className="pt-4 border-t">
+                <div className="text-sm text-muted-foreground mb-2">{t("subscriptionStatus")}</div>
+                <div className="text-sm">
+                  <div className="flex justify-between">
+                    <span>{t("currentSeats")}</span>
+                    <span className="font-medium">
+                      {(teamSubscription.extra as any)?.seats || 0}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>{t("subscriptionEnd")}</span>
+                    <span className="font-medium">
+                      {formatDate(teamSubscription.endsAt, locale)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="pt-4 border-t">
+              <Button
+                onClick={() => setIsSubscriptionDialogOpen(true)}
+                className="w-full"
+                variant="outline"
+              >
+                <CreditCardIcon className="w-4 h-4 mr-2" />
+                {teamSubscription ? t("manageSubscription") : t("purchaseSeats")}
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -336,6 +384,25 @@ export function TeamDetailPageClient({ teamId }: { teamId: number }) {
           </Card>
         </div>
       </div>
+
+      {/* Team Subscription Dialog */}
+      <TeamSubscriptionDialog
+        open={isSubscriptionDialogOpen}
+        onOpenChange={setIsSubscriptionDialogOpen}
+        team={team}
+        existingSubscription={
+          teamSubscription
+            ? {
+                seats: (teamSubscription.extra as any)?.seats || 0,
+                endsAt: teamSubscription.endsAt,
+              }
+            : null
+        }
+        onSuccess={() => {
+          setIsSubscriptionDialogOpen(false);
+          loadTeamData();
+        }}
+      />
     </div>
   );
 }

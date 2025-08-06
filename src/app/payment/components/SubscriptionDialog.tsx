@@ -1,3 +1,4 @@
+import { retrieveLatestPaid } from "@/app/payment/actions";
 import { ProductName } from "@/app/payment/data";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,7 +26,6 @@ import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { retrieveLatestPaid } from "../actions";
 import { PaymentProvider, usePay } from "./usePay";
 
 interface SubscriptionDialogProps {
