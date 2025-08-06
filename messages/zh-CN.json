@@ -266,6 +266,7 @@
       "passwordRequirementLowercase": "包含小写字母",
       "passwordRequirementNumber": "包含数字",
       "passwordRequirementSpecial": "包含特殊字符",
+      "passwordTooWeak": "密码太弱",
       "showPassword": "显示密码",
       "hidePassword": "隐藏密码",
       "submitButton": "注册",

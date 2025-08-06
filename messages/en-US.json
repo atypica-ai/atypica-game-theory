@@ -266,6 +266,7 @@
       "passwordRequirementLowercase": "Contains a lowercase letter",
       "passwordRequirementNumber": "Contains a number",
       "passwordRequirementSpecial": "Contains a special character",
+      "passwordTooWeak": "Password is too weak",
       "showPassword": "Show password",
       "hidePassword": "Hide password",
       "submitButton": "Sign Up",

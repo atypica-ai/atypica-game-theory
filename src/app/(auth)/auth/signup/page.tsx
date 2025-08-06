@@ -65,6 +65,10 @@ export default function SignUpPage() {
       setError(t("passwordMismatch"));
       return;
     }
+    if (passwordStrength.level < 2) {
+      setError(t("passwordTooWeak"));
+      return;
+    }
     setIsLoading(true);
     try {
       setError("");
@@ -166,21 +170,21 @@ export default function SignUpPage() {
                   {/* Password requirements */}
                   <div className="text-xs text-gray-500 space-y-1">
                     <div className={password.length >= 8 ? "text-green-600" : "text-gray-400"}>
-                      ✓ {t("passwordRequirement8Chars") || "至少8个字符"}
+                      ✓ {t("passwordRequirement8Chars")}
                     </div>
                     <div className={/[A-Z]/.test(password) ? "text-green-600" : "text-gray-400"}>
-                      ✓ {t("passwordRequirementUppercase") || "包含大写字母"}
+                      ✓ {t("passwordRequirementUppercase")}
                     </div>
                     <div className={/[a-z]/.test(password) ? "text-green-600" : "text-gray-400"}>
-                      ✓ {t("passwordRequirementLowercase") || "包含小写字母"}
+                      ✓ {t("passwordRequirementLowercase")}
                     </div>
                     <div className={/[0-9]/.test(password) ? "text-green-600" : "text-gray-400"}>
-                      ✓ {t("passwordRequirementNumber") || "包含数字"}
+                      ✓ {t("passwordRequirementNumber")}
                     </div>
                     <div
                       className={/[^A-Za-z0-9]/.test(password) ? "text-green-600" : "text-gray-400"}
                     >
-                      ✓ {t("passwordRequirementSpecial") || "包含特殊字符"}
+                      ✓ {t("passwordRequirementSpecial")}
                     </div>
                   </div>
                 </div>
@@ -209,7 +213,7 @@ export default function SignUpPage() {
               variant="default"
               className="w-full h-10 font-medium"
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || passwordStrength.level < 2}
             >
               {isLoading ? t("submittingButton") : t("submitButton")}
             </Button>
