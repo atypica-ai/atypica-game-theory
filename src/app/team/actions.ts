@@ -586,7 +586,7 @@ export async function getUserTeamStatusAction(): Promise<
         },
       };
     } catch (error) {
-      rootLogger.error(`获取用户团队状态失败: ${(error as Error).message}`);
+      rootLogger.error(`Failed to get team status: ${(error as Error).message}`);
       return {
         success: false,
         message: t("getTeamStatus.failed"),

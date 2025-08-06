@@ -7,7 +7,7 @@ import { TermsZH } from "./TermsZH";
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("TermsPage");
   return {
-    title: `${t("title")} | atypica.AI`,
+    title: `${t("title")}`,
     description: t("description"),
   };
 }

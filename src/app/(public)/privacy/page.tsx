@@ -7,7 +7,7 @@ import { PrivacyZH } from "./PrivacyZH";
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("PrivacyPage");
   return {
-    title: `${t("title")} | atypica.AI`,
+    title: `${t("title")}`,
     description: t("description"),
   };
 }

@@ -1,0 +1,353 @@
+{
+  "HomePage": {
+    "title": "首页",
+    "HistoryDrawer": {
+      "title": "历史对话",
+      "unnamedChat": "未命名对话"
+    },
+    "HeroSection": {
+      "subtitle": "> AI驱动的市场研究，深入理解人类决策的真实驱动因素",
+      "startYourStudy": "开始您的研究",
+      "newStudyHint": "询问任何消费者决策问题——我们将访谈AI人设来揭示真实动机",
+      "stats": {
+        "personas": "AI人设创建",
+        "interviews": "访谈已完成",
+        "trustedUsers": "受到各大机构用户信赖"
+      }
+    },
+    "FeaturesSection": {
+      "badge": "工作原理",
+      "title": "从问题到洞察，数分钟内完成",
+      "description": "我们的AI系统自动构建用户画像、进行访谈并分析模式，揭示人类选择背后的情感和认知因素。",
+      "metaphor": {
+        "objective": "传统数据",
+        "subjective": "人类心理"
+      },
+      "features": {
+        "personaConstruction": {
+          "title": "AI人设生成",
+          "description": "基于真实行为模式和人口洞察，自动创建多样化的AI人设"
+        },
+        "agentInterviews": {
+          "title": "专家主导访谈",
+          "description": "AI专家与用户画像进行自然对话，挖掘深层动机和决策驱动因素"
+        },
+        "cognitiveModeling": {
+          "title": "行为分析",
+          "description": "识别影响真实购买决策的情感触发点、认知偏见和文化因素"
+        },
+        "rapidStudies": {
+          "title": "即时洞察",
+          "description": "10-20分钟内获得全面的研究报告，而非传统调研的数周时间"
+        }
+      }
+    },
+    "DemoSection": {
+      "badge": "真实案例",
+      "title": "真实研究过程演示",
+      "description": "看AI人设如何揭示可持续包装偏好的真实洞察",
+      "quote": {
+        "text": "人们不是在事物之间做选择，而是在事物的描述之间做选择。",
+        "author": "丹尼尔·卡尼曼"
+      },
+      "terminal": {
+        "title": "研究过程",
+        "command": "$ atypica research \"欧洲市场可持续包装偏好\"",
+        "steps": {
+          "scout": "→ 分析社交对话和市场讨论",
+          "builder": "→ 构建8个具有独特动机的消费者AI人设",
+          "expert": "→ 深度访谈购买决策过程",
+          "analyst": "→ 识别关键情感和实用决策因素",
+          "complete": "✓ 研究完成：12分钟，8个AI人设访谈，4个可执行洞察"
+        }
+      },
+      "interview": {
+        "title": "AI人设访谈示例",
+        "profile": {
+          "label": "AI人设档案",
+          "name": "陈莎莎",
+          "details": "环保倡导者 | 34岁 | 职场妈妈",
+          "pattern": "价值观驱动，受社交影响较强"
+        },
+        "conversation": {
+          "expert": "研究专家：",
+          "persona": "陈莎莎（AI人设）：",
+          "question1": "选择包装产品时您会考虑什么？",
+          "answer1": "我总是先看回收标识，甚至在看价格之前。我女儿还会监督我，提醒我不要买不环保的产品。我愿意多付15-20%买真正环保的包装，因为这符合我们家的价值观。",
+          "question2": "如何区分真正的可持续性和营销包装？",
+          "answer2": "我会在妈妈群里询问其他人的看法。如果有品牌被曝光漂绿，消息传播很快。对品牌的信任一旦失去，真的很难重建。"
+        }
+      }
+    },
+    "InputSection": {
+      "label": "开始您的研究",
+      "placeholder": "提出任何关于人类行为和决策的商业问题。我们将为驱动真实选择的主观因素建模。",
+      "hint": "询问任何消费者决策问题——我们将访谈AI人设来揭示真实动机",
+      "sendLabel": "研究",
+      "enterToSend": "按回车开始",
+      "tapToSend": "点击开始"
+    },
+    "FeaturedStudies": {
+      "title": "精选研究",
+      "description": "探索我们精心挑选的AI研究案例",
+      "viewStudy": "查看研究",
+      "viewMore": "查看更多研究",
+      "noFeatured": "暂无精选研究"
+    },
+    "CTASection": {
+      "title": "准备好更好地了解您的客户了吗？",
+      "description": "加入数千名研究者和营销人员，使用AI访谈来发现真实的消费者洞察",
+      "startButton": "开始研究",
+      "examplesButton": "查看示例"
+    }
+  },
+  "TermsPage": {
+    "title": "用户协议",
+    "description": "atypica.AI 用户协议 - 使用我们的 AI 驱动市场研究平台的条款和条件"
+  },
+  "PrivacyPage": {
+    "title": "隐私政策",
+    "description": "atypica.AI 隐私政策 - 我们如何收集、使用和保护您的个人信息"
+  },
+  "PricingPage": {
+    "title": "价格",
+    "subtitle": "选择最适合您的方案",
+    "monthly": "每月",
+    "freeTitle": "免费版",
+    "freeSubtitle": "欢迎试用Atypica",
+    "freePrice": "¥0",
+    "freeTokens": "100万免费Token",
+    "basicTitle": "体验版",
+    "basicSubtitle": "不定期进行基础商业分析",
+    "oneMillionTokensPrice": "¥100",
+    "oneMillionTokens": "100万Token",
+    "payAsYouGoTokens": "按需充值Token",
+    "proTitle": "Pro版",
+    "proSubtitle": "经常进行深度商业分析",
+    "proPrice": "¥129",
+    "maxTitle": "Max版",
+    "maxSubtitle": "进行高级商业分析",
+    "maxPrice": "¥329",
+    "month": "月",
+    "proMonthlyTokens": "每月200万Token（有效期30天）",
+    "maxMonthlyTokens": "每月500万Token（有效期30天）",
+    "enterpriseTitle": "企业版",
+    "enterpriseSubtitle": "5月中旬上线",
+    "getStarted": "免费开始使用",
+    "chooseBasic": "购买Token",
+    "upgradeToPro": "升级到Pro版",
+    "upgradeToMax": "升级到Max版",
+    "contactSales": "联系销售",
+    "purchaseAdditionalTokens": "购买额外Token",
+    "averageStudyToken": "每次研究平均40万个Token，复杂问题或者追问会消耗更多",
+    "features": {
+      "socialPlatforms": {
+        "single": "覆盖单个社交媒体平台作为调研数据源",
+        "multiple": "覆盖多个社交媒体平台作为调研数据源（小红书、抖音、Tiktok、Instagram、X、等）"
+      },
+      "personas": {
+        "limited": "生成不超过10个AI人设进行调研",
+        "unlimited": "无限制的高级AI人设，用于高度精准的目标研究",
+        "curated": "具有真实行为模式和特征的个性化AI人设"
+      },
+      "analysisModel": {
+        "standard": "通用分析模型",
+        "enhanced": "更强的报告推理模型",
+        "superior": "强大的报告推理模型"
+      },
+      "reports": {
+        "followUp": "可以进行报告追问",
+        "deepDive": "可以进行报告主题下钻"
+      },
+      "tokens": {
+        "basicGift": "限时优惠：充值100万再送100万",
+        "proGift": "限时优惠：每月额外赠送100万Token",
+        "maxGift": "限时优惠：每月额外赠送300万Token"
+      },
+      "enterprise": {
+        "AdvancedAnalysisTools": "调用工具能力",
+        "DataIntegration": "调用数据能力",
+        "SecurityAndCollaboration": "权限安全管理"
+      },
+      "multiModal": "支持多模态输入分析、洞察（文字、图片、等）",
+      "customReports": "定制企业报告结构",
+      "enterpriseData": "接入企业私有数据",
+      "customPersonas": "定制企业私有Persona",
+      "collaboration": "团队协作功能（分享、协作）",
+      "security": "数据安全功能（指定可见、有效期）",
+      "tokenPurchase": {
+        "available": "可随时购买更多Token（¥100每100万 + 100万赠送）",
+        "notAvailable": "无法增购Token"
+      },
+      "earlyAccess": "抢先体验",
+      "personaPreview": "导入访谈记录并生成互动式AI人设"
+    }
+  },
+  "HomePageV3": {
+    "HeroSection": {
+      "title": "商业研究多智能体",
+      "titleHighlight": "",
+      "subtitle": "Atypica 模拟消费者决策，全自动访谈和分析，并产出报告。",
+      "startStudyButton": "开始您的研究",
+      "trustIndicator": "受到各大机构用户信赖",
+      "loadingVideo": "视频加载中..."
+    },
+    "StatsSection": {
+      "title": "大规模AI用户画像研究",
+      "subtitle": "构建真人智能体以理解",
+      "subtitleHighlight": "人类决策",
+      "subtitleEnd": "",
+      "badges": {
+        "aiPersonas": "🤖 AI人设",
+        "expertInterviews": "💬 专家访谈",
+        "behavioralInsights": "📊 行为洞察"
+      },
+      "stats": {
+        "personasCreated": "AI人设创建",
+        "interviewsConducted": "访谈已完成",
+        "minutesPerResearch": "每次研究用时"
+      }
+    },
+    "UseCaseScenarios": {
+      "badge": "研究应用",
+      "title": "AI人设研究实践",
+      "description": "了解高精度AI人设如何在不同场景中转换研究方式。从概念测试到洞察发现，我们的AI人设通过结构化访谈流程提供真实反馈。",
+      "useCases": {
+        "testing": {
+          "title": "测试",
+          "description": "访谈AI人设以测试产品概念和活动创意，获得真实反馈。"
+        },
+        "planning": {
+          "title": "规划",
+          "description": "通过访谈AI人设了解偏好和优先级，创建框架以指导路线图制定。"
+        },
+        "insights": {
+          "title": "洞察",
+          "description": "通过访谈代表目标受众的AI人设，揭示行为模式和动机。"
+        },
+        "creation": {
+          "title": "创意",
+          "description": "与AI人设头脑风暴和共创，产生创新想法并验证创意概念。"
+        }
+      }
+    },
+    "UseCases": {
+      "badge": "我们的工作",
+      "title": "AI人设研究案例",
+      "description": "探索真实案例研究，了解高精度AI人设和专家访谈如何提供深入的消费者洞察，助力更好的商业决策。",
+      "viewAllStudies": "查看所有研究",
+      "errorMessage": "出现错误。",
+      "noStudiesTitle": "暂无精选研究",
+      "noStudiesDescription": "请稍后回来查看我们的实际工作。"
+    },
+    "HowItWorks": {
+      "badge": "主观世界建模实践",
+      "title": "从问题到洞察，数分钟内完成",
+      "steps": {
+        "personaGeneration": {
+          "title": "AI人设生成",
+          "description": "基于真实行为模式和人口统计洞察，生成多样化的AI人设。"
+        },
+        "aiInterviews": {
+          "title": "AI主导访谈",
+          "description": "与AI人设进行自然对话，挖掘深层动机和关键决策驱动因素。"
+        },
+        "behaviorAnalysis": {
+          "title": "行为分析",
+          "description": "识别影响购买决策的情感触发点、认知偏见和文化因素。"
+        },
+        "instantInsights": {
+          "title": "即时洞察",
+          "description": "在数分钟内生成全面洞察，而非传统研究流程的数周时间。"
+        }
+      }
+    },
+    "AudienceSection": {
+      "title": "为研究专业人士打造",
+      "description": "Atypica通过AI驱动的人设访谈和主观世界建模，改变专业人士理解消费者行为的方式。",
+      "audiences": {
+        "marketer": {
+          "name": "陈亚历",
+          "role": "营销专员",
+          "description": "通过与多样化AI人设的访谈，测试活动信息和创意概念。"
+        },
+        "productManager": {
+          "name": "玛丽亚·加西亚",
+          "role": "产品经理",
+          "description": "通过与代表用户的AI人设访谈，发现用户需求和功能缺口。"
+        },
+        "uxResearcher": {
+          "name": "山姆·泰勒",
+          "role": "用户体验研究员",
+          "description": "通过与行为AI人设的研究访谈，绘制用户旅程并发现关键痛点。"
+        },
+        "startupFounder": {
+          "name": "李茉莉",
+          "role": "创业创始人",
+          "description": "使用AI人设研究和行为建模验证市场机会并完善目标受众。"
+        }
+      }
+    },
+    "PersonaSimulationSection": {
+      "badge": "核心技术",
+      "title": "通过深度访谈构建 AI 人设",
+      "description": "模拟真实人类认知的高级AI人设。无论是使用我们丰富的模型库，还是通过您自己的访谈数据创建私有人设，这些智能体都能保持一致的个性和行为框架，提供逼真的洞察。",
+      "technologyQuote": "我们的深度访谈 AI 人设是一项高精度消费者模拟技术。您也可以将这项强大的技术应用于您自己的访谈记录，以创建供您专用的、安全的、私有的 AI 人设。",
+      "technologyDescription": "这些智能体保持一致的认知模式、情感反应和决策框架，实现真实的研究对话——在行为模拟中达到85%的人类相似度准确性。",
+      "learnMoreLink": "了解更多关于通过深度访谈构建 AI 人设",
+      "accuracyLabel": "模拟准确度",
+      "accuracyDescription": "AI人设回应中的人类行为一致性",
+      "differentiatorTitle": "超越人口统计学",
+      "differentiatorDescription": "与传统调研数据或统计模型不同，我们的AI人设是复杂的行为模拟，在新情境中保持一致的个性特征和决策逻辑。",
+      "differentiatorFeatures": {
+        "consistency": "在不同情境下保持一致的个性特征和决策逻辑",
+        "authenticity": "模拟真实的人类认知偏见和情感反应",
+        "realism": "提供逼真、有深度的访谈回应，而不仅仅是数据聚合"
+      },
+      "ecosystemTitle": "智能体生态系统",
+      "ecosystemFeatures": {
+        "syntheticAgents": {
+          "title": "30万个 AI 人设 (社交媒体)",
+          "description": "基于社交媒体数据分析"
+        },
+        "highPrecisionPersonas": {
+          "title": "1万个 AI 人设 (深度访谈)",
+          "description": "基于深度访谈数据"
+        },
+        "multiDimensional": {
+          "title": "真人 AI 人设 (私有)",
+          "description": "通过您自己的私有访谈数据构建"
+        }
+      },
+      "ctaTitle": "构建您的定制化 AI 研究面板",
+      "ctaDescription": "通过您自己的访谈数据创建私有的、高保真的 AI 人设，或利用我们丰富的模型库发现深度的消费者洞察。",
+      "startResearchButton": "开始您的研究",
+      "learnTechnologyButton": "构建您的私有 AI 人设"
+    },
+    "TestimonialSection": {
+      "title": "研究团队喜爱我们的成果",
+      "description": "了解专业人士如何使用AI人设研究来理解消费者行为并更快做出更好的决策。",
+      "timeCategory": "节省时间",
+      "timeStat": "< 1小时",
+      "timeDescription": "在数分钟而非数周内获得洞察。",
+      "customerStoryCategory": "客户故事",
+      "testimonials": {
+        "productManager": {
+          "quote": "我们需要了解不同用户群体对我们新功能的反应。atypica的AI人设通过详细访谈提供了真实反馈，让我们在几小时内获得了传统用户研究需要数周才能得到的洞察。",
+          "author": "埃琳娜·罗德里格斯",
+          "title": "高级产品经理"
+        },
+        "marketingDirector": {
+          "quote": "高精度AI人设的回应令人难以置信地逼真。我们通过人设访谈测试了多个活动信息，在实际投放广告之前就确定了最有效的方法。",
+          "author": "本·卡特",
+          "title": "营销总监"
+        },
+        "founder": {
+          "quote": "作为一家初创公司，我们负担不起传统的焦点小组或大规模用户访谈。atypica的AI人设研究以极低的成本为我们提供了深入的行为洞察并验证了我们的假设。",
+          "author": "陈苏菲",
+          "title": "创始人兼CEO"
+        }
+      }
+    }
+  }
+}

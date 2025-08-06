@@ -4,17 +4,20 @@ import { cookies, headers } from "next/headers";
 import { locales } from "./routing";
 
 const getMessages = async (locale: string) => {
-  const [messages, interviewProject, persona, team] = await Promise.all([
-    import(`../../messages/${locale}.json`),
-    import(`../app/(interviewProject)/messages/${locale}.json`),
-    import(`../app/(persona)/messages/${locale}.json`),
-    import(`../app/team/messages/${locale}.json`),
-  ]);
+  const [messages, interviewProjectMessages, personaMessages, publicMessages, teamMessages] =
+    await Promise.all([
+      import(`../../messages/${locale}.json`),
+      import(`../app/(interviewProject)/messages/${locale}.json`),
+      import(`../app/(persona)/messages/${locale}.json`),
+      import(`../app/(public)/messages/${locale}.json`),
+      import(`../app/team/messages/${locale}.json`),
+    ]);
   return {
     ...messages.default,
-    ...interviewProject.default,
-    ...persona.default,
-    ...team.default,
+    ...interviewProjectMessages.default,
+    ...personaMessages.default,
+    ...publicMessages.default,
+    ...teamMessages.default,
   };
 };
 
