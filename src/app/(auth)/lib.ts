@@ -117,5 +117,8 @@ export async function createTeamMemberUser({
 
   recordLastLogin(teamUser.id);
 
-  return teamUser;
+  return teamUser as Omit<User, "teamIdAsMember" | "personalUserId"> & {
+    teamIdAsMember: number;
+    personalUserId: number;
+  };
 }

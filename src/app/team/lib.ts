@@ -1,8 +1,16 @@
+import "server-only";
+
 import { createTeamMemberUser } from "@/app/(auth)/lib";
-import { User } from "@/prisma/client";
+import { Team, User } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 
-export async function createTeam({ name, ownerUser }: { name: string; ownerUser: User }) {
+export async function createTeam({ name, ownerUser }: { name: string; ownerUser: User }): Promise<{
+  team: Team;
+  teamUser: Omit<User, "teamIdAsMember" | "personalUserId"> & {
+    teamIdAsMember: number;
+    personalUserId: number;
+  };
+}> {
   const team = await prisma.team.create({
     data: {
       name,
@@ -20,10 +28,10 @@ export async function createTeam({ name, ownerUser }: { name: string; ownerUser:
   });
 
   // 创建团队拥有者的团队用户身份
-  await createTeamMemberUser({
+  const teamUser = await createTeamMemberUser({
     personalUser: ownerUser,
     teamAsMember: team,
   });
 
-  return team;
+  return { team, teamUser };
 }

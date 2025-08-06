@@ -83,35 +83,24 @@
         "networkError": "Network error, please try again"
       }
     },
-    "SwitchPage": {
-      "loading": "Loading...",
-      "loadError": "Could not load identity information",
+    "SwitchDialog": {
       "title": "Switch Identity",
-      "description": "Select the identity to switch to. You will be logged in as that identity.",
+      "description": "Select the identity to switch to.",
+      "loading": "Loading identities...",
+      "loadError": "Could not load identity information. Please try again.",
       "personalAccountTitle": "Personal Account",
+      "teamIdentitiesTitle": "Team Identities",
+      "ownerLabel": "Owner: {name}",
       "currentBadge": "Current",
       "switchingButton": "Switching...",
-      "currentButton": "Current Identity",
+      "currentButton": "Current",
       "switchButton": "Switch",
-      "teamIdentitiesTitle": "Team Identities",
-      "teamLabel": "Team: {teamName}",
-      "noIdentities": "No switchable identities available",
-      "backButton": "Back",
-      "notesTitle": "Notes:",
-      "note1": "• Personal Identity: Log in with your personal email to manage personal data and teams",
-      "note2": "• Team Identity: Work in a team environment and access shared team resources",
-      "note3": "• After switching identity, the page needs to be reloaded to apply new permissions",
+      "noIdentities": "No other identities available to switch to.",
       "toast": {
-        "switchSuccess": "Identity switched successfully",
-        "switchFailed": "Switch failed",
-        "missingCredentials": "Missing necessary authentication credentials",
-        "invalidUserId": "Invalid user ID",
-        "invalidSwitchToken": "Invalid switch token",
-        "tokenUserMismatch": "Token user mismatch",
-        "targetUserNotFound": "Target user not found",
-        "invalidTargetUser": "Invalid target user",
-        "emailNotVerified": "Email not verified",
-        "networkError": "Network error, please try again"
+        "targetUserNotFound": "Target identity not found",
+        "switchSuccess": "Identity switched successfully!",
+        "switchFailed": "Failed to switch identity.",
+        "networkError": "Network error, please try again."
       }
     },
     "Actions": {

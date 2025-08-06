@@ -1,8 +1,4 @@
-import {
-  createTeamAction,
-  generateUserSwitchTokenAction,
-  getUserSwitchableIdentitiesAction,
-} from "@/app/team/actions";
+import { createTeamAction, generateUserSwitchTokenAction } from "@/app/team/actions";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -27,7 +23,7 @@ interface TeamCreateButtonProps {
 export function TeamCreateButton({ children }: TeamCreateButtonProps) {
   const t = useTranslations("Team.CreatePage");
   const tActions = useTranslations("Team.Actions.createTeam");
-  const tSwitch = useTranslations("Team.SwitchPage");
+  const tSwitch = useTranslations("Team.SwitchDialog");
   const router = useRouter();
   const [name, setName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -54,19 +50,10 @@ export function TeamCreateButton({ children }: TeamCreateButtonProps) {
       const result = await createTeamAction({ name: name.trim() });
 
       if (!result.success) throw result;
-
       toast.success(t("toast.createSuccess"));
-      const team = result.data;
 
-      // Switch identity and redirect
-      const identitiesResult = await getUserSwitchableIdentitiesAction();
-      if (!identitiesResult.success) throw identitiesResult;
-
-      const teamUser = identitiesResult.data.teamUsers.find((tu) => tu.teamIdAsMember === team.id);
-      if (!teamUser) {
-        throw new Error(tSwitch("toast.targetUserNotFound"));
-      }
-
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { team, teamUser } = result.data;
       const tokenResult = await generateUserSwitchTokenAction(teamUser.id);
       if (!tokenResult.success) throw tokenResult;
 

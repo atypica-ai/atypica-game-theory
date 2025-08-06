@@ -1,5 +1,6 @@
 "use client";
 import { getUserTeamStatusAction } from "@/app/team/actions";
+import { TeamSwitchButton } from "@/app/team/components/TeamSwitchButton";
 import { Avatar } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -103,11 +104,9 @@ export default function UserMenu() {
       <>
         <DropdownMenuItem>
           <MailIcon className="h-4 w-4 mr-2" />
-          {teamStatus?.teamRole && (
-            <span className="text-xs px-1 rounded-xs bg-zinc-200 dark:bg-zinc-700">
-              {t("teamUser")}
-            </span>
-          )}
+          <span className="text-xs px-1 rounded-xs bg-zinc-200 dark:bg-zinc-700">
+            {teamStatus?.teamRole ? t("teamUser") : t("personalUser")}
+          </span>
           <span className="text-xs tracking-tight">{session.user.name || session.user.email}</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
@@ -118,14 +117,12 @@ export default function UserMenu() {
           </Link>
         </DropdownMenuItem>
         {teamStatus?.canSwitchIdentity && (
-          <>
-            <DropdownMenuItem asChild>
-              <Link href="/team/switch">
-                <ArrowLeftRightIcon className="h-4 w-4 mr-2" />
-                <span>{t("switchIdentity")}</span>
-              </Link>
+          <TeamSwitchButton>
+            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+              <ArrowLeftRightIcon className="h-4 w-4 mr-2" />
+              {t("switchIdentity")}
             </DropdownMenuItem>
-          </>
+          </TeamSwitchButton>
         )}
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>

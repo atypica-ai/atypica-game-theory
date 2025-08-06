@@ -30,7 +30,15 @@ async function verifyTeamOwnership(
 }
 
 // 创建团队
-export async function createTeamAction(data: { name: string }): Promise<ServerActionResult<Team>> {
+export async function createTeamAction(data: { name: string }): Promise<
+  ServerActionResult<{
+    team: Team;
+    teamUser: Omit<User, "teamIdAsMember" | "personalUserId"> & {
+      teamIdAsMember: number;
+      personalUserId: number;
+    };
+  }>
+> {
   const t = await getTranslations("Team.Actions");
 
   return withAuth(async (user) => {
@@ -71,17 +79,20 @@ export async function createTeamAction(data: { name: string }): Promise<ServerAc
         };
       }
 
-      const team = await createTeam({
+      const {
+        team,
+        teamUser, // owner 在 team 中对应的 team user，返回给前端用于创建完以后切换身份
+      } = await createTeam({
         name: data.name,
         ownerUser: fullUser,
       });
 
       return {
         success: true,
-        data: team,
+        data: { team, teamUser },
       };
     } catch (error) {
-      rootLogger.error(`创建团队失败: ${(error as Error).message}`);
+      rootLogger.error(`Failed to create team: ${(error as Error).message}`);
       return {
         success: false,
         message: t("createTeam.failed"),
@@ -482,6 +493,8 @@ export async function generateUserSwitchTokenAction(
         prisma.user.findUnique({ where: { id: targetUserId } }),
       ]);
 
+      console.log(currentUser, targetUser);
+
       if (!currentUser || !targetUser) {
         return {
           success: false,
@@ -632,19 +645,19 @@ function verifyUserSwitchPermission(currentUser: User, targetUser: User): boolea
     return true;
   }
 
-  // 情况1：当前是个人用户，目标是其团队用户
-  if (currentUser.email && !currentUser.teamIdAsMember && !currentUser.personalUserId) {
+  if (!currentUser.teamIdAsMember && !currentUser.personalUserId) {
+    // 当前是个人用户，目标是其团队用户
     return targetUser.personalUserId === currentUser.id;
-  }
-
-  // 情况2：当前是团队用户，目标是对应的个人用户
-  if (currentUser.personalUserId && currentUser.teamIdAsMember) {
-    return targetUser.id === currentUser.personalUserId;
-  }
-
-  // 情况3：当前是团队用户，目标是同一个人的其他团队用户
-  if (currentUser.personalUserId && targetUser.personalUserId) {
-    return currentUser.personalUserId === targetUser.personalUserId;
+  } else if (currentUser.teamIdAsMember && currentUser.personalUserId) {
+    // 当前是团队用户，目标是对应的个人用户或者同一个人的其他团队用户
+    return (
+      targetUser.id === currentUser.personalUserId ||
+      targetUser.personalUserId === currentUser.personalUserId
+    );
+  } else {
+    // 用户的 teamIdAsMember 和 personalUserId 必须同时存在或者同时不存在
+    // 否则可能是当前 team user 被从团队中移除，或者数据有问题
+    // 只能 logout 以后再继续了
   }
 
   return false;

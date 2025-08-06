@@ -83,35 +83,24 @@
         "networkError": "网络错误，请重试"
       }
     },
-    "SwitchPage": {
-      "loading": "加载中...",
-      "loadError": "无法加载身份信息",
+    "SwitchDialog": {
       "title": "切换身份",
-      "description": "选择要切换到的身份，切换后您将以该身份登录",
-      "personalAccountTitle": "个人用户",
-      "currentBadge": "当前身份",
-      "switchingButton": "切换中...",
-      "currentButton": "当前身份",
-      "switchButton": "切换",
+      "description": "选择要切换到的身份。",
+      "loading": "正在加载身份信息...",
+      "loadError": "无法加载身份信息，请重试。",
+      "personalAccountTitle": "个人账户",
       "teamIdentitiesTitle": "团队身份",
-      "teamLabel": "团队：{teamName}",
-      "noIdentities": "没有可切换的身份",
-      "backButton": "返回",
-      "notesTitle": "说明：",
-      "note1": "• 个人身份：使用个人邮箱登录，管理个人数据和团队",
-      "note2": "• 团队身份：在团队环境中工作，访问团队共享资源",
-      "note3": "• 切换身份后需要重新加载页面以应用新的权限",
+      "ownerLabel": "拥有者：{name}",
+      "currentBadge": "当前",
+      "switchingButton": "切换中...",
+      "currentButton": "当前",
+      "switchButton": "切换",
+      "noIdentities": "没有其他可切换的身份。",
       "toast": {
-        "switchSuccess": "身份切换成功",
-        "switchFailed": "切换失败",
-        "missingCredentials": "缺少必要的认证信息",
-        "invalidUserId": "无效的用户ID",
-        "invalidSwitchToken": "无效的切换令牌",
-        "tokenUserMismatch": "令牌用户不匹配",
-        "targetUserNotFound": "目标用户不存在",
-        "invalidTargetUser": "无效的目标用户",
-        "emailNotVerified": "邮箱未验证",
-        "networkError": "网络错误，请重试"
+        "targetUserNotFound": "目标身份未找到",
+        "switchSuccess": "身份切换成功！",
+        "switchFailed": "切换身份失败。",
+        "networkError": "网络错误，请重试。"
       }
     },
     "Actions": {
