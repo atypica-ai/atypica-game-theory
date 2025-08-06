@@ -178,10 +178,12 @@ export async function addTeamMemberAction(data: {
       }
 
       // 检查用户是否已经在团队中
-      const existingMember = await prisma.user.findFirst({
+      const existingMember = await prisma.user.findUnique({
         where: {
-          personalUserId: targetUser.id,
-          teamIdAsMember: data.teamId,
+          teamIdAsMember_personalUserId: {
+            personalUserId: targetUser.id,
+            teamIdAsMember: data.teamId,
+          },
         },
       });
 

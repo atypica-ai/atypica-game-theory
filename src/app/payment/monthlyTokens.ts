@@ -177,19 +177,20 @@ export async function resetTeamMonthlyTokens({ teamId }: { teamId: number }) {
     const team = await prisma.team.findUniqueOrThrow({
       where: { id: teamId },
     });
-    // TODO: 等 @@unique([teamIdAsMember, personalUserId]) 加上以后，这里要改成 findUnique
-    const user = await prisma.user.findFirst({
+    const teamMember = await prisma.user.findUnique({
       where: {
-        teamIdAsMember: teamId,
-        personalUserId: team.ownerUserId,
+        teamIdAsMember_personalUserId: {
+          teamIdAsMember: teamId,
+          personalUserId: team.ownerUserId,
+        },
       },
     });
-    if (!user) {
+    if (!teamMember) {
       throw new Error(
         `Team user not found with teamId: ${teamId} and ownerUserId: ${team.ownerUserId}`,
       );
     }
-    responsibleUser = user;
+    responsibleUser = teamMember;
   } catch (error) {
     logger.error((error as Error).message);
     throw error;
