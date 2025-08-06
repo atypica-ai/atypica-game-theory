@@ -128,15 +128,21 @@
     "maxTitle": "Max",
     "maxSubtitle": "For advanced business analysis",
     "maxPrice": "$50",
+    "teamTitle": "Team",
+    "teamSubtitle": "For collaborative research and analysis",
+    "teamPrice": "$50",
+    "perSeat": "/seat/month",
     "month": "month",
     "proMonthlyTokens": "2M tokens (30-day validity)",
     "maxMonthlyTokens": "5M tokens (30-day validity)",
+    "teamMonthlyTokens": "5M tokens per seat (pooled monthly)",
     "enterpriseTitle": "Enterprise",
     "enterpriseSubtitle": "Coming mid-May",
     "getStarted": "Get Started Free",
     "chooseBasic": "Buy Tokens",
     "upgradeToPro": "Upgrade to Pro",
     "upgradeToMax": "Upgrade to Max",
+    "createTeam": "Create a Team",
     "contactSales": "Contact Sales",
     "purchaseAdditionalTokens": "Purchase Additional Tokens",
     "averageStudyToken": "A typical research study uses approximately 400K tokens. Complex analyses may require additional tokens.",
@@ -148,7 +154,8 @@
       "personas": {
         "limited": "Generate up to 10 AI Personas for market research",
         "unlimited": "Unlimited advanced custom AI Personas for highly targeted research",
-        "curated": "Curated AI Personas with authentic behavioral patterns and realistic traits"
+        "curated": "Curated AI Personas with authentic behavioral patterns and realistic traits",
+        "humanPersonaImports": "Unlimited Human AI Persona imports"
       },
       "analysisModel": {
         "standard": "Standard analysis model",
@@ -180,7 +187,13 @@
         "notAvailable": "Cannot purchase additional tokens"
       },
       "earlyAccess": "Early Access",
-      "personaPreview": "Import interviews & generate interactive AI Personas"
+      "personaPreview": "Import interviews & generate Human AI Personas",
+      "allMaxFeatures": "All features from Max plan",
+      "interviews": {
+        "unlimited": "Unlimited automated interview projects (Coming Soon)"
+      },
+      "knowledgeBase": "Set team-wide context to ground AI interviews",
+      "preReleaseAccess": "Early access to pre-release features"
     }
   },
   "HomePageV3": {

@@ -14,7 +14,6 @@ import { createHelloUserChatAction } from "./actions";
 
 export default function PricingPageClient({
   activeSubscription,
-  // stripeSubscriptionId,
 }: {
   activeSubscription:
     | (Omit<UserSubscription, "extra"> & {
@@ -52,7 +51,7 @@ export default function PricingPageClient({
         <p className="text-xl text-muted-foreground">{t("subtitle")}</p>
       </div>
 
-      <div className="py-8 md:pt-12 max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="py-8 md:pt-12 max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Free Plan */}
         <Card className="flex flex-col not-dark:border-muted/40">
           <CardHeader>
@@ -174,12 +173,6 @@ export default function PricingPageClient({
         </Card>
 
         {/* Max Plan */}
-        {/* <Card className="flex flex-col relative border-primary/50 shadow-md">
-          <div className="absolute -top-4 left-0 right-0 flex justify-center">
-            <div className="bg-primary text-primary-foreground px-4 py-1 text-sm rounded-full font-medium">
-              Popular
-            </div>
-          </div> */}
         <Card className="flex flex-col not-dark:border-muted/40">
           <CardHeader>
             <CardTitle className="text-2xl">{t("maxTitle")}</CardTitle>
@@ -220,6 +213,31 @@ export default function PricingPageClient({
             <FeatureItem text={t("features.analysisModel.superior")} />
             <FeatureItem text={t("features.reports.followUp")} />
             <FeatureItemWithPreview text={t("features.personaPreview")} />
+          </CardContent>
+        </Card>
+
+        {/* Team Plan */}
+        <Card className="flex flex-col not-dark:border-muted/40">
+          <CardHeader>
+            <CardTitle className="text-2xl">{t("teamTitle")}</CardTitle>
+            <CardDescription className="h-12">{t("teamSubtitle")}</CardDescription>
+            <div className="mt-4 h-30">
+              <div>
+                <span className="text-3xl font-bold">{t("teamPrice")}</span>
+                <span className="text-lg">{t("perSeat")}</span>
+              </div>
+              <div className="mt-1">{t("teamMonthlyTokens")}</div>
+            </div>
+          </CardHeader>
+          <CardContent className="flex-grow space-y-4">
+            <Button className="w-full mb-6" disabled>
+              {t("createTeam")}
+            </Button>
+            <FeatureItem text={t("features.allMaxFeatures")} />
+            <FeatureItem text={t("features.interviews.unlimited")} />
+            <FeatureItem text={t("features.personas.humanPersonaImports")} />
+            <FeatureItem text={t("features.knowledgeBase")} />
+            <FeatureItemWithPreview text={t("features.preReleaseAccess")} />
           </CardContent>
         </Card>
 

@@ -128,15 +128,21 @@
     "maxTitle": "Max版",
     "maxSubtitle": "进行高级商业分析",
     "maxPrice": "¥329",
+    "teamTitle": "团队版",
+    "teamSubtitle": "专为团队协作设计",
+    "teamPrice": "¥329",
+    "perSeat": "/席位/月",
     "month": "月",
     "proMonthlyTokens": "每月200万Token（有效期30天）",
     "maxMonthlyTokens": "每月500万Token（有效期30天）",
+    "teamMonthlyTokens": "每席位每月500万Token（团队共享）",
     "enterpriseTitle": "企业版",
     "enterpriseSubtitle": "5月中旬上线",
     "getStarted": "免费开始使用",
     "chooseBasic": "购买Token",
     "upgradeToPro": "升级到Pro版",
     "upgradeToMax": "升级到Max版",
+    "createTeam": "创建团队",
     "contactSales": "联系销售",
     "purchaseAdditionalTokens": "购买额外Token",
     "averageStudyToken": "每次研究平均40万个Token，复杂问题或者追问会消耗更多",
@@ -148,7 +154,8 @@
       "personas": {
         "limited": "生成不超过10个AI人设进行调研",
         "unlimited": "无限制的高级AI人设，用于高度精准的目标研究",
-        "curated": "具有真实行为模式和特征的个性化AI人设"
+        "curated": "具有真实行为模式和特征的个性化AI人设",
+        "humanPersonaImports": "无限制导入真人AI人设"
       },
       "analysisModel": {
         "standard": "通用分析模型",
@@ -180,7 +187,13 @@
         "notAvailable": "无法增购Token"
       },
       "earlyAccess": "抢先体验",
-      "personaPreview": "导入访谈记录并生成互动式AI人设"
+      "personaPreview": "导入访谈记录并生成真人AI人设",
+      "allMaxFeatures": "包含Max版所有功能",
+      "interviews": {
+        "unlimited": "无限制自动化访谈项目（即将发布）"
+      },
+      "knowledgeBase": "为AI访谈设置团队共享的背景知识",
+      "preReleaseAccess": "预发布功能抢先试用"
     }
   },
   "HomePageV3": {
