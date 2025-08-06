@@ -141,9 +141,8 @@ export default function PersonasClient() {
                   "transition-all duration-300",
                   persona.personaImportProcessing
                     ? "opacity-75 cursor-not-allowed border-amber-500/30 bg-amber-500/10"
-                    : "hover:shadow-md cursor-pointer",
+                    : "hover:shadow-md",
                 )}
-                onClick={() => !persona.personaImportProcessing && handleViewPersona(persona)}
               >
                 <CardHeader>
                   <CardTitle>
@@ -163,17 +162,12 @@ export default function PersonasClient() {
                       {persona.name}
                     </div>
                     <div className="text-xs text-muted-foreground mt-1">
-                      Source: {persona.source}
+                      {t("source")}: {persona.source}
                     </div>
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="pt-0 space-y-3">
                   <div className="flex flex-wrap gap-2">
-                    {persona.tier !== null && (
-                      <Badge variant="default" className="text-xs">
-                        {t("tier")} {persona.tier}
-                      </Badge>
-                    )}
                     <Badge variant="secondary" className="text-xs">
                       <MessageCircleIcon className="h-3 w-3 mr-1" />
                       Persona
@@ -195,11 +189,11 @@ export default function PersonasClient() {
                     {persona.personaImportProcessing ? (
                       <>
                         <Button size="sm" className="flex-1" disabled variant="outline">
-                          <LockIcon className="size-3 mr-2" />
+                          <LockIcon className="size-3" />
                           {t("updating")}
                         </Button>
                         <Button size="sm" className="flex-1" disabled variant="outline">
-                          <RefreshCwIcon className="size-3 mr-2 animate-spin" />
+                          <RefreshCwIcon className="size-3 animate-spin" />
                           {t("processing")}
                         </Button>
                       </>
@@ -213,12 +207,13 @@ export default function PersonasClient() {
                             handleStartChat(persona);
                           }}
                           disabled={chatCreating[persona.id]}
+                          variant="outline"
                         >
-                          <MessageCircleIcon className="size-3 mr-2" />
+                          <MessageCircleIcon className="size-3" />
                           {chatCreating[persona.id] ? t("starting") : t("startChat")}
                         </Button>
                         <Button
-                          variant="outline"
+                          variant="secondary"
                           size="sm"
                           className="flex-1"
                           onClick={(e) => {
@@ -226,7 +221,7 @@ export default function PersonasClient() {
                             handleViewPersona(persona);
                           }}
                         >
-                          <FileTextIcon className="size-3 mr-2" />
+                          <FileTextIcon className="size-3" />
                           {t("viewAnalysis")}
                         </Button>
                       </>
