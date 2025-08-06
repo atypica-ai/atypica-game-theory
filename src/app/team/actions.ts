@@ -499,8 +499,7 @@ export async function generateUserSwitchTokenAction(
 // 检查用户是否有团队（用于 UserMenu 条件显示）
 export async function getUserTeamStatusAction(): Promise<
   ServerActionResult<{
-    teamRole: "owner" | "member" | null;
-    hasOwnedTeams: boolean;
+    teamRole: "owner" | "member" | "removed" | null;
     canSwitchIdentity: boolean;
   }>
 > {
@@ -519,18 +518,11 @@ export async function getUserTeamStatusAction(): Promise<
         };
       }
 
-      let teamRole: "owner" | "member" | null = null;
-      let hasOwnedTeams = false;
+      let teamRole: "owner" | "member" | "removed" | null = null;
       let canSwitchIdentity = false;
 
       // 检查是否为个人用户
-      if (currentUser.email && !currentUser.teamIdAsMember && !currentUser.personalUserId) {
-        // 个人用户，检查是否拥有团队
-        const ownedTeamsCount = await prisma.team.count({
-          where: { ownerUserId: user.id },
-        });
-        hasOwnedTeams = ownedTeamsCount > 0;
-
+      if (!currentUser.teamIdAsMember) {
         // 检查是否有活跃的团队用户可以切换
         const teamUsersCount = await prisma.user.count({
           where: {
@@ -540,28 +532,26 @@ export async function getUserTeamStatusAction(): Promise<
         });
         canSwitchIdentity = teamUsersCount > 0;
         teamRole = null;
-      } else if (currentUser.personalUserId && currentUser.teamIdAsMember) {
-        // 活跃的团队用户，总是可以切换回个人用户或其他团队
-        canSwitchIdentity = true;
-
-        // 检查所在团队的 owner 是否是当前团队用户，team owner 等于当前 team user 关联的 personal user
-        const teamAsMember = await prisma.team.findUnique({
-          where: { id: currentUser.teamIdAsMember },
-        });
-        teamRole = teamAsMember?.ownerUserId === currentUser.personalUserId ? "owner" : "member";
-
-        // 检查对应的个人用户是否拥有团队
-        const ownedTeamsCount = await prisma.team.count({
-          where: { ownerUserId: currentUser.personalUserId },
-        });
-        hasOwnedTeams = ownedTeamsCount > 0;
+      } else {
+        if (!currentUser.personalUserId) {
+          // 用户被移除团队，无效，无法切换回个人用户
+          teamRole = "removed";
+          canSwitchIdentity = false;
+        } else {
+          // 有效的团队用户，总是可以切换回个人用户或其他团队
+          canSwitchIdentity = true;
+          // 检查所在团队的 owner 是否是当前团队用户，team owner 等于当前 team user 关联的 personal user
+          const teamAsMember = await prisma.team.findUnique({
+            where: { id: currentUser.teamIdAsMember },
+          });
+          teamRole = teamAsMember?.ownerUserId === currentUser.personalUserId ? "owner" : "member";
+        }
       }
 
       return {
         success: true,
         data: {
           teamRole,
-          hasOwnedTeams,
           canSwitchIdentity,
         },
       };
