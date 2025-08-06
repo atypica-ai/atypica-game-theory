@@ -30,7 +30,7 @@ async function verifyTeamOwnership(
 }
 
 // 创建团队
-export async function createTeamAction(data: { name: string }): Promise<
+export async function createTeamAction({ name: teamName }: { name: string }): Promise<
   ServerActionResult<{
     team: Team;
     teamUser: Omit<User, "teamIdAsMember" | "personalUserId"> & {
@@ -41,22 +41,14 @@ export async function createTeamAction(data: { name: string }): Promise<
 > {
   const t = await getTranslations("Team.Actions");
 
-  return withAuth(async (user) => {
+  return withAuth(async ({ id: userId }) => {
     try {
       // 检查用户是否为个人用户（有email且没有teamId）
-      const fullUser = await prisma.user.findUnique({
-        where: { id: user.id },
+      const user = await prisma.user.findUniqueOrThrow({
+        where: { id: userId },
       });
 
-      if (!fullUser) {
-        return {
-          success: false,
-          message: t("userNotFound"),
-          code: "not_found",
-        };
-      }
-
-      if (!fullUser.email || fullUser.teamIdAsMember) {
+      if (user.teamIdAsMember) {
         return {
           success: false,
           message: t("createTeam.forbidden"),
@@ -64,18 +56,22 @@ export async function createTeamAction(data: { name: string }): Promise<
         };
       }
 
-      // 检查团队名称是否已存在
-      const existingTeam = await prisma.team.findFirst({
-        where: {
-          name: data.name,
-          ownerUserId: user.id,
-        },
+      const teams = await prisma.team.findMany({
+        where: { ownerUserId: user.id },
+        select: { name: true },
       });
 
-      if (existingTeam) {
+      if (teams.find((team) => team.name === teamName)) {
         return {
           success: false,
           message: t("createTeam.nameExists"),
+        };
+      }
+
+      if (teams.length > 1) {
+        return {
+          success: false,
+          message: t("createTeam.maxTeams"),
         };
       }
 
@@ -83,8 +79,8 @@ export async function createTeamAction(data: { name: string }): Promise<
         team,
         teamUser, // owner 在 team 中对应的 team user，返回给前端用于创建完以后切换身份
       } = await createTeam({
-        name: data.name,
-        ownerUser: fullUser,
+        name: teamName,
+        ownerUser: user,
       });
 
       return {
@@ -365,7 +361,7 @@ export async function getUserSwitchableIdentitiesAction(): Promise<
   const t = await getTranslations("Team.Actions");
   return withAuth(async (user) => {
     try {
-      const fullUser = await prisma.user.findUnique({
+      const fullUser = await prisma.user.findUniqueOrThrow({
         where: { id: user.id },
         select: {
           id: true,
@@ -374,13 +370,6 @@ export async function getUserSwitchableIdentitiesAction(): Promise<
           personalUserId: true,
         },
       });
-      if (!fullUser) {
-        return {
-          success: false,
-          message: t("userNotFound"),
-          code: "not_found",
-        };
-      }
 
       let personalUser: Pick<User, "id" | "name"> | null = null;
       let teamUsers: Array<
@@ -461,19 +450,9 @@ export async function generateUserSwitchTokenAction(
 
       // 获取当前用户和目标用户
       const [currentUser, targetUser] = await Promise.all([
-        prisma.user.findUnique({ where: { id: currentUserId } }),
-        prisma.user.findUnique({ where: { id: targetUserId } }),
+        prisma.user.findUniqueOrThrow({ where: { id: currentUserId } }),
+        prisma.user.findUniqueOrThrow({ where: { id: targetUserId } }),
       ]);
-
-      console.log(currentUser, targetUser);
-
-      if (!currentUser || !targetUser) {
-        return {
-          success: false,
-          message: t("userNotFound"),
-          code: "not_found",
-        };
-      }
 
       // 验证切换权限
       const hasPermission = verifyUserSwitchPermission(currentUser, targetUser);
@@ -513,17 +492,9 @@ export async function getUserTeamStatusAction(): Promise<
   const t = await getTranslations("Team.Actions");
   return withAuth(async (user) => {
     try {
-      const currentUser = await prisma.user.findUnique({
+      const currentUser = await prisma.user.findUniqueOrThrow({
         where: { id: user.id },
       });
-
-      if (!currentUser) {
-        return {
-          success: false,
-          message: t("userNotFound"),
-          code: "not_found",
-        };
-      }
 
       let teamRole: "owner" | "member" | "removed" | null = null;
       let canSwitchIdentity = false;

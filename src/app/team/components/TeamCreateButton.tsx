@@ -22,7 +22,6 @@ interface TeamCreateButtonProps {
 
 export function TeamCreateButton({ children }: TeamCreateButtonProps) {
   const t = useTranslations("Team.CreatePage");
-  const tActions = useTranslations("Team.Actions.createTeam");
   const tSwitch = useTranslations("Team.SwitchDialog");
   const router = useRouter();
   const [name, setName] = useState("");

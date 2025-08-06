@@ -90,10 +90,10 @@
       }
     },
     "Actions": {
-      "userNotFound": "User not found",
       "createTeam": {
         "forbidden": "Only individual users can create teams",
         "nameExists": "Team name already exists",
+        "maxTeams": "Maximum number of teams reached",
         "failed": "Failed to create team"
       },
       "getUserTeams": {

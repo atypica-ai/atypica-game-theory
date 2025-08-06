@@ -67,7 +67,7 @@ export function TeamDetailPageClient({ team }: { team: Team }) {
     } finally {
       setIsLoading(false);
     }
-  }, [team.id, t]);
+  }, [team.id]);
 
   // 添加成员
   const handleAddMember = useCallback(
@@ -94,7 +94,7 @@ export function TeamDetailPageClient({ team }: { team: Team }) {
         setIsAddingMember(false);
       }
     },
-    [team.id, t],
+    [team.id, t, loadTeamData, newMemberEmail, tActions],
   );
 
   // 移除成员
