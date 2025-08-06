@@ -22,19 +22,6 @@
         "networkError": "Network error, please try again"
       }
     },
-    "ManageListPage": {
-      "title": "Team Management",
-      "createButton": "Create Team",
-      "noTeams": "You don't have any teams yet",
-      "createFirstButton": "Create your first team",
-      "seatsLabel": "Seats:",
-      "createdAtLabel": "Created At:",
-      "manageButton": "Manage Team",
-      "loading": "Loading...",
-      "toast": {
-        "networkError": "Network error, please try again"
-      }
-    },
     "ManageDetailPage": {
       "loading": "Loading...",
       "notFound": "Team not found or you don't have access",

@@ -21,7 +21,7 @@ export default async function TeamDetailPage() {
     });
     if (team.ownerUserId === user.personalUserId) {
       // 团队成员是 owner，直接进入团队管理界面
-      return <TeamDetailPageClient teamId={team.id} />;
+      return <TeamDetailPageClient team={team} />;
     } else {
       // 团队成员不是 owner，无权限访问
       forbidden();

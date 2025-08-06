@@ -22,19 +22,6 @@
         "networkError": "网络错误，请重试"
       }
     },
-    "ManageListPage": {
-      "title": "团队管理",
-      "createButton": "创建团队",
-      "noTeams": "您还没有团队",
-      "createFirstButton": "创建第一个团队",
-      "seatsLabel": "座位数：",
-      "createdAtLabel": "创建时间：",
-      "manageButton": "管理团队",
-      "loading": "加载中...",
-      "toast": {
-        "networkError": "网络错误，请重试"
-      }
-    },
     "ManageDetailPage": {
       "loading": "加载中...",
       "notFound": "团队不存在或无权访问",

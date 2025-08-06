@@ -77,7 +77,7 @@ export default function AccountSidebar() {
     if (teamStatus?.hasOwnedTeams) {
       sidebarItems.push({
         label: t("teamManagement"),
-        href: "/team/manage",
+        href: "/team",
         icon: <UsersIcon className="mr-2 h-4 w-4" />,
       });
     }

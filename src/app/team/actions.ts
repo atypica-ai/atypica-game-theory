@@ -102,41 +102,6 @@ export async function createTeamAction(data: { name: string }): Promise<
   });
 }
 
-// 获取用户的团队列表
-export async function getUserTeamsAction(): Promise<ServerActionResult<Team[]>> {
-  const t = await getTranslations("Team.Actions");
-  return withAuth(async (user) => {
-    try {
-      const fullUser = await prisma.user.findUnique({
-        where: { id: user.id },
-        include: {
-          teamsAsOwner: true,
-        },
-      });
-
-      if (!fullUser) {
-        return {
-          success: false,
-          message: t("userNotFound"),
-          code: "not_found",
-        };
-      }
-
-      return {
-        success: true,
-        data: fullUser.teamsAsOwner,
-      };
-    } catch (error) {
-      rootLogger.error(`获取团队列表失败: ${(error as Error).message}`);
-      return {
-        success: false,
-        message: t("getUserTeams.failed"),
-        code: "internal_server_error",
-      };
-    }
-  });
-}
-
 // 添加团队成员
 export async function addTeamMemberAction(data: {
   teamId: number;
@@ -605,34 +570,6 @@ export async function getUserTeamStatusAction(): Promise<
       return {
         success: false,
         message: t("getTeamStatus.failed"),
-        code: "internal_server_error",
-      };
-    }
-  });
-}
-
-// 获取单个团队信息
-export async function getTeamDetailsAction(teamId: number): Promise<ServerActionResult<Team>> {
-  const t = await getTranslations("Team.Actions");
-  return withAuth(async ({ id: userId }) => {
-    try {
-      // 检查团队是否存在且用户是否为团队拥有者
-      const ownershipCheck = await verifyTeamOwnership(teamId, userId);
-      if (!ownershipCheck.success) {
-        return ownershipCheck;
-      }
-
-      const team = ownershipCheck.team;
-
-      return {
-        success: true,
-        data: team,
-      };
-    } catch (error) {
-      rootLogger.error(`获取团队信息失败: ${(error as Error).message}`);
-      return {
-        success: false,
-        message: t("getTeam.failed"),
         code: "internal_server_error",
       };
     }

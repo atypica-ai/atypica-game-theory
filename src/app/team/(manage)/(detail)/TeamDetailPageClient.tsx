@@ -2,7 +2,6 @@
 import { TeamSubscriptionDialog } from "@/app/payment/components/TeamSubscriptionDialog";
 import {
   addTeamMemberAction,
-  getTeamDetailsAction,
   getTeamMembersAction,
   getTeamSubscriptionAction,
   removeTeamMemberAction,
@@ -34,15 +33,13 @@ import { formatDate } from "@/lib/utils";
 import { Team, User } from "@/prisma/client";
 import { CreditCardIcon, TrashIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
-export function TeamDetailPageClient({ teamId }: { teamId: number }) {
+export function TeamDetailPageClient({ team }: { team: Team }) {
   const t = useTranslations("Team.ManageDetailPage");
   const tActions = useTranslations("Team.Actions");
   const locale = useLocale();
-  const [team, setTeam] = useState<Team | null>(null);
   const [members, setMembers] = useState<Array<User & { personalUser: User | null }>>([]);
   const [teamSubscription, setTeamSubscription] = useState<ExtractServerActionData<
     typeof getTeamSubscriptionAction
@@ -56,119 +53,80 @@ export function TeamDetailPageClient({ teamId }: { teamId: number }) {
   // 加载团队信息和成员
   const loadTeamData = useCallback(async () => {
     try {
-      const [teamResult, membersResult, subscriptionResult] = await Promise.all([
-        getTeamDetailsAction(teamId),
-        getTeamMembersAction(teamId),
-        getTeamSubscriptionAction(teamId),
+      const [membersResult, subscriptionResult] = await Promise.all([
+        getTeamMembersAction(team.id),
+        getTeamSubscriptionAction(team.id),
       ]);
-
-      if (teamResult.success) {
-        setTeam(teamResult.data);
-      } else {
-        toast.error(teamResult.message);
-        // if (teamResult.code === "forbidden" || teamResult.code === "not_found") {
-        //   router.push("/team/manage");
-        //   return;
-        // }
-      }
-
-      if (membersResult.success) {
-        setMembers(membersResult.data);
-      } else {
-        toast.error(membersResult.message);
-      }
-
-      if (subscriptionResult.success) {
-        setTeamSubscription(subscriptionResult.data);
-      } else {
-        // Subscription error is not critical, just log it
-        console.log("Failed to load team subscription:", subscriptionResult.message);
-      }
+      if (!membersResult.success) throw membersResult;
+      setMembers(membersResult.data);
+      if (!subscriptionResult.success) throw subscriptionResult;
+      setTeamSubscription(subscriptionResult.data);
     } catch (error) {
       console.log("Failed to load team data:", error);
-      toast.error(t("toast.networkError"));
+      toast.error((error as Error).message);
     } finally {
       setIsLoading(false);
     }
-  }, [teamId, t]);
+  }, [team.id, t]);
 
   // 添加成员
-  const handleAddMember = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!newMemberEmail.trim()) {
-      toast.error(tActions("addMember.userNotExist")); // Re-using a relevant error
-      return;
-    }
-
-    setIsAddingMember(true);
-
-    try {
-      const result = await addTeamMemberAction({
-        teamId,
-        memberEmail: newMemberEmail.trim(),
-      });
-
-      if (result.success) {
+  const handleAddMember = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!newMemberEmail.trim()) {
+        toast.error(tActions("addMember.userNotExist")); // Re-using a relevant error
+        return;
+      }
+      setIsAddingMember(true);
+      try {
+        const result = await addTeamMemberAction({
+          teamId: team.id,
+          memberEmail: newMemberEmail.trim(),
+        });
+        if (!result.success) throw result;
         toast.success(t("toast.addSuccess"));
         setNewMemberEmail("");
         await loadTeamData();
-      } else {
-        toast.error(result.message);
+      } catch (error) {
+        console.log("Failed to add team member:", error);
+        toast.error((error as Error).message);
+      } finally {
+        setIsAddingMember(false);
       }
-    } catch (error) {
-      console.log("Failed to add team member:", error);
-      toast.error(t("toast.networkError"));
-    } finally {
-      setIsAddingMember(false);
-    }
-  };
+    },
+    [team.id, t],
+  );
 
   // 移除成员
-  const handleRemoveMember = async (member: User & { personalUser: User | null }) => {
-    setRemovingMemberId(member.id);
-
-    try {
-      const result = await removeTeamMemberAction({
-        teamId,
-        memberId: member.id,
-      });
-
-      if (result.success) {
+  const handleRemoveMember = useCallback(
+    async (member: User & { personalUser: User | null }) => {
+      setRemovingMemberId(member.id);
+      try {
+        const result = await removeTeamMemberAction({
+          teamId: team.id,
+          memberId: member.id,
+        });
+        if (!result.success) throw result;
         toast.success(t("toast.removeSuccess"));
         await loadTeamData();
-      } else {
-        toast.error(result.message);
+      } catch (error) {
+        console.log("Failed to remove team member:", error);
+        toast.error((error as Error).message);
+      } finally {
+        setRemovingMemberId(null);
       }
-    } catch (error) {
-      console.log("Failed to remove team member:", error);
-      toast.error(t("toast.networkError"));
-    } finally {
-      setRemovingMemberId(null);
-    }
-  };
+    },
+    [team.id, t, loadTeamData],
+  );
 
   useEffect(() => {
     loadTeamData();
-  }, [teamId, loadTeamData]);
+  }, [loadTeamData]);
 
   if (isLoading) {
     return (
       <div className="container mx-auto py-8">
         <div className="text-center">{t("loading")}</div>
-      </div>
-    );
-  }
-
-  if (!team) {
-    return (
-      <div className="container p-6">
-        <div className="text-center">
-          <p className="text-muted-foreground mb-4">{t("notFound")}</p>
-          <Link href="/team/manage">
-            <Button>{t("backToListButton")}</Button>
-          </Link>
-        </div>
       </div>
     );
   }
@@ -179,12 +137,6 @@ export function TeamDetailPageClient({ teamId }: { teamId: number }) {
   return (
     <div className="container p-6 space-y-6">
       <div className="flex items-center gap-4">
-        {/*<Link href="/team/manage">
-          <Button variant="ghost" size="sm">
-            <ArrowLeftIcon className="w-4 h-4 mr-2" />
-            {t("backButton")}
-          </Button>
-        </Link>*/}
         <h1 className="text-2xl font-bold">{team.name}</h1>
       </div>
 
