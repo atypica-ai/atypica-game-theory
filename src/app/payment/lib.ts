@@ -7,13 +7,10 @@ import { PaymentRecord, SubscriptionPlan, UserTokensLogVerb } from "@/prisma/cli
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import Stripe from "stripe";
+import { resetUserMonthlyTokens } from "./monthlyTokens";
 
 export const ONCE_RECHARGE_TOKENS = 1_000_000;
 export const ONCE_RECHARGE_GIFT = 1_000_000;
-export const PRO_MONTHLY_TOKENS = 2_000_000;
-export const PRO_MONTHLY_GIFT = 1_000_000;
-export const MAX_MONTHLY_TOKENS = 5_000_000;
-export const MAX_MONTHLY_GIFT = 3_000_000;
 
 const globalForStripe = global as unknown as {
   stripe: Stripe | undefined;
@@ -65,130 +62,6 @@ async function recharge1MTokens({
       },
     });
   });
-}
-
-/**
- * 定期调用，找到当前生效的套餐，如果生效时间 > userTokens 上的重置余额时间，就重置余额并更新重置时间
- */
-export async function resetMonthlyTokens({ userId }: { userId: number }) {
-  const logger = rootLogger.child({ api: "resetMonthlyTokens" });
-  const now = new Date();
-
-  let userTokens = await prisma.userTokens.findUniqueOrThrow({
-    where: { userId },
-  });
-
-  if (userTokens.monthlyResetAt && userTokens.monthlyResetAt > now) {
-    // 当前的 monthlyBalance 还在生效中，结束
-    return;
-  }
-
-  // 此时满足 userTokens.monthlyResetAt === null || userTokens.monthlyResetAt && userTokens.monthlyResetAt <= now
-  // 重置 monthlyBalance 和 monthlyResetAt
-  await prisma.$transaction(async (tx) => {
-    // 如果余额大于 0，创建一个 userTokensLog 记录，扣除剩余余额
-    const rest = userTokens.monthlyBalance;
-
-    if (rest > 0) {
-      logger.info(
-        `User ${userId} needs monthly token reset, monthlyBalance=${rest}, monthlyResetAt=${userTokens.monthlyResetAt}`,
-      );
-      await tx.userTokensLog.create({
-        data: {
-          userId: userId,
-          verb: UserTokensLogVerb.subscriptionReset,
-          value: -rest,
-        },
-      });
-      userTokens = await tx.userTokens.update({
-        where: { userId },
-        data: {
-          monthlyBalance: { decrement: rest },
-          monthlyResetAt: null,
-        },
-      });
-    } else {
-      // 如果 monthlyBalance < 0，保留
-      // 只有当 monthlyResetAt 不是 null 时才需要更新
-      if (userTokens.monthlyResetAt !== null) {
-        logger.info(
-          `User ${userId} needs monthly token reset, monthlyBalance=${rest}, monthlyResetAt=${userTokens.monthlyResetAt}`,
-        );
-        userTokens = await tx.userTokens.update({
-          where: { userId },
-          data: {
-            monthlyResetAt: null,
-          },
-        });
-      }
-    }
-  });
-
-  // now 在 [startsAt, endsAt) 的区间内，理应只有一个，所以 orderBy 和 findFirst 都其实没意义
-  const { activeSubscription } = await fetchActiveSubscription({ userId });
-  if (!activeSubscription) {
-    // 当前没有生效中的订阅
-    return;
-  }
-
-  if (activeSubscription.createdAt < new Date(1749865000000)) {
-    // TODO: 这个在一个月以后（2025-07-15）去掉，即 2025-06-14 09:30 之前的 subscription 都已经过期了
-    // 在 2025-06-14 09:30 之前的 tokens 都被加到了 permanentBalance 里，在此时间之后的才加入到 monthlyBalance
-    logger.info(`User ${userId} subscription before cutoff date, skipping`);
-    return;
-  }
-
-  let rechargeAmount;
-  let giftAmount;
-  if (activeSubscription.plan === SubscriptionPlan.pro) {
-    rechargeAmount = PRO_MONTHLY_TOKENS; // 2_000_000
-    giftAmount = PRO_MONTHLY_GIFT; // 1_000_000
-  } else if (activeSubscription.plan === SubscriptionPlan.max) {
-    rechargeAmount = MAX_MONTHLY_TOKENS; // 5_000_000
-    giftAmount = MAX_MONTHLY_GIFT; // 3_000_000
-  } else {
-    logger.error(`User ${userId} has unknown subscription plan: ${activeSubscription.plan}`);
-    return;
-  }
-
-  logger.info(
-    `User ${userId} allocating monthly tokens: plan=${activeSubscription.plan}, recharge=${rechargeAmount}, gift=${giftAmount}`,
-  );
-
-  await prisma.$transaction(async (tx) => {
-    await tx.userTokensLog.create({
-      data: {
-        userId: userId,
-        verb: UserTokensLogVerb.subscription,
-        resourceType: "UserSubscription",
-        resourceId: activeSubscription.id,
-        value: rechargeAmount,
-      },
-    });
-    await tx.userTokensLog.create({
-      data: {
-        userId: userId,
-        verb: UserTokensLogVerb.gift,
-        resourceType: "UserSubscription",
-        resourceId: activeSubscription.id,
-        value: giftAmount,
-      },
-    });
-    // 注意！这里也是 balance.increment，如果之前研究过程中把 monthlyBalance 扣减到负数了，这里余额不满
-    await tx.userTokens.update({
-      where: { userId },
-      data: {
-        monthlyBalance: {
-          increment: rechargeAmount + giftAmount,
-        },
-        monthlyResetAt: activeSubscription.endsAt,
-      },
-    });
-  });
-
-  logger.info(
-    `User ${userId} monthly tokens reset completed successfully. New monthlyResetAt: ${activeSubscription.endsAt.toISOString()}`,
-  );
 }
 
 async function calculatePlanStartEnd({
@@ -276,7 +149,7 @@ export async function handlePaymentSuccess({
       },
     });
     // reset monthly tokens
-    await resetMonthlyTokens({ userId });
+    await resetUserMonthlyTokens({ userId });
   } else if (productName === ProductName.MAX1MONTH) {
     const { activeSubscription, stripeSubscriptionId } = await fetchActiveSubscription({
       userId,
@@ -308,7 +181,7 @@ export async function handlePaymentSuccess({
         where: { id: activeSubscription.id },
         data: { endsAt: now },
       });
-      // subscription 取消以后，把 monthlyResetAt 设置成当前时间，resetMonthlyTokens 里面会进一步重置
+      // subscription 取消以后，把 monthlyResetAt 设置成当前时间，resetUserMonthlyTokens 里面会进一步重置
       userTokens = await prisma.userTokens.update({
         where: { userId },
         data: { monthlyResetAt: now },
@@ -333,6 +206,6 @@ export async function handlePaymentSuccess({
       },
     });
     // reset monthly tokens
-    await resetMonthlyTokens({ userId });
+    await resetUserMonthlyTokens({ userId });
   }
 }

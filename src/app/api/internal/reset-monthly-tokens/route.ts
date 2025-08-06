@@ -1,11 +1,11 @@
-import { resetMonthlyTokens } from "@/app/payment/lib";
+import { resetUserMonthlyTokens } from "@/app/payment/monthlyTokens";
 import { rootLogger } from "@/lib/logging";
 import { prisma } from "@/prisma/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
 // 只允许集群内部访问的内部API
 export async function POST(request: NextRequest) {
-  const logger = rootLogger.child({ api: "resetMonthlyTokens" });
+  const logger = rootLogger.child({ api: "resetUserMonthlyTokens" });
   try {
     // 验证请求来源 - 只允许集群内部访问
     const forwardedFor = request.headers.get("x-forwarded-for");
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
 
     const now = new Date();
     // 查找所有需要重置月度tokens的用户
-    // 根据 resetMonthlyTokens 函数逻辑：如果 monthlyResetAt === null 或者 monthlyResetAt <= now
+    // 根据 resetUserMonthlyTokens 函数逻辑：如果 monthlyResetAt === null 或者 monthlyResetAt <= now
     // 过滤条件：只处理有subscription记录的用户，减少处理量
     const usersToReset = await prisma.userTokens.findMany({
       where: {
@@ -47,10 +47,10 @@ export async function POST(request: NextRequest) {
     let errorCount = 0;
     const errors: Array<{ userId: number; error: string }> = [];
 
-    // 遍历每个用户，调用 resetMonthlyTokens
+    // 遍历每个用户，调用 resetUserMonthlyTokens
     for (const userTokens of usersToReset) {
       try {
-        await resetMonthlyTokens({ userId: userTokens.userId });
+        await resetUserMonthlyTokens({ userId: userTokens.userId });
         successCount++;
         logger.debug(`Successfully reset monthly tokens for user ${userTokens.userId}`);
       } catch (error) {

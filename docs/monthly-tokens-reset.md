@@ -8,7 +8,7 @@
 
 - 查找 `monthlyResetAt` 为空或已过期的用户
 - 只处理有subscription记录的用户（减少处理量）
-- 调用 `resetMonthlyTokens()` 函数重置tokens
+- 调用 `resetUserMonthlyTokens()` 函数重置tokens
 - 记录处理结果和错误
 
 ## 实现方式

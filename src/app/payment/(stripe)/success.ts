@@ -1,7 +1,8 @@
 import "server-only";
 
 import { ProductName } from "@/app/payment/data";
-import { resetTeamMonthlyTokens, stripeClient } from "@/app/payment/lib";
+import { stripeClient } from "@/app/payment/lib";
+import { resetTeamMonthlyTokens } from "@/app/payment/monthlyTokens";
 import { rootLogger } from "@/lib/logging";
 import { PaymentRecord } from "@/prisma/client";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
