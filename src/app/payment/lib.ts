@@ -1,13 +1,9 @@
 import "server-only";
 
-import { fetchActiveSubscription } from "@/app/account/lib";
 import { ProductName } from "@/app/payment/data";
-import { rootLogger } from "@/lib/logging";
-import { PaymentRecord, SubscriptionPlan, UserTokensLogVerb } from "@/prisma/client";
-import { InputJsonValue } from "@/prisma/client/runtime/library";
-import { prisma } from "@/prisma/prisma";
+import { PaymentRecord } from "@/prisma/client";
 import Stripe from "stripe";
-import { resetUserMonthlyTokens } from "./monthlyTokens";
+import { recharge1MTokens } from "./permanentTokens";
 
 export const ONCE_RECHARGE_TOKENS = 1_000_000;
 export const ONCE_RECHARGE_GIFT = 1_000_000;
@@ -25,187 +21,23 @@ export const stripeClient = () => {
   return globalForStripe.stripe;
 };
 
-async function recharge1MTokens({
-  userId,
-  paymentRecordId,
-}: {
-  userId: number;
-  paymentRecordId: number;
-}) {
-  const rechargeAmount = ONCE_RECHARGE_TOKENS;
-  const giftAmount = ONCE_RECHARGE_GIFT;
-  await prisma.$transaction(async (tx) => {
-    await tx.userTokensLog.create({
-      data: {
-        userId: userId,
-        verb: UserTokensLogVerb.recharge,
-        resourceType: "PaymentRecord",
-        resourceId: paymentRecordId,
-        value: rechargeAmount,
-      },
-    });
-    await tx.userTokensLog.create({
-      data: {
-        userId: userId,
-        verb: UserTokensLogVerb.gift,
-        resourceType: "PaymentRecord",
-        resourceId: paymentRecordId,
-        value: giftAmount,
-      },
-    });
-    await tx.userTokens.update({
-      where: { userId },
-      data: {
-        permanentBalance: {
-          increment: rechargeAmount + giftAmount,
-        },
-      },
-    });
-  });
-}
-
-async function calculatePlanStartEnd({
-  userId,
-  invoice,
-}: {
-  userId: number;
-  invoice?: Stripe.Invoice;
-}): Promise<{
-  planStartsAt: Date;
-  planEndsAt: Date;
-}> {
-  let planStartsAt = new Date();
-  const existingSubscription = await prisma.userSubscription.findFirst({
-    where: { userId },
-    orderBy: { endsAt: "desc" },
-  });
-  if (existingSubscription?.endsAt && existingSubscription.endsAt > planStartsAt) {
-    planStartsAt = existingSubscription.endsAt;
-  }
-
-  let planEndsAt = new Date(planStartsAt.getTime() + 31 * 86400 * 1000); // 有效期 31 天。
-
-  if (invoice?.parent?.subscription_details) {
-    let stripeSubscriptionId: string | null = null;
-    const subscription_details = invoice.parent.subscription_details;
-    if (typeof subscription_details.subscription === "string") {
-      stripeSubscriptionId = subscription_details.subscription;
-    } else {
-      stripeSubscriptionId = subscription_details.subscription.id;
-    }
-    try {
-      const stripe = stripeClient();
-      const stripeSubscription = await stripe.subscriptions.retrieve(stripeSubscriptionId);
-      const stripeSubscriptionItem = stripeSubscription.items.data[0];
-      if (!stripeSubscriptionItem) {
-        throw new Error(
-          `Subscription item not found on stripe subscription ${stripeSubscriptionId} for user ${userId}`,
-        );
-      }
-      planStartsAt = new Date(stripeSubscriptionItem.current_period_start * 1000);
-      planEndsAt = new Date(stripeSubscriptionItem.current_period_end * 1000);
-    } catch (error) {
-      rootLogger.error(`Failed to retrieve Stripe subscription: ${(error as Error).message}`);
-    }
-  }
-
-  return {
-    planStartsAt,
-    planEndsAt,
-  };
-}
-
+/**
+ * 通用的支付成功处理函数，目前只有购买 token 一种情况
+ * stripe 订阅有关的全部转移到了 (stripe)/success.ts
+ * pingxx 购买订阅相关产品现在已经不支持，会报错
+ */
 export async function handlePaymentSuccess({
   paymentRecord,
   productName,
-  invoiceData,
 }: {
   paymentRecord: PaymentRecord;
   productName: ProductName;
-  invoiceData?: Stripe.Invoice;
 }) {
   const userId = paymentRecord.userId;
-  let userTokens = await prisma.userTokens.findUniqueOrThrow({
-    where: { userId },
-  });
   if (productName === ProductName.TOKENS1M) {
     // recharge 1M tokens
     await recharge1MTokens({ userId, paymentRecordId: paymentRecord.id });
-  } else if (productName === ProductName.PRO1MONTH) {
-    const { planStartsAt, planEndsAt } = await calculatePlanStartEnd({
-      userId,
-      invoice: invoiceData,
-    });
-    await prisma.userSubscription.create({
-      data: {
-        userId,
-        plan: SubscriptionPlan.pro,
-        startsAt: planStartsAt,
-        endsAt: planEndsAt,
-        extra: {
-          paymentRecordId: paymentRecord.id,
-          invoice: invoiceData as unknown as InputJsonValue,
-        },
-      },
-    });
-    // reset monthly tokens
-    await resetUserMonthlyTokens({ userId });
-  } else if (productName === ProductName.MAX1MONTH) {
-    const { activeSubscription, stripeSubscriptionId } = await fetchActiveSubscription({
-      userId,
-    });
-    // 如果当前套餐是 pro，则升级，否则只是简单的延长套餐
-    if (
-      activeSubscription &&
-      activeSubscription.plan === SubscriptionPlan.pro &&
-      !(activeSubscription.createdAt < new Date(1749865000000))
-      // TODO: 这个在一个月以后（2025-07-15）去掉，即 2025-06-14 09:30 之前的 subscription 都已经过期了
-      // 在 2025-06-14 09:30 之前的 tokens 都被加到了 permanentBalance 里，在此时间之后的才加入到 monthlyBalance
-    ) {
-      if (!userTokens.monthlyResetAt) {
-        throw new Error(`Active subscription found, but monthlyResetAt value is not set`);
-      }
-      if (stripeSubscriptionId) {
-        const stripe = stripeClient();
-        try {
-          await stripe.subscriptions.cancel(stripeSubscriptionId);
-        } catch (error) {
-          rootLogger.error(
-            `Failed to cancel Stripe subscription during upgrade. The process will continue and this error will be ignored, but further investigation is required: ${error}`,
-          );
-        }
-      }
-      const now = new Date();
-      now.setMilliseconds(0);
-      await prisma.userSubscription.update({
-        where: { id: activeSubscription.id },
-        data: { endsAt: now },
-      });
-      // subscription 取消以后，把 monthlyResetAt 设置成当前时间，resetUserMonthlyTokens 里面会进一步重置
-      userTokens = await prisma.userTokens.update({
-        where: { userId },
-        data: { monthlyResetAt: now },
-      });
-    }
-    // 注意，一定要在前面先取消当前 pro 套餐，然后下面再创建新的 userSubscription，否则 fetchActiveSubscription 会返回新创建的记录
-    // 现在一定是 stripe，所以就算是 pro 到 max 的 upgrade，新的套餐时间也是从当前时间开始的，不是从之前的 pro 套餐结束后开始，这符合预期
-    const { planStartsAt, planEndsAt } = await calculatePlanStartEnd({
-      userId,
-      invoice: invoiceData,
-    });
-    await prisma.userSubscription.create({
-      data: {
-        userId,
-        plan: SubscriptionPlan.max,
-        startsAt: planStartsAt,
-        endsAt: planEndsAt,
-        extra: {
-          paymentRecordId: paymentRecord.id,
-          invoice: invoiceData as unknown as InputJsonValue,
-        },
-      },
-    });
-    // reset monthly tokens
-    await resetUserMonthlyTokens({ userId });
+  } else {
+    throw new Error(`Invalid product name ${productName} received in handlePaymentSuccess`);
   }
 }

@@ -1,4 +1,7 @@
-import { handleTeamSubscriptionPaymentSuccess } from "@/app/payment/(stripe)/success";
+import {
+  handleTeamSubscriptionPaymentSuccess,
+  handleUserSubscriptionPaymentSuccess,
+} from "@/app/payment/(stripe)/success";
 import { ProductName, StripeMetadata } from "@/app/payment/data";
 import { handlePaymentSuccess, stripeClient } from "@/app/payment/lib";
 import { rootLogger } from "@/lib/logging";
@@ -150,11 +153,19 @@ export async function POST(req: Request) {
             productName: metadata.productName,
             invoiceData,
           });
+        } else if (
+          metadata.productName === ProductName.PRO1MONTH ||
+          metadata.productName === ProductName.MAX1MONTH
+        ) {
+          await handleUserSubscriptionPaymentSuccess({
+            paymentRecord,
+            productName: metadata.productName,
+            invoiceData,
+          });
         } else {
           await handlePaymentSuccess({
             paymentRecord,
             productName: metadata.productName,
-            invoiceData,
           });
         }
         return NextResponse.json({ received: true }, { status: 200 });
