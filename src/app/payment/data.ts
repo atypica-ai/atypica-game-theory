@@ -12,6 +12,7 @@ export enum ProductName {
   TOKENS1M = "TOKENS1M",
   PRO1MONTH = "PRO1MONTH",
   MAX1MONTH = "MAX1MONTH",
+  TEAMSEAT1MONTH = "TEAMSEAT1MONTH",
 }
 
 export enum PaymentMethod {
@@ -28,13 +29,6 @@ export type PingxxNewPaymentParams = {
   paymentMethod: PaymentMethod;
   successUrl?: string;
   openid?: string;
-};
-
-export type StripeNewPaymentParams = {
-  userId: number;
-  productName: ProductName;
-  currency: Currency;
-  successUrl: string;
 };
 
 export type PaymentChargeData = {

@@ -11,24 +11,27 @@ export const stripeSessionCreatePayloadSchema = z
       ProductName.TOKENS1M,
       ProductName.PRO1MONTH,
       ProductName.MAX1MONTH,
-      ProductName.TEAMSEAT1M,
+      ProductName.TEAMSEAT1MONTH,
     ]),
     currency: z.enum(["USD", "CNY"]),
     successUrl: z.string().regex(/^https?:\/\/.+$/),
-    quantity: z.number().min(1).optional(),
+    quantity: z
+      .string()
+      .regex(/^\d+$/)
+      .transform((val) => parseInt(val))
+      .refine((val) => val > 0)
+      .optional(),
   })
   .refine(
     (data) => {
-      if (data.productName === ProductName.TEAMSEAT1M) {
+      if (data.productName === ProductName.TEAMSEAT1MONTH) {
         return data.quantity !== undefined;
       } else {
         return data.quantity === undefined;
       }
     },
     {
-      message: "quantity is required when productName is TEAMSEAT1M",
+      message: "quantity is required when productName is TEAMSEAT1MONTH",
       path: ["quantity"],
     },
   );
-
-export type StripeSessionCreatePayload = z.infer<typeof stripeSessionCreatePayloadSchema>;

@@ -1,11 +1,6 @@
 "use server";
 import { fetchActiveSubscription } from "@/app/account/lib";
-import {
-  PaymentMethod,
-  ProductName,
-  StripeMetadata,
-  StripeNewPaymentParams,
-} from "@/app/payment/data";
+import { PaymentMethod, ProductName, StripeMetadata } from "@/app/payment/data";
 import { PRO_MONTHLY_GIFT, PRO_MONTHLY_TOKENS, stripeClient } from "@/app/payment/lib";
 import { getDeployRegion } from "@/lib/request/deployRegion";
 import { getRequestOrigin } from "@/lib/request/headers";
@@ -13,13 +8,15 @@ import { SubscriptionPlan } from "@/prisma/client";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import Stripe from "stripe";
+import { z } from "zod";
+import { stripeSessionCreatePayloadSchema } from "./types";
 
 export async function createStripeSession({
   userId,
   productName,
   currency,
   successUrl,
-}: StripeNewPaymentParams) {
+}: z.infer<typeof stripeSessionCreatePayloadSchema>) {
   // if (currency !== "USD") {
   //   throw new Error("Only USD currency is supported");
   // }

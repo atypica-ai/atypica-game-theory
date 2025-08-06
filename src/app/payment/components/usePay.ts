@@ -1,8 +1,12 @@
+import { stripeSessionCreatePayloadSchema } from "@/app/payment/(stripe)/types";
+import { PingxxNewPaymentParams, ProductName } from "@/app/payment/data";
 import { useDevice } from "@/lib/utils";
 import { Currency } from "@/prisma/client";
 import { useSession } from "next-auth/react";
 import { useCallback, useState } from "react";
-import { PingxxNewPaymentParams, ProductName, StripeNewPaymentParams } from "../data";
+import { z } from "zod";
+
+type StripeSessionCreatePayload = z.input<typeof stripeSessionCreatePayloadSchema>;
 
 export enum PaymentProvider {
   Stripe = "Stripe",
@@ -61,10 +65,10 @@ export function usePay() {
 
   // Stripe payment
   const submitForStripePayment = useCallback(
-    ({ productName, currency, userId }: Omit<StripeNewPaymentParams, "successUrl">) => {
+    ({ productName, currency, userId }: Omit<StripeSessionCreatePayload, "successUrl">) => {
       try {
         setLoading(true);
-        const params: StripeNewPaymentParams = {
+        const params: StripeSessionCreatePayload = {
           userId: userId,
           productName,
           currency,
@@ -104,7 +108,11 @@ export function usePay() {
       productName,
     }: {
       paymentProvider: PaymentProvider;
-      productName: ProductName;
+      productName:
+        | ProductName.TOKENS1M
+        | ProductName.PRO1MONTH
+        | ProductName.MAX1MONTH
+        | ProductName.TEAMSEAT1MONTH;
     }) => {
       if (!session?.user) {
         setError("You must be logged in to make a purchase");
@@ -114,13 +122,13 @@ export function usePay() {
         submitForStripePayment({
           productName,
           currency: Currency.USD,
-          userId: session.user.id,
+          userId: session.user.id.toString(),
         });
       } else if (paymentProvider === PaymentProvider.StripeCNY) {
         submitForStripePayment({
           productName,
           currency: Currency.CNY,
-          userId: session.user.id,
+          userId: session.user.id.toString(),
         });
       } else {
         await createPingxxPaymentUrl({
