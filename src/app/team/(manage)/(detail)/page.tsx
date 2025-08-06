@@ -28,6 +28,6 @@ export default async function TeamDetailPage() {
     }
   }
 
-  // 不是团队用户，无权限访问
-  forbidden();
+  // 不是团队用户，切换到个人页面
+  redirect("/account");
 }
