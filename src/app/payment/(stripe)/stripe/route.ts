@@ -1,8 +1,19 @@
-import { createStripeSession } from "@/app/payment/(stripe)/actions";
+import authOptions from "@/app/(auth)/authOptions";
+import {
+  createPaymentStripeSession,
+  createSubscriptionStripeSession,
+} from "@/app/payment/(stripe)/create";
 import { stripeSessionCreatePayloadSchema } from "@/app/payment/(stripe)/types";
+import { ProductName } from "@/app/payment/data";
+import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  const userId = session.user.id;
   try {
     const formData = await req.formData();
     const parseResult = stripeSessionCreatePayloadSchema.safeParse(Object.fromEntries(formData));
@@ -12,9 +23,16 @@ export async function POST(req: Request) {
         { status: 400 },
       );
     }
-    const params = parseResult.data;
-    const { sessionUrl } = await createStripeSession(params);
-    return NextResponse.redirect(sessionUrl, 303);
+    const { productName, ...params } = parseResult.data;
+    let sessionResponse: { sessionUrl: string };
+    if (productName === ProductName.PRO1MONTH || productName === ProductName.MAX1MONTH) {
+      sessionResponse = await createSubscriptionStripeSession({ ...params, userId, productName });
+    } else if (productName === ProductName.TOKENS1M) {
+      sessionResponse = await createPaymentStripeSession({ ...params, userId, productName });
+    } else {
+      return NextResponse.json({ error: "Invalid product name" }, { status: 400 });
+    }
+    return NextResponse.redirect(sessionResponse.sessionUrl, 303);
   } catch (error) {
     return NextResponse.json(
       { error: (error as Error).message },

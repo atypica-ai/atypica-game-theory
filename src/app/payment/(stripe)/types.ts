@@ -3,10 +3,6 @@ import { z } from "zod";
 
 export const stripeSessionCreatePayloadSchema = z
   .object({
-    userId: z
-      .string()
-      .regex(/^\d+$/)
-      .transform((val) => parseInt(val)),
     productName: z.enum([
       ProductName.TOKENS1M,
       ProductName.PRO1MONTH,

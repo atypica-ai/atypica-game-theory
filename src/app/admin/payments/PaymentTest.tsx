@@ -160,7 +160,6 @@ export function PaymentTest({ session, fetchRecords }: PaymentTestProps) {
             </CardHeader>
             <CardContent className="flex flex-row gap-4">
               <form action="/payment/stripe" method="POST">
-                <input type="hidden" name="userId" value={session?.user?.id} />
                 <input type="hidden" name="productName" value={ProductName.TEST_A} />
                 <input type="hidden" name="currency" value={Currency.USD} />
                 <input
@@ -173,7 +172,6 @@ export function PaymentTest({ session, fetchRecords }: PaymentTestProps) {
                 </Button>
               </form>
               <form action="/payment/stripe" method="POST">
-                <input type="hidden" name="userId" value={session?.user?.id} />
                 <input type="hidden" name="productName" value={ProductName.TEST_B} />
                 <input type="hidden" name="currency" value={Currency.USD} />
                 <input

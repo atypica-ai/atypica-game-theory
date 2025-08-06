@@ -65,11 +65,10 @@ export function usePay() {
 
   // Stripe payment
   const submitForStripePayment = useCallback(
-    ({ productName, currency, userId }: Omit<StripeSessionCreatePayload, "successUrl">) => {
+    ({ productName, currency }: Omit<StripeSessionCreatePayload, "successUrl">) => {
       try {
         setLoading(true);
         const params: StripeSessionCreatePayload = {
-          userId: userId,
           productName,
           currency,
           successUrl: /^\/pricing/.test(window.location.pathname)
@@ -122,13 +121,11 @@ export function usePay() {
         submitForStripePayment({
           productName,
           currency: Currency.USD,
-          userId: session.user.id.toString(),
         });
       } else if (paymentProvider === PaymentProvider.StripeCNY) {
         submitForStripePayment({
           productName,
           currency: Currency.CNY,
-          userId: session.user.id.toString(),
         });
       } else {
         await createPingxxPaymentUrl({
