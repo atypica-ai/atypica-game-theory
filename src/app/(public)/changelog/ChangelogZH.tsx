@@ -4,7 +4,7 @@ export const ChangelogZH: React.FC = () => {
   return (
     <div className="max-w-4xl mx-auto px-6 py-12 font-sans">
       <header className="text-center mb-12">
-        <h1 className="text-3xl font-bold mb-2">Atypica.AI 更新日志</h1>
+        <h1 className="text-3xl font-bold mb-2">atypica.AI 更新日志</h1>
       </header>
 
       <div className="space-y-16">
@@ -73,7 +73,7 @@ export const ChangelogZH: React.FC = () => {
                   <p className="text-gray-700 dark:text-gray-300 mt-1">
                     上线核心功能 <code>AI 人设导入</code>，开启 <strong>Max 套餐用户公测</strong>。
                     用户可上传自己的访谈记录 (<code>PDF</code>, <code>JSON</code>, <code>CSV</code>
-                    )，构建出完全私有的 <code>真人 AI 人设</code> (Human Persona)。 AI
+                    )，构建出完全私有的 <code>真人 AI 人设 (私有)</code>。 AI
                     会对上传内容进行多维度分析与打分，生成可交互的 <code>AI 人设</code>
                     ，并以雷达图等可视化形式呈现分析结果。
                   </p>

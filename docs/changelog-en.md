@@ -1,4 +1,4 @@
-# Atypica.AI Changelog
+# atypica.AI Changelog
 
 ---
 
@@ -24,7 +24,7 @@
 
 - **✨ Core Feature: Build Private AI Personas (AI Persona Import) [Beta]**
   - Launched the core `AI Persona Import` feature, opening up a **public beta for Max plan users**.
-  - Users can upload their own interview transcripts (`PDF`, `JSON`, `CSV`) to build completely private `Human Personas`.
+  - Users can upload their own interview transcripts (`PDF`, `JSON`, `CSV`) to build completely private `Human AI Personas`.
   - The AI provides multi-dimensional analysis and scoring for the uploaded content, generating an interactive `AI Persona` and visualizing the analysis with tools like radar charts.
 
 ---

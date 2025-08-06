@@ -435,11 +435,11 @@
       "researchTopic": "Research Topic",
       "interviewing": "Interviewing with {count} people",
       "reportBeingGenerated": "Report being generated...",
-      "humanPersonaPrivate": "Human Persona (Private)",
-      "highPrecisionPersona": "High-Precision AI Persona",
+      "humanPersonaPrivate": "Human AI Persona (Proprietary)",
+      "highPrecisionPersona": "AI Persona (Deep Interview)",
       "learnMore": "Learn More",
-      "highPrecisionPersonaCount": "including {count} High-Precision AI Persona",
-      "highPrecisionPersonaCountPlural": "including {count} High-Precision AI Personas"
+      "highPrecisionPersonaCount": "including {count} AI Persona (Deep Interview)",
+      "highPrecisionPersonaCountPlural": "including {count} AI Personas (Deep Interview)"
     }
   },
   "ScoutPage": {
@@ -596,6 +596,7 @@
       "lightTheme": "Light Theme",
       "darkTheme": "Dark Theme",
       "myStudies": "My Projects",
+      "myPersonas": "My Personas",
       "marketResearch": "AI Research",
       "personaImport": "AI Persona",
       "useCases": "Use cases",
@@ -822,7 +823,7 @@
     "UseCaseScenarios": {
       "badge": "Research Applications",
       "title": "AI Persona Research in Action",
-      "description": "See how High-Precision AI Personas transform research across different scenarios. From testing concepts to uncovering insights, our AI Personas provide authentic responses through structured interview processes.",
+      "description": "See how AI Personas built from in-depth interviews transform research across different scenarios. From testing concepts to uncovering insights, our AI Personas provide authentic responses through structured interview processes.",
       "useCases": {
         "testing": {
           "title": "Testing",
@@ -845,7 +846,7 @@
     "UseCases": {
       "badge": "Our Work",
       "title": "AI Persona Research Studies",
-      "description": "Explore real case studies showcasing how High-Precision AI Personas and expert interviews provide deep consumer insights for better business decisions.",
+      "description": "Explore real case studies showcasing how AI Personas built from in-depth interviews and expert interviews provide deep consumer insights for better business decisions.",
       "viewAllStudies": "View All Studies",
       "errorMessage": "Something went wrong.",
       "noStudiesTitle": "No Featured Studies Available",
@@ -901,11 +902,11 @@
     },
     "PersonaSimulationSection": {
       "badge": "Core Technology",
-      "title": "High-Precision AI Personas",
-      "description": "Advanced AI Personas that simulate authentic human cognition and decision-making patterns. Our High-Precision AI Personas maintain consistent personalities, cognitive biases, and behavioral frameworks to provide realistic interview responses.",
-      "technologyQuote": "High-Precision AI Personas are high-precision consumer simulation technology designed specifically to solve complex business problems. Through AI-conducted in-depth interviews lasting 1-2 hours with real consumers, we generate an average of 5,000 words of transcript for each person.",
+      "title": "AI Personas from Deep Interviews",
+      "description": "Advanced AI Personas that simulate authentic human cognition. Whether using our extensive library or creating private personas from your own interview data, these agents maintain consistent personalities and behavioral frameworks to provide realistic insights.",
+      "technologyQuote": "Our deep interview AI Personas are a form of high-precision consumer simulation technology. You can also apply this same powerful technology to your own interview transcripts to create secure, proprietary AI Personas for your exclusive use.",
       "technologyDescription": "These agents maintain consistent cognitive patterns, emotional responses, and decision-making frameworks that enable authentic research conversations - achieving 85% human-like accuracy in behavioral simulation.",
-      "learnMoreLink": "Learn more about High-Precision AI Personas",
+      "learnMoreLink": "Learn more about AI Personas from Deep Interviews",
       "accuracyLabel": "Simulation Accuracy",
       "accuracyDescription": "Human-like behavioral consistency in AI persona responses",
       "differentiatorTitle": "Beyond Demographics",
@@ -918,22 +919,22 @@
       "ecosystemTitle": "Scale & Coverage",
       "ecosystemFeatures": {
         "syntheticAgents": {
-          "title": "300,000 AI Personas",
+          "title": "300,000 AI Personas (Social Media)",
           "description": "Based on social media data analysis"
         },
         "highPrecisionPersonas": {
-          "title": "10,000 High-Precision AI Personas",
+          "title": "10,000 AI Personas (Deep Interview)",
           "description": "Based on in-depth interview data"
         },
         "multiDimensional": {
-          "title": "Multi-dimensional Coverage",
-          "description": "Diverse consumer group ecosystem"
+          "title": "Human AI Personas (Proprietary)",
+          "description": "Build from your own private interview data"
         }
       },
-      "ctaTitle": "Ready to Experience High-Precision AI Personas?",
-      "ctaDescription": "Start your first AI persona research study and discover deep consumer insights in minutes, not weeks.",
+      "ctaTitle": "Build Your Custom AI Research Panel",
+      "ctaDescription": "Create private, high-fidelity AI Personas from your own interview data, or leverage our extensive library to discover deep consumer insights.",
       "startResearchButton": "Start Your Study",
-      "learnTechnologyButton": "Learn More About the Technology"
+      "learnTechnologyButton": "Build Your Proprietary AI Personas"
     },
     "TestimonialSection": {
       "title": "Research Teams Love Our Results",
@@ -949,7 +950,7 @@
           "title": "Senior Product Manager"
         },
         "marketingDirector": {
-          "quote": "The High-Precision AI Personas were incredibly realistic in their responses. We tested multiple campaign messages through persona interviews and identified the most effective approach before spending on actual ads.",
+          "quote": "The AI Personas built from deep interviews were incredibly realistic in their responses. We tested multiple campaign messages through persona interviews and identified the most effective approach before spending on actual ads.",
           "author": "Ben Carter",
           "title": "Marketing Director"
         },

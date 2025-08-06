@@ -4,7 +4,7 @@ export const ChangelogEN: React.FC = () => {
   return (
     <div className="max-w-4xl mx-auto px-6 py-12 font-sans">
       <header className="text-center mb-12">
-        <h1 className="text-3xl font-bold mb-2">Atypica.AI Changelog</h1>
+        <h1 className="text-3xl font-bold mb-2">atypica.AI Changelog</h1>
       </header>
 
       <div className="space-y-16">
@@ -77,10 +77,10 @@ export const ChangelogEN: React.FC = () => {
                     Launched the core <code>AI Persona Import</code> feature, opening up a{" "}
                     <strong>public beta for Max plan users</strong>. Users can upload their own
                     interview transcripts (<code>PDF</code>, <code>JSON</code>, <code>CSV</code>) to
-                    build completely private <code>Human Personas</code>. The AI provides
-                    multi-dimensional analysis and scoring for the uploaded content, generating an
-                    interactive <code>AI Persona</code> and visualizing the analysis with tools like
-                    radar charts.
+                    build completely private <code>Human AI Personas (Proprietary)</code>. The AI
+                    provides multi-dimensional analysis and scoring for the uploaded content,
+                    generating an interactive <code>AI Persona</code> and visualizing the analysis
+                    with tools like radar charts.
                   </p>
                 </li>
               </ul>

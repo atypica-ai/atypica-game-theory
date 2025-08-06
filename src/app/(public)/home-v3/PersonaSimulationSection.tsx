@@ -116,14 +116,19 @@ export function PersonaSimulationSection() {
             <p className="text-zinc-600 dark:text-zinc-400">{t("ctaDescription")}</p>
           </div>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button size="lg" className="rounded-full has-[>svg]:px-8 px-8 h-12" asChild>
+            <Button variant="default" size="lg" className="rounded-full h-12 px-8" asChild>
+              <Link href="/persona">{t("learnTechnologyButton")}</Link>
+            </Button>
+            <Button
+              variant="outline"
+              size="lg"
+              className="rounded-full has-[>svg]:px-8 px-8 h-12"
+              asChild
+            >
               <Link href="/study">
                 {t("startResearchButton")}
                 <ChevronRightIcon className="h-3 w-3" />
               </Link>
-            </Button>
-            <Button variant="outline" size="lg" className="rounded-full h-12 px-8" asChild>
-              <Link href="/persona-simulation">{t("learnTechnologyButton")}</Link>
             </Button>
           </div>
         </div>

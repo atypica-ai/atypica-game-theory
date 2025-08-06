@@ -436,10 +436,10 @@
       "interviewing": "正在与{count}人访谈",
       "reportBeingGenerated": "报告正在生成中",
       "humanPersonaPrivate": "真人 AI 人设 (私有)",
-      "highPrecisionPersona": "高精度 AI 人设",
+      "highPrecisionPersona": "AI 人设 (深度访谈)",
       "learnMore": "了解更多",
-      "highPrecisionPersonaCount": "含 {count} 个高精度 AI 人设",
-      "highPrecisionPersonaCountPlural": "含 {count} 个高精度 AI 人设"
+      "highPrecisionPersonaCount": "含 {count} 个 AI 人设 (深度访谈)",
+      "highPrecisionPersonaCountPlural": "含 {count} 个 AI 人设 (深度访谈)"
     }
   },
   "ScoutPage": {
@@ -596,6 +596,7 @@
       "lightTheme": "浅色主题",
       "darkTheme": "深色主题",
       "myStudies": "我的项目",
+      "myPersonas": "我的人设",
       "marketResearch": "商业研究",
       "personaImport": "AI 人设",
       "useCases": "案例",
@@ -901,39 +902,39 @@
     },
     "PersonaSimulationSection": {
       "badge": "核心技术",
-      "title": "高精度 AI 人设",
-      "description": "模拟真实人类认知和决策模式的高级AI人设。我们的高精度AI人设保持一致的个性、认知偏见和行为框架，提供逼真的访谈回应。",
-      "technologyQuote": "高精度AI人设是专门为解决复杂商业问题而设计的高精度消费者模拟技术。通过AI进行1-2小时的深度访谈，我们为每个人平均生成5000字的访谈记录。",
+      "title": "通过深度访谈构建 AI 人设",
+      "description": "模拟真实人类认知的高级AI人设。无论是使用我们丰富的模型库，还是通过您自己的访谈数据创建私有人设，这些智能体都能保持一致的个性和行为框架，提供逼真的洞察。",
+      "technologyQuote": "我们的深度访谈 AI 人设是一项高精度消费者模拟技术。您也可以将这项强大的技术应用于您自己的访谈记录，以创建供您专用的、安全的、私有的 AI 人设。",
       "technologyDescription": "这些智能体保持一致的认知模式、情感反应和决策框架，实现真实的研究对话——在行为模拟中达到85%的人类相似度准确性。",
-      "learnMoreLink": "了解更多关于高精度AI人设",
+      "learnMoreLink": "了解更多关于通过深度访谈构建 AI 人设",
       "accuracyLabel": "模拟准确度",
       "accuracyDescription": "AI人设回应中的人类行为一致性",
       "differentiatorTitle": "超越人口统计学",
       "differentiatorDescription": "与传统调研数据或统计模型不同，我们的AI人设是复杂的行为模拟，在新情境中保持一致的个性特征和决策逻辑。",
       "differentiatorFeatures": {
-        "consistency": "跨对话的一致个性",
-        "authenticity": "真实的情感反应和偏见",
-        "realism": "逼真的决策模式"
+        "consistency": "在不同情境下保持一致的个性特征和决策逻辑",
+        "authenticity": "模拟真实的人类认知偏见和情感反应",
+        "realism": "提供逼真、有深度的访谈回应，而不仅仅是数据聚合"
       },
-      "ecosystemTitle": "规模与覆盖",
+      "ecosystemTitle": "智能体生态系统",
       "ecosystemFeatures": {
         "syntheticAgents": {
-          "title": "30万AI人设",
+          "title": "30万个 AI 人设 (社交媒体)",
           "description": "基于社交媒体数据分析"
         },
         "highPrecisionPersonas": {
-          "title": "1万高精度AI人设",
+          "title": "1万个 AI 人设 (深度访谈)",
           "description": "基于深度访谈数据"
         },
         "multiDimensional": {
-          "title": "多维度覆盖",
-          "description": "多样化消费者群体生态系统"
+          "title": "真人 AI 人设 (私有)",
+          "description": "通过您自己的私有访谈数据构建"
         }
       },
-      "ctaTitle": "准备体验高精度AI人设了吗？",
-      "ctaDescription": "开始您的首次AI用户画像研究，在数分钟而非数周内发现深入的消费者洞察。",
+      "ctaTitle": "构建您的定制化 AI 研究面板",
+      "ctaDescription": "通过您自己的访谈数据创建私有的、高保真的 AI 人设，或利用我们丰富的模型库发现深度的消费者洞察。",
       "startResearchButton": "开始您的研究",
-      "learnTechnologyButton": "了解更多技术信息"
+      "learnTechnologyButton": "构建您的私有 AI 人设"
     },
     "TestimonialSection": {
       "title": "研究团队喜爱我们的成果",
@@ -944,7 +945,7 @@
       "customerStoryCategory": "客户故事",
       "testimonials": {
         "productManager": {
-          "quote": "我们需要了解不同用户群体对我们新功能的反应。Atypica的AI人设通过详细访谈提供了真实反馈，让我们在几小时内获得了传统用户研究需要数周才能得到的洞察。",
+          "quote": "我们需要了解不同用户群体对我们新功能的反应。atypica的AI人设通过详细访谈提供了真实反馈，让我们在几小时内获得了传统用户研究需要数周才能得到的洞察。",
           "author": "埃琳娜·罗德里格斯",
           "title": "高级产品经理"
         },
@@ -954,7 +955,7 @@
           "title": "营销总监"
         },
         "founder": {
-          "quote": "作为一家初创公司，我们负担不起传统的焦点小组或大规模用户访谈。Atypica的AI人设研究以极低的成本为我们提供了深入的行为洞察并验证了我们的假设。",
+          "quote": "作为一家初创公司，我们负担不起传统的焦点小组或大规模用户访谈。atypica的AI人设研究以极低的成本为我们提供了深入的行为洞察并验证了我们的假设。",
           "author": "陈苏菲",
           "title": "创始人兼CEO"
         }

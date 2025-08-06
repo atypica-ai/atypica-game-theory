@@ -22,6 +22,7 @@ import {
   MoonIcon,
   SunIcon,
   UserIcon,
+  Users2Icon,
 } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
@@ -109,9 +110,15 @@ export default function UserMenu() {
           )}
           <span className="text-xs tracking-tight">{session.user.name || session.user.email}</span>
         </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link href="/account">
+            <UserIcon className="h-4 w-4 mr-2" />
+            <span>{t("viewAccount")}</span>
+          </Link>
+        </DropdownMenuItem>
         {teamStatus?.canSwitchIdentity && (
           <>
-            <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
               <Link href="/team/switch">
                 <ArrowLeftRightIcon className="h-4 w-4 mr-2" />
@@ -122,15 +129,15 @@ export default function UserMenu() {
         )}
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link href="/account">
-            <UserIcon className="h-4 w-4 mr-2" />
-            <span>{t("viewAccount")}</span>
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
           <Link href="/studies">
             <HistoryIcon className="h-4 w-4 mr-2" />
             {t("myStudies")}
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/personas">
+            <Users2Icon className="h-4 w-4 mr-2" />
+            {t("myPersonas")}
           </Link>
         </DropdownMenuItem>
       </>
