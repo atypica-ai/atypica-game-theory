@@ -1,4 +1,5 @@
-import { StripeMetadata } from "@/app/payment/data";
+import { handleTeamSubscriptionPaymentSuccess } from "@/app/payment/(stripe)/success";
+import { ProductName, StripeMetadata } from "@/app/payment/data";
 import { handlePaymentSuccess, stripeClient } from "@/app/payment/lib";
 import { rootLogger } from "@/lib/logging";
 import { getDeployRegion } from "@/lib/request/deployRegion";
@@ -143,11 +144,19 @@ export async function POST(req: Request) {
         }
       }
       try {
-        await handlePaymentSuccess({
-          paymentRecord,
-          productName: metadata.productName,
-          invoiceData,
-        });
+        if (metadata.productName === ProductName.TEAMSEAT1MONTH) {
+          await handleTeamSubscriptionPaymentSuccess({
+            paymentRecord,
+            productName: metadata.productName,
+            invoiceData,
+          });
+        } else {
+          await handlePaymentSuccess({
+            paymentRecord,
+            productName: metadata.productName,
+            invoiceData,
+          });
+        }
         return NextResponse.json({ received: true }, { status: 200 });
       } catch (error) {
         const errorMsg = `Failed to handle payment success: ${(error as Error).message}`;

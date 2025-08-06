@@ -78,7 +78,6 @@
         "confirmButton": "确认移除"
       },
       "toast": {
-        "invalidId": "无效的团队ID",
         "addSuccess": "成员添加成功",
         "removeSuccess": "成员移除成功",
         "networkError": "网络错误，请重试"
@@ -126,8 +125,6 @@
         "failed": "获取团队列表失败"
       },
       "addMember": {
-        "teamNotFound": "团队不存在",
-        "forbidden": "只有团队拥有者可以添加成员",
         "seatsFull": "团队座位已满",
         "userNotExist": "该邮箱用户不存在，请确保用户已注册",
         "notIndividualUser": "只能添加个人用户为团队成员",
@@ -135,13 +132,9 @@
         "failed": "添加团队成员失败"
       },
       "getMembers": {
-        "teamNotFound": "团队不存在",
-        "forbidden": "只有团队拥有者可以查看成员列表",
         "failed": "获取团队成员失败"
       },
       "removeMember": {
-        "teamNotFound": "团队不存在",
-        "forbidden": "只有团队拥有者可以移除成员",
         "memberNotFound": "成员不存在或不属于该团队",
         "ownerCannotBeRemoved": "团队拥有者不能被移除",
         "failed": "移除团队成员失败"
@@ -157,8 +150,6 @@
         "failed": "获取用户团队状态失败"
       },
       "getTeam": {
-        "teamNotFound": "团队不存在",
-        "forbidden": "只有团队拥有者可以查看团队信息",
         "failed": "获取团队信息失败"
       }
     }

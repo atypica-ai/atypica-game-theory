@@ -78,7 +78,6 @@
         "confirmButton": "Confirm Removal"
       },
       "toast": {
-        "invalidId": "Invalid team ID",
         "addSuccess": "Member added successfully",
         "removeSuccess": "Member removed successfully",
         "networkError": "Network error, please try again"
@@ -126,8 +125,6 @@
         "failed": "Failed to get team list"
       },
       "addMember": {
-        "teamNotFound": "Team not found",
-        "forbidden": "Only the team owner can add members",
         "seatsFull": "Team seats are full",
         "userNotExist": "User with this email does not exist, please ensure the user is registered",
         "notIndividualUser": "Only individual users can be added as team members",
@@ -135,13 +132,9 @@
         "failed": "Failed to add team member"
       },
       "getMembers": {
-        "teamNotFound": "Team not found",
-        "forbidden": "Only the team owner can view the member list",
         "failed": "Failed to get team members"
       },
       "removeMember": {
-        "teamNotFound": "Team not found",
-        "forbidden": "Only the team owner can remove members",
         "memberNotFound": "Member not found or does not belong to this team",
         "ownerCannotBeRemoved": "The team owner cannot be removed",
         "failed": "Failed to remove team member"
@@ -157,8 +150,6 @@
         "failed": "Failed to get user team status"
       },
       "getTeam": {
-        "teamNotFound": "Team not found",
-        "forbidden": "Only the team owner can view team information",
         "failed": "Failed to get team information"
       }
     }
