@@ -214,19 +214,9 @@ export function TeamDetailPageClient({ teamId }: { teamId: number }) {
             {teamSubscription && (
               <div className="pt-4 border-t">
                 <div className="text-sm text-muted-foreground mb-2">{t("subscriptionStatus")}</div>
-                <div className="text-sm">
-                  <div className="flex justify-between">
-                    <span>{t("currentSeats")}</span>
-                    <span className="font-medium">
-                      {(teamSubscription.extra as any)?.seats || 0}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>{t("subscriptionEnd")}</span>
-                    <span className="font-medium">
-                      {formatDate(teamSubscription.endsAt, locale)}
-                    </span>
-                  </div>
+                <div className="text-sm flex justify-between">
+                  <span>{t("subscriptionEnd")}</span>
+                  <span className="font-medium">{formatDate(teamSubscription.endsAt, locale)}</span>
                 </div>
               </div>
             )}
@@ -390,14 +380,6 @@ export function TeamDetailPageClient({ teamId }: { teamId: number }) {
         open={isSubscriptionDialogOpen}
         onOpenChange={setIsSubscriptionDialogOpen}
         team={team}
-        existingSubscription={
-          teamSubscription
-            ? {
-                seats: (teamSubscription.extra as any)?.seats || 0,
-                endsAt: teamSubscription.endsAt,
-              }
-            : null
-        }
         onSuccess={() => {
           setIsSubscriptionDialogOpen(false);
           loadTeamData();

@@ -232,7 +232,7 @@ export async function getTeamMembersAction(teamId: number): Promise<
         return ownershipCheck;
       }
 
-      const team = ownershipCheck.team;
+      // const team = ownershipCheck.team;
 
       // 获取团队成员（包括被删除的成员）
       const members = await prisma.user.findMany({

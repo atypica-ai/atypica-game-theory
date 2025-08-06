@@ -44,7 +44,6 @@
       "usedSeats": "Used",
       "createdAt": "Created At",
       "subscriptionStatus": "Subscription Status",
-      "currentSeats": "Current Seats",
       "subscriptionEnd": "Subscription Ends",
       "purchaseSeats": "Purchase Seats",
       "manageSubscription": "Manage Subscription",

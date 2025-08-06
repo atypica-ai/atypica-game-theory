@@ -37,6 +37,7 @@ interface TeamSubscriptionDialogProps {
 export const TeamSubscriptionDialog = ({
   open,
   onOpenChange,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onSuccess,
   team,
 }: TeamSubscriptionDialogProps) => {
@@ -45,6 +46,8 @@ export const TeamSubscriptionDialog = ({
   const [paymentProvider, setPaymentProvider] = useState<PaymentProvider>(
     getDeployRegion() === "mainland" ? PaymentProvider.StripeCNY : PaymentProvider.Stripe,
   );
+  // 没有支付宝微信扫码支付，用不到 paymentSuccess 和 onSuccess
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [paymentSuccess, setPaymentSuccess] = useState<boolean>(false);
 
   const { createPaymentLink, loading, error } = usePay();

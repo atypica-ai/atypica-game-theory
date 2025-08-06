@@ -44,7 +44,6 @@
       "usedSeats": "已使用",
       "createdAt": "创建时间",
       "subscriptionStatus": "订阅状态",
-      "currentSeats": "当前席位",
       "subscriptionEnd": "订阅到期",
       "purchaseSeats": "购买席位",
       "manageSubscription": "管理订阅",

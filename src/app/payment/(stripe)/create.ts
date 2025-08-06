@@ -1,6 +1,7 @@
 import { fetchActiveSubscription } from "@/app/account/lib";
 import { PaymentMethod, ProductName, StripeMetadata } from "@/app/payment/data";
-import { PRO_MONTHLY_GIFT, PRO_MONTHLY_TOKENS, stripeClient } from "@/app/payment/lib";
+import { stripeClient } from "@/app/payment/lib";
+import { PRO_MONTHLY_GIFT, PRO_MONTHLY_TOKENS } from "@/app/payment/monthlyTokens";
 import { getDeployRegion } from "@/lib/request/deployRegion";
 import { getRequestOrigin } from "@/lib/request/headers";
 import { Currency, Product, SubscriptionPlan } from "@/prisma/client";
@@ -335,6 +336,7 @@ export async function createTeamSubscriptionStripeSession({
     throw new Error("Minimum 3 seats required for team subscription");
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { email, teamId } = await requireTeamlUser(userId);
   // team user 会取 team subscription
   const { activeSubscription: activeTeamSubscription } = await fetchActiveSubscription({ userId });
