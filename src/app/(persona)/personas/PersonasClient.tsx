@@ -79,7 +79,7 @@ export default function PersonasClient() {
       toast.warning(t("updating"));
       return;
     }
-    router.push(`/persona/import/${persona.personaImportId}`);
+    router.push(`/persona/${persona.id}`);
   };
 
   const NewPersonaCard = () => (
@@ -201,7 +201,7 @@ export default function PersonasClient() {
                       <>
                         <Button
                           size="sm"
-                          className="flex-1"
+                          className="flex-1 hidden" // 暂时先隐藏，简单点进入详情页再 chat
                           onClick={(e) => {
                             e.stopPropagation();
                             handleStartChat(persona);
@@ -213,7 +213,7 @@ export default function PersonasClient() {
                           {chatCreating[persona.id] ? t("starting") : t("startChat")}
                         </Button>
                         <Button
-                          variant="secondary"
+                          variant="outline"
                           size="sm"
                           className="flex-1"
                           onClick={(e) => {
@@ -222,7 +222,7 @@ export default function PersonasClient() {
                           }}
                         >
                           <FileTextIcon className="size-3" />
-                          {t("viewAnalysis")}
+                          {t("viewDetails")}
                         </Button>
                       </>
                     )}

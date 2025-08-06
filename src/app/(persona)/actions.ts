@@ -99,6 +99,45 @@ export async function fetchPersonaById(
   };
 }
 
+export async function fetchPersonaWithDetails(personaId: number): Promise<
+  ServerActionResult<{
+    persona: Omit<Persona, "tags"> & { tags: string[] };
+    analysis: Partial<PersonaImportAnalysis> | null;
+    personaImportId: number | null;
+  }>
+> {
+  // `withAuth` will handle session check
+  return withAuth(async () => {
+    // This function already checks for admin or ownership
+    const accessResult = await checkPersonaAccess(personaId);
+    if (!accessResult.success) {
+      return {
+        success: false,
+        code: accessResult.code,
+        message: accessResult.message,
+      };
+    }
+
+    const personaWithImport = accessResult.data;
+
+    const { personaImport, tags, ...persona } = personaWithImport;
+
+    return {
+      success: true,
+      data: {
+        persona: {
+          ...persona,
+          tags: tags as string[],
+        },
+        analysis: personaImport
+          ? (personaImport.analysis as Partial<PersonaImportAnalysis> | null)
+          : null,
+        personaImportId: personaImport?.id ?? null,
+      },
+    };
+  });
+}
+
 export async function createFollowUpInterviewChat(
   personaImportId: number,
 ): Promise<ServerActionResult<{ token: string }>> {
@@ -201,7 +240,7 @@ export async function fetchFollowUpInterviewChat(
   };
 }
 
-export async function checkPersonaAccess(
+async function checkPersonaAccess(
   personaId: number,
 ): Promise<ServerActionResult<Persona & { personaImport: PersonaImport | null }>> {
   const session = await getServerSession(authOptions);

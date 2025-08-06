@@ -79,7 +79,7 @@
       "importNewInterview": "导入新访谈",
       "startChat": "开始对话",
       "source": "来源",
-      "viewAnalysis": "查看分析",
+      "viewDetails": "查看详情",
       "updating": "更新中",
       "processing": "处理中",
       "starting": "启动中...",
@@ -89,7 +89,7 @@
       "details": "详情",
       "created": "创建于",
       "source": "来源",
-      "tier": "等级",
+      "tier": "Tier",
       "tags": "标签",
       "clearChatHistory": "清除聊天记录",
       "clearing": "清理中...",
@@ -99,6 +99,14 @@
       "clearFailed": "清理失败，请重试",
       "chatWith": "与",
       "haveConversation": "与以下 AI 人设对话"
+    },
+    "personaDetails": {
+      "title": "AI 人设详情",
+      "description": "查看该 AI 人设的详细资料。",
+      "viewFullReport": "查看完整分析报告",
+      "chatWithPersona": "与该人设对话",
+      "personaInfo": "人设信息",
+      "analysisSummary": "分析摘要"
     },
     "followUpInterview": {
       "interviewComplete": "访谈完成",

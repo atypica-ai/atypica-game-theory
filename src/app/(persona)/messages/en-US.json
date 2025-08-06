@@ -79,7 +79,7 @@
       "importNewInterview": "Import New Interview",
       "startChat": "Start Chat",
       "source": "Source",
-      "viewAnalysis": "View Analysis",
+      "viewDetails": "View Details",
       "updating": "Updating",
       "processing": "Processing",
       "starting": "Starting...",
@@ -99,6 +99,14 @@
       "clearFailed": "Failed to clear history, please try again",
       "chatWith": "Chat with",
       "haveConversation": "Have a conversation with"
+    },
+    "personaDetails": {
+      "title": "AI Persona Details",
+      "description": "View the detailed profile of this AI Persona",
+      "viewFullReport": "View Full Analysis Report",
+      "chatWithPersona": "Chat with this Persona",
+      "personaInfo": "Persona Information",
+      "analysisSummary": "Analysis Summary"
     },
     "followUpInterview": {
       "interviewComplete": "Interview Complete",
