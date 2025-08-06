@@ -77,7 +77,6 @@
       "loadError": "无法加载身份信息，请重试。",
       "personalAccountTitle": "个人账户",
       "teamIdentitiesTitle": "团队身份",
-      "ownerLabel": "拥有者：{name}",
       "currentBadge": "当前",
       "switchingButton": "切换中...",
       "currentButton": "当前",

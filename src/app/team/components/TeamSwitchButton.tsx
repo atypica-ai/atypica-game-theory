@@ -13,7 +13,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Team, User } from "@/prisma/client";
+import { ExtractServerActionData } from "@/lib/serverAction";
 import { CheckIcon, ChevronsUpDownIcon, UserIcon, UsersIcon } from "lucide-react";
 import { signIn, useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
@@ -21,10 +21,7 @@ import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-interface Identities {
-  personalUser: User | null;
-  teamUsers: Array<User & { team: Team }>;
-}
+type Identities = ExtractServerActionData<typeof getUserSwitchableIdentitiesAction>;
 
 export function TeamSwitchButton({ children }: { children?: React.ReactNode }) {
   const { data: session } = useSession();
@@ -91,7 +88,6 @@ export function TeamSwitchButton({ children }: { children?: React.ReactNode }) {
   };
 
   const currentUserId = session?.user?.id;
-  const ownerName = identities?.personalUser?.name || "N/A";
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -122,12 +118,7 @@ export function TeamSwitchButton({ children }: { children?: React.ReactNode }) {
                     {t("personalAccountTitle")}
                   </h3>
                   <div className="flex items-center justify-between p-3 border rounded-lg">
-                    <div>
-                      <div className="font-medium">{identities.personalUser.name}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {identities.personalUser.email}
-                      </div>
-                    </div>
+                    <div className="font-medium">{identities.personalUser.name}</div>
                     {currentUserId === identities.personalUser.id ? (
                       <Badge variant="secondary">
                         <CheckIcon className="w-3 h-3 mr-1" />
@@ -161,12 +152,7 @@ export function TeamSwitchButton({ children }: { children?: React.ReactNode }) {
                         key={teamUser.id}
                         className="flex items-center justify-between p-3 border rounded-lg"
                       >
-                        <div>
-                          <div className="font-medium">{teamUser.team.name}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {t("ownerLabel", { name: ownerName })}
-                          </div>
-                        </div>
+                        <div className="font-medium">{teamUser.teamAsMember.name}</div>
                         {currentUserId === teamUser.id ? (
                           <Badge variant="secondary">
                             <CheckIcon className="w-3 h-3 mr-1" />

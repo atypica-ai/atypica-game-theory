@@ -77,7 +77,6 @@
       "loadError": "Could not load identity information. Please try again.",
       "personalAccountTitle": "Personal Account",
       "teamIdentitiesTitle": "Team Identities",
-      "ownerLabel": "Owner: {name}",
       "currentBadge": "Current",
       "switchingButton": "Switching...",
       "currentButton": "Current",

@@ -358,8 +358,8 @@ export async function getTeamSubscriptionAction(teamId: number): Promise<
 // 获取用户可以切换的身份列表
 export async function getUserSwitchableIdentitiesAction(): Promise<
   ServerActionResult<{
-    personalUser: User | null;
-    teamUsers: Array<User & { team: Team }>;
+    personalUser: Pick<User, "id" | "name"> | null;
+    teamUsers: Array<Pick<User, "id" | "name"> & { teamAsMember: Pick<Team, "id" | "name"> }>;
   }>
 > {
   const t = await getTranslations("Team.Actions");
@@ -367,8 +367,13 @@ export async function getUserSwitchableIdentitiesAction(): Promise<
     try {
       const fullUser = await prisma.user.findUnique({
         where: { id: user.id },
+        select: {
+          id: true,
+          name: true,
+          teamIdAsMember: true,
+          personalUserId: true,
+        },
       });
-
       if (!fullUser) {
         return {
           success: false,
@@ -377,51 +382,53 @@ export async function getUserSwitchableIdentitiesAction(): Promise<
         };
       }
 
-      let personalUser: User | null = null;
-      let teamUsers: Array<User & { team: Team }> = [];
+      let personalUser: Pick<User, "id" | "name"> | null = null;
+      let teamUsers: Array<
+        Pick<User, "id" | "name"> & { teamAsMember: Pick<Team, "id" | "name"> }
+      > = [];
 
-      // 如果是个人用户，返回个人用户和其团队用户
-      if (fullUser.email && !fullUser.teamIdAsMember && !fullUser.personalUserId) {
+      if (!fullUser.teamIdAsMember) {
+        // 个人用户，返回个人用户和其团队用户
         personalUser = fullUser;
-
-        // 获取活跃的团队用户（只包含有 personalUserId 的）
-        const teamUsersData = await prisma.user.findMany({
-          where: {
-            personalUserId: fullUser.id,
-            teamIdAsMember: { not: null },
-          },
-          include: {
-            teamAsMember: true,
-          },
-        });
-
-        teamUsers = teamUsersData.map((tu) => ({
-          ...tu,
-          team: tu.teamAsMember!,
-        }));
-      }
-      // 如果是团队用户，返回对应的个人用户和其他团队用户
-      else if (fullUser.personalUserId) {
-        personalUser = await prisma.user.findUnique({
-          where: { id: fullUser.personalUserId },
-        });
-
-        if (personalUser) {
-          // 获取所有活跃的团队用户
-          const teamUsersData = await prisma.user.findMany({
+        teamUsers = (
+          await prisma.user.findMany({
             where: {
-              personalUserId: personalUser.id,
+              personalUserId: fullUser.id,
               teamIdAsMember: { not: null },
             },
-            include: {
-              teamAsMember: true,
+            select: {
+              id: true,
+              name: true,
+              teamAsMember: { select: { id: true, name: true } },
             },
+          })
+        ).map(({ teamAsMember, ...rest }) => ({ teamAsMember: teamAsMember!, ...rest }));
+      } else {
+        // 团队用户，返回对应的个人用户和其他团队用户
+        if (!fullUser.personalUserId) {
+          // 用户从团队中被移除
+          personalUser = null;
+          teamUsers = [];
+        } else {
+          personalUser = await prisma.user.findUnique({
+            where: {
+              id: fullUser.personalUserId,
+            },
+            select: { id: true, name: true },
           });
-
-          teamUsers = teamUsersData.map((tu) => ({
-            ...tu,
-            team: tu.teamAsMember!,
-          }));
+          teamUsers = (
+            await prisma.user.findMany({
+              where: {
+                personalUserId: fullUser.personalUserId,
+                teamIdAsMember: { not: null },
+              },
+              select: {
+                id: true,
+                name: true,
+                teamAsMember: { select: { id: true, name: true } },
+              },
+            })
+          ).map(({ teamAsMember, ...rest }) => ({ teamAsMember: teamAsMember!, ...rest }));
         }
       }
 
