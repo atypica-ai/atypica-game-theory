@@ -1,5 +1,6 @@
 "use client";
 import { getUserTeamsAction } from "@/app/team/actions";
+import { TeamCreateButton } from "@/app/team/components/TeamCreateButton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Team } from "@/prisma/client";
@@ -48,12 +49,12 @@ export function TeamListPageClient() {
     <div className="container p-6 space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">{t("title")}</h1>
-        <Link href="/team/create">
+        <TeamCreateButton>
           <Button>
             <PlusIcon className="w-4 h-4 mr-2" />
             {t("createButton")}
           </Button>
-        </Link>
+        </TeamCreateButton>
       </div>
 
       {teams.length === 0 ? (
@@ -61,9 +62,9 @@ export function TeamListPageClient() {
           <CardContent className="py-8 text-center">
             <UsersIcon className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
             <p className="text-muted-foreground mb-4">{t("noTeams")}</p>
-            <Link href="/team/create">
+            <TeamCreateButton>
               <Button>{t("createFirstButton")}</Button>
-            </Link>
+            </TeamCreateButton>
           </CardContent>
         </Card>
       ) : (

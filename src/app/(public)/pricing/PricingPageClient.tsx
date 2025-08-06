@@ -1,6 +1,7 @@
 "use client";
 import { AddTokensDialog } from "@/app/payment/components/AddTokensDialog";
 import { SubscriptionDialog } from "@/app/payment/components/SubscriptionDialog";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -10,6 +11,8 @@ import { CheckIcon, GiftIcon, InfoIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useCallback, useState } from "react";
+
+import { TeamCreateButton } from "@/app/team/components/TeamCreateButton";
 import { createHelloUserChatAction } from "./actions";
 
 export default function PricingPageClient({
@@ -230,9 +233,11 @@ export default function PricingPageClient({
             </div>
           </CardHeader>
           <CardContent className="flex-grow space-y-4">
-            <Button className="w-full mb-6" disabled>
-              {t("createTeam")}
-            </Button>
+            <TeamCreateButton>
+              <Button className="w-full mb-6" disabled={false && !activeSubscription}>
+                {t("createTeam")}
+              </Button>
+            </TeamCreateButton>
             <FeatureItem text={t("features.allMaxFeatures")} />
             <FeatureItem text={t("features.interviews.unlimited")} />
             <FeatureItem text={t("features.personas.humanPersonaImports")} />
