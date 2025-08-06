@@ -9,6 +9,25 @@ import { getTranslations } from "next-intl/server";
 import { createTeam } from "./lib";
 import { generateUserSwitchToken } from "./userSwitchToken";
 
+// 验证团队所有权的工具函数
+async function verifyTeamOwnership(
+  teamId: number,
+  userId: number,
+): Promise<{ success: false; message: string } | { success: true; team: Team; user: User }> {
+  const team = await prisma.team.findUnique({ where: { id: teamId } });
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!team) {
+    return { success: false, message: "Team not found" };
+  }
+  if (!user) {
+    return { success: false, message: "User not found" };
+  }
+  if (team.ownerUserId !== user.personalUserId) {
+    return { success: false, message: "User is not the owner of this team" };
+  }
+  return { success: true, team, user };
+}
+
 // 创建团队
 export async function createTeamAction(data: { name: string }): Promise<ServerActionResult<Team>> {
   const t = await getTranslations("Team.Actions");
@@ -115,31 +134,12 @@ export async function addTeamMemberAction(data: {
   return withAuth(async ({ id: userId }) => {
     try {
       // 检查团队是否存在且用户是否为团队拥有者
-      const team = await prisma.team.findUnique({
-        where: { id: data.teamId },
-        include: {
-          members: true,
-        },
-      });
-      const user = await prisma.user.findUniqueOrThrow({
-        where: { id: userId },
-      });
-
-      if (!team) {
-        return {
-          success: false,
-          message: t("addMember.teamNotFound"),
-          code: "not_found",
-        };
+      const ownershipCheck = await verifyTeamOwnership(data.teamId, userId);
+      if (!ownershipCheck.success) {
+        return ownershipCheck;
       }
 
-      if (team.ownerUserId !== user.personalUserId) {
-        return {
-          success: false,
-          message: t("addMember.forbidden"),
-          code: "forbidden",
-        };
-      }
+      const team = ownershipCheck.team;
 
       // 检查活跃成员数量（只统计有 personalUserId 的成员）
       const activeMembersCount = await prisma.user.count({
@@ -226,28 +226,12 @@ export async function getTeamMembersAction(teamId: number): Promise<
   return withAuth(async ({ id: userId }) => {
     try {
       // 检查团队是否存在且用户是否为团队拥有者
-      const team = await prisma.team.findUnique({
-        where: { id: teamId },
-      });
-      const user = await prisma.user.findUniqueOrThrow({
-        where: { id: userId },
-      });
-
-      if (!team) {
-        return {
-          success: false,
-          message: t("getMembers.teamNotFound"),
-          code: "not_found",
-        };
+      const ownershipCheck = await verifyTeamOwnership(teamId, userId);
+      if (!ownershipCheck.success) {
+        return ownershipCheck;
       }
 
-      if (team.ownerUserId !== user.personalUserId) {
-        return {
-          success: false,
-          message: t("getMembers.forbidden"),
-          code: "forbidden",
-        };
-      }
+      const team = ownershipCheck.team;
 
       // 获取团队成员（包括被删除的成员）
       const members = await prisma.user.findMany({
@@ -296,28 +280,12 @@ export async function removeTeamMemberAction(data: {
   return withAuth(async ({ id: userId }) => {
     try {
       // 检查团队是否存在且用户是否为团队拥有者
-      const team = await prisma.team.findUnique({
-        where: { id: data.teamId },
-      });
-      const user = await prisma.user.findUniqueOrThrow({
-        where: { id: userId },
-      });
-
-      if (!team) {
-        return {
-          success: false,
-          message: t("removeMember.teamNotFound"),
-          code: "not_found",
-        };
+      const ownershipCheck = await verifyTeamOwnership(data.teamId, userId);
+      if (!ownershipCheck.success) {
+        return ownershipCheck;
       }
 
-      if (team.ownerUserId !== user.personalUserId) {
-        return {
-          success: false,
-          message: t("removeMember.forbidden"),
-          code: "forbidden",
-        };
-      }
+      const team = ownershipCheck.team;
 
       // 检查要移除的成员是否存在
       const member = await prisma.user.findUnique({
@@ -595,28 +563,13 @@ export async function getTeamDetailsAction(teamId: number): Promise<ServerAction
   const t = await getTranslations("Team.Actions");
   return withAuth(async ({ id: userId }) => {
     try {
-      const team = await prisma.team.findUnique({
-        where: { id: teamId },
-      });
-      const user = await prisma.user.findUniqueOrThrow({
-        where: { id: userId },
-      });
-
-      if (!team) {
-        return {
-          success: false,
-          message: t("getTeam.teamNotFound"),
-          code: "not_found",
-        };
+      // 检查团队是否存在且用户是否为团队拥有者
+      const ownershipCheck = await verifyTeamOwnership(teamId, userId);
+      if (!ownershipCheck.success) {
+        return ownershipCheck;
       }
 
-      if (team.ownerUserId !== user.personalUserId) {
-        return {
-          success: false,
-          message: t("getTeam.forbidden"),
-          code: "forbidden",
-        };
-      }
+      const team = ownershipCheck.team;
 
       return {
         success: true,
