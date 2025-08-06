@@ -1,17 +1,18 @@
-import { ProductName, StripeNewPaymentParams } from "@/app/payment/data";
-import { Currency } from "@/prisma/client";
+import { createStripeSession } from "@/app/payment/(stripe)/actions";
+import { stripeSessionCreatePayloadSchema } from "@/app/payment/(stripe)/types";
 import { NextResponse } from "next/server";
-import { createStripeSession } from "../actions";
 
 export async function POST(req: Request) {
   try {
     const formData = await req.formData();
-    const params: StripeNewPaymentParams = {
-      userId: parseInt(formData.get("userId") as string),
-      productName: formData.get("productName") as string as ProductName,
-      currency: formData.get("currency") as string as Currency,
-      successUrl: formData.get("successUrl") as string,
-    };
+    const parseResult = stripeSessionCreatePayloadSchema.safeParse(Object.fromEntries(formData));
+    if (!parseResult.success) {
+      return NextResponse.json(
+        { errors: parseResult.error.errors.map((error) => error.message) },
+        { status: 400 },
+      );
+    }
+    const params = parseResult.data;
     const { sessionUrl } = await createStripeSession(params);
     return NextResponse.redirect(sessionUrl, 303);
   } catch (error) {
