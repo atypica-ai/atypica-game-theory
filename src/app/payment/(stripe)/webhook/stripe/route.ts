@@ -5,7 +5,6 @@ import {
 import { ProductName, StripeMetadata } from "@/app/payment/data";
 import { handlePaymentSuccess, stripeClient } from "@/app/payment/lib";
 import { rootLogger } from "@/lib/logging";
-import { getDeployRegion } from "@/lib/request/deployRegion";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import { NextResponse } from "next/server";
@@ -20,8 +19,13 @@ function checkInvoiceMetadata(invoiceData: Stripe.Invoice) {
         ? (invoiceData.parent?.subscription_details?.metadata ?? null)
         : null
   ) as StripeMetadata | null;
-  if (metadata?.project !== "atypica" || metadata.deployRegion !== getDeployRegion()) {
-    rootLogger.info(`project or deployRegion not belong to this app, ignore invoice`);
+  // if (metadata?.project !== "atypica" || metadata.deployRegion !== getDeployRegion()) {
+  //   rootLogger.info(`project or deployRegion not belong to this app, ignore invoice`);
+  //   return null;
+  // }
+  // 不再判断 deployRegion，现在只有 us 区接收 webhook，不会重复
+  if (metadata?.project !== "atypica") {
+    rootLogger.info(`project not belong to this app, ignore invoice`);
     return null;
   }
   return metadata;
