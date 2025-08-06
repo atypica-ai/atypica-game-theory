@@ -2,6 +2,8 @@ declare module "@/prisma/client" {
   export * from "@/prisma/client/index";
   import Stripe from "stripe";
 
+  export type UserType = "Personal" | "TeamMember";
+
   export type UserExtra = Partial<{
     stripeCustomerId: string;
   }>;

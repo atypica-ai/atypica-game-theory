@@ -6,7 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { SubscriptionPlan, UserSubscription, UserSubscriptionExtra } from "@/prisma/client";
+import {
+  SubscriptionPlan,
+  UserSubscription,
+  UserSubscriptionExtra,
+  UserType,
+} from "@/prisma/client";
 import { CheckIcon, GiftIcon, InfoIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
@@ -17,6 +22,7 @@ import { createHelloUserChatAction } from "./actions";
 
 export default function PricingPageClient({
   activeSubscription,
+  userType,
 }: {
   activeSubscription:
     | (Omit<UserSubscription, "extra"> & {
@@ -24,7 +30,9 @@ export default function PricingPageClient({
       })
     | null;
   stripeSubscriptionId: string | null;
+  userType: UserType;
 }) {
+  console.log(userType);
   const locale = useLocale();
   const t = useTranslations("PricingPage");
   const [isTokensDialogOpen, setIsTokensDialogOpen] = useState(false);
@@ -123,7 +131,7 @@ export default function PricingPageClient({
             <Button
               className="w-full mb-6"
               onClick={() => setIsTokensDialogOpen(true)}
-              disabled={!activeSubscription}
+              disabled={!activeSubscription || userType !== "Personal"}
             >
               {t("chooseBasic")}
             </Button>
@@ -151,7 +159,11 @@ export default function PricingPageClient({
             </div>
           </CardHeader>
           <CardContent className="flex-grow space-y-4">
-            {!activeSubscription ? (
+            {userType !== "Personal" ? (
+              <Button className="w-full mb-6 text-xs" disabled>
+                {t("switchToPersonalUserToContinue")}
+              </Button>
+            ) : !activeSubscription ? (
               <Button
                 className="w-full mb-6"
                 onClick={() => setIsSubscriptionDialogOpen({ plan: SubscriptionPlan.pro })}
@@ -193,7 +205,11 @@ export default function PricingPageClient({
             </div>
           </CardHeader>
           <CardContent className="flex-grow space-y-4">
-            {!activeSubscription || activeSubscription.plan === SubscriptionPlan.pro ? (
+            {userType !== "Personal" ? (
+              <Button className="w-full mb-6 text-xs" disabled>
+                {t("switchToPersonalUserToContinue")}
+              </Button>
+            ) : !activeSubscription || activeSubscription.plan === SubscriptionPlan.pro ? (
               <Button
                 className="w-full mb-6"
                 onClick={() => setIsSubscriptionDialogOpen({ plan: SubscriptionPlan.max })}
@@ -234,7 +250,7 @@ export default function PricingPageClient({
           </CardHeader>
           <CardContent className="flex-grow space-y-4">
             <TeamCreateButton>
-              <Button className="w-full mb-6" disabled={false && !activeSubscription}>
+              <Button className="w-full mb-6" disabled={userType !== "Personal"}>
                 {t("createTeam")}
               </Button>
             </TeamCreateButton>

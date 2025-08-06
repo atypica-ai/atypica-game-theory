@@ -1,6 +1,10 @@
 import "server-only";
 
-import { UserSubscriptionExtra, UserSubscription as UserSubscriptionPrisma } from "@/prisma/client";
+import {
+  UserSubscriptionExtra,
+  UserSubscription as UserSubscriptionPrisma,
+  UserType,
+} from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 
 type UserSubscription = Omit<UserSubscriptionPrisma, "extra"> & {
@@ -19,11 +23,14 @@ export async function fetchActiveSubscription({ userId }: { userId: number }): P
       }
   ) & {
     stripeSubscriptionId: string | null;
+    userType: UserType;
   }
 > {
   const user = await prisma.user.findUniqueOrThrow({
     where: { id: userId },
   });
+
+  const userType: UserType = user.teamIdAsMember ? "TeamMember" : "Personal";
 
   const filterUserOrTeam = user.teamIdAsMember
     ? {
@@ -55,6 +62,7 @@ export async function fetchActiveSubscription({ userId }: { userId: number }): P
       activeSubscription: null,
       planExpiresAt: null,
       stripeSubscriptionId: null,
+      userType,
     };
   }
 
@@ -88,5 +96,6 @@ export async function fetchActiveSubscription({ userId }: { userId: number }): P
     activeSubscription,
     planExpiresAt,
     stripeSubscriptionId,
+    userType,
   };
 }

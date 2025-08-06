@@ -17,16 +17,23 @@ export default async function PricingPage() {
   const session = await getServerSession(authOptions);
   if (session?.user) {
     const userId = session.user.id;
-    const { activeSubscription, stripeSubscriptionId } = await fetchActiveSubscription({
+    const { activeSubscription, stripeSubscriptionId, userType } = await fetchActiveSubscription({
       userId,
     });
     return (
       <PricingPageClient
         activeSubscription={activeSubscription}
         stripeSubscriptionId={stripeSubscriptionId}
+        userType={userType}
       />
     );
   } else {
-    return <PricingPageClient activeSubscription={null} stripeSubscriptionId={null} />;
+    return (
+      <PricingPageClient
+        activeSubscription={null}
+        stripeSubscriptionId={null}
+        userType="Personal"
+      />
+    );
   }
 }
