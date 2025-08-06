@@ -130,10 +130,10 @@ export const GlossaryZH: React.FC = () => {
                 Tier 2: AI 人设 (深度访谈)
               </h3>
               <p className="text-sm font-semibold text-teal-600 dark:text-teal-400 mb-4">
-                来源: 专业认知建模
+                来源: 由 atypica.AI 团队专业构建
               </p>
               <p className="text-gray-700 dark:text-gray-300">
-                高质量、高精度的 AI
+                由 atypica.AI 团队通过深度访谈和专业认知建模构建的高质量、高精度的 AI
                 人设。它们在认知模式、情感反应和决策逻辑上保持高度一致性，能够模拟真实消费者的复杂行为，是进行深度商业研究的核心。
               </p>
             </div>

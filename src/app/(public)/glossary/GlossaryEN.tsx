@@ -142,10 +142,10 @@ export const GlossaryEN: React.FC = () => {
                 Source: Professional Cognitive Modeling
               </p>
               <p className="text-gray-700 dark:text-gray-300">
-                High-quality, high-precision personas built by the Atypica team through deep
-                interviews and expert modeling. They exhibit high consistency in cognitive patterns,
-                emotional responses, and decision-making logic, enabling deep business research by
-                simulating complex consumer behaviors.
+                High-quality, high-precision personas built by the atypica.AI team through deep
+                interviews and professional cognitive modeling. They exhibit high consistency in
+                cognitive patterns, emotional responses, and decision-making logic, enabling deep
+                business research by simulating complex consumer behaviors.
               </p>
             </div>
             <div className="border border-indigo-500/50 dark:border-indigo-400/60 rounded-lg p-6 hover:shadow-lg transition-shadow bg-indigo-50/20 dark:bg-indigo-900/10">
