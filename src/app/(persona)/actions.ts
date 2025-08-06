@@ -17,6 +17,7 @@ import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
 import { generateId, Message } from "ai";
 import { getServerSession } from "next-auth";
+import { getLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { processPersonaImport } from "./processing";
 import { PersonaImportAnalysis } from "./types";
@@ -142,6 +143,7 @@ export async function createFollowUpInterviewChat(
   personaImportId: number,
 ): Promise<ServerActionResult<{ token: string }>> {
   return withAuth(async (user) => {
+    const locale = await getLocale();
     // Check if persona import exists and belongs to user
     const personaImport = await prisma.personaImport.findUnique({
       where: { id: personaImportId, userId: user.id },
@@ -171,9 +173,11 @@ export async function createFollowUpInterviewChat(
     const firstQuestion = analysis?.supplementaryQuestions?.questions?.[0];
 
     // 如果有补充问题，使用第一个问题；否则使用默认开场白
-    const content =
-      "您好！我想了解一些额外的信息来完善您的用户画像。让我们开始吧！" + firstQuestion ||
-      "您好！我想了解一些额外的信息来完善您的用户画像。让我们开始吧！";
+    const prologue =
+      locale === "zh-CN"
+        ? "您好！我想了解一些额外的信息。让我们开始吧！"
+        : "Hello! I want to learn some additional information. Let's get started!";
+    const content = firstQuestion ? `${prologue}\n${firstQuestion}` : prologue;
     const parts = [{ type: "text", text: content }];
 
     const userChat = await prisma.$transaction(async (tx) => {
