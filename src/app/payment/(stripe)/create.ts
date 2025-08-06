@@ -27,6 +27,30 @@ async function requirePersonalUser(userId: number) {
   };
 }
 
+async function requireTeamlUser(userId: number) {
+  const user = await prisma.user.findUniqueOrThrow({
+    where: { id: userId },
+    include: {
+      tokens: true,
+      teamAsMember: true,
+      personalUser: true,
+    },
+  });
+  if (!user.personalUserId || !user.teamIdAsMember) {
+    throw new Error("Only team users can purchase");
+  }
+  if (!user.personalUser || !user.personalUser.email) {
+    throw new Error("User must be linked to a personal user with an email");
+  }
+  if (!user.teamAsMember) {
+    throw new Error("User must be a member of a team");
+  }
+  return {
+    email: user.personalUser.email,
+    teamId: user.teamIdAsMember,
+  };
+}
+
 function generateOrderNo() {
   // Generate a unique order number
   const timestamp = Date.now().toString();
@@ -42,12 +66,14 @@ async function createPaymentRecord({
   orderNo,
   price,
   product,
+  quantity,
   session,
 }: {
   userId: number;
   orderNo: string;
   price: number;
   product: Product;
+  quantity: number;
   session: Stripe.Checkout.Session;
 }) {
   // const clientIp = await getRequestClientIp();
@@ -56,8 +82,8 @@ async function createPaymentRecord({
     {
       productId: product.id,
       productName: product.name,
-      quantity: 1,
-      price: price,
+      quantity,
+      price,
       currency: product.currency,
       description: product.description,
     },
@@ -173,6 +199,7 @@ export async function createSubscriptionStripeSession({
     unit_amount: amountInCents,
     recurring: { interval: "month" },
   };
+  const quantity = 1;
 
   const session = await stripe.checkout.sessions.create({
     customer_email: user.email,
@@ -183,7 +210,7 @@ export async function createSubscriptionStripeSession({
     mode: "subscription",
     subscription_data: { metadata },
     discounts: discountCoupon ? [{ coupon: discountCoupon }] : undefined,
-    line_items: [{ price_data: priceData, quantity: 1 }],
+    line_items: [{ price_data: priceData, quantity }],
     automatic_tax: { enabled: true },
     success_url: successUrl || `${siteOrigin}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${siteOrigin}/payment/cancel?canceled=true`,
@@ -199,6 +226,7 @@ export async function createSubscriptionStripeSession({
     orderNo,
     price: finalPrice,
     product,
+    quantity,
     session,
   });
 
@@ -250,6 +278,7 @@ export async function createPaymentStripeSession({
     currency: currency,
     unit_amount: amountInCents,
   };
+  const quantity = 1;
 
   const session = await stripe.checkout.sessions.create({
     customer_email: user.email,
@@ -262,7 +291,7 @@ export async function createPaymentStripeSession({
       enabled: true,
       invoice_data: { metadata },
     },
-    line_items: [{ price_data: priceData, quantity: 1 }],
+    line_items: [{ price_data: priceData, quantity }],
     automatic_tax: { enabled: true },
     success_url: successUrl || `${siteOrigin}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${siteOrigin}/payment/cancel?canceled=true`,
@@ -280,6 +309,96 @@ export async function createPaymentStripeSession({
     orderNo,
     price: finalPrice,
     product,
+    quantity,
+    session,
+  });
+
+  return {
+    sessionUrl: session.url,
+  };
+}
+
+export async function createTeamSubscriptionStripeSession({
+  userId,
+  productName,
+  quantity,
+  currency,
+  successUrl,
+}: {
+  userId: number;
+  productName: ProductName.TEAMSEAT1MONTH;
+  quantity: number;
+  currency: Currency;
+  successUrl: string;
+}) {
+  if (quantity < 3) {
+    throw new Error("Minimum 3 seats required for team subscription");
+  }
+
+  const { email, teamId } = await requireTeamlUser(userId);
+  // team user 会取 team subscription
+  const { activeSubscription: activeTeamSubscription } = await fetchActiveSubscription({ userId });
+  // 如果当前有套餐，不能继续 PRO 会员购买
+  if (activeTeamSubscription) {
+    throw new Error("Team subscription is only available to teams without an active subscription");
+  }
+
+  const orderNo = generateOrderNo();
+
+  const product = await prisma.product.findUniqueOrThrow({
+    where: {
+      name_currency: {
+        name: productName,
+        currency: currency,
+      },
+    },
+  });
+
+  const stripe = stripeClient();
+  const amountInCents = product.price * 100;
+  const siteOrigin = await getRequestOrigin();
+  const metadata: StripeMetadata = {
+    project: "atypica",
+    deployRegion: getDeployRegion(),
+    orderNo,
+    productName: ProductName.TEAMSEAT1MONTH,
+  };
+  const priceData: Stripe.Checkout.SessionCreateParams.LineItem.PriceData = {
+    product_data: {
+      name: `${product.name} x ${quantity}`,
+      description: `${product.description} (${quantity} seats)`,
+    },
+    currency: currency,
+    unit_amount: amountInCents,
+    recurring: { interval: "month" },
+  };
+
+  const session = await stripe.checkout.sessions.create({
+    customer_email: email,
+    client_reference_id: orderNo,
+    currency: currency,
+    payment_method_types: currency === "CNY" ? ["card", "alipay"] : ["card"],
+    metadata,
+    mode: "subscription",
+    subscription_data: { metadata },
+    line_items: [{ price_data: priceData, quantity }],
+    automatic_tax: { enabled: true },
+    success_url: successUrl || `${siteOrigin}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${siteOrigin}/payment/cancel?canceled=true`,
+  });
+
+  if (!session.url) {
+    throw new Error("No session URL");
+  }
+
+  const finalPrice = amountInCents / 100;
+  // description: `${product.description} (${quantity} seats)`,
+  await createPaymentRecord({
+    userId,
+    orderNo,
+    price: finalPrice,
+    product,
+    quantity,
     session,
   });
 

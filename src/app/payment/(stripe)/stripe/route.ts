@@ -2,6 +2,7 @@ import authOptions from "@/app/(auth)/authOptions";
 import {
   createPaymentStripeSession,
   createSubscriptionStripeSession,
+  createTeamSubscriptionStripeSession,
 } from "@/app/payment/(stripe)/create";
 import { stripeSessionCreatePayloadSchema } from "@/app/payment/(stripe)/types";
 import { ProductName } from "@/app/payment/data";
@@ -29,6 +30,14 @@ export async function POST(req: Request) {
       sessionResponse = await createSubscriptionStripeSession({ ...params, userId, productName });
     } else if (productName === ProductName.TOKENS1M) {
       sessionResponse = await createPaymentStripeSession({ ...params, userId, productName });
+    } else if (productName === ProductName.TEAMSEAT1MONTH) {
+      const quantity = params.quantity!; // 前面校验过了，不会有问题
+      sessionResponse = await createTeamSubscriptionStripeSession({
+        ...params,
+        userId,
+        productName,
+        quantity,
+      });
     } else {
       return NextResponse.json({ error: "Invalid product name" }, { status: 400 });
     }
