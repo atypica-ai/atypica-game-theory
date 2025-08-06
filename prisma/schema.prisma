@@ -45,6 +45,7 @@ model User {
   password      String
   emailVerified DateTime? @db.Timestamptz(6)
   lastLogin     Json      @default("{}")
+  extra         Json      @default("{}")
 
   // teams owned by the user
   teamsAsOwner      Team[] @relation("TeamOwner")
@@ -72,6 +73,9 @@ model User {
   interviewProjects        InterviewProject[]
 
   interviewSessionsAsInterviewee InterviewSession[]
+
+  // 唯一定位一个 personal user 在一个 team 里对应的 team member 身份
+  @@unique([teamIdAsMember, personalUserId])
 }
 
 enum AdminRole {
@@ -364,6 +368,7 @@ model UserTokens {
   permanentBalance Int       @default(0)
   monthlyBalance   Int       @default(0)
   monthlyResetAt   DateTime? @db.Timestamptz(6)
+  extra            Json      @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
@@ -412,6 +417,7 @@ model TeamTokens {
   permanentBalance Int       @default(0)
   monthlyBalance   Int       @default(0)
   monthlyResetAt   DateTime? @db.Timestamptz(6)
+  extra            Json      @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)

@@ -2,6 +2,10 @@ declare module "@/prisma/client" {
   export * from "@/prisma/client/index";
   import Stripe from "stripe";
 
+  export type UserExtra = Partial<{
+    stripeCustomerId: string;
+  }>;
+
   export type UserLastLogin = Partial<{
     timestamp: number;
     clientIp: string;
@@ -45,6 +49,14 @@ declare module "@/prisma/client" {
     // ... pingxx invoice data tbd
     paymentRecordId: number;
     invoice: Stripe.Invoice;
+  }>;
+
+  export type UserTokensExtra = Partial<{
+    activeUserSubscriptionId: number;
+  }>;
+
+  export type TeamTokensExtra = Partial<{
+    activeUserSubscriptionId: number;
   }>;
 
   export type ChatMessageAttachment = {
