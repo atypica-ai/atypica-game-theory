@@ -617,6 +617,7 @@
       "maxPlan": "Max Subscription",
       "teamPlan": "Team Subscription",
       "notSubscribed": "Not Subscribed",
+      "manageSubscription": "Manage Subscription",
       "cancelSubscription": "Cancel Auto-Renewal",
       "confirmCancel": "Cancel Auto-Renewal",
       "cancelDescription": "Are you sure you want to cancel auto-renewal? Your current subscription will remain active until the expiration date, but it will not automatically renew.",

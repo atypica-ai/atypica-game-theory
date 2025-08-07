@@ -11,6 +11,10 @@ type UserSubscription = Omit<UserSubscriptionPrisma, "extra"> & {
   extra: UserSubscriptionExtra;
 };
 
+/**
+ * 返回的 stripeCustomerId 是 subscription 上的 stripeCustomerId，
+ * 虽然 user 现在都固定了 stripeCustomerId，但既然 subscription 上有，更合理且靠谱
+ */
 export async function fetchActiveSubscription({ userId }: { userId: number }): Promise<
   (
     | {
@@ -23,6 +27,7 @@ export async function fetchActiveSubscription({ userId }: { userId: number }): P
       }
   ) & {
     stripeSubscriptionId: string | null;
+    stripeCustomerId: string | null;
     userType: UserType;
   }
 > {
@@ -62,9 +67,15 @@ export async function fetchActiveSubscription({ userId }: { userId: number }): P
       activeSubscription: null,
       planExpiresAt: null,
       stripeSubscriptionId: null,
+      stripeCustomerId: null,
       userType,
     };
   }
+
+  const stripeCustomerId =
+    typeof activeSubscription.extra.invoice?.customer === "string"
+      ? activeSubscription.extra.invoice.customer
+      : null;
 
   const invoice = activeSubscription.extra?.invoice;
   if (invoice?.parent?.subscription_details) {
@@ -96,6 +107,7 @@ export async function fetchActiveSubscription({ userId }: { userId: number }): P
     activeSubscription,
     planExpiresAt,
     stripeSubscriptionId,
+    stripeCustomerId,
     userType,
   };
 }

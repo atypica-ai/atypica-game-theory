@@ -617,6 +617,7 @@
       "maxPlan": "个人Max版",
       "teamPlan": "团队版",
       "notSubscribed": "未订阅",
+      "manageSubscription": "管理订阅",
       "cancelSubscription": "取消自动续费",
       "confirmCancel": "取消自动续费",
       "cancelDescription": "确定要取消自动续费吗？您的当前订阅将保持有效直到到期日，但不会自动续费。",

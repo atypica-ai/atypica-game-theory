@@ -1,5 +1,9 @@
 "use client";
-import { cancelSubscriptionAction, stripeSubscriptionAction } from "@/app/account/actions";
+import {
+  cancelSubscriptionAction,
+  createCustomerPortalSessionAction,
+  stripeSubscriptionAction,
+} from "@/app/account/actions";
 import { AddTokensDialog } from "@/app/payment/components/AddTokensDialog";
 import {
   AlertDialog,
@@ -16,7 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatDate } from "@/lib/utils";
 import { UserSubscription, UserSubscriptionExtra } from "@/prisma/client";
-import { CalendarIcon, CircleDollarSignIcon, CreditCardIcon } from "lucide-react";
+import { CalendarIcon, CircleDollarSignIcon, CreditCardIcon, LoaderIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 
@@ -29,6 +33,7 @@ export function AccountPageClient({
   activeSubscription,
   planExpiresAt,
   stripeSubscriptionId,
+  stripeCustomerId,
 }: (
   | {
       activeSubscription: Omit<UserSubscription, "extra"> & { extra: UserSubscriptionExtra };
@@ -40,6 +45,7 @@ export function AccountPageClient({
     }
 ) & {
   stripeSubscriptionId: string | null;
+  stripeCustomerId: string | null;
   userTokens: {
     permanentBalance: number;
     monthlyBalance: number;
@@ -52,6 +58,7 @@ export function AccountPageClient({
   const [isAddTokensOpen, setIsAddTokensOpen] = useState(false);
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
   const [isCanceling, setIsCanceling] = useState(false);
+  const [isCreatingPortalSession, setIsCreatingPortalSession] = useState(false);
   const [stripeSubscription, setStripeSubscription] = useState<Pick<
     Stripe.Subscription,
     "id" | "status"
@@ -90,6 +97,22 @@ export function AccountPageClient({
       setIsCancelDialogOpen(false);
     }
   }, [stripeSubscriptionId, t]);
+
+  const handleManageSubscription = useCallback(
+    async (stripeCustomerId: string) => {
+      setIsCreatingPortalSession(true);
+      try {
+        const result = await createCustomerPortalSessionAction({ stripeCustomerId });
+        if (!result.success) throw result;
+        window.location.href = result.data.url;
+      } catch (error) {
+        toast.error((error as Error).message);
+      } finally {
+        setIsCreatingPortalSession(false);
+      }
+    },
+    [t],
+  );
 
   return (
     <div className="flex-1 overflow-y-auto scrollbar-thin p-6">
@@ -167,11 +190,26 @@ export function AccountPageClient({
                 )}
               </div>
             </CardContent>
-            <CardFooter>
+            <CardFooter className="flex flex-col sm:flex-row gap-4">
+              {stripeCustomerId && (
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => handleManageSubscription(stripeCustomerId)}
+                  disabled={isCreatingPortalSession || isCanceling}
+                >
+                  {isCreatingPortalSession && <LoaderIcon className="animate-spin size-4" />}
+                  {t("subscriptionSection.manageSubscription")}
+                </Button>
+              )}
               {stripeSubscription?.status === "active" ? (
                 <AlertDialog open={isCancelDialogOpen} onOpenChange={setIsCancelDialogOpen}>
                   <AlertDialogTrigger asChild>
-                    <Button className="w-full mt-4" disabled={isCanceling}>
+                    <Button
+                      variant="outline"
+                      className="flex-1"
+                      disabled={isCanceling || isCreatingPortalSession}
+                    >
                       {isCanceling
                         ? t("subscriptionSection.canceling")
                         : t("subscriptionSection.cancelSubscription")}

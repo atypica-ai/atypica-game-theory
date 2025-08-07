@@ -2,6 +2,7 @@
 import { PaymentChargeData, PaymentMethod, PaymentRecord } from "@/app/payment/data";
 import { stripeClient } from "@/app/payment/lib";
 import { rootLogger } from "@/lib/logging";
+import { getRequestOrigin } from "@/lib/request/headers";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { UserTokensLog } from "@/prisma/client";
@@ -284,6 +285,38 @@ export async function stripeSubscriptionAction() {
       id: stripeSubscription.id,
       status: stripeSubscription.status,
     };
+  });
+}
+
+export async function createCustomerPortalSessionAction({
+  stripeCustomerId,
+}: {
+  stripeCustomerId: string; // 其实应该从 user 的 activeSubscription 重新获取防止越权
+}): Promise<ServerActionResult<{ url: string }>> {
+  return withAuth(async (user) => {
+    const stripe = stripeClient();
+    const siteOrigin = await getRequestOrigin();
+    const returnUrl = `${siteOrigin}/account`;
+    try {
+      const portalSession = await stripe.billingPortal.sessions.create({
+        customer: stripeCustomerId,
+        return_url: returnUrl,
+      });
+      return {
+        success: true,
+        data: {
+          url: portalSession.url,
+        },
+      };
+    } catch (error) {
+      rootLogger.error(
+        `Failed to create customer portal session for user ${user.id}: ${(error as Error).message}`,
+      );
+      return {
+        success: false,
+        message: "Failed to create customer portal session",
+      };
+    }
   });
 }
 
