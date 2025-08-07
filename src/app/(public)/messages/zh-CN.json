@@ -135,7 +135,7 @@
     "month": "月",
     "proMonthlyTokens": "每月200万Token（有效期30天）",
     "maxMonthlyTokens": "每月500万Token（有效期30天）",
-    "teamMonthlyTokens": "每席位每月500万Token（团队共享）",
+    "teamMonthlyTokens": "每席位每月500万Token（有效期30天，团队共享）",
     "enterpriseTitle": "企业版",
     "enterpriseSubtitle": "5月中旬上线",
     "getStarted": "免费开始使用",

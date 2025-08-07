@@ -135,7 +135,7 @@
     "month": "month",
     "proMonthlyTokens": "2M tokens (30-day validity)",
     "maxMonthlyTokens": "5M tokens (30-day validity)",
-    "teamMonthlyTokens": "5M tokens per seat (pooled monthly)",
+    "teamMonthlyTokens": "5M tokens per seat (30-day validity, shared across team)",
     "enterpriseTitle": "Enterprise",
     "enterpriseSubtitle": "Coming mid-May",
     "getStarted": "Get Started Free",
