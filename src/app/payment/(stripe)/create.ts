@@ -4,35 +4,35 @@ import { stripeClient } from "@/app/payment/lib";
 import { PRO_MONTHLY_GIFT, PRO_MONTHLY_TOKENS } from "@/app/payment/monthlyTokens";
 import { getDeployRegion } from "@/lib/request/deployRegion";
 import { getRequestOrigin } from "@/lib/request/headers";
-import { Currency, Product, SubscriptionPlan } from "@/prisma/client";
+import { Currency, Product, SubscriptionPlan, User, UserExtra } from "@/prisma/client";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import Stripe from "stripe";
 
 async function requirePersonalUser(userId: number) {
-  const user = await prisma.user.findUniqueOrThrow({
+  const { tokens, email, ...user } = await prisma.user.findUniqueOrThrow({
     where: { id: userId },
     include: { tokens: true },
   });
   if (user.personalUserId || user.teamIdAsMember) {
     throw new Error("Only personal users can purchase");
   }
-  if (!user.email) throw new Error("User must have an email");
-  if (!user.tokens) throw new Error("User must have tokens");
+  if (!email) throw new Error("User must have an email");
+  if (!tokens) throw new Error("User must have tokens");
   return {
-    id: user.id,
-    email: user.email,
-    tokens: {
-      monthlyBalance: user.tokens.monthlyBalance,
+    user: {
+      ...user,
+      email,
     },
+    monthlyBalance: tokens.monthlyBalance,
   };
 }
 
 async function requireTeamlUser(userId: number) {
-  const user = await prisma.user.findUniqueOrThrow({
+  const { teamAsMember, personalUser, ...user } = await prisma.user.findUniqueOrThrow({
     where: { id: userId },
     include: {
-      tokens: true,
+      // tokens: true,
       teamAsMember: true,
       personalUser: true,
     },
@@ -40,15 +40,16 @@ async function requireTeamlUser(userId: number) {
   if (!user.personalUserId || !user.teamIdAsMember) {
     throw new Error("Only team users can purchase");
   }
-  if (!user.personalUser || !user.personalUser.email) {
+  if (!personalUser || !personalUser.email) {
     throw new Error("User must be linked to a personal user with an email");
   }
-  if (!user.teamAsMember) {
+  if (!teamAsMember) {
     throw new Error("User must be a member of a team");
   }
   return {
-    email: user.personalUser.email,
-    teamId: user.teamIdAsMember,
+    teamUser: user,
+    team: teamAsMember,
+    email: personalUser.email,
   };
 }
 
@@ -115,6 +116,39 @@ async function createPaymentRecord({
   });
 }
 
+async function stripeCustomerIdForUser(user: User, email: string) {
+  let stripeCustomerId = (user.extra as UserExtra).stripeCustomerId;
+  if (stripeCustomerId) {
+    return stripeCustomerId;
+  }
+
+  const stripe = stripeClient();
+  stripeCustomerId = await stripe.customers
+    .create({
+      email: email,
+      name: user.name,
+      metadata: user.teamIdAsMember
+        ? {
+            teamId: user.teamIdAsMember.toString(),
+            userId: user.id.toString(),
+          }
+        : { userId: user.id.toString() },
+    })
+    .then((customer) => customer.id);
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      extra: {
+        ...(user.extra as UserExtra),
+        stripeCustomerId,
+      },
+    },
+  });
+
+  return stripeCustomerId;
+}
+
 export async function createSubscriptionStripeSession({
   userId,
   productName,
@@ -126,7 +160,7 @@ export async function createSubscriptionStripeSession({
   currency: Currency;
   successUrl: string;
 }) {
-  const user = await requirePersonalUser(userId);
+  const { user, monthlyBalance: currentMonthlyBalance } = await requirePersonalUser(userId);
 
   let upgradeFrom: ProductName | null = null;
   const { activeSubscription } = await fetchActiveSubscription({ userId });
@@ -162,7 +196,7 @@ export async function createSubscriptionStripeSession({
   let discountAmountInCents = 0;
   let discountCoupon: string | null = null;
   if (productName === ProductName.MAX1MONTH && upgradeFrom === ProductName.PRO1MONTH) {
-    const monthlyBalance = Math.max(user.tokens?.monthlyBalance ?? 0, 0); // >=0
+    const monthlyBalance = Math.max(currentMonthlyBalance, 0); // >=0
     const monthlyInitial = PRO_MONTHLY_TOKENS + PRO_MONTHLY_GIFT;
     const proProduct = await prisma.product.findUniqueOrThrow({
       where: {
@@ -201,9 +235,10 @@ export async function createSubscriptionStripeSession({
     recurring: { interval: "month" },
   };
   const quantity = 1;
-
+  const stripeCustomerId = await stripeCustomerIdForUser(user, user.email);
   const session = await stripe.checkout.sessions.create({
-    customer_email: user.email,
+    // customer_email: user.email,
+    customer: stripeCustomerId,
     client_reference_id: orderNo,
     currency: currency,
     payment_method_types: currency === "CNY" ? ["card", "alipay"] : ["card"],
@@ -247,7 +282,7 @@ export async function createPaymentStripeSession({
   currency: Currency;
   successUrl: string;
 }) {
-  const user = await requirePersonalUser(userId);
+  const { user } = await requirePersonalUser(userId);
 
   const { activeSubscription } = await fetchActiveSubscription({ userId });
   if (!activeSubscription) {
@@ -280,9 +315,10 @@ export async function createPaymentStripeSession({
     unit_amount: amountInCents,
   };
   const quantity = 1;
-
+  const stripeCustomerId = await stripeCustomerIdForUser(user, user.email);
   const session = await stripe.checkout.sessions.create({
-    customer_email: user.email,
+    // customer_email: user.email,
+    customer: stripeCustomerId,
     client_reference_id: orderNo,
     currency: currency,
     payment_method_types: currency === "CNY" ? ["card", "alipay"] : ["card"],
@@ -337,7 +373,7 @@ export async function createTeamSubscriptionStripeSession({
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { email, teamId } = await requireTeamlUser(userId);
+  const { email: personalUserEmail, team, teamUser } = await requireTeamlUser(userId);
   // team user 会取 team subscription
   const { activeSubscription: activeTeamSubscription } = await fetchActiveSubscription({ userId });
   // 如果当前有套餐，不能继续 PRO 会员购买
@@ -374,9 +410,10 @@ export async function createTeamSubscriptionStripeSession({
     unit_amount: amountInCents,
     recurring: { interval: "month" },
   };
-
+  const stripeCustomerId = await stripeCustomerIdForUser(teamUser, personalUserEmail);
   const session = await stripe.checkout.sessions.create({
-    customer_email: email,
+    // customer_email: email,
+    customer: stripeCustomerId,
     client_reference_id: orderNo,
     currency: currency,
     payment_method_types: currency === "CNY" ? ["card", "alipay"] : ["card"],
