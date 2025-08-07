@@ -53,6 +53,7 @@
       "description": "Manage your interview projects and collect valuable insights",
       "newProject": "Create Interview",
       "createFirstProject": "Create interview project to start collecting insights",
+      "upgradeToMaxPlan": "Please upgrade to MAX plan to use this feature",
       "humanSessions": "Human",
       "aiSessions": "AI Persona",
       "loadFailed": "Failed to load projects"

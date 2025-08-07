@@ -98,21 +98,18 @@ export function AccountPageClient({
     }
   }, [stripeSubscriptionId, t]);
 
-  const handleManageSubscription = useCallback(
-    async (stripeCustomerId: string) => {
-      setIsCreatingPortalSession(true);
-      try {
-        const result = await createCustomerPortalSessionAction({ stripeCustomerId });
-        if (!result.success) throw result;
-        window.location.href = result.data.url;
-      } catch (error) {
-        toast.error((error as Error).message);
-      } finally {
-        setIsCreatingPortalSession(false);
-      }
-    },
-    [t],
-  );
+  const handleManageSubscription = useCallback(async (stripeCustomerId: string) => {
+    setIsCreatingPortalSession(true);
+    try {
+      const result = await createCustomerPortalSessionAction({ stripeCustomerId });
+      if (!result.success) throw result;
+      window.location.href = result.data.url;
+    } catch (error) {
+      toast.error((error as Error).message);
+    } finally {
+      setIsCreatingPortalSession(false);
+    }
+  }, []);
 
   return (
     <div className="flex-1 overflow-y-auto scrollbar-thin p-6">

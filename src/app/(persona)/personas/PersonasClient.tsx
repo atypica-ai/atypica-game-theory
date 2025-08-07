@@ -83,7 +83,7 @@ export default function PersonasClient() {
   };
 
   const NewPersonaCard = () => (
-    <Card className="transition-all duration-300 hover:shadow-md border-dashed border-primary/30">
+    <Card className="transition-all duration-300 hover:shadow-md border-dashed border-primary/30 min-w-80">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <div className="bg-primary/20 rounded-full p-1">

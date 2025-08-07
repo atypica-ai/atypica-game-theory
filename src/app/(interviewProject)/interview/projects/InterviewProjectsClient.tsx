@@ -7,12 +7,13 @@ import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDate } from "@/lib/utils";
 import { BotIcon, BriefcaseIcon, CalendarIcon, PlusIcon, UsersIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { CreateProjectDialog } from "./CreateProjectDialog";
 
-export function InterviewProjectsClient() {
+export function InterviewProjectsClient({ isCreateEnabled }: { isCreateEnabled: boolean }) {
   const locale = useLocale();
   const router = useRouter();
   const t = useTranslations("InterviewProject.projectsList");
@@ -39,7 +40,7 @@ export function InterviewProjectsClient() {
   }, [loadProjects]);
 
   const NewProjectCard = () => (
-    <Card className="transition-all duration-300 hover:shadow-md border-dashed border-primary/30">
+    <Card className="transition-all duration-300 hover:shadow-md border-dashed border-primary/30 min-w-80">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <div className="bg-primary/20 rounded-full p-1">
@@ -52,10 +53,18 @@ export function InterviewProjectsClient() {
         <div className="text-sm text-muted-foreground text-center mb-4">
           {t("createFirstProject")}
         </div>
-        <Button onClick={() => setCreateDialogOpen(true)} className="w-full" size="sm">
-          <PlusIcon className="size-3" />
-          {t("newProject")}
-        </Button>
+        {isCreateEnabled ? (
+          <Button onClick={() => setCreateDialogOpen(true)} className="w-full" size="sm">
+            <PlusIcon className="size-3" />
+            {t("newProject")}
+          </Button>
+        ) : (
+          <Button variant="secondary" className="w-full" size="sm" asChild>
+            <Link href="/pricing" className="underline underline-offset-3">
+              {t("upgradeToMaxPlan")}
+            </Link>
+          </Button>
+        )}
       </CardContent>
     </Card>
   );

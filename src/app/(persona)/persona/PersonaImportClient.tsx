@@ -269,12 +269,11 @@ export default function PersonaImportClient({ isUploadEnabled }: PersonaImportCl
               ) : (
                 <>
                   <div className="w-full space-y-2">
-                    <Button disabled size="lg" variant="outline" className="w-full h-12">
-                      {t("uploadDisabled")}
+                    <Button disabled size="lg" variant="outline" className="w-full h-12" asChild>
+                      <Link href="/pricing" className="underline underline-offset-3">
+                        {t("upgradeToMaxPlan")}
+                      </Link>
                     </Button>
-                    <div className="text-sm text-primary font-medium text-center">
-                      {t("upgradeToMaxPlan")}
-                    </div>
                   </div>
                   <Button size="lg" variant="outline" asChild className="w-full h-12">
                     <Link href="/personas">
@@ -461,14 +460,11 @@ export default function PersonaImportClient({ isUploadEnabled }: PersonaImportCl
                   </Button>
                 )
               ) : (
-                <div className="w-full space-y-2">
-                  <Button disabled size="lg" variant="outline" className="w-full h-12">
-                    {t("uploadDisabled")}
-                  </Button>
-                  <div className="text-sm text-primary font-medium text-center">
+                <Button disabled size="lg" variant="outline" className="w-full h-12">
+                  <Link href="/pricing" className="underline underline-offset-3">
                     {t("upgradeToMaxPlan")}
-                  </div>
-                </div>
+                  </Link>
+                </Button>
               )}
             </div>
           </div>

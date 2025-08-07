@@ -18,7 +18,7 @@ export default async function PersonaHomePage() {
       const result = await fetchActiveSubscription({
         userId: session?.user?.id,
       });
-      if (result.activeSubscription?.plan === "max") {
+      if (result.activeSubscription?.plan === "max" || result.activeSubscription?.plan === "team") {
         isUploadEnabled = true;
       }
     }

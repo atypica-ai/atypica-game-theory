@@ -1,4 +1,3 @@
-import { checkTezignAuth } from "@/app/admin/actions";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ArrowRight } from "lucide-react";
@@ -6,8 +5,6 @@ import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 
 export default async function InterviewProjectHomePage() {
-  await checkTezignAuth();
-
   const t = await getTranslations("InterviewProject.homepage");
 
   const features = [
