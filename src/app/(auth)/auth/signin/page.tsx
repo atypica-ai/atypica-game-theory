@@ -36,7 +36,7 @@ function SignIn() {
     if (typeof window !== "undefined") {
       setIsWechat(window.navigator.userAgent.toLowerCase().includes("micromessenger"));
     }
-  }, []);
+  }, [searchParams, router, callbackUrl]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,8 +52,8 @@ function SignIn() {
         email,
         password,
       });
-      // router.replace(callbackUrl);
-      window.location.replace(callbackUrl);
+      // Redirect to callback page to check onboarding status
+      window.location.replace(`/auth/callback?callbackUrl=${encodeURIComponent(callbackUrl)}`);
     } catch (error) {
       const errMsg = (error as Error).message;
       if (errMsg === "EMAIL_NOT_VERIFIED") {
@@ -143,7 +143,11 @@ function SignIn() {
                 <Button
                   variant="outline"
                   className="w-full h-10"
-                  onClick={() => signIn("google", { callbackUrl })}
+                  onClick={() =>
+                    signIn("google", {
+                      callbackUrl: `/auth/callback?callbackUrl=${encodeURIComponent(callbackUrl)}`,
+                    })
+                  }
                   type="button"
                 >
                   <Image src="/_public/icon-google.png" alt="Google" width={20} height={20} />

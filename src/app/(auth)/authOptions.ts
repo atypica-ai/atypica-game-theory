@@ -94,6 +94,7 @@ const authOptions: NextAuthOptions = {
           }
           throw new Error("EMAIL_NOT_VERIFIED");
         }
+
         recordLastLogin(user.id);
         return {
           id: user.id,
@@ -274,6 +275,7 @@ const authOptions: NextAuthOptions = {
           });
           // 更新 session 上的 user.id 为数据库的 id，本来是 google 的用户 id
           user.id = newUser.id;
+          // 新用户不需要检查 onboarding，会在后续流程中处理
         } else {
           // 更新 session 上的 user.id 为数据库的 id，本来是 google 的用户 id
           user.id = existingUser.id;
