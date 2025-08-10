@@ -310,8 +310,7 @@ const authOptions: NextAuthOptions = {
           });
           // 更新 session 上的 user.id 为数据库的 id，本来是 google 的用户 id
           user.id = newUser.id;
-          // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-          user.userType === "Personal";
+          user.userType = "Personal";
           user.teamIdAsMember = null;
           // 新用户不需要检查 onboarding，会在后续流程中处理
         } else {
