@@ -105,7 +105,11 @@ export default function UserMenu() {
         <DropdownMenuItem>
           <MailIcon className="h-4 w-4 mr-2" />
           <span className="text-xs px-1 rounded-xs bg-zinc-200 dark:bg-zinc-700">
-            {teamStatus?.teamRole ? t("teamUser") : t("personalUser")}
+            {session.userType === "TeamMember"
+              ? t("teamUser")
+              : session.userType === "Personal"
+                ? t("personalUser")
+                : "-"}
           </span>
           <span className="text-xs tracking-tight">{session.user.name || session.user.email}</span>
         </DropdownMenuItem>

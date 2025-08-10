@@ -3,7 +3,7 @@ import "server-only";
 import { sendVerificationCode } from "@/app/(auth)/auth/verify/lib";
 import { verifyUserSwitchToken } from "@/app/team/userSwitchToken";
 import { rootLogger } from "@/lib/logging";
-import { User } from "@/prisma/client";
+import { User, UserType } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { compare } from "bcryptjs";
 import { type NextAuthOptions } from "next-auth";
@@ -82,6 +82,9 @@ const authOptions: NextAuthOptions = {
         if (!user) {
           throw new Error("USER_NOT_FOUND");
         }
+        if (user.teamIdAsMember) {
+          throw new Error("TEAM_MEMBER_NOT_ALLOWED");
+        }
         const isPasswordValid = await compare(credentials.password, user.password);
         if (!isPasswordValid) {
           throw new Error("INVALID_PASSWORD");
@@ -94,12 +97,13 @@ const authOptions: NextAuthOptions = {
           }
           throw new Error("EMAIL_NOT_VERIFIED");
         }
-
         recordLastLogin(user.id);
         return {
           id: user.id,
           name: user.name,
           email: user.email!,
+          userType: "Personal",
+          teamIdAsMember: null,
         };
       },
     }),
@@ -127,17 +131,19 @@ const authOptions: NextAuthOptions = {
         if (!user) {
           throw new Error("USER_NOT_FOUND");
         }
-        if (!user.emailVerified) {
-          throw new Error("EMAIL_NOT_VERIFIED");
-        }
         if (user.teamIdAsMember) {
           throw new Error("TEAM_MEMBER_NOT_ALLOWED");
+        }
+        if (!user.emailVerified) {
+          throw new Error("EMAIL_NOT_VERIFIED");
         }
         // 不要 recordLastLogin，因为可能是 admin 登录的
         return {
           id: user.id,
           name: user.name,
           email: user.email!,
+          userType: "Personal",
+          teamIdAsMember: null,
         };
       },
     }),
@@ -185,6 +191,7 @@ const authOptions: NextAuthOptions = {
         // 验证目标用户是否有效
         const isPersonalUser = targetUser.email && !targetUser.teamIdAsMember;
         const isTeamUser = targetUser.personalUserId && targetUser.teamIdAsMember;
+        const userType: UserType = targetUser.teamIdAsMember ? "TeamMember" : "Personal";
 
         if (!isPersonalUser && !isTeamUser) {
           throw new Error("INVALID_TARGET_USER");
@@ -219,6 +226,8 @@ const authOptions: NextAuthOptions = {
           id: targetUser.id,
           name: targetUser.name,
           email: displayEmail!,
+          userType,
+          teamIdAsMember: targetUser.teamIdAsMember,
         };
       },
     }),
@@ -236,20 +245,46 @@ const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     session: ({ session, token }) => {
-      return {
+      const invalidSession = { ...session, user: undefined, userType: undefined, team: undefined };
+      const validSession = {
         ...session,
         user: {
           ...session.user,
           id: parseInt(token.id + ""),
         },
       };
+      if (token._ut === 0) {
+        validSession.userType = "Personal";
+      } else if (token._ut === 1) {
+        if (!token._tid) {
+          return invalidSession;
+        }
+        validSession.userType = "TeamMember";
+        validSession.team = { id: token._tid };
+      } else {
+        return invalidSession;
+      }
+
+      return validSession;
     },
     jwt: ({ token, user }) => {
       if (user) {
-        return {
+        const validToken = {
           ...token,
           id: parseInt(user.id + ""),
         };
+        if (user.userType === "Personal") {
+          validToken._ut = 0;
+        } else if (user.userType === "TeamMember") {
+          if (!user.teamIdAsMember) {
+            throw new Error("INVALID_TEAM_ID");
+          }
+          validToken._ut = 1;
+          validToken._tid = parseInt(user.teamIdAsMember + "");
+        } else {
+          throw new Error("INVALID_USER_TYPE");
+        }
+        return validToken;
       }
       return token;
     },
@@ -275,10 +310,18 @@ const authOptions: NextAuthOptions = {
           });
           // 更新 session 上的 user.id 为数据库的 id，本来是 google 的用户 id
           user.id = newUser.id;
+          // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+          user.userType === "Personal";
+          user.teamIdAsMember = null;
           // 新用户不需要检查 onboarding，会在后续流程中处理
         } else {
+          if (existingUser.teamIdAsMember) {
+            throw new Error("TEAM_MEMBER_NOT_ALLOWED");
+          }
           // 更新 session 上的 user.id 为数据库的 id，本来是 google 的用户 id
           user.id = existingUser.id;
+          user.userType = "Personal";
+          user.teamIdAsMember = null;
         }
       }
       return true;

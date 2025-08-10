@@ -93,8 +93,8 @@ export async function createTeamMemberUser({
   personalUser,
   teamAsMember,
 }: {
-  personalUser: User;
-  teamAsMember: Team;
+  personalUser: Pick<User, "id" | "name">;
+  teamAsMember: Pick<Team, "id">;
 }) {
   const teamUser = await prisma.user.create({
     data: {

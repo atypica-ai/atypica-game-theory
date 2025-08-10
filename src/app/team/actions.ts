@@ -39,16 +39,10 @@ export async function createTeamAction({ name: teamName }: { name: string }): Pr
     };
   }>
 > {
-  const t = await getTranslations("Team.Actions");
-
-  return withAuth(async ({ id: userId }) => {
+  return withAuth(async (user, userType) => {
+    const t = await getTranslations("Team.Actions");
     try {
-      // 检查用户是否为个人用户（有email且没有teamId）
-      const user = await prisma.user.findUniqueOrThrow({
-        where: { id: userId },
-      });
-
-      if (user.teamIdAsMember) {
+      if (userType !== "Personal") {
         return {
           success: false,
           message: t("createTeam.forbidden"),

@@ -32,7 +32,7 @@ export default function UserTokensBalance() {
 
   const { isDocumentVisible } = useDocumentVisibility();
   useEffect(() => {
-    if (!session || !isDocumentVisible) {
+    if (!session?.user || !isDocumentVisible) {
       return;
     }
     let timeoutId: NodeJS.Timeout;
@@ -53,7 +53,9 @@ export default function UserTokensBalance() {
     };
   }, [session, setBalance, isDocumentVisible]);
 
-  return status === "authenticated" ? (
+  // status === "authenticated" 只是判断 session 是否存在，没判断 user 是否有效
+  // 最近一次升级，user 上没有 userType 会被认为无效，这种 user session 数据的升级之后还会发生
+  return status === "authenticated" && session?.user ? (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <div

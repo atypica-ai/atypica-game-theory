@@ -4,7 +4,13 @@ import { createTeamMemberUser } from "@/app/(auth)/lib";
 import { Team, User } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 
-export async function createTeam({ name, ownerUser }: { name: string; ownerUser: User }): Promise<{
+export async function createTeam({
+  name,
+  ownerUser,
+}: {
+  name: string;
+  ownerUser: Pick<User, "id" | "name">;
+}): Promise<{
   team: Team;
   teamUser: Omit<User, "teamIdAsMember" | "personalUserId"> & {
     teamIdAsMember: number;

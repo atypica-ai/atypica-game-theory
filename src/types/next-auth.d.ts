@@ -1,3 +1,4 @@
+import { UserType } from "@/prisma/client";
 import "next-auth";
 
 declare module "next-auth" {
@@ -5,13 +6,27 @@ declare module "next-auth" {
     id: number;
     name: string;
     email: string;
+    userType: UserType;
+    teamIdAsMember: number | null;
   }
   interface Session {
+    team?: {
+      id: number;
+    };
     user?: {
       id: number;
       name: string;
       email: string;
     };
+    userType?: UserType;
     expires: ISODateString;
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    id: number;
+    _ut: 0 | 1; // 0 = Personal, 1 = TeamMember
+    _tid?: number; // team id
   }
 }
