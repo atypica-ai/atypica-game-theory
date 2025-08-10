@@ -6,7 +6,6 @@ import { useChat } from "@ai-sdk/react";
 import { Message } from "ai";
 import { ShieldIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 interface FollowUpInterviewClientProps {
@@ -19,7 +18,6 @@ export default function FollowUpInterviewClient({
   initialMessages = [],
 }: FollowUpInterviewClientProps) {
   const t = useTranslations("PersonaImport.followUpInterview");
-  const router = useRouter();
   const [isInterviewComplete, setIsInterviewComplete] = useState(false);
 
   const initialRequestBody = {

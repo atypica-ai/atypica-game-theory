@@ -2,6 +2,7 @@
 import { FitToViewport } from "@/components/layout/FitToViewport";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Loader2Icon } from "lucide-react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
@@ -86,7 +87,7 @@ function ImpersonationLogin() {
         <CardContent className="space-y-4">
           {status === "loading" && (
             <div className="flex justify-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+              <Loader2Icon className="size-8 animate-spin mx-auto mb-4" />
             </div>
           )}
 

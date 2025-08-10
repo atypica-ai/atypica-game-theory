@@ -64,9 +64,9 @@ export function InterviewReportsSection({ projectId }: { projectId: number }) {
       <Card>
         <CardContent className="p-6">
           {loadingReports ? (
-            <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-foreground mx-auto mb-4"></div>
-              <p className="text-muted-foreground">{t("loadingReports")}</p>
+            <div className="py-8 flex flex-col items-center gap-4">
+              <Loader2Icon className="size-8 animate-spin" />
+              <p className="text-muted-foreground text-xs">{t("loadingReports")}</p>
             </div>
           ) : (
             <div className="space-y-4">

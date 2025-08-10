@@ -38,7 +38,7 @@ async function StudyPage({ searchParams }: { searchParams: Promise<{ id: string 
 
   return (
     <FitToViewport className="hero-grid">
-      <div className="w-2xl max-w-full mx-auto px-4 py-12 sm:py-40">
+      <div className="relative w-2xl max-w-full mx-auto px-4 py-12 sm:py-40">
         <div className="w-full flex items-center justify-center gap-2 mb-8 text-2xl font-medium">
           <CommandIcon className="size-6" />
           <span>{t("startYourStudy")}</span>

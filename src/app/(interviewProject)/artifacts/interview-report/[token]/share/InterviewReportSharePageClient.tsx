@@ -3,7 +3,7 @@ import GlobalHeader from "@/components/layout/GlobalHeader";
 import { Button } from "@/components/ui/button";
 import UserMenu from "@/components/UserMenu";
 import UserTokensBalance from "@/components/UserTokensBalance";
-import { Share2 } from "lucide-react";
+import { Loader2Icon, Share2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -54,7 +54,7 @@ export default function InterviewReportSharePageClient({ reportToken }: { report
         {isLoading && (
           <div className="absolute inset-0 flex items-center justify-center bg-background">
             <div className="flex flex-col items-center gap-4">
-              <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+              <Loader2Icon className="size-8 animate-spin" />
               <div className="text-sm text-muted-foreground">{t("title")}</div>
             </div>
           </div>

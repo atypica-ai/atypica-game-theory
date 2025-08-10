@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Pagination } from "@/components/ui/pagination";
 import { ExtractServerActionData } from "@/lib/serverAction";
-import { SearchIcon, XIcon } from "lucide-react";
+import { Loader2Icon, SearchIcon, XIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -140,14 +140,14 @@ export function SelectPersonaDialog({ open, onOpenChange, onSelect }: SelectPers
         {renderSearchStatus()}
         {loading && currentPage === 1 && !searchQuery ? (
           <div className="flex justify-center items-center h-40">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
+            <Loader2Icon className="size-8 animate-spin mx-auto mb-4" />
           </div>
         ) : (
           <>
             <div className="grid lg:grid-cols-3 gap-4 mt-4 max-h-[60vh] overflow-y-auto scrollbar-thin relative">
               {loading && (currentPage > 1 || searchQuery) && (
                 <div className="absolute inset-0 bg-background/80 flex justify-center items-center z-10">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
+                  <Loader2Icon className="size-8 animate-spin mx-auto mb-4" />
                 </div>
               )}
               {personas.length === 0 && !loading ? (

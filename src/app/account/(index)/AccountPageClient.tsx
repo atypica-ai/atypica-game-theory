@@ -20,7 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatDate } from "@/lib/utils";
 import { UserSubscription, UserSubscriptionExtra } from "@/prisma/client";
-import { CalendarIcon, CircleDollarSignIcon, CreditCardIcon, LoaderIcon } from "lucide-react";
+import { CalendarIcon, CircleDollarSignIcon, CreditCardIcon, Loader2Icon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 
@@ -195,7 +195,7 @@ export function AccountPageClient({
                   onClick={() => handleManageSubscription(stripeCustomerId)}
                   disabled={isCreatingPortalSession || isCanceling}
                 >
-                  {isCreatingPortalSession && <LoaderIcon className="animate-spin size-4" />}
+                  {isCreatingPortalSession && <Loader2Icon className="animate-spin size-4" />}
                   {t("subscriptionSection.manageSubscription")}
                 </Button>
               )}

@@ -11,6 +11,7 @@ import {
   CheckCircleIcon,
   ClockIcon,
   ExternalLinkIcon,
+  Loader2Icon,
   MessageSquareIcon,
   UsersIcon,
 } from "lucide-react";
@@ -69,9 +70,9 @@ export function InterviewSessionsSection({ projectId }: { projectId: number }) {
       </CardHeader>
       <CardContent>
         {loading ? (
-          <div className="text-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-foreground mx-auto mb-4"></div>
-            <p className="text-muted-foreground">{tSessions("loadingSessions")}</p>
+          <div className="py-8 flex flex-col items-center gap-4">
+            <Loader2Icon className="size-8 animate-spin" />
+            <p className="text-muted-foreground text-xs">{tSessions("loadingSessions")}</p>
           </div>
         ) : error ? (
           <div className="text-center py-8">

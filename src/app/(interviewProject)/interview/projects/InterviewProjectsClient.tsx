@@ -5,7 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDate } from "@/lib/utils";
-import { BotIcon, BriefcaseIcon, CalendarIcon, PlusIcon, UsersIcon } from "lucide-react";
+import {
+  BotIcon,
+  BriefcaseIcon,
+  CalendarIcon,
+  Loader2Icon,
+  PlusIcon,
+  UsersIcon,
+} from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -74,7 +81,7 @@ export function InterviewProjectsClient({ isCreateEnabled }: { isCreateEnabled: 
       <div className="flex-1 overflow-y-auto scrollbar-thin">
         <div className="container mx-auto px-8 py-12 max-w-6xl">
           <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-foreground"></div>
+            <Loader2Icon className="size-8 animate-spin" />
           </div>
         </div>
       </div>

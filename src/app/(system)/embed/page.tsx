@@ -1,4 +1,5 @@
 "use client";
+import { Loader2Icon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -53,7 +54,7 @@ export default function EmbedPage() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <Loader2Icon className="size-8 animate-spin mx-auto mb-4" />
           <p>检查认证状态...</p>
         </div>
       </div>

@@ -8,6 +8,7 @@ import { cn, formatDate } from "@/lib/utils";
 import {
   CalendarIcon,
   FileTextIcon,
+  Loader2Icon,
   LockIcon,
   MessageCircleIcon,
   PlusIcon,
@@ -111,7 +112,7 @@ export default function PersonasClient() {
       <div className="flex-1 overflow-y-auto scrollbar-thin">
         <div className="container mx-auto px-8 py-12 max-w-6xl">
           <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-foreground"></div>
+            <Loader2Icon className="size-8 animate-spin" />
           </div>
         </div>
       </div>
