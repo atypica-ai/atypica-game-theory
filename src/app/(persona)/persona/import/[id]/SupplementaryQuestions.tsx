@@ -45,7 +45,7 @@ export function SupplementaryQuestions({
       if (!result.success) {
         throw new Error(result.message || t("generating"));
       }
-      const url = `${window.location.origin}/personas/followup/${result.data.token}`;
+      const url = `${window.location.origin}/persona/followup/${result.data.token}`;
       setShareUrl(url);
       setOpen(true);
     } catch (error) {

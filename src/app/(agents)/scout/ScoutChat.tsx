@@ -1,4 +1,5 @@
 "use client";
+import { FitToViewport } from "@/components/layout/FitToViewport";
 import { Textarea } from "@/components/ui/textarea";
 import { cn, useDevice } from "@/lib/utils";
 import { useTranslations } from "next-intl";
@@ -35,9 +36,9 @@ export function ScoutChat() {
   };
 
   return (
-    <div
+    <FitToViewport
       className={cn(
-        "flex-1 overflow-y-auto scrollbar-thin",
+        // "flex-1 overflow-y-auto scrollbar-thin",  included in FitToViewport
         "flex flex-col items-stretch justify-between gap-4 w-full max-w-5xl mx-auto p-3",
       )}
     >
@@ -68,6 +69,6 @@ export function ScoutChat() {
           }}
         />
       </form>
-    </div>
+    </FitToViewport>
   );
 }

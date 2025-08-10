@@ -1,9 +1,11 @@
 import { convertDBMessagesToAIMessages } from "@/ai/messageUtils";
 import { fetchInterviewSessionByChatToken } from "@/app/(interviewProject)/actions";
+import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { throwServerActionError } from "@/lib/serverAction";
 import { prisma } from "@/prisma/prisma";
 import { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
+import { Suspense } from "react";
 import { InterviewSessionChatClient } from "./InterviewSessionChatClient";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -13,7 +15,7 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function InterviewSessionChatPage({
+async function InterviewSessionChatPage({
   params,
 }: {
   params: Promise<{ userChatToken: string }>;
@@ -41,5 +43,17 @@ export default async function InterviewSessionChatPage({
       userChatToken={userChatToken}
       initialMessages={initialMessages}
     />
+  );
+}
+
+export default async function InterviewSessionChatPageWithLoading({
+  params,
+}: {
+  params: Promise<{ userChatToken: string }>;
+}) {
+  return (
+    <Suspense fallback={<PageLoadingFallback />}>
+      <InterviewSessionChatPage params={params} />
+    </Suspense>
   );
 }

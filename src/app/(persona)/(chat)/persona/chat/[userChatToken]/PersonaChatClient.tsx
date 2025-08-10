@@ -3,6 +3,7 @@ import { ClientMessagePayload } from "@/ai/messageUtilsClient";
 import { clearPersonaChatHistory } from "@/app/(persona)/actions";
 import { UserChatSession } from "@/components/chat/UserChatSession";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
+import { FitToViewport } from "@/components/layout/FitToViewport";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -91,7 +92,7 @@ export function PersonaChatClient({
   };
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden">
+    <FitToViewport className="flex flex-col overflow-hidden">
       {/* Chat Header */}
       <div className="w-full mt-2 px-3 py-3 max-w-4xl mx-auto relative">
         <h1 className="font-medium text-sm text-center">{persona.name}</h1>
@@ -213,22 +214,20 @@ export function PersonaChatClient({
       </div>
 
       {/* Centered Chat Area */}
-      <div className="flex-1 overflow-hidden">
-        <div className="max-w-4xl mx-auto h-full">
-          <UserChatSession
-            nickname={{ assistant: persona.name, user: session?.user?.email ?? "You" }}
-            avatar={{
-              assistant: <HippyGhostAvatar className="size-8" seed={persona.id} />,
-              user: session?.user ? (
-                <HippyGhostAvatar className="size-8" seed={session.user.id} />
-              ) : undefined,
-            }}
-            useChatHelpers={useChatHelpers}
-            useChatRef={useChatRef}
-            acceptAttachments={false}
-          />
-        </div>
+      <div className="flex-1 overflow-hidden w-full max-w-4xl mx-auto flex flex-col">
+        <UserChatSession
+          nickname={{ assistant: persona.name, user: session?.user?.email ?? "You" }}
+          avatar={{
+            assistant: <HippyGhostAvatar className="size-8" seed={persona.id} />,
+            user: session?.user ? (
+              <HippyGhostAvatar className="size-8" seed={session.user.id} />
+            ) : undefined,
+          }}
+          useChatHelpers={useChatHelpers}
+          useChatRef={useChatRef}
+          acceptAttachments={false}
+        />
       </div>
-    </div>
+    </FitToViewport>
   );
 }

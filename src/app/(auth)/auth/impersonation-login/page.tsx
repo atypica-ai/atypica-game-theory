@@ -1,4 +1,5 @@
 "use client";
+import { FitToViewport } from "@/components/layout/FitToViewport";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { signIn } from "next-auth/react";
@@ -71,7 +72,7 @@ function ImpersonationLogin() {
   };
 
   return (
-    <div className="flex-1 flex items-center justify-center p-4">
+    <FitToViewport className="flex items-center justify-center p-4">
       <Card className="mx-auto w-full max-w-sm">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">Impersonation Login</CardTitle>
@@ -108,6 +109,6 @@ function ImpersonationLogin() {
           )}
         </CardContent>
       </Card>
-    </div>
+    </FitToViewport>
   );
 }

@@ -1,6 +1,5 @@
 .hero-grid {
   position: relative;
-  overflow: hidden;
 }
 
 .hero-grid::before {

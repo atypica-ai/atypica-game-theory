@@ -1,6 +1,7 @@
 "use client";
 import { ClientMessagePayload } from "@/ai/messageUtilsClient";
 import { FocusedInterviewChat } from "@/components/chat/FocusedInterviewChat";
+import { FitToViewport } from "@/components/layout/FitToViewport";
 import { UserChat } from "@/prisma/client";
 import { useChat } from "@ai-sdk/react";
 import { Message } from "ai";
@@ -104,19 +105,21 @@ export function NewStudyChatClient({
   }, [initialMessages]);
 
   const chatWithAIArea = (
-    <FocusedInterviewChat
-      useChatHelpers={useChatHelpers}
-      useChatRef={useChatRef}
-      showTimer={true}
-    />
+    <FitToViewport>
+      <FocusedInterviewChat
+        useChatHelpers={useChatHelpers}
+        useChatRef={useChatRef}
+        showTimer={true}
+      />
+    </FitToViewport>
   );
 
   const briefCountdownArea = (
-    <div className="flex items-center justify-center px-6 py-18">
+    <FitToViewport>
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="text-left max-w-2xl text-zinc-900 dark:text-zinc-100 w-full"
+        className="text-left max-w-2xl mx-auto text-zinc-900 dark:text-zinc-100 w-full min-h-64 px-6 py-12 sm:py-40"
       >
         <h1 className="text-xl font-EuclidCircularA font-medium mb-6 text-center">
           {t("studyBriefReady")}
@@ -129,7 +132,7 @@ export function NewStudyChatClient({
         </div>
         <CountdownRedirect studyBrief={summary} userChatId={userChat.id} />
       </motion.div>
-    </div>
+    </FitToViewport>
   );
 
   return planningState === "summary" ? briefCountdownArea : chatWithAIArea;

@@ -1,5 +1,6 @@
 "use client";
 import { UserChatSession } from "@/components/chat/UserChatSession";
+import { FitToViewport } from "@/components/layout/FitToViewport";
 import { Message, useChat } from "@ai-sdk/react";
 import { useEffect, useRef } from "react";
 
@@ -49,7 +50,7 @@ export function AgentChatPage({
   }, [initialMessages, readOnly]);
 
   return (
-    <div className="flex-1 overflow-hidden flex flex-col items-stretch justify-start container mx-auto">
+    <FitToViewport className="flex-1 overflow-hidden flex flex-col items-stretch justify-start container mx-auto">
       <UserChatSession
         chatId={chatId}
         chatTitle={chatTitle}
@@ -61,6 +62,6 @@ export function AgentChatPage({
         persistMessages={persistMessages}
         acceptAttachments={false}
       />
-    </div>
+    </FitToViewport>
   );
 }

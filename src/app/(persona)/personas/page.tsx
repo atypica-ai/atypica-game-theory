@@ -1,5 +1,5 @@
-import PersonasClient from "./PersonasClient";
+import PersonasListClient from "./PersonasListClient";
 
 export default async function PersonasPage() {
-  return <PersonasClient />;
+  return <PersonasListClient />;
 }

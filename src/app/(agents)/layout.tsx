@@ -1,11 +1,15 @@
-import GlobalHeader from "@/components/layout/GlobalHeader";
-import { ReactNode } from "react";
+import { DefaultLayout } from "@/components/layout/DefaultLayout";
+import { FitToViewport } from "@/components/layout/FitToViewport";
+import { ReactElement } from "react";
 
-export default async function AgentsPageLayout({ children }: { children: ReactNode }) {
+export default async function AgentsPageLayout({
+  children,
+}: {
+  children: ReactElement<React.ComponentProps<typeof FitToViewport>>;
+}) {
   return (
-    <div className="h-dvh flex flex-col items-stretch justify-start">
-      <GlobalHeader />
+    <DefaultLayout header={true} fitToViewport={true}>
       {children}
-    </div>
+    </DefaultLayout>
   );
 }

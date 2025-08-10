@@ -75,7 +75,7 @@ export function FollowUpChatList({ personaImportId }: { personaImportId: number 
   // 继续对话
   const handleContinueChat = () => {
     if (followUpHistory?.userChatToken) {
-      router.push(`/personas/followup/${followUpHistory.userChatToken}`);
+      router.push(`/persona/followup/${followUpHistory.userChatToken}`);
     }
   };
 

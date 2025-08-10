@@ -5,6 +5,7 @@ import {
 } from "@/app/(interviewProject)/actions";
 import { UserChatSession } from "@/components/chat/UserChatSession";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
+import { FitToViewport } from "@/components/layout/FitToViewport";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -209,9 +210,9 @@ export function InterviewSessionViewer({
   );
 
   return (
-    <div
+    <FitToViewport
       className={cn(
-        "flex-1 overflow-hidden flex flex-col items-stretch justify-start",
+        "overflow-hidden flex flex-col items-stretch justify-start",
         "container max-w-[60rem] mx-auto",
         className,
       )}
@@ -281,6 +282,6 @@ export function InterviewSessionViewer({
           persistMessages={false}
         />
       </div>
-    </div>
+    </FitToViewport>
   );
 }

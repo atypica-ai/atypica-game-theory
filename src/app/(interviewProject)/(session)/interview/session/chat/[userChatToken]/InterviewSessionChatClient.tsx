@@ -2,6 +2,7 @@
 import { ClientMessagePayload } from "@/ai/messageUtilsClient";
 import { fetchInterviewSessionByChatToken } from "@/app/(interviewProject)/actions";
 import { FocusedInterviewChat } from "@/components/chat/FocusedInterviewChat";
+import { FitToViewport } from "@/components/layout/FitToViewport";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -177,7 +178,7 @@ export function InterviewSessionChatClient({
 
   if (interviewState === "summary") {
     return (
-      <div className="flex flex-col items-center justify-center h-full p-8 text-center">
+      <FitToViewport className="flex flex-col items-center justify-center h-full p-8 text-center">
         <div className="max-w-md space-y-6">
           <div className="space-y-4">
             <div className="w-16 h-16 mx-auto bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
@@ -196,17 +197,19 @@ export function InterviewSessionChatClient({
           </div>
           <ProjectInfoButton />
         </div>
-      </div>
+      </FitToViewport>
     );
   }
 
   return (
-    <FocusedInterviewChat
-      useChatHelpers={useChatHelpers}
-      useChatRef={useChatRef}
-      showTimer={false} // Interviews don't need timer pressure
-      topRightButton={<ProjectInfoButton />}
-      className="h-full"
-    />
+    <FitToViewport>
+      <FocusedInterviewChat
+        useChatHelpers={useChatHelpers}
+        useChatRef={useChatRef}
+        showTimer={false} // Interviews don't need timer pressure
+        topRightButton={<ProjectInfoButton />}
+        className="h-full"
+      />
+    </FitToViewport>
   );
 }

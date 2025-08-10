@@ -1,4 +1,5 @@
 "use client";
+import { FitToViewport } from "@/components/layout/FitToViewport";
 import { Button } from "@/components/ui/button";
 import { EarIcon, RotateCwIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -26,7 +27,7 @@ export default function NewStudyPage() {
   }, [router, t]);
 
   return (
-    <div className="flex-1 relative flex flex-col items-center justify-center w-full overflow-hidden bg-zinc-50 dark:bg-black">
+    <FitToViewport className="flex-1 relative flex flex-col items-center justify-center w-full overflow-hidden bg-zinc-50 dark:bg-black">
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <div
           className="w-full h-full max-w-2xl max-h-2xl rounded-full blur-[150px] opacity-20 dark:opacity-30"
@@ -55,6 +56,6 @@ export default function NewStudyPage() {
           {isPending ? t("starting") : t("startPlanning")}
         </Button>
       </div>
-    </div>
+    </FitToViewport>
   );
 }

@@ -1,4 +1,5 @@
 import authOptions from "@/app/(auth)/authOptions";
+import { FitToViewport } from "@/components/layout/FitToViewport";
 import { NewStudyInputBox } from "@/components/NewStudyInputBox";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { prisma } from "@/prisma/prisma";
@@ -8,6 +9,7 @@ import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { forbidden, notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
+import "./style.css";
 
 async function StudyPage({ searchParams }: { searchParams: Promise<{ id: string }> }) {
   const { id } = await searchParams;
@@ -35,7 +37,7 @@ async function StudyPage({ searchParams }: { searchParams: Promise<{ id: string 
   const t = await getTranslations("StudyPage.NewStudy");
 
   return (
-    <div className="flex-1 hero-grid">
+    <FitToViewport className="hero-grid">
       <div className="w-2xl max-w-full mx-auto px-4 py-12 sm:py-40">
         <div className="w-full flex items-center justify-center gap-2 mb-8 text-2xl font-medium">
           <CommandIcon className="size-6" />
@@ -58,7 +60,7 @@ async function StudyPage({ searchParams }: { searchParams: Promise<{ id: string 
         </div>
         <div className="mt-2 text-xs text-muted-foreground text-center">{t("newStudyHint")}</div>
       </div>
-    </div>
+    </FitToViewport>
   );
 }
 

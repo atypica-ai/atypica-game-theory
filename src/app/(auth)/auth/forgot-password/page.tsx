@@ -1,4 +1,5 @@
 "use client";
+import { FitToViewport } from "@/components/layout/FitToViewport";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useTranslations } from "next-intl";
@@ -37,7 +38,7 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="flex-1 flex items-center justify-center">
+    <FitToViewport className="flex items-center justify-center p-4">
       <div className="mx-auto w-full max-w-xs space-y-6 px-4 mb-10">
         <div className="space-y-2 text-center">
           <h1 className="text-3xl font-bold">{t("title")}</h1>
@@ -82,6 +83,6 @@ export default function ForgotPasswordPage() {
           </form>
         )}
       </div>
-    </div>
+    </FitToViewport>
   );
 }

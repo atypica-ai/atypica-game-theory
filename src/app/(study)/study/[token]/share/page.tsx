@@ -1,9 +1,11 @@
 import { StudyPageClient } from "@/app/(study)/study/StudyPageClient";
+import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { generatePageMetadata } from "@/lib/request/metadata";
 import { throwServerActionError } from "@/lib/serverAction";
 import { getLocale } from "next-intl/server";
 import { notFound, redirect } from "next/navigation";
 import { Metadata } from "next/types";
+import { Suspense } from "react";
 import { fetchUserChatByToken } from "../../actions";
 
 export const dynamic = "force-dynamic";
@@ -27,7 +29,7 @@ export async function generateMetadata({
   return generatePageMetadata({ title, locale });
 }
 
-export default async function StudySharePage({
+async function StudySharePage({
   params,
   searchParams,
 }: {
@@ -49,4 +51,18 @@ export default async function StudySharePage({
   } else {
     throwServerActionError(result);
   }
+}
+
+export default async function StudySharePageWithLoading({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ token: string }>;
+  searchParams: Promise<{ id?: string; replay?: string }>;
+}) {
+  return (
+    <Suspense fallback={<PageLoadingFallback />}>
+      <StudySharePage params={params} searchParams={searchParams} />
+    </Suspense>
+  );
 }

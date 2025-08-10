@@ -1,12 +1,14 @@
 import authOptions from "@/app/(auth)/authOptions";
 import { PersonaImportAnalysis } from "@/app/(persona)/types";
+import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { PersonaImportExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { getServerSession } from "next-auth";
 import { forbidden, notFound } from "next/navigation";
+import { Suspense } from "react";
 import { PersonaImportView } from "./PersonaImportView";
 
-export default async function PersonaImportDetailPage({
+async function PersonaImportDetailPage({
   params,
 }: {
   params: Promise<{
@@ -43,5 +45,17 @@ export default async function PersonaImportDetailPage({
       }}
       personas={personas}
     />
+  );
+}
+
+export default async function PersonaImportDetailPageWithLoading({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  return (
+    <Suspense fallback={<PageLoadingFallback />}>
+      <PersonaImportDetailPage params={params} />
+    </Suspense>
   );
 }

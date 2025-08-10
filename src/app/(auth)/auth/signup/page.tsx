@@ -1,4 +1,5 @@
 "use client";
+import { FitToViewport } from "@/components/layout/FitToViewport";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -93,7 +94,7 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="flex-1 flex items-center justify-center p-4">
+    <FitToViewport className="flex items-center justify-center p-4">
       <Card className="mx-auto w-full max-w-sm">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">{t("title")}</CardTitle>
@@ -229,6 +230,6 @@ export default function SignUpPage() {
           </div>
         </CardContent>
       </Card>
-    </div>
+    </FitToViewport>
   );
 }

@@ -1,10 +1,10 @@
 "use client";
 import { ClientMessagePayload } from "@/ai/messageUtilsClient";
 import { FocusedInterviewChat } from "@/components/chat/FocusedInterviewChat";
-import { Button } from "@/components/ui/button";
+import { FitToViewport } from "@/components/layout/FitToViewport";
 import { useChat } from "@ai-sdk/react";
 import { Message } from "ai";
-import { ArrowLeft, ShieldIcon } from "lucide-react";
+import { ShieldIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -112,24 +112,12 @@ export default function FollowUpInterviewClient({
   }
 
   return (
-    <div className="h-screen w-full">
+    <FitToViewport>
       <FocusedInterviewChat
         useChatHelpers={useChatHelpers}
         useChatRef={useChatRef}
         showTimer={false}
-        className="h-full"
-        topRightButton={
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => router.push("/personas")}
-            className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
-          >
-            <ArrowLeft className="h-4 w-4 mr-1" />
-            {t("backToHome")}
-          </Button>
-        }
       />
-    </div>
+    </FitToViewport>
   );
 }

@@ -1,8 +1,10 @@
 import { fetchPersonaWithDetails } from "@/app/(persona)/actions";
+import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { generatePageMetadata } from "@/lib/request/metadata";
 import { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import { PersonaDetailClient } from "./PersonaDetailClient";
 
 export const dynamic = "force-dynamic";
@@ -34,11 +36,7 @@ export async function generateMetadata({
   });
 }
 
-export default async function PersonaDetailPage({
-  params,
-}: {
-  params: Promise<{ personaId: string }>;
-}) {
+async function PersonaDetailPage({ params }: { params: Promise<{ personaId: string }> }) {
   const personaId = parseInt((await params).personaId, 10);
 
   if (isNaN(personaId)) {
@@ -56,5 +54,17 @@ export default async function PersonaDetailPage({
 
   return (
     <PersonaDetailClient persona={persona} analysis={analysis} personaImportId={personaImportId} />
+  );
+}
+
+export default async function PersonaDetailPageWithLoading({
+  params,
+}: {
+  params: Promise<{ personaId: string }>;
+}) {
+  return (
+    <Suspense fallback={<PageLoadingFallback />}>
+      <PersonaDetailPage params={params} />
+    </Suspense>
   );
 }

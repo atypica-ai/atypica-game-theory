@@ -1,5 +1,6 @@
 "use client";
 import { personaBuildSchemaStreamObject } from "@/ai/tools/experts/buildPersonaStreamObject/types";
+import { FitToViewport } from "@/components/layout/FitToViewport";
 import { Button } from "@/components/ui/button";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
 import { cn } from "@/lib/utils";
@@ -27,7 +28,7 @@ export function BuildPersonaStreamObjectClient({
   const [messagesContainerRef, messagesEndRef] = useScrollToBottom<HTMLDivElement>();
 
   return (
-    <div
+    <FitToViewport
       className={cn(
         "flex-1 overflow-hidden",
         "flex flex-col items-stretch justify-start gap-4 w-full max-w-5xl mx-auto p-3",
@@ -74,6 +75,6 @@ export function BuildPersonaStreamObjectClient({
         ))} */}
         <div ref={messagesEndRef} />
       </div>
-    </div>
+    </FitToViewport>
   );
 }

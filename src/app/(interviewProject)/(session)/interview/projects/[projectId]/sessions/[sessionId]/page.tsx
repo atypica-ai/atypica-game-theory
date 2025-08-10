@@ -1,10 +1,12 @@
 import { convertDBMessagesToAIMessages } from "@/ai/messageUtils";
 import { fetchInterviewSessionDetails } from "@/app/(interviewProject)/actions";
+import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { throwServerActionError } from "@/lib/serverAction";
 import { prisma } from "@/prisma/prisma";
 import { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { NextResponse } from "next/server";
+import { Suspense } from "react";
 import { z } from "zod";
 import { InterviewSessionViewer } from "./InterviewSessionViewer";
 
@@ -32,19 +34,11 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function SessionPage({
-  params,
+async function SessionPage({
+  params: { projectId, sessionId },
 }: {
-  params: Promise<z.input<typeof paramsSchema>>;
+  params: z.infer<typeof paramsSchema>;
 }) {
-  let validatedParams;
-  try {
-    validatedParams = paramsSchema.parse(await params);
-  } catch {
-    return NextResponse.json({ error: "Invalid parameters" }, { status: 400 });
-  }
-  const { projectId, sessionId } = validatedParams;
-
   // fetchInterviewSessionDetails 里会检查权限
   const result = await fetchInterviewSessionDetails({ projectId, sessionId });
   if (!result.success) {
@@ -64,5 +58,23 @@ export default async function SessionPage({
 
   return (
     <InterviewSessionViewer interviewSession={interviewSession} initialMessages={initialMessages} />
+  );
+}
+
+export default async function StudyPageWithLoading({
+  params,
+}: {
+  params: Promise<z.input<typeof paramsSchema>>;
+}) {
+  let validatedParams;
+  try {
+    validatedParams = paramsSchema.parse(await params);
+  } catch {
+    return NextResponse.json({ error: "Invalid parameters" }, { status: 400 });
+  }
+  return (
+    <Suspense fallback={<PageLoadingFallback />}>
+      <SessionPage params={validatedParams} />
+    </Suspense>
   );
 }

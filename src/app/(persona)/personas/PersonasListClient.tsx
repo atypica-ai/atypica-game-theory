@@ -63,7 +63,7 @@ export default function PersonasClient() {
         if (!result.success) {
           throw new Error(result.message);
         }
-        router.push(`/personas/chat/${result.data.token}`);
+        router.push(`/persona/chat/${result.data.token}`);
       } catch (error) {
         console.log("Failed to start chat:", error);
         toast.error("Failed to start chat");
@@ -79,7 +79,7 @@ export default function PersonasClient() {
       toast.warning(t("updating"));
       return;
     }
-    router.push(`/persona/${persona.id}`);
+    router.push(`/personas/${persona.id}`);
   };
 
   const NewPersonaCard = () => (

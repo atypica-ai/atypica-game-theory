@@ -1,26 +1,46 @@
+import { FitToViewport } from "@/components/layout/FitToViewport";
 import GlobalFooter from "@/components/layout/GlobalFooter";
 import GlobalHeader from "@/components/layout/GlobalHeader";
-import { ReactNode } from "react";
+import React, { ReactElement, ReactNode } from "react";
 
-export default async function DefaultLayout({
+type DefaultLayoutProps = {
+  header?: boolean;
+} & (
+  | {
+      fitToViewport: true;
+      footer?: false; // footer cannot be used with fitToViewport
+      // This type hint guides developers but is not enforced at runtime for Next.js pages
+      // due to lazy loading.
+      children: ReactElement<React.ComponentProps<typeof FitToViewport>>;
+    }
+  | {
+      fitToViewport?: false;
+      footer?: boolean;
+      children: ReactNode;
+    }
+);
+
+export async function DefaultLayout({
   children,
   header = false,
   footer = false,
   fitToViewport = false,
-}: {
-  children: ReactNode;
-  header?: Boolean;
-  footer?: Boolean;
-  fitToViewport?: Boolean;
-}) {
+}: DefaultLayoutProps) {
   if (fitToViewport && footer) {
-    throw new Error("fitToViewport and footer cannot be used together");
+    // This case is already handled by the type definition, but a runtime check
+    // is good practice for non-TypeScript environments.
+    throw new Error("The `footer` prop cannot be used when `fitToViewport` is true.");
   }
+
+  // The previous runtime check for `children.type === FitToViewport` has been removed.
+  // It is unreliable in a Next.js environment because page components passed as
+  // `children` are often lazy-loaded and their type is not directly inspectable.
+  // We now rely on TypeScript's static analysis to guide correct usage.
+
   return fitToViewport ? (
     <div className="h-dvh flex flex-col items-stretch justify-start overflow-hidden">
       {header && <GlobalHeader />}
-      <main className="flex-1 overflow-hidden">{children}</main>
-      {footer && <GlobalFooter />}
+      {children}
     </div>
   ) : (
     <div className="pt-16 min-h-dvh flex flex-col items-stretch justify-start overflow-y-auto scrollbar-thin">
