@@ -1,5 +1,5 @@
 "use client";
-import GlobalHeader from "@/components/GlobalHeader";
+import GlobalHeader from "@/components/layout/GlobalHeader";
 import { Button } from "@/components/ui/button";
 import UserMenu from "@/components/UserMenu";
 import UserTokensBalance from "@/components/UserTokensBalance";

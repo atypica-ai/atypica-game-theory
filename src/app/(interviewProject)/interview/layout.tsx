@@ -1,5 +1,5 @@
-import GlobalFooter from "@/components/GlobalFooter";
-import GlobalHeader from "@/components/GlobalHeader";
+import GlobalFooter from "@/components/layout/GlobalFooter";
+import GlobalHeader from "@/components/layout/GlobalHeader";
 import { ReactNode } from "react";
 
 export default async function InterviewProjectsLayout({ children }: { children: ReactNode }) {

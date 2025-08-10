@@ -1,4 +1,4 @@
-import GlobalHeader from "@/components/GlobalHeader";
+import GlobalHeader from "@/components/layout/GlobalHeader";
 import AccountSidebar from "./components/AccountSidebar";
 
 export default async function AccountLayout({ children }: { children: React.ReactNode }) {

@@ -1,4 +1,4 @@
-import GlobalHeader from "@/components/GlobalHeader";
+import GlobalHeader from "@/components/layout/GlobalHeader";
 import { ReactNode } from "react";
 
 export default async function AccountStudiesLayout({ children }: { children: ReactNode }) {

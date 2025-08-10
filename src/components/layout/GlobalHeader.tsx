@@ -1,4 +1,5 @@
 "use client";
+import { MaintenanceNotification } from "@/components/MaintenanceNotification";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -6,14 +7,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import UserMenu from "@/components/UserMenu";
+import UserTokensBalance from "@/components/UserTokensBalance";
 import { cn } from "@/lib/utils";
 import { MenuIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useState } from "react";
-import { MaintenanceNotification } from "./MaintenanceNotification";
-import UserMenu from "./UserMenu";
-import UserTokensBalance from "./UserTokensBalance";
 
 export default function GlobalHeader({
   className,
