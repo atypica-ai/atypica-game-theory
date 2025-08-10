@@ -1,17 +1,15 @@
 import authOptions from "@/app/(auth)/authOptions";
 import { NewStudyInputBox } from "@/components/NewStudyInputBox";
+import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { prisma } from "@/prisma/prisma";
 import { CommandIcon } from "lucide-react";
 import { getServerSession } from "next-auth/next";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { forbidden, notFound, redirect } from "next/navigation";
+import { Suspense } from "react";
 
-export default async function StudyPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ id: string }>;
-}) {
+async function StudyPage({ searchParams }: { searchParams: Promise<{ id: string }> }) {
   const { id } = await searchParams;
 
   const session = await getServerSession(authOptions);
@@ -61,5 +59,17 @@ export default async function StudyPage({
         <div className="mt-2 text-xs text-muted-foreground text-center">{t("newStudyHint")}</div>
       </div>
     </div>
+  );
+}
+
+export default async function StudyPageWithLoading({
+  searchParams,
+}: {
+  searchParams: Promise<{ id: string }>;
+}) {
+  return (
+    <Suspense fallback={<PageLoadingFallback />}>
+      <StudyPage searchParams={searchParams} />
+    </Suspense>
   );
 }

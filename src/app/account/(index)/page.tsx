@@ -1,11 +1,13 @@
 import authOptions from "@/app/(auth)/authOptions";
 import { fetchActiveSubscription } from "@/app/account/lib";
+import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { getUserTokens } from "@/tokens/lib";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 import { AccountPageClient } from "./AccountPageClient";
 
-export default async function AccountPage() {
+async function AccountPage() {
   const session = await getServerSession(authOptions);
   if (!session?.user) {
     redirect("/auth/signin?callbackUrl=/account");
@@ -22,4 +24,12 @@ export default async function AccountPage() {
   const result = await fetchActiveSubscription({ userId });
 
   return <AccountPageClient userTokens={userTokens} {...result}></AccountPageClient>;
+}
+
+export default async function AccountPageWithLoading() {
+  return (
+    <Suspense fallback={<PageLoadingFallback />}>
+      <AccountPage />
+    </Suspense>
+  );
 }

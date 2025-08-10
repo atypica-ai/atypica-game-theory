@@ -1,10 +1,12 @@
+import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ArrowRight } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
+import { Suspense } from "react";
 
-export default async function InterviewProjectHomePage() {
+async function InterviewProjectHomePage() {
   const t = await getTranslations("InterviewProject.homepage");
 
   const features = [
@@ -174,5 +176,13 @@ export default async function InterviewProjectHomePage() {
         </div>
       </section>
     </div>
+  );
+}
+
+export default async function InterviewProjectHomePageWithLoading() {
+  return (
+    <Suspense fallback={<PageLoadingFallback />}>
+      <InterviewProjectHomePage />
+    </Suspense>
   );
 }

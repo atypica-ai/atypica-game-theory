@@ -1,4 +1,5 @@
 import authOptions from "@/app/(auth)/authOptions";
+import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { getServerSession } from "next-auth/next";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
@@ -12,7 +13,7 @@ export default function AuthCallbackPage({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   return (
-    <Suspense fallback={<CallbackLoading />}>
+    <Suspense fallback={<PageLoadingFallback />}>
       <AuthCallback searchParams={searchParams} />
     </Suspense>
   );
@@ -48,17 +49,4 @@ async function AuthCallback({
     // If onboarding is complete, redirect to the final destination.
     return redirect(callbackUrl);
   }
-}
-
-// A simple loading component to show while the server logic is processing.
-// This will be visible for a very short time, if at all.
-function CallbackLoading() {
-  return (
-    <div className="flex-1 flex items-center justify-center p-4">
-      <div className="text-center space-y-4">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-current mx-auto"></div>
-        <div className="text-sm text-muted-foreground">Finalizing your login...</div>
-      </div>
-    </div>
-  );
 }

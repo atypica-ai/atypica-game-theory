@@ -1,10 +1,12 @@
 import authOptions from "@/app/(auth)/authOptions";
 import { fetchActiveSubscription } from "@/app/account/lib";
 import { checkTezignAuth } from "@/app/admin/actions";
+import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { getServerSession } from "next-auth";
-import PersonaImportClient from "./PersonaImportClient";
+import { Suspense } from "react";
+import PersonaHomePageClient from "./PersonaHomePageClient";
 
-export default async function PersonaHomePage() {
+async function PersonaHomePage() {
   // Check if user is superadmin to enable upload feature
   let isUploadEnabled = false;
   try {
@@ -24,5 +26,13 @@ export default async function PersonaHomePage() {
     }
   }
 
-  return <PersonaImportClient isUploadEnabled={isUploadEnabled} />;
+  return <PersonaHomePageClient isUploadEnabled={isUploadEnabled} />;
+}
+
+export default async function PersonaHomePageWithLoading() {
+  return (
+    <Suspense fallback={<PageLoadingFallback />}>
+      <PersonaHomePage />
+    </Suspense>
+  );
 }

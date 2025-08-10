@@ -1,9 +1,11 @@
 import authOptions from "@/app/(auth)/authOptions";
 import { fetchActiveSubscription } from "@/app/account/lib";
 import { checkTezignAuth } from "@/app/admin/actions";
+import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { getTranslations } from "next-intl/server";
+import { Suspense } from "react";
 import { InterviewProjectsClient } from "./InterviewProjectsClient";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -13,7 +15,7 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function InterviewProjectsPage() {
+async function InterviewProjectsPage() {
   let isCreateEnabled = false;
   try {
     await checkTezignAuth();
@@ -33,4 +35,12 @@ export default async function InterviewProjectsPage() {
   }
 
   return <InterviewProjectsClient isCreateEnabled={isCreateEnabled} />;
+}
+
+export default async function InterviewProjectsPageWithLoading() {
+  return (
+    <Suspense fallback={<PageLoadingFallback />}>
+      <InterviewProjectsPage />
+    </Suspense>
+  );
 }
