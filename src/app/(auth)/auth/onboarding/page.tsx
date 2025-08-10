@@ -9,13 +9,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { UserOnboardingData } from "@/prisma/client";
 import { ArrowLeft, BrainIcon, MessageCircleIcon, SparklesIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import { OnboardingData, saveOnboardingData } from "./actions";
+import { saveOnboardingData } from "./actions";
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -58,7 +59,7 @@ export default function OnboardingPage() {
     setError("");
 
     try {
-      const data: OnboardingData = {
+      const data: UserOnboardingData = {
         usageType,
         role: role.trim(),
         howDidYouHear: howDidYouHear.trim(),

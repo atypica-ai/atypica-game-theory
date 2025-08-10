@@ -1,26 +1,25 @@
 import authOptions from "@/app/(auth)/authOptions";
-import { PageLoadingFallback } from "@/components/PageLoadingFallback";
+import { UserExtra } from "@/prisma/client";
+import { prisma } from "@/prisma/prisma";
 import { getServerSession } from "next-auth/next";
 import { redirect } from "next/navigation";
-import { Suspense } from "react";
-import { checkOnboardingStatus } from "../onboarding/actions";
 
-// The main logic is in the component, but we wrap it in Suspense
-// as a best practice when dealing with searchParams in Server Components.
-export default function AuthCallbackPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-}) {
-  return (
-    <Suspense fallback={<PageLoadingFallback />}>
-      <AuthCallback searchParams={searchParams} />
-    </Suspense>
-  );
-}
+// // The main logic is in the component, but we wrap it in Suspense
+// // as a best practice when dealing with searchParams in Server Components.
+// export default function AuthCallbackPage({
+//   searchParams,
+// }: {
+//   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+// }) {
+//   return (
+//     <Suspense fallback={<PageLoadingFallback />}>
+//       <AuthCallback searchParams={searchParams} />
+//     </Suspense>
+//   );
+// }
 
 // This is the core server component that handles the logic.
-async function AuthCallback({
+export default async function AuthCallback({
   searchParams,
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -38,7 +37,11 @@ async function AuthCallback({
   }
 
   // 3. Check onboarding status from the server
-  const hasCompletedOnboarding = await checkOnboardingStatus(session.user.id);
+  const user = await prisma.user.findUniqueOrThrow({
+    where: { id: session.user.id },
+  });
+  const extra = (user.extra as UserExtra) || {};
+  const hasCompletedOnboarding = Boolean(extra.onboarding?.completedAt);
 
   // 4. Redirect based on onboarding status
   if (!hasCompletedOnboarding) {

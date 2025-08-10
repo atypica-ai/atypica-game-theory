@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Pagination } from "@/components/ui/pagination";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Table,
   TableBody,
@@ -21,7 +22,7 @@ import {
 } from "@/components/ui/table";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDate, formatTokensNumber } from "@/lib/utils";
-import { AdminRole } from "@/prisma/client";
+import { AdminRole, UserExtra } from "@/prisma/client";
 import { CheckIcon, CoinsIcon, CopyIcon, LinkIcon, PlusIcon, SearchIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useLocale } from "next-intl";
@@ -69,6 +70,7 @@ export default function UsersPage() {
   const [resetUrl, setResetUrl] = useState("");
   const [isGeneratingReset, setIsGeneratingReset] = useState(false);
   const [resetCopied, setResetCopied] = useState(false);
+  const [viewMode, setViewMode] = useState<"actions" | "onboarding">("actions");
 
   // Initialize page from URL on load
   useEffect(() => {
@@ -276,6 +278,23 @@ export default function UsersPage() {
             Show admin users only
           </label>
         </div>
+
+        <div className="mt-4">
+          <RadioGroup
+            defaultValue="actions"
+            onValueChange={(value: string) => setViewMode(value as "actions" | "onboarding")}
+            className="flex items-center space-x-4"
+          >
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="actions" id="view-actions" />
+              <Label htmlFor="view-actions">Actions View</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="onboarding" id="view-onboarding" />
+              <Label htmlFor="view-onboarding">Onboarding View</Label>
+            </div>
+          </RadioGroup>
+        </div>
       </div>
 
       <div className="mb-4 overflow-x-auto rounded-lg border">
@@ -286,13 +305,24 @@ export default function UsersPage() {
               <TableHead>Email</TableHead>
               <TableHead className="text-right">Paid</TableHead>
               <TableHead className="text-right">Tokens</TableHead>
-              <TableHead></TableHead>
+              {viewMode === "actions" ? (
+                <>
+                  <TableHead></TableHead>
+                  <TableHead>Last Login</TableHead>
+                  <TableHead>Admin Role</TableHead>
+                  <TableHead>Impersonation Login</TableHead>
+                  <TableHead>Password Reset</TableHead>
+                  <TableHead>Delete</TableHead>
+                </>
+              ) : (
+                <>
+                  <TableHead className="text-center">Usage Type</TableHead>
+                  <TableHead className="text-center">Role</TableHead>
+                  <TableHead className="text-center">Industry</TableHead>
+                  <TableHead className="text-center">Heard From</TableHead>
+                </>
+              )}
               <TableHead>Created At</TableHead>
-              <TableHead>Last Login</TableHead>
-              <TableHead>Admin Role</TableHead>
-              <TableHead>Impersonation Login</TableHead>
-              <TableHead>Password Reset</TableHead>
-              <TableHead>Delete</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -321,18 +351,138 @@ export default function UsersPage() {
                       ).toLocaleString()}
                     </span>
                   </TableCell>
-                  <TableCell className="whitespace-nowrap text-sm">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-6 text-xs text-amber-500 hover:text-amber-500 gap-0"
-                      onClick={() => openTokensDialog(user)}
-                      title="Add tokens"
-                    >
-                      <PlusIcon className="size-3" />
-                      <CoinsIcon className="size-4" />
-                    </Button>
-                  </TableCell>
+                  {viewMode === "actions" ? (
+                    <>
+                      <TableCell className="whitespace-nowrap text-sm">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-6 text-xs text-amber-500 hover:text-amber-500 gap-0"
+                          onClick={() => openTokensDialog(user)}
+                          title="Add tokens"
+                        >
+                          <PlusIcon className="size-3" />
+                          <CoinsIcon className="size-4" />
+                        </Button>
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap text-xs">
+                        {user.lastLogin?.timestamp ? (
+                          <>
+                            <div>{formatDate(new Date(user.lastLogin.timestamp), locale)}</div>
+                            <div>{user.lastLogin.clientIp}</div>
+                            {user.lastLogin.geo && (
+                              <div>
+                                {user.lastLogin.geo.city}, {user.lastLogin.geo.countryCode}
+                              </div>
+                            )}
+                          </>
+                        ) : (
+                          <span className="text-muted-foreground">-</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap text-sm">
+                        <div className="flex items-center gap-2">
+                          {user.adminUser ? (
+                            <>
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                {user.adminUser.role}
+                              </span>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-7"
+                                onClick={() => openAdminDialog(user)}
+                              >
+                                Edit
+                              </Button>
+                            </>
+                          ) : (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-7"
+                              onClick={() => openAdminDialog(user)}
+                            >
+                              Make Admin
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap text-center">
+                        {user.emailVerified ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-7 gap-1"
+                            onClick={() => generateLoginUrl(user)}
+                            disabled={isGeneratingLogin}
+                            title="Generate impersonation login URL"
+                          >
+                            <LinkIcon className="size-3" />
+                            {isGeneratingLogin ? "..." : "Login"}
+                          </Button>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">Email not verified</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap text-center">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 gap-1"
+                          onClick={() => generateResetUrl(user)}
+                          disabled={isGeneratingReset}
+                          title="Generate password reset URL"
+                        >
+                          <LinkIcon className="size-3" />
+                          {isGeneratingReset ? "..." : "Reset"}
+                        </Button>
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap text-center">
+                        <ConfirmDialog
+                          title="Delete User Account"
+                          description={`Are you sure you want to permanently delete the account for ${user.email}? This will remove all user data including tokens, payments, and subscription information.`}
+                          onConfirm={async () => {
+                            const result = await deleteUserAccount(user.id);
+                            if (!result.success) {
+                              setError(result.message || "Failed to delete user");
+                            }
+                            fetchData();
+                          }}
+                        >
+                          <Button variant="destructive" size="icon" className="size-7">
+                            ×
+                          </Button>
+                        </ConfirmDialog>
+                      </TableCell>
+                    </>
+                  ) : (
+                    <>
+                      {(user.extra as UserExtra)?.onboarding ? (
+                        <>
+                          <TableCell className="text-center text-xs">
+                            {(user.extra as UserExtra).onboarding?.usageType}
+                          </TableCell>
+                          <TableCell className="text-center text-xs">
+                            {(user.extra as UserExtra).onboarding?.role}
+                          </TableCell>
+                          <TableCell className="text-center text-xs">
+                            {(user.extra as UserExtra).onboarding?.industry || "-"}
+                          </TableCell>
+                          <TableCell className="text-center text-xs">
+                            {(user.extra as UserExtra).onboarding?.howDidYouHear}
+                          </TableCell>
+                        </>
+                      ) : (
+                        <TableCell
+                          colSpan={4}
+                          className="text-center text-xs text-muted-foreground"
+                        >
+                          Onboarding not completed
+                        </TableCell>
+                      )}
+                    </>
+                  )}
                   <TableCell className="whitespace-nowrap text-xs">
                     <div>{formatDate(user.createdAt, locale)}</div>
                     <div className="flex items-center gap-2 mt-2">
@@ -358,96 +508,6 @@ export default function UsersPage() {
                         </>
                       )}
                     </div>
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap text-xs">
-                    {user.lastLogin?.timestamp ? (
-                      <>
-                        <div>{formatDate(new Date(user.lastLogin.timestamp), locale)}</div>
-                        <div>{user.lastLogin.clientIp}</div>
-                        {user.lastLogin.geo && (
-                          <div>
-                            {user.lastLogin.geo.city}, {user.lastLogin.geo.countryCode}
-                          </div>
-                        )}
-                      </>
-                    ) : (
-                      <span className="text-muted-foreground">-</span>
-                    )}
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap text-sm">
-                    <div className="flex items-center gap-2">
-                      {user.adminUser ? (
-                        <>
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                            {user.adminUser.role}
-                          </span>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-7"
-                            onClick={() => openAdminDialog(user)}
-                          >
-                            Edit
-                          </Button>
-                        </>
-                      ) : (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-7"
-                          onClick={() => openAdminDialog(user)}
-                        >
-                          Make Admin
-                        </Button>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap text-center">
-                    {user.emailVerified ? (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-7 gap-1"
-                        onClick={() => generateLoginUrl(user)}
-                        disabled={isGeneratingLogin}
-                        title="Generate impersonation login URL"
-                      >
-                        <LinkIcon className="size-3" />
-                        {isGeneratingLogin ? "..." : "Login"}
-                      </Button>
-                    ) : (
-                      <span className="text-xs text-muted-foreground">Email not verified</span>
-                    )}
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap text-center">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-7 gap-1"
-                      onClick={() => generateResetUrl(user)}
-                      disabled={isGeneratingReset}
-                      title="Generate password reset URL"
-                    >
-                      <LinkIcon className="size-3" />
-                      {isGeneratingReset ? "..." : "Reset"}
-                    </Button>
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap text-center">
-                    <ConfirmDialog
-                      title="Delete User Account"
-                      description={`Are you sure you want to permanently delete the account for ${user.email}? This will remove all user data including tokens, payments, and subscription information.`}
-                      onConfirm={async () => {
-                        const result = await deleteUserAccount(user.id);
-                        if (!result.success) {
-                          setError(result.message || "Failed to delete user");
-                        }
-                        fetchData();
-                      }}
-                    >
-                      <Button variant="destructive" size="icon" className="size-7">
-                        ×
-                      </Button>
-                    </ConfirmDialog>
                   </TableCell>
                 </TableRow>
               ))

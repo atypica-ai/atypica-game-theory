@@ -4,8 +4,17 @@ declare module "@/prisma/client" {
 
   export type UserType = "Personal" | "TeamMember";
 
+  export type UserOnboardingData = {
+    usageType: "work" | "personal";
+    role: string;
+    industry?: string;
+    companyName?: string;
+    howDidYouHear: string;
+  };
+
   export type UserExtra = Partial<{
     stripeCustomerId: string;
+    onboarding: UserOnboardingData & { completedAt?: Date };
   }>;
 
   export type UserLastLogin = Partial<{

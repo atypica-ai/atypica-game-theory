@@ -16,7 +16,7 @@ export async function fetchUsers(
   adminOnly?: boolean,
 ): Promise<
   ServerActionResult<
-    (Pick<User, "id" | "name" | "email" | "createdAt" | "emailVerified"> & {
+    (Pick<User, "id" | "name" | "email" | "createdAt" | "emailVerified" | "extra"> & {
       tokens: { permanentBalance: number; monthlyBalance: number } | null;
       paymentRecords: { id: number; amount: number; currency: Currency }[];
       adminUser: { role: AdminRole; permissions: AdminPermission[] } | null;
@@ -59,6 +59,7 @@ export async function fetchUsers(
         name: true,
         email: true,
         createdAt: true,
+        extra: true,
         emailVerified: true,
         lastLogin: true,
         tokens: {
