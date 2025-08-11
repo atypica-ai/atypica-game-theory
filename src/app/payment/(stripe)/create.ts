@@ -247,7 +247,7 @@ export async function createSubscriptionStripeSession({
     subscription_data: { metadata },
     discounts: discountCoupon ? [{ coupon: discountCoupon }] : undefined,
     line_items: [{ price_data: priceData, quantity }],
-    automatic_tax: { enabled: true },
+    automatic_tax: { enabled: false },
     success_url: successUrl || `${siteOrigin}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${siteOrigin}/payment/cancel?canceled=true`,
   });
@@ -329,7 +329,7 @@ export async function createPaymentStripeSession({
       invoice_data: { metadata },
     },
     line_items: [{ price_data: priceData, quantity }],
-    automatic_tax: { enabled: true },
+    automatic_tax: { enabled: false },
     success_url: successUrl || `${siteOrigin}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${siteOrigin}/payment/cancel?canceled=true`,
   });
@@ -421,7 +421,7 @@ export async function createTeamSubscriptionStripeSession({
     mode: "subscription",
     subscription_data: { metadata },
     line_items: [{ price_data: priceData, quantity }],
-    automatic_tax: { enabled: true },
+    automatic_tax: { enabled: false },
     success_url: successUrl || `${siteOrigin}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${siteOrigin}/payment/cancel?canceled=true`,
   });
