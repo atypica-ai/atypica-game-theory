@@ -2,6 +2,8 @@
 import { FitToViewport } from "@/components/layout/FitToViewport";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Select,
   SelectContent,
@@ -10,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { UserOnboardingData } from "@/prisma/client";
-import { ArrowLeft, BrainIcon, MessageCircleIcon, SparklesIcon } from "lucide-react";
+import { SparklesIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -25,9 +27,7 @@ export default function OnboardingPage() {
   const t = useTranslations("Auth.Onboarding");
   const callbackUrl = searchParams.get("callbackUrl") || "/";
 
-  const [step, setStep] = useState(1);
-  const [usageType, setUsageType] = useState<"work" | "personal" | null>(null);
-
+  const [usageType, setUsageType] = useState<"work" | "personal" | "">("");
   const [role, setRole] = useState("");
   const [industry, setIndustry] = useState("");
   const [companyName, setCompanyName] = useState("");
@@ -36,21 +36,12 @@ export default function OnboardingPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleUsageTypeSelect = (type: "work" | "personal") => {
-    setUsageType(type);
-    setStep(2);
-  };
-
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!session?.user?.id || !usageType) return;
+    if (!session?.user?.id) return;
 
-    // Validation
-    if (usageType === "work" && (!role.trim() || !industry.trim() || !howDidYouHear.trim())) {
-      setError(t("requiredFields"));
-      return;
-    }
-    if (usageType === "personal" && (!role.trim() || !howDidYouHear.trim())) {
+    // Validation - all fields except companyName are required
+    if (!usageType || !role.trim() || !industry.trim() || !howDidYouHear.trim()) {
       setError(t("requiredFields"));
       return;
     }
@@ -60,13 +51,11 @@ export default function OnboardingPage() {
 
     try {
       const data: UserOnboardingData = {
-        usageType,
+        usageType: usageType as "work" | "personal",
         role: role.trim(),
+        industry: industry.trim(),
+        companyName: companyName.trim(),
         howDidYouHear: howDidYouHear.trim(),
-        ...(usageType === "work" && {
-          industry: industry.trim(),
-          companyName: companyName.trim(),
-        }),
       };
 
       const result = await saveOnboardingData(data);
@@ -86,221 +75,151 @@ export default function OnboardingPage() {
 
   return (
     <FitToViewport>
-      <div className="container max-w-6xl mx-auto px-4 lg:px-16 py-16 md:py-24">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-start">
-          {/* Mobile: Introduction Second, Desktop: Introduction Left */}
-          <div className="order-2 lg:order-1 space-y-8">
-            <div className="space-y-6">
-              <h1 className="font-sans text-3xl md:text-5xl font-normal tracking-tight leading-tight">
-                {t("welcomeTitle")} <br />
-                <span className="font-mono">atypica.ai</span>
-              </h1>
+      <div className="container max-w-3xl mx-auto px-4 py-8 md:py-16">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary rounded-full mb-4">
+            <SparklesIcon className="w-8 h-8 text-white" />
+          </div>
+          <h1 className="text-2xl md:text-3xl font-EuclidCircularA font-medium tracking-tight mb-2">
+            {t("introTitle")}
+          </h1>
+          <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            {t("introDescription")}
+          </p>
+        </div>
 
-              <p className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-lg">
-                {t("welcomeDescription")}
-              </p>
-            </div>
-
-            {/* Feature Highlights */}
-            <div className="border">
-              <div className="grid grid-cols-1 divide-y">
-                <div className="p-6">
-                  <div className="flex items-start space-x-4">
-                    <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
-                      <SparklesIcon className="w-4 h-4 text-muted-foreground" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium mb-1">{t("featureAiPersonasTitle")}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {t("featureAiPersonasDescription")}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-6">
-                  <div className="flex items-start space-x-4">
-                    <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
-                      <MessageCircleIcon className="w-4 h-4 text-muted-foreground" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium mb-1">{t("featureInterviewerAiTitle")}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {t("featureInterviewerAiDescription")}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-6">
-                  <div className="flex items-start space-x-4">
-                    <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
-                      <BrainIcon className="w-4 h-4 text-muted-foreground" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium mb-1">{t("featureInsightsTitle")}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {t("featureInsightsDescription")}
-                      </p>
-                    </div>
-                  </div>
-                </div>
+        {/* Form */}
+        <div className="bg-card rounded-2xl shadow-lg border overflow-hidden">
+          <form onSubmit={onSubmit} className="p-6 md:p-8 space-y-6">
+            {error && (
+              <div className="rounded-lg bg-destructive/10 p-4 text-sm text-destructive border border-destructive/20">
+                {error}
               </div>
+            )}
+
+            {/* Usage Type */}
+            <div className="space-y-3">
+              <Label className="text-base font-medium flex items-center gap-2">
+                {t("usageTypeLabel")} <span className="text-red-500">*</span>
+              </Label>
+              <RadioGroup
+                value={usageType}
+                onValueChange={(value) => setUsageType(value as "work" | "personal")}
+                className="grid grid-cols-1 md:grid-cols-2 gap-3"
+              >
+                <Label
+                  htmlFor="onboarding-usage-work"
+                  className={`flex items-center space-x-3 p-4 rounded-lg border-2 cursor-pointer transition-all hover:border-primary/60 ${usageType === "work" ? "border-primary bg-primary/5" : "border-border"}`}
+                >
+                  <RadioGroupItem value="work" id="onboarding-usage-work" />
+                  <span className="font-medium">{t("usageTypeWorkOption")}</span>
+                </Label>
+                <Label
+                  htmlFor="onboarding-usage-personal"
+                  className={`flex items-center space-x-3 p-4 rounded-lg border-2 cursor-pointer transition-all hover:border-primary/60 ${usageType === "personal" ? "border-primary bg-primary/5" : "border-border"}`}
+                >
+                  <RadioGroupItem value="personal" id="onboarding-usage-personal" />
+                  <span className="font-medium">{t("usageTypePersonalOption")}</span>
+                </Label>
+              </RadioGroup>
             </div>
-          </div>
 
-          {/* Mobile: Form First, Desktop: Form Right */}
-          <div className="order-1 lg:order-2">
-            <div className="space-y-6">
-              {/* Step 1: Usage Type */}
-              {step === 1 && (
-                <div className="space-y-6">
-                  <div className="space-y-2">
-                    <h2 className="text-xl md:text-2xl font-medium">{t("usageTypeTitle")}</h2>
-                    <p className="text-base text-muted-foreground">{t("usageTypeSubtitle")}</p>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <button
-                      type="button"
-                      onClick={() => handleUsageTypeSelect("work")}
-                      className="text-left p-6 border rounded-lg hover:border-foreground/50 transition-colors"
-                    >
-                      <h3 className="font-medium mb-1">{t("usageTypeWorkTitle")}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {t("usageTypeWorkDescription")}
-                      </p>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleUsageTypeSelect("personal")}
-                      className="text-left p-6 border rounded-lg hover:border-foreground/50 transition-colors"
-                    >
-                      <h3 className="font-medium mb-1">{t("usageTypePersonalTitle")}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {t("usageTypePersonalDescription")}
-                      </p>
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Step 2: Details */}
-              {step === 2 && (
-                <div>
-                  <div className="space-y-2 mb-6">
-                    <div className="flex items-center justify-between">
-                      <h2 className="text-xl md:text-2xl font-medium">{t("detailsTitle")}</h2>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setStep(1)}
-                        className="text-muted-foreground"
-                      >
-                        <ArrowLeft className="w-4 h-4" />
-                        {t("backButton")}
-                      </Button>
-                    </div>
-                    <p className="text-base text-muted-foreground">{t("detailsSubtitle")}</p>
-                  </div>
-                  <form onSubmit={onSubmit}>
-                    {error && (
-                      <div className="rounded-lg bg-red-50 dark:bg-red-900/20 p-3 text-sm text-red-500 dark:text-red-400 border border-red-200 dark:border-red-800 mb-6">
-                        {error}
-                      </div>
-                    )}
-                    <div className="border divide-y">
-                      {/* Your Role */}
-                      <div className="p-6">
-                        <h3 className="font-medium mb-4">{t("roleLabel")} *</h3>
-                        <Input
-                          id="role"
-                          placeholder={t("rolePlaceholder")}
-                          value={role}
-                          onChange={(e) => setRole(e.target.value)}
-                        />
-                      </div>
-
-                      {/* Industry (work only) */}
-                      {usageType === "work" && (
-                        <div className="p-6">
-                          <h3 className="font-medium mb-4">{t("industryLabel")} *</h3>
-                          <Select value={industry} onValueChange={setIndustry}>
-                            <SelectTrigger>
-                              <SelectValue placeholder={t("industryPlaceholder")} />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="technology">{t("industryTechnology")}</SelectItem>
-                              <SelectItem value="finance">{t("industryFinance")}</SelectItem>
-                              <SelectItem value="healthcare">{t("industryHealthcare")}</SelectItem>
-                              <SelectItem value="education">{t("industryEducation")}</SelectItem>
-                              <SelectItem value="retail">{t("industryRetail")}</SelectItem>
-                              <SelectItem value="manufacturing">
-                                {t("industryManufacturing")}
-                              </SelectItem>
-                              <SelectItem value="consulting">{t("industryConsulting")}</SelectItem>
-                              <SelectItem value="media">{t("industryMedia")}</SelectItem>
-                              <SelectItem value="government">{t("industryGovernment")}</SelectItem>
-                              <SelectItem value="nonprofit">{t("industryNonprofit")}</SelectItem>
-                              <SelectItem value="other">{t("industryOther")}</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      )}
-
-                      {/* Company Name (work only, optional) */}
-                      {usageType === "work" && (
-                        <div className="p-6">
-                          <h3 className="font-medium mb-4">{t("companyNameLabel")}</h3>
-                          <Input
-                            id="companyName"
-                            placeholder={t("companyNamePlaceholder")}
-                            value={companyName}
-                            onChange={(e) => setCompanyName(e.target.value)}
-                          />
-                        </div>
-                      )}
-
-                      {/* How did you hear about us */}
-                      <div className="p-6">
-                        <h3 className="font-medium mb-4">{t("howDidYouHearLabel")} *</h3>
-                        <Select value={howDidYouHear} onValueChange={setHowDidYouHear}>
-                          <SelectTrigger>
-                            <SelectValue placeholder={t("howDidYouHearPlaceholder")} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="search">{t("howDidYouHearSearch")}</SelectItem>
-                            <SelectItem value="social_media">
-                              {t("howDidYouHearSocial_media")}
-                            </SelectItem>
-                            <SelectItem value="friend_colleague">
-                              {t("howDidYouHearFriend_colleague")}
-                            </SelectItem>
-                            <SelectItem value="blog_article">
-                              {t("howDidYouHearBlog_article")}
-                            </SelectItem>
-                            <SelectItem value="advertisement">
-                              {t("howDidYouHearAdvertisement")}
-                            </SelectItem>
-                            <SelectItem value="conference_event">
-                              {t("howDidYouHearConference_event")}
-                            </SelectItem>
-                            <SelectItem value="other">{t("howDidYouHearOther")}</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                    <Button
-                      type="submit"
-                      className="w-full h-12 font-medium mt-6"
-                      disabled={isLoading}
-                    >
-                      {isLoading ? t("submittingButton") : t("submitButton")}
-                    </Button>
-                  </form>
-                </div>
-              )}
+            {/* Role */}
+            <div className="space-y-3">
+              <Label htmlFor="role" className="text-base font-medium flex items-center gap-2">
+                {t("roleLabel")} <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="role"
+                placeholder={t("rolePlaceholder")}
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                className="h-12 text-base"
+              />
             </div>
-          </div>
+
+            {/* Industry */}
+            <div className="space-y-3">
+              <Label className="text-base font-medium flex items-center gap-2">
+                {t("industryLabel")} <span className="text-red-500">*</span>
+              </Label>
+              <Select value={industry} onValueChange={setIndustry}>
+                <SelectTrigger className="h-12 text-base">
+                  <SelectValue placeholder={t("industryPlaceholder")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="technology">{t("industryTechnology")}</SelectItem>
+                  <SelectItem value="finance">{t("industryFinance")}</SelectItem>
+                  <SelectItem value="healthcare">{t("industryHealthcare")}</SelectItem>
+                  <SelectItem value="education">{t("industryEducation")}</SelectItem>
+                  <SelectItem value="retail">{t("industryRetail")}</SelectItem>
+                  <SelectItem value="manufacturing">{t("industryManufacturing")}</SelectItem>
+                  <SelectItem value="consulting">{t("industryConsulting")}</SelectItem>
+                  <SelectItem value="media">{t("industryMedia")}</SelectItem>
+                  <SelectItem value="government">{t("industryGovernment")}</SelectItem>
+                  <SelectItem value="nonprofit">{t("industryNonprofit")}</SelectItem>
+                  <SelectItem value="other">{t("industryOther")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Company Name */}
+            <div className="space-y-3">
+              <Label htmlFor="companyName" className="text-base font-medium">
+                {t("companyNameLabel")}
+              </Label>
+              <Input
+                id="companyName"
+                placeholder={t("companyNamePlaceholder")}
+                value={companyName}
+                onChange={(e) => setCompanyName(e.target.value)}
+                className="h-12 text-base"
+              />
+            </div>
+
+            {/* How did you hear */}
+            <div className="space-y-3">
+              <Label className="text-base font-medium flex items-center gap-2">
+                {t("howDidYouHearLabel")} <span className="text-red-500">*</span>
+              </Label>
+              <Select value={howDidYouHear} onValueChange={setHowDidYouHear}>
+                <SelectTrigger className="h-12 text-base">
+                  <SelectValue placeholder={t("howDidYouHearPlaceholder")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="search">{t("howDidYouHearSearch")}</SelectItem>
+                  <SelectItem value="social_media">{t("howDidYouHearSocial_media")}</SelectItem>
+                  <SelectItem value="friend_colleague">
+                    {t("howDidYouHearFriend_colleague")}
+                  </SelectItem>
+                  <SelectItem value="blog_article">{t("howDidYouHearBlog_article")}</SelectItem>
+                  <SelectItem value="advertisement">{t("howDidYouHearAdvertisement")}</SelectItem>
+                  <SelectItem value="conference_event">
+                    {t("howDidYouHearConference_event")}
+                  </SelectItem>
+                  <SelectItem value="other">{t("howDidYouHearOther")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Required fields note */}
+            <div className="text-sm text-muted-foreground">{t("optionalFieldNote")}</div>
+
+            {/* Submit button */}
+            <Button
+              type="submit"
+              className="w-full h-12 text-base font-medium"
+              disabled={isLoading}
+            >
+              {isLoading ? t("submittingButton") : t("submitButton")}
+            </Button>
+          </form>
+        </div>
+
+        {/* Footer note */}
+        <div className="text-center mt-6 text-sm text-muted-foreground">
+          <span className="font-mono">atypica.ai</span> • AI-powered user research platform
         </div>
       </div>
     </FitToViewport>

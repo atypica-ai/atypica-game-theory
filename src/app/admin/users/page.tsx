@@ -79,6 +79,7 @@ export default function UsersPage() {
       const pageParam = url.searchParams.get("page");
       const searchParam = url.searchParams.get("search");
       const adminParam = url.searchParams.get("adminOnly");
+      const viewParam = url.searchParams.get("view");
 
       if (pageParam) {
         setCurrentPage(parseInt(pageParam, 10));
@@ -89,10 +90,13 @@ export default function UsersPage() {
       if (adminParam === "true") {
         setAdminOnly(true);
       }
+      if (viewParam === "onboarding") {
+        setViewMode("onboarding");
+      }
     }
   }, []);
 
-  // Update URL when page, search, or admin filter changes
+  // Update URL when page, search, admin filter, or view mode changes
   useEffect(() => {
     const url = new URL(window.location.href);
     url.searchParams.set("page", currentPage.toString());
@@ -109,8 +113,14 @@ export default function UsersPage() {
       url.searchParams.delete("adminOnly");
     }
 
+    if (viewMode === "onboarding") {
+      url.searchParams.set("view", "onboarding");
+    } else {
+      url.searchParams.delete("view");
+    }
+
     window.history.pushState({}, "", url.toString());
-  }, [currentPage, searchQuery, adminOnly]);
+  }, [currentPage, searchQuery, adminOnly, viewMode]);
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
@@ -281,7 +291,7 @@ export default function UsersPage() {
 
         <div className="mt-4">
           <RadioGroup
-            defaultValue="actions"
+            value={viewMode}
             onValueChange={(value: string) => setViewMode(value as "actions" | "onboarding")}
             className="flex items-center space-x-4"
           >
@@ -319,6 +329,7 @@ export default function UsersPage() {
                   <TableHead className="text-center">Usage Type</TableHead>
                   <TableHead className="text-center">Role</TableHead>
                   <TableHead className="text-center">Industry</TableHead>
+                  <TableHead className="text-center">Company</TableHead>
                   <TableHead className="text-center">Heard From</TableHead>
                 </>
               )}
@@ -461,21 +472,24 @@ export default function UsersPage() {
                       {(user.extra as UserExtra)?.onboarding ? (
                         <>
                           <TableCell className="text-center text-xs">
-                            {(user.extra as UserExtra).onboarding?.usageType}
+                            {(user.extra as UserExtra).onboarding?.usageType || "-"}
                           </TableCell>
                           <TableCell className="text-center text-xs">
-                            {(user.extra as UserExtra).onboarding?.role}
+                            {(user.extra as UserExtra).onboarding?.role || "-"}
                           </TableCell>
                           <TableCell className="text-center text-xs">
                             {(user.extra as UserExtra).onboarding?.industry || "-"}
                           </TableCell>
                           <TableCell className="text-center text-xs">
-                            {(user.extra as UserExtra).onboarding?.howDidYouHear}
+                            {(user.extra as UserExtra).onboarding?.companyName || "-"}
+                          </TableCell>
+                          <TableCell className="text-center text-xs">
+                            {(user.extra as UserExtra).onboarding?.howDidYouHear || "-"}
                           </TableCell>
                         </>
                       ) : (
                         <TableCell
-                          colSpan={4}
+                          colSpan={5}
                           className="text-center text-xs text-muted-foreground"
                         >
                           Onboarding not completed
