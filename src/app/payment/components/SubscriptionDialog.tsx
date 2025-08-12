@@ -1,3 +1,4 @@
+import { upgradeFromProToMaxAction } from "@/app/payment/(stripe)/actions";
 import {
   fetchProductPricesAction,
   retrieveLatestPaid,
@@ -29,7 +30,7 @@ import {
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { PaymentProvider, usePay } from "./usePay";
 
 interface SubscriptionDialogProps {
@@ -59,8 +60,23 @@ export const SubscriptionDialog = ({
   );
   const [paymentSuccess, setPaymentSuccess] = useState<boolean>(false);
   const [productPrices, setProductPrices] = useState<TProductPrices | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const {
+    createPaymentLink,
+    clearPaymentLink,
+    paymentScanQR,
+    loading: usePayLoading,
+    error: usePayError,
+  } = usePay();
 
-  const { createPaymentLink, clearPaymentLink, paymentScanQR, loading, error } = usePay();
+  useEffect(() => {
+    setError(usePayError);
+  }, [usePayError]);
+
+  useEffect(() => {
+    setLoading(usePayLoading);
+  }, [usePayLoading]);
 
   // Poll for payment success
   useEffect(() => {
@@ -122,6 +138,33 @@ export const SubscriptionDialog = ({
   const isUpgradeFromPro = useMemo(() => {
     return activeSubscription?.plan === SubscriptionPlan.pro && plan === SubscriptionPlan.max;
   }, [activeSubscription, plan]);
+
+  const upgradeOrCreatePaymentLink = useCallback(
+    async ({
+      paymentProvider,
+      productName,
+    }: {
+      paymentProvider: PaymentProvider;
+      productName: ProductName.MAX1MONTH | ProductName.PRO1MONTH;
+    }) => {
+      if (isUpgradeFromPro) {
+        setLoading(true);
+        try {
+          const result = await upgradeFromProToMaxAction();
+          if (!result.success) throw result;
+          setPaymentSuccess(true);
+        } catch (error) {
+          console.log("Error upgrading from Pro to Max:", error);
+          setError((error as Error).message);
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        createPaymentLink({ paymentProvider, productName });
+      }
+    },
+    [createPaymentLink, isUpgradeFromPro],
+  );
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -331,7 +374,7 @@ export const SubscriptionDialog = ({
                   if (!productName) {
                     throw new Error("Invalid plan");
                   }
-                  createPaymentLink({ paymentProvider, productName });
+                  upgradeOrCreatePaymentLink({ paymentProvider, productName });
                 }}
                 disabled={loading}
                 className={cn(
@@ -343,6 +386,8 @@ export const SubscriptionDialog = ({
                     <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
                     {t("processing")}
                   </>
+                ) : isUpgradeFromPro ? (
+                  t("upgrade")
                 ) : (
                   t("subscribe")
                 )}

@@ -116,6 +116,11 @@ export async function POST(req: Request) {
       if (!metadata) {
         return NextResponse.json({ received: true }, { status: 200 }); // ignore this event
       }
+      if (metadata.invoiceType === "ProToMaxUpgrade") {
+        // 创建 invoice 的时候自动扣费了，这里可以直接忽略
+        // 没法通过 voiceData.billing_reason === "manual" 来判断，因为购买 TOKENS1M 的时候，也是 manual
+        return NextResponse.json({ received: true }, { status: 200 });
+      }
       let paymentRecord;
       if (invoiceData.billing_reason === "subscription_cycle") {
         if (await prisma.paymentRecord.findUnique({ where: { chargeId: invoiceId } })) {

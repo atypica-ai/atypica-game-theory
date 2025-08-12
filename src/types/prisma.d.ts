@@ -57,6 +57,10 @@ declare module "@/prisma/client" {
     reportedBy: string;
   } & Record<string, unknown>;
 
+  export type ProductExtra = Partial<{
+    stripePriceId: string;
+  }>;
+
   export type UserSubscriptionExtra = Partial<{
     // ... pingxx invoice data tbd
     paymentRecordId: number;
