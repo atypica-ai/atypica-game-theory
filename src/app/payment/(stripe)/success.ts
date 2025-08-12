@@ -50,8 +50,11 @@ export async function handleTeamSubscriptionPaymentSuccess({
   productName: ProductName.TEAMSEAT1MONTH;
   invoiceData: Stripe.Invoice;
 }) {
+  const paymentLine = await prisma.paymentLine.findFirstOrThrow({
+    where: { paymentRecordId: paymentRecord.id },
+  });
   const quantity = invoiceData.lines.data[0]?.quantity;
-  if (!quantity) {
+  if (!quantity || quantity !== paymentLine.quantity) {
     throw new Error(`Invalid quantity on invoice data for paymentRecord ${paymentRecord.id}`);
   }
 

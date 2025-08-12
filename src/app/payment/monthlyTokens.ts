@@ -263,12 +263,20 @@ export async function resetTeamMonthlyTokens({ teamId }: { teamId: number }) {
     return;
   }
 
+  const paymentRecordId = activeSubscription.extra.paymentRecordId;
+  if (!paymentRecordId) {
+    throw new Error(`Payment record ID not found for subscription ${activeSubscription.id}`);
+  }
+  const paymentLine = await prisma.paymentLine.findFirstOrThrow({
+    where: { paymentRecordId: paymentRecordId },
+  });
+
   let seats: number;
   if (activeSubscription.plan === SubscriptionPlan.team) {
     try {
       const { invoice: invoiceData } = activeSubscription.extra;
       const quantity = invoiceData?.lines.data[0]?.quantity;
-      if (!quantity) {
+      if (!quantity || quantity !== paymentLine.quantity) {
         throw new Error(
           `Invalid quantity on invoice data of subscription ${activeSubscription.id}`,
         );
