@@ -1,3 +1,4 @@
+import { fetchProductPricesAction, TProductPrices } from "@/app/payment/actions";
 import { ProductName } from "@/app/payment/data";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,7 +25,7 @@ import {
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { PaymentProvider, usePay } from "./usePay";
 
 interface TeamSubscriptionDialogProps {
@@ -49,28 +50,35 @@ export const TeamSubscriptionDialog = ({
   // 没有支付宝微信扫码支付，用不到 paymentSuccess 和 onSuccess
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [paymentSuccess, setPaymentSuccess] = useState<boolean>(false);
+  const [productPrices, setProductPrices] = useState<TProductPrices | null>(null);
 
   const { createPaymentLink, loading, error } = usePay();
 
+  useEffect(() => {
+    fetchProductPricesAction().then(setProductPrices);
+  }, []);
+
   const unitPrice = useMemo(() => {
+    if (!productPrices) return "-";
     if (paymentProvider === PaymentProvider.StripeCNY) {
-      return "¥329";
+      return `¥${productPrices["TEAMSEAT1MONTH"]["CNY"]}`;
     }
     if (paymentProvider === PaymentProvider.Stripe) {
-      return "$50";
+      return `$${productPrices["TEAMSEAT1MONTH"]["USD"]}`;
     }
     return "-";
-  }, [paymentProvider]);
+  }, [paymentProvider, productPrices]);
 
   const totalPrice = useMemo(() => {
+    if (!productPrices) return "-";
     if (paymentProvider === PaymentProvider.StripeCNY) {
-      return `¥${(329 * quantity).toLocaleString()}`;
+      return `¥${(productPrices["TEAMSEAT1MONTH"]["CNY"] * quantity).toLocaleString()}`;
     }
     if (paymentProvider === PaymentProvider.Stripe) {
-      return `$${(50 * quantity).toLocaleString()}`;
+      return `$${(productPrices["TEAMSEAT1MONTH"]["USD"] * quantity).toLocaleString()}`;
     }
     return "-";
-  }, [paymentProvider, quantity]);
+  }, [paymentProvider, quantity, productPrices]);
 
   // const submitForStripePayment = useCallback(
   //   ({ teamId, quantity, currency }: { teamId: number; quantity: number; currency: string }) => {

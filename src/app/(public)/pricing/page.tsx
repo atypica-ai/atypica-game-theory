@@ -1,5 +1,6 @@
 import authOptions from "@/app/(auth)/authOptions";
 import { fetchActiveSubscription } from "@/app/account/lib";
+import { fetchProductPricesAction } from "@/app/payment/actions";
 import { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { getTranslations } from "next-intl/server";
@@ -14,6 +15,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function PricingPage() {
+  const productPrices = await fetchProductPricesAction();
   const session = await getServerSession(authOptions);
   if (session?.user) {
     const userId = session.user.id;
@@ -22,6 +24,7 @@ export default async function PricingPage() {
     });
     return (
       <PricingPageClient
+        productPrices={productPrices}
         activeSubscription={activeSubscription}
         stripeSubscriptionId={stripeSubscriptionId}
         userType={userType}
@@ -30,6 +33,7 @@ export default async function PricingPage() {
   } else {
     return (
       <PricingPageClient
+        productPrices={productPrices}
         activeSubscription={null}
         stripeSubscriptionId={null}
         userType="Personal"

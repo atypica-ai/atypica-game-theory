@@ -1,4 +1,8 @@
-import { retrieveLatestPaid } from "@/app/payment/actions";
+import {
+  fetchProductPricesAction,
+  retrieveLatestPaid,
+  TProductPrices,
+} from "@/app/payment/actions";
 import { ProductName } from "@/app/payment/data";
 import { Button } from "@/components/ui/button";
 import {
@@ -54,6 +58,7 @@ export const SubscriptionDialog = ({
     getDeployRegion() === "mainland" ? PaymentProvider.StripeCNY : PaymentProvider.Stripe,
   );
   const [paymentSuccess, setPaymentSuccess] = useState<boolean>(false);
+  const [productPrices, setProductPrices] = useState<TProductPrices | null>(null);
 
   const { createPaymentLink, clearPaymentLink, paymentScanQR, loading, error } = usePay();
 
@@ -87,27 +92,32 @@ export const SubscriptionDialog = ({
     };
   }, [open, paymentScanQR, paymentSuccess, onSuccess]);
 
+  useEffect(() => {
+    fetchProductPricesAction().then(setProductPrices);
+  }, []);
+
   const price = useMemo(() => {
+    if (!productPrices) return "-";
     if (paymentProvider === PaymentProvider.Pingxx && plan === SubscriptionPlan.pro) {
-      return "¥129";
+      return `¥${productPrices["PRO1MONTH"]["CNY"]}`;
     }
     if (paymentProvider === PaymentProvider.Pingxx && plan === SubscriptionPlan.max) {
-      return "¥329";
+      return `¥${productPrices["MAX1MONTH"]["CNY"]}`;
     }
     if (paymentProvider === PaymentProvider.StripeCNY && plan === SubscriptionPlan.pro) {
-      return "¥129";
+      return `¥${productPrices["PRO1MONTH"]["CNY"]}`;
     }
     if (paymentProvider === PaymentProvider.StripeCNY && plan === SubscriptionPlan.max) {
-      return "¥329";
+      return `¥${productPrices["MAX1MONTH"]["CNY"]}`;
     }
     if (paymentProvider === PaymentProvider.Stripe && plan === SubscriptionPlan.pro) {
-      return "$20";
+      return `$${productPrices["PRO1MONTH"]["USD"]}`;
     }
     if (paymentProvider === PaymentProvider.Stripe && plan === SubscriptionPlan.max) {
-      return "$50";
+      return `$${productPrices["MAX1MONTH"]["USD"]}`;
     }
     return "-";
-  }, [paymentProvider, plan]);
+  }, [paymentProvider, plan, productPrices]);
 
   const isUpgradeFromPro = useMemo(() => {
     return activeSubscription?.plan === SubscriptionPlan.pro && plan === SubscriptionPlan.max;

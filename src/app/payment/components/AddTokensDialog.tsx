@@ -1,3 +1,8 @@
+import {
+  fetchProductPricesAction,
+  retrieveLatestPaid,
+  TProductPrices,
+} from "@/app/payment/actions";
 import { ProductName } from "@/app/payment/data";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,7 +21,6 @@ import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { retrieveLatestPaid } from "../actions";
 import { PaymentProvider, usePay } from "./usePay";
 
 interface AddTokensDialogProps {
@@ -31,6 +35,7 @@ export const AddTokensDialog = ({ open, onOpenChange, onSuccess }: AddTokensDial
     getDeployRegion() === "mainland" ? PaymentProvider.StripeCNY : PaymentProvider.Stripe,
   );
   const [paymentSuccess, setPaymentSuccess] = useState<boolean>(false);
+  const [productPrices, setProductPrices] = useState<TProductPrices | null>(null);
 
   const { createPaymentLink, clearPaymentLink, paymentScanQR, loading, error } = usePay();
 
@@ -64,18 +69,23 @@ export const AddTokensDialog = ({ open, onOpenChange, onSuccess }: AddTokensDial
     };
   }, [open, paymentScanQR, paymentSuccess, onSuccess]);
 
+  useEffect(() => {
+    fetchProductPricesAction().then(setProductPrices);
+  }, []);
+
   const price = useMemo(() => {
+    if (!productPrices) return "-";
     if (paymentProvider === PaymentProvider.Pingxx) {
-      return "¥100";
+      return `¥${productPrices["TOKENS1M"]["CNY"]}`;
     }
     if (paymentProvider === PaymentProvider.StripeCNY) {
-      return "¥100";
+      return `¥${productPrices["TOKENS1M"]["CNY"]}`;
     }
     if (paymentProvider === PaymentProvider.Stripe) {
-      return "$16";
+      return `$${productPrices["TOKENS1M"]["USD"]}`;
     }
     return "-";
-  }, [paymentProvider]);
+  }, [paymentProvider, productPrices]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

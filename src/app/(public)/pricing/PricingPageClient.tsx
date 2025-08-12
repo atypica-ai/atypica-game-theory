@@ -17,13 +17,16 @@ import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useCallback, useState } from "react";
 
+import { TProductPrices } from "@/app/payment/actions";
 import { TeamCreateButton } from "@/app/team/components/TeamCreateButton";
 import { createHelloUserChatAction } from "./actions";
 
 export default function PricingPageClient({
+  productPrices,
   activeSubscription,
   userType,
 }: {
+  productPrices: TProductPrices;
   activeSubscription:
     | (Omit<UserSubscription, "extra"> & {
         extra: UserSubscriptionExtra;
@@ -32,7 +35,6 @@ export default function PricingPageClient({
   stripeSubscriptionId: string | null;
   userType: UserType;
 }) {
-  console.log(userType);
   const locale = useLocale();
   const t = useTranslations("PricingPage");
   const [isTokensDialogOpen, setIsTokensDialogOpen] = useState(false);
@@ -148,7 +150,11 @@ export default function PricingPageClient({
             <CardDescription className="h-12">{t("proSubtitle")}</CardDescription>
             <div className="mt-4 h-30">
               <div>
-                <span className="text-3xl font-bold">{t("proPrice")}</span>
+                <span className="text-3xl font-bold">
+                  {locale === "zh-CN"
+                    ? `¥${productPrices["PRO1MONTH"]["CNY"]}`
+                    : `$${productPrices["PRO1MONTH"]["USD"]}`}
+                </span>
                 <span className="text-lg">/{t("month")}</span>
               </div>
               <div className="mt-1">{t("proMonthlyTokens")}</div>
@@ -194,7 +200,11 @@ export default function PricingPageClient({
             <CardDescription className="h-12">{t("maxSubtitle")}</CardDescription>
             <div className="mt-4 h-30">
               <div>
-                <span className="text-3xl font-bold">{t("maxPrice")}</span>
+                <span className="text-3xl font-bold">
+                  {locale === "zh-CN"
+                    ? `¥${productPrices["MAX1MONTH"]["CNY"]}`
+                    : `$${productPrices["MAX1MONTH"]["USD"]}`}
+                </span>
                 <span className="text-lg">/{t("month")}</span>
               </div>
               <div className="mt-1">{t("maxMonthlyTokens")}</div>
@@ -242,7 +252,11 @@ export default function PricingPageClient({
             <CardDescription className="h-12">{t("teamSubtitle")}</CardDescription>
             <div className="mt-4 h-30">
               <div>
-                <span className="text-3xl font-bold">{t("teamPrice")}</span>
+                <span className="text-3xl font-bold">
+                  {locale === "zh-CN"
+                    ? `¥${productPrices["TEAMSEAT1MONTH"]["CNY"]}`
+                    : `$${productPrices["TEAMSEAT1MONTH"]["USD"]}`}
+                </span>
                 <span className="text-lg">{t("perSeat")}</span>
               </div>
               <div className="mt-1">{t("teamMonthlyTokens")}</div>
