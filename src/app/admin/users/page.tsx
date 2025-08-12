@@ -333,199 +333,193 @@ export default function UsersPage() {
                   <TableHead className="text-center">Heard From</TableHead>
                 </>
               )}
-              <TableHead>Created At</TableHead>
+              {/*<TableHead>Created At</TableHead>*/}
             </TableRow>
           </TableHeader>
           <TableBody>
-            {users.length === 0 ? (
-              <TableRow>
-                <TableCell className="text-center text-sm">No users found</TableCell>
-              </TableRow>
-            ) : (
-              users.map((user) => (
-                <TableRow key={user.id.toString()}>
-                  <TableCell className="whitespace-nowrap text-sm">{user.id}</TableCell>
-                  <TableCell className="whitespace-nowrap text-sm">{user.email}</TableCell>
-                  {/* TODO: 去要按照 currency 区分 */}
-                  <TableCell className="whitespace-nowrap text-sm text-right">
-                    {user.paymentRecords.reduce((acc, r) => acc + r.amount, 0)}
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap text-sm text-right">
-                    {formatTokensNumber(
-                      user.tokens ? user.tokens.permanentBalance + user.tokens.monthlyBalance : 0,
-                    )}{" "}
-                    <br />
-                    <span className="text-xs text-muted-foreground">
-                      {(user.tokens
-                        ? user.tokens.permanentBalance + user.tokens.monthlyBalance
-                        : 0
-                      ).toLocaleString()}
-                    </span>
-                  </TableCell>
-                  {viewMode === "actions" ? (
-                    <>
-                      <TableCell className="whitespace-nowrap text-sm">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-6 text-xs text-amber-500 hover:text-amber-500 gap-0"
-                          onClick={() => openTokensDialog(user)}
-                          title="Add tokens"
-                        >
-                          <PlusIcon className="size-3" />
-                          <CoinsIcon className="size-4" />
+            {users.map((user) => (
+              <TableRow key={user.id.toString()}>
+                <TableCell className="whitespace-nowrap text-xs text-muted-foreground">
+                  {user.id}
+                </TableCell>
+                <TableCell>
+                  <div className="whitespace-nowrap text-sm font-medium">{user.email}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {formatDate(user.createdAt, locale)}
+                  </div>
+                  {user.emailVerified ? (
+                    <div className="text-green-600/80 text-xs">
+                      Verified {formatDate(user.emailVerified, locale)}
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 text-xs mt-1">
+                      <span className="font-medium text-red-500">Not Verified</span>
+                      <ConfirmDialog
+                        title="Verify User Email"
+                        description={`Are you sure you want to mark ${user.email} as verified?`}
+                        onConfirm={async () => {
+                          await verifyUserEmail(user.id);
+                          fetchData();
+                        }}
+                      >
+                        <Button variant="outline" className="h-4 text-xs rounded-sm">
+                          Mark as Verified
                         </Button>
-                      </TableCell>
-                      <TableCell className="whitespace-nowrap text-xs">
-                        {user.lastLogin?.timestamp ? (
+                      </ConfirmDialog>
+                    </div>
+                  )}
+                </TableCell>
+                {/* TODO: 去要按照 currency 区分 */}
+                <TableCell className="whitespace-nowrap text-sm text-right">
+                  {user.paymentRecords.reduce((acc, r) => acc + r.amount, 0)}
+                </TableCell>
+                <TableCell className="whitespace-nowrap text-sm text-right">
+                  {formatTokensNumber(
+                    user.tokens ? user.tokens.permanentBalance + user.tokens.monthlyBalance : 0,
+                  )}{" "}
+                  <br />
+                  <span className="text-xs text-muted-foreground">
+                    {(user.tokens
+                      ? user.tokens.permanentBalance + user.tokens.monthlyBalance
+                      : 0
+                    ).toLocaleString()}
+                  </span>
+                </TableCell>
+                {viewMode === "actions" ? (
+                  <>
+                    <TableCell className="whitespace-nowrap text-sm">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-6 text-xs text-amber-500 hover:text-amber-500 gap-0"
+                        onClick={() => openTokensDialog(user)}
+                        title="Add tokens"
+                      >
+                        <PlusIcon className="size-3" />
+                        <CoinsIcon className="size-4" />
+                      </Button>
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap text-xs">
+                      {user.lastLogin?.timestamp ? (
+                        <>
+                          <div>{formatDate(new Date(user.lastLogin.timestamp), locale)}</div>
+                          <div>{user.lastLogin.clientIp}</div>
+                          {user.lastLogin.geo && (
+                            <div>
+                              {user.lastLogin.geo.city}, {user.lastLogin.geo.countryCode}
+                            </div>
+                          )}
+                          {user.lastLogin.provider && <div>{user.lastLogin.provider}</div>}
+                        </>
+                      ) : (
+                        <span className="text-muted-foreground">-</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap text-sm">
+                      <div className="flex items-center gap-2">
+                        {user.adminUser ? (
                           <>
-                            <div>{formatDate(new Date(user.lastLogin.timestamp), locale)}</div>
-                            <div>{user.lastLogin.clientIp}</div>
-                            {user.lastLogin.geo && (
-                              <div>
-                                {user.lastLogin.geo.city}, {user.lastLogin.geo.countryCode}
-                              </div>
-                            )}
-                          </>
-                        ) : (
-                          <span className="text-muted-foreground">-</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="whitespace-nowrap text-sm">
-                        <div className="flex items-center gap-2">
-                          {user.adminUser ? (
-                            <>
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                {user.adminUser.role}
-                              </span>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="h-7"
-                                onClick={() => openAdminDialog(user)}
-                              >
-                                Edit
-                              </Button>
-                            </>
-                          ) : (
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                              {user.adminUser.role}
+                            </span>
                             <Button
                               variant="outline"
                               size="sm"
                               className="h-7"
                               onClick={() => openAdminDialog(user)}
                             >
-                              Make Admin
+                              Edit
                             </Button>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell className="whitespace-nowrap text-center">
-                        {user.emailVerified ? (
+                          </>
+                        ) : (
                           <Button
                             variant="outline"
                             size="sm"
-                            className="h-7 gap-1"
-                            onClick={() => generateLoginUrl(user)}
-                            disabled={isGeneratingLogin}
-                            title="Generate impersonation login URL"
+                            className="h-7"
+                            onClick={() => openAdminDialog(user)}
                           >
-                            <LinkIcon className="size-3" />
-                            {isGeneratingLogin ? "..." : "Login"}
+                            Make Admin
                           </Button>
-                        ) : (
-                          <span className="text-xs text-muted-foreground">Email not verified</span>
                         )}
-                      </TableCell>
-                      <TableCell className="whitespace-nowrap text-center">
+                      </div>
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap text-center">
+                      {user.emailVerified ? (
                         <Button
                           variant="outline"
                           size="sm"
                           className="h-7 gap-1"
-                          onClick={() => generateResetUrl(user)}
-                          disabled={isGeneratingReset}
-                          title="Generate password reset URL"
+                          onClick={() => generateLoginUrl(user)}
+                          disabled={isGeneratingLogin}
+                          title="Generate impersonation login URL"
                         >
                           <LinkIcon className="size-3" />
-                          {isGeneratingReset ? "..." : "Reset"}
+                          {isGeneratingLogin ? "..." : "Login"}
                         </Button>
-                      </TableCell>
-                      <TableCell className="whitespace-nowrap text-center">
-                        <ConfirmDialog
-                          title="Delete User Account"
-                          description={`Are you sure you want to permanently delete the account for ${user.email}? This will remove all user data including tokens, payments, and subscription information.`}
-                          onConfirm={async () => {
-                            const result = await deleteUserAccount(user.id);
-                            if (!result.success) {
-                              setError(result.message || "Failed to delete user");
-                            }
-                            fetchData();
-                          }}
-                        >
-                          <Button variant="destructive" size="icon" className="size-7">
-                            ×
-                          </Button>
-                        </ConfirmDialog>
-                      </TableCell>
-                    </>
-                  ) : (
-                    <>
-                      {(user.extra as UserExtra)?.onboarding ? (
-                        <>
-                          <TableCell className="text-center text-xs">
-                            {(user.extra as UserExtra).onboarding?.usageType || "-"}
-                          </TableCell>
-                          <TableCell className="text-center text-xs">
-                            {(user.extra as UserExtra).onboarding?.role || "-"}
-                          </TableCell>
-                          <TableCell className="text-center text-xs">
-                            {(user.extra as UserExtra).onboarding?.industry || "-"}
-                          </TableCell>
-                          <TableCell className="text-center text-xs">
-                            {(user.extra as UserExtra).onboarding?.companyName || "-"}
-                          </TableCell>
-                          <TableCell className="text-center text-xs">
-                            {(user.extra as UserExtra).onboarding?.howDidYouHear || "-"}
-                          </TableCell>
-                        </>
                       ) : (
-                        <TableCell
-                          colSpan={5}
-                          className="text-center text-xs text-muted-foreground"
-                        >
-                          Onboarding not completed
+                        <span className="text-xs text-muted-foreground">Email not verified</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap text-center">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-7 gap-1"
+                        onClick={() => generateResetUrl(user)}
+                        disabled={isGeneratingReset}
+                        title="Generate password reset URL"
+                      >
+                        <LinkIcon className="size-3" />
+                        {isGeneratingReset ? "..." : "Reset"}
+                      </Button>
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap text-center">
+                      <ConfirmDialog
+                        title="Delete User Account"
+                        description={`Are you sure you want to permanently delete the account for ${user.email}? This will remove all user data including tokens, payments, and subscription information.`}
+                        onConfirm={async () => {
+                          const result = await deleteUserAccount(user.id);
+                          if (!result.success) {
+                            setError(result.message || "Failed to delete user");
+                          }
+                          fetchData();
+                        }}
+                      >
+                        <Button variant="destructive" size="icon" className="size-7">
+                          ×
+                        </Button>
+                      </ConfirmDialog>
+                    </TableCell>
+                  </>
+                ) : (
+                  <>
+                    {(user.extra as UserExtra)?.onboarding ? (
+                      <>
+                        <TableCell className="text-center text-xs">
+                          {(user.extra as UserExtra).onboarding?.usageType || "-"}
                         </TableCell>
-                      )}
-                    </>
-                  )}
-                  <TableCell className="whitespace-nowrap text-xs">
-                    <div>{formatDate(user.createdAt, locale)}</div>
-                    <div className="flex items-center gap-2 mt-2">
-                      {user.emailVerified ? (
-                        <span className="text-green-600">
-                          Verified {formatDate(user.emailVerified, locale)}
-                        </span>
-                      ) : (
-                        <>
-                          <span className="font-medium text-red-500">Not Verified</span>
-                          <ConfirmDialog
-                            title="Verify User Email"
-                            description={`Are you sure you want to mark ${user.email} as verified?`}
-                            onConfirm={async () => {
-                              await verifyUserEmail(user.id);
-                              fetchData();
-                            }}
-                          >
-                            <Button variant="outline" size="icon" className="size-6 text-xs">
-                              ✓
-                            </Button>
-                          </ConfirmDialog>
-                        </>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
+                        <TableCell className="text-center text-xs">
+                          {(user.extra as UserExtra).onboarding?.role || "-"}
+                        </TableCell>
+                        <TableCell className="text-center text-xs">
+                          {(user.extra as UserExtra).onboarding?.industry || "-"}
+                        </TableCell>
+                        <TableCell className="text-center text-xs">
+                          {(user.extra as UserExtra).onboarding?.companyName || "-"}
+                        </TableCell>
+                        <TableCell className="text-center text-xs">
+                          {(user.extra as UserExtra).onboarding?.howDidYouHear || "-"}
+                        </TableCell>
+                      </>
+                    ) : (
+                      <TableCell colSpan={5} className="text-center text-xs text-muted-foreground">
+                        Onboarding not completed
+                      </TableCell>
+                    )}
+                  </>
+                )}
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
       </div>

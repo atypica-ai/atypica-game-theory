@@ -26,6 +26,7 @@ declare module "@/prisma/client" {
       countryCode: string;
       city: string;
     }>;
+    provider: "email-password" | "impersonation" | "team-switch" | "google";
   }>;
 
   export type AnalystReportExtra = Partial<{

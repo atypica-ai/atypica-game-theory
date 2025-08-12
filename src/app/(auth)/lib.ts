@@ -9,7 +9,9 @@ import { hash } from "bcryptjs";
 
 export const authLogger = rootLogger.child({ api: "next-auth" });
 
-export const authClientInfo = async (): Promise<UserLastLogin> => {
+export const authClientInfo = async (): Promise<
+  Pick<UserLastLogin, "timestamp" | "clientIp" | "userAgent" | "geo">
+> => {
   const timestamp = Date.now();
   const [clientIp, userAgent, geo] = await Promise.all([
     getRequestClientIp(),
@@ -24,15 +26,26 @@ export const authClientInfo = async (): Promise<UserLastLogin> => {
   };
 };
 
-export function recordLastLogin(userId: number) {
+export function recordLastLogin({
+  userId,
+  provider,
+}: {
+  userId: number;
+  provider: "email-password" | "impersonation" | "team-switch" | "google";
+}) {
   // 后台运行，不要 await
   waitUntil(
     new Promise(async (resolve) => {
       try {
-        const lastLogin = await authClientInfo();
+        const clientInfo = await authClientInfo();
         await prisma.user.update({
           where: { id: userId },
-          data: { lastLogin },
+          data: {
+            lastLogin: {
+              ...clientInfo,
+              provider,
+            },
+          },
         });
       } catch (error) {
         authLogger.error(`Error updating user last login: ${(error as Error).message}`);
@@ -84,7 +97,7 @@ export async function createPersonalUser({
     });
   });
 
-  recordLastLogin(user.id);
+  recordLastLogin({ userId: user.id, provider: "email-password" });
 
   return { ...user, email } as Omit<User, "email"> & { email: string };
 }
@@ -115,7 +128,7 @@ export async function createTeamMemberUser({
   //   },
   // });
 
-  recordLastLogin(teamUser.id);
+  recordLastLogin({ userId: teamUser.id, provider: "team-switch" });
 
   return teamUser as Omit<User, "teamIdAsMember" | "personalUserId"> & {
     teamIdAsMember: number;

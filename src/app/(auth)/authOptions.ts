@@ -97,7 +97,7 @@ const authOptions: NextAuthOptions = {
           }
           throw new Error("EMAIL_NOT_VERIFIED");
         }
-        recordLastLogin(user.id);
+        recordLastLogin({ userId: user.id, provider: "email-password" });
         return {
           id: user.id,
           name: user.name,
@@ -212,7 +212,7 @@ const authOptions: NextAuthOptions = {
           throw new Error("EMAIL_NOT_VERIFIED");
         }
 
-        recordLastLogin(targetUser.id);
+        recordLastLogin({ userId: targetUser.id, provider: "team-switch" });
         // 获取显示用的email
         let displayEmail = targetUser.email;
         if (!displayEmail && targetUser.personalUserId) {
@@ -310,8 +310,6 @@ const authOptions: NextAuthOptions = {
           });
           // 更新 session 上的 user.id 为数据库的 id，本来是 google 的用户 id
           user.id = newUser.id;
-          user.userType = "Personal";
-          user.teamIdAsMember = null;
           // 新用户不需要检查 onboarding，会在后续流程中处理
         } else {
           if (existingUser.teamIdAsMember) {
@@ -319,9 +317,10 @@ const authOptions: NextAuthOptions = {
           }
           // 更新 session 上的 user.id 为数据库的 id，本来是 google 的用户 id
           user.id = existingUser.id;
-          user.userType = "Personal";
-          user.teamIdAsMember = null;
         }
+        user.userType = "Personal";
+        user.teamIdAsMember = null;
+        recordLastLogin({ userId: user.id, provider: "google" });
       }
       return true;
     },
