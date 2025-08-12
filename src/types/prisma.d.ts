@@ -13,7 +13,7 @@ declare module "@/prisma/client" {
   }>;
 
   export type UserExtra = Partial<{
-    stripeCustomerId: string;
+    // stripeCustomerId: string; // dropped, see payment/(stripe)/create.ts
     onboarding: UserOnboardingData & { completedAt?: Date };
   }>;
 

@@ -4,7 +4,7 @@ import { stripeClient } from "@/app/payment/lib";
 import { PRO_MONTHLY_GIFT, PRO_MONTHLY_TOKENS } from "@/app/payment/monthlyTokens";
 import { getDeployRegion } from "@/lib/request/deployRegion";
 import { getRequestOrigin } from "@/lib/request/headers";
-import { Currency, Product, SubscriptionPlan, User, UserExtra } from "@/prisma/client";
+import { Currency, Product, SubscriptionPlan } from "@/prisma/client";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import Stripe from "stripe";
@@ -116,38 +116,38 @@ async function createPaymentRecord({
   });
 }
 
-async function stripeCustomerIdForUser(user: User, email: string) {
-  let stripeCustomerId = (user.extra as UserExtra).stripeCustomerId;
-  if (stripeCustomerId) {
-    return stripeCustomerId;
-  }
+// async function stripeCustomerIdForUser(user: User, email: string) {
+//   let stripeCustomerId = (user.extra as UserExtra).stripeCustomerId;
+//   if (stripeCustomerId) {
+//     return stripeCustomerId;
+//   }
 
-  const stripe = stripeClient();
-  stripeCustomerId = await stripe.customers
-    .create({
-      email: email,
-      name: user.name,
-      metadata: user.teamIdAsMember
-        ? {
-            teamId: user.teamIdAsMember.toString(),
-            userId: user.id.toString(),
-          }
-        : { userId: user.id.toString() },
-    })
-    .then((customer) => customer.id);
+//   const stripe = stripeClient();
+//   stripeCustomerId = await stripe.customers
+//     .create({
+//       email: email,
+//       name: user.name,
+//       metadata: user.teamIdAsMember
+//         ? {
+//             teamId: user.teamIdAsMember.toString(),
+//             userId: user.id.toString(),
+//           }
+//         : { userId: user.id.toString() },
+//     })
+//     .then((customer) => customer.id);
 
-  await prisma.user.update({
-    where: { id: user.id },
-    data: {
-      extra: {
-        ...(user.extra as UserExtra),
-        stripeCustomerId,
-      },
-    },
-  });
+//   await prisma.user.update({
+//     where: { id: user.id },
+//     data: {
+//       extra: {
+//         ...(user.extra as UserExtra),
+//         stripeCustomerId,
+//       },
+//     },
+//   });
 
-  return stripeCustomerId;
-}
+//   return stripeCustomerId;
+// }
 
 export async function createSubscriptionStripeSession({
   userId,
@@ -235,10 +235,14 @@ export async function createSubscriptionStripeSession({
     recurring: { interval: "month" },
   };
   const quantity = 1;
-  const stripeCustomerId = await stripeCustomerIdForUser(user, user.email);
+  // const stripeCustomerId = await stripeCustomerIdForUser(user, user.email);
   const session = await stripe.checkout.sessions.create({
-    // customer_email: user.email,
-    customer: stripeCustomerId,
+    customer_email: user.email,
+    // 不再给 user 固定 stripeCustomerId, 一个 customer 只支持一种 currency，如果有 usd 的 subscription 就没法用 rmb 充值了，所以，索性简单点每次都重新创建
+    // customer: stripeCustomerId,
+    // 如果是固定 stripe customer id 并且开启 automatic_tax，必须配置 customer_update 的策略
+    // customer_update: { name: "auto", address: "auto", shipping: "auto" },
+    automatic_tax: { enabled: true },
     client_reference_id: orderNo,
     currency: currency,
     payment_method_types: currency === "CNY" ? ["card", "alipay"] : ["card"],
@@ -247,8 +251,6 @@ export async function createSubscriptionStripeSession({
     subscription_data: { metadata },
     discounts: discountCoupon ? [{ coupon: discountCoupon }] : undefined,
     line_items: [{ price_data: priceData, quantity }],
-    automatic_tax: { enabled: true },
-    customer_update: { name: "auto", address: "auto", shipping: "auto" },
     success_url: successUrl || `${siteOrigin}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${siteOrigin}/payment/cancel?canceled=true`,
   });
@@ -316,10 +318,12 @@ export async function createPaymentStripeSession({
     unit_amount: amountInCents,
   };
   const quantity = 1;
-  const stripeCustomerId = await stripeCustomerIdForUser(user, user.email);
+  // const stripeCustomerId = await stripeCustomerIdForUser(user, user.email);
   const session = await stripe.checkout.sessions.create({
-    // customer_email: user.email,
-    customer: stripeCustomerId,
+    customer_email: user.email,
+    // customer: stripeCustomerId,
+    // customer_update: { name: "auto", address: "auto", shipping: "auto" },
+    automatic_tax: { enabled: true },
     client_reference_id: orderNo,
     currency: currency,
     payment_method_types: currency === "CNY" ? ["card", "alipay"] : ["card"],
@@ -330,8 +334,6 @@ export async function createPaymentStripeSession({
       invoice_data: { metadata },
     },
     line_items: [{ price_data: priceData, quantity }],
-    automatic_tax: { enabled: true },
-    customer_update: { name: "auto", address: "auto", shipping: "auto" },
     success_url: successUrl || `${siteOrigin}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${siteOrigin}/payment/cancel?canceled=true`,
   });
@@ -412,10 +414,12 @@ export async function createTeamSubscriptionStripeSession({
     unit_amount: amountInCents,
     recurring: { interval: "month" },
   };
-  const stripeCustomerId = await stripeCustomerIdForUser(teamUser, personalUserEmail);
+  // const stripeCustomerId = await stripeCustomerIdForUser(teamUser, personalUserEmail);
   const session = await stripe.checkout.sessions.create({
-    // customer_email: email,
-    customer: stripeCustomerId,
+    customer_email: personalUserEmail,
+    // customer: stripeCustomerId,
+    // customer_update: { name: "auto", address: "auto", shipping: "auto" },
+    automatic_tax: { enabled: true },
     client_reference_id: orderNo,
     currency: currency,
     payment_method_types: currency === "CNY" ? ["card", "alipay"] : ["card"],
@@ -423,8 +427,6 @@ export async function createTeamSubscriptionStripeSession({
     mode: "subscription",
     subscription_data: { metadata },
     line_items: [{ price_data: priceData, quantity }],
-    automatic_tax: { enabled: true },
-    customer_update: { name: "auto", address: "auto", shipping: "auto" },
     success_url: successUrl || `${siteOrigin}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${siteOrigin}/payment/cancel?canceled=true`,
   });
