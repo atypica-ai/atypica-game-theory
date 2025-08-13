@@ -93,7 +93,7 @@ export function FileUploadButton({
         size: file.size,
       });
     } catch (error) {
-      console.error("Error uploading file:", error);
+      console.log("Error uploading file:", error);
       toast.error(error instanceof Error ? error.message : t("failedToUploadFile"));
     } finally {
       setIsUploading(false);
@@ -245,7 +245,7 @@ function SelectFromLibraryDialog({
         toast.error(result.message);
       }
     } catch (error) {
-      console.error("Error selecting file:", error);
+      console.log("Error selecting file:", error);
       toast.error(error instanceof Error ? error.message : t("failedToSelectFile"));
     } finally {
       setIsSelecting(false);

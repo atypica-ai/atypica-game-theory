@@ -211,7 +211,7 @@ export default function PersonaImportClient({ isUploadEnabled }: PersonaImportCl
                     <FileUploadButton
                       onFileUploadedAction={handleFileUploaded}
                       existingFiles={uploadedFiles}
-                      showLimitsCheck={false}
+                      showLimitsCheck={true}
                       disabled={isCreating}
                       className="w-full h-12 text-sm"
                     >
@@ -442,7 +442,7 @@ export default function PersonaImportClient({ isUploadEnabled }: PersonaImportCl
                   <FileUploadButton
                     onFileUploadedAction={handleFileUploaded}
                     existingFiles={uploadedFiles}
-                    showLimitsCheck={false}
+                    showLimitsCheck={true}
                     disabled={isCreating}
                     className="w-full h-12 text-sm"
                   >

@@ -24,7 +24,6 @@ export function useFileUploadManager(options: UseFileUploadManagerOptions = {}) 
     (fileInfo: FileUploadInfo) => {
       // Check limits before adding the file
       const limitCheck = checkFileUploadLimits(uploadedFiles, fileInfo);
-
       if (!limitCheck.canUpload) {
         if (showToast) {
           let message = "";
@@ -36,6 +35,8 @@ export function useFileUploadManager(options: UseFileUploadManagerOptions = {}) 
             message = t("maxTotalSize");
           } else if (limitCheck.reason === "unsupported-type") {
             message = t("unsupportedType");
+          } else if (limitCheck.reason === "max-single-file-size") {
+            message = t("fileSizeExceeds3MB");
           }
           toast.error(message);
         }
