@@ -115,6 +115,9 @@ export type LLMModelName =
   | "gpt-4.1"
   | "gpt-4.1-mini"
   | "gpt-4.1-nano"
+  | "gpt-5"
+  | "gpt-5-mini"
+  | "gpt-5-nano"
   | "o3-mini"
   | "claude-3-7-sonnet"
   | "claude-sonnet-4"
@@ -133,9 +136,18 @@ export function llm(modelName: LLMModelName, options?: any) {
   if (deployRegion === "mainland") {
     switch (modelName) {
       case "gpt-4o":
+      case "gpt-5":
+      case "gpt-5-mini":
+      case "gpt-5-nano":
+        if (process.env.AZURE_EASTUS2_API_KEY) {
+          break;
+        } else {
+          return openai(modelName, options);
+        }
       case "gpt-4.1":
       case "gpt-4.1-mini":
       case "gpt-4.1-nano":
+      case "o3-mini":
         if (process.env.AZURE_API_KEY) {
           break;
         } else {
@@ -175,6 +187,12 @@ export function llm(modelName: LLMModelName, options?: any) {
   switch (modelName) {
     case "gpt-4o":
       return azureEastUS2("gpt-4o", options); // gpt-4o 自动支持 prompt cache，gpt-4.1 还不支持
+    case "gpt-5":
+      return azureEastUS2("gpt-5", options);
+    case "gpt-5-mini":
+      return azureEastUS2("gpt-5-mini", options);
+    case "gpt-5-nano":
+      return azureEastUS2("gpt-5-nano", options);
     case "gpt-4.1":
       return azure("gpt-4.1", options); // options 支持 parallelToolCalls 参数
     case "gpt-4.1-mini":

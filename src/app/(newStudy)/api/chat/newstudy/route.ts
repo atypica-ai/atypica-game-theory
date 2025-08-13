@@ -108,14 +108,14 @@ export async function POST(req: NextRequest) {
     //     ? {} //必须去掉，否则 toolChoice: "required" 会调用 searchTool 最终还是没有调用 endInterview
     //     : { useSearchGrounding: true, dynamicRetrievalConfig: { mode: "MODE_DYNAMIC" } },
     // ),
-    model: llm("gpt-4.1-mini"),
+    model: llm("gpt-5-mini"),
     providerOptions,
     system: newStudySystem({ locale }),
     messages: coreMessages,
     tools: newStudyTools,
     toolChoice: shouldEndInterview ? "required" : "auto",
     maxSteps: 2,
-    temperature: 0,
+    // temperature: 0,  // gpt-5 不支持 temperature
     experimental_generateMessageId: () => streamingMessage.id,
     experimental_transform: smoothStream({
       delayInMs: 30,
