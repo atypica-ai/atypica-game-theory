@@ -84,6 +84,7 @@ const GlobalHeaderMenusDesktop = () => {
       <MenuLink href="/featured-studies">{t("useCases")}</MenuLink>
       <MenuLink href="/study">{t("marketResearch")}</MenuLink>
       <MenuLink href="/persona">{t("personaImport")}</MenuLink>
+      <MenuLink href="/interview">{t("interviewProject")}</MenuLink>
       <MenuLink href="/pricing">{t("pricing")}</MenuLink>
     </div>
   );

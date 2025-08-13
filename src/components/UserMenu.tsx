@@ -20,6 +20,7 @@ import {
   LogInIcon,
   LogOutIcon,
   MailIcon,
+  MicIcon,
   MoonIcon,
   SunIcon,
   UserIcon,
@@ -139,6 +140,12 @@ export default function UserMenu() {
           <Link href="/personas">
             <Users2Icon className="h-4 w-4 mr-2" />
             {t("myPersonas")}
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/interviews">
+            <MicIcon className="h-4 w-4 mr-2" />
+            {t("myInterviews")}
           </Link>
         </DropdownMenuItem>
       </>

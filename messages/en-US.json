@@ -335,8 +335,10 @@
       "darkTheme": "Dark Theme",
       "myStudies": "My Projects",
       "myPersonas": "My Personas",
+      "myInterviews": "My Interviews",
       "marketResearch": "AI Research",
       "personaImport": "AI Persona",
+      "interviewProject": "Interview Project",
       "useCases": "Use cases",
       "pricing": "Pricing"
     },
