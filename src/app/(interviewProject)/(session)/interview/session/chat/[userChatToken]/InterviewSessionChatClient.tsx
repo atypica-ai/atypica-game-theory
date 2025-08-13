@@ -1,6 +1,7 @@
 "use client";
 import { ClientMessagePayload } from "@/ai/messageUtilsClient";
 import { fetchInterviewSessionByChatToken } from "@/app/(interviewProject)/actions";
+import { InterviewToolName } from "@/app/(interviewProject)/types";
 import { FocusedInterviewChat } from "@/components/chat/FocusedInterviewChat";
 import { FitToViewport } from "@/components/layout/FitToViewport";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -75,7 +76,7 @@ export function InterviewSessionChatClient({
       message.parts?.some(
         (part) =>
           part.type === "tool-invocation" &&
-          part.toolInvocation.toolName === "endInterview" &&
+          part.toolInvocation.toolName === InterviewToolName.endInterview &&
           part.toolInvocation.state === "result",
       ),
     );

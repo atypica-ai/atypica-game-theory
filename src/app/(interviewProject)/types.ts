@@ -16,3 +16,8 @@ export interface InterviewSharePayload {
   timestamp: number;
   expiresAt: number;
 }
+
+export enum InterviewToolName {
+  endInterview = "endInterview",
+  requestInteractionForm = "requestInteractionForm",
+}

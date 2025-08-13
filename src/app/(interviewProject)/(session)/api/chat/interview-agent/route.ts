@@ -9,6 +9,7 @@ import { initInterviewProjectStatReporter } from "@/ai/tools/stats";
 import { fetchInterviewSessionByChatToken } from "@/app/(interviewProject)/actions";
 import { interviewAgentSystemPrompt } from "@/app/(interviewProject)/prompt";
 import { interviewSessionTools } from "@/app/(interviewProject)/tools";
+import { InterviewToolName } from "@/app/(interviewProject)/types";
 import { rootLogger } from "@/lib/logging";
 import { throwServerActionError } from "@/lib/serverAction";
 import { CoreMessage, generateId, smoothStream, streamText } from "ai";
@@ -98,7 +99,10 @@ export async function POST(req: Request) {
     },
     system: systemPrompt,
     messages: coreMessages,
-    toolChoice: coreMessages.length < 19 ? "auto" : { type: "tool", toolName: "endInterview" },
+    toolChoice:
+      coreMessages.length < 19
+        ? "auto"
+        : { type: "tool", toolName: InterviewToolName.endInterview },
     tools: interviewSessionTools({
       interviewSessionId,
     }),
