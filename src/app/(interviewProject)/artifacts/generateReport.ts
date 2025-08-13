@@ -91,7 +91,8 @@ export async function generateInterviewReportContent({
 
   let onePageHtml = "";
   const response = streamText({
-    model: llm("claude-sonnet-4"),
+    // model: llm("claude-sonnet-4"),
+    model: llm("gemini-2.5-pro"), // 当访谈有 100 左右时，claude 的 input token context 不够，需要用 gemini
     providerOptions: providerOptions,
     system: interviewReportSystemPrompt({ locale }),
     messages: [
