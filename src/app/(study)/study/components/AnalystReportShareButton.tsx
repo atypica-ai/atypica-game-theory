@@ -60,7 +60,7 @@ export function AnalystReportShareButton({
         toast.dismiss();
         toast.success(t("pdfDownloadSuccess"));
       } catch (error) {
-        console.error(error);
+        console.log(error);
         toast.dismiss();
         toast.error(t("pdfGenerationFailed"));
       }

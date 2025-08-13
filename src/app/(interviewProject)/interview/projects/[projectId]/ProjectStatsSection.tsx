@@ -26,7 +26,7 @@ export function ProjectStatsSection({ projectId }: { projectId: number }) {
       setStats(result.data);
     } catch (error) {
       setError((error as Error).message || "Failed to fetch statistics");
-      console.error("Error fetching stats:", error);
+      console.log("Error fetching stats:", error);
     } finally {
       setLoading(false);
     }

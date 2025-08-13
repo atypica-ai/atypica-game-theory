@@ -30,7 +30,7 @@ export default function ReportsListPanel() {
         setReports(result.data);
       })
       .catch((error) => {
-        console.error(error);
+        console.log(error);
       });
   }, [studyUserChat.token]);
 

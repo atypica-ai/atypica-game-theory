@@ -59,7 +59,7 @@ export default function PersonaImportClient({ isUploadEnabled }: PersonaImportCl
       const personaImport = result.data;
       router.push(`/persona/import/${personaImport.id}`);
     } catch (error) {
-      console.error("Error creating persona import:", error);
+      console.log("Error creating persona import:", error);
       toast.error(t("createFailed"));
       setIsCreating(false);
     }

@@ -42,7 +42,7 @@ export const BuildPersonaConsole: FC<{
     if (result.success) {
       setPersonasDetails(result.data);
     } else {
-      console.error("Failed to fetch personas:", result.message);
+      console.log("Failed to fetch personas:", result.message);
     }
   }, [scoutUserChatToken]);
 

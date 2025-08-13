@@ -270,7 +270,7 @@ const ScoutTaskChatMessages = ({ scoutUserChatToken }: { scoutUserChatToken: str
     if (result.success) {
       setMessages(result.data.messages);
     } else {
-      console.error(result.message);
+      console.log(result.message);
     }
     setIsLoading(false);
   }, [scoutUserChatToken]);

@@ -32,7 +32,7 @@ export function NerdStats() {
         setLastFetchTime(Date.now());
       })
       .catch((error) => {
-        console.error("Failed to fetch chat statistics:", error);
+        console.log("Failed to fetch chat statistics:", error);
       })
       .finally(() => {
         setIsLoading(false);

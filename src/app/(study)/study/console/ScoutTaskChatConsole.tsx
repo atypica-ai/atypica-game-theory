@@ -31,7 +31,7 @@ export const ScoutTaskChatConsole = ({ toolInvocation }: { toolInvocation: ToolI
     if (result.success) {
       setMessages(result.data.messages);
     } else {
-      console.error(result.message);
+      console.log(result.message);
     }
   }, [scoutUserChatToken]);
 
@@ -40,7 +40,7 @@ export const ScoutTaskChatConsole = ({ toolInvocation }: { toolInvocation: ToolI
   const refreshScoutUserChat = useCallback(async () => {
     const result = await fetchUserChatStateByToken(scoutUserChatToken, "scout");
     if (!result.success) {
-      console.error(result.message);
+      console.log(result.message);
       return;
     }
     const { backgroundToken: newBackgroundToken, chatMessageUpdatedAt } = result.data;

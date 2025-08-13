@@ -38,7 +38,7 @@ export function InterviewSessionsSection({ projectId }: { projectId: number }) {
       setSessions(result.data);
     } catch (error) {
       setError((error as Error).message || "Failed to fetch sessions");
-      console.error("Error fetching sessions:", error);
+      console.log("Error fetching sessions:", error);
     } finally {
       setLoading(false);
     }

@@ -44,7 +44,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ toke
                 break;
               }
             } catch (error) {
-              console.error("Error streaming interview report:", error);
+              console.log("Error streaming interview report:", error);
               controller.error(error);
               break;
             }

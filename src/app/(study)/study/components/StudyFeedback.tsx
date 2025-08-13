@@ -38,7 +38,7 @@ export function StudyFeedback({
           setFeedback({ rating: result.data.rating });
         }
       } catch (error) {
-        console.error("Failed to load feedback:", error);
+        console.log("Failed to load feedback:", error);
       } finally {
         setIsLoading(false);
       }
@@ -63,10 +63,10 @@ export function StudyFeedback({
         // Hide thank you message after 2 seconds
         setTimeout(() => setJustSubmitted(false), 2000);
       } else {
-        console.error("Failed to submit feedback:", result.message);
+        console.log("Failed to submit feedback:", result.message);
       }
     } catch (error) {
-      console.error("Failed to submit feedback:", error);
+      console.log("Failed to submit feedback:", error);
     } finally {
       setIsSubmitting(false);
     }

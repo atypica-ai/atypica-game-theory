@@ -150,7 +150,7 @@ export function ChatBox() {
     }
     const result = await fetchUserChatStateByToken(studyUserChatToken, "study");
     if (!result.success) {
-      console.error(result.message);
+      console.log(result.message);
       return;
     }
     const { backgroundToken: newBackgroundToken, chatMessageUpdatedAt } = result.data;
@@ -172,7 +172,7 @@ export function ChatBox() {
         if (result.success) {
           useChatRef.current.setMessages(result.data.messages);
         } else {
-          console.error(result.message);
+          console.log(result.message);
         }
       });
     } else {
@@ -308,7 +308,7 @@ export function ChatBox() {
             //         if (result.success) {
             //           setMessages(result.data);
             //         } else {
-            //           console.error(result.message);
+            //           console.log(result.message);
             //         }
             //       }
             //     : undefined

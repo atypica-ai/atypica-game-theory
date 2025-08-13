@@ -49,7 +49,7 @@ export function SupplementaryQuestions({
       setShareUrl(url);
       setOpen(true);
     } catch (error) {
-      console.error("Error creating share link:", error);
+      console.log("Error creating share link:", error);
       toast.error(t("generating"));
     } finally {
       setIsCreatingLink(false);

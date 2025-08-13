@@ -47,7 +47,7 @@ export function PersonaDetailClient({
       }
       router.push(`/persona/chat/${result.data.token}`);
     } catch (error) {
-      console.error("Failed to start chat:", error);
+      console.log("Failed to start chat:", error);
       toast.error("Failed to start chat");
     } finally {
       setIsChatCreating(false);

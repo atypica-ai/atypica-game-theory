@@ -68,7 +68,7 @@ export function InterviewSessionViewer({
         toast.info(t("autoConversationNote"));
       } catch (error) {
         toast.error((error as Error).message || t("restartError"));
-        console.error("Error restarting chat:", error);
+        console.log("Error restarting chat:", error);
       }
     });
   }, [interviewSession.projectId, interviewSession.id, useChatHelpers, t]);

@@ -76,7 +76,7 @@ export function StudyListPageClient() {
         setPagination(result.pagination);
       }
     } catch (error) {
-      console.error("Failed to fetch studies:", (error as Error).message);
+      console.log("Failed to fetch studies:", (error as Error).message);
     } finally {
       setIsLoading(false);
     }

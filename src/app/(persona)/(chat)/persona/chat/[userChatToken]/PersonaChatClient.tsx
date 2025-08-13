@@ -84,7 +84,7 @@ export function PersonaChatClient({
       // 清空当前聊天界面的消息
       useChatHelpers.setMessages([]);
     } catch (error) {
-      console.error("Error clearing history:", error);
+      console.log("Error clearing history:", error);
       toast.error(t("clearFailed"));
     } finally {
       setIsClearing(false);
