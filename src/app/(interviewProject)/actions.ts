@@ -350,6 +350,17 @@ export async function createHumanInterviewSession({
   });
 }
 
+export async function deleteInterviewSessionAction(sessionId: number) {
+  return withAuth(async (user) => {
+    await prisma.interviewSession.delete({
+      where: {
+        project: { userId: user.id }, // 确保删除的 session 属于当前用户
+        id: sessionId,
+      },
+    });
+  });
+}
+
 /**
  * Restart persona interview session
  */

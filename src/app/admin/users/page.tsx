@@ -1,4 +1,5 @@
 "use client";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -28,7 +29,6 @@ import { useSession } from "next-auth/react";
 import { useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
-import { ConfirmDialog } from "../components/ConfirmDialog";
 import { AdminPermission, PaginationInfo } from "../types";
 import {
   addTokensToUser,

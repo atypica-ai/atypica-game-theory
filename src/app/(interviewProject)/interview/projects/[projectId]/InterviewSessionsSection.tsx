@@ -1,6 +1,10 @@
 "use client";
 
-import { fetchInterviewSessions } from "@/app/(interviewProject)/actions";
+import {
+  deleteInterviewSessionAction,
+  fetchInterviewSessions,
+} from "@/app/(interviewProject)/actions";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,6 +17,7 @@ import {
   ExternalLinkIcon,
   Loader2Icon,
   MessageSquareIcon,
+  TrashIcon,
   UsersIcon,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
@@ -37,12 +42,26 @@ export function InterviewSessionsSection({ projectId }: { projectId: number }) {
       if (!result.success) throw result;
       setSessions(result.data);
     } catch (error) {
-      setError((error as Error).message || "Failed to fetch sessions");
+      setError((error as Error).message);
       console.log("Error fetching sessions:", error);
     } finally {
       setLoading(false);
     }
   }, [projectId]);
+
+  const deleteInterviewSession = useCallback(async (sessionId: number) => {
+    setLoading(true);
+    setError(null);
+    try {
+      await deleteInterviewSessionAction(sessionId);
+      setSessions((prev) => prev.filter((session) => session.id !== sessionId));
+    } catch (error) {
+      setError((error as Error).message);
+      console.log("Error deleting session:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     loadSessions();
@@ -98,7 +117,7 @@ export function InterviewSessionsSection({ projectId }: { projectId: number }) {
               return (
                 <div
                   key={session.id}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted transition-colors"
+                  className="flex items-center justify-between flex-wrap p-4 border rounded-lg hover:bg-muted transition-colors"
                 >
                   <div className="flex items-center space-x-3">
                     {session.intervieweePersona ? (
@@ -141,14 +160,28 @@ export function InterviewSessionsSection({ projectId }: { projectId: number }) {
                       </div>
                     </div>
                   </div>
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link
-                      href={`/interview/projects/${projectId}/sessions/${session.id}`}
-                      target="_blank"
+                  <div className="flex flex-items flex-start">
+                    <Button variant="ghost" size="icon" asChild>
+                      <Link
+                        href={`/interview/projects/${projectId}/sessions/${session.id}`}
+                        target="_blank"
+                      >
+                        <ExternalLinkIcon className="h-4 w-4" />
+                      </Link>
+                    </Button>
+                    <ConfirmDialog
+                      title="Delete Interview Session"
+                      description={`Are you sure you want to delete this interview session?`}
+                      onConfirm={async () => {
+                        await deleteInterviewSession(session.id);
+                        loadSessions();
+                      }}
                     >
-                      <ExternalLinkIcon className="h-4 w-4" />
-                    </Link>
-                  </Button>
+                      <Button variant="ghost" size="icon">
+                        <TrashIcon className="h-4 w-4 text-red-500" />
+                      </Button>
+                    </ConfirmDialog>
+                  </div>
                 </div>
               );
             })}
