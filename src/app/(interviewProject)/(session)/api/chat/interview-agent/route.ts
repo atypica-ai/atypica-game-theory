@@ -91,7 +91,9 @@ export async function POST(req: Request) {
   });
 
   const mergedAbortSignal = AbortSignal.any([req.signal]);
-
+  const { endInterview, requestInteractionForm } = interviewSessionTools({
+    interviewSessionId,
+  });
   const streamTextResult = streamText({
     model: llm("claude-3-7-sonnet"),
     providerOptions: {
@@ -103,9 +105,10 @@ export async function POST(req: Request) {
       coreMessages.length < 19
         ? "auto"
         : { type: "tool", toolName: InterviewToolName.endInterview },
-    tools: interviewSessionTools({
-      interviewSessionId,
-    }),
+    tools: {
+      endInterview,
+      requestInteractionForm,
+    },
     maxSteps: 1, // Keep it simple for interviews
     experimental_generateMessageId: () => streamingMessage.id,
     experimental_transform: smoothStream({

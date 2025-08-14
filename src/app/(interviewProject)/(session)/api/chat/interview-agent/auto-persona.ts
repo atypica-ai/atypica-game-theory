@@ -317,6 +317,10 @@ async function generateInterviewerResponse({
   statReport: StatReporter;
   logger: Logger;
 }) {
+  // persona 访谈只使用 endInterview
+  const { endInterview } = interviewSessionTools({
+    interviewSessionId,
+  });
   const promise = new Promise<Omit<Message, "role">>((resolve, reject) => {
     const streamTextPromise = streamText({
       model: llm("claude-3-7-sonnet"),
@@ -328,9 +332,9 @@ async function generateInterviewerResponse({
       toolChoice: shouldEndInterview
         ? { type: "tool", toolName: InterviewToolName.endInterview }
         : "auto",
-      tools: interviewSessionTools({
-        interviewSessionId,
-      }),
+      tools: {
+        endInterview,
+      },
       maxSteps: 1,
       onStepFinish: async ({ usage, stepType, toolCalls }) => {
         logger.info({

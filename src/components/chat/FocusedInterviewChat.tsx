@@ -304,6 +304,13 @@ export function FocusedInterviewChat({
                       </div>
                     ) : null,
                   ) || lastAssistantMessage.content}
+              {status === "streaming" && (
+                <div className="my-4 flex gap-px items-center justify-center text-muted-foreground text-xs font-mono">
+                  <span className="animate-bounce">·</span>
+                  <span className="animate-bounce [animation-delay:0.2s]">·</span>
+                  <span className="animate-bounce [animation-delay:0.4s]">·</span>
+                </div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>

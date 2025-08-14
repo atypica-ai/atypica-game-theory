@@ -190,7 +190,7 @@ export function InterviewSessionChatClient({
 
   if (useChatHelpers.status === "ready" && requestInteractionToolInvocation) {
     return (
-      <FitToViewport className="flex flex-col items-center justify-start h-full p-8 text-center">
+      <FitToViewport className="flex flex-col items-center justify-start h-full p-8">
         <RequestInteractionFormToolMessage
           toolInvocation={requestInteractionToolInvocation}
           addToolResult={useChatHelpers.addToolResult}

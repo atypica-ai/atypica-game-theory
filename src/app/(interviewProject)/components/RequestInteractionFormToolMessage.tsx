@@ -91,9 +91,11 @@ export const RequestInteractionFormToolMessage: FC<{
       case "text":
         return (
           <div key={field.id} className="space-y-3">
-            <label className="block text-sm font-medium text-gray-900">{field.label}</label>
+            <label className="block text-sm font-medium text-zinc-900 dark:text-zinc-300">
+              {field.label}
+            </label>
             {isCompleted ? (
-              <div className="p-3 bg-gray-50 rounded-lg border text-sm text-gray-700">
+              <div className="p-3 bg-zinc-50 rounded-lg border text-sm text-zinc-700">
                 {fieldValue || "未填写"}
               </div>
             ) : (
@@ -101,7 +103,7 @@ export const RequestInteractionFormToolMessage: FC<{
                 placeholder={field.placeholder}
                 value={fieldValue || ""}
                 onChange={(e) => updateFieldValue(field.id, e.target.value)}
-                className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                className="border-zinc-200 focus:border-primary focus:ring-primary"
               />
             )}
           </div>
@@ -111,7 +113,9 @@ export const RequestInteractionFormToolMessage: FC<{
         return (
           <div key={field.id} className="space-y-3">
             <div className="flex items-center justify-between">
-              <label className="block text-sm font-medium text-gray-900">{field.label}</label>
+              <label className="block text-sm font-medium text-zinc-900 dark:text-zinc-300">
+                {field.label}
+              </label>
               {!isCompleted && (
                 <Badge variant="secondary" className="text-xs">
                   可多选
@@ -131,9 +135,9 @@ export const RequestInteractionFormToolMessage: FC<{
                     className={cn(
                       "relative p-3 rounded-lg border text-sm transition-all duration-200",
                       isCompleted
-                        ? "border-gray-200 bg-gray-50"
-                        : "border-gray-200 cursor-pointer hover:border-blue-300 hover:bg-blue-50",
-                      isSelected && !isCompleted && "border-blue-500 bg-blue-50 text-blue-900",
+                        ? "border-zinc-200 bg-zinc-50"
+                        : "border-zinc-200 cursor-pointer hover:border-green-300 hover:bg-green-50",
+                      isSelected && !isCompleted && "border-green-500 bg-green-50 text-green-900",
                       isSelected && isCompleted && "border-green-200 bg-green-50 text-green-900",
                     )}
                   >
@@ -145,7 +149,7 @@ export const RequestInteractionFormToolMessage: FC<{
                         <Check
                           className={cn(
                             "h-4 w-4",
-                            isCompleted ? "text-green-600" : "text-blue-600",
+                            isCompleted ? "text-green-600" : "text-green-600",
                           )}
                         />
                       )}
@@ -160,9 +164,11 @@ export const RequestInteractionFormToolMessage: FC<{
       case "boolean":
         return (
           <div key={field.id} className="space-y-3">
-            <label className="block text-sm font-medium text-gray-900">{field.label}</label>
+            <label className="block text-sm font-medium text-zinc-900 dark:text-zinc-300">
+              {field.label}
+            </label>
             {isCompleted ? (
-              <div className="p-3 bg-gray-50 rounded-lg border text-sm text-gray-700">
+              <div className="p-3 bg-zinc-50 rounded-lg border text-sm text-zinc-700">
                 {fieldValue === true ? "是" : fieldValue === false ? "否" : "未选择"}
               </div>
             ) : (
@@ -170,14 +176,14 @@ export const RequestInteractionFormToolMessage: FC<{
                 <Button
                   variant={fieldValue === true ? "default" : "outline"}
                   onClick={() => setBooleanValue(field.id, true)}
-                  className={cn("flex-1", fieldValue === true && "bg-blue-600 hover:bg-blue-700")}
+                  className={cn("flex-1", fieldValue === true && "bg-primary")}
                 >
                   是
                 </Button>
                 <Button
                   variant={fieldValue === false ? "default" : "outline"}
                   onClick={() => setBooleanValue(field.id, false)}
-                  className={cn("flex-1", fieldValue === false && "bg-blue-600 hover:bg-blue-700")}
+                  className={cn("flex-1", fieldValue === false && "bg-primary")}
                 >
                   否
                 </Button>
@@ -192,42 +198,31 @@ export const RequestInteractionFormToolMessage: FC<{
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
+    <div className="w-full max-w-2xl mx-auto p-6">
       <Card className="border-0 shadow-lg">
         <CardHeader className="pb-4">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-              <FileText className="h-5 w-5 text-blue-600" />
+            <div className="shrink-0 w-10 h-10 bg-zinc-100 dark:bg-zinc-800 rounded-full flex items-center justify-center">
+              <FileText className="h-5 w-5 text-primary" />
             </div>
-            <div>
-              <CardTitle className="text-lg font-semibold text-gray-900">信息收集表单</CardTitle>
-              <p className="text-sm text-gray-600 mt-1">请填写以下信息以继续访谈</p>
-            </div>
+            <CardTitle className="text-base font-normal">
+              {formData.prologue || "请填写以下信息以继续访谈"}
+            </CardTitle>
           </div>
         </CardHeader>
 
         <CardContent className="space-y-6">
-          {formData.prologue && (
-            <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-              <p className="text-sm text-blue-800 leading-relaxed whitespace-pre-wrap">
-                {formData.prologue}
-              </p>
-            </div>
-          )}
-
           <div className="space-y-6">{formData.fields.map(renderField)}</div>
 
           {!isFormCompleted && (
             <div className="flex justify-end pt-4 border-t">
-              <Button onClick={submitForm} className="px-6 bg-blue-600 hover:bg-blue-700">
-                提交表单
-              </Button>
+              <Button onClick={submitForm}>提交表单</Button>
             </div>
           )}
 
           {isFormCompleted && (
             <div className="flex items-center justify-center pt-4 border-t">
-              <div className="flex items-center space-x-2 text-green-600">
+              <div className="flex items-center space-x-2 text-primary">
                 <Check className="h-5 w-5" />
                 <span className="text-sm font-medium">表单已提交</span>
               </div>
