@@ -184,6 +184,16 @@
       "loadingError": "加载会话时出错",
       "retryButton": "重试",
       "loadingSessions": "加载会话中..."
+    },
+    "requestInteractionForm": {
+      "defaultPrologue": "请填写以下信息以继续访谈",
+      "multipleChoice": "可多选",
+      "yes": "是",
+      "no": "否",
+      "notFilled": "未填写",
+      "notSelected": "未选择",
+      "submitForm": "提交表单",
+      "formSubmitted": "表单已提交"
     }
   }
 }

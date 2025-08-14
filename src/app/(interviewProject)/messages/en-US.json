@@ -184,6 +184,16 @@
       "loadingError": "Error Loading Sessions",
       "retryButton": "Retry",
       "loadingSessions": "Loading sessions..."
+    },
+    "requestInteractionForm": {
+      "defaultPrologue": "Please fill in the following information to continue the interview",
+      "multipleChoice": "Multiple choice",
+      "yes": "Yes",
+      "no": "No",
+      "notFilled": "Not filled",
+      "notSelected": "Not selected",
+      "submitForm": "Submit Form",
+      "formSubmitted": "Form submitted"
     }
   }
 }

@@ -32,11 +32,12 @@ export const RequestInteractionFormToolMessage: FC<{
     result: RequestInteractionFormResult;
   }) => void;
 }> = ({ toolInvocation, addToolResult }) => {
-  const t = useTranslations("StudyPage.ChatBox");
+  const t = useTranslations("InterviewProject.requestInteractionForm");
   const formData = toolInvocation.args as FormData;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [formResponses, setFormResponses] = useState<Record<string, any>>({});
-
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const updateFieldValue = useCallback((fieldId: string, value: any) => {
     setFormResponses((prev) => ({
       ...prev,
@@ -96,14 +97,14 @@ export const RequestInteractionFormToolMessage: FC<{
             </label>
             {isCompleted ? (
               <div className="p-3 bg-zinc-50 rounded-lg border text-sm text-zinc-700">
-                {fieldValue || "未填写"}
+                {fieldValue || t("notFilled")}
               </div>
             ) : (
               <Input
                 placeholder={field.placeholder}
                 value={fieldValue || ""}
                 onChange={(e) => updateFieldValue(field.id, e.target.value)}
-                className="border-zinc-200 focus:border-primary focus:ring-primary"
+                className="border focus:border-primary focus:ring-primary"
               />
             )}
           </div>
@@ -118,7 +119,7 @@ export const RequestInteractionFormToolMessage: FC<{
               </label>
               {!isCompleted && (
                 <Badge variant="secondary" className="text-xs">
-                  可多选
+                  {t("multipleChoice")}
                 </Badge>
               )}
             </div>
@@ -127,34 +128,16 @@ export const RequestInteractionFormToolMessage: FC<{
                 const isSelected = Array.isArray(fieldValue)
                   ? fieldValue.includes(option)
                   : fieldValue === option;
-
                 return (
-                  <div
+                  <Button
+                    variant={isSelected ? "default" : "outline"}
                     key={index}
                     onClick={isCompleted ? undefined : () => toggleChoiceOption(field.id, option)}
-                    className={cn(
-                      "relative p-3 rounded-lg border text-sm transition-all duration-200",
-                      isCompleted
-                        ? "border-zinc-200 bg-zinc-50"
-                        : "border-zinc-200 cursor-pointer hover:border-green-300 hover:bg-green-50",
-                      isSelected && !isCompleted && "border-green-500 bg-green-50 text-green-900",
-                      isSelected && isCompleted && "border-green-200 bg-green-50 text-green-900",
-                    )}
+                    className="flex items-center justify-between"
                   >
-                    <div className="flex items-center justify-between">
-                      <span className={cn("font-medium", isSelected && "text-current")}>
-                        {option}
-                      </span>
-                      {isSelected && (
-                        <Check
-                          className={cn(
-                            "h-4 w-4",
-                            isCompleted ? "text-green-600" : "text-green-600",
-                          )}
-                        />
-                      )}
-                    </div>
-                  </div>
+                    {option}
+                    {isSelected && <Check className="h-4 w-4" />}
+                  </Button>
                 );
               })}
             </div>
@@ -169,7 +152,7 @@ export const RequestInteractionFormToolMessage: FC<{
             </label>
             {isCompleted ? (
               <div className="p-3 bg-zinc-50 rounded-lg border text-sm text-zinc-700">
-                {fieldValue === true ? "是" : fieldValue === false ? "否" : "未选择"}
+                {fieldValue === true ? t("yes") : fieldValue === false ? t("no") : t("notSelected")}
               </div>
             ) : (
               <div className="flex gap-3">
@@ -178,14 +161,14 @@ export const RequestInteractionFormToolMessage: FC<{
                   onClick={() => setBooleanValue(field.id, true)}
                   className={cn("flex-1", fieldValue === true && "bg-primary")}
                 >
-                  是
+                  {t("yes")}
                 </Button>
                 <Button
                   variant={fieldValue === false ? "default" : "outline"}
                   onClick={() => setBooleanValue(field.id, false)}
                   className={cn("flex-1", fieldValue === false && "bg-primary")}
                 >
-                  否
+                  {t("no")}
                 </Button>
               </div>
             )}
@@ -206,7 +189,7 @@ export const RequestInteractionFormToolMessage: FC<{
               <FileText className="h-5 w-5 text-primary" />
             </div>
             <CardTitle className="text-base font-normal">
-              {formData.prologue || "请填写以下信息以继续访谈"}
+              {formData.prologue || t("defaultPrologue")}
             </CardTitle>
           </div>
         </CardHeader>
@@ -216,7 +199,7 @@ export const RequestInteractionFormToolMessage: FC<{
 
           {!isFormCompleted && (
             <div className="flex justify-end pt-4 border-t">
-              <Button onClick={submitForm}>提交表单</Button>
+              <Button onClick={submitForm}>{t("submitForm")}</Button>
             </div>
           )}
 
@@ -224,7 +207,7 @@ export const RequestInteractionFormToolMessage: FC<{
             <div className="flex items-center justify-center pt-4 border-t">
               <div className="flex items-center space-x-2 text-primary">
                 <Check className="h-5 w-5" />
-                <span className="text-sm font-medium">表单已提交</span>
+                <span className="text-sm font-medium">{t("formSubmitted")}</span>
               </div>
             </div>
           )}
