@@ -7,6 +7,7 @@ import { initInterviewProjectStatReporter } from "@/ai/tools/stats";
 import { StatReporter } from "@/ai/tools/types";
 import { interviewAgentSystemPrompt } from "@/app/(interviewProject)/prompt";
 import { interviewSessionTools } from "@/app/(interviewProject)/tools";
+import { InterviewToolName } from "@/app/(interviewProject)/types";
 import { rootLogger } from "@/lib/logging";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
@@ -196,7 +197,8 @@ export async function runAutoPersonaInterview({
       if (
         ((lastMessage?.parts || []) as NonNullable<Message["parts"]>).some(
           (part) =>
-            part.type === "tool-invocation" && part.toolInvocation.toolName === "endInterview",
+            part.type === "tool-invocation" &&
+            part.toolInvocation.toolName === InterviewToolName.endInterview,
         )
       ) {
         logger.info({
@@ -323,7 +325,9 @@ async function generateInterviewerResponse({
       },
       system: systemPrompt,
       messages,
-      toolChoice: shouldEndInterview ? { type: "tool", toolName: "endInterview" } : "auto",
+      toolChoice: shouldEndInterview
+        ? { type: "tool", toolName: InterviewToolName.endInterview }
+        : "auto",
       tools: interviewSessionTools({
         interviewSessionId,
       }),

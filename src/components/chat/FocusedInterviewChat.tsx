@@ -7,7 +7,7 @@ import { cn, useDevice } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
 import { generateId } from "ai";
 import { AnimatePresence, motion } from "framer-motion";
-import { Ear, Keyboard, Loader2Icon, Send, XIcon } from "lucide-react";
+import { CheckIcon, Ear, Keyboard, Loader2Icon, Send, XIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -282,12 +282,25 @@ export function FocusedInterviewChat({
                 ? t("gettingReady")
                 : lastAssistantMessage.parts?.map((part, index) =>
                     part.type === "text" ? (
-                      <div key={index} className="whitespace-normal">
+                      <div
+                        key={index}
+                        className={cn(
+                          "whitespace-normal",
+                          index < lastAssistantMessage.parts.length - 1 &&
+                            "text-sm font-normal text-muted-foreground",
+                        )}
+                      >
                         {part.text}
                       </div>
                     ) : part.type === "tool-invocation" ? (
-                      <div key={index} className="mt-8 text-sm text-muted-foreground">
-                        {t("processing")}
+                      <div
+                        key={index}
+                        className="my-4 text-sm text-muted-foreground font-normal font-mono"
+                      >
+                        {t("toolCalling")} {part.toolInvocation.toolName}
+                        {part.toolInvocation.state === "result" ? (
+                          <CheckIcon className="size-3 inline-block ml-2 text-green-500" />
+                        ) : null}
                       </div>
                     ) : null,
                   ) || lastAssistantMessage.content}

@@ -4,6 +4,7 @@ import { PlainTextToolResult } from "@/ai/tools/types";
 import { prisma } from "@/prisma/prisma";
 import { tool } from "ai";
 import { z } from "zod";
+import { RequestInteractionFormResult } from "./types";
 
 export const interviewSessionTools = ({ interviewSessionId }: { interviewSessionId: number }) => ({
   endInterview: tool({
@@ -37,6 +38,38 @@ export const interviewSessionTools = ({ interviewSessionId }: { interviewSession
         interviewSummary,
         plainText: "",
       };
+    },
+  }),
+  requestInteractionForm: tool({
+    description:
+      "Generate a dynamic form with various input types (text, choice, boolean) for collecting user input during research workflows",
+    parameters: z.object({
+      prologue: z
+        .string()
+        .describe(
+          "Introductory text explaining why the user needs to fill out this form and what purpose it serves",
+        ),
+      fields: z
+        .array(
+          z.object({
+            id: z.string().describe("Unique identifier for the field"),
+            label: z.string().describe("Display label for the field"),
+            type: z.enum(["text", "choice", "boolean"]).describe("Type of input field"),
+            placeholder: z.string().optional().describe("Placeholder text for text fields"),
+            options: z
+              .array(z.string())
+              .optional()
+              .describe("Available options for choice fields (2-4 options)"),
+          }),
+        )
+        .min(1)
+        .describe("Array of form fields"),
+    }),
+    experimental_toToolResultContent: (result: RequestInteractionFormResult) => {
+      // const responseString = Object.entries(result.formResponses)
+      //   .map(([key, value]) => `${key}: ${value}`)
+      //   .join("\n");
+      return [{ type: "text", text: result.plainText }];
     },
   }),
 });

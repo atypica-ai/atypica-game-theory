@@ -446,7 +446,7 @@
       "thinking": "Thinking...",
       "gettingReady": "Getting ready to start...",
       "shareThoughts": "Share your thoughts...",
-      "processing": "Processing...",
+      "toolCalling": "executing",
       "timeRemaining": "{time} left",
       "listening": "Listening..."
     },

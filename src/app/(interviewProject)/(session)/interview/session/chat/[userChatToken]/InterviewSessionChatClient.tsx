@@ -1,6 +1,7 @@
 "use client";
 import { ClientMessagePayload } from "@/ai/messageUtilsClient";
 import { fetchInterviewSessionByChatToken } from "@/app/(interviewProject)/actions";
+import { RequestInteractionFormToolMessage } from "@/app/(interviewProject)/components/RequestInteractionFormToolMessage";
 import { InterviewToolName } from "@/app/(interviewProject)/types";
 import { FocusedInterviewChat } from "@/components/chat/FocusedInterviewChat";
 import { FitToViewport } from "@/components/layout/FitToViewport";
@@ -54,7 +55,7 @@ export function InterviewSessionChatClient({
           id: lastMessage.id,
           role: lastMessage.role as "user" | "assistant",
           content: lastMessage.content,
-          // parts: lastMessage.parts,
+          parts: lastMessage.parts, // 这个需要，addToolResult 的信息不在 content 里，在 parts 里
         },
         ...requestBody,
       };
@@ -69,6 +70,16 @@ export function InterviewSessionChatClient({
   });
 
   const { messages } = useChatHelpers;
+  const requestInteractionToolInvocation = useMemo(() => {
+    const lastPart = messages.at(-1)?.parts?.at(-1);
+    if (
+      lastPart?.type === "tool-invocation" &&
+      lastPart.toolInvocation.toolName === InterviewToolName.requestInteractionForm
+    ) {
+      return lastPart.toolInvocation;
+    }
+  }, [messages]);
+
   // Determine planning state based on messages content
   const interviewState = useMemo(() => {
     // Check if any message has endInterview tool result
@@ -176,6 +187,17 @@ export function InterviewSessionChatClient({
       </DialogContent>
     </Dialog>
   );
+
+  if (useChatHelpers.status === "ready" && requestInteractionToolInvocation) {
+    return (
+      <FitToViewport className="flex flex-col items-center justify-start h-full p-8 text-center">
+        <RequestInteractionFormToolMessage
+          toolInvocation={requestInteractionToolInvocation}
+          addToolResult={useChatHelpers.addToolResult}
+        />
+      </FitToViewport>
+    );
+  }
 
   if (interviewState === "summary") {
     return (

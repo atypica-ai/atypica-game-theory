@@ -1,3 +1,4 @@
+import { PlainTextToolResult } from "@/ai/tools/types";
 import { z } from "zod";
 
 // Create Interview Project schema
@@ -20,4 +21,9 @@ export interface InterviewSharePayload {
 export enum InterviewToolName {
   endInterview = "endInterview",
   requestInteractionForm = "requestInteractionForm",
+}
+
+export interface RequestInteractionFormResult extends PlainTextToolResult {
+  formResponses: Record<string, string | number>;
+  plainText: string;
 }
