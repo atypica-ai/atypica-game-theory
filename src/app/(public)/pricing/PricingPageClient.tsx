@@ -242,6 +242,7 @@ export default function PricingPageClient({
             <FeatureItem text={t("features.analysisModel.superior")} />
             <FeatureItem text={t("features.reports.followUp")} />
             <FeatureItemWithPreview text={t("features.personaPreview")} />
+            <FeatureItemWithPreview text={t("features.interviewProjectPreview")} />
           </CardContent>
         </Card>
 

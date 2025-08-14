@@ -185,7 +185,8 @@
         "notAvailable": "Cannot purchase additional tokens"
       },
       "earlyAccess": "Early Access",
-      "personaPreview": "Import interviews & generate Human AI Personas",
+      "personaPreview": "Import interview transcripts to build private Human AI Personas",
+      "interviewProjectPreview": "Conduct professional interviews with real people and AI Personas",
       "allMaxFeatures": "All features from Max plan",
       "interviews": {
         "unlimited": "Unlimited automated interview projects (Coming Soon)"

@@ -185,7 +185,8 @@
         "notAvailable": "无法增购Token"
       },
       "earlyAccess": "抢先体验",
-      "personaPreview": "导入访谈记录并生成真人AI人设",
+      "personaPreview": "导入访谈记录构建私有的真人AI人设",
+      "interviewProjectPreview": "使用AI专家与真人和AI人设进行自动访谈",
       "allMaxFeatures": "包含Max版所有功能",
       "interviews": {
         "unlimited": "无限制自动化访谈项目（即将发布）"
