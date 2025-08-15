@@ -30,7 +30,7 @@ interface PersonaImportClientProps {
 }
 
 export default function PersonaImportClient({ isUploadEnabled }: PersonaImportClientProps) {
-  const t = useTranslations("PersonaImport.personaImportClient");
+  const t = useTranslations("PersonaImport.homepage");
   const router = useRouter();
   const { uploadedFiles, handleFileUploaded, clearFiles } = useFileUploadManager();
   const [isCreating, setIsCreating] = useState(false);
@@ -192,7 +192,7 @@ export default function PersonaImportClient({ isUploadEnabled }: PersonaImportCl
         <div className="max-w-4xl mx-auto text-center space-y-8">
           <div className="space-y-4">
             <h1 className="font-mono text-sm font-medium tracking-wider text-zinc-500 dark:text-zinc-400 uppercase">
-              {t("platformTitle")}
+              Persona Platform
             </h1>
             <h2 className="font-sans text-4xl md:text-7xl font-normal tracking-tight text-zinc-900 dark:text-zinc-50 leading-tight">
               {t("title")}

@@ -111,6 +111,9 @@ const GlobalHeaderMenusMobile = () => {
           <MenuLink href="/persona">{t("personaImport")}</MenuLink>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
+          <MenuLink href="/interview">{t("interviewProject")}</MenuLink>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
           <MenuLink href="/pricing">{t("pricing")}</MenuLink>
         </DropdownMenuItem>
       </DropdownMenuContent>

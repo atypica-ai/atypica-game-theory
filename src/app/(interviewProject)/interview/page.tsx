@@ -2,9 +2,15 @@ import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ArrowRight } from "lucide-react";
+import { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { Suspense } from "react";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("InterviewProject.homepage");
+  return { title: t("title") };
+}
 
 async function InterviewProjectHomePage() {
   const t = await getTranslations("InterviewProject.homepage");

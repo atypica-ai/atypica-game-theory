@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
-  const t = await getTranslations("PersonaImport");
+  const t = await getTranslations("PersonaImport.followUpInterview");
   return generatePageMetadata({
     title: t("followUpInterviewTitle"),
     description: t("followUpInterviewDescription"),

@@ -1,10 +1,5 @@
 {
   "InterviewProject": {
-    "title": "Interview Projects",
-    "description": "Create and manage interview research projects",
-    "createProject": "Create Project",
-    "viewProjects": "View Projects",
-    "backToProjects": "Back to Projects",
     "homepage": {
       "title": "AI-Powered Interview Research",
       "subtitle": "Conduct professional interviews with real people and AI Personas. Generate insights automatically with our intelligent interviewer.",

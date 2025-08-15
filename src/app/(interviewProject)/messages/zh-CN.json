@@ -1,10 +1,5 @@
 {
   "InterviewProject": {
-    "title": "访谈项目",
-    "description": "创建和管理访谈研究项目",
-    "createProject": "创建项目",
-    "viewProjects": "查看项目",
-    "backToProjects": "返回项目列表",
     "homepage": {
       "title": "AI 智能访谈研究",
       "subtitle": "与真实用户和 AI 人设进行专业访谈。通过我们的智能访谈员自动生成洞察。",

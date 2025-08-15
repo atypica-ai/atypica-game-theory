@@ -1,12 +1,8 @@
 {
   "PersonaImport": {
-    "userChatNotFound": "User chat not found",
-    "followUpInterviewTitle": "Follow-up Interview",
-    "followUpInterviewDescription": "Conduct in-depth supplementary interview based on analysis results",
-    "personaImportClient": {
+    "homepage": {
       "title": "Build AI Persona",
       "subtitle": "Import interview records, analyze completeness, and generate interactive AI Personas for your research and analysis needs.",
-      "platformTitle": "Persona Platform",
       "ctaTitle": "Ready to start analyzing?",
       "ctaDescription": "Upload your first interview and discover deep insights about your personas.",
       "uploadFirstInterview": "Upload Your First Interview",
@@ -108,6 +104,8 @@
       "analysisSummary": "Analysis Summary"
     },
     "followUpInterview": {
+      "followUpInterviewTitle": "Follow-up Interview",
+      "followUpInterviewDescription": "Conduct in-depth supplementary interview based on analysis results",
       "interviewComplete": "Interview Complete",
       "thankYou": "Thank you for participating in this interview session. Your responses have been recorded and will be used for research purposes.",
       "summaryNote": "The interview summary and analysis will be available to the researcher shortly.",

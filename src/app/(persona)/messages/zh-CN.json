@@ -1,12 +1,8 @@
 {
   "PersonaImport": {
-    "userChatNotFound": "用户聊天未找到",
-    "followUpInterviewTitle": "补充访谈",
-    "followUpInterviewDescription": "基于分析结果进行深度补充访谈",
-    "personaImportClient": {
+    "homepage": {
       "title": "构建 AI 人设",
       "subtitle": "导入访谈记录，分析完整性，并生成互动式 AI 人设，满足您的研究和分析需求。",
-      "platformTitle": "人设平台",
       "ctaTitle": "准备开始分析了吗？",
       "ctaDescription": "上传您的第一个访谈，发现关于您人设的深度洞察。",
       "uploadFirstInterview": "上传您的第一个访谈",
@@ -108,6 +104,8 @@
       "analysisSummary": "分析摘要"
     },
     "followUpInterview": {
+      "followUpInterviewTitle": "补充访谈",
+      "followUpInterviewDescription": "基于分析结果进行深度补充访谈",
       "interviewComplete": "访谈完成",
       "thankYou": "感谢您参与此次访谈会话。您的回答已被记录并将用于研究目的。",
       "summaryNote": "访谈摘要和分析将很快提供给研究人员。",
