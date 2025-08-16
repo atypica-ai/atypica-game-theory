@@ -12,9 +12,11 @@ import { InterviewReportsSection } from "./InterviewReportsSection";
 import { InterviewSessionsSection } from "./InterviewSessionsSection";
 import { InviteDialog } from "./InviteDialog";
 import { ProjectStatsSection } from "./ProjectStatsSection";
+import { ShareInterviewProjectButton } from "./ShareInterviewProjectButton";
 
 export function ProjectDetails({
   project,
+  readOnly = false,
 }: {
   project: {
     id: number;
@@ -22,6 +24,7 @@ export function ProjectDetails({
     brief: string;
     createdAt: Date;
   };
+  readOnly?: boolean;
 }) {
   const locale = useLocale();
   const t = useTranslations("InterviewProject.projectDetails");
@@ -52,25 +55,30 @@ export function ProjectDetails({
   );
 
   return (
-    <div className="space-y-6 my-6 container mx-auto">
+    <div className="space-y-6 my-6 container max-w-6xl mx-auto">
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold">
-            {t("title")} #{project.id}
+          <h1 className="text-3xl font-bold flex items-center gap-4">
+            <span>
+              {t("title")} #{project.id}
+            </span>
+            <ShareInterviewProjectButton interviewProject={project} />
           </h1>
           <p className="text-muted-foreground">{formatDate(project.createdAt, locale)}</p>
         </div>
-        <div className="flex items-center space-x-2">
-          <Button variant="outline" onClick={() => setInviteDialogOpen(true)}>
-            <Share2 className="h-4 w-4" />
-            {t("interviewHuman")}
-          </Button>
-          <Button variant="outline" onClick={() => setPersonaDialogOpen(true)}>
-            <Bot className="h-4 w-4" />
-            {t("interviewAI")}
-          </Button>
-        </div>
+        {!readOnly ? (
+          <div className="ml-auto flex items-center space-x-2">
+            <Button variant="outline" onClick={() => setInviteDialogOpen(true)}>
+              <Share2 className="h-4 w-4" />
+              {t("interviewHuman")}
+            </Button>
+            <Button variant="outline" onClick={() => setPersonaDialogOpen(true)}>
+              <Bot className="h-4 w-4" />
+              {t("interviewAI")}
+            </Button>
+          </div>
+        ) : null}
       </div>
 
       {/* Project Brief */}
@@ -89,24 +97,29 @@ export function ProjectDetails({
       </Card>
 
       {/* Statistics */}
-      <ProjectStatsSection projectId={project.id} />
+      <ProjectStatsSection projectId={project.id} readOnly={readOnly} />
 
       {/* Sessions List */}
-      <InterviewSessionsSection projectId={project.id} />
+      <InterviewSessionsSection projectId={project.id} readOnly={readOnly} />
 
       {/* Reports Section */}
-      <InterviewReportsSection projectId={project.id} />
+      <InterviewReportsSection projectId={project.id} readOnly={readOnly} />
 
-      <InviteDialog
-        open={inviteDialogOpen}
-        onOpenChange={setInviteDialogOpen}
-        projectId={project.id}
-      />
-      <SelectPersonaDialog
-        open={personaDialogOpen}
-        onOpenChange={setPersonaDialogOpen}
-        onSelect={onSelectPersonas}
-      />
+      {!readOnly && (
+        <InviteDialog
+          open={inviteDialogOpen}
+          onOpenChange={setInviteDialogOpen}
+          projectId={project.id}
+        />
+      )}
+
+      {!readOnly && (
+        <SelectPersonaDialog
+          open={personaDialogOpen}
+          onOpenChange={setPersonaDialogOpen}
+          onSelect={onSelectPersonas}
+        />
+      )}
     </div>
   );
 }

@@ -17,7 +17,13 @@ interface ReportItem {
   createdAt: Date;
 }
 
-export function InterviewReportsSection({ projectId }: { projectId: number }) {
+export function InterviewReportsSection({
+  projectId,
+  readOnly = false,
+}: {
+  projectId: number;
+  readOnly?: boolean;
+}) {
   const locale = useLocale();
   const t = useTranslations("InterviewProject.reports");
   const [reports, setReports] = useState<ReportItem[]>([]);
@@ -62,7 +68,7 @@ export function InterviewReportsSection({ projectId }: { projectId: number }) {
   return (
     <>
       <Card>
-        <CardContent className="p-6">
+        <CardContent className="px-6">
           {loadingReports ? (
             <div className="py-8 flex flex-col items-center gap-4">
               <Loader2Icon className="size-8 animate-spin" />
@@ -78,25 +84,27 @@ export function InterviewReportsSection({ projectId }: { projectId: number }) {
                   </h3>
                   <p className="text-sm text-muted-foreground">{t("description")}</p>
                 </div>
-                <div className="flex gap-2">
-                  <Button
-                    onClick={loadReports}
-                    disabled={loadingReports}
-                    variant="outline"
-                    size="sm"
-                  >
-                    <RefreshCwIcon className={cn("h-4 w-4", loadingReports && "animate-spin")} />
-                    {t("refresh")}
-                  </Button>
-                  <Button
-                    onClick={() => setShowConfirmDialog(true)}
-                    disabled={generatingReport}
-                    size="sm"
-                  >
-                    <PlusIcon className="h-4 w-4" />
-                    {generatingReport ? t("generating") : t("generateReport")}
-                  </Button>
-                </div>
+                {!readOnly ? (
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={loadReports}
+                      disabled={loadingReports}
+                      variant="outline"
+                      size="sm"
+                    >
+                      <RefreshCwIcon className={cn("h-4 w-4", loadingReports && "animate-spin")} />
+                      {t("refresh")}
+                    </Button>
+                    <Button
+                      onClick={() => setShowConfirmDialog(true)}
+                      disabled={generatingReport}
+                      size="sm"
+                    >
+                      <PlusIcon className="h-4 w-4" />
+                      {generatingReport ? t("generating") : t("generateReport")}
+                    </Button>
+                  </div>
+                ) : null}
               </div>
 
               {reports.length === 0 ? (
@@ -109,7 +117,10 @@ export function InterviewReportsSection({ projectId }: { projectId: number }) {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {reports.map((report) => (
+                  {(readOnly
+                    ? reports.filter((report) => !!report.generatedAt) // 如果是分享，只显示已生成的
+                    : reports
+                  ).map((report) => (
                     <div
                       key={report.token}
                       className="relative border rounded-lg p-4 hover:bg-muted/50 transition-colors cursor-pointer group"
@@ -145,7 +156,7 @@ export function InterviewReportsSection({ projectId }: { projectId: number }) {
                         )}
                       </div>
 
-                      <div className="text-xs text-muted-foreground mb-3">
+                      <div className="text-xs text-muted-foreground">
                         {report.generatedAt ? (
                           <span className="text-green-600 dark:text-green-400">
                             ✓ {t("generated")} {formatDistanceToNow(report.generatedAt)} {t("ago")}
@@ -166,82 +177,88 @@ export function InterviewReportsSection({ projectId }: { projectId: number }) {
       </Card>
 
       {/* Live Report Generation Dialog */}
-      <Dialog
-        open={!!isReportDialogOpen}
-        onOpenChange={(open) => {
-          if (!open) {
-            setIsReportDialogOpen(null);
-          }
-        }}
-        modal
-      >
-        <DialogContent
-          className="sm:max-w-[90vw] h-[90vh] flex flex-col"
-          onPointerDownOutside={(e) => e.preventDefault()}
+      {!readOnly && (
+        <Dialog
+          open={!!isReportDialogOpen}
+          onOpenChange={(open) => {
+            if (!open) {
+              setIsReportDialogOpen(null);
+            }
+          }}
+          modal
         >
-          <DialogHeader>
-            <DialogTitle className="flex items-center">
-              <Loader2Icon className="h-4 w-4 animate-spin mr-2" />
-              {t("generatingReportTitle")}
-            </DialogTitle>
-            <p className="text-sm text-muted-foreground">{t("generatingReportDescription")}</p>
-          </DialogHeader>
-          {isReportDialogOpen && (
-            <div className="flex-1 overflow-hidden">
-              <iframe
-                src={`/artifacts/interview-report/${isReportDialogOpen.token}/raw?live=1`}
-                className="w-full h-full border rounded-md"
-                title="Live Report Generation"
-              />
-            </div>
-          )}
-          <div className="flex justify-between items-center pt-4">
-            <div className="text-xs text-muted-foreground">{t("refreshTip")}</div>
-            <div className="flex gap-2">
-              {isReportDialogOpen && (
-                <Button variant="outline" size="sm" asChild>
-                  <Link
-                    href={`/artifacts/interview-report/${isReportDialogOpen.token}/raw`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <ExternalLinkIcon className="h-4 w-4 mr-2" />
-                    {t("openInNewTab")}
-                  </Link>
+          <DialogContent
+            className="sm:max-w-[90vw] h-[90vh] flex flex-col"
+            onPointerDownOutside={(e) => e.preventDefault()}
+          >
+            <DialogHeader>
+              <DialogTitle className="flex items-center">
+                <Loader2Icon className="h-4 w-4 animate-spin mr-2" />
+                {t("generatingReportTitle")}
+              </DialogTitle>
+              <p className="text-sm text-muted-foreground">{t("generatingReportDescription")}</p>
+            </DialogHeader>
+            {isReportDialogOpen && (
+              <div className="flex-1 overflow-hidden">
+                <iframe
+                  src={`/artifacts/interview-report/${isReportDialogOpen.token}/raw?live=1`}
+                  className="w-full h-full border rounded-md"
+                  title="Live Report Generation"
+                />
+              </div>
+            )}
+            <div className="flex justify-between items-center pt-4">
+              <div className="text-xs text-muted-foreground">{t("refreshTip")}</div>
+              <div className="flex gap-2">
+                {isReportDialogOpen && (
+                  <Button variant="outline" size="sm" asChild>
+                    <Link
+                      href={`/artifacts/interview-report/${isReportDialogOpen.token}/raw`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <ExternalLinkIcon className="h-4 w-4 mr-2" />
+                      {t("openInNewTab")}
+                    </Link>
+                  </Button>
+                )}
+                <Button variant="outline" size="sm" onClick={() => setIsReportDialogOpen(null)}>
+                  {t("close")}
                 </Button>
-              )}
-              <Button variant="outline" size="sm" onClick={() => setIsReportDialogOpen(null)}>
-                {t("close")}
-              </Button>
+              </div>
             </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+          </DialogContent>
+        </Dialog>
+      )}
 
       {/* Confirmation Dialog */}
-      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{t("generateReportConfirmTitle")}</DialogTitle>
-            <p className="text-sm text-muted-foreground">{t("generateReportConfirmDescription")}</p>
-          </DialogHeader>
-          <div className="flex justify-end gap-2 pt-4">
-            <Button variant="outline" onClick={() => setShowConfirmDialog(false)}>
-              {t("cancel")}
-            </Button>
-            <Button onClick={handleGenerateReport} disabled={generatingReport}>
-              {generatingReport ? (
-                <>
-                  <Loader2Icon className="h-4 w-4 animate-spin mr-2" />
-                  {t("generating")}
-                </>
-              ) : (
-                t("generateReport")
-              )}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {!readOnly && (
+        <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>{t("generateReportConfirmTitle")}</DialogTitle>
+              <p className="text-sm text-muted-foreground">
+                {t("generateReportConfirmDescription")}
+              </p>
+            </DialogHeader>
+            <div className="flex justify-end gap-2 pt-4">
+              <Button variant="outline" onClick={() => setShowConfirmDialog(false)}>
+                {t("cancel")}
+              </Button>
+              <Button onClick={handleGenerateReport} disabled={generatingReport}>
+                {generatingReport ? (
+                  <>
+                    <Loader2Icon className="h-4 w-4 animate-spin mr-2" />
+                    {t("generating")}
+                  </>
+                ) : (
+                  t("generateReport")
+                )}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </>
   );
 }

@@ -26,7 +26,13 @@ import { useCallback, useEffect, useState } from "react";
 
 type InterviewSessionItem = ExtractServerActionData<typeof fetchInterviewSessions>[number];
 
-export function InterviewSessionsSection({ projectId }: { projectId: number }) {
+export function InterviewSessionsSection({
+  projectId,
+  readOnly = false,
+}: {
+  projectId: number;
+  readOnly?: boolean;
+}) {
   const locale = useLocale();
   const t = useTranslations("InterviewProject.projectDetails");
   const tSessions = useTranslations("InterviewProject.sessions");
@@ -112,7 +118,10 @@ export function InterviewSessionsSection({ projectId }: { projectId: number }) {
           </div>
         ) : (
           <div className="space-y-3">
-            {sessions.map((session) => {
+            {(readOnly
+              ? sessions.filter((session) => !!session.title) // 如果是分享，只显示已完成的
+              : sessions
+            ).map((session) => {
               const isCompleted = isSessionCompleted(session);
               return (
                 <div
@@ -160,30 +169,32 @@ export function InterviewSessionsSection({ projectId }: { projectId: number }) {
                       </div>
                     </div>
                   </div>
-                  <div className="flex flex-items flex-start">
-                    {session.userChat ? (
-                      <Button variant="ghost" size="icon" asChild>
-                        <Link
-                          href={`/interview/session/view/${session.userChat.token}`}
-                          target="_blank"
-                        >
-                          <ExternalLinkIcon className="h-4 w-4" />
-                        </Link>
-                      </Button>
-                    ) : null}
-                    <ConfirmDialog
-                      title="Delete Interview Session"
-                      description={`Are you sure you want to delete this interview session?`}
-                      onConfirm={async () => {
-                        await deleteInterviewSession(session.id);
-                        loadSessions();
-                      }}
-                    >
-                      <Button variant="ghost" size="icon">
-                        <TrashIcon className="h-4 w-4 text-red-500" />
-                      </Button>
-                    </ConfirmDialog>
-                  </div>
+                  {!readOnly ? (
+                    <div className="flex flex-items flex-start">
+                      {session.userChat ? (
+                        <Button variant="ghost" size="icon" asChild>
+                          <Link
+                            href={`/interview/session/view/${session.userChat.token}`}
+                            target="_blank"
+                          >
+                            <ExternalLinkIcon className="h-4 w-4" />
+                          </Link>
+                        </Button>
+                      ) : null}
+                      <ConfirmDialog
+                        title="Delete Interview Session"
+                        description={`Are you sure you want to delete this interview session?`}
+                        onConfirm={async () => {
+                          await deleteInterviewSession(session.id);
+                          loadSessions();
+                        }}
+                      >
+                        <Button variant="ghost" size="icon">
+                          <TrashIcon className="h-4 w-4 text-red-500" />
+                        </Button>
+                      </ConfirmDialog>
+                    </div>
+                  ) : null}
                 </div>
               );
             })}

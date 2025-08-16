@@ -84,6 +84,16 @@
       "inProgress": "In Progress",
       "createInterviewFailed": "Failed to create interview session"
     },
+    "ShareInterviewProjectButton": {
+      "shareProject": "Share",
+      "title": "Share Interview Project",
+      "shareTipMessage": "Use this link to access the project or copy it to share with others:",
+      "copyButton": "Copy",
+      "openInstructions": "You can also click \"Open\" below to view it in a new tab.",
+      "closeButton": "Close",
+      "openButton": "Open",
+      "copySuccess": "Link copied to clipboard"
+    },
     "sessionViewer": {
       "aiInterview": "AI Persona Interview",
       "humanInterview": "Human Interview",

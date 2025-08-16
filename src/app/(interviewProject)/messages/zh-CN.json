@@ -84,6 +84,16 @@
       "inProgress": "进行中",
       "createInterviewFailed": "创建访谈会话失败"
     },
+    "ShareInterviewProjectButton": {
+      "shareProject": "分享",
+      "title": "访谈项目分享链接",
+      "shareTipMessage": "您可以通过此链接访问分享页面，或复制链接分享他人：",
+      "copyButton": "复制",
+      "openInstructions": "您也可以点击下方的\"打开\"按钮在新标签页中查看。",
+      "closeButton": "关闭",
+      "openButton": "打开",
+      "copySuccess": "链接已复制到剪贴板"
+    },
     "sessionViewer": {
       "aiInterview": "AI 人设访谈",
       "humanInterview": "真人访谈",

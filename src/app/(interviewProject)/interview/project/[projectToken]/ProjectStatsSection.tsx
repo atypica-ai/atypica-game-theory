@@ -8,7 +8,14 @@ import { Bot, CheckCircle, Clock, MessageSquare, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 
-export function ProjectStatsSection({ projectId }: { projectId: number }) {
+export function ProjectStatsSection({
+  projectId,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  readOnly = false,
+}: {
+  projectId: number;
+  readOnly?: boolean;
+}) {
   const t = useTranslations("InterviewProject.projectDetails");
   const tStats = useTranslations("InterviewProject.statistics");
   const [stats, setStats] = useState<ExtractServerActionData<
