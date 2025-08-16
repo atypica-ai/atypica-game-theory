@@ -12,10 +12,10 @@ async function PersonaImportDetailPage({
   params,
 }: {
   params: Promise<{
-    id: string;
+    personaImportId: string;
   }>;
 }) {
-  const id = parseInt((await params).id);
+  const id = parseInt((await params).personaImportId);
   const session = await getServerSession(authOptions);
   if (!session?.user) {
     forbidden();
@@ -51,7 +51,7 @@ async function PersonaImportDetailPage({
 export default async function PersonaImportDetailPageWithLoading({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ personaImportId: string }>;
 }) {
   return (
     <Suspense fallback={<PageLoadingFallback />}>
