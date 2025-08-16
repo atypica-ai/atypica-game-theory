@@ -87,7 +87,7 @@ npx auth secret
 
 ```bash
 psql -d postgres
-CREATE USER atypica WITH PASSWORD 'atypica' SUPERUSER;  # migration 执行时包含创建 vector extension, 需要 superuser 权限
+CREATE USER atypica WITH LOGIN PASSWORD 'atypica' SUPERUSER;  # migration 执行时包含创建 vector extension, 需要 superuser 权限
 CREATE DATABASE atypica_dev OWNER atypica;
 CREATE DATABASE atypica_dev_shadow OWNER atypica;
 \q
