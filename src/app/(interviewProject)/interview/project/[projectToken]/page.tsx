@@ -1,50 +1,37 @@
 import authOptions from "@/app/(auth)/authOptions";
+import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { prisma } from "@/prisma/prisma";
 import { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { notFound, redirect } from "next/navigation";
-import { z } from "zod";
+import { Suspense } from "react";
 import { ProjectDetails } from "./ProjectDetails";
-
-const paramsSchema = z.object({
-  projectId: z.string().transform((val) => {
-    const num = parseInt(val, 10);
-    if (isNaN(num)) {
-      throw new Error("Invalid project ID");
-    }
-    return num;
-  }),
-});
 
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ projectId: string }>;
+  params: Promise<{ projectToken: string }>;
 }): Promise<Metadata> {
-  const { projectId } = await params;
+  const { projectToken } = await params;
   return {
-    title: `Interview Project #${projectId}`,
+    title: `Interview Project #${projectToken}`,
   };
 }
 
-export default async function ProjectPage({
-  params,
-}: {
-  params: Promise<z.input<typeof paramsSchema>>;
-}) {
-  const { projectId } = paramsSchema.parse(await params);
+async function ProjectPage({ params }: { params: Promise<{ projectToken: string }> }) {
+  const { projectToken } = await params;
 
   const session = await getServerSession(authOptions);
   if (!session?.user) {
-    const callbackUrl = `/interview/projects/${projectId}`;
+    const callbackUrl = `/interview/projects/${projectToken}`;
     redirect(`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`);
   }
-  const userId = session.user.id;
 
   const interviewProject = await prisma.interviewProject.findUnique({
-    where: { userId, id: projectId },
+    where: { token: projectToken },
     select: {
       id: true,
+      token: true,
       brief: true,
       createdAt: true,
     },
@@ -58,9 +45,22 @@ export default async function ProjectPage({
     <ProjectDetails
       project={{
         id: interviewProject.id,
+        token: interviewProject.token,
         brief: interviewProject.brief,
         createdAt: interviewProject.createdAt,
       }}
     />
+  );
+}
+
+export default async function ProjectPageWithLoading({
+  params,
+}: {
+  params: Promise<{ projectToken: string }>;
+}) {
+  return (
+    <Suspense fallback={<PageLoadingFallback />}>
+      <ProjectPage params={params} />
+    </Suspense>
   );
 }

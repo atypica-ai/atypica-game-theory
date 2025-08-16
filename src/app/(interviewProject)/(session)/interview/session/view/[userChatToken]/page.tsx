@@ -5,27 +5,8 @@ import { throwServerActionError } from "@/lib/serverAction";
 import { prisma } from "@/prisma/prisma";
 import { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { NextResponse } from "next/server";
 import { Suspense } from "react";
-import { z } from "zod";
 import { InterviewSessionViewer } from "./InterviewSessionViewer";
-
-const paramsSchema = z.object({
-  projectId: z.string().transform((val) => {
-    const num = parseInt(val, 10);
-    if (isNaN(num)) {
-      throw new Error("Invalid project ID");
-    }
-    return num;
-  }),
-  sessionId: z.string().transform((val) => {
-    const num = parseInt(val, 10);
-    if (isNaN(num)) {
-      throw new Error("Invalid session ID");
-    }
-    return num;
-  }),
-});
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("InterviewProject.sessionViewer");
@@ -34,17 +15,14 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-async function SessionPage({
-  params: { projectId, sessionId },
-}: {
-  params: z.infer<typeof paramsSchema>;
-}) {
+async function SessionPage({ params }: { params: Promise<{ userChatToken: string }> }) {
+  const { userChatToken } = await params;
+
   // fetchInterviewSessionDetails 里会检查权限
-  const result = await fetchInterviewSessionDetails({ projectId, sessionId });
+  const result = await fetchInterviewSessionDetails({ userChatToken });
   if (!result.success) {
     throwServerActionError(result);
   }
-
   const interviewSession = result.data;
 
   const initialMessages = interviewSession.userChatId
@@ -64,17 +42,11 @@ async function SessionPage({
 export default async function StudyPageWithLoading({
   params,
 }: {
-  params: Promise<z.input<typeof paramsSchema>>;
+  params: Promise<{ userChatToken: string }>;
 }) {
-  let validatedParams;
-  try {
-    validatedParams = paramsSchema.parse(await params);
-  } catch {
-    return NextResponse.json({ error: "Invalid parameters" }, { status: 400 });
-  }
   return (
     <Suspense fallback={<PageLoadingFallback />}>
-      <SessionPage params={validatedParams} />
+      <SessionPage params={params} />
     </Suspense>
   );
 }

@@ -161,14 +161,16 @@ export function InterviewSessionsSection({ projectId }: { projectId: number }) {
                     </div>
                   </div>
                   <div className="flex flex-items flex-start">
-                    <Button variant="ghost" size="icon" asChild>
-                      <Link
-                        href={`/interview/projects/${projectId}/sessions/${session.id}`}
-                        target="_blank"
-                      >
-                        <ExternalLinkIcon className="h-4 w-4" />
-                      </Link>
-                    </Button>
+                    {session.userChat ? (
+                      <Button variant="ghost" size="icon" asChild>
+                        <Link
+                          href={`/interview/session/view/${session.userChat.token}`}
+                          target="_blank"
+                        >
+                          <ExternalLinkIcon className="h-4 w-4" />
+                        </Link>
+                      </Button>
+                    ) : null}
                     <ConfirmDialog
                       title="Delete Interview Session"
                       description={`Are you sure you want to delete this interview session?`}

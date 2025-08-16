@@ -1,5 +1,5 @@
 import { convertDBMessagesToAIMessages } from "@/ai/messageUtils";
-import { fetchInterviewSessionByChatToken } from "@/app/(interviewProject)/actions";
+import { fetchInterviewSessionChat } from "@/app/(interviewProject)/actions";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { throwServerActionError } from "@/lib/serverAction";
 import { prisma } from "@/prisma/prisma";
@@ -22,8 +22,8 @@ async function InterviewSessionChatPage({
 }) {
   const { userChatToken } = await params;
 
-  // fetchInterviewSessionByChatToken 会检查权限
-  const result = await fetchInterviewSessionByChatToken(userChatToken);
+  // fetchInterviewSessionChat 会检查权限
+  const result = await fetchInterviewSessionChat({ userChatToken });
   if (!result.success) {
     throwServerActionError(result);
   }

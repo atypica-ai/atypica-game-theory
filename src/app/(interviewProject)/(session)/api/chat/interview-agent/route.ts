@@ -6,7 +6,7 @@ import {
 import { clientMessagePayloadSchema } from "@/ai/messageUtilsClient";
 import { llm, providerOptions } from "@/ai/provider";
 import { initInterviewProjectStatReporter } from "@/ai/tools/stats";
-import { fetchInterviewSessionByChatToken } from "@/app/(interviewProject)/actions";
+import { fetchInterviewSessionChat } from "@/app/(interviewProject)/actions";
 import { interviewAgentSystemPrompt } from "@/app/(interviewProject)/prompt";
 import { interviewSessionTools } from "@/app/(interviewProject)/tools";
 import { InterviewToolName } from "@/app/(interviewProject)/types";
@@ -38,7 +38,7 @@ function setBedrockCache(model: `claude-${string}`, coreMessages: CoreMessage[])
 }
 
 /**
- * ⚠️ fetchInterviewSessionByChatToken 会检查权限，所以这里无需另外检查权限
+ * ⚠️ fetchInterviewSessionChat 会检查权限，所以这里无需另外检查权限
  */
 export async function POST(req: Request) {
   const payload = await req.json();
@@ -50,7 +50,7 @@ export async function POST(req: Request) {
 
   const { message: newMessage, userChatToken } = parseResult.data;
 
-  const sessionResult = await fetchInterviewSessionByChatToken(userChatToken);
+  const sessionResult = await fetchInterviewSessionChat({ userChatToken });
   if (!sessionResult.success) {
     throwServerActionError(sessionResult);
   }

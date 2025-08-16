@@ -220,7 +220,7 @@ export function InterviewSessionViewer({
       {/* Header with project info */}
       <div className="border-b border-muted p-4 flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          {/* <Link href={`/interview/projects/${interviewSession.projectId}`}>
+          {/* <Link href={`/interview/project/${interviewSession.projectToken}`}>
             <Button variant="ghost" size="sm">
               <ArrowLeftIcon className="h-4 w-4 mr-2" />
               Back to Project

@@ -160,12 +160,16 @@ export async function fetchInterviewSessions(projectId: number): Promise<
       id: number;
       title: string | null;
       createdAt: Date;
-      intervieweeUser?: {
+      userChat: {
+        id: number;
+        token: string;
+      } | null;
+      intervieweeUser: {
         id: number;
         name: string;
         email: string | null;
       } | null;
-      intervieweePersona?: {
+      intervieweePersona: {
         id: number;
         name: string;
       } | null;
@@ -197,6 +201,9 @@ export async function fetchInterviewSessions(projectId: number): Promise<
         },
         intervieweePersona: {
           select: { id: true, name: true },
+        },
+        userChat: {
+          select: { id: true, token: true },
         },
         createdAt: true,
       },
@@ -425,14 +432,13 @@ export async function restartPersonaInterviewSession({
 }
 
 /**
- * Fetch interview session by project and session ID
+ * Fetch interview session by userChat's token associated with the session
+ * ⚠️ This action requires authentication and authorization to access the session details.
  */
 export async function fetchInterviewSessionDetails({
-  projectId,
-  sessionId,
+  userChatToken,
 }: {
-  projectId: number;
-  sessionId: number;
+  userChatToken: string;
 }): Promise<
   ServerActionResult<
     Pick<InterviewSession, "id" | "projectId" | "title" | "userChatId"> & {
@@ -445,17 +451,22 @@ export async function fetchInterviewSessionDetails({
   >
 > {
   return withAuth(async (user) => {
-    const session = await prisma.interviewSession.findUnique({
+    const sessions = await prisma.interviewSession.findMany({
       where: {
         project: { userId: user.id },
-        projectId: projectId,
-        id: sessionId,
+        userChat: { token: userChatToken },
       },
       select: {
         id: true,
         projectId: true,
         title: true,
         userChatId: true,
+        userChat: {
+          select: {
+            id: true,
+            token: true,
+          },
+        },
         project: {
           select: {
             id: true,
@@ -474,13 +485,15 @@ export async function fetchInterviewSessionDetails({
       },
     });
 
-    if (!session) {
+    if (!sessions.length) {
       return {
         success: false,
         code: "not_found",
         message: "Interview session not found",
       };
     }
+
+    const session = sessions[0];
 
     return {
       success: true,
@@ -492,7 +505,11 @@ export async function fetchInterviewSessionDetails({
 /**
  * Fetch interview session by chat token
  */
-export async function fetchInterviewSessionByChatToken(chatToken: string): Promise<
+export async function fetchInterviewSessionChat({
+  userChatToken,
+}: {
+  userChatToken: string;
+}): Promise<
   ServerActionResult<{
     interviewSessionId: number;
     project: Pick<InterviewProject, "id" | "brief"> & {
@@ -505,7 +522,7 @@ export async function fetchInterviewSessionByChatToken(chatToken: string): Promi
   return withAuth(async (user) => {
     const userChat = await prisma.userChat.findUnique({
       where: {
-        token: chatToken,
+        token: userChatToken,
         kind: "interviewSession",
       },
       select: {

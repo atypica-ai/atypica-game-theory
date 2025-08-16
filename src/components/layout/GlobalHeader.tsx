@@ -52,11 +52,11 @@ export default function GlobalHeader({
               {/* additional menus */}
               <UserTokensBalance />
               <UserMenu />
-              <div className="sm:hidden">
+              <div className="md:hidden">
                 <GlobalHeaderMenusMobile />
               </div>
             </div>
-            <div className="hidden sm:block absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+            <div className="hidden md:block absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
               <GlobalHeaderMenusDesktop />
             </div>
           </>
@@ -72,7 +72,10 @@ const MenuLink = ({
   children,
   ...props
 }: React.ComponentProps<typeof Link> & { children: React.ReactNode }) => (
-  <Link {...props} className={cn("p-1 text-sm font-normal hover:text-foreground/80", className)}>
+  <Link
+    {...props}
+    className={cn("p-1 text-sm font-normal hover:text-foreground/80 whitespace-nowrap", className)}
+  >
     {children}
   </Link>
 );
@@ -96,7 +99,11 @@ const GlobalHeaderMenusMobile = () => {
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" aria-label="Toggle menu" size="icon">
+        <Button
+          variant="ghost"
+          aria-label="Toggle menu"
+          className="h-9 p-0 has-[>svg]:px-0 hover:bg-transparent"
+        >
           <MenuIcon className="size-5" />
         </Button>
       </DropdownMenuTrigger>

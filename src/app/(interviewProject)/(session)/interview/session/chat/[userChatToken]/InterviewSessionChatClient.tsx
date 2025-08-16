@@ -1,6 +1,6 @@
 "use client";
 import { ClientMessagePayload } from "@/ai/messageUtilsClient";
-import { fetchInterviewSessionByChatToken } from "@/app/(interviewProject)/actions";
+import { fetchInterviewSessionChat } from "@/app/(interviewProject)/actions";
 import { RequestInteractionFormToolMessage } from "@/app/(interviewProject)/components/RequestInteractionFormToolMessage";
 import { InterviewToolName } from "@/app/(interviewProject)/types";
 import { FocusedInterviewChat } from "@/components/chat/FocusedInterviewChat";
@@ -29,7 +29,7 @@ export function InterviewSessionChatClient({
   intervieweeUser,
   userChatToken,
   initialMessages = [],
-}: ExtractServerActionData<typeof fetchInterviewSessionByChatToken> & {
+}: ExtractServerActionData<typeof fetchInterviewSessionChat> & {
   userChatToken: string;
   initialMessages?: Message[];
 }) {

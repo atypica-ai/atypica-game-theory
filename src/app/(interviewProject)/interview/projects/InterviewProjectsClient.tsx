@@ -2,7 +2,14 @@
 import { fetchUserInterviewProjects } from "@/app/(interviewProject)/actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDate } from "@/lib/utils";
 import {
@@ -15,14 +22,12 @@ import {
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { CreateProjectDialog } from "./CreateProjectDialog";
 
 export function InterviewProjectsClient({ isCreateEnabled }: { isCreateEnabled: boolean }) {
   const locale = useLocale();
-  const router = useRouter();
   const t = useTranslations("InterviewProject.projectsList");
   const [projects, setProjects] = useState<
     ExtractServerActionData<typeof fetchUserInterviewProjects>
@@ -89,8 +94,8 @@ export function InterviewProjectsClient({ isCreateEnabled }: { isCreateEnabled: 
   }
 
   return (
-    <div className="flex-1 overflow-y-auto scrollbar-thin">
-      <div className="container mx-auto px-8 py-8 max-w-6xl space-y-6">
+    <div className="flex-1 overflow-y-auto scrollbar-thin px-8 py-8">
+      <div className="container mx-auto max-w-6xl space-y-6">
         {/* Header */}
         <div className="text-center space-y-3">
           <div className="inline-flex items-center justify-center w-10 h-10 rounded bg-primary text-primary-foreground mb-2">
@@ -105,11 +110,7 @@ export function InterviewProjectsClient({ isCreateEnabled }: { isCreateEnabled: 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <NewProjectCard />
             {projects.map((project) => (
-              <Card
-                key={project.id}
-                className="transition-all duration-300 hover:shadow-md cursor-pointer"
-                onClick={() => router.push(`/interview/projects/${project.id}`)}
-              >
+              <Card key={project.id}>
                 <CardHeader>
                   <CardTitle>
                     <div className="flex items-center text-xs gap-2 font-normal text-muted-foreground">
@@ -135,6 +136,11 @@ export function InterviewProjectsClient({ isCreateEnabled }: { isCreateEnabled: 
                     </Badge>
                   </div>
                 </CardContent>
+                <CardFooter>
+                  <Button variant="outline" size="sm" className="w-full" asChild>
+                    <Link href={`/interview/project/${project.token}`}>{t("viewDetails")}</Link>
+                  </Button>
+                </CardFooter>
               </Card>
             ))}
           </div>

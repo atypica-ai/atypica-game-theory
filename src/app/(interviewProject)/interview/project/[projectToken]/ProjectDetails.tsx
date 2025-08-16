@@ -18,6 +18,7 @@ export function ProjectDetails({
 }: {
   project: {
     id: number;
+    token: string;
     brief: string;
     createdAt: Date;
   };
