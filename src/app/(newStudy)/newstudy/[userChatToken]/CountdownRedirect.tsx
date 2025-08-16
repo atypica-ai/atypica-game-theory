@@ -15,7 +15,7 @@ interface CountdownRedirectProps {
 
 export function CountdownRedirect({ studyBrief, userChatId }: CountdownRedirectProps) {
   const router = useRouter();
-  const t = useTranslations("NewStudyPage");
+  const t = useTranslations("NewStudyChatPage");
   const [countdown, setCountdown] = useState(COUNTDOWN_SECONDS);
   const [isPending, startTransition] = useTransition();
   const hasStarted = useRef(false);

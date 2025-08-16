@@ -1,6 +1,6 @@
 "use client";
 import { createOrGetUserPersonaChat } from "@/app/(persona)/actions";
-import { AnalysisResult } from "@/app/(persona)/persona/import/[id]/AnalysisResult";
+import { AnalysisResult } from "@/app/(persona)/persona/import/[personaImportId]/AnalysisResult";
 import { PersonaImportAnalysis } from "@/app/(persona)/types";
 import { Markdown } from "@/components/markdown";
 import { Badge } from "@/components/ui/badge";

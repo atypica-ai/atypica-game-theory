@@ -79,7 +79,7 @@ export function NewStudyInputBox({ className }: { className?: string }) {
       const chat = result.data;
       // Clear input cache after successfully creating chat
       localStorage.removeItem("studyInputCache");
-      router.push(`/study/?id=${chat.id}`);
+      router.push(`/study/${chat.token}`);
     } catch (error) {
       console.error("Error saving input:", (error as Error).message);
     }
@@ -135,7 +135,7 @@ export function NewStudyInputBox({ className }: { className?: string }) {
           <div></div>
         )}
         <Link
-          href="/newstudy"
+          href="/newstudy?interview=1"
           className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors group"
         >
           <SparklesIcon className="h-3 w-3 text-primary/80 group-hover:scale-110 group-hover:text-primary transition-all" />

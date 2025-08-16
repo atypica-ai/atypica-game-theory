@@ -12,7 +12,9 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
         allow: [
           "/",
           "/pricing",
-          "/study",
+          "/newstudy",
+          "/persona",
+          "/interview",
           "/featured-studies",
           "/about",
           "/changelog",

@@ -320,7 +320,12 @@ export function FocusedInterviewChat({
       <div className="w-full max-w-3xl mx-auto p-4 sm:p-8 pt-0 relative">
         {/* Timer progress indicator */}
         {showTimer && (
-          <div className="flex items-center justify-center gap-3 text-xs text-zinc-400 dark:text-zinc-500">
+          <div
+            className={cn(
+              "absolute top-1 left-1/2 -translate-x-1/2",
+              "flex items-center justify-center gap-3 text-xs text-zinc-400 dark:text-zinc-500",
+            )}
+          >
             <div className="w-20 bg-zinc-200 dark:bg-zinc-700 rounded-full h-0.5">
               <div
                 className="bg-zinc-400 dark:bg-zinc-500 h-0.5 rounded-full transition-all duration-300"

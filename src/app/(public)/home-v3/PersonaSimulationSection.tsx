@@ -125,7 +125,7 @@ export function PersonaSimulationSection() {
               className="rounded-full has-[>svg]:px-8 px-8 h-12"
               asChild
             >
-              <Link href="/study">
+              <Link href="/newstudy">
                 {t("startResearchButton")}
                 <ChevronRightIcon className="h-3 w-3" />
               </Link>

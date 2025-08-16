@@ -18,7 +18,7 @@ export function CTASection() {
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center reveal-up reveal-delay-2">
           <Button size="lg" className="btn-primary-enhanced" asChild>
-            <Link href="/study">
+            <Link href="/newstudy">
               {t("startButton")}
               <ArrowRightIcon className="h-4 w-4" />
             </Link>

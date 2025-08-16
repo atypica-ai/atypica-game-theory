@@ -85,7 +85,7 @@ const GlobalHeaderMenusDesktop = () => {
   return (
     <div className="flex items-center gap-4">
       <MenuLink href="/featured-studies">{t("useCases")}</MenuLink>
-      <MenuLink href="/study">{t("marketResearch")}</MenuLink>
+      <MenuLink href="/newstudy">{t("marketResearch")}</MenuLink>
       <MenuLink href="/persona">{t("personaImport")}</MenuLink>
       <MenuLink href="/interview">{t("interviewProject")}</MenuLink>
       <MenuLink href="/pricing">{t("pricing")}</MenuLink>
@@ -112,7 +112,7 @@ const GlobalHeaderMenusMobile = () => {
           <MenuLink href="/featured-studies">{t("useCases")}</MenuLink>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <MenuLink href="/study">{t("marketResearch")}</MenuLink>
+          <MenuLink href="/newstudy">{t("marketResearch")}</MenuLink>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <MenuLink href="/persona">{t("personaImport")}</MenuLink>

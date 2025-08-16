@@ -630,7 +630,7 @@
       "passwordMismatch": "Passwords do not match"
     }
   },
-  "NewStudyPage": {
+  "NewStudyChatPage": {
     "studyHelper": "Study Helper",
     "title": "Let's clarify your research ideas and study goals together.",
     "description": "I'll help you organize your thoughts and develop a clear study plan. The more detailed your responses, the better guidance I can provide.",

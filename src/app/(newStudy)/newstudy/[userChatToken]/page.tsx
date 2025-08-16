@@ -12,20 +12,17 @@ export const dynamic = "force-dynamic";
 export default async function NewStudyPlanningPage({
   params,
 }: {
-  params: Promise<{ token: string }>;
+  params: Promise<{ userChatToken: string }>;
 }) {
-  const { token } = await params;
-  if (!token) {
-    notFound();
-  }
+  const { userChatToken } = await params;
 
   const session = await getServerSession(authOptions);
   if (!session?.user) {
-    const callbackUrl = `/newstudy/${token}`;
+    const callbackUrl = `/newstudy/${userChatToken}`;
     redirect(`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`);
   }
 
-  const result = await fetchMiscUserChat(token);
+  const result = await fetchMiscUserChat(userChatToken);
   if (!result.success) {
     notFound();
   }

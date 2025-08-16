@@ -18,7 +18,7 @@ export function NewStudyChatClient({
   initialMessages: Message[];
   user: { id: number; email: string };
 }) {
-  const t = useTranslations("NewStudyPage");
+  const t = useTranslations("NewStudyChatPage");
 
   const initialRequestBody = {
     userChatToken: userChat.token,

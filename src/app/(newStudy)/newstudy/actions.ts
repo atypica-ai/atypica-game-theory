@@ -14,7 +14,7 @@ export async function createNewStudyChat(): Promise<
   ServerActionResult<Omit<UserChat, "kind"> & { kind: "misc" }>
 > {
   return withAuth(async (user) => {
-    const t = await getTranslations("NewStudyPage");
+    const t = await getTranslations("NewStudyChatPage");
     const content = "[READY]";
     const parts = [{ type: "text", text: content }];
     const userChat = await prisma.$transaction(async (tx) => {
@@ -49,7 +49,7 @@ export async function createNewStudyChat(): Promise<
 
 export async function fetchMiscUserChat(token: string): Promise<ServerActionResult<UserChat>> {
   return withAuth(async (user) => {
-    const t = await getTranslations("NewStudyPage");
+    const t = await getTranslations("NewStudyChatPage");
     const userChat = await prisma.userChat.findUnique({
       where: { token, userId: user.id, kind: "misc" },
     });
@@ -74,7 +74,7 @@ export async function continueToStudyUserChat(
   studyBrief: string,
 ): Promise<ServerActionResult<{ token: string }>> {
   return withAuth(async (user) => {
-    const t = await getTranslations("NewStudyPage");
+    const t = await getTranslations("NewStudyChatPage");
     const userChat = await prisma.userChat.findUnique({
       where: { id: userChatId, userId: user.id },
     });
