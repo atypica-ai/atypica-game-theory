@@ -27,6 +27,14 @@ export default async function AuthCallback({
   let { callbackUrl } = await searchParams;
   callbackUrl = typeof callbackUrl === "string" ? callbackUrl : "/";
 
+  // Remove domain from callbackUrl, keep only the path part
+  try {
+    const url = new URL(callbackUrl, "http://localhost"); // Use dummy base for relative URLs
+    callbackUrl = url.pathname + url.search + url.hash;
+  } catch {
+    callbackUrl = "/";
+  }
+
   // 1. Get the server session
   const session = await getServerSession(authOptions);
 
