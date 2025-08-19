@@ -1,5 +1,8 @@
 "use client";
-import { fetchInterviewReports, generateInterviewReport } from "@/app/(interviewProject)/actions";
+import {
+  fetchInterviewReportsByProjectToken,
+  generateInterviewReport,
+} from "@/app/(interviewProject)/actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -18,10 +21,13 @@ interface ReportItem {
 }
 
 export function InterviewReportsSection({
-  projectId,
+  project,
   readOnly = false,
 }: {
-  projectId: number;
+  project: {
+    id: number;
+    token: string;
+  };
   readOnly?: boolean;
 }) {
   const locale = useLocale();
@@ -35,7 +41,8 @@ export function InterviewReportsSection({
   const loadReports = useCallback(async () => {
     setLoadingReports(true);
     try {
-      const result = await fetchInterviewReports(projectId);
+      const result = await fetchInterviewReportsByProjectToken({ projectToken: project.token });
+
       if (!result.success) throw result;
       setReports(result.data);
     } catch (error) {
@@ -43,7 +50,7 @@ export function InterviewReportsSection({
     } finally {
       setLoadingReports(false);
     }
-  }, [projectId]);
+  }, [project.token]);
 
   // Fetch reports on component mount
   useEffect(() => {
@@ -54,7 +61,7 @@ export function InterviewReportsSection({
     setGeneratingReport(true);
     setShowConfirmDialog(false);
     try {
-      const result = await generateInterviewReport(projectId);
+      const result = await generateInterviewReport(project.id);
       if (!result.success) throw result;
       setIsReportDialogOpen(result.data);
       loadReports();
@@ -63,7 +70,7 @@ export function InterviewReportsSection({
     } finally {
       setGeneratingReport(false);
     }
-  }, [projectId, loadReports, t]);
+  }, [project.id, loadReports, t]);
 
   return (
     <>

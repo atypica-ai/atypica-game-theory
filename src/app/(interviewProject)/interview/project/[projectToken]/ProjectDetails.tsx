@@ -97,13 +97,13 @@ export function ProjectDetails({
       </Card>
 
       {/* Statistics */}
-      <ProjectStatsSection projectId={project.id} readOnly={readOnly} />
+      <ProjectStatsSection projectToken={project.token} readOnly={readOnly} />
 
       {/* Sessions List */}
-      <InterviewSessionsSection projectId={project.id} readOnly={readOnly} />
+      <InterviewSessionsSection projectToken={project.token} readOnly={readOnly} />
 
       {/* Reports Section */}
-      <InterviewReportsSection projectId={project.id} readOnly={readOnly} />
+      <InterviewReportsSection project={project} readOnly={readOnly} />
 
       {!readOnly && (
         <InviteDialog

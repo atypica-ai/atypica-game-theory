@@ -2,7 +2,7 @@
 
 import {
   deleteInterviewSessionAction,
-  fetchInterviewSessions,
+  fetchInterviewSessionsByProjectToken,
 } from "@/app/(interviewProject)/actions";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Badge } from "@/components/ui/badge";
@@ -24,13 +24,15 @@ import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
-type InterviewSessionItem = ExtractServerActionData<typeof fetchInterviewSessions>[number];
+type InterviewSessionItem = ExtractServerActionData<
+  typeof fetchInterviewSessionsByProjectToken
+>[number];
 
 export function InterviewSessionsSection({
-  projectId,
+  projectToken,
   readOnly = false,
 }: {
-  projectId: number;
+  projectToken: string;
   readOnly?: boolean;
 }) {
   const locale = useLocale();
@@ -44,7 +46,7 @@ export function InterviewSessionsSection({
     setLoading(true);
     setError(null);
     try {
-      const result = await fetchInterviewSessions(projectId);
+      const result = await fetchInterviewSessionsByProjectToken({ projectToken });
       if (!result.success) throw result;
       setSessions(result.data);
     } catch (error) {
@@ -53,7 +55,7 @@ export function InterviewSessionsSection({
     } finally {
       setLoading(false);
     }
-  }, [projectId]);
+  }, [projectToken]);
 
   const deleteInterviewSession = useCallback(async (sessionId: number) => {
     setLoading(true);

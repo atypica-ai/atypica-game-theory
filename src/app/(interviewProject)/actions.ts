@@ -83,7 +83,11 @@ export async function createInterviewProject(
 /**
  * Fetch session statistics for a project
  */
-export async function fetchInterviewSessionStats(projectId: number): Promise<
+export async function fetchInterviewSessionStatsByProjectToken({
+  projectToken,
+}: {
+  projectToken: string;
+}): Promise<
   ServerActionResult<{
     total: number;
     completed: number;
@@ -100,10 +104,11 @@ export async function fetchInterviewSessionStats(projectId: number): Promise<
     };
   }>
 > {
-  return withAuth(async (user) => {
+  return withAuth(async () => {
     const { sessions } = await prisma.interviewProject
       .findUniqueOrThrow({
-        where: { id: projectId, userId: user.id },
+        // where: { id: projectId, userId: user.id },
+        where: { token: projectToken },
         select: {
           id: true,
           sessions: {
@@ -154,7 +159,11 @@ export async function fetchInterviewSessionStats(projectId: number): Promise<
 /**
  * Fetch interview sessions for a project
  */
-export async function fetchInterviewSessions(projectId: number): Promise<
+export async function fetchInterviewSessionsByProjectToken({
+  projectToken,
+}: {
+  projectToken: string;
+}): Promise<
   ServerActionResult<
     Array<{
       id: number;
@@ -176,10 +185,11 @@ export async function fetchInterviewSessions(projectId: number): Promise<
     }>
   >
 > {
-  return withAuth(async (user) => {
+  return withAuth(async () => {
     // First verify the project belongs to the user
     const project = await prisma.interviewProject.findUnique({
-      where: { id: projectId, userId: user.id },
+      // where: { id: projectId, userId: user.id },
+      where: { token: projectToken },
       select: { id: true },
     });
 
@@ -192,7 +202,7 @@ export async function fetchInterviewSessions(projectId: number): Promise<
     }
 
     const sessions = await prisma.interviewSession.findMany({
-      where: { projectId: projectId },
+      where: { projectId: project.id },
       select: {
         id: true,
         title: true,
@@ -579,7 +589,11 @@ export async function fetchInterviewSessionChat({
 /**
  * Fetch interview reports for a project
  */
-export async function fetchInterviewReports(projectId: number): Promise<
+export async function fetchInterviewReportsByProjectToken({
+  projectToken,
+}: {
+  projectToken: string;
+}): Promise<
   ServerActionResult<
     Array<{
       id: number;
@@ -589,11 +603,12 @@ export async function fetchInterviewReports(projectId: number): Promise<
     }>
   >
 > {
-  return withAuth(async (user) => {
+  return withAuth(async () => {
     // Ensure project belongs to user
     const project = await prisma.interviewProject
       .findUniqueOrThrow({
-        where: { id: projectId, userId: user.id },
+        // where: { id: projectId, userId: user.id },
+        where: { token: projectToken },
       })
       .catch(() => notFound());
     const reports = await prisma.interviewReport.findMany({

@@ -1,5 +1,5 @@
 "use client";
-import { fetchInterviewSessionStats } from "@/app/(interviewProject)/actions";
+import { fetchInterviewSessionStatsByProjectToken } from "@/app/(interviewProject)/actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -9,17 +9,17 @@ import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 
 export function ProjectStatsSection({
-  projectId,
+  projectToken,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   readOnly = false,
 }: {
-  projectId: number;
+  projectToken: string;
   readOnly?: boolean;
 }) {
   const t = useTranslations("InterviewProject.projectDetails");
   const tStats = useTranslations("InterviewProject.statistics");
   const [stats, setStats] = useState<ExtractServerActionData<
-    typeof fetchInterviewSessionStats
+    typeof fetchInterviewSessionStatsByProjectToken
   > | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -28,7 +28,7 @@ export function ProjectStatsSection({
     setLoading(true);
     setError(null);
     try {
-      const result = await fetchInterviewSessionStats(projectId);
+      const result = await fetchInterviewSessionStatsByProjectToken({ projectToken });
       if (!result.success) throw result;
       setStats(result.data);
     } catch (error) {
@@ -37,7 +37,7 @@ export function ProjectStatsSection({
     } finally {
       setLoading(false);
     }
-  }, [projectId]);
+  }, [projectToken]);
 
   useEffect(() => {
     loadStats();
