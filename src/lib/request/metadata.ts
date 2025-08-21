@@ -1,5 +1,21 @@
+import { AWS_S3_CONFIG } from "@/lib/attachments/s3";
 import { Metadata } from "next";
 import { Locale } from "next-intl";
+import { getDeployRegion } from "./deployRegion";
+
+const POSTER_IMAGE = (() => {
+  const homePageVideoPoster = "atypica/public/atypica-promo-video-poster-20250624.jpeg";
+  try {
+    const s3Region = getDeployRegion() === "mainland" ? "cn-north-1" : "us-east-1";
+    const s3Config = AWS_S3_CONFIG.find((item) => item.region === s3Region);
+    if (!s3Config) {
+      throw new Error("S3 configuration not found");
+    }
+    return `${s3Config.origin}${homePageVideoPoster}`;
+  } catch {
+    return null;
+  }
+})();
 
 const siteTitles = {
   "zh-CN": "atypica.AI - 商业研究多智能体", // 为「主观世界」建模
@@ -49,11 +65,25 @@ export function generatePageMetadata({
       description,
       type: "website",
       locale,
+      images: POSTER_IMAGE
+        ? [
+            {
+              url: POSTER_IMAGE,
+              width: 1200,
+              height: 630,
+              alt: title,
+            },
+          ]
+        : [],
+      siteName: "atypica.AI",
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
+      images: POSTER_IMAGE ? [POSTER_IMAGE] : [],
+      creator: "@BMRLab",
+      site: "@atypica_ai",
     },
   };
 }

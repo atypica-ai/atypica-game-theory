@@ -54,9 +54,16 @@ export async function generateMetadata(): Promise<Metadata> {
       follow: true,
     },
     icons: {
-      icon: "/_public/hippyghost-square-dark.jpg",
+      icon: [
+        { url: "/_public/hippyghost-square-dark.jpg", sizes: "32x32", type: "image/jpeg" },
+        { url: "/_public/hippyghost-square-dark.jpg", sizes: "16x16", type: "image/jpeg" },
+      ],
       shortcut: "/_public/hippyghost-square-dark.jpg",
-      apple: { url: "/_public/hippyghost-square-dark.jpg", sizes: "180x180", type: "image/png" },
+      apple: [
+        { url: "/_public/hippyghost-square-dark.jpg", sizes: "180x180", type: "image/jpeg" },
+        { url: "/_public/hippyghost-square-dark.jpg", sizes: "152x152", type: "image/jpeg" },
+        { url: "/_public/hippyghost-square-dark.jpg", sizes: "144x144", type: "image/jpeg" },
+      ],
     },
     manifest: "/manifest.json",
   };
