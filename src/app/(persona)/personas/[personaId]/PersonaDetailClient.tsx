@@ -146,8 +146,8 @@ export function PersonaDetailClient({
           </div>
         </div>
 
-        {/* Analysis Summary */}
-        {analysis?.analysis && <AnalysisResult analysis={analysis.analysis} />}
+        {/* Analysis Summary, 先隐藏，persona 详情页不需要显示 analysis，重复了 */}
+        {false && analysis?.analysis && <AnalysisResult analysis={analysis?.analysis} />}
       </div>
     </div>
   );
