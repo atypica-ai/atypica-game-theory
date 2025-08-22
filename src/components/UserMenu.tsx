@@ -143,7 +143,7 @@ export default function UserMenu() {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link href="/interviews">
+          <Link href="/interview/projects">
             <MicIcon className="h-4 w-4 mr-2" />
             {t("myInterviews")}
           </Link>
