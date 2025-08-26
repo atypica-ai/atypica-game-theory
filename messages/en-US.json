@@ -675,5 +675,15 @@
     "noFilesFound": "No files found.",
     "fileSelectedSuccessfully": "File selected successfully",
     "failedToSelectFile": "Failed to select file"
+  },
+  "NotFoundPage": {
+    "title": "404 Page Not Found",
+    "description": "Sorry, the page you are looking for does not exist or has been removed. Please check the URL or return to the homepage.",
+    "returnHome": "Return Home"
+  },
+  "ForbiddenPage": {
+    "title": "Access Denied",
+    "description": "Sorry, you do not have permission to access this page. Please confirm your access rights or contact the administrator.",
+    "returnHome": "Return Home"
   }
 }

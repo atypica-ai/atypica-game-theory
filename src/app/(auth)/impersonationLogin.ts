@@ -35,17 +35,17 @@ export function verifyImpersonationLoginToken(token: string): ImpersonationLogin
     const decryptedText = decryptText(token);
     const payload: ImpersonationLoginPayload = JSON.parse(decryptedText);
 
-    // Check if token has expired
-    if (Date.now() > payload.expiresAt) {
-      return null;
-    }
-
     // Validate payload structure
     if (
       typeof payload.userId !== "number" ||
       typeof payload.timestamp !== "number" ||
       typeof payload.expiresAt !== "number"
     ) {
+      return null;
+    }
+
+    // Check if token has expired
+    if (Date.now() > payload.expiresAt) {
       return null;
     }
 
