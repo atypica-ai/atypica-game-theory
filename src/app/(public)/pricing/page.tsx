@@ -6,6 +6,8 @@ import { getServerSession } from "next-auth";
 import { getTranslations } from "next-intl/server";
 import PricingPageClient from "./PricingPageClient";
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("PricingPage");
   return {
