@@ -66,7 +66,7 @@ export default async function PersonaDetailPageWithLoading({
   // notFound error 没这个问题
   // 所以这里先提前判断下用户是否登录
   const session = await getServerSession(authOptions);
-  if (!session?.user || !session?.team) {
+  if (!session?.user) {
     const callbackUrl = `/personas/${personaId}`;
     redirect(`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`);
   }
