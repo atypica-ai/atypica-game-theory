@@ -80,7 +80,7 @@ export async function fetchPersonas({
       const totalCountResult = await prisma.$queryRaw<{ count: number }[]>`
         SELECT COUNT(*) as count
         FROM "Persona"
-        WHERE "embedding" <=> ${JSON.stringify(embedding)}::vector < 0.5 AND locale = ${locale} AND tier = ANY(${tiers})
+        WHERE "embedding" <=> ${JSON.stringify(embedding)}::vector < 0.9 AND locale = ${locale} AND tier = ANY(${tiers})
       `;
       // 向量搜索的结果现在看起来最多就是 40，这个应该是索引的设置
       const totalCount = Math.min(40, Number(totalCountResult[0].count));

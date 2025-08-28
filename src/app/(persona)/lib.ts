@@ -57,7 +57,10 @@ export async function createPersonaWithPostProcess({
       data: data,
     });
   }
-  await Promise.all([createPersonaEmbedding(persona), scorePersona(persona)]);
+
+  // 只调用 scorePersona，如果 tier > 0，再计算 embedding，否则清空 embedding
+  await scorePersona(persona);
+  // await Promise.all([createPersonaEmbedding(persona), scorePersona(persona)]);
 
   return persona;
 }
@@ -76,6 +79,21 @@ async function createPersonaEmbedding(persona: Persona) {
   } catch (error) {
     rootLogger.error(
       `Failed to update semantic embedding for persona ${persona.id}: ${(error as Error).message}`,
+    );
+  }
+}
+
+async function clearPersonaEmbedding(persona: Persona) {
+  try {
+    await prisma.$executeRaw`
+      UPDATE "Persona"
+      SET "embedding" = NULL
+      WHERE "id" = ${persona.id}
+    `;
+    rootLogger.info(`Cleared semantic embedding for persona ${persona.id}`);
+  } catch (error) {
+    rootLogger.error(
+      `Failed to clear semantic embedding for persona ${persona.id}: ${(error as Error).message}`,
     );
   }
 }
@@ -122,10 +140,17 @@ export async function scorePersona(persona: Persona) {
           ? PersonaTier.Tier1 // 超出平均，高质量的合成智能体
           : PersonaTier.Tier0;
 
-    await prisma.persona.update({
+    persona = await prisma.persona.update({
       where: { id: persona.id },
       data: { tier: tier },
     });
+
+    if (tier === PersonaTier.Tier0) {
+      await clearPersonaEmbedding(persona);
+    } else {
+      await createPersonaEmbedding(persona);
+    }
+
     rootLogger.info(
       `Persona ${persona.id} scored with tier ${tier}. ${JSON.stringify(result.object)}`,
     );
