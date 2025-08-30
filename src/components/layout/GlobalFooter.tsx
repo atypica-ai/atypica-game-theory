@@ -134,6 +134,12 @@ export default function GlobalFooter({ className }: { className?: string }) {
                 {t("blog")}
               </Link>
               <Link
+                href="/deck"
+                className="block text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {t("deck")}
+              </Link>
+              <Link
                 href="/terms"
                 className="block text-muted-foreground hover:text-foreground transition-colors"
               >

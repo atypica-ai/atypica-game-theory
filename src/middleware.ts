@@ -111,9 +111,9 @@ export async function middleware(req: NextRequest) {
 
   // Handle locale-aware static pages
   const path = req.nextUrl.pathname;
-  if (path === "/about" || path === "/persona-simulation" || path === "/changelog.html") {
+  if (path === "/about.html" || path === "/persona-simulation" || path === "/changelog.html") {
     const url = req.nextUrl.clone();
-    if (path === "/about") {
+    if (path === "/about.html") {
       url.pathname = locale === "zh-CN" ? "/_pages/about-zh.html" : "/_pages/about-en.html";
     } else if (path === "/persona-simulation") {
       url.pathname =
