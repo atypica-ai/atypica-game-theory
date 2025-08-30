@@ -1,6 +1,7 @@
 import { FitToViewport } from "@/components/layout/FitToViewport";
 import GlobalFooter from "@/components/layout/GlobalFooter";
 import GlobalHeader from "@/components/layout/GlobalHeader";
+import { cn } from "@/lib/utils";
 import React, { ReactElement, ReactNode } from "react";
 
 type DefaultLayoutProps = {
@@ -43,7 +44,12 @@ export async function DefaultLayout({
       {children}
     </div>
   ) : (
-    <div className="pt-16 min-h-dvh flex flex-col items-stretch justify-start overflow-y-auto scrollbar-thin">
+    <div
+      className={cn(
+        "min-h-dvh flex flex-col items-stretch justify-start overflow-y-auto scrollbar-thin",
+        { "pt-16": !!header },
+      )}
+    >
       {header && <GlobalHeader className="h-16 fixed top-0 left-0 right-0 z-10" />}
       {children}
       {footer && <GlobalFooter />}
