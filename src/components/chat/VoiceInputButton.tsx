@@ -34,7 +34,7 @@ export function VoiceInputButton({
   const [audioLevel, setAudioLevel] = useState(0);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [partialTranscript, setPartialTranscript] = useState("");
-  
+
   const lastTranscriptRef = useRef<string>("");
   const fullTranscriptRef = useRef<string>("");
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -190,8 +190,14 @@ export function VoiceInputButton({
             chunksRef.current.length >= 3 && totalSize >= 4000 && timeSinceLastTranscribe > 4000;
 
           if (shouldTranscribe && !isTranscribingRef.current) {
-            console.log("📤 Processing accumulated audio:", chunksRef.current.length, "chunks,", totalSize, "bytes");
-            
+            console.log(
+              "📤 Processing accumulated audio:",
+              chunksRef.current.length,
+              "chunks,",
+              totalSize,
+              "bytes",
+            );
+
             isTranscribingRef.current = true;
             lastTranscribeTimeRef.current = now;
 
@@ -211,7 +217,10 @@ export function VoiceInputButton({
             // Set a debounced transcription for later
             transcribeTimeoutRef.current = setTimeout(async () => {
               if (chunksRef.current.length >= 3 && !isTranscribingRef.current) {
-                const currentTotalSize = chunksRef.current.reduce((sum, chunk) => sum + chunk.size, 0);
+                const currentTotalSize = chunksRef.current.reduce(
+                  (sum, chunk) => sum + chunk.size,
+                  0,
+                );
                 if (currentTotalSize >= 4000) {
                   console.log("⏰ Debounced transcription executing");
                   isTranscribingRef.current = true;
@@ -265,7 +274,7 @@ export function VoiceInputButton({
         // Only process unprocessed chunks if there are any
         if (unprocessedChunks.length > 0 && unprocessedSize > 1000) {
           console.log("🎬 Processing final unprocessed audio segment...");
-          
+
           const originalChunks = chunksRef.current;
           chunksRef.current = unprocessedChunks;
 
@@ -277,7 +286,10 @@ export function VoiceInputButton({
             isTranscribingRef.current = false;
           }
         } else if (fullTranscriptRef.current) {
-          console.log("✨ No unprocessed audio, using accumulated streaming transcript:", fullTranscriptRef.current);
+          console.log(
+            "✨ No unprocessed audio, using accumulated streaming transcript:",
+            fullTranscriptRef.current,
+          );
           setPartialTranscript("");
           onTranscript(fullTranscriptRef.current);
         } else {

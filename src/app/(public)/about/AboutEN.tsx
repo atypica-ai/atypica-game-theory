@@ -12,7 +12,8 @@ export const AboutEN: React.FC = () => {
         </p>
         <blockquote className="text-lg mt-6 border-l-4 border-green-600 dark:border-green-400 pl-6 italic">
           <p className="text-gray-700 dark:text-gray-300">
-            &ldquo;People don&apos;t choose between things, they choose between descriptions of things.&rdquo;
+            &ldquo;People don&apos;t choose between things, they choose between descriptions of
+            things.&rdquo;
             <span className="opacity-70 block text-sm mt-1">— Daniel Kahneman</span>
           </p>
         </blockquote>
@@ -27,16 +28,17 @@ export const AboutEN: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div className="space-y-4">
               <p className="text-gray-800 dark:text-gray-200">
-                Business research is the science of understanding human decision-making. Humans don&apos;t
-                make decisions based purely on rationality, but are influenced by narratives,
-                emotions, and cognitive biases. Therefore, understanding the mechanisms that influence
-                decision-making is at the core of business research.
+                Business research is the science of understanding human decision-making. Humans
+                don&apos;t make decisions based purely on rationality, but are influenced by
+                narratives, emotions, and cognitive biases. Therefore, understanding the mechanisms
+                that influence decision-making is at the core of business research.
               </p>
               <p className="text-gray-800 dark:text-gray-200">
-                If &ldquo;physics&rdquo; models the &ldquo;objective world,&rdquo; then &ldquo;language models&rdquo; have the opportunity
-                to model the &ldquo;subjective world.&rdquo; atypica.AI can capture human decision-making
-                mechanisms that traditional data analysis handles poorly, providing deep insights for
-                personal and business decision problems.
+                If &ldquo;physics&rdquo; models the &ldquo;objective world,&rdquo; then
+                &ldquo;language models&rdquo; have the opportunity to model the &ldquo;subjective
+                world.&rdquo; atypica.AI can capture human decision-making mechanisms that
+                traditional data analysis handles poorly, providing deep insights for personal and
+                business decision problems.
               </p>
             </div>
             <div className="bg-gray-100 dark:bg-gray-800 p-6 rounded-lg">
@@ -46,11 +48,13 @@ export const AboutEN: React.FC = () => {
               <ul className="space-y-2">
                 <li className="flex items-start">
                   <span className="text-green-600 dark:text-green-400 mr-2">→</span>
-                  Simulate consumer personalities and cognition by building &ldquo;AI Personas&rdquo;
+                  Simulate consumer personalities and cognition by building &ldquo;AI
+                  Personas&rdquo;
                 </li>
                 <li className="flex items-start">
                   <span className="text-green-600 dark:text-green-400 mr-2">→</span>
-                  Analyze consumer behavior through &ldquo;interviews&rdquo; between &ldquo;Interviewer AIs&rdquo; and &ldquo;AI Personas&rdquo;
+                  Analyze consumer behavior through &ldquo;interviews&rdquo; between
+                  &ldquo;Interviewer AIs&rdquo; and &ldquo;AI Personas&rdquo;
                 </li>
                 <li className="flex items-start">
                   <span className="text-green-600 dark:text-green-400 mr-2">→</span>
@@ -68,7 +72,8 @@ export const AboutEN: React.FC = () => {
           </h2>
           <p className="text-gray-700 dark:text-gray-300 mb-8">
             Using atypica.AI, you simply need to ask a specific business research question, and the
-            system will provide a detailed research report through 10-20 minutes of &ldquo;long reasoning.&rdquo;
+            system will provide a detailed research report through 10-20 minutes of &ldquo;long
+            reasoning.&rdquo;
           </p>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
             {[
@@ -93,8 +98,9 @@ export const AboutEN: React.FC = () => {
           </div>
           <div className="mt-6 bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
             <p className="text-sm text-gray-700 dark:text-gray-300">
-              &ldquo;Nerd Stats&rdquo; records how much time, steps, AI Persona roles, and tokens were consumed
-              during the work process, which is also a form of &ldquo;Proof of Work&rdquo; for the AI.
+              &ldquo;Nerd Stats&rdquo; records how much time, steps, AI Persona roles, and tokens
+              were consumed during the work process, which is also a form of &ldquo;Proof of
+              Work&rdquo; for the AI.
             </p>
           </div>
         </section>
@@ -116,7 +122,8 @@ export const AboutEN: React.FC = () => {
                 Evaluate marketing content topics and effectiveness, predict audience reactions
               </p>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                <strong>Example:</strong> Which Logitech mouse topic would be more popular on social media?
+                <strong>Example:</strong> Which Logitech mouse topic would be more popular on social
+                media?
               </p>
             </div>
 
@@ -131,7 +138,8 @@ export const AboutEN: React.FC = () => {
                 Discover user experience pain points, understand customer feedback and experiences
               </p>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                <strong>Example:</strong> Customer feedback analysis for luxury retail store experiences
+                <strong>Example:</strong> Customer feedback analysis for luxury retail store
+                experiences
               </p>
             </div>
 
@@ -146,7 +154,8 @@ export const AboutEN: React.FC = () => {
                 Co-create with simulated users to develop new products and services
               </p>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                <strong>Example:</strong> Co-create new product ideas with young parents from first-tier cities
+                <strong>Example:</strong> Co-create new product ideas with young parents from
+                first-tier cities
               </p>
             </div>
 
@@ -190,43 +199,55 @@ export const AboutEN: React.FC = () => {
               <div className="space-y-4">
                 <div className="border-l-4 border-gray-400 pl-4">
                   <div className="flex items-center mb-2">
-                    <span className="text-xs bg-gray-700 text-white px-2 py-1 rounded mr-2">2023</span>
+                    <span className="text-xs bg-gray-700 text-white px-2 py-1 rounded mr-2">
+                      2023
+                    </span>
                     <h4 className="font-medium">Multi-Persona Interaction</h4>
                   </div>
                   <p className="text-sm text-gray-700 dark:text-gray-300">
-                    The Stanford Town paper introduced us to the concept of multi-persona interaction,
-                    but didn&apos;t truly demonstrate how these simulated personas interact with each other.
+                    The Stanford Town paper introduced us to the concept of multi-persona
+                    interaction, but didn&apos;t truly demonstrate how these simulated personas
+                    interact with each other.
                   </p>
                 </div>
                 <div className="border-l-4 border-blue-500 pl-4">
                   <div className="flex items-center mb-2">
-                    <span className="text-xs bg-gray-700 text-white px-2 py-1 rounded mr-2">2023.12</span>
+                    <span className="text-xs bg-gray-700 text-white px-2 py-1 rounded mr-2">
+                      2023.12
+                    </span>
                     <h4 className="font-medium">Model Tool Calling</h4>
                   </div>
                   <p className="text-sm text-gray-700 dark:text-gray-300">
-                    OpenAI&apos;s Function Calling and Claude&apos;s MCP protocol opened up new possibilities for
-                    models to interact with the external world beyond chatbox interactions.
+                    OpenAI&apos;s Function Calling and Claude&apos;s MCP protocol opened up new
+                    possibilities for models to interact with the external world beyond chatbox
+                    interactions.
                   </p>
                 </div>
                 <div className="border-l-4 border-green-500 pl-4">
                   <div className="flex items-center mb-2">
-                    <span className="text-xs bg-gray-700 text-white px-2 py-1 rounded mr-2">2024.11</span>
+                    <span className="text-xs bg-gray-700 text-white px-2 py-1 rounded mr-2">
+                      2024.11
+                    </span>
                     <h4 className="font-medium">Language Models for Subjective World Modeling</h4>
                   </div>
                   <p className="text-sm text-gray-700 dark:text-gray-300">
-                    Stanford&apos;s breakthrough research successfully simulated 1,000 Americans with 85%+ behavioral
-                    consistency, demonstrating the potential for AI personas to model human behavior.
+                    Stanford&apos;s breakthrough research successfully simulated 1,000 Americans
+                    with 85%+ behavioral consistency, demonstrating the potential for AI personas to
+                    model human behavior.
                   </p>
                 </div>
                 <div className="border-l-4 border-yellow-500 pl-4">
                   <div className="flex items-center mb-2">
-                    <span className="text-xs bg-gray-700 text-white px-2 py-1 rounded mr-2">2025.02</span>
+                    <span className="text-xs bg-gray-700 text-white px-2 py-1 rounded mr-2">
+                      2025.02
+                    </span>
                     <h4 className="font-medium">Divergence-First Long Reasoning</h4>
                   </div>
                   <p className="text-sm text-gray-700 dark:text-gray-300">
-                    Unlike objective world reasoning that emphasizes &ldquo;convergence,&rdquo; subjective world
-                    reasoning needs to emphasize &ldquo;divergence&rdquo; across four dimensions: learning from cases,
-                    eureka moments, feedback quality, and iteration count.
+                    Unlike objective world reasoning that emphasizes &ldquo;convergence,&rdquo;
+                    subjective world reasoning needs to emphasize &ldquo;divergence&rdquo; across
+                    four dimensions: learning from cases, eureka moments, feedback quality, and
+                    iteration count.
                   </p>
                 </div>
               </div>
@@ -256,21 +277,23 @@ export const AboutEN: React.FC = () => {
                   <span className="text-gray-500 mr-2">2.</span>
                   <div>
                     <strong>Model Accuracy Limitations:</strong> 80% accuracy in simulating complex
-                    decision-making, with limitations in highly emotional or context-dependent scenarios
+                    decision-making, with limitations in highly emotional or context-dependent
+                    scenarios
                   </div>
                 </li>
                 <li className="flex items-start">
                   <span className="text-gray-500 mr-2">3.</span>
                   <div>
-                    <strong>Data Integration Complexity:</strong> Quality differences make integration
-                    difficult, better at positive/negative feedback than biases and limitations
+                    <strong>Data Integration Complexity:</strong> Quality differences make
+                    integration difficult, better at positive/negative feedback than biases and
+                    limitations
                   </div>
                 </li>
                 <li className="flex items-start">
                   <span className="text-gray-500 mr-2">4.</span>
                   <div>
-                    <strong>Innovation Prediction Difficulty:</strong> Difficult to predict responses
-                    to truly breakthrough innovations
+                    <strong>Innovation Prediction Difficulty:</strong> Difficult to predict
+                    responses to truly breakthrough innovations
                   </div>
                 </li>
               </ul>
@@ -282,13 +305,14 @@ export const AboutEN: React.FC = () => {
               </h3>
               <div className="mb-4">
                 <blockquote className="border-l-4 border-gray-500 pl-4 italic text-gray-700 dark:text-gray-300">
-                  This method is equivalent to refining orange juice into concentrated powder,
-                  then using language models as &ldquo;water&rdquo; to reconstitute it back into orange juice.
+                  This method is equivalent to refining orange juice into concentrated powder, then
+                  using language models as &ldquo;water&rdquo; to reconstitute it back into orange
+                  juice.
                 </blockquote>
               </div>
               <p className="text-gray-700 dark:text-gray-300 mb-4">
-                With the continuous development of language models and enhanced multimodal capabilities,
-                atypica.AI will continue to improve in the following areas:
+                With the continuous development of language models and enhanced multimodal
+                capabilities, atypica.AI will continue to improve in the following areas:
               </p>
               <ul className="space-y-2">
                 <li className="flex items-start">
@@ -330,15 +354,19 @@ export const AboutEN: React.FC = () => {
                 </h3>
                 <p className="mb-4 text-gray-700 dark:text-gray-300">
                   The visual identity of atypica.AI comes from the{" "}
-                  <a href="https://hippyghosts.io" className="text-green-600 dark:text-green-400 hover:underline">
+                  <a
+                    href="https://hippyghosts.io"
+                    className="text-green-600 dark:text-green-400 hover:underline"
+                  >
                     HippyGhosts.io
                   </a>{" "}
                   community, which represents the geek spirit of joyful hippy ghosts.
                 </p>
                 <p className="text-gray-700 dark:text-gray-300">
-                  In the world of atypica.AI, the physical embodiment of each &ldquo;AI Persona&rdquo; is a &ldquo;Hippy
-                  Ghost,&rdquo; representing the fusion of technology and creativity, and symbolizing our
-                  pursuit of building AI personas with personality and warmth.
+                  In the world of atypica.AI, the physical embodiment of each &ldquo;AI
+                  Persona&rdquo; is a &ldquo;Hippy Ghost,&rdquo; representing the fusion of
+                  technology and creativity, and symbolizing our pursuit of building AI personas
+                  with personality and warmth.
                 </p>
               </div>
             </div>
@@ -347,8 +375,8 @@ export const AboutEN: React.FC = () => {
 
         <footer className="text-center text-gray-500 dark:text-gray-400 pt-8 border-t border-gray-300 dark:border-gray-700">
           <div className="mb-4">
-            <a 
-              href="/deck" 
+            <a
+              href="/deck"
               className="inline-flex items-center text-sm text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
             >
               View our pitch deck →

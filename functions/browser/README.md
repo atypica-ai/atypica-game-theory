@@ -37,6 +37,7 @@ PORT=3000 npm start
 **Request Body:**
 
 Option 1 - From URL:
+
 ```json
 {
   "url": "https://example.com/page-to-convert",
@@ -45,6 +46,7 @@ Option 1 - From URL:
 ```
 
 Option 2 - From HTML content:
+
 ```json
 {
   "url": null,
@@ -54,11 +56,13 @@ Option 2 - From HTML content:
 ```
 
 **Response:**
+
 - Content-Type: `application/pdf`
 - Content-Disposition: `inline; filename="my-document.pdf"`
 - The generated PDF file as binary data
 
 **Features:**
+
 - Full page height capture
 - Print background enabled
 - No margins for full content display
@@ -71,6 +75,7 @@ Option 2 - From HTML content:
 **Request Body:**
 
 Option 1 - From URL:
+
 ```json
 {
   "url": "https://example.com/page-to-screenshot",
@@ -79,6 +84,7 @@ Option 1 - From URL:
 ```
 
 Option 2 - From HTML content:
+
 ```json
 {
   "url": null,
@@ -88,11 +94,13 @@ Option 2 - From HTML content:
 ```
 
 **Response:**
+
 - Content-Type: `image/png`
 - Content-Disposition: `inline; filename="my-screenshot.png"`
 - The generated screenshot as PNG binary data
 
 **Features:**
+
 - 1280x720 viewport (classic desktop size)
 - PNG format output
 - Viewport-only capture (first screen)
@@ -100,11 +108,11 @@ Option 2 - From HTML content:
 
 ## Request Parameters
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `url` | string | conditional | URL of the webpage (required if `html` not provided) |
-| `html` | string | conditional | HTML content to process (required if `url` not provided) |
-| `filename` | string | required | Output filename without extension |
+| Parameter  | Type   | Required    | Description                                              |
+| ---------- | ------ | ----------- | -------------------------------------------------------- |
+| `url`      | string | conditional | URL of the webpage (required if `html` not provided)     |
+| `html`     | string | conditional | HTML content to process (required if `url` not provided) |
+| `filename` | string | required    | Output filename without extension                        |
 
 ## Environment Variables
 
@@ -115,6 +123,7 @@ Option 2 - From HTML content:
 ### Using curl
 
 Generate PDF from URL:
+
 ```bash
 curl -X POST http://localhost:8080/html-to-pdf \
   -H "Content-Type: application/json" \
@@ -123,6 +132,7 @@ curl -X POST http://localhost:8080/html-to-pdf \
 ```
 
 Take screenshot from HTML:
+
 ```bash
 curl -X POST http://localhost:8080/screenshot \
   -H "Content-Type: application/json" \
@@ -133,6 +143,7 @@ curl -X POST http://localhost:8080/screenshot \
 ### Using JavaScript fetch
 
 Generate PDF:
+
 ```javascript
 fetch("http://localhost:8080/html-to-pdf", {
   method: "POST",
@@ -159,6 +170,7 @@ fetch("http://localhost:8080/html-to-pdf", {
 ```
 
 Take screenshot:
+
 ```javascript
 fetch("http://localhost:8080/screenshot", {
   method: "POST",
@@ -222,6 +234,7 @@ The server returns appropriate HTTP status codes:
 - `500 Internal Server Error`: Processing errors
 
 Error response format:
+
 ```json
 {
   "success": false,
@@ -232,18 +245,21 @@ Error response format:
 ## Technical Details
 
 ### PDF Generation
+
 - **Viewport**: 1440px width, dynamic height based on content
 - **Format**: Full page capture with print backgrounds
 - **Margins**: Zero margins for full content display
 - **Timeout**: 10 seconds for HTML content, 60 seconds for URLs
 
 ### Screenshot Generation
+
 - **Viewport**: 1280x720 pixels (desktop resolution)
 - **Format**: PNG image
 - **Capture**: Viewport-only (first screen)
 - **Timeout**: 10 seconds for HTML content, 60 seconds for URLs
 
 ### Performance
+
 - Each request launches a new browser instance for isolation
 - Browser instances are automatically closed after processing
 - Content size limit: 1MB for HTML input

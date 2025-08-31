@@ -2,6 +2,7 @@ import { appendChunkToStreamingMessage, createDebouncePersistentMessage } from "
 import { productRnDSystem } from "@/ai/prompt/study/productRnD";
 import { fixFileNameInMessageToUsePromptCache, llm, providerOptions } from "@/ai/provider";
 import { initStudyStatReporter } from "@/ai/tools/stats";
+import { saveInnovationSummaryTool } from "@/ai/tools/system/saveAnalyst";
 import {
   audienceCallTool,
   generateReportTool,
@@ -27,7 +28,6 @@ import { Logger } from "pino";
 import { backgroundChatUntilCancel, raceForUserChat } from "./background";
 import { notifyReportCompletion, notifyStudyInterruption } from "./notify";
 import { outOfBalance, setBedrockCache } from "./studyAgentRequest";
-import { saveInnovationSummaryTool } from "@/ai/tools/system/saveAnalyst";
 
 const MAX_STEPS_EACH_ROUND = 15; // streamText 默认 15 步
 

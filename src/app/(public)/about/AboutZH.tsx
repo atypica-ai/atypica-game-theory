@@ -16,8 +16,8 @@ export const AboutZH: React.FC = () => {
             <span className="opacity-70 block text-sm mt-1">— 丹尼尔·卡尼曼</span>
           </p>
           <p className="text-sm mt-2 opacity-70 text-gray-600 dark:text-gray-400">
-            People don&apos;t choose between things, they choose between descriptions of things. — Daniel
-            Kahneman
+            People don&apos;t choose between things, they choose between descriptions of things. —
+            Daniel Kahneman
           </p>
         </blockquote>
       </header>
@@ -143,7 +143,8 @@ export const AboutZH: React.FC = () => {
                 与模拟用户共同创意，开发新产品和服务
               </p>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                <strong>示例：</strong>和一线城市的年轻父母，一起共创Mars的&ldquo;脆香米&rdquo;的新产品想法？
+                <strong>示例：</strong>
+                和一线城市的年轻父母，一起共创Mars的&ldquo;脆香米&rdquo;的新产品想法？
               </p>
             </div>
 

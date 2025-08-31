@@ -6,7 +6,8 @@ import { z } from "zod";
 import { ThanksResult } from "./types";
 
 export const thanksTool = tool({
-  description: "Collect user contact information and thank them for participating in the research consultation",
+  description:
+    "Collect user contact information and thank them for participating in the research consultation",
   parameters: z.object({
     name: z.string().describe("User's full name for follow-up contact"),
     company: z.string().describe("Company or organization name"),
@@ -17,6 +18,9 @@ export const thanksTool = tool({
     return [{ type: "text", text: result.plainText }];
   },
   execute: async (): Promise<ThanksResult> => {
-    return { plainText: "Contact information saved successfully. Thank you for your interest in atypica.AI enterprise solutions." };
+    return {
+      plainText:
+        "Contact information saved successfully. Thank you for your interest in atypica.AI enterprise solutions.",
+    };
   },
 });

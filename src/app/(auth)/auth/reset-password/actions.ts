@@ -1,7 +1,7 @@
 "use server";
 import { decryptText } from "@/lib/cipher";
-import { prisma } from "@/prisma/prisma";
 import { ServerActionResult } from "@/lib/serverAction";
+import { prisma } from "@/prisma/prisma";
 import { hash } from "bcryptjs";
 import { getTranslations } from "next-intl/server";
 

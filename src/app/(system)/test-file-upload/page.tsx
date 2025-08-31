@@ -75,13 +75,21 @@ export default function TestFileUploadPage() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
               <div>
                 <div className="font-medium">Images</div>
-                <div className={status.imageCount >= FILE_UPLOAD_LIMITS.MAX_IMAGES ? "text-red-500" : ""}>
+                <div
+                  className={
+                    status.imageCount >= FILE_UPLOAD_LIMITS.MAX_IMAGES ? "text-red-500" : ""
+                  }
+                >
                   {status.imageCount} / {FILE_UPLOAD_LIMITS.MAX_IMAGES}
                 </div>
               </div>
               <div>
                 <div className="font-medium">Documents</div>
-                <div className={status.documentCount >= FILE_UPLOAD_LIMITS.MAX_DOCUMENTS ? "text-red-500" : ""}>
+                <div
+                  className={
+                    status.documentCount >= FILE_UPLOAD_LIMITS.MAX_DOCUMENTS ? "text-red-500" : ""
+                  }
+                >
                   {status.documentCount} / {FILE_UPLOAD_LIMITS.MAX_DOCUMENTS}
                 </div>
               </div>
@@ -93,7 +101,13 @@ export default function TestFileUploadPage() {
               </div>
               <div>
                 <div className="font-medium">Can Upload More</div>
-                <div className={!status.canUploadImage && !status.canUploadDocument ? "text-red-500" : "text-green-500"}>
+                <div
+                  className={
+                    !status.canUploadImage && !status.canUploadDocument
+                      ? "text-red-500"
+                      : "text-green-500"
+                  }
+                >
                   {status.canUploadImage || status.canUploadDocument ? "Yes" : "No"}
                 </div>
               </div>
@@ -109,7 +123,9 @@ export default function TestFileUploadPage() {
             <div className="space-y-2 text-sm">
               <div>• Maximum images: {FILE_UPLOAD_LIMITS.MAX_IMAGES}</div>
               <div>• Maximum documents: {FILE_UPLOAD_LIMITS.MAX_DOCUMENTS}</div>
-              <div>• Maximum total size: {FILE_UPLOAD_LIMITS.MAX_TOTAL_SIZE / (1024 * 1024)} MB</div>
+              <div>
+                • Maximum total size: {FILE_UPLOAD_LIMITS.MAX_TOTAL_SIZE / (1024 * 1024)} MB
+              </div>
               <div>• Supported image types: JPEG, PNG, GIF, WebP, BMP, SVG</div>
               <div>• Supported document types: PDF, Word, Excel, PowerPoint, Text, CSV, JSON</div>
             </div>
