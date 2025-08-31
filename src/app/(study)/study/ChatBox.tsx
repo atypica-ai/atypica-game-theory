@@ -36,6 +36,7 @@ function popLastUserMessage(messages: Message[]) {
 export function ChatBox() {
   // 这个组件是不支持对话直接切换的，如果切换，需要刷新页面重新加载！);
   const t = useTranslations("StudyPage.ChatBox");
+  const tCompliance = useTranslations("AICompliance");
   const {
     setLastToolInvocation,
     studyUserChat: {
@@ -320,6 +321,13 @@ export function ChatBox() {
         {/* Study Feedback */}
         {studyCompleted && uiStatus !== "background" && uiStatus !== "streaming" && (
           <StudyFeedback studyUserChatId={studyUserChatId} className="mt-12 max-w-full" />
+        )}
+
+        {/* AI Compliance Disclaimer */}
+        {messages.length > 0 && (
+          <div className="w-full text-xs text-center text-zinc-500 dark:text-zinc-400 px-4 mt-4 mb-8">
+            {tCompliance("fullDisclaimer")}
+          </div>
         )}
 
         <div ref={messagesEndRef} />

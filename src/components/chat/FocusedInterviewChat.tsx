@@ -60,6 +60,7 @@ export function FocusedInterviewChat({
   const locale = useLocale();
   const { isMobile } = useDevice();
   const t = useTranslations("Components.FocusedInterviewChat");
+  const tCompliance = useTranslations("AICompliance");
 
   const [timeLeft, setTimeLeft] = useState(DEFAULT_TIME_LEFT);
   const [hasTimedOut, setHasTimedOut] = useState(false);
@@ -311,6 +312,9 @@ export function FocusedInterviewChat({
                   <span className="animate-bounce [animation-delay:0.4s]">·</span>
                 </div>
               )}
+              <div className="w-full text-xs text-center font-normal text-zinc-500 dark:text-zinc-400 px-4 my-4">
+                {tCompliance("shortDisclaimer")}
+              </div>
             </motion.div>
           )}
         </AnimatePresence>

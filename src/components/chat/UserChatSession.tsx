@@ -40,6 +40,7 @@ export function UserChatSession({
   persistMessages?: boolean;
 }) {
   const t = useTranslations("Components.UserChatSession");
+  const tCompliance = useTranslations("AICompliance");
   const locale = useLocale();
   const { uploadedFiles, handleFileUploaded, handleRemoveFile, clearFiles, isUploadDisabled } =
     useFileUploadManager();
@@ -111,6 +112,12 @@ export function UserChatSession({
               extra={extra}
             ></ChatMessage>
           ))}
+        {/* AI Compliance Disclaimer */}
+        {messages.length > 0 && (
+          <div className="w-full text-xs text-center text-zinc-500 dark:text-zinc-400 px-4 mt-4 mb-8">
+            {tCompliance("fullDisclaimer")}
+          </div>
+        )}
         {error && (
           <div className="flex justify-center items-center text-red-500 dark:text-red-400 text-sm">
             {error.toString()}

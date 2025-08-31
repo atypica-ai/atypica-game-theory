@@ -13,6 +13,7 @@ import { SingleMessage } from "./SingleMessage";
 export function ChatReplay() {
   const { studyUserChat, setLastToolInvocation } = useStudyContext();
   const t = useTranslations("StudyPage.ChatReplay");
+  const tCompliance = useTranslations("AICompliance");
   const { data: session } = useSession();
   const {
     partialMessages: messagesDisplay,
@@ -70,6 +71,14 @@ export function ChatReplay() {
             isLastMessage={index === messagesDisplay.length - 1}
           ></SingleMessage>
         ))}
+
+        {/* AI Compliance Disclaimer */}
+        {messagesDisplay.length > 0 && (
+          <div className="w-full text-xs text-center text-zinc-500 dark:text-zinc-400 px-4 mt-4 mb-8">
+            {tCompliance("fullDisclaimer")}
+          </div>
+        )}
+
         {isCompleted ? (
           <div className="mt-30 mb-30 flex flex-col items-center gap-4 bg-background/95 backdrop-blur-sm border rounded-lg p-6 shadow-lg">
             <div className="text-center">

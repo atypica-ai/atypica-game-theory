@@ -296,7 +296,7 @@
   "Artifacts": {
     "ReportSharePage": {
       "title": "研究报告",
-      "attribution": "报告来自研究“{topic}”，由 atypica.AI 提供支持",
+      "attribution": "报告来自研究“{topic}”。",
       "viewReplay": "研究回放",
       "shareReport": "分享报告",
       "copyLink": "复制链接",
@@ -686,5 +686,10 @@
     "title": "访问被拒绝",
     "description": "很抱歉，您没有访问此页面的权限。请确认您的访问权限或联系管理员。",
     "returnHome": "返回首页"
+  },
+  "AICompliance": {
+    "fullDisclaimer": "以上内容由人工智能生成",
+    "shortDisclaimer": "内容由AI生成",
+    "period": "。"
   }
 }

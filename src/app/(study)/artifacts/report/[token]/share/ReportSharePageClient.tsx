@@ -3,6 +3,7 @@ import GlobalHeader from "@/components/layout/GlobalHeader";
 import { Button } from "@/components/ui/button";
 import UserMenu from "@/components/UserMenu";
 import UserTokensBalance from "@/components/UserTokensBalance";
+import { truncateForTitle } from "@/lib/textUtils";
 import { Loader2Icon, Play, Share2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
@@ -20,6 +21,7 @@ export default function ReportSharePageClient({
   analystTopic: string;
 }) {
   const t = useTranslations("Artifacts.ReportSharePage");
+  const tCompliance = useTranslations("AICompliance");
   const pathname = usePathname();
   const [isLoading, setIsLoading] = useState(true);
 
@@ -83,11 +85,11 @@ export default function ReportSharePageClient({
       </div>
 
       <footer className="py-2 px-4 text-center text-xs text-muted-foreground border-t border-border">
-        <span>
-          {t("attribution", {
-            topic: analystTopic.length > 30 ? analystTopic.substring(0, 30) + "..." : analystTopic,
-          })}
-        </span>
+        {t("attribution", {
+          topic: truncateForTitle(analystTopic, { maxDisplayWidth: 30, suffix: "..." }),
+        })}
+        {tCompliance("shortDisclaimer")}
+        {tCompliance("period")}
       </footer>
     </div>
   );
