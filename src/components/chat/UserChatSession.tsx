@@ -11,7 +11,7 @@ import { cn, useDevice } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
 import { ArrowRightIcon, PlayIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { ReactNode, RefObject, useCallback } from "react";
+import { ReactNode, RefObject, useCallback, useState } from "react";
 import { ChatMessage } from "./ChatMessage";
 import { FileAttachment } from "./FileAttachment";
 import { FileUploadButton, FileUploadInfo } from "./FileUploadButton";
@@ -87,6 +87,7 @@ export function UserChatSession({
   const [messagesContainerRef, messagesEndRef] = useScrollToBottom<HTMLDivElement>();
   const inputDisabled = status === "streaming" || status === "submitted";
   const { isMobile } = useDevice();
+  const [partialTranscript, setPartialTranscript] = useState("");
 
   return (
     <div className="w-full h-full overflow-hidden relative pb-4">
@@ -147,6 +148,16 @@ export function UserChatSession({
                 ))}
               </div>
             )}
+            {/* Partial transcript indicator */}
+            {partialTranscript && (
+              <div className="absolute bottom-full left-0 mb-1 p-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg max-w-xs">
+                <div className="flex items-center gap-2 text-xs text-blue-700 dark:text-blue-300">
+                  <span className="inline-block w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></span>
+                  <span className="font-medium">正在识别:</span>
+                  <span className="flex-1 truncate">{partialTranscript}</span>
+                </div>
+              </div>
+            )}
             <Textarea
               className={cn(
                 "block min-h-24 max-lg:min-h-20 resize-none focus-visible:border-primary/20 transition-colors",
@@ -192,6 +203,10 @@ export function UserChatSession({
                 disabled={inputDisabled}
                 onTranscript={(text) => {
                   setInput((current) => (current ? `${current} ${text}` : text));
+                  setPartialTranscript(""); // Clear partial transcript when final transcript is set
+                }}
+                onPartialTranscript={(text) => {
+                  setPartialTranscript(text);
                 }}
                 language={locale}
                 contextText={input}

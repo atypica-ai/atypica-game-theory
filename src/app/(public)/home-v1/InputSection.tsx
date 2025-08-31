@@ -21,6 +21,7 @@ export function InputSection() {
   const { isMobile } = useDevice();
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [partialTranscript, setPartialTranscript] = useState("");
   const { uploadedFiles, handleFileUploaded, handleRemoveFile, isUploadDisabled } =
     useFileUploadManager();
 
@@ -88,6 +89,16 @@ export function InputSection() {
             }
           }}
         />
+        {/* Partial transcript indicator */}
+        {partialTranscript && (
+          <div className="absolute bottom-16 left-4 right-4 p-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+            <div className="flex items-center gap-2 text-xs text-blue-700 dark:text-blue-300">
+              <span className="inline-block w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></span>
+              <span className="font-medium">正在识别:</span>
+              <span className="flex-1 truncate">{partialTranscript}</span>
+            </div>
+          </div>
+        )}
         <div className="absolute left-0 bottom-0 right-0 flex items-center justify-start gap-2 p-4">
           <FileUploadButton
             onFileUploadedAction={handleFileUploaded}
@@ -110,6 +121,10 @@ export function InputSection() {
           <VoiceInputButton
             onTranscript={(text) => {
               setInput((current) => (current ? `${current} ${text}` : text));
+              setPartialTranscript(""); // Clear partial transcript when final transcript is set
+            }}
+            onPartialTranscript={(text) => {
+              setPartialTranscript(text);
             }}
             language={locale}
             contextText={input}
