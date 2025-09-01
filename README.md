@@ -165,6 +165,20 @@ psql -d postgres -c "SELECT * FROM pg_extension WHERE extname = 'vector';"
 
 详细说明：[Monthly Tokens Reset](./docs/monthly-tokens-reset.md)
 
+### 管理员工具
+
+项目提供了管理员工具脚本用于用户管理：
+
+```bash
+# 创建新用户（自动验证邮箱）
+pnpm admintool create-user email@example.com password123
+
+# 将现有用户设为超级管理员
+pnpm admintool make-admin email@example.com
+```
+
+脚本位置：`scripts/admintool.ts`
+
 ## 贡献指南
 
 欢迎提交Issue和PR，一起改进atypica.AI！
