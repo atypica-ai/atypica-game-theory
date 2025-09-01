@@ -123,7 +123,7 @@ export class AtypicaAI {
 
       case 1:
         return (
-          <div className="h-full flex flex-col px-12 md:px-16 py-10 relative">
+          <div className="h-full flex flex-col px-12 md:px-16 py-8 relative">
             {/* 背景装饰 */}
             <div className="absolute top-0 right-0 opacity-5 text-xs overflow-hidden h-full w-1/4">
               <pre className="text-zinc-300 opacity-40 font-mono leading-tight">
@@ -139,53 +139,53 @@ console.log("Industry at turning point");`}
             </div>
 
             {/* 标题 */}
-            <div className="mb-8 relative z-10">
+            <div className="mb-10 relative z-10">
               <div className="text-sm font-light text-zinc-300 opacity-60 uppercase tracking-wider mb-2">
                 行业现状
               </div>
-              <h2 className="text-4xl md:text-5xl font-light tracking-tight text-zinc-300 mb-2">
+              <h2 className="text-4xl md:text-6xl font-light tracking-tight text-zinc-300 mb-3">
                 然而，2025年，行业来到
               </h2>
-              <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-[#1bff1b] shadow-[0_0_15px_rgba(27,255,27,0.25)]">
+              <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-[#1bff1b] shadow-[0_0_15px_rgba(27,255,27,0.25)]">
                 一个转折点
               </h2>
-              <div className="w-16 h-0.5 mt-4 bg-gradient-to-r from-[#1bff1b] to-transparent shadow-[0_0_8px_rgba(27,255,27,0.35)]"></div>
+              <div className="w-16 h-0.5 mt-6 bg-gradient-to-r from-[#1bff1b] to-transparent shadow-[0_0_8px_rgba(27,255,27,0.35)]"></div>
             </div>
 
             {/* 内容 */}
-            <div className="flex-1 flex flex-col justify-center max-w-5xl mx-auto relative z-10 space-y-6">
-              <div className="bg-zinc-800/70 backdrop-blur-sm border border-zinc-600 p-8 rounded-xl">
-                <div className="flex items-start gap-3 mb-4">
-                  <div className="w-3 h-3 rounded-full bg-red-500 mt-1.5 flex-shrink-0"></div>
+            <div className="flex-1 flex flex-col justify-center max-w-5xl mx-auto relative z-10 space-y-8">
+              <div className="bg-zinc-800/70 backdrop-blur-sm border border-zinc-600 p-10 rounded-xl">
+                <div className="flex items-start gap-4 mb-6">
+                  <div className="w-4 h-4 rounded-full bg-red-500 mt-2 flex-shrink-0"></div>
                   <div>
-                    <p className="text-base md:text-lg font-light leading-relaxed text-zinc-300 mb-2">
+                    <p className="text-lg md:text-xl font-light leading-relaxed text-zinc-300 mb-3">
                       <span className="font-semibold">8月5日Gartner股价暴跌30%</span>
                       ，创99年以来最大跌幅
                     </p>
-                    <p className="text-sm text-zinc-300 opacity-70">
+                    <p className="text-base text-zinc-300 opacity-70">
                       ——资本市场公开承认：传统模式面临结构性挑战
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3">
-                  <div className="w-3 h-3 rounded-full bg-orange-500 mt-1.5 flex-shrink-0"></div>
+                <div className="flex items-start gap-4">
+                  <div className="w-4 h-4 rounded-full bg-orange-500 mt-2 flex-shrink-0"></div>
                   <div>
-                    <p className="text-base md:text-lg font-light leading-relaxed text-zinc-300 mb-2">
+                    <p className="text-lg md:text-xl font-light leading-relaxed text-zinc-300 mb-3">
                       <span className="font-semibold">McKinsey公布年度增长仅2%</span>，两年内减员10%
                     </p>
-                    <p className="text-sm text-zinc-300 opacity-70">
+                    <p className="text-base text-zinc-300 opacity-70">
                       ——脑力密集型、人工驱动的研究模式增长受阻
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-gradient-to-r from-[#1e1e1e] to-[#2a2a2a] border border-[#1bff1b] p-6 rounded-xl text-center shadow-[0_0_30px_rgba(27,255,27,0.15)]">
-                <p className="text-lg md:text-xl font-light leading-relaxed text-zinc-300 mb-2">
+              <div className="bg-gradient-to-r from-[#1e1e1e] to-[#2a2a2a] border border-[#1bff1b] p-8 rounded-xl text-center shadow-[0_0_30px_rgba(27,255,27,0.15)]">
+                <p className="text-xl md:text-2xl font-light leading-relaxed text-zinc-300 mb-4">
                   这些并非偶然波动，而是范式松动的征兆。
                 </p>
-                <p className="text-base font-medium text-[#1bff1b]">
+                <p className="text-lg font-medium text-[#1bff1b]">
                   <span className="font-bold">Atypica.AI就诞生在这个关口！</span>
                 </p>
               </div>
@@ -195,7 +195,7 @@ console.log("Industry at turning point");`}
 
       case 2:
         return (
-          <div className="h-full flex flex-col px-12 md:px-16 py-10">
+          <div className="h-full flex flex-col px-12 md:px-16 py-8">
             {/* 标题 */}
             <div className="mb-8">
               <div className="text-sm font-light text-zinc-300 opacity-60 uppercase tracking-wider mb-2">
@@ -204,13 +204,13 @@ console.log("Industry at turning point");`}
               <h2 className="text-4xl md:text-5xl font-light tracking-tight text-zinc-300">
                 四个阶段，<span className="font-medium">一张表看懂差异</span>
               </h2>
-              <div className="w-12 h-0.5 mt-3 bg-[#1bff1b]"></div>
+              <div className="w-12 h-0.5 mt-4 bg-[#1bff1b]"></div>
             </div>
 
             {/* 内容 */}
             <div className="flex-1 flex flex-col justify-center">
-              <div className="bg-zinc-800/70 backdrop-blur-sm border border-zinc-600 p-4 rounded-xl mb-6">
-                <p className="text-sm text-zinc-300 leading-relaxed font-light text-center">
+              <div className="bg-zinc-800/70 backdrop-blur-sm border border-zinc-600 p-6 rounded-xl mb-8">
+                <p className="text-base md:text-lg text-zinc-300 leading-relaxed font-light text-center">
                   投资机构<span className="font-semibold text-[#1bff1b]">A16Z</span>
                   ，把市场研究的范式演进分为四个阶段：
                 </p>
@@ -241,36 +241,40 @@ console.log("Industry at turning point");`}
                     </thead>
                     <tbody>
                       <tr className="border-t border-zinc-600">
-                        <td className="px-4 py-3 text-sm font-medium text-zinc-300">传统咨询</td>
-                        <td className="px-4 py-3 text-sm text-zinc-300">
+                        <td className="px-5 py-4 text-base font-medium text-zinc-300">传统咨询</td>
+                        <td className="px-5 py-4 text-base text-zinc-300">
                           McKinsey/BCG/Ipsos/Gartner
                         </td>
-                        <td className="px-4 py-3 text-sm text-zinc-300">专家判断+人工分析</td>
+                        <td className="px-5 py-4 text-base text-zinc-300">专家判断+人工分析</td>
                         <td className="px-4 py-3 text-center text-sm text-zinc-300">按季度</td>
                         <td className="px-4 py-3 text-center text-sm text-zinc-300">百万美</td>
                       </tr>
                       <tr className="border-t border-zinc-600">
-                        <td className="px-4 py-3 text-sm font-medium text-zinc-300">软件化研究</td>
-                        <td className="px-4 py-3 text-sm text-zinc-300">Qualtrics/Medallia</td>
-                        <td className="px-4 py-3 text-sm text-zinc-300">在线问卷、量表、仪表盘</td>
+                        <td className="px-5 py-4 text-base font-medium text-zinc-300">
+                          软件化研究
+                        </td>
+                        <td className="px-5 py-4 text-base text-zinc-300">Qualtrics/Medallia</td>
+                        <td className="px-5 py-4 text-base text-zinc-300">
+                          在线问卷、量表、仪表盘
+                        </td>
                         <td className="px-4 py-3 text-center text-sm text-zinc-300">按周</td>
                         <td className="px-4 py-3 text-center text-sm text-zinc-300">十万美</td>
                       </tr>
                       <tr className="border-t border-zinc-600 bg-[#1bff1b]/10">
-                        <td className="px-4 py-3 text-sm font-semibold text-[#1bff1b]">
+                        <td className="px-5 py-4 text-base font-semibold text-[#1bff1b]">
                           AI原生研究
                         </td>
-                        <td className="px-4 py-3 text-sm text-[#1bff1b]">Atypica</td>
-                        <td className="px-4 py-3 text-sm text-[#1bff1b]">
+                        <td className="px-5 py-4 text-base text-[#1bff1b]">Atypica</td>
+                        <td className="px-5 py-4 text-base text-[#1bff1b]">
                           LLM主持访谈、转写、暨意/模式分析
                         </td>
                         <td className="px-4 py-3 text-center text-sm text-[#1bff1b]">按天</td>
                         <td className="px-4 py-3 text-center text-sm text-[#1bff1b]">数百-千</td>
                       </tr>
                       <tr className="border-t border-zinc-600 bg-[#1bff1b]/20">
-                        <td className="px-4 py-3 text-sm font-bold text-[#1bff1b]">AI模拟用户</td>
-                        <td className="px-4 py-3 text-sm font-bold text-[#1bff1b]">Atypica</td>
-                        <td className="px-4 py-3 text-sm font-bold text-[#1bff1b]">
+                        <td className="px-5 py-4 text-base font-bold text-[#1bff1b]">AI模拟用户</td>
+                        <td className="px-5 py-4 text-base font-bold text-[#1bff1b]">Atypica</td>
+                        <td className="px-5 py-4 text-base font-bold text-[#1bff1b]">
                           多智能体模拟行为与决策、虚拟焦点小组
                         </td>
                         <td className="px-4 py-3 text-center text-sm font-bold text-[#1bff1b]">
@@ -374,69 +378,73 @@ const capabilities = {
 
       case 4:
         return (
-          <div className="h-full flex flex-col px-12 md:px-16 py-10">
+          <div className="h-full flex flex-col px-8 md:px-12 py-6">
             {/* 标题 */}
-            <div className="mb-8">
-              <div className="text-sm font-light text-zinc-300 opacity-60 uppercase tracking-wider mb-2">
+            <div className="mb-6">
+              <div className="text-xs font-light text-zinc-300 opacity-60 uppercase tracking-wider mb-1">
                 技术架构
               </div>
-              <h2 className="text-4xl md:text-5xl font-light tracking-tight text-zinc-300">
+              <h2 className="text-2xl md:text-3xl font-light tracking-tight text-zinc-300">
                 构建三层<span className="font-medium">AI体系</span>
               </h2>
-              <h2 className="text-3xl md:text-4xl font-light tracking-tight text-zinc-300 opacity-80 mt-2">
+              <h2 className="text-xl md:text-2xl font-light tracking-tight text-zinc-300 opacity-80 mt-1">
                 从&ldquo;答案&rdquo;到&ldquo;主观世界&rdquo;
               </h2>
-              <div className="w-12 h-0.5 mt-4 bg-[#1bff1b]"></div>
+              <div className="w-12 h-0.5 mt-2 bg-[#1bff1b]"></div>
             </div>
 
             {/* 架构图 */}
             <div className="flex-1 flex flex-col justify-center">
-              <div className="max-w-4xl mx-auto space-y-6">
+              <div className="max-w-6xl mx-auto space-y-4">
                 {/* 第三层 */}
-                <div className="bg-zinc-800 border border-zinc-600 p-6 rounded-xl text-center">
-                  <div className="text-sm text-zinc-400 mb-2">3. 分析洞察层</div>
-                  <h3 className="text-xl font-bold text-[#1bff1b] mb-3">AI研究 / AI Research</h3>
-                  <div className="grid grid-cols-3 gap-4 text-sm">
-                    <div className="bg-zinc-700 p-3 rounded-lg">
-                      <div className="font-semibold text-zinc-300 mb-1">高质量科学整理</div>
-                      <div className="text-zinc-400 text-xs">全量记录文本、情绪、观点演进</div>
+                <div className="bg-zinc-800 border border-zinc-600 p-4 rounded-xl flex items-center gap-8">
+                  <div className="flex-shrink-0 w-56">
+                    <div className="text-sm text-zinc-400 mb-1">3. 分析洞察层</div>
+                    <h3 className="text-lg font-bold text-[#1bff1b]">AI研究 / AI Research</h3>
+                  </div>
+                  <div className="flex-1 grid grid-cols-3 gap-4">
+                    <div className="bg-zinc-700 p-4 rounded-lg">
+                      <div className="text-sm font-semibold text-zinc-300 mb-2">高质量科学整理</div>
+                      <div className="text-xs text-zinc-400">全量记录文本、情绪、观点演进</div>
                     </div>
-                    <div className="bg-zinc-700 p-3 rounded-lg">
-                      <div className="font-semibold text-zinc-300 mb-1">跨学科分析模型</div>
-                      <div className="text-zinc-400 text-xs">内置多场景专业研究分析模型</div>
+                    <div className="bg-zinc-700 p-4 rounded-lg">
+                      <div className="text-sm font-semibold text-zinc-300 mb-2">跨学科分析模型</div>
+                      <div className="text-xs text-zinc-400">内置多场景专业研究分析模型</div>
                     </div>
-                    <div className="bg-zinc-700 p-3 rounded-lg">
-                      <div className="font-semibold text-zinc-300 mb-1">自动化生成报告</div>
-                      <div className="text-zinc-400 text-xs">AI总结观点洞察+可下载/转发/回放</div>
+                    <div className="bg-zinc-700 p-4 rounded-lg">
+                      <div className="text-sm font-semibold text-zinc-300 mb-2">自动化生成报告</div>
+                      <div className="text-xs text-zinc-400">AI总结观点洞察+可下载/转发/回放</div>
                     </div>
                   </div>
                 </div>
 
                 {/* 箭头 */}
-                <div className="text-center">
-                  <div className="text-[#1bff1b] text-2xl">↓</div>
+                <div className="text-center py-2">
+                  <div className="text-[#1bff1b] text-2xl">↑</div>
                 </div>
 
                 {/* 第二层 */}
-                <div className="bg-zinc-800 border border-zinc-600 p-6 rounded-xl text-center">
-                  <div className="text-sm text-zinc-400 mb-2">2. 工作流程层</div>
-                  <h3 className="text-xl font-bold text-[#1bff1b] mb-3">AI访谈 / AI Interview</h3>
-                  <div className="grid grid-cols-3 gap-4 text-sm">
-                    <div className="bg-zinc-700 p-3 rounded-lg">
-                      <div className="font-semibold text-zinc-300 mb-1">人访谈AI</div>
-                      <div className="text-zinc-400 text-xs">
+                <div className="bg-zinc-800 border border-zinc-600 p-4 rounded-xl flex items-center gap-8">
+                  <div className="flex-shrink-0 w-56">
+                    <div className="text-sm text-zinc-400 mb-1">2. 工作流程层</div>
+                    <h3 className="text-lg font-bold text-[#1bff1b]">AI访谈 / AI Interview</h3>
+                  </div>
+                  <div className="flex-1 grid grid-cols-3 gap-4">
+                    <div className="bg-zinc-700 p-4 rounded-lg">
+                      <div className="text-sm font-semibold text-zinc-300 mb-2">人访谈AI</div>
+                      <div className="text-xs text-zinc-400">
                         直接与AI人设文字/多模态对话，分级获得调研
                       </div>
                     </div>
-                    <div className="bg-zinc-700 p-3 rounded-lg">
-                      <div className="font-semibold text-zinc-300 mb-1">AI访谈人</div>
-                      <div className="text-zinc-400 text-xs">
+                    <div className="bg-zinc-700 p-4 rounded-lg">
+                      <div className="text-sm font-semibold text-zinc-300 mb-2">AI访谈人</div>
+                      <div className="text-xs text-zinc-400">
                         AI开发主持多人访谈，自动追问与收敛
                       </div>
                     </div>
-                    <div className="bg-zinc-700 p-3 rounded-lg">
-                      <div className="font-semibold text-zinc-300 mb-1">AI访谈AI</div>
-                      <div className="text-zinc-400 text-xs">
+                    <div className="bg-zinc-700 p-4 rounded-lg">
+                      <div className="text-sm font-semibold text-zinc-300 mb-2">AI访谈AI</div>
+                      <div className="text-xs text-zinc-400">
                         AI组织虚拟焦点小组，定期运行、自动总结
                       </div>
                     </div>
@@ -444,31 +452,41 @@ const capabilities = {
                 </div>
 
                 {/* 箭头 */}
-                <div className="text-center">
-                  <div className="text-[#1bff1b] text-2xl">↓</div>
+                <div className="text-center py-2">
+                  <div className="text-[#1bff1b] text-2xl">↑</div>
                 </div>
 
                 {/* 第一层 */}
-                <div className="bg-zinc-800 border border-zinc-600 p-6 rounded-xl text-center">
-                  <div className="text-sm text-zinc-400 mb-2">1. 用户数据层</div>
-                  <h3 className="text-xl font-bold text-[#1bff1b] mb-3">AI人设 / AI Persona</h3>
-                  <div className="grid grid-cols-3 gap-4 text-sm">
-                    <div className="bg-zinc-700 p-3 rounded-lg">
-                      <div className="font-semibold text-zinc-300 mb-1">Tier 1: 公共社交媒体</div>
-                      <div className="text-zinc-400 text-xs">75-79% 准确度，10-15分钟</div>
+                <div className="bg-zinc-800 border border-zinc-600 p-4 rounded-xl flex items-center gap-8">
+                  <div className="flex-shrink-0 w-56">
+                    <div className="text-sm text-zinc-400 mb-1">1. 用户数据层</div>
+                    <h3 className="text-lg font-bold text-[#1bff1b]">AI人设 / AI Persona</h3>
+                  </div>
+                  <div className="flex-1 grid grid-cols-3 gap-4">
+                    <div className="bg-zinc-700 p-4 rounded-lg">
+                      <div className="text-sm font-semibold text-zinc-300 mb-2">
+                        Tier 1: 公共社交媒体
+                      </div>
+                      <div className="text-xs text-zinc-400">75-79% 准确度，10-15分钟</div>
                     </div>
-                    <div className="bg-zinc-700 p-3 rounded-lg">
-                      <div className="font-semibold text-zinc-300 mb-1">Tier 2: 通用深度访谈</div>
-                      <div className="text-zinc-400 text-xs">81-85% 准确度，1-2小时</div>
+                    <div className="bg-zinc-700 p-4 rounded-lg">
+                      <div className="text-sm font-semibold text-zinc-300 mb-2">
+                        Tier 2: 通用深度访谈
+                      </div>
+                      <div className="text-xs text-zinc-400">81-85% 准确度，1-2小时</div>
                     </div>
-                    <div className="bg-zinc-700 p-3 rounded-lg">
-                      <div className="font-semibold text-zinc-300 mb-1">Tier 3: 企业私有资料</div>
-                      <div className="text-zinc-400 text-xs">88%以上准确度，1-2小时</div>
+                    <div className="bg-zinc-700 p-4 rounded-lg">
+                      <div className="text-sm font-semibold text-zinc-300 mb-2">
+                        Tier 3: 企业私有资料
+                      </div>
+                      <div className="text-xs text-zinc-400">88%以上准确度，1-2小时</div>
                     </div>
                   </div>
                 </div>
+              </div>
 
-                {/* 底部说明 */}
+              {/* 底部说明 - 单独放在外面增加间距 */}
+              <div className="max-w-6xl mx-auto mt-8">
                 <div className="bg-zinc-900 border-2 border-[#1bff1b] p-4 rounded-xl text-center">
                   <p className="text-sm text-[#1bff1b] font-medium">
                     传统问卷记录&ldquo;答案&rdquo;，Atypica建模&ldquo;主观世界&rdquo;。
@@ -481,25 +499,25 @@ const capabilities = {
 
       case 5:
         return (
-          <div className="h-full flex flex-col px-12 md:px-16 py-10">
+          <div className="h-full flex flex-col px-8 md:px-12 py-6">
             {/* 标题 */}
-            <div className="mb-8">
-              <div className="text-sm font-light text-zinc-300 opacity-60 uppercase tracking-wider mb-2">
+            <div className="mb-4">
+              <div className="text-xs font-light text-zinc-300 opacity-60 uppercase tracking-wider mb-1">
                 AI人设详解
               </div>
-              <h2 className="text-4xl md:text-5xl font-light tracking-tight text-zinc-300">
+              <h2 className="text-2xl md:text-3xl font-light tracking-tight text-zinc-300">
                 基于不同数据源的
               </h2>
-              <h2 className="text-4xl md:text-5xl font-medium tracking-tight text-zinc-300">
+              <h2 className="text-2xl md:text-3xl font-medium tracking-tight text-zinc-300">
                 主观世界建模法
               </h2>
-              <div className="w-12 h-0.5 mt-4 bg-[#1bff1b]"></div>
+              <div className="w-12 h-0.5 mt-2 bg-[#1bff1b]"></div>
             </div>
 
             {/* 内容 */}
-            <div className="flex-1 flex flex-col justify-center space-y-6">
-              <div className="bg-zinc-800/70 backdrop-blur-sm border border-zinc-600 p-6 rounded-xl">
-                <p className="text-base md:text-lg font-light leading-relaxed text-zinc-300 text-center mb-4">
+            <div className="flex-1 flex flex-col justify-center space-y-4">
+              <div className="bg-zinc-800/70 backdrop-blur-sm border border-zinc-600 p-5 rounded-xl">
+                <p className="text-base md:text-lg font-light leading-relaxed text-zinc-300 text-center mb-3">
                   Atypica 基于此提出【
                   <span className="font-bold text-[#1bff1b]">主观世界建模法</span>
                   】，用AI建立三层人设：
@@ -545,20 +563,20 @@ const capabilities = {
                       <tr className="border-t border-zinc-600">
                         <td className="px-4 py-3 text-sm font-medium text-[#1bff1b]">Tier 2</td>
                         <td className="px-4 py-3 text-sm text-zinc-300">通用深度访谈</td>
-                        <td className="px-4 py-3 text-center text-sm text-zinc-300">81-85%</td>
-                        <td className="px-4 py-3 text-center text-sm text-zinc-300">1-2小时</td>
-                        <td className="px-4 py-3 text-center text-sm text-zinc-300">10-50元</td>
+                        <td className="px-3 py-2 text-center text-xs text-zinc-300">81-85%</td>
+                        <td className="px-3 py-2 text-center text-xs text-zinc-300">1-2小时</td>
+                        <td className="px-3 py-2 text-center text-xs text-zinc-300">10-50元</td>
                       </tr>
                       <tr className="border-t border-zinc-600 bg-[#1bff1b]/10">
                         <td className="px-4 py-3 text-sm font-bold text-[#1bff1b]">Tier 3</td>
                         <td className="px-4 py-3 text-sm font-bold text-[#1bff1b]">企业私有资料</td>
-                        <td className="px-4 py-3 text-center text-sm font-bold text-[#1bff1b]">
+                        <td className="px-3 py-2 text-center text-xs font-bold text-[#1bff1b]">
                           88%以上
                         </td>
-                        <td className="px-4 py-3 text-center text-sm font-bold text-[#1bff1b]">
+                        <td className="px-3 py-2 text-center text-xs font-bold text-[#1bff1b]">
                           1-2小时
                         </td>
-                        <td className="px-4 py-3 text-center text-sm font-bold text-[#1bff1b]">
+                        <td className="px-3 py-2 text-center text-xs font-bold text-[#1bff1b]">
                           10-100元
                         </td>
                       </tr>
@@ -567,36 +585,36 @@ const capabilities = {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-zinc-800/70 backdrop-blur-sm border border-zinc-600 p-4 rounded-xl">
-                  <h4 className="text-base font-semibold text-[#1bff1b] mb-3 flex items-center">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-zinc-800/70 backdrop-blur-sm border border-zinc-600 p-3 rounded-xl">
+                  <h4 className="text-sm font-semibold text-[#1bff1b] mb-2 flex items-center">
                     <span className="w-2 h-2 rounded-full bg-[#1bff1b] mr-2"></span>
                     Tier 1/2 公有人设库
                   </h4>
-                  <p className="text-sm text-zinc-300 opacity-80">
+                  <p className="text-xs text-zinc-300 opacity-80">
                     （已建40万+10万档），可即取即用；
                   </p>
                 </div>
 
-                <div className="bg-zinc-800/70 backdrop-blur-sm border border-zinc-600 p-4 rounded-xl">
-                  <h4 className="text-base font-semibold text-[#1bff1b] mb-3 flex items-center">
+                <div className="bg-zinc-800/70 backdrop-blur-sm border border-zinc-600 p-3 rounded-xl">
+                  <h4 className="text-sm font-semibold text-[#1bff1b] mb-2 flex items-center">
                     <span className="w-2 h-2 rounded-full bg-[#1bff1b] mr-2"></span>
                     Tier 3 私有人设
                   </h4>
-                  <p className="text-sm text-zinc-300 opacity-80">
+                  <p className="text-xs text-zinc-300 opacity-80">
                     沉淀为企业私有资产，可持续访谈与学习。
                   </p>
                 </div>
               </div>
 
               {/* 科研证据 */}
-              <div className="bg-zinc-900 border border-[#1bff1b] p-4 rounded-xl">
-                <h4 className="text-base font-semibold text-[#1bff1b] mb-3 text-center">
+              <div className="bg-zinc-900 border border-[#1bff1b] p-3 rounded-xl">
+                <h4 className="text-sm font-semibold text-[#1bff1b] mb-2 text-center">
                   科研证据为AI模拟人提供了坚实基础：
                 </h4>
-                <div className="space-y-2 text-sm text-zinc-300">
+                <div className="space-y-1 text-xs text-zinc-300">
                   <div className="flex items-start gap-2">
-                    <span className="w-2 h-2 rounded-full bg-[#1bff1b] mt-1.5 flex-shrink-0"></span>
+                    <span className="w-2 h-2 rounded-full bg-[#1bff1b] mt-1 flex-shrink-0"></span>
                     <span>
                       <span className="font-semibold text-[#1bff1b]">
                         Generative Agents: Interactive Simulacra of Human Behavior
@@ -605,7 +623,7 @@ const capabilities = {
                     </span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <span className="w-2 h-2 rounded-full bg-[#1bff1b] mt-1.5 flex-shrink-0"></span>
+                    <span className="w-2 h-2 rounded-full bg-[#1bff1b] mt-1 flex-shrink-0"></span>
                     <span>
                       <span className="font-semibold text-[#1bff1b]">
                         Generative Agent Simulations of 1000 People
@@ -614,7 +632,7 @@ const capabilities = {
                     </span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <span className="w-2 h-2 rounded-full bg-[#1bff1b] mt-1.5 flex-shrink-0"></span>
+                    <span className="w-2 h-2 rounded-full bg-[#1bff1b] mt-1 flex-shrink-0"></span>
                     <span>
                       <span className="font-semibold text-[#1bff1b]">
                         Persona vectors: Monitoring and controlling character traits in language
@@ -631,50 +649,50 @@ const capabilities = {
 
       case 6:
         return (
-          <div className="h-full flex flex-col px-12 md:px-16 py-10">
+          <div className="h-full flex flex-col px-8 md:px-12 py-6">
             {/* 标题 */}
-            <div className="mb-8">
-              <div className="text-sm font-light text-zinc-300 opacity-60 uppercase tracking-wider mb-2">
+            <div className="mb-6">
+              <div className="text-xs font-light text-zinc-300 opacity-60 uppercase tracking-wider mb-1">
                 AI访谈功能
               </div>
-              <h2 className="text-4xl md:text-5xl font-light tracking-tight text-zinc-300">
+              <h2 className="text-3xl md:text-4xl font-light tracking-tight text-zinc-300">
                 让人与AI直接
               </h2>
-              <h2 className="text-4xl md:text-5xl font-medium tracking-tight text-zinc-300">
+              <h2 className="text-3xl md:text-4xl font-medium tracking-tight text-zinc-300">
                 对话交流
               </h2>
-              <div className="w-12 h-0.5 mt-4 bg-[#1bff1b]"></div>
+              <div className="w-12 h-0.5 mt-3 bg-[#1bff1b]"></div>
             </div>
 
             {/* 内容 */}
-            <div className="flex-1 flex flex-col justify-center space-y-8">
+            <div className="flex-1 flex flex-col justify-center space-y-5">
               {/* 三种访谈模式 */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-zinc-800/70 backdrop-blur-sm border border-zinc-600 p-6 rounded-xl text-center">
-                  <div className="w-16 h-16 bg-[#1bff1b]/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span className="text-2xl">👤➡️🤖</span>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-zinc-800/70 backdrop-blur-sm border border-zinc-600 p-4 rounded-xl text-center">
+                  <div className="w-12 h-12 bg-[#1bff1b]/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <span className="text-sm font-bold text-[#1bff1b]">人→AI</span>
                   </div>
-                  <h3 className="text-lg font-semibold text-[#1bff1b] mb-3">人访谈AI</h3>
+                  <h3 className="text-base font-semibold text-[#1bff1b] mb-2">人访谈AI</h3>
                   <p className="text-sm text-zinc-300 opacity-80">
                     直接与AI人设文字/多模态对话，分级获得调研；
                   </p>
                 </div>
 
-                <div className="bg-zinc-800/70 backdrop-blur-sm border border-zinc-600 p-6 rounded-xl text-center">
-                  <div className="w-16 h-16 bg-[#1bff1b]/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span className="text-2xl">🤖➡️👥</span>
+                <div className="bg-zinc-800/70 backdrop-blur-sm border border-zinc-600 p-4 rounded-xl text-center">
+                  <div className="w-12 h-12 bg-[#1bff1b]/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <span className="text-sm font-bold text-[#1bff1b]">AI→人</span>
                   </div>
-                  <h3 className="text-lg font-semibold text-[#1bff1b] mb-3">AI访谈人</h3>
+                  <h3 className="text-base font-semibold text-[#1bff1b] mb-2">AI访谈人</h3>
                   <p className="text-sm text-zinc-300 opacity-80">
                     AI并发主持多人访谈，自动追问与收敛；
                   </p>
                 </div>
 
-                <div className="bg-zinc-800/70 backdrop-blur-sm border border-zinc-600 p-6 rounded-xl text-center">
-                  <div className="w-16 h-16 bg-[#1bff1b]/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span className="text-2xl">🤖↔️🤖</span>
+                <div className="bg-zinc-800/70 backdrop-blur-sm border border-zinc-600 p-4 rounded-xl text-center">
+                  <div className="w-12 h-12 bg-[#1bff1b]/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <span className="text-sm font-bold text-[#1bff1b]">AI↔AI</span>
                   </div>
-                  <h3 className="text-lg font-semibold text-[#1bff1b] mb-3">AI访谈AI</h3>
+                  <h3 className="text-base font-semibold text-[#1bff1b] mb-2">AI访谈AI</h3>
                   <p className="text-sm text-zinc-300 opacity-80">
                     AI组织虚拟焦点小组，定期运行、自动总结，形成&ldquo;永续研究网络&rdquo;。
                   </p>
@@ -682,77 +700,81 @@ const capabilities = {
               </div>
 
               {/* 访谈流程示意图 */}
-              <div className="bg-zinc-800 rounded-xl border border-zinc-600 p-6">
-                <h3 className="text-xl font-semibold text-[#1bff1b] mb-6 text-center">
+              <div className="bg-zinc-800 rounded-xl border border-zinc-600 p-4">
+                <h3 className="text-lg font-semibold text-[#1bff1b] mb-4 text-center">
                   AI访谈工作流程
                 </h3>
                 <div className="flex items-center justify-between">
                   <div className="text-center flex-1">
-                    <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 bg-[#1bff1b]">
-                      <span className="text-zinc-900 font-bold">1</span>
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-2 bg-[#1bff1b]">
+                      <span className="text-zinc-900 font-bold text-sm">1</span>
                     </div>
-                    <p className="text-sm text-zinc-300 mb-2 font-medium">问题澄清</p>
+                    <p className="text-sm text-zinc-300 mb-1 font-medium">问题澄清</p>
                     <p className="text-xs text-zinc-400">理解研究意图</p>
                   </div>
-                  <div className="text-[#1bff1b] text-xl">→</div>
+                  <div className="text-[#1bff1b] text-lg">→</div>
                   <div className="text-center flex-1">
-                    <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 bg-[#1bff1b]">
-                      <span className="text-zinc-900 font-bold">2</span>
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-2 bg-[#1bff1b]">
+                      <span className="text-zinc-900 font-bold text-sm">2</span>
                     </div>
-                    <p className="text-sm text-zinc-300 mb-2 font-medium">智能匹配</p>
+                    <p className="text-sm text-zinc-300 mb-1 font-medium">智能匹配</p>
                     <p className="text-xs text-zinc-400">选择合适AI人设</p>
                   </div>
-                  <div className="text-[#1bff1b] text-xl">→</div>
+                  <div className="text-[#1bff1b] text-lg">→</div>
                   <div className="text-center flex-1">
-                    <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 bg-[#1bff1b]">
-                      <span className="text-zinc-900 font-bold">3</span>
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-2 bg-[#1bff1b]">
+                      <span className="text-zinc-900 font-bold text-sm">3</span>
                     </div>
-                    <p className="text-sm text-zinc-300 mb-2 font-medium">模拟访谈</p>
+                    <p className="text-sm text-zinc-300 mb-1 font-medium">模拟访谈</p>
                     <p className="text-xs text-zinc-400">深度对话交流</p>
                   </div>
-                  <div className="text-[#1bff1b] text-xl">→</div>
+                  <div className="text-[#1bff1b] text-lg">→</div>
                   <div className="text-center flex-1">
-                    <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 bg-[#1bff1b]">
-                      <span className="text-zinc-900 font-bold">4</span>
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-2 bg-[#1bff1b]">
+                      <span className="text-zinc-900 font-bold text-sm">4</span>
                     </div>
-                    <p className="text-sm text-zinc-300 mb-2 font-medium">洞察整理</p>
+                    <p className="text-sm text-zinc-300 mb-1 font-medium">洞察整理</p>
                     <p className="text-xs text-zinc-400">自动生成报告</p>
                   </div>
                 </div>
               </div>
 
-              {/* 特色功能 */}
-              <div className="bg-gradient-to-r from-[#1e1e1e] to-[#2a2a2a] border border-[#1bff1b] p-6 rounded-xl">
-                <h3 className="text-lg font-semibold text-[#1bff1b] mb-4 text-center">核心优势</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                  <div className="flex items-start gap-3">
-                    <div className="w-2 h-2 bg-[#1bff1b] rounded-full mt-1.5 flex-shrink-0"></div>
-                    <div>
-                      <span className="font-semibold text-zinc-300">多模态支持：</span>
-                      <span className="text-zinc-300 opacity-80">
-                        文字、语音、图像等多种交互方式
-                      </span>
-                    </div>
+              {/* 特色功能 - 采用左右布局 */}
+              <div className="bg-gradient-to-r from-[#1e1e1e] to-[#2a2a2a] border border-[#1bff1b] p-4 rounded-xl">
+                <div className="flex items-center gap-8">
+                  <div className="flex-shrink-0 w-24">
+                    <h3 className="text-base font-semibold text-[#1bff1b]">核心优势</h3>
                   </div>
-                  <div className="flex items-start gap-3">
-                    <div className="w-2 h-2 bg-[#1bff1b] rounded-full mt-1.5 flex-shrink-0"></div>
-                    <div>
-                      <span className="font-semibold text-zinc-300">智能追问：</span>
-                      <span className="text-zinc-300 opacity-80">根据回答自动生成深入问题</span>
+                  <div className="flex-1 grid grid-cols-2 gap-x-8 gap-y-3 text-sm">
+                    <div className="flex items-start gap-2">
+                      <div className="w-2 h-2 bg-[#1bff1b] rounded-full mt-1 flex-shrink-0"></div>
+                      <div>
+                        <span className="font-semibold text-zinc-300">多模态支持：</span>
+                        <span className="text-zinc-300 opacity-80">
+                          文字、语音、图像等多种交互方式
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div className="w-2 h-2 bg-[#1bff1b] rounded-full mt-1.5 flex-shrink-0"></div>
-                    <div>
-                      <span className="font-semibold text-zinc-300">虚拟焦点小组：</span>
-                      <span className="text-zinc-300 opacity-80">多个AI人设同时参与讨论</span>
+                    <div className="flex items-start gap-2">
+                      <div className="w-2 h-2 bg-[#1bff1b] rounded-full mt-1 flex-shrink-0"></div>
+                      <div>
+                        <span className="font-semibold text-zinc-300">智能追问：</span>
+                        <span className="text-zinc-300 opacity-80">根据回答自动生成深入问题</span>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div className="w-2 h-2 bg-[#1bff1b] rounded-full mt-1.5 flex-shrink-0"></div>
-                    <div>
-                      <span className="font-semibold text-zinc-300">24/7可用：</span>
-                      <span className="text-zinc-300 opacity-80">随时随地进行研究访谈</span>
+                    <div className="flex items-start gap-2">
+                      <div className="w-2 h-2 bg-[#1bff1b] rounded-full mt-1 flex-shrink-0"></div>
+                      <div>
+                        <span className="font-semibold text-zinc-300">虚拟焦点小组：</span>
+                        <span className="text-zinc-300 opacity-80">多个AI人设同时参与讨论</span>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <div className="w-2 h-2 bg-[#1bff1b] rounded-full mt-1 flex-shrink-0"></div>
+                      <div>
+                        <span className="font-semibold text-zinc-300">24/7可用：</span>
+                        <span className="text-zinc-300 opacity-80">随时随地进行研究访谈</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -763,143 +785,139 @@ const capabilities = {
 
       case 7:
         return (
-          <div className="h-full flex flex-col px-12 md:px-16 py-10">
+          <div className="h-full flex flex-col px-8 md:px-12 py-6">
             {/* 标题 */}
-            <div className="mb-8">
-              <div className="text-sm font-light text-zinc-300 opacity-60 uppercase tracking-wider mb-2">
+            <div className="mb-3">
+              <div className="text-xs font-light text-zinc-300 opacity-60 uppercase tracking-wider mb-1">
                 AI研究功能
               </div>
-              <h2 className="text-4xl md:text-5xl font-light tracking-tight text-zinc-300">
+              <h2 className="text-2xl md:text-3xl font-light tracking-tight text-zinc-300">
                 从数据收集到
               </h2>
-              <h2 className="text-4xl md:text-5xl font-medium tracking-tight text-zinc-300">
+              <h2 className="text-2xl md:text-3xl font-medium tracking-tight text-zinc-300">
                 洞察生成
               </h2>
-              <div className="w-12 h-0.5 mt-4 bg-[#1bff1b]"></div>
+              <div className="w-12 h-0.5 mt-2 bg-[#1bff1b]"></div>
             </div>
 
             {/* 内容 */}
-            <div className="flex-1 flex flex-col justify-center space-y-6">
-              {/* 三大核心功能 */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-zinc-800/70 backdrop-blur-sm border border-zinc-600 p-6 rounded-xl">
-                  <div className="w-16 h-16 bg-[#1bff1b]/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span className="text-2xl">📊</span>
-                  </div>
-                  <h3 className="text-lg font-semibold text-[#1bff1b] mb-3 text-center">
+            <div className="flex-1 flex flex-col justify-center space-y-3">
+              {/* 三大核心功能 - 调整布局，emoji放在标题左边 */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="bg-zinc-800/70 backdrop-blur-sm border border-zinc-600 p-3 rounded-xl">
+                  <h3 className="text-sm font-semibold text-[#1bff1b] mb-2 flex items-center justify-center">
+                    <span className="text-base mr-2">📊</span>
                     高质量科学整理
                   </h3>
-                  <p className="text-sm text-zinc-300 opacity-80 text-center">
+                  <p className="text-xs text-zinc-300 opacity-80 text-center">
                     全量记录文本、情绪、观点演进；
                   </p>
                 </div>
 
-                <div className="bg-zinc-800/70 backdrop-blur-sm border border-zinc-600 p-6 rounded-xl">
-                  <div className="w-16 h-16 bg-[#1bff1b]/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span className="text-2xl">🔬</span>
-                  </div>
-                  <h3 className="text-lg font-semibold text-[#1bff1b] mb-3 text-center">
+                <div className="bg-zinc-800/70 backdrop-blur-sm border border-zinc-600 p-3 rounded-xl">
+                  <h3 className="text-sm font-semibold text-[#1bff1b] mb-2 flex items-center justify-center">
+                    <span className="text-base mr-2">🔬</span>
                     跨学科分析模型
                   </h3>
-                  <p className="text-sm text-zinc-300 opacity-80 text-center">
+                  <p className="text-xs text-zinc-300 opacity-80 text-center">
                     按问题自动/手动选取分析模型，得出结果与策略建议；（内置分析模型见附录1）
                   </p>
                 </div>
 
-                <div className="bg-zinc-800/70 backdrop-blur-sm border border-zinc-600 p-6 rounded-xl">
-                  <div className="w-16 h-16 bg-[#1bff1b]/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span className="text-2xl">📄</span>
-                  </div>
-                  <h3 className="text-lg font-semibold text-[#1bff1b] mb-3 text-center">
+                <div className="bg-zinc-800/70 backdrop-blur-sm border border-zinc-600 p-3 rounded-xl">
+                  <h3 className="text-sm font-semibold text-[#1bff1b] mb-2 flex items-center justify-center">
+                    <span className="text-base mr-2">📄</span>
                     自动化生成报告
                   </h3>
-                  <p className="text-sm text-zinc-300 opacity-80 text-center">
+                  <p className="text-xs text-zinc-300 opacity-80 text-center">
                     AI总结观点洞察+可下载/转发/回放的研究资产。
                   </p>
                 </div>
               </div>
 
-              {/* 功能展示区域 */}
-              <div className="bg-zinc-800 rounded-xl border border-zinc-600 p-6">
-                <h3 className="text-xl font-semibold text-[#1bff1b] mb-6 text-center">
+              {/* 功能展示区域 - 缩小padding和字体 */}
+              <div className="bg-zinc-800 rounded-xl border border-zinc-600 p-3">
+                <h3 className="text-base font-semibold text-[#1bff1b] mb-3 text-center">
                   AI研究报告示例
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {/* 左侧：报告预览 */}
-                  <div className="bg-zinc-700/50 border border-zinc-600 rounded-lg p-4">
-                    <div className="bg-white rounded-lg p-4 mb-4 min-h-48">
-                      <div className="text-black text-xs space-y-2">
-                        <div className="font-bold text-sm border-b pb-2 mb-3">
-                          研究报告：LV上海门店购物体验
-                        </div>
-                        <div className="space-y-1">
-                          <div className="font-semibold">核心发现</div>
-                          <div>• 服务质量获得高度认可</div>
-                          <div>• 排队时间是主要痛点</div>
-                          <div>• 产品展示需要优化</div>
-                        </div>
-                        <div className="space-y-1">
-                          <div className="font-semibold">消费者洞察</div>
-                          <div>• 期待更个性化的服务体验</div>
-                          <div>• 希望有更舒适的试用环境</div>
-                        </div>
-                        <div className="space-y-1">
-                          <div className="font-semibold">改进建议</div>
-                          <div>• 引入预约制度</div>
-                          <div>• 优化店面布局</div>
+                  <div className="flex flex-col h-full">
+                    <div className="bg-zinc-700/50 border border-zinc-600 rounded-lg p-2 flex-1 flex flex-col">
+                      <div className="bg-white rounded-lg p-2 mb-2 flex-1">
+                        <div className="text-black text-xs space-y-1">
+                          <div className="font-bold text-xs border-b pb-1 mb-1">
+                            研究报告：LV上海门店购物体验
+                          </div>
+                          <div className="space-y-0.5 text-xs">
+                            <div className="font-semibold">核心发现</div>
+                            <div className="text-xs">• 服务质量获得高度认可</div>
+                            <div className="text-xs">• 排队时间是主要痛点</div>
+                            <div className="text-xs">• 产品展示需要优化</div>
+                          </div>
+                          <div className="space-y-0.5 text-xs">
+                            <div className="font-semibold">消费者洞察</div>
+                            <div className="text-xs">• 期待更个性化的服务体验</div>
+                            <div className="text-xs">• 希望有更舒适的试用环境</div>
+                          </div>
+                          <div className="space-y-0.5 text-xs">
+                            <div className="font-semibold">改进建议</div>
+                            <div className="text-xs">• 引入预约制度</div>
+                            <div className="text-xs">• 优化店面布局</div>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="text-center">
-                      <div className="inline-flex items-center gap-2 bg-[#1bff1b] text-zinc-900 px-3 py-1 rounded-full text-xs font-medium">
-                        <span>📊</span>
-                        <span>完整报告</span>
+                      <div className="text-center">
+                        <div className="inline-flex items-center gap-1 bg-[#1bff1b] text-zinc-900 px-2 py-0.5 rounded-full text-xs font-medium">
+                          <span className="text-xs">📊</span>
+                          <span>完整报告</span>
+                        </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* 右侧：生成过程 */}
-                  <div className="space-y-4">
-                    <div className="bg-zinc-700/50 border border-zinc-600 rounded-lg p-4">
-                      <h4 className="text-sm font-semibold text-zinc-300 mb-2">生成过程</h4>
-                      <div className="space-y-2 text-xs">
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                          <span className="text-zinc-300">数据收集完成</span>
+                  {/* 右侧：生成过程和统计数据 - 调整高度对齐 */}
+                  <div className="flex flex-col h-full gap-2">
+                    <div className="bg-zinc-700/50 border border-zinc-600 rounded-lg p-2 flex-1">
+                      <h4 className="text-xs font-semibold text-zinc-300 mb-1">生成过程</h4>
+                      <div className="space-y-0.5 text-xs">
+                        <div className="flex items-center gap-1">
+                          <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
+                          <span className="text-zinc-300 text-xs">数据收集完成</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                          <span className="text-zinc-300">情感分析完成</span>
+                        <div className="flex items-center gap-1">
+                          <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
+                          <span className="text-zinc-300 text-xs">情感分析完成</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
-                          <span className="text-zinc-300">跨学科模型分析中...</span>
+                        <div className="flex items-center gap-1">
+                          <div className="w-1.5 h-1.5 rounded-full bg-yellow-500"></div>
+                          <span className="text-zinc-300 text-xs">跨学科模型分析中...</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 rounded-full bg-zinc-500"></div>
-                          <span className="text-zinc-400">报告生成等待中</span>
+                        <div className="flex items-center gap-1">
+                          <div className="w-1.5 h-1.5 rounded-full bg-zinc-500"></div>
+                          <span className="text-zinc-400 text-xs">报告生成等待中</span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="bg-zinc-700/50 border border-zinc-600 rounded-lg p-4">
-                      <h4 className="text-sm font-semibold text-zinc-300 mb-2">统计数据</h4>
-                      <div className="space-y-2 text-xs">
+                    <div className="bg-zinc-700/50 border border-zinc-600 rounded-lg p-2 flex-1">
+                      <h4 className="text-xs font-semibold text-zinc-300 mb-1">统计数据</h4>
+                      <div className="space-y-0.5 text-xs">
                         <div className="flex justify-between">
-                          <span className="text-zinc-300">访谈对象：</span>
-                          <span className="text-[#1bff1b]">47位用户</span>
+                          <span className="text-zinc-300 text-xs">访谈对象：</span>
+                          <span className="text-[#1bff1b] text-xs">47位用户</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-zinc-300">数据点：</span>
-                          <span className="text-[#1bff1b]">1,240个</span>
+                          <span className="text-zinc-300 text-xs">数据点：</span>
+                          <span className="text-[#1bff1b] text-xs">1,240个</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-zinc-300">分析模型：</span>
-                          <span className="text-[#1bff1b]">客户体验分析</span>
+                          <span className="text-zinc-300 text-xs">分析模型：</span>
+                          <span className="text-[#1bff1b] text-xs">客户体验分析</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-zinc-300">置信度：</span>
-                          <span className="text-[#1bff1b]">87%</span>
+                          <span className="text-zinc-300 text-xs">置信度：</span>
+                          <span className="text-[#1bff1b] text-xs">87%</span>
                         </div>
                       </div>
                     </div>
@@ -908,17 +926,17 @@ const capabilities = {
               </div>
 
               {/* Always-on 模式 */}
-              <div className="bg-gradient-to-r from-[#1e1e1e] to-[#2a2a2a] border border-[#1bff1b] p-6 rounded-xl text-center">
-                <h3 className="text-xl font-bold text-[#1bff1b] mb-4">Always-on 研究模式</h3>
-                <p className="text-base text-zinc-300 mb-4">
+              <div className="bg-gradient-to-r from-[#1e1e1e] to-[#2a2a2a] border border-[#1bff1b] p-3 rounded-xl text-center">
+                <h3 className="text-base font-bold text-[#1bff1b] mb-2">Always-on 研究模式</h3>
+                <p className="text-xs text-zinc-300 mb-2">
                   研究由&ldquo;问卷项目&rdquo;转为&ldquo;持续分析&rdquo;（Always-on），让每个决策都能实时获得更全面的用户视角。
                 </p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                  <div className="bg-zinc-800/50 p-3 rounded-lg">
+                <div className="flex gap-2 justify-center text-xs">
+                  <div className="bg-zinc-800/50 px-2 py-1 rounded">
                     <span className="font-semibold text-zinc-300">传统模式：</span>
                     <span className="text-zinc-300 opacity-80">项目制、周期性</span>
                   </div>
-                  <div className="bg-zinc-800/50 p-3 rounded-lg">
+                  <div className="bg-zinc-800/50 px-2 py-1 rounded">
                     <span className="font-semibold text-[#1bff1b]">Always-on：</span>
                     <span className="text-zinc-300">持续、实时、智能</span>
                   </div>
@@ -930,7 +948,7 @@ const capabilities = {
 
       case 8:
         return (
-          <div className="h-full flex flex-col justify-center items-center text-center px-12 md:px-16 py-10 relative">
+          <div className="h-full flex flex-col px-10 md:px-14 py-8 relative">
             {/* 背景装饰 */}
             <div className="absolute top-0 right-0 opacity-10 text-xs overflow-hidden h-full w-1/3">
               <pre className="text-zinc-300 opacity-40 font-mono leading-tight">
@@ -945,67 +963,75 @@ const transformation = {
   from: "periodic_research",
   to: "continuous_insights",
   mode: "always_on"
-};
-
-console.log("Research revolution activated");`}
+};`}
               </pre>
             </div>
 
             {/* 主标题 */}
-            <div className="mb-12 relative z-10">
-              <h1 className="text-5xl md:text-7xl font-light tracking-tight text-zinc-300 mb-4">
+            <div className="mb-6 relative z-10 text-center">
+              <h1 className="text-4xl md:text-5xl font-light tracking-tight text-zinc-300 mb-2">
                 有了Atypica
               </h1>
-              <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-[#1bff1b] shadow-[0_0_30px_rgba(27,255,27,0.35)]">
+              <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-[#1bff1b] shadow-[0_0_25px_rgba(27,255,27,0.3)]">
                 会怎样？
               </h1>
-              <div className="w-24 h-1 bg-gradient-to-r from-transparent via-[#1bff1b] to-transparent mx-auto mt-6 shadow-[0_0_12px_rgba(27,255,27,0.35)]"></div>
+              <div className="w-20 h-0.5 bg-gradient-to-r from-transparent via-[#1bff1b] to-transparent mx-auto mt-4 shadow-[0_0_10px_rgba(27,255,27,0.35)]"></div>
             </div>
 
-            {/* 三个100倍 */}
-            <div className="max-w-6xl mx-auto mb-12 relative z-10">
-              <div className="text-xl md:text-2xl font-light text-zinc-300 mb-8">
+            {/* 内容区域 */}
+            <div className="flex-1 flex flex-col justify-center space-y-6 max-w-5xl mx-auto w-full relative z-10">
+              {/* 三个100倍 */}
+              <div className="text-lg md:text-xl font-light text-zinc-300 text-center mb-2">
                 当AI让市场研究成本<span className="font-bold text-[#1bff1b]">降低100倍</span>、速度
                 <span className="font-bold text-[#1bff1b]">提升100倍</span>、覆盖用户群体
                 <span className="font-bold text-[#1bff1b]">增加100倍</span>，那么：
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="bg-zinc-800/70 backdrop-blur-sm border border-zinc-600 p-8 rounded-xl">
-                  <div className="text-3xl mb-4">🎯</div>
-                  <h3 className="text-xl font-semibold text-[#1bff1b] mb-4">每一个经营决策</h3>
-                  <p className="text-base text-zinc-300 opacity-90 leading-relaxed">
-                    都能实时邀请更全面的用户视角；
-                  </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-zinc-800/70 backdrop-blur-sm border border-zinc-600 p-6 rounded-xl">
+                  <div className="flex items-start mb-3">
+                    <span className="text-2xl mr-3 mt-1">🎯</span>
+                    <div>
+                      <h3 className="text-lg font-semibold text-[#1bff1b] mb-2">每一个经营决策</h3>
+                      <p className="text-base text-zinc-300 opacity-90 leading-relaxed">
+                        都能实时邀请更全面的用户视角；
+                      </p>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="bg-zinc-800/70 backdrop-blur-sm border border-zinc-600 p-8 rounded-xl">
-                  <div className="text-3xl mb-4">⚡</div>
-                  <h3 className="text-xl font-semibold text-[#1bff1b] mb-4">从项目到基础设施</h3>
-                  <p className="text-base text-zinc-300 opacity-90 leading-relaxed">
-                    付费模式从&ldquo;任务/工时&rdquo;转向&ldquo;订阅式基础设施&rdquo;——像云计算一样，让研究和洞察变成水电煤。
-                  </p>
+                <div className="bg-zinc-800/70 backdrop-blur-sm border border-zinc-600 p-6 rounded-xl">
+                  <div className="flex items-start mb-3">
+                    <span className="text-2xl mr-3 mt-1">⚡</span>
+                    <div>
+                      <h3 className="text-lg font-semibold text-[#1bff1b] mb-2">从项目到基础设施</h3>
+                      <p className="text-base text-zinc-300 opacity-90 leading-relaxed">
+                        付费模式从&ldquo;任务/工时&rdquo;转向&ldquo;订阅式基础设施&rdquo;——像云计算一样，让研究和洞察变成水电煤。
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* 核心价值主张 */}
-            <div className="max-w-4xl bg-gradient-to-r from-[#1e1e1e] to-[#2a2a2a] border-2 border-[#1bff1b] rounded-2xl p-8 relative z-10 shadow-[0_0_40px_rgba(27,255,27,0.2)]">
-              <p className="text-lg md:text-xl font-light leading-relaxed text-zinc-300 mb-6">
-                但请记住：当数据和研究变得更经济，
-                <span className="font-bold text-[#1bff1b]">
-                  真正有价值的是&ldquo;智慧&rdquo;与&ldquo;好猜想&rdquo;
-                </span>
-                。提出好问题，建立可验证假设，才是下一阶段的竞争壁垒。
-              </p>
+              {/* 核心价值主张 */}
+              <div className="bg-gradient-to-r from-[#1e1e1e] to-[#2a2a2a] border border-[#1bff1b] rounded-xl p-6 shadow-[0_0_25px_rgba(27,255,27,0.15)]">
+                <p className="text-base md:text-lg font-light leading-relaxed text-zinc-300 text-center">
+                  但请记住：当数据和研究变得更经济，
+                  <span className="font-bold text-[#1bff1b]">
+                    真正有价值的是&ldquo;智慧&rdquo;与&ldquo;好猜想&rdquo;
+                  </span>
+                  。提出好问题，建立可验证假设，才是下一阶段的竞争壁垒。
+                </p>
+              </div>
 
-              <div className="grid grid-cols-2 gap-6 mt-8">
-                <div className="text-center">
-                  <div className="text-lg font-semibold text-zinc-400 mb-2">传统模式</div>
+              {/* 对比模式 */}
+              <div className="grid grid-cols-2 gap-6 mt-4">
+                <div className="bg-zinc-800/50 p-4 rounded-lg text-center">
+                  <div className="text-base font-semibold text-zinc-400 mb-2">传统模式</div>
                   <div className="text-sm text-zinc-300 opacity-70">先研究，再决策</div>
                 </div>
-                <div className="text-center">
-                  <div className="text-lg font-semibold text-[#1bff1b] mb-2">Always-on 模式</div>
+                <div className="bg-zinc-800/50 border border-[#1bff1b]/50 p-4 rounded-lg text-center">
+                  <div className="text-base font-semibold text-[#1bff1b] mb-2">Always-on 模式</div>
                   <div className="text-sm text-[#1bff1b]">边研究，边决策，边执行</div>
                 </div>
               </div>
@@ -1015,42 +1041,42 @@ console.log("Research revolution activated");`}
 
       case 9:
         return (
-          <div className="h-full flex flex-col px-12 md:px-16 py-10">
+          <div className="h-full flex flex-col px-10 md:px-14 py-8">
             {/* 标题 */}
-            <div className="mb-8">
+            <div className="mb-6">
               <div className="text-sm font-light text-zinc-300 opacity-60 uppercase tracking-wider mb-2">
                 使用场景
               </div>
-              <h2 className="text-4xl md:text-5xl font-light tracking-tight text-zinc-300">
+              <h2 className="text-3xl md:text-4xl font-light tracking-tight text-zinc-300">
                 谁在使用
               </h2>
-              <h2 className="text-4xl md:text-5xl font-medium tracking-tight text-zinc-300">
+              <h2 className="text-3xl md:text-4xl font-medium tracking-tight text-zinc-300">
                 Atypica？
               </h2>
-              <div className="w-12 h-0.5 mt-4 bg-[#1bff1b]"></div>
+              <div className="w-12 h-0.5 mt-3 bg-[#1bff1b]"></div>
             </div>
 
             {/* 内容 */}
-            <div className="flex-1 flex flex-col justify-center space-y-6">
+            <div className="flex-1 flex flex-col justify-center space-y-4">
               {/* 使用场景表格 */}
               <div className="bg-zinc-800 rounded-xl border border-zinc-600 overflow-hidden shadow-lg">
-                <div className="bg-zinc-700/50 px-4 py-3 border-b border-zinc-600">
+                <div className="bg-zinc-700/50 px-4 py-2.5 border-b border-zinc-600">
                   <h3 className="text-lg font-semibold text-[#1bff1b] text-center">适用场景详解</h3>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
                       <tr className="bg-zinc-700/30">
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-zinc-300">
+                        <th className="px-4 py-2.5 text-left text-sm font-semibold text-zinc-300">
                           客户
                         </th>
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-zinc-300">
+                        <th className="px-4 py-2.5 text-left text-sm font-semibold text-zinc-300">
                           客户规模
                         </th>
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-zinc-300">
+                        <th className="px-4 py-2.5 text-left text-sm font-semibold text-zinc-300">
                           使用方式
                         </th>
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-zinc-300">
+                        <th className="px-4 py-2.5 text-left text-sm font-semibold text-zinc-300">
                           典型场景
                         </th>
                       </tr>
@@ -1077,7 +1103,9 @@ console.log("Research revolution activated");`}
                         <td className="px-4 py-3 text-sm text-zinc-300">营销效果监测</td>
                       </tr>
                       <tr className="border-t border-zinc-600">
-                        <td className="px-4 py-3 text-sm font-medium text-zinc-300">某连锁餐饮</td>
+                        <td className="px-4 py-3 text-sm font-medium text-zinc-300">
+                          某连锁餐饮
+                        </td>
                         <td className="px-4 py-3 text-sm text-zinc-300">大</td>
                         <td className="px-4 py-3 text-sm text-zinc-300">
                           用【AI访谈】3000位真实用户体验
@@ -1097,11 +1125,15 @@ console.log("Research revolution activated");`}
                       <tr className="border-t border-zinc-600">
                         <td className="px-4 py-3 text-sm font-medium text-zinc-300">某B2B公司</td>
                         <td className="px-4 py-3 text-sm text-zinc-300">中</td>
-                        <td className="px-4 py-3 text-sm text-zinc-300">用【AI人设】做销售剧本</td>
+                        <td className="px-4 py-3 text-sm text-zinc-300">
+                          用【AI人设】做销售剧本
+                        </td>
                         <td className="px-4 py-3 text-sm text-zinc-300">销售培训优化</td>
                       </tr>
                       <tr className="border-t border-zinc-600">
-                        <td className="px-4 py-3 text-sm font-medium text-zinc-300">某美妆品牌</td>
+                        <td className="px-4 py-3 text-sm font-medium text-zinc-300">
+                          某美妆品牌
+                        </td>
                         <td className="px-4 py-3 text-sm text-zinc-300">超大</td>
                         <td className="px-4 py-3 text-sm text-zinc-300">
                           用【AI研究】每日跟踪竞品文案与互动
@@ -1109,7 +1141,9 @@ console.log("Research revolution activated");`}
                         <td className="px-4 py-3 text-sm text-zinc-300">竞品分析监控</td>
                       </tr>
                       <tr className="border-t border-zinc-600">
-                        <td className="px-4 py-3 text-sm font-medium text-zinc-300">某咨询专家</td>
+                        <td className="px-4 py-3 text-sm font-medium text-zinc-300">
+                          某咨询专家
+                        </td>
                         <td className="px-4 py-3 text-sm text-zinc-300">个人</td>
                         <td className="px-4 py-3 text-sm text-zinc-300">
                           用【AI研究】做项目前调研
@@ -1132,31 +1166,12 @@ console.log("Research revolution activated");`}
               </div>
 
               {/* 工具统计 */}
-              <div className="bg-zinc-800/70 backdrop-blur-sm border border-zinc-600 p-4 rounded-xl text-center">
+              <div className="bg-zinc-800/70 backdrop-blur-sm border border-zinc-600 p-3 rounded-lg text-center">
                 <p className="text-sm text-zinc-300">
                   <span className="font-semibold text-zinc-300">
                     （Atypica使用的具体统计附录2）
                   </span>
                 </p>
-              </div>
-
-              {/* 核心价值 */}
-              <div className="bg-gradient-to-r from-[#1e1e1e] to-[#2a2a2a] border border-[#1bff1b] p-6 rounded-xl text-center">
-                <h3 className="text-xl font-semibold text-[#1bff1b] mb-4">核心优势</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                  <div className="bg-zinc-800/50 p-4 rounded-lg">
-                    <h4 className="font-semibold text-zinc-300 mb-2">灵活性</h4>
-                    <p className="text-zinc-300 opacity-80">适应不同规模企业需求</p>
-                  </div>
-                  <div className="bg-zinc-800/50 p-4 rounded-lg">
-                    <h4 className="font-semibold text-zinc-300 mb-2">实时性</h4>
-                    <p className="text-zinc-300 opacity-80">随时获取消费者洞察</p>
-                  </div>
-                  <div className="bg-zinc-800/50 p-4 rounded-lg">
-                    <h4 className="font-semibold text-zinc-300 mb-2">成本效益</h4>
-                    <p className="text-zinc-300 opacity-80">显著降低研究成本</p>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
@@ -1164,24 +1179,24 @@ console.log("Research revolution activated");`}
 
       case 10:
         return (
-          <div className="h-full flex flex-col px-12 md:px-16 py-10">
+          <div className="h-full flex flex-col px-10 md:px-14 py-6">
             {/* 标题 */}
-            <div className="mb-8">
-              <div className="text-sm font-light text-zinc-300 opacity-60 uppercase tracking-wider mb-2">
+            <div className="mb-4">
+              <div className="text-xs font-light text-zinc-300 opacity-60 uppercase tracking-wider mb-1">
                 用户数据洞察
               </div>
-              <h2 className="text-4xl md:text-5xl font-light tracking-tight text-zinc-300">
+              <h2 className="text-3xl md:text-4xl font-light tracking-tight text-zinc-300">
                 5000名用户的
               </h2>
-              <h2 className="text-4xl md:text-5xl font-medium tracking-tight text-zinc-300">
+              <h2 className="text-3xl md:text-4xl font-medium tracking-tight text-zinc-300">
                 行业分布
               </h2>
-              <div className="w-12 h-0.5 mt-4 bg-[#1bff1b]"></div>
+              <div className="w-12 h-0.5 mt-2 bg-[#1bff1b]"></div>
             </div>
 
             {/* 内容 */}
-            <div className="flex-1 flex flex-col justify-center space-y-8">
-              <div className="bg-zinc-800/70 backdrop-blur-sm border border-zinc-600 p-4 rounded-xl text-center">
+            <div className="flex-1 flex flex-col justify-center space-y-4">
+              <div className="bg-zinc-800/70 backdrop-blur-sm border border-zinc-600 p-3 rounded-xl text-center">
                 <p className="text-sm text-zinc-300">
                   样本量：抽样调研<span className="font-semibold text-[#1bff1b]">5000</span>
                   份真实的用户研究报告
@@ -1189,12 +1204,12 @@ console.log("Research revolution activated");`}
               </div>
 
               {/* 行业分布图表 */}
-              <div className="bg-zinc-800 rounded-xl border border-zinc-600 p-6">
-                <h3 className="text-xl font-semibold text-[#1bff1b] mb-6 text-center">
+              <div className="bg-zinc-800 rounded-xl border border-zinc-600 p-4">
+                <h3 className="text-lg font-semibold text-[#1bff1b] mb-4 text-center">
                   行业分布 / Industry
                 </h3>
 
-                <div className="space-y-3">
+                <div className="space-y-2">
                   {[
                     { label: "创业者/自由职业", value: 24.8, color: "#1bff1b" },
                     { label: "咨询/营销行业", value: 17.4, color: "#1bff1b" },
@@ -1207,9 +1222,9 @@ console.log("Research revolution activated");`}
                     { label: "金融投资行业", value: 4.6, color: "#1bff1b" },
                     { label: "制造业", value: 4.1, color: "#1bff1b" },
                   ].map((item, index) => (
-                    <div key={index} className="flex items-center gap-4">
-                      <div className="w-32 text-sm text-zinc-300 text-right">{item.label}</div>
-                      <div className="flex-1 bg-zinc-700 h-8 rounded-full overflow-hidden relative">
+                    <div key={index} className="flex items-center gap-3">
+                      <div className="w-28 text-xs text-zinc-300 text-right">{item.label}</div>
+                      <div className="flex-1 bg-zinc-700 h-6 rounded-full overflow-hidden relative">
                         <div
                           className="h-full bg-gradient-to-r from-[#1bff1b] to-[#0d8a0d] transition-all duration-1000 ease-out"
                           style={{ width: `${item.value}%` }}
@@ -1218,31 +1233,31 @@ console.log("Research revolution activated");`}
                           {item.value}%
                         </div>
                       </div>
-                      <div className="w-16 text-sm text-zinc-400">{item.value}%</div>
+                      <div className="w-14 text-xs text-zinc-400">{item.value}%</div>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* 核心洞察 */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-zinc-800/70 backdrop-blur-sm border border-zinc-600 p-6 rounded-xl">
-                  <h4 className="text-lg font-semibold text-[#1bff1b] mb-4">主要用户群体特征</h4>
-                  <div className="space-y-3 text-sm text-zinc-300">
-                    <div className="flex items-start gap-2">
-                      <div className="w-2 h-2 rounded-full bg-[#1bff1b] mt-1.5 flex-shrink-0"></div>
+              {/* 核心洞察 - 精简版 */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-zinc-800/70 backdrop-blur-sm border border-zinc-600 p-4 rounded-xl">
+                  <h4 className="text-sm font-semibold text-[#1bff1b] mb-2">主要用户群体特征</h4>
+                  <div className="space-y-1.5 text-xs text-zinc-300">
+                    <div className="flex items-start gap-1.5">
+                      <div className="w-1.5 h-1.5 rounded-full bg-[#1bff1b] mt-1 flex-shrink-0"></div>
                       <span>
                         <strong>创新驱动</strong>：创业者和自由职业者占比最高（24.8%）
                       </span>
                     </div>
-                    <div className="flex items-start gap-2">
-                      <div className="w-2 h-2 rounded-full bg-[#1bff1b] mt-1.5 flex-shrink-0"></div>
+                    <div className="flex items-start gap-1.5">
+                      <div className="w-1.5 h-1.5 rounded-full bg-[#1bff1b] mt-1 flex-shrink-0"></div>
                       <span>
                         <strong>专业导向</strong>：咨询营销专业人士紧随其后（17.4%）
                       </span>
                     </div>
-                    <div className="flex items-start gap-2">
-                      <div className="w-2 h-2 rounded-full bg-[#1bff1b] mt-1.5 flex-shrink-0"></div>
+                    <div className="flex items-start gap-1.5">
+                      <div className="w-1.5 h-1.5 rounded-full bg-[#1bff1b] mt-1 flex-shrink-0"></div>
                       <span>
                         <strong>数字化转型</strong>：电商、科技、内容行业占比显著
                       </span>
@@ -1250,23 +1265,23 @@ console.log("Research revolution activated");`}
                   </div>
                 </div>
 
-                <div className="bg-zinc-800/70 backdrop-blur-sm border border-zinc-600 p-6 rounded-xl">
-                  <h4 className="text-lg font-semibold text-[#1bff1b] mb-4">市场需求趋势</h4>
-                  <div className="space-y-3 text-sm text-zinc-300">
-                    <div className="flex items-start gap-2">
-                      <div className="w-2 h-2 rounded-full bg-[#1bff1b] mt-1.5 flex-shrink-0"></div>
+                <div className="bg-zinc-800/70 backdrop-blur-sm border border-zinc-600 p-4 rounded-xl">
+                  <h4 className="text-sm font-semibold text-[#1bff1b] mb-2">市场需求趋势</h4>
+                  <div className="space-y-1.5 text-xs text-zinc-300">
+                    <div className="flex items-start gap-1.5">
+                      <div className="w-1.5 h-1.5 rounded-full bg-[#1bff1b] mt-1 flex-shrink-0"></div>
                       <span>
                         <strong>敏捷决策</strong>：快速变化行业更需要实时洞察
                       </span>
                     </div>
-                    <div className="flex items-start gap-2">
-                      <div className="w-2 h-2 rounded-full bg-[#1bff1b] mt-1.5 flex-shrink-0"></div>
+                    <div className="flex items-start gap-1.5">
+                      <div className="w-1.5 h-1.5 rounded-full bg-[#1bff1b] mt-1 flex-shrink-0"></div>
                       <span>
                         <strong>成本敏感</strong>：中小企业和个人用户需要经济方案
                       </span>
                     </div>
-                    <div className="flex items-start gap-2">
-                      <div className="w-2 h-2 rounded-full bg-[#1bff1b] mt-1.5 flex-shrink-0"></div>
+                    <div className="flex items-start gap-1.5">
+                      <div className="w-1.5 h-1.5 rounded-full bg-[#1bff1b] mt-1 flex-shrink-0"></div>
                       <span>
                         <strong>专业化</strong>：不同行业需要定制化的研究方法
                       </span>
@@ -1280,94 +1295,73 @@ console.log("Research revolution activated");`}
 
       case 11:
         return (
-          <div className="h-full flex flex-col justify-center items-center text-center px-12 md:px-16 py-10 relative">
-            {/* 背景装饰 */}
-            <div className="absolute top-0 right-0 opacity-10 text-xs overflow-hidden h-full w-1/3">
-              <pre className="text-zinc-300 opacity-40 font-mono leading-tight">
-                {`// Future of Research
-const future = {
-  mode: "always_on",
-  approach: "dynamic_execution", 
-  value: "actionable_insights"
-};
-
-const transformation = {
-  from: "static_analysis",
-  to: "continuous_intelligence",
-  paradigm: "research_as_service"
-};
-
-execute(transformation);`}
-              </pre>
-            </div>
-
+          <div className="h-full flex flex-col px-10 md:px-14 py-6">
             {/* 标题 */}
-            <div className="mb-8 relative z-10">
-              <div className="text-sm font-light text-zinc-300 opacity-60 uppercase tracking-wider mb-2">
+            <div className="mb-4 text-center">
+              <div className="text-xs font-light text-zinc-300 opacity-60 uppercase tracking-wider mb-1">
                 未来展望
               </div>
-              <h1 className="text-4xl md:text-6xl font-light tracking-tight text-zinc-300 mb-2">
+              <h1 className="text-3xl md:text-4xl font-light tracking-tight text-zinc-300">
                 欢迎使用
               </h1>
-              <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-[#1bff1b] shadow-[0_0_20px_rgba(27,255,27,0.35)]">
+              <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-[#1bff1b] shadow-[0_0_20px_rgba(27,255,27,0.25)]">
                 Atypica
               </h1>
-              <div className="w-20 h-0.5 bg-gradient-to-r from-transparent via-[#1bff1b] to-transparent mx-auto mt-4 shadow-[0_0_8px_rgba(27,255,27,0.35)]"></div>
             </div>
 
-            {/* 核心理念 */}
-            <div className="max-w-4xl mx-auto mb-8 relative z-10">
-              <div className="bg-zinc-800/70 backdrop-blur-sm border border-zinc-600 rounded-xl p-8">
-                <p className="text-lg md:text-xl font-light leading-relaxed text-zinc-300 mb-4">
+            {/* 内容区域 */}
+            <div className="flex-1 flex flex-col justify-center space-y-4 max-w-4xl mx-auto w-full">
+              {/* 核心理念 */}
+              <div className="bg-zinc-800/70 backdrop-blur-sm border border-zinc-600 rounded-xl p-4">
+                <p className="text-base font-light leading-relaxed text-zinc-300 text-center mb-2">
                   让研究进入 <span className="font-bold text-[#1bff1b]">Always-on</span> 模式，
                 </p>
-                <p className="text-lg md:text-xl font-light leading-relaxed text-zinc-300 mb-6">
+                <p className="text-base font-light leading-relaxed text-zinc-300 text-center mb-3">
                   让洞察触手可及，让每个决策与实时世界对话。
                 </p>
-
-                <div className="text-base font-light leading-relaxed text-zinc-300 space-y-4">
+                <div className="text-sm font-light text-zinc-300 text-center">
                   <p>研究已经变得更便宜，更迅速，</p>
                   <p className="font-medium text-[#1bff1b]">但唯有好问题与好猜想，才真正无价。</p>
                 </div>
               </div>
-            </div>
 
-            {/* 联系方式 */}
-            <div className="max-w-3xl mx-auto space-y-6 relative z-10">
-              <div className="bg-gradient-to-r from-[#1e1e1e] to-[#2a2a2a] border border-[#1bff1b] rounded-xl p-6">
-                <h3 className="text-xl font-semibold text-[#1bff1b] mb-4">看完 Atypica 的介绍，</h3>
-                <p className="text-base text-zinc-300 mb-4">我知道，您一定有很多问题。</p>
-                <p className="text-base text-zinc-300 mb-4">
-                  没关系，我用 Atypica 发起了一个访谈，
-                </p>
-                <p className="text-base text-zinc-300 mb-6">
-                  扫下面的二维码告诉我，说出您的疑问和期待！
-                </p>
-
-                <div className="bg-white p-4 rounded-lg inline-block">
-                  <div className="w-32 h-32 bg-zinc-900 rounded flex items-center justify-center">
-                    <span className="text-white text-xs">QR Code</span>
+              {/* 联系方式 */}
+              <div className="bg-gradient-to-r from-[#1e1e1e] to-[#2a2a2a] border border-[#1bff1b] rounded-xl p-4">
+                <h3 className="text-lg font-semibold text-[#1bff1b] mb-2 text-center">
+                  看完 Atypica 的介绍，
+                </h3>
+                <div className="text-sm text-zinc-300 text-center mb-3">
+                  <p>我知道，您一定有很多问题。</p>
+                  <p>没关系，我用 Atypica 发起了一个访谈，</p>
+                  <p>扫下面的二维码告诉我，说出您的疑问和期待！</p>
+                </div>
+                
+                <div className="text-center mb-3">
+                  <div className="bg-white p-3 rounded-lg inline-block">
+                    <div className="w-20 h-20 bg-zinc-900 rounded flex items-center justify-center">
+                      <span className="text-white text-xs">QR Code</span>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-zinc-800/70 backdrop-blur-sm border border-zinc-600 rounded-xl p-4 text-sm text-zinc-300">
-                <p className="mb-2">
+              {/* 会员福利 */}
+              <div className="bg-zinc-800/70 backdrop-blur-sm border border-zinc-600 rounded-xl p-3 text-center">
+                <p className="text-sm text-zinc-300">
                   认真完成访谈的朋友会获赠{" "}
-                  <span className="font-bold text-[#1bff1b]">1个月免费 Pro 会员</span>，
+                  <span className="font-bold text-[#1bff1b]">1个月免费 Pro 会员</span>
+                  ，
                 </p>
-                <p>我会整体通知具体领取方式。</p>
+                <p className="text-sm text-zinc-300">我会整体通知具体领取方式。</p>
               </div>
-            </div>
 
-            {/* 最终愿景 */}
-            <div className="max-w-4xl mx-auto mt-12 relative z-10">
-              <div className="bg-zinc-900 border-2 border-[#1bff1b] rounded-xl p-6 text-center shadow-[0_0_30px_rgba(27,255,27,0.15)]">
-                <p className="text-lg font-light text-zinc-300 mb-4">
-                  从依赖历史数据的<span className="font-medium">被动分析</span>， 转向基于智能体的
-                  <span className="font-medium">主动模拟</span>
+              {/* 最终愿景 */}
+              <div className="bg-zinc-900 border border-[#1bff1b] rounded-xl p-4 text-center">
+                <p className="text-sm font-light text-zinc-300 mb-2">
+                  从依赖历史数据的<span className="font-medium">被动分析</span>
+                  ，转向基于智能体的<span className="font-medium">主动模拟</span>
                 </p>
-                <p className="text-base font-medium text-[#1bff1b]">
+                <p className="text-xs text-[#1bff1b] leading-relaxed">
                   这种从&ldquo;静态分析&rdquo;到&ldquo;动态执行&rdquo;的转变，让企业能够在几小时内完成从问题识别到策略制定的全流程，
                   实现从&ldquo;先研究，再决策&rdquo;到&ldquo;边研究，边决策，边执行&rdquo;的敏捷商业模式。
                 </p>
@@ -1393,7 +1387,7 @@ execute(transformation);`}
       <div className="flex-1 flex items-center justify-center p-4">
         {/* PPT Container with responsive aspect ratio */}
         <div
-          className="w-full max-w-6xl aspect-[16/9] bg-[#121212] relative flex flex-col shadow-2xl border border-zinc-600"
+          className="w-full max-w-7xl aspect-[16/10] bg-[#121212] relative flex flex-col shadow-2xl border border-zinc-600"
           key={currentSlide}
         >
           {/* 演讲稿提示按钮 - 只有 Tezign 用户可见 */}
