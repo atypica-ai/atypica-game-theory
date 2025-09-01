@@ -1,10 +1,12 @@
-const { PrismaClient } = require("../src/prisma/client");
+// pnpm tsx scripts/payment-stats.ts > payment-stats.csv
 
-const prisma = new PrismaClient();
+import { PaymentChargeData } from "@/app/payment/data";
+import { UserSubscriptionExtra } from "@/prisma/client";
+import { loadEnvConfig } from "@next/env";
 
-const dateBefore = new Date("2025-08-01T00:00:00+08:00");
-const pad12 = (n) => n.toLocaleString().padStart(12, " ");
-const fdate = (d) =>
+const dateBefore = new Date("2025-09-01T00:00:00+08:00");
+const pad12 = (n: number) => n.toLocaleString().padStart(12, " ");
+const fdate = (d: Date) =>
   new Intl.DateTimeFormat("zh-CN", {
     dateStyle: "short",
     timeZone: "Asia/Shanghai",
@@ -12,30 +14,19 @@ const fdate = (d) =>
     .format(d)
     .padEnd(10, " ");
 
-async function getPaidUsers() {
+async function main() {
+  loadEnvConfig(process.cwd());
+  const { prisma } = await import("@/prisma/prisma");
   const users = await prisma.user.findMany({
     where: {
       paymentRecords: {
         some: {
           status: "succeeded",
-          paidAt: {
-            lt: dateBefore,
-          },
+          paidAt: { lt: dateBefore },
         },
       },
     },
-    // include: {
-    //   paymentRecords: {
-    //     where: { status: "succeeded" },
-    //     include: { paymentLines: { include: { product: true } } },
-    //   },
-    // },
   });
-  return users;
-}
-
-async function main() {
-  const users = await getPaidUsers();
   console.log(
     `Order,StripePaymentId,StripeCharge,PaymentMethod,Currency,Amount,Receibed,Used,Payable,Plan,Date,Email`,
   );
@@ -50,7 +41,7 @@ async function main() {
       orderBy: { id: "asc" },
     });
     const giftedTokensTotal = tokensLogs
-      .filter((log) => (log.verb === "gift") | (log.verb === "signup"))
+      .filter((log) => log.verb === "gift" || log.verb === "signup")
       .reduce((acc, log) => acc + log.value, 0);
     const consumedTokensTotal = tokensLogs
       .filter((log) => log.verb === "consume")
@@ -60,28 +51,28 @@ async function main() {
     for (const log of tokensLogs.filter((log) => log.verb === "subscription")) {
       if (log.resourceType === "PaymentRecord") {
         const paymentRecord = await prisma.paymentRecord.findUniqueOrThrow({
-          where: { id: log.resourceId },
+          where: { id: log.resourceId! },
         });
-        const invoice = paymentRecord.charge?.invoice ?? {};
+        const invoice = (paymentRecord.charge as PaymentChargeData)?.invoice;
         const used = Math.min(0, Math.max(payable, -log.value));
         payable = payable - used;
         console.log(
-          `${paymentRecord.orderNo},${invoice.payment_intent},${invoice.charge},${paymentRecord.paymentMethod},${paymentRecord.currency},${paymentRecord.amount},${log.value},${used},${payable},Pro,${fdate(paymentRecord.paidAt)},${user.email}`,
+          `${paymentRecord.orderNo},${(invoice as any)?.payment_intent ?? ""},${(invoice as any)?.charge ?? ""},${paymentRecord.paymentMethod},${paymentRecord.currency},${paymentRecord.amount},${log.value},${used},${payable},Pro,${paymentRecord.paidAt ? fdate(paymentRecord.paidAt) : ""},${user.email}`,
         );
       } else if (log.resourceType === "UserSubscription") {
         const userSubscription = await prisma.userSubscription.findUniqueOrThrow({
-          where: { id: log.resourceId },
+          where: { id: log.resourceId! },
         });
-        const paymentRecordId = userSubscription.extra.paymentRecordId;
+        const paymentRecordId = (userSubscription.extra as UserSubscriptionExtra).paymentRecordId;
         if (paymentRecordId) {
           const paymentRecord = await prisma.paymentRecord.findUniqueOrThrow({
             where: { id: paymentRecordId },
           });
-          const invoice = paymentRecord.charge?.invoice ?? {};
+          const invoice = (paymentRecord.charge as PaymentChargeData)?.invoice;
           const used = Math.min(0, Math.max(payable, -log.value));
           payable = payable - used;
           console.log(
-            `${paymentRecord.orderNo},${invoice.payment_intent},${invoice.charge},${paymentRecord.paymentMethod},${paymentRecord.currency},${paymentRecord.amount},${log.value},${used},${payable},Pro,${fdate(paymentRecord.paidAt)},${user.email}`,
+            `${paymentRecord.orderNo},${(invoice as any)?.payment_intent ?? ""},${(invoice as any)?.charge ?? ""},${paymentRecord.paymentMethod},${paymentRecord.currency},${paymentRecord.amount},${log.value},${used},${payable},Pro,${paymentRecord.paidAt ? fdate(paymentRecord.paidAt) : ""},${user.email}`,
           );
         } else {
           // 一般是人工添加的 subscription 可以跳过
@@ -103,17 +94,18 @@ async function main() {
         throw new Error("Something went wrong");
       }
       const paymentRecord = await prisma.paymentRecord.findUniqueOrThrow({
-        where: { id: log.resourceId },
+        where: { id: log.resourceId! },
       });
-      const invoice = paymentRecord.charge?.invoice ?? {};
+      const invoice = (paymentRecord.charge as PaymentChargeData)?.invoice;
       const used = Math.min(0, Math.max(payable, -log.value));
       payable = payable - used;
       console.log(
-        `${paymentRecord.orderNo},${invoice.payment_intent},${invoice.charge},${paymentRecord.paymentMethod},${paymentRecord.currency},${paymentRecord.amount},${log.value},${used},${payable},Recharge,${fdate(paymentRecord.paidAt)},${user.email}`,
+        `${paymentRecord.orderNo},${(invoice as any)?.payment_intent ?? ""},${(invoice as any)?.charge ?? ""},${paymentRecord.paymentMethod},${paymentRecord.currency},${paymentRecord.amount},${log.value},${used},${payable},Recharge,${paymentRecord.paidAt ? fdate(paymentRecord.paidAt) : ""},${user.email}`,
       );
     }
   }
 }
 
-main();
-// node scripts/payment-stats.js > payment-stats.csv
+if (require.main === module) {
+  main();
+}
