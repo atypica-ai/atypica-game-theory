@@ -1,6 +1,7 @@
 // pnpm tsx scripts/rescore-personas.ts
 
 import { loadEnvConfig } from "@next/env";
+import "./mock-server-only";
 
 async function main() {
   // load env config from .env file

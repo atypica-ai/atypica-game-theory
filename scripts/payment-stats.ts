@@ -3,6 +3,7 @@
 import { PaymentChargeData } from "@/app/payment/data";
 import { UserSubscriptionExtra } from "@/prisma/client";
 import { loadEnvConfig } from "@next/env";
+import "./mock-server-only";
 
 const dateBefore = new Date("2025-09-01T00:00:00+08:00");
 const pad12 = (n: number) => n.toLocaleString().padStart(12, " ");

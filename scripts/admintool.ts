@@ -3,18 +3,9 @@
 //   pnpm tsx scripts/admintool.ts create-user email@example.com password123
 //   pnpm tsx scripts/admintool.ts make-admin email@example.com
 
-// Mock server-only module to avoid client component error
-import { Module } from "module";
-const originalRequire = Module.prototype.require;
-Module.prototype.require = function (id: string) {
-  if (id === "server-only") {
-    return {}; // Mock empty object
-  }
-  return originalRequire.apply(this, arguments as any);
-};
-
 import { AdminRole } from "@/prisma/client";
 import { loadEnvConfig } from "@next/env";
+import "./mock-server-only";
 
 async function createUser(email: string, password: string) {
   loadEnvConfig(process.cwd());
