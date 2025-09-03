@@ -141,7 +141,12 @@
       "confirmReanalyze": "确定要重新分析吗？这将覆盖现有的分析结果。",
       "reanalyzeStarted": "重新分析已开始，请稍候...",
       "reanalyzeFailed": "重新分析失败，请重试",
-      "file": "文件"
+      "file": "文件",
+      "processingProgress": "处理进度",
+      "processingProgressDescription": "查看当前处理状态和完成进度",
+      "parseAttachment": "解析附件",
+      "analyzeCompleteness": "分析完整性",
+      "generatePersona": "生成人设"
     },
     "analysisResult": {
       "title": "完整性分析结果",

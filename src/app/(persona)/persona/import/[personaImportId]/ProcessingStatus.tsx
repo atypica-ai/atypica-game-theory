@@ -2,168 +2,155 @@
 import { PersonaImportAnalysis } from "@/app/(persona)/types";
 import { Persona } from "@/prisma/client";
 import {
-  ActivityIcon,
-  AlertCircleIcon,
+  CheckCircleIcon,
+  CircleIcon,
+  FileTextIcon,
+  Loader2Icon,
   BarChart3Icon,
   BotIcon,
-  CheckCircleIcon,
-  Loader2Icon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 interface ProcessingStatusProps {
-  isGenerating: boolean;
-  isAnalyzing: boolean;
+  processing: {
+    parseAttachment: boolean;
+    analyzeCompleteness: boolean;
+    buildPersonaPrompt: boolean;
+  } | false;
   personas?: Persona[];
   personaImportAnalysis?: Partial<PersonaImportAnalysis> | null;
+  context?: string;
 }
 
 export function ProcessingStatus({
-  isGenerating,
-  isAnalyzing,
+  processing,
   personas,
   personaImportAnalysis,
+  context,
 }: ProcessingStatusProps) {
   const t = useTranslations("PersonaImport.import");
-  // Extract analysis data from personaImportAnalysis
-  const analysis = personaImportAnalysis?.analysis;
-  const supplementaryQuestions = personaImportAnalysis?.supplementaryQuestions;
+  
+  // Define the three steps
+  const steps = [
+    {
+      key: "parseAttachment",
+      icon: FileTextIcon,
+      title: t("parseAttachment"),
+      completed: processing ? processing.parseAttachment : false,
+    },
+    {
+      key: "analyzeCompleteness", 
+      icon: BarChart3Icon,
+      title: t("analyzeCompleteness"),
+      completed: processing ? processing.analyzeCompleteness : false,
+    },
+    {
+      key: "generatePersona",
+      icon: BotIcon, 
+      title: t("generatePersona"),
+      completed: processing ? processing.buildPersonaPrompt : Boolean(personas?.length),
+    },
+  ];
 
-  // Determine actual completion status
-  const personaAgentCompleted = Boolean(personas?.length);
-  const analysisCompleted = Boolean(analysis && supplementaryQuestions);
-
+  // Determine which step is currently in progress
+  const currentStepIndex = steps.findIndex(step => !step.completed);
+  const isProcessing = Boolean(processing);
+  
   return (
-    <div className="bg-card text-card-foreground rounded-lg border p-3 sm:p-6">
-      <div className="space-y-3">
-        <div className="space-y-2">
-          <h2 className="text-xl font-semibold flex items-center gap-3">
-            <div className="w-6 h-6 rounded bg-primary text-primary-foreground flex items-center justify-center">
-              <ActivityIcon className="size-3" />
-            </div>
-            {t("progress")}
-          </h2>
-          <p className="text-muted-foreground ml-9 text-sm">{t("progressDescription")}</p>
-        </div>
-
-        <div className="space-y-4">
-          {/* 人格画像生成状态 */}
-          <div className="p-4 bg-background rounded-lg border">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded bg-muted flex items-center justify-center">
-                    <BotIcon className="size-4 text-muted-foreground" />
-                  </div>
-                  <span className="font-medium">{t("personaGeneration")}</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  {isGenerating ? (
-                    <Loader2Icon className="size-4 text-muted-foreground animate-spin" />
-                  ) : personaAgentCompleted ? (
-                    <CheckCircleIcon className="size-4 text-green-600" />
+    <div className="space-y-6">
+      {/* Three Steps Progress */}
+      <div className="relative">
+        <div className="flex items-start justify-between relative">
+          {steps.map((step, index) => {
+            const isCompleted = step.completed;
+            const isCurrentStep = isProcessing && index === currentStepIndex;
+            
+            // Get step-specific details
+            let stepDetails = null;
+            if (step.key === "parseAttachment") {
+              // Show parsed text length from context field (during processing or after completion)
+              const contextLength = context?.length || 0;
+              if (contextLength > 0) {
+                stepDetails = `已解析 ${contextLength.toLocaleString()} 字符`;
+              }
+            } else if (step.key === "analyzeCompleteness" && personaImportAnalysis) {
+              const analysis = personaImportAnalysis.analysis;
+              const supplementaryQuestions = personaImportAnalysis.supplementaryQuestions;
+              const details = [];
+              
+              if (analysis?.totalScore) {
+                const completeness = Math.round(((analysis.totalScore) / (7 * 3)) * 100);
+                details.push(`完整度 ${completeness}%`);
+              }
+              
+              if (supplementaryQuestions?.questions?.length) {
+                details.push(`已生成 ${supplementaryQuestions.questions.length} 个补充问题`);
+              }
+              
+              if (details.length > 0) {
+                stepDetails = details.join('，');
+              }
+            }
+            
+            return (
+              <div key={step.key} className="flex flex-col items-center flex-1 relative">
+                {/* Step Circle */}
+                <div className={`
+                  w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300 relative z-10
+                  ${isCompleted 
+                    ? 'bg-green-100 text-green-600' 
+                    : isCurrentStep 
+                      ? 'bg-orange-100 text-orange-500' 
+                      : 'bg-gray-100 text-gray-400'
+                  }
+                `}>
+                  {isCompleted ? (
+                    <CheckCircleIcon className="w-5 h-5" />
+                  ) : isCurrentStep ? (
+                    <Loader2Icon className="w-4 h-4 animate-spin" />
                   ) : (
-                    <AlertCircleIcon className="size-4 text-muted-foreground" />
+                    <CircleIcon className="w-4 h-4" />
                   )}
-                  <span className="text-sm text-muted-foreground">
-                    {isGenerating
-                      ? t("generating")
-                      : personaAgentCompleted
-                        ? t("completed")
-                        : t("waiting")}
-                  </span>
                 </div>
-              </div>
-              <div className="w-full bg-muted rounded-full h-2">
-                <div
-                  className="h-full bg-primary transition-all duration-500 rounded-full"
-                  style={{
-                    width: `${isGenerating ? 50 : personaAgentCompleted ? 100 : 0}%`,
-                  }}
-                />
-              </div>
-              {isGenerating && (
-                <div className="text-xs text-foreground bg-muted px-3 py-1 rounded inline-block">
-                  {t("generatingPersona")}
+                
+                {/* Step Title */}
+                <div className={`
+                  mt-3 text-sm font-medium text-center px-1
+                  ${isCompleted || isCurrentStep ? 'text-foreground' : 'text-muted-foreground'}
+                `}>
+                  {step.title}
                 </div>
-              )}
-            </div>
-          </div>
-
-          {/* 分析状态 */}
-          <div className="p-4 bg-background rounded-lg border">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded bg-muted flex items-center justify-center">
-                    <BarChart3Icon className="size-4 text-muted-foreground" />
-                  </div>
-                  <span className="font-medium">{t("completenessAnalysis")}</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  {isAnalyzing ? (
-                    <Loader2Icon className="size-4 text-muted-foreground animate-spin" />
-                  ) : analysisCompleted ? (
-                    <CheckCircleIcon className="size-4 text-green-600" />
-                  ) : (
-                    <AlertCircleIcon className="size-4 text-muted-foreground" />
-                  )}
-                  <span className="text-sm text-muted-foreground">
-                    {isAnalyzing
-                      ? t("analyzing")
-                      : analysisCompleted
-                        ? t("completed")
-                        : t("waiting")}
-                  </span>
-                </div>
-              </div>
-              <div className="w-full bg-muted rounded-full h-2">
-                <div
-                  className="h-full bg-primary transition-all duration-500 rounded-full"
-                  style={{
-                    width: `${isAnalyzing ? 50 : analysisCompleted ? 100 : 0}%`,
-                  }}
-                />
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {analysisCompleted && (
-                  <div className="text-xs text-foreground bg-muted px-3 py-1 rounded flex items-center gap-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full" />
-                    {t("dimensionAnalysisComplete")}
-                    {Math.round(((analysis?.totalScore ?? 0) / (7 * 3)) * 100)}%
-                  </div>
-                )}
-                {supplementaryQuestions && (
-                  <div className="text-xs text-foreground bg-muted px-3 py-1 rounded flex items-center gap-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full" />
-                    {t("supplementaryQuestionsGenerated")}{" "}
-                    {supplementaryQuestions.questions?.length ?? 0} {t("supplementaryQuestions")}
+                
+                {/* Step Details */}
+                {stepDetails && (
+                  <div className="mt-2 text-xs text-muted-foreground text-center px-2">
+                    {stepDetails}
                   </div>
                 )}
               </div>
-              {isAnalyzing && (
-                <div className="text-xs text-foreground bg-muted px-3 py-1 rounded inline-block">
-                  {t("analyzingCompleteness")}
+            );
+          })}
+        </div>
+        
+        {/* Connection Lines */}
+        <div className="absolute top-4 left-0 right-0 flex items-center px-8">
+          <div className="flex-1 flex">
+            {steps.slice(0, -1).map((step, index) => {
+              const isCompleted = step.completed;
+              return (
+                <div key={`line-${index}`} className="flex-1">
+                  <div className={`
+                    h-0.5 transition-all duration-300 mx-2
+                    ${isCompleted ? 'bg-green-400' : 'bg-gray-200'}
+                  `} />
                 </div>
-              )}
-            </div>
+              );
+            })}
           </div>
         </div>
-        {/* 显示生成的人格画像 */}
-        {personas && personas.length > 0 && (
-          <div className="space-y-3">
-            <h3 className="font-medium">{t("generatedPersonas")}</h3>
-            <div className="grid gap-3">
-              {personas.map((persona) => (
-                <div key={persona.id} className="p-3 bg-muted rounded border">
-                  <div className="font-medium">{persona.name}</div>
-                  <div className="text-sm text-muted-foreground mt-1">{persona.source}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
+
+
     </div>
   );
 }

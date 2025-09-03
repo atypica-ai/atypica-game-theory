@@ -1,6 +1,7 @@
 "use client";
 import { processPersonaImportAction } from "@/app/(persona)/actions";
 import { PersonaImportAnalysis } from "@/app/(persona)/types";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ChatMessageAttachment, Persona, PersonaImport, PersonaImportExtra } from "@/prisma/client";
@@ -32,11 +33,8 @@ export function PersonaImportView({
   const isProcessing = Boolean(personaImport.extra?.processing);
   const hasError = Boolean(personaImport.extra?.error);
 
-  // Check individual completion status
-  const personaAgentCompleted = Boolean(personas.length);
-  const analysisCompleted = Boolean(
-    personaImport.analysis?.analysis && personaImport.analysis?.supplementaryQuestions,
-  );
+  // Get processing status for three-stage workflow
+  const processingStatus = personaImport.extra?.processing ?? false;
 
   // Parse analysis data
   const analysis = personaImport.analysis?.analysis;
@@ -59,14 +57,16 @@ export function PersonaImportView({
     }
   }, [isProcessing, hasError]);
 
+  // Polling mechanism - refresh every 15 seconds during processing
+  useEffect(() => {
+    if (!isProcessing) return;
+    const interval = setInterval(() => {
+      router.refresh();
+    }, 10000); // Poll every 10 seconds
+    return () => clearInterval(interval);
+  }, [isProcessing, router]);
+
   const handleReAnalyze = useCallback(async () => {
-    if (isProcessing) {
-      toast.error(t("reanalyzing"));
-      return;
-    }
-    if (!confirm(t("confirmReanalyze"))) {
-      return;
-    }
     try {
       const result = await processPersonaImportAction(personaImport.id);
       if (!result.success) throw result;
@@ -78,7 +78,7 @@ export function PersonaImportView({
     } finally {
       router.refresh();
     }
-  }, [isProcessing, personaImport.id, t, router]);
+  }, [personaImport.id, t, router]);
 
   const handleViewFile = () => {
     const attachment = attachments[0];
@@ -134,49 +134,62 @@ export function PersonaImportView({
       </div>
 
       <div className="space-y-6">
-        {/* Processing Status */}
-        <ProcessingStatus
-          isGenerating={!personaAgentCompleted || isProcessing}
-          isAnalyzing={!analysisCompleted || isProcessing}
-          personas={personas}
-          personaImportAnalysis={personaImport.analysis}
-        />
-
-        {/* File Information and Re-analyze */}
+        {/* Combined File Information and Processing Status */}
         <div className="bg-card text-card-foreground rounded-lg border p-3 sm:p-6">
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <h2 className="text-xl font-semibold flex items-center gap-3">
-                <div className="w-6 h-6 rounded bg-primary text-primary-foreground flex items-center justify-center">
-                  <FileTextIcon className="size-3" />
+          <div className="space-y-6">
+            {/* File Information Header */}
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <h2 className="text-xl font-semibold flex items-center gap-3">
+                  <div className="w-6 h-6 rounded bg-primary text-primary-foreground flex items-center justify-center">
+                    <FileTextIcon className="size-3" />
+                  </div>
+                  {t("fileInfo")}
+                </h2>
+                <p className="text-muted-foreground ml-9 text-sm">{t("fileInfoDescription")}</p>
+              </div>
+
+              <div className="flex flex-wrap items-center justify-between p-4 bg-muted rounded-lg border">
+                <div className="flex items-center gap-3">
+                  <FileTextIcon className="shrink-0 size-4 text-muted-foreground" />
+                  <div>
+                    <p className="font-medium">{fileName}</p>
+                    <p className="text-sm text-muted-foreground">PDF</p>
+                  </div>
                 </div>
-                {t("fileInfo")}
-              </h2>
-              <p className="text-muted-foreground ml-9 text-sm">{t("fileInfoDescription")}</p>
+                <div className="flex items-center gap-3">
+                  <Button variant="outline" size="sm" onClick={handleViewFile}>
+                    {t("viewFile")}
+                  </Button>
+                  <ConfirmDialog
+                    title={t("reanalyze")}
+                    description={t("confirmReanalyze")}
+                    onConfirm={handleReAnalyze}
+                  >
+                    <Button variant="outline" size="sm" disabled={isProcessing}>
+                      <RefreshCwIcon className={cn("size-4", isProcessing ? "animate-spin" : "")} />
+                      {isProcessing ? t("reanalyzing") : t("reanalyze")}
+                    </Button>
+                  </ConfirmDialog>
+                </div>
+              </div>
             </div>
 
-            <div className="flex flex-wrap items-center justify-between p-4 bg-muted rounded-lg border">
-              <div className="flex items-center gap-3">
-                <FileTextIcon className="shrink-0 size-4 text-muted-foreground" />
-                <div>
-                  <p className="font-medium">{fileName}</p>
-                  <p className="text-sm text-muted-foreground">PDF</p>
-                </div>
+            {/* Processing Status */}
+            <div className="space-y-3">
+              <div className="space-y-2">
+                <h3 className="text-lg font-medium">{t("processingProgress")}</h3>
+                <p className="text-muted-foreground text-sm">
+                  {t("processingProgressDescription")}
+                </p>
               </div>
-              <div className="flex items-center gap-3">
-                <Button variant="outline" size="sm" onClick={handleViewFile}>
-                  {t("viewFile")}
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleReAnalyze}
-                  disabled={isProcessing}
-                >
-                  <RefreshCwIcon className={cn("size-4", isProcessing ? "animate-spin" : "")} />
-                  {isProcessing ? t("reanalyzing") : t("reanalyze")}
-                </Button>
-              </div>
+
+              <ProcessingStatus
+                processing={processingStatus}
+                personas={personas}
+                personaImportAnalysis={personaImport.analysis}
+                context={personaImport.context}
+              />
             </div>
           </div>
         </div>

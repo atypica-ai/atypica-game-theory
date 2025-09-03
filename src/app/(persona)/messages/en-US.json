@@ -141,7 +141,12 @@
       "confirmReanalyze": "Are you sure you want to re-analyze? This will overwrite existing analysis results.",
       "reanalyzeStarted": "Re-analysis started, please wait...",
       "reanalyzeFailed": "Re-analysis failed, please try again",
-      "file": "File"
+      "file": "File",
+      "processingProgress": "Processing Progress",
+      "processingProgressDescription": "View current processing status and completion progress",
+      "parseAttachment": "Parse Attachment",
+      "analyzeCompleteness": "Analyze Completeness",
+      "generatePersona": "Generate Persona"
     },
     "analysisResult": {
       "title": "Completeness Analysis Results",

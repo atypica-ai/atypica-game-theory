@@ -157,7 +157,32 @@ async function attachmentToContext(
   const attachment = personaImport.attachments[0];
   const { name: fileName, mimeType } = attachment;
   const dataUrl = await attachmentToDataUrl(attachment);
-  const parsedContext = await new Promise<string>((resolve, reject) => {
+
+  let parsedContext = "";
+  const throttleSaveParsedContext = (() => {
+    let timerId: NodeJS.Timeout | null = null;
+    return async () => {
+      if (!timerId) {
+        timerId = setTimeout(() => {
+          timerId = null;
+          saveNow();
+        }, 10000);
+      }
+      async function saveNow() {
+        try {
+          await prisma.personaImport.update({
+            where: { id: personaImport.id },
+            data: { context: parsedContext },
+          });
+          logger.info("Parsed context saved successfully");
+        } catch (error) {
+          logger.error(`Error saving parsed context: ${(error as Error).message}`);
+        }
+      }
+    };
+  })();
+
+  await new Promise((resolve, reject) => {
     const response = streamText({
       model: llm("gemini-2.5-flash"),
       providerOptions: providerOptions,
@@ -173,7 +198,9 @@ async function attachmentToContext(
       maxSteps: 1,
       onChunk: async ({ chunk }) => {
         if (chunk.type === "text-delta") {
-          console.log(chunk.textDelta);
+          parsedContext += chunk.textDelta.toString();
+          await throttleSaveParsedContext();
+          // logger.info(`Parsed context updated: ${parsedContext.length} characters`);
         }
       },
       onStepFinish: async (step) => {
@@ -195,7 +222,8 @@ async function attachmentToContext(
       },
       onFinish: async (result) => {
         logger.info("attachmentToContext completed");
-        resolve(result.text);
+        resolve(null);
+        parsedContext = result.text;
       },
       onError: ({ error }) => {
         logger.error(`attachmentToContext error: ${(error as Error).message}`);
