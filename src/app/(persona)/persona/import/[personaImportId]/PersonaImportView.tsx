@@ -108,6 +108,18 @@ export function PersonaImportView({
           <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 max-w-2xl mx-auto">
             <p className="text-destructive text-sm">{errorMessage}</p>
           </div>
+          <div className="flex justify-center mt-6">
+            <ConfirmDialog
+              title={t("reanalyze")}
+              description={t("confirmReanalyze")}
+              onConfirm={handleReAnalyze}
+            >
+              <Button variant="outline" disabled={isProcessing}>
+                <RefreshCwIcon className={cn("size-4 mr-2", isProcessing ? "animate-spin" : "")} />
+                {isProcessing ? t("reanalyzing") : t("reanalyze")}
+              </Button>
+            </ConfirmDialog>
+          </div>
         </div>
       </div>
     );

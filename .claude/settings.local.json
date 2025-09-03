@@ -5,7 +5,9 @@
       "Bash(sed:*)",
       "Bash(pnpm lint:*)",
       "Bash(git add:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(git diff:*)",
+      "Bash(git show:*)"
     ],
     "deny": [],
     "ask": []

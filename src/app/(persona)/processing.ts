@@ -29,18 +29,21 @@ export async function processPersonaImport(personaImportId: number) {
     })
     .then(convertType);
 
+  const shouldResetContext =
+    !personaImport.context || !!personaImport.extra.error || !!personaImport.extra.processing;
+
   personaImport = await prisma.personaImport
     .update({
       where: { id: personaImportId },
       data: {
-        context: "",
+        ...(shouldResetContext ? { context: "" } : {}),
         analysis: {},
         extra: {
           ...personaImport.extra,
           error: undefined,
           processing: {
             startsAt: Date.now(),
-            parseAttachment: false,
+            parseAttachment: shouldResetContext ? false : true,
             buildPersonaPrompt: false,
             analyzeCompleteness: false,
           },
@@ -50,19 +53,21 @@ export async function processPersonaImport(personaImportId: number) {
     .then(convertType);
 
   try {
-    const context = await attachmentToContext(personaImport);
-    personaImport = await prisma.personaImport
-      .update({
-        where: { id: personaImport.id },
-        data: {
-          context,
-          extra: {
-            ...personaImport.extra,
-            processing: { ...personaImport.extra.processing, parseAttachment: true },
+    if (shouldResetContext) {
+      const context = await attachmentToContext(personaImport);
+      personaImport = await prisma.personaImport
+        .update({
+          where: { id: personaImport.id },
+          data: {
+            context,
+            extra: {
+              ...personaImport.extra,
+              processing: { ...personaImport.extra.processing, parseAttachment: true },
+            },
           },
-        },
-      })
-      .then(convertType);
+        })
+        .then(convertType);
+    }
 
     const analysis = await analyzeInterviewCompleteness(personaImport);
     personaImport = await prisma.personaImport
@@ -257,18 +262,25 @@ async function buildPersonaAgentPrompt(
     logger: logger,
   });
 
-  const attachment = personaImport.attachments[0];
-  const { name: fileName, mimeType } = attachment;
-  const dataUrl = await attachmentToDataUrl(attachment);
   const personaMessages: CoreMessage[] = [
     {
       role: "user",
       content: [
-        { type: "file", filename: fileName, data: dataUrl, mimeType },
+        {
+          type: "text",
+          text:
+            locale === "zh-CN"
+              ? "以下是经过整理和优化的访谈内容，请基于此内容生成AI人设：\n\n"
+              : "Below is the organized and optimized interview content. Please generate AI persona based on this content:\n\n",
+        },
+        {
+          type: "text",
+          text: personaImport.context,
+        },
         followUpChatContent
           ? {
               type: "text",
-              text: `\n# follow-up interview with the user\n\n${followUpChatContent}\n`,
+              text: `\n\n${locale === "zh-CN" ? "# 与用户的补充访谈" : "# Follow-up interview with the user"}\n\n${followUpChatContent}\n`,
             }
           : { type: "text", text: "[READY]" },
       ],
@@ -344,19 +356,25 @@ async function analyzeInterviewCompleteness(
     logger: logger,
   });
 
-  const attachment = personaImport.attachments[0];
-  const { name: fileName, mimeType } = attachment;
-  const dataUrl = await attachmentToDataUrl(attachment);
-
   const messages: CoreMessage[] = [
     {
       role: "user",
       content: [
-        { type: "file", filename: fileName, data: dataUrl, mimeType },
+        {
+          type: "text",
+          text:
+            locale === "zh-CN"
+              ? "以下是经过整理和优化的访谈内容，请基于此内容进行分析：\n\n"
+              : "Below is the organized and optimized interview content. Please analyze based on this content:\n\n",
+        },
+        {
+          type: "text",
+          text: personaImport.context,
+        },
         followUpChatContent
           ? {
               type: "text",
-              text: `\n# follow-up interview with the user\n\n${followUpChatContent}\n`,
+              text: `\n\n${locale === "zh-CN" ? "# 与用户的补充访谈" : "# Follow-up interview with the user"}\n\n${followUpChatContent}\n`,
             }
           : { type: "text", text: "[READY]" },
       ],
