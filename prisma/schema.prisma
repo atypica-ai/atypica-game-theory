@@ -463,6 +463,7 @@ model PersonaImport {
   userId          Int
   user            User      @relation(fields: [userId], references: [id])
   attachments     Json      @default("[]")
+  context         String    @default("") @db.Text // parse attachments as context
   analysis        Json      @default("{}")
   extra           Json      @default("{}")
   extraUserChatId Int?      @unique // interview UserChat for follow up questions

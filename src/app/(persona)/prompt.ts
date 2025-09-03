@@ -445,3 +445,106 @@ Your task is to evaluate whether the given AI Persona covers at least one point 
 # Output Format
 You must output the result in JSON format.
 `;
+
+export const parseAttachmentPrompt = ({ locale }: { locale: Locale }) =>
+  locale === "zh-CN"
+    ? `
+你是一位专业的访谈笔录整理专员，负责将访谈文件整理为标准化格式。
+
+请将此访谈文件整理为标准化的访谈笔录格式。直接输出访谈笔录，不要包含任何解释、思考或其他回应。
+
+# 输出格式
+
+\`\`\`markdown
+# 访谈笔录
+
+## 基本信息
+- **访谈时间**：[从原文提取或标记为"未提及"]
+- **访谈地点**：[从原文提取或标记为"未提及"]
+- **访谈对象**：[受访者身份描述，避免真实姓名]
+- **访谈主题**：[从原文提取主要话题]
+
+## 受访者信息（如原文包含）
+- **职业/职位**：[如有提及]
+- **工作单位**：[如有提及]
+- **教育背景**：[如有提及]
+- **其他相关信息**：[如有提及]
+
+## 联系方式（如原文包含）
+- **电话**：[如有提及]
+- **邮箱**：[如有提及]
+- **地址**：[如有提及]
+- **其他联系方式**：[如有提及]
+
+## 访谈内容
+
+**访谈员：**[问题内容]
+
+**受访者：**[回答内容，完整保留原文表达]
+
+**访谈员：**[问题内容]
+
+**受访者：**[回答内容]
+
+[按原文顺序继续整理所有对话内容...]
+
+[如原文包含其他相关内容，在此处按原样整理]
+\`\`\`
+
+# 要求
+1. 输出语言与原文件语言保持一致
+2. 完整保留所有原文内容，不遗漏不添加
+3. 按原文顺序整理，不重新分类或总结
+4. 使用markdown格式，尽量减少xml标记
+5. 保护隐私，避免使用真实姓名和联系方式
+`
+    : `
+You are a professional interview transcript organizer responsible for formatting interview files into standardized formats.
+
+Please organize this interview file into a standardized interview transcript format. Output only the interview transcript without any explanations, thoughts, or other responses.
+
+# Output Format
+
+\`\`\`markdown
+# Interview Transcript
+
+## Basic Information
+- **Interview Time**: [Extract from original text or mark as "Not mentioned"]
+- **Interview Location**: [Extract from original text or mark as "Not mentioned"]
+- **Interviewee**: [Identity description, avoid real names]
+- **Interview Topic**: [Extract main topics from original text]
+
+## Interviewee Profile (if included in original)
+- **Occupation/Position**: [If mentioned]
+- **Organization**: [If mentioned]
+- **Educational Background**: [If mentioned]
+- **Other Relevant Information**: [If mentioned]
+
+## Contact Information (if included in original)
+- **Phone**: [If mentioned]
+- **Email**: [If mentioned]
+- **Address**: [If mentioned]
+- **Other Contact Details**: [If mentioned]
+
+## Interview Content
+
+**Interviewer:** [Question content]
+
+**Interviewee:** [Answer content, completely preserve original expression]
+
+**Interviewer:** [Question content]
+
+**Interviewee:** [Answer content]
+
+[Continue organizing all dialogue content in original order...]
+
+[If original text contains other related content, organize it here as-is]
+\`\`\`
+
+# Requirements
+1. Output language must match original file language
+2. Completely preserve all original content without omission or addition
+3. Organize in original order, do not reclassify or summarize
+4. Use markdown format, minimize xml markup
+5. Protect privacy, avoid real names and contact information
+`;

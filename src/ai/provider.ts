@@ -119,6 +119,7 @@ export type LLMModelName =
   | "gpt-5-mini"
   | "gpt-5-nano"
   | "o3-mini"
+  | "claude-3-5-haiku"
   | "claude-3-7-sonnet"
   | "claude-sonnet-4"
   | "gemini-2.5-flash"
@@ -201,6 +202,8 @@ export function llm(modelName: LLMModelName, options?: any) {
       return azure("gpt-4.1-nano", options);
     case "o3-mini":
       return azure("o3-mini", options);
+    case "claude-3-5-haiku":
+      return bedrock("us.anthropic.claude-3-5-haiku-20241022-v1:0", options);
     case "claude-3-7-sonnet":
       return bedrock("us.anthropic.claude-3-7-sonnet-20250219-v1:0", options);
     // case "claude-3-7-sonnet-beta":

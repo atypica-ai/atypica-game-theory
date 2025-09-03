@@ -12,20 +12,92 @@ import { ChatMessageAttachment, PersonaImport, PersonaImportExtra } from "@/pris
 import { prisma } from "@/prisma/prisma";
 import { CoreMessage, generateObject, streamText } from "ai";
 import { getLocale } from "next-intl/server";
-import { personaAnalysisPrompt, personaGenerationPrompt } from "./prompt";
+import { z } from "zod";
+import { parseAttachmentPrompt, personaAnalysisPrompt, personaGenerationPrompt } from "./prompt";
 import { analysisSchema } from "./types";
 
 export async function processPersonaImport(personaImportId: number) {
-  const personaImport = await prisma.personaImport
+  const convertType = ({ attachments, extra, ...personaImport }: PersonaImport) => ({
+    ...personaImport,
+    attachments: attachments as unknown as ChatMessageAttachment[],
+    extra: extra as unknown as PersonaImportExtra,
+  });
+
+  let personaImport = await prisma.personaImport
     .findUniqueOrThrow({
       where: { id: personaImportId },
     })
-    .then(({ attachments, extra, ...personaImport }) => ({
-      ...personaImport,
-      attachments: attachments as unknown as ChatMessageAttachment[],
-      extra: extra as unknown as PersonaImportExtra,
-    }));
+    .then(convertType);
 
+  personaImport = await prisma.personaImport
+    .update({
+      where: { id: personaImportId },
+      data: {
+        context: "",
+        analysis: {},
+        extra: {
+          ...personaImport.extra,
+          error: undefined,
+          processing: {
+            startsAt: Date.now(),
+            parseAttachment: false,
+            buildPersonaPrompt: false,
+            analyzeCompleteness: false,
+          },
+        } as PersonaImportExtra,
+      },
+    })
+    .then(convertType);
+
+  try {
+    const context = await attachmentToContext(personaImport);
+    personaImport = await prisma.personaImport
+      .update({
+        where: { id: personaImport.id },
+        data: {
+          context,
+          extra: {
+            ...personaImport.extra,
+            processing: { ...personaImport.extra.processing, parseAttachment: true },
+          },
+        },
+      })
+      .then(convertType);
+
+    const analysis = await analyzeInterviewCompleteness(personaImport);
+    personaImport = await prisma.personaImport
+      .update({
+        where: { id: personaImport.id },
+        data: {
+          analysis,
+          extra: {
+            ...personaImport.extra,
+            processing: { ...personaImport.extra.processing, analyzeCompleteness: true },
+          },
+        },
+      })
+      .then(convertType);
+
+    await buildPersonaAgentPrompt(personaImport);
+    personaImport = await prisma.personaImport
+      .update({
+        where: { id: personaImport.id },
+        data: {
+          extra: { ...personaImport.extra, error: undefined, processing: false },
+        },
+      })
+      .then(convertType);
+  } catch (error) {
+    await prisma.personaImport.update({
+      where: { id: personaImportId },
+      data: {
+        extra: { ...personaImport.extra, error: (error as Error).message, processing: false },
+      },
+    });
+  }
+}
+
+async function formatFollowUpChatContent(personaImport: PersonaImport) {
   const followUpChatContent = personaImport.extraUserChatId
     ? (
         await prisma.chatMessage.findMany({
@@ -38,37 +110,11 @@ export async function processPersonaImport(personaImportId: number) {
         )
         .join("\n")
     : undefined;
+  return followUpChatContent;
+}
 
-  const extra = {
-    ...personaImport.extra,
-    error: undefined,
-    processing: true,
-  };
-
-  await prisma.personaImport.update({
-    where: { id: personaImportId },
-    data: {
-      analysis: {},
-      extra: extra,
-    },
-  });
-
-  await Promise.all([
-    buildPersonaAgentPrompt(personaImport, followUpChatContent),
-    analyzeInterviewCompleteness(personaImport, followUpChatContent),
-  ])
-    .catch(async (error) => {
-      await prisma.personaImport.update({
-        where: { id: personaImportId },
-        data: { extra: { ...extra, error: error.message, processing: false } },
-      });
-    })
-    .finally(async () => {
-      await prisma.personaImport.update({
-        where: { id: personaImportId },
-        data: { extra: { ...extra, processing: false } },
-      });
-    });
+async function ensureBalanceEnough() {
+  // TODO
 }
 
 async function attachmentToDataUrl(attachment: ChatMessageAttachment) {
@@ -89,12 +135,13 @@ async function attachmentToDataUrl(attachment: ChatMessageAttachment) {
   return dataUrl;
 }
 
-async function buildPersonaAgentPrompt(
+async function attachmentToContext(
   personaImport: Omit<PersonaImport, "attachments"> & {
     attachments: ChatMessageAttachment[];
   },
-  followUpChatContent?: string,
-): Promise<void> {
+): Promise<string> {
+  const followUpChatContent = await formatFollowUpChatContent(personaImport);
+
   const locale = await getLocale();
   const logger = rootLogger.child({
     personaImportId: personaImport.id,
@@ -107,25 +154,99 @@ async function buildPersonaAgentPrompt(
     logger: logger,
   });
 
-  try {
-    const attachment = personaImport.attachments[0];
-    const { name: fileName, mimeType } = attachment;
-    const dataUrl = await attachmentToDataUrl(attachment);
-    const personaMessages: CoreMessage[] = [
-      {
-        role: "user",
-        content: [
-          { type: "file", filename: fileName, data: dataUrl, mimeType },
-          followUpChatContent
-            ? {
-                type: "text",
-                text: `\n# follow-up interview with the user\n\n${followUpChatContent}\n`,
-              }
-            : { type: "text", text: "[READY]" },
-        ],
+  const attachment = personaImport.attachments[0];
+  const { name: fileName, mimeType } = attachment;
+  const dataUrl = await attachmentToDataUrl(attachment);
+  const parsedContext = await new Promise<string>((resolve, reject) => {
+    const response = streamText({
+      model: llm("gemini-2.5-flash"),
+      providerOptions: providerOptions,
+      system: parseAttachmentPrompt({
+        locale,
+      }),
+      messages: [
+        {
+          role: "user",
+          content: [{ type: "file", filename: fileName, data: dataUrl, mimeType }],
+        },
+      ],
+      maxSteps: 1,
+      onChunk: async ({ chunk }) => {
+        if (chunk.type === "text-delta") {
+          console.log(chunk.textDelta);
+        }
       },
-    ];
+      onStepFinish: async (step) => {
+        const { usage, stepType } = step;
+        logger.info({
+          msg: "attachmentToContext streamText onStepFinish",
+          stepType,
+          usage,
+        });
+        if (usage.totalTokens > 0) {
+          const tokens = usage.totalTokens;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const extra: any = {
+            reportedBy: "parse attachment",
+            usage,
+          };
+          await statReport("tokens", tokens, extra);
+        }
+      },
+      onFinish: async (result) => {
+        logger.info("attachmentToContext completed");
+        resolve(result.text);
+      },
+      onError: ({ error }) => {
+        logger.error(`attachmentToContext error: ${(error as Error).message}`);
+        reject(error);
+      },
+    });
 
+    response.consumeStream().catch((error) => reject(error));
+  });
+
+  return parsedContext;
+}
+
+async function buildPersonaAgentPrompt(
+  personaImport: Omit<PersonaImport, "attachments"> & {
+    attachments: ChatMessageAttachment[];
+  },
+): Promise<void> {
+  const followUpChatContent = await formatFollowUpChatContent(personaImport);
+
+  const locale = await getLocale();
+  const logger = rootLogger.child({
+    personaImportId: personaImport.id,
+    followUpChat: Boolean(followUpChatContent),
+  });
+
+  const { statReport } = initPersonaImportStatReporter({
+    userId: personaImport.userId,
+    personaImportId: personaImport.id,
+    logger: logger,
+  });
+
+  const attachment = personaImport.attachments[0];
+  const { name: fileName, mimeType } = attachment;
+  const dataUrl = await attachmentToDataUrl(attachment);
+  const personaMessages: CoreMessage[] = [
+    {
+      role: "user",
+      content: [
+        { type: "file", filename: fileName, data: dataUrl, mimeType },
+        followUpChatContent
+          ? {
+              type: "text",
+              text: `\n# follow-up interview with the user\n\n${followUpChatContent}\n`,
+            }
+          : { type: "text", text: "[READY]" },
+      ],
+    },
+  ];
+
+  const response = await new Promise((resolve, reject) => {
     const response = streamText({
       model: llm("claude-3-7-sonnet"),
       providerOptions: providerOptions,
@@ -161,26 +282,27 @@ async function buildPersonaAgentPrompt(
           await statReport("tokens", tokens, extra);
         }
       },
+      onFinish: async () => {
+        logger.info("buildPersonaAgentPrompt completed");
+        resolve(null);
+      },
       onError: ({ error }) => {
-        logger.error((error as Error).message);
+        logger.error(`buildPersonaAgentPrompt error: ${(error as Error).message}`);
+        reject(error);
       },
     });
 
-    await response.consumeStream();
-
-    logger.info("buildPersonaAgentPrompt completed");
-  } catch (error) {
-    logger.error(`buildPersonaAgentPrompt error: ${(error as Error).message}`);
-    throw error;
-  }
+    response.consumeStream().catch((error) => reject(error));
+  });
 }
 
 async function analyzeInterviewCompleteness(
   personaImport: Omit<PersonaImport, "attachments"> & {
     attachments: ChatMessageAttachment[];
   },
-  followUpChatContent?: string,
-): Promise<void> {
+): Promise<z.infer<typeof analysisSchema>> {
+  const followUpChatContent = await formatFollowUpChatContent(personaImport);
+
   const locale = await getLocale();
   const logger = rootLogger.child({
     personaImportId: personaImport.id,
@@ -193,57 +315,53 @@ async function analyzeInterviewCompleteness(
     logger: logger,
   });
 
+  const attachment = personaImport.attachments[0];
+  const { name: fileName, mimeType } = attachment;
+  const dataUrl = await attachmentToDataUrl(attachment);
+
+  const messages: CoreMessage[] = [
+    {
+      role: "user",
+      content: [
+        { type: "file", filename: fileName, data: dataUrl, mimeType },
+        followUpChatContent
+          ? {
+              type: "text",
+              text: `\n# follow-up interview with the user\n\n${followUpChatContent}\n`,
+            }
+          : { type: "text", text: "[READY]" },
+      ],
+    },
+  ];
+
+  let analysisResult: z.infer<typeof analysisSchema>;
+
   try {
-    const attachment = personaImport.attachments[0];
-    const { name: fileName, mimeType } = attachment;
-    const dataUrl = await attachmentToDataUrl(attachment);
-
-    const messages: CoreMessage[] = [
-      {
-        role: "user",
-        content: [
-          { type: "file", filename: fileName, data: dataUrl, mimeType },
-          followUpChatContent
-            ? {
-                type: "text",
-                text: `\n# follow-up interview with the user\n\n${followUpChatContent}\n`,
-              }
-            : { type: "text", text: "[READY]" },
-        ],
-      },
-    ];
-
     const result = await generateObject({
       model: llm("gemini-2.5-pro"),
       system: personaAnalysisPrompt({ locale }),
       schema: analysisSchema,
       messages: messages,
     });
-
-    // Update PersonaImport with the analysis results
-    await prisma.personaImport.update({
-      where: { id: personaImport.id },
-      data: { analysis: result.object },
+    const { usage } = result;
+    logger.info({
+      msg: "analyzeInterviewCompleteness generateObject finish",
+      usage,
     });
-
-    {
-      const { usage } = result;
-      logger.info({
-        msg: "analyzeInterviewCompleteness generateObject finish",
+    if (usage.totalTokens > 0) {
+      const tokens = usage.totalTokens;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const extra: any = {
+        reportedBy: "analyze interview completeness",
         usage,
-      });
-      if (usage.totalTokens > 0) {
-        const tokens = usage.totalTokens;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const extra: any = {
-          reportedBy: "analyze interview completeness",
-          usage,
-        };
-        await statReport("tokens", tokens, extra);
-      }
+      };
+      await statReport("tokens", tokens, extra);
     }
+    analysisResult = result.object;
   } catch (error) {
     logger.error(`analyzeInterviewCompleteness error: ${(error as Error).message}`);
     throw error;
   }
+
+  return analysisResult;
 }

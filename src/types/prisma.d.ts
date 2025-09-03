@@ -97,7 +97,15 @@ declare module "@/prisma/client" {
 
   export type PersonaImportExtra = Partial<{
     error: string;
-    processing: boolean;
+    // processing: boolean;
+    processing:
+      | {
+          startsAt: number; // timestamp, typeof Date.now()
+          parseAttachment: boolean;
+          buildPersonaPrompt: boolean;
+          analyzeCompleteness: boolean;
+        }
+      | false;
   }>;
 
   // 只覆盖这个不够，findUnique 返回的类型还是原来的
