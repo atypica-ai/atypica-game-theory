@@ -70,19 +70,16 @@ export function PersonaSummary({ personas }: { personas: Persona[] }) {
   };
 
   return (
-    <div className="bg-card text-card-foreground rounded-lg border p-3 sm:p-6">
-      <div className="space-y-3">
-        <div className="space-y-2">
-          <h2 className="text-xl font-semibold flex items-center gap-3">
-            <div className="w-6 h-6 rounded bg-primary text-primary-foreground flex items-center justify-center">
-              <BrainIcon className="size-3" />
-            </div>
-            {t("title")}
-          </h2>
-          <p className="text-muted-foreground ml-9 text-sm">{t("description")}</p>
-        </div>
+    <div className="bg-card rounded-2xl p-6 shadow-sm border border-border/20">
+      <div className="space-y-4">
+        <h2 className="text-lg font-medium flex items-center gap-2">
+          <div className="w-5 h-5 rounded-md bg-primary text-primary-foreground flex items-center justify-center">
+            <BrainIcon className="size-3" />
+          </div>
+          {t("title")}
+        </h2>
 
-        <div className="grid gap-3">
+        <div className="grid gap-4">
           {personas.map((persona) => {
             const personaChatHistory = personaChatStats[persona.id] || [];
             const hasHistory =
@@ -90,7 +87,7 @@ export function PersonaSummary({ personas }: { personas: Persona[] }) {
               personaChatHistory.some((chat) => chat.messageCount > 0);
 
             return (
-              <div key={persona.id} className="p-4 bg-muted/50 rounded-lg border">
+              <div key={persona.id} className="p-4 bg-muted/50 rounded-lg border border-border/30">
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <div>
@@ -118,7 +115,7 @@ export function PersonaSummary({ personas }: { personas: Persona[] }) {
                     {(persona.tags as string[]).map((tag, tagIndex) => (
                       <span
                         key={tagIndex}
-                        className="px-2 py-1 bg-background text-foreground text-xs rounded border"
+                        className="px-2 py-1 bg-background text-foreground text-xs rounded"
                       >
                         {tag}
                       </span>
@@ -126,7 +123,7 @@ export function PersonaSummary({ personas }: { personas: Persona[] }) {
                   </div>
                 </div>
                 <div className="mt-2">
-                  <div className="border p-2 rounded-sm text-xs bg-background">
+                  <div className="p-2 rounded-sm text-xs bg-background border border-border/20">
                     <Markdown>{extractSummaryFromPrompt(persona.prompt)}</Markdown>
                   </div>
                 </div>

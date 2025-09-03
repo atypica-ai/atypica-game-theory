@@ -85,73 +85,67 @@ export function FollowUpChatList({ personaImportId }: { personaImportId: number 
   }
 
   return (
-    <div className="bg-card text-card-foreground rounded-lg border p-3 sm:p-6">
-      <div className="space-y-3">
-        <div className="space-y-2">
-          <h2 className="text-xl font-semibold flex items-center gap-3">
-            <div className="w-6 h-6 rounded bg-primary text-primary-foreground flex items-center justify-center">
-              <MessageSquareIcon className="size-3" />
-            </div>
-            {t("title")}
-          </h2>
-          <p className="text-muted-foreground ml-9 text-sm">{t("description")}</p>
+    <div className="bg-card rounded-2xl p-6 shadow-sm border border-border/20 space-y-4">
+      <h2 className="text-lg font-medium flex items-center gap-2">
+        <div className="w-5 h-5 rounded-md bg-primary text-primary-foreground flex items-center justify-center">
+          <MessageSquareIcon className="size-3" />
         </div>
+        {t("title")}
+      </h2>
 
-        <div className="flex items-center justify-between p-4 bg-muted rounded-lg border">
-          <div className="flex items-center gap-3">
-            <MessageSquareIcon className="size-4 text-muted-foreground" />
-            <div>
-              <p className="font-medium">{t("followUpConversation")}</p>
-              <p className="text-sm text-muted-foreground">{t("viewCompleteRecord")}</p>
-            </div>
+      <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg border border-border/20">
+        <div className="flex items-center gap-3">
+          <MessageSquareIcon className="size-4 text-muted-foreground" />
+          <div>
+            <p className="font-medium">{t("followUpConversation")}</p>
           </div>
-          <Dialog open={followUpChatOpen} onOpenChange={setFollowUpChatOpen}>
-            <DialogTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleViewFollowUpHistory}
-                disabled={loadingFollowUpHistory}
-              >
-                {loadingFollowUpHistory ? t("loading") : t("viewRecord")}
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden flex flex-col">
-              <DialogHeader>
-                <DialogTitle>{t("conversationHistory")}</DialogTitle>
-              </DialogHeader>
-              <div className="flex-1 overflow-y-auto space-y-4 pr-2">
-                {loadingFollowUpChat ? (
-                  <div className="flex items-center justify-center py-8">
-                    <div className="text-muted-foreground">{t("loading")}</div>
-                  </div>
-                ) : followUpChatMessages.length === 0 ? (
-                  <div className="flex items-center justify-center py-8">
-                    <div className="text-muted-foreground">{t("noRecord")}</div>
-                  </div>
-                ) : (
-                  followUpChatMessages.map(({ id, role, content, parts, ...extra }) => (
-                    <ChatMessage
-                      key={id}
-                      role={role}
-                      content={content}
-                      parts={parts}
-                      extra={extra}
-                    ></ChatMessage>
-                  ))
-                )}
-              </div>
-              <div className="flex justify-end gap-3 pt-4 border-t">
-                <Button variant="outline" onClick={() => setFollowUpChatOpen(false)}>
-                  {t("close")}
-                </Button>
-                <Button onClick={handleContinueChat} disabled={!followUpHistory?.userChatToken}>
-                  {t("continueConversation")}
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
         </div>
+        <Dialog open={followUpChatOpen} onOpenChange={setFollowUpChatOpen}>
+          <DialogTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleViewFollowUpHistory}
+              disabled={loadingFollowUpHistory}
+            >
+              {loadingFollowUpHistory ? t("loading") : t("viewRecord")}
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden flex flex-col">
+            <DialogHeader>
+              <DialogTitle>{t("conversationHistory")}</DialogTitle>
+            </DialogHeader>
+            <div className="flex-1 overflow-y-auto space-y-4 pr-2">
+              {loadingFollowUpChat ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="text-muted-foreground">{t("loading")}</div>
+                </div>
+              ) : followUpChatMessages.length === 0 ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="text-muted-foreground">{t("noRecord")}</div>
+                </div>
+              ) : (
+                followUpChatMessages.map(({ id, role, content, parts, ...extra }) => (
+                  <ChatMessage
+                    key={id}
+                    role={role}
+                    content={content}
+                    parts={parts}
+                    extra={extra}
+                  ></ChatMessage>
+                ))
+              )}
+            </div>
+            <div className="flex justify-end gap-3 pt-4 border-t">
+              <Button variant="outline" onClick={() => setFollowUpChatOpen(false)}>
+                {t("close")}
+              </Button>
+              <Button onClick={handleContinueChat} disabled={!followUpHistory?.userChatToken}>
+                {t("continueConversation")}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

@@ -113,6 +113,7 @@ async function formatFollowUpChatContent(personaImport: PersonaImport) {
   return followUpChatContent;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function ensureBalanceEnough() {
   // TODO
 }
@@ -274,7 +275,7 @@ async function buildPersonaAgentPrompt(
     },
   ];
 
-  const response = await new Promise((resolve, reject) => {
+  await new Promise((resolve, reject) => {
     const response = streamText({
       model: llm("claude-3-7-sonnet"),
       providerOptions: providerOptions,

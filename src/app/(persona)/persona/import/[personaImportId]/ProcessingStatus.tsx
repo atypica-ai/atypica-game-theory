@@ -1,5 +1,6 @@
 "use client";
 import { PersonaImportAnalysis } from "@/app/(persona)/types";
+import { cn } from "@/lib/utils";
 import { Persona } from "@/prisma/client";
 import {
   CheckCircleIcon,
@@ -59,8 +60,8 @@ export function ProcessingStatus({
   return (
     <div className="space-y-6">
       {/* Three Steps Progress */}
-      <div className="relative">
-        <div className="flex items-start justify-between relative">
+      <div className="relative py-4">
+        <div className="flex items-start justify-between relative px-4">
           {steps.map((step, index) => {
             const isCompleted = step.completed;
             const isCurrentStep = isProcessing && index === currentStepIndex;
@@ -71,7 +72,7 @@ export function ProcessingStatus({
               // Show parsed text length from context field (during processing or after completion)
               const contextLength = context?.length || 0;
               if (contextLength > 0) {
-                stepDetails = `已解析 ${contextLength.toLocaleString()} 字符`;
+                stepDetails = `${t("parsed")} ${contextLength.toLocaleString()} ${t("characters")}`;
               }
             } else if (step.key === "analyzeCompleteness" && personaImportAnalysis) {
               const analysis = personaImportAnalysis.analysis;
@@ -80,30 +81,27 @@ export function ProcessingStatus({
               
               if (analysis?.totalScore) {
                 const completeness = Math.round(((analysis.totalScore) / (7 * 3)) * 100);
-                details.push(`完整度 ${completeness}%`);
+                details.push(`${t("completeness")} ${completeness}%`);
               }
               
               if (supplementaryQuestions?.questions?.length) {
-                details.push(`已生成 ${supplementaryQuestions.questions.length} 个补充问题`);
+                details.push(`${t("generated")} ${supplementaryQuestions.questions.length} ${t("questionsCount")}`);
               }
               
               if (details.length > 0) {
-                stepDetails = details.join('，');
+                stepDetails = details.join(`${t("comma")} `);
               }
             }
             
             return (
               <div key={step.key} className="flex flex-col items-center flex-1 relative">
                 {/* Step Circle */}
-                <div className={`
-                  w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300 relative z-10
-                  ${isCompleted 
-                    ? 'bg-green-100 text-green-600' 
-                    : isCurrentStep 
-                      ? 'bg-orange-100 text-orange-500' 
-                      : 'bg-gray-100 text-gray-400'
-                  }
-                `}>
+                <div className={cn(
+                  "w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 relative z-10",
+                  isCompleted && 'bg-green-500 text-white',
+                  isCurrentStep && !isCompleted && 'bg-orange-500 text-white',
+                  !isCompleted && !isCurrentStep && 'bg-gray-100 text-gray-500 border border-gray-200'
+                )}>
                   {isCompleted ? (
                     <CheckCircleIcon className="w-5 h-5" />
                   ) : isCurrentStep ? (
@@ -114,10 +112,10 @@ export function ProcessingStatus({
                 </div>
                 
                 {/* Step Title */}
-                <div className={`
-                  mt-3 text-sm font-medium text-center px-1
-                  ${isCompleted || isCurrentStep ? 'text-foreground' : 'text-muted-foreground'}
-                `}>
+                <div className={cn(
+                  "mt-3 text-sm font-medium text-center px-1",
+                  (isCompleted || isCurrentStep) ? 'text-foreground' : 'text-muted-foreground'
+                )}>
                   {step.title}
                 </div>
                 
@@ -133,16 +131,16 @@ export function ProcessingStatus({
         </div>
         
         {/* Connection Lines */}
-        <div className="absolute top-4 left-0 right-0 flex items-center px-8">
+        <div className="absolute top-9 left-0 right-0 flex items-center px-8">
           <div className="flex-1 flex">
             {steps.slice(0, -1).map((step, index) => {
               const isCompleted = step.completed;
               return (
                 <div key={`line-${index}`} className="flex-1">
-                  <div className={`
-                    h-0.5 transition-all duration-300 mx-2
-                    ${isCompleted ? 'bg-green-400' : 'bg-gray-200'}
-                  `} />
+                  <div className={cn(
+                    "h-0.5 transition-all duration-300 mx-2",
+                    isCompleted ? 'bg-green-400' : 'bg-gray-200'
+                  )} />
                 </div>
               );
             })}

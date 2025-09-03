@@ -108,22 +108,19 @@ export function AnalysisResult({ analysis }: AnalysisResultProps) {
   if (!analysis) return null;
 
   return (
-    <div className="bg-card rounded-lg border p-3 sm:p-6">
-      <div className="space-y-3">
-        <div className="space-y-2">
-          <h2 className="text-xl font-semibold flex items-center gap-3 text-card-foreground">
-            <div className="w-6 h-6 rounded bg-primary flex items-center justify-center">
-              <BarChart3Icon className="size-3 text-primary-foreground" />
-            </div>
-            {t("title")}
-          </h2>
-          <p className="text-muted-foreground ml-9 text-sm">{t("description")}</p>
-        </div>
+    <div className="bg-card rounded-2xl p-6 shadow-sm border border-border/20">
+      <div className="space-y-6">
+        <h2 className="text-lg font-medium flex items-center gap-2 text-card-foreground">
+          <div className="w-5 h-5 rounded-md bg-primary flex items-center justify-center">
+            <BarChart3Icon className="size-3 text-primary-foreground" />
+          </div>
+          {t("title")}
+        </h2>
 
         <div className="space-y-6">
           {/* Radar Chart */}
           <div className="flex justify-center">
-            <div className="w-full p-6 bg-white rounded-lg border">
+            <div className="w-full p-6 bg-white rounded-lg">
               <div className="h-80 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <RadarChart cx="50%" cy="50%" outerRadius="75%" data={radarData}>
@@ -172,7 +169,7 @@ export function AnalysisResult({ analysis }: AnalysisResultProps) {
           </div>
 
           {/* Overall Score */}
-          <div className="p-4 bg-card rounded-lg border">
+          <div className="p-4 bg-card rounded-lg">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-medium text-foreground">{t("personaCompleteness")}</h3>
@@ -227,11 +224,11 @@ export function AnalysisResult({ analysis }: AnalysisResultProps) {
                 return null;
               }
               return (
-                <div key={dimension} className="p-4 bg-card rounded-lg border">
+                <div key={dimension} className="p-4 bg-card rounded-lg">
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-6 h-6 rounded bg-muted flex items-center justify-center">
+                        <div className="w-5 h-5 rounded-md bg-muted flex items-center justify-center">
                           {getDimensionIcon(dimension)}
                         </div>
                         <h4 className="font-medium text-card-foreground text-sm">
@@ -268,7 +265,7 @@ export function AnalysisResult({ analysis }: AnalysisResultProps) {
                           {dimensionData.questions.map((question, index) => (
                             <div
                               key={index}
-                              className="text-xs p-2 bg-muted rounded border-l-2 border-border"
+                              className="text-xs p-2 bg-muted rounded border-l-2 border-primary"
                             >
                               <span className="font-medium text-foreground">Q{index + 1}:</span>{" "}
                               <span className="text-muted-foreground">{question}</span>
