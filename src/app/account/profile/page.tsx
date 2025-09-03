@@ -41,6 +41,7 @@ const passwordFormSchema = z
 export default function ProfilePage() {
   const t = useTranslations("AccountPage.profile");
   const [isLoading, setIsLoading] = useState(true);
+  const [userEmail, setUserEmail] = useState("");
 
   const nameForm = useForm<z.infer<typeof nameFormSchema>>({
     resolver: zodResolver(nameFormSchema),
@@ -63,6 +64,7 @@ export default function ProfilePage() {
       const result = await getCurrentUser();
       if (result.success) {
         nameForm.reset({ name: result.data.name || "" });
+        setUserEmail(result.data.email || "");
       } else {
         toast.error("Failed to load user data", { description: result.message });
       }
@@ -92,7 +94,7 @@ export default function ProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-8">
+      <div className="space-y-6 p-6 max-w-lg">
         <div>
           <Skeleton className="h-8 w-48" />
           <Skeleton className="h-4 w-72 mt-2" />
@@ -102,20 +104,22 @@ export default function ProfilePage() {
             <Skeleton className="h-6 w-32" />
             <Skeleton className="h-4 w-64 mt-1" />
           </CardHeader>
-          <CardContent>
-            <Skeleton className="h-10 w-full max-w-sm" />
-            <Skeleton className="h-10 w-32 mt-4" />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-6 w-32" />
-            <Skeleton className="h-4 w-64 mt-1" />
-          </CardHeader>
-          <CardContent className="space-y-4 max-w-sm">
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-32" />
+          <CardContent className="space-y-8">
+            <div className="space-y-4">
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-10 w-full max-w-sm" />
+            </div>
+            <div className="space-y-4">
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-10 w-full max-w-sm" />
+              <Skeleton className="h-10 w-32" />
+            </div>
+            <div className="space-y-4">
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-10 w-full max-w-sm" />
+              <Skeleton className="h-10 w-full max-w-sm" />
+              <Skeleton className="h-10 w-32" />
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -123,79 +127,106 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="space-y-8 p-6 max-w-lg">
-      <h1 className="text-2xl font-bold mb-6">{t("title")}</h1>
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("nameCard.title")}</CardTitle>
-          <CardDescription>{t("nameCard.description")}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...nameForm}>
-            <form onSubmit={nameForm.handleSubmit(onNameSubmit)} className="space-y-4 max-w-sm">
-              <FormField
-                control={nameForm.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("nameCard.nameLabel")}</FormLabel>
-                    <FormControl>
-                      <Input placeholder={t("nameCard.namePlaceholder")} {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button type="submit" disabled={nameForm.formState.isSubmitting}>
-                {nameForm.formState.isSubmitting ? t("saving") : t("saveChanges")}
-              </Button>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
+    <div className="space-y-6 p-6 max-w-lg">
+      <div>
+        <h1 className="text-2xl font-bold">{t("title")}</h1>
+        <p className="text-muted-foreground mt-1">{t("description")}</p>
+      </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>{t("passwordCard.title")}</CardTitle>
-          <CardDescription>{t("passwordCard.description")}</CardDescription>
+          <CardTitle>个人信息</CardTitle>
+          <CardDescription>查看和更新您的账户信息</CardDescription>
         </CardHeader>
-        <CardContent>
-          <Form {...passwordForm}>
-            <form
-              onSubmit={passwordForm.handleSubmit(onPasswordSubmit)}
-              className="space-y-4 max-w-sm"
-            >
-              <FormField
-                control={passwordForm.control}
-                name="newPassword"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("passwordCard.newPasswordLabel")}</FormLabel>
-                    <FormControl>
-                      <Input type="password" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+        <CardContent className="space-y-8">
+          {/* Email Section */}
+          {userEmail && (
+            <div className="space-y-3">
+              <h3 className="text-sm font-medium text-gray-900">{t("emailCard.emailLabel")}</h3>
+              <Input
+                value={userEmail}
+                disabled
+                className="bg-gray-50 text-gray-600 cursor-not-allowed max-w-sm"
+                readOnly
               />
-              <FormField
-                control={passwordForm.control}
-                name="confirmPassword"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("passwordCard.confirmPasswordLabel")}</FormLabel>
-                    <FormControl>
-                      <Input type="password" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button type="submit" disabled={passwordForm.formState.isSubmitting}>
-                {passwordForm.formState.isSubmitting ? t("saving") : t("updatePassword")}
-              </Button>
-            </form>
-          </Form>
+              <p className="text-xs text-muted-foreground">{t("emailCard.description")}</p>
+            </div>
+          )}
+
+          {/* Name Section */}
+          <div className="space-y-3">
+            <h3 className="text-sm font-medium text-gray-900">{t("nameCard.nameLabel")}</h3>
+            <Form {...nameForm}>
+              <form onSubmit={nameForm.handleSubmit(onNameSubmit)} className="space-y-4">
+                <FormField
+                  control={nameForm.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input
+                          placeholder={t("nameCard.namePlaceholder")}
+                          {...field}
+                          className="max-w-sm"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <Button type="submit" disabled={nameForm.formState.isSubmitting} size="sm">
+                  {nameForm.formState.isSubmitting ? t("saving") : t("saveChanges")}
+                </Button>
+              </form>
+            </Form>
+            <p className="text-xs text-muted-foreground">{t("nameCard.description")}</p>
+          </div>
+
+          {/* Divider */}
+          <div className="border-t"></div>
+
+          {/* Password Section */}
+          <div className="space-y-3">
+            <h3 className="text-sm font-medium text-gray-900">{t("passwordCard.title")}</h3>
+            <Form {...passwordForm}>
+              <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-4">
+                <FormField
+                  control={passwordForm.control}
+                  name="newPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs">
+                        {t("passwordCard.newPasswordLabel")}
+                      </FormLabel>
+                      <FormControl>
+                        <Input type="password" {...field} className="max-w-sm" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={passwordForm.control}
+                  name="confirmPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs">
+                        {t("passwordCard.confirmPasswordLabel")}
+                      </FormLabel>
+                      <FormControl>
+                        <Input type="password" {...field} className="max-w-sm" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <Button type="submit" disabled={passwordForm.formState.isSubmitting} size="sm">
+                  {passwordForm.formState.isSubmitting ? t("saving") : t("updatePassword")}
+                </Button>
+              </form>
+            </Form>
+            <p className="text-xs text-muted-foreground">{t("passwordCard.description")}</p>
+          </div>
         </CardContent>
       </Card>
     </div>

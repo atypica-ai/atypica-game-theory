@@ -1,0 +1,115 @@
+{
+  "AccountPage": {
+    "title": "账户中心",
+    "subscriptionSection": {
+      "title": "订阅信息",
+      "currentPlan": "当前方案",
+      "expires": "到期时间",
+      "neverExpires": "永久有效",
+      "upgrade": "升级",
+      "renew": "续费",
+      "autoRenew": "自动续费",
+      "status": "状态",
+      "active": "有效",
+      "proPlan": "个人Pro版",
+      "maxPlan": "个人Max版",
+      "teamPlan": "团队版",
+      "notSubscribed": "未订阅",
+      "manageSubscription": "管理订阅",
+      "cancelSubscription": "取消自动续费",
+      "confirmCancel": "取消自动续费",
+      "cancelDescription": "确定要取消自动续费吗？您的当前订阅将保持有效直到到期日，但不会自动续费。",
+      "keepSubscription": "保持自动续费",
+      "canceling": "取消中...",
+      "cancelSuccess": "自动续费取消成功",
+      "cancelError": "取消自动续费失败"
+    },
+    "tokensSection": {
+      "title": "Token",
+      "balance": "余额",
+      "permanentBalance": "永久余额",
+      "monthlyBalance": "每月余额",
+      "monthlyResetAt": "每月重置时间",
+      "totalBalance": "总余额",
+      "purchase": "购买Token"
+    },
+    "tokensHistorySection": {
+      "title": "Token记录",
+      "type": "类型",
+      "amount": "数量",
+      "consumedBy": "成员",
+      "date": "日期",
+      "noRecords": "暂无Token记录",
+      "loadMore": "加载更多",
+      "verbs": {
+        "recharge": "充值",
+        "consume": "atypica.AI 任务消耗",
+        "subscription": "订阅会员",
+        "subscriptionReset": "订阅月末重置",
+        "gift": "atypica.AI 赠送",
+        "signup": "注册赠送"
+      },
+      "consume": {
+        "StudyUserChat": "atypica.AI 研究消耗",
+        "InterviewProject": "访谈项目消耗",
+        "PersonaImport": "构建AI人设消耗"
+      }
+    },
+    "paymentRecordsSection": {
+      "title": "交易记录",
+      "status": {
+        "title": "交易状态",
+        "pending": "待支付",
+        "success": "支付成功",
+        "failed": "支付失败"
+      },
+      "details": "详情",
+      "amount": "金额",
+      "date": "日期",
+      "invoice": "Invoice",
+      "downloadInvoice": "Invoice",
+      "noRecords": "暂无交易记录",
+      "loadMore": "加载更多"
+    },
+    "sidebar": {
+      "teamUser": "团队",
+      "personalUser": "个人",
+      "accountIndex": "账户首页",
+      "switchIdentity": "切换团队",
+      "profile": "个人资料",
+      "tokens": "点数历史",
+      "paymentHistory": "支付历史",
+      "teamManagement": "团队管理"
+    },
+    "profile": {
+      "title": "个人资料设置",
+      "description": "管理您的个人信息和账户设置",
+      "emailCard": {
+        "title": "邮箱地址",
+        "description": "您的登录邮箱地址，不可修改。",
+        "emailLabel": "邮箱"
+      },
+      "nameCard": {
+        "title": "显示名称",
+        "description": "这是您的公开显示名称。",
+        "nameLabel": "名称",
+        "namePlaceholder": "您的姓名"
+      },
+      "passwordCard": {
+        "title": "密码",
+        "description": "更新您的密码。请选择一个强密码。",
+        "currentPasswordLabel": "当前密码",
+        "newPasswordLabel": "新密码",
+        "confirmPasswordLabel": "确认新密码"
+      },
+      "saving": "保存中...",
+      "saveChanges": "保存更改",
+      "updatePassword": "更新密码",
+      "nameUpdateSuccess": "名称更新成功",
+      "nameUpdateError": "名称更新失败",
+      "passwordUpdateSuccess": "密码更新成功",
+      "passwordUpdateError": "密码更新失败",
+      "passwordMismatch": "密码不匹配"
+    }
+  }
+}

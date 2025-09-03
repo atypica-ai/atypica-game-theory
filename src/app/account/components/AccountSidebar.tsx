@@ -1,5 +1,6 @@
 "use client";
 import { getUserTeamStatusAction } from "@/app/team/actions";
+import { TeamSwitchButton } from "@/app/team/components/TeamSwitchButton";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -10,6 +11,7 @@ import {
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import {
+  ArrowLeftRightIcon,
   CreditCardIcon,
   MenuIcon,
   SettingsIcon,
@@ -86,9 +88,18 @@ export default function AccountSidebar() {
   }, [teamStatus, t]);
 
   return (
-    <aside className="w-full md:w-64 border-r">
+    <aside className="w-full sm:w-48 lg:w-64 max-sm:border-t sm:border-r">
       <div className="flex h-16 items-center border-b px-6 justify-between">
-        <h1 className="text-lg font-bold">{t("title")}</h1>
+        <div className="space-x-2 truncate">
+          <span className="text-xs px-1 py-1 rounded-xs bg-zinc-200 dark:bg-zinc-700">
+            {session?.userType === "TeamMember"
+              ? t("teamUser")
+              : session?.userType === "Personal"
+                ? t("personalUser")
+                : "-"}
+          </span>
+          <span className="text-xs">{session?.user?.email || session?.user?.name}</span>
+        </div>
         {!isSM && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -126,6 +137,16 @@ export default function AccountSidebar() {
                 </Button>
               </li>
             ))}
+            {teamStatus?.canSwitchIdentity && (
+              <li>
+                <TeamSwitchButton>
+                  <Button variant="ghost" className="w-full justify-start">
+                    <ArrowLeftRightIcon className="mr-2 h-4 w-4" />
+                    {t("switchIdentity")}
+                  </Button>
+                </TeamSwitchButton>
+              </li>
+            )}
           </ul>
         </nav>
       )}

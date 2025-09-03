@@ -31,6 +31,9 @@ export default function GlobalHeader({
         )}
       >
         <div className="flex items-center gap-2 sm:gap-6">
+          <div className="md:hidden mt-1">
+            <GlobalHeaderMenusMobile />
+          </div>
           <Link href="/" className={cn("block h-4 w-24 mb-0.5 relative")}>
             <div className="font-EuclidCircularA font-medium tracking-tight text-xl leading-none">
               atypica.AI
@@ -52,9 +55,9 @@ export default function GlobalHeader({
               {/* additional menus */}
               <UserTokensBalance />
               <UserMenu />
-              <div className="md:hidden">
+              {/*<div className="md:hidden">
                 <GlobalHeaderMenusMobile />
-              </div>
+              </div>*/}
             </div>
             <div className="hidden md:block absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
               <GlobalHeaderMenusDesktop />

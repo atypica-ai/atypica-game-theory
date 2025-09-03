@@ -1,0 +1,115 @@
+{
+  "AccountPage": {
+    "title": "Account",
+    "subscriptionSection": {
+      "title": "Subscription",
+      "currentPlan": "Current Plan",
+      "expires": "Expires",
+      "neverExpires": "Never Expires",
+      "upgrade": "Upgrade",
+      "renew": "Renew",
+      "autoRenew": "Auto Renew",
+      "status": "Status",
+      "active": "Active",
+      "proPlan": "Pro Subscription",
+      "maxPlan": "Max Subscription",
+      "teamPlan": "Team Subscription",
+      "notSubscribed": "Not Subscribed",
+      "manageSubscription": "Manage Subscription",
+      "cancelSubscription": "Cancel Auto-Renewal",
+      "confirmCancel": "Cancel Auto-Renewal",
+      "cancelDescription": "Are you sure you want to cancel auto-renewal? Your current subscription will remain active until the expiration date, but it will not automatically renew.",
+      "keepSubscription": "Keep Auto-Renewal",
+      "canceling": "Canceling...",
+      "cancelSuccess": "Auto-renewal cancelled successfully",
+      "cancelError": "Failed to cancel auto-renewal"
+    },
+    "tokensSection": {
+      "title": "Tokens",
+      "balance": "Balance",
+      "permanentBalance": "Permanent Balance",
+      "monthlyBalance": "Monthly Balance",
+      "monthlyResetAt": "Monthly Reset",
+      "totalBalance": "Total Balance",
+      "purchase": "Purchase Tokens"
+    },
+    "tokensHistorySection": {
+      "title": "Tokens History",
+      "type": "Type",
+      "amount": "Amount",
+      "consumedBy": "Consumed By",
+      "date": "Date",
+      "noRecords": "No tokens records",
+      "loadMore": "Load More",
+      "verbs": {
+        "recharge": "Token Purchase",
+        "consume": "AI Study Usage",
+        "subscription": "Subscription",
+        "subscriptionReset": "Subscription Monthly Reset",
+        "gift": "Gift from atypica.AI",
+        "signup": "Signup Bonus"
+      },
+      "consume": {
+        "StudyUserChat": "AI Study Usage",
+        "InterviewProject": "Interview Project Usage",
+        "PersonaImport": "Persona Building Usage"
+      }
+    },
+    "paymentRecordsSection": {
+      "title": "Payment Records",
+      "status": {
+        "title": "Status",
+        "pending": "Payment Pending",
+        "success": "Payment Successful",
+        "failed": "Payment Failed"
+      },
+      "details": "Details",
+      "amount": "Amount",
+      "date": "Date",
+      "invoice": "Invoice",
+      "downloadInvoice": "Invoice",
+      "noRecords": "No payment records",
+      "loadMore": "Load More"
+    },
+    "sidebar": {
+      "teamUser": "Team",
+      "personalUser": "Personal",
+      "accountIndex": "Account",
+      "switchIdentity": "Switch Team",
+      "profile": "Profile",
+      "tokens": "Tokens History",
+      "paymentHistory": "Payment History",
+      "teamManagement": "Team Management"
+    },
+    "profile": {
+      "title": "Profile Settings",
+      "description": "Manage your personal information and account settings",
+      "emailCard": {
+        "title": "Email Address",
+        "description": "Your login email address, cannot be modified.",
+        "emailLabel": "Email"
+      },
+      "nameCard": {
+        "title": "Display Name",
+        "description": "This is your public display name.",
+        "nameLabel": "Name",
+        "namePlaceholder": "Your name"
+      },
+      "passwordCard": {
+        "title": "Password",
+        "description": "Update your password. Please choose a strong one.",
+        "currentPasswordLabel": "Current Password",
+        "newPasswordLabel": "New Password",
+        "confirmPasswordLabel": "Confirm New Password"
+      },
+      "saving": "Saving...",
+      "saveChanges": "Save Changes",
+      "updatePassword": "Update Password",
+      "nameUpdateSuccess": "Name updated successfully",
+      "nameUpdateError": "Failed to update name",
+      "passwordUpdateSuccess": "Password updated successfully",
+      "passwordUpdateError": "Failed to update password",
+      "passwordMismatch": "Passwords do not match"
+    }
+  }
+}
