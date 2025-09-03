@@ -12,146 +12,144 @@ export default function GlobalFooter({ className }: { className?: string }) {
         className,
       )}
     >
-      <div className="max-w-6xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-          {/* Brand Column */}
-          <div className="md:col-span-2 space-y-4">
-            <div className="font-EuclidCircularA font-bold text-lg leading-none">atypica.AI</div>
-            <p className="text-sm text-muted-foreground max-w-md">{t("tagline")}</p>
-            <p className="text-xs text-muted-foreground">
-              {t("copyright", { year: new Date().getFullYear() })}
-            </p>
-            <div className="flex items-center justify-start mt-2 gap-1 -ml-1">
-              <Link href="https://www.linkedin.com/company/atypica-ai" target="_blank">
-                <svg
-                  width="28"
-                  height="28"
-                  viewBox="0 0 28 29"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M9.24822 11.6358V22.0444H5.78202V11.6358H9.24822ZM9.46879 8.42133C9.47585 8.93267 9.299 9.35989 8.93825 9.703C8.57749 10.0461 8.10302 10.2177 7.51483 10.2177H7.49365C6.91958 10.2177 6.45745 10.0461 6.10729 9.703C5.75712 9.35989 5.58203 8.93267 5.58203 8.42133C5.58203 7.90333 5.76241 7.47435 6.12317 7.13437C6.48392 6.7944 6.95487 6.62461 7.536 6.625C8.11713 6.62539 8.58278 6.79518 8.93295 7.13437C9.28312 7.47356 9.46174 7.90255 9.46879 8.42133ZM21.7161 16.0784V22.0444H18.2605V16.4778C18.2605 15.7425 18.1187 15.1665 17.8352 14.7497C17.5517 14.3328 17.1088 14.1244 16.5065 14.1244C16.0654 14.1244 15.696 14.2452 15.3983 14.4868C15.1007 14.7283 14.8784 15.0277 14.7313 15.3849C14.6545 15.5951 14.616 15.8786 14.616 16.2354V22.0438H11.1604C11.1745 19.2499 11.1816 16.9846 11.1816 15.2479C11.1816 13.5111 11.1781 12.4748 11.171 12.1387L11.1604 11.6346H14.616V13.1469H14.5949C14.7349 12.923 14.8784 12.7269 15.0254 12.5587C15.1725 12.3904 15.3703 12.2083 15.6189 12.0122C15.8675 11.8162 16.1722 11.6638 16.533 11.5552C16.8937 11.4466 17.2947 11.3923 17.7358 11.3923C18.9334 11.3923 19.8962 11.7897 20.6244 12.5845C21.3526 13.3794 21.7167 14.5436 21.7167 16.0772L21.7161 16.0784Z"
-                    fill="currentColor"
-                  ></path>
-                </svg>
-              </Link>{" "}
-              <Link href="https://x.com/atypica_ai" target="_blank">
-                <svg
-                  width="28"
-                  height="28"
-                  viewBox="0 0 29 29"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <g clipPath="url(#:rgg:_clip0_2659_26042)">
-                    <path
-                      d="M19.5356 7.5H22.0727L16.531 13.8136L23.0742 22.375H17.9332L13.9271 17.1853L9.3202 22.375H6.78305L12.7253 15.6317L6.44922 7.5H11.7238L15.3626 12.26L19.5356 7.5ZM18.6342 20.8544H20.0363L10.956 8.92139H9.42035L18.6342 20.8544Z"
-                      fill="currentColor"
-                    ></path>
-                  </g>
-                  <defs>
-                    <clipPath id=":rgg:_clip0_2659_26042">
-                      <rect
-                        width="16.625"
-                        height="14.875"
-                        fill="currentColor"
-                        transform="translate(6.4502 7.5)"
-                      ></rect>
-                    </clipPath>
-                  </defs>
-                </svg>
-              </Link>
-              <Link href="https://www.instagram.com/atypica.ai" target="_blank">
-                <svg
-                  width="28"
-                  height="28"
-                  viewBox="0 0 29 29"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M14.5042 5.75C12.1264 5.75 11.828 5.76039 10.8941 5.80286C9.96197 5.84551 9.32574 5.99297 8.76903 6.20933C8.19318 6.43278 7.7047 6.7317 7.21805 7.21818C6.73103 7.70448 6.43188 8.19259 6.20753 8.76784C5.99046 9.32431 5.84271 9.96024 5.80076 10.8913C5.75899 11.8245 5.74805 12.1229 5.74805 14.4989C5.74805 16.875 5.75863 17.1723 5.80094 18.1055C5.84381 19.0369 5.99138 19.6727 6.2077 20.2289C6.43152 20.8044 6.73066 21.2925 7.2175 21.7788C7.70398 22.2654 8.19245 22.5651 8.76794 22.7886C9.325 23.0049 9.96142 23.1524 10.8933 23.195C11.8272 23.2375 12.1255 23.2479 14.5031 23.2479C16.8811 23.2479 17.1786 23.2375 18.1125 23.195C19.0446 23.1524 19.6816 23.0049 20.2387 22.7885C20.8143 22.5651 21.3021 22.2654 21.7886 21.7788C22.2756 21.2925 22.5747 20.8044 22.7991 20.2291C23.0143 19.6727 23.1621 19.0367 23.2058 18.1057C23.2478 17.1725 23.2587 16.875 23.2587 14.4989C23.2587 12.1229 23.2478 11.8247 23.2058 10.8915C23.1621 9.96006 23.0143 9.32431 22.7991 8.76802C22.5747 8.19259 22.2756 7.70447 21.7886 7.21818C21.3015 6.73152 20.8145 6.4326 20.2381 6.20932C19.6799 5.99297 19.0434 5.84551 18.1113 5.80286C17.1774 5.76039 16.88 5.75 14.5015 5.75H14.5042ZM13.7188 7.32663C13.9519 7.32627 14.212 7.32663 14.5042 7.32663C16.8419 7.32663 17.119 7.33502 18.0421 7.37694C18.8958 7.41595 19.3591 7.55847 19.6677 7.67823C20.0763 7.8368 20.3676 8.02636 20.6739 8.33257C20.9803 8.63879 21.17 8.93042 21.3291 9.3387C21.4489 9.64673 21.5917 10.1097 21.6306 10.9627C21.6725 11.885 21.6817 12.1621 21.6817 14.4969C21.6817 16.8318 21.6725 17.1089 21.6306 18.0311C21.5915 18.8842 21.4489 19.3471 21.3291 19.6552C21.1704 20.0634 20.9803 20.3542 20.6739 20.6602C20.3674 20.9664 20.0765 21.156 19.6677 21.3145C19.3595 21.4348 18.8958 21.577 18.0421 21.616C17.1192 21.6579 16.8419 21.667 14.5042 21.667C12.1663 21.667 11.8893 21.6579 10.9663 21.616C10.1126 21.5766 9.64933 21.4341 9.34051 21.3144C8.93192 21.1558 8.64007 20.9662 8.33364 20.66C8.0272 20.3538 7.8375 20.0629 7.67844 19.6544C7.5586 19.3464 7.41577 18.8834 7.37693 18.0304C7.33497 17.1081 7.32658 16.8311 7.32658 14.4947C7.32658 12.1584 7.33497 11.8828 7.37693 10.9605C7.41596 10.1075 7.5586 9.64455 7.67844 9.33615C7.83713 8.92787 8.0272 8.63624 8.33364 8.33003C8.64007 8.02381 8.93192 7.83425 9.34051 7.67532C9.64914 7.55501 10.1126 7.41285 10.9663 7.37365C11.774 7.3372 12.087 7.32627 13.7188 7.32444L13.7188 7.32663ZM19.1778 8.77932C18.5977 8.77932 18.1271 9.24903 18.1271 9.82882C18.1271 10.4084 18.5977 10.8787 19.1778 10.8787C19.7578 10.8787 20.2284 10.4084 20.2284 9.82882C20.2284 9.24921 19.7578 8.77896 19.1778 8.77896L19.1778 8.77932ZM14.5042 10.006C12.0211 10.006 10.0079 12.0177 10.0079 14.4989C10.0079 16.9802 12.0211 18.991 14.5042 18.991C16.9873 18.991 18.9998 16.9802 18.9998 14.4989C18.9998 12.0177 16.9873 10.006 14.5042 10.006ZM14.5042 11.5826C16.1159 11.5826 17.4227 12.8882 17.4227 14.4989C17.4227 16.1095 16.1159 17.4152 14.5042 17.4152C12.8923 17.4152 11.5857 16.1095 11.5857 14.4989C11.5857 12.8882 12.8923 11.5826 14.5042 11.5826Z"
-                    fill="currentColor"
-                  ></path>
-                </svg>
-              </Link>
-            </div>
-          </div>
-
-          {/* Product Column */}
-          <div className="space-y-4">
-            <h4 className="text-sm font-medium text-foreground">{t("product")}</h4>
-            <div className="space-y-3 text-sm">
-              <Link
-                href="/about"
-                className="block text-muted-foreground hover:text-foreground transition-colors"
+      <div className="container max-w-6xl mx-auto max-md:space-y-8 md:flex md:items-start md:justify-start gap-8 mb-8">
+        {/* Brand Column */}
+        <div className="space-y-4">
+          <div className="font-EuclidCircularA font-bold text-lg leading-none">atypica.AI</div>
+          <p className="text-sm text-muted-foreground max-w-md">{t("tagline")}</p>
+          <p className="text-xs text-muted-foreground">
+            {t("copyright", { year: new Date().getFullYear() })}
+          </p>
+          <div className="flex items-center justify-start mt-2 gap-1 -ml-1">
+            <Link href="https://www.linkedin.com/company/atypica-ai" target="_blank">
+              <svg
+                width="28"
+                height="28"
+                viewBox="0 0 28 29"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
               >
-                {t("about")}
-              </Link>
-              {/*<Link
+                <path
+                  d="M9.24822 11.6358V22.0444H5.78202V11.6358H9.24822ZM9.46879 8.42133C9.47585 8.93267 9.299 9.35989 8.93825 9.703C8.57749 10.0461 8.10302 10.2177 7.51483 10.2177H7.49365C6.91958 10.2177 6.45745 10.0461 6.10729 9.703C5.75712 9.35989 5.58203 8.93267 5.58203 8.42133C5.58203 7.90333 5.76241 7.47435 6.12317 7.13437C6.48392 6.7944 6.95487 6.62461 7.536 6.625C8.11713 6.62539 8.58278 6.79518 8.93295 7.13437C9.28312 7.47356 9.46174 7.90255 9.46879 8.42133ZM21.7161 16.0784V22.0444H18.2605V16.4778C18.2605 15.7425 18.1187 15.1665 17.8352 14.7497C17.5517 14.3328 17.1088 14.1244 16.5065 14.1244C16.0654 14.1244 15.696 14.2452 15.3983 14.4868C15.1007 14.7283 14.8784 15.0277 14.7313 15.3849C14.6545 15.5951 14.616 15.8786 14.616 16.2354V22.0438H11.1604C11.1745 19.2499 11.1816 16.9846 11.1816 15.2479C11.1816 13.5111 11.1781 12.4748 11.171 12.1387L11.1604 11.6346H14.616V13.1469H14.5949C14.7349 12.923 14.8784 12.7269 15.0254 12.5587C15.1725 12.3904 15.3703 12.2083 15.6189 12.0122C15.8675 11.8162 16.1722 11.6638 16.533 11.5552C16.8937 11.4466 17.2947 11.3923 17.7358 11.3923C18.9334 11.3923 19.8962 11.7897 20.6244 12.5845C21.3526 13.3794 21.7167 14.5436 21.7167 16.0772L21.7161 16.0784Z"
+                  fill="currentColor"
+                ></path>
+              </svg>
+            </Link>{" "}
+            <Link href="https://x.com/atypica_ai" target="_blank">
+              <svg
+                width="28"
+                height="28"
+                viewBox="0 0 29 29"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <g clipPath="url(#:rgg:_clip0_2659_26042)">
+                  <path
+                    d="M19.5356 7.5H22.0727L16.531 13.8136L23.0742 22.375H17.9332L13.9271 17.1853L9.3202 22.375H6.78305L12.7253 15.6317L6.44922 7.5H11.7238L15.3626 12.26L19.5356 7.5ZM18.6342 20.8544H20.0363L10.956 8.92139H9.42035L18.6342 20.8544Z"
+                    fill="currentColor"
+                  ></path>
+                </g>
+                <defs>
+                  <clipPath id=":rgg:_clip0_2659_26042">
+                    <rect
+                      width="16.625"
+                      height="14.875"
+                      fill="currentColor"
+                      transform="translate(6.4502 7.5)"
+                    ></rect>
+                  </clipPath>
+                </defs>
+              </svg>
+            </Link>
+            <Link href="https://www.instagram.com/atypica.ai" target="_blank">
+              <svg
+                width="28"
+                height="28"
+                viewBox="0 0 29 29"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M14.5042 5.75C12.1264 5.75 11.828 5.76039 10.8941 5.80286C9.96197 5.84551 9.32574 5.99297 8.76903 6.20933C8.19318 6.43278 7.7047 6.7317 7.21805 7.21818C6.73103 7.70448 6.43188 8.19259 6.20753 8.76784C5.99046 9.32431 5.84271 9.96024 5.80076 10.8913C5.75899 11.8245 5.74805 12.1229 5.74805 14.4989C5.74805 16.875 5.75863 17.1723 5.80094 18.1055C5.84381 19.0369 5.99138 19.6727 6.2077 20.2289C6.43152 20.8044 6.73066 21.2925 7.2175 21.7788C7.70398 22.2654 8.19245 22.5651 8.76794 22.7886C9.325 23.0049 9.96142 23.1524 10.8933 23.195C11.8272 23.2375 12.1255 23.2479 14.5031 23.2479C16.8811 23.2479 17.1786 23.2375 18.1125 23.195C19.0446 23.1524 19.6816 23.0049 20.2387 22.7885C20.8143 22.5651 21.3021 22.2654 21.7886 21.7788C22.2756 21.2925 22.5747 20.8044 22.7991 20.2291C23.0143 19.6727 23.1621 19.0367 23.2058 18.1057C23.2478 17.1725 23.2587 16.875 23.2587 14.4989C23.2587 12.1229 23.2478 11.8247 23.2058 10.8915C23.1621 9.96006 23.0143 9.32431 22.7991 8.76802C22.5747 8.19259 22.2756 7.70447 21.7886 7.21818C21.3015 6.73152 20.8145 6.4326 20.2381 6.20932C19.6799 5.99297 19.0434 5.84551 18.1113 5.80286C17.1774 5.76039 16.88 5.75 14.5015 5.75H14.5042ZM13.7188 7.32663C13.9519 7.32627 14.212 7.32663 14.5042 7.32663C16.8419 7.32663 17.119 7.33502 18.0421 7.37694C18.8958 7.41595 19.3591 7.55847 19.6677 7.67823C20.0763 7.8368 20.3676 8.02636 20.6739 8.33257C20.9803 8.63879 21.17 8.93042 21.3291 9.3387C21.4489 9.64673 21.5917 10.1097 21.6306 10.9627C21.6725 11.885 21.6817 12.1621 21.6817 14.4969C21.6817 16.8318 21.6725 17.1089 21.6306 18.0311C21.5915 18.8842 21.4489 19.3471 21.3291 19.6552C21.1704 20.0634 20.9803 20.3542 20.6739 20.6602C20.3674 20.9664 20.0765 21.156 19.6677 21.3145C19.3595 21.4348 18.8958 21.577 18.0421 21.616C17.1192 21.6579 16.8419 21.667 14.5042 21.667C12.1663 21.667 11.8893 21.6579 10.9663 21.616C10.1126 21.5766 9.64933 21.4341 9.34051 21.3144C8.93192 21.1558 8.64007 20.9662 8.33364 20.66C8.0272 20.3538 7.8375 20.0629 7.67844 19.6544C7.5586 19.3464 7.41577 18.8834 7.37693 18.0304C7.33497 17.1081 7.32658 16.8311 7.32658 14.4947C7.32658 12.1584 7.33497 11.8828 7.37693 10.9605C7.41596 10.1075 7.5586 9.64455 7.67844 9.33615C7.83713 8.92787 8.0272 8.63624 8.33364 8.33003C8.64007 8.02381 8.93192 7.83425 9.34051 7.67532C9.64914 7.55501 10.1126 7.41285 10.9663 7.37365C11.774 7.3372 12.087 7.32627 13.7188 7.32444L13.7188 7.32663ZM19.1778 8.77932C18.5977 8.77932 18.1271 9.24903 18.1271 9.82882C18.1271 10.4084 18.5977 10.8787 19.1778 10.8787C19.7578 10.8787 20.2284 10.4084 20.2284 9.82882C20.2284 9.24921 19.7578 8.77896 19.1778 8.77896L19.1778 8.77932ZM14.5042 10.006C12.0211 10.006 10.0079 12.0177 10.0079 14.4989C10.0079 16.9802 12.0211 18.991 14.5042 18.991C16.9873 18.991 18.9998 16.9802 18.9998 14.4989C18.9998 12.0177 16.9873 10.006 14.5042 10.006ZM14.5042 11.5826C16.1159 11.5826 17.4227 12.8882 17.4227 14.4989C17.4227 16.1095 16.1159 17.4152 14.5042 17.4152C12.8923 17.4152 11.5857 16.1095 11.5857 14.4989C11.5857 12.8882 12.8923 11.5826 14.5042 11.5826Z"
+                  fill="currentColor"
+                ></path>
+              </svg>
+            </Link>
+          </div>
+        </div>
+
+        {/* Product Column */}
+        <div className="md:ml-auto md:mr-20 space-y-4">
+          <h4 className="text-sm font-medium text-foreground">{t("product")}</h4>
+          <div className="space-y-3 text-sm">
+            <Link
+              href="/about"
+              className="block text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {t("about")}
+            </Link>
+            {/*<Link
                 href="/pricing"
                 className="block text-muted-foreground hover:text-foreground transition-colors"
               >
                 {t("pricing")}
               </Link>*/}
-              <Link
-                href="/persona-simulation"
-                className="block text-muted-foreground hover:text-foreground transition-colors"
-              >
-                {t("personaSimulation")}
-              </Link>
-              <Link
-                href="/changelog"
-                className="block text-muted-foreground hover:text-foreground transition-colors"
-              >
-                {t("changelog")}
-              </Link>
-              <Link
-                href="/glossary"
-                className="block text-muted-foreground hover:text-foreground transition-colors"
-              >
-                {t("glossary")}
-              </Link>
-            </div>
+            <Link
+              href="/persona-simulation"
+              className="block text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {t("personaSimulation")}
+            </Link>
+            <Link
+              href="/changelog"
+              className="block text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {t("changelog")}
+            </Link>
+            <Link
+              href="/glossary"
+              className="block text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {t("glossary")}
+            </Link>
           </div>
+        </div>
 
-          {/* Company Column */}
-          <div className="space-y-4">
-            <h4 className="text-sm font-medium text-foreground">{t("company")}</h4>
-            <div className="space-y-3 text-sm">
-              {/* <Link
+        {/* Company Column */}
+        <div className="space-y-4">
+          <h4 className="text-sm font-medium text-foreground">{t("company")}</h4>
+          <div className="space-y-3 text-sm">
+            {/* <Link
                 href="/status"
                 className="block text-muted-foreground hover:text-foreground transition-colors"
               >
                 Status
               </Link> */}
-              <Link
-                href="https://blog.atypica.ai/"
-                target="_blank"
-                className="block text-muted-foreground hover:text-foreground transition-colors"
-              >
-                {t("blog")}
-              </Link>
-              <Link
-                href="/deck/about"
-                className="block text-muted-foreground hover:text-foreground transition-colors"
-              >
-                {t("deck")}
-              </Link>
-              <Link
-                href="/terms"
-                className="block text-muted-foreground hover:text-foreground transition-colors"
-              >
-                {t("terms")}
-              </Link>
-              <Link
-                href="/privacy"
-                className="block text-muted-foreground hover:text-foreground transition-colors"
-              >
-                {t("privacy")}
-              </Link>
-            </div>
+            <Link
+              href="https://blog.atypica.ai/"
+              target="_blank"
+              className="block text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {t("blog")}
+            </Link>
+            <Link
+              href="/deck/about"
+              className="block text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {t("deck")}
+            </Link>
+            <Link
+              href="/terms"
+              className="block text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {t("terms")}
+            </Link>
+            <Link
+              href="/privacy"
+              className="block text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {t("privacy")}
+            </Link>
           </div>
         </div>
       </div>
