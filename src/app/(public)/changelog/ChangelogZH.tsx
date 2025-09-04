@@ -18,19 +18,59 @@ export const ChangelogZH: React.FC = () => {
               <ul className="space-y-4">
                 <li>
                   <h4 className="font-semibold text-lg">
-                    🧪 Alpha 测试中: 新版访谈项目 (Interview Project)
-                  </h4>
-                  <p className="text-gray-700 dark:text-gray-300 mt-1 pl-1">
-                    一个更简洁、更强大的访谈项目流程正在内部测试中，将支持 AI
-                    自动访谈和真人访谈两种模式，旨在大幅简化用户研究的执行过程。
-                  </p>
-                </li>
-                <li>
-                  <h4 className="font-semibold text-lg">
                     🧪 Alpha 测试中: 产品研发流程 (Product R&D Flow)
                   </h4>
                   <p className="text-gray-700 dark:text-gray-300 mt-1 pl-1">
-                    全新的“产品研发”研究模板正在内部测试，该模板专注于市场趋势、用户需求和创意生成，其报告结构将更侧重于图像和概念展示。
+                    全新的"产品创新"研究模板，专注于市场趋势、用户需求和创意生成。
+                  </p>
+                </li>
+              </ul>
+            </article>
+          </div>
+        </section>
+
+        {/* v8.x */}
+        <section>
+          <h2 className="text-2xl font-bold mb-8">v8.x: AI 访谈与 AI 人设全面上线</h2>
+          <div className="space-y-10">
+            <article>
+              <h3 className="font-semibold text-xl mb-4">
+                <code>v8.0.0</code> —{" "}
+                <em className="text-gray-600 dark:text-gray-400 font-normal">2025-09-04</em>
+              </h3>
+              <ul className="space-y-4 text-gray-800 dark:text-gray-200">
+                <li>
+                  <h4 className="font-semibold text-lg">🚀 正式上线: 访谈项目 & AI 人设导入</h4>
+                  <p className="text-gray-700 dark:text-gray-300 mt-1 pl-1">
+                    两大功能现已面向所有套餐用户开放（移除预览/测试状态）
+                  </p>
+                  <p className="text-gray-700 dark:text-gray-300 mt-1 pl-1">
+                    Free/Pro 套餐：可使用基础功能<br />
+                    Max/Team 套餐：可使用全部功能
+                  </p>
+                </li>
+                <li>
+                  <h4 className="font-semibold text-lg">✨ 重要功能: AI 访谈问题智能优化</h4>
+                  <p className="text-gray-700 dark:text-gray-300 mt-1 pl-1">
+                    AI 自动分析你的访谈项目简介，智能优化访谈问题以提升研究效果
+                  </p>
+                  <p className="text-gray-700 dark:text-gray-300 mt-1 pl-1">
+                    将复杂问题转化为清晰易答的细分问题，遵循研究最佳实践
+                  </p>
+                  <p className="text-gray-700 dark:text-gray-300 mt-1 pl-1">
+                    采用事实优先方法，生成细致问题深度挖掘洞察和真实回答
+                  </p>
+                  <p className="text-gray-700 dark:text-gray-300 mt-1 pl-1">
+                    无缝支持真人访谈和 AI 人设访谈两种模式
+                  </p>
+                </li>
+                <li>
+                  <h4 className="font-semibold text-lg">🎨 体验优化</h4>
+                  <p className="text-gray-700 dark:text-gray-300 mt-1 pl-1">
+                    语音输入速度和响应性优化
+                  </p>
+                  <p className="text-gray-700 dark:text-gray-300 mt-1 pl-1">
+                    重设计人设导入流程，状态显示更清晰
                   </p>
                 </li>
               </ul>

@@ -4,10 +4,29 @@
 
 ## Future Updates Preview
 
-- **🧪 Alpha Testing: New Interview Project**
-  - A more streamlined and powerful `Interview Project` workflow is currently in internal testing. It will support both AI-led and human-led interview modes, aiming to significantly simplify the execution of user research.
 - **🧪 Alpha Testing: Product R&D Flow**
-  - A new "Product R&D" research template is being tested internally. This template focuses on market trends, user needs, and creative ideation, with a report structure that emphasizes images and conceptual designs.
+  - A new "Product R&D" research template focusing on market trends, user needs, and creative ideation.
+
+---
+
+## v8.x: AI Interview & AI Persona Full Launch
+
+### `v8.0.0` — _2025-09-04_
+
+- **🚀 Full Launch: Interview Project & AI Persona Import**
+  - Both features now available to all plans (removed preview/beta status)
+  - Free/Pro plans: Access to limited features
+  - Max/Team plans: Access to full functionality
+- **✨ Major Feature: AI Interview Question Optimization**
+  - AI automatically analyzes your interview project brief and optimizes questions for better research outcomes
+  - Transforms complex questions into clear, answerable segments following research best practices
+  - Applies fact-first methodology: prioritizes concrete behaviors over abstract opinions
+  - Generates more granular questions to capture deeper insights and authentic responses
+  - Works seamlessly with both human interviews and AI persona interviews
+  - Real-time processing with background optimization and live status updates
+- **🎨 UX Improvements**
+  - Enhanced voice input speed and responsiveness
+  - Redesigned persona import workflow with better status visibility
 
 ---
 

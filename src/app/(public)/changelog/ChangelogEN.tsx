@@ -17,20 +17,60 @@ export const ChangelogEN: React.FC = () => {
             <article>
               <ul className="space-y-4">
                 <li>
-                  <h4 className="font-semibold text-lg">🧪 Alpha Testing: New Interview Project</h4>
+                  <h4 className="font-semibold text-lg">🧪 Alpha Testing: Product R&D Flow</h4>
                   <p className="text-gray-700 dark:text-gray-300 mt-1 pl-1">
-                    A more streamlined and powerful <code>Interview Project</code> workflow is
-                    currently in internal testing. It will support both AI-led and human-led
-                    interview modes, aiming to significantly simplify the execution of user
-                    research.
+                    A new &quot;Product R&D&quot; research template focusing on market trends, user needs, and creative ideation.
+                  </p>
+                </li>
+              </ul>
+            </article>
+          </div>
+        </section>
+
+        {/* v8.x */}
+        <section>
+          <h2 className="text-2xl font-bold mb-8">
+            v8.x: AI Interview & AI Persona Full Launch
+          </h2>
+          <div className="space-y-10">
+            <article>
+              <h3 className="font-semibold text-xl mb-4">
+                <code>v8.0.0</code> —{" "}
+                <em className="text-gray-600 dark:text-gray-400 font-normal">2025-09-04</em>
+              </h3>
+              <ul className="space-y-4 text-gray-800 dark:text-gray-200">
+                <li>
+                  <h4 className="font-semibold text-lg">🚀 Full Launch: Interview Project & AI Persona Import</h4>
+                  <p className="text-gray-700 dark:text-gray-300 mt-1 pl-1">
+                    Both features now available to all plans (removed preview/beta status)
+                  </p>
+                  <p className="text-gray-700 dark:text-gray-300 mt-1 pl-1">
+                    Free/Pro plans: Access to limited features<br />
+                    Max/Team plans: Access to full functionality
                   </p>
                 </li>
                 <li>
-                  <h4 className="font-semibold text-lg">🧪 Alpha Testing: Product R&D Flow</h4>
+                  <h4 className="font-semibold text-lg">✨ Major Feature: AI Interview Question Optimization</h4>
                   <p className="text-gray-700 dark:text-gray-300 mt-1 pl-1">
-                    A new &quot;Product R&D&quot; research template is being tested internally. This
-                    template focuses on market trends, user needs, and creative ideation, with a
-                    report structure that emphasizes images and conceptual designs.
+                    AI automatically analyzes your interview project brief and optimizes questions for better research outcomes
+                  </p>
+                  <p className="text-gray-700 dark:text-gray-300 mt-1 pl-1">
+                    Transforms complex questions into clear, answerable segments following research best practices
+                  </p>
+                  <p className="text-gray-700 dark:text-gray-300 mt-1 pl-1">
+                    Applies fact-first methodology and generates granular questions to capture deeper insights
+                  </p>
+                  <p className="text-gray-700 dark:text-gray-300 mt-1 pl-1">
+                    Works seamlessly with both human interviews and AI persona interviews
+                  </p>
+                </li>
+                <li>
+                  <h4 className="font-semibold text-lg">🎨 UX Improvements</h4>
+                  <p className="text-gray-700 dark:text-gray-300 mt-1 pl-1">
+                    Enhanced voice input speed and responsiveness
+                  </p>
+                  <p className="text-gray-700 dark:text-gray-300 mt-1 pl-1">
+                    Redesigned persona import workflow with better status visibility
                   </p>
                 </li>
               </ul>
