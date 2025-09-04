@@ -51,10 +51,13 @@ export function InterviewProjectsClient({ isCreateEnabled }: { isCreateEnabled: 
     }
   }, [t]);
 
-  const handleProjectCreated = useCallback((project: { token: string }) => {
-    // Navigate to project details page immediately after creation
-    router.push(`/interview/project/${project.token}`);
-  }, [router]);
+  const handleProjectCreated = useCallback(
+    (project: { token: string }) => {
+      // Navigate to project details page immediately after creation
+      router.push(`/interview/project/${project.token}`);
+    },
+    [router],
+  );
 
   useEffect(() => {
     loadProjects();

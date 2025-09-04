@@ -902,7 +902,7 @@ export async function getInterviewTranscriptMarkdown(
         success: true,
         data: markdown,
       };
-    } catch (error) {
+    } catch {
       return {
         success: false,
         code: "internal_server_error",

@@ -32,7 +32,7 @@ export default function Stars() {
     } else {
       setStars([]);
     }
-  }, [theme]);
+  }, [theme, forcedTheme]);
 
   return (
     <div>

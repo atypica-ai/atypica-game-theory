@@ -45,7 +45,8 @@ export const ChangelogZH: React.FC = () => {
                     两大功能现已面向所有套餐用户开放（移除预览/测试状态）
                   </p>
                   <p className="text-gray-700 dark:text-gray-300 mt-1 pl-1">
-                    Free/Pro 套餐：可使用基础功能<br />
+                    Free/Pro 套餐：可使用基础功能
+                    <br />
                     Max/Team 套餐：可使用全部功能
                   </p>
                 </li>

@@ -118,7 +118,6 @@ export function InterviewSessionsSection({
     });
   };
 
-
   return (
     <Card>
       <CardHeader>
