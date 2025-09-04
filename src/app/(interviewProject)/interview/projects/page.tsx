@@ -1,9 +1,5 @@
-import authOptions from "@/app/(auth)/authOptions";
-import { fetchActiveSubscription } from "@/app/account/lib";
-import { checkTezignAuth } from "@/app/admin/actions";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { Metadata } from "next";
-import { getServerSession } from "next-auth";
 import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 import { InterviewProjectsClient } from "./InterviewProjectsClient";
@@ -16,25 +12,25 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 async function InterviewProjectsPage() {
-  let isCreateEnabled = false;
-  try {
-    await checkTezignAuth();
-    isCreateEnabled = true;
-  } catch {
-    // User is not superadmin, upload remains disabled
-    isCreateEnabled = false;
-    const session = await getServerSession(authOptions);
-    if (session?.user) {
-      const result = await fetchActiveSubscription({
-        userId: session?.user?.id,
-      });
-      if (result.activeSubscription?.plan === "max" || result.activeSubscription?.plan === "team") {
-        isCreateEnabled = true;
-      }
-    }
-  }
-
-  return <InterviewProjectsClient isCreateEnabled={isCreateEnabled} />;
+  // let isCreateEnabled = false;
+  // try {
+  //   await checkTezignAuth();
+  //   isCreateEnabled = true;
+  // } catch {
+  //   // User is not superadmin, upload remains disabled
+  //   isCreateEnabled = false;
+  //   const session = await getServerSession(authOptions);
+  //   if (session?.user) {
+  //     const result = await fetchActiveSubscription({
+  //       userId: session?.user?.id,
+  //     });
+  //     if (result.activeSubscription?.plan === "max" || result.activeSubscription?.plan === "team") {
+  //       isCreateEnabled = true;
+  //     }
+  //   }
+  // }
+  // 全面开放 interviewProject
+  return <InterviewProjectsClient isCreateEnabled={true} />;
 }
 
 export default async function InterviewProjectsPageWithLoading() {
