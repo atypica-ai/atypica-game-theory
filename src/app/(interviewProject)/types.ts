@@ -11,6 +11,16 @@ export const createInterviewProjectSchema = z.object({
 
 export type CreateInterviewProjectInput = z.infer<typeof createInterviewProjectSchema>;
 
+// Update Interview Project schema
+export const updateInterviewProjectSchema = z.object({
+  brief: z
+    .string()
+    .min(10, "Brief must be at least 10 characters")
+    .max(2000, "Brief must be less than 2000 characters"),
+});
+
+export type UpdateInterviewProjectInput = z.infer<typeof updateInterviewProjectSchema>;
+
 // Share link payload
 export interface InterviewSharePayload {
   projectId: number;

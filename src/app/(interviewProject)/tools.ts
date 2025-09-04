@@ -1,6 +1,8 @@
 import "server-only";
 
 import { PlainTextToolResult } from "@/ai/tools/types";
+import { InterviewProjectExtra } from "@/prisma/client";
+import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import { tool } from "ai";
 import { z } from "zod";
@@ -70,6 +72,54 @@ export const interviewSessionTools = ({ interviewSessionId }: { interviewSession
       //   .map(([key, value]) => `${key}: ${value}`)
       //   .join("\n");
       return [{ type: "text", text: result.plainText }];
+    },
+  }),
+});
+
+export const questionOptimizationTools = ({ projectId }: { projectId: number }) => ({
+  updateQuestions: tool({
+    description: "Save the optimized interview questions and optimization reasoning to the project",
+    parameters: z.object({
+      optimizedQuestions: z.array(z.string()).describe("Array of optimized interview questions"),
+      reason: z
+        .string()
+        .describe(
+          "Explanation of why and how the questions were optimized, what changes were made and the reasoning behind them",
+        ),
+    }),
+    execute: async ({ optimizedQuestions, reason }) => {
+      try {
+        // Get current project data
+        const project = await prisma.interviewProject.findUnique({
+          where: { id: projectId },
+        });
+
+        if (!project) {
+          throw new Error(`InterviewProject ${projectId} not found`);
+        }
+
+        const currentExtra = (project.extra as InterviewProjectExtra) || {};
+
+        // Update project with optimized questions and reason
+        await prisma.interviewProject.update({
+          where: { id: projectId },
+          data: {
+            extra: {
+              ...currentExtra,
+              optimizedQuestions,
+              optimizationReason: reason,
+              lastOptimizedAt: Date.now(),
+            } as InputJsonValue,
+          },
+        });
+
+        return {
+          success: true,
+          message: `Successfully saved ${optimizedQuestions.length} optimized questions with reasoning`,
+        };
+      } catch (error) {
+        throw error;
+      }
     },
   }),
 });

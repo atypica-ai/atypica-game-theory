@@ -9,6 +9,7 @@ import { interviewAgentSystemPrompt } from "@/app/(interviewProject)/prompt";
 import { interviewSessionTools } from "@/app/(interviewProject)/tools";
 import { InterviewToolName } from "@/app/(interviewProject)/types";
 import { rootLogger } from "@/lib/logging";
+import { InterviewProjectExtra } from "@/prisma/client";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import { generateId, Message, streamText } from "ai";
@@ -72,6 +73,7 @@ export interface AutoPersonaInterviewParams {
     id: number;
     brief: string;
     userId: number;
+    extra?: InterviewProjectExtra;
   };
   sessionId: number;
   userChatId: number;
@@ -112,6 +114,7 @@ export async function runAutoPersonaInterview({
 
   const interviewerSystemPrompt = interviewAgentSystemPrompt({
     brief: project.brief,
+    optimizedQuestions: project.extra?.optimizedQuestions,
     isPersonaInterview: true,
     personaName: persona.name,
     locale,

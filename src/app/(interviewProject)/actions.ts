@@ -3,14 +3,26 @@ import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { createUserChat } from "@/lib/userChat/lib";
 import { generateToken } from "@/lib/utils";
-import { InterviewProject, InterviewSession, Persona, User } from "@/prisma/client";
+import {
+  InterviewProject,
+  InterviewProjectExtra,
+  InterviewSession,
+  Persona,
+  User,
+} from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
 import { notFound } from "next/navigation";
 import { runAutoPersonaInterview } from "./(session)/api/chat/interview-agent/auto-persona";
 import { generateInterviewReportContent } from "./artifacts/generateReport";
 import { generateInterviewShareToken, validateInterviewShareToken } from "./lib";
-import { CreateInterviewProjectInput, createInterviewProjectSchema } from "./types";
+import { processInterviewQuestionOptimization } from "./processing";
+import {
+  CreateInterviewProjectInput,
+  createInterviewProjectSchema,
+  UpdateInterviewProjectInput,
+  updateInterviewProjectSchema,
+} from "./types";
 
 /**
  * Fetch user's interview projects
@@ -44,11 +56,12 @@ export async function fetchUserInterviewProjects(): Promise<
     });
     return {
       success: true,
-      data: projects.map(({ sessions, ...project }) => {
+      data: projects.map(({ sessions, extra, ...project }) => {
         const humanSessions = sessions.filter((s) => s.intervieweeUserId).length;
         const personaSessions = sessions.filter((s) => s.intervieweePersonaId).length;
         return {
           ...project,
+          extra: extra as InterviewProjectExtra,
           sessionStats: {
             humanSessions,
             personaSessions,
@@ -73,9 +86,96 @@ export async function createInterviewProject(
     const project = await prisma.interviewProject.create({
       data: { brief, userId, token },
     });
+
+    // Start question optimization in background
+    waitUntil(
+      processInterviewQuestionOptimization(project.id).catch((error) => {
+        console.error("Question optimization failed:", error);
+      }),
+    );
+
     return {
       success: true,
-      data: project,
+      data: {
+        ...project,
+        extra: project.extra as InterviewProjectExtra,
+      },
+    };
+  });
+}
+
+/**
+ * Update interview project brief
+ */
+export async function updateInterviewProject(
+  projectId: number,
+  input: UpdateInterviewProjectInput,
+): Promise<ServerActionResult<InterviewProject>> {
+  const { brief } = updateInterviewProjectSchema.parse(input);
+  return withAuth(async (user) => {
+    const project = await prisma.interviewProject.findUnique({
+      where: { id: projectId, userId: user.id },
+    });
+
+    if (!project) {
+      return {
+        success: false,
+        code: "not_found",
+        message: "Interview project not found",
+      };
+    }
+
+    const updatedProject = await prisma.interviewProject.update({
+      where: { id: projectId },
+      data: { brief },
+    });
+
+    // Start question optimization in background after brief update
+    waitUntil(
+      processInterviewQuestionOptimization(projectId).catch((error) => {
+        console.error("Question optimization failed:", error);
+      }),
+    );
+
+    return {
+      success: true,
+      data: {
+        ...updatedProject,
+        extra: updatedProject.extra as InterviewProjectExtra,
+      },
+    };
+  });
+}
+
+/**
+ * Manually trigger question optimization
+ */
+export async function optimizeInterviewQuestions(
+  projectId: number,
+): Promise<ServerActionResult<void>> {
+  return withAuth(async (user) => {
+    const project = await prisma.interviewProject.findUnique({
+      where: { id: projectId, userId: user.id },
+    });
+
+    if (!project) {
+      return {
+        success: false,
+        code: "not_found",
+        message: "Interview project not found",
+      };
+    }
+
+    // Start question optimization in background
+    waitUntil(
+      processInterviewQuestionOptimization(projectId).catch((error) => {
+        console.error("Question optimization failed:", error);
+      }),
+    );
+
+    return {
+      success: true,
+      data: undefined,
     };
   });
 }
@@ -288,6 +388,7 @@ export async function createPersonaInterviewSession({
           id: project.id,
           brief: project.brief,
           userId: project.userId,
+          extra: project.extra as InterviewProjectExtra,
         },
         personaId: persona.id,
       }),
@@ -398,7 +499,7 @@ export async function restartPersonaInterviewSession({
       },
       include: {
         userChat: { select: { id: true, token: true } },
-        project: { select: { id: true, userId: true, brief: true } },
+        project: { select: { id: true, userId: true, brief: true, extra: true } },
       },
     });
 
@@ -427,6 +528,7 @@ export async function restartPersonaInterviewSession({
           id: project.id,
           brief: project.brief,
           userId: project.userId,
+          extra: project.extra as InterviewProjectExtra,
         },
         personaId: intervieweePersonaId,
       }),
@@ -524,6 +626,7 @@ export async function fetchInterviewSessionChat({
     interviewSessionId: number;
     project: Pick<InterviewProject, "id" | "brief"> & {
       user: Pick<User, "id" | "name" | "email">;
+      extra: InterviewProjectExtra;
     };
     userChatId: number;
     intervieweeUser: Pick<User, "id" | "name" | "email">;
@@ -544,6 +647,7 @@ export async function fetchInterviewSessionChat({
               select: {
                 id: true,
                 brief: true,
+                extra: true,
                 user: {
                   select: { id: true, name: true, email: true },
                 },
@@ -578,7 +682,10 @@ export async function fetchInterviewSessionChat({
       success: true,
       data: {
         interviewSessionId: session.id,
-        project: session.project,
+        project: {
+          ...session.project,
+          extra: session.project.extra as InterviewProjectExtra,
+        },
         userChatId: userChat.id,
         intervieweeUser: session.intervieweeUser,
       },
