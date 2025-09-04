@@ -7,6 +7,7 @@ import {
   InterviewProject,
   InterviewProjectExtra,
   InterviewSession,
+  InterviewSessionExtra,
   Persona,
   User,
 } from "@/prisma/client";
@@ -215,6 +216,7 @@ export async function fetchInterviewSessionStatsByProjectToken({
             select: {
               id: true,
               title: true,
+              extra: true,
               intervieweeUserId: true,
               intervieweePersonaId: true,
             },
@@ -224,15 +226,15 @@ export async function fetchInterviewSessionStatsByProjectToken({
       .catch(() => notFound());
 
     const total = sessions.length;
-    const completed = sessions.filter((s) => s.title && s.title.trim() !== "").length;
+    const completed = sessions.filter((s) => !(s.extra as InterviewSessionExtra)?.ongoing).length;
     const incomplete = total - completed;
 
     const humanSessions = sessions.filter((s) => s.intervieweeUserId);
-    const humanCompleted = humanSessions.filter((s) => s.title && s.title.trim() !== "").length;
+    const humanCompleted = humanSessions.filter((s) => !(s.extra as InterviewSessionExtra)?.ongoing).length;
     const humanIncomplete = humanSessions.length - humanCompleted;
 
     const personaSessions = sessions.filter((s) => s.intervieweePersonaId);
-    const personaCompleted = personaSessions.filter((s) => s.title && s.title.trim() !== "").length;
+    const personaCompleted = personaSessions.filter((s) => !(s.extra as InterviewSessionExtra)?.ongoing).length;
     const personaIncomplete = personaSessions.length - personaCompleted;
 
     return {
@@ -269,6 +271,7 @@ export async function fetchInterviewSessionsByProjectToken({
       id: number;
       title: string | null;
       createdAt: Date;
+      extra: InterviewSessionExtra;
       userChat: {
         id: number;
         token: string;
@@ -306,6 +309,7 @@ export async function fetchInterviewSessionsByProjectToken({
       select: {
         id: true,
         title: true,
+        extra: true,
         intervieweeUser: {
           select: { id: true, name: true, email: true },
         },
@@ -322,7 +326,10 @@ export async function fetchInterviewSessionsByProjectToken({
 
     return {
       success: true,
-      data: sessions,
+      data: sessions.map(({extra, ...session}) => ({
+        extra: extra as InterviewSessionExtra,
+        ...session,
+      })),
     };
   });
 }
@@ -630,6 +637,7 @@ export async function fetchInterviewSessionChat({
     };
     userChatId: number;
     intervieweeUser: Pick<User, "id" | "name" | "email">;
+    extra: InterviewSessionExtra;
   }>
 > {
   return withAuth(async (user) => {
@@ -643,6 +651,7 @@ export async function fetchInterviewSessionChat({
         interviewSession: {
           select: {
             id: true,
+            extra: true,
             project: {
               select: {
                 id: true,
@@ -688,6 +697,7 @@ export async function fetchInterviewSessionChat({
         },
         userChatId: userChat.id,
         intervieweeUser: session.intervieweeUser,
+        extra: session.extra as InterviewSessionExtra,
       },
     };
   });
@@ -757,11 +767,17 @@ export async function generateInterviewReport(projectId: number): Promise<
       })
       .catch(() => notFound());
 
+    // First get completed session IDs using raw SQL for efficient filtering
+    const completedSessionIds = await prisma.$queryRaw<{id: number}[]>`
+      SELECT id FROM "InterviewSession" 
+      WHERE "projectId" = ${project.id} 
+      AND extra->>'ongoing' != 'true'
+      AND title IS NOT NULL AND title != ''
+    `;
+
     const sessions = await prisma.interviewSession.findMany({
       where: {
-        projectId: project.id,
-        // filter completed sessions with a title
-        title: { not: "" },
+        id: { in: completedSessionIds.map(s => s.id) },
       },
       select: {
         title: true,

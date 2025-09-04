@@ -9,7 +9,7 @@ import { interviewAgentSystemPrompt } from "@/app/(interviewProject)/prompt";
 import { interviewSessionTools } from "@/app/(interviewProject)/tools";
 import { InterviewToolName } from "@/app/(interviewProject)/types";
 import { rootLogger } from "@/lib/logging";
-import { InterviewProjectExtra } from "@/prisma/client";
+import { InterviewProjectExtra, InterviewSessionExtra } from "@/prisma/client";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import { generateId, Message, streamText } from "ai";
@@ -98,6 +98,23 @@ export async function runAutoPersonaInterview({
     where: { id: userChatId, kind: "interviewSession" },
     data: { backgroundToken },
   });
+
+  // Check and set interview session status if needed
+  const currentSession = await prisma.interviewSession
+    .findUniqueOrThrow({ where: { id: sessionId } })
+    .then(({ extra, ...session }) => ({ extra: extra as InterviewSessionExtra, ...session }));
+  if (!currentSession.extra.ongoing || !currentSession.extra.startsAt) {
+    await prisma.interviewSession.update({
+      where: { id: sessionId },
+      data: {
+        extra: {
+          ...currentSession.extra,
+          ongoing: true,
+          startsAt: Date.now(),
+        } as InputJsonValue,
+      },
+    });
+  }
 
   const logger = rootLogger.child({
     userChatId,

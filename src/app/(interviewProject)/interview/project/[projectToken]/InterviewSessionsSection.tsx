@@ -75,9 +75,6 @@ export function InterviewSessionsSection({
     loadSessions();
   }, [loadSessions]);
 
-  const isSessionCompleted = (session: InterviewSessionItem) => {
-    return session.title && session.title.trim() !== "";
-  };
 
   const getSessionDisplayName = (session: InterviewSessionItem) => {
     if (session.intervieweePersona) {
@@ -121,10 +118,10 @@ export function InterviewSessionsSection({
         ) : (
           <div className="space-y-3">
             {(readOnly
-              ? sessions.filter((session) => !!session.title) // 如果是分享，只显示已完成的
+              ? sessions.filter((session) => !session.extra.ongoing) // 如果是分享，只显示已完成的
               : sessions
             ).map((session) => {
-              const isCompleted = isSessionCompleted(session);
+              const isCompleted = !session.extra.ongoing;
               return (
                 <div
                   key={session.id}

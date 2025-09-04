@@ -12,6 +12,8 @@ import { interviewSessionTools } from "@/app/(interviewProject)/tools";
 import { InterviewToolName } from "@/app/(interviewProject)/types";
 import { rootLogger } from "@/lib/logging";
 import { throwServerActionError } from "@/lib/serverAction";
+import { InputJsonValue } from "@/prisma/client/runtime/library";
+import { prisma } from "@/prisma/prisma";
 import { CoreMessage, generateId, smoothStream, streamText } from "ai";
 import { getLocale } from "next-intl/server";
 import { after, NextResponse } from "next/server";
@@ -56,8 +58,21 @@ export async function POST(req: Request) {
   }
 
   const interviewSession = sessionResult.data;
+  const { interviewSessionId, project, userChatId, extra: sessionExtra } = interviewSession;
 
-  const { interviewSessionId, project, userChatId } = interviewSession;
+  // Check and set interview session status if needed
+  if (!sessionExtra.ongoing || !sessionExtra.startsAt) {
+    await prisma.interviewSession.update({
+      where: { id: interviewSessionId },
+      data: {
+        extra: {
+          ...sessionExtra,
+          ongoing: true,
+          startsAt: Date.now(),
+        } as InputJsonValue,
+      },
+    });
+  }
 
   const chatLogger = rootLogger.child({
     userChatId,

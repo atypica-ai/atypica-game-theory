@@ -1,7 +1,7 @@
 import "server-only";
 
 import { PlainTextToolResult } from "@/ai/tools/types";
-import { InterviewProjectExtra } from "@/prisma/client";
+import { InterviewProjectExtra, InterviewSessionExtra } from "@/prisma/client";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import { tool } from "ai";
@@ -27,12 +27,22 @@ export const interviewSessionTools = ({ interviewSessionId }: { interviewSession
       return [{ type: "text", text: result.plainText }];
     },
     execute: async ({ title, interviewSummary }) => {
+      // Get current session to preserve existing extra data
+      const currentSession = await prisma.interviewSession
+        .findUniqueOrThrow({ where: { id: interviewSessionId } })
+        .then(({ extra, ...session }) => ({ extra: extra as InterviewSessionExtra, ...session }));
       await Promise.all([
         // 故意等10s，这样前端可以感觉到工具正在被执行。
         new Promise((resolve) => setTimeout(resolve, 10_000)),
         prisma.interviewSession.update({
           where: { id: interviewSessionId },
-          data: { title: (title ?? "").slice(0, 200) },
+          data: {
+            title: (title ?? "").slice(0, 200),
+            extra: {
+              ...currentSession.extra,
+              ongoing: undefined,
+            } as InputJsonValue,
+          },
         }),
       ]);
       return {
