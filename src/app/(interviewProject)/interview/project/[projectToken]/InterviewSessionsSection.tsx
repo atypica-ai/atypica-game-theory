@@ -8,6 +8,7 @@ import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Pagination } from "@/components/ui/pagination";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn, formatDate } from "@/lib/utils";
 import {
@@ -41,21 +42,35 @@ export function InterviewSessionsSection({
   const [sessions, setSessions] = useState<InterviewSessionItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState<{
+    page: number;
+    pageSize: number;
+    totalCount: number;
+    totalPages: number;
+  } | null>(null);
 
   const loadSessions = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const result = await fetchInterviewSessionsByProjectToken({ projectToken });
+      const result = await fetchInterviewSessionsByProjectToken({
+        projectToken,
+        page: currentPage,
+        pageSize: 10,
+      });
       if (!result.success) throw result;
       setSessions(result.data);
+      if (result.pagination) {
+        setPagination(result.pagination);
+      }
     } catch (error) {
       setError((error as Error).message);
       console.log("Error fetching sessions:", error);
     } finally {
       setLoading(false);
     }
-  }, [projectToken]);
+  }, [projectToken, currentPage]);
 
   const deleteInterviewSession = useCallback(async (sessionId: number) => {
     setLoading(true);
@@ -74,7 +89,6 @@ export function InterviewSessionsSection({
   useEffect(() => {
     loadSessions();
   }, [loadSessions]);
-
 
   const getSessionDisplayName = (session: InterviewSessionItem) => {
     if (session.intervieweePersona) {
@@ -197,6 +211,17 @@ export function InterviewSessionsSection({
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {pagination && pagination.totalPages > 1 && (
+          <div className="mt-6 flex justify-center">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={pagination.totalPages}
+              onPageChange={(page) => setCurrentPage(page)}
+            />
           </div>
         )}
       </CardContent>

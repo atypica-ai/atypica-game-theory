@@ -230,11 +230,15 @@ export async function fetchInterviewSessionStatsByProjectToken({
     const incomplete = total - completed;
 
     const humanSessions = sessions.filter((s) => s.intervieweeUserId);
-    const humanCompleted = humanSessions.filter((s) => !(s.extra as InterviewSessionExtra)?.ongoing).length;
+    const humanCompleted = humanSessions.filter(
+      (s) => !(s.extra as InterviewSessionExtra)?.ongoing,
+    ).length;
     const humanIncomplete = humanSessions.length - humanCompleted;
 
     const personaSessions = sessions.filter((s) => s.intervieweePersonaId);
-    const personaCompleted = personaSessions.filter((s) => !(s.extra as InterviewSessionExtra)?.ongoing).length;
+    const personaCompleted = personaSessions.filter(
+      (s) => !(s.extra as InterviewSessionExtra)?.ongoing,
+    ).length;
     const personaIncomplete = personaSessions.length - personaCompleted;
 
     return {
@@ -263,8 +267,12 @@ export async function fetchInterviewSessionStatsByProjectToken({
  */
 export async function fetchInterviewSessionsByProjectToken({
   projectToken,
+  page = 1,
+  pageSize = 10,
 }: {
   projectToken: string;
+  page?: number;
+  pageSize?: number;
 }): Promise<
   ServerActionResult<
     Array<{
@@ -304,32 +312,46 @@ export async function fetchInterviewSessionsByProjectToken({
       };
     }
 
-    const sessions = await prisma.interviewSession.findMany({
-      where: { projectId: project.id },
-      select: {
-        id: true,
-        title: true,
-        extra: true,
-        intervieweeUser: {
-          select: { id: true, name: true, email: true },
+    const skip = (page - 1) * pageSize;
+    const whereCondition = { projectId: project.id };
+
+    const [sessions, totalCount] = await Promise.all([
+      prisma.interviewSession.findMany({
+        where: whereCondition,
+        select: {
+          id: true,
+          title: true,
+          extra: true,
+          intervieweeUser: {
+            select: { id: true, name: true, email: true },
+          },
+          intervieweePersona: {
+            select: { id: true, name: true },
+          },
+          userChat: {
+            select: { id: true, token: true },
+          },
+          createdAt: true,
         },
-        intervieweePersona: {
-          select: { id: true, name: true },
-        },
-        userChat: {
-          select: { id: true, token: true },
-        },
-        createdAt: true,
-      },
-      orderBy: { createdAt: "desc" },
-    });
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: pageSize,
+      }),
+      prisma.interviewSession.count({ where: whereCondition }),
+    ]);
 
     return {
       success: true,
-      data: sessions.map(({extra, ...session}) => ({
+      data: sessions.map(({ extra, ...session }) => ({
         extra: extra as InterviewSessionExtra,
         ...session,
       })),
+      pagination: {
+        page,
+        pageSize,
+        totalCount,
+        totalPages: Math.ceil(totalCount / pageSize),
+      },
     };
   });
 }
@@ -768,16 +790,16 @@ export async function generateInterviewReport(projectId: number): Promise<
       .catch(() => notFound());
 
     // First get completed session IDs using raw SQL for efficient filtering
-    const completedSessionIds = await prisma.$queryRaw<{id: number}[]>`
-      SELECT id FROM "InterviewSession" 
-      WHERE "projectId" = ${project.id} 
+    const completedSessionIds = await prisma.$queryRaw<{ id: number }[]>`
+      SELECT id FROM "InterviewSession"
+      WHERE "projectId" = ${project.id}
       AND extra->>'ongoing' != 'true'
       AND title IS NOT NULL AND title != ''
     `;
 
     const sessions = await prisma.interviewSession.findMany({
       where: {
-        id: { in: completedSessionIds.map(s => s.id) },
+        id: { in: completedSessionIds.map((s) => s.id) },
       },
       select: {
         title: true,
