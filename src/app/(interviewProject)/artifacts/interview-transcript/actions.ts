@@ -73,7 +73,7 @@ export async function generateInterviewTranscriptPDFAction(
     const origin = await getRequestOrigin();
     const transcriptUrl = `${origin}/artifacts/interview-transcript/${userChatToken}/raw?locale=${locale}&theme=light`;
 
-    const response = await fetch(`${apiBase}/html-to-pdf`, {
+    const response = await fetch(`${apiBase}/html-to-paginated-pdf`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
