@@ -119,6 +119,7 @@ declare module "@/prisma/client" {
     error: string;        // 错误信息
     ongoing: boolean;     // 是否正在进行中
     startsAt: number;     // 开始时间戳（首次消息时设置）
+    pdfObjectUrl: string; // PDF文件的S3对象URL
   }>;
 
   // 只覆盖这个不够，findUnique 返回的类型还是原来的

@@ -1,5 +1,8 @@
+"use client";
+
 import { InterviewTranscript } from "@/app/(interviewProject)/lib";
 import { formatDate } from "@/lib/utils";
+import { useLocale, useTranslations } from "next-intl";
 
 interface InterviewTranscriptDisplayProps {
   transcript: InterviewTranscript;
@@ -16,6 +19,8 @@ export function InterviewTranscriptDisplay({
   transcript,
   sessionInfo,
 }: InterviewTranscriptDisplayProps) {
+  const t = useTranslations("InterviewProject.transcriptDisplay");
+  const locale = useLocale();
   const { title, summary, participantInfo, messages } = transcript;
 
   return (
@@ -24,11 +29,11 @@ export function InterviewTranscriptDisplay({
       <div className="text-center mb-12">
         <h1 className="text-2xl font-bold text-foreground/90 mb-4">{title}</h1>
         <div className="text-sm text-gray-600 space-y-1">
-          <p>{formatDate(sessionInfo.createdAt, "zh-CN")}</p>
+          <p>{formatDate(sessionInfo.createdAt, locale)}</p>
           <p>
             {sessionInfo.intervieweePersona
-              ? `${sessionInfo.intervieweePersona.name}（AI模拟）`
-              : sessionInfo.intervieweeUser?.name || "未知"}
+              ? `${sessionInfo.intervieweePersona.name}（${t("aiSimulated")}）`
+              : sessionInfo.intervieweeUser?.name || t("unknown")}
           </p>
         </div>
       </div>
@@ -36,7 +41,7 @@ export function InterviewTranscriptDisplay({
       {/* Research Objective */}
       {/*<section className="mb-8">
         <h2 className="text-xl font-semibold text-foreground/90 mb-3 pb-1 border-b border-gray-300">
-          一、研究目标
+          {t("researchObjective")}
         </h2>
         <div className="text-foreground/80 text-sm">
           <Markdown>{sessionInfo.projectBrief}</Markdown>
@@ -47,7 +52,7 @@ export function InterviewTranscriptDisplay({
       {participantInfo && Object.keys(participantInfo).length > 0 && (
         <section className="mb-12">
           <h2 className="text-xl font-semibold text-foreground/80 mb-3 pb-1 border-b border-border">
-            受访者基本信息
+            {t("intervieweeInfo")}
           </h2>
           <div className="space-y-2 text-foreground/80">
             {Object.entries(participantInfo).map(([label, value]) => (
@@ -64,7 +69,7 @@ export function InterviewTranscriptDisplay({
       {messages.length > 0 && (
         <section className="mb-12">
           <h2 className="text-xl font-semibold text-foreground/90 mb-3 pb-1 border-b border-border">
-            访谈内容
+            {t("interviewContent")}
           </h2>
           {messages
             .filter((message) => !/\[READY\]|\[CONTINUE\]|\[USER_HESITATED\]/.test(message.content))
@@ -72,12 +77,12 @@ export function InterviewTranscriptDisplay({
               <div key={index} className="leading-relaxed text-sm">
                 {message.role === "assistant" ? (
                   <div className="mb-2">
-                    <strong className="font-bold">访谈者：</strong>
+                    <strong className="font-bold">{t("interviewer")}</strong>
                     <strong className="font-bold ml-1">{message.content}</strong>
                   </div>
                 ) : (
                   <div className="text-foreground/80 mb-8">
-                    <span>受访者：</span>
+                    <span>{t("interviewee")}</span>
                     <span className="ml-1">{message.content}</span>
                   </div>
                 )}
@@ -90,7 +95,7 @@ export function InterviewTranscriptDisplay({
       {summary && (
         <section className="mb-12">
           <h2 className="text-xl font-semibold text-foreground/90 mb-3 pb-1 border-b border-border">
-            访谈总结
+            {t("interviewSummary")}
           </h2>
           <p className="text-foreground/80 whitespace-pre-wrap leading-relaxed text-sm">
             {summary}
@@ -101,7 +106,7 @@ export function InterviewTranscriptDisplay({
       {/* Document Footer */}
       <div className="mt-12 pt-6 border-t border-gray-200 text-center">
         <p className="text-xs text-gray-500">
-          本笔录由系统自动生成于 {new Date().toLocaleDateString("zh-CN")}
+          {t("generatedNote")} {new Date().toLocaleDateString(locale)}
         </p>
       </div>
     </div>

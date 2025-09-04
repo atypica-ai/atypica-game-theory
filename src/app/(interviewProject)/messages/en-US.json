@@ -210,6 +210,28 @@
       "notSelected": "Not selected",
       "submitForm": "Submit Form",
       "formSubmitted": "Form submitted"
+    },
+    "transcriptDialog": {
+      "title": "Interview Transcript",
+      "iframeTitle": "Interview Transcript",
+      "downloadPdf": "Download PDF",
+      "pdfGenerating": "Generating PDF...",
+      "pdfDownloadSuccess": "PDF downloaded successfully",
+      "pdfDownloadFailed": "Failed to generate PDF",
+      "loadError": "Failed to load transcript",
+      "close": "Close"
+    },
+    "transcriptDisplay": {
+      "aiSimulated": "AI Simulated",
+      "unknown": "Unknown",
+      "researchObjective": "I. Research Objective",
+      "intervieweeInfo": "Interviewee Information",
+      "interviewContent": "Interview Content",
+      "interviewer": "Interviewer:",
+      "interviewee": "Interviewee:",
+      "interviewSummary": "Interview Summary",
+      "generatedNote": "This transcript was automatically generated on",
+      "defaultFileName": "Interview Transcript"
     }
   }
 }

@@ -7,7 +7,6 @@ import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Pagination } from "@/components/ui/pagination";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn, formatDate } from "@/lib/utils";
@@ -25,6 +24,7 @@ import {
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
+import { TranscriptDialog } from "./TranscriptDialog";
 
 type InterviewSessionItem = ExtractServerActionData<
   typeof fetchInterviewSessionsByProjectToken
@@ -117,6 +117,7 @@ export function InterviewSessionsSection({
       userChatToken: session.userChat.token,
     });
   };
+
 
   return (
     <Card>
@@ -256,30 +257,11 @@ export function InterviewSessionsSection({
         )}
       </CardContent>
 
-      {/* Transcript Dialog */}
-      <Dialog
+      <TranscriptDialog
         open={transcriptDialog.open}
         onOpenChange={(open) => setTranscriptDialog((prev) => ({ ...prev, open }))}
-      >
-        <DialogContent className="sm:max-w-6xl max-h-[90vh] p-0">
-          <DialogHeader className="px-6 py-4 border-b">
-            <DialogTitle>访谈笔录</DialogTitle>
-          </DialogHeader>
-          <div className="h-[75vh] w-full">
-            {transcriptDialog.userChatToken ? (
-              <iframe
-                src={`/artifacts/interview-transcript/${transcriptDialog.userChatToken}/raw`}
-                className="w-full h-full border-0 rounded-b-lg"
-                title="访谈笔录"
-              />
-            ) : (
-              <div className="flex items-center justify-center h-full text-muted-foreground">
-                无法加载笔录
-              </div>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
+        userChatToken={transcriptDialog.userChatToken}
+      />
     </Card>
   );
 }

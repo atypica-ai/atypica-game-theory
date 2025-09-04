@@ -210,6 +210,28 @@
       "notSelected": "未选择",
       "submitForm": "提交表单",
       "formSubmitted": "表单已提交"
+    },
+    "transcriptDialog": {
+      "title": "访谈笔录",
+      "iframeTitle": "访谈笔录",
+      "downloadPdf": "下载PDF",
+      "pdfGenerating": "生成PDF中...",
+      "pdfDownloadSuccess": "PDF下载成功",
+      "pdfDownloadFailed": "PDF生成失败",
+      "loadError": "无法加载笔录",
+      "close": "关闭"
+    },
+    "transcriptDisplay": {
+      "aiSimulated": "AI模拟",
+      "unknown": "未知",
+      "researchObjective": "一、研究目标",
+      "intervieweeInfo": "受访者基本信息",
+      "interviewContent": "访谈内容",
+      "interviewer": "访谈者：",
+      "interviewee": "受访者：",
+      "interviewSummary": "访谈总结",
+      "generatedNote": "本笔录由系统自动生成于",
+      "defaultFileName": "访谈笔录"
     }
   }
 }
