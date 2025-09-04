@@ -20,7 +20,7 @@ import { toast } from "sonner";
 interface CreateProjectDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onProjectCreated: () => void;
+  onProjectCreated: (project: { token: string }) => void;
 }
 
 export function CreateProjectDialog({
@@ -55,7 +55,7 @@ export function CreateProjectDialog({
       setBrief("");
       setQuestions("");
       onOpenChange(false);
-      onProjectCreated();
+      onProjectCreated({ token: result.data.token });
     } catch (error) {
       toast.error((error as Error).message || t("error"));
       setErrors([(error as Error).message || t("error")]);

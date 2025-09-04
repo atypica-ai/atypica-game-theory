@@ -1,4 +1,5 @@
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
+import { InterviewProjectExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -25,6 +26,7 @@ async function ProjectSharePage({ params }: { params: Promise<{ projectToken: st
       id: true,
       token: true,
       brief: true,
+      extra: true,
       createdAt: true,
     },
   });
@@ -39,6 +41,7 @@ async function ProjectSharePage({ params }: { params: Promise<{ projectToken: st
         id: interviewProject.id,
         token: interviewProject.token,
         brief: interviewProject.brief,
+        extra: interviewProject.extra as InterviewProjectExtra,
         createdAt: interviewProject.createdAt,
       }}
       readOnly={true}

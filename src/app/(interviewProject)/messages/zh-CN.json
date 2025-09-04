@@ -52,7 +52,10 @@
       "upgradeToMaxPlan": "请升级至 MAX 套餐以使用此功能",
       "humanSessions": "真人",
       "aiSessions": "AI 人设",
-      "loadFailed": "加载项目失败"
+      "loadFailed": "加载项目失败",
+      "optimizing": "优化中",
+      "optimized": "已优化",
+      "questionsOptimized": "问题已优化"
     },
     "projectDetails": {
       "title": "访谈项目",
@@ -82,7 +85,14 @@
       "noInterviewsDescription": "分享项目链接或与 AI 人设进行访谈以开始",
       "completed": "已完成",
       "inProgress": "进行中",
-      "createInterviewFailed": "创建访谈会话失败"
+      "optimizing": "优化中",
+      "optimized": "已优化",
+      "createInterviewFailed": "创建访谈会话失败",
+      "optimizedQuestions": "优化后的问题",
+      "optimizedQuestionsDescription": "基于项目简介生成的优化访谈问题",
+      "optimizationReason": "优化原因",
+      "reoptimizeQuestions": "重新优化问题",
+      "reoptimizeQuestionsDescription": "基于当前项目简介重新生成优化的访谈问题"
     },
     "ShareInterviewProjectButton": {
       "shareProject": "分享",

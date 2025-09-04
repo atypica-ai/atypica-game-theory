@@ -1,12 +1,25 @@
 "use client";
-import { createPersonaInterviewSession } from "@/app/(interviewProject)/actions";
+import {
+  createPersonaInterviewSession,
+  optimizeInterviewQuestions,
+} from "@/app/(interviewProject)/actions";
 import { SelectPersonaDialog } from "@/components/SelectPersonaDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { formatDate } from "@/lib/utils";
-import { Bot, MessageSquare, Share2 } from "lucide-react";
+import { InterviewProjectExtra } from "@/prisma/client";
+import {
+  BotIcon,
+  InfoIcon,
+  Loader2Icon,
+  MessageSquareIcon,
+  Share2Icon,
+  SparklesIcon,
+} from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { useCallback, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { InterviewReportsSection } from "./InterviewReportsSection";
 import { InterviewSessionsSection } from "./InterviewSessionsSection";
@@ -22,16 +35,27 @@ export function ProjectDetails({
     id: number;
     token: string;
     brief: string;
+    extra: InterviewProjectExtra;
     createdAt: Date;
   };
   readOnly?: boolean;
 }) {
   const locale = useLocale();
   const t = useTranslations("InterviewProject.projectDetails");
-  // const router = useRouter();
+  const router = useRouter();
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [personaDialogOpen, setPersonaDialogOpen] = useState(false);
   const [, setCreatingPersonaSessions] = useState(false);
+  const [optimizing, setOptimizing] = useState(false);
+
+  // Polling mechanism - refresh every 10 seconds during processing
+  useEffect(() => {
+    if (!project.extra?.processing) return;
+    const interval = setInterval(() => {
+      router.refresh();
+    }, 10000); // Poll every 10 seconds
+    return () => clearInterval(interval);
+  }, [project.extra?.processing, router]);
 
   const onSelectPersonas = useCallback(
     async (selectedIds: number[]) => {
@@ -54,6 +78,20 @@ export function ProjectDetails({
     [project.id, t],
   );
 
+  const handleReoptimizeQuestions = useCallback(async () => {
+    setOptimizing(true);
+    try {
+      const result = await optimizeInterviewQuestions(project.id);
+      if (!result.success) throw result;
+      toast.success(t("reoptimizeQuestions"));
+      window.location.reload();
+    } catch (error) {
+      toast.error((error as Error).message || "优化问题失败");
+    } finally {
+      setOptimizing(false);
+    }
+  }, [project.id, t]);
+
   return (
     <div className="space-y-6 my-6 container max-w-6xl mx-auto">
       {/* Header */}
@@ -70,11 +108,11 @@ export function ProjectDetails({
         {!readOnly ? (
           <div className="ml-auto flex items-center space-x-2">
             <Button variant="outline" onClick={() => setInviteDialogOpen(true)}>
-              <Share2 className="h-4 w-4" />
+              <Share2Icon className="h-4 w-4" />
               {t("interviewHuman")}
             </Button>
             <Button variant="outline" onClick={() => setPersonaDialogOpen(true)}>
-              <Bot className="h-4 w-4" />
+              <BotIcon className="h-4 w-4" />
               {t("interviewAI")}
             </Button>
           </div>
@@ -84,9 +122,22 @@ export function ProjectDetails({
       {/* Project Brief */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center">
-            <MessageSquare className="h-5 w-5 mr-2" />
-            {t("projectBrief")}
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center">
+              <MessageSquareIcon className="h-5 w-5 mr-2" />
+              {t("projectBrief")}
+            </div>
+            {!readOnly && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleReoptimizeQuestions}
+                disabled={optimizing || project.extra?.processing}
+              >
+                <SparklesIcon className="h-3 w-3 mr-1" />
+                {t("reoptimizeQuestions")}
+              </Button>
+            )}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -95,6 +146,62 @@ export function ProjectDetails({
           </p>
         </CardContent>
       </Card>
+
+      {/* Optimized Questions */}
+      {(project.extra?.processing || project.extra?.optimizedQuestions) && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center">
+                <SparklesIcon className="h-5 w-5 mr-2" />
+                {t("optimizedQuestions")}
+              </div>
+              {project.extra?.optimizationReason && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                        <InfoIcon className="h-4 w-4 text-muted-foreground" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="left" className="max-w-md">
+                      <p className="text-sm whitespace-pre-wrap">
+                        {project.extra.optimizationReason}
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+            </CardTitle>
+            <p className="text-sm text-muted-foreground mt-1">
+              {t("optimizedQuestionsDescription")}
+            </p>
+          </CardHeader>
+          <CardContent>
+            {project.extra?.processing ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="text-center">
+                  <Loader2Icon className="h-8 w-8 animate-spin mx-auto mb-2 text-muted-foreground" />
+                  <p className="text-sm text-muted-foreground">{t("optimizing")}</p>
+                </div>
+              </div>
+            ) : project.extra?.optimizedQuestions && project.extra.optimizedQuestions.length > 0 ? (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  {project.extra.optimizedQuestions.map((question, index) => (
+                    <div key={index} className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
+                      <div className="bg-primary/20 rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <span className="text-xs font-medium text-primary">{index + 1}</span>
+                      </div>
+                      <p className="text-sm leading-relaxed">{question}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Statistics */}
       <ProjectStatsSection projectToken={project.token} readOnly={readOnly} />

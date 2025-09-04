@@ -12,22 +12,26 @@ import {
 } from "@/components/ui/card";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDate } from "@/lib/utils";
+import { InterviewProjectExtra } from "@/prisma/client";
 import {
   BotIcon,
   BriefcaseIcon,
   CalendarIcon,
   Loader2Icon,
   PlusIcon,
+  SparklesIcon,
   UsersIcon,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { CreateProjectDialog } from "./CreateProjectDialog";
 
 export function InterviewProjectsClient({ isCreateEnabled }: { isCreateEnabled: boolean }) {
   const locale = useLocale();
+  const router = useRouter();
   const t = useTranslations("InterviewProject.projectsList");
   const [projects, setProjects] = useState<
     ExtractServerActionData<typeof fetchUserInterviewProjects>
@@ -46,6 +50,11 @@ export function InterviewProjectsClient({ isCreateEnabled }: { isCreateEnabled: 
       setLoading(false);
     }
   }, [t]);
+
+  const handleProjectCreated = useCallback((project: { token: string }) => {
+    // Navigate to project details page immediately after creation
+    router.push(`/interview/project/${project.token}`);
+  }, [router]);
 
   useEffect(() => {
     loadProjects();
@@ -134,6 +143,25 @@ export function InterviewProjectsClient({ isCreateEnabled }: { isCreateEnabled: 
                       <BotIcon className="h-3 w-3 mr-1" />
                       {project.sessionStats.personaSessions} {t("aiSessions")}
                     </Badge>
+                    {(() => {
+                      const extra = project.extra as InterviewProjectExtra;
+                      if (extra?.processing) {
+                        return (
+                          <Badge variant="outline" className="text-xs">
+                            <SparklesIcon className="h-3 w-3 mr-1 animate-pulse" />
+                            {t("optimizing")}
+                          </Badge>
+                        );
+                      } else if (extra?.optimizedQuestions && extra.optimizedQuestions.length > 0) {
+                        return (
+                          <Badge variant="outline" className="text-xs">
+                            <SparklesIcon className="h-3 w-3 mr-1" />
+                            {t("optimized")}
+                          </Badge>
+                        );
+                      }
+                      return null;
+                    })()}
                   </div>
                 </CardContent>
                 <CardFooter>
@@ -153,7 +181,7 @@ export function InterviewProjectsClient({ isCreateEnabled }: { isCreateEnabled: 
         <CreateProjectDialog
           open={createDialogOpen}
           onOpenChange={setCreateDialogOpen}
-          onProjectCreated={loadProjects}
+          onProjectCreated={handleProjectCreated}
         />
       </div>
     </div>

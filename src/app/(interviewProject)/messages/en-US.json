@@ -52,7 +52,10 @@
       "upgradeToMaxPlan": "Please upgrade to MAX plan to use this feature",
       "humanSessions": "Human",
       "aiSessions": "AI Persona",
-      "loadFailed": "Failed to load projects"
+      "loadFailed": "Failed to load projects",
+      "optimizing": "Optimizing",
+      "optimized": "Optimized",
+      "questionsOptimized": "Questions Optimized"
     },
     "projectDetails": {
       "title": "Interview Project",
@@ -82,7 +85,14 @@
       "noInterviewsDescription": "Share the project link or interview an AI Persona to get started",
       "completed": "Completed",
       "inProgress": "In Progress",
-      "createInterviewFailed": "Failed to create interview session"
+      "optimizing": "Optimizing",
+      "optimized": "Optimized",
+      "createInterviewFailed": "Failed to create interview session",
+      "optimizedQuestions": "Optimized Questions",
+      "optimizedQuestionsDescription": "Generated interview questions based on the project brief",
+      "optimizationReason": "Optimization Reasoning",
+      "reoptimizeQuestions": "Re-optimize Questions",
+      "reoptimizeQuestionsDescription": "Regenerate optimized interview questions based on the current project brief"
     },
     "ShareInterviewProjectButton": {
       "shareProject": "Share",
