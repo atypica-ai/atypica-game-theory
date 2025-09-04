@@ -190,7 +190,8 @@
       "cancel": "取消",
       "generateReportError": "生成报告失败",
       "ago": "前",
-      "loadingReports": "加载报告中..."
+      "loadingReports": "加载报告中...",
+      "basedOnSessions": "基于 {count} 个访谈"
     },
     "statistics": {
       "failedToLoadStats": "加载统计数据失败",

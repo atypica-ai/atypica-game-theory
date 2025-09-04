@@ -3,6 +3,7 @@ import {
   fetchInterviewReportsByProjectToken,
   generateInterviewReport,
 } from "@/app/(interviewProject)/actions";
+import { InterviewReportExtra } from "@/prisma/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -18,6 +19,7 @@ interface ReportItem {
   token: string;
   generatedAt: Date | null;
   createdAt: Date;
+  extra: InterviewReportExtra;
 }
 
 export function InterviewReportsSection({
@@ -155,6 +157,11 @@ export function InterviewReportsSection({
                             <p className="text-xs text-muted-foreground">
                               {formatDate(report.createdAt, locale)}
                             </p>
+                            {report.extra?.sessions && (
+                              <p className="text-xs text-muted-foreground">
+                                {t("basedOnSessions", { count: report.extra.sessions.length })}
+                              </p>
+                            )}
                           </div>
                         </div>
 

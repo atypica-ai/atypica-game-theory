@@ -190,7 +190,8 @@
       "cancel": "Cancel",
       "generateReportError": "Failed to generate report",
       "ago": "ago",
-      "loadingReports": "Loading reports..."
+      "loadingReports": "Loading reports...",
+      "basedOnSessions": "Based on {count} interviews"
     },
     "statistics": {
       "failedToLoadStats": "Failed to load statistics",

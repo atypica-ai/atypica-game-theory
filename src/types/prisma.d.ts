@@ -122,6 +122,13 @@ declare module "@/prisma/client" {
     pdfObjectUrl: string; // PDF文件的S3对象URL
   }>;
 
+  export type InterviewReportExtra = Partial<{
+    sessions: Array<{
+      id: number;
+      title: string;
+    }>;
+  }>;
+
   // 只覆盖这个不够，findUnique 返回的类型还是原来的
   // import { User as UserPrisma } from "@/prisma/client/index";
   // export type User = Omit<UserPrisma, "lastLogin"> & {

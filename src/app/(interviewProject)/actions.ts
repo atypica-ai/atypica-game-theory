@@ -6,6 +6,7 @@ import { generateToken } from "@/lib/utils";
 import {
   InterviewProject,
   InterviewProjectExtra,
+  InterviewReportExtra,
   InterviewSession,
   InterviewSessionExtra,
   Persona,
@@ -744,6 +745,7 @@ export async function fetchInterviewReportsByProjectToken({
       token: string;
       generatedAt: Date | null;
       createdAt: Date;
+      extra: InterviewReportExtra;
     }>
   >
 > {
@@ -764,12 +766,16 @@ export async function fetchInterviewReportsByProjectToken({
         token: true,
         generatedAt: true,
         createdAt: true,
+        extra: true,
       },
       orderBy: { createdAt: "desc" },
     });
     return {
       success: true,
-      data: reports,
+      data: reports.map(({ extra, ...report }) => ({
+        ...report,
+        extra: extra as InterviewReportExtra,
+      })),
     };
   });
 }
@@ -782,6 +788,7 @@ export async function generateInterviewReport(projectId: number): Promise<
     id: number;
     token: string;
     generatedAt: Date | null;
+    extra: InterviewReportExtra;
     createdAt: Date;
   }>
 > {
@@ -795,10 +802,11 @@ export async function generateInterviewReport(projectId: number): Promise<
       .catch(() => notFound());
 
     // First get completed session IDs using raw SQL for efficient filtering
+    // extra->>'ongoing' IS NULL 需要，如果 ongoing key 不存在，会导致 extra->>'ongoing' != 'true' 不成立
     const completedSessionIds = await prisma.$queryRaw<{ id: number }[]>`
       SELECT id FROM "InterviewSession"
       WHERE "projectId" = ${project.id}
-      AND extra->>'ongoing' != 'true'
+      AND (extra->>'ongoing' IS NULL OR extra->>'ongoing' != 'true')
       AND title IS NOT NULL AND title != ''
     `;
 
@@ -807,6 +815,7 @@ export async function generateInterviewReport(projectId: number): Promise<
         id: { in: completedSessionIds.map((s) => s.id) },
       },
       select: {
+        id: true,
         title: true,
         userChat: {
           select: {
@@ -836,6 +845,12 @@ export async function generateInterviewReport(projectId: number): Promise<
         token: reportToken,
         projectId,
         onePageHtml: "",
+        extra: {
+          sessions: filteredSessions.map((s) => ({
+            id: s.id,
+            title: s.title || "",
+          })),
+        } as InterviewReportExtra,
       },
     });
 
@@ -860,6 +875,7 @@ export async function generateInterviewReport(projectId: number): Promise<
       data: {
         id: report.id,
         token: report.token,
+        extra: report.extra as InterviewReportExtra,
         generatedAt: null,
         createdAt: report.createdAt,
       },
