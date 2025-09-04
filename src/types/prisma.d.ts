@@ -108,6 +108,13 @@ declare module "@/prisma/client" {
       | false;
   }>;
 
+  export type InterviewProjectExtra = Partial<{
+    processing: boolean;
+    optimizedQuestions: string[];
+    optimizationReason: string;
+    lastOptimizedAt: number;
+  }>;
+
   // 只覆盖这个不够，findUnique 返回的类型还是原来的
   // import { User as UserPrisma } from "@/prisma/client/index";
   // export type User = Omit<UserPrisma, "lastLogin"> & {

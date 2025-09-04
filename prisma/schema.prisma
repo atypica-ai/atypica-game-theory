@@ -496,6 +496,7 @@ model InterviewProject {
   userId Int
   user   User   @relation(fields: [userId], references: [id])
   brief  String @db.Text
+  extra  Json   @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
@@ -515,6 +516,7 @@ model InterviewSession {
   intervieweeUser      User?            @relation(fields: [intervieweeUserId], references: [id], onDelete: SetNull)
   intervieweePersonaId Int? // 受访的 AI 角色
   intervieweePersona   Persona?         @relation(fields: [intervieweePersonaId], references: [id], onDelete: SetNull)
+  extra                Json             @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
