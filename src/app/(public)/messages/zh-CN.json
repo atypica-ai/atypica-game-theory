@@ -185,8 +185,15 @@
         "notAvailable": "无法增购Token"
       },
       "earlyAccess": "抢先体验",
-      "personaPreview": "导入访谈记录构建私有的真人AI人设",
-      "interviewProjectPreview": "使用AI专家与真人和AI人设进行自动访谈",
+      "personaImport": {
+        "basic": "导入访谈记录构建私有的真人AI人设（基础功能）",
+        "full": "导入访谈记录构建私有的真人AI人设（完整功能）"
+      },
+      "interviewProject": {
+        "basic": "使用AI专家与真人和AI人设进行自动访谈（基础功能）",
+        "full": "使用AI专家与真人和AI人设进行自动访谈（完整功能）"
+      },
+      "productRnDPreview": "产品创新研发流程用于创新和创意生成",
       "allMaxFeatures": "包含Max版所有功能",
       "interviews": {
         "unlimited": "无限制自动化访谈项目（即将发布）"

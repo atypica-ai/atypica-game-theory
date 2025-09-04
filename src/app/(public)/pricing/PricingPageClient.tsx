@@ -92,6 +92,8 @@ export default function PricingPageClient({
             <FeatureItem text={t("features.socialPlatforms.single")} />
             <FeatureItem text={t("features.personas.limited")} />
             <FeatureItem text={t("features.analysisModel.standard")} />
+            <FeatureItem text={t("features.personaImport.basic")} />
+            <FeatureItem text={t("features.interviewProject.basic")} />
           </CardContent>
         </Card>
 
@@ -190,6 +192,8 @@ export default function PricingPageClient({
             <FeatureItem text={t("features.socialPlatforms.multiple")} />
             <FeatureItem text={t("features.personas.unlimited")} />
             <FeatureItem text={t("features.analysisModel.enhanced")} />
+            <FeatureItem text={t("features.personaImport.basic")} />
+            <FeatureItem text={t("features.interviewProject.basic")} />
           </CardContent>
         </Card>
 
@@ -241,8 +245,9 @@ export default function PricingPageClient({
             <FeatureItem text={t("features.personas.curated")} />
             <FeatureItem text={t("features.analysisModel.superior")} />
             <FeatureItem text={t("features.reports.followUp")} />
-            <FeatureItemWithPreview text={t("features.personaPreview")} />
-            <FeatureItemWithPreview text={t("features.interviewProjectPreview")} />
+            <FeatureItem text={t("features.personaImport.full")} />
+            <FeatureItem text={t("features.interviewProject.full")} />
+            <FeatureItemWithPreview text={t("features.productRnDPreview")} />
           </CardContent>
         </Card>
 
@@ -273,7 +278,9 @@ export default function PricingPageClient({
             <FeatureItem text={t("features.interviews.unlimited")} />
             <FeatureItem text={t("features.personas.humanPersonaImports")} />
             <FeatureItem text={t("features.knowledgeBase")} />
-            <FeatureItemWithPreview text={t("features.preReleaseAccess")} />
+            <FeatureItem text={t("features.personaImport.full")} />
+            <FeatureItem text={t("features.interviewProject.full")} />
+            <FeatureItemWithPreview text={t("features.productRnDPreview")} />
           </CardContent>
         </Card>
 

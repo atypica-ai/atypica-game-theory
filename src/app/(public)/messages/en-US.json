@@ -185,8 +185,15 @@
         "notAvailable": "Cannot purchase additional tokens"
       },
       "earlyAccess": "Early Access",
-      "personaPreview": "Import interview transcripts to build private Human AI Personas",
-      "interviewProjectPreview": "Conduct professional interviews with real people and AI Personas",
+      "personaImport": {
+        "basic": "Import interview transcripts to build private Human AI Personas (limited features)",
+        "full": "Import interview transcripts to build private Human AI Personas (full features)"
+      },
+      "interviewProject": {
+        "basic": "Conduct professional interviews with real people and AI Personas (limited features)",
+        "full": "Conduct professional interviews with real people and AI Personas (full features)"
+      },
+      "productRnDPreview": "Product R&D research workflow for innovation and ideation",
       "allMaxFeatures": "All features from Max plan",
       "interviews": {
         "unlimited": "Unlimited automated interview projects (Coming Soon)"

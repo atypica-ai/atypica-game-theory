@@ -21,7 +21,7 @@ export const ChangelogZH: React.FC = () => {
                     🧪 Alpha 测试中: 产品研发流程 (Product R&D Flow)
                   </h4>
                   <p className="text-gray-700 dark:text-gray-300 mt-1 pl-1">
-                    全新的"产品创新"研究模板，专注于市场趋势、用户需求和创意生成。
+                    全新的&quot;产品创新&quot;研究模板，专注于市场趋势、用户需求和创意生成。
                   </p>
                 </li>
               </ul>
