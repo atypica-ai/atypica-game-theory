@@ -3,7 +3,7 @@ import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 
 export default function Stars() {
-  const { theme } = useTheme();
+  const { theme, forcedTheme } = useTheme();
   const [stars, setStars] = useState<
     {
       left: string;
@@ -27,7 +27,7 @@ export default function Stars() {
       });
       setStars(starsArray);
     };
-    if (theme === "dark") {
+    if (theme === "dark" && (!forcedTheme || forcedTheme === "dark")) {
       generateStars();
     } else {
       setStars([]);

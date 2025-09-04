@@ -1,8 +1,12 @@
-"use client";
-
 import { generateInterviewTranscriptPDFAction } from "@/app/(interviewProject)/artifacts/interview-transcript/actions";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { FileDownIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useTransition } from "react";
@@ -62,7 +66,7 @@ export function TranscriptDialog({ open, onOpenChange, userChatToken }: Transcri
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-6xl max-h-[90vh] p-0 flex flex-col">
+      <DialogContent className="sm:max-w-6xl h-[90vh] p-0 flex flex-col">
         <DialogHeader className="px-6 py-4 border-b">
           <DialogTitle>{t("title")}</DialogTitle>
         </DialogHeader>
@@ -85,12 +89,10 @@ export function TranscriptDialog({ open, onOpenChange, userChatToken }: Transcri
             onClick={handleDownloadPDF}
             disabled={isPdfPending || !userChatToken}
           >
-            <FileDownIcon className="h-4 w-4 mr-2" />
+            <FileDownIcon className="h-4 w-4" />
             {isPdfPending ? t("pdfGenerating") : t("downloadPdf")}
           </Button>
-          <Button onClick={handleClose}>
-            {t("close")}
-          </Button>
+          <Button onClick={handleClose}>{t("close")}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
