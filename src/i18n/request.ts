@@ -32,13 +32,15 @@ const getMessages = async (locale: string) => {
   };
 };
 
-export default getRequestConfig(async () => {
-  // Get locale from cookie or header
-  const [cookieLocale, headerLocale] = await Promise.all([cookies(), headers()]).then(
-    ([cookies, headers]) => [cookies.get("locale")?.value, headers.get("x-locale")],
-  );
-  const defaultLocale = getDeployRegion() === "mainland" ? "zh-CN" : "en-US";
-  const locale = (cookieLocale || headerLocale || defaultLocale) as (typeof locales)[number];
+export default getRequestConfig(async ({ locale }) => {
+  if (!locale) {
+    // Get locale from cookie or header
+    const [cookieLocale, headerLocale] = await Promise.all([cookies(), headers()]).then(
+      ([cookies, headers]) => [cookies.get("locale")?.value, headers.get("x-locale")],
+    );
+    const defaultLocale = getDeployRegion() === "mainland" ? "zh-CN" : "en-US";
+    locale = (cookieLocale || headerLocale || defaultLocale) as (typeof locales)[number];
+  }
   return {
     locale,
     messages: await getMessages(locale),

@@ -6,6 +6,7 @@ import { ServerActionResult } from "@/lib/serverAction";
 import { InterviewSessionExtra } from "@/prisma/client";
 import { InputJsonObject } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
+import { getLocale } from "next-intl/server";
 import { createHash } from "node:crypto";
 
 export async function generateInterviewTranscriptPDFAction(
@@ -68,8 +69,9 @@ export async function generateInterviewTranscriptPDFAction(
       };
     }
 
+    const locale = await getLocale();
     const origin = await getRequestOrigin();
-    const transcriptUrl = `${origin}/artifacts/interview-transcript/${userChatToken}/raw`;
+    const transcriptUrl = `${origin}/artifacts/interview-transcript/${userChatToken}/raw?locale=${locale}`;
 
     const response = await fetch(`${apiBase}/html-to-pdf`, {
       method: "POST",
