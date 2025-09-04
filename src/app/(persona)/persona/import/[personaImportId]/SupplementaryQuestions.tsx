@@ -78,7 +78,10 @@ export function SupplementaryQuestions({
         <h4 className="font-medium text-sm">{t("suggestedQuestions")}</h4>
         <div className="grid gap-3">
           {(supplementaryQuestions.questions ?? []).map((question, index) => (
-            <div key={index} className="p-3 rounded-lg bg-background border border-border/20 flex items-start justify-between gap-4">
+            <div
+              key={index}
+              className="p-3 rounded-lg bg-background border border-border/20 flex items-start justify-between gap-4"
+            >
               <div className="flex items-start gap-3 flex-1">
                 <div className="shrink-0 w-5 h-5 rounded bg-primary text-primary-foreground flex items-center justify-center text-xs font-medium mt-0.5">
                   {index + 1}
@@ -105,11 +108,7 @@ export function SupplementaryQuestions({
             if (!open) setOpen(false);
           }}
         >
-          <Button
-            className="w-full"
-            onClick={handleCreateShareLink}
-            disabled={isCreatingLink}
-          >
+          <Button className="w-full" onClick={handleCreateShareLink} disabled={isCreatingLink}>
             <ShareIcon className="size-4 mr-2" />
             {isCreatingLink ? t("generating") : t("generateShareLink")}
           </Button>
@@ -124,12 +123,7 @@ export function SupplementaryQuestions({
                 <div className="bg-muted p-2 rounded-md text-xs flex-1 overflow-hidden break-words">
                   {shareUrl}
                 </div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={handleCopyUrl}
-                  className="shrink-0"
-                >
+                <Button size="sm" variant="outline" onClick={handleCopyUrl} className="shrink-0">
                   <ClipboardCopyIcon className="size-4 mr-1" />
                   {t("copyLink")}
                 </Button>
@@ -137,9 +131,7 @@ export function SupplementaryQuestions({
               <p className="text-xs text-muted-foreground mt-2">{t("shareNote")}</p>
             </div>
             <AlertDialogFooter>
-              <AlertDialogCancel onClick={() => setOpen(false)}>
-                {t("close")}
-              </AlertDialogCancel>
+              <AlertDialogCancel onClick={() => setOpen(false)}>{t("close")}</AlertDialogCancel>
               <Button onClick={() => window.open(shareUrl, "_blank")}>{t("openLink")}</Button>
             </AlertDialogFooter>
           </AlertDialogContent>

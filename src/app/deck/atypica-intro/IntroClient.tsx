@@ -1004,7 +1004,9 @@ const transformation = {
                   <div className="flex items-start mb-3">
                     <span className="text-2xl mr-3 mt-1">⚡</span>
                     <div>
-                      <h3 className="text-lg font-semibold text-[#1bff1b] mb-2">从项目到基础设施</h3>
+                      <h3 className="text-lg font-semibold text-[#1bff1b] mb-2">
+                        从项目到基础设施
+                      </h3>
                       <p className="text-base text-zinc-300 opacity-90 leading-relaxed">
                         付费模式从&ldquo;任务/工时&rdquo;转向&ldquo;订阅式基础设施&rdquo;——像云计算一样，让研究和洞察变成水电煤。
                       </p>
@@ -1103,9 +1105,7 @@ const transformation = {
                         <td className="px-4 py-3 text-sm text-zinc-300">营销效果监测</td>
                       </tr>
                       <tr className="border-t border-zinc-600">
-                        <td className="px-4 py-3 text-sm font-medium text-zinc-300">
-                          某连锁餐饮
-                        </td>
+                        <td className="px-4 py-3 text-sm font-medium text-zinc-300">某连锁餐饮</td>
                         <td className="px-4 py-3 text-sm text-zinc-300">大</td>
                         <td className="px-4 py-3 text-sm text-zinc-300">
                           用【AI访谈】3000位真实用户体验
@@ -1125,15 +1125,11 @@ const transformation = {
                       <tr className="border-t border-zinc-600">
                         <td className="px-4 py-3 text-sm font-medium text-zinc-300">某B2B公司</td>
                         <td className="px-4 py-3 text-sm text-zinc-300">中</td>
-                        <td className="px-4 py-3 text-sm text-zinc-300">
-                          用【AI人设】做销售剧本
-                        </td>
+                        <td className="px-4 py-3 text-sm text-zinc-300">用【AI人设】做销售剧本</td>
                         <td className="px-4 py-3 text-sm text-zinc-300">销售培训优化</td>
                       </tr>
                       <tr className="border-t border-zinc-600">
-                        <td className="px-4 py-3 text-sm font-medium text-zinc-300">
-                          某美妆品牌
-                        </td>
+                        <td className="px-4 py-3 text-sm font-medium text-zinc-300">某美妆品牌</td>
                         <td className="px-4 py-3 text-sm text-zinc-300">超大</td>
                         <td className="px-4 py-3 text-sm text-zinc-300">
                           用【AI研究】每日跟踪竞品文案与互动
@@ -1141,9 +1137,7 @@ const transformation = {
                         <td className="px-4 py-3 text-sm text-zinc-300">竞品分析监控</td>
                       </tr>
                       <tr className="border-t border-zinc-600">
-                        <td className="px-4 py-3 text-sm font-medium text-zinc-300">
-                          某咨询专家
-                        </td>
+                        <td className="px-4 py-3 text-sm font-medium text-zinc-300">某咨询专家</td>
                         <td className="px-4 py-3 text-sm text-zinc-300">个人</td>
                         <td className="px-4 py-3 text-sm text-zinc-300">
                           用【AI研究】做项目前调研
@@ -1335,7 +1329,7 @@ const transformation = {
                   <p>没关系，我用 Atypica 发起了一个访谈，</p>
                   <p>扫下面的二维码告诉我，说出您的疑问和期待！</p>
                 </div>
-                
+
                 <div className="text-center mb-3">
                   <div className="bg-white p-3 rounded-lg inline-block">
                     <div className="w-20 h-20 bg-zinc-900 rounded flex items-center justify-center">
@@ -1349,8 +1343,7 @@ const transformation = {
               <div className="bg-zinc-800/70 backdrop-blur-sm border border-zinc-600 rounded-xl p-3 text-center">
                 <p className="text-sm text-zinc-300">
                   认真完成访谈的朋友会获赠{" "}
-                  <span className="font-bold text-[#1bff1b]">1个月免费 Pro 会员</span>
-                  ，
+                  <span className="font-bold text-[#1bff1b]">1个月免费 Pro 会员</span>，
                 </p>
                 <p className="text-sm text-zinc-300">我会整体通知具体领取方式。</p>
               </div>

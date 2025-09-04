@@ -140,7 +140,7 @@ export function PersonaImportView({
               {t("processingProgress")}
             </span>
           </a>
-          
+
           {personas.length > 0 && !isProcessing && (
             <a
               href="#persona-summary"
@@ -153,7 +153,7 @@ export function PersonaImportView({
               </span>
             </a>
           )}
-          
+
           {analysis && !isProcessing && (
             <a
               href="#analysis-result"
@@ -166,7 +166,7 @@ export function PersonaImportView({
               </span>
             </a>
           )}
-          
+
           {supplementaryQuestions && !isProcessing && (
             <a
               href="#supplementary-questions"
@@ -183,88 +183,95 @@ export function PersonaImportView({
       </div>
 
       <div className="container mx-auto px-3 sm:px-8 xl:px-32 py-8 max-w-6xl space-y-8">
-      {/* Header */}
-      <div className="text-center space-y-3">
-        <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground mb-4 shadow-sm">
-          <BrainIcon className="w-6 h-6" />
+        {/* Header */}
+        <div className="text-center space-y-3">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground mb-4 shadow-sm">
+            <BrainIcon className="w-6 h-6" />
+          </div>
+          <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+          <p className="text-base text-muted-foreground max-w-2xl mx-auto">
+            {!isProcessing ? t("fileProcessed") : t("processingFile")}
+            <span
+              className="font-medium text-foreground hover:underline cursor-pointer"
+              onClick={handleViewFile}
+            >
+              {fileName}
+            </span>
+          </p>
+          <div className="flex items-center justify-center gap-4">
+            {!isProcessing && (
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300 rounded-full border border-green-200/50 dark:border-green-900/30 text-sm font-medium shadow-sm">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                {t("allTasksCompleted")}
+              </div>
+            )}
+            <ConfirmDialog
+              title={t("reanalyze")}
+              description={t("confirmReanalyze")}
+              onConfirm={handleReAnalyze}
+            >
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={isProcessing}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <RefreshCwIcon className={cn("size-4", isProcessing ? "animate-spin" : "")} />
+                <span className="ml-1 text-xs">
+                  {isProcessing ? t("reanalyzing") : t("reanalyze")}
+                </span>
+              </Button>
+            </ConfirmDialog>
+          </div>
         </div>
-        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
-        <p className="text-base text-muted-foreground max-w-2xl mx-auto">
-          {!isProcessing ? t("fileProcessed") : t("processingFile")}
-          <span 
-            className="font-medium text-foreground hover:underline cursor-pointer" 
-            onClick={handleViewFile}
-          >
-            {fileName}
-          </span>
-        </p>
-        <div className="flex items-center justify-center gap-4">
-          {!isProcessing && (
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300 rounded-full border border-green-200/50 dark:border-green-900/30 text-sm font-medium shadow-sm">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              {t("allTasksCompleted")}
-            </div>
-          )}
-          <ConfirmDialog
-            title={t("reanalyze")}
-            description={t("confirmReanalyze")}
-            onConfirm={handleReAnalyze}
-          >
-            <Button variant="ghost" size="sm" disabled={isProcessing} className="text-muted-foreground hover:text-foreground">
-              <RefreshCwIcon className={cn("size-4", isProcessing ? "animate-spin" : "")} />
-              <span className="ml-1 text-xs">{isProcessing ? t("reanalyzing") : t("reanalyze")}</span>
-            </Button>
-          </ConfirmDialog>
-        </div>
-      </div>
 
-      <div className="space-y-10">
-        {/* Processing Status */}
-        <section id="file-info" className="scroll-mt-24">
-          <ProcessingStatus
-            processing={processingStatus}
-            personas={personas}
-            personaImportAnalysis={personaImport.analysis}
-            context={personaImport.context}
-          />
-        </section>
-
-        {/* Persona Summary - only show if summary exists */}
-        {personas.length > 0 && !isProcessing && (
-          <section id="persona-summary" className="scroll-mt-24 relative">
-            <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 w-20 h-px bg-gradient-to-r from-transparent via-border to-transparent"></div>
-            <PersonaSummary personas={personas} />
-          </section>
-        )}
-
-        {/* Analysis Result - only show if analysis exists */}
-        {analysis && !isProcessing && (
-          <section id="analysis-result" className="scroll-mt-24 relative">
-            <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 w-20 h-px bg-gradient-to-r from-transparent via-border to-transparent"></div>
-            <AnalysisResult analysis={analysis} />
-          </section>
-        )}
-
-        {/* Supplementary Questions - only show if exists */}
-        {supplementaryQuestions && !isProcessing && (
-          <section id="supplementary-questions" className="scroll-mt-24 relative">
-            <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 w-20 h-px bg-gradient-to-r from-transparent via-border to-transparent"></div>
-            <SupplementaryQuestions
-              supplementaryQuestions={supplementaryQuestions}
-              fileName={fileName}
-              personaImportId={personaImport.id}
+        <div className="space-y-10">
+          {/* Processing Status */}
+          <section id="file-info" className="scroll-mt-24">
+            <ProcessingStatus
+              processing={processingStatus}
+              personas={personas}
+              personaImportAnalysis={personaImport.analysis}
+              context={personaImport.context}
             />
           </section>
-        )}
 
-        {/* Follow Up Chat */}
-        {!isProcessing && (
-          <section id="follow-up-chat" className="scroll-mt-24 relative">
-            <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 w-20 h-px bg-gradient-to-r from-transparent via-border to-transparent"></div>
-            <FollowUpChatList personaImportId={personaImport.id} />
-          </section>
-        )}
-      </div>
+          {/* Persona Summary - only show if summary exists */}
+          {personas.length > 0 && !isProcessing && (
+            <section id="persona-summary" className="scroll-mt-24 relative">
+              <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 w-20 h-px bg-gradient-to-r from-transparent via-border to-transparent"></div>
+              <PersonaSummary personas={personas} />
+            </section>
+          )}
+
+          {/* Analysis Result - only show if analysis exists */}
+          {analysis && !isProcessing && (
+            <section id="analysis-result" className="scroll-mt-24 relative">
+              <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 w-20 h-px bg-gradient-to-r from-transparent via-border to-transparent"></div>
+              <AnalysisResult analysis={analysis} />
+            </section>
+          )}
+
+          {/* Supplementary Questions - only show if exists */}
+          {supplementaryQuestions && !isProcessing && (
+            <section id="supplementary-questions" className="scroll-mt-24 relative">
+              <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 w-20 h-px bg-gradient-to-r from-transparent via-border to-transparent"></div>
+              <SupplementaryQuestions
+                supplementaryQuestions={supplementaryQuestions}
+                fileName={fileName}
+                personaImportId={personaImport.id}
+              />
+            </section>
+          )}
+
+          {/* Follow Up Chat */}
+          {!isProcessing && (
+            <section id="follow-up-chat" className="scroll-mt-24 relative">
+              <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 w-20 h-px bg-gradient-to-r from-transparent via-border to-transparent"></div>
+              <FollowUpChatList personaImportId={personaImport.id} />
+            </section>
+          )}
+        </div>
       </div>
     </div>
   );
