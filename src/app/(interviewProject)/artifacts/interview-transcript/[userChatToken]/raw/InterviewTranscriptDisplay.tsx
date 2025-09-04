@@ -1,0 +1,109 @@
+import { InterviewTranscript } from "@/app/(interviewProject)/lib";
+import { formatDate } from "@/lib/utils";
+
+interface InterviewTranscriptDisplayProps {
+  transcript: InterviewTranscript;
+  sessionInfo: {
+    title: string | null;
+    createdAt: Date;
+    projectBrief: string;
+    intervieweeUser: { name: string; email: string | null } | null;
+    intervieweePersona: { name: string } | null;
+  };
+}
+
+export function InterviewTranscriptDisplay({
+  transcript,
+  sessionInfo,
+}: InterviewTranscriptDisplayProps) {
+  const { title, summary, participantInfo, messages } = transcript;
+
+  return (
+    <div className="min-h-screen max-w-5xl mx-auto px-8 py-8">
+      {/* Document Header */}
+      <div className="text-center mb-12">
+        <h1 className="text-2xl font-bold text-foreground/90 mb-4">{title}</h1>
+        <div className="text-sm text-gray-600 space-y-1">
+          <p>{formatDate(sessionInfo.createdAt, "zh-CN")}</p>
+          <p>
+            {sessionInfo.intervieweePersona
+              ? `${sessionInfo.intervieweePersona.name}（AI模拟）`
+              : sessionInfo.intervieweeUser?.name || "未知"}
+          </p>
+        </div>
+      </div>
+
+      {/* Research Objective */}
+      {/*<section className="mb-8">
+        <h2 className="text-xl font-semibold text-foreground/90 mb-3 pb-1 border-b border-gray-300">
+          一、研究目标
+        </h2>
+        <div className="text-foreground/80 text-sm">
+          <Markdown>{sessionInfo.projectBrief}</Markdown>
+        </div>
+      </section>*/}
+
+      {/* Participant Information */}
+      {participantInfo && Object.keys(participantInfo).length > 0 && (
+        <section className="mb-12">
+          <h2 className="text-xl font-semibold text-foreground/80 mb-3 pb-1 border-b border-border">
+            受访者基本信息
+          </h2>
+          <div className="space-y-2 text-foreground/80">
+            {Object.entries(participantInfo).map(([label, value]) => (
+              <p key={label} className="text-foreground/80">
+                <span>{label}：</span>
+                {String(value)}
+              </p>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Interview Content */}
+      {messages.length > 0 && (
+        <section className="mb-12">
+          <h2 className="text-xl font-semibold text-foreground/90 mb-3 pb-1 border-b border-border">
+            访谈内容
+          </h2>
+          {messages
+            .filter((message) => !/\[READY\]|\[CONTINUE\]|\[USER_HESITATED\]/.test(message.content))
+            .map((message, index) => (
+              <div key={index} className="leading-relaxed text-sm">
+                {message.role === "assistant" ? (
+                  <div className="mb-2">
+                    <strong className="font-bold">访谈者：</strong>
+                    <strong className="font-bold ml-1">{message.content}</strong>
+                  </div>
+                ) : (
+                  <div className="text-foreground/80 mb-8">
+                    <span>受访者：</span>
+                    <span className="ml-1">{message.content}</span>
+                  </div>
+                )}
+              </div>
+            ))}
+        </section>
+      )}
+
+      {/* Summary */}
+      {summary && (
+        <section className="mb-12">
+          <h2 className="text-xl font-semibold text-foreground/90 mb-3 pb-1 border-b border-border">
+            访谈总结
+          </h2>
+          <p className="text-foreground/80 whitespace-pre-wrap leading-relaxed text-sm">
+            {summary}
+          </p>
+        </section>
+      )}
+
+      {/* Document Footer */}
+      <div className="mt-12 pt-6 border-t border-gray-200 text-center">
+        <p className="text-xs text-gray-500">
+          本笔录由系统自动生成于 {new Date().toLocaleDateString("zh-CN")}
+        </p>
+      </div>
+    </div>
+  );
+}

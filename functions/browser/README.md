@@ -13,19 +13,19 @@ A powerful HTTP server that provides webpage screenshot and PDF conversion servi
 ## Installation
 
 ```bash
-npm install
+pnpm install
 ```
 
 ## Running the Server
 
 ```bash
-npm start
+node index.js
 ```
 
 By default, the server runs on port 8080. You can customize this by setting the `PORT` environment variable:
 
 ```bash
-PORT=3000 npm start
+PORT=3000 node index.js
 ```
 
 ## API Endpoints

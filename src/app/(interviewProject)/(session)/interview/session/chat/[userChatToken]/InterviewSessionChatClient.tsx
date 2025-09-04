@@ -202,7 +202,7 @@ export function InterviewSessionChatClient({
   if (interviewState === "summary") {
     return (
       <FitToViewport className="flex flex-col items-center justify-center h-full p-8 text-center">
-        <div className="max-w-md space-y-6">
+        <div className="max-w-lg space-y-6">
           <div className="space-y-4">
             <div className="w-16 h-16 mx-auto bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
               <Shield className="h-8 w-8 text-green-600 dark:text-green-400" />

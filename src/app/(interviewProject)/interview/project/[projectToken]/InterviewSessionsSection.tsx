@@ -1,5 +1,4 @@
 "use client";
-
 import {
   deleteInterviewSessionAction,
   fetchInterviewSessionsByProjectToken,
@@ -8,6 +7,7 @@ import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Pagination } from "@/components/ui/pagination";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn, formatDate } from "@/lib/utils";
@@ -16,6 +16,7 @@ import {
   CheckCircleIcon,
   ClockIcon,
   ExternalLinkIcon,
+  FileTextIcon,
   Loader2Icon,
   MessageSquareIcon,
   TrashIcon,
@@ -49,6 +50,13 @@ export function InterviewSessionsSection({
     totalCount: number;
     totalPages: number;
   } | null>(null);
+  const [transcriptDialog, setTranscriptDialog] = useState<{
+    open: boolean;
+    userChatToken: string | null;
+  }>({
+    open: false,
+    userChatToken: null,
+  });
 
   const loadSessions = useCallback(async () => {
     setLoading(true);
@@ -98,6 +106,16 @@ export function InterviewSessionsSection({
       return session.intervieweeUser.name;
     }
     return `#${session.id}`;
+  };
+
+  const handleTranscriptClick = (session: InterviewSessionItem) => {
+    if (!session.userChat) {
+      return;
+    }
+    setTranscriptDialog({
+      open: true,
+      userChatToken: session.userChat.token,
+    });
   };
 
   return (
@@ -182,32 +200,44 @@ export function InterviewSessionsSection({
                       </div>
                     </div>
                   </div>
-                  {!readOnly ? (
-                    <div className="flex flex-items flex-start">
-                      {session.userChat ? (
-                        <Button variant="ghost" size="icon" asChild>
-                          <Link
-                            href={`/interview/session/view/${session.userChat.token}`}
-                            target="_blank"
-                          >
-                            <ExternalLinkIcon className="h-4 w-4" />
-                          </Link>
-                        </Button>
-                      ) : null}
-                      <ConfirmDialog
-                        title="Delete Interview Session"
-                        description={`Are you sure you want to delete this interview session?`}
-                        onConfirm={async () => {
-                          await deleteInterviewSession(session.id);
-                          loadSessions();
-                        }}
+                  <div className="flex flex-items flex-start">
+                    {/* Transcript button - available for completed sessions */}
+                    {isCompleted && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleTranscriptClick(session)}
                       >
-                        <Button variant="ghost" size="icon">
-                          <TrashIcon className="h-4 w-4 text-red-500" />
-                        </Button>
-                      </ConfirmDialog>
-                    </div>
-                  ) : null}
+                        <FileTextIcon className="h-4 w-4" />
+                      </Button>
+                    )}
+                    {!readOnly && (
+                      <>
+                        {session.userChat ? (
+                          <Button variant="ghost" size="icon" asChild>
+                            <Link
+                              href={`/interview/session/view/${session.userChat.token}`}
+                              target="_blank"
+                            >
+                              <ExternalLinkIcon className="h-4 w-4" />
+                            </Link>
+                          </Button>
+                        ) : null}
+                        <ConfirmDialog
+                          title="Delete Interview Session"
+                          description={`Are you sure you want to delete this interview session?`}
+                          onConfirm={async () => {
+                            await deleteInterviewSession(session.id);
+                            loadSessions();
+                          }}
+                        >
+                          <Button variant="ghost" size="icon">
+                            <TrashIcon className="h-4 w-4 text-red-500" />
+                          </Button>
+                        </ConfirmDialog>
+                      </>
+                    )}
+                  </div>
                 </div>
               );
             })}
@@ -225,6 +255,31 @@ export function InterviewSessionsSection({
           </div>
         )}
       </CardContent>
+
+      {/* Transcript Dialog */}
+      <Dialog
+        open={transcriptDialog.open}
+        onOpenChange={(open) => setTranscriptDialog((prev) => ({ ...prev, open }))}
+      >
+        <DialogContent className="sm:max-w-6xl max-h-[90vh] p-0">
+          <DialogHeader className="px-6 py-4 border-b">
+            <DialogTitle>访谈笔录</DialogTitle>
+          </DialogHeader>
+          <div className="h-[75vh] w-full">
+            {transcriptDialog.userChatToken ? (
+              <iframe
+                src={`/artifacts/interview-transcript/${transcriptDialog.userChatToken}/raw`}
+                className="w-full h-full border-0 rounded-b-lg"
+                title="访谈笔录"
+              />
+            ) : (
+              <div className="flex items-center justify-center h-full text-muted-foreground">
+                无法加载笔录
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
