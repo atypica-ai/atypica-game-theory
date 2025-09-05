@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { serverLog } from "@/lib/serverLogging";
 import { cn } from "@/lib/utils";
 import { Loader2, Mic, Square } from "lucide-react";
 import { Locale, useTranslations } from "next-intl";
@@ -107,10 +108,27 @@ export function RecordButton({
               : transcriptText;
             console.log("🎯 Setting final transcript (appended):", finalTranscript);
             console.log(`📝 Full: "${fullTranscriptRef.current}" + Final: "${transcriptText}"`);
+            // Server logging for mobile debugging
+            serverLog("🎯 FINAL TRANSCRIPT APPEND", {
+              finalLength: finalTranscript.length,
+              fullText: fullTranscriptRef.current || "empty",
+              newText: transcriptText,
+              hasDuplicate:
+                finalTranscript.includes(transcriptText) &&
+                fullTranscriptRef.current?.includes(transcriptText)
+                  ? 1
+                  : 0,
+            });
             setPartialTranscript("");
             onTranscript(finalTranscript);
           } else {
             console.log("⚡ Setting partial transcript:", transcriptText);
+            // Server logging for mobile debugging
+            serverLog("⚡ STREAMING TRANSCRIPT UPDATE", {
+              newLength: transcriptText.length,
+              previousText: fullTranscriptRef.current || "empty",
+              processedChunks: processedChunksRef.current,
+            });
             // Update accumulated transcript for streaming results
             fullTranscriptRef.current = transcriptText;
             // Update processed chunks counter to current total
@@ -206,6 +224,11 @@ export function RecordButton({
             lastTranscribeTimeRef.current = now;
 
             try {
+              serverLog("🚀 IMMEDIATE TRANSCRIPTION START", {
+                chunksCount: chunksRef.current.length,
+                totalSize,
+                path: "immediate",
+              });
               await transcribeAccumulatedAudio(false);
             } finally {
               isTranscribingRef.current = false;
@@ -231,6 +254,15 @@ export function RecordButton({
                   lastTranscribeTimeRef.current = Date.now();
 
                   try {
+                    const currentTotalSize = chunksRef.current.reduce(
+                      (sum, chunk) => sum + chunk.size,
+                      0,
+                    );
+                    serverLog("🚀 DEBOUNCED TRANSCRIPTION START", {
+                      chunksCount: chunksRef.current.length,
+                      totalSize: currentTotalSize,
+                      path: "debounced",
+                    });
                     await transcribeAccumulatedAudio(false);
                   } finally {
                     isTranscribingRef.current = false;
@@ -266,6 +298,16 @@ export function RecordButton({
         const unprocessedChunks = chunksRef.current.slice(processedChunksRef.current);
         const unprocessedSize = unprocessedChunks.reduce((sum, chunk) => sum + chunk.size, 0);
 
+        // Critical debugging for onstop logic
+        serverLog("🛑 ONSTOP CHUNK ANALYSIS", {
+          totalChunks: chunksRef.current.length,
+          processedChunks: processedChunksRef.current,
+          unprocessedChunks: unprocessedChunks.length,
+          totalSize: totalSize,
+          unprocessedSize: unprocessedSize,
+          willProcess: unprocessedChunks.length > 0 && unprocessedSize > 1000 ? 1 : 0,
+        });
+
         console.log("📊 Final audio analysis:", {
           totalChunks: chunksRef.current.length,
           processedChunks: processedChunksRef.current,
@@ -300,6 +342,12 @@ export function RecordButton({
             "✨ No unprocessed audio, using accumulated streaming transcript:",
             fullTranscriptRef.current,
           );
+          // Server logging for mobile debugging
+          serverLog("✨ USING CACHED TRANSCRIPT", {
+            cachedLength: fullTranscriptRef.current.length,
+            processedChunks: processedChunksRef.current,
+            totalChunks: chunksRef.current.length,
+          });
           setPartialTranscript("");
           onTranscript(fullTranscriptRef.current);
         } else {
