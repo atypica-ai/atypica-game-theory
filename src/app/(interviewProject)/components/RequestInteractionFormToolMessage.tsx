@@ -181,14 +181,14 @@ export const RequestInteractionFormToolMessage: FC<{
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto p-6">
+    <div className="w-full max-w-2xl mx-auto">
       <Card className="border-0 shadow-lg">
         <CardHeader className="pb-4">
           <div className="flex items-center space-x-3">
             <div className="shrink-0 w-10 h-10 bg-zinc-100 dark:bg-zinc-800 rounded-full flex items-center justify-center">
               <FileText className="h-5 w-5 text-primary" />
             </div>
-            <CardTitle className="text-base font-normal">
+            <CardTitle className="text-sm sm:text-base font-normal leading-tight">
               {formData.prologue || t("defaultPrologue")}
             </CardTitle>
           </div>

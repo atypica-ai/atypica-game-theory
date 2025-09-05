@@ -430,7 +430,7 @@ export function FocusedInterviewChat({
               initial={{ opacity: 0, y: 5 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -5 }}
-              className="absolute bottom-0 left-1/2 transform -translate-x-1/2 max-w-xs"
+              className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 max-w-xs"
             >
               <div className="text-xs text-zinc-500 dark:text-zinc-400 text-center truncate px-2">
                 <span className="inline-block w-1 h-1 bg-blue-500 rounded-full animate-pulse mr-1"></span>
