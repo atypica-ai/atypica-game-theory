@@ -1,3 +1,6 @@
+import { Locale } from "next-intl";
+import { getLocale } from "next-intl/server";
+
 /**
  * 检测字符串中中文字符的比例
  */
@@ -105,4 +108,50 @@ export function truncateForTitle(
   }
 
   return text.substring(0, maxChars) + suffix;
+}
+
+/**
+ * 检测用户输入的语言并返回对应的locale
+ * 基于中文字符比例判断输入语言
+ * @param options 配置选项
+ * @param options.text 用户输入文本
+ * @param options.threshold 中文字符比例阈值，默认0.3
+ * @param options.fallbackLocale 当输入为空或系统消息时使用的回退locale
+ * @returns 检测到的locale
+ */
+export async function detectInputLanguage({
+  text,
+  threshold = 0.3,
+  fallbackLocale,
+}: {
+  text: string;
+  threshold?: number;
+  fallbackLocale?: Locale;
+}): Promise<Locale> {
+  // 处理 null/undefined 输入或空白字符
+  if (!text || !text.trim()) {
+    return fallbackLocale || (await getLocale());
+  }
+
+  // 处理系统消息，只允许单个空格转下划线，不允许连续空格或前后空格
+  const trimmedText = text.trim();
+  const normalizedText = trimmedText.replace(/(\w)\s(\w)/g, '$1_$2');
+  if (/^\[(READY|USER_HESITATED|CONTINUE|CONTINUE_ASSISTANT_STEPS)\]$/i.test(normalizedText)) {
+    return fallbackLocale || (await getLocale());
+  }
+  
+  let adjustedThreshold = threshold;
+  
+  // 启发式规则1: 中文开头强烈倾向中文（用户意图优先）
+  if (/^[\u4e00-\u9fff]/.test(text.trim())) {
+    adjustedThreshold *= 0.4; // 0.3 -> 0.12，大幅降低阈值
+  }
+  
+  // 启发式规则2: 英文开头但有较多连续中文，适度倾向中文
+  else if (/[\u4e00-\u9fff]{3,}/.test(text)) {
+    adjustedThreshold *= 0.8; // 0.3 -> 0.24，适度降低阈值
+  }
+  
+  const chineseRatio = getChineseCharacterRatio(text);
+  return chineseRatio > adjustedThreshold ? "zh-CN" : "en-US";
 }
