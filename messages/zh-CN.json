@@ -449,7 +449,8 @@
       "shareThoughts": "分享您的想法...",
       "toolCalling": "正在执行",
       "timeRemaining": "{time} 剩余",
-      "listening": "聆听中..."
+      "listening": "聆听中...",
+      "processing": "稍等片刻..."
     },
     "VoiceInputModal": {
       "listening": "AI正在聆听",

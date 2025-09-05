@@ -1,5 +1,6 @@
 "use client";
 
+import { correctSpeechText } from "@/app/api/transcribe/actions";
 import { RecordButton } from "@/components/chat/RecordButton";
 import { Button } from "@/components/ui/button";
 import { useDocumentVisibility } from "@/hooks/use-document-visibility";
@@ -71,6 +72,7 @@ export function FocusedInterviewChat({
   );
   const [showTextInput, setShowTextInput] = useState(false);
   const [partialTranscript, setPartialTranscript] = useState("");
+  const [isProcessingTranscript, setIsProcessingTranscript] = useState(false);
 
   const { messages, input, setInput, handleSubmit, status, stop } = useChatHelpers;
 
@@ -112,28 +114,52 @@ export function FocusedInterviewChat({
   );
 
   const handleTranscriptInternal = useCallback(
-    (text: string) => {
+    async (text: string) => {
       console.log("🎯 Final transcript received in FocusedInterviewChat:", text);
       if (text.trim()) {
-        const messageToSend = {
-          role: "user" as const,
-          content: text,
-          id: generateId(),
-        };
-        setLastUserMessage(messageToSend);
+        setIsProcessingTranscript(true);
+        setPartialTranscript(""); // Clear partial transcript immediately
 
-        console.log("📨 Sending transcript message to chat:", messageToSend.content);
-        useChatRef.current?.append(messageToSend);
+        try {
+          // Extract context from last 2 messages (recent conversation round)
+          const recentContext = messages
+            .slice(-2)
+            .map((m) => m.content)
+            .join(" ");
 
-        // Reset timeout state when user responds
-        setHasTimedOut(false);
-        setTimeLeft(DEFAULT_TIME_LEFT);
-        setIsTimerActive(false);
-        setPartialTranscript(""); // Clear partial transcript
-        console.log("✅ Transcript processing completed, chat updated");
+          console.log("📝 Correcting speech text with context:", {
+            originalText: text,
+            contextLength: recentContext.length,
+          });
+
+          // Apply speech correction
+          const correctedText = await correctSpeechText(text, recentContext || undefined);
+          console.log("✨ Speech correction result:", {
+            original: text,
+            corrected: correctedText,
+          });
+
+          const messageToSend = {
+            role: "user" as const,
+            content: correctedText,
+            id: generateId(),
+          };
+          setLastUserMessage(messageToSend);
+
+          console.log("📨 Sending corrected transcript message to chat:", messageToSend.content);
+          useChatRef.current?.append(messageToSend);
+
+          // Reset timeout state when user responds
+          setHasTimedOut(false);
+          setTimeLeft(DEFAULT_TIME_LEFT);
+          setIsTimerActive(false);
+          console.log("✅ Transcript processing completed, chat updated");
+        } finally {
+          setIsProcessingTranscript(false);
+        }
       }
     },
-    [useChatRef],
+    [useChatRef, messages],
   );
 
   const handlePartialTranscriptInternal = useCallback((text: string) => {
@@ -252,7 +278,7 @@ export function FocusedInterviewChat({
         )}
       >
         <AnimatePresence mode="wait">
-          {status === "submitted" ? (
+          {status === "submitted" || isProcessingTranscript ? (
             <motion.div
               key="thinking"
               initial={{ opacity: 0, y: -10 }}
@@ -262,7 +288,7 @@ export function FocusedInterviewChat({
             >
               <div className="flex items-center gap-2">
                 <Ear className="w-4 h-4 text-primary" />
-                <span>{t("thinking")}</span>
+                <span>{isProcessingTranscript ? t("processing") : t("thinking")}</span>
               </div>
               {lastUserMessage && (
                 <p className="text-sm text-zinc-500 dark:text-zinc-500 italic max-w-md">
@@ -347,7 +373,7 @@ export function FocusedInterviewChat({
             onTranscript={handleTranscriptInternal}
             onPartialTranscript={handlePartialTranscriptInternal}
             language={locale}
-            disabled={status === "streaming" || status === "submitted"}
+            disabled={status === "streaming" || status === "submitted" || isProcessingTranscript}
           />
 
           {/* Text Input Toggle Button */}
@@ -360,7 +386,7 @@ export function FocusedInterviewChat({
                 : "bg-zinc-100 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-600"
             }`}
             onClick={() => setShowTextInput(!showTextInput)}
-            disabled={status === "streaming" || status === "submitted"}
+            disabled={status === "streaming" || status === "submitted" || isProcessingTranscript}
           >
             <Keyboard className="h-5 w-5" />
           </Button>
@@ -386,7 +412,9 @@ export function FocusedInterviewChat({
                   onInput={(e) => setInput(e.currentTarget.value)}
                   placeholder={t("shareThoughts")}
                   rows={1}
-                  disabled={status === "streaming" || status === "submitted"}
+                  disabled={
+                    status === "streaming" || status === "submitted" || isProcessingTranscript
+                  }
                   className="flex min-h-[48px] w-full resize-none bg-transparent border-none
                   focus-visible:ring-0 focus-visible:ring-offset-0 outline-none
                   text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-500 dark:placeholder:text-zinc-400 py-3 px-3 max-h-32
@@ -409,7 +437,12 @@ export function FocusedInterviewChat({
                   type="submit"
                   variant="ghost"
                   size="icon"
-                  disabled={status === "streaming" || status === "submitted" || !input.trim()}
+                  disabled={
+                    status === "streaming" ||
+                    status === "submitted" ||
+                    isProcessingTranscript ||
+                    !input.trim()
+                  }
                   className="rounded-xl text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-700 flex-shrink-0 w-12 h-12 transition-colors"
                 >
                   {status === "submitted" ? (
