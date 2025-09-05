@@ -3,7 +3,7 @@ import { createProductRnDStudyUserChat, createStudyUserChat } from "@/app/(study
 import { FileAttachment } from "@/components/chat/FileAttachment";
 import { FileUploadButton } from "@/components/chat/FileUploadButton";
 import { FileUploadStatus } from "@/components/chat/FileUploadStatus";
-import { VoiceInputButton } from "@/components/chat/VoiceInputButton";
+import { RecordButton } from "@/components/chat/RecordButton";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -206,7 +206,7 @@ export function NewStudyInputBox({ className }: { className?: string }) {
             existingFiles={uploadedFiles}
           />
           <div className="ml-auto" />
-          <VoiceInputButton
+          <RecordButton
             onTranscript={(text) => {
               setInput((current) => (current ? `${current} ${text}` : text));
               setPartialTranscript(""); // Clear partial transcript when final transcript is set
@@ -215,8 +215,8 @@ export function NewStudyInputBox({ className }: { className?: string }) {
               setPartialTranscript(text);
             }}
             language={locale}
-            contextText={input}
             disabled={isLoading}
+            className="h-9 w-9"
           />
           <div className="text-xs text-muted-foreground hidden sm:block">
             {isMobile ? t("tapToSend") : t("enterToSend")}

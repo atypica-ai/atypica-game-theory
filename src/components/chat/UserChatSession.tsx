@@ -1,7 +1,7 @@
 "use client";
 import { CONTINUE_ASSISTANT_STEPS } from "@/ai/messageUtilsClient";
+import { RecordButton } from "@/components/chat/RecordButton";
 import { StatusDisplay } from "@/components/chat/StatusDisplay";
-import { VoiceInputButton } from "@/components/chat/VoiceInputButton";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useFileUploadManager } from "@/hooks/use-file-upload-manager";
@@ -206,7 +206,7 @@ export function UserChatSession({
                   existingFiles={uploadedFiles}
                 />
               )}
-              <VoiceInputButton
+              <RecordButton
                 disabled={inputDisabled}
                 onTranscript={(text) => {
                   setInput((current) => (current ? `${current} ${text}` : text));
@@ -216,7 +216,7 @@ export function UserChatSession({
                   setPartialTranscript(text);
                 }}
                 language={locale}
-                contextText={input}
+                className="h-9 w-9"
               />
               <Button
                 type="submit"

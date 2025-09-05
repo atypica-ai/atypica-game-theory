@@ -451,13 +451,6 @@
       "timeRemaining": "{time} left",
       "listening": "Listening..."
     },
-    "VoiceInputButton": {
-      "startListening": "Start voice input",
-      "stopListening": "Stop voice input",
-      "listeningActive": "Listening...",
-      "clickToSpeak": "Click to speak",
-      "processing": "Processing..."
-    },
     "VoiceInputModal": {
       "listening": "AI is listening",
       "processing": "Processing your speech",

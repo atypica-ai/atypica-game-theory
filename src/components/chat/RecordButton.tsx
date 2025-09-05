@@ -285,16 +285,16 @@ export function RecordButton({
         let waitTime = 0;
         const maxWait = 3000; // 3 seconds maximum
         const checkInterval = 200; // Check every 200ms
-        
+
         while (!fullTranscriptRef.current && waitTime < maxWait) {
           await new Promise((resolve) => setTimeout(resolve, checkInterval));
           waitTime += checkInterval;
-          
+
           if (waitTime % 1000 === 0) {
-            console.log(`⏳ Still waiting for streaming result... ${waitTime/1000}s elapsed`);
+            console.log(`⏳ Still waiting for streaming result... ${waitTime / 1000}s elapsed`);
           }
         }
-        
+
         if (fullTranscriptRef.current) {
           console.log(`✅ Streaming result received after ${waitTime}ms wait`);
         } else {
@@ -311,7 +311,9 @@ export function RecordButton({
           lastTranscriptContent: lastTranscriptRef.current || "empty",
           actualWaitTime: waitTime,
           maxWaitTime: maxWait,
-          waitEfficiency: fullTranscriptRef.current ? (waitTime / maxWait * 100).toFixed(1) + "%" : "timeout",
+          waitEfficiency: fullTranscriptRef.current
+            ? ((waitTime / maxWait) * 100).toFixed(1) + "%"
+            : "timeout",
         });
 
         serverLog("🛑 FINAL TRANSCRIPTION DECISION", {
@@ -327,7 +329,7 @@ export function RecordButton({
           console.log(
             `📊 Total audio: ${chunksRef.current.length} chunks, size: ${totalSize} bytes`,
           );
-          
+
           if (fullTranscriptRef.current && fullTranscriptRef.current.trim()) {
             console.log("ℹ️ Note: Streaming result available, final transcription will replace it");
             serverLog("ℹ️ FINAL TRANSCRIPTION WITH STREAMING BACKUP", {
@@ -340,7 +342,7 @@ export function RecordButton({
               reason: "no_streaming_result",
             });
           }
-          
+
           isTranscribingRef.current = true;
           try {
             await transcribeAccumulatedAudio(true);
@@ -448,11 +450,12 @@ export function RecordButton({
       type="button"
       variant="ghost"
       className={cn(
-        "transition-all duration-200 flex items-center gap-2 h-10",
-        isRecording || isProcessing
-          ? "bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/40 px-3 rounded-full"
-          : "bg-zinc-100 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-600 rounded-full w-10",
+        "transition-all duration-200 flex items-center gap-2 h-10 w-10",
+        // 组件输入的 className 需要放这里，后面的状态变化需要覆盖这个 className 里指定的 width 等等
         className,
+        isRecording || isProcessing
+          ? "bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/40 px-3 rounded-full w-auto"
+          : "bg-zinc-100 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-600 rounded-full",
       )}
       disabled={disabled || isProcessing}
       onClick={handleClick}

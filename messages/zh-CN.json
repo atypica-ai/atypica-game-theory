@@ -451,13 +451,6 @@
       "timeRemaining": "{time} 剩余",
       "listening": "聆听中..."
     },
-    "VoiceInputButton": {
-      "startListening": "开始语音输入",
-      "stopListening": "停止语音输入",
-      "listeningActive": "正在聆听...",
-      "clickToSpeak": "点击说话",
-      "processing": "正在处理..."
-    },
     "VoiceInputModal": {
       "listening": "AI正在聆听",
       "processing": "正在处理您的语音",
