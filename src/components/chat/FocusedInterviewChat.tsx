@@ -4,6 +4,7 @@ import { correctSpeechText } from "@/app/api/transcribe/actions";
 import { RecordButton } from "@/components/chat/RecordButton";
 import { Button } from "@/components/ui/button";
 import { useDocumentVisibility } from "@/hooks/use-document-visibility";
+import { getDisplayWidth } from "@/lib/textUtils";
 import { cn, useDevice } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
 import { generateId } from "ai";
@@ -189,6 +190,20 @@ export function FocusedInterviewChat({
     return messages.findLast((m) => m.role === "assistant");
   }, [messages]);
 
+  const messageDisplayStyle = useMemo(() => {
+    const displayWidth = lastAssistantMessage?.content
+      ? getDisplayWidth(lastAssistantMessage.content)
+      : 0;
+    const threshold = isMobile ? 40 : 120;
+    return cn({
+      "text-xl sm:text-2xl": displayWidth < 60,
+      "text-lg sm:text-xl": displayWidth >= 60 && displayWidth < 120,
+      "text-base sm:text-lg": displayWidth >= 120,
+      "text-center": displayWidth <= threshold,
+      "text-left": displayWidth > threshold,
+    });
+  }, [lastAssistantMessage?.content, isMobile]);
+
   // When a new assistant message is being generated, clear the last user message
   useEffect(() => {
     if (status === "streaming") {
@@ -303,7 +318,10 @@ export function FocusedInterviewChat({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.4, ease: "circOut" }}
-              className="text-xl sm:text-2xl font-EuclidCircularA font-medium text-zinc-900 dark:text-zinc-100 leading-relaxed"
+              className={cn(
+                "font-EuclidCircularA font-medium text-zinc-900 dark:text-zinc-100 leading-relaxed",
+                messageDisplayStyle,
+              )}
             >
               {!lastAssistantMessage
                 ? t("gettingReady")
@@ -314,7 +332,7 @@ export function FocusedInterviewChat({
                         className={cn(
                           "whitespace-normal",
                           index < lastAssistantMessage.parts.length - 1 &&
-                            "text-sm font-normal text-muted-foreground",
+                            "mx-4 text-sm font-normal text-muted-foreground/50",
                         )}
                       >
                         {part.text}
@@ -322,7 +340,7 @@ export function FocusedInterviewChat({
                     ) : part.type === "tool-invocation" ? (
                       <div
                         key={index}
-                        className="my-4 text-sm text-muted-foreground font-normal font-mono"
+                        className="my-4 text-sm text-center text-muted-foreground/50 font-normal font-mono"
                       >
                         {t("toolCalling")} {part.toolInvocation.toolName}
                         {part.toolInvocation.state === "result" ? (
