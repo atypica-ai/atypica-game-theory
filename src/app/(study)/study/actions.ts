@@ -4,7 +4,7 @@ import { categorizeFiles, FILE_UPLOAD_LIMITS } from "@/lib/fileUploadLimits";
 import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
-import { truncateForTitle } from "@/lib/textUtils";
+import { detectInputLanguage, truncateForTitle } from "@/lib/textUtils";
 import { createUserChat } from "@/lib/userChat/lib";
 import {
   Analyst,
@@ -69,6 +69,11 @@ export async function createStudyUserChat(
       }
     }
 
+    // 根据用户输入决定模型的默认语言
+    const locale = await detectInputLanguage({
+      text: content,
+    });
+
     const parts = [{ type: "text", text: content }];
     const userChat = await prisma.$transaction(async (tx) => {
       const userChat = await createUserChat({
@@ -96,6 +101,7 @@ export async function createStudyUserChat(
           userId: user.id,
           studyUserChatId: userChat.id,
           brief: content, // 用户的第一条消息作为 brief
+          locale,
           role: "",
           topic: "",
           studySummary: "",

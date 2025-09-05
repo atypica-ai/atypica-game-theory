@@ -8,6 +8,7 @@ import { s3SignedUrl } from "@/lib/attachments/s3";
 import { rootLogger } from "@/lib/logging";
 import { proxiedFetch } from "@/lib/proxy/fetch";
 import { getDeployRegion } from "@/lib/request/deployRegion";
+import { detectInputLanguage } from "@/lib/textUtils";
 import { ChatMessageAttachment, PersonaImport, PersonaImportExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { CoreMessage, generateObject, streamText } from "ai";
@@ -250,7 +251,9 @@ async function buildPersonaAgentPrompt(
 ): Promise<void> {
   const followUpChatContent = await formatFollowUpChatContent(personaImport);
 
-  const locale = await getLocale();
+  // 优先使用文件解析的语言
+  const locale = await detectInputLanguage({ text: personaImport.context });
+
   const logger = rootLogger.child({
     personaImportId: personaImport.id,
     followUpChat: Boolean(followUpChatContent),
@@ -344,7 +347,9 @@ async function analyzeInterviewCompleteness(
 ): Promise<z.infer<typeof analysisSchema>> {
   const followUpChatContent = await formatFollowUpChatContent(personaImport);
 
-  const locale = await getLocale();
+  // 优先使用文件解析的语言
+  const locale = await detectInputLanguage({ text: personaImport.context });
+
   const logger = rootLogger.child({
     personaImportId: personaImport.id,
     followUpChat: Boolean(followUpChatContent),

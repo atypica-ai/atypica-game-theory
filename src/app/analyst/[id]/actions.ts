@@ -6,11 +6,11 @@ import { generateReportScreenshot } from "@/app/(study)/artifacts/lib/screenshot
 import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
+import { detectInputLanguage } from "@/lib/textUtils";
 import { generateToken } from "@/lib/utils";
 import { Analyst, AnalystReport, AnalystReportExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
-import { getLocale } from "next-intl/server";
 import { forbidden } from "next/navigation";
 import { Logger } from "pino";
 
@@ -69,7 +69,10 @@ export async function batchBackgroundInterview({
 
     const abortController = new AbortController();
     const abortSignal = abortController.signal;
-    const locale = await getLocale();
+    const locale =
+      analyst.locale === "zh-CN" || analyst.locale === "en-US"
+        ? analyst.locale
+        : await detectInputLanguage({ text: analyst.brief });
 
     for (const personaId of personaIds) {
       const { analystInterviewId, interviewUserChatId, prompt, attachments } =
@@ -200,7 +203,10 @@ export async function backgroundGenerateReport({
     const statReport: StatReporter = async (dimension, value, extra) => {
       reportLog.info(`statReport: ${dimension}=${value} ${JSON.stringify(extra)}`);
     };
-    const locale = await getLocale();
+    const locale =
+      analyst.locale === "zh-CN" || analyst.locale === "en-US"
+        ? analyst.locale
+        : await detectInputLanguage({ text: analyst.brief });
 
     backgroundWait(
       (async () => {

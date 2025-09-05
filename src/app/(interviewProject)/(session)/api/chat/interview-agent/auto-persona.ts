@@ -9,11 +9,12 @@ import { interviewAgentSystemPrompt } from "@/app/(interviewProject)/prompt";
 import { interviewSessionTools } from "@/app/(interviewProject)/tools";
 import { InterviewToolName } from "@/app/(interviewProject)/types";
 import { rootLogger } from "@/lib/logging";
+import { detectInputLanguage } from "@/lib/textUtils";
 import { InterviewProjectExtra, InterviewSessionExtra } from "@/prisma/client";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import { generateId, Message, streamText } from "ai";
-import { getLocale } from "next-intl/server";
+import { Locale } from "next-intl";
 import { Logger } from "pino";
 
 const MAX_CONVERSATION_TURNS = 20;
@@ -86,11 +87,15 @@ export async function runAutoPersonaInterview({
   project,
   personaId,
 }: AutoPersonaInterviewParams): Promise<void> {
-  const locale = await getLocale();
-
   const persona = await prisma.persona.findUniqueOrThrow({
     where: { id: personaId },
   });
+
+  // 优先使用 persona 的语言，然后通过 project brief 猜测语言
+  const locale: Locale =
+    persona.locale === "zh-CN" || persona.locale === "en-US"
+      ? persona.locale
+      : await detectInputLanguage({ text: project.brief });
 
   // Set background token to prevent concurrent executions
   const backgroundToken = new Date().valueOf().toString();

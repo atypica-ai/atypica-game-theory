@@ -2,6 +2,7 @@ import { persistentAIMessageToDB, prepareMessagesForStreaming } from "@/ai/messa
 import { clientMessagePayloadSchema } from "@/ai/messageUtilsClient";
 import authOptions from "@/app/(auth)/authOptions";
 import { rootLogger } from "@/lib/logging";
+import { detectInputLanguage } from "@/lib/textUtils";
 import { UserChatExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { AnalystKind } from "@/prisma/types";
@@ -9,7 +10,6 @@ import { getUserTokens } from "@/tokens/lib";
 import { generateId } from "ai";
 import { getServerSession } from "next-auth/next";
 import { Locale } from "next-intl";
-import { getLocale } from "next-intl/server";
 import { NextResponse } from "next/server";
 import { noQuotaAgentRequest } from "./noQuotaAgentRequest";
 import { productRnDAgentRequest } from "./productRnDAgentRequest";
@@ -79,13 +79,14 @@ export async function POST(req: Request) {
     ? "CLARIFIED"
     : "DRAFT";
 
-  // 如果 analyst 语言已经定了，后面始终使用这个语言
-  const locale: Locale =
-    userChat.analyst.locale === "zh-CN"
-      ? "zh-CN"
-      : userChat.analyst.locale === "en-US"
-        ? "en-US"
-        : await getLocale();
+  // 首先遵循用户的输入语言，然后，如果 analyst 语言已经定了，默认使用 analyst 的语言
+  const locale: Locale = await detectInputLanguage({
+    text: newMessage.content,
+    fallbackLocale:
+      userChat.analyst.locale === "zh-CN" || userChat.analyst.locale === "en-US"
+        ? userChat.analyst.locale
+        : undefined,
+  });
 
   const reqSignal = req.signal;
 

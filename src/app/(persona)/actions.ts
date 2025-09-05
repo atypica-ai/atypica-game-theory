@@ -4,6 +4,7 @@ import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
+import { detectInputLanguage } from "@/lib/textUtils";
 import { createUserChat } from "@/lib/userChat/lib";
 import {
   ChatMessageAttachment,
@@ -17,7 +18,6 @@ import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
 import { generateId, Message } from "ai";
 import { getServerSession } from "next-auth";
-import { getLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { processPersonaImport } from "./processing";
 import { PersonaImportAnalysis } from "./types";
@@ -143,7 +143,6 @@ export async function createFollowUpInterviewChat(
   personaImportId: number,
 ): Promise<ServerActionResult<{ token: string }>> {
   return withAuth(async (user) => {
-    const locale = await getLocale();
     // Check if persona import exists and belongs to user
     const personaImport = await prisma.personaImport.findUnique({
       where: { id: personaImportId, userId: user.id },
@@ -171,6 +170,11 @@ export async function createFollowUpInterviewChat(
     // 获取分析结果中的第一个补充问题
     const analysis = personaImport.analysis as PersonaImportAnalysis | null;
     const firstQuestion = analysis?.supplementaryQuestions?.questions?.[0];
+
+    // followup chat 的开场白默认使用导入文件的语言 (context 字段)
+    const locale = await detectInputLanguage({
+      text: personaImport.context,
+    });
 
     // 如果有补充问题，使用第一个问题；否则使用默认开场白
     const prologue =

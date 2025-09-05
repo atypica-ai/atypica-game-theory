@@ -3,10 +3,10 @@ import "server-only";
 import { llm, providerOptions } from "@/ai/provider";
 import { initInterviewProjectStatReporter } from "@/ai/tools/stats";
 import { rootLogger } from "@/lib/logging";
+import { detectInputLanguage } from "@/lib/textUtils";
 import { ChatMessage } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { streamText } from "ai";
-import { getLocale } from "next-intl/server";
 import { interviewReportPrologue, interviewReportSystemPrompt } from "../prompt";
 
 /**
@@ -78,7 +78,10 @@ export async function generateInterviewReportContent({
     };
   })();
 
-  const locale = await getLocale();
+  // interview report 优先使用 project brief 的语言
+  const locale = await detectInputLanguage({
+    text: project.brief,
+  });
 
   // Prepare conversation data
   const conversations = project.sessions.map(({ title: sessionTitle, userChat }) => {

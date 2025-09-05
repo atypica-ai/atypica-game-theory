@@ -12,9 +12,9 @@ import { personaFollowUpSystemPrompt } from "@/app/(persona)/prompt";
 import { followUpInterviewTools } from "@/app/(persona)/tools";
 import { PersonaImportAnalysis } from "@/app/(persona)/types";
 import { rootLogger } from "@/lib/logging";
+import { detectInputLanguage } from "@/lib/textUtils";
 import { prisma } from "@/prisma/prisma";
 import { generateId, smoothStream, streamText } from "ai";
-import { getLocale } from "next-intl/server";
 import { after, NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
@@ -69,11 +69,18 @@ export async function POST(req: NextRequest) {
     id: newMessage.id ?? generateId(),
   });
 
-  const locale = await getLocale();
   const abortSignal = req.signal;
 
   const { personaImport } = userChat;
   const { coreMessages, streamingMessage } = await prepareMessagesForStreaming(userChat.id);
+
+  // 动态检测用户输入的语言，先检测用户输入的语言，默认使用用户导入的访谈文件的语言 (context 内容)
+  const locale = await detectInputLanguage({
+    text: newMessage.content,
+    fallbackLocale: await detectInputLanguage({
+      text: personaImport.context,
+    }),
+  });
 
   // Generate system prompt for follow-up interview
   const systemPrompt = personaFollowUpSystemPrompt({

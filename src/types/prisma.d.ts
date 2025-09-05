@@ -109,6 +109,7 @@ declare module "@/prisma/client" {
   }>;
 
   export type InterviewProjectExtra = Partial<{
+    error: string;
     processing: boolean;
     optimizedQuestions: string[];
     optimizationReason: string;

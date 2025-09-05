@@ -10,9 +10,9 @@ import { initGenericUserChatStatReporter } from "@/ai/tools/stats";
 import authOptions from "@/app/(auth)/authOptions";
 import { fetchUserPersonaChatByToken } from "@/app/(persona)/actions";
 import { rootLogger } from "@/lib/logging";
+import { detectInputLanguage } from "@/lib/textUtils";
 import { generateId, smoothStream, streamText } from "ai";
 import { getServerSession } from "next-auth";
-import { getLocale } from "next-intl/server";
 import { after, NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -72,7 +72,13 @@ export async function POST(req: Request) {
     id: newMessage.id ?? generateId(),
   });
 
-  const locale = await getLocale();
+  // 动态检测用户输入的语言，先检测用户输入的语言，默认使用 persona 自身的语言
+  const locale = await detectInputLanguage({
+    text: newMessage.content,
+    fallbackLocale:
+      persona.locale === "zh-CN" || persona.locale === "en-US" ? persona.locale : undefined,
+  });
+
   const { coreMessages, streamingMessage } = await prepareMessagesForStreaming(userChat.id);
 
   const mergedAbortSignal = AbortSignal.any([

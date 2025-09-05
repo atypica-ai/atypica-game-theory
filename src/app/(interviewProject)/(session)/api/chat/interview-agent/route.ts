@@ -12,10 +12,10 @@ import { interviewSessionTools } from "@/app/(interviewProject)/tools";
 import { InterviewToolName } from "@/app/(interviewProject)/types";
 import { rootLogger } from "@/lib/logging";
 import { throwServerActionError } from "@/lib/serverAction";
+import { detectInputLanguage } from "@/lib/textUtils";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import { CoreMessage, generateId, smoothStream, streamText } from "ai";
-import { getLocale } from "next-intl/server";
 import { after, NextResponse } from "next/server";
 
 function setBedrockCache(model: `claude-${string}`, coreMessages: CoreMessage[]) {
@@ -93,7 +93,8 @@ export async function POST(req: Request) {
     id: newMessage.id ?? generateId(),
   });
 
-  const locale = await getLocale();
+  // 动态检测用户输入的语言
+  const locale = await detectInputLanguage({ text: newMessage.content });
   const { coreMessages: _coreMessages, streamingMessage } =
     await prepareMessagesForStreaming(userChatId);
   const coreMessages = setBedrockCache("claude-3-7-sonnet", _coreMessages);

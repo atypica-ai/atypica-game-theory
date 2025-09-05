@@ -10,6 +10,7 @@ import authOptions from "@/app/(auth)/authOptions";
 import { newStudySystem } from "@/app/(newStudy)/prompt";
 import { newStudyTools } from "@/app/(newStudy)/tools";
 import { rootLogger } from "@/lib/logging";
+import { detectInputLanguage } from "@/lib/textUtils";
 import { prisma } from "@/prisma/prisma";
 import { getUserTokens } from "@/tokens/lib";
 import {
@@ -20,12 +21,9 @@ import {
   streamText,
 } from "ai";
 import { getServerSession } from "next-auth";
-import { getLocale } from "next-intl/server";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
-  const locale = await getLocale();
-
   // Authenticate user
   const session = await getServerSession(authOptions);
   if (!session?.user) {
@@ -41,6 +39,9 @@ export async function POST(req: NextRequest) {
   }
 
   const { message: newMessage, userChatToken } = parseResult.data;
+
+  // 动态检测用户输入的语言
+  const locale = await detectInputLanguage({ text: newMessage.content });
 
   // Verify user has access to this chat
   const userChat = await prisma.userChat.findUnique({

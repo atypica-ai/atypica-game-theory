@@ -3,62 +3,49 @@ import "server-only";
 import { llm, providerOptions } from "@/ai/provider";
 import { initInterviewProjectStatReporter } from "@/ai/tools/stats";
 import { rootLogger } from "@/lib/logging";
+import { detectInputLanguage } from "@/lib/textUtils";
 import { InterviewProjectExtra } from "@/prisma/client";
-import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import { CoreMessage, streamText } from "ai";
-import { getLocale } from "next-intl/server";
 import { interviewQuestionRefinementPrompt } from "./prompt";
 import { questionOptimizationTools } from "./tools";
 
 export async function processInterviewQuestionOptimization(projectId: number): Promise<void> {
   const logger = rootLogger.child({ projectId });
 
-  try {
-    // Get project data
-    const project = await prisma.interviewProject.findUnique({
-      where: { id: projectId },
-    });
+  // Get project data
+  let project = await prisma.interviewProject
+    .findUniqueOrThrow({ where: { id: projectId } })
+    .then(({ extra, ...project }) => ({ ...project, extra: extra as InterviewProjectExtra }));
 
-    if (!project) {
-      throw new Error(`InterviewProject ${projectId} not found`);
-    }
-
-    logger.info("Starting question optimization", { projectId });
-
-    // Set processing status to true
-    const currentExtra = (project.extra as InterviewProjectExtra) || {};
-    await prisma.interviewProject.update({
+  // Set processing status to true
+  project = await prisma.interviewProject
+    .update({
       where: { id: projectId },
       data: {
-        extra: {
-          ...currentExtra,
-          processing: true,
-        } as InputJsonValue,
+        extra: { ...project.extra, processing: true },
       },
-    });
+    })
+    .then(({ extra, ...project }) => ({ ...project, extra: extra as InterviewProjectExtra }));
 
-    const locale = await getLocale();
+  // 优先使用 brief 一样的语言
+  const locale = await detectInputLanguage({ text: project.brief });
 
-    // Initialize stats reporter
-    const { statReport } = initInterviewProjectStatReporter({
-      userId: project.userId,
-      interviewProjectId: projectId,
-      logger: logger,
-    });
+  // Initialize stats reporter
+  const { statReport } = initInterviewProjectStatReporter({
+    userId: project.userId,
+    interviewProjectId: projectId,
+    logger: logger,
+  });
 
-    const messages: CoreMessage[] = [
-      {
-        role: "user",
-        content: [
-          {
-            type: "text",
-            text: project.brief,
-          },
-        ],
-      },
-    ];
+  const messages: CoreMessage[] = [
+    {
+      role: "user",
+      content: [{ type: "text", text: project.brief }],
+    },
+  ];
 
+  try {
     // Use streamText with updateQuestions tool
     await new Promise((resolve, reject) => {
       const response = streamText({
@@ -106,52 +93,32 @@ export async function processInterviewQuestionOptimization(projectId: number): P
       response.consumeStream().catch((error) => reject(error));
     });
 
-    // Clear processing status on success
-    const updatedProject = await prisma.interviewProject.findUnique({
-      where: { id: projectId },
-    });
-
-    if (updatedProject) {
-      const updatedExtra = (updatedProject.extra as InterviewProjectExtra) || {};
-      await prisma.interviewProject.update({
+    project = await prisma.interviewProject
+      .update({
         where: { id: projectId },
         data: {
-          extra: {
-            ...updatedExtra,
-            processing: false,
-          } as InputJsonValue,
+          extra: { ...project.extra, processing: false },
         },
-      });
-    }
+      })
+      .then(({ extra, ...project }) => ({ ...project, extra: extra as InterviewProjectExtra }));
 
     logger.info("Question optimization process completed successfully");
   } catch (error) {
-    logger.error("Question optimization failed", {
-      error: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined,
-    });
+    logger.error(`Question optimization failed: ${(error as Error).message}`);
 
     // Clear processing status on error
-    try {
-      const project = await prisma.interviewProject.findUnique({
+    project = await prisma.interviewProject
+      .update({
         where: { id: projectId },
-      });
-
-      if (project) {
-        const currentExtra = (project.extra as InterviewProjectExtra) || {};
-        await prisma.interviewProject.update({
-          where: { id: projectId },
-          data: {
-            extra: {
-              ...currentExtra,
-              processing: false,
-            } as InputJsonValue,
+        data: {
+          extra: {
+            ...project.extra,
+            error: (error as Error).message,
+            processing: false,
           },
-        });
-      }
-    } catch (updateError) {
-      logger.error("Failed to clear processing status", { updateError });
-    }
+        },
+      })
+      .then(({ extra, ...project }) => ({ ...project, extra: extra as InterviewProjectExtra }));
 
     throw error;
   }
