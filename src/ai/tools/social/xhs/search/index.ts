@@ -12,27 +12,18 @@ const toolLog = rootLogger.child({
 });
 
 function parseXHSSearchResult(data: {
-  data: {
-    items: {
-      model_type: string;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      note: any;
-    }[];
-  };
+  items: {
+    model_type: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    note: any;
+  }[];
 }): XHSSearchResult {
   const notes: XHSNote[] = [];
   // 过滤并取前十条
-  const topNotes = (data?.data?.items ?? [])
-    .filter((item) => item.model_type === "note")
-    .slice(0, 10);
+  const topNotes = (data?.items ?? []).filter((item) => item.model_type === "note").slice(0, 10);
   topNotes.forEach(({ note }) => {
-    // Extract the first image URL from the new image_list structure
-    const firstImageUrl =
-      note.image_list?.[0]?.info_list?.find(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (info: any) => info.image_scene === "WB_DFT",
-      )?.url || note.cover?.url_default;
-
+    // Extract the first image URL from the images_list structure
+    const firstImageUrl = note.images_list?.[0]?.url;
     notes.push({
       id: note.id || note.note_id || "unknown", // fallback for missing id
       title: note.display_title || note.title || "",
@@ -47,13 +38,7 @@ function parseXHSSearchResult(data: {
         image: note.user?.avatar || note.user?.images,
       },
       // Updated to handle new image structure
-      images_list: firstImageUrl
-        ? [
-            {
-              url: firstImageUrl,
-            },
-          ]
-        : [],
+      images_list: firstImageUrl ? [{ url: firstImageUrl }] : [],
     });
   });
   // 这个方法返回的结果会发给 LLM 用来生成回复，只需要把 LLM 能够使用的文本给它就行，节省很多 tokens
@@ -85,12 +70,13 @@ async function xhsSearch({ keyword }: { keyword: string }) {
       };
       const queryString = new URLSearchParams(params).toString();
       const response = await fetch(
-        `${process.env.SX_API_BASE_URL}/xiaohongshu/search-note/v2?${queryString}`,
+        `${process.env.SX_API_BASE_URL}/xiaohongshu/search-note/v3?${queryString}`,
       );
-      const data = await response.json();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const data: { code: number; data: any } = await response.json();
       toolLog.info(`Response text: ${JSON.stringify(data).slice(0, 100)}`);
-      if (data.code === 0) {
-        const result = parseXHSSearchResult(data);
+      if (data.code === 0 && data.data) {
+        const result = parseXHSSearchResult(data.data);
         return result;
       } else {
         toolLog.warn(`Failed to fetch XHS posts, retrying... ${i + 1}`);
