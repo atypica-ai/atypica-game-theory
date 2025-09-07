@@ -19,6 +19,7 @@ import {
   searchPersonasTool,
   toolCallError,
   webSearchTool,
+  planStudyTool,
 } from "@/ai/tools/tools";
 import { AgentToolConfigArgs, ToolName } from "@/ai/tools/types";
 import { setUserChatError } from "@/lib/userChat/lib";
@@ -204,6 +205,7 @@ export async function studyAgentRequest({
     [ToolName.interviewChat]: interviewChatTool({ userId, studyUserChatId, ...agentToolArgs }),
     [ToolName.saveAnalystStudySummary]: saveAnalystStudySummaryTool({ studyUserChatId }),
     [ToolName.generateReport]: generateReportTool({ studyUserChatId, ...agentToolArgs }),
+    [ToolName.planStudy]: planStudyTool({ studyUserChatId, ...agentToolArgs }),
     [ToolName.toolCallError]: toolCallError,
   };
   let tools: Partial<typeof allTools> = allTools;

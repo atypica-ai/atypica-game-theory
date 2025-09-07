@@ -107,7 +107,7 @@ export const saveAnalystStudySummaryTool = ({ studyUserChatId }: { studyUserChat
       studySummary: z
         .string()
         .describe(
-          "Objective documentation of study design, methodology steps, data collection process, and workflow execution (exclude conclusions or findings)",
+          "Objective documentation of study design, methodology steps, data collection process, and workflow execution (exclude conclusions or findings). Valuable findings from websearch results according to study plan should be summarized and included.",
         )
         .transform(fixMalformedUnicodeString),
     }),

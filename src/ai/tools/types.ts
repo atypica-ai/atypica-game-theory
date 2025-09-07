@@ -38,6 +38,7 @@ export interface PlainTextToolResult {
 }
 
 export enum ToolName {
+  planStudy = "planStudy",
   interviewChat = "interviewChat",
   generateReport = "generateReport",
   reasoningThinking = "reasoningThinking",

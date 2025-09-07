@@ -77,20 +77,20 @@ export const webSearchTool = ({
           },
           {} as Partial<Record<ToolName, number>>,
         );
-      if ((toolUseCount[ToolName.webSearch] ?? 0) >= 2) {
-        return {
-          results: [],
-          plainText:
-            "The webSearch tool has reached its limit of 2 uses per study session. Please continue with your study using the information already gathered.",
-        };
-      }
-      if ((toolUseCount[ToolName.saveAnalyst] ?? 0) >= 1) {
-        return {
-          results: [],
-          plainText:
-            "The webSearch tool is not allowed after the saveAnalyst tool has been used. Please continue your research using the previously saved analyst topic.",
-        };
-      }
+      // if ((toolUseCount[ToolName.webSearch] ?? 0) >= 4) {
+      //   return {
+      //     results: [],
+      //     plainText:
+      //       "The webSearch tool has reached its limit of 2 uses per study session. Please continue with your study using the information already gathered.",
+      //   };
+      // }
+      // if ((toolUseCount[ToolName.saveAnalyst] ?? 0) >= 1) {
+      //   return {
+      //     results: [],
+      //     plainText:
+      //       "The webSearch tool is not allowed after the saveAnalyst tool has been used. Please continue your research using the previously saved analyst topic.",
+      //   };
+      // }
       const result = await webSearch({ query });
       // 每次查询固定消耗 3000 tokens
       await statReport("tokens", 3000, {

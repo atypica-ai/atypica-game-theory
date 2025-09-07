@@ -34,5 +34,6 @@ export { savePersonaTool } from "./system/savePersona";
 export { requestInteractionTool } from "./user/interaction";
 export { requestPaymentTool } from "./user/payment";
 export { thanksTool } from "./user/thanks";
+export { planStudyTool } from "./experts/planStudy";
 
 export { handleToolCallError, toolCallError } from "./error";
