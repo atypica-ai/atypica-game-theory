@@ -105,6 +105,7 @@ export async function createStudyUserChat(
           role: "",
           topic: "",
           studySummary: "",
+          studyLog: "",
           attachments: attachments,
         },
       });

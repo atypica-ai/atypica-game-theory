@@ -64,6 +64,7 @@ export async function createAnalyst({
           role,
           topic,
           studySummary: "",
+          studyLog: "",
         },
       });
       return analyst;

@@ -138,6 +138,7 @@ model Analyst {
   role            String    @db.VarChar(255)
   topic           String    @db.Text
   studySummary    String    @db.Text
+  studyLog        String    @default("") @db.Text
   studyUserChatId Int?      @unique @db.Integer
   studyUserChat   UserChat? @relation(fields: [studyUserChatId], references: [id])
   attachments     Json      @default("[]")
