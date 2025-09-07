@@ -3,7 +3,7 @@ import "server-only";
 import { prepareMessagesForStreaming } from "@/ai/messageUtils";
 import { buildPersonaSystem } from "@/ai/prompt";
 import { llm, LLMModelName, providerOptions } from "@/ai/provider";
-import { handleToolCallError, savePersonaTool } from "@/ai/tools/tools";
+import { handleToolCallError, savePersonaTool, toolCallError } from "@/ai/tools/tools";
 import { AgentToolConfigArgs, PlainTextToolResult, ToolName } from "@/ai/tools/types";
 import { prisma } from "@/prisma/prisma";
 import { CoreMessage, DataStreamWriter, streamText, tool } from "ai";
@@ -161,7 +161,7 @@ export async function runBuildPersona({
     const temperature = 0.5;
     const tools = {
       [ToolName.savePersona]: savePersonaTool({ scoutUserChatId }),
-      // [ToolName.toolCallError]: toolCallError,
+      [ToolName.toolCallError]: toolCallError,
     };
     /**
      * 给 gemini 2.5 flash 设置 toolChoice 时要注意:

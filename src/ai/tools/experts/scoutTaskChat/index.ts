@@ -14,7 +14,6 @@ import {
   dyPostCommentsTool,
   dySearchTool,
   dyUserPostsTool,
-  handleToolCallError,
   insPostCommentsTool,
   insSearchTool,
   insUserPostsTool,
@@ -306,7 +305,7 @@ export async function runScoutTaskChatStream({
         messages: coreMessages,
         tools: tools,
         toolChoice: toolChoice,
-        experimental_repairToolCall: handleToolCallError,
+        // experimental_repairToolCall: handleToolCallError,  // 这个要求 tools 里面有 [ToolName.toolCallError]
         maxSteps: maxSteps,
         experimental_generateMessageId: () => streamingMessage.id,
         experimental_transform: smoothStream({
