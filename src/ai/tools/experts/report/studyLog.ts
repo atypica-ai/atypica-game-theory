@@ -43,24 +43,26 @@ export async function generateAndSaveStudyLog({
       ],
       // maxTokens: 500,
       // onChunk: (chunk) => console.log("[Reasoning]", JSON.stringify(chunk)),
-      onFinish: async (result) => {
+      onFinish: async ({ finishReason, text, usage }) => {
         // const reasoning = result.reasoning ?? "";
         // const text = result.text ?? "";
         // resolve({ reasoning, text, plainText: text });
-        const studyLog = result.text ?? "";
+        const studyLog = text ?? "";
+        logger.info({ msg: "studyLog streamText onFinish", finishReason, usage });
+        if (usage.totalTokens > 0 && statReport) {
+          await statReport("tokens", usage.totalTokens, {
+            reportedBy: "studyLog tool",
+            usage,
+          });
+        }
         await prisma.analyst.update({
           where: { id: analyst.id },
           data: { studyLog: studyLog },
         });
         resolve({ studyLog });
-        if (result.usage.totalTokens > 0 && statReport) {
-          await statReport("tokens", result.usage.totalTokens, {
-            reportedBy: "studyLog tool",
-          });
-        }
       },
       onError: ({ error }) => {
-        logger.error(`Error generating study log: ${(error as Error).message}`);
+        logger.error(`studyLog streamText onError: ${(error as Error).message}`);
         reject(error);
       },
       abortSignal,

@@ -29,17 +29,9 @@ ${analyst.interviews.map((interview) => `\n${interview.conclusion}\n`).join("\n\
     : ""
 }
 
-【联网搜索的结果总结】
+【研究总结】
 ${analyst.studySummary}
 
-【任务】
-  1. 理解用户的问题和需要的产出
-  2. 理解提供给你的商业研究规划和商业框架
-  3. 理解提供给你的信息收集：用户访谈结果和联网搜索结果
-  4. 根据商业研究规划和商业框架，结合用户访谈结果和联网搜索结果，结构化地输出对内容进行有深度的分析的详细过程。
-
-【输出格式】
-  请以Markdown格式结构化地输出你的分析过程，每个步骤之间要有很强的逻辑关系。
 `
     : `
 【Original Research Requirements】
@@ -56,17 +48,9 @@ ${analyst.interviews.map((interview) => `\n${interview.conclusion}\n`).join("\n\
     : ""
 }
 
-【Summary of Online Search Results】
+【Summary of The Research】
 ${analyst.studySummary}
 
-【Tasks】
-  1. Understand the user's questions and required deliverables
-  2. Understand the business research planning and business framework provided to you
-  3. Understand the information collection provided to you: user interview results and online search results
-  4. Based on the business research planning and business framework, combined with user interview results and online search results, output a structured and detailed process of in-depth content analysis.
-
-【Output Format】
-Please output your analysis process in a structured manner using Markdown format, with strong logical relationships between each step.
 `;
 
 export const studyLogSystem = ({ locale }: { locale: Locale }) =>
@@ -80,12 +64,15 @@ export const studyLogSystem = ({ locale }: { locale: Locale }) =>
 1. 理解用户的问题和需要的产出
 2. 理解提供给你的商业研究规划和商业框架
 3. 理解提供给你的信息收集：用户访谈结果和联网搜索结果
-4. 根据商业研究规划和商业框架，结合用户访谈结果和联网搜索结果，对内容进行有深度的分析
-5. 根据分析过程，输出具体的有实操性的分析结论（需要的产出），包括决策建议、实时路径和风险识别。
-6. 一步一步的以MarkDown格式结构化详细地输出你的分析过程。
+4. 在开场自然地介绍这个研究问题的背景，基于用户最初的问题和澄清后的研究主题来阐述
+5. 根据商业研究规划和商业框架，结合用户访谈结果和联网搜索结果，对内容进行有深度的分析
+6. 根据研究过程，输出具体的有实操性的分析结论（需要的产出），包括决策建议、实时路径和风险识别
 
-【注意】
-- 需要引用信息来源：用户访谈原话请标注被访谈人；联网搜索结果请标注来源网站。
+【重要输出要求】
+- 直接输出研究日志内容，不要与用户对话
+- 不要包含任何对话式的开场白（如"好的，作为您的商业化咨询师..."）
+- 直接从研究内容开始，以Markdown格式结构化地输出你的研究过程
+- 需要引用信息来源：用户访谈原话请标注被访谈人；联网搜索结果请标注来源网站
 `
     : `${promptSystemConfig({ locale })}
 【Role】
@@ -96,10 +83,13 @@ You have extensive knowledge of various categories of commercialization issues (
 1. Understand the user's questions and required deliverables
 2. Understand the provided business research plan and business frameworks
 3. Understand the provided information collection: user interview results and online search results
-4. Based on the business research plan and business frameworks, combined with user interview results and online search results, conduct in-depth analysis of the content
-5. Based on the analysis process, output specific actionable analysis conclusions (required deliverables), including decision recommendations, implementation pathways, and risk identification
-6. Step by step, output your analysis process in a structured and detailed manner using Markdown format
+4. Naturally introduce the background of this research problem at the beginning, based on the user's original question and clarified research topic
+5. Based on the business research plan and business frameworks, combined with user interview results and online search results, conduct in-depth analysis of the content
+6. Based on the study process, output specific actionable analysis conclusions (required deliverables), including decision recommendations, implementation pathways, and risk identification
 
-【Notes】
-- Source citation is required: For user interview quotes, mark the interviewee; for online search results, mark the source website.
+【Important Output Requirements】
+- Directly output the study log content without conversing with the user
+- Do not include any conversational opening remarks (such as "Alright, as your business consultant...")
+- Start directly with the research content, outputting your study process in a structured Markdown format
+- Source citation is required: For user interview quotes, mark the interviewee; for online search results, mark the source website
 `;
