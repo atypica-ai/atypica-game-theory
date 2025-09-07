@@ -1,6 +1,6 @@
 import "server-only";
 
-import { AgentToolConfigArgs, PlainTextToolResult, ToolName } from "@/ai/tools/types";
+import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
 import { tavily, TavilyClient } from "@tavily/core";
 import { tool } from "ai";
 import { z } from "zod";
@@ -63,20 +63,20 @@ export const webSearchTool = ({
     experimental_toToolResultContent: (result: PlainTextToolResult) => {
       return [{ type: "text", text: result.plainText }];
     },
-    execute: async ({ query }, { messages }) => {
-      const toolUseCount = messages
-        .filter((message) => message.role === "tool")
-        .reduce(
-          (_count, message) => {
-            const count = { ..._count };
-            (message.content ?? []).forEach((part) => {
-              const toolName = part.toolName as ToolName;
-              count[toolName] = (count[toolName] || 0) + 1;
-            });
-            return count;
-          },
-          {} as Partial<Record<ToolName, number>>,
-        );
+    execute: async ({ query }) => {
+      // const toolUseCount = messages
+      //   .filter((message) => message.role === "tool")
+      //   .reduce(
+      //     (_count, message) => {
+      //       const count = { ..._count };
+      //       (message.content ?? []).forEach((part) => {
+      //         const toolName = part.toolName as ToolName;
+      //         count[toolName] = (count[toolName] || 0) + 1;
+      //       });
+      //       return count;
+      //     },
+      //     {} as Partial<Record<ToolName, number>>,
+      //   );
       // if ((toolUseCount[ToolName.webSearch] ?? 0) >= 4) {
       //   return {
       //     results: [],
