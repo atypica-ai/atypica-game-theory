@@ -58,25 +58,10 @@ export const reportHTMLPrologue = ({
 ${analyst.brief}
 </brief>
 
-经过澄清后的研究主题（topic）：
-
-<topic>
-${analyst.topic}
-</topic>
-
-${
-  analyst.interviews.length > 0
-    ? `以下是我们的访谈总结：
-
-${analyst.interviews.map((interview) => `<conclusion>\n${interview.conclusion}\n</conclusion>`).join("\n\n")}`
-    : ""
-}
-
-以下是研究总结：
-
-<studySummary>
-${analyst.studySummary}
-</studySummary>
+研究过程：
+<studyLog>
+${analyst.studyLog}
+</studyLog>
 
 ${
   lastReport
@@ -115,25 +100,10 @@ Original study brief:
 ${analyst.brief}
 </brief>
 
-Clarified study topic:
-
-<topic>
-${analyst.topic}
-</topic>
-
-${
-  analyst.interviews.length > 0
-    ? `Here are our interview summaries:
-
-${analyst.interviews.map((interview) => `<conclusion>\n${interview.conclusion}\n</conclusion>`).join("\n\n")}`
-    : ""
-}
-
-Here is the study process summary:
-
-<studySummary>
-${analyst.studySummary}
-</studySummary>
+Study process:
+<studyLog>
+${analyst.studyLog}
+</studyLog>
 
 ${
   lastReport

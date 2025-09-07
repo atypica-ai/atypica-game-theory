@@ -17,6 +17,7 @@ import { prisma } from "@/prisma/prisma";
 import { AnalystKind } from "@/prisma/types";
 import { FinishReason, Message, streamText, tool } from "ai";
 import { z } from "zod";
+import { generateAndSaveStudyLog } from "./studyLog";
 import { type GenerateReportResult } from "./types";
 
 export const generateReportTool = ({
@@ -82,7 +83,7 @@ export const generateReportTool = ({
       //     plainText: `为调研主题 ${analystId} 生成报告失败：你提供的 reportToken ${reportToken} 已经存在，无法使用，请重试。你可以忽略提供这个字段，系统会自动生成 token。`,
       //   };
       // }
-      const reportLog = logger.child({ analystId, reportToken });
+      const reportLogger = logger.child({ analystId, reportToken });
       let report = await prisma.analystReport.findFirst({
         where: { analystId },
         orderBy: { createdAt: "desc" },
@@ -108,6 +109,8 @@ export const generateReportTool = ({
           data: { analystId, instruction, token: reportToken, coverSvg: "", onePageHtml: "" },
         });
       }
+
+      // Generate Report
       try {
         await generateReport({
           analyst,
@@ -117,14 +120,14 @@ export const generateReportTool = ({
           locale,
           abortSignal,
           statReport,
-          logger: reportLog,
+          logger: reportLogger,
         });
         // 更新一下 report 的数据
         report = await prisma.analystReport.findUniqueOrThrow({
           where: { id: report.id },
         });
       } catch (error) {
-        reportLog.error(`Error generating report for analyst ${analystId}: ${error}`);
+        reportLogger.error(`Error generating report for analyst ${analystId}: ${error}`);
         throw error;
         // return {
         //   plainText: `为研究主题 ${analystId} 生成报告失败：${(error as Error).message}`,
@@ -137,7 +140,7 @@ export const generateReportTool = ({
           extra: report.extra as AnalystReportExtra,
           analyst,
         }).catch((error) => {
-          reportLog.error(`Error generating screenshot for report ${report.token}: ${error}`); // screenshot 生成失败就算了
+          reportLogger.error(`Error generating screenshot for report ${report.token}: ${error}`); // screenshot 生成失败就算了
         }),
         generateCover({
           analyst,
@@ -146,9 +149,9 @@ export const generateReportTool = ({
           locale,
           abortSignal,
           statReport,
-          logger: reportLog,
+          logger: reportLogger,
         }).catch((error) => {
-          reportLog.error(`Error generating cover for analyst ${analystId}: ${error}`); // cover 生成失败就算了
+          reportLogger.error(`Error generating cover for analyst ${analystId}: ${error}`); // cover 生成失败就算了
         }),
       ]);
 
@@ -180,6 +183,30 @@ export async function generateReport({
   instruction: string;
   systemPrompt?: string;
 } & AgentToolConfigArgs) {
+  // 如果 studyLog 没有生成过，先生成，report 的内容主要来自 studyLog
+  if (analyst.studyLog) {
+    logger.info("generateReport: studyLog found in Analyst");
+  } else {
+    logger.info("studyLog not found in Analyst, generating studyLog");
+    try {
+      const { studyLog } = await generateAndSaveStudyLog({
+        analyst,
+        locale,
+        abortSignal,
+        statReport,
+        logger,
+      });
+      // ⚠️ IMPROVE THIS，更新 analyst 对象上的 studyLog，不从数据库读取
+      analyst = {
+        ...analyst,
+        studyLog,
+      };
+    } catch (error) {
+      logger.error(`Error generating study process for analyst ${analyst.id}: ${error}`);
+      throw error;
+    }
+  }
+
   let onePageHtml = report.onePageHtml; // 如果 report 有内容，就继续使用 report 的 onePageHtml
 
   const throttleSaveHTML = (() => {
