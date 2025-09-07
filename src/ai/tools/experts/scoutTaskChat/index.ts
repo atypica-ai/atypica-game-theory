@@ -14,12 +14,14 @@ import {
   dyPostCommentsTool,
   dySearchTool,
   dyUserPostsTool,
+  handleToolCallError,
   insPostCommentsTool,
   insSearchTool,
   insUserPostsTool,
   tiktokPostCommentsTool,
   tiktokSearchTool,
   tiktokUserPostsTool,
+  toolCallError,
   twitterPostCommentsTool,
   twitterSearchTool,
   twitterUserPostsTool,
@@ -233,7 +235,7 @@ export async function runScoutTaskChatStream({
     [ToolName.twitterSearch]: twitterSearchTool,
     [ToolName.twitterUserPosts]: twitterUserPostsTool,
     [ToolName.twitterPostComments]: twitterPostCommentsTool,
-    // [ToolName.toolCallError]: toolCallError,
+    [ToolName.toolCallError]: toolCallError,
   };
   const systemPrompt = scoutSystem({ locale });
   const tools = allTools;
@@ -305,7 +307,7 @@ export async function runScoutTaskChatStream({
         messages: coreMessages,
         tools: tools,
         toolChoice: toolChoice,
-        // experimental_repairToolCall: handleToolCallError,  // 这个要求 tools 里面有 [ToolName.toolCallError]
+        experimental_repairToolCall: handleToolCallError, // 这个要求 tools 里面有 [ToolName.toolCallError]
         maxSteps: maxSteps,
         experimental_generateMessageId: () => streamingMessage.id,
         experimental_transform: smoothStream({
