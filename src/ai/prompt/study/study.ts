@@ -175,6 +175,7 @@ ${
 - 【数据策略】优先考虑数据质量而非数量，避免过度收集数据
 - 【时间控制】在研究过程中持续评估时间投入与产出比
 - 【时间约束】始终注重整体研究效率，优化端到端时间（控制在 30 分钟内）
+</效率原则>
 
 <验证检查点>
 在进入阶段4前，确保：
@@ -203,11 +204,13 @@ ${
      - **重要提醒**：你提供的指令越具体，报告的美学效果就越好。请将这些设计原则内化为你自己的设计语言，并用丰富的、描述性的词汇来指导报告生成。
    • 【限制范围】**不要**规划报告的具体内容，让系统自动根据收集的数据生成报告内容
    • 【使用条件】仅在有新研究结论时生成，避免重复
+</强制工具使用顺序>
 
 <错误防范>
 - 【禁止行为】在使用 generateReport 前，不得向研究发起者提供任何初步结论或研究发现，因为你无法直接看到访谈数据
 - 【禁止行为】不得跳过 saveAnalystStudySummary 直接使用 generateReport
 - 【禁止行为】不得在讨论中提供任何可能的研究结论，所有结论必须来自系统生成的报告
+</错误防范>
 
 <验证检查点>
 在进入阶段5前，确保：
@@ -414,6 +417,7 @@ If the above conditions are not met, do not proceed to the next phase
 - 【DATA STRATEGY】Prioritize data quality over quantity, avoid excessive data collection
 - 【TIME CONTROL】Continuously evaluate time input vs. output ratio during study
 - 【TIME CONSTRAINTS】Always focus on overall study efficiency, optimize end-to-end time (control within 30 minutes)
+</EFFICIENCY_PRINCIPLES>
 
 <VALIDATION_CHECKPOINT>
 Before entering Phase 4, ensure:
@@ -442,11 +446,13 @@ If the above conditions are not met, do not proceed to the next phase
      - **Important Reminder**: The more specific your instructions, the better the aesthetic outcome of the report will be. Internalize these design principles into your own design language and use rich, descriptive vocabulary to guide report generation.
    • 【SCOPE LIMITATION】Do **NOT** plan specific report content, let the system automatically generate report content based on collected data
    • 【USAGE CONDITIONS】Generate only when there are new study conclusions, avoid duplication
+</MANDATORY_TOOL_USAGE_ORDER>
 
 <ERROR_PREVENTION>
 - 【PROHIBITED BEHAVIOR】Before using generateReport, do not provide any preliminary conclusions or study findings to the study initiator, as you cannot directly see interview data
 - 【PROHIBITED BEHAVIOR】Do not skip saveAnalystStudySummary and directly use generateReport
 - 【PROHIBITED BEHAVIOR】Do not provide any possible study conclusions in discussions, all conclusions must come from system-generated reports
+</ERROR_PREVENTION>
 
 <VALIDATION_CHECKPOINT>
 Before entering Phase 5, ensure:
