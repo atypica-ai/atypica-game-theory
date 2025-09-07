@@ -2,12 +2,12 @@ import { appendChunkToStreamingMessage, createDebouncePersistentMessage } from "
 import { productRnDSystem } from "@/ai/prompt/study/productRnD";
 import { fixFileNameInMessageToUsePromptCache, llm, providerOptions } from "@/ai/provider";
 import { initStudyStatReporter } from "@/ai/tools/stats";
-import { saveInnovationSummaryTool } from "@/ai/tools/system/saveAnalyst";
 import {
   audienceCallTool,
   generateReportTool,
   handleToolCallError,
   saveAnalystTool,
+  saveInnovationSummaryTool,
   scoutSocialTrendsTool,
   toolCallError,
 } from "@/ai/tools/tools";

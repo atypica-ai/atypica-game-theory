@@ -38,9 +38,9 @@ function parseXHSSearchResult(data: {
       title: note.display_title || note.title || "",
       desc: note.desc || note.description || "", // fallback for missing desc
       type: note.type,
-      liked_count: note.liked_count,
-      collected_count: note.collected_count,
-      comments_count: note.comments_count,
+      liked_count: note.liked_count || 0, // fallback for missing engagement data
+      collected_count: note.collected_count || 0,
+      comments_count: note.comments_count || 0,
       user: {
         nickname: note.user?.nickname,
         userid: note.user?.userid,
