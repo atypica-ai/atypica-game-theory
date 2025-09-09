@@ -1,4 +1,3 @@
-"use server";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import { googleAnalyticsMeasurementId } from "./config";
 import { SegmentAnalytics } from "./segment";

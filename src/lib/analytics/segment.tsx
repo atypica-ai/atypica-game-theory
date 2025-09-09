@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { cn } from "../utils";
 import { calcIntercomUserHash, segmentAnalyticsWriteKey } from "./config";
+import { trackUser } from "./server";
 
 // 用一个模块级变量存储 analytics 实例
 let analyticsInstance: AnalyticsBrowser | null = null;
@@ -59,11 +60,14 @@ export function SegmentAnalytics() {
       analyticsInstance.page();
       if (session?.user) {
         const userId = session.user.id.toString();
+        // 前端 identify 初始化 intercom
         analyticsInstance.identify(
           userId,
           { email: session.user.email },
           { integrations: { Intercom: { user_hash: calcIntercomUserHash(userId) } } },
         );
+        // 后端 track 上报完整信息
+        trackUser();
       }
     };
     if (status === "authenticated" && !isSegmentLoaded) {
