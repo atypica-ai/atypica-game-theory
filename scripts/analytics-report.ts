@@ -183,6 +183,70 @@ async function main() {
 
     console.log(`\n✅ 找到 ${reports.length} 个 /study/*/share/ 页面`);
     console.log(`📈 Study页面总浏览量: ${totalSharePageViews.toLocaleString()}`);
+  } else if (firstArg === "all") {
+    // 查询所有类型的 share 页面数据
+    console.log("🔍 正在获取所有 share 页面的浏览数据...\n");
+
+    const reports = await reporter.getSharePagesViews(['study', 'report'], startDate, endDate);
+
+    // 按页面类型分类统计
+    const studyReports = reports.filter(r => r.pagePath.startsWith('/study/'));
+    const reportReports = reports.filter(r => r.pagePath.startsWith('/artifacts/report/'));
+
+    console.log(`📄 所有 Share 页面详细数据 (最近${days}天):`);
+    console.log("─".repeat(80));
+    console.log("页面路径".padEnd(50) + "浏览量".padEnd(10) + "会话数".padEnd(10) + "用户数");
+    console.log("─".repeat(80));
+
+    let totalAllPageViews = 0;
+    let totalAllSessions = 0;
+    let totalAllUsers = 0;
+
+    // 显示 Study 页面
+    if (studyReports.length > 0) {
+      console.log("🎓 Study Pages:");
+      for (const report of studyReports) {
+        console.log(
+          ("  " + report.pagePath).padEnd(50) +
+            report.pageViews.toString().padEnd(10) +
+            report.sessions.toString().padEnd(10) +
+            report.users.toString(),
+        );
+        totalAllPageViews += report.pageViews;
+        totalAllSessions += report.sessions;
+        totalAllUsers += report.users;
+      }
+      console.log("");
+    }
+
+    // 显示 Report 页面
+    if (reportReports.length > 0) {
+      console.log("📊 Report Pages:");
+      for (const report of reportReports) {
+        console.log(
+          ("  " + report.pagePath).padEnd(50) +
+            report.pageViews.toString().padEnd(10) +
+            report.sessions.toString().padEnd(10) +
+            report.users.toString(),
+        );
+        totalAllPageViews += report.pageViews;
+        totalAllSessions += report.sessions;
+        totalAllUsers += report.users;
+      }
+      console.log("");
+    }
+
+    console.log("─".repeat(80));
+    console.log(
+      "所有页面合计".padEnd(50) +
+        totalAllPageViews.toString().padEnd(10) +
+        totalAllSessions.toString().padEnd(10) +
+        totalAllUsers.toString(),
+    );
+    console.log("─".repeat(80));
+
+    console.log(`\n✅ 找到 ${reports.length} 个 share 页面 (Study: ${studyReports.length}, Report: ${reportReports.length})`);
+    console.log(`📈 所有页面总浏览量: ${totalAllPageViews.toLocaleString()}`);
   } else {
     // 显示帮助信息
     console.log("📊 Google Analytics 页面浏览量统计工具\n");
@@ -191,6 +255,7 @@ async function main() {
     console.log("  查询特定 report: pnpm analytics report <report-token> [--days <天数>]");
     console.log("  查询所有 study:  pnpm analytics studies [--days <天数>]");
     console.log("  查询所有 report: pnpm analytics reports [--days <天数>]");
+    console.log("  查询所有页面:    pnpm analytics all [--days <天数>]");
     console.log("\n参数说明:");
     console.log("  --days <天数>    查询最近N天的数据 (默认: 30天)");
     console.log("\n示例:");
@@ -199,6 +264,7 @@ async function main() {
     console.log("  pnpm analytics report XdUaA9mpwbEcLmxa --days 14");
     console.log("  pnpm analytics studies --days 90");
     console.log("  pnpm analytics reports");
+    console.log("  pnpm analytics all --days 7");
   }
 }
 
