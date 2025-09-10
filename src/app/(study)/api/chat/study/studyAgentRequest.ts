@@ -11,6 +11,7 @@ import {
   generateReportTool,
   handleToolCallError,
   interviewChatTool,
+  planStudyTool,
   reasoningThinkingTool,
   requestInteractionTool,
   saveAnalystStudySummaryTool,
@@ -19,7 +20,6 @@ import {
   searchPersonasTool,
   toolCallError,
   webSearchTool,
-  planStudyTool,
 } from "@/ai/tools/tools";
 import { AgentToolConfigArgs, ToolName } from "@/ai/tools/types";
 import { setUserChatError } from "@/lib/userChat/lib";

@@ -64,10 +64,10 @@ node -r ts-node/register scripts/analytics-report.ts
 
 ```typescript
 // 获取最近7天的数据
-const reports = await reporter.getPageViews('/study/*/share/', '7daysAgo', 'today');
+const reports = await reporter.getPageViews("/study/*/share/", "7daysAgo", "today");
 
 // 获取指定日期范围的数据
-const reports = await reporter.getPageViews('/study/*/share/', '2024-01-01', '2024-01-31');
+const reports = await reporter.getPageViews("/study/*/share/", "2024-01-01", "2024-01-31");
 ```
 
 ### 输出示例
@@ -100,14 +100,17 @@ Share页面合计                                     80         69         60
 ### 常见错误
 
 1. **"请在环境变量中设置 GA4_PROPERTY_ID"**
+
    - 检查 `.env` 文件中的 `GA4_PROPERTY_ID` 是否正确设置
 
 2. **"Authentication error"**
+
    - 检查 `GOOGLE_APPLICATION_CREDENTIALS` 路径是否正确
    - 确认服务账号 JSON 文件存在且可读
    - 验证服务账号是否在 GA4 中有访问权限
 
 3. **"Property not found"**
+
    - 检查 GA4 Property ID 是否正确
    - 确认使用的是 GA4 (不是 Universal Analytics)
 
@@ -122,8 +125,8 @@ Share页面合计                                     80         69         60
 
 ```typescript
 // 在 main() 函数开头添加
-console.log('Property ID:', process.env.GA4_PROPERTY_ID);
-console.log('Credentials:', process.env.GOOGLE_APPLICATION_CREDENTIALS ? '已设置' : '未设置');
+console.log("Property ID:", process.env.GA4_PROPERTY_ID);
+console.log("Credentials:", process.env.GOOGLE_APPLICATION_CREDENTIALS ? "已设置" : "未设置");
 ```
 
 ## 扩展功能

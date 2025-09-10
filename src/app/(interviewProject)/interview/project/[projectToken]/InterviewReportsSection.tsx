@@ -3,11 +3,11 @@ import {
   fetchInterviewReportsByProjectToken,
   generateInterviewReport,
 } from "@/app/(interviewProject)/actions";
-import { InterviewReportExtra } from "@/prisma/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn, formatDate, formatDistanceToNow } from "@/lib/utils";
+import { InterviewReportExtra } from "@/prisma/client";
 import { ExternalLinkIcon, FileTextIcon, Loader2Icon, PlusIcon, RefreshCwIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";

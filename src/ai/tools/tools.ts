@@ -3,6 +3,7 @@ import "server-only";
 export { audienceCallTool } from "./experts/audienceCall";
 export { buildPersonaTool } from "./experts/buildPersona";
 export { interviewChatTool } from "./experts/interviewChat";
+export { planStudyTool } from "./experts/planStudy";
 export { reasoningThinkingTool } from "./experts/reasoning";
 export { generateReportTool } from "./experts/report";
 export { scoutSocialTrendsTool } from "./experts/scoutSocialTrends";
@@ -34,6 +35,5 @@ export { savePersonaTool } from "./system/savePersona";
 export { requestInteractionTool } from "./user/interaction";
 export { requestPaymentTool } from "./user/payment";
 export { thanksTool } from "./user/thanks";
-export { planStudyTool } from "./experts/planStudy";
 
 export { handleToolCallError, toolCallError } from "./error";

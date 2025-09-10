@@ -187,11 +187,11 @@ async function main() {
     // 查询所有类型的 share 页面数据
     console.log("🔍 正在获取所有 share 页面的浏览数据...\n");
 
-    const reports = await reporter.getSharePagesViews(['study', 'report'], startDate, endDate);
+    const reports = await reporter.getSharePagesViews(["study", "report"], startDate, endDate);
 
     // 按页面类型分类统计
-    const studyReports = reports.filter(r => r.pagePath.startsWith('/study/'));
-    const reportReports = reports.filter(r => r.pagePath.startsWith('/artifacts/report/'));
+    const studyReports = reports.filter((r) => r.pagePath.startsWith("/study/"));
+    const reportReports = reports.filter((r) => r.pagePath.startsWith("/artifacts/report/"));
 
     console.log(`📄 所有 Share 页面详细数据 (最近${days}天):`);
     console.log("─".repeat(80));
@@ -245,7 +245,9 @@ async function main() {
     );
     console.log("─".repeat(80));
 
-    console.log(`\n✅ 找到 ${reports.length} 个 share 页面 (Study: ${studyReports.length}, Report: ${reportReports.length})`);
+    console.log(
+      `\n✅ 找到 ${reports.length} 个 share 页面 (Study: ${studyReports.length}, Report: ${reportReports.length})`,
+    );
     console.log(`📈 所有页面总浏览量: ${totalAllPageViews.toLocaleString()}`);
   } else {
     // 显示帮助信息

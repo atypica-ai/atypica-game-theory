@@ -1,5 +1,3 @@
-"use server";
-
 import { BetaAnalyticsDataClient } from "@google-analytics/data";
 
 export interface PageViewsReport {
@@ -9,7 +7,7 @@ export interface PageViewsReport {
   users: number;
 }
 
-export type PageType = 'study' | 'report';
+export type PageType = "study" | "report";
 
 export interface PageTypeFilter {
   type: PageType;
@@ -24,15 +22,15 @@ export class GoogleAnalyticsReporter {
   // 支持的页面类型定义
   private static readonly PAGE_TYPE_FILTERS: Record<PageType, PageTypeFilter> = {
     study: {
-      type: 'study',
+      type: "study",
       pathPattern: /^\/study\/[^\/]+\/share\/?$/,
-      description: 'Study share pages'
+      description: "Study share pages",
     },
     report: {
-      type: 'report', 
+      type: "report",
       pathPattern: /^\/artifacts\/report\/[^\/]+\/share\/?$/,
-      description: 'Report share pages'
-    }
+      description: "Report share pages",
+    },
   };
 
   constructor() {
@@ -62,14 +60,14 @@ export class GoogleAnalyticsReporter {
    * @param endDate 结束日期，格式 'YYYY-MM-DD'
    */
   async getSharePagesViews(
-    pageTypes: PageType[] = ['study', 'report'],
+    pageTypes: PageType[] = ["study", "report"],
     startDate: string = "30daysAgo",
     endDate: string = "today",
   ): Promise<PageViewsReport[]> {
     try {
       // 构建 GA4 过滤器，查询包含相关路径的页面
-      const filterConditions = pageTypes.map(type => {
-        const basePattern = type === 'study' ? '/study/' : '/artifacts/report/';
+      const filterConditions = pageTypes.map((type) => {
+        const basePattern = type === "study" ? "/study/" : "/artifacts/report/";
         return {
           filter: {
             fieldName: "pagePath",
@@ -82,13 +80,14 @@ export class GoogleAnalyticsReporter {
       });
 
       // 使用 OR 条件组合多个过滤器
-      const dimensionFilter = filterConditions.length === 1 
-        ? filterConditions[0]
-        : {
-            orGroup: {
-              expressions: filterConditions
-            }
-          };
+      const dimensionFilter =
+        filterConditions.length === 1
+          ? filterConditions[0]
+          : {
+              orGroup: {
+                expressions: filterConditions,
+              },
+            };
 
       const [response] = await this.client.runReport({
         property: `properties/${this.propertyId}`,
@@ -128,7 +127,7 @@ export class GoogleAnalyticsReporter {
           const users = parseInt(row.metricValues![2].value!);
 
           // 使用正则表达式精确匹配页面路径
-          const matchesAnyType = pageTypes.some(type => {
+          const matchesAnyType = pageTypes.some((type) => {
             const filter = GoogleAnalyticsReporter.PAGE_TYPE_FILTERS[type];
             return filter.pathPattern.test(pagePath);
           });
@@ -163,7 +162,7 @@ export class GoogleAnalyticsReporter {
     endDate: string = "today",
   ): Promise<PageViewsReport[]> {
     // 使用新的通用方法，仅查询 study 类型
-    return this.getSharePagesViews(['study'], startDate, endDate);
+    return this.getSharePagesViews(["study"], startDate, endDate);
   }
 
   /**
@@ -179,7 +178,7 @@ export class GoogleAnalyticsReporter {
   ): Promise<PageViewsReport | null> {
     try {
       const targetPath = `/study/${studyToken}/share`;
-      
+
       const [response] = await this.client.runReport({
         property: `properties/${this.propertyId}`,
         dateRanges: [
@@ -241,7 +240,7 @@ export class GoogleAnalyticsReporter {
   ): Promise<PageViewsReport | null> {
     try {
       const targetPath = `/artifacts/report/${reportToken}/share`;
-      
+
       const [response] = await this.client.runReport({
         property: `properties/${this.propertyId}`,
         dateRanges: [
@@ -300,7 +299,7 @@ export class GoogleAnalyticsReporter {
     endDate: string = "today",
   ): Promise<PageViewsReport[]> {
     // 使用新的通用方法，仅查询 report 类型
-    return this.getSharePagesViews(['report'], startDate, endDate);
+    return this.getSharePagesViews(["report"], startDate, endDate);
   }
 
   /**
