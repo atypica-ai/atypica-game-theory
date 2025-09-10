@@ -18,11 +18,9 @@ import { PageViewWithReport } from "./actions";
 interface ReportsListProps {
   data: PageViewWithReport[];
   isLoading: boolean;
-  actualDays: number;
-  limit: number;
 }
 
-export function ReportsList({ data, isLoading, actualDays, limit }: ReportsListProps) {
+export function ReportsList({ data, isLoading }: ReportsListProps) {
   const locale = useLocale();
 
   if (isLoading) {

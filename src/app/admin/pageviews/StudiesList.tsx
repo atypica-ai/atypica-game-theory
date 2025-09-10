@@ -17,11 +17,9 @@ import { PageViewWithStudy } from "./actions";
 interface StudiesListProps {
   data: PageViewWithStudy[];
   isLoading: boolean;
-  actualDays: number;
-  limit: number;
 }
 
-export function StudiesList({ data, isLoading, actualDays, limit }: StudiesListProps) {
+export function StudiesList({ data, isLoading }: StudiesListProps) {
   const locale = useLocale();
 
   if (isLoading) {
@@ -65,22 +63,22 @@ export function StudiesList({ data, isLoading, actualDays, limit }: StudiesListP
                   <div className="flex-shrink-0 pt-1">
                     <span
                       className={`px-3 py-1 text-xs font-semibold rounded-full ${
-                        pageView.study?.analyst.kind === "testing"
+                        pageView.study?.analyst?.kind === "testing"
                           ? "bg-blue-100 text-blue-800"
-                          : pageView.study?.analyst.kind === "planning"
+                          : pageView.study?.analyst?.kind === "planning"
                             ? "bg-green-100 text-green-800"
-                            : pageView.study?.analyst.kind === "insights"
+                            : pageView.study?.analyst?.kind === "insights"
                               ? "bg-purple-100 text-purple-800"
-                              : pageView.study?.analyst.kind === "creation"
+                              : pageView.study?.analyst?.kind === "creation"
                                 ? "bg-orange-100 text-orange-800"
-                                : pageView.study?.analyst.kind === "productRnD"
+                                : pageView.study?.analyst?.kind === "productRnD"
                                   ? "bg-cyan-100 text-cyan-800"
-                                  : pageView.study?.analyst.kind === "misc"
+                                  : pageView.study?.analyst?.kind === "misc"
                                     ? "bg-gray-100 text-gray-800"
                                     : "bg-gray-100 text-gray-500"
                       }`}
                     >
-                      {pageView.study?.analyst.kind || "N/A"}
+                      {pageView.study?.analyst?.kind || "N/A"}
                     </span>
                   </div>
 
@@ -100,7 +98,7 @@ export function StudiesList({ data, isLoading, actualDays, limit }: StudiesListP
                         </Link>
                         {/* Topic - Not clickable */}
                         <p className="text-xs text-muted-foreground line-clamp-2">
-                          {pageView.study.analyst.topic}
+                          {pageView.study.analyst?.topic}
                         </p>
                         {/* Path - Not clickable */}
                         <p className="text-xs text-muted-foreground font-mono truncate">
@@ -121,7 +119,7 @@ export function StudiesList({ data, isLoading, actualDays, limit }: StudiesListP
               </TableCell>
               <TableCell>
                 <div className="space-y-1">
-                  <p className="text-sm truncate">{pageView.study?.analyst.user?.email || "N/A"}</p>
+                  <p className="text-sm truncate">{pageView.study?.analyst?.user?.email || "N/A"}</p>
                   <p className="text-xs text-muted-foreground">
                     {pageView.study ? formatDate(pageView.study.createdAt, locale) : "N/A"}
                   </p>

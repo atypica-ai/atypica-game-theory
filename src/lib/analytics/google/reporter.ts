@@ -1,5 +1,5 @@
-import { BetaAnalyticsDataClient } from "@google-analytics/data";
 import { proxiedFetch } from "@/lib/proxy/fetch";
+import { BetaAnalyticsDataClient } from "@google-analytics/data";
 
 export interface PageViewsReport {
   pagePath: string;
@@ -45,6 +45,8 @@ export class GoogleAnalyticsReporter {
         client_email: process.env.GOOGLE_VERTEX_CLIENT_EMAIL,
         private_key: process.env.GOOGLE_VERTEX_PRIVATE_KEY,
       },
+      // 使用代理 fetch 函数
+      fetch: proxiedFetch,
     });
 
     // 从环境变量获取 GA4 Property ID
@@ -125,7 +127,6 @@ export class GoogleAnalyticsReporter {
       if (response.rows) {
         for (const row of response.rows) {
           const pagePath = row.dimensionValues![0].value!;
-          const pageTitle = row.dimensionValues![1].value!;
           const hostName = row.dimensionValues![2].value!;
           const pageViews = parseInt(row.metricValues![0].value!);
           const sessions = parseInt(row.metricValues![1].value!);

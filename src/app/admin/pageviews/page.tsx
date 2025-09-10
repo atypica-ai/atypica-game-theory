@@ -90,14 +90,14 @@ export default function PageViewsPage() {
     } else if (status === "authenticated") {
       fetchData();
     }
-  }, [status, router]);
+  }, [status, router, fetchData]);
 
   // Fetch data when viewType changes
   useEffect(() => {
     if (status === "authenticated") {
       fetchData();
     }
-  }, [viewType]);
+  }, [viewType, status, fetchData]);
 
   if (status === "loading") {
     return <div>Loading...</div>;
@@ -232,15 +232,11 @@ export default function PageViewsPage() {
             <ReportsList
               data={topPageViews}
               isLoading={isLoading}
-              actualDays={actualDays}
-              limit={limit}
             />
           ) : (
             <StudiesList
               data={topStudyViews}
               isLoading={isLoading}
-              actualDays={actualDays}
-              limit={limit}
             />
           )}
         </CardContent>
