@@ -132,7 +132,8 @@ export default function TokenConsumptionPage() {
 
   // Helper to get user display name
   const getUserDisplayName = (chat: ChatTokenConsumptionData) => {
-    return chat.userName || chat.userEmail || `User #${chat.userId}`;
+    // return chat.userName || chat.userEmail || `User #${chat.userId}`;
+    return chat.userEmail || `User #${chat.userId}`;
   };
 
   return (

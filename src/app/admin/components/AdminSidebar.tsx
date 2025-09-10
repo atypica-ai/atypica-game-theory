@@ -7,6 +7,7 @@ import {
   BarChartIcon,
   CreditCardIcon,
   DatabaseIcon,
+  EyeIcon,
   FileTextIcon,
   HomeIcon,
   MessageCircleIcon,
@@ -65,6 +66,12 @@ export default function AdminSidebar({ adminRole, permissions = [] }: AdminSideb
         label: "Statistics",
         href: "/admin/statistics",
         icon: <BarChartIcon className="mr-2 h-4 w-4" />,
+        permission: AdminPermission.VIEW_STATISTICS,
+      },
+      {
+        label: "Page Views",
+        href: "/admin/pageviews",
+        icon: <EyeIcon className="mr-2 h-4 w-4" />,
         permission: AdminPermission.VIEW_STATISTICS,
       },
       {

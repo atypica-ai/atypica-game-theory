@@ -1,10 +1,12 @@
 import { BetaAnalyticsDataClient } from "@google-analytics/data";
+import { proxiedFetch } from "@/lib/proxy/fetch";
 
 export interface PageViewsReport {
   pagePath: string;
   pageViews: number;
   sessions: number;
   users: number;
+  hostName?: string;
 }
 
 export type PageType = "study" | "report";
@@ -63,9 +65,10 @@ export class GoogleAnalyticsReporter {
     pageTypes: PageType[] = ["study", "report"],
     startDate: string = "30daysAgo",
     endDate: string = "today",
+    limit: number = 100,
   ): Promise<PageViewsReport[]> {
     try {
-      // 构建 GA4 过滤器，查询包含相关路径的页面
+      // 构建 GA4 过滤器，使用 CONTAINS 匹配然后在代码中精确过滤
       const filterConditions = pageTypes.map((type) => {
         const basePattern = type === "study" ? "/study/" : "/artifacts/report/";
         return {
@@ -97,24 +100,24 @@ export class GoogleAnalyticsReporter {
             endDate,
           },
         ],
-        dimensions: [{ name: "pagePath" }, { name: "pageTitle" }],
+        dimensions: [{ name: "pagePath" }, { name: "pageTitle" }, { name: "hostName" }],
         metrics: [
           { name: "screenPageViews" }, // 页面浏览量
           { name: "sessions" }, // 会话数
           { name: "activeUsers" }, // 活跃用户数
         ],
         dimensionFilter,
-        // 按页面浏览量排序
+        // 按用户数排序（users 高的一定是 share 页面）
         orderBys: [
           {
             metric: {
-              metricName: "screenPageViews",
+              metricName: "activeUsers",
             },
             desc: true,
           },
         ],
         // 限制返回结果数量
-        limit: 100,
+        limit,
       });
 
       const reports: PageViewsReport[] = [];
@@ -122,24 +125,20 @@ export class GoogleAnalyticsReporter {
       if (response.rows) {
         for (const row of response.rows) {
           const pagePath = row.dimensionValues![0].value!;
+          const pageTitle = row.dimensionValues![1].value!;
+          const hostName = row.dimensionValues![2].value!;
           const pageViews = parseInt(row.metricValues![0].value!);
           const sessions = parseInt(row.metricValues![1].value!);
           const users = parseInt(row.metricValues![2].value!);
 
-          // 使用正则表达式精确匹配页面路径
-          const matchesAnyType = pageTypes.some((type) => {
-            const filter = GoogleAnalyticsReporter.PAGE_TYPE_FILTERS[type];
-            return filter.pathPattern.test(pagePath);
+          // 直接添加所有结果
+          reports.push({
+            pagePath,
+            pageViews,
+            sessions,
+            users,
+            hostName,
           });
-
-          if (matchesAnyType) {
-            reports.push({
-              pagePath,
-              pageViews,
-              sessions,
-              users,
-            });
-          }
         }
       }
 
@@ -187,7 +186,7 @@ export class GoogleAnalyticsReporter {
             endDate,
           },
         ],
-        dimensions: [{ name: "pagePath" }, { name: "pageTitle" }],
+        dimensions: [{ name: "pagePath" }, { name: "pageTitle" }, { name: "hostName" }],
         metrics: [
           { name: "screenPageViews" }, // 页面浏览量
           { name: "sessions" }, // 会话数
@@ -249,7 +248,7 @@ export class GoogleAnalyticsReporter {
             endDate,
           },
         ],
-        dimensions: [{ name: "pagePath" }, { name: "pageTitle" }],
+        dimensions: [{ name: "pagePath" }, { name: "pageTitle" }, { name: "hostName" }],
         metrics: [
           { name: "screenPageViews" }, // 页面浏览量
           { name: "sessions" }, // 会话数
@@ -297,9 +296,10 @@ export class GoogleAnalyticsReporter {
   async getReportSharePagesViews(
     startDate: string = "30daysAgo",
     endDate: string = "today",
+    limit: number = 100,
   ): Promise<PageViewsReport[]> {
     // 使用新的通用方法，仅查询 report 类型
-    return this.getSharePagesViews(["report"], startDate, endDate);
+    return this.getSharePagesViews(["report"], startDate, endDate, limit);
   }
 
   /**
