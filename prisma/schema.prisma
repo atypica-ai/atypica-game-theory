@@ -276,6 +276,23 @@ model ChatStatistics {
   @@index([userChatId, dimension])
 }
 
+model Product {
+  id            Int      @id @default(autoincrement())
+  name          String   @db.VarChar(64)
+  price         Float
+  description   String   @db.VarChar(255)
+  currency      Currency
+  stripePriceId String?  @db.VarChar(50)
+  extra         Json     @default("{}")
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  paymentLines PaymentLine[]
+
+  @@unique([name, currency])
+}
+
 enum PaymentStatus {
   pending
   succeeded
@@ -296,32 +313,23 @@ model PaymentRecord {
   currency      Currency
   status        PaymentStatus
   paymentMethod String        @db.VarChar(64)
-  charge        Json // ping++ charge or stripe invoice
-  chargeId      String        @unique @db.VarChar(255) // ping++ chargeId or stripe invoiceId
-  credential    Json
   description   String        @db.VarChar(255)
   paidAt        DateTime?     @db.Timestamptz(6)
 
-  createdAt DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+  // pingxx
+  pingxxCharge     Json    @default("{}") // ping++ charge or stripe invoice
+  pingxxChargeId   String? @unique @db.VarChar(255) // ping++ chargeId or stripe invoiceId
+  pingxxCredential Json    @default("{}") // for ping++ payment intent creation
 
-  paymentLines PaymentLine[]
-}
-
-model Product {
-  id          Int      @id @default(autoincrement())
-  name        String   @db.VarChar(64)
-  price       Float
-  description String   @db.VarChar(255)
-  currency    Currency
-  extra       Json     @default("{}")
+  // stripe
+  stripeInvoice   Json    @default("{}")
+  stripeInvoiceId String? @unique @db.VarChar(50)
+  stripeSession   Json    @default("{}") // for stripe payment intent creation
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
   paymentLines PaymentLine[]
-
-  @@unique([name, currency])
 }
 
 model PaymentLine {
@@ -340,6 +348,7 @@ model PaymentLine {
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
   @@unique([paymentRecordId, productId])
+  @@unique([paymentRecordId, productName])
 }
 
 enum SubscriptionPlan {
