@@ -151,8 +151,7 @@ export async function createSubscriptionStripeSession({
     price: finalPrice,
     product,
     quantity,
-    chargeId: session.id,
-    charge: session,
+    stripeSession: session,
   });
 
   return {
@@ -247,8 +246,7 @@ export async function createPaymentStripeSession({
     price: finalPrice,
     product,
     quantity,
-    chargeId: session.id,
-    charge: session,
+    stripeSession: session,
   });
 
   return {
@@ -350,8 +348,7 @@ export async function createTeamSubscriptionStripeSession({
     price: finalPrice,
     product,
     quantity,
-    chargeId: session.id,
-    charge: session,
+    stripeSession: session,
   });
 
   return {

@@ -2,7 +2,7 @@ import "server-only";
 
 import { stripeClient } from "@/app/payment/(stripe)/lib";
 import { PaymentMethod } from "@/app/payment/data";
-import { PaymentStatus, Product } from "@/prisma/client";
+import { PaymentRecord, PaymentStatus, Product } from "@/prisma/client";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import Stripe from "stripe";
@@ -61,6 +61,26 @@ export function generateOrderNo() {
   return orderNo;
 }
 
+export async function createPaymentRecord(args: {
+  userId: number;
+  orderNo: string;
+  status?: PaymentStatus;
+  price: number;
+  product: Product;
+  quantity: number;
+  stripeSession: Stripe.Checkout.Session;
+}): Promise<PaymentRecord>;
+
+export async function createPaymentRecord(args: {
+  userId: number;
+  orderNo: string;
+  status?: PaymentStatus;
+  price: number;
+  product: Product;
+  quantity: number;
+  stripeInvoice: Stripe.Invoice;
+}): Promise<PaymentRecord>;
+
 export async function createPaymentRecord({
   userId,
   orderNo,
@@ -68,8 +88,8 @@ export async function createPaymentRecord({
   price,
   product,
   quantity,
-  chargeId,
-  charge,
+  stripeSession,
+  stripeInvoice,
 }: {
   userId: number;
   orderNo: string;
@@ -77,8 +97,10 @@ export async function createPaymentRecord({
   price: number;
   product: Product;
   quantity: number;
-  chargeId: string;
-  charge: Stripe.Checkout.Session | Stripe.Invoice;
+  stripeSession?: Stripe.Checkout.Session;
+  stripeInvoice?: Stripe.Invoice;
+  // chargeId: string;
+  // charge: Stripe.Checkout.Session | Stripe.Invoice;
 }) {
   // const clientIp = await getRequestClientIp();
   const paymentMethod: PaymentMethod = PaymentMethod.stripe;
@@ -103,9 +125,15 @@ export async function createPaymentRecord({
       currency: product.currency,
       status: status,
       paymentMethod: paymentMethod,
-      chargeId: chargeId, // 这个在 stripe 里没有用，只是存储一下
-      charge: charge as unknown as InputJsonValue, // 这个在 stripe 里没有用，只是存储一下
-      credential: {},
+      ...(stripeSession ? { stripeSession: stripeSession as unknown as InputJsonValue } : {}),
+      ...(stripeInvoice
+        ? {
+            stripeInvoiceId: stripeInvoice.id,
+            stripeInvoice: stripeInvoice as unknown as InputJsonValue,
+          }
+        : {}),
+      // chargeId: chargeId, // 这个在 stripe 里没有用，只是存储一下
+      // charge: charge as unknown as InputJsonValue, // 这个在 stripe 里没有用，只是存储一下
       description: description,
     },
   });

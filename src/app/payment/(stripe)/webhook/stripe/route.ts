@@ -54,14 +54,11 @@ async function cycleNewPaymentRecord(
       amount: invoiceData.total / 100,
       currency: invoiceData.currency === "cny" ? "CNY" : "USD",
       paymentMethod: "stripe",
-      chargeId: invoiceId, // IMPORTANT: 把 unique chargeId 更新成 invoiceId 值来确保 payment 和 invoice 一一对应
-      credential: {},
+      stripeInvoiceId: invoiceId,
+      stripeInvoice: invoiceData as unknown as InputJsonValue,
       description: initial.description,
       status: "succeeded",
       paidAt: new Date(),
-      charge: {
-        invoice: invoiceData as unknown as InputJsonValue,
-      },
     },
   });
   await prisma.paymentLine.createMany({
@@ -124,7 +121,7 @@ export async function POST(req: Request) {
       }
       let paymentRecord;
       if (invoiceData.billing_reason === "subscription_cycle") {
-        if (await prisma.paymentRecord.findUnique({ where: { chargeId: invoiceId } })) {
+        if (await prisma.paymentRecord.findUnique({ where: { stripeInvoiceId: invoiceId } })) {
           rootLogger.error(`Payment record with chargeId/invoiceId ${invoiceId} already exists`);
           return new Response(`Duplicate webhook received for chargeId/invoiceId ${invoiceId}`, {
             status: 400,
@@ -141,10 +138,8 @@ export async function POST(req: Request) {
             data: {
               status: "succeeded",
               paidAt: new Date(),
-              chargeId: invoiceId, // IMPORTANT: 把 unique chargeId 更新成 invoiceId 值来确保 payment 和 invoice 一一对应
-              charge: {
-                invoice: invoiceData as unknown as InputJsonValue,
-              },
+              stripeInvoiceId: invoiceId,
+              stripeInvoice: invoiceData as unknown as InputJsonValue,
             },
           });
         } catch (error) {

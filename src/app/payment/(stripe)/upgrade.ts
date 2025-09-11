@@ -157,8 +157,7 @@ export async function createProToMaxInvoice({ userId }: { userId: number }) {
     price: finalPrice,
     product: maxProduct,
     quantity: 1,
-    chargeId: paidInvoice.id!,
-    charge: paidInvoice,
+    stripeInvoice: paidInvoice,
   });
 
   // 取消现在的 subscription，并创建一个新的 subscription，新的 subscription 开始时间是当前，结束时间和之前的订阅保持一致
