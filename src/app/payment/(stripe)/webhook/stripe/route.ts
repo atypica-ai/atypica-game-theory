@@ -1,10 +1,10 @@
 import { stripeClient } from "@/app/payment/(stripe)/lib";
 import {
+  handleRechargePaymentSuccess,
   handleTeamSubscriptionPaymentSuccess,
   handleUserSubscriptionPaymentSuccess,
 } from "@/app/payment/(stripe)/success";
 import { ProductName, StripeMetadata } from "@/app/payment/data";
-import { handlePaymentSuccess } from "@/app/payment/lib";
 import { rootLogger } from "@/lib/logging";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
@@ -173,7 +173,7 @@ export async function POST(req: Request) {
             invoiceData,
           });
         } else {
-          await handlePaymentSuccess({
+          await handleRechargePaymentSuccess({
             paymentRecord,
             productName: metadata.productName,
           });

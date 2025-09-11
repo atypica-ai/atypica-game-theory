@@ -1,5 +1,5 @@
+import { handleRechargePaymentSuccess } from "@/app/payment/(pingxx)/success";
 import { ProductName } from "@/app/payment/data";
-import { handlePaymentSuccess } from "@/app/payment/lib";
 import { rootLogger } from "@/lib/logging";
 import { prisma } from "@/prisma/prisma";
 import crypto from "crypto";
@@ -57,7 +57,7 @@ async function handleWebhook(request: Request) {
     });
     for (const paymentLine of paymentRecord.paymentLines) {
       // 其实不会有多行
-      await handlePaymentSuccess({
+      await handleRechargePaymentSuccess({
         paymentRecord,
         productName: paymentLine.productName as ProductName,
       });
