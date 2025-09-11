@@ -37,7 +37,7 @@ async function handleWebhook(request: Request) {
     try {
       await prisma.paymentRecord.update({
         where: {
-          chargeId: charge.id,
+          pingxxChargeId: charge.id,
           status: "pending", // 确保 pending -> succeeded 只更新一次
         },
         data: {
@@ -52,7 +52,7 @@ async function handleWebhook(request: Request) {
       return new Response("Duplicate webhook received", { status: 400 });
     }
     const paymentRecord = await prisma.paymentRecord.findUniqueOrThrow({
-      where: { chargeId: charge.id, status: "succeeded" },
+      where: { pingxxChargeId: charge.id, status: "succeeded" },
       include: { paymentLines: true },
     });
     for (const paymentLine of paymentRecord.paymentLines) {
@@ -70,7 +70,7 @@ async function handleWebhook(request: Request) {
     const charge = event.data.object;
     await prisma.paymentRecord.update({
       where: {
-        chargeId: charge.id,
+        pingxxChargeId: charge.id,
         status: "pending", // 确保 pending -> succeeded 只更新一次
       },
       data: {

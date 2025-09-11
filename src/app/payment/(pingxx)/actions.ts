@@ -131,9 +131,9 @@ export async function createPingxxCharge({
       currency: product.currency,
       status: "pending",
       paymentMethod: paymentMethod,
-      chargeId: chargeResult.id,
-      charge: { ...chargeResult },
-      credential: { ...chargeResult.credential },
+      pingxxChargeId: chargeResult.id,
+      pingxxCharge: { ...chargeResult },
+      pingxxCredential: { ...chargeResult.credential },
       description: description,
     },
   });
