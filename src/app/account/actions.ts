@@ -1,6 +1,6 @@
 "use server";
+import { stripeClient } from "@/app/payment/(stripe)/lib";
 import { PaymentChargeData, PaymentMethod, PaymentRecord } from "@/app/payment/data";
-import { stripeClient } from "@/app/payment/lib";
 import { rootLogger } from "@/lib/logging";
 import { getRequestOrigin } from "@/lib/request/headers";
 import { withAuth } from "@/lib/request/withAuth";

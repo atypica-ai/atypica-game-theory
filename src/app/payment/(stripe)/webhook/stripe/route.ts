@@ -1,9 +1,10 @@
+import { stripeClient } from "@/app/payment/(stripe)/lib";
 import {
   handleTeamSubscriptionPaymentSuccess,
   handleUserSubscriptionPaymentSuccess,
 } from "@/app/payment/(stripe)/success";
 import { ProductName, StripeMetadata } from "@/app/payment/data";
-import { handlePaymentSuccess, stripeClient } from "@/app/payment/lib";
+import { handlePaymentSuccess } from "@/app/payment/lib";
 import { rootLogger } from "@/lib/logging";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";

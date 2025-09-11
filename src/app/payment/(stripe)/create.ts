@@ -1,8 +1,8 @@
 import "server-only";
 
 import { fetchActiveSubscription } from "@/app/account/lib";
+import { stripeClient } from "@/app/payment/(stripe)/lib";
 import { ProductName, StripeMetadata } from "@/app/payment/data";
-import { stripeClient } from "@/app/payment/lib";
 import { getDeployRegion } from "@/lib/request/deployRegion";
 import { getRequestOrigin } from "@/lib/request/headers";
 import { Currency, ProductExtra } from "@/prisma/client";

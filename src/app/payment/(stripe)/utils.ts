@@ -1,7 +1,7 @@
 import "server-only";
 
+import { stripeClient } from "@/app/payment/(stripe)/lib";
 import { PaymentMethod } from "@/app/payment/data";
-import { stripeClient } from "@/app/payment/lib";
 import { PaymentStatus, Product } from "@/prisma/client";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";

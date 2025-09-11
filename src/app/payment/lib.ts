@@ -2,24 +2,10 @@ import "server-only";
 
 import { ProductName } from "@/app/payment/data";
 import { PaymentRecord } from "@/prisma/client";
-import Stripe from "stripe";
 import { recharge1MTokens } from "./permanentTokens";
 
 export const ONCE_RECHARGE_TOKENS = 1_000_000;
 export const ONCE_RECHARGE_GIFT = 1_000_000;
-
-const globalForStripe = global as unknown as {
-  stripe: Stripe | undefined;
-};
-export const stripeClient = () => {
-  if (!process.env.STRIPE_SECRET_KEY) {
-    throw new Error("Stripe secret key not found");
-  }
-  if (!globalForStripe.stripe) {
-    globalForStripe.stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-  }
-  return globalForStripe.stripe;
-};
 
 /**
  * 通用的支付成功处理函数，目前只有购买 token 一种情况

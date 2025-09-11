@@ -1,8 +1,8 @@
 import "server-only";
 
 import { fetchActiveSubscription } from "@/app/account/lib";
+import { stripeClient } from "@/app/payment/(stripe)/lib";
 import { ProductName, StripeMetadata } from "@/app/payment/data";
-import { stripeClient } from "@/app/payment/lib";
 import {
   PRO_MONTHLY_GIFT,
   PRO_MONTHLY_TOKENS,
