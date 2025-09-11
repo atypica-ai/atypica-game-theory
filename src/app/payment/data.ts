@@ -1,6 +1,5 @@
 import { TDeployRegion } from "@/lib/request/deployRegion";
-import { Currency, PaymentRecord as PaymentRecordPrisma } from "@/prisma/client";
-import Stripe from "stripe";
+import { Currency } from "@/prisma/client";
 
 export enum ProductName {
   TEST_A = "TEST_A",
@@ -29,19 +28,6 @@ export type PingxxNewPaymentParams = {
   paymentMethod: PaymentMethod;
   successUrl?: string;
   openid?: string;
-};
-
-export type PaymentChargeData = {
-  // 这里只定义 stripe 相关的字段，ping++ 的那些支付以后一般用不到了，如果需要，就在这里定义
-  // ... pingxx charge data
-  invoice?: Stripe.Invoice;
-};
-
-export type PaymentRecord = Omit<PaymentRecordPrisma, "paymentMethod" | "charge" | "credential"> & {
-  paymentMethod: PaymentMethod;
-  charge: PaymentChargeData;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  credential: Record<"alipay_pc_direct" | "alipay_wap" | "wx_pub", any> | null;
 };
 
 export type StripeMetadata = {

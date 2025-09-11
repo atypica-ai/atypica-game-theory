@@ -1,13 +1,14 @@
 "use server";
 import { stripeClient } from "@/app/payment/(stripe)/lib";
-import { PaymentChargeData, PaymentMethod, PaymentRecord } from "@/app/payment/data";
+import { PaymentMethod } from "@/app/payment/data";
 import { rootLogger } from "@/lib/logging";
 import { getRequestOrigin } from "@/lib/request/headers";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
-import { UserTokensLog } from "@/prisma/client";
+import { PaymentRecord, UserTokensLog } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { getUserTokens } from "@/tokens/lib";
+import Stripe from "stripe";
 import { fetchActiveSubscription } from "./lib";
 
 export async function fetchTokensHistory(
@@ -208,14 +209,39 @@ export async function fetchTokensHistoryAsTeamOwner(
 export async function fetchPaymentRecords(
   page: number = 1,
   pageSize: number = 10,
-): Promise<ServerActionResult<Omit<PaymentRecord, "credential">[]>> {
+): Promise<
+  ServerActionResult<
+    (Omit<
+      PaymentRecord,
+      | "pingxxCredential"
+      | "pingxxChargeId"
+      | "pingxxCharge"
+      | "stripeInvoiceId"
+      | "stripeInvoice"
+      | "stripeSession"
+    > & { stripeInvoice: Stripe.Invoice | null })[]
+  >
+> {
   return withAuth(async (user) => {
     const userId = user.id;
     const skip = (page - 1) * pageSize;
-
     const [paymentRecords, totalCount] = await Promise.all([
       prisma.paymentRecord.findMany({
         where: { userId },
+        select: {
+          id: true,
+          userId: true,
+          orderNo: true,
+          amount: true,
+          currency: true,
+          status: true,
+          paymentMethod: true,
+          description: true,
+          paidAt: true,
+          stripeInvoice: true,
+          createdAt: true,
+          updatedAt: true,
+        },
         orderBy: { createdAt: "desc" },
         take: pageSize,
         skip: skip,
@@ -227,10 +253,9 @@ export async function fetchPaymentRecords(
 
     return {
       success: true,
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      data: paymentRecords.map(({ credential, charge, paymentMethod, ...paymentRecord }) => ({
+      data: paymentRecords.map(({ stripeInvoice, paymentMethod, ...paymentRecord }) => ({
         ...paymentRecord,
-        charge: charge as unknown as PaymentChargeData,
+        stripeInvoice: stripeInvoice as unknown as Stripe.Invoice | null,
         paymentMethod: paymentMethod as PaymentMethod,
       })),
       pagination: {

@@ -125,9 +125,9 @@ export function PaymentHistory() {
                     {formatDate(item.createdAt, locale)}
                   </TableCell>
                   <TableCell className="text-center">
-                    {item.charge?.invoice?.hosted_invoice_url ? (
+                    {item.stripeInvoice?.hosted_invoice_url ? (
                       <Button variant="outline" size="sm" className="text-xs h-7" asChild>
-                        <Link href={item.charge.invoice.hosted_invoice_url} target="_blank">
+                        <Link href={item.stripeInvoice.hosted_invoice_url} target="_blank">
                           <DownloadIcon className="size-4" />
                           {t("downloadInvoice")}
                         </Link>

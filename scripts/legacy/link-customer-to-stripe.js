@@ -38,6 +38,7 @@ async function main() {
       },
     });
     for (const paymentRecord of paymentRecords) {
+      // ⚠️ TODO: charge.invoice is moved to stripeInvoice field
       const stripeCustomerId = paymentRecord.charge.invoice?.customer;
       if (!stripeCustomerId) {
         continue;

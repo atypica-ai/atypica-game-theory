@@ -1,9 +1,8 @@
 "use server";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
-import { PaymentRecord } from "@/app/payment/data";
 import { ServerActionResult } from "@/lib/serverAction";
-import { PaymentLine, User } from "@/prisma/client";
+import { PaymentLine, PaymentRecord, User } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 
 // Get payment records for display

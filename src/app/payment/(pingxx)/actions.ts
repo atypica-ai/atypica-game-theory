@@ -117,6 +117,7 @@ export async function createPingxxCharge({
     throw new Error(`Ping++ API error: ${JSON.stringify(errorData)}`);
   }
 
+  // chargeResult: { credential: Record<"alipay_pc_direct" | "alipay_wap" | "wx_pub", any> | null; }
   const chargeResult = await response.json();
   if (!chargeResult.id || !chargeResult.credential) {
     throw new Error("Invalid charge result");

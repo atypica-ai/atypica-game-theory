@@ -1,8 +1,8 @@
 // pnpm tsx scripts/payment-stats.ts > payment-stats.csv
 
-import { PaymentChargeData } from "@/app/payment/data";
 import { UserSubscriptionExtra } from "@/prisma/client";
 import { loadEnvConfig } from "@next/env";
+import Stripe from "stripe";
 import "./mock-server-only";
 
 const dateBefore = new Date("2025-09-01T00:00:00+08:00");
@@ -54,7 +54,7 @@ async function main() {
         const paymentRecord = await prisma.paymentRecord.findUniqueOrThrow({
           where: { id: log.resourceId! },
         });
-        const invoice = (paymentRecord.charge as PaymentChargeData)?.invoice;
+        const invoice = paymentRecord.stripeInvoice as Stripe.Invoice | null;
         const used = Math.min(0, Math.max(payable, -log.value));
         payable = payable - used;
         console.log(
@@ -69,7 +69,7 @@ async function main() {
           const paymentRecord = await prisma.paymentRecord.findUniqueOrThrow({
             where: { id: paymentRecordId },
           });
-          const invoice = (paymentRecord.charge as PaymentChargeData)?.invoice;
+          const invoice = paymentRecord.stripeInvoice as Stripe.Invoice | null;
           const used = Math.min(0, Math.max(payable, -log.value));
           payable = payable - used;
           console.log(
@@ -97,7 +97,7 @@ async function main() {
       const paymentRecord = await prisma.paymentRecord.findUniqueOrThrow({
         where: { id: log.resourceId! },
       });
-      const invoice = (paymentRecord.charge as PaymentChargeData)?.invoice;
+      const invoice = paymentRecord.stripeInvoice as Stripe.Invoice | null;
       const used = Math.min(0, Math.max(payable, -log.value));
       payable = payable - used;
       console.log(
