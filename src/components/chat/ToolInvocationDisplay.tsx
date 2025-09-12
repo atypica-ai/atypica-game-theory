@@ -5,7 +5,8 @@ import {
   ScoutTaskChatResultMessage,
   WebSearchResultMessage,
 } from "@/ai/tools/experts/ToolMessage";
-import { InterviewChatResultMessage } from "@/ai/tools/experts/ToolMessage/SaveAnalystToolResultMessage";
+import { InterviewChatResultMessage } from "@/ai/tools/experts/ToolMessage/InterviewChatResultMessage";
+import { PlanStudyToolResultMessage } from "@/ai/tools/experts/ToolMessage/PlanStudyToolResultMessage";
 import { ScoutSocialTrendsResultMessage } from "@/ai/tools/experts/ToolMessage/ScoutSocialTrendsResultMessage";
 import { SearchPersonasResultMessage } from "@/ai/tools/experts/ToolMessage/SearchPersonasResultMessage";
 import {
@@ -76,6 +77,8 @@ export const ToolInvocationDisplay = ({
 
     case ToolName.saveAnalyst:
       return <SaveAnalystToolResultMessage toolInvocation={toolInvocation} />;
+    case ToolName.planStudy:
+      return <PlanStudyToolResultMessage toolInvocation={toolInvocation} />;
 
     case ToolName.xhsSearch:
     case ToolName.dySearch:

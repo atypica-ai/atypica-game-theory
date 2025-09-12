@@ -504,6 +504,9 @@
     "ReasoningThinkingResultMessage": {
       "deepThinking": "Deep Thinking"
     },
+    "PlanStudyToolResultMessage": {
+      "studyPlan": "Study Plan"
+    },
     "SelectPersonaDialog": {
       "title": "Select Interview Subjects",
       "cancel": "Cancel",

@@ -504,6 +504,9 @@
     "ReasoningThinkingResultMessage": {
       "deepThinking": "深度思考"
     },
+    "PlanStudyToolResultMessage": {
+      "studyPlan": "研究计划"
+    },
     "SelectPersonaDialog": {
       "title": "选择访谈对象",
       "cancel": "取消",
