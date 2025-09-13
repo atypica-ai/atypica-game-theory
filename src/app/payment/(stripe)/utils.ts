@@ -8,21 +8,21 @@ import { prisma } from "@/prisma/prisma";
 import Stripe from "stripe";
 
 export async function requirePersonalUser(userId: number) {
-  const { tokens, email, ...user } = await prisma.user.findUniqueOrThrow({
+  const { tokensAccount, email, ...user } = await prisma.user.findUniqueOrThrow({
     where: { id: userId },
-    include: { tokens: true },
+    include: { tokensAccount: true },
   });
   if (user.personalUserId || user.teamIdAsMember) {
     throw new Error("Only personal users can purchase");
   }
   if (!email) throw new Error("User must have an email");
-  if (!tokens) throw new Error("User must have tokens");
+  if (!tokensAccount) throw new Error("User must have tokens");
   return {
     user: {
       ...user,
       email,
     },
-    monthlyBalance: tokens.monthlyBalance,
+    monthlyBalance: tokensAccount.monthlyBalance,
   };
 }
 

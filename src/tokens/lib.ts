@@ -43,17 +43,17 @@ export async function consumeUserTokens({
             extra: extra as InputJsonValue,
           },
         });
-        const teamTokens = await tx.teamTokens.findUniqueOrThrow({
+        const tokensAccount = await tx.tokensAccount.findUniqueOrThrow({
           where: { teamId },
         });
         // 优先扣除 monthlyBalance，并且不拆分，balance 可以是负数
-        if (teamTokens.monthlyBalance > 0) {
-          await tx.teamTokens.update({
+        if (tokensAccount.monthlyBalance > 0) {
+          await tx.tokensAccount.update({
             where: { teamId },
             data: { monthlyBalance: { decrement: tokens } },
           });
         } else {
-          await tx.teamTokens.update({
+          await tx.tokensAccount.update({
             where: { teamId },
             data: { permanentBalance: { decrement: tokens } },
           });
@@ -72,17 +72,17 @@ export async function consumeUserTokens({
             extra: extra as InputJsonValue,
           },
         });
-        const userTokens = await tx.userTokens.findUniqueOrThrow({
+        const tokensAccount = await tx.tokensAccount.findUniqueOrThrow({
           where: { userId },
         });
         // 优先扣除 monthlyBalance，并且不拆分，balance 可以是负数
-        if (userTokens.monthlyBalance > 0) {
-          await tx.userTokens.update({
+        if (tokensAccount.monthlyBalance > 0) {
+          await tx.tokensAccount.update({
             where: { userId },
             data: { monthlyBalance: { decrement: tokens } },
           });
         } else {
-          await tx.userTokens.update({
+          await tx.tokensAccount.update({
             where: { userId },
             data: { permanentBalance: { decrement: tokens } },
           });
@@ -107,7 +107,7 @@ export async function getUserTokens({ userId }: { userId: number }) {
   if (user.teamIdAsMember) {
     const teamId = user.teamIdAsMember;
     const { permanentBalance, monthlyBalance, monthlyResetAt } =
-      await prisma.teamTokens.findUniqueOrThrow({
+      await prisma.tokensAccount.findUniqueOrThrow({
         where: { teamId },
       });
     return {
@@ -119,7 +119,7 @@ export async function getUserTokens({ userId }: { userId: number }) {
     };
   } else {
     const { permanentBalance, monthlyBalance, monthlyResetAt } =
-      await prisma.userTokens.findUniqueOrThrow({
+      await prisma.tokensAccount.findUniqueOrThrow({
         where: { userId },
       });
     return {

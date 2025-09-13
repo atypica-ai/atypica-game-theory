@@ -200,9 +200,9 @@ export default function IssueStudiesPage() {
                           <span className="inline-block mr-4">
                             Token Balance:{" "}
                             {formatTokensNumber(
-                              study.user.tokens
-                                ? study.user.tokens.permanentBalance +
-                                    study.user.tokens.monthlyBalance
+                              study.user.tokensAccount
+                                ? study.user.tokensAccount.permanentBalance +
+                                    study.user.tokensAccount.monthlyBalance
                                 : 0,
                             )}
                           </span>

@@ -375,12 +375,14 @@ export default function UsersPage() {
                 </TableCell>
                 <TableCell className="whitespace-nowrap text-sm text-right">
                   {formatTokensNumber(
-                    user.tokens ? user.tokens.permanentBalance + user.tokens.monthlyBalance : 0,
+                    user.tokensAccount
+                      ? user.tokensAccount.permanentBalance + user.tokensAccount.monthlyBalance
+                      : 0,
                   )}{" "}
                   <br />
                   <span className="text-xs text-muted-foreground">
-                    {(user.tokens
-                      ? user.tokens.permanentBalance + user.tokens.monthlyBalance
+                    {(user.tokensAccount
+                      ? user.tokensAccount.permanentBalance + user.tokensAccount.monthlyBalance
                       : 0
                     ).toLocaleString()}
                   </span>
@@ -548,8 +550,9 @@ export default function UsersPage() {
             <div className="grid grid-cols-4 items-center gap-4">
               <Label className="text-right">Balance</Label>
               <div className="col-span-3 text-sm">
-                {(selectedUser?.tokens
-                  ? selectedUser.tokens.permanentBalance + selectedUser.tokens.monthlyBalance
+                {(selectedUser?.tokensAccount
+                  ? selectedUser.tokensAccount.permanentBalance +
+                    selectedUser.tokensAccount.monthlyBalance
                   : 0
                 ).toLocaleString()}{" "}
                 tokens

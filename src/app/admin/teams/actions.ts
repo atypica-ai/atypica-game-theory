@@ -15,7 +15,7 @@ export async function fetchTeams(
   ServerActionResult<
     (Pick<Team, "id" | "name" | "createdAt" | "seats"> & {
       ownerUser: Pick<User, "id" | "email">;
-      tokens: { permanentBalance: number; monthlyBalance: number } | null;
+      tokensAccount: { permanentBalance: number; monthlyBalance: number } | null;
       _count: { members: number };
     })[]
   >
@@ -47,7 +47,7 @@ export async function fetchTeams(
             email: true,
           },
         },
-        tokens: {
+        tokensAccount: {
           select: {
             permanentBalance: true,
             monthlyBalance: true,
@@ -88,7 +88,7 @@ export async function addTokensToTeam(
 
   const team = await prisma.team.findUnique({
     where: { id: teamId },
-    include: { tokens: true },
+    include: { tokensAccount: true },
   });
 
   if (!team) {
@@ -100,7 +100,7 @@ export async function addTokensToTeam(
 
   await prisma.$transaction(async (tx) => {
     // ⚠️ 团队积分发放，余额记录在 team 上，日志记录在 user 上
-    await tx.teamTokens.update({
+    await tx.tokensAccount.update({
       where: { teamId: team.id },
       data: {
         permanentBalance: { increment: tokens },

@@ -35,7 +35,8 @@ model Team {
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
-  tokens TeamTokens?
+  tokensAccount TokensAccount?
+  TeamTokens    TeamTokens?
 }
 
 model User {
@@ -60,7 +61,7 @@ model User {
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
-  tokens                   UserTokens?
+  tokensAccount            TokensAccount?
   tokensLogs               UserTokensLog[]
   adminUser                AdminUser?
   analysts                 Analyst[]
@@ -375,10 +376,12 @@ model UserSubscription {
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 }
 
-model UserTokens {
+model TokensAccount {
   id               Int       @id @default(autoincrement())
-  userId           Int       @unique
-  user             User      @relation(fields: [userId], references: [id])
+  userId           Int?      @unique
+  user             User?     @relation(fields: [userId], references: [id])
+  teamId           Int?      @unique
+  team             Team?     @relation(fields: [teamId], references: [id])
   permanentBalance Int       @default(0)
   monthlyBalance   Int       @default(0)
   monthlyResetAt   DateTime? @db.Timestamptz(6)

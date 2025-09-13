@@ -169,7 +169,7 @@ export async function createProToMaxInvoice({ userId }: { userId: number }) {
     data: { endsAt: now },
   });
   // subscription 取消以后，把 monthlyResetAt 设置成当前时间，resetUserMonthlyTokens 里面会进一步重置
-  await prisma.userTokens.update({
+  await prisma.tokensAccount.update({
     where: { userId },
     data: { monthlyResetAt: now },
   });

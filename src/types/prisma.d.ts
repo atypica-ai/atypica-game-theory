@@ -57,11 +57,7 @@ declare module "@/prisma/client" {
     reportedBy: string;
   } & Record<string, unknown>;
 
-  export type UserTokensExtra = Partial<{
-    activeUserSubscriptionId: number;
-  }>;
-
-  export type TeamTokensExtra = Partial<{
+  export type TokensAccountExtra = Partial<{
     activeUserSubscriptionId: number;
   }>;
 

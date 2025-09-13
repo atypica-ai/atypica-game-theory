@@ -17,7 +17,7 @@ export async function fetchUsers(
 ): Promise<
   ServerActionResult<
     (Pick<User, "id" | "name" | "email" | "createdAt" | "emailVerified" | "extra"> & {
-      tokens: { permanentBalance: number; monthlyBalance: number } | null;
+      tokensAccount: { permanentBalance: number; monthlyBalance: number } | null;
       paymentRecords: { id: number; amount: number; currency: Currency }[];
       adminUser: { role: AdminRole; permissions: AdminPermission[] } | null;
       lastLogin: UserLastLogin;
@@ -62,7 +62,7 @@ export async function fetchUsers(
         extra: true,
         emailVerified: true,
         lastLogin: true,
-        tokens: {
+        tokensAccount: {
           select: {
             permanentBalance: true,
             monthlyBalance: true,
@@ -123,7 +123,7 @@ export async function addTokensToUser(
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    include: { tokens: true },
+    include: { tokensAccount: true },
   });
 
   if (!user) {
@@ -134,8 +134,8 @@ export async function addTokensToUser(
   }
 
   await prisma.$transaction(async (tx) => {
-    // Create user tokens if they don't exist
-    await tx.userTokens.update({
+    // Create tokensAccount if they don't exist
+    await tx.tokensAccount.update({
       where: { userId: user.id },
       data: {
         permanentBalance: { increment: tokens },
@@ -196,7 +196,7 @@ export async function deleteUserAccount(userId: number): Promise<ServerActionRes
       analysts: true,
       userChats: true,
       paymentRecords: true,
-      tokens: true,
+      tokensAccount: true,
       tokensLogs: true,
       subscriptions: true,
     },
@@ -223,7 +223,7 @@ export async function deleteUserAccount(userId: number): Promise<ServerActionRes
   }
 
   try {
-    await prisma.userTokens.delete({
+    await prisma.tokensAccount.delete({
       where: { userId },
     });
     await prisma.userTokensLog.deleteMany({

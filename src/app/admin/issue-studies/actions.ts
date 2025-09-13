@@ -8,7 +8,7 @@ import { studyAgentRequest } from "@/app/(study)/api/chat/study/studyAgentReques
 import { checkAdminAuth } from "@/app/admin/actions";
 import { rootLogger } from "@/lib/logging";
 import { ServerActionResult } from "@/lib/serverAction";
-import { PaymentRecord, User, UserChat, UserChatExtra, UserTokens } from "@/prisma/client";
+import { PaymentRecord, TokensAccount, User, UserChat, UserChatExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { generateId } from "ai";
 import { Locale } from "next-intl";
@@ -23,7 +23,7 @@ export async function fetchIssueStudies(
   ServerActionResult<
     (Omit<UserChat, "messages"> & {
       user: Pick<User, "id" | "email"> & {
-        tokens: UserTokens | null;
+        tokensAccount: TokensAccount | null;
         paymentRecords: PaymentRecord[];
       };
     })[]
@@ -47,7 +47,7 @@ export async function fetchIssueStudies(
         select: {
           id: true,
           email: true,
-          tokens: true,
+          tokensAccount: true,
           paymentRecords: {
             where: {
               status: "succeeded",
@@ -92,7 +92,7 @@ export async function fetchErrorStudies(
   ServerActionResult<
     (Omit<UserChat, "messages"> & {
       user: Pick<User, "id" | "email"> & {
-        tokens: UserTokens | null;
+        tokensAccount: TokensAccount | null;
         paymentRecords: PaymentRecord[];
       };
       errorMessage: string;
@@ -110,7 +110,7 @@ export async function fetchErrorStudies(
   const studies = await prisma.$queryRaw<
     (UserChat & {
       user: Pick<User, "id" | "email"> & {
-        tokens: UserTokens | null;
+        tokensAccount: TokensAccount | null;
         paymentRecords: PaymentRecord[];
       };
     })[]
@@ -120,7 +120,7 @@ export async function fetchErrorStudies(
       json_build_object(
         'id', u.id,
         'email', u.email,
-        'tokens', ut.*,
+        'tokensAccount', ut.*,
         'paymentRecords', COALESCE(
           json_agg(
             json_build_object(
@@ -135,7 +135,7 @@ export async function fetchErrorStudies(
       ) as user
     FROM "UserChat" uc
     JOIN "User" u ON uc."userId" = u.id
-    LEFT JOIN "UserTokens" ut ON u.id = ut."userId"
+    LEFT JOIN "TokensAccount" ut ON u.id = ut."userId"
     LEFT JOIN "PaymentRecord" pr ON u.id = pr."userId" AND pr.status = 'succeeded'
     WHERE uc.kind = 'study'
       AND uc.extra ? 'error'

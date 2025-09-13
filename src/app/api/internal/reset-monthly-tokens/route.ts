@@ -29,9 +29,10 @@ export async function POST(request: NextRequest) {
     // 查找所有需要重置月度tokens的用户
     // 根据 resetUserMonthlyTokens 函数逻辑：如果 monthlyResetAt === null 或者 monthlyResetAt <= now
     // 过滤条件：只处理有subscription记录的用户，减少处理量
-    const usersToReset = await prisma.userTokens.findMany({
+    const usersToReset = await prisma.tokensAccount.findMany({
       where: {
         AND: [
+          { userId: { not: null } },
           { OR: [{ monthlyResetAt: null }, { monthlyResetAt: { lte: now } }] },
           { user: { subscriptions: { some: {} } } }, // 有任何subscription记录
         ],
@@ -48,21 +49,20 @@ export async function POST(request: NextRequest) {
     const errors: Array<{ userId: number; error: string }> = [];
 
     // 遍历每个用户，调用 resetUserMonthlyTokens
-    for (const userTokens of usersToReset) {
+    for (const tokensAccount of usersToReset) {
+      const userId = tokensAccount.userId!; // userId 不会为空，上面过滤了
       try {
-        await resetUserMonthlyTokens({ userId: userTokens.userId });
+        await resetUserMonthlyTokens({ userId });
         successCount++;
-        logger.debug(`Successfully reset monthly tokens for user ${userTokens.userId}`);
+        logger.debug(`Successfully reset monthly tokens for user ${userId}`);
       } catch (error) {
         errorCount++;
         const errorMessage = error instanceof Error ? error.message : "Unknown error";
         errors.push({
-          userId: userTokens.userId,
+          userId,
           error: errorMessage,
         });
-        logger.error(
-          `Failed to reset monthly tokens for user ${userTokens.userId}: ${errorMessage}`,
-        );
+        logger.error(`Failed to reset monthly tokens for user ${userId}: ${errorMessage}`);
       }
     }
 

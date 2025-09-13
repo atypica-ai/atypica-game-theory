@@ -25,7 +25,7 @@ export async function createTeam({
     },
   });
 
-  await prisma.teamTokens.create({
+  await prisma.tokensAccount.create({
     data: {
       teamId: team.id,
       permanentBalance: 0,

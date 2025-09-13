@@ -240,12 +240,14 @@ export default function TeamsPage() {
                   </TableCell>
                   <TableCell className="whitespace-nowrap text-sm text-right">
                     {formatTokensNumber(
-                      team.tokens ? team.tokens.permanentBalance + team.tokens.monthlyBalance : 0,
+                      team.tokensAccount
+                        ? team.tokensAccount.permanentBalance + team.tokensAccount.monthlyBalance
+                        : 0,
                     )}{" "}
                     <br />
                     <span className="text-xs text-muted-foreground">
-                      {(team.tokens
-                        ? team.tokens.permanentBalance + team.tokens.monthlyBalance
+                      {(team.tokensAccount
+                        ? team.tokensAccount.permanentBalance + team.tokensAccount.monthlyBalance
                         : 0
                       ).toLocaleString()}
                     </span>
@@ -301,8 +303,9 @@ export default function TeamsPage() {
             <div className="grid grid-cols-4 items-center gap-4">
               <Label className="text-right">Balance</Label>
               <div className="col-span-3 text-sm">
-                {(selectedTeam?.tokens
-                  ? selectedTeam.tokens.permanentBalance + selectedTeam.tokens.monthlyBalance
+                {(selectedTeam?.tokensAccount
+                  ? selectedTeam.tokensAccount.permanentBalance +
+                    selectedTeam.tokensAccount.monthlyBalance
                   : 0
                 ).toLocaleString()}{" "}
                 tokens

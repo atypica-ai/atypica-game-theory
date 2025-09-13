@@ -88,7 +88,7 @@ export async function createPersonalUser({
         value: signupAmount,
       },
     });
-    await tx.userTokens.create({
+    await tx.tokensAccount.create({
       data: {
         userId: user.id,
         permanentBalance: signupAmount,
@@ -119,8 +119,8 @@ export async function createTeamMemberUser({
     },
   });
 
-  // ⚠️ team user 没有 userTokens，而是关联 teamTokens
-  // await prisma.userTokens.create({
+  // ⚠️ team user 没有 tokensAccount，而是关联 team 的 tokensAccount
+  // await prisma.tokensAccount.create({
   //   data: {
   //     userId: teamUser.id,
   //     permanentBalance: 0,

@@ -34,7 +34,7 @@ export async function recharge1MTokens({
         value: giftAmount,
       },
     });
-    await tx.userTokens.update({
+    await tx.tokensAccount.update({
       where: { userId },
       data: {
         permanentBalance: {
