@@ -58,10 +58,6 @@ declare module "@/prisma/client" {
     reportedBy: string;
   } & Record<string, unknown>;
 
-  export type ProductExtra = Partial<{
-    stripePriceId: string;
-  }>;
-
   export type UserSubscriptionExtra = Partial<{
     // ... pingxx invoice data tbd
     paymentRecordId: number;
@@ -130,6 +126,11 @@ declare module "@/prisma/client" {
       title: string;
     }>;
   }>;
+
+  // Removed, stripePriceId is moved to Product
+  // export type ProductExtra = Partial<{
+  //   stripePriceId: string;
+  // }>;
 
   // 只覆盖这个不够，findUnique 返回的类型还是原来的
   // import { User as UserPrisma } from "@/prisma/client/index";

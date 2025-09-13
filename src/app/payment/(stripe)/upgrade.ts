@@ -9,7 +9,7 @@ import {
   resetUserMonthlyTokens,
 } from "@/app/payment/monthlyTokens";
 import { getDeployRegion } from "@/lib/request/deployRegion";
-import { ProductExtra, SubscriptionPlan } from "@/prisma/client";
+import { SubscriptionPlan } from "@/prisma/client";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import { createPaymentRecord, requirePersonalUser } from "./utils";
@@ -71,7 +71,7 @@ export async function createProToMaxInvoice({ userId }: { userId: number }) {
     proProductPriceInCents * (monthlyBalance / monthlyInitial),
   );
 
-  const maxProductStripePriceId = (maxProduct.extra as ProductExtra).stripePriceId;
+  const maxProductStripePriceId = maxProduct.stripePriceId;
   if (!maxProductStripePriceId) {
     throw new Error("Price ID is missing");
   }

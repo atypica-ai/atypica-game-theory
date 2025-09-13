@@ -5,7 +5,7 @@ import { stripeClient } from "@/app/payment/(stripe)/lib";
 import { ProductName, StripeMetadata } from "@/app/payment/data";
 import { getDeployRegion } from "@/lib/request/deployRegion";
 import { getRequestOrigin } from "@/lib/request/headers";
-import { Currency, ProductExtra } from "@/prisma/client";
+import { Currency } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import {
   createPaymentRecord,
@@ -108,7 +108,7 @@ export async function createSubscriptionStripeSession({
   //   unit_amount: amountInCents,
   //   recurring: { interval: "month" },
   // };
-  const stripePriceId = (product.extra as ProductExtra).stripePriceId;
+  const stripePriceId = product.stripePriceId;
   if (!stripePriceId) {
     throw new Error("Price ID is missing");
   }
@@ -202,7 +202,7 @@ export async function createPaymentStripeSession({
   //   currency: currency,
   //   unit_amount: amountInCents,
   // };
-  const stripePriceId = (product.extra as ProductExtra).stripePriceId;
+  const stripePriceId = product.stripePriceId;
   if (!stripePriceId) {
     throw new Error("Price ID is missing");
   }
@@ -310,7 +310,7 @@ export async function createTeamSubscriptionStripeSession({
   //   recurring: { interval: "month" },
   // };
   // const stripeCustomerId = await stripeCustomerIdForUser(teamUser, personalUserEmail);
-  const stripePriceId = (product.extra as ProductExtra).stripePriceId;
+  const stripePriceId = product.stripePriceId;
   if (!stripePriceId) {
     throw new Error("Price ID is missing");
   }
