@@ -2,7 +2,7 @@ import "server-only";
 
 import { fetchActiveSubscription } from "@/app/account/lib";
 import { rootLogger } from "@/lib/logging";
-import { SubscriptionPlan, TokensAccountExtra, User, UserTokensLogVerb } from "@/prisma/client";
+import { SubscriptionPlan, User, UserTokensLogVerb } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 
 export const PRO_MONTHLY_TOKENS = 2_000_000;
@@ -37,10 +37,10 @@ export async function resetUserMonthlyTokens({ userId }: { userId: number }) {
       logger.info(
         `User ${userId} needs monthly token reset, monthlyBalance=${rest}, monthlyResetAt=${tokensAccount.monthlyResetAt}`,
       );
-      const { activeUserSubscriptionId, ...extra } = tokensAccount.extra as TokensAccountExtra;
+      const activeUserSubscriptionId = tokensAccount.activeUserSubscriptionId;
       if (!activeUserSubscriptionId) {
         logger.error(
-          `TokensAccount ${tokensAccount.id} of user ${userId} is being reset, but activeUserSubscriptionId is missing in extra. It will continue but further investigation is required.`,
+          `TokensAccount ${tokensAccount.id} of user ${userId} is being reset, but activeUserSubscriptionId is missing. It will continue but further investigation is required.`,
         );
       }
       await tx.userTokensLog.create({
@@ -57,7 +57,7 @@ export async function resetUserMonthlyTokens({ userId }: { userId: number }) {
         data: {
           monthlyBalance: { decrement: rest },
           monthlyResetAt: null,
-          extra: extra,
+          activeUserSubscriptionId: null,
         },
       });
     } else {
@@ -67,14 +67,12 @@ export async function resetUserMonthlyTokens({ userId }: { userId: number }) {
         logger.info(
           `User ${userId} needs monthly token reset, monthlyBalance=${rest}, monthlyResetAt=${tokensAccount.monthlyResetAt}`,
         );
-        // 将 activeUserSubscriptionId 从 extra 中移除
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { activeUserSubscriptionId, ...extra } = tokensAccount.extra as TokensAccountExtra;
+        // activeUserSubscriptionId 现在是直接字段，不需要从 extra 中移除
         tokensAccount = await tx.tokensAccount.update({
           where: { userId },
           data: {
             monthlyResetAt: null,
-            extra: extra,
+            activeUserSubscriptionId: null,
           },
         });
       }
@@ -132,23 +130,20 @@ export async function resetUserMonthlyTokens({ userId }: { userId: number }) {
       },
     });
     // 注意！这里也是 balance.increment，如果之前研究过程中把 monthlyBalance 扣减到负数了，这里余额不满
-    await tx.tokensAccount.update({
+    tokensAccount = await tx.tokensAccount.update({
       where: { userId },
       data: {
         monthlyBalance: {
           increment: rechargeAmount + giftAmount,
         },
         monthlyResetAt: activeSubscription.endsAt,
-        extra: {
-          ...(tokensAccount.extra as TokensAccountExtra),
-          activeUserSubscriptionId: activeSubscription.id,
-        },
+        activeUserSubscriptionId: activeSubscription.id,
       },
     });
   });
 
   logger.info(
-    `User ${userId} monthly tokens reset completed successfully. New monthlyResetAt: ${activeSubscription.endsAt.toISOString()}`,
+    `User ${userId} monthly tokens reset completed successfully. New monthlyResetAt: ${tokensAccount.monthlyResetAt?.toISOString()}, activeUserSubscriptionId: ${tokensAccount.activeUserSubscriptionId}`,
   );
 }
 
@@ -199,10 +194,10 @@ export async function resetTeamMonthlyTokens({ teamId }: { teamId: number }) {
       logger.info(
         `Team ${teamId} needs monthly token reset, monthlyBalance=${rest}, monthlyResetAt=${tokensAccount.monthlyResetAt}`,
       );
-      const { activeUserSubscriptionId, ...extra } = tokensAccount.extra as TokensAccountExtra;
+      const activeUserSubscriptionId = tokensAccount.activeUserSubscriptionId;
       if (!activeUserSubscriptionId) {
         logger.error(
-          `TokensAccount ${tokensAccount.id} of team ${teamId} is being reset, but activeSubscriptionId is missing in extra. It will continue but further investigation is required.`,
+          `TokensAccount ${tokensAccount.id} of team ${teamId} is being reset, but activeSubscriptionId is missing. It will continue but further investigation is required.`,
         );
       } else {
         const { user } = await tx.userSubscription.findUniqueOrThrow({
@@ -226,7 +221,7 @@ export async function resetTeamMonthlyTokens({ teamId }: { teamId: number }) {
         data: {
           monthlyBalance: { decrement: rest },
           monthlyResetAt: null,
-          extra: extra,
+          activeUserSubscriptionId: null,
         },
       });
     } else {
@@ -236,14 +231,12 @@ export async function resetTeamMonthlyTokens({ teamId }: { teamId: number }) {
         logger.info(
           `Team ${teamId} needs monthly token reset, monthlyBalance=${rest}, monthlyResetAt=${tokensAccount.monthlyResetAt}`,
         );
-        // 将 activeUserSubscriptionId 从 extra 中移除
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { activeUserSubscriptionId, ...extra } = tokensAccount.extra as TokensAccountExtra;
+        // activeUserSubscriptionId 现在是直接字段，不需要从 extra 中移除
         tokensAccount = await tx.tokensAccount.update({
           where: { teamId },
           data: {
             monthlyResetAt: null,
-            extra: extra,
+            activeUserSubscriptionId: null,
           },
         });
       }
@@ -302,22 +295,19 @@ export async function resetTeamMonthlyTokens({ teamId }: { teamId: number }) {
       },
     });
     // 注意！这里也是 balance.increment，如果之前研究过程中把 monthlyBalance 扣减到负数了，这里余额不满
-    await tx.tokensAccount.update({
+    tokensAccount = await tx.tokensAccount.update({
       where: { teamId },
       data: {
         monthlyBalance: {
           increment: rechargeAmount,
         },
         monthlyResetAt: activeSubscription.endsAt,
-        extra: {
-          ...(tokensAccount.extra as TokensAccountExtra),
-          activeUserSubscriptionId: activeSubscription.id,
-        },
+        activeUserSubscriptionId: activeSubscription.id,
       },
     });
   });
 
   logger.info(
-    `Team ${teamId} monthly tokens reset completed successfully. New monthlyResetAt: ${activeSubscription.endsAt.toISOString()}`,
+    `Team ${teamId} monthly tokens reset completed successfully. New monthlyResetAt: ${tokensAccount.monthlyResetAt?.toISOString()}, activeUserSubscriptionId: ${tokensAccount.activeUserSubscriptionId}`,
   );
 }

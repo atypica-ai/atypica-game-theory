@@ -36,7 +36,6 @@ model Team {
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
   tokensAccount TokensAccount?
-  TeamTokens    TeamTokens?
 }
 
 model User {
@@ -374,6 +373,8 @@ model UserSubscription {
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  activeTokensAccount TokensAccount?
 }
 
 model TokensAccount {
@@ -386,6 +387,9 @@ model TokensAccount {
   monthlyBalance   Int       @default(0)
   monthlyResetAt   DateTime? @db.Timestamptz(6)
   extra            Json      @default("{}")
+
+  activeUserSubscriptionId Int?              @unique
+  activeUserSubscription   UserSubscription? @relation(fields: [activeUserSubscriptionId], references: [id])
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
@@ -425,19 +429,6 @@ model UserTokensLog {
 
   @@index([userId, verb])
   @@index([userId, verb, resourceType, resourceId])
-}
-
-model TeamTokens {
-  id               Int       @id @default(autoincrement())
-  teamId           Int       @unique
-  team             Team      @relation(fields: [teamId], references: [id])
-  permanentBalance Int       @default(0)
-  monthlyBalance   Int       @default(0)
-  monthlyResetAt   DateTime? @db.Timestamptz(6)
-  extra            Json      @default("{}")
-
-  createdAt DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt DateTime @updatedAt @db.Timestamptz(6)
 }
 
 model SystemConfig {

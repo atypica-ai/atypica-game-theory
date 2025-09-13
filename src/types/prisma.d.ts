@@ -57,10 +57,6 @@ declare module "@/prisma/client" {
     reportedBy: string;
   } & Record<string, unknown>;
 
-  export type TokensAccountExtra = Partial<{
-    activeUserSubscriptionId: number;
-  }>;
-
   export type ChatMessageAttachment = {
     objectUrl: string; // s3 object url without signature
     name: string;
@@ -124,6 +120,9 @@ declare module "@/prisma/client" {
   //   // ... pingxx invoice data tbd
   //   paymentRecordId: number;
   //   invoice: Stripe.Invoice;
+  // }>;
+  // export type TokensAccountExtra = Partial<{
+  //   activeUserSubscriptionId: number;
   // }>;
 
   // 只覆盖这个不够，findUnique 返回的类型还是原来的
