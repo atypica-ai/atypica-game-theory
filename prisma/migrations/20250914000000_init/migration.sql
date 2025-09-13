@@ -20,22 +20,37 @@ CREATE TYPE "PaymentStatus" AS ENUM ('pending', 'succeeded', 'failed');
 CREATE TYPE "Currency" AS ENUM ('CNY', 'USD');
 
 -- CreateEnum
-CREATE TYPE "SubscriptionPlan" AS ENUM ('pro', 'max');
+CREATE TYPE "SubscriptionPlan" AS ENUM ('pro', 'max', 'team');
 
 -- CreateEnum
-CREATE TYPE "UserTokensLogVerb" AS ENUM ('recharge', 'consume', 'subscription', 'gift', 'signup');
+CREATE TYPE "UserTokensLogVerb" AS ENUM ('recharge', 'consume', 'subscription', 'subscriptionReset', 'gift', 'signup');
 
 -- CreateEnum
-CREATE TYPE "UserTokensLogResourceType" AS ENUM ('StudyUserChat', 'ScoutUserChat', 'GenericUserChat', 'InterviewProject', 'PaymentRecord', 'UserSubscription');
+CREATE TYPE "UserTokensLogResourceType" AS ENUM ('StudyUserChat', 'ScoutUserChat', 'GenericUserChat', 'InterviewProject', 'PersonaImport', 'PaymentRecord', 'UserSubscription');
+
+-- CreateTable
+CREATE TABLE "Team" (
+    "id" SERIAL NOT NULL,
+    "name" VARCHAR(255) NOT NULL,
+    "seats" INTEGER NOT NULL,
+    "ownerUserId" INTEGER NOT NULL,
+    "createdAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ(6) NOT NULL,
+
+    CONSTRAINT "Team_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
 CREATE TABLE "User" (
     "id" SERIAL NOT NULL,
     "name" VARCHAR(64) NOT NULL DEFAULT '',
-    "email" TEXT NOT NULL,
+    "email" TEXT,
     "password" TEXT NOT NULL,
     "emailVerified" TIMESTAMPTZ(6),
     "lastLogin" JSONB NOT NULL DEFAULT '{}',
+    "extra" JSONB NOT NULL DEFAULT '{}',
+    "teamIdAsMember" INTEGER,
+    "personalUserId" INTEGER,
     "createdAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMPTZ(6) NOT NULL,
 
@@ -92,6 +107,7 @@ CREATE TABLE "Analyst" (
     "role" VARCHAR(255) NOT NULL,
     "topic" TEXT NOT NULL,
     "studySummary" TEXT NOT NULL,
+    "studyLog" TEXT NOT NULL DEFAULT '',
     "studyUserChatId" INTEGER,
     "attachments" JSONB NOT NULL DEFAULT '[]',
     "kind" VARCHAR(16),
@@ -190,6 +206,21 @@ CREATE TABLE "ChatStatistics" (
 );
 
 -- CreateTable
+CREATE TABLE "Product" (
+    "id" SERIAL NOT NULL,
+    "name" VARCHAR(64) NOT NULL,
+    "price" DOUBLE PRECISION NOT NULL,
+    "description" VARCHAR(255) NOT NULL,
+    "currency" "Currency" NOT NULL,
+    "stripePriceId" VARCHAR(50),
+    "extra" JSONB NOT NULL DEFAULT '{}',
+    "createdAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ(6) NOT NULL,
+
+    CONSTRAINT "Product_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "PaymentRecord" (
     "id" SERIAL NOT NULL,
     "userId" INTEGER NOT NULL,
@@ -198,29 +229,18 @@ CREATE TABLE "PaymentRecord" (
     "currency" "Currency" NOT NULL,
     "status" "PaymentStatus" NOT NULL,
     "paymentMethod" VARCHAR(64) NOT NULL,
-    "charge" JSONB NOT NULL,
-    "chargeId" VARCHAR(255) NOT NULL,
-    "credential" JSONB NOT NULL,
     "description" VARCHAR(255) NOT NULL,
     "paidAt" TIMESTAMPTZ(6),
+    "pingxxCharge" JSONB NOT NULL DEFAULT '{}',
+    "pingxxChargeId" VARCHAR(255),
+    "pingxxCredential" JSONB NOT NULL DEFAULT '{}',
+    "stripeInvoice" JSONB NOT NULL DEFAULT '{}',
+    "stripeInvoiceId" VARCHAR(50),
+    "stripeSession" JSONB NOT NULL DEFAULT '{}',
     "createdAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMPTZ(6) NOT NULL,
 
     CONSTRAINT "PaymentRecord_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "Product" (
-    "id" SERIAL NOT NULL,
-    "name" VARCHAR(64) NOT NULL,
-    "price" DOUBLE PRECISION NOT NULL,
-    "description" VARCHAR(255) NOT NULL,
-    "currency" "Currency" NOT NULL,
-    "extra" JSONB NOT NULL DEFAULT '{}',
-    "createdAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMPTZ(6) NOT NULL,
-
-    CONSTRAINT "Product_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -247,6 +267,8 @@ CREATE TABLE "UserSubscription" (
     "startsAt" TIMESTAMPTZ(6) NOT NULL,
     "endsAt" TIMESTAMPTZ(6) NOT NULL,
     "extra" JSONB NOT NULL DEFAULT '{}',
+    "paymentRecordId" INTEGER,
+    "stripeSubscriptionId" VARCHAR(50),
     "createdAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMPTZ(6) NOT NULL,
 
@@ -254,16 +276,19 @@ CREATE TABLE "UserSubscription" (
 );
 
 -- CreateTable
-CREATE TABLE "UserTokens" (
+CREATE TABLE "TokensAccount" (
     "id" SERIAL NOT NULL,
-    "userId" INTEGER NOT NULL,
+    "userId" INTEGER,
+    "teamId" INTEGER,
     "permanentBalance" INTEGER NOT NULL DEFAULT 0,
     "monthlyBalance" INTEGER NOT NULL DEFAULT 0,
     "monthlyResetAt" TIMESTAMPTZ(6),
+    "extra" JSONB NOT NULL DEFAULT '{}',
+    "activeUserSubscriptionId" INTEGER,
     "createdAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMPTZ(6) NOT NULL,
 
-    CONSTRAINT "UserTokens_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "TokensAccount_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -274,6 +299,7 @@ CREATE TABLE "UserTokensLog" (
     "verb" "UserTokensLogVerb" NOT NULL,
     "resourceType" "UserTokensLogResourceType",
     "resourceId" INTEGER,
+    "extra" JSONB NOT NULL DEFAULT '{}',
     "createdAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMPTZ(6) NOT NULL,
 
@@ -325,6 +351,7 @@ CREATE TABLE "PersonaImport" (
     "id" SERIAL NOT NULL,
     "userId" INTEGER NOT NULL,
     "attachments" JSONB NOT NULL DEFAULT '[]',
+    "context" TEXT NOT NULL DEFAULT '',
     "analysis" JSONB NOT NULL DEFAULT '{}',
     "extra" JSONB NOT NULL DEFAULT '{}',
     "extraUserChatId" INTEGER,
@@ -352,6 +379,7 @@ CREATE TABLE "InterviewProject" (
     "token" TEXT NOT NULL,
     "userId" INTEGER NOT NULL,
     "brief" TEXT NOT NULL,
+    "extra" JSONB NOT NULL DEFAULT '{}',
     "createdAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMPTZ(6) NOT NULL,
 
@@ -366,6 +394,7 @@ CREATE TABLE "InterviewSession" (
     "userChatId" INTEGER,
     "intervieweeUserId" INTEGER,
     "intervieweePersonaId" INTEGER,
+    "extra" JSONB NOT NULL DEFAULT '{}',
     "createdAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMPTZ(6) NOT NULL,
 
@@ -390,11 +419,12 @@ CREATE TABLE "InterviewReport" (
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "User_teamIdAsMember_personalUserId_key" ON "User"("teamIdAsMember", "personalUserId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "AdminUser_userId_key" ON "AdminUser"("userId");
 
 -- CreateIndex
--- CREATE INDEX "Persona_embedding_idx" ON "Persona"("embedding");
--- 人工修改索引，Prisma 生成的是上面那样的，不对
 CREATE INDEX "Persona_embedding_idx" on "Persona" USING hnsw ("embedding" vector_cosine_ops);
 
 -- CreateIndex
@@ -428,19 +458,34 @@ CREATE INDEX "ChatMessage_userChatId_id_idx" ON "ChatMessage"("userChatId", "id"
 CREATE INDEX "ChatStatistics_userChatId_dimension_idx" ON "ChatStatistics"("userChatId", "dimension");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Product_name_currency_key" ON "Product"("name", "currency");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "PaymentRecord_orderNo_key" ON "PaymentRecord"("orderNo");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "PaymentRecord_chargeId_key" ON "PaymentRecord"("chargeId");
+CREATE UNIQUE INDEX "PaymentRecord_pingxxChargeId_key" ON "PaymentRecord"("pingxxChargeId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Product_name_currency_key" ON "Product"("name", "currency");
+CREATE UNIQUE INDEX "PaymentRecord_stripeInvoiceId_key" ON "PaymentRecord"("stripeInvoiceId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "PaymentLine_paymentRecordId_productId_key" ON "PaymentLine"("paymentRecordId", "productId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "UserTokens_userId_key" ON "UserTokens"("userId");
+CREATE UNIQUE INDEX "PaymentLine_paymentRecordId_productName_key" ON "PaymentLine"("paymentRecordId", "productName");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "UserSubscription_paymentRecordId_key" ON "UserSubscription"("paymentRecordId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "TokensAccount_userId_key" ON "TokensAccount"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "TokensAccount_teamId_key" ON "TokensAccount"("teamId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "TokensAccount_activeUserSubscriptionId_key" ON "TokensAccount"("activeUserSubscriptionId");
 
 -- CreateIndex
 CREATE INDEX "UserTokensLog_userId_verb_idx" ON "UserTokensLog"("userId", "verb");
@@ -474,6 +519,15 @@ CREATE UNIQUE INDEX "InterviewSession_userChatId_key" ON "InterviewSession"("use
 
 -- CreateIndex
 CREATE UNIQUE INDEX "InterviewReport_token_key" ON "InterviewReport"("token");
+
+-- AddForeignKey
+ALTER TABLE "Team" ADD CONSTRAINT "Team_ownerUserId_fkey" FOREIGN KEY ("ownerUserId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "User" ADD CONSTRAINT "User_teamIdAsMember_fkey" FOREIGN KEY ("teamIdAsMember") REFERENCES "Team"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "User" ADD CONSTRAINT "User_personalUserId_fkey" FOREIGN KEY ("personalUserId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "AdminUser" ADD CONSTRAINT "AdminUser_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -530,7 +584,16 @@ ALTER TABLE "PaymentLine" ADD CONSTRAINT "PaymentLine_productId_fkey" FOREIGN KE
 ALTER TABLE "UserSubscription" ADD CONSTRAINT "UserSubscription_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "UserTokens" ADD CONSTRAINT "UserTokens_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "UserSubscription" ADD CONSTRAINT "UserSubscription_paymentRecordId_fkey" FOREIGN KEY ("paymentRecordId") REFERENCES "PaymentRecord"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "TokensAccount" ADD CONSTRAINT "TokensAccount_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "TokensAccount" ADD CONSTRAINT "TokensAccount_teamId_fkey" FOREIGN KEY ("teamId") REFERENCES "Team"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "TokensAccount" ADD CONSTRAINT "TokensAccount_activeUserSubscriptionId_fkey" FOREIGN KEY ("activeUserSubscriptionId") REFERENCES "UserSubscription"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "UserTokensLog" ADD CONSTRAINT "UserTokensLog_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
