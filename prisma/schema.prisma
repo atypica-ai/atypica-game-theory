@@ -36,6 +36,8 @@ model Team {
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
   tokensAccount TokensAccount?
+  tokensLogs    TokensLog[]
+  subscriptions Subscription[]
 }
 
 model User {
@@ -61,12 +63,12 @@ model User {
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
   tokensAccount            TokensAccount?
-  tokensLogs               UserTokensLog[]
+  tokensLogs               TokensLog[]
   adminUser                AdminUser?
   analysts                 Analyst[]
   userChats                UserChat[]
   paymentRecords           PaymentRecord[]
-  subscriptions            UserSubscription[]
+  subscriptions            Subscription[]
   attachmentFiles          AttachmentFile[]
   personaImports           PersonaImport[]
   userPersonaChatRelations UserPersonaChatRelation[]
@@ -329,8 +331,8 @@ model PaymentRecord {
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
-  paymentLines     PaymentLine[]
-  UserSubscription UserSubscription?
+  paymentLines PaymentLine[]
+  subscription Subscription?
 }
 
 model PaymentLine {
@@ -358,16 +360,18 @@ enum SubscriptionPlan {
   team
 }
 
-model UserSubscription {
+model Subscription {
   id       Int              @id @default(autoincrement())
-  userId   Int
-  user     User             @relation(fields: [userId], references: [id])
+  userId   Int?
+  user     User?            @relation(fields: [userId], references: [id])
+  teamId   Int?
+  team     Team?            @relation(fields: [teamId], references: [id])
   plan     SubscriptionPlan
   startsAt DateTime         @db.Timestamptz(6)
   endsAt   DateTime         @db.Timestamptz(6)
   extra    Json             @default("{}")
 
-  paymentRecordId      Int?           @unique //一个支付记录只能生成一条 UserSubscription
+  paymentRecordId      Int?           @unique //一个支付记录只能生成一条 Subscription
   paymentRecord        PaymentRecord? @relation(fields: [paymentRecordId], references: [id])
   stripeSubscriptionId String?        @db.VarChar(50)
 
@@ -388,14 +392,14 @@ model TokensAccount {
   monthlyResetAt   DateTime? @db.Timestamptz(6)
   extra            Json      @default("{}")
 
-  activeUserSubscriptionId Int?              @unique
-  activeUserSubscription   UserSubscription? @relation(fields: [activeUserSubscriptionId], references: [id])
+  activeSubscriptionId Int?          @unique
+  activeSubscription   Subscription? @relation(fields: [activeSubscriptionId], references: [id])
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 }
 
-enum UserTokensLogVerb {
+enum TokensLogVerb {
   recharge
   consume
   subscription
@@ -404,31 +408,23 @@ enum UserTokensLogVerb {
   signup
 }
 
-enum UserTokensLogResourceType {
-  StudyUserChat
-  ScoutUserChat // 没用到
-  GenericUserChat
-  InterviewProject
-  PersonaImport
-  PaymentRecord
-  UserSubscription
-}
-
-model UserTokensLog {
-  id           Int                        @id @default(autoincrement())
-  userId       Int
-  user         User                       @relation(fields: [userId], references: [id])
+model TokensLog {
+  id           Int           @id @default(autoincrement())
+  userId       Int?
+  user         User?         @relation(fields: [userId], references: [id])
+  teamId       Int?
+  team         Team?         @relation(fields: [teamId], references: [id])
   value        Int
-  verb         UserTokensLogVerb
-  resourceType UserTokensLogResourceType?
+  verb         TokensLogVerb
+  resourceType String?       @db.VarChar(50)
   resourceId   Int?
-  extra        Json                       @default("{}")
+  extra        Json          @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
-  @@index([userId, verb])
   @@index([userId, verb, resourceType, resourceId])
+  @@index([teamId, verb, resourceType, resourceId])
 }
 
 model SystemConfig {
