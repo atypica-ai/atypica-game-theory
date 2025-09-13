@@ -313,12 +313,48 @@ export async function stripeSubscriptionAction() {
   });
 }
 
+/**
+ * 返回的 stripeCustomerId 是 subscription 上的 stripeCustomerId，
+ * 虽然 user 现在都固定了 stripeCustomerId，但既然 subscription 上有，更合理且靠谱
+ */
 export async function createCustomerPortalSessionAction({
-  stripeCustomerId,
+  userSubscriptionId,
 }: {
-  stripeCustomerId: string; // 其实应该从 user 的 activeSubscription 重新获取防止越权
+  userSubscriptionId: number;
 }): Promise<ServerActionResult<{ url: string }>> {
   return withAuth(async (user) => {
+    const userSubscription = await prisma.userSubscription.findUnique({
+      where: {
+        id: userSubscriptionId,
+        userId: user.id, // 确保 subscription 是用户自己的
+      },
+      include: {
+        paymentRecord: true,
+      },
+    });
+    if (!userSubscription) {
+      return {
+        success: false,
+        message: "User subscription not found",
+        code: "not_found",
+      };
+    }
+    if (!userSubscription.paymentRecord?.stripeInvoice) {
+      return {
+        success: false,
+        message: "User subscription payment record not found or invoice not found",
+        code: "internal_server_error",
+      };
+    }
+    const invoiceData = userSubscription.paymentRecord.stripeInvoice as unknown as Stripe.Invoice;
+    const stripeCustomerId = typeof invoiceData.customer === "string" ? invoiceData.customer : null;
+    if (!stripeCustomerId) {
+      return {
+        success: false,
+        message: "Stripe customer ID not found",
+        code: "internal_server_error",
+      };
+    }
     const stripe = stripeClient();
     const siteOrigin = await getRequestOrigin();
     const returnUrl = `${siteOrigin}/account`;

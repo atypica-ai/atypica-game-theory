@@ -17,7 +17,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getDeployRegion } from "@/lib/request/deployRegion";
 import { cn } from "@/lib/utils";
-import { SubscriptionPlan, UserSubscription, UserSubscriptionExtra } from "@/prisma/client";
+import { SubscriptionPlan, UserSubscription } from "@/prisma/client";
 import {
   CalendarIcon,
   CoinsIcon,
@@ -37,11 +37,7 @@ interface SubscriptionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
-  activeSubscription?:
-    | (Omit<UserSubscription, "extra"> & {
-        extra: UserSubscriptionExtra;
-      })
-    | null;
+  activeSubscription?: UserSubscription | null;
 }
 
 export const SubscriptionDialog = ({

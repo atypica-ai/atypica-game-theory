@@ -1,6 +1,5 @@
 // pnpm tsx scripts/payment-stats.ts > payment-stats.csv
 
-import { UserSubscriptionExtra } from "@/prisma/client";
 import { loadEnvConfig } from "@next/env";
 import Stripe from "stripe";
 import "./mock-server-only";
@@ -64,7 +63,7 @@ async function main() {
         const userSubscription = await prisma.userSubscription.findUniqueOrThrow({
           where: { id: log.resourceId! },
         });
-        const paymentRecordId = (userSubscription.extra as UserSubscriptionExtra).paymentRecordId;
+        const paymentRecordId = userSubscription.paymentRecordId;
         if (paymentRecordId) {
           const paymentRecord = await prisma.paymentRecord.findUniqueOrThrow({
             where: { id: paymentRecordId },

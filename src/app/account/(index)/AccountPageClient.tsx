@@ -19,7 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatDate } from "@/lib/utils";
-import { UserSubscription, UserSubscriptionExtra } from "@/prisma/client";
+import { UserSubscription } from "@/prisma/client";
 import { CalendarIcon, CircleDollarSignIcon, CreditCardIcon, Loader2Icon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
@@ -33,10 +33,9 @@ export function AccountPageClient({
   activeSubscription,
   planExpiresAt,
   stripeSubscriptionId,
-  stripeCustomerId,
 }: (
   | {
-      activeSubscription: Omit<UserSubscription, "extra"> & { extra: UserSubscriptionExtra };
+      activeSubscription: UserSubscription;
       planExpiresAt: Date;
     }
   | {
@@ -45,7 +44,6 @@ export function AccountPageClient({
     }
 ) & {
   stripeSubscriptionId: string | null;
-  stripeCustomerId: string | null;
   userTokens: {
     permanentBalance: number;
     monthlyBalance: number;
@@ -98,10 +96,12 @@ export function AccountPageClient({
     }
   }, [stripeSubscriptionId, t]);
 
-  const handleManageSubscription = useCallback(async (stripeCustomerId: string) => {
+  const handleManageSubscription = useCallback(async (activeSubscription: UserSubscription) => {
     setIsCreatingPortalSession(true);
     try {
-      const result = await createCustomerPortalSessionAction({ stripeCustomerId });
+      const result = await createCustomerPortalSessionAction({
+        userSubscriptionId: activeSubscription.id,
+      });
       if (!result.success) throw result;
       window.location.href = result.data.url;
     } catch (error) {
@@ -188,11 +188,11 @@ export function AccountPageClient({
               </div>
             </CardContent>
             <CardFooter className="flex flex-col sm:flex-row gap-4">
-              {stripeCustomerId && (
+              {activeSubscription && (
                 <Button
                   variant="outline"
                   className="flex-1"
-                  onClick={() => handleManageSubscription(stripeCustomerId)}
+                  onClick={() => handleManageSubscription(activeSubscription)}
                   disabled={isCreatingPortalSession || isCanceling}
                 >
                   {isCreatingPortalSession && <Loader2Icon className="animate-spin size-4" />}

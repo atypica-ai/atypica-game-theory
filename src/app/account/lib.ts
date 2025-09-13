@@ -1,20 +1,8 @@
 import "server-only";
 
-import {
-  UserSubscriptionExtra,
-  UserSubscription as UserSubscriptionPrisma,
-  UserType,
-} from "@/prisma/client";
+import { UserSubscription, UserType } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 
-type UserSubscription = Omit<UserSubscriptionPrisma, "extra"> & {
-  extra: UserSubscriptionExtra;
-};
-
-/**
- * 返回的 stripeCustomerId 是 subscription 上的 stripeCustomerId，
- * 虽然 user 现在都固定了 stripeCustomerId，但既然 subscription 上有，更合理且靠谱
- */
 export async function fetchActiveSubscription({ userId }: { userId: number }): Promise<
   (
     | {
@@ -27,7 +15,6 @@ export async function fetchActiveSubscription({ userId }: { userId: number }): P
       }
   ) & {
     stripeSubscriptionId: string | null;
-    stripeCustomerId: string | null;
     userType: UserType;
   }
 > {
@@ -67,24 +54,12 @@ export async function fetchActiveSubscription({ userId }: { userId: number }): P
       activeSubscription: null,
       planExpiresAt: null,
       stripeSubscriptionId: null,
-      stripeCustomerId: null,
       userType,
     };
   }
 
-  const stripeCustomerId =
-    typeof activeSubscription.extra.invoice?.customer === "string"
-      ? activeSubscription.extra.invoice.customer
-      : null;
-
-  const invoice = activeSubscription.extra?.invoice;
-  if (invoice?.parent?.subscription_details) {
-    const subscription_details = invoice.parent.subscription_details;
-    if (typeof subscription_details.subscription === "string") {
-      stripeSubscriptionId = subscription_details.subscription;
-    } else {
-      stripeSubscriptionId = subscription_details.subscription.id;
-    }
+  if (activeSubscription.stripeSubscriptionId) {
+    stripeSubscriptionId = activeSubscription.stripeSubscriptionId;
   }
 
   // 如果 activeSubscription 存在，lastSubscription 一定存在，所以可以 throw
@@ -107,7 +82,6 @@ export async function fetchActiveSubscription({ userId }: { userId: number }): P
     activeSubscription,
     planExpiresAt,
     stripeSubscriptionId,
-    stripeCustomerId,
     userType,
   };
 }

@@ -8,9 +8,9 @@ import {
   PRO_MONTHLY_TOKENS,
   resetUserMonthlyTokens,
 } from "@/app/payment/monthlyTokens";
+import { rootLogger } from "@/lib/logging";
 import { getDeployRegion } from "@/lib/request/deployRegion";
 import { SubscriptionPlan } from "@/prisma/client";
-import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import { createPaymentRecord, requirePersonalUser } from "./utils";
 
@@ -31,7 +31,7 @@ export async function createProToMaxInvoice({ userId }: { userId: number }) {
   if (
     !activeStripeSubscriptionId ||
     !activeSubscription ||
-    !activeSubscription.extra.paymentRecordId ||
+    !activeSubscription.paymentRecordId ||
     activeSubscription.plan !== SubscriptionPlan.pro
   ) {
     throw new Error(
@@ -40,7 +40,7 @@ export async function createProToMaxInvoice({ userId }: { userId: number }) {
   }
   const { currency } = await prisma.paymentRecord.findUniqueOrThrow({
     where: {
-      id: activeSubscription.extra.paymentRecordId,
+      id: activeSubscription.paymentRecordId,
     },
   });
 
@@ -173,17 +173,28 @@ export async function createProToMaxInvoice({ userId }: { userId: number }) {
     where: { userId },
     data: { monthlyResetAt: now },
   });
-  //
+
+  let stripeSubscriptionId: string | null;
+  const subscription_details = paidInvoice.parent?.subscription_details;
+  if (!subscription_details) {
+    rootLogger.error(
+      `No subscription details found for invoice ${paidInvoice.id} on paymentRecord ${paymentRecord.id}`,
+    );
+    stripeSubscriptionId = null;
+  } else if (typeof subscription_details.subscription === "string") {
+    stripeSubscriptionId = subscription_details.subscription;
+  } else {
+    stripeSubscriptionId = subscription_details.subscription.id;
+  }
+
   await prisma.userSubscription.create({
     data: {
       userId,
       plan: SubscriptionPlan.max,
       startsAt: now,
       endsAt: planEndsAt,
-      extra: {
-        paymentRecordId: paymentRecord.id,
-        invoice: paidInvoice as unknown as InputJsonValue,
-      },
+      paymentRecordId: paymentRecord.id,
+      stripeSubscriptionId,
     },
   });
 

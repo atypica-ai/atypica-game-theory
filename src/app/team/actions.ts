@@ -4,7 +4,7 @@ import { fetchActiveSubscription } from "@/app/account/lib";
 import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
-import { Team, User, UserSubscription, UserSubscriptionExtra } from "@/prisma/client";
+import { Team, User, UserSubscription } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { getTranslations } from "next-intl/server";
 import { createTeam } from "./lib";
@@ -309,14 +309,9 @@ export async function removeTeamMemberAction(data: {
 }
 
 // 获取团队订阅信息
-export async function getTeamSubscriptionAction(teamId: number): Promise<
-  ServerActionResult<
-    | (Omit<UserSubscription, "extra"> & {
-        extra: UserSubscriptionExtra;
-      })
-    | null
-  >
-> {
+export async function getTeamSubscriptionAction(
+  teamId: number,
+): Promise<ServerActionResult<UserSubscription | null>> {
   const t = await getTranslations("Team.Actions");
   return withAuth(async ({ id: userId }) => {
     try {

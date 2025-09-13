@@ -329,7 +329,8 @@ model PaymentRecord {
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
-  paymentLines PaymentLine[]
+  paymentLines     PaymentLine[]
+  UserSubscription UserSubscription?
 }
 
 model PaymentLine {
@@ -364,8 +365,11 @@ model UserSubscription {
   plan     SubscriptionPlan
   startsAt DateTime         @db.Timestamptz(6)
   endsAt   DateTime         @db.Timestamptz(6)
-  // paymentRecordId Int? @unique //一个支付记录只能生成一条 UserSubscription
   extra    Json             @default("{}")
+
+  paymentRecordId      Int?           @unique //一个支付记录只能生成一条 UserSubscription
+  paymentRecord        PaymentRecord? @relation(fields: [paymentRecordId], references: [id])
+  stripeSubscriptionId String?        @db.VarChar(50)
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)

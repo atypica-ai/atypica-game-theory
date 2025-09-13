@@ -1,6 +1,5 @@
 declare module "@/prisma/client" {
   export * from "@/prisma/client/index";
-  import Stripe from "stripe";
 
   export type UserType = "Personal" | "TeamMember";
 
@@ -57,12 +56,6 @@ declare module "@/prisma/client" {
   export type AgentStatisticsExtra = {
     reportedBy: string;
   } & Record<string, unknown>;
-
-  export type UserSubscriptionExtra = Partial<{
-    // ... pingxx invoice data tbd
-    paymentRecordId: number;
-    invoice: Stripe.Invoice;
-  }>;
 
   export type UserTokensExtra = Partial<{
     activeUserSubscriptionId: number;
@@ -127,9 +120,14 @@ declare module "@/prisma/client" {
     }>;
   }>;
 
-  // Removed, stripePriceId is moved to Product
+  // Removed
   // export type ProductExtra = Partial<{
   //   stripePriceId: string;
+  // }>;
+  // export type UserSubscriptionExtra = Partial<{
+  //   // ... pingxx invoice data tbd
+  //   paymentRecordId: number;
+  //   invoice: Stripe.Invoice;
   // }>;
 
   // 只覆盖这个不够，findUnique 返回的类型还是原来的

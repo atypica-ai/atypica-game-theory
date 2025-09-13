@@ -148,7 +148,12 @@ export async function createPaymentRecord({
   return paymentRecord;
 }
 
-export async function retrievePlanStartEnd({ invoice }: { invoice: Stripe.Invoice }): Promise<{
+export async function retrieveStripeSubscriptionDetails({
+  invoice,
+}: {
+  invoice: Stripe.Invoice;
+}): Promise<{
+  stripeSubscriptionId: string;
   planStartsAt: Date;
   planEndsAt: Date;
 }> {
@@ -174,6 +179,7 @@ export async function retrievePlanStartEnd({ invoice }: { invoice: Stripe.Invoic
   const planEndsAt = new Date(stripeSubscriptionItem.current_period_end * 1000);
 
   return {
+    stripeSubscriptionId,
     planStartsAt,
     planEndsAt,
   };
