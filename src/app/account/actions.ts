@@ -141,6 +141,7 @@ export async function fetchTokensHistoryAsTeamOwner(
 
     const teamId = teamAsMember.id;
 
+    // 需要 join user 以获取 user.name，但是过滤直接用 teamId，有些 log 没有 userid，所以要用 leftjoin
     const [tokensLogs, totalCount] = await Promise.all([
       (async () => {
         const result = await prisma.$queryRaw<Array<TokensLog & { consumedBy: string }>>`
@@ -155,8 +156,8 @@ export async function fetchTokensHistoryAsTeamOwner(
           MIN("TokensLog"."createdAt") as "createdAt",
           MAX("TokensLog"."updatedAt") as "updatedAt"
         FROM "TokensLog"
-        INNER JOIN "User" ON "TokensLog"."userId" = "User"."id"
-        WHERE "User"."teamIdAsMember" = ${teamId}
+        LEFT JOIN "User" ON "TokensLog"."userId" = "User"."id"
+        WHERE "TokensLog"."teamId" = ${teamId}
         GROUP BY
           "TokensLog"."userId",
           "resourceType",
@@ -179,8 +180,8 @@ export async function fetchTokensHistoryAsTeamOwner(
             "verb",
             CASE WHEN "resourceType" IS NULL THEN "TokensLog"."id" ELSE NULL END
           FROM "TokensLog"
-          INNER JOIN "User" ON "TokensLog"."userId" = "User"."id"
-          WHERE "User"."teamIdAsMember" = ${teamId}
+          LEFT JOIN "User" ON "TokensLog"."userId" = "User"."id"
+          WHERE "TokensLog"."teamId" = ${teamId}
           GROUP BY
             "TokensLog"."userId",
             "resourceType",

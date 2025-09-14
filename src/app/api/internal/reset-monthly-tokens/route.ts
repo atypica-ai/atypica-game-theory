@@ -1,4 +1,4 @@
-import { resetUserMonthlyTokens } from "@/app/payment/monthlyTokens";
+import { resetTeamMonthlyTokens, resetUserMonthlyTokens } from "@/app/payment/monthlyTokens";
 import { rootLogger } from "@/lib/logging";
 import { prisma } from "@/prisma/prisma";
 import { NextRequest, NextResponse } from "next/server";
@@ -29,45 +29,64 @@ export async function POST(request: NextRequest) {
     // 查找所有需要重置月度tokens的用户
     // 根据 resetUserMonthlyTokens 函数逻辑：如果 monthlyResetAt === null 或者 monthlyResetAt <= now
     // 过滤条件：只处理有subscription记录的用户，减少处理量
-    const usersToReset = await prisma.tokensAccount.findMany({
+    const accountsToReset = await prisma.tokensAccount.findMany({
       where: {
         AND: [
-          { userId: { not: null } },
-          { OR: [{ monthlyResetAt: null }, { monthlyResetAt: { lte: now } }] },
-          { user: { subscriptions: { some: {} } } }, // 有任何subscription记录
+          {
+            OR: [{ monthlyResetAt: null }, { monthlyResetAt: { lte: now } }],
+          },
+          {
+            OR: [
+              { user: { subscriptions: { some: {} } } },
+              { team: { subscriptions: { some: {} } } },
+            ],
+          }, // 有任何subscription记录
         ],
       },
       select: {
         userId: true,
+        teamId: true,
         monthlyResetAt: true,
       },
     });
-    logger.info(`Found ${usersToReset.length} users to reset monthly tokens`);
+
+    const usersCount = accountsToReset.filter((account) => account.userId !== null).length;
+    const teamsCount = accountsToReset.filter((account) => account.teamId !== null).length;
+
+    logger.info(`Found ${usersCount} users and ${teamsCount} teams to reset monthly tokens`);
 
     let successCount = 0;
     let errorCount = 0;
-    const errors: Array<{ userId: number; error: string }> = [];
+    const errors: Array<{ userId: number | null; teamId: number | null; error: string }> = [];
 
     // 遍历每个用户，调用 resetUserMonthlyTokens
-    for (const tokensAccount of usersToReset) {
-      const userId = tokensAccount.userId!; // userId 不会为空，上面过滤了
+    for (const tokensAccount of accountsToReset) {
+      const { userId, teamId } = tokensAccount;
       try {
-        await resetUserMonthlyTokens({ userId });
+        if (teamId) {
+          await resetTeamMonthlyTokens({ teamId });
+        } else if (userId) {
+          await resetUserMonthlyTokens({ userId });
+        }
         successCount++;
-        logger.debug(`Successfully reset monthly tokens for user ${userId}`);
+        logger.debug(`Successfully reset monthly tokens, user=${userId} team=${teamId}`);
       } catch (error) {
         errorCount++;
         const errorMessage = error instanceof Error ? error.message : "Unknown error";
         errors.push({
           userId,
+          teamId,
           error: errorMessage,
         });
-        logger.error(`Failed to reset monthly tokens for user ${userId}: ${errorMessage}`);
+        logger.error(
+          `Failed to reset monthly tokens for user=${userId} team=${teamId}: ${errorMessage}`,
+        );
       }
     }
 
     const result = {
-      totalUsers: usersToReset.length,
+      totalUsers: usersCount,
+      totalTeams: teamsCount,
       successCount,
       errorCount,
       errors: errors.length > 0 ? errors : undefined,
