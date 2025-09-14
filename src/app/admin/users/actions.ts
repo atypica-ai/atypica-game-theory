@@ -142,7 +142,7 @@ export async function addTokensToUser(
       },
     });
     // Create a log entry
-    await tx.userTokensLog.create({
+    await tx.tokensLog.create({
       data: {
         userId: user.id,
         value: tokens,
@@ -226,7 +226,7 @@ export async function deleteUserAccount(userId: number): Promise<ServerActionRes
     await prisma.tokensAccount.delete({
       where: { userId },
     });
-    await prisma.userTokensLog.deleteMany({
+    await prisma.tokensLog.deleteMany({
       where: { userId },
     });
     await prisma.user.delete({

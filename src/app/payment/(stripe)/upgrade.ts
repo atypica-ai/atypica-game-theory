@@ -26,16 +26,20 @@ function generateOrderNo() {
 
 export async function createProToMaxInvoice({ userId }: { userId: number }) {
   const { monthlyBalance: currentMonthlyBalance } = await requirePersonalUser(userId);
-  const { activeSubscription, stripeSubscriptionId: activeStripeSubscriptionId } =
-    await fetchActiveSubscription({ userId });
+  const {
+    userType,
+    activeSubscription,
+    stripeSubscriptionId: activeStripeSubscriptionId,
+  } = await fetchActiveSubscription({ userId });
   if (
+    userType !== "Personal" ||
     !activeStripeSubscriptionId ||
     !activeSubscription ||
     !activeSubscription.paymentRecordId ||
     activeSubscription.plan !== SubscriptionPlan.pro
   ) {
     throw new Error(
-      "Upgrade from PRO to MAX is only available to users with an existing PRO subscription, and paymentRecordId exists",
+      "Upgrade from PRO to MAX is only available to personal users with an existing PRO subscription, and paymentRecordId exists",
     );
   }
   const { currency } = await prisma.paymentRecord.findUniqueOrThrow({
@@ -164,7 +168,7 @@ export async function createProToMaxInvoice({ userId }: { userId: number }) {
   const now = new Date();
   now.setMilliseconds(0);
   const planEndsAt = activeSubscription.endsAt;
-  await prisma.userSubscription.update({
+  await prisma.subscription.update({
     where: { id: activeSubscription.id },
     data: { endsAt: now },
   });
@@ -187,7 +191,7 @@ export async function createProToMaxInvoice({ userId }: { userId: number }) {
     stripeSubscriptionId = subscription_details.subscription.id;
   }
 
-  await prisma.userSubscription.create({
+  await prisma.subscription.create({
     data: {
       userId,
       plan: SubscriptionPlan.max,

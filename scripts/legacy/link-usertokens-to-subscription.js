@@ -4,15 +4,15 @@ const prisma = new PrismaClient();
 
 async function main() {
   try {
-    const userTokens = await prisma.userTokens.findMany({
+    const tokensAccount = await prisma.tokensAccount.findMany({
       where: {
         monthlyResetAt: {
           not: null,
         },
       },
     });
-    for (const { id: userTokensId, userId, monthlyResetAt } of userTokens) {
-      const subscription = await prisma.userSubscription.findFirst({
+    for (const { id: tokensAccountId, userId, monthlyResetAt } of tokensAccount) {
+      const subscription = await prisma.subscription.findFirst({
         where: {
           userId,
         },
@@ -21,9 +21,9 @@ async function main() {
         },
       });
       if (subscription.endsAt.valueOf() === monthlyResetAt.valueOf()) {
-        await prisma.userTokens.update({
+        await prisma.tokensAccount.update({
           where: {
-            id: userTokensId,
+            id: tokensAccountId,
           },
           data: {
             extra: {

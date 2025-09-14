@@ -4,7 +4,7 @@ const prisma = new PrismaClient();
 
 async function main() {
   try {
-    const subscriptions = await prisma.userSubscription.findMany({
+    const subscriptions = await prisma.subscription.findMany({
       orderBy: {
         endsAt: "desc",
       },

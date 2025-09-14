@@ -45,7 +45,7 @@ async function _trackUser(user: User) {
   // prepare
   const analytics = await loadSegmentAnalytics();
   const now = new Date();
-  const activeSubscription = await prisma.userSubscription.findFirst({
+  const activeSubscription = await prisma.subscription.findFirst({
     where: { userId: user.id, startsAt: { lte: now }, endsAt: { gt: now } },
     orderBy: { endsAt: "desc" },
   });

@@ -365,12 +365,12 @@ export function FocusedInterviewChat({
       </div>
 
       {/* Bottom input area - fixed to bottom */}
-      <div className="w-full max-w-3xl mx-auto p-4 sm:p-8 pt-0 relative">
+      <div className="shrink-0 w-full max-w-3xl mx-auto px-4 pt-0 sm:px-8 relative space-y-3">
         {/* Timer progress indicator */}
         {showTimer && (
           <div
             className={cn(
-              "absolute top-1 left-1/2 -translate-x-1/2",
+              // "absolute top-1 left-1/2 -translate-x-1/2",
               "flex items-center justify-center gap-3 text-xs text-zinc-400 dark:text-zinc-500",
             )}
           >
@@ -418,11 +418,11 @@ export function FocusedInterviewChat({
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.1 }}
-              className="overflow-hidden mt-6"
+              className="overflow-hidden"
             >
               <form
                 onSubmit={handleSubmitWithFocus}
-                className="relative flex items-center bg-white dark:bg-zinc-800 backdrop-blur-sm rounded-2xl p-2 w-full border border-zinc-200 dark:border-zinc-700"
+                className="relative flex items-center bg-white dark:bg-zinc-800 backdrop-blur-sm rounded-md p-2 w-full border border-zinc-200 dark:border-zinc-700"
               >
                 <CustomTextarea
                   ref={textareaRef}

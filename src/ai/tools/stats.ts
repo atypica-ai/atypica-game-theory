@@ -1,6 +1,7 @@
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import { consumeUserTokens } from "@/tokens/lib";
+import { TokensLogResourceType } from "@/tokens/types";
 import { Logger } from "pino";
 import { StatReporter } from "./types";
 
@@ -25,7 +26,7 @@ export const initStudyStatReporter = ({
     if (dimension === "tokens") {
       await consumeUserTokens({
         userId,
-        resourceType: "StudyUserChat",
+        resourceType: TokensLogResourceType.StudyUserChat,
         resourceId: studyUserChatId,
         tokens: value,
         extra,
@@ -57,7 +58,7 @@ export const initGenericUserChatStatReporter = ({
     if (dimension === "tokens") {
       await consumeUserTokens({
         userId,
-        resourceType: "GenericUserChat",
+        resourceType: TokensLogResourceType.GenericUserChat,
         resourceId: userChatId,
         tokens: value,
         extra,
@@ -93,7 +94,7 @@ export const initInterviewProjectStatReporter = ({
     if (dimension === "tokens") {
       await consumeUserTokens({
         userId,
-        resourceType: "InterviewProject",
+        resourceType: TokensLogResourceType.InterviewProject,
         resourceId: interviewProjectId,
         tokens: value,
         extra,
@@ -129,7 +130,7 @@ export const initPersonaImportStatReporter = ({
     if (dimension === "tokens") {
       await consumeUserTokens({
         userId,
-        resourceType: "PersonaImport",
+        resourceType: TokensLogResourceType.PersonaImport,
         resourceId: personaImportId,
         tokens: value,
         extra,

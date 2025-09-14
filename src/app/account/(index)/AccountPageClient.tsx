@@ -19,7 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatDate } from "@/lib/utils";
-import { UserSubscription } from "@/prisma/client";
+import { Subscription } from "@/prisma/client";
 import { CalendarIcon, CircleDollarSignIcon, CreditCardIcon, Loader2Icon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
@@ -35,7 +35,7 @@ export function AccountPageClient({
   stripeSubscriptionId,
 }: (
   | {
-      activeSubscription: UserSubscription;
+      activeSubscription: Subscription;
       planExpiresAt: Date;
     }
   | {
@@ -96,11 +96,11 @@ export function AccountPageClient({
     }
   }, [stripeSubscriptionId, t]);
 
-  const handleManageSubscription = useCallback(async (activeSubscription: UserSubscription) => {
+  const handleManageSubscription = useCallback(async (activeSubscription: Subscription) => {
     setIsCreatingPortalSession(true);
     try {
       const result = await createCustomerPortalSessionAction({
-        userSubscriptionId: activeSubscription.id,
+        subscriptionId: activeSubscription.id,
       });
       if (!result.success) throw result;
       window.location.href = result.data.url;

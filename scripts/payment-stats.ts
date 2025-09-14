@@ -1,5 +1,6 @@
 // pnpm tsx scripts/payment-stats.ts > payment-stats.csv
 
+import { TokensLogResourceType } from "@/tokens/types";
 import { loadEnvConfig } from "@next/env";
 import Stripe from "stripe";
 import "./mock-server-only";
@@ -31,7 +32,7 @@ async function main() {
     `Order,StripePaymentId,StripeCharge,PaymentMethod,Currency,Amount,Receibed,Used,Payable,Plan,Date,Email`,
   );
   for (const user of users) {
-    const tokensLogs = await prisma.userTokensLog.findMany({
+    const tokensLogs = await prisma.tokensLog.findMany({
       where: {
         userId: user.id,
         createdAt: {
@@ -49,7 +50,7 @@ async function main() {
     let payable = giftedTokensTotal + consumedTokensTotal;
     console.log(`Free,,,,,,${giftedTokensTotal},${consumedTokensTotal},${payable},,,${user.email}`);
     for (const log of tokensLogs.filter((log) => log.verb === "subscription")) {
-      if (log.resourceType === "PaymentRecord") {
+      if (log.resourceType === TokensLogResourceType.PaymentRecord) {
         const paymentRecord = await prisma.paymentRecord.findUniqueOrThrow({
           where: { id: log.resourceId! },
         });
@@ -59,11 +60,11 @@ async function main() {
         console.log(
           `${paymentRecord.orderNo},${(invoice as any)?.payment_intent ?? ""},${(invoice as any)?.charge ?? ""},${paymentRecord.paymentMethod},${paymentRecord.currency},${paymentRecord.amount},${log.value},${used},${payable},Pro,${paymentRecord.paidAt ? fdate(paymentRecord.paidAt) : ""},${user.email}`,
         );
-      } else if (log.resourceType === "UserSubscription") {
-        const userSubscription = await prisma.userSubscription.findUniqueOrThrow({
+      } else if (log.resourceType === TokensLogResourceType.Subscription) {
+        const subscription = await prisma.subscription.findUniqueOrThrow({
           where: { id: log.resourceId! },
         });
-        const paymentRecordId = userSubscription.paymentRecordId;
+        const paymentRecordId = subscription.paymentRecordId;
         if (paymentRecordId) {
           const paymentRecord = await prisma.paymentRecord.findUniqueOrThrow({
             where: { id: paymentRecordId },
@@ -77,7 +78,7 @@ async function main() {
         } else {
           // 一般是人工添加的 subscription 可以跳过
           // throw new Error(
-          //   `Payment record ID not found in user subscription ${userSubscription.id}`,
+          //   `Payment record ID not found in user subscription ${subscription.id}`,
           // );
         }
       } else if (log.resourceType === null) {
@@ -90,7 +91,7 @@ async function main() {
       }
     }
     for (const log of tokensLogs.filter((log) => log.verb === "recharge")) {
-      if (log.resourceType !== "PaymentRecord") {
+      if (log.resourceType !== TokensLogResourceType.PaymentRecord) {
         throw new Error("Something went wrong");
       }
       const paymentRecord = await prisma.paymentRecord.findUniqueOrThrow({

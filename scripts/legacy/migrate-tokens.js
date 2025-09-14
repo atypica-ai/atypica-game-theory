@@ -5,13 +5,13 @@ const prisma = new PrismaClient();
 async function migrateTokens() {
   try {
     const users = await prisma.user.findMany({
-      // include: { userTokens: true },
+      // include: { tokensAccount: true },
     });
     console.log(`${users.length} users`);
     let promises = [];
     for (const user of users) {
       const promise = (async () => {
-        const logs = await prisma.userTokensLog.findMany({
+        const logs = await prisma.tokensLog.findMany({
           where: { userId: user.id },
         });
         for (const log of logs) {
@@ -29,19 +29,19 @@ async function migrateTokens() {
             }
           }
           if (value !== null) {
-            await prisma.userTokensLog.update({
+            await prisma.tokensLog.update({
               where: { id: log.id },
               data: { value: value },
             });
           }
         }
-        const result = await prisma.userTokensLog.aggregate({
+        const result = await prisma.tokensLog.aggregate({
           where: { userId: user.id },
           _sum: { value: true },
         });
         const totalTokens = result._sum.value || 0;
-        // Update the userTokens total
-        await prisma.userTokens.update({
+        // Update the tokensAccount total
+        await prisma.tokensAccount.update({
           where: { userId: user.id },
           data: { balance: totalTokens },
         });

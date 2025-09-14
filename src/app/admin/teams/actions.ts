@@ -106,9 +106,10 @@ export async function addTokensToTeam(
         permanentBalance: { increment: tokens },
       },
     });
-    await tx.userTokensLog.create({
+    await tx.tokensLog.create({
       data: {
-        userId: team.ownerUserId,
+        // userId: team.ownerUserId, // 给团队直接发送的 tokens，不记录在单个用户上。
+        teamId: team.id,
         value: tokens,
         verb: "gift",
       },

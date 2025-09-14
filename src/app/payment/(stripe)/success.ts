@@ -46,10 +46,11 @@ export async function handleTeamSubscriptionPaymentSuccess({
       invoice: invoiceData,
     });
 
-  // Create team subscription record using UserSubscription
-  await prisma.userSubscription.create({
+  // Create team subscription record
+  await prisma.subscription.create({
     data: {
       userId,
+      teamId,
       plan: SubscriptionPlan.team,
       startsAt: planStartsAt,
       endsAt: planEndsAt,
@@ -77,7 +78,7 @@ export async function handleUserSubscriptionPaymentSuccess({
   });
   if (personalUser.teamIdAsMember) {
     throw new Error(
-      `User is not a member of a team, but received a success paymentRecord ${paymentRecord.id} for a personal subscription`,
+      `User is a member of a team, but received a success paymentRecord ${paymentRecord.id} for a personal subscription`,
     );
   }
 
@@ -86,7 +87,7 @@ export async function handleUserSubscriptionPaymentSuccess({
       await retrieveStripeSubscriptionDetails({
         invoice: invoiceData,
       });
-    await prisma.userSubscription.create({
+    await prisma.subscription.create({
       data: {
         userId,
         plan: SubscriptionPlan.pro,
@@ -103,7 +104,7 @@ export async function handleUserSubscriptionPaymentSuccess({
       await retrieveStripeSubscriptionDetails({
         invoice: invoiceData,
       });
-    await prisma.userSubscription.create({
+    await prisma.subscription.create({
       data: {
         userId,
         plan: SubscriptionPlan.max,

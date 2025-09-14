@@ -13,7 +13,8 @@ import {
 } from "@/components/ui/table";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn, formatDate } from "@/lib/utils";
-import { UserTokensLog, UserTokensLogVerb } from "@/prisma/client";
+import { TokensLog, TokensLogVerb } from "@/prisma/client";
+import { TokensLogResourceType } from "@/tokens/types";
 import {
   ClockIcon,
   CoinsIcon,
@@ -31,7 +32,7 @@ export function TokensHistory() {
   const { data: session } = useSession();
   const t = useTranslations("AccountPage");
   const locale = useLocale();
-  const [tokensHistory, setTokensHistory] = useState<(UserTokensLog & { consumedBy?: string })[]>(
+  const [tokensHistory, setTokensHistory] = useState<(TokensLog & { consumedBy?: string })[]>(
     [],
   );
   const [historyIsLoading, setHistoryIsLoading] = useState(true);
@@ -141,14 +142,14 @@ export function TokensHistory() {
                   <TableCell className="font-medium">
                     {(() => {
                       switch (item.verb) {
-                        case UserTokensLogVerb.recharge:
+                        case TokensLogVerb.recharge:
                           return (
                             <div className="flex items-center gap-2">
                               <CoinsIcon className="size-4" />
                               <span>{t("tokensHistorySection.verbs.recharge")}</span>
                             </div>
                           );
-                        case UserTokensLogVerb.consume:
+                        case TokensLogVerb.consume:
                           return (
                             <div className="flex items-center gap-2">
                               <HippyGhostAvatar
@@ -157,7 +158,7 @@ export function TokensHistory() {
                               />
                               {(() => {
                                 switch (item.resourceType) {
-                                  case "StudyUserChat":
+                                  case TokensLogResourceType.StudyUserChat:
                                     return (
                                       <>
                                         {t("tokensHistorySection.consume.StudyUserChat")}
@@ -166,7 +167,7 @@ export function TokensHistory() {
                                         </Link>
                                       </>
                                     );
-                                  case "InterviewProject":
+                                  case TokensLogResourceType.InterviewProject:
                                     return (
                                       <>
                                         {t("tokensHistorySection.consume.InterviewProject")}
@@ -178,7 +179,7 @@ export function TokensHistory() {
                                         </Link>
                                       </>
                                     );
-                                  case "PersonaImport":
+                                  case TokensLogResourceType.PersonaImport:
                                     return (
                                       <>
                                         {t("tokensHistorySection.consume.PersonaImport")}
@@ -196,28 +197,28 @@ export function TokensHistory() {
                               })()}
                             </div>
                           );
-                        case UserTokensLogVerb.subscription:
+                        case TokensLogVerb.subscription:
                           return (
                             <div className="flex items-center gap-2">
                               <CreditCardIcon className="size-4" />
                               <span>{t("tokensHistorySection.verbs.subscription")}</span>
                             </div>
                           );
-                        case UserTokensLogVerb.subscriptionReset:
+                        case TokensLogVerb.subscriptionReset:
                           return (
                             <div className="flex items-center gap-2">
                               <ClockIcon className="size-4" />
                               <span>{t("tokensHistorySection.verbs.subscriptionReset")}</span>
                             </div>
                           );
-                        case UserTokensLogVerb.gift:
+                        case TokensLogVerb.gift:
                           return (
                             <div className="flex items-center gap-2">
                               <GiftIcon className="size-4" />
                               <span>{t("tokensHistorySection.verbs.gift")}</span>
                             </div>
                           );
-                        case UserTokensLogVerb.signup:
+                        case TokensLogVerb.signup:
                           return (
                             <div className="flex items-center gap-2">
                               <User2Icon className="size-4" />

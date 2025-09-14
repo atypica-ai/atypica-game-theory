@@ -2,8 +2,9 @@ import "server-only";
 
 import { fetchActiveSubscription } from "@/app/account/lib";
 import { rootLogger } from "@/lib/logging";
-import { SubscriptionPlan, User, UserTokensLogVerb } from "@/prisma/client";
+import { SubscriptionPlan, TokensLogVerb } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
+import { TokensLogResourceType } from "@/tokens/types";
 
 export const PRO_MONTHLY_TOKENS = 2_000_000;
 export const PRO_MONTHLY_GIFT = 1_000_000;
@@ -37,19 +38,19 @@ export async function resetUserMonthlyTokens({ userId }: { userId: number }) {
       logger.info(
         `User ${userId} needs monthly token reset, monthlyBalance=${rest}, monthlyResetAt=${tokensAccount.monthlyResetAt}`,
       );
-      const activeUserSubscriptionId = tokensAccount.activeUserSubscriptionId;
-      if (!activeUserSubscriptionId) {
+      const activeSubscriptionId = tokensAccount.activeSubscriptionId;
+      if (!activeSubscriptionId) {
         logger.error(
-          `TokensAccount ${tokensAccount.id} of user ${userId} is being reset, but activeUserSubscriptionId is missing. It will continue but further investigation is required.`,
+          `TokensAccount ${tokensAccount.id} of user ${userId} is being reset, but activeSubscriptionId is missing. It will continue but further investigation is required.`,
         );
       }
-      await tx.userTokensLog.create({
+      await tx.tokensLog.create({
         data: {
           userId: userId,
-          verb: UserTokensLogVerb.subscriptionReset,
+          verb: TokensLogVerb.subscriptionReset,
           value: -rest,
-          resourceType: "UserSubscription",
-          resourceId: activeUserSubscriptionId,
+          resourceType: TokensLogResourceType.Subscription,
+          resourceId: activeSubscriptionId,
         },
       });
       tokensAccount = await tx.tokensAccount.update({
@@ -57,7 +58,7 @@ export async function resetUserMonthlyTokens({ userId }: { userId: number }) {
         data: {
           monthlyBalance: { decrement: rest },
           monthlyResetAt: null,
-          activeUserSubscriptionId: null,
+          activeSubscriptionId: null,
         },
       });
     } else {
@@ -67,12 +68,12 @@ export async function resetUserMonthlyTokens({ userId }: { userId: number }) {
         logger.info(
           `User ${userId} needs monthly token reset, monthlyBalance=${rest}, monthlyResetAt=${tokensAccount.monthlyResetAt}`,
         );
-        // activeUserSubscriptionId 现在是直接字段，不需要从 extra 中移除
+        // activeSubscriptionId 现在是直接字段，不需要从 extra 中移除
         tokensAccount = await tx.tokensAccount.update({
           where: { userId },
           data: {
             monthlyResetAt: null,
-            activeUserSubscriptionId: null,
+            activeSubscriptionId: null,
           },
         });
       }
@@ -86,12 +87,12 @@ export async function resetUserMonthlyTokens({ userId }: { userId: number }) {
     return;
   }
 
-  if (activeSubscription.createdAt < new Date(1749865000000)) {
-    // TODO: 这个在一个月以后（2025-07-15）去掉，即 2025-06-14 09:30 之前的 subscription 都已经过期了
-    // 在 2025-06-14 09:30 之前的 tokens 都被加到了 permanentBalance 里，在此时间之后的才加入到 monthlyBalance
-    logger.info(`User ${userId} subscription before cutoff date, skipping`);
-    return;
-  }
+  // if (activeSubscription.createdAt < new Date(1749865000000)) {
+  //   // TODO: 这个在一个月以后（2025-07-15）去掉，即 2025-06-14 09:30 之前的 subscription 都已经过期了
+  //   // 在 2025-06-14 09:30 之前的 tokens 都被加到了 permanentBalance 里，在此时间之后的才加入到 monthlyBalance
+  //   logger.info(`User ${userId} subscription before cutoff date, skipping`);
+  //   return;
+  // }
 
   let rechargeAmount;
   let giftAmount;
@@ -111,20 +112,20 @@ export async function resetUserMonthlyTokens({ userId }: { userId: number }) {
   );
 
   await prisma.$transaction(async (tx) => {
-    await tx.userTokensLog.create({
+    await tx.tokensLog.create({
       data: {
         userId: userId,
-        verb: UserTokensLogVerb.subscription,
-        resourceType: "UserSubscription",
+        verb: TokensLogVerb.subscription,
+        resourceType: TokensLogResourceType.Subscription,
         resourceId: activeSubscription.id,
         value: rechargeAmount,
       },
     });
-    await tx.userTokensLog.create({
+    await tx.tokensLog.create({
       data: {
         userId: userId,
-        verb: UserTokensLogVerb.gift,
-        resourceType: "UserSubscription",
+        verb: TokensLogVerb.gift,
+        resourceType: TokensLogResourceType.Subscription,
         resourceId: activeSubscription.id,
         value: giftAmount,
       },
@@ -137,13 +138,13 @@ export async function resetUserMonthlyTokens({ userId }: { userId: number }) {
           increment: rechargeAmount + giftAmount,
         },
         monthlyResetAt: activeSubscription.endsAt,
-        activeUserSubscriptionId: activeSubscription.id,
+        activeSubscriptionId: activeSubscription.id,
       },
     });
   });
 
   logger.info(
-    `User ${userId} monthly tokens reset completed successfully. New monthlyResetAt: ${tokensAccount.monthlyResetAt?.toISOString()}, activeUserSubscriptionId: ${tokensAccount.activeUserSubscriptionId}`,
+    `User ${userId} monthly tokens reset completed successfully. New monthlyResetAt: ${tokensAccount.monthlyResetAt?.toISOString()}, activeSubscriptionId: ${tokensAccount.activeSubscriptionId}`,
   );
 }
 
@@ -160,31 +161,6 @@ export async function resetTeamMonthlyTokens({ teamId }: { teamId: number }) {
     return;
   }
 
-  // 获取团队的 owner user，记录 tokenslog，如果后面在 tokensAccount 上有关联 activeUserSubscriptionId，则换成对应 UserSubscription 的 user，那个是付费的人
-  let responsibleUser: User;
-  try {
-    const team = await prisma.team.findUniqueOrThrow({
-      where: { id: teamId },
-    });
-    const teamMember = await prisma.user.findUnique({
-      where: {
-        teamIdAsMember_personalUserId: {
-          teamIdAsMember: teamId,
-          personalUserId: team.ownerUserId,
-        },
-      },
-    });
-    if (!teamMember) {
-      throw new Error(
-        `Team user not found with teamId: ${teamId} and ownerUserId: ${team.ownerUserId}`,
-      );
-    }
-    responsibleUser = teamMember;
-  } catch (error) {
-    logger.error((error as Error).message);
-    throw error;
-  }
-
   // 此时满足 tokensAccount.monthlyResetAt === null || tokensAccount.monthlyResetAt && tokensAccount.monthlyResetAt <= now
   // 重置 monthlyBalance 和 monthlyResetAt
   await prisma.$transaction(async (tx) => {
@@ -194,26 +170,19 @@ export async function resetTeamMonthlyTokens({ teamId }: { teamId: number }) {
       logger.info(
         `Team ${teamId} needs monthly token reset, monthlyBalance=${rest}, monthlyResetAt=${tokensAccount.monthlyResetAt}`,
       );
-      const activeUserSubscriptionId = tokensAccount.activeUserSubscriptionId;
-      if (!activeUserSubscriptionId) {
+      const activeSubscriptionId = tokensAccount.activeSubscriptionId;
+      if (!activeSubscriptionId) {
         logger.error(
           `TokensAccount ${tokensAccount.id} of team ${teamId} is being reset, but activeSubscriptionId is missing. It will continue but further investigation is required.`,
         );
-      } else {
-        const { user } = await tx.userSubscription.findUniqueOrThrow({
-          where: { id: activeUserSubscriptionId },
-          select: { user: true },
-        });
-        // 把 responsibleUser 换成 activeUserSubscriptionId 对应的用户，这样 userTokensLog 上 userId 和 resourceId 对应同一个用户
-        responsibleUser = user;
       }
-      await tx.userTokensLog.create({
+      await tx.tokensLog.create({
         data: {
-          userId: responsibleUser.id,
-          verb: UserTokensLogVerb.subscriptionReset,
+          teamId: teamId,
+          verb: TokensLogVerb.subscriptionReset,
           value: -rest,
-          resourceType: "UserSubscription",
-          resourceId: activeUserSubscriptionId,
+          resourceType: TokensLogResourceType.Subscription,
+          resourceId: activeSubscriptionId,
         },
       });
       tokensAccount = await tx.tokensAccount.update({
@@ -221,7 +190,7 @@ export async function resetTeamMonthlyTokens({ teamId }: { teamId: number }) {
         data: {
           monthlyBalance: { decrement: rest },
           monthlyResetAt: null,
-          activeUserSubscriptionId: null,
+          activeSubscriptionId: null,
         },
       });
     } else {
@@ -231,12 +200,12 @@ export async function resetTeamMonthlyTokens({ teamId }: { teamId: number }) {
         logger.info(
           `Team ${teamId} needs monthly token reset, monthlyBalance=${rest}, monthlyResetAt=${tokensAccount.monthlyResetAt}`,
         );
-        // activeUserSubscriptionId 现在是直接字段，不需要从 extra 中移除
+        // activeSubscriptionId 现在是直接字段，不需要从 extra 中移除
         tokensAccount = await tx.tokensAccount.update({
           where: { teamId },
           data: {
             monthlyResetAt: null,
-            activeUserSubscriptionId: null,
+            activeSubscriptionId: null,
           },
         });
       }
@@ -244,7 +213,7 @@ export async function resetTeamMonthlyTokens({ teamId }: { teamId: number }) {
   });
 
   // now 在 [startsAt, endsAt) 的区间内，理应只有一个，所以 orderBy 和 findFirst 都其实没意义
-  const { activeSubscription } = await fetchActiveSubscription({ userId: responsibleUser.id });
+  const { activeSubscription } = await fetchActiveSubscription({ teamId });
   if (!activeSubscription) {
     // 当前没有生效中的订阅
     return;
@@ -285,11 +254,12 @@ export async function resetTeamMonthlyTokens({ teamId }: { teamId: number }) {
   );
 
   await prisma.$transaction(async (tx) => {
-    await tx.userTokensLog.create({
+    await tx.tokensLog.create({
       data: {
-        userId: activeSubscription.userId, // 不要用 responsibleUser.id，直接使用 activeSubscription.userId，确保 userTokensLog 记录在付款人上
-        verb: UserTokensLogVerb.subscription,
-        resourceType: "UserSubscription",
+        // userId: activeSubscription.userId, // 不要用 responsibleUser.id，直接使用 activeSubscription.userId，确保 userTokensLog 记录在付款人上
+        teamId: teamId,
+        verb: TokensLogVerb.subscription,
+        resourceType: TokensLogResourceType.Subscription,
         resourceId: activeSubscription.id,
         value: rechargeAmount,
       },
@@ -302,12 +272,12 @@ export async function resetTeamMonthlyTokens({ teamId }: { teamId: number }) {
           increment: rechargeAmount,
         },
         monthlyResetAt: activeSubscription.endsAt,
-        activeUserSubscriptionId: activeSubscription.id,
+        activeSubscriptionId: activeSubscription.id,
       },
     });
   });
 
   logger.info(
-    `Team ${teamId} monthly tokens reset completed successfully. New monthlyResetAt: ${tokensAccount.monthlyResetAt?.toISOString()}, activeUserSubscriptionId: ${tokensAccount.activeUserSubscriptionId}`,
+    `Team ${teamId} monthly tokens reset completed successfully. New monthlyResetAt: ${tokensAccount.monthlyResetAt?.toISOString()}, activeSubscriptionId: ${tokensAccount.activeSubscriptionId}`,
   );
 }

@@ -1,13 +1,10 @@
 import "server-only";
 
-import {
-  AgentStatisticsExtra,
-  UserTokensLogResourceType,
-  UserTokensLogVerb,
-} from "@/prisma/client";
+import { AgentStatisticsExtra, TokensLogVerb } from "@/prisma/client";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import { Logger } from "pino";
+import { TokensLogResourceType } from "./types";
 
 export async function consumeUserTokens({
   userId,
@@ -18,7 +15,7 @@ export async function consumeUserTokens({
   logger,
 }: {
   userId: number;
-  resourceType: UserTokensLogResourceType;
+  resourceType: TokensLogResourceType;
   resourceId: number;
   tokens: number;
   extra: AgentStatisticsExtra;
@@ -30,13 +27,14 @@ export async function consumeUserTokens({
       select: { id: true, teamIdAsMember: true },
     });
     if (user.teamIdAsMember) {
-      // ⚠️ 团队积分扣减，余额记录在 team 上，日志记录在 user 上
+      // ⚠️ 团队积分扣减，余额记录在 team 上，日志同时记录在 user 和 team 上
       const teamId = user.teamIdAsMember;
       await prisma.$transaction(async (tx) => {
-        await tx.userTokensLog.create({
+        await tx.tokensLog.create({
           data: {
             userId: userId,
-            verb: UserTokensLogVerb.consume,
+            teamId: teamId,
+            verb: TokensLogVerb.consume,
             resourceType,
             resourceId,
             value: -tokens,
@@ -62,10 +60,10 @@ export async function consumeUserTokens({
       logger.info({ msg: "User tokens consumed successfully", userId, teamId, tokens });
     } else {
       await prisma.$transaction(async (tx) => {
-        await tx.userTokensLog.create({
+        await tx.tokensLog.create({
           data: {
             userId: userId,
-            verb: UserTokensLogVerb.consume,
+            verb: TokensLogVerb.consume,
             resourceType,
             resourceId,
             value: -tokens,

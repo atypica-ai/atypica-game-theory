@@ -5,7 +5,7 @@ import { rootLogger } from "@/lib/logging";
 import { getRequestOrigin } from "@/lib/request/headers";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
-import { PaymentRecord, UserTokensLog } from "@/prisma/client";
+import { PaymentRecord, TokensLog } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { getUserTokens } from "@/tokens/lib";
 import Stripe from "stripe";
@@ -14,14 +14,14 @@ import { fetchActiveSubscription } from "./lib";
 export async function fetchTokensHistory(
   page: number = 1,
   pageSize: number = 10,
-): Promise<ServerActionResult<UserTokensLog[]>> {
+): Promise<ServerActionResult<TokensLog[]>> {
   return withAuth(async (user) => {
     const userId = user.id;
     const skip = (page - 1) * pageSize;
 
     const [tokensLogs, totalCount] = await Promise.all([
       (async () => {
-        // (await prisma.userTokensLog.groupBy({
+        // (await prisma.tokensLog.groupBy({
         //   by: ["userId", "resourceType", "resourceId", "verb"],
         //   where: { userId },
         //   _sum: { value: true },
@@ -36,7 +36,7 @@ export async function fetchTokensHistory(
         //   createdAt: _min.createdAt!,
         //   updatedAt: _min.updatedAt!,
         // }));
-        const result = await prisma.$queryRaw<Array<UserTokensLog>>`
+        const result = await prisma.$queryRaw<Array<TokensLog>>`
         SELECT
           "userId",
           "resourceType",
@@ -46,7 +46,7 @@ export async function fetchTokensHistory(
           MIN("id") as "id",
           MIN("createdAt") as "createdAt",
           MAX("updatedAt") as "updatedAt"
-        FROM "UserTokensLog"
+        FROM "TokensLog"
         WHERE "userId" = ${userId}
         GROUP BY
           "userId",
@@ -60,7 +60,7 @@ export async function fetchTokensHistory(
         return result;
       })(),
       (async () => {
-        // (await prisma.userTokensLog.groupBy({
+        // (await prisma.tokensLog.groupBy({
         //   by: ["userId", "resourceType", "resourceId", "verb"],
         //   where: { userId },
         // })).length,
@@ -73,7 +73,7 @@ export async function fetchTokensHistory(
             "resourceId",
             "verb",
             CASE WHEN "resourceType" IS NULL THEN "id" ELSE NULL END
-          FROM "UserTokensLog"
+          FROM "TokensLog"
           WHERE "userId" = ${userId}
           GROUP BY
             "userId",
@@ -88,13 +88,13 @@ export async function fetchTokensHistory(
     ]);
 
     // const [tokensLogs, totalCount] = await Promise.all([
-    //   prisma.userTokensLog.findMany({
+    //   prisma.tokensLog.findMany({
     //     where: { userId },
     //     orderBy: { createdAt: "desc" },
     //     take: pageSize,
     //     skip: skip,
     //   }),
-    //   prisma.userTokensLog.count({
+    //   prisma.tokensLog.count({
     //     where: { userId },
     //   }),
     // ]);
@@ -115,7 +115,7 @@ export async function fetchTokensHistory(
 export async function fetchTokensHistoryAsTeamOwner(
   page: number = 1,
   pageSize: number = 10,
-): Promise<ServerActionResult<(UserTokensLog & { consumedBy: string })[]>> {
+): Promise<ServerActionResult<(TokensLog & { consumedBy: string })[]>> {
   return withAuth(async (user) => {
     // const userId = user.id;
     const skip = (page - 1) * pageSize;
@@ -143,27 +143,27 @@ export async function fetchTokensHistoryAsTeamOwner(
 
     const [tokensLogs, totalCount] = await Promise.all([
       (async () => {
-        const result = await prisma.$queryRaw<Array<UserTokensLog & { consumedBy: string }>>`
+        const result = await prisma.$queryRaw<Array<TokensLog & { consumedBy: string }>>`
         SELECT
-          "UserTokensLog"."userId" as "userId",
+          "TokensLog"."userId" as "userId",
           MIN("User"."name") as "consumedBy",
           "resourceType",
           "resourceId",
           "verb",
           SUM("value") as "value",
-          MIN("UserTokensLog"."id") as "id",
-          MIN("UserTokensLog"."createdAt") as "createdAt",
-          MAX("UserTokensLog"."updatedAt") as "updatedAt"
-        FROM "UserTokensLog"
-        INNER JOIN "User" ON "UserTokensLog"."userId" = "User"."id"
+          MIN("TokensLog"."id") as "id",
+          MIN("TokensLog"."createdAt") as "createdAt",
+          MAX("TokensLog"."updatedAt") as "updatedAt"
+        FROM "TokensLog"
+        INNER JOIN "User" ON "TokensLog"."userId" = "User"."id"
         WHERE "User"."teamIdAsMember" = ${teamId}
         GROUP BY
-          "UserTokensLog"."userId",
+          "TokensLog"."userId",
           "resourceType",
           "resourceId",
           "verb",
-          CASE WHEN "resourceType" IS NULL THEN "UserTokensLog"."id" ELSE NULL END
-        ORDER BY MAX("UserTokensLog"."updatedAt") DESC
+          CASE WHEN "resourceType" IS NULL THEN "TokensLog"."id" ELSE NULL END
+        ORDER BY MAX("TokensLog"."updatedAt") DESC
         LIMIT ${pageSize} OFFSET ${skip}
       `;
         return result;
@@ -173,20 +173,20 @@ export async function fetchTokensHistoryAsTeamOwner(
         SELECT COUNT(*) as count
         FROM (
           SELECT
-            "UserTokensLog"."userId" as "userId",
+            "TokensLog"."userId" as "userId",
             "resourceType",
             "resourceId",
             "verb",
-            CASE WHEN "resourceType" IS NULL THEN "UserTokensLog"."id" ELSE NULL END
-          FROM "UserTokensLog"
-          INNER JOIN "User" ON "UserTokensLog"."userId" = "User"."id"
+            CASE WHEN "resourceType" IS NULL THEN "TokensLog"."id" ELSE NULL END
+          FROM "TokensLog"
+          INNER JOIN "User" ON "TokensLog"."userId" = "User"."id"
           WHERE "User"."teamIdAsMember" = ${teamId}
           GROUP BY
-            "UserTokensLog"."userId",
+            "TokensLog"."userId",
             "resourceType",
             "resourceId",
             "verb",
-            CASE WHEN "resourceType" IS NULL THEN "UserTokensLog"."id" ELSE NULL END
+            CASE WHEN "resourceType" IS NULL THEN "TokensLog"."id" ELSE NULL END
         ) as grouped_data
       `;
         return Number(result[0].count);
@@ -316,37 +316,40 @@ export async function stripeSubscriptionAction() {
 /**
  * 返回的 stripeCustomerId 是 subscription 上的 stripeCustomerId，
  * 虽然 user 现在都固定了 stripeCustomerId，但既然 subscription 上有，更合理且靠谱
+ * @todo 只有 team owner 才可以看，其他人不应该看到
  */
 export async function createCustomerPortalSessionAction({
-  userSubscriptionId,
+  subscriptionId,
 }: {
-  userSubscriptionId: number;
+  subscriptionId: number;
 }): Promise<ServerActionResult<{ url: string }>> {
-  return withAuth(async (user) => {
-    const userSubscription = await prisma.userSubscription.findUnique({
+  return withAuth(async ({ id: userId }) => {
+    const user = await prisma.user.findUniqueOrThrow({ where: { id: userId } });
+    const subscription = await prisma.subscription.findUnique({
       where: {
-        id: userSubscriptionId,
-        userId: user.id, // 确保 subscription 是用户自己的
+        id: subscriptionId,
+        // userId: user.id, // 确保 subscription 是用户自己的
+        ...(user?.teamIdAsMember ? { teamId: user.teamIdAsMember } : { userId: user.id }),
       },
       include: {
         paymentRecord: true,
       },
     });
-    if (!userSubscription) {
+    if (!subscription) {
       return {
         success: false,
         message: "User subscription not found",
         code: "not_found",
       };
     }
-    if (!userSubscription.paymentRecord?.stripeInvoice) {
+    if (!subscription.paymentRecord?.stripeInvoice) {
       return {
         success: false,
         message: "User subscription payment record not found or invoice not found",
         code: "internal_server_error",
       };
     }
-    const invoiceData = userSubscription.paymentRecord.stripeInvoice as unknown as Stripe.Invoice;
+    const invoiceData = subscription.paymentRecord.stripeInvoice as unknown as Stripe.Invoice;
     const stripeCustomerId = typeof invoiceData.customer === "string" ? invoiceData.customer : null;
     if (!stripeCustomerId) {
       return {

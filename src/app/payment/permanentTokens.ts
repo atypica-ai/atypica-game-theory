@@ -1,7 +1,8 @@
 import "server-only";
 
-import { UserTokensLogVerb } from "@/prisma/client";
+import { TokensLogVerb } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
+import { TokensLogResourceType } from "@/tokens/types";
 
 export const ONCE_RECHARGE_TOKENS = 1_000_000;
 export const ONCE_RECHARGE_GIFT = 1_000_000;
@@ -16,20 +17,20 @@ export async function recharge1MTokens({
   const rechargeAmount = ONCE_RECHARGE_TOKENS;
   const giftAmount = ONCE_RECHARGE_GIFT;
   await prisma.$transaction(async (tx) => {
-    await tx.userTokensLog.create({
+    await tx.tokensLog.create({
       data: {
         userId: userId,
-        verb: UserTokensLogVerb.recharge,
-        resourceType: "PaymentRecord",
+        verb: TokensLogVerb.recharge,
+        resourceType: TokensLogResourceType.PaymentRecord,
         resourceId: paymentRecordId,
         value: rechargeAmount,
       },
     });
-    await tx.userTokensLog.create({
+    await tx.tokensLog.create({
       data: {
         userId: userId,
-        verb: UserTokensLogVerb.gift,
-        resourceType: "PaymentRecord",
+        verb: TokensLogVerb.gift,
+        resourceType: TokensLogResourceType.PaymentRecord,
         resourceId: paymentRecordId,
         value: giftAmount,
       },

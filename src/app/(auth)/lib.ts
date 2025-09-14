@@ -81,7 +81,7 @@ export async function createPersonalUser({
   // 注册赠送 1_000_000 tokens
   const signupAmount = 1_000_000;
   await prisma.$transaction(async (tx) => {
-    await tx.userTokensLog.create({
+    await tx.tokensLog.create({
       data: {
         userId: user.id,
         verb: "signup",
