@@ -112,6 +112,12 @@ export default function GlobalFooter({ className }: { className?: string }) {
             >
               {t("glossary")}
             </Link>
+            <Link
+              href="/deck/about"
+              className="block text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {t("deck")}
+            </Link>
           </div>
         </div>
 
@@ -133,10 +139,10 @@ export default function GlobalFooter({ className }: { className?: string }) {
               {t("blog")}
             </Link>
             <Link
-              href="/deck/about"
+              href="/join-us"
               className="block text-muted-foreground hover:text-foreground transition-colors"
             >
-              {t("deck")}
+              {t("joinUs")}
             </Link>
             <Link
               href="/terms"
