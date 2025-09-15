@@ -18,9 +18,11 @@ export interface PageViewWithReport extends PageViewsReport {
 
 export interface PageViewWithStudy extends PageViewsReport {
   study?: UserChat & {
-    analyst: (Analyst & {
-      user: Pick<User, "email"> | null;
-    }) | null;
+    analyst:
+      | (Analyst & {
+          user: Pick<User, "email"> | null;
+        })
+      | null;
   };
 }
 

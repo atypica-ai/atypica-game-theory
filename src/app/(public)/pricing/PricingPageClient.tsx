@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { SubscriptionPlan, Subscription, UserType } from "@/prisma/client";
+import { Subscription, SubscriptionPlan, UserType } from "@/prisma/client";
 import { CheckIcon, GiftIcon, InfoIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";

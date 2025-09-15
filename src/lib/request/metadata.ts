@@ -83,7 +83,7 @@ export function generatePageMetadata({
       description,
       images: POSTER_IMAGE ? [POSTER_IMAGE] : [],
       creator: "@BMRLab",
-      site: "@atypica_ai",
+      site: "@atypica_AI",
     },
   };
 }

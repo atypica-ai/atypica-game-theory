@@ -1,3 +1,4 @@
+import { generatePageMetadata } from "@/lib/request/metadata";
 import { Metadata } from "next";
 import { getLocale } from "next-intl/server";
 import React from "react";
@@ -5,9 +6,18 @@ import { ChangelogEN } from "./ChangelogEN";
 import { ChangelogZH } from "./ChangelogZH";
 
 export async function generateMetadata(): Promise<Metadata> {
-  return {
-    title: "Changelog",
-  };
+  const locale = await getLocale();
+  const title = locale === "zh-CN" ? "更新日志" : "Changelog";
+  const description =
+    locale === "zh-CN"
+      ? "查看 atypica.AI 最新功能更新和改进。"
+      : "View the latest feature updates and improvements for atypica.AI.";
+
+  return generatePageMetadata({
+    title,
+    description,
+    locale,
+  });
 }
 
 const ChangelogPage: React.FC = async () => {

@@ -1,16 +1,20 @@
 import authOptions from "@/app/(auth)/authOptions";
 import { validateInterviewShareToken } from "@/app/(interviewProject)/lib";
+import { generatePageMetadata } from "@/lib/request/metadata";
 import { Metadata } from "next";
 import { getServerSession } from "next-auth";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { InviteInterviewClient } from "./InviteInterviewClient";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("InterviewProject.shareInvite");
-  return {
+  const locale = await getLocale();
+  return generatePageMetadata({
     title: t("title"),
-  };
+    description: t("description"),
+    locale,
+  });
 }
 
 export default async function SharePage({

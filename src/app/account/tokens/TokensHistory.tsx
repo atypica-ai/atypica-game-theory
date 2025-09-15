@@ -32,9 +32,7 @@ export function TokensHistory() {
   const { data: session } = useSession();
   const t = useTranslations("AccountPage");
   const locale = useLocale();
-  const [tokensHistory, setTokensHistory] = useState<(TokensLog & { consumedBy?: string })[]>(
-    [],
-  );
+  const [tokensHistory, setTokensHistory] = useState<(TokensLog & { consumedBy?: string })[]>([]);
   const [historyIsLoading, setHistoryIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState<number | null>(null);
 

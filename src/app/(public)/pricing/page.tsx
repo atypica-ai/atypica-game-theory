@@ -1,19 +1,22 @@
 import authOptions from "@/app/(auth)/authOptions";
 import { fetchActiveSubscription } from "@/app/account/lib";
 import { fetchProductPricesAction } from "@/app/payment/actions";
+import { generatePageMetadata } from "@/lib/request/metadata";
 import { Metadata } from "next";
 import { getServerSession } from "next-auth";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import PricingPageClient from "./PricingPageClient";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("PricingPage");
-  return {
+  const locale = await getLocale();
+  return generatePageMetadata({
     title: `${t("title")}`,
     description: t("subtitle"),
-  };
+    locale,
+  });
 }
 
 export default async function PricingPage() {

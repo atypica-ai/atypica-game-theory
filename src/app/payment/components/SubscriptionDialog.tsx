@@ -17,7 +17,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getDeployRegion } from "@/lib/request/deployRegion";
 import { cn } from "@/lib/utils";
-import { SubscriptionPlan, Subscription } from "@/prisma/client";
+import { Subscription, SubscriptionPlan } from "@/prisma/client";
 import {
   CalendarIcon,
   CoinsIcon,

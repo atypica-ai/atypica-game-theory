@@ -229,15 +229,9 @@ export default function PageViewsPage() {
         </CardHeader>
         <CardContent>
           {viewType === "reports" ? (
-            <ReportsList
-              data={topPageViews}
-              isLoading={isLoading}
-            />
+            <ReportsList data={topPageViews} isLoading={isLoading} />
           ) : (
-            <StudiesList
-              data={topStudyViews}
-              isLoading={isLoading}
-            />
+            <StudiesList data={topStudyViews} isLoading={isLoading} />
           )}
         </CardContent>
       </Card>

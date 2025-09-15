@@ -119,7 +119,9 @@ export function StudiesList({ data, isLoading }: StudiesListProps) {
               </TableCell>
               <TableCell>
                 <div className="space-y-1">
-                  <p className="text-sm truncate">{pageView.study?.analyst?.user?.email || "N/A"}</p>
+                  <p className="text-sm truncate">
+                    {pageView.study?.analyst?.user?.email || "N/A"}
+                  </p>
                   <p className="text-xs text-muted-foreground">
                     {pageView.study ? formatDate(pageView.study.createdAt, locale) : "N/A"}
                   </p>
