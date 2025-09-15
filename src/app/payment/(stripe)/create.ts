@@ -10,6 +10,7 @@ import { prisma } from "@/prisma/prisma";
 import {
   createPaymentRecord,
   generateOrderNo,
+  getStripePriceIdForUser,
   requirePersonalUser,
   requireTeamlUser,
 } from "./utils";
@@ -108,7 +109,8 @@ export async function createSubscriptionStripeSession({
   //   unit_amount: amountInCents,
   //   recurring: { interval: "month" },
   // };
-  const stripePriceId = product.stripePriceId;
+  // const stripePriceId = product.stripePriceId;
+  const stripePriceId = getStripePriceIdForUser({ user, product });
   if (!stripePriceId) {
     throw new Error("Price ID is missing");
   }
@@ -202,7 +204,8 @@ export async function createPaymentStripeSession({
   //   currency: currency,
   //   unit_amount: amountInCents,
   // };
-  const stripePriceId = product.stripePriceId;
+  // const stripePriceId = product.stripePriceId;
+  const stripePriceId = getStripePriceIdForUser({ user, product });
   if (!stripePriceId) {
     throw new Error("Price ID is missing");
   }
@@ -310,7 +313,11 @@ export async function createTeamSubscriptionStripeSession({
   //   recurring: { interval: "month" },
   // };
   // const stripeCustomerId = await stripeCustomerIdForUser(teamUser, personalUserEmail);
-  const stripePriceId = product.stripePriceId;
+  // const stripePriceId = product.stripePriceId;
+  const stripePriceId = getStripePriceIdForUser({
+    user: { id: teamUser.personalUserId }, // stripePriceId override 是针对个人用户的
+    product,
+  });
   if (!stripePriceId) {
     throw new Error("Price ID is missing");
   }

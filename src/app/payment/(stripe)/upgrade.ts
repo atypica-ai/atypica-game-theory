@@ -12,7 +12,7 @@ import { rootLogger } from "@/lib/logging";
 import { getDeployRegion } from "@/lib/request/deployRegion";
 import { SubscriptionPlan } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
-import { createPaymentRecord, requirePersonalUser } from "./utils";
+import { createPaymentRecord, getStripePriceIdForUser, requirePersonalUser } from "./utils";
 
 function generateOrderNo() {
   // Generate a unique order number
@@ -75,7 +75,11 @@ export async function createProToMaxInvoice({ userId }: { userId: number }) {
     proProductPriceInCents * (monthlyBalance / monthlyInitial),
   );
 
-  const maxProductStripePriceId = maxProduct.stripePriceId;
+  // const maxProductStripePriceId = maxProduct.stripePriceId;
+  const maxProductStripePriceId = getStripePriceIdForUser({
+    user: { id: userId },
+    product: maxProduct,
+  });
   if (!maxProductStripePriceId) {
     throw new Error("Price ID is missing");
   }

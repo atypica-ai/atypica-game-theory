@@ -51,6 +51,23 @@ export async function requireTeamlUser(userId: number) {
   };
 }
 
+export function getStripePriceIdForUser({
+  user,
+  product,
+}: {
+  user: { id: number | null };
+  product: Pick<Product, "extra" | "stripePriceId">;
+}) {
+  const extra = product.extra as unknown as {
+    override?: { userIds: number[]; stripePriceId: string };
+  };
+  if (user.id && extra?.override?.userIds?.includes(user.id)) {
+    return extra.override.stripePriceId;
+  } else {
+    return product.stripePriceId;
+  }
+}
+
 export function generateOrderNo() {
   // Generate a unique order number
   const timestamp = Date.now().toString();
