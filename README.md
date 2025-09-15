@@ -179,6 +179,35 @@ pnpm admintool make-admin email@example.com
 
 脚本位置：`scripts/admintool.ts`
 
+### API 健康检查
+
+测试系统 API 的健康状况：
+
+```bash
+# 启动开发服务器
+pnpm dev
+
+# 运行 API 健康检查（另开终端）
+npx tsx scripts/check-status.ts
+
+# 指定测试站点
+npx tsx scripts/check-status.ts --site https://atypica.ai
+npx tsx scripts/check-status.ts --site http://localhost:3000
+```
+
+**直接通过 API 创建监控项目**
+
+```
+# Uptime Kuma Socket.io API 配置
+UPTIME_KUMA_API_URL=http://your-uptime-kuma.com
+UPTIME_KUMA_USERNAME=your-username
+UPTIME_KUMA_PASSWORD=your-password
+```
+
+```bash
+npx tsx scripts/check-status.ts --create-monitors --site https://atypica.ai
+```
+
 ## 贡献指南
 
 欢迎提交Issue和PR，一起改进atypica.AI！
