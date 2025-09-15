@@ -7,15 +7,13 @@ import { JoinUsZH } from "./JoinUsZH";
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
-  const title = locale === "zh-CN" ? "加入我们" : "Join Us";
-  const description =
+  const title =
     locale === "zh-CN"
-      ? "加入我们的团队，与优秀的人才一起构建 AI 的未来。"
-      : "Join our team of talented individuals and help us build the future of AI.";
+      ? "加入 atypica.AI - 与优秀人才一起构建 AI 的未来"
+      : "Join atypica.AI - Build the Future of AI with Talented Individuals";
 
   return generatePageMetadata({
     title,
-    description,
     locale,
   });
 }
