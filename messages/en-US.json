@@ -356,7 +356,8 @@
       "deck": "Pitch Deck",
       "joinUs": "Join Us",
       "terms": "Terms and Conditions",
-      "privacy": "Privacy Policy"
+      "privacy": "Privacy Policy",
+      "status": "Operational"
     },
     "TokenAlertDialog": {
       "confirmOperation": "Confirm Operation",

@@ -356,7 +356,8 @@
       "deck": "项目介绍",
       "joinUs": "加入我们",
       "terms": "服务条款",
-      "privacy": "隐私政策"
+      "privacy": "隐私政策",
+      "status": "系统运行中"
     },
     "TokenAlertDialog": {
       "confirmOperation": "确认操作",

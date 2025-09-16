@@ -76,6 +76,15 @@ export default function GlobalFooter({ className }: { className?: string }) {
               </svg>
             </Link>
           </div>
+
+          {/* Status Indicator */}
+          <Link
+            href="/status"
+            className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors mt-3"
+          >
+            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+            <span>{t("status")}</span>
+          </Link>
         </div>
 
         {/* Product Column */}
