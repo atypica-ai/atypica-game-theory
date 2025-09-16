@@ -1,5 +1,6 @@
 "use server";
 import { prepareDBForInterview, runInterview } from "@/ai/tools/experts/interviewChat";
+import { generatePodcastScript } from "@/ai/tools/experts/podcastGeneration";
 import { generateCover, generateReport } from "@/ai/tools/experts/report";
 import { StatReporter } from "@/ai/tools/types";
 import { generateReportScreenshot } from "@/app/(study)/artifacts/lib/screenshot";
@@ -8,7 +9,7 @@ import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { detectInputLanguage } from "@/lib/textUtils";
 import { generateToken } from "@/lib/utils";
-import { Analyst, AnalystReport, AnalystReportExtra } from "@/prisma/client";
+import { Analyst, AnalystReport, AnalystReportExtra, AnalystPodcast } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
 import { forbidden } from "next/navigation";
@@ -236,6 +237,120 @@ export async function backgroundGenerateReport({
         });
       })(),
       reportLog,
+    );
+  });
+}
+
+export async function fetchAnalystPodcasts({
+  analystId,
+}: {
+  analystId: number;
+}): Promise<
+  ServerActionResult<
+    (Pick<
+      AnalystPodcast,
+      "id" | "token" | "analystId" | "script" | "generatedAt" | "createdAt" | "updatedAt"
+    > & { analyst: Analyst })[]
+  >
+> {
+  return withAuth(async (user) => {
+    const analyst = await prisma.analyst.findUnique({
+      where: { id: analystId },
+    });
+    if (analyst?.userId !== user.id) {
+      return {
+        success: false,
+        code: "forbidden",
+        message: "You are not authorized to access this resource.",
+      };
+    }
+    const podcasts = await prisma.analystPodcast.findMany({
+      where: {
+        analystId: analyst.id,
+      },
+      select: {
+        id: true,
+        token: true,
+        analystId: true,
+        analyst: true,
+        script: true,
+        generatedAt: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    return {
+      success: true,
+      data: podcasts,
+    };
+  });
+}
+
+export async function backgroundGeneratePodcast({
+  analystId,
+  instruction = "",
+  systemPrompt,
+}: {
+  analystId: number;
+  instruction?: string;
+  systemPrompt?: string;
+}): Promise<void> {
+  return withAuth(async (user) => {
+    const analyst = await prisma.analyst.findUnique({
+      where: { id: analystId },
+      include: {
+        interviews: {
+          select: {
+            conclusion: true,
+          },
+        },
+      },
+    });
+    if (analyst?.userId !== user.id) {
+      forbidden();
+    }
+
+    const podcastToken = generateToken();
+    const podcast = await prisma.analystPodcast.create({
+      data: {
+        analystId,
+        instruction,
+        token: podcastToken,
+        script: "",
+      },
+    });
+
+    const abortController = new AbortController();
+    const abortSignal = abortController.signal;
+
+    const podcastLog = rootLogger.child({
+      analystId,
+      podcastToken,
+      method: "backgroundGeneratePodcast",
+    });
+    const statReport: StatReporter = async (dimension, value, extra) => {
+      podcastLog.info(`statReport: ${dimension}=${value} ${JSON.stringify(extra)}`);
+    };
+    const locale =
+      analyst.locale === "zh-CN" || analyst.locale === "en-US"
+        ? analyst.locale
+        : await detectInputLanguage({ text: analyst.brief });
+
+    backgroundWait(
+      (async () => {
+        await generatePodcastScript({
+          analyst,
+          podcast,
+          instruction,
+          locale,
+          abortSignal,
+          statReport,
+          logger: podcastLog,
+          systemPrompt,
+        });
+      })(),
+      podcastLog,
     );
   });
 }

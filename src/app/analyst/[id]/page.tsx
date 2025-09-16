@@ -1,4 +1,4 @@
-import { reportHTMLSystem } from "@/ai/prompt";
+import { podcastScriptSystem, reportHTMLSystem } from "@/ai/prompt";
 import { fetchAnalystInterviews } from "@/app/(agents)/interview/actions";
 import { checkTezignAuth } from "@/app/admin/actions";
 import { throwServerActionError } from "@/lib/serverAction";
@@ -6,7 +6,7 @@ import { AnalystKind } from "@/prisma/types";
 import { getLocale } from "next-intl/server";
 import { fetchAnalystById } from "../actions";
 import { AnalystDetail } from "./AnalystDetail";
-import { fetchAnalystReports } from "./actions";
+import { fetchAnalystPodcasts, fetchAnalystReports } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -32,8 +32,19 @@ export default async function AnalystPage({ params }: { params: Promise<{ id: st
   }
   const reports = reportsResult.data;
 
+  const podcastsResult = await fetchAnalystPodcasts({ analystId: analyst.id });
+  if (!podcastsResult.success) {
+    throwServerActionError(podcastsResult);
+  }
+  const podcasts = podcastsResult.data;
+
   const locale = await getLocale();
   const defaultReportHTMLSystem = reportHTMLSystem({
+    locale,
+    analystKind: (analyst.kind as AnalystKind) || AnalystKind.misc,
+  });
+
+  const defaultPodcastSystem = podcastScriptSystem({
     locale,
     analystKind: (analyst.kind as AnalystKind) || AnalystKind.misc,
   });
@@ -43,7 +54,9 @@ export default async function AnalystPage({ params }: { params: Promise<{ id: st
       analyst={analyst}
       interviews={interviews}
       reports={reports}
+      podcasts={podcasts}
       defaultReportHTMLSystem={defaultReportHTMLSystem}
+      defaultPodcastSystem={defaultPodcastSystem}
     />
   );
 }

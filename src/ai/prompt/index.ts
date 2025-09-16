@@ -7,5 +7,6 @@ export * from "./personaAgent";
 export * from "./planStudy";
 export * from "./reasoning";
 export * from "./report";
+export * from "./podcast";
 export * from "./scout/scout";
 export * from "./study/study";

@@ -6,22 +6,28 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AnalystInterviewsSection } from "./AnalystInterviewsSection";
+import { AnalystPodcastsSection } from "./AnalystPodcastsSection";
 import { AnalystReportsSection } from "./AnalystReportsSection";
-import { fetchAnalystReports } from "./actions";
+import { fetchAnalystPodcasts, fetchAnalystReports } from "./actions";
 
 type AnalystInterview = ExtractServerActionData<typeof fetchAnalystInterviews>[number];
 type AnalystReport = ExtractServerActionData<typeof fetchAnalystReports>[number];
+type AnalystPodcast = ExtractServerActionData<typeof fetchAnalystPodcasts>[number];
 
 export function AnalystDetail({
   analyst,
   interviews,
   reports,
+  podcasts,
   defaultReportHTMLSystem,
+  defaultPodcastSystem,
 }: {
   analyst: Analyst;
   interviews: AnalystInterview[];
   reports: AnalystReport[];
+  podcasts: AnalystPodcast[];
   defaultReportHTMLSystem: string;
+  defaultPodcastSystem: string;
 }) {
   const t = useTranslations("AnalystPage");
   const router = useRouter();
@@ -78,6 +84,11 @@ export function AnalystDetail({
             analyst={analyst}
             reports={reports}
             defaultReportHTMLSystem={defaultReportHTMLSystem}
+          />
+          <AnalystPodcastsSection
+            analyst={analyst}
+            podcasts={podcasts}
+            defaultPodcastSystem={defaultPodcastSystem}
           />
           <AnalystInterviewsSection
             analystId={analyst.id}
