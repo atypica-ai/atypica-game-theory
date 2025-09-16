@@ -205,7 +205,11 @@ UPTIME_KUMA_PASSWORD=your-password
 ```
 
 ```bash
+# 创建或更新监控项目（智能模式：检查现有项目并更新）
 npx tsx scripts/check-status.ts --create-monitors --site https://atypica.ai
+
+# 强制重新创建所有监控项目（删除现有项目后重新创建）
+npx tsx scripts/check-status.ts --create-monitors --override --site https://atypica.ai
 ```
 
 ## 贡献指南

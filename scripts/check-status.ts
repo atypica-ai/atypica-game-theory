@@ -5,8 +5,8 @@ const args = process.argv.slice(2);
 const siteIndex = args.indexOf("--site");
 const API_BASE =
   siteIndex !== -1 && args[siteIndex + 1] ? args[siteIndex + 1] : "http://localhost:3000";
-const shouldExport = args.includes("--export");
 const shouldCreateViaAPI = args.includes("--create-monitors");
+const shouldOverride = args.includes("--override");
 
 const APIS = [
   // Social Tools
@@ -21,22 +21,38 @@ const APIS = [
   "sendEmail",
   // AI Services
   "embedding",
+  // Ping Service
+  "ping",
 ];
 
 const API_DESCRIPTIONS = {
-  xhsSearch: "XHS Search Service",
-  dySearch: "Douyin Search Service",
-  insSearch: "Instagram Search Service",
-  tiktokSearch: "TikTok Search Service",
-  twitterSearch: "Twitter Search Service",
-  htmlToPdf: "HTML to PDF Service",
-  sendEmail: "Email Service",
-  embedding: "Text Embedding Service",
+  xhsSearch: "XHS Search",
+  dySearch: "Douyin Search",
+  insSearch: "Instagram Search",
+  tiktokSearch: "TikTok Search",
+  twitterSearch: "Twitter Search",
+  htmlToPdf: "HTML to PDF Function",
+  sendEmail: "Email API",
+  embedding: "Text Embedding API",
+  ping: "Ping",
+};
+
+const API_GROUPS = {
+  Website: ["sendEmail", "ping"], // 还要加一个 database
+  "Social Agents": ["xhsSearch", "dySearch", "insSearch", "tiktokSearch", "twitterSearch"],
+  "Edge Functions": ["htmlToPdf"],
+  "Study Agent": [],
+  Persona: ["embedding"],
+  Interview: [],
+  Report: [],
 };
 
 async function testApi(apiName: string) {
   try {
-    const response = await fetch(`${API_BASE}/api/health/${apiName}`);
+    // Special URL handling for ping
+    const testUrl = apiName === "ping" ? `${API_BASE}/.ping` : `${API_BASE}/api/health/${apiName}`;
+
+    const response = await fetch(testUrl);
     const data = await response.json();
 
     const icon = response.status === 200 ? "✅" : "❌";
@@ -85,103 +101,6 @@ async function testApi(apiName: string) {
   }
 }
 
-function generateUptimeKumaConfig() {
-  const monitors = APIS.map((apiName, index) => ({
-    id: index + 1,
-    name: API_DESCRIPTIONS[apiName as keyof typeof API_DESCRIPTIONS],
-    description: null,
-    pathName: API_DESCRIPTIONS[apiName as keyof typeof API_DESCRIPTIONS],
-    parent: null,
-    childrenIDs: [],
-    url: `${API_BASE}/api/health/${apiName}`,
-    method: "GET",
-    hostname: null,
-    port: null,
-    maxretries: 3,
-    weight: 2000,
-    active: true,
-    forceInactive: false,
-    type: "http",
-    timeout: 30,
-    interval: 1800, // 30 minutes
-    retryInterval: 300, // 5 minutes
-    resendInterval: 0,
-    keyword: null,
-    invertKeyword: false,
-    expiryNotification: true,
-    ignoreTls: false,
-    upsideDown: false,
-    packetSize: 56,
-    maxredirects: 10,
-    accepted_statuscodes: ["200-299"],
-    dns_resolve_type: "A",
-    dns_resolve_server: "1.1.1.1",
-    dns_last_result: null,
-    docker_container: "",
-    docker_host: null,
-    proxyId: null,
-    notificationIDList: {},
-    tags: [],
-    maintenance: false,
-    mqttTopic: "",
-    mqttSuccessMessage: "",
-    databaseQuery: null,
-    authMethod: null,
-    grpcUrl: null,
-    grpcProtobuf: null,
-    grpcMethod: null,
-    grpcServiceName: null,
-    grpcEnableTls: false,
-    radiusCalledStationId: null,
-    radiusCallingStationId: null,
-    game: null,
-    gamedigGivenPortOnly: true,
-    httpBodyEncoding: "json",
-    jsonPath: null,
-    expectedValue: null,
-    kafkaProducerTopic: null,
-    kafkaProducerBrokers: [],
-    kafkaProducerSsl: false,
-    kafkaProducerAllowAutoTopicCreation: false,
-    kafkaProducerMessage: null,
-    screenshot: null,
-    headers: null,
-    body: null,
-    grpcBody: null,
-    grpcMetadata: null,
-    basic_auth_user: null,
-    basic_auth_pass: null,
-    oauth_client_id: null,
-    oauth_client_secret: null,
-    oauth_token_url: null,
-    oauth_scopes: null,
-    oauth_auth_method: "client_secret_basic",
-    pushToken: null,
-    databaseConnectionString: null,
-    radiusUsername: null,
-    radiusPassword: null,
-    radiusSecret: null,
-    mqttUsername: "",
-    mqttPassword: "",
-    authWorkstation: null,
-    authDomain: null,
-    tlsCa: null,
-    tlsCert: null,
-    tlsKey: null,
-    kafkaProducerSaslOptions: {
-      mechanism: "None",
-    },
-    includeSensitiveData: true,
-  }));
-
-  return {
-    version: "1.23.3",
-    notificationList: [],
-    monitorList: monitors,
-    tagList: [],
-  };
-}
-
 async function createMonitorsViaAPI() {
   const uptimeKumaUrl = process.env.UPTIME_KUMA_API_URL;
   const username = process.env.UPTIME_KUMA_USERNAME;
@@ -204,11 +123,27 @@ async function createMonitorsViaAPI() {
       socket.on("connect", () => {
         console.log("✅ Connected to Uptime Kuma");
 
+        // Listen for monitorList event (sent automatically after authentication)
+        let monitorListReceived = false;
+        socket.on("monitorList", (monitorListData: any) => {
+          if (monitorListReceived) return;
+          monitorListReceived = true;
+          console.log("📋 Received monitor list from server");
+          createAllMonitors(monitorListData);
+        });
+
         // Login with username and password
         socket.emit("login", { username, password }, (response: any) => {
           if (response.ok) {
             console.log("✅ Authenticated successfully");
-            createAllMonitors();
+            // Don't call createAllMonitors here - wait for monitorList event
+            // Set a timeout in case monitorList is not received
+            setTimeout(() => {
+              if (!monitorListReceived) {
+                console.log("⏰ No monitorList received, proceeding with empty list");
+                createAllMonitors({});
+              }
+            }, 3000);
           } else {
             console.error("❌ Authentication failed:", response.msg);
             socket.disconnect();
@@ -224,84 +159,346 @@ async function createMonitorsViaAPI() {
 
       let createdCount = 0;
 
-      function createAllMonitors() {
+      function createAllMonitors(existingMonitors: any) {
         // Extract site name for group
         const siteName = API_BASE.replace(/^https?:\/\//, "").replace(/:\d+$/, "");
 
-        // First, create the group
-        const group = {
-          name: siteName,
-          type: "group",
-          active: true,
-          interval: 60,
-          retryInterval: 60,
-          maxretries: 0,
-          timeout: 48,
-          ignoreTls: false,
-          upsideDown: false,
-          maxredirects: 10,
-          accepted_statuscodes: ["200-299"],
-          dns_resolve_type: "A",
-          dns_resolve_server: "1.1.1.1",
-          expiryNotification: false,
-          notificationIDList: {},
-          url: "https://",
-          method: "GET",
-          conditions: "[]", // Empty JSON array as string
+        console.log(`🔍 Processing ${Object.keys(existingMonitors).length} existing monitors`);
+
+        if (shouldOverride) {
+          console.log("🗑️ Override mode: deleting all existing monitors and groups first");
+          deleteAllMonitors(existingMonitors, () => {
+            // After deletion, proceed with clean creation
+            processMonitorList({});
+          });
+        } else {
+          processMonitorList(existingMonitors);
+        }
+      }
+
+      function deleteAllMonitors(existingMonitors: any, callback: () => void) {
+        const monitors = [];
+        const groups = [];
+
+        // Separate monitors and groups
+        for (const [id, monitor] of Object.entries(existingMonitors)) {
+          const mon = monitor as any;
+          if (mon?.type === "group") {
+            groups.push({ id: parseInt(id), ...mon });
+          } else {
+            monitors.push({ id: parseInt(id), ...mon });
+          }
+        }
+
+        console.log(`🗑️ Found ${monitors.length} monitors and ${groups.length} groups to delete`);
+
+        let deletedCount = 0;
+        const totalToDelete = monitors.length + groups.length;
+
+        if (totalToDelete === 0) {
+          console.log("✅ No monitors or groups to delete");
+          callback();
+          return;
+        }
+
+        // Function to handle deletion completion
+        const checkDeletionComplete = () => {
+          deletedCount++;
+          if (deletedCount === totalToDelete) {
+            console.log(`✅ Deleted all ${totalToDelete} items`);
+            callback();
+          }
         };
 
-        console.log(`📁 Creating group: ${group.name}`);
-        socket.emit("add", group, (groupResponse: any) => {
-          if (groupResponse.ok) {
-            const groupId = groupResponse.monitorID;
-            console.log(`✅ Created group: ${group.name} (ID: ${groupId})`);
+        // Delete monitors first (they may have parent dependencies)
+        monitors.forEach((monitor) => {
+          socket.emit("deleteMonitor", monitor.id, (response: any) => {
+            if (response.ok) {
+              console.log(`🗑️ Deleted monitor: ${monitor.name} (ID: ${monitor.id})`);
+            } else {
+              console.error(`❌ Failed to delete monitor: ${monitor.name} - ${response.msg}`);
+            }
+            checkDeletionComplete();
+          });
+        });
 
-            // Now create monitors under the group
-            let monitorCount = 0;
-            APIS.forEach((apiName) => {
-              const monitor = {
-                name: API_DESCRIPTIONS[apiName as keyof typeof API_DESCRIPTIONS],
-                type: "http",
-                url: `${API_BASE}/api/health/${apiName}`,
-                method: "GET",
-                interval: 1800, // 30 minutes
-                retryInterval: 300, // 5 minutes
-                maxretries: 3,
-                timeout: 30,
-                active: true,
-                ignoreTls: false,
-                upsideDown: false,
-                maxredirects: 10,
-                accepted_statuscodes: ["200-299"],
-                dns_resolve_type: "A",
-                dns_resolve_server: "1.1.1.1",
-                expiryNotification: true,
-                notificationIDList: {},
-                parent: groupId, // Set parent to the group ID
-                conditions: "[]", // Empty JSON array as string
-              };
+        // Delete groups after monitors
+        groups.forEach((group) => {
+          socket.emit("deleteMonitor", group.id, (response: any) => {
+            if (response.ok) {
+              console.log(`🗑️ Deleted group: ${group.name} (ID: ${group.id})`);
+            } else {
+              console.error(`❌ Failed to delete group: ${group.name} - ${response.msg}`);
+            }
+            checkDeletionComplete();
+          });
+        });
+      }
 
-              socket.emit("add", monitor, (response: any) => {
-                if (response.ok) {
-                  console.log(`✅ Created monitor: ${monitor.name} (ID: ${response.monitorID})`);
-                } else {
-                  console.error(`❌ Failed to create monitor: ${monitor.name} - ${response.msg}`);
-                }
+      function processMonitorList(monitorListResponse: any) {
+        console.log(
+          `🔍 Processing monitor list with ${Object.keys(monitorListResponse || {}).length} items`,
+        );
 
-                monitorCount++;
-                if (monitorCount === APIS.length) {
-                  console.log(
-                    `\n✨ Monitor creation completed: 1 group + ${monitorCount} monitors`,
-                  );
-                  socket.disconnect();
-                  resolve();
-                }
-              });
+        // Handle different possible response structures
+        let existingMonitors: Record<string, any> = {};
+        if (Array.isArray(monitorListResponse)) {
+          // If it's an array, convert to object with id as key
+          monitorListResponse.forEach((monitor: any, index: number) => {
+            existingMonitors[monitor.id || index] = monitor;
+          });
+        } else if (typeof monitorListResponse === "object" && monitorListResponse !== null) {
+          existingMonitors = monitorListResponse;
+        }
+
+        const siteName = API_BASE.replace(/^https?:\/\//, "").replace(/:\d+$/, "");
+        console.log(`🔍 Looking for existing group with name: "${siteName}"`);
+        console.log(`📋 Found ${Object.keys(existingMonitors).length} existing monitors/groups:`);
+
+        // List all items for debugging
+        const groups = [];
+        for (const [id, monitor] of Object.entries(existingMonitors)) {
+          const mon = monitor as any;
+          console.log(
+            `   ${mon?.type === "group" ? "📁" : "🔍"} ${mon?.type || "unknown"}: "${mon?.name || "unnamed"}" (ID: ${id})`,
+          );
+          if (mon?.type === "group") {
+            groups.push({ id: parseInt(id), ...mon });
+          }
+        }
+
+        console.log(`📁 Found ${groups.length} groups total`);
+
+        // Find existing group by name (case-insensitive and flexible matching)
+        let existingGroup = null;
+        for (const group of groups) {
+          // Try multiple matching strategies
+          const isExactMatch = group.name === siteName;
+          const isCaseInsensitiveMatch = group.name?.toLowerCase() === siteName.toLowerCase();
+          const containsMatch =
+            group.name?.includes(siteName) || siteName.includes(group.name || "");
+
+          console.log(
+            `   Checking group "${group.name}": exact=${isExactMatch}, case=${isCaseInsensitiveMatch}, contains=${containsMatch}`,
+          );
+
+          if (isExactMatch || isCaseInsensitiveMatch || containsMatch) {
+            existingGroup = group;
+            console.log(`✅ Found matching group: "${group.name}" (ID: ${group.id})`);
+            break;
+          }
+        }
+
+        if (existingGroup) {
+          console.log(`📁 Found existing group: ${existingGroup.name} (ID: ${existingGroup.id})`);
+          createSubGroups(existingGroup.id, existingMonitors);
+        } else {
+          // Create new main group
+          const group = {
+            name: siteName,
+            type: "group",
+            active: true,
+            interval: 60,
+            retryInterval: 60,
+            maxretries: 0,
+            upsideDown: false,
+            maxredirects: 10,
+            accepted_statuscodes: [],
+            notificationIDList: {},
+            conditions: "[]",
+          };
+
+          console.log(`📁 Creating new main group: ${group.name}`);
+          socket.emit("add", group, (groupResponse: any) => {
+            if (groupResponse.ok) {
+              const groupId = groupResponse.monitorID;
+              console.log(`✅ Created main group: ${group.name} (ID: ${groupId})`);
+              createSubGroups(groupId, existingMonitors);
+            } else {
+              console.error(`❌ Failed to create main group: ${group.name} - ${groupResponse.msg}`);
+              socket.disconnect();
+              reject(new Error("Failed to create main group"));
+            }
+          });
+        }
+      }
+
+      function createSubGroups(mainGroupId: number, existingMonitors: any) {
+        const subGroups = Object.keys(API_GROUPS);
+        const subGroupIds: Record<string, number> = {};
+        let createdSubGroups = 0;
+
+        console.log(
+          `📁 Creating ${subGroups.length} sub-groups under main group (ID: ${mainGroupId})`,
+        );
+
+        subGroups.forEach((subGroupName) => {
+          // Check if sub-group already exists
+          let existingSubGroup = null;
+          for (const [id, monitor] of Object.entries(existingMonitors)) {
+            const mon = monitor as any;
+            if (
+              mon?.type === "group" &&
+              mon?.name === subGroupName &&
+              mon?.parent === mainGroupId
+            ) {
+              existingSubGroup = { id: parseInt(id), ...mon };
+              break;
+            }
+          }
+
+          if (existingSubGroup) {
+            console.log(
+              `📁 Found existing sub-group: ${subGroupName} (ID: ${existingSubGroup.id})`,
+            );
+            subGroupIds[subGroupName] = existingSubGroup.id;
+            createdSubGroups++;
+
+            if (createdSubGroups === subGroups.length) {
+              createOrUpdateMonitors(subGroupIds, existingMonitors);
+            }
+          } else {
+            // Create new sub-group
+            const subGroup = {
+              name: subGroupName,
+              type: "group",
+              parent: mainGroupId,
+              active: true,
+              interval: 60,
+              retryInterval: 60,
+              maxretries: 0,
+              upsideDown: false,
+              maxredirects: 10,
+              accepted_statuscodes: [],
+              notificationIDList: {},
+              conditions: "[]",
+            };
+
+            console.log(`📁 Creating sub-group: ${subGroupName}`);
+            socket.emit("add", subGroup, (response: any) => {
+              if (response.ok) {
+                console.log(`✅ Created sub-group: ${subGroupName} (ID: ${response.monitorID})`);
+                subGroupIds[subGroupName] = response.monitorID;
+              } else {
+                console.error(`❌ Failed to create sub-group: ${subGroupName} - ${response.msg}`);
+              }
+
+              createdSubGroups++;
+              if (createdSubGroups === subGroups.length) {
+                createOrUpdateMonitors(subGroupIds, existingMonitors);
+              }
+            });
+          }
+        });
+      }
+
+      function createOrUpdateMonitors(subGroupIds: Record<string, number>, existingMonitors: any) {
+        let processedCount = 0;
+
+        APIS.forEach((apiName) => {
+          const monitorName = API_DESCRIPTIONS[apiName as keyof typeof API_DESCRIPTIONS];
+
+          // Find which sub-group this API belongs to
+          let parentGroupId = 0;
+          let parentGroupName = "";
+          for (const [groupName, apis] of Object.entries(API_GROUPS) as [string, string[]][]) {
+            if (apis.includes(apiName)) {
+              parentGroupId = subGroupIds[groupName];
+              parentGroupName = groupName;
+              break;
+            }
+          }
+
+          if (!parentGroupId) {
+            console.error(`❌ No sub-group found for API: ${apiName}`);
+            processedCount++;
+            if (processedCount === APIS.length) {
+              console.log(
+                `\n✨ Monitor processing completed: ${processedCount} monitors processed`,
+              );
+              socket.disconnect();
+              resolve();
+            }
+            return;
+          }
+
+          // Check if monitor already exists in this sub-group
+          let existingMonitor = null;
+          for (const [id, monitor] of Object.entries(existingMonitors)) {
+            const mon = monitor as any;
+            if (mon.name === monitorName && mon.parent === parentGroupId) {
+              existingMonitor = { id: parseInt(id), ...mon };
+              break;
+            }
+          }
+
+          // Special URL handling for ping
+          const monitorUrl =
+            apiName === "ping" ? `${API_BASE}/.ping` : `${API_BASE}/api/health/${apiName}`;
+
+          const monitorConfig = {
+            name: monitorName,
+            type: "http",
+            url: monitorUrl,
+            method: "GET",
+            interval: 1800, // 30 minutes
+            retryInterval: 300, // 5 minutes
+            maxretries: 3,
+            timeout: 90,
+            active: true,
+            ignoreTls: false,
+            upsideDown: false,
+            maxredirects: 10,
+            accepted_statuscodes: ["200-299"],
+            dns_resolve_type: "A",
+            dns_resolve_server: "1.1.1.1",
+            expiryNotification: false,
+            notificationIDList: {},
+            parent: parentGroupId,
+            conditions: "[]",
+          };
+
+          if (existingMonitor) {
+            // Update existing monitor
+            const updateConfig = { ...monitorConfig, id: existingMonitor.id };
+            socket.emit("editMonitor", updateConfig, (response: any) => {
+              if (response.ok) {
+                console.log(
+                  `🔄 Updated monitor: ${monitorName} in ${parentGroupName} (ID: ${existingMonitor.id})`,
+                );
+              } else {
+                console.error(`❌ Failed to update monitor: ${monitorName} - ${response.msg}`);
+              }
+
+              processedCount++;
+              if (processedCount === APIS.length) {
+                console.log(
+                  `\n✨ Monitor processing completed: ${processedCount} monitors processed`,
+                );
+                socket.disconnect();
+                resolve();
+              }
             });
           } else {
-            console.error(`❌ Failed to create group: ${group.name} - ${groupResponse.msg}`);
-            socket.disconnect();
-            reject(new Error("Failed to create group"));
+            // Create new monitor
+            socket.emit("add", monitorConfig, (response: any) => {
+              if (response.ok) {
+                console.log(
+                  `✅ Created monitor: ${monitorName} in ${parentGroupName} (ID: ${response.monitorID})`,
+                );
+              } else {
+                console.error(`❌ Failed to create monitor: ${monitorName} - ${response.msg}`);
+              }
+
+              processedCount++;
+              if (processedCount === APIS.length) {
+                console.log(
+                  `\n✨ Monitor processing completed: ${processedCount} monitors processed`,
+                );
+                socket.disconnect();
+                resolve();
+              }
+            });
           }
         });
       }
@@ -314,12 +511,6 @@ async function createMonitorsViaAPI() {
 
 async function main() {
   loadEnvConfig(process.cwd());
-
-  if (shouldExport) {
-    const config = generateUptimeKumaConfig();
-    console.log(JSON.stringify(config, null, 2));
-    return;
-  }
 
   if (shouldCreateViaAPI) {
     await createMonitorsViaAPI();
