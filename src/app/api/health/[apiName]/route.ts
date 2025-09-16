@@ -1,6 +1,10 @@
+import { prisma } from "@/prisma/prisma";
+import { generateText } from "ai";
+import Groq from "groq-sdk";
 import { NextRequest, NextResponse } from "next/server";
 
 import { createTextEmbedding } from "@/ai/embedding";
+import { llm } from "@/ai/provider";
 import {
   dySearchTool,
   insSearchTool,
@@ -9,6 +13,7 @@ import {
   xhsSearchTool,
 } from "@/ai/tools/tools";
 import { sendEmail } from "@/email/lib";
+import { proxiedFetch } from "@/lib/proxy/fetch";
 import { getRequestOrigin } from "@/lib/request/headers";
 
 // Social tools configuration
@@ -29,7 +34,7 @@ const API_CONFIGS = {
     getPayload: async () => {
       const origin = await getRequestOrigin();
       return {
-        url: origin,
+        url: `${origin}/.ping`,
         filename: "health-check",
       };
     },
@@ -53,6 +58,147 @@ const API_CONFIGS = {
       return {
         dimension: embedding.length,
         sample: embedding.slice(0, 3),
+      };
+    },
+  },
+  database: {
+    type: "database-service",
+    test: async () => {
+      try {
+        await prisma.$queryRaw`SELECT 1`;
+        return {
+          message: "Database connection successful",
+          timestamp: new Date().toISOString(),
+        };
+      } finally {
+        await prisma.$disconnect();
+      }
+    },
+  },
+  claude: {
+    type: "llm-service",
+    test: async () => {
+      const { text } = await generateText({
+        model: llm("claude-sonnet-4"),
+        prompt: "hello",
+      });
+      return {
+        response: text,
+        model: "claude-sonnet-4",
+        timestamp: new Date().toISOString(),
+      };
+    },
+  },
+  gpt: {
+    type: "llm-service",
+    test: async () => {
+      const { text } = await generateText({
+        model: llm("gpt-4o"),
+        prompt: "hello",
+      });
+      return {
+        response: text,
+        model: "gpt-4o",
+        timestamp: new Date().toISOString(),
+      };
+    },
+  },
+  gemini: {
+    type: "llm-service",
+    test: async () => {
+      const { text } = await generateText({
+        model: llm("gemini-2.5-flash"),
+        prompt: "hello",
+      });
+      return {
+        response: text,
+        model: "gemini-2.5-flash",
+        timestamp: new Date().toISOString(),
+      };
+    },
+  },
+  whisper: {
+    type: "transcription-service",
+    test: async () => {
+      // Create a minimal audio file for testing (silence)
+      const minimalWavBuffer = Buffer.from([
+        0x52,
+        0x49,
+        0x46,
+        0x46, // "RIFF"
+        0x24,
+        0x08,
+        0x00,
+        0x00, // file size
+        0x57,
+        0x41,
+        0x56,
+        0x45, // "WAVE"
+        0x66,
+        0x6d,
+        0x74,
+        0x20, // "fmt "
+        0x10,
+        0x00,
+        0x00,
+        0x00, // fmt chunk size
+        0x01,
+        0x00, // audio format (PCM)
+        0x01,
+        0x00, // number of channels
+        0x40,
+        0x1f,
+        0x00,
+        0x00, // sample rate (8000 Hz)
+        0x80,
+        0x3e,
+        0x00,
+        0x00, // byte rate
+        0x02,
+        0x00, // block align
+        0x10,
+        0x00, // bits per sample
+        0x64,
+        0x61,
+        0x74,
+        0x61, // "data"
+        0x00,
+        0x08,
+        0x00,
+        0x00, // data size
+        // 2048 bytes of silence (zeros)
+        ...new Array(2048).fill(0),
+      ]);
+
+      const audioFile = new File([minimalWavBuffer], "test.wav", {
+        type: "audio/wav",
+      });
+
+      if (!process.env.GROQ_API_KEY) {
+        throw new Error("GROQ_API_KEY not configured");
+      }
+
+      const groq = new Groq({
+        apiKey: process.env.GROQ_API_KEY,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        fetch: async (url: any, init?: any) =>
+          await proxiedFetch(url, {
+            ...init,
+            duplex: "half",
+          }),
+      });
+
+      const result = await groq.audio.transcriptions.create({
+        file: audioFile,
+        model: "whisper-large-v3",
+        response_format: "json",
+        language: "en",
+      });
+
+      return {
+        transcription: result.text || "(silence)",
+        model: "whisper-large-v3",
+        timestamp: new Date().toISOString(),
       };
     },
   },
@@ -120,9 +266,20 @@ async function testService(apiName: string) {
     };
 
     return { healthy, result };
-  } else if (config.type === "email-service" || config.type === "ai-service") {
+  } else if (
+    config.type === "email-service" ||
+    config.type === "ai-service" ||
+    config.type === "database-service" ||
+    config.type === "llm-service" ||
+    config.type === "transcription-service"
+  ) {
     const serviceConfig = config as {
-      type: "email-service" | "ai-service";
+      type:
+        | "email-service"
+        | "ai-service"
+        | "database-service"
+        | "llm-service"
+        | "transcription-service";
       test: () => Promise<unknown>;
     };
     const result = await serviceConfig.test();
@@ -141,8 +298,18 @@ export async function GET(
   try {
     let testResult;
 
+    // Special handling for "ping" - just return a simple healthy response
+    if (apiName === "ping") {
+      testResult = {
+        healthy: true,
+        result: {
+          message: "pong",
+          timestamp: new Date().toISOString(),
+        },
+      };
+    }
     // Check if it's a social tool
-    if (apiName in SOCIAL_TOOLS) {
+    else if (apiName in SOCIAL_TOOLS) {
       testResult = await testSocialTool(apiName);
     }
     // Check if it's a service API

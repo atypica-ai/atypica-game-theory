@@ -9,20 +9,28 @@ const shouldCreateViaAPI = args.includes("--create-monitors");
 const shouldOverride = args.includes("--override");
 
 const APIS = [
-  // Social Tools
-  "xhsSearch",
-  "dySearch",
-  "insSearch",
-  "tiktokSearch",
-  "twitterSearch",
+  // Ping Service
+  "ping",
+  // Database
+  "database",
   // Browser APIs
   "htmlToPdf",
   // Email Service
   "sendEmail",
   // AI Services
   "embedding",
-  // Ping Service
-  "ping",
+  // LLM Models
+  "claude",
+  "gpt",
+  "gemini",
+  // Transcription
+  "whisper",
+  // Social Tools
+  "xhsSearch",
+  "dySearch",
+  "insSearch",
+  "tiktokSearch",
+  "twitterSearch",
 ];
 
 const API_DESCRIPTIONS = {
@@ -35,16 +43,21 @@ const API_DESCRIPTIONS = {
   sendEmail: "Email API",
   embedding: "Text Embedding API",
   ping: "Ping",
+  database: "Database Connection",
+  claude: "Claude API",
+  gpt: "GPT API",
+  gemini: "Gemini API",
+  whisper: "Whisper Transcription",
 };
 
 const API_GROUPS = {
-  Website: ["sendEmail", "ping"], // 还要加一个 database
+  Website: ["sendEmail", "ping", "database"],
   "Social Agents": ["xhsSearch", "dySearch", "insSearch", "tiktokSearch", "twitterSearch"],
   "Edge Functions": ["htmlToPdf"],
-  "Study Agent": [],
-  Persona: ["embedding"],
-  Interview: [],
-  Report: [],
+  "Study Agent": ["claude"],
+  Persona: ["embedding", "gpt"],
+  Interview: ["whisper"],
+  Report: ["gemini"],
 };
 
 async function testApi(apiName: string) {
