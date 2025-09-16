@@ -153,6 +153,7 @@ model Analyst {
 
   interviews    AnalystInterview[]
   reports       AnalystReport[]
+  podcasts      AnalystPodcast[]
   featuredStudy FeaturedStudy?
 }
 
@@ -177,6 +178,21 @@ model AnalystReport {
   instruction String    @db.Text
   coverSvg    String    @db.Text
   onePageHtml String    @db.Text
+  generatedAt DateTime? @db.Timestamptz(6)
+  extra       Json      @default("{}")
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+}
+
+model AnalystPodcast {
+  id          Int       @id @default(autoincrement())
+  token       String    @unique @db.VarChar(64)
+  analystId   Int       @db.Integer
+  analyst     Analyst   @relation(fields: [analystId], references: [id])
+  instruction String    @db.Text
+  script      String    @db.Text
+  podcastUrl  String?   @db.VarChar(500)
   generatedAt DateTime? @db.Timestamptz(6)
   extra       Json      @default("{}")
 
