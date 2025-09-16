@@ -110,6 +110,12 @@ export default function GlobalFooter({ className }: { className?: string }) {
               {t("personaSimulation")}
             </Link>
             <Link
+              href="/deck/about"
+              className="block text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {t("overview")}
+            </Link>
+            <Link
               href="/changelog"
               className="block text-muted-foreground hover:text-foreground transition-colors"
             >
@@ -120,12 +126,6 @@ export default function GlobalFooter({ className }: { className?: string }) {
               className="block text-muted-foreground hover:text-foreground transition-colors"
             >
               {t("glossary")}
-            </Link>
-            <Link
-              href="/deck/about"
-              className="block text-muted-foreground hover:text-foreground transition-colors"
-            >
-              {t("deck")}
             </Link>
           </div>
         </div>
@@ -152,6 +152,12 @@ export default function GlobalFooter({ className }: { className?: string }) {
               className="block text-muted-foreground hover:text-foreground transition-colors"
             >
               {t("joinUs")}
+            </Link>
+            <Link
+              href="/deck/pitch"
+              className="block text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {t("deck")}
             </Link>
             <Link
               href="/terms"

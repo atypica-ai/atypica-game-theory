@@ -1289,72 +1289,44 @@ const transformation = {
 
       case 11:
         return (
-          <div className="h-full flex flex-col px-10 md:px-14 py-6">
+          <div className="h-full flex flex-col justify-center items-center px-10 md:px-14 py-8">
             {/* 标题 */}
-            <div className="mb-4 text-center">
-              <div className="text-xs font-light text-zinc-300 opacity-60 uppercase tracking-wider mb-1">
+            <div className="mb-8 text-center">
+              <div className="text-sm font-light text-zinc-300 opacity-60 uppercase tracking-wider mb-3">
                 未来展望
               </div>
-              <h1 className="text-3xl md:text-4xl font-light tracking-tight text-zinc-300">
+              <h1 className="text-4xl md:text-5xl font-light tracking-tight text-zinc-300 mb-2">
                 欢迎使用
               </h1>
-              <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-[#1bff1b] shadow-[0_0_20px_rgba(27,255,27,0.25)]">
+              <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-[#1bff1b] shadow-[0_0_20px_rgba(27,255,27,0.25)]">
                 Atypica
               </h1>
+              <div className="w-20 h-0.5 bg-gradient-to-r from-transparent via-[#1bff1b] to-transparent mx-auto mt-6 shadow-[0_0_10px_rgba(27,255,27,0.35)]"></div>
             </div>
 
             {/* 内容区域 */}
-            <div className="flex-1 flex flex-col justify-center space-y-4 max-w-4xl mx-auto w-full">
+            <div className="max-w-5xl mx-auto w-full space-y-6">
               {/* 核心理念 */}
-              <div className="bg-zinc-800/70 backdrop-blur-sm border border-zinc-600 rounded-xl p-4">
-                <p className="text-base font-light leading-relaxed text-zinc-300 text-center mb-2">
+              <div className="bg-zinc-800/70 backdrop-blur-sm border border-zinc-600 rounded-xl p-6">
+                <p className="text-lg md:text-xl font-light leading-relaxed text-zinc-300 text-center mb-3">
                   让研究进入 <span className="font-bold text-[#1bff1b]">Always-on</span> 模式，
                 </p>
-                <p className="text-base font-light leading-relaxed text-zinc-300 text-center mb-3">
+                <p className="text-lg md:text-xl font-light leading-relaxed text-zinc-300 text-center mb-4">
                   让洞察触手可及，让每个决策与实时世界对话。
                 </p>
-                <div className="text-sm font-light text-zinc-300 text-center">
-                  <p>研究已经变得更便宜，更迅速，</p>
+                <div className="text-base font-light text-zinc-300 text-center">
+                  <p className="mb-1">研究已经变得更便宜，更迅速，</p>
                   <p className="font-medium text-[#1bff1b]">但唯有好问题与好猜想，才真正无价。</p>
                 </div>
               </div>
 
-              {/* 联系方式 */}
-              <div className="bg-gradient-to-r from-[#1e1e1e] to-[#2a2a2a] border border-[#1bff1b] rounded-xl p-4">
-                <h3 className="text-lg font-semibold text-[#1bff1b] mb-2 text-center">
-                  看完 Atypica 的介绍，
-                </h3>
-                <div className="text-sm text-zinc-300 text-center mb-3">
-                  <p>我知道，您一定有很多问题。</p>
-                  <p>没关系，我用 Atypica 发起了一个访谈，</p>
-                  <p>扫下面的二维码告诉我，说出您的疑问和期待！</p>
-                </div>
-
-                <div className="text-center mb-3">
-                  <div className="bg-white p-3 rounded-lg inline-block">
-                    <div className="w-20 h-20 bg-zinc-900 rounded flex items-center justify-center">
-                      <span className="text-white text-xs">QR Code</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* 会员福利 */}
-              <div className="bg-zinc-800/70 backdrop-blur-sm border border-zinc-600 rounded-xl p-3 text-center">
-                <p className="text-sm text-zinc-300">
-                  认真完成访谈的朋友会获赠{" "}
-                  <span className="font-bold text-[#1bff1b]">1个月免费 Pro 会员</span>，
-                </p>
-                <p className="text-sm text-zinc-300">我会整体通知具体领取方式。</p>
-              </div>
-
               {/* 最终愿景 */}
-              <div className="bg-zinc-900 border border-[#1bff1b] rounded-xl p-4 text-center">
-                <p className="text-sm font-light text-zinc-300 mb-2">
+              <div className="bg-gradient-to-r from-[#1e1e1e] to-[#2a2a2a] border border-[#1bff1b] rounded-xl p-6 text-center shadow-[0_0_30px_rgba(27,255,27,0.15)]">
+                <p className="text-base md:text-lg font-light text-zinc-300 mb-4">
                   从依赖历史数据的<span className="font-medium">被动分析</span>
-                  ，转向基于智能体的<span className="font-medium">主动模拟</span>
+                  ，转向基于智能体的<span className="font-medium text-[#1bff1b]">主动模拟</span>
                 </p>
-                <p className="text-xs text-[#1bff1b] leading-relaxed">
+                <p className="text-sm md:text-base text-[#1bff1b] leading-relaxed">
                   这种从&ldquo;静态分析&rdquo;到&ldquo;动态执行&rdquo;的转变，让企业能够在几小时内完成从问题识别到策略制定的全流程，
                   实现从&ldquo;先研究，再决策&rdquo;到&ldquo;边研究，边决策，边执行&rdquo;的敏捷商业模式。
                 </p>
