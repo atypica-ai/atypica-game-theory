@@ -190,26 +190,28 @@ export async function generatePodcastScript({
     // Create podcast script prompt content
     const podcastContent = `# Podcast Script Generation Request
 
-## Research Topic
+<Research Topic>
 ${analyst.topic}
+</Research Topic>
 
-## Research Brief
+<Research Brief>
 ${analyst.brief}
+</Research Brief>
 
-## Study Summary
+<Study Summary>
 ${analyst.studySummary}
+</Study Summary>
 
-## Study Log (Research Process)
+<Research Process>
 ${analyst.studyLog}
+</Research Process>
 
-## Interview Findings
+<Interviews>
 ${analyst.interviews.map((interview, index) => `
 ### Interview ${index + 1}
 ${interview.conclusion}
 `).join('\n')}
-
-## Style Instructions
-${instruction}
+</Interviews>
 
 Please generate a comprehensive, engaging podcast script based on the above research findings. The script should be conversational, well-structured, and optimized for audio delivery.`;
 
