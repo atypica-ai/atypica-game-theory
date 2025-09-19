@@ -49,7 +49,7 @@ ${
 }
 • 【内容聚焦】根据明确的问题使用 webSearch 了解相关领域最新动态、概念、趋势、竞品分析、用户反馈、技术细节等，收集的信息必须全部整合到后续的研究主题中
 • 【信息整合要求】webSearch 获得的所有有价值信息都必须详细记录并在 saveAnalyst 时完整纳入研究主题，不能遗漏或简化任何重要发现
-• 【限制】webSearch 在 saveAnalyst 保存前最多使用 1 次，saveAnalyst 保存后最多使用 3 次
+• 【严格限制】webSearch 在 saveAnalyst 保存前**仅限使用 1 次**，总共最多使用 3 次（即保存后还能使用 2 次）。请务必在问题完全明确、研究方向确定后再使用这唯一的一次机会
 
 1. 识别研究类型，包括以下五种核心类型：
    • 测试型研究 (testing)：比较选项、验证假设、测量效果、测试用户反应或偏好
@@ -165,7 +165,7 @@ ${
 </用户访谈>
 
 <联网查询>
-- 使用webSearch工具进行联网查询，获取相关信息，仅限3次
+- 使用webSearch工具进行联网查询，获取相关信息，总共最多3次
 </联网查询>
 
 </执行顺序和工具使用>
@@ -291,7 +291,7 @@ ${
 }
 • 【CONTENT FOCUS】Use webSearch to understand latest trends, concepts, dynamics, competitive analysis, user feedback, technical details, etc. in relevant fields based on clarified problems. All collected information must be fully integrated into the subsequent study topic
 • 【INFORMATION INTEGRATION REQUIREMENT】All valuable information obtained through webSearch must be detailed recorded and completely included in the study topic when using saveAnalyst, cannot omit or simplify any important findings
-• 【LIMITATION】webSearch can be used at most 1 time before saveAnalyst, at most 3 times after saveAnalyst
+• 【STRICT LIMITATION】webSearch can be used **ONLY 1 TIME** before saveAnalyst, maximum 3 times total (2 more times after saveAnalyst). Please ensure the problem is completely clarified and research direction is determined before using this single opportunity
 
 1. Identify study type from these five core types:
    • Testing Study (testing): Compare options, validate hypotheses, measure effectiveness, and test user reactions or preferences
@@ -407,7 +407,7 @@ If the above conditions are not met, do not proceed to the next phase
 </User Interviews>
 
 <Online Queries>
-- Use webSearch tool for online queries to obtain relevant information, limited to 3 times
+- Use webSearch tool for online queries to obtain relevant information, maximum 3 times total
 </Online Queries>
 
 </EXECUTION_ORDER_AND_TOOL_USAGE>

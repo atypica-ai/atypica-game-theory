@@ -1,6 +1,6 @@
 import "server-only";
 
-import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
+import { AgentToolConfigArgs, PlainTextToolResult, ToolName } from "@/ai/tools/types";
 import { tavily, TavilyClient } from "@tavily/core";
 import { tool } from "ai";
 import { z } from "zod";
@@ -63,34 +63,39 @@ export const webSearchTool = ({
     experimental_toToolResultContent: (result: PlainTextToolResult) => {
       return [{ type: "text", text: result.plainText }];
     },
-    execute: async ({ query }) => {
-      // const toolUseCount = messages
-      //   .filter((message) => message.role === "tool")
-      //   .reduce(
-      //     (_count, message) => {
-      //       const count = { ..._count };
-      //       (message.content ?? []).forEach((part) => {
-      //         const toolName = part.toolName as ToolName;
-      //         count[toolName] = (count[toolName] || 0) + 1;
-      //       });
-      //       return count;
-      //     },
-      //     {} as Partial<Record<ToolName, number>>,
-      //   );
-      // if ((toolUseCount[ToolName.webSearch] ?? 0) >= 4) {
-      //   return {
-      //     results: [],
-      //     plainText:
-      //       "The webSearch tool has reached its limit of 2 uses per study session. Please continue with your study using the information already gathered.",
-      //   };
-      // }
-      // if ((toolUseCount[ToolName.saveAnalyst] ?? 0) >= 1) {
-      //   return {
-      //     results: [],
-      //     plainText:
-      //       "The webSearch tool is not allowed after the saveAnalyst tool has been used. Please continue your research using the previously saved analyst topic.",
-      //   };
-      // }
+    execute: async ({ query }, { messages }) => {
+      const toolUseCount = messages
+        .filter((message) => message.role === "tool")
+        .reduce(
+          (_count, message) => {
+            const count = { ..._count };
+            (message.content ?? []).forEach((part) => {
+              const toolName = part.toolName as ToolName;
+              count[toolName] = (count[toolName] || 0) + 1;
+            });
+            return count;
+          },
+          {} as Partial<Record<ToolName, number>>,
+        );
+      // Before saveAnalyst is called, webSearch can only be used once
+      if (
+        (toolUseCount[ToolName.saveAnalyst] ?? 0) < 1 &&
+        (toolUseCount[ToolName.webSearch] ?? 0) >= 1
+      ) {
+        return {
+          results: [],
+          plainText:
+            "The webSearch tool can only be used once before the saveAnalyst tool is called. Please save your analyst topic first, then you can continue web searching.",
+        };
+      }
+      if ((toolUseCount[ToolName.webSearch] ?? 0) >= 3) {
+        return {
+          results: [],
+          plainText:
+            "The webSearch tool has reached its limit of 3 uses per study session. Please continue with your study using the information already gathered.",
+        };
+      }
+
       const result = await webSearch({ query });
       // 每次查询固定消耗 3000 tokens
       await statReport("tokens", 3000, {
