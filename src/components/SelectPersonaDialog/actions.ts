@@ -46,7 +46,7 @@ export async function fetchPersonas({
       prisma.persona.findMany({
         where,
         orderBy: {
-          createdAt: "desc",
+          id: "desc",
         },
         select: {
           id: true,
@@ -131,7 +131,7 @@ export async function fetchPersonas({
     prisma.persona.findMany({
       where,
       orderBy: {
-        createdAt: "desc",
+        id: "desc",
       },
       select: {
         id: true,

@@ -130,6 +130,7 @@ model Persona {
   interviewSessionsAsInterviewee InterviewSession[]
 
   @@index([embedding])
+  @@index([tier, locale])
 }
 
 model Analyst {
