@@ -61,6 +61,33 @@ const API_CONFIGS = {
       };
     },
   },
+  webSearch: {
+    type: "ai-service",
+    test: async () => {
+      if (!process.env.TAVILY_API_KEY) {
+        throw new Error("TAVILY_API_KEY not configured");
+      }
+
+      // Import webSearch function dynamically
+      const { webSearchTool } = await import("@/ai/tools/experts/webSearch");
+
+      // Create a minimal test tool instance
+      const testTool = webSearchTool({
+        studyUserChatId: 0,
+        statReport: async () => {},
+      });
+
+      const result = await testTool.execute(
+        { query: "test health check" },
+        { toolCallId: "health-check", messages: [] }
+      );
+
+      return {
+        hasResults: Array.isArray(result.results) && result.results.length > 0,
+        timestamp: new Date().toISOString(),
+      };
+    },
+  },
   database: {
     type: "database-service",
     test: async () => {

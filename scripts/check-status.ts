@@ -19,6 +19,7 @@ const APIS = [
   "sendEmail",
   // AI Services
   "embedding",
+  "webSearch",
   // LLM Models
   "claude",
   "gpt",
@@ -42,6 +43,7 @@ const API_DESCRIPTIONS = {
   htmlToPdf: "HTML to PDF Function",
   sendEmail: "Email API",
   embedding: "Text Embedding API",
+  webSearch: "Web Search API",
   ping: "Ping",
   database: "Database Connection",
   claude: "Claude API",
@@ -54,7 +56,7 @@ const API_GROUPS = {
   Website: ["sendEmail", "ping", "database"],
   "Social Agents": ["xhsSearch", "dySearch", "insSearch", "tiktokSearch", "twitterSearch"],
   "Edge Functions": ["htmlToPdf"],
-  "Study Agent": ["claude"],
+  "Study Agent": ["claude", "webSearch"],
   Persona: ["embedding", "gpt"],
   Interview: ["whisper"],
   Report: ["gemini"],
