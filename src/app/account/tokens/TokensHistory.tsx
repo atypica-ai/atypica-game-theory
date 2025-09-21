@@ -11,6 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { createParamConfig, useListQueryParams } from "@/hooks/use-list-query-params";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn, formatDate } from "@/lib/utils";
 import { TokensLog, TokensLogVerb } from "@/prisma/client";
@@ -28,13 +29,31 @@ import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
-export function TokensHistory() {
+interface TokensHistoryProps {
+  initialSearchParams: Record<string, string | number>;
+}
+
+export function TokensHistory({ initialSearchParams }: TokensHistoryProps) {
   const { data: session } = useSession();
   const t = useTranslations("AccountPage");
   const locale = useLocale();
   const [tokensHistory, setTokensHistory] = useState<(TokensLog & { consumedBy?: string })[]>([]);
   const [historyIsLoading, setHistoryIsLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState<number | null>(null);
+
+  // Use query params hook for URL synchronization
+  type TokensHistorySearchParams = {
+    page: number;
+  };
+
+  const {
+    values: { page: currentPage },
+    setParam,
+  } = useListQueryParams<TokensHistorySearchParams>({
+    params: {
+      page: createParamConfig.number(1),
+    },
+    initialValues: initialSearchParams,
+  });
 
   const [teamStatus, setTeamStatus] = useState<ExtractServerActionData<
     typeof getUserTeamStatusAction
@@ -42,41 +61,14 @@ export function TokensHistory() {
 
   // 加载用户团队状态
   useEffect(() => {
-    if (session?.user) {
+    if (session?.user?.id) {
       getUserTeamStatusAction().then((result) => {
         if (result.success) {
           setTeamStatus(result.data);
         }
       });
     }
-  }, [session?.user]);
-
-  // Initialize page from URL on load
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const url = new URL(window.location.href);
-      const pageParam = url.searchParams.get("page");
-      if (pageParam) {
-        setCurrentPage(parseInt(pageParam, 10));
-      } else {
-        setCurrentPage(1);
-      }
-    }
-  }, []);
-
-  // Update URL when page changes (but only if page > 1)
-  useEffect(() => {
-    if (currentPage === null) return;
-    if (typeof window !== "undefined") {
-      const url = new URL(window.location.href);
-      if (currentPage > 1) {
-        url.searchParams.set("page", currentPage.toString());
-      } else {
-        url.searchParams.delete("page");
-      }
-      window.history.replaceState({}, "", url.toString());
-    }
-  }, [currentPage]);
+  }, [session?.user?.id]);
 
   const [pagination, setPagination] = useState<{
     page: number;
@@ -86,11 +78,15 @@ export function TokensHistory() {
   } | null>(null);
 
   const loadTokensHistory = useCallback(async () => {
-    if (currentPage === null) return;
+    if (!teamStatus) {
+      // 等 teamStatus 加载好了再获取 tokens
+      return;
+    }
     setHistoryIsLoading(true);
     try {
+      console.log(teamStatus, "start");
       const result =
-        teamStatus?.teamRole === "owner"
+        teamStatus.teamRole === "owner"
           ? await fetchTokensHistoryAsTeamOwner(currentPage, 10)
           : await fetchTokensHistory(currentPage, 10);
       if (result.success) {
@@ -106,6 +102,7 @@ export function TokensHistory() {
     }
   }, [currentPage, teamStatus]);
 
+  // 当页面或团队状态变化时加载数据
   useEffect(() => {
     loadTokensHistory();
   }, [loadTokensHistory]);
@@ -254,7 +251,7 @@ export function TokensHistory() {
             <Pagination
               currentPage={pagination.page}
               totalPages={pagination.totalPages}
-              onPageChange={setCurrentPage}
+              onPageChange={(page) => setParam("page", page)}
             />
           </div>
         </div>

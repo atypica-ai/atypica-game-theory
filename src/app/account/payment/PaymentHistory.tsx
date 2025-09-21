@@ -10,6 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { createParamConfig, useListQueryParams } from "@/hooks/use-list-query-params";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDate } from "@/lib/utils";
 import { DownloadIcon } from "lucide-react";
@@ -17,41 +18,36 @@ import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
-export function PaymentHistory() {
+export const SearchParamsConfig = {
+  page: createParamConfig.number(1),
+} as const;
+
+export type PaymentHistorySearchParams = {
+  page: number;
+};
+
+interface PaymentHistoryClientProps {
+  initialSearchParams: Record<string, string | number>;
+}
+
+export function PaymentHistory({ initialSearchParams }: PaymentHistoryClientProps) {
   const t = useTranslations("AccountPage.paymentRecordsSection");
   const locale = useLocale();
   const [paymentRecords, setPaymentRecords] = useState<
     ExtractServerActionData<typeof fetchPaymentRecords>
   >([]);
   const [historyIsLoading, setHistoryIsLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState<number | null>(null);
 
-  // Initialize page from URL on load
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const url = new URL(window.location.href);
-      const pageParam = url.searchParams.get("page");
-      if (pageParam) {
-        setCurrentPage(parseInt(pageParam, 10));
-      } else {
-        setCurrentPage(1);
-      }
-    }
-  }, []);
-
-  // Update URL when page changes (but only if page > 1)
-  useEffect(() => {
-    if (currentPage === null) return;
-    if (typeof window !== "undefined") {
-      const url = new URL(window.location.href);
-      if (currentPage > 1) {
-        url.searchParams.set("page", currentPage.toString());
-      } else {
-        url.searchParams.delete("page");
-      }
-      window.history.replaceState({}, "", url.toString());
-    }
-  }, [currentPage]);
+  // Use query params hook for URL synchronization
+  const {
+    values: { page: currentPage },
+    setParam,
+  } = useListQueryParams<PaymentHistorySearchParams>({
+    params: {
+      page: createParamConfig.number(1),
+    },
+    initialValues: initialSearchParams,
+  });
 
   const [pagination, setPagination] = useState<{
     page: number;
@@ -61,7 +57,6 @@ export function PaymentHistory() {
   } | null>(null);
 
   const loadPaymentHistory = useCallback(async () => {
-    if (currentPage === null) return;
     setHistoryIsLoading(true);
     try {
       const result = await fetchPaymentRecords(currentPage, 10);
@@ -146,7 +141,7 @@ export function PaymentHistory() {
             <Pagination
               currentPage={pagination.page}
               totalPages={pagination.totalPages}
-              onPageChange={setCurrentPage}
+              onPageChange={(page) => setParam("page", page)}
             />
           </div>
         </div>

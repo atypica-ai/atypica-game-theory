@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Pagination } from "@/components/ui/pagination";
+import { createParamConfig, useListQueryParams } from "@/hooks/use-list-query-params";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { Loader2Icon, NotebookTextIcon, SearchIcon, XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -19,44 +20,34 @@ type PaginationInfo = {
   totalPages: number;
 };
 
-export function StudyListPageClient() {
+type StudiesSearchParams = {
+  page: number;
+  search: string;
+};
+
+interface StudyListPageClientProps {
+  initialSearchParams: Record<string, string | number>;
+}
+
+export function StudyListPageClient({ initialSearchParams }: StudyListPageClientProps) {
   const t = useTranslations("StudyListPage");
   const [studies, setStudies] = useState<TStudy[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Initialize page from URL on load
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const url = new URL(window.location.href);
-      const pageParam = url.searchParams.get("page");
-      const searchParam = url.searchParams.get("search");
-
-      if (pageParam) {
-        setCurrentPage(parseInt(pageParam, 10));
-      }
-      if (searchParam) {
-        setSearchQuery(searchParam);
-      }
-    }
-  }, []);
-
-  // Update URL when page or search changes
-  useEffect(() => {
-    const url = new URL(window.location.href);
-    url.searchParams.set("page", currentPage.toString());
-
-    if (searchQuery) {
-      url.searchParams.set("search", searchQuery);
-    } else {
-      url.searchParams.delete("search");
-    }
-
-    window.history.replaceState({}, "", url.toString());
-  }, [currentPage, searchQuery]);
+  // Use query params hook with initial values from server
+  const {
+    values: { page: currentPage, search: searchQuery },
+    setParam,
+    setParams,
+  } = useListQueryParams<StudiesSearchParams>({
+    params: {
+      page: createParamConfig.number(1),
+      search: createParamConfig.string(""),
+    },
+    initialValues: initialSearchParams,
+  });
 
   const loadStudies = useCallback(async () => {
     setIsLoading(true);
@@ -88,16 +79,14 @@ export function StudyListPageClient() {
 
   const handleSearch = (e: FormEvent) => {
     e.preventDefault();
-    setCurrentPage(1); // Reset to first page on new search
-    setSearchQuery(inputRef.current?.value ?? "");
+    setParams({ search: inputRef.current?.value ?? "", page: 1 }); // Reset to first page on new search
   };
 
   const clearSearch = () => {
     if (inputRef.current) {
       inputRef.current.value = "";
     }
-    setSearchQuery("");
-    setCurrentPage(1);
+    setParams({ search: "", page: 1 });
   };
 
   return (
@@ -190,7 +179,7 @@ export function StudyListPageClient() {
                 <Pagination
                   currentPage={pagination.page}
                   totalPages={pagination.totalPages}
-                  onPageChange={setCurrentPage}
+                  onPageChange={(page) => setParam("page", page)}
                 />
               </div>
             )}
