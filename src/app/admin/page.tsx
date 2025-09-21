@@ -10,6 +10,7 @@ import {
   StarIcon,
   UserIcon,
   UsersIcon,
+  VideoIcon,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
@@ -133,6 +134,17 @@ export default function AdminDashboard() {
             <h2 className="text-xl font-semibold">Personas</h2>
           </div>
           <p className="text-sm text-muted-foreground">Manage user personas</p>
+        </Link>
+
+        <Link
+          href="/admin/interviews"
+          className="rounded-lg border bg-card p-4 shadow-sm hover:shadow-md transition-shadow"
+        >
+          <div className="flex items-center mb-2">
+            <VideoIcon className="h-5 w-5 mr-2" />
+            <h2 className="text-xl font-semibold">Interviews</h2>
+          </div>
+          <p className="text-sm text-muted-foreground">Manage interview projects and sessions</p>
         </Link>
 
         <Link

@@ -15,6 +15,7 @@ import {
   StarIcon,
   UserIcon,
   UsersIcon,
+  VideoIcon,
   X,
 } from "lucide-react";
 
@@ -103,6 +104,12 @@ export default function AdminSidebar({ adminRole, permissions = [] }: AdminSideb
         href: "/admin/personas",
         icon: <UserIcon className="mr-2 h-4 w-4" />,
         permission: AdminPermission.MANAGE_PERSONAS,
+      },
+      {
+        label: "Interviews",
+        href: "/admin/interviews",
+        icon: <VideoIcon className="mr-2 h-4 w-4" />,
+        permission: AdminPermission.MANAGE_INTERVIEWS,
       },
       {
         label: "Issue Studies",
