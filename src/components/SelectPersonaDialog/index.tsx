@@ -1,15 +1,16 @@
-import { fetchPersonas } from "@/app/(persona)/actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Pagination } from "@/components/ui/pagination";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { Loader2Icon, SearchIcon, XIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { fetchPersonas } from "./actions";
 
 interface SelectPersonaDialogProps {
   open: boolean;
@@ -28,6 +29,7 @@ export function SelectPersonaDialog({ open, onOpenChange, onSelect }: SelectPers
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [mode, setMode] = useState<"public" | "private">("public");
   const inputRef = useRef<HTMLInputElement>(null);
 
   const loadPersonas = useCallback(
@@ -38,6 +40,7 @@ export function SelectPersonaDialog({ open, onOpenChange, onSelect }: SelectPers
           locale: locale,
           searchQuery: search,
           page,
+          mode,
         });
         if (!result.success) throw result;
         setPersonas(result.data);
@@ -48,26 +51,40 @@ export function SelectPersonaDialog({ open, onOpenChange, onSelect }: SelectPers
         setLoading(false);
       }
     },
-    [locale],
+    [locale, mode],
   );
 
+  // Reset state when dialog opens
   useEffect(() => {
     if (open) {
       setSelectedIds([]);
       setSearchQuery("");
+      setMode("public");
       if (inputRef.current) {
         inputRef.current.value = "";
       }
-      loadPersonas(1, "");
       setCurrentPage(1);
     }
-  }, [open, loadPersonas]);
+  }, [open]);
 
+  // Reset search and page when mode changes, then load personas
   useEffect(() => {
     if (open) {
-      loadPersonas(currentPage, searchQuery);
+      setSearchQuery("");
+      if (inputRef.current) {
+        inputRef.current.value = "";
+      }
+      setCurrentPage(1);
+      loadPersonas(1, "");
     }
-  }, [currentPage, searchQuery, open, loadPersonas]);
+  }, [mode, open, loadPersonas]);
+
+  // Load personas when page or search changes
+  useEffect(() => {
+    if (open) {
+      loadPersonas(currentPage, mode === "private" ? "" : searchQuery);
+    }
+  }, [currentPage, searchQuery, open, loadPersonas, mode]);
 
   const handleSubmit = async () => {
     try {
@@ -109,43 +126,60 @@ export function SelectPersonaDialog({ open, onOpenChange, onSelect }: SelectPers
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="md:max-w-3xl lg:max-w-5xl">
+      <DialogContent className="md:max-w-3xl lg:max-w-5xl h-[80vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>{t("title")}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSearch} className="flex gap-2 mt-4">
-          <div className="flex-1 relative flex gap-2">
-            <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search personas..."
-              defaultValue={searchQuery}
-              ref={inputRef}
-              className="pl-9 pr-9"
-              aria-label="Search personas by name or tags"
-            />
-            {searchQuery && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
-                onClick={handleClearSearch}
-                type="button"
-              >
-                <XIcon className="size-3" />
-              </Button>
-            )}
-          </div>
-          <Button type="submit">Search</Button>
-        </form>
-        {renderSearchStatus()}
-        {loading && currentPage === 1 && !searchQuery ? (
-          <div className="flex justify-center items-center h-40">
-            <Loader2Icon className="size-8 animate-spin mx-auto mb-4" />
-          </div>
-        ) : (
-          <>
-            <div className="grid lg:grid-cols-3 gap-4 mt-4 max-h-[60vh] overflow-y-auto scrollbar-thin relative">
-              {loading && (currentPage > 1 || searchQuery) && (
+
+        <Tabs
+          value={mode}
+          onValueChange={(value) => setMode(value as "public" | "private")}
+          className="mt-4"
+        >
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="public">Public Personas</TabsTrigger>
+            <TabsTrigger value="private">My Personas</TabsTrigger>
+          </TabsList>
+        </Tabs>
+
+        {mode === "public" && (
+          <form onSubmit={handleSearch} className="flex gap-2 mt-4">
+            <div className="flex-1 relative flex gap-2">
+              <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search personas..."
+                defaultValue={searchQuery}
+                ref={inputRef}
+                className="pl-9 pr-9"
+                aria-label="Search personas by name or tags"
+              />
+              {searchQuery && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
+                  onClick={handleClearSearch}
+                  type="button"
+                >
+                  <XIcon className="size-3" />
+                </Button>
+              )}
+            </div>
+            <Button type="submit">Search</Button>
+          </form>
+        )}
+        {mode === "public" && renderSearchStatus()}
+
+        <div className="flex-1 flex flex-col min-h-0">
+          {loading && currentPage === 1 && (mode === "private" || !searchQuery) ? (
+            <div className="flex-1 flex justify-center items-center">
+              <Loader2Icon className="size-8 animate-spin mx-auto mb-4" />
+            </div>
+          ) : (
+            <>
+              <div className="flex-1 overflow-y-auto scrollbar-thin relative min-h-0">
+                <div className="grid lg:grid-cols-3 gap-4 mt-4">
+              {loading && (currentPage > 1 || (mode === "public" && searchQuery)) && (
                 <div className="absolute inset-0 bg-background/80 flex justify-center items-center z-10">
                   <Loader2Icon className="size-8 animate-spin mx-auto mb-4" />
                 </div>
@@ -153,11 +187,13 @@ export function SelectPersonaDialog({ open, onOpenChange, onSelect }: SelectPers
               {personas.length === 0 && !loading ? (
                 <div className="col-span-3 py-12 text-center">
                   <p className="text-muted-foreground">
-                    {searchQuery
+                    {mode === "public" && searchQuery
                       ? `No results found for "${searchQuery}"`
-                      : "No personas available"}
+                      : mode === "private"
+                        ? "No private personas available"
+                        : "No personas available"}
                   </p>
-                  {searchQuery && (
+                  {mode === "public" && searchQuery && (
                     <Button variant="ghost" onClick={handleClearSearch} size="sm" className="mt-2">
                       Clear search
                     </Button>
@@ -209,26 +245,28 @@ export function SelectPersonaDialog({ open, onOpenChange, onSelect }: SelectPers
                   </Card>
                 ))
               )}
-            </div>
-            <div className="flex flex-wrap justify-between items-center mt-4">
-              {totalPages > 1 && (
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={(page) => setCurrentPage(page)}
-                />
-              )}
-              <div className="flex space-x-2 ml-auto">
-                <Button variant="outline" onClick={() => onOpenChange(false)}>
-                  {t("cancel")}
-                </Button>
-                <Button onClick={handleSubmit} disabled={selectedIds.length === 0}>
-                  {t("confirm")} ({selectedIds.length})
-                </Button>
+                </div>
               </div>
-            </div>
-          </>
-        )}
+              <div className="flex flex-wrap justify-between items-center mt-4 flex-shrink-0">
+                {totalPages > 1 && (
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={(page) => setCurrentPage(page)}
+                  />
+                )}
+                <div className="flex space-x-2 ml-auto">
+                  <Button variant="outline" onClick={() => onOpenChange(false)}>
+                    {t("cancel")}
+                  </Button>
+                  <Button onClick={handleSubmit} disabled={selectedIds.length === 0}>
+                    {t("confirm")} ({selectedIds.length})
+                  </Button>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   );
