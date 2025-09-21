@@ -2,9 +2,12 @@
 import { Button } from "@/components/ui/button";
 import UserMenu from "@/components/UserMenu";
 import { AdminRole } from "@/prisma/client";
+import * as Collapsible from "@radix-ui/react-collapsible";
 import {
   AlertTriangleIcon,
   BarChartIcon,
+  ChevronDownIcon,
+  ChevronRightIcon,
   CreditCardIcon,
   DatabaseIcon,
   EyeIcon,
@@ -20,7 +23,7 @@ import {
 } from "lucide-react";
 
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { AdminPermission } from "../types";
 
 interface SidebarItem {
@@ -28,6 +31,13 @@ interface SidebarItem {
   href: string;
   icon: React.ReactNode;
   role?: "SUPER_ADMIN"; // Role-specific items
+  permission?: AdminPermission;
+}
+
+interface SidebarGroup {
+  label: string;
+  items: SidebarItem[];
+  alwaysShow?: boolean; // Groups that should always be visible
 }
 
 interface AdminSidebarProps {
@@ -36,122 +46,188 @@ interface AdminSidebarProps {
 }
 
 export default function AdminSidebar({ adminRole, permissions = [] }: AdminSidebarProps) {
-  // Define all available sidebar items with their required permissions
-  const allSidebarItems = useMemo<(SidebarItem & { permission?: AdminPermission })[]>(
+  // State for collapsed groups
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
+
+  // Load collapsed state from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem('admin-sidebar-collapsed');
+    if (saved) {
+      try {
+        setCollapsedGroups(new Set(JSON.parse(saved)));
+      } catch (e) {
+        // Ignore parsing errors
+      }
+    }
+  }, []);
+
+  // Save collapsed state to localStorage
+  useEffect(() => {
+    localStorage.setItem('admin-sidebar-collapsed', JSON.stringify([...collapsedGroups]));
+  }, [collapsedGroups]);
+
+  // Define grouped sidebar items
+  const allSidebarGroups = useMemo<SidebarGroup[]>(
     () => [
+      // {
+      //   label: "Overview",
+      //   alwaysShow: true,
+      //   items: [
+      //     {
+      //       label: "Dashboard",
+      //       href: "/admin",
+      //       icon: <HomeIcon className="mr-2 h-4 w-4" />,
+      //     },
+      //   ],
+      // },
       {
-        label: "Dashboard",
-        href: "/admin",
-        icon: <HomeIcon className="mr-2 h-4 w-4" />,
-        // Dashboard accessible to all admins
-      },
-      {
-        label: "Analyst Reports",
-        href: "/admin/analyst-reports",
-        icon: <FileTextIcon className="mr-2 h-4 w-4" />,
-        permission: AdminPermission.MANAGE_STUDIES,
-      },
-      {
-        label: "Featured Studies",
-        href: "/admin/featured-studies",
-        icon: <StarIcon className="mr-2 h-4 w-4" />,
-        permission: AdminPermission.MANAGE_STUDIES,
-      },
-      {
-        label: "Token Consumption",
-        href: "/admin/token-consumption",
-        icon: <MonitorPlayIcon className="mr-2 h-4 w-4" />,
-        permission: AdminPermission.VIEW_TOKEN_CONSUMPTION,
-      },
-      {
-        label: "Statistics",
-        href: "/admin/statistics",
-        icon: <BarChartIcon className="mr-2 h-4 w-4" />,
-        permission: AdminPermission.VIEW_STATISTICS,
-      },
-      {
-        label: "Page Views",
-        href: "/admin/pageviews",
-        icon: <EyeIcon className="mr-2 h-4 w-4" />,
-        permission: AdminPermission.VIEW_STATISTICS,
+        label: "Content",
+        items: [
+          {
+            label: "Analyst Reports",
+            href: "/admin/analyst-reports",
+            icon: <FileTextIcon className="mr-2 h-4 w-4" />,
+            permission: AdminPermission.MANAGE_STUDIES,
+          },
+          {
+            label: "Featured Studies",
+            href: "/admin/featured-studies",
+            icon: <StarIcon className="mr-2 h-4 w-4" />,
+            permission: AdminPermission.MANAGE_STUDIES,
+          },
+          {
+            label: "Personas",
+            href: "/admin/personas",
+            icon: <UserIcon className="mr-2 h-4 w-4" />,
+            permission: AdminPermission.MANAGE_PERSONAS,
+          },
+          {
+            label: "Interviews",
+            href: "/admin/interviews",
+            icon: <VideoIcon className="mr-2 h-4 w-4" />,
+            permission: AdminPermission.MANAGE_INTERVIEWS,
+          },
+        ],
       },
       {
         label: "Users",
-        href: "/admin/users",
-        icon: <UserIcon className="mr-2 h-4 w-4" />,
-        permission: AdminPermission.MANAGE_USERS,
+        items: [
+          {
+            label: "Users",
+            href: "/admin/users",
+            icon: <UserIcon className="mr-2 h-4 w-4" />,
+            permission: AdminPermission.MANAGE_USERS,
+          },
+          {
+            label: "Teams",
+            href: "/admin/teams",
+            icon: <UsersIcon className="mr-2 h-4 w-4" />,
+            permission: AdminPermission.MANAGE_USERS,
+          },
+          {
+            label: "Payments",
+            href: "/admin/payments",
+            icon: <CreditCardIcon className="mr-2 h-4 w-4" />,
+            permission: AdminPermission.MANAGE_PAYMENTS,
+          },
+          // {
+          //   label: "Enterprise Leads",
+          //   href: "/admin/enterprise-leads",
+          //   icon: <MessageCircleIcon className="mr-2 h-4 w-4" />,
+          //   permission: AdminPermission.VIEW_ENTERPRISE_LEADS,
+          // },
+        ],
       },
       {
-        label: "Teams",
-        href: "/admin/teams",
-        icon: <UsersIcon className="mr-2 h-4 w-4" />,
-        permission: AdminPermission.MANAGE_USERS,
+        label: "Analytics",
+        items: [
+          {
+            label: "Statistics",
+            href: "/admin/statistics",
+            icon: <BarChartIcon className="mr-2 h-4 w-4" />,
+            permission: AdminPermission.VIEW_STATISTICS,
+          },
+          {
+            label: "Page Views",
+            href: "/admin/pageviews",
+            icon: <EyeIcon className="mr-2 h-4 w-4" />,
+            permission: AdminPermission.VIEW_STATISTICS,
+          },
+        ],
       },
       {
-        label: "Payments",
-        href: "/admin/payments",
-        icon: <CreditCardIcon className="mr-2 h-4 w-4" />,
-        permission: AdminPermission.MANAGE_PAYMENTS,
+        label: "System",
+        items: [
+          {
+            label: "Token Consumption",
+            href: "/admin/token-consumption",
+            icon: <MonitorPlayIcon className="mr-2 h-4 w-4" />,
+            permission: AdminPermission.VIEW_TOKEN_CONSUMPTION,
+          },
+          {
+            label: "Issue Studies",
+            href: "/admin/issue-studies",
+            icon: <AlertTriangleIcon className="mr-2 h-4 w-4" />,
+            role: "SUPER_ADMIN",
+          },
+          {
+            label: "Maintenance Mode",
+            href: "/admin/maintenance",
+            icon: <AlertTriangleIcon className="mr-2 h-4 w-4" />,
+            role: "SUPER_ADMIN",
+          },
+        ],
       },
       {
-        label: "Enterprise Leads",
-        href: "/admin/enterprise-leads",
-        icon: <MessageCircleIcon className="mr-2 h-4 w-4" />,
-        permission: AdminPermission.VIEW_ENTERPRISE_LEADS,
-      },
-      {
-        label: "Personas",
-        href: "/admin/personas",
-        icon: <UserIcon className="mr-2 h-4 w-4" />,
-        permission: AdminPermission.MANAGE_PERSONAS,
-      },
-      {
-        label: "Interviews",
-        href: "/admin/interviews",
-        icon: <VideoIcon className="mr-2 h-4 w-4" />,
-        permission: AdminPermission.MANAGE_INTERVIEWS,
-      },
-      {
-        label: "Issue Studies",
-        href: "/admin/issue-studies",
-        icon: <AlertTriangleIcon className="mr-2 h-4 w-4" />,
-        // Only for super admins
-        role: "SUPER_ADMIN",
-      },
-      {
-        label: "Maintenance Mode",
-        href: "/admin/maintenance",
-        icon: <AlertTriangleIcon className="mr-2 h-4 w-4" />,
-        role: "SUPER_ADMIN",
-      },
-      {
-        label: "View Site",
-        href: "/",
-        icon: <DatabaseIcon className="mr-2 h-4 w-4" />,
-        // View site accessible to all
+        label: "Quick Actions",
+        alwaysShow: true,
+        items: [
+          {
+            label: "View Site",
+            href: "/",
+            icon: <DatabaseIcon className="mr-2 h-4 w-4" />,
+          },
+        ],
       },
     ],
     [],
   );
 
-  // Filter items based on permissions and role
-  const sidebarItems = useMemo(
+  // Filter groups and items based on permissions and role
+  const visibleGroups = useMemo(
     () =>
-      allSidebarItems.filter((item) => {
-        // Super admins can access everything
-        if (adminRole === "SUPER_ADMIN") return true;
+      allSidebarGroups
+        .map((group) => ({
+          ...group,
+          items: group.items.filter((item) => {
+            // Super admins can access everything
+            if (adminRole === "SUPER_ADMIN") return true;
 
-        // Items that require SUPER_ADMIN role are filtered out for others
-        if (item.role === "SUPER_ADMIN") return false;
+            // Items that require SUPER_ADMIN role are filtered out for others
+            if (item.role === "SUPER_ADMIN") return false;
 
-        // Items without permission requirements are accessible
-        if (!item.permission) return true;
+            // Items without permission requirements are accessible
+            if (!item.permission) return true;
 
-        // Check if user has the required permission
-        return permissions.includes(item.permission);
-      }),
-    [adminRole, permissions, allSidebarItems],
+            // Check if user has the required permission
+            return permissions.includes(item.permission);
+          }),
+        }))
+        .filter((group) => group.items.length > 0), // Only show groups with visible items
+    [adminRole, permissions, allSidebarGroups],
   );
+
+  const toggleGroup = (groupLabel: string) => {
+    setCollapsedGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(groupLabel)) {
+        next.delete(groupLabel);
+      } else {
+        next.add(groupLabel);
+      }
+      return next;
+    });
+  };
 
   const closeSidebar = () => {
     const sidebar = document.getElementById("admin-sidebar");
@@ -163,9 +239,9 @@ export default function AdminSidebar({ adminRole, permissions = [] }: AdminSideb
     <>
       <aside
         id="admin-sidebar"
-        className="w-full md:w-64 border-r bg-background -translate-x-full md:translate-x-0 fixed md:relative top-0 left-0 h-full z-40 transition-transform duration-300 ease-in-out shadow-lg md:shadow-none"
+        className="w-full md:w-64 border-r bg-background -translate-x-full md:translate-x-0 fixed md:relative top-0 left-0 h-full z-40 transition-transform duration-300 ease-in-out shadow-lg md:shadow-none flex flex-col"
       >
-        <div className="flex h-16 items-center border-b px-6 justify-between">
+        <div className="flex h-16 items-center border-b px-6 justify-between flex-shrink-0">
           <h1 className="text-lg font-bold">Admin Panel</h1>
           <div className="flex items-center gap-2">
             <div className="hidden md:block">
@@ -182,26 +258,79 @@ export default function AdminSidebar({ adminRole, permissions = [] }: AdminSideb
             </Button>
           </div>
         </div>
-        <nav className="p-4">
-          <ul className="space-y-2">
-            {sidebarItems.map((item) => (
-              <li key={item.href}>
-                <Button asChild variant="ghost" className="w-full justify-start">
-                  <Link
-                    href={item.href}
-                    onClick={() => {
-                      if (window.innerWidth < 768) {
-                        closeSidebar();
-                      }
-                    }}
-                  >
-                    {item.icon}
-                    {item.label}
-                  </Link>
-                </Button>
-              </li>
+        <nav className="p-4 flex-1 overflow-y-auto">
+          <div className="space-y-4">
+            {visibleGroups.map((group) => (
+              <div key={group.label}>
+                {group.alwaysShow ? (
+                  // Always visible groups (no collapse functionality)
+                  <div>
+                    <div className="px-2 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      {group.label}
+                    </div>
+                    <ul className="mt-2 space-y-1">
+                      {group.items.map((item) => (
+                        <li key={item.href}>
+                          <Button asChild variant="ghost" className="w-full justify-start">
+                            <Link
+                              href={item.href}
+                              onClick={() => {
+                                if (window.innerWidth < 768) {
+                                  closeSidebar();
+                                }
+                              }}
+                            >
+                              {item.icon}
+                              {item.label}
+                            </Link>
+                          </Button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : (
+                  // Collapsible groups
+                  <Collapsible.Root open={!collapsedGroups.has(group.label)}>
+                    <Collapsible.Trigger asChild>
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-between px-2 py-1 h-auto text-xs font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground"
+                        onClick={() => toggleGroup(group.label)}
+                      >
+                        {group.label}
+                        {collapsedGroups.has(group.label) ? (
+                          <ChevronRightIcon className="h-3 w-3" />
+                        ) : (
+                          <ChevronDownIcon className="h-3 w-3" />
+                        )}
+                      </Button>
+                    </Collapsible.Trigger>
+                    <Collapsible.Content className="mt-2">
+                      <ul className="space-y-1">
+                        {group.items.map((item) => (
+                          <li key={item.href}>
+                            <Button asChild variant="ghost" className="w-full justify-start">
+                              <Link
+                                href={item.href}
+                                onClick={() => {
+                                  if (window.innerWidth < 768) {
+                                    closeSidebar();
+                                  }
+                                }}
+                              >
+                                {item.icon}
+                                {item.label}
+                              </Link>
+                            </Button>
+                          </li>
+                        ))}
+                      </ul>
+                    </Collapsible.Content>
+                  </Collapsible.Root>
+                )}
+              </div>
             ))}
-          </ul>
+          </div>
         </nav>
       </aside>
 
