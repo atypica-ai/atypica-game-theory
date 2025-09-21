@@ -31,6 +31,7 @@ import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { createOrGetUserPersonaChat } from "../../(persona)/actions";
 import { fetchPersonas, rescorePersona } from "./actions";
+import { PersonaImportDialog } from "./PersonaImportDialog";
 
 type PaginationInfo = {
   page: number;
@@ -55,6 +56,8 @@ export default function PersonasList({
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [rescoringId, setRescoringId] = useState<number | null>(null);
   const [chatCreating, setChatCreating] = useState<Record<number, boolean>>({});
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [selectedImportId, setSelectedImportId] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Use query params hook for URL synchronization
@@ -64,6 +67,8 @@ export default function PersonasList({
     tiers: number[];
     locales: string[];
   };
+
+  console.log(initialParams);
 
   const {
     values: {
@@ -82,8 +87,8 @@ export default function PersonasList({
       locales: createParamConfig.stringArray(["zh-CN", "en-US"]),
     },
     initialValues: (({ tiers, locales, ...rest }) => ({
-      tiers: tiers && typeof tiers === "string" ? tiers.split(",").map(Number) : undefined,
-      locales: locales && typeof locales === "string" ? locales.split(",") : undefined,
+      tiers: tiers ? tiers.toString().split(",").map(Number) : undefined,
+      locales: locales ? locales.toString().split(",") : undefined,
       ...rest,
     }))(initialParams),
   });
@@ -343,11 +348,12 @@ export default function PersonasList({
                             className="text-xs h-5 gap-1"
                             onClick={(e) => {
                               e.stopPropagation();
-                              window.open(`/persona/import/${persona.personaImport?.id}`, "_blank");
+                              setSelectedImportId(persona.personaImport?.id || null);
+                              setImportDialogOpen(true);
                             }}
                           >
                             <FileTextIcon className="size-3" />
-                            Import
+                            View Import
                           </Button>
                           {persona.personaImport.user?.email && (
                             <Badge variant="outline" className="whitespace-nowrap text-xs">
@@ -441,6 +447,12 @@ export default function PersonasList({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <PersonaImportDialog
+        open={importDialogOpen}
+        onOpenChange={setImportDialogOpen}
+        personaImportId={selectedImportId}
+      />
     </div>
   );
 }

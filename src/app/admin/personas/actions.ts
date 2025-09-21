@@ -2,9 +2,10 @@
 
 import { createTextEmbedding } from "@/ai/embedding";
 import { scorePersona } from "@/app/(persona)/lib";
+import { PersonaImportAnalysis } from "@/app/(persona)/types";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { ServerActionResult } from "@/lib/serverAction";
-import { Persona } from "@/prisma/client";
+import { ChatMessageAttachment, Persona, PersonaImport, PersonaImportExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { AdminPermission } from "../types";
 
@@ -196,6 +197,49 @@ export async function fetchPersonas({
       pageSize,
       totalCount,
       totalPages: Math.ceil(totalCount / pageSize),
+    },
+  };
+}
+
+export async function fetchPersonaImportDetails(personaImportId: number): Promise<
+  ServerActionResult<{
+    personaImport: Omit<PersonaImport, "analysis" | "extra"> & {
+      analysis: Partial<PersonaImportAnalysis> | null;
+      extra: PersonaImportExtra;
+    };
+    attachments: ChatMessageAttachment[];
+    userEmail: string | null;
+  }>
+> {
+  await checkAdminAuth([AdminPermission.MANAGE_PERSONAS]);
+
+  const personaImport = await prisma.personaImport.findUnique({
+    where: { id: personaImportId },
+    include: {
+      user: {
+        select: { email: true },
+      },
+    },
+  });
+
+  if (!personaImport) {
+    return {
+      success: false,
+      code: "not_found",
+      message: "Persona import not found",
+    };
+  }
+
+  return {
+    success: true,
+    data: {
+      personaImport: {
+        ...personaImport,
+        analysis: personaImport.analysis as Partial<PersonaImportAnalysis> | null,
+        extra: personaImport.extra as PersonaImportExtra,
+      },
+      attachments: personaImport.attachments as ChatMessageAttachment[],
+      userEmail: personaImport.user.email,
     },
   };
 }
