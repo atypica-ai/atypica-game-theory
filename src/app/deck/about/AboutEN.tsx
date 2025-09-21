@@ -29,11 +29,7 @@ const slideNotes: { [key: number]: string } = {
   21: "From insight to action. Atypica.AI is not a replacement for traditional research but an innovative option providing speed and scale advantages when facing complex social and business problems. Research value lies not in generating reports but in driving effective action. Through connecting more MCPs, Atypica.AI is building a complete ecosystem from insight to execution. Redefining research value. Starting with consumer-understanding agents, Atypica.AI represents a new stage of consumer insight analysis - from passive analysis relying on historical data to active simulation based on intelligent agents. This shift from 'static analysis' to 'dynamic execution' enables companies to complete the full process from problem identification to strategy formulation within hours, achieving agile business models that 'research, decide, and execute' simultaneously.",
 };
 
-export function AboutEN({
-  showPresenterNotes = false,
-}: {
-  showPresenterNotes?: boolean;
-}) {
+export function AboutEN({ showPresenterNotes = false }: { showPresenterNotes?: boolean }) {
   const [currentSlide, setCurrentSlide] = useState(0);
 
   const goToNextSlide = useCallback(() => {
@@ -116,7 +112,8 @@ export class ResearchAgent {
             <div className="max-w-4xl bg-zinc-800/70 backdrop-blur-sm border border-zinc-600 rounded-lg p-8 relative z-10">
               <div className="border-l-4 border-[#1bff1b] pl-6">
                 <p className="text-base md:text-lg font-light leading-relaxed text-zinc-300 mb-4">
-                  Business research is about understanding human decision-making. Decisions are influenced by narratives, emotions, and cognitive biases.
+                  Business research is about understanding human decision-making. Decisions are
+                  influenced by narratives, emotions, and cognitive biases.
                 </p>
                 <p className="text-base md:text-lg font-light leading-relaxed text-zinc-300 opacity-80">
                   Understanding decision mechanisms is the core of business research.
@@ -221,7 +218,8 @@ const llmModels = {
             <div className="flex-1 flex flex-col justify-center max-w-5xl mx-auto relative z-10">
               <div className="bg-zinc-800/70 backdrop-blur-sm border border-zinc-600 p-8 rounded-xl mb-6 transition-all hover:border-[#1bff1b] hover:shadow-[0_0_20px_rgba(27,255,27,0.1)]">
                 <p className="text-base md:text-lg font-light leading-relaxed text-zinc-300 mb-4">
-                  Simulating human behavior and decisions is not a new concept. Before large language models, scholars used mathematical models for group behavior modeling.
+                  Simulating human behavior and decisions is not a new concept. Before large
+                  language models, scholars used mathematical models for group behavior modeling.
                 </p>
                 <p className="text-base md:text-lg font-light leading-relaxed text-zinc-300 opacity-90">
                   But these methods were helpless against
@@ -238,14 +236,20 @@ const llmModels = {
 
               <div className="grid grid-cols-2 gap-6">
                 <div className="bg-zinc-700/70 backdrop-blur-sm border border-zinc-600 p-6 rounded-lg transition-all hover:border-red-500 hover:shadow-[0_0_20px_rgba(239,68,68,0.1)]">
-                  <h3 className="text-base font-semibold text-red-400 mb-3">Traditional Mathematical Models</h3>
+                  <h3 className="text-base font-semibold text-red-400 mb-3">
+                    Traditional Mathematical Models
+                  </h3>
                   <p className="text-sm font-light text-zinc-300 opacity-80">
                     Treat people as simple entities, ignoring individual differences
                   </p>
                 </div>
                 <div className="bg-zinc-800/70 backdrop-blur-sm border border-[#1bff1b] p-6 rounded-lg transition-all hover:shadow-[0_0_20px_rgba(27,255,27,0.1)]">
-                  <h3 className="text-base font-semibold text-[#1bff1b] mb-3">Large Language Model Opportunity</h3>
-                  <p className="text-sm font-light text-zinc-300">Individual simulation becomes possible</p>
+                  <h3 className="text-base font-semibold text-[#1bff1b] mb-3">
+                    Large Language Model Opportunity
+                  </h3>
+                  <p className="text-sm font-light text-zinc-300">
+                    Individual simulation becomes possible
+                  </p>
                 </div>
               </div>
             </div>
@@ -288,10 +292,12 @@ class SubjectiveAgent {
             <div className="flex-1 flex flex-col justify-center max-w-5xl mx-auto space-y-8 relative z-10">
               <div className="bg-zinc-800/70 backdrop-blur-sm border border-zinc-600 p-8 rounded-xl transition-all hover:border-[#1bff1b] hover:shadow-[0_0_20px_rgba(27,255,27,0.1)]">
                 <p className="text-base md:text-lg font-light leading-relaxed text-zinc-300 mb-4">
-                  Large language models enable individual simulation through Agent-Based Modeling (ABM).
+                  Large language models enable individual simulation through Agent-Based Modeling
+                  (ABM).
                 </p>
                 <p className="text-base md:text-lg font-light leading-relaxed text-zinc-300 opacity-90">
-                  The core approach is to build models for individuals based on their detailed data using large language models.
+                  The core approach is to build models for individuals based on their detailed data
+                  using large language models.
                 </p>
               </div>
 
@@ -324,12 +330,15 @@ class SubjectiveAgent {
               <div className="w-2/5 flex flex-col justify-center">
                 <div className="bg-zinc-800/70 backdrop-blur-sm border border-zinc-600 p-6 rounded-xl transition-all hover:border-[#1bff1b] hover:shadow-[0_0_20px_rgba(27,255,27,0.1)]">
                   <p className="text-base md:text-lg font-light leading-relaxed text-zinc-300 mb-6">
-                    After injecting the complete Harry Potter corpus into a large language model, the system can build the character&rsquo;s cognitive model, thus inferring behavioral preferences not explicitly mentioned in the original text.
+                    After injecting the complete Harry Potter corpus into a large language model,
+                    the system can build the character&rsquo;s cognitive model, thus inferring
+                    behavioral preferences not explicitly mentioned in the original text.
                   </p>
                   <div className="bg-zinc-700 border border-zinc-600 p-4 rounded-lg text-center">
                     <p className="text-sm font-semibold text-[#1bff1b] mb-2">Example Question</p>
                     <p className="text-sm font-light text-zinc-300">
-                      &ldquo;Would Harry Potter be more likely to choose coffee or juice for breakfast?&rdquo;
+                      &ldquo;Would Harry Potter be more likely to choose coffee or juice for
+                      breakfast?&rdquo;
                     </p>
                   </div>
                 </div>
@@ -352,23 +361,32 @@ class SubjectiveAgent {
                     <div className="bg-[#121212]/50 backdrop-blur-sm p-4 rounded-lg border border-zinc-600">
                       <div className="space-y-3 text-zinc-300 leading-relaxed text-xs">
                         <p className="font-medium text-[#1bff1b] shadow-[0_0_8px_rgba(27,255,27,0.35)]">
-                          Harry would likely choose juice for breakfast, especially pumpkin juice, rather than coffee.
+                          Harry would likely choose juice for breakfast, especially pumpkin juice,
+                          rather than coffee.
                         </p>
 
                         <p className="opacity-90">
-                          In the wizarding world, pumpkin juice is a common beverage, often seen during meals at Hogwarts. Throughout the series, there are descriptions of Harry enjoying pumpkin juice at breakfast.
+                          In the wizarding world, pumpkin juice is a common beverage, often seen
+                          during meals at Hogwarts. Throughout the series, there are descriptions of
+                          Harry enjoying pumpkin juice at breakfast.
                         </p>
 
                         <p className="opacity-90">
-                          Coffee is never mentioned as something Harry drinks, which isn&rsquo;t surprising given that he&rsquo;s a child or teenager for most of the story. The British setting also suggests that if he were to drink a hot beverage, it would more likely be tea rather than coffee.
+                          Coffee is never mentioned as something Harry drinks, which isn&rsquo;t
+                          surprising given that he&rsquo;s a child or teenager for most of the
+                          story. The British setting also suggests that if he were to drink a hot
+                          beverage, it would more likely be tea rather than coffee.
                         </p>
 
                         <p className="opacity-90">
-                          Additionally, while students sometimes drink butterbeer on special occasions (though this is more popular in Hogsmeade village), coffee isn&rsquo;t listed as a popular magical beverage in Harry&rsquo;s circle.
+                          Additionally, while students sometimes drink butterbeer on special
+                          occasions (though this is more popular in Hogsmeade village), coffee
+                          isn&rsquo;t listed as a popular magical beverage in Harry&rsquo;s circle.
                         </p>
 
                         <p className="font-medium text-[#1bff1b] bg-zinc-800/80 border border-zinc-600 p-2 rounded text-xs shadow-[0_0_8px_rgba(27,255,27,0.35)]">
-                          Based on plot clues from the books, Harry Potter would tend to choose juice over coffee at breakfast.
+                          Based on plot clues from the books, Harry Potter would tend to choose
+                          juice over coffee at breakfast.
                         </p>
                       </div>
                     </div>
@@ -419,7 +437,9 @@ class SubjectiveAgent {
               <div className="bg-zinc-800/70 backdrop-blur-sm/50 border-zinc-600 p-6 rounded-xl border mb-6">
                 <p className="text-base md:text-lg font-light leading-relaxed text-zinc-300 text-center">
                   atypica.AI generates detailed research reports through
-                  <span className="font-medium text-zinc-300">10-20 minute &ldquo;long reasoning&rdquo;</span>
+                  <span className="font-medium text-zinc-300">
+                    10-20 minute &ldquo;long reasoning&rdquo;
+                  </span>
                 </p>
               </div>
 
@@ -429,7 +449,9 @@ class SubjectiveAgent {
                     <span className="text-zinc-900 text-xs font-bold">1</span>
                   </div>
                   <h3 className="text-xs font-medium text-zinc-300 mb-1">Clarify Question</h3>
-                  <p className="text-xs font-light text-zinc-300 opacity-60">Analyze research intent</p>
+                  <p className="text-xs font-light text-zinc-300 opacity-60">
+                    Analyze research intent
+                  </p>
                 </div>
 
                 <div className="bg-zinc-800 border-zinc-600 p-3 rounded-lg border text-center">
@@ -437,7 +459,9 @@ class SubjectiveAgent {
                     <span className="text-zinc-900 text-xs font-bold">2</span>
                   </div>
                   <h3 className="text-xs font-medium text-zinc-300 mb-1">Design Task</h3>
-                  <p className="text-xs font-light text-zinc-300 opacity-60">Create work sequence</p>
+                  <p className="text-xs font-light text-zinc-300 opacity-60">
+                    Create work sequence
+                  </p>
                 </div>
 
                 <div className="bg-zinc-800 border-zinc-600 p-3 rounded-lg border text-center">
@@ -445,7 +469,9 @@ class SubjectiveAgent {
                     <span className="text-zinc-900 text-xs font-bold">3</span>
                   </div>
                   <h3 className="text-xs font-medium text-zinc-300 mb-1">Browse Social Media</h3>
-                  <p className="text-xs font-light text-zinc-300 opacity-60">Collect data sources</p>
+                  <p className="text-xs font-light text-zinc-300 opacity-60">
+                    Collect data sources
+                  </p>
                 </div>
 
                 <div className="bg-zinc-800 border-zinc-600 p-3 rounded-lg border text-center">
@@ -461,7 +487,9 @@ class SubjectiveAgent {
                     <span className="text-zinc-900 text-xs font-bold">5</span>
                   </div>
                   <h3 className="text-xs font-medium text-zinc-300 mb-1">Interview Simulation</h3>
-                  <p className="text-xs font-light text-zinc-300 opacity-60">AI persona interaction</p>
+                  <p className="text-xs font-light text-zinc-300 opacity-60">
+                    AI persona interaction
+                  </p>
                 </div>
 
                 <div className="bg-zinc-800 border-zinc-600 p-3 rounded-lg border text-center">
@@ -484,7 +512,8 @@ class SubjectiveAgent {
               <div className="bg-zinc-800/70 backdrop-blur-sm/50 p-3 rounded-xl border border-zinc-600 mt-4">
                 <p className="text-xs text-zinc-300 text-center">
                   <span className="font-semibold text-zinc-300">&ldquo;Nerd Stats&rdquo;</span>
-                  record time spent, steps, AI persona count, token consumption during work process, serving as AI&rsquo;s
+                  record time spent, steps, AI persona count, token consumption during work process,
+                  serving as AI&rsquo;s
                   <span className="font-semibold">&ldquo;Proof of Work&rdquo;</span>
                 </p>
               </div>
@@ -505,10 +534,13 @@ class SubjectiveAgent {
             <div className="flex-1 flex flex-col justify-center">
               <div className="mb-6">
                 <p className="text-base md:text-lg font-light leading-relaxed text-zinc-300">
-                  Generative persona construction uses strict validation methods to ensure model accuracy.
+                  Generative persona construction uses strict validation methods to ensure model
+                  accuracy.
                 </p>
                 <p className="text-base md:text-lg font-light leading-relaxed text-zinc-300 mt-4">
-                  Research shows that real users have about 81% consistency when answering the same question two weeks apart, using this as the perfect baseline (100 point standard) to evaluate the effectiveness of different modeling methods.
+                  Research shows that real users have about 81% consistency when answering the same
+                  question two weeks apart, using this as the perfect baseline (100 point standard)
+                  to evaluate the effectiveness of different modeling methods.
                 </p>
               </div>
               <div className="bg-zinc-700 border-zinc-600 p-6 rounded-xl border text-center">
@@ -539,8 +571,9 @@ class SubjectiveAgent {
                 <div className="bg-zinc-800/70 backdrop-blur-sm/50 p-4 rounded-xl border border-zinc-600">
                   <p className="text-sm text-zinc-300 leading-relaxed font-light">
                     <span className="font-semibold text-zinc-300">Evaluation baseline:</span>
-                    Real humans have about{" "}
-                    <span className="font-semibold">81%</span> consistency when answering the same question two weeks later, setting this as the perfect standard (100 points)
+                    Real humans have about <span className="font-semibold">81%</span> consistency
+                    when answering the same question two weeks later, setting this as the perfect
+                    standard (100 points)
                   </p>
                 </div>
               </div>
@@ -563,7 +596,9 @@ class SubjectiveAgent {
                     </thead>
                     <tbody>
                       <tr className="border-t border-zinc-600">
-                        <td className="px-4 py-2 text-xs font-medium text-zinc-300">Personal Info</td>
+                        <td className="px-4 py-2 text-xs font-medium text-zinc-300">
+                          Personal Info
+                        </td>
                         <td className="px-4 py-2 text-center">
                           <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-zinc-700 text-zinc-300">
                             55 points
@@ -574,7 +609,9 @@ class SubjectiveAgent {
                         </td>
                       </tr>
                       <tr className="border-t border-zinc-600">
-                        <td className="px-4 py-2 text-xs font-medium text-zinc-300">Personality Tests</td>
+                        <td className="px-4 py-2 text-xs font-medium text-zinc-300">
+                          Personality Tests
+                        </td>
                         <td className="px-4 py-2 text-center">
                           <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-zinc-700 text-zinc-300">
                             64 points
@@ -611,7 +648,9 @@ class SubjectiveAgent {
                         </td>
                       </tr>
                       <tr className="border-t border-zinc-600 bg-zinc-800/70 backdrop-blur-sm/20">
-                        <td className="px-4 py-2 text-xs font-semibold text-zinc-300">In-depth Interviews</td>
+                        <td className="px-4 py-2 text-xs font-semibold text-zinc-300">
+                          In-depth Interviews
+                        </td>
                         <td className="px-4 py-2 text-center">
                           <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-zinc-700 text-zinc-300">
                             85 points
@@ -676,7 +715,8 @@ class SubjectiveAgent {
                   </p>
                   <div className="bg-zinc-700/20 p-3 rounded-lg">
                     <p className="text-xs text-zinc-300 font-medium">
-                      ⚠️ Limitation: Hard to understand &ldquo;what&rdquo; and &ldquo;why&rdquo; deeper motivations
+                      ⚠️ Limitation: Hard to understand &ldquo;what&rdquo; and &ldquo;why&rdquo;
+                      deeper motivations
                     </p>
                   </div>
                 </div>
@@ -688,21 +728,26 @@ class SubjectiveAgent {
                   <div className="flex items-start gap-2">
                     <div className="w-1.5 h-1.5 bg-zinc-400 rounded-full mt-1.5 flex-shrink-0"></div>
                     <p className="text-zinc-300 text-sm">
-                      Personal info and personality tests are <span className="font-semibold">static data</span>
+                      Personal info and personality tests are{" "}
+                      <span className="font-semibold">static data</span>
                     </p>
                   </div>
                   <div className="flex items-start gap-2">
                     <div className="w-1.5 h-1.5 bg-zinc-400 rounded-full mt-1.5 flex-shrink-0"></div>
                     <p className="text-zinc-300 text-sm">
                       Behavioral data is dynamic but hard to understand
-                      <span className="font-semibold"> &ldquo;what&rdquo; and &ldquo;why&rdquo;</span>
+                      <span className="font-semibold">
+                        {" "}
+                        &ldquo;what&rdquo; and &ldquo;why&rdquo;
+                      </span>
                       questions
                     </p>
                   </div>
                   <div className="flex items-start gap-2">
                     <div className="w-1.5 h-1.5 bg-zinc-400 rounded-full mt-1.5 flex-shrink-0"></div>
                     <p className="text-zinc-300 text-sm">
-                      For example: what <span className="font-semibold">part of a product</span> they like,
+                      For example: what <span className="font-semibold">part of a product</span>{" "}
+                      they like,
                       <span className="font-semibold"> why</span> they like a product, etc.
                     </p>
                   </div>
@@ -720,7 +765,8 @@ class SubjectiveAgent {
                 Breakthrough Solution
               </div>
               <h2 className="text-3xl md:text-4xl font-light tracking-tight text-zinc-300">
-                Social Media Data Modeling & <span className="font-black">Three-Layer Framework</span>
+                Social Media Data Modeling &{" "}
+                <span className="font-black">Three-Layer Framework</span>
               </h2>
               <div className="w-12 h-0.5 mt-2 bg-[#1bff1b]"></div>
             </div>
@@ -728,7 +774,9 @@ class SubjectiveAgent {
             <div className="flex-1 flex flex-col justify-center space-y-6">
               <div className="bg-zinc-800/70 backdrop-blur-sm/50 p-6 rounded-xl border border-zinc-600">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-xl font-semibold text-zinc-300">Social Media Content Modeling</h3>
+                  <h3 className="text-xl font-semibold text-zinc-300">
+                    Social Media Content Modeling
+                  </h3>
                   <div className="bg-zinc-700 px-3 py-1 rounded-full">
                     <span className="font-bold text-xl text-[#1bff1b]">79 points</span>
                   </div>
@@ -738,7 +786,9 @@ class SubjectiveAgent {
                   <div>
                     <p className="text-zinc-300 leading-relaxed mb-4">
                       Building dynamic consumer models based on
-                      <span className="font-semibold text-zinc-300">&ldquo;social media&rdquo;</span>
+                      <span className="font-semibold text-zinc-300">
+                        &ldquo;social media&rdquo;
+                      </span>
                       content
                     </p>
 
@@ -770,7 +820,9 @@ class SubjectiveAgent {
 
                   <div>
                     <div className="bg-zinc-700/50 p-4 rounded-lg border border-zinc-600">
-                      <h4 className="text-base font-semibold text-[#1bff1b] mb-3">Data Processing Flow</h4>
+                      <h4 className="text-base font-semibold text-[#1bff1b] mb-3">
+                        Data Processing Flow
+                      </h4>
                       <div className="space-y-2 text-sm text-zinc-300">
                         <div className="flex items-start gap-2">
                           <span className="w-2 h-2 bg-[#1bff1b] rounded-full mt-1.5 flex-shrink-0"></span>
@@ -798,15 +850,21 @@ class SubjectiveAgent {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                   <div className="bg-zinc-700/70 p-4 rounded-lg border-l-4 border-[#1bff1b]">
                     <h4 className="text-lg font-bold mb-2 text-zinc-300">Explicit Expression</h4>
-                    <p className="text-zinc-300 text-sm mb-3">Directly record consumer&rsquo;s explicit preferences and attitudes</p>
+                    <p className="text-zinc-300 text-sm mb-3">
+                      Directly record consumer&rsquo;s explicit preferences and attitudes
+                    </p>
                     <div className="bg-zinc-800 p-2 rounded">
-                      <p className="text-xs text-zinc-300 italic">&ldquo;I like eco-friendly products&rdquo;</p>
+                      <p className="text-xs text-zinc-300 italic">
+                        &ldquo;I like eco-friendly products&rdquo;
+                      </p>
                     </div>
                   </div>
 
                   <div className="bg-zinc-700/70 p-4 rounded-lg border-l-4 border-[#1bff1b]">
                     <h4 className="text-lg font-bold mb-2 text-zinc-300">Implicit Logic</h4>
-                    <p className="text-zinc-300 text-sm mb-3">Identify consumer&rsquo;s underlying thinking patterns</p>
+                    <p className="text-zinc-300 text-sm mb-3">
+                      Identify consumer&rsquo;s underlying thinking patterns
+                    </p>
                     <div className="bg-zinc-800 p-2 rounded">
                       <p className="text-xs text-zinc-300 italic">Risk aversion, herd mentality</p>
                     </div>
@@ -814,9 +872,13 @@ class SubjectiveAgent {
 
                   <div className="bg-zinc-700/70 p-4 rounded-lg border-l-4 border-[#1bff1b]">
                     <h4 className="text-lg font-bold mb-2 text-zinc-300">Emotional Association</h4>
-                    <p className="text-zinc-300 text-sm mb-3">Analyze emotional tones of different consumption experiences</p>
+                    <p className="text-zinc-300 text-sm mb-3">
+                      Analyze emotional tones of different consumption experiences
+                    </p>
                     <div className="bg-zinc-800 p-2 rounded">
-                      <p className="text-xs text-zinc-300 italic">Positive/negative emotional triggers</p>
+                      <p className="text-xs text-zinc-300 italic">
+                        Positive/negative emotional triggers
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -844,14 +906,17 @@ class SubjectiveAgent {
             <div className="flex-1 flex flex-col justify-center space-y-4">
               <div className="bg-zinc-800/70 backdrop-blur-sm/50 p-4 rounded-xl border border-zinc-600">
                 <p className="text-sm text-zinc-300 leading-relaxed font-light">
-                  In-depth interview method: AI conducts 1-2 hour deep interviews with consumers, following up based on responses.
+                  In-depth interview method: AI conducts 1-2 hour deep interviews with consumers,
+                  following up based on responses.
                 </p>
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <div className="bg-zinc-800 p-3 rounded-lg border border-zinc-600 text-center shadow-sm">
                   <div className="text-lg font-bold mb-1 text-[#1bff1b]">1-2 hrs</div>
-                  <div className="text-xs text-zinc-300 opacity-70 font-medium">Interview duration</div>
+                  <div className="text-xs text-zinc-300 opacity-70 font-medium">
+                    Interview duration
+                  </div>
                 </div>
                 <div className="bg-zinc-800 p-3 rounded-lg border border-zinc-600 text-center shadow-sm">
                   <div className="text-lg font-bold mb-1 text-[#1bff1b]">5,000</div>
@@ -867,7 +932,9 @@ class SubjectiveAgent {
                 </div>
                 <div className="bg-zinc-800 p-3 rounded-lg border border-zinc-600 text-center shadow-sm">
                   <div className="text-lg font-bold mb-1 text-[#1bff1b]">85 pts</div>
-                  <div className="text-xs text-zinc-300 opacity-70 font-medium">Consistency evaluation</div>
+                  <div className="text-xs text-zinc-300 opacity-70 font-medium">
+                    Consistency evaluation
+                  </div>
                 </div>
               </div>
 
@@ -879,13 +946,23 @@ class SubjectiveAgent {
               </div>
 
               <div className="bg-zinc-800/70 backdrop-blur-sm/50 p-4 rounded-xl border border-zinc-600">
-                <h3 className="text-base font-semibold text-zinc-300 mb-2">AI Persona Construction Mechanism</h3>
+                <h3 className="text-base font-semibold text-zinc-300 mb-2">
+                  AI Persona Construction Mechanism
+                </h3>
                 <p className="text-zinc-300 leading-relaxed text-xs mb-2">
-                  Interview transcripts and analysis dimensions form the consumer&rsquo;s agent. When questioned, the agent responds based on the person&rsquo;s expressed views, values, and experiences from the interview.
+                  Interview transcripts and analysis dimensions form the consumer&rsquo;s agent.
+                  When questioned, the agent responds based on the person&rsquo;s expressed views,
+                  values, and experiences from the interview.
                 </p>
                 <p className="text-zinc-300 leading-relaxed text-xs">
-                  This method&rsquo;s advantage is maintaining information completeness and contextual coherence, without needing to predetermine which information is important, but letting the language model autonomously identify and utilize relevant information from complete interview content.
-                  <span className="font-semibold text-zinc-300"> Achieves 85 points in consistency evaluation.</span>
+                  This method&rsquo;s advantage is maintaining information completeness and
+                  contextual coherence, without needing to predetermine which information is
+                  important, but letting the language model autonomously identify and utilize
+                  relevant information from complete interview content.
+                  <span className="font-semibold text-zinc-300">
+                    {" "}
+                    Achieves 85 points in consistency evaluation.
+                  </span>
                 </p>
               </div>
             </div>
@@ -913,7 +990,8 @@ class SubjectiveAgent {
                 <p className="text-sm text-zinc-300 leading-relaxed font-light text-center">
                   In-depth interviews cover multiple key dimensions to
                   <span className="font-semibold text-zinc-300">
-                    comprehensively capture individual cognitive patterns, value systems and behavioral tendencies
+                    comprehensively capture individual cognitive patterns, value systems and
+                    behavioral tendencies
                   </span>
                 </p>
               </div>
@@ -922,28 +1000,39 @@ class SubjectiveAgent {
                 <div className="bg-zinc-800 p-4 rounded-lg border border-zinc-600 shadow-sm">
                   <h3 className="text-base font-semibold text-zinc-300 mb-2">Life Narrative</h3>
                   <p className="text-zinc-300 opacity-70 text-xs leading-relaxed">
-                    Participants tell their life story, including important turning points, setbacks, and achievements. This helps AI understand individual growth trajectory and personality formation.
+                    Participants tell their life story, including important turning points,
+                    setbacks, and achievements. This helps AI understand individual growth
+                    trajectory and personality formation.
                   </p>
                 </div>
 
                 <div className="bg-zinc-800 p-4 rounded-lg border border-zinc-600 shadow-sm">
                   <h3 className="text-base font-semibold text-zinc-300 mb-2">Value Exploration</h3>
                   <p className="text-zinc-300 opacity-70 text-xs leading-relaxed">
-                    Deep exploration of participants&rsquo; core values through open-ended questions, including views on family, work, social responsibility, and understanding of success, happiness, justice.
+                    Deep exploration of participants&rsquo; core values through open-ended
+                    questions, including views on family, work, social responsibility, and
+                    understanding of success, happiness, justice.
                   </p>
                 </div>
 
                 <div className="bg-zinc-800 p-4 rounded-lg border border-zinc-600 shadow-sm">
-                  <h3 className="text-base font-semibold text-zinc-300 mb-2">Social Viewpoint Expression</h3>
+                  <h3 className="text-base font-semibold text-zinc-300 mb-2">
+                    Social Viewpoint Expression
+                  </h3>
                   <p className="text-zinc-300 opacity-70 text-xs leading-relaxed">
-                    Collect participants&rsquo; views on current social issues, including political leanings, attitudes toward social problems, expectations for the future, providing foundation for agent performance in social science surveys.
+                    Collect participants&rsquo; views on current social issues, including political
+                    leanings, attitudes toward social problems, expectations for the future,
+                    providing foundation for agent performance in social science surveys.
                   </p>
                 </div>
 
                 <div className="bg-zinc-800 p-4 rounded-lg border border-zinc-600 shadow-sm">
-                  <h3 className="text-base font-semibold text-zinc-300 mb-2">Decision Pattern Analysis</h3>
+                  <h3 className="text-base font-semibold text-zinc-300 mb-2">
+                    Decision Pattern Analysis
+                  </h3>
                   <p className="text-zinc-300 opacity-70 text-xs leading-relaxed">
-                    Through specific scenario discussions, understand participants&rsquo; thinking process, weighing factors, and decision criteria when facing choices.
+                    Through specific scenario discussions, understand participants&rsquo; thinking
+                    process, weighing factors, and decision criteria when facing choices.
                   </p>
                 </div>
               </div>
@@ -970,27 +1059,38 @@ class SubjectiveAgent {
             <div className="flex-1 flex flex-col justify-center space-y-4">
               <div className="bg-zinc-800/70 backdrop-blur-sm/50 p-4 rounded-xl border border-zinc-600">
                 <p className="text-sm text-zinc-300 leading-relaxed font-light">
-                  Atypica.AI has built an agent ecosystem covering diverse consumer groups, with numbers continuously growing.
+                  Atypica.AI has built an agent ecosystem covering diverse consumer groups, with
+                  numbers continuously growing.
                 </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="bg-zinc-800/70 backdrop-blur-sm/50 p-4 rounded-xl border border-zinc-600 text-center">
                   <div className="text-4xl font-bold mb-2 text-[#1bff1b]">300k</div>
-                  <h3 className="text-base font-semibold text-zinc-300 mb-2">Synthetic Consumer Agents</h3>
-                  <p className="text-zinc-300 text-xs">Based on &ldquo;social media&rdquo; data construction</p>
+                  <h3 className="text-base font-semibold text-zinc-300 mb-2">
+                    Synthetic Consumer Agents
+                  </h3>
+                  <p className="text-zinc-300 text-xs">
+                    Based on &ldquo;social media&rdquo; data construction
+                  </p>
                 </div>
 
                 <div className="bg-zinc-800/70 backdrop-blur-sm/50 p-4 rounded-xl border border-zinc-600 text-center">
                   <div className="text-4xl font-bold mb-2 text-[#1bff1b]">10k</div>
-                  <h3 className="text-base font-semibold text-zinc-300 mb-2">Real Consumer Agents</h3>
-                  <p className="text-zinc-300 text-xs">Based on &ldquo;in-depth interview&rdquo; data construction</p>
+                  <h3 className="text-base font-semibold text-zinc-300 mb-2">
+                    Real Consumer Agents
+                  </h3>
+                  <p className="text-zinc-300 text-xs">
+                    Based on &ldquo;in-depth interview&rdquo; data construction
+                  </p>
                 </div>
               </div>
 
               <div className="bg-zinc-800 rounded-xl border border-zinc-600 overflow-hidden shadow-sm">
                 <div className="px-4 py-2 bg-zinc-800/70 backdrop-blur-sm">
-                  <h3 className="text-sm font-semibold text-zinc-300">Intelligent Calling Process</h3>
+                  <h3 className="text-sm font-semibold text-zinc-300">
+                    Intelligent Calling Process
+                  </h3>
                 </div>
                 <div className="p-4">
                   <div className="flex items-center justify-between">
@@ -1026,7 +1126,9 @@ class SubjectiveAgent {
               </div>
 
               <div className="bg-[#1bff1b] text-zinc-900 p-3 rounded-lg text-center">
-                <p className="text-sm font-semibold">Achieve large-scale, multi-dimensional consumer insight collection</p>
+                <p className="text-sm font-semibold">
+                  Achieve large-scale, multi-dimensional consumer insight collection
+                </p>
               </div>
             </div>
           </div>
@@ -1052,7 +1154,9 @@ class SubjectiveAgent {
               <div className="bg-zinc-800/70 backdrop-blur-sm/50 p-4 rounded-xl border border-zinc-600">
                 <p className="text-sm text-zinc-300 leading-relaxed font-light">
                   Research types are divided into
-                  <span className="font-semibold text-zinc-300">Testing, Insight, Planning, Creative</span>
+                  <span className="font-semibold text-zinc-300">
+                    Testing, Insight, Planning, Creative
+                  </span>
                   four categories.
                 </p>
               </div>
@@ -1061,19 +1165,25 @@ class SubjectiveAgent {
                 <div className="bg-zinc-800/70 backdrop-blur-sm/50 p-4 rounded-xl border border-zinc-600 text-center">
                   <div className="text-2xl font-bold text-zinc-300 mb-2">Testing</div>
                   <h3 className="text-base font-semibold text-zinc-300 mb-1">Testing</h3>
-                  <p className="text-xs text-zinc-300">Product function testing, user experience validation</p>
+                  <p className="text-xs text-zinc-300">
+                    Product function testing, user experience validation
+                  </p>
                 </div>
 
                 <div className="bg-zinc-800/70 backdrop-blur-sm/50 p-4 rounded-xl border border-zinc-600 text-center">
                   <div className="text-2xl font-bold text-zinc-300 mb-2">Insight</div>
                   <h3 className="text-base font-semibold text-zinc-300 mb-1">Insight</h3>
-                  <p className="text-xs text-zinc-300">Consumer behavior analysis, market trend research</p>
+                  <p className="text-xs text-zinc-300">
+                    Consumer behavior analysis, market trend research
+                  </p>
                 </div>
 
                 <div className="bg-zinc-800/70 backdrop-blur-sm/50 p-4 rounded-xl border border-zinc-600 text-center">
                   <div className="text-2xl font-bold text-zinc-300 mb-2">Planning</div>
                   <h3 className="text-base font-semibold text-zinc-300 mb-1">Planning</h3>
-                  <p className="text-xs text-zinc-300">Strategy development, product roadmap planning</p>
+                  <p className="text-xs text-zinc-300">
+                    Strategy development, product roadmap planning
+                  </p>
                 </div>
 
                 <div className="bg-zinc-800/70 backdrop-blur-sm/50 p-4 rounded-xl border border-zinc-600 text-center">
@@ -1108,7 +1218,9 @@ class SubjectiveAgent {
                   </div>
                   <div className="bg-zinc-700 p-3 rounded-lg">
                     <h4 className="text-xs font-medium text-zinc-300 mb-1">Co-creation</h4>
-                    <p className="text-xs text-zinc-300 opacity-80">Mars crispy rice new product creative co-creation</p>
+                    <p className="text-xs text-zinc-300 opacity-80">
+                      Mars crispy rice new product creative co-creation
+                    </p>
                   </div>
                 </div>
                 <div className="text-center">
@@ -1194,7 +1306,9 @@ class SubjectiveAgent {
               </div>
 
               <div className="bg-zinc-700 p-4 rounded-xl border border-zinc-600">
-                <h3 className="text-base font-semibold text-zinc-300 mb-3">Currently Not Suitable Scenarios</h3>
+                <h3 className="text-base font-semibold text-zinc-300 mb-3">
+                  Currently Not Suitable Scenarios
+                </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
                   <div className="text-zinc-300 opacity-70">
                     <span className="text-red-400">•</span> Complex behavior observation
@@ -1221,7 +1335,9 @@ class SubjectiveAgent {
               <h2 className="text-5xl md:text-6xl font-light tracking-tight text-zinc-300 mb-6">
                 Product Idea
               </h2>
-              <h2 className="text-5xl md:text-6xl font-black tracking-tight text-zinc-300">Origins</h2>
+              <h2 className="text-5xl md:text-6xl font-black tracking-tight text-zinc-300">
+                Origins
+              </h2>
               <div className="w-16 h-1 bg-[#1bff1b] mt-6"></div>
             </div>
 
@@ -1237,7 +1353,9 @@ class SubjectiveAgent {
                   <div className="w-12 h-12 bg-[#1bff1b] rounded-full flex items-center justify-center mx-auto mb-4">
                     <span className="text-zinc-900 font-bold text-lg">1</span>
                   </div>
-                  <h3 className="text-lg font-semibold text-zinc-300 mb-2">Theoretical Foundation</h3>
+                  <h3 className="text-lg font-semibold text-zinc-300 mb-2">
+                    Theoretical Foundation
+                  </h3>
                   <p className="text-sm text-zinc-300 opacity-70">Stanford Town research</p>
                 </div>
 
@@ -1253,7 +1371,9 @@ class SubjectiveAgent {
                   <div className="w-12 h-12 bg-[#1bff1b] rounded-full flex items-center justify-center mx-auto mb-4">
                     <span className="text-zinc-900 font-bold text-lg">3</span>
                   </div>
-                  <h3 className="text-lg font-semibold text-zinc-300 mb-2">Reasoning Architecture</h3>
+                  <h3 className="text-lg font-semibold text-zinc-300 mb-2">
+                    Reasoning Architecture
+                  </h3>
                   <p className="text-sm text-zinc-300 opacity-70">DeepSeek R1</p>
                 </div>
 
@@ -1288,14 +1408,21 @@ class SubjectiveAgent {
                   2023: Multi-agent Interaction Concept
                 </h3>
                 <p className="text-base font-light leading-relaxed text-zinc-300 mb-4">
-                  Stanford Town research &ldquo;Generative Agents: Interactive Simulacra of Human Behavior&rdquo; first demonstrated multi-agent interaction possibilities, but didn&rsquo;t deeply show agent interaction mechanisms.
+                  Stanford Town research &ldquo;Generative Agents: Interactive Simulacra of Human
+                  Behavior&rdquo; first demonstrated multi-agent interaction possibilities, but
+                  didn&rsquo;t deeply show agent interaction mechanisms.
                 </p>
               </div>
 
               <div className="bg-zinc-800/70 backdrop-blur-sm p-6 rounded-xl border border-zinc-600">
-                <h3 className="text-xl font-semibold text-[#1bff1b] mb-4">2024: Commercial Application Validation</h3>
+                <h3 className="text-xl font-semibold text-[#1bff1b] mb-4">
+                  2024: Commercial Application Validation
+                </h3>
                 <p className="text-base font-light leading-relaxed text-zinc-300 mb-4">
-                  &ldquo;Generative Agent Simulations of 1,000 People&rdquo; successfully simulated behavior patterns of 1000 random Americans, with agent-human behavioral consistency reaching 85%+, validating the commercial potential of agents simulating real human behavior.
+                  &ldquo;Generative Agent Simulations of 1,000 People&rdquo; successfully simulated
+                  behavior patterns of 1000 random Americans, with agent-human behavioral
+                  consistency reaching 85%+, validating the commercial potential of agents
+                  simulating real human behavior.
                 </p>
                 <div className="bg-zinc-700 p-4 rounded-lg text-center">
                   <p className="text-lg font-bold text-[#1bff1b]">85%+ Behavioral Consistency</p>
@@ -1324,7 +1451,8 @@ class SubjectiveAgent {
                   December 2023 - OpenAI GPT-4 Function Calling
                 </h3>
                 <p className="text-base font-light leading-relaxed text-zinc-300">
-                  Enabled models to call external tools, creating entirely new application scenarios, no longer limiting models to interactions within dialog boxes.
+                  Enabled models to call external tools, creating entirely new application
+                  scenarios, no longer limiting models to interactions within dialog boxes.
                 </p>
               </div>
 
@@ -1333,7 +1461,9 @@ class SubjectiveAgent {
                   November 2024 - Claude MCP Protocol
                 </h3>
                 <p className="text-base font-light leading-relaxed text-zinc-300 mb-4">
-                  Enabled models to actively connect to the external world, capable of browsing social media, autonomously discovering content, filtering trending topics, analyzing content performance and user feedback.
+                  Enabled models to actively connect to the external world, capable of browsing
+                  social media, autonomously discovering content, filtering trending topics,
+                  analyzing content performance and user feedback.
                 </p>
                 <div className="bg-zinc-700 p-3 rounded-lg">
                   <p className="text-sm text-zinc-300 font-medium">
@@ -1364,7 +1494,8 @@ class SubjectiveAgent {
                   February 2025 - DeepSeek R1 Transparent Reasoning
                 </h3>
                 <p className="text-base font-light leading-relaxed text-zinc-300 mb-4">
-                  Demonstrated transparent reasoning processes, providing direction for designing reasoning architectures on foundation models.
+                  Demonstrated transparent reasoning processes, providing direction for designing
+                  reasoning architectures on foundation models.
                 </p>
               </div>
 
@@ -1373,7 +1504,8 @@ class SubjectiveAgent {
                   Divergent vs Convergent: Business Problem Specificity
                 </h3>
                 <p className="text-base font-light leading-relaxed text-zinc-300 mb-6">
-                  Unlike objective world/scientific problems emphasizing &ldquo;convergence&rdquo;, subjective world/business problems need to emphasize &ldquo;divergence&rdquo;
+                  Unlike objective world/scientific problems emphasizing &ldquo;convergence&rdquo;,
+                  subjective world/business problems need to emphasize &ldquo;divergence&rdquo;
                 </p>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -1397,7 +1529,8 @@ class SubjectiveAgent {
 
                 <div className="bg-zinc-900 border-2 border-[#1bff1b] text-white p-4 rounded-lg text-center">
                   <p className="text-base font-semibold text-[#1bff1b]">
-                    Developed &ldquo;Creative Reasoning&rdquo; long reasoning architecture based on four dimensions
+                    Developed &ldquo;Creative Reasoning&rdquo; long reasoning architecture based on
+                    four dimensions
                   </p>
                 </div>
               </div>
@@ -1424,7 +1557,8 @@ class SubjectiveAgent {
                   March 2025 - Multi-agent Product Forms
                 </h3>
                 <p className="text-base font-light leading-relaxed text-zinc-300 mb-4">
-                  The release of Cursor, Manus, Claude Artifacts, Devin and other products demonstrated new possibilities for multi-agent product design.
+                  The release of Cursor, Manus, Claude Artifacts, Devin and other products
+                  demonstrated new possibilities for multi-agent product design.
                 </p>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
@@ -1448,11 +1582,15 @@ class SubjectiveAgent {
                   Key Innovation: Work Process Transparency
                 </h3>
                 <p className="text-sm mb-3">
-                  Manus&rsquo;s innovation in agent work process expression and replay functionality is particularly outstanding, allowing users to see the agent&rsquo;s work process.
+                  Manus&rsquo;s innovation in agent work process expression and replay functionality
+                  is particularly outstanding, allowing users to see the agent&rsquo;s work process.
                 </p>
-                <p className="text-sm font-medium mb-3">✅ Improves user trust and empathy for AI results</p>
+                <p className="text-sm font-medium mb-3">
+                  ✅ Improves user trust and empathy for AI results
+                </p>
                 <p className="text-sm font-medium text-[#1bff1b]">
-                  💡 Provides design inspiration for atypica.AI&rsquo;s research process replay functionality
+                  💡 Provides design inspiration for atypica.AI&rsquo;s research process replay
+                  functionality
                 </p>
               </div>
             </div>
@@ -1490,11 +1628,15 @@ class SubjectiveAgent {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-zinc-800/70 backdrop-blur-sm/50 border-zinc-600 p-4 rounded-xl border">
                     <h3 className="text-sm font-medium text-zinc-300 mb-2">Traditional Mode</h3>
-                    <p className="text-sm font-light text-zinc-300 opacity-60">Research first, then decide</p>
+                    <p className="text-sm font-light text-zinc-300 opacity-60">
+                      Research first, then decide
+                    </p>
                   </div>
                   <div className="bg-zinc-700 border-zinc-600 p-4 rounded-xl border">
                     <h3 className="text-sm font-medium text-zinc-300 mb-2">AI-driven Mode</h3>
-                    <p className="text-sm font-light text-zinc-300">Research, decide, execute simultaneously</p>
+                    <p className="text-sm font-light text-zinc-300">
+                      Research, decide, execute simultaneously
+                    </p>
                   </div>
                 </div>
 
@@ -1503,7 +1645,8 @@ class SubjectiveAgent {
                     Research value lies not in generating reports, but in driving effective action
                   </p>
                   <p className="text-sm font-light opacity-80">
-                    From &ldquo;research first, then decide&rdquo; to &ldquo;research, decide, execute simultaneously&rdquo;
+                    From &ldquo;research first, then decide&rdquo; to &ldquo;research, decide,
+                    execute simultaneously&rdquo;
                   </p>
                 </div>
               </div>

@@ -20,11 +20,7 @@ const slideNotes: { [key: number]: string } = {
   11: "Atypica代表了从静态分析到动态执行的转变，让研究不再只是产生报告，而是驱动有效行动，实现边研究、边决策、边执行的敏捷模式。",
 };
 
-export function PitchZH({
-  showPresenterNotes = false,
-}: {
-  showPresenterNotes?: boolean;
-}) {
+export function PitchZH({ showPresenterNotes = false }: { showPresenterNotes?: boolean }) {
   const [currentSlide, setCurrentSlide] = useState(0);
 
   const goToNextSlide = useCallback(() => {

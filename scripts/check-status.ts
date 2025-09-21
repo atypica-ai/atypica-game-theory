@@ -328,7 +328,9 @@ async function createMonitorsViaAPI() {
             if (updateResponse.ok) {
               console.log(`✅ Updated main group: ${existingGroup.name} (ID: ${existingGroup.id})`);
             } else {
-              console.error(`❌ Failed to update main group: ${existingGroup.name} - ${updateResponse.msg}`);
+              console.error(
+                `❌ Failed to update main group: ${existingGroup.name} - ${updateResponse.msg}`,
+              );
             }
           });
 
@@ -415,7 +417,9 @@ async function createMonitorsViaAPI() {
               if (updateResponse.ok) {
                 console.log(`✅ Updated sub-group: ${subGroupName} (ID: ${existingSubGroup.id})`);
               } else {
-                console.error(`❌ Failed to update sub-group: ${subGroupName} - ${updateResponse.msg}`);
+                console.error(
+                  `❌ Failed to update sub-group: ${subGroupName} - ${updateResponse.msg}`,
+                );
               }
             });
 

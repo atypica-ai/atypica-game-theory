@@ -91,8 +91,10 @@ export async function fetchInterviewProjects(
   // Transform the data
   const interviewProjectsData: InterviewProjectData[] = projects.map((project) => {
     // Count human vs AI persona sessions
-    const humanSessionsCount = project.sessions.filter(s => s.intervieweeUserId !== null).length;
-    const aiPersonaSessionsCount = project.sessions.filter(s => s.intervieweePersonaId !== null).length;
+    const humanSessionsCount = project.sessions.filter((s) => s.intervieweeUserId !== null).length;
+    const aiPersonaSessionsCount = project.sessions.filter(
+      (s) => s.intervieweePersonaId !== null,
+    ).length;
 
     return {
       id: project.id,

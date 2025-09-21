@@ -1,6 +1,6 @@
 "use server";
-import authOptions from "@/app/(auth)/authOptions";
 import { createTextEmbedding } from "@/ai/embedding";
+import authOptions from "@/app/(auth)/authOptions";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
 import { withAuth } from "@/lib/request/withAuth";

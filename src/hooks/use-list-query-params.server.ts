@@ -2,9 +2,9 @@
  * Simple server-side URL parameter parser
  * Just extracts values from URL, doesn't handle defaults or complex logic
  */
-export function parseServerSearchParams(
-  searchParams: { [key: string]: string | string[] | undefined }
-): Record<string, string | number> {
+export function parseServerSearchParams(searchParams: {
+  [key: string]: string | string[] | undefined;
+}): Record<string, string | number> {
   const result: Record<string, string | number> = {};
 
   for (const [key, rawValue] of Object.entries(searchParams)) {

@@ -182,12 +182,18 @@ export default function InterviewsPage() {
                       <>
                         {project.humanSessionsCount > 0 && (
                           <div className="text-xs">
-                            <span className="text-sm font-semibold">{project.humanSessionsCount}</span> Humans
+                            <span className="text-sm font-semibold">
+                              {project.humanSessionsCount}
+                            </span>{" "}
+                            Humans
                           </div>
                         )}
                         {project.aiPersonaSessionsCount > 0 && (
                           <div className="text-xs">
-                            <span className="text-sm font-semibold">{project.aiPersonaSessionsCount}</span> AI
+                            <span className="text-sm font-semibold">
+                              {project.aiPersonaSessionsCount}
+                            </span>{" "}
+                            AI
                           </div>
                         )}
                       </>

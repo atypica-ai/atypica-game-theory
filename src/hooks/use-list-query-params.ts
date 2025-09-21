@@ -131,7 +131,6 @@ export function useListQueryParams<T extends Record<string, unknown>>(
     return result;
   });
 
-
   const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   // Update URL when values change

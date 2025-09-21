@@ -20,11 +20,7 @@ const slideNotes: { [key: number]: string } = {
   11: "Atypica represents the shift from static analysis to dynamic execution, making research not just produce reports but drive effective action, achieving agile business model of research-decide-execute simultaneously.",
 };
 
-export function PitchEN({
-  showPresenterNotes = false,
-}: {
-  showPresenterNotes?: boolean;
-}) {
+export function PitchEN({ showPresenterNotes = false }: { showPresenterNotes?: boolean }) {
   const [currentSlide, setCurrentSlide] = useState(0);
 
   const goToNextSlide = useCallback(() => {
@@ -110,7 +106,8 @@ export class AtypicaAI {
                   The core question in market research never changes: What are consumers thinking?
                 </p>
                 <p className="text-base md:text-lg font-light leading-relaxed text-zinc-300 opacity-80">
-                  Global enterprises invest over $140B annually, creating consulting giants like McKinsey, Ipsos, and software companies like Qualtrics, Medallia.
+                  Global enterprises invest over $140B annually, creating consulting giants like
+                  McKinsey, Ipsos, and software companies like Qualtrics, Medallia.
                 </p>
               </div>
             </div>
@@ -152,8 +149,8 @@ console.log("Industry at turning point");`}
                   <div className="w-4 h-4 rounded-full bg-red-500 mt-2 flex-shrink-0"></div>
                   <div>
                     <p className="text-lg md:text-xl font-light leading-relaxed text-zinc-300 mb-3">
-                      <span className="font-semibold">Gartner stock crashed 30% on Aug 5</span>
-                      , largest drop since 1999
+                      <span className="font-semibold">Gartner stock crashed 30% on Aug 5</span>,
+                      largest drop since 1999
                     </p>
                     <p className="text-base text-zinc-300 opacity-70">
                       —Capital markets admit: traditional models face structural challenges
@@ -165,7 +162,8 @@ console.log("Industry at turning point");`}
                   <div className="w-4 h-4 rounded-full bg-orange-500 mt-2 flex-shrink-0"></div>
                   <div>
                     <p className="text-lg md:text-xl font-light leading-relaxed text-zinc-300 mb-3">
-                      <span className="font-semibold">McKinsey reports only 2% annual growth</span>, 10% workforce reduction
+                      <span className="font-semibold">McKinsey reports only 2% annual growth</span>,
+                      10% workforce reduction
                     </p>
                     <p className="text-base text-zinc-300 opacity-70">
                       —Brain-intensive, human-driven research models face growth constraints
@@ -231,11 +229,15 @@ console.log("Industry at turning point");`}
                     </thead>
                     <tbody>
                       <tr className="border-t border-zinc-600">
-                        <td className="px-5 py-4 text-base font-medium text-zinc-300">Traditional</td>
+                        <td className="px-5 py-4 text-base font-medium text-zinc-300">
+                          Traditional
+                        </td>
                         <td className="px-5 py-4 text-base text-zinc-300">
                           McKinsey/BCG/Ipsos/Gartner
                         </td>
-                        <td className="px-5 py-4 text-base text-zinc-300">Expert judgment + manual analysis</td>
+                        <td className="px-5 py-4 text-base text-zinc-300">
+                          Expert judgment + manual analysis
+                        </td>
                         <td className="px-4 py-3 text-center text-sm text-zinc-300">Quarterly</td>
                         <td className="px-4 py-3 text-center text-sm text-zinc-300">$1M+</td>
                       </tr>
@@ -262,7 +264,9 @@ console.log("Industry at turning point");`}
                         <td className="px-4 py-3 text-center text-sm text-[#1bff1b]">$100s</td>
                       </tr>
                       <tr className="border-t border-zinc-600 bg-[#1bff1b]/20">
-                        <td className="px-5 py-4 text-base font-bold text-[#1bff1b]">AI User Simulation</td>
+                        <td className="px-5 py-4 text-base font-bold text-[#1bff1b]">
+                          AI User Simulation
+                        </td>
                         <td className="px-5 py-4 text-base font-bold text-[#1bff1b]">Atypica</td>
                         <td className="px-5 py-4 text-base font-bold text-[#1bff1b]">
                           Multi-agent behavior modeling, virtual focus groups
@@ -318,7 +322,8 @@ const capabilities = {
                 <p className="text-base md:text-lg font-light leading-relaxed text-zinc-300 mb-4 text-center">
                   Business pace has shifted:
                   <span className="font-semibold text-[#1bff1b]">
-                    marketing operates in &ldquo;days&rdquo;, product development in &ldquo;months&rdquo;;
+                    marketing operates in &ldquo;days&rdquo;, product development in
+                    &ldquo;months&rdquo;;
                   </span>
                 </p>
                 <p className="text-base md:text-lg font-light leading-relaxed text-zinc-300 text-center">
@@ -328,7 +333,9 @@ const capabilities = {
               </div>
 
               <div className="bg-gradient-to-r from-[#1e1e1e] to-[#2a2a2a] border border-[#1bff1b] p-6 rounded-xl text-center shadow-[0_0_30px_rgba(27,255,27,0.15)]">
-                <h3 className="text-xl font-bold text-[#1bff1b] mb-4">Atypica has two core capabilities:</h3>
+                <h3 className="text-xl font-bold text-[#1bff1b] mb-4">
+                  Atypica has two core capabilities:
+                </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="bg-zinc-800/50 p-4 rounded-lg border border-zinc-600">
                     <h4 className="text-lg font-semibold text-[#1bff1b] mb-3">
@@ -345,17 +352,22 @@ const capabilities = {
                       AI User Simulation
                     </h4>
                     <p className="text-sm text-zinc-300">
-                      Model user behavior, values, emotions & decisions with multi-agents, keeping &ldquo;virtual focus groups&rdquo; always online.
+                      Model user behavior, values, emotions & decisions with multi-agents, keeping
+                      &ldquo;virtual focus groups&rdquo; always online.
                     </p>
                   </div>
                 </div>
               </div>
 
               <div className="bg-zinc-900 border-2 border-[#1bff1b] p-6 rounded-xl text-center">
-                <h3 className="text-2xl font-bold text-[#1bff1b] mb-3">Atypica&rsquo;s Value Proposition:</h3>
+                <h3 className="text-2xl font-bold text-[#1bff1b] mb-3">
+                  Atypica&rsquo;s Value Proposition:
+                </h3>
                 <p className="text-xl font-light text-zinc-300">
-                  When AI reduces market research costs by <span className="font-bold text-[#1bff1b]">100x</span>
-                  , increases speed by <span className="font-bold text-[#1bff1b]">100x</span>, and expands user coverage by
+                  When AI reduces market research costs by{" "}
+                  <span className="font-bold text-[#1bff1b]">100x</span>, increases speed by{" "}
+                  <span className="font-bold text-[#1bff1b]">100x</span>, and expands user coverage
+                  by
                   <span className="font-bold text-[#1bff1b]"> 100x</span>
                 </p>
               </div>
@@ -389,16 +401,28 @@ const capabilities = {
                   </div>
                   <div className="flex-1 grid grid-cols-3 gap-4">
                     <div className="bg-zinc-700 p-4 rounded-lg">
-                      <div className="text-sm font-semibold text-zinc-300 mb-2">Scientific Organization</div>
-                      <div className="text-xs text-zinc-400">Full text, emotion, opinion tracking</div>
+                      <div className="text-sm font-semibold text-zinc-300 mb-2">
+                        Scientific Organization
+                      </div>
+                      <div className="text-xs text-zinc-400">
+                        Full text, emotion, opinion tracking
+                      </div>
                     </div>
                     <div className="bg-zinc-700 p-4 rounded-lg">
-                      <div className="text-sm font-semibold text-zinc-300 mb-2">Cross-disciplinary Models</div>
-                      <div className="text-xs text-zinc-400">Built-in professional analysis models</div>
+                      <div className="text-sm font-semibold text-zinc-300 mb-2">
+                        Cross-disciplinary Models
+                      </div>
+                      <div className="text-xs text-zinc-400">
+                        Built-in professional analysis models
+                      </div>
                     </div>
                     <div className="bg-zinc-700 p-4 rounded-lg">
-                      <div className="text-sm font-semibold text-zinc-300 mb-2">Automated Reports</div>
-                      <div className="text-xs text-zinc-400">AI insights + downloadable/shareable</div>
+                      <div className="text-sm font-semibold text-zinc-300 mb-2">
+                        Automated Reports
+                      </div>
+                      <div className="text-xs text-zinc-400">
+                        AI insights + downloadable/shareable
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -471,7 +495,8 @@ const capabilities = {
               <div className="max-w-6xl mx-auto mt-8">
                 <div className="bg-zinc-900 border-2 border-[#1bff1b] p-4 rounded-xl text-center">
                   <p className="text-sm text-[#1bff1b] font-medium">
-                    Traditional surveys record &ldquo;answers&rdquo;, Atypica models &ldquo;subjective worlds&rdquo;.
+                    Traditional surveys record &ldquo;answers&rdquo;, Atypica models
+                    &ldquo;subjective worlds&rdquo;.
                   </p>
                 </div>
               </div>
@@ -498,8 +523,9 @@ const capabilities = {
             <div className="flex-1 flex flex-col justify-center space-y-4">
               <div className="bg-zinc-800/70 backdrop-blur-sm border border-zinc-600 p-5 rounded-xl">
                 <p className="text-base md:text-lg font-light leading-relaxed text-zinc-300 text-center mb-3">
-                  Atypica introduces <span className="font-bold text-[#1bff1b]">Subjective World Modeling</span>,
-                  using AI to build three-tier personas:
+                  Atypica introduces{" "}
+                  <span className="font-bold text-[#1bff1b]">Subjective World Modeling</span>, using
+                  AI to build three-tier personas:
                 </p>
               </div>
 
@@ -513,11 +539,21 @@ const capabilities = {
                   <table className="w-full">
                     <thead>
                       <tr className="bg-zinc-700/30">
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-zinc-300">Tier</th>
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-zinc-300">Data Source</th>
-                        <th className="px-4 py-3 text-center text-sm font-semibold text-zinc-300">Accuracy</th>
-                        <th className="px-4 py-3 text-center text-sm font-semibold text-zinc-300">Build Time</th>
-                        <th className="px-4 py-3 text-center text-sm font-semibold text-zinc-300">Cost</th>
+                        <th className="px-4 py-3 text-left text-sm font-semibold text-zinc-300">
+                          Tier
+                        </th>
+                        <th className="px-4 py-3 text-left text-sm font-semibold text-zinc-300">
+                          Data Source
+                        </th>
+                        <th className="px-4 py-3 text-center text-sm font-semibold text-zinc-300">
+                          Accuracy
+                        </th>
+                        <th className="px-4 py-3 text-center text-sm font-semibold text-zinc-300">
+                          Build Time
+                        </th>
+                        <th className="px-4 py-3 text-center text-sm font-semibold text-zinc-300">
+                          Cost
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
@@ -537,10 +573,18 @@ const capabilities = {
                       </tr>
                       <tr className="border-t border-zinc-600 bg-[#1bff1b]/10">
                         <td className="px-4 py-3 text-sm font-bold text-[#1bff1b]">Tier 3</td>
-                        <td className="px-4 py-3 text-sm font-bold text-[#1bff1b]">Enterprise Private Data</td>
-                        <td className="px-3 py-2 text-center text-xs font-bold text-[#1bff1b]">88%+</td>
-                        <td className="px-3 py-2 text-center text-xs font-bold text-[#1bff1b]">1-2 hours</td>
-                        <td className="px-3 py-2 text-center text-xs font-bold text-[#1bff1b]">$10-100</td>
+                        <td className="px-4 py-3 text-sm font-bold text-[#1bff1b]">
+                          Enterprise Private Data
+                        </td>
+                        <td className="px-3 py-2 text-center text-xs font-bold text-[#1bff1b]">
+                          88%+
+                        </td>
+                        <td className="px-3 py-2 text-center text-xs font-bold text-[#1bff1b]">
+                          1-2 hours
+                        </td>
+                        <td className="px-3 py-2 text-center text-xs font-bold text-[#1bff1b]">
+                          $10-100
+                        </td>
                       </tr>
                     </tbody>
                   </table>
@@ -594,7 +638,9 @@ const capabilities = {
                   <div className="w-12 h-12 bg-[#1bff1b]/20 rounded-full flex items-center justify-center mx-auto mb-3">
                     <span className="text-sm font-bold text-[#1bff1b]">H→AI</span>
                   </div>
-                  <h3 className="text-base font-semibold text-[#1bff1b] mb-2">Human Interviews AI</h3>
+                  <h3 className="text-base font-semibold text-[#1bff1b] mb-2">
+                    Human Interviews AI
+                  </h3>
                   <p className="text-sm text-zinc-300 opacity-80">
                     Direct text/multimodal dialogue with AI personas
                   </p>
@@ -604,7 +650,9 @@ const capabilities = {
                   <div className="w-12 h-12 bg-[#1bff1b]/20 rounded-full flex items-center justify-center mx-auto mb-3">
                     <span className="text-sm font-bold text-[#1bff1b]">AI→H</span>
                   </div>
-                  <h3 className="text-base font-semibold text-[#1bff1b] mb-2">AI Interviews Human</h3>
+                  <h3 className="text-base font-semibold text-[#1bff1b] mb-2">
+                    AI Interviews Human
+                  </h3>
                   <p className="text-sm text-zinc-300 opacity-80">
                     AI hosts multi-person interviews with auto follow-up
                   </p>
@@ -616,7 +664,8 @@ const capabilities = {
                   </div>
                   <h3 className="text-base font-semibold text-[#1bff1b] mb-2">AI Interviews AI</h3>
                   <p className="text-sm text-zinc-300 opacity-80">
-                    AI organizes virtual focus groups, creates &ldquo;perpetual research networks&rdquo;
+                    AI organizes virtual focus groups, creates &ldquo;perpetual research
+                    networks&rdquo;
                   </p>
                 </div>
               </div>
@@ -670,28 +719,40 @@ const capabilities = {
                       <div className="w-2 h-2 bg-[#1bff1b] rounded-full mt-1 flex-shrink-0"></div>
                       <div>
                         <span className="font-semibold text-zinc-300">Multimodal Support:</span>
-                        <span className="text-zinc-300 opacity-80"> Text, voice, image interactions</span>
+                        <span className="text-zinc-300 opacity-80">
+                          {" "}
+                          Text, voice, image interactions
+                        </span>
                       </div>
                     </div>
                     <div className="flex items-start gap-2">
                       <div className="w-2 h-2 bg-[#1bff1b] rounded-full mt-1 flex-shrink-0"></div>
                       <div>
                         <span className="font-semibold text-zinc-300">Smart Follow-up:</span>
-                        <span className="text-zinc-300 opacity-80"> Auto-generated deep questions</span>
+                        <span className="text-zinc-300 opacity-80">
+                          {" "}
+                          Auto-generated deep questions
+                        </span>
                       </div>
                     </div>
                     <div className="flex items-start gap-2">
                       <div className="w-2 h-2 bg-[#1bff1b] rounded-full mt-1 flex-shrink-0"></div>
                       <div>
                         <span className="font-semibold text-zinc-300">Virtual Focus Groups:</span>
-                        <span className="text-zinc-300 opacity-80"> Multiple AI personas participate</span>
+                        <span className="text-zinc-300 opacity-80">
+                          {" "}
+                          Multiple AI personas participate
+                        </span>
                       </div>
                     </div>
                     <div className="flex items-start gap-2">
                       <div className="w-2 h-2 bg-[#1bff1b] rounded-full mt-1 flex-shrink-0"></div>
                       <div>
                         <span className="font-semibold text-zinc-300">24/7 Available:</span>
-                        <span className="text-zinc-300 opacity-80"> Research anytime, anywhere</span>
+                        <span className="text-zinc-300 opacity-80">
+                          {" "}
+                          Research anytime, anywhere
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -753,8 +814,9 @@ const capabilities = {
               <div className="bg-gradient-to-r from-[#1e1e1e] to-[#2a2a2a] border border-[#1bff1b] p-3 rounded-xl text-center">
                 <h3 className="text-base font-bold text-[#1bff1b] mb-2">Always-on Research Mode</h3>
                 <p className="text-xs text-zinc-300 mb-2">
-                  Research transforms from &ldquo;survey projects&rdquo; to &ldquo;continuous analysis&rdquo; (Always-on),
-                  enabling real-time comprehensive user perspectives for every decision.
+                  Research transforms from &ldquo;survey projects&rdquo; to &ldquo;continuous
+                  analysis&rdquo; (Always-on), enabling real-time comprehensive user perspectives
+                  for every decision.
                 </p>
                 <div className="flex gap-2 justify-center text-xs">
                   <div className="bg-zinc-800/50 px-2 py-1 rounded">
@@ -803,8 +865,9 @@ const transformation = {
 
             <div className="flex-1 flex flex-col justify-center space-y-6 max-w-5xl mx-auto w-full relative z-10">
               <div className="text-lg md:text-xl font-light text-zinc-300 text-center mb-2">
-                When AI reduces market research costs by <span className="font-bold text-[#1bff1b]">100x</span>,
-                increases speed by <span className="font-bold text-[#1bff1b]">100x</span>, and expands user coverage by
+                When AI reduces market research costs by{" "}
+                <span className="font-bold text-[#1bff1b]">100x</span>, increases speed by{" "}
+                <span className="font-bold text-[#1bff1b]">100x</span>, and expands user coverage by
                 <span className="font-bold text-[#1bff1b]"> 100x</span>:
               </div>
 
@@ -813,7 +876,9 @@ const transformation = {
                   <div className="flex items-start mb-3">
                     <span className="text-2xl mr-3 mt-1">🎯</span>
                     <div>
-                      <h3 className="text-lg font-semibold text-[#1bff1b] mb-2">Every Business Decision</h3>
+                      <h3 className="text-lg font-semibold text-[#1bff1b] mb-2">
+                        Every Business Decision
+                      </h3>
                       <p className="text-base text-zinc-300 opacity-90 leading-relaxed">
                         Gets real-time comprehensive user perspectives
                       </p>
@@ -829,8 +894,9 @@ const transformation = {
                         From Project to Infrastructure
                       </h3>
                       <p className="text-base text-zinc-300 opacity-90 leading-relaxed">
-                        Pricing shifts from &ldquo;task/hourly&rdquo; to &ldquo;subscription infrastructure&rdquo; —
-                        like cloud computing, making research & insights utilities.
+                        Pricing shifts from &ldquo;task/hourly&rdquo; to &ldquo;subscription
+                        infrastructure&rdquo; — like cloud computing, making research & insights
+                        utilities.
                       </p>
                     </div>
                   </div>
@@ -842,19 +908,24 @@ const transformation = {
                   But remember: when data and research become more affordable,
                   <span className="font-bold text-[#1bff1b]">
                     true value lies in &ldquo;wisdom&rdquo; and &ldquo;good hypotheses&rdquo;
-                  </span>.
-                  Asking good questions and building verifiable assumptions are the next competitive barriers.
+                  </span>
+                  . Asking good questions and building verifiable assumptions are the next
+                  competitive barriers.
                 </p>
               </div>
 
               <div className="grid grid-cols-2 gap-6 mt-4">
                 <div className="bg-zinc-800/50 p-4 rounded-lg text-center">
                   <div className="text-base font-semibold text-zinc-400 mb-2">Traditional Mode</div>
-                  <div className="text-sm text-zinc-300 opacity-70">Research first, then decide</div>
+                  <div className="text-sm text-zinc-300 opacity-70">
+                    Research first, then decide
+                  </div>
                 </div>
                 <div className="bg-zinc-800/50 border border-[#1bff1b]/50 p-4 rounded-lg text-center">
                   <div className="text-base font-semibold text-[#1bff1b] mb-2">Always-on Mode</div>
-                  <div className="text-sm text-[#1bff1b]">Research, decide, execute simultaneously</div>
+                  <div className="text-sm text-[#1bff1b]">
+                    Research, decide, execute simultaneously
+                  </div>
                 </div>
               </div>
             </div>
@@ -880,66 +951,108 @@ const transformation = {
             <div className="flex-1 flex flex-col justify-center space-y-4">
               <div className="bg-zinc-800 rounded-xl border border-zinc-600 overflow-hidden shadow-lg">
                 <div className="bg-zinc-700/50 px-4 py-2.5 border-b border-zinc-600">
-                  <h3 className="text-lg font-semibold text-[#1bff1b] text-center">Use Case Details</h3>
+                  <h3 className="text-lg font-semibold text-[#1bff1b] text-center">
+                    Use Case Details
+                  </h3>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
                       <tr className="bg-zinc-700/30">
-                        <th className="px-4 py-2.5 text-left text-sm font-semibold text-zinc-300">Customer</th>
-                        <th className="px-4 py-2.5 text-left text-sm font-semibold text-zinc-300">Size</th>
-                        <th className="px-4 py-2.5 text-left text-sm font-semibold text-zinc-300">Usage</th>
-                        <th className="px-4 py-2.5 text-left text-sm font-semibold text-zinc-300">Scenario</th>
+                        <th className="px-4 py-2.5 text-left text-sm font-semibold text-zinc-300">
+                          Customer
+                        </th>
+                        <th className="px-4 py-2.5 text-left text-sm font-semibold text-zinc-300">
+                          Size
+                        </th>
+                        <th className="px-4 py-2.5 text-left text-sm font-semibold text-zinc-300">
+                          Usage
+                        </th>
+                        <th className="px-4 py-2.5 text-left text-sm font-semibold text-zinc-300">
+                          Scenario
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
                       <tr className="border-t border-zinc-600">
-                        <td className="px-4 py-3 text-sm font-medium text-zinc-300">Electronics Company</td>
+                        <td className="px-4 py-3 text-sm font-medium text-zinc-300">
+                          Electronics Company
+                        </td>
                         <td className="px-4 py-3 text-sm text-zinc-300">Large</td>
-                        <td className="px-4 py-3 text-sm text-zinc-300">Interactive AI Persona research for anytime inquiries</td>
+                        <td className="px-4 py-3 text-sm text-zinc-300">
+                          Interactive AI Persona research for anytime inquiries
+                        </td>
                         <td className="px-4 py-3 text-sm text-zinc-300">Pre-launch feedback</td>
                       </tr>
                       <tr className="border-t border-zinc-600">
-                        <td className="px-4 py-3 text-sm font-medium text-zinc-300">FMCG Company</td>
+                        <td className="px-4 py-3 text-sm font-medium text-zinc-300">
+                          FMCG Company
+                        </td>
                         <td className="px-4 py-3 text-sm text-zinc-300">Enterprise</td>
-                        <td className="px-4 py-3 text-sm text-zinc-300">AI Research for social media & VOC analysis</td>
+                        <td className="px-4 py-3 text-sm text-zinc-300">
+                          AI Research for social media & VOC analysis
+                        </td>
                         <td className="px-4 py-3 text-sm text-zinc-300">Marketing effectiveness</td>
                       </tr>
                       <tr className="border-t border-zinc-600">
-                        <td className="px-4 py-3 text-sm font-medium text-zinc-300">Chain Restaurant</td>
+                        <td className="px-4 py-3 text-sm font-medium text-zinc-300">
+                          Chain Restaurant
+                        </td>
                         <td className="px-4 py-3 text-sm text-zinc-300">Large</td>
-                        <td className="px-4 py-3 text-sm text-zinc-300">AI Interview with 3000 real users</td>
+                        <td className="px-4 py-3 text-sm text-zinc-300">
+                          AI Interview with 3000 real users
+                        </td>
                         <td className="px-4 py-3 text-sm text-zinc-300">2025 strategic planning</td>
                       </tr>
                       <tr className="border-t border-zinc-600">
-                        <td className="px-4 py-3 text-sm font-medium text-zinc-300">Global Brand</td>
+                        <td className="px-4 py-3 text-sm font-medium text-zinc-300">
+                          Global Brand
+                        </td>
                         <td className="px-4 py-3 text-sm text-zinc-300">Small</td>
-                        <td className="px-4 py-3 text-sm text-zinc-300">AI Research simulating Brazil, Chile users</td>
-                        <td className="px-4 py-3 text-sm text-zinc-300">Cross-cultural adaptation</td>
+                        <td className="px-4 py-3 text-sm text-zinc-300">
+                          AI Research simulating Brazil, Chile users
+                        </td>
+                        <td className="px-4 py-3 text-sm text-zinc-300">
+                          Cross-cultural adaptation
+                        </td>
                       </tr>
                       <tr className="border-t border-zinc-600">
                         <td className="px-4 py-3 text-sm font-medium text-zinc-300">B2B Company</td>
                         <td className="px-4 py-3 text-sm text-zinc-300">Medium</td>
-                        <td className="px-4 py-3 text-sm text-zinc-300">AI Persona for sales scripts</td>
+                        <td className="px-4 py-3 text-sm text-zinc-300">
+                          AI Persona for sales scripts
+                        </td>
                         <td className="px-4 py-3 text-sm text-zinc-300">Sales training</td>
                       </tr>
                       <tr className="border-t border-zinc-600">
-                        <td className="px-4 py-3 text-sm font-medium text-zinc-300">Beauty Brand</td>
+                        <td className="px-4 py-3 text-sm font-medium text-zinc-300">
+                          Beauty Brand
+                        </td>
                         <td className="px-4 py-3 text-sm text-zinc-300">Enterprise</td>
-                        <td className="px-4 py-3 text-sm text-zinc-300">AI Research for daily competitor monitoring</td>
+                        <td className="px-4 py-3 text-sm text-zinc-300">
+                          AI Research for daily competitor monitoring
+                        </td>
                         <td className="px-4 py-3 text-sm text-zinc-300">Competitive analysis</td>
                       </tr>
                       <tr className="border-t border-zinc-600">
                         <td className="px-4 py-3 text-sm font-medium text-zinc-300">Consultant</td>
                         <td className="px-4 py-3 text-sm text-zinc-300">Individual</td>
-                        <td className="px-4 py-3 text-sm text-zinc-300">AI Research for pre-project research</td>
+                        <td className="px-4 py-3 text-sm text-zinc-300">
+                          AI Research for pre-project research
+                        </td>
                         <td className="px-4 py-3 text-sm text-zinc-300">Professional services</td>
                       </tr>
                       <tr className="border-t border-zinc-600 bg-[#1bff1b]/10">
-                        <td className="px-4 py-3 text-sm font-medium text-[#1bff1b]">University Professor</td>
+                        <td className="px-4 py-3 text-sm font-medium text-[#1bff1b]">
+                          University Professor
+                        </td>
                         <td className="px-4 py-3 text-sm text-[#1bff1b]">Individual</td>
-                        <td className="px-4 py-3 text-sm text-[#1bff1b]">AI Research for real-time classroom cases</td>
-                        <td className="px-4 py-3 text-sm text-[#1bff1b]">Academic research & teaching</td>
+                        <td className="px-4 py-3 text-sm text-[#1bff1b]">
+                          AI Research for real-time classroom cases
+                        </td>
+                        <td className="px-4 py-3 text-sm text-[#1bff1b]">
+                          Academic research & teaching
+                        </td>
                       </tr>
                     </tbody>
                   </table>
@@ -968,7 +1081,8 @@ const transformation = {
             <div className="flex-1 flex flex-col justify-center space-y-4">
               <div className="bg-zinc-800/70 backdrop-blur-sm border border-zinc-600 p-3 rounded-xl text-center">
                 <p className="text-sm text-zinc-300">
-                  Sample: <span className="font-semibold text-[#1bff1b]">5000</span> real user research reports
+                  Sample: <span className="font-semibold text-[#1bff1b]">5000</span> real user
+                  research reports
                 </p>
               </div>
 
@@ -1009,37 +1123,58 @@ const transformation = {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="bg-zinc-800/70 backdrop-blur-sm border border-zinc-600 p-4 rounded-xl">
-                  <h4 className="text-sm font-semibold text-[#1bff1b] mb-2">Main User Characteristics</h4>
+                  <h4 className="text-sm font-semibold text-[#1bff1b] mb-2">
+                    Main User Characteristics
+                  </h4>
                   <div className="space-y-1.5 text-xs text-zinc-300">
                     <div className="flex items-start gap-1.5">
                       <div className="w-1.5 h-1.5 rounded-full bg-[#1bff1b] mt-1 flex-shrink-0"></div>
-                      <span><strong>Innovation-driven</strong>: Entrepreneurs & freelancers lead (24.8%)</span>
+                      <span>
+                        <strong>Innovation-driven</strong>: Entrepreneurs & freelancers lead (24.8%)
+                      </span>
                     </div>
                     <div className="flex items-start gap-1.5">
                       <div className="w-1.5 h-1.5 rounded-full bg-[#1bff1b] mt-1 flex-shrink-0"></div>
-                      <span><strong>Professional-focused</strong>: Consulting/marketing professionals follow (17.4%)</span>
+                      <span>
+                        <strong>Professional-focused</strong>: Consulting/marketing professionals
+                        follow (17.4%)
+                      </span>
                     </div>
                     <div className="flex items-start gap-1.5">
                       <div className="w-1.5 h-1.5 rounded-full bg-[#1bff1b] mt-1 flex-shrink-0"></div>
-                      <span><strong>Digital transformation</strong>: E-commerce, tech, content industries prominent</span>
+                      <span>
+                        <strong>Digital transformation</strong>: E-commerce, tech, content
+                        industries prominent
+                      </span>
                     </div>
                   </div>
                 </div>
 
                 <div className="bg-zinc-800/70 backdrop-blur-sm border border-zinc-600 p-4 rounded-xl">
-                  <h4 className="text-sm font-semibold text-[#1bff1b] mb-2">Market Demand Trends</h4>
+                  <h4 className="text-sm font-semibold text-[#1bff1b] mb-2">
+                    Market Demand Trends
+                  </h4>
                   <div className="space-y-1.5 text-xs text-zinc-300">
                     <div className="flex items-start gap-1.5">
                       <div className="w-1.5 h-1.5 rounded-full bg-[#1bff1b] mt-1 flex-shrink-0"></div>
-                      <span><strong>Agile decisions</strong>: Fast-changing industries need real-time insights</span>
+                      <span>
+                        <strong>Agile decisions</strong>: Fast-changing industries need real-time
+                        insights
+                      </span>
                     </div>
                     <div className="flex items-start gap-1.5">
                       <div className="w-1.5 h-1.5 rounded-full bg-[#1bff1b] mt-1 flex-shrink-0"></div>
-                      <span><strong>Cost-sensitive</strong>: SMEs and individuals need economical solutions</span>
+                      <span>
+                        <strong>Cost-sensitive</strong>: SMEs and individuals need economical
+                        solutions
+                      </span>
                     </div>
                     <div className="flex items-start gap-1.5">
                       <div className="w-1.5 h-1.5 rounded-full bg-[#1bff1b] mt-1 flex-shrink-0"></div>
-                      <span><strong>Specialization</strong>: Different industries need customized research methods</span>
+                      <span>
+                        <strong>Specialization</strong>: Different industries need customized
+                        research methods
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -1074,18 +1209,23 @@ const transformation = {
                 </p>
                 <div className="text-base font-light text-zinc-300 text-center">
                   <p className="mb-1">Research has become cheaper and faster,</p>
-                  <p className="font-medium text-[#1bff1b]">but only good questions and hypotheses are truly priceless.</p>
+                  <p className="font-medium text-[#1bff1b]">
+                    but only good questions and hypotheses are truly priceless.
+                  </p>
                 </div>
               </div>
 
               <div className="bg-gradient-to-r from-[#1e1e1e] to-[#2a2a2a] border border-[#1bff1b] rounded-xl p-6 text-center shadow-[0_0_30px_rgba(27,255,27,0.15)]">
                 <p className="text-base md:text-lg font-light text-zinc-300 mb-4">
                   From historical data <span className="font-medium">passive analysis</span>
-                  to agent-based <span className="font-medium text-[#1bff1b]">active simulation</span>
+                  to agent-based{" "}
+                  <span className="font-medium text-[#1bff1b]">active simulation</span>
                 </p>
                 <p className="text-sm md:text-base text-[#1bff1b] leading-relaxed">
-                  This shift from &ldquo;static analysis&rdquo; to &ldquo;dynamic execution&rdquo; enables companies to complete the full process from problem identification to strategy formulation within hours,
-                  achieving agile business models that &ldquo;research, decide, and execute&rdquo; simultaneously.
+                  This shift from &ldquo;static analysis&rdquo; to &ldquo;dynamic execution&rdquo;
+                  enables companies to complete the full process from problem identification to
+                  strategy formulation within hours, achieving agile business models that
+                  &ldquo;research, decide, and execute&rdquo; simultaneously.
                 </p>
               </div>
             </div>

@@ -12,8 +12,6 @@ import {
   DatabaseIcon,
   EyeIcon,
   FileTextIcon,
-  HomeIcon,
-  MessageCircleIcon,
   MonitorPlayIcon,
   StarIcon,
   UserIcon,
@@ -23,7 +21,7 @@ import {
 } from "lucide-react";
 
 import Link from "next/link";
-import { useMemo, useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AdminPermission } from "../types";
 
 interface SidebarItem {
@@ -51,11 +49,11 @@ export default function AdminSidebar({ adminRole, permissions = [] }: AdminSideb
 
   // Load collapsed state from localStorage
   useEffect(() => {
-    const saved = localStorage.getItem('admin-sidebar-collapsed');
+    const saved = localStorage.getItem("admin-sidebar-collapsed");
     if (saved) {
       try {
         setCollapsedGroups(new Set(JSON.parse(saved)));
-      } catch (e) {
+      } catch {
         // Ignore parsing errors
       }
     }
@@ -63,7 +61,7 @@ export default function AdminSidebar({ adminRole, permissions = [] }: AdminSideb
 
   // Save collapsed state to localStorage
   useEffect(() => {
-    localStorage.setItem('admin-sidebar-collapsed', JSON.stringify([...collapsedGroups]));
+    localStorage.setItem("admin-sidebar-collapsed", JSON.stringify([...collapsedGroups]));
   }, [collapsedGroups]);
 
   // Define grouped sidebar items

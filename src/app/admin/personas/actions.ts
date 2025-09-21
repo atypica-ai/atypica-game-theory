@@ -180,12 +180,16 @@ export async function fetchPersonas({
     data: personas.map((persona) => ({
       ...persona,
       tags: persona.tags as string[],
-      personaImport: persona.personaImport ? {
-        ...persona.personaImport,
-        analysis: persona.personaImport.analysis,
-        extra: persona.personaImport.extra,
-        user: persona.personaImport.user?.email ? { email: persona.personaImport.user.email } : undefined,
-      } : null,
+      personaImport: persona.personaImport
+        ? {
+            ...persona.personaImport,
+            analysis: persona.personaImport.analysis,
+            extra: persona.personaImport.extra,
+            user: persona.personaImport.user?.email
+              ? { email: persona.personaImport.user.email }
+              : undefined,
+          }
+        : null,
     })),
     pagination: {
       page,

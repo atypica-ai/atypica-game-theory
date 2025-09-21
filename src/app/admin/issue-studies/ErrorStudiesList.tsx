@@ -2,11 +2,11 @@
 import { PaginationInfo } from "@/app/admin/types";
 import { Button } from "@/components/ui/button";
 import { Pagination } from "@/components/ui/pagination";
+import { createParamConfig, useListQueryParams } from "@/hooks/use-list-query-params";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDate, formatTokensNumber } from "@/lib/utils";
 import { useLocale } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
-import { createParamConfig, useListQueryParams } from "@/hooks/use-list-query-params";
 import { fetchErrorStudies, retryStudy } from "./actions";
 
 type ErrorStudy = ExtractServerActionData<typeof fetchErrorStudies>[number];

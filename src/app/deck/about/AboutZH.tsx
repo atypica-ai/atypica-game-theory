@@ -31,11 +31,7 @@ const slideNotes: { [key: number]: string } = {
   21: '从洞察到行动。Atypica.AI的定位并非传统调研的替代者，而是在面对复杂的社会和商业问题时，提供速度与规模优势的创新选项。调研的价值不在于产生报告，而在于驱动有效行动。通过接入更多的MCP，Atypica.AI正在构建从洞察到执行的完整生态。重新定义调研价值。从懂消费者的智能体开始，Atypica.AI代表了消费者洞察分析的新阶段——从依赖历史数据的被动分析，转向基于智能体的主动模拟。这种从"静态分析"到"动态执行"的转变，让企业能够在几小时内完成从问题识别到策略制定的全流程，实现从"先研究，再决策"到"边研究，边决策，边执行"的敏捷商业模式。',
 };
 
-export function AboutZH({
-  showPresenterNotes = false,
-}: {
-  showPresenterNotes?: boolean;
-}) {
+export function AboutZH({ showPresenterNotes = false }: { showPresenterNotes?: boolean }) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [videoSrc, setVideoSrc] = useState<string | null>(null);
   const [posterSrc, setPosterSrc] = useState<string | null>(null);
