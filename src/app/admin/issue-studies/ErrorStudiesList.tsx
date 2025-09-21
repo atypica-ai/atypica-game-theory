@@ -6,6 +6,7 @@ import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDate, formatTokensNumber } from "@/lib/utils";
 import { useLocale } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
+import { createParamConfig, useListQueryParams } from "@/hooks/use-list-query-params";
 import { fetchErrorStudies, retryStudy } from "./actions";
 
 type ErrorStudy = ExtractServerActionData<typeof fetchErrorStudies>[number];
@@ -25,16 +26,34 @@ export default function ErrorStudiesList({
   const [isLoading, setIsLoading] = useState(true);
   const [studies, setStudies] = useState<ErrorStudy[]>([]);
   const [error, setError] = useState("");
-  const [currentPage, setCurrentPage] = useState(initialPage);
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
   const [processingIds, setProcessingIds] = useState<Set<number>>(new Set());
 
+  // Use query params hook for URL synchronization
+  type ErrorStudiesSearchParams = {
+    page: number;
+  };
+
+  const {
+    values: { page: currentPage },
+    setParam,
+  } = useListQueryParams<ErrorStudiesSearchParams>({
+    params: {
+      page: createParamConfig.number(1),
+    },
+    initialValues: { page: initialPage },
+  });
+
   // Update current page when initialPage changes
   useEffect(() => {
-    setCurrentPage(initialPage);
-  }, [initialPage]);
+    if (initialPage !== currentPage) {
+      setParam("page", initialPage);
+    }
+  }, [initialPage, currentPage, setParam]);
 
   const fetchData = useCallback(async () => {
+    // No need to wait for URL parsing as we use server-parsed params
+
     setIsLoading(true);
     const result = await fetchErrorStudies(currentPage);
     if (!result.success) {
@@ -196,7 +215,7 @@ export default function ErrorStudiesList({
             currentPage={pagination.page}
             totalPages={pagination.totalPages}
             onPageChange={(page) => {
-              setCurrentPage(page);
+              setParam("page", page);
               onPageChange?.(page);
             }}
           />

@@ -1,35 +1,16 @@
-import { fetchUserChatByIdAction } from "@/app/(agents)/agents/actions";
-import { throwServerActionError } from "@/lib/serverAction";
-import PersonasList from "./PersonasList";
+import { parseServerSearchParams } from "@/hooks/use-list-query-params.server";
+import { PersonasPageClient } from "./PersonasPageClient";
 
 // 关闭 SSG，否则 build 环境会读取数据库
 export const dynamic = "force-dynamic";
 
-// type PageProps = {
-//   searchParams?: { scoutUserChat?: string };
-// };
+interface PersonasPageProps {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}
 
-export default async function PersonasPage({
-  searchParams,
-}: {
-  searchParams: Promise<{
-    scoutUserChat?: string;
-    page?: string;
-    search?: string;
-  }>;
-}) {
-  const { scoutUserChat: userChatParam, page: pageStr, search } = await searchParams;
-  const page = pageStr ? parseInt(pageStr) : undefined;
-  if (userChatParam) {
-    const scoutUserChatId = parseInt(userChatParam);
-    const scoutUserChatResult = await fetchUserChatByIdAction(scoutUserChatId, "scout");
-    if (!scoutUserChatResult.success) {
-      throwServerActionError(scoutUserChatResult);
-    }
-    return (
-      <PersonasList scoutUserChat={scoutUserChatResult.data} initialParams={{ page, search }} />
-    );
-  } else {
-    return <PersonasList initialParams={{ page, search }} />;
-  }
+export default async function PersonasPage({ searchParams }: PersonasPageProps) {
+  const params = await searchParams;
+  const initialSearchParams = parseServerSearchParams(params);
+
+  return <PersonasPageClient initialSearchParams={initialSearchParams} />;
 }

@@ -21,6 +21,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Pagination } from "@/components/ui/pagination";
+import { createParamConfig, useListQueryParams } from "@/hooks/use-list-query-params";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn } from "@/lib/utils";
 import { UserChat } from "@/prisma/client";
@@ -45,89 +46,58 @@ export default function PersonasList({
   initialParams,
 }: {
   scoutUserChat?: UserChat;
-  initialParams: { page?: number; search?: string };
+  initialParams: Record<string, string | number>;
 }) {
   const router = useRouter();
   const [selectedPersona, setSelectedPersona] = useState<TPersona | null>(null);
   const [personas, setPersonas] = useState<TPersona[]>([]);
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
-  const [currentPage, setCurrentPage] = useState<number>(initialParams.page || 1);
-  const [searchQuery, setSearchQuery] = useState<string>(initialParams.search || "");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [rescoringId, setRescoringId] = useState<number | null>(null);
   const [chatCreating, setChatCreating] = useState<Record<number, boolean>>({});
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Filter states
-  const [selectedTiers, setSelectedTiers] = useState<number[]>([2, 3]);
-  const [selectedLocales, setSelectedLocales] = useState<string[]>(["zh-CN", "en-US"]);
+  // Use query params hook for URL synchronization
+  type PersonasListSearchParams = {
+    page: number;
+    search: string;
+    tiers: number[];
+    locales: string[];
+  };
 
-  // Initialize page and search query from URL on load
+  const {
+    values: {
+      page: currentPage,
+      search: searchQuery,
+      tiers: selectedTiers,
+      locales: selectedLocales,
+    },
+    setParam,
+    setParams,
+  } = useListQueryParams<PersonasListSearchParams>({
+    params: {
+      page: createParamConfig.number(1),
+      search: createParamConfig.string(""),
+      tiers: createParamConfig.numberArray([2, 3]),
+      locales: createParamConfig.stringArray(["zh-CN", "en-US"]),
+    },
+    initialValues: (({ tiers, locales, ...rest }) => ({
+      tiers: tiers && typeof tiers === "string" ? tiers.split(",").map(Number) : undefined,
+      locales: locales && typeof locales === "string" ? locales.split(",") : undefined,
+      ...rest,
+    }))(initialParams),
+  });
+
+  // Preserve scoutUserChat in URL if present
   useEffect(() => {
-    // 不用 const searchParams = useSearchParams(); 因为 useSearchParams 一开始取值是空的
-    const url = new URL(window.location.href);
-    const pageParam = url.searchParams.get("page");
-    const searchParam = url.searchParams.get("search");
-    const tiersParam = url.searchParams.get("tiers");
-    const localesParam = url.searchParams.get("locales");
-
-    if (pageParam) {
-      setCurrentPage(parseInt(pageParam, 10));
-    }
-    if (searchParam) {
-      setSearchQuery(searchParam);
-    }
-    if (tiersParam) {
-      const tiers = tiersParam.split(',').map(t => parseInt(t, 10)).filter(t => !isNaN(t));
-      if (tiers.length > 0) {
-        setSelectedTiers(tiers);
-      }
-    }
-    if (localesParam) {
-      const locales = localesParam.split(',').filter(l => l.length > 0);
-      if (locales.length > 0) {
-        setSelectedLocales(locales);
-      }
-    }
-  }, []);
-
-  // Update URL when page, search, or filters change
-  useEffect(() => {
-    const url = new URL(window.location.href);
-
-    // Update page parameter
-    url.searchParams.set("page", currentPage.toString());
-
-    // Update search parameter
-    if (searchQuery) {
-      url.searchParams.set("search", searchQuery);
-    } else {
-      url.searchParams.delete("search");
-    }
-
-    // Update tiers parameter
-    if (selectedTiers.length > 0) {
-      url.searchParams.set("tiers", selectedTiers.join(','));
-    } else {
-      url.searchParams.delete("tiers");
-    }
-
-    // Update locales parameter
-    if (selectedLocales.length > 0) {
-      url.searchParams.set("locales", selectedLocales.join(','));
-    } else {
-      url.searchParams.delete("locales");
-    }
-
-    // If there's a scoutUserChat ID, preserve it in the URL
     if (scoutUserChat) {
+      const url = new URL(window.location.href);
       url.searchParams.set("scoutUserChat", scoutUserChat.id.toString());
+      window.history.replaceState({}, "", url.toString());
     }
+  }, [scoutUserChat]);
 
-    window.history.replaceState({}, "", url.toString());
-  }, [currentPage, searchQuery, selectedTiers, selectedLocales, scoutUserChat]);
-
-  // Fetch personas when page or search query changes
+  // Fetch personas when params change
   const fetchPersonasForPage = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -156,19 +126,20 @@ export default function PersonasList({
     fetchPersonasForPage();
   }, [fetchPersonasForPage]);
 
-  const handleSearch = useCallback((e: FormEvent) => {
-    e.preventDefault();
-    setCurrentPage(1); // Reset to first page on new search
-    setSearchQuery(inputRef.current?.value ?? "");
-  }, []);
+  const handleSearch = useCallback(
+    (e: FormEvent) => {
+      e.preventDefault();
+      setParams({ search: inputRef.current?.value ?? "", page: 1 }); // Reset to first page on new search
+    },
+    [setParams],
+  );
 
   // Handle search clear
   const handleClearSearch = () => {
     if (inputRef.current) {
       inputRef.current.value = "";
     }
-    setSearchQuery("");
-    setCurrentPage(1);
+    setParams({ search: "", page: 1 });
   };
 
   const handleRescore = async (personaId: number) => {
@@ -248,12 +219,10 @@ export default function PersonasList({
                       id={`tier-${tier}`}
                       checked={selectedTiers.includes(tier)}
                       onCheckedChange={(checked) => {
-                        if (checked) {
-                          setSelectedTiers([...selectedTiers, tier]);
-                        } else {
-                          setSelectedTiers(selectedTiers.filter((t) => t !== tier));
-                        }
-                        setCurrentPage(1);
+                        const newTiers = checked
+                          ? [...selectedTiers, tier]
+                          : selectedTiers.filter((t) => t !== tier);
+                        setParams({ tiers: newTiers, page: 1 });
                       }}
                     />
                     <Label htmlFor={`tier-${tier}`} className="text-sm">
@@ -275,12 +244,10 @@ export default function PersonasList({
                       id={`lang-${lang.code}`}
                       checked={selectedLocales.includes(lang.code)}
                       onCheckedChange={(checked) => {
-                        if (checked) {
-                          setSelectedLocales([...selectedLocales, lang.code]);
-                        } else {
-                          setSelectedLocales(selectedLocales.filter((l) => l !== lang.code));
-                        }
-                        setCurrentPage(1);
+                        const newLocales = checked
+                          ? [...selectedLocales, lang.code]
+                          : selectedLocales.filter((l) => l !== lang.code);
+                        setParams({ locales: newLocales, page: 1 });
                       }}
                     />
                     <Label htmlFor={`lang-${lang.code}`} className="text-sm">
@@ -295,7 +262,6 @@ export default function PersonasList({
       </div>
 
       <div className="container mx-auto flex-1 flex-col gap-6 ">
-
         {scoutUserChat && !isLoading && (
           <div className="flex items-center justify-start gap-3 mb-4">
             <div className="flex items-center justify-center size-8 rounded-md border">🔍</div>
@@ -352,9 +318,7 @@ export default function PersonasList({
                     </Button>
                   </CardTitle>
                   <CardDescription className="text-xs text-muted-foreground">
-                    <div>
-                      Source：{persona.source}
-                    </div>
+                    <div>Source：{persona.source}</div>
                     <div className="pt-2 flex flex-wrap gap-2">
                       <Badge variant="secondary" className="whitespace-nowrap text-xs">
                         Tier: {persona.tier ?? "N/A"}
@@ -391,14 +355,18 @@ export default function PersonasList({
                             </Badge>
                           )}
                           {persona.personaImport.analysis &&
-                           typeof persona.personaImport.analysis === 'object' &&
-                           persona.personaImport.analysis !== null &&
-                           'score' in persona.personaImport.analysis &&
-                           typeof (persona.personaImport.analysis as { score?: number }).score === 'number' && (
-                            <Badge variant="default" className="whitespace-nowrap text-xs">
-                              Score: {((persona.personaImport.analysis as { score: number }).score).toFixed(1)}
-                            </Badge>
-                          )}
+                            typeof persona.personaImport.analysis === "object" &&
+                            persona.personaImport.analysis !== null &&
+                            "score" in persona.personaImport.analysis &&
+                            typeof (persona.personaImport.analysis as { score?: number }).score ===
+                              "number" && (
+                              <Badge variant="default" className="whitespace-nowrap text-xs">
+                                Score:{" "}
+                                {(
+                                  persona.personaImport.analysis as { score: number }
+                                ).score.toFixed(1)}
+                              </Badge>
+                            )}
                         </>
                       )}
                     </div>
@@ -434,7 +402,7 @@ export default function PersonasList({
             currentPage={currentPage}
             totalPages={pagination.totalPages}
             onPageChange={(page) => {
-              setCurrentPage(page);
+              setParam("page", page);
               window.scrollTo(0, 0);
             }}
           />

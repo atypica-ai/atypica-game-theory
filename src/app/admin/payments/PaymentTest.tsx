@@ -90,7 +90,7 @@ export function PaymentTest({ session, fetchRecords }: PaymentTestProps) {
 
       {error && <div className="mb-4 rounded-lg bg-red-50 p-4 text-red-500">{error}</div>}
 
-      <Tabs defaultValue="alipay_pc_direct" className="mb-6">
+      <Tabs defaultValue={PaymentMethod.stripe} className="mb-6">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value={PaymentMethod.alipay_pc_direct}>Alipay PC Direct</TabsTrigger>
           <TabsTrigger value={PaymentMethod.alipay_wap}>Alipay WAP</TabsTrigger>
