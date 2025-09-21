@@ -62,32 +62,6 @@
       "viewInterview": "查看访谈"
     }
   },
-  "PersonasPage": {
-    "title": "AI 人设",
-    "guide": {
-      "title": "小贴士",
-      "tip1": {
-        "1": "在",
-        "2": "🔍 用户发现",
-        "3": "页面，atypica 可以帮你找到更多潜在的目标用户"
-      },
-      "tip2": {
-        "1": "每个AI人设都可以在",
-        "2": "🎯 深度访谈",
-        "3": "中使用，帮助你更好地理解用户需求"
-      },
-      "tip3": "点击人设卡片可以查看完整的AI人设信息"
-    },
-    "searchResult": "通过搜索找到的AI人设",
-    "source": "来源",
-    "personaDialog": {
-      "source": "来源"
-    },
-    "searchPlaceholder": "搜索AI人设",
-    "searchResultsFor": "搜索结果",
-    "noSearchResults": "没有符合您搜索条件的AI人设",
-    "noPersonas": "暂无AI人设"
-  },
   "Email": {
     "PasswordReset": {
       "subjectLine": "您的 atypica.AI 密码重置链接",

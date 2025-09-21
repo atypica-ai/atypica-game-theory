@@ -62,32 +62,6 @@
       "viewInterview": "View Interview"
     }
   },
-  "PersonasPage": {
-    "title": "AI Personas",
-    "guide": {
-      "title": "Tips",
-      "tip1": {
-        "1": "In the",
-        "2": "🔍 User Discovery",
-        "3": "page, atypica can help you find more potential target users"
-      },
-      "tip2": {
-        "1": "Each AI Persona can be used in",
-        "2": "🎯 Deep Interviews",
-        "3": "to help you better understand user needs"
-      },
-      "tip3": "Click on a persona card to view complete persona information"
-    },
-    "searchResult": "AI Personas found through search",
-    "source": "Source",
-    "personaDialog": {
-      "source": "Source"
-    },
-    "searchPlaceholder": "Search AI Personas",
-    "searchResultsFor": "Search results",
-    "noSearchResults": "No AI Personas match your search criteria",
-    "noPersonas": "No AI Personas yet"
-  },
   "Email": {
     "PasswordReset": {
       "subjectLine": "Your atypica.AI Password Reset Link",
