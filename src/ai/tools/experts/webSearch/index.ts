@@ -53,7 +53,7 @@ export const webSearchTool = ({
   statReport,
 }: {
   studyUserChatId: number;
-} & AgentToolConfigArgs) =>
+} & Omit<AgentToolConfigArgs, "logger" | "locale" | "abortSignal">) =>
   tool({
     description:
       "Search the internet for current information, facts, or data that might be relevant to the study topic",

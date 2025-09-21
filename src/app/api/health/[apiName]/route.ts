@@ -79,7 +79,7 @@ const API_CONFIGS = {
 
       const result = await testTool.execute(
         { query: "test health check" },
-        { toolCallId: "health-check", messages: [] }
+        { toolCallId: "health-check", messages: [] },
       );
 
       return {
