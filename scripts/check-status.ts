@@ -304,6 +304,32 @@ async function createMonitorsViaAPI() {
 
         if (existingGroup) {
           console.log(`📁 Found existing group: ${existingGroup.name} (ID: ${existingGroup.id})`);
+
+          // Update existing main group
+          const updatedGroup = {
+            id: existingGroup.id,
+            name: existingGroup.name,
+            type: "group",
+            active: true,
+            interval: 600,
+            retryInterval: 300,
+            maxretries: 0,
+            upsideDown: false,
+            maxredirects: 10,
+            accepted_statuscodes: [],
+            notificationIDList: {},
+            conditions: "[]",
+          };
+
+          console.log(`🔄 Updating main group: ${existingGroup.name}`);
+          socket.emit("editMonitor", updatedGroup, (updateResponse: any) => {
+            if (updateResponse.ok) {
+              console.log(`✅ Updated main group: ${existingGroup.name} (ID: ${existingGroup.id})`);
+            } else {
+              console.error(`❌ Failed to update main group: ${existingGroup.name} - ${updateResponse.msg}`);
+            }
+          });
+
           createSubGroups(existingGroup.id, existingMonitors);
         } else {
           // Create new main group
@@ -311,8 +337,8 @@ async function createMonitorsViaAPI() {
             name: siteName,
             type: "group",
             active: true,
-            interval: 60,
-            retryInterval: 60,
+            interval: 600,
+            retryInterval: 300,
             maxretries: 0,
             upsideDown: false,
             maxredirects: 10,
@@ -364,6 +390,33 @@ async function createMonitorsViaAPI() {
             console.log(
               `📁 Found existing sub-group: ${subGroupName} (ID: ${existingSubGroup.id})`,
             );
+
+            // Update existing sub-group
+            const updatedSubGroup = {
+              id: existingSubGroup.id,
+              name: subGroupName,
+              type: "group",
+              parent: mainGroupId,
+              active: true,
+              interval: 600,
+              retryInterval: 300,
+              maxretries: 0,
+              upsideDown: false,
+              maxredirects: 10,
+              accepted_statuscodes: [],
+              notificationIDList: {},
+              conditions: "[]",
+            };
+
+            console.log(`🔄 Updating sub-group: ${subGroupName}`);
+            socket.emit("editMonitor", updatedSubGroup, (updateResponse: any) => {
+              if (updateResponse.ok) {
+                console.log(`✅ Updated sub-group: ${subGroupName} (ID: ${existingSubGroup.id})`);
+              } else {
+                console.error(`❌ Failed to update sub-group: ${subGroupName} - ${updateResponse.msg}`);
+              }
+            });
+
             subGroupIds[subGroupName] = existingSubGroup.id;
             createdSubGroups++;
 
@@ -377,8 +430,8 @@ async function createMonitorsViaAPI() {
               type: "group",
               parent: mainGroupId,
               active: true,
-              interval: 60,
-              retryInterval: 60,
+              interval: 600,
+              retryInterval: 300,
               maxretries: 0,
               upsideDown: false,
               maxredirects: 10,
@@ -449,12 +502,20 @@ async function createMonitorsViaAPI() {
           const monitorUrl =
             apiName === "ping" ? `${API_BASE}/.ping` : `${API_BASE}/api/health/${apiName}`;
 
+          // Set different intervals based on API type
+          let interval = 1800; // 30 minutes default
+          if (apiName === "xhsSearch") {
+            interval = 3600; // 1 hour for XHS (小红书)
+          } else if (apiName === "dySearch") {
+            interval = 7200; // 2 hours for Douyin (抖音)
+          }
+
           const monitorConfig = {
             name: monitorName,
             type: "http",
             url: monitorUrl,
             method: "GET",
-            interval: 1800, // 30 minutes
+            interval: interval,
             retryInterval: 300, // 5 minutes
             maxretries: 3,
             timeout: 90,
