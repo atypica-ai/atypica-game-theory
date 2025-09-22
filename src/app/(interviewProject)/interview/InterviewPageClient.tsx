@@ -1,5 +1,6 @@
 "use client";
 import { reginalS3Url } from "@/app/(public)/home-v3/actions";
+import { HeroVideo } from "@/app/(public)/home-v3/HeroVideo";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ArrowRight } from "lucide-react";
@@ -9,7 +10,7 @@ import { useEffect, useState } from "react";
 
 export default function InterviewPageClient() {
   const t = useTranslations("InterviewProject.homepage");
-  const [videoSrc, setVideoSrc] = useState<string | null>(null);
+  const [videoSrc, setVideoSrc] = useState<string | undefined>();
 
   useEffect(() => {
     reginalS3Url("atypica/public/atypica-promo-ai-interview-20250921.mp4").then((res) => {
@@ -87,24 +88,7 @@ export default function InterviewPageClient() {
         {/* Video Section */}
         <div className="relative max-w-5xl mx-auto mt-16">
           <div className="aspect-video rounded-xl shadow-2xl shadow-black/10 overflow-hidden">
-            {videoSrc ? (
-              <video
-                key={videoSrc}
-                className="w-full h-full object-cover"
-                autoPlay
-                muted
-                loop
-                playsInline
-                controls
-              >
-                <source src={videoSrc} type="video/mp4" />
-                Your browser does not support the video tag.
-              </video>
-            ) : (
-              <div className="w-full h-full bg-zinc-100 dark:bg-zinc-900/50 flex items-center justify-center">
-                <div className="text-zinc-400 dark:text-zinc-600">Loading video...</div>
-              </div>
-            )}
+            <HeroVideo src={videoSrc} />
           </div>
         </div>
       </section>

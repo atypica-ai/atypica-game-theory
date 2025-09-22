@@ -1,6 +1,7 @@
 "use client";
 import { createPersonaImport } from "@/app/(persona)/actions";
 import { reginalS3Url } from "@/app/(public)/home-v3/actions";
+import { HeroVideo } from "@/app/(public)/home-v3/HeroVideo";
 import { FileUploadButton } from "@/components/chat/FileUploadButton";
 import { Button } from "@/components/ui/button";
 import { useFileUploadManager } from "@/hooks/use-file-upload-manager";
@@ -35,7 +36,7 @@ export default function PersonaImportClient({ isUploadEnabled }: PersonaImportCl
   const router = useRouter();
   const { uploadedFiles, handleFileUploaded, clearFiles } = useFileUploadManager();
   const [isCreating, setIsCreating] = useState(false);
-  const [videoSrc, setVideoSrc] = useState<string | null>(null);
+  const [videoSrc, setVideoSrc] = useState<string | undefined>();
 
   useEffect(() => {
     reginalS3Url("atypica/public/atypica-promo-ai-persona-20250917.mp4").then((res) => {
@@ -298,24 +299,7 @@ export default function PersonaImportClient({ isUploadEnabled }: PersonaImportCl
         {/* Video Section */}
         <div className="relative max-w-5xl mx-auto mt-16">
           <div className="aspect-video rounded-xl shadow-2xl shadow-black/10 overflow-hidden">
-            {videoSrc ? (
-              <video
-                key={videoSrc}
-                className="w-full h-full object-cover"
-                autoPlay
-                muted
-                loop
-                playsInline
-                controls
-              >
-                <source src={videoSrc} type="video/mp4" />
-                Your browser does not support the video tag.
-              </video>
-            ) : (
-              <div className="w-full h-full bg-zinc-100 dark:bg-zinc-900/50 flex items-center justify-center">
-                <div className="text-zinc-400 dark:text-zinc-600">Loading video...</div>
-              </div>
-            )}
+            <HeroVideo src={videoSrc} />
           </div>
         </div>
       </section>

@@ -68,8 +68,6 @@ export default function PersonasList({
     locales: string[];
   };
 
-  console.log(initialParams);
-
   const {
     values: {
       page: currentPage,
@@ -164,21 +162,24 @@ export default function PersonasList({
     }
   };
 
-  const handleStartChat = async (personaId: number) => {
-    setChatCreating((prev) => ({ ...prev, [personaId]: true }));
-    try {
-      const result = await createOrGetUserPersonaChat(personaId);
-      if (!result.success) {
-        throw new Error(result.message);
+  const handleStartChat = useCallback(
+    async (personaId: number) => {
+      setChatCreating((prev) => ({ ...prev, [personaId]: true }));
+      try {
+        const result = await createOrGetUserPersonaChat(personaId);
+        if (!result.success) {
+          throw new Error(result.message);
+        }
+        router.push(`/persona/chat/${result.data.token}`);
+      } catch (error) {
+        console.log("Failed to start chat:", error);
+        toast.error("Failed to start chat");
+      } finally {
+        setChatCreating((prev) => ({ ...prev, [personaId]: false }));
       }
-      router.push(`/persona/chat/${result.data.token}`);
-    } catch (error) {
-      console.log("Failed to start chat:", error);
-      toast.error("Failed to start chat");
-    } finally {
-      setChatCreating((prev) => ({ ...prev, [personaId]: false }));
-    }
-  };
+    },
+    [router],
+  );
 
   return (
     <div className={cn("flex-1 overflow-y-auto scrollbar-thin space-y-6")}>

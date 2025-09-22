@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { HeroVideo } from "./HeroVideo";
 import { reginalS3Url } from "./actions";
 
 const testimonials = [
@@ -43,8 +44,8 @@ const testimonials = [
 
 export function HeroSection() {
   const t = useTranslations("HomePageV3.HeroSection");
-  const [videoSrc, setVideoSrc] = useState<string | null>(null);
-  const [posterSrc, setPosterSrc] = useState<string | null>(null);
+  const [videoSrc, setVideoSrc] = useState<string | undefined>();
+  const [posterSrc, setPosterSrc] = useState<string | undefined>();
 
   useEffect(() => {
     reginalS3Url("atypica/public/atypica-promo-20250627.mp4").then((res) => {
@@ -125,25 +126,7 @@ export function HeroSection() {
         {/* Video Section */}
         <div className="relative max-w-5xl mx-auto">
           <div className="aspect-video rounded-xl shadow-2xl shadow-black/10 overflow-hidden">
-            {videoSrc && posterSrc ? (
-              <video
-                key={videoSrc}
-                poster={posterSrc}
-                className="w-full h-full object-cover"
-                autoPlay
-                muted
-                loop
-                playsInline
-                controls
-              >
-                <source src={videoSrc} type="video/mp4" />
-                Your browser does not support the video tag.
-              </video>
-            ) : (
-              <div className="w-full h-full bg-zinc-100 dark:bg-zinc-900/50 flex items-center justify-center">
-                <div className="text-zinc-400 dark:text-zinc-600">{t("loadingVideo")}</div>
-              </div>
-            )}
+            <HeroVideo src={videoSrc} poster={posterSrc} />
           </div>
         </div>
       </div>
