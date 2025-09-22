@@ -97,7 +97,7 @@ export default function PersonasClient() {
         <div className="text-sm text-muted-foreground text-center mb-4">
           {t("createNewPersonas")}
         </div>
-        <Button asChild className="w-full" size="sm">
+        <Button variant="secondary" asChild className="w-full" size="sm">
           <Link href="/persona" className="flex items-center gap-2">
             <PlusIcon className="size-3" />
             {t("importNewInterview")}

@@ -124,7 +124,7 @@ export function HeroSection() {
 
         {/* Video Section */}
         <div className="relative max-w-5xl mx-auto">
-          <div className="aspect-video rounded-xl bg-zinc-900 shadow-2xl shadow-black/10 overflow-hidden">
+          <div className="aspect-video rounded-xl shadow-2xl shadow-black/10 overflow-hidden">
             {videoSrc && posterSrc ? (
               <video
                 key={videoSrc}
@@ -134,6 +134,7 @@ export function HeroSection() {
                 muted
                 loop
                 playsInline
+                controls
               >
                 <source src={videoSrc} type="video/mp4" />
                 Your browser does not support the video tag.

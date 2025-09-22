@@ -1,5 +1,6 @@
 "use client";
 import { createPersonaImport } from "@/app/(persona)/actions";
+import { reginalS3Url } from "@/app/(public)/home-v3/actions";
 import { FileUploadButton } from "@/components/chat/FileUploadButton";
 import { Button } from "@/components/ui/button";
 import { useFileUploadManager } from "@/hooks/use-file-upload-manager";
@@ -22,7 +23,7 @@ import {
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 interface PersonaImportClientProps {
@@ -34,6 +35,13 @@ export default function PersonaImportClient({ isUploadEnabled }: PersonaImportCl
   const router = useRouter();
   const { uploadedFiles, handleFileUploaded, clearFiles } = useFileUploadManager();
   const [isCreating, setIsCreating] = useState(false);
+  const [videoSrc, setVideoSrc] = useState<string | null>(null);
+
+  useEffect(() => {
+    reginalS3Url("atypica/public/atypica-promo-ai-persona-20250917.mp4").then((res) => {
+      setVideoSrc(res);
+    });
+  }, []);
 
   const handleStartAnalysis = async () => {
     if (uploadedFiles.length === 0) {
@@ -284,6 +292,30 @@ export default function PersonaImportClient({ isUploadEnabled }: PersonaImportCl
                 </>
               )}
             </div>
+          </div>
+        </div>
+
+        {/* Video Section */}
+        <div className="relative max-w-5xl mx-auto mt-16">
+          <div className="aspect-video rounded-xl shadow-2xl shadow-black/10 overflow-hidden">
+            {videoSrc ? (
+              <video
+                key={videoSrc}
+                className="w-full h-full object-cover"
+                autoPlay
+                muted
+                loop
+                playsInline
+                controls
+              >
+                <source src={videoSrc} type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+            ) : (
+              <div className="w-full h-full bg-zinc-100 dark:bg-zinc-900/50 flex items-center justify-center">
+                <div className="text-zinc-400 dark:text-zinc-600">Loading video...</div>
+              </div>
+            )}
           </div>
         </div>
       </section>

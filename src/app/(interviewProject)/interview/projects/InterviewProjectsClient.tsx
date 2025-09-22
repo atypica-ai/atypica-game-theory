@@ -78,7 +78,12 @@ export function InterviewProjectsClient({ isCreateEnabled }: { isCreateEnabled: 
           {t("createFirstProject")}
         </div>
         {isCreateEnabled ? (
-          <Button onClick={() => setCreateDialogOpen(true)} className="w-full" size="sm">
+          <Button
+            variant="secondary"
+            onClick={() => setCreateDialogOpen(true)}
+            className="w-full"
+            size="sm"
+          >
             <PlusIcon className="size-3" />
             {t("newProject")}
           </Button>
@@ -138,7 +143,7 @@ export function InterviewProjectsClient({ isCreateEnabled }: { isCreateEnabled: 
                 </CardHeader>
                 <CardContent className="pt-0 space-y-3">
                   <div className="flex flex-wrap gap-2">
-                    <Badge variant="default" className="text-xs">
+                    <Badge variant="secondary" className="text-xs">
                       <UsersIcon className="h-3 w-3 mr-1" />
                       {project.sessionStats.humanSessions} {t("humanSessions")}
                     </Badge>
