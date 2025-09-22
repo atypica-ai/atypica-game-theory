@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export interface SearchParamConfig<T> {
@@ -119,11 +120,42 @@ export function useListQueryParams<T extends Record<string, unknown>>(
   options: UseSearchParamsOptions<T>,
 ): UseSearchParamsReturn<T> {
   const { params, initialValues, replaceState = true, debounceMs = 0 } = options;
+  const router = useRouter();
+
+  /**
+   * 使用 ref 存储 params 配置的原因：
+   *
+   * 调用方通常会这样写：
+   * useListQueryParams({
+   *   params: {
+   *     page: createParamConfig.number(1),
+   *     search: createParamConfig.string(""),
+   *     // ...
+   *   }
+   * })
+   *
+   * 这种写法会导致每次组件重新渲染时，params 都是一个全新的对象引用，即使内容完全相同。这会触发 useEffect 的重新执行，造成不必要的 URL 更新。
+   *
+   * 具体问题场景：当用户点击按钮触发某个方法（如 handleStartChat）时，该方法通常会：
+   * 1) 调用 setState 更新组件状态（如 loading 状态）
+   * 2) 执行异步操作
+   * 3) 最后通过 router.push() 跳转到新页面
+   *
+   * 但由于第1步的 setState 会触发重新渲染 → params 对象重新创建 → useEffect 执行 URL 更新 → router.replace() 覆盖了第3步的 router.push()，
+   * 最终用户点击按钮后页面没有跳转到预期页面，而是停留在当前页面。
+   *
+   * 虽然组件可以用 useMemo 包装 params 来避免这个问题，但很容易被忘记，而且这会增加每个调用方的心智负担。
+   *
+   * 由于 params 对于一个组件来说本质上是静态配置，在组件的整个生命周期中都不应该发生变化，所以这里可以安全地使用 ref 来存储，避免不必要的重新计算。
+   *
+   * 注意：如果未来遇到 params 需要动态变化的场景，可以考虑其他方案，比如深度比较或者提供专门的 updateParams 方法。
+   */
+  const paramsRef = useRef(params);
 
   // Initialize with server-parsed values if provided, otherwise use defaults
   const [values, setValues] = useState<T>(() => {
-    const result = Object.keys(params).reduce((acc, key) => {
-      const config = params[key as keyof T];
+    const result = Object.keys(paramsRef.current).reduce((acc, key) => {
+      const config = paramsRef.current[key as keyof T];
       // Use initialValues if provided, otherwise use defaultValue
       acc[key as keyof T] = initialValues?.[key as keyof T] ?? config.defaultValue;
       return acc;
@@ -145,8 +177,8 @@ export function useListQueryParams<T extends Record<string, unknown>>(
       const url = new URL(window.location.href);
 
       // Update search parameters
-      Object.keys(params).forEach((key) => {
-        const config = params[key as keyof T];
+      Object.keys(paramsRef.current).forEach((key) => {
+        const config = paramsRef.current[key as keyof T];
         const value = values[key as keyof T];
         const serialize = config.serialize || ((v: unknown) => String(v));
 
@@ -166,8 +198,13 @@ export function useListQueryParams<T extends Record<string, unknown>>(
         }
       });
 
-      const method = replaceState ? "replaceState" : "pushState";
-      window.history[method]({}, "", url.toString());
+      const newUrl = url.pathname + url.search;
+
+      if (replaceState) {
+        router.replace(newUrl, { scroll: false });
+      } else {
+        router.push(newUrl, { scroll: false });
+      }
     };
 
     if (debounceMs > 0) {
@@ -181,7 +218,7 @@ export function useListQueryParams<T extends Record<string, unknown>>(
         clearTimeout(timeoutRef.current);
       }
     };
-  }, [values, params, replaceState, debounceMs]);
+  }, [values, replaceState, debounceMs, router]);
 
   const setParam = useCallback(<K extends keyof T>(key: K, value: T[K]) => {
     setValues((prev) => ({ ...prev, [key]: value }));
@@ -192,13 +229,13 @@ export function useListQueryParams<T extends Record<string, unknown>>(
   }, []);
 
   const reset = useCallback(() => {
-    const defaults = Object.keys(params).reduce((acc, key) => {
-      const config = params[key as keyof T];
+    const defaults = Object.keys(paramsRef.current).reduce((acc, key) => {
+      const config = paramsRef.current[key as keyof T];
       acc[key as keyof T] = config.defaultValue;
       return acc;
     }, {} as T);
     setValues(defaults);
-  }, [params]);
+  }, []);
 
   return {
     values,
