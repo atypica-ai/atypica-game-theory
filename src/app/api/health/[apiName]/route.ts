@@ -42,12 +42,10 @@ const API_CONFIGS = {
   sendEmail: {
     type: "email-service",
     test: async () => {
-      await sendEmail({
-        to: "hi@atypica.ai",
-        subject: "[atypica.AI health check]",
-        text: "",
-        html: "",
-      });
+      await sendEmail(
+        { to: "hi@atypica.ai", subject: "[atypica.AI health check]", text: "", html: "" },
+        { throwError: true },
+      );
       return { message: "Email sent successfully" };
     },
   },

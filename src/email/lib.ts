@@ -26,7 +26,10 @@ export function createTransporter() {
 /**
  * Sends an email using the configured transporter
  */
-export async function sendEmail(options: EmailOptions): Promise<void> {
+export async function sendEmail(
+  options: EmailOptions,
+  { throwError = false }: { throwError?: boolean } = {},
+): Promise<void> {
   const transporter = createTransporter();
 
   const mailOptions = {
@@ -44,5 +47,8 @@ export async function sendEmail(options: EmailOptions): Promise<void> {
     );
   } catch (error) {
     rootLogger.error(`Failed to send email to ${options.to}: ${error}`);
+    if (throwError) {
+      throw error;
+    }
   }
 }
