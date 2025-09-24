@@ -5,10 +5,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDistanceToNow } from "@/lib/utils";
 import { Analyst } from "@/prisma/client";
-import { Loader2Icon, PlayIcon } from "lucide-react";
+import { Loader2Icon, PlayIcon, VolumeXIcon, Volume2Icon, PauseIcon, DownloadIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { backgroundGeneratePodcast, fetchAnalystPodcasts } from "./actions";
 
@@ -28,6 +28,11 @@ export function AnalystPodcastsSection({
   const [isPodcastDialogOpen, setIsPodcastDialogOpen] = useState<AnalystPodcast | null>(null);
   const [isPromptDialogOpen, setIsPromptDialogOpen] = useState(false);
   const [systemPrompt, setSystemPrompt] = useState("");
+  const [generatingAudio, setGeneratingAudio] = useState<string | null>(null);
+  const [playingAudio, setPlayingAudio] = useState<string | null>(null);
+  const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(null);
+  const [isPolling, setIsPolling] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const openPromptDialog = useCallback(() => {
     setSystemPrompt(defaultPodcastSystem);
@@ -45,6 +50,116 @@ export function AnalystPodcastsSection({
       toast.error(`${error}`);
     }
   }, [analyst.id, router, systemPrompt]);
+
+  const generateAudio = useCallback(async (podcastToken: string) => {
+    try {
+      setGeneratingAudio(podcastToken);
+      const response = await fetch('/api/podcast/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ podcastToken }),
+      });
+
+      const result = await response.json();
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to generate audio');
+      }
+
+      toast.success('Audio generation started');
+      
+      // Start polling for completion
+      setIsPolling(true);
+      
+    } catch (error) {
+      toast.error(`Failed to generate audio: ${error}`);
+      setGeneratingAudio(null);
+    }
+  }, []);
+
+  const playAudio = useCallback((podcastUrl: string, podcastToken: string) => {
+    if (playingAudio === podcastToken) {
+      // Stop current audio
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
+      setPlayingAudio(null);
+      return;
+    }
+
+    // Stop any currently playing audio
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
+
+    // Create new audio element
+    const audio = new Audio(podcastUrl);
+    audioRef.current = audio;
+    
+    audio.addEventListener('ended', () => {
+      setPlayingAudio(null);
+    });
+
+    audio.addEventListener('error', () => {
+      toast.error('Failed to play audio');
+      setPlayingAudio(null);
+    });
+
+    audio.play().then(() => {
+      setPlayingAudio(podcastToken);
+    }).catch(() => {
+      toast.error('Failed to play audio');
+      setPlayingAudio(null);
+    });
+  }, [playingAudio]);
+
+  const stopAudio = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+    setPlayingAudio(null);
+  }, []);
+
+  // Polling effect for audio generation status
+  useEffect(() => {
+    if (!isPolling) return;
+
+    const pollInterval = setInterval(async () => {
+      try {
+        // Refresh the page to check for updates
+        router.refresh();
+        
+        // Check if any podcast now has audio that was being generated
+        const updatedPodcasts = await fetchAnalystPodcasts({ analystId: analyst.id });
+        if (updatedPodcasts.success) {
+          const generatingPodcast = updatedPodcasts.data.find(p => p.token === generatingAudio);
+          if (generatingPodcast?.podcastUrl && generatingPodcast?.generatedAt) {
+            toast.success('Audio generation completed!');
+            setGeneratingAudio(null);
+            setIsPolling(false);
+            router.refresh();
+          }
+        }
+      } catch (error) {
+        console.error('Polling error:', error);
+      }
+    }, 3000);
+
+    return () => clearInterval(pollInterval);
+  }, [isPolling, generatingAudio, analyst.id, router]);
+
+  // Clean up audio on unmount
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+    };
+  }, []);
 
   return (
     <>
@@ -69,9 +184,13 @@ export function AnalystPodcastsSection({
           >
             <div className="block w-full aspect-[2/1] cursor-pointer border border-input rounded-md overflow-hidden transition-all hover:border-primary/50 hover:shadow-sm bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900/20 dark:to-blue-900/20 flex items-center justify-center">
               <div className="flex flex-col items-center justify-center text-center p-4">
-                <PlayIcon className="size-8 mb-2 text-purple-600 dark:text-purple-400" />
+                {podcast.podcastUrl ? (
+                  <Volume2Icon className="size-8 mb-2 text-green-600 dark:text-green-400" />
+                ) : (
+                  <PlayIcon className="size-8 mb-2 text-purple-600 dark:text-purple-400" />
+                )}
                 <div className="text-xs font-medium text-purple-800 dark:text-purple-200">
-                  Podcast Script
+                  {podcast.podcastUrl ? "Podcast Audio" : "Podcast Script"}
                 </div>
               </div>
             </div>
@@ -103,10 +222,79 @@ export function AnalystPodcastsSection({
           {isPodcastDialogOpen && (
             <div className="h-[70vh]">
               {isPodcastDialogOpen.generatedAt ? (
-                <div className="w-full h-full overflow-y-auto scrollbar-thin">
-                  <div className="prose prose-sm max-w-none dark:prose-invert p-4">
-                    <div className="whitespace-pre-wrap text-sm">
-                      {isPodcastDialogOpen.script || "Script content not available"}
+                <div className="w-full h-full flex flex-col">
+                  {/* Audio controls section */}
+                  {isPodcastDialogOpen.script && (
+                    <div className="border-b p-4 bg-muted/30">
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-3">
+                          {isPodcastDialogOpen.podcastUrl ? (
+                            <>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => playAudio(isPodcastDialogOpen.podcastUrl!, isPodcastDialogOpen.token)}
+                                disabled={generatingAudio === isPodcastDialogOpen.token}
+                              >
+                                {playingAudio === isPodcastDialogOpen.token ? (
+                                  <>
+                                    <PauseIcon className="size-4 mr-1" />
+                                    Pause
+                                  </>
+                                ) : (
+                                  <>
+                                    <PlayIcon className="size-4 mr-1" />
+                                    Play Audio
+                                  </>
+                                )}
+                              </Button>
+                              <a
+                                href={isPodcastDialogOpen.podcastUrl}
+                                download={`podcast-${isPodcastDialogOpen.token}.mp3`}
+                                className="inline-flex"
+                              >
+                                <Button variant="outline" size="sm">
+                                  <DownloadIcon className="size-4 mr-1" />
+                                  Download
+                                </Button>
+                              </a>
+                            </>
+                          ) : (
+                            <Button
+                              variant="default"
+                              size="sm"
+                              onClick={() => generateAudio(isPodcastDialogOpen.token)}
+                              disabled={generatingAudio === isPodcastDialogOpen.token || !isPodcastDialogOpen.script}
+                            >
+                              {generatingAudio === isPodcastDialogOpen.token ? (
+                                <>
+                                  <Loader2Icon className="size-4 mr-1 animate-spin" />
+                                  Generating Audio...
+                                </>
+                              ) : (
+                                <>
+                                  <Volume2Icon className="size-4 mr-1" />
+                                  Generate Audio
+                                </>
+                              )}
+                            </Button>
+                          )}
+                        </div>
+                        {generatingAudio === isPodcastDialogOpen.token && (
+                          <div className="text-sm text-muted-foreground">
+                            Audio generation may take 2-5 minutes...
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Script content */}
+                  <div className="flex-1 overflow-y-auto scrollbar-thin">
+                    <div className="prose prose-sm max-w-none dark:prose-invert p-4">
+                      <div className="whitespace-pre-wrap text-sm">
+                        {isPodcastDialogOpen.script || "Script content not available"}
+                      </div>
                     </div>
                   </div>
                 </div>

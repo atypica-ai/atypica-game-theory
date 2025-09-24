@@ -249,7 +249,7 @@ export async function fetchAnalystPodcasts({
   ServerActionResult<
     (Pick<
       AnalystPodcast,
-      "id" | "token" | "analystId" | "script" | "generatedAt" | "createdAt" | "updatedAt"
+      "id" | "token" | "analystId" | "script" | "podcastUrl" | "generatedAt" | "createdAt" | "updatedAt"
     > & { analyst: Analyst })[]
   >
 > {
@@ -274,6 +274,7 @@ export async function fetchAnalystPodcasts({
         analystId: true,
         analyst: true,
         script: true,
+        podcastUrl: true,
         generatedAt: true,
         createdAt: true,
         updatedAt: true,

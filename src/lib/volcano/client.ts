@@ -15,6 +15,7 @@ import {
   PodcastRequestParams,
   PodcastNLPText,
   VolcanoHeaders,
+  Message,
 } from './protocols';
 
 const VOLCANO_ENDPOINT = 'wss://openspeech.bytedance.com/api/v3/sami/podcasttts';
@@ -125,6 +126,13 @@ export class VolcanoTTSClient {
       'X-Api-Connect-Id': uuidv4(),
     };
     
+    this.logger?.debug('Request headers prepared', {
+      appId: this.config.appId.substring(0, 8) + '...',
+      accessTokenLength: this.config.accessToken.length,
+      resourceId: headers['X-Api-Resource-Id'],
+      connectId: headers['X-Api-Connect-Id']
+    });
+    
     let ws: WebSocket | null = null;
     let retryCount = 0;
     const maxRetries = 5;
@@ -155,9 +163,19 @@ export class VolcanoTTSClient {
           this.logger?.info('WebSocket connection established');
           
           // Start connection protocol
-          await StartConnection(ws);
-          await WaitForEvent(ws, MsgType.FullServerResponse, EventType.ConnectionStarted);
-          this.logger?.info('Connection started');
+          try {
+            this.logger?.debug('Sending StartConnection...');
+            await StartConnection(ws);
+            this.logger?.debug('StartConnection sent, waiting for ConnectionStarted event...');
+            await WaitForEvent(ws, MsgType.FullServerResponse, EventType.ConnectionStarted);
+            this.logger?.info('Connection started');
+          } catch (error) {
+            this.logger?.error('Connection protocol failed', { 
+              error: error instanceof Error ? error.message : String(error),
+              stack: error instanceof Error ? error.stack : undefined
+            });
+            throw error;
+          }
           
           // Prepare session parameters
           const sessionId = uuidv4();
@@ -182,13 +200,29 @@ export class VolcanoTTSClient {
           };
           
           // Start session
-          const sessionPayload = new TextEncoder().encode(JSON.stringify(reqParams));
-          await StartSession(ws, sessionPayload, sessionId);
-          await WaitForEvent(ws, MsgType.FullServerResponse, EventType.SessionStarted);
-          this.logger?.info('Session started');
-          
-          // Finish session to start processing
-          await FinishSession(ws, sessionId);
+          try {
+            this.logger?.debug('Preparing session payload...', { 
+              sessionId,
+              nlpTextsCount: reqParams.nlp_texts.length 
+            });
+            const sessionPayload = new TextEncoder().encode(JSON.stringify(reqParams));
+            this.logger?.debug('Sending StartSession...', { payloadSize: sessionPayload.length });
+            await StartSession(ws, sessionPayload, sessionId);
+            this.logger?.debug('StartSession sent, waiting for SessionStarted event...');
+            await WaitForEvent(ws, MsgType.FullServerResponse, EventType.SessionStarted);
+            this.logger?.info('Session started');
+            
+            // Finish session to start processing
+            this.logger?.debug('Sending FinishSession...');
+            await FinishSession(ws, sessionId);
+            this.logger?.debug('FinishSession sent, starting event processing...');
+          } catch (error) {
+            this.logger?.error('Session setup failed', { 
+              error: error instanceof Error ? error.message : String(error),
+              stack: error instanceof Error ? error.stack : undefined
+            });
+            throw error;
+          }
           
           // Process events
           let audioUrl: string | undefined;
@@ -198,6 +232,19 @@ export class VolcanoTTSClient {
           
           while (true) {
             const msg = await ReceiveMessage(ws);
+            this.logger?.debug('Received message', { 
+              type: msg.type, 
+              event: msg.event, 
+              payloadSize: msg.payload.length,
+              messageString: msg.toString()
+            });
+            
+            // Handle error messages first
+            if (msg.type === MsgType.Error) {
+              const errorMsg = new TextDecoder().decode(msg.payload);
+              this.logger?.error('Received error message from server', { errorMsg });
+              throw new Error(`Server error: ${errorMsg}`);
+            }
             
             switch (msg.event) {
               case EventType.PodcastRoundStart:
@@ -256,12 +303,6 @@ export class VolcanoTTSClient {
               default:
                 this.logger?.debug('Received unknown event', { event: msg.event });
             }
-            
-            // Handle error messages
-            if (msg.type === MsgType.Error) {
-              const errorMsg = new TextDecoder().decode(msg.payload);
-              throw new Error(`Server error: ${errorMsg}`);
-            }
           }
           
         } catch (error) {
@@ -311,6 +352,13 @@ export class VolcanoTTSClient {
 export function createVolcanoClient(logger?: Logger): VolcanoTTSClient {
   const appId = process.env.VOLCANO_APP_ID;
   const accessToken = process.env.VOLCANO_ACCESS_TOKEN;
+  
+  logger?.debug('Volcano TTS configuration check', {
+    hasAppId: !!appId,
+    hasAccessToken: !!accessToken,
+    appIdLength: appId?.length || 0,
+    accessTokenLength: accessToken?.length || 0,
+  });
   
   if (!appId || !accessToken) {
     throw new Error('Missing Volcano TTS configuration. Please set VOLCANO_APP_ID and VOLCANO_ACCESS_TOKEN environment variables.');
