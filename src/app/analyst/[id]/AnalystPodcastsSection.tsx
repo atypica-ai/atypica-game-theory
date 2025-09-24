@@ -16,7 +16,7 @@ type AnalystPodcast = ExtractServerActionData<typeof fetchAnalystPodcasts>[numbe
 
 export function AnalystPodcastsSection({
   analyst,
-  podcasts,
+  podcasts: initialPodcasts,
   defaultPodcastSystem,
 }: {
   analyst: Analyst;
@@ -32,6 +32,7 @@ export function AnalystPodcastsSection({
   const [playingAudio, setPlayingAudio] = useState<string | null>(null);
   const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(null);
   const [isPolling, setIsPolling] = useState(false);
+  const [podcasts, setPodcasts] = useState<AnalystPodcast[]>(initialPodcasts);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const openPromptDialog = useCallback(() => {
@@ -76,6 +77,7 @@ export function AnalystPodcastsSection({
     } catch (error) {
       toast.error(`Failed to generate audio: ${error}`);
       setGeneratingAudio(null);
+      setIsPolling(false);
     }
   }, []);
 
@@ -126,7 +128,7 @@ export function AnalystPodcastsSection({
 
   // Polling effect for audio generation status
   useEffect(() => {
-    if (!isPolling) return;
+    if (!isPolling || !generatingAudio) return;
 
     const pollInterval = setInterval(async () => {
       try {
@@ -146,11 +148,31 @@ export function AnalystPodcastsSection({
         }
       } catch (error) {
         console.error('Polling error:', error);
+        // Stop polling on error to prevent infinite retries
+        setIsPolling(false);
+        setGeneratingAudio(null);
+        toast.error('Failed to check audio generation status');
       }
     }, 3000);
 
-    return () => clearInterval(pollInterval);
+    return () => {
+      clearInterval(pollInterval);
+    };
   }, [isPolling, generatingAudio, analyst.id, router]);
+
+  // Update local state when initial podcasts change
+  useEffect(() => {
+    setPodcasts(initialPodcasts);
+    
+    // Check if any podcast we think is generating already has audio
+    if (generatingAudio) {
+      const podcast = initialPodcasts.find(p => p.token === generatingAudio);
+      if (podcast?.podcastUrl && podcast?.generatedAt) {
+        setGeneratingAudio(null);
+        setIsPolling(false);
+      }
+    }
+  }, [initialPodcasts, generatingAudio]);
 
   // Clean up audio on unmount
   useEffect(() => {

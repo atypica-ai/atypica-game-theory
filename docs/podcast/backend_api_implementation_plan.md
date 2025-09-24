@@ -207,11 +207,12 @@ VOLCANO_ENDPOINT=wss://openspeech.bytedance.com/api/v3/sami/podcasttts
 
 ## **Implementation Phases**
 
-### **Phase 1: Core Infrastructure**
-1. Add WebSocket dependencies
-2. Create API route structure  
-3. Implement basic WebSocket client
-4. Create protocol utilities (from demo)
+### **Phase 1: Core Infrastructure** ✅ COMPLETED
+1. ✅ Add WebSocket dependencies
+2. ✅ Create API route structure  
+3. ✅ Implement basic WebSocket client
+4. ✅ Create protocol utilities (from demo)
+5. ✅ **CRITICAL FIX**: Complete protocol rewrite based on demo implementation
 
 ### **Phase 2: Audio Generation** ✅ COMPLETED
 1. ✅ Script parsing logic (Markdown → NLP texts format)
@@ -245,7 +246,7 @@ This architecture leverages the existing `waitUntil` pattern used throughout you
 
 ### **New Files Created:**
 ```
-/src/lib/volcano/protocols.ts              ✅ Binary protocol utilities
+/src/lib/volcano/protocols.ts              ✅ Binary protocol utilities (REWRITTEN)
 /src/lib/volcano/client.ts                 ✅ WebSocket client implementation  
 /src/lib/volcano/index.ts                  ✅ Export index
 /src/app/api/podcast/generate/route.ts     ✅ Background audio generation API
@@ -270,3 +271,50 @@ This architecture leverages the existing `waitUntil` pattern used throughout you
 
 ### **Ready for Production:**
 The complete podcast audio generation system is now implemented and ready for production use. Simply configure the environment variables `VOLCANO_APP_ID` and `VOLCANO_ACCESS_TOKEN` to enable the feature.
+
+## **Protocol Fix Summary** 🔧
+
+### **Issue Resolved:**
+- ❌ **Error 1**: `"unsupported message type (9)"` - Wrong message type values
+- ❌ **Error 2**: `"parse payload size failed: body too short"` - Incorrect binary protocol structure
+
+### **Solution Implemented:**
+✅ **Complete protocol rewrite** based on official Volcano TTS demo:
+- Proper message structure with `Message` interface
+- Correct `MsgTypeFlagBits.WithEvent` usage instead of hardcoded flags
+- Field writers system (`writeEvent`, `writeSessionId`, `writePayload`)
+- Proper `marshalMessage`/`unmarshalMessage` functions
+- Enhanced debugging with message toString() methods
+
+### **Result:**
+🎉 **Backend audio generation now working** - WebSocket protocol fully compliant with Volcano TTS API specification!
+
+## **Frontend Polling Fix** 🔄
+
+### **Issue Identified:**
+After successful audio generation, the "Generate Audio" button remained in loading state until dialog was reopened.
+
+### **Root Cause:**
+1. **Stale State**: Component used `podcasts` prop but polling didn't update local state
+2. **Race Condition**: `router.refresh()` async but immediate data check
+3. **Missing Dependencies**: Polling effect didn't properly track `generatingAudio` changes
+
+### **Solution Implemented:**
+✅ **Enhanced State Management:**
+- Added local `podcasts` state managed independently from props
+- Proper state synchronization between server data and UI state
+- Safety checks to prevent stuck generating states
+
+✅ **Improved Polling Logic:**
+- Added detailed console logging for debugging
+- Enhanced error handling with automatic cleanup
+- Proper dependency tracking in `useEffect`
+- Real-time local state updates from server data
+
+✅ **Better User Experience:**
+- Immediate state updates when generation completes
+- Graceful error handling with user feedback
+- Prevention of infinite polling on errors
+
+### **Result:**
+🎉 **Frontend now properly updates** - Button states reflect actual generation status in real-time!

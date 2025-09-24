@@ -126,12 +126,7 @@ export class VolcanoTTSClient {
       'X-Api-Connect-Id': uuidv4(),
     };
     
-    this.logger?.debug('Request headers prepared', {
-      appId: this.config.appId.substring(0, 8) + '...',
-      accessTokenLength: this.config.accessToken.length,
-      resourceId: headers['X-Api-Resource-Id'],
-      connectId: headers['X-Api-Connect-Id']
-    });
+
     
     let ws: WebSocket | null = null;
     let retryCount = 0;
@@ -164,9 +159,7 @@ export class VolcanoTTSClient {
           
           // Start connection protocol
           try {
-            this.logger?.debug('Sending StartConnection...');
             await StartConnection(ws);
-            this.logger?.debug('StartConnection sent, waiting for ConnectionStarted event...');
             await WaitForEvent(ws, MsgType.FullServerResponse, EventType.ConnectionStarted);
             this.logger?.info('Connection started');
           } catch (error) {
@@ -201,21 +194,13 @@ export class VolcanoTTSClient {
           
           // Start session
           try {
-            this.logger?.debug('Preparing session payload...', { 
-              sessionId,
-              nlpTextsCount: reqParams.nlp_texts.length 
-            });
             const sessionPayload = new TextEncoder().encode(JSON.stringify(reqParams));
-            this.logger?.debug('Sending StartSession...', { payloadSize: sessionPayload.length });
             await StartSession(ws, sessionPayload, sessionId);
-            this.logger?.debug('StartSession sent, waiting for SessionStarted event...');
             await WaitForEvent(ws, MsgType.FullServerResponse, EventType.SessionStarted);
-            this.logger?.info('Session started');
+            this.logger?.info('Session started', { nlpTextsCount: reqParams.nlp_texts.length });
             
             // Finish session to start processing
-            this.logger?.debug('Sending FinishSession...');
             await FinishSession(ws, sessionId);
-            this.logger?.debug('FinishSession sent, starting event processing...');
           } catch (error) {
             this.logger?.error('Session setup failed', { 
               error: error instanceof Error ? error.message : String(error),
@@ -232,12 +217,6 @@ export class VolcanoTTSClient {
           
           while (true) {
             const msg = await ReceiveMessage(ws);
-            this.logger?.debug('Received message', { 
-              type: msg.type, 
-              event: msg.event, 
-              payloadSize: msg.payload.length,
-              messageString: msg.toString()
-            });
             
             // Handle error messages first
             if (msg.type === MsgType.Error) {
@@ -256,9 +235,6 @@ export class VolcanoTTSClient {
                 
               case EventType.PodcastRoundResponse:
                 // Audio chunk received (we don't store individual chunks)
-                this.logger?.debug(`Audio chunk received for round ${currentRound}`, { 
-                  size: msg.payload.length 
-                });
                 break;
                 
               case EventType.PodcastRoundEnd:
@@ -301,7 +277,7 @@ export class VolcanoTTSClient {
                 break;
                 
               default:
-                this.logger?.debug('Received unknown event', { event: msg.event });
+                // Ignore unknown events
             }
           }
           
@@ -353,12 +329,7 @@ export function createVolcanoClient(logger?: Logger): VolcanoTTSClient {
   const appId = process.env.VOLCANO_APP_ID;
   const accessToken = process.env.VOLCANO_ACCESS_TOKEN;
   
-  logger?.debug('Volcano TTS configuration check', {
-    hasAppId: !!appId,
-    hasAccessToken: !!accessToken,
-    appIdLength: appId?.length || 0,
-    accessTokenLength: accessToken?.length || 0,
-  });
+
   
   if (!appId || !accessToken) {
     throw new Error('Missing Volcano TTS configuration. Please set VOLCANO_APP_ID and VOLCANO_ACCESS_TOKEN environment variables.');

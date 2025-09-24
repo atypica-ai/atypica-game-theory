@@ -419,7 +419,6 @@ export async function StartConnection(ws: WebSocket): Promise<void> {
   )
   msg.event = EventType.StartConnection
   msg.payload = new TextEncoder().encode('{}')
-  console.log(`[DEBUG] StartConnection: ${msg.toString()}`)
   const data = marshalMessage(msg)
   return new Promise((resolve, reject) => {
     ws.send(data, (error) => {
@@ -441,7 +440,6 @@ export async function StartSession(
   msg.event = EventType.StartSession
   msg.sessionId = sessionId
   msg.payload = payload
-  console.log(`[DEBUG] StartSession: ${msg.toString()}`)
   const data = marshalMessage(msg)
   return new Promise((resolve, reject) => {
     ws.send(data, (error) => {
@@ -459,7 +457,6 @@ export async function FinishSession(ws: WebSocket, sessionId: string): Promise<v
   msg.event = EventType.FinishSession
   msg.sessionId = sessionId
   msg.payload = new TextEncoder().encode('{}')
-  console.log(`[DEBUG] FinishSession: ${msg.toString()}`)
   const data = marshalMessage(msg)
   return new Promise((resolve, reject) => {
     ws.send(data, (error) => {
@@ -476,7 +473,6 @@ export async function FinishConnection(ws: WebSocket): Promise<void> {
   )
   msg.event = EventType.FinishConnection
   msg.payload = new TextEncoder().encode('{}')
-  console.log(`[DEBUG] FinishConnection: ${msg.toString()}`)
   const data = marshalMessage(msg)
   return new Promise((resolve, reject) => {
     ws.send(data, (error) => {
