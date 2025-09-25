@@ -1,5 +1,5 @@
 "use server";
-import { llm } from "@/ai/provider";
+import { llm, providerOptions } from "@/ai/provider";
 import { detectInputLanguage } from "@/lib/textUtils";
 import { OpenAIResponsesProviderOptions } from "@ai-sdk/openai";
 import { generateText } from "ai";
@@ -81,6 +81,7 @@ export async function correctSpeechText(speechText: string, contextText?: string
       // temperature: 0.1,
       providerOptions: {
         openai: {
+          ...providerOptions.openai,
           reasoningSummary: "auto", // 'auto' | 'detailed'
           reasoningEffort: "minimal", // 'minimal' | 'low' | 'medium' | 'high'
         } satisfies OpenAIResponsesProviderOptions,

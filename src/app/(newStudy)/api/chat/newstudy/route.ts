@@ -13,6 +13,7 @@ import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage } from "@/lib/textUtils";
 import { prisma } from "@/prisma/prisma";
 import { getUserTokens } from "@/tokens/lib";
+import { OpenAIResponsesProviderOptions } from "@ai-sdk/openai";
 import {
   createDataStreamResponse,
   formatDataStreamPart,
@@ -110,7 +111,13 @@ export async function POST(req: NextRequest) {
     //     : { useSearchGrounding: true, dynamicRetrievalConfig: { mode: "MODE_DYNAMIC" } },
     // ),
     model: llm("gpt-5-mini"),
-    providerOptions,
+    providerOptions: {
+      openai: {
+        ...providerOptions.openai,
+        reasoningSummary: "auto", // 'auto' | 'detailed'
+        reasoningEffort: "minimal", // 'minimal' | 'low' | 'medium' | 'high'
+      } satisfies OpenAIResponsesProviderOptions,
+    },
     system: newStudySystem({ locale }),
     messages: coreMessages,
     tools: newStudyTools,
