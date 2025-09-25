@@ -139,7 +139,7 @@ async function syncToS3MultipleRegions({
 export async function generatePodcastScriptForAnalyst(
   params: PodcastGenerationParams & { userId: number }
 ): Promise<void> {
-  const { analystId, userId, instruction = "", systemPrompt } = params;
+  const { analystId, instruction = "", systemPrompt } = params;
   
   const analyst = await prisma.analyst.findUnique({
     where: { id: analystId },
@@ -152,7 +152,7 @@ export async function generatePodcastScriptForAnalyst(
     },
   });
   
-  if (!analyst || analyst.userId !== userId) {
+  if (!analyst) {
     throw new Error("Analyst not found or unauthorized");
   }
 
