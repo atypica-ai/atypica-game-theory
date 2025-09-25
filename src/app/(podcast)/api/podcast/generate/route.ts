@@ -4,8 +4,8 @@ import { NextRequest } from "next/server";
 import { waitUntil } from "@vercel/functions";
 
 import { 
-  validatePodcastRequest, 
-  backgroundGeneratePodcastAudio 
+  validatePodcastRequest,
+  generatePodcastAudio
 } from "@/app/(podcast)/lib";
 
 export async function POST(request: NextRequest) {
@@ -33,9 +33,9 @@ export async function POST(request: NextRequest) {
           });
         }
 
-        // Start background audio generation
+        // Start background audio generation using pure function
         waitUntil(
-          backgroundGeneratePodcastAudio({
+          generatePodcastAudio({
             podcastId: podcast.id,
             podcastToken: podcast.token,
             script: podcast.script,

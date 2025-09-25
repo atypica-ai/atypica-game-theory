@@ -2,7 +2,6 @@ import "server-only";
 
 import { createVolcanoClient } from "@/lib/volcano/client";
 import { rootLogger } from "@/lib/logging";
-import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { detectInputLanguage } from "@/lib/textUtils";
 import { generateToken } from "@/lib/utils";
@@ -37,48 +36,47 @@ export interface PodcastCreationParams {
   token?: string;
 }
 
-// Core data fetching functions
-export async function fetchPodcastsForAnalyst(analystId: number): Promise<
-  ServerActionResult<
-    (Pick<
-      AnalystPodcast,
-      "id" | "token" | "analystId" | "script" | "podcastUrl" | "generatedAt" | "createdAt" | "updatedAt"
-    > & { analyst: Analyst })[]
-  >
+// ========================================
+// PURE BUSINESS LOGIC FUNCTIONS (NO AUTH)
+// ========================================
+
+// Pure data fetching function (no auth)
+export async function fetchPodcastsForAnalyst(
+  analystId: number, 
+  userId: number
+): Promise<
+  (Pick<
+    AnalystPodcast,
+    "id" | "token" | "analystId" | "script" | "podcastUrl" | "generatedAt" | "createdAt" | "updatedAt"
+  > & { analyst: Analyst })[]
 > {
-  return withAuth(async (user) => {
-    const analyst = await prisma.analyst.findUnique({
-      where: { id: analystId },
-    });
-    if (analyst?.userId !== user.id) {
-      return {
-        success: false,
-        code: "forbidden",
-        message: "You are not authorized to access this resource.",
-      };
-    }
-    const podcasts = await prisma.analystPodcast.findMany({
-      where: {
-        analystId: analyst.id,
-      },
-      select: {
-        id: true,
-        token: true,
-        analystId: true,
-        analyst: true,
-        script: true,
-        podcastUrl: true,
-        generatedAt: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-      orderBy: { createdAt: "desc" },
-    });
-    return {
-      success: true,
-      data: podcasts,
-    };
+  // Verify ownership
+  const analyst = await prisma.analyst.findUnique({
+    where: { id: analystId },
   });
+  if (!analyst || analyst.userId !== userId) {
+    throw new Error("Analyst not found or unauthorized");
+  }
+
+  const podcasts = await prisma.analystPodcast.findMany({
+    where: {
+      analystId: analyst.id,
+    },
+    select: {
+      id: true,
+      token: true,
+      analystId: true,
+      analyst: true,
+      script: true,
+      podcastUrl: true,
+      generatedAt: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+    orderBy: { createdAt: "desc" },
+  });
+  
+  return podcasts;
 }
 
 // Core podcast record creation
@@ -106,7 +104,7 @@ function preprocessScriptForAudio(script: string): string {
     .trim();
 }
 
-// S3 upload helper (moved from API route)
+// S3 upload helper
 async function syncToS3MultipleRegions({
   fileBody,
   mimeType,
@@ -137,123 +135,123 @@ async function syncToS3MultipleRegions({
   }
 }
 
-// Core podcast script generation logic
-export async function backgroundGeneratePodcastScript(params: PodcastGenerationParams): Promise<void> {
-  return withAuth(async (user) => {
-    const { analystId, instruction = "", systemPrompt } = params;
-    
-    const analyst = await prisma.analyst.findUnique({
-      where: { id: analystId },
-      include: {
-        interviews: {
-          select: {
-            conclusion: true,
-          },
+// Pure podcast script generation function (no auth)
+export async function generatePodcastScriptForAnalyst(
+  params: PodcastGenerationParams & { userId: number }
+): Promise<void> {
+  const { analystId, userId, instruction = "", systemPrompt } = params;
+  
+  const analyst = await prisma.analyst.findUnique({
+    where: { id: analystId },
+    include: {
+      interviews: {
+        select: {
+          conclusion: true,
         },
       },
-    });
-    
-    if (!analyst || analyst.userId !== user.id) {
-      throw new Error("Analyst not found or unauthorized");
-    }
-
-    const podcastToken = generateToken();
-    const podcast = await createPodcastRecord({
-      analystId,
-      instruction,
-      token: podcastToken,
-    });
-
-    const abortController = new AbortController();
-    const abortSignal = abortController.signal;
-
-    const podcastLog = rootLogger.child({
-      analystId,
-      podcastToken,
-      method: "backgroundGeneratePodcastScript",
-    });
-    
-    const statReport = async (dimension: string, value: number, extra?: any) => {
-      podcastLog.info(`statReport: ${dimension}=${value} ${JSON.stringify(extra)}`);
-    };
-    
-    const locale =
-      analyst.locale === "zh-CN" || analyst.locale === "en-US"
-        ? analyst.locale
-        : await detectInputLanguage({ text: analyst.brief });
-
-    // Background wait implementation (copied from original actions.ts)
-    const backgroundWait = (promise: Promise<any>, logger: Logger) => {
-      waitUntil(
-        new Promise(async (resolve, reject) => {
-          let stop = false;
-          const start = Date.now();
-          const tick = () => {
-            const now = Date.now();
-            const elapsedSeconds = Math.floor((now - start) / 1000);
-            if (elapsedSeconds > 1200) {
-              // 20 mins
-              logger.warn("timeout");
-              stop = true;
-              reject(new Error("podcast generation timeout"));
-            }
-            if (stop) {
-              logger.info("stopped");
-            } else {
-              logger.info(`ongoing, ${elapsedSeconds} seconds`);
-              setTimeout(() => tick(), 5000);
-            }
-          };
-          tick();
-
-          promise
-            .then(() => {
-              stop = true;
-              resolve(null);
-            })
-            .catch((error) => {
-              stop = true;
-              reject(error);
-            });
-        }),
-      );
-    };
-
-    backgroundWait(
-      (async () => {
-        await generatePodcastScript({
-          analyst,
-          podcast,
-          instruction,
-          locale,
-          abortSignal,
-          statReport,
-          logger: podcastLog,
-          systemPrompt,
-        });
-      })(),
-      podcastLog,
-    );
+    },
   });
+  
+  if (!analyst || analyst.userId !== userId) {
+    throw new Error("Analyst not found or unauthorized");
+  }
+
+  const podcastToken = generateToken();
+  const podcast = await createPodcastRecord({
+    analystId,
+    instruction,
+    token: podcastToken,
+  });
+
+  const abortController = new AbortController();
+  const abortSignal = abortController.signal;
+
+  const podcastLog = rootLogger.child({
+    analystId,
+    podcastToken,
+    method: "generatePodcastScriptForAnalyst",
+  });
+  
+  const statReport = async (dimension: string, value: number, extra?: any) => {
+    podcastLog.info(`statReport: ${dimension}=${value} ${JSON.stringify(extra)}`);
+  };
+  
+  const locale =
+    analyst.locale === "zh-CN" || analyst.locale === "en-US"
+      ? analyst.locale
+      : await detectInputLanguage({ text: analyst.brief });
+
+  // Background wait implementation
+  const backgroundWait = (promise: Promise<any>, logger: Logger) => {
+    waitUntil(
+      new Promise(async (resolve, reject) => {
+        let stop = false;
+        const start = Date.now();
+        const tick = () => {
+          const now = Date.now();
+          const elapsedSeconds = Math.floor((now - start) / 1000);
+          if (elapsedSeconds > 1200) {
+            // 20 mins
+            logger.warn("timeout");
+            stop = true;
+            reject(new Error("podcast generation timeout"));
+          }
+          if (stop) {
+            logger.info("stopped");
+          } else {
+            logger.info(`ongoing, ${elapsedSeconds} seconds`);
+            setTimeout(() => tick(), 5000);
+          }
+        };
+        tick();
+
+        promise
+          .then(() => {
+            stop = true;
+            resolve(null);
+          })
+          .catch((error) => {
+            stop = true;
+            reject(error);
+          });
+      }),
+    );
+  };
+
+  backgroundWait(
+    (async () => {
+      await generatePodcastScript({
+        analyst,
+        podcast,
+        instruction,
+        locale,
+        abortSignal,
+        statReport,
+        logger: podcastLog,
+        systemPrompt,
+      });
+    })(),
+    podcastLog,
+  );
 }
 
-// Core podcast audio generation logic
-export async function backgroundGeneratePodcastAudio(params: PodcastAudioGenerationParams): Promise<void> {
+// Pure podcast audio generation function (no auth, renamed from backgroundGeneratePodcastAudioImpl)
+export async function generatePodcastAudio(params: PodcastAudioGenerationParams): Promise<void> {
   const { podcastId, podcastToken, script, locale } = params;
   
   const logger = rootLogger.child({
     podcastId,
     podcastToken,
-    method: "backgroundGeneratePodcastAudio",
+    method: "generatePodcastAudio",
   });
 
   try {
-    logger.info("Starting background podcast audio generation");
+    logger.info("Starting podcast audio generation");
 
     // Preprocess script for audio generation
     const preprocessedScript = preprocessScriptForAudio(script);
     logger.info("Script preprocessed for audio generation", { 
-      processedLength: preprocessedScript 
+      processedLength: preprocessedScript.length
     });
 
     // Create Volcano TTS client
@@ -376,7 +374,7 @@ export async function backgroundGeneratePodcastAudio(params: PodcastAudioGenerat
   }
 }
 
-// Validation and auth helper for API routes
+// Validation helper for API routes (no auth, just validation)
 export async function validatePodcastRequest(podcastToken: string, userId: number): Promise<{
   podcast: AnalystPodcast & { analyst: Analyst };
   locale: string;

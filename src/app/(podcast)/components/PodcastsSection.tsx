@@ -10,7 +10,7 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useCallback, useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
-import { backgroundGeneratePodcast, fetchAnalystPodcasts } from "@/app/(podcast)/actions";
+import { backgroundGeneratePodcast, backgroundGeneratePodcastAudio, fetchAnalystPodcasts } from "@/app/(podcast)/actions";
 
 type AnalystPodcast = ExtractServerActionData<typeof fetchAnalystPodcasts>[number];
 
@@ -55,20 +55,10 @@ export function AnalystPodcastsSection({
   const generateAudio = useCallback(async (podcastToken: string) => {
     try {
       setGeneratingAudio(podcastToken);
-      const response = await fetch('/api/podcast/generate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ podcastToken }),
-      });
-
-      const result = await response.json();
       
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to generate audio');
-      }
-
+      // Use server action instead of API call
+      await backgroundGeneratePodcastAudio({ podcastToken });
+      
       toast.success('Audio generation started');
       
       // Start polling for completion
