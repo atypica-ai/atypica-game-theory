@@ -10,7 +10,7 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useCallback, useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
-import { backgroundGeneratePodcast, fetchAnalystPodcasts } from "./actions";
+import { backgroundGeneratePodcast, fetchAnalystPodcasts } from "@/app/(podcast)/actions";
 
 type AnalystPodcast = ExtractServerActionData<typeof fetchAnalystPodcasts>[number];
 

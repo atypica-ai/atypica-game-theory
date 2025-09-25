@@ -1,6 +1,5 @@
 import "server-only";
 
-import { podcastScriptSystem } from "@/ai/prompt";
 import { llm, LLMModelName, providerOptions } from "@/ai/provider";
 import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
 import { fileUrlToDataUrl } from "@/lib/attachments/actions";
@@ -10,7 +9,15 @@ import { prisma } from "@/prisma/prisma";
 import { AnalystKind } from "@/prisma/types";
 import { FinishReason, Message, streamText, tool } from "ai";
 import { z } from "zod";
-import { type GeneratePodcastResult } from "./types";
+
+// Import from the new prompt location
+import { podcastScriptSystem } from "./prompt";
+
+// Types
+export interface GeneratePodcastResult extends PlainTextToolResult {
+  podcastToken?: string;
+  plainText: string;
+}
 
 export const generatePodcastTool = ({
   studyUserChatId,

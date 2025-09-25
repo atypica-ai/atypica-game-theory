@@ -6,9 +6,10 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AnalystInterviewsSection } from "./AnalystInterviewsSection";
-import { AnalystPodcastsSection } from "./AnalystPodcastsSection";
 import { AnalystReportsSection } from "./AnalystReportsSection";
-import { fetchAnalystPodcasts, fetchAnalystReports } from "./actions";
+import { fetchAnalystReports } from "./actions";
+import { fetchAnalystPodcasts } from "@/app/(podcast)/actions";
+import { AnalystPodcastsSection } from "@/app/(podcast)/components/PodcastsSection";
 
 type AnalystInterview = ExtractServerActionData<typeof fetchAnalystInterviews>[number];
 type AnalystReport = ExtractServerActionData<typeof fetchAnalystReports>[number];

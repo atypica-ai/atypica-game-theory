@@ -6,7 +6,8 @@ import { AnalystKind } from "@/prisma/types";
 import { getLocale } from "next-intl/server";
 import { fetchAnalystById } from "../actions";
 import { AnalystDetail } from "./AnalystDetail";
-import { fetchAnalystPodcasts, fetchAnalystReports } from "./actions";
+import { fetchAnalystReports } from "./actions";
+import { fetchAnalystPodcasts } from "@/app/(podcast)/actions";
 
 export const dynamic = "force-dynamic";
 
