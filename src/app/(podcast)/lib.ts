@@ -54,8 +54,8 @@ export async function fetchPodcastsForAnalyst(
   const analyst = await prisma.analyst.findUnique({
     where: { id: analystId },
   });
-  if (!analyst || analyst.userId !== userId) {
-    throw new Error("Analyst not found or unauthorized");
+  if (!analyst) {
+    throw new Error("Analyst not found");
   }
 
   const podcasts = await prisma.analystPodcast.findMany({
@@ -137,7 +137,7 @@ async function syncToS3MultipleRegions({
 
 // Pure podcast script generation function (no auth)
 export async function generatePodcastScriptForAnalyst(
-  params: PodcastGenerationParams & { userId: number }
+  params: PodcastGenerationParams
 ): Promise<void> {
   const { analystId, instruction = "", systemPrompt } = params;
   
@@ -153,7 +153,7 @@ export async function generatePodcastScriptForAnalyst(
   });
   
   if (!analyst) {
-    throw new Error("Analyst not found or unauthorized");
+    throw new Error("Analyst not found");
   }
 
   const podcastToken = generateToken();

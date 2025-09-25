@@ -2,6 +2,7 @@
 
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
+import { prisma } from "@/prisma/prisma";
 import { 
   fetchPodcastsForAnalyst, 
   generatePodcastScriptForAnalyst,
@@ -50,10 +51,16 @@ export async function fetchAnalystPodcasts({ analystId }: { analystId: number })
 // Server action: Generate podcast script with auth
 export async function backgroundGeneratePodcast(params: PodcastGenerationParams): Promise<void> {
   return withAuth(async (user) => {
-    await generatePodcastScriptForAnalyst({
-      ...params,
-      userId: user.id,
+    // Verify the user owns the analyst
+    const analyst = await prisma.analyst.findUnique({
+      where: { id: params.analystId },
     });
+    
+    if (!analyst || analyst.userId !== user.id) {
+      throw new Error("Analyst not found or unauthorized");
+    }
+    
+    await generatePodcastScriptForAnalyst(params);
   });
 }
 
