@@ -95,6 +95,17 @@ export async function createPodcastRecord(params: PodcastCreationParams): Promis
   });
 }
 
+// Script preprocessing for audio generation
+function preprocessScriptForAudio(script: string): string {
+  return script
+    // Remove speaker labels like 【A】【B】
+    .replace(/【[^】]*】/g, '')
+    // Remove excessive newlines (keep single \n, remove multiple)
+    .replace(/\n{2,}/g, '\n')
+    // Trim whitespace from beginning and end
+    .trim();
+}
+
 // S3 upload helper (moved from API route)
 async function syncToS3MultipleRegions({
   fileBody,
@@ -239,12 +250,18 @@ export async function backgroundGeneratePodcastAudio(params: PodcastAudioGenerat
   try {
     logger.info("Starting background podcast audio generation");
 
+    // Preprocess script for audio generation
+    const preprocessedScript = preprocessScriptForAudio(script);
+    logger.info("Script preprocessed for audio generation", { 
+      processedLength: preprocessedScript 
+    });
+
     // Create Volcano TTS client
     const volcanoClient = createVolcanoClient(logger);
 
     // Generate audio
     const result = await volcanoClient.generatePodcastAudio({
-      script,
+      script: preprocessedScript,
       podcastToken,
       locale,
       logger,
