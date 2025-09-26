@@ -10,6 +10,7 @@ import {
   validatePodcastRequest,
   PodcastGenerationParams 
 } from "./lib";
+import { AnalystPodcast, Analyst } from "@/prisma/client";
 
 // ========================================
 // SERVER ACTIONS (WITH AUTH)
@@ -19,9 +20,9 @@ import {
 export async function fetchAnalystPodcasts({ analystId }: { analystId: number }): Promise<
   ServerActionResult<
     (Pick<
-      import("@/prisma/client").AnalystPodcast,
+      AnalystPodcast,
       "id" | "token" | "analystId" | "script" | "podcastUrl" | "generatedAt" | "createdAt" | "updatedAt"
-    > & { analyst: import("@/prisma/client").Analyst })[]
+    > & { analyst: Analyst })[]
   >
 > {
   return withAuth(async (user) => {

@@ -5,7 +5,6 @@ export { buildPersonaTool } from "./experts/buildPersona";
 export { interviewChatTool } from "./experts/interviewChat";
 export { planStudyTool } from "./experts/planStudy";
 export { reasoningThinkingTool } from "./experts/reasoning";
-export { generatePodcastTool } from "@/app/(podcast)/tools";
 export { generateReportTool } from "./experts/report";
 export { scoutSocialTrendsTool } from "./experts/scoutSocialTrends";
 export { scoutTaskChatTool } from "./experts/scoutTaskChat";

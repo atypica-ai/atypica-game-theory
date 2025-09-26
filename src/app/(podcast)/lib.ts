@@ -5,9 +5,7 @@ import { rootLogger } from "@/lib/logging";
 import { ServerActionResult } from "@/lib/serverAction";
 import { detectInputLanguage } from "@/lib/textUtils";
 import { generateToken } from "@/lib/utils";
-import { AWS_S3_CONFIG } from "@/lib/attachments/s3";
-import { getDeployRegion } from "@/lib/request/deployRegion";
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { uploadToS3 } from "@/lib/attachments/s3";
 import { Analyst, AnalystPodcast } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
@@ -104,36 +102,7 @@ function preprocessScriptForAudio(script: string): string {
     .trim();
 }
 
-// S3 upload helper
-async function syncToS3MultipleRegions({
-  fileBody,
-  mimeType,
-  key,
-}: {
-  fileBody: Buffer;
-  mimeType: string;
-  key: string;
-}) {
-  for (const s3Config of AWS_S3_CONFIG) {
-    const s3Client = new S3Client({
-      region: s3Config.region,
-      credentials: {
-        accessKeyId: s3Config.accessKeyId,
-        secretAccessKey: s3Config.secretAccessKey,
-      },
-    });
-    const s3Bucket = s3Config.bucketName;
-    const putObjectCommand = new PutObjectCommand({
-      Bucket: s3Bucket,
-      Key: key,
-      Body: fileBody,
-      ContentType: mimeType,
-      ACL: "public-read",
-      CacheControl: "public, max-age=31536000, immutable",
-    });
-    await s3Client.send(putObjectCommand);
-  }
-}
+// (Removed syncToS3MultipleRegions - now using standardized uploadToS3)
 
 // Pure podcast script generation function (no auth)
 export async function generatePodcastScriptForAnalyst(
@@ -319,22 +288,15 @@ export async function generatePodcastAudio(params: PodcastAudioGenerationParams)
 
     logger.info("Audio downloaded, uploading to S3", { size: audioBuffer.byteLength });
 
-    // Upload to S3
-    const s3Key = `atypica/podcasts/${podcastToken}.mp3`;
-    await syncToS3MultipleRegions({
-      fileBody: Buffer.from(audioBuffer),
+    // Upload to S3 using standardized function
+    const keySuffix = `podcasts/${podcastToken}.mp3` as const;
+    const { objectUrl } = await uploadToS3({
+      keySuffix,
+      fileBody: audioBuffer,
       mimeType: "audio/mpeg",
-      key: s3Key,
     });
 
-    // Get the appropriate S3 config for final URL
-    const s3Region = getDeployRegion() === "mainland" ? "cn-north-1" : "us-east-1";
-    const s3Config = AWS_S3_CONFIG.find((item) => item.region === s3Region);
-    if (!s3Config) {
-      throw new Error(`No S3 config found for region ${s3Region}`);
-    }
-
-    const finalUrl = `${s3Config.origin}${s3Key}`;
+    const finalUrl = objectUrl;
 
     // Update database with final URL
     await prisma.analystPodcast.update({
