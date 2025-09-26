@@ -3,9 +3,10 @@
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { prisma } from "@/prisma/prisma";
+import { waitUntil } from "@vercel/functions";
 import { 
   fetchPodcastsForAnalyst, 
-  generatePodcastScriptForAnalyst,
+  generatePodcastScript,
   generatePodcastAudio,
   validatePodcastRequest,
   PodcastGenerationParams 
@@ -49,7 +50,7 @@ export async function fetchAnalystPodcasts({ analystId }: { analystId: number })
   });
 }
 
-// Server action: Generate podcast script with auth
+// Server action: Generate podcast script with auth and background processing
 export async function backgroundGeneratePodcast(params: PodcastGenerationParams): Promise<void> {
   return withAuth(async (user) => {
     // Verify the user owns the analyst
@@ -61,7 +62,24 @@ export async function backgroundGeneratePodcast(params: PodcastGenerationParams)
       throw new Error("Analyst not found or unauthorized");
     }
     
-    await generatePodcastScriptForAnalyst(params);
+    // Handle background processing at the server action level
+    waitUntil(
+      (async () => {
+        try {
+          await generatePodcastScript({
+            analystId: params.analystId,
+            instruction: params.instruction,
+            systemPrompt: params.systemPrompt,
+          });
+        } catch (error) {
+          // Log error but don't throw since this is background processing
+          console.error("Background podcast script generation failed", {
+            analystId: params.analystId,
+            error: error instanceof Error ? error.message : String(error),
+          });
+        }
+      })()
+    );
   });
 }
 

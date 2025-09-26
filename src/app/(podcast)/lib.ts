@@ -382,36 +382,8 @@ Please generate a comprehensive, engaging podcast script based on the above rese
   return podcast;
 }
 
-/**
- * Legacy wrapper function for backward compatibility with background processing
- * @deprecated Use generatePodcastScript instead for new implementations
- */
-export async function generatePodcastScriptForAnalyst(
-  params: PodcastGenerationParams
-): Promise<void> {
-  const logger = rootLogger.child({
-    analystId: params.analystId,
-    method: "generatePodcastScriptForAnalyst",
-  });
-
-  // Handle background processing at this level using waitUntil
-  waitUntil(
-    (async () => {
-      try {
-        await generatePodcastScript({
-          analystId: params.analystId,
-          instruction: params.instruction,
-          systemPrompt: params.systemPrompt,
-        });
-      } catch (error) {
-        logger.error("Background podcast script generation failed", {
-          error: error instanceof Error ? error.message : String(error),
-        });
-        throw error;
-      }
-    })()
-  );
-}
+// The legacy generatePodcastScriptForAnalyst function has been removed.
+// Server actions now call generatePodcastScript directly for cleaner architecture.
 
 // Pure podcast audio generation function (no auth, renamed from backgroundGeneratePodcastAudioImpl)
 export async function generatePodcastAudio(params: PodcastAudioGenerationParams): Promise<void> {
