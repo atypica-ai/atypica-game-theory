@@ -102,7 +102,6 @@ export class VolcanoTTSClient {
       }
     }
     
-    this.logger?.info(`Parsed script into ${nlpTexts.length} dialogue segments`);
     return nlpTexts;
   }
 
@@ -155,13 +154,13 @@ export class VolcanoTTSClient {
             ws!.on('error', reject);
           });
           
-          this.logger?.info('WebSocket connection established');
+          // this.logger?.info('WebSocket connection established');
           
           // Start connection protocol
           try {
             await StartConnection(ws);
             await WaitForEvent(ws, MsgType.FullServerResponse, EventType.ConnectionStarted);
-            this.logger?.info('Connection started');
+            // this.logger?.info('Connection started');
           } catch (error) {
             this.logger?.error('Connection protocol failed', { 
               error: error instanceof Error ? error.message : String(error),
@@ -197,7 +196,7 @@ export class VolcanoTTSClient {
             const sessionPayload = new TextEncoder().encode(JSON.stringify(reqParams));
             await StartSession(ws, sessionPayload, sessionId);
             await WaitForEvent(ws, MsgType.FullServerResponse, EventType.SessionStarted);
-            this.logger?.info('Session started', { nlpTextsCount: reqParams.nlp_texts.length });
+            // this.logger?.info('Session started', { nlpTextsCount: reqParams.nlp_texts.length });
             
             // Finish session to start processing
             await FinishSession(ws, sessionId);
@@ -230,7 +229,7 @@ export class VolcanoTTSClient {
                 const startData = JSON.parse(new TextDecoder().decode(msg.payload));
                 currentRound = startData.round_id;
                 totalRounds = Math.max(totalRounds, currentRound);
-                this.logger?.info(`Podcast round ${currentRound} started`, { speaker: startData.speaker });
+                // this.logger?.info(`Podcast round ${currentRound} started`, { speaker: startData.speaker });
                 break;
                 
               case EventType.PodcastRoundResponse:

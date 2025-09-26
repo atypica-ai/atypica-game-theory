@@ -100,3 +100,47 @@ export async function backgroundGeneratePodcastAudio(params: { podcastToken: str
     });
   });
 } 
+
+// ========================================
+// BATCH PODCAST GENERATION (NO AUTH - FOR CRON JOBS)
+// ========================================
+
+// Server action: Batch generate podcasts for multiple analysts (no auth - called by cron)
+export async function backgroundBatchGeneratePodcasts(params: {
+  batchSize?: number;
+  targetCount?: number;
+  poolLimit?: number;
+} = {}): Promise<void> {
+  // This action is called by CronJob → API → Server Action
+  // Authentication is handled at the API level using internal secret
+  
+  const { batchSize = 10, targetCount = 10, poolLimit = 10 } = params;
+  
+  // Use waitUntil for background processing - returns immediately
+  waitUntil(
+    (async () => {
+      try {
+        const { batchGeneratePodcasts } = await import("./lib");
+        
+        const result = await batchGeneratePodcasts({
+          batchSize,
+          targetCount,
+          poolLimit
+        });
+        
+        console.log("Batch podcast generation completed", {
+          totalProcessed: result.totalProcessed,
+          successful: result.successful,
+          failed: result.failed,
+          processingTimeMs: result.summary.processingTimeMs
+        });
+        
+      } catch (error) {
+        console.error("Batch podcast generation failed", {
+          error: error instanceof Error ? error.message : String(error),
+          params: { batchSize, targetCount, poolLimit }
+        });
+      }
+    })()
+  );
+} 
