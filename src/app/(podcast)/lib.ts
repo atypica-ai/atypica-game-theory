@@ -499,13 +499,14 @@ export async function generatePodcastAudio(params: PodcastAudioGenerationParams)
 
     // Upload to S3 using standardized function
     const keySuffix = `podcasts/${podcastToken}.mp3` as const;
-    const { objectUrl } = await uploadToS3({
+    const { getObjectUrl, objectUrl } = await uploadToS3({
       keySuffix,
       fileBody: audioBuffer,
       mimeType: "audio/mpeg",
     });
 
-    const finalUrl = objectUrl;
+    // Use signed URL for audio playback and download
+    const finalUrl = getObjectUrl;
 
     // Update database with final URL
     await prisma.analystPodcast.update({
