@@ -7,9 +7,9 @@ import { detectInputLanguage } from "@/lib/textUtils";
 
 import { 
   generatePodcastAudio,
-  createPodcastRecord
+  createPodcastRecord,
+  generatePodcastScript
 } from "@/app/(podcast)/lib";
-import { generatePodcastScript } from "@/app/(podcast)/tools";
 
 // Internal auth validation helper
 function validateInternalAuth(request: NextRequest): boolean {
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
         try {
           pipelineLogger.info("Starting podcast script generation");
           
-          // Step 1: Generate script content
+          // Step 1: Generate script content using the unified function
           const abortController = new AbortController();
           const statReport = async (dimension: string, value: number, extra?: any) => {
             pipelineLogger.info(`statReport: ${dimension}=${value}`, extra);

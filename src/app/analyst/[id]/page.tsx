@@ -1,4 +1,5 @@
-import { podcastScriptSystem, reportHTMLSystem } from "@/ai/prompt";
+import { reportHTMLSystem } from "@/ai/prompt";
+import { podcastScriptSystem } from "@/app/(podcast)/prompt";
 import { fetchAnalystInterviews } from "@/app/(agents)/interview/actions";
 import { checkTezignAuth } from "@/app/admin/actions";
 import { throwServerActionError } from "@/lib/serverAction";

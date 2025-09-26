@@ -11,8 +11,18 @@ import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
 import { Logger } from "pino";
 
-// Import AI tools and prompts from the new structure
-import { generatePodcastScript } from "./tools";
+// Import required dependencies for script generation
+import { llm, LLMModelName, providerOptions } from "@/ai/provider";
+import { fileUrlToDataUrl } from "@/lib/attachments/actions";
+import { fixMalformedUnicodeString } from "@/lib/utils";
+import { ChatMessageAttachment } from "@/prisma/client";
+import { AnalystKind } from "@/prisma/types";
+import { FinishReason, Message, streamText } from "ai";
+
+// Import from the prompt location
+import { podcastScriptSystem } from "./prompt";
+// Import Locale type for proper typing
+import { Locale } from "next-intl";
 
 // Types
 export interface PodcastGenerationParams {
@@ -32,6 +42,22 @@ export interface PodcastCreationParams {
   analystId: number;
   instruction: string;
   token?: string;
+}
+
+// Enhanced interface for the unified script generation function
+export interface PodcastScriptGenerationParams {
+  // Option 1: Provide analystId (will fetch analyst and create podcast record)
+  analystId?: number;
+  // Option 2: Provide pre-fetched analyst and podcast (for advanced use cases)
+  analyst?: Analyst & { interviews: { conclusion: string; }[] };
+  podcast?: AnalystPodcast;
+  // Common parameters
+  instruction?: string;
+  systemPrompt?: string;
+  locale?: Locale;
+  abortSignal?: AbortSignal;
+  statReport?: (dimension: string, value: number, extra?: any) => Promise<void>;
+  logger?: Logger;
 }
 
 // ========================================
@@ -102,105 +128,288 @@ function preprocessScriptForAudio(script: string): string {
     .trim();
 }
 
-// (Removed syncToS3MultipleRegions - now using standardized uploadToS3)
+// ========================================
+// UNIFIED PODCAST SCRIPT GENERATION
+// ========================================
 
-// Pure podcast script generation function (no auth)
+/**
+ * Unified podcast script generation function that handles both use cases:
+ * 1. Direct analyst ID (fetches analyst, creates podcast record)
+ * 2. Pre-provided analyst and podcast objects (for advanced use cases)
+ * 
+ * This function is now simplified and purely synchronous.
+ */
+export async function generatePodcastScript(params: PodcastScriptGenerationParams): Promise<AnalystPodcast> {
+  const { 
+    analystId, 
+    analyst: providedAnalyst, 
+    podcast: providedPodcast,
+    instruction = "", 
+    systemPrompt,
+    locale: providedLocale,
+    abortSignal,
+    statReport,
+    logger: providedLogger
+  } = params;
+
+  // Step 1: Get or fetch analyst
+  let analyst: Analyst & { interviews: { conclusion: string; }[] };
+  
+  if (providedAnalyst) {
+    analyst = providedAnalyst;
+  } else if (analystId) {
+    const fetchedAnalyst = await prisma.analyst.findUnique({
+      where: { id: analystId },
+      include: {
+        interviews: {
+          select: {
+            conclusion: true,
+          },
+        },
+      },
+    });
+    
+    if (!fetchedAnalyst) {
+      throw new Error("Analyst not found");
+    }
+    analyst = fetchedAnalyst;
+  } else {
+    throw new Error("Either analystId or analyst object must be provided");
+  }
+
+  // Step 2: Get or create podcast record
+  let podcast: AnalystPodcast;
+  
+  if (providedPodcast) {
+    podcast = providedPodcast;
+  } else {
+    const podcastToken = generateToken();
+    podcast = await createPodcastRecord({
+      analystId: analyst.id,
+      instruction,
+      token: podcastToken,
+    });
+  }
+
+  // Step 3: Setup logging and locale
+  const logger = providedLogger || rootLogger.child({
+    analystId: analyst.id,
+    podcastToken: podcast.token,
+    method: "generatePodcastScript",
+  });
+
+  const locale: Locale = providedLocale || 
+    (analyst.locale === "zh-CN" || analyst.locale === "en-US"
+      ? analyst.locale as Locale
+      : await detectInputLanguage({ text: analyst.brief }) as Locale);
+
+  // Step 4: Setup abort signal and stat reporting
+  const finalAbortSignal = abortSignal || new AbortController().signal;
+  const finalStatReport = statReport || (async (dimension: string, value: number, extra?: any) => {
+    logger.info(`statReport: ${dimension}=${value}`, extra);
+  });
+
+  // Step 5: Core script generation logic
+  logger.info("Starting podcast script generation", { 
+    analystId: analyst.id, 
+    podcastId: podcast.id 
+  });
+
+  let script = podcast.script; // If podcast has content, continue from existing script
+
+  const throttleSaveScript = (() => {
+    let timerId: NodeJS.Timeout | null = null;
+
+    return async (
+      podcastId: number,
+      script: string,
+      { immediate }: { immediate?: boolean } = {},
+    ) => {
+      if (immediate) {
+        if (timerId) {
+          clearTimeout(timerId);
+          timerId = null;
+        }
+        saveNow();
+        return;
+      }
+
+      if (!timerId) {
+        timerId = setTimeout(() => {
+          timerId = null;
+          saveNow();
+        }, 5000); // 5 second throttle
+      }
+
+      async function saveNow() {
+        try {
+          await prisma.analystPodcast.update({
+            where: { id: podcastId },
+            data: { script },
+          });
+          logger.info("Podcast script persisted successfully");
+        } catch (error) {
+          logger.error(`Error persisting podcast script: ${(error as Error).message}`);
+        }
+      }
+    };
+  })();
+
+  let modelName: LLMModelName = "claude-sonnet-4";
+  
+  const streamTextPromise = new Promise<{
+    finishReason: FinishReason;
+    content: string;
+  }>(async (resolve, reject) => {
+    const experimental_attachments = analyst.attachments
+      ? await Promise.all(
+          (analyst.attachments as ChatMessageAttachment[]).map(
+            async ({ name, objectUrl, mimeType }) => {
+              const url = await fileUrlToDataUrl({ objectUrl, mimeType });
+              return { name, url, contentType: mimeType };
+            },
+          ),
+        )
+      : undefined;
+
+    // Create podcast script prompt content
+    const podcastContent = `# Podcast Script Generation Request
+
+<User Brief>
+${analyst.brief}
+</User Brief>
+
+<Research Topic>
+${analyst.topic}
+</Research Topic>
+
+<Study Summary>
+${analyst.studySummary}
+</Study Summary>
+
+<Research Process>
+${analyst.studyLog}
+</Research Process>
+
+Please generate a comprehensive, engaging podcast script based on the above research findings.`;
+
+    const messages: Omit<Message, "id">[] = [
+      {
+        role: "user",
+        content: podcastContent,
+        experimental_attachments,
+      },
+    ];
+
+    if (script) {
+      messages.push({ role: "assistant", content: script });
+      messages.push({
+        role: "user",
+        content: "Please continue with the remaining podcast script content without repeating what's already been generated.",
+      });
+    }
+
+    const response = streamText({
+      model: llm(modelName),
+      providerOptions: providerOptions,
+      system: systemPrompt
+        ? systemPrompt
+        : podcastScriptSystem({
+            locale,
+            analystKind: (analyst.kind as AnalystKind) || AnalystKind.misc,
+          }),
+      messages: messages,
+      maxSteps: 1,
+      maxTokens: 30000,
+      onChunk: async ({ chunk }) => {
+        if (chunk.type === "text-delta") {
+          script += chunk.textDelta.toString();
+          await throttleSaveScript(podcast.id, script);
+        }
+      },
+      onFinish: async ({ finishReason, text, usage }) => {
+        resolve({
+          finishReason: finishReason,
+          content: text,
+        });
+        logger.info("Script generation completed", { finishReason, usage });
+        const totalTokens =
+          (usage.completionTokens ?? 0) * 3 + (usage.promptTokens ?? 0) || usage.totalTokens;
+        if (totalTokens > 0 && finalStatReport) {
+          await finalStatReport("tokens", totalTokens, {
+            reportedBy: "generatePodcastScript",
+            part: "script",
+            usage,
+          });
+        }
+      },
+      onError: ({ error }) => {
+        const msg = (error as Error).message;
+        if ((error as Error).name === "AbortError") {
+          logger.warn(`Script generation aborted: ${msg}`);
+        } else {
+          logger.error(`Script generation error: ${msg}`);
+          reject(error);
+        }
+      },
+      abortSignal: finalAbortSignal,
+    });
+
+    finalAbortSignal.addEventListener("abort", () => {
+      reject(new Error("Script generation aborted"));
+    });
+
+    response
+      .consumeStream()
+      .then(() => {})
+      .catch((error) => reject(error));
+  });
+
+  const { finishReason } = await streamTextPromise;
+  // Save final script
+  await throttleSaveScript(podcast.id, script, { immediate: true });
+
+  if (finishReason === "length") {
+    logger.warn("Podcast script generation hit length limit but completed");
+  }
+
+  await prisma.analystPodcast.update({
+    where: { id: podcast.id },
+    data: { generatedAt: new Date() },
+  });
+
+  logger.info("Podcast script generation completed successfully");
+  return podcast;
+}
+
+/**
+ * Legacy wrapper function for backward compatibility with background processing
+ * @deprecated Use generatePodcastScript instead for new implementations
+ */
 export async function generatePodcastScriptForAnalyst(
   params: PodcastGenerationParams
 ): Promise<void> {
-  const { analystId, instruction = "", systemPrompt } = params;
-  
-  const analyst = await prisma.analyst.findUnique({
-    where: { id: analystId },
-    include: {
-      interviews: {
-        select: {
-          conclusion: true,
-        },
-      },
-    },
-  });
-  
-  if (!analyst) {
-    throw new Error("Analyst not found");
-  }
-
-  const podcastToken = generateToken();
-  const podcast = await createPodcastRecord({
-    analystId,
-    instruction,
-    token: podcastToken,
-  });
-
-  const abortController = new AbortController();
-  const abortSignal = abortController.signal;
-
-  const podcastLog = rootLogger.child({
-    analystId,
-    podcastToken,
+  const logger = rootLogger.child({
+    analystId: params.analystId,
     method: "generatePodcastScriptForAnalyst",
   });
-  
-  const statReport = async (dimension: string, value: number, extra?: any) => {
-    podcastLog.info(`statReport: ${dimension}=${value} ${JSON.stringify(extra)}`);
-  };
-  
-  const locale =
-    analyst.locale === "zh-CN" || analyst.locale === "en-US"
-      ? analyst.locale
-      : await detectInputLanguage({ text: analyst.brief });
 
-  // Background wait implementation
-  const backgroundWait = (promise: Promise<any>, logger: Logger) => {
-    waitUntil(
-      new Promise(async (resolve, reject) => {
-        let stop = false;
-        const start = Date.now();
-        const tick = () => {
-          const now = Date.now();
-          const elapsedSeconds = Math.floor((now - start) / 1000);
-          if (elapsedSeconds > 1200) {
-            // 20 mins
-            logger.warn("timeout");
-            stop = true;
-            reject(new Error("podcast generation timeout"));
-          }
-          if (stop) {
-            logger.info("stopped");
-          } else {
-            logger.info(`ongoing, ${elapsedSeconds} seconds`);
-            setTimeout(() => tick(), 5000);
-          }
-        };
-        tick();
-
-        promise
-          .then(() => {
-            stop = true;
-            resolve(null);
-          })
-          .catch((error) => {
-            stop = true;
-            reject(error);
-          });
-      }),
-    );
-  };
-
-  backgroundWait(
+  // Handle background processing at this level using waitUntil
+  waitUntil(
     (async () => {
-      await generatePodcastScript({
-        analyst,
-        podcast,
-        instruction,
-        locale,
-        abortSignal,
-        statReport,
-        logger: podcastLog,
-        systemPrompt,
-      });
-    })(),
-    podcastLog,
+      try {
+        await generatePodcastScript({
+          analystId: params.analystId,
+          instruction: params.instruction,
+          systemPrompt: params.systemPrompt,
+        });
+      } catch (error) {
+        logger.error("Background podcast script generation failed", {
+          error: error instanceof Error ? error.message : String(error),
+        });
+        throw error;
+      }
+    })()
   );
 }
 
