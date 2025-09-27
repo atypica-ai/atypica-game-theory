@@ -1,10 +1,13 @@
 "use client";
+import PodcastsListPanel from "@/app/(study)/study/components/PodcastsListPanel";
+import ReportsListPanel from "@/app/(study)/study/components/ReportsListPanel";
+import { ShareReplayButton } from "@/app/(study)/study/components/ShareReplayButton";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn, formatDate } from "@/lib/utils";
-import { CalendarDaysIcon, PaperclipIcon } from "lucide-react";
+import { CalendarDaysIcon, FileTextIcon, MicIcon, PaperclipIcon, PlayIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { fetchUserStudies } from "./actions";
@@ -28,71 +31,100 @@ export function StudyCard({ study: { studyUserChat, analyst } }: { study: TStudy
   };
 
   const status = getStudyStatus();
+  const hasStats =
+    (analyst?.reports && analyst.reports.length > 0) ||
+    (analyst?.podcasts && analyst.podcasts.length > 0) ||
+    (analyst?.attachments && analyst.attachments.length > 0);
 
   return (
-    <Card className="flex flex-col h-full transition-shadow hover:shadow-md">
-      <CardHeader className="flex flex-row items-top">
-        <HippyGhostAvatar seed={studyUserChat.id} className="size-8 mr-2 shrink-0" />
-        <CardTitle className="text-base font-semibold line-clamp-2 leading-5 h-10">
-          {studyUserChat.title}
-        </CardTitle>
-        <div className="shrink-0 ml-auto px-2 py-1 text-xs font-semibold">
-          {(() => {
-            switch (analyst?.kind) {
-              case "testing":
-                return <span>{tRoot("AnalystListPage.kinds.testing")}</span>;
-              case "planning":
-                return <span>{tRoot("AnalystListPage.kinds.planning")}</span>;
-              case "insights":
-                return <span>{tRoot("AnalystListPage.kinds.insights")}</span>;
-              case "creation":
-                return <span>{tRoot("AnalystListPage.kinds.creation")}</span>;
-              case "productRnD":
-                return <span>{tRoot("AnalystListPage.kinds.productRnD")}</span>;
-              case "misc":
-                return <span>{tRoot("AnalystListPage.kinds.misc")}</span>;
-              default:
-                return <span>N/A</span>;
-            }
-          })()}
+    <Card className="flex flex-col h-full border border-zinc-200 dark:border-zinc-700 shadow-sm bg-gradient-to-br from-white to-zinc-50/50 dark:from-zinc-800 dark:to-zinc-700/50">
+      <CardHeader>
+        {/* Header with avatar and meta info */}
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-3">
+            <HippyGhostAvatar
+              seed={studyUserChat.id}
+              className="size-10 ring-2 ring-zinc-100 dark:ring-zinc-800"
+            />
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <CalendarDaysIcon className="h-3.5 w-3.5" />
+                <span>{formatDate(studyUserChat.updatedAt, locale)}</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <span>{t(`status.${status}`)}</span>
+                <div
+                  className={cn("w-2 h-2 rounded-full", {
+                    "bg-amber-400 animate-pulse": status === "backgroundRunning",
+                    "bg-green-400": status === "reportGenerated",
+                    "bg-gray-300": status === "notCompleted",
+                  })}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Share button */}
+          <ShareReplayButton studyUserChat={studyUserChat}></ShareReplayButton>
         </div>
       </CardHeader>
-      <CardContent className="flex-1">
-        <div className="text-sm text-muted-foreground mb-3 line-clamp-3 leading-[1.25rem] h-[3.75rem]">
+
+      <CardContent className="flex-1 space-y-3">
+        {/* Title */}
+        <h3 className="text-lg font-semibold line-clamp-2 leading-6 text-zinc-900 dark:text-zinc-100">
+          {studyUserChat.title}
+        </h3>
+
+        {/* Description */}
+        <p className="text-sm text-muted-foreground mb-4 line-clamp-3 leading-relaxed">
           {analyst?.topic || t("noTopic")}
-        </div>
-        <div className="flex items-center justify-between mt-auto">
-          <div className="flex items-center gap-3 text-xs text-muted-foreground">
-            <div className="flex items-center">
-              <CalendarDaysIcon className="mr-1 h-4 w-4" />
-              <div>{formatDate(studyUserChat.updatedAt, locale)}</div>
-            </div>
+        </p>
+
+        {/* Stats section */}
+        {hasStats && (
+          <div className="p-3 bg-zinc-50 dark:bg-zinc-700/50 rounded-lg flex items-center justify-start gap-4">
+            {analyst?.reports && analyst.reports.length > 0 && (
+              <ReportsListPanel studyUserChatToken={studyUserChat.token} download={true}>
+                <div className="flex items-center gap-1.5 text-sm cursor-pointer ">
+                  <FileTextIcon className="h-4 w-4" />
+                  <span className="font-medium">
+                    {t("stats.reports", { count: analyst.reports.length })}
+                  </span>
+                </div>
+              </ReportsListPanel>
+            )}
+            {analyst?.podcasts && analyst.podcasts.length > 0 && (
+              <PodcastsListPanel studyUserChatToken={studyUserChat.token}>
+                <div className="flex items-center gap-1.5 text-sm text-violet-600 dark:text-violet-400 cursor-pointer">
+                  <MicIcon className="h-4 w-4" />
+                  <span className="font-medium">
+                    {t("stats.podcasts", { count: analyst.podcasts.length })}
+                  </span>
+                </div>
+              </PodcastsListPanel>
+            )}
             {analyst?.attachments && analyst.attachments.length > 0 && (
-              <div className="flex items-center">
-                <PaperclipIcon className="mr-1 h-4 w-4" />
-                <div>{analyst.attachments.length}</div>
+              <div className="ml-auto flex items-center gap-1 text-xs text-muted-foreground">
+                <PaperclipIcon className="h-3.5 w-3.5" />
+                <span>{t("stats.attachments", { count: analyst.attachments.length })}</span>
               </div>
             )}
           </div>
-          <div className="flex items-center">
-            <span
-              className={cn("text-xs px-2 py-0.5 rounded-full", {
-                "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-100":
-                  status === "backgroundRunning",
-                "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100":
-                  status === "reportGenerated",
-                "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200":
-                  status === "notCompleted",
-              })}
-            >
-              {t(`status.${status}`)}
-            </span>
+        )}
+        {/*{analyst?.attachments && analyst.attachments.length > 0 && (
+          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+            <PaperclipIcon className="h-3.5 w-3.5" />
+            <span>{t("stats.attachments", { count: analyst.attachments.length })}</span>
           </div>
-        </div>
+        )}*/}
       </CardContent>
-      <CardFooter>
-        <Button asChild variant="outline" className="w-full">
-          <Link href={`/study/${studyUserChat.token}`}>{t("viewStudy")}</Link>
+
+      <CardFooter className="pt-0">
+        <Button asChild variant="outline" size="sm" className="w-full">
+          <Link href={`/study/${studyUserChat.token}`}>
+            <PlayIcon className="h-4 w-4 mr-1.5" />
+            {t("viewStudy")}
+          </Link>
         </Button>
       </CardFooter>
     </Card>

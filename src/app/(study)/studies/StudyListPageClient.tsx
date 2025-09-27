@@ -1,7 +1,7 @@
 "use client";
 import { NewStudyButton } from "@/components/NewStudyInputBox";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Pagination } from "@/components/ui/pagination";
 import { createParamConfig, useListQueryParams } from "@/hooks/use-list-query-params";
@@ -138,30 +138,36 @@ export function StudyListPageClient({ initialSearchParams }: StudyListPageClient
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6 w-full">
               {/* New Study Quick Action Card */}
-              <Card className="flex flex-col h-full transition-shadow hover:shadow-md border-dashed border border-primary/30">
-                <CardHeader className="flex flex-row items-center">
-                  <div className="bg-primary/20 rounded-full p-1 mr-2 shrink-0">
-                    <NotebookTextIcon className="h-4 w-4 text-primary" />
+              <Card className="flex flex-col h-full border-2 border-dashed border-zinc-200 dark:border-zinc-700 bg-gradient-to-br from-zinc-50 to-zinc-50/50 dark:from-zinc-900/50 dark:to-zinc-900/30">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="bg-zinc-600 dark:bg-zinc-500 rounded-xl p-2.5 shadow-sm">
+                      <NotebookTextIcon className="h-5 w-5 text-white" />
+                    </div>
+                    <div className="flex flex-col">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                        {t("newStudyCard.title")}
+                      </h3>
+                      <div className=" text-zinc-700 dark:text-zinc-300 text-xs font-medium w-fit">
+                        {t("newStudyCard.badge")}
+                      </div>
+                    </div>
                   </div>
-                  <CardTitle className="text-lg font-semibold">
-                    {t("newStudyCard.title") || "New Research"}
-                  </CardTitle>
                 </CardHeader>
-                <CardContent className="flex-1 flex flex-col justify-center">
-                  <div className="text-sm text-muted-foreground mb-4 text-center">
-                    {t("newStudyCard.description") ||
-                      "Start exploring a new topic with AI-powered research and analysis"}
-                  </div>
-                  <div className="flex items-center justify-center text-xs text-muted-foreground">
-                    <div className="bg-primary/10 px-2 py-1 rounded-full">
-                      {t("newStudyCard.badge") || "Quick Start"}
+                <CardContent className="flex-1 flex flex-col justify-center pb-4">
+                  <p className="text-sm text-muted-foreground text-center leading-relaxed mb-6">
+                    {t("newStudyCard.description")}
+                  </p>
+                  <div className="flex items-center justify-center">
+                    <div className="w-16 h-16 bg-zinc-100 dark:bg-zinc-800/30 rounded-full flex items-center justify-center">
+                      <div className="w-0 h-0 border-l-[8px] border-l-zinc-600 border-t-[6px] border-t-transparent border-b-[6px] border-b-transparent ml-1"></div>
                     </div>
                   </div>
                 </CardContent>
-                <CardFooter>
+                <CardFooter className="pt-0">
                   <NewStudyButton>
-                    <Button className="w-full">
-                      <NotebookTextIcon className="h-4 w-4 mr-2" />
+                    <Button className="w-full bg-zinc-600 dark:bg-zinc-500 hover:bg-zinc-700 dark:hover:bg-zinc-600 text-white font-medium py-2.5">
+                      <NotebookTextIcon className="h-4 w-4" />
                       {t("startNewStudy")}
                     </Button>
                   </NewStudyButton>
