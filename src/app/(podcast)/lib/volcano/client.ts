@@ -157,7 +157,8 @@ export class VolcanoTTSClient {
             await WaitForEvent(ws, MsgType.FullServerResponse, EventType.ConnectionStarted);
             // this.logger?.info('Connection started');
           } catch (error) {
-            this.logger?.error("Connection protocol failed", {
+            this.logger?.error({
+              msg: "Connection protocol failed",
               error: error instanceof Error ? error.message : String(error),
               stack: error instanceof Error ? error.stack : undefined,
             });
@@ -198,7 +199,8 @@ export class VolcanoTTSClient {
             // Finish session to start processing
             await FinishSession(ws, sessionId);
           } catch (error) {
-            this.logger?.error("Session setup failed", {
+            this.logger?.error({
+              msg: "Session setup failed",
               error: error instanceof Error ? error.message : String(error),
               stack: error instanceof Error ? error.stack : undefined,
             });
@@ -217,7 +219,7 @@ export class VolcanoTTSClient {
             // Handle error messages first
             if (msg.type === MsgType.Error) {
               const errorMsg = new TextDecoder().decode(msg.payload);
-              this.logger?.error("Received error message from server", { errorMsg });
+              this.logger?.error({ msg: "Received error message from server", error: errorMsg });
               throw new Error(`Server error: ${errorMsg}`);
             }
 
@@ -279,7 +281,8 @@ export class VolcanoTTSClient {
             }
           }
         } catch (error) {
-          this.logger?.error("Generation attempt failed", {
+          this.logger?.error({
+            msg: "Generation attempt failed",
             attempt: retryCount + 1,
             error: error instanceof Error ? error.message : String(error),
           });

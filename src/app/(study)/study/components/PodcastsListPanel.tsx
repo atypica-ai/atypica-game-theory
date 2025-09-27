@@ -6,7 +6,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { truncateForTitle } from "@/lib/textUtils";
 import { formatDistanceToNow } from "@/lib/utils";
-import { MicIcon, PlayIcon } from "lucide-react";
+import { Loader2Icon, MicIcon, PlayIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
@@ -70,12 +70,14 @@ export default function PodcastsListPanel({
 }) {
   const t = useTranslations("StudyPage.PodcastsListPanel");
   const [isOpen, setIsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [podcasts, setPodcasts] = useState<
     ExtractServerActionData<typeof fetchAnalystPodcastsOfStudyUserChat>
   >([]);
 
   const fetchPodcasts = useCallback(async () => {
     if (!studyUserChatToken) return;
+    setIsLoading(true);
     try {
       const result = await fetchAnalystPodcastsOfStudyUserChat({
         studyUserChatToken: studyUserChatToken,
@@ -85,6 +87,8 @@ export default function PodcastsListPanel({
       }
     } catch (error) {
       console.log("Failed to fetch podcasts:", error);
+    } finally {
+      setIsLoading(false);
     }
   }, [studyUserChatToken]);
 
@@ -122,7 +126,11 @@ export default function PodcastsListPanel({
           <MicIcon className="size-4 text-muted-foreground" />
           <div className="text-sm font-medium">{t("title")}</div>
         </div>
-        {podcasts.length === 0 ? (
+        {isLoading ? (
+          <div className="p-6 flex justify-center">
+            <Loader2Icon className="size-6 animate-spin text-muted-foreground" />
+          </div>
+        ) : podcasts.length === 0 ? (
           <div className="p-6 text-center text-sm text-muted-foreground">{t("noPodcastsYet")}</div>
         ) : (
           <div className="p-3 grid grid-cols-1 gap-3 max-h-[400px] overflow-y-auto scrollbar-thin">

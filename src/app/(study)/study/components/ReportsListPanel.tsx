@@ -4,7 +4,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDistanceToNow } from "@/lib/utils";
-import { ClipboardListIcon, FileType2Icon } from "lucide-react";
+import { ClipboardListIcon, FileType2Icon, Loader2Icon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import {
@@ -70,12 +70,14 @@ export default function ReportsListPanel({
 }) {
   const t = useTranslations("StudyPage.ReportsListPanel");
   const [isOpen, setIsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [reports, setReports] = useState<
     ExtractServerActionData<typeof fetchAnalystReportsOfStudyUserChat>
   >([]);
 
   const fetchReports = useCallback(async () => {
     if (!studyUserChatToken) return;
+    setIsLoading(true);
     try {
       const result = await fetchAnalystReportsOfStudyUserChat({
         studyUserChatToken: studyUserChatToken,
@@ -85,6 +87,8 @@ export default function ReportsListPanel({
       }
     } catch (error) {
       console.log("Failed to fetch reports:", error);
+    } finally {
+      setIsLoading(false);
     }
   }, [studyUserChatToken]);
 
@@ -122,7 +126,11 @@ export default function ReportsListPanel({
           <ClipboardListIcon className="size-4 text-muted-foreground" />
           <div className="text-sm font-medium">{t("title")}</div>
         </div>
-        {reports.length === 0 ? (
+        {isLoading ? (
+          <div className="p-6 flex justify-center">
+            <Loader2Icon className="size-6 animate-spin text-muted-foreground" />
+          </div>
+        ) : reports.length === 0 ? (
           <div className="p-6 text-center text-sm text-muted-foreground">{t("noReportsYet")}</div>
         ) : (
           <div className="p-3 grid grid-cols-2 gap-3 max-h-[400px] overflow-y-auto scrollbar-thin">
