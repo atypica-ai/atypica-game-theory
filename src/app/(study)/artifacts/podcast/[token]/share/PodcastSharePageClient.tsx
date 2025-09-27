@@ -1,11 +1,10 @@
 "use client";
 import GlobalHeader from "@/components/layout/GlobalHeader";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import UserMenu from "@/components/UserMenu";
 import { truncateForTitle } from "@/lib/textUtils";
 import { Analyst, AnalystPodcast } from "@/prisma/client";
-import { Loader2Icon, Pause, Play, RotateCcw, RotateCw, Share2, Volume2 } from "lucide-react";
+import { Loader2Icon, Pause, Play, RotateCcw, RotateCw, Share2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -156,49 +155,54 @@ export default function PodcastSharePageClient({
         </div>
       </GlobalHeader>
 
-      <div className="flex-1 flex flex-col items-center justify-start p-4 md:p-8 overflow-y-auto scrollbar-thin">
-        <div className="w-full max-w-4xl mx-auto space-y-6">
-          {/* Podcast Header */}
-          <div className="text-center space-y-2">
-            <h1 className="text-xl md:text-2xl font-medium line-clamp-3">{analyst.topic}</h1>
-            <p className="text-muted-foreground">{t("title")}</p>
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col overflow-y-auto">
+        {/* Hero Section */}
+        <section className="container mx-auto px-4 py-8 md:py-12">
+          <div className="max-w-4xl mx-auto">
+            <h1 className="text-xl md:text-2xl font-medium text-zinc-900 dark:text-zinc-50 leading-tight line-clamp-3">
+              {truncateForTitle(analyst.topic, { maxDisplayWidth: 200, suffix: "..." })}
+            </h1>
           </div>
+        </section>
 
-          {/* Audio Player */}
-          <Card className="w-full">
-            <CardContent className="px-6 py-3">
+        {/* Audio Player Section */}
+        <section className="border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/20">
+          <div className="container mx-auto px-4 py-16 md:py-24">
+            <div className="max-w-2xl mx-auto">
               {error ? (
-                <div className="text-center py-8">
-                  <p className="text-destructive">{error}</p>
+                <div className="text-center py-16">
+                  <p className="text-destructive text-lg">{error}</p>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-8 md:space-y-12">
                   {/* Hidden audio element */}
                   {audioUrl && <audio ref={audioRef} src={audioUrl} preload="metadata" />}
 
                   {/* Play controls */}
-                  <div className="flex items-center justify-center gap-4">
+                  <div className="flex items-center justify-center gap-8 md:gap-12">
                     <Button
                       variant="ghost"
                       size="icon"
                       onClick={skipBackward}
                       disabled={isLoading || !audioUrl}
+                      className="h-14 w-14 md:h-16 md:w-16 touch-manipulation hover:bg-zinc-200 dark:hover:bg-zinc-700"
                     >
-                      <RotateCcw className="h-4 w-4" />
+                      <RotateCcw className="size-5" />
                     </Button>
 
                     <Button
                       size="lg"
                       onClick={togglePlayPause}
                       disabled={isLoading || !audioUrl}
-                      className="h-10 w-10 rounded-full"
+                      className="size-20 rounded-full touch-manipulation active:scale-95 transition-transform"
                     >
                       {isLoading ? (
-                        <Loader2Icon className="h-6 w-6 animate-spin" />
+                        <Loader2Icon className="size-6 animate-spin" />
                       ) : isPlaying ? (
-                        <Pause className="h-5 w-5" />
+                        <Pause className="size-6" />
                       ) : (
-                        <Play className="h-5 w-5" />
+                        <Play className="size-6 ml-1" />
                       )}
                     </Button>
 
@@ -207,52 +211,57 @@ export default function PodcastSharePageClient({
                       size="icon"
                       onClick={skipForward}
                       disabled={isLoading || !audioUrl}
+                      className="h-14 w-14 md:h-16 md:w-16 touch-manipulation hover:bg-zinc-200 dark:hover:bg-zinc-700"
                     >
-                      <RotateCw className="h-4 w-4" />
+                      <RotateCw className="size-5" />
                     </Button>
                   </div>
 
                   {/* Progress bar */}
-                  <div className="space-y-2">
-                    <input
-                      type="range"
-                      min={0}
-                      max={duration || 100}
-                      value={currentTime}
-                      onChange={(e) => seekTo(Number(e.target.value))}
-                      className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
-                      disabled={isLoading || !audioUrl}
-                    />
-                    <div className="flex justify-between text-sm text-muted-foreground">
+                  <div className="space-y-4 md:space-y-6">
+                    <div className="relative">
+                      <input
+                        type="range"
+                        min={0}
+                        max={duration || 100}
+                        value={currentTime}
+                        onChange={(e) => seekTo(Number(e.target.value))}
+                        className="w-full h-3 rounded-lg appearance-none cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 touch-manipulation [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-zinc-900 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-lg [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-zinc-900 [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:shadow-lg dark:[&::-webkit-slider-thumb]:bg-zinc-100 dark:[&::-moz-range-thumb]:bg-zinc-100"
+                        style={{
+                          background: `linear-gradient(to right, rgb(24 24 27) 0%, rgb(24 24 27) ${(currentTime / (duration || 100)) * 100}%, rgb(209 213 219) ${(currentTime / (duration || 100)) * 100}%, rgb(209 213 219) 100%)`,
+                          ...(document.documentElement.classList.contains('dark') && {
+                            background: `linear-gradient(to right, rgb(244 244 245) 0%, rgb(244 244 245) ${(currentTime / (duration || 100)) * 100}%, rgb(63 63 70) ${(currentTime / (duration || 100)) * 100}%, rgb(63 63 70) 100%)`,
+                          }),
+                        }}
+                        disabled={isLoading || !audioUrl}
+                      />
+                    </div>
+                    <div className="flex justify-between text-xs text-zinc-600 dark:text-zinc-400 font-mono">
                       <span>{formatTime(currentTime)}</span>
                       <span>{formatTime(duration)}</span>
                     </div>
                   </div>
-
-                  {/* Volume indicator */}
-                  <div className="flex items-center justify-center gap-2 text-muted-foreground">
-                    <Volume2 className="h-4 w-4" />
-                    <span className="text-sm">{t("audioPlayer")}</span>
-                  </div>
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
+        </section>
 
-          {/* Script Content */}
-          {podcast.script && (
-            <Card className="w-full">
-              <CardContent className="px-6">
-                <h2 className="text-lg font-semibold mb-4">{t("transcript")}</h2>
-                <div className="prose prose-sm max-w-none dark:prose-invert">
-                  <div className="whitespace-pre-wrap text-sm leading-relaxed">
-                    {podcast.script}
-                  </div>
+        {/* Transcript Section */}
+        {podcast.script && (
+          <section className="border-t border-zinc-200 dark:border-zinc-800">
+            <div className="container mx-auto px-4 py-12 md:py-16">
+              <div className="max-w-4xl mx-auto">
+                <h2 className="text-lg md:text-xl font-medium text-zinc-900 dark:text-zinc-100 mb-6 md:mb-8">
+                  {t("transcript")}
+                </h2>
+                <div className="text-sm md:text-base leading-7 md:leading-8 text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap">
+                  {podcast.script}
                 </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
+              </div>
+            </div>
+          </section>
+        )}
       </div>
 
       <footer className="py-2 px-4 text-center text-xs text-muted-foreground border-t border-border">

@@ -150,12 +150,10 @@
     "linkCopied": "链接已复制！"
   },
   "PodcastSharePage": {
-    "title": "研究播客",
     "attribution": "播客来自研究\"{topic}\"。",
     "viewReplay": "研究回放",
     "copyLink": "复制链接",
     "linkCopied": "链接已复制！",
-    "audioPlayer": "音频播放器",
     "transcript": "文字稿"
   }
 }

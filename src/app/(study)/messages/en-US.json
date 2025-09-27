@@ -150,12 +150,10 @@
     "linkCopied": "Link copied!"
   },
   "PodcastSharePage": {
-    "title": "Research Podcast",
     "attribution": "Podcast from research \"{topic}\".",
     "viewReplay": "Replay Study",
     "copyLink": "Copy Link",
     "linkCopied": "Link copied!",
-    "audioPlayer": "Audio Player",
     "transcript": "Transcript"
   }
 }
