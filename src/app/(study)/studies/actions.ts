@@ -20,6 +20,7 @@ export async function fetchUserStudies({
         title: string;
         id: number;
         token: string;
+        kind: "study";
         backgroundToken: string | null;
         createdAt: Date;
         updatedAt: Date;
@@ -28,6 +29,10 @@ export async function fetchUserStudies({
         topic: string;
         kind: AnalystKind | null;
         reports: {
+          id: number;
+          token: string;
+        }[];
+        podcasts: {
           id: number;
           token: string;
         }[];
@@ -79,6 +84,10 @@ export async function fetchUserStudies({
               where: { generatedAt: { not: null } },
               select: { id: true, token: true },
             },
+            podcasts: {
+              where: { generatedAt: { not: null } },
+              select: { id: true, token: true },
+            },
             attachments: true,
           },
         },
@@ -92,7 +101,10 @@ export async function fetchUserStudies({
       success: true,
       data: userChats.map(({ analyst, ...userChat }) => {
         return {
-          studyUserChat: userChat,
+          studyUserChat: {
+            ...userChat,
+            kind: "study", // where 里已经过滤了 kind
+          },
           analyst: analyst
             ? {
                 ...analyst,

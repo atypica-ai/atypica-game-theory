@@ -9,6 +9,7 @@ import { createUserChat } from "@/lib/userChat/lib";
 import {
   Analyst,
   AnalystInterview,
+  AnalystPodcast,
   AnalystReport,
   ChatMessageAttachment,
   Persona,
@@ -576,4 +577,103 @@ export async function submitStudyFeedback(
       data: undefined,
     };
   });
+}
+
+export async function fetchAnalystPodcastsOfStudyUserChat({
+  studyUserChatToken,
+}: {
+  studyUserChatToken: string;
+}): Promise<
+  ServerActionResult<
+    (Pick<
+      AnalystPodcast,
+      "id" | "token" | "analystId" | "script" | "generatedAt" | "createdAt" | "updatedAt"
+    > & { analyst: Analyst })[]
+  >
+> {
+  const studyUserChat = await prisma.userChat.findUnique({
+    where: { token: studyUserChatToken, kind: "study" },
+    include: { analyst: { select: { id: true } } },
+  });
+  if (!studyUserChat?.analyst) {
+    return {
+      success: true,
+      data: [],
+    };
+  }
+  const podcasts = await prisma.analystPodcast.findMany({
+    where: {
+      analystId: studyUserChat.analyst.id,
+      generatedAt: { not: null },
+    },
+    select: {
+      id: true,
+      token: true,
+      analystId: true,
+      analyst: true,
+      script: true,
+      generatedAt: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+    orderBy: { createdAt: "desc" },
+  });
+  return {
+    success: true,
+    data: podcasts,
+  };
+}
+
+export async function fetchAnalystReportsCountOfStudyUserChat({
+  studyUserChatToken,
+}: {
+  studyUserChatToken: string;
+}): Promise<ServerActionResult<number>> {
+  const studyUserChat = await prisma.userChat.findUnique({
+    where: { token: studyUserChatToken, kind: "study" },
+    include: { analyst: { select: { id: true } } },
+  });
+  if (!studyUserChat?.analyst) {
+    return {
+      success: true,
+      data: 0,
+    };
+  }
+  const count = await prisma.analystReport.count({
+    where: {
+      analystId: studyUserChat.analyst.id,
+      generatedAt: { not: null },
+    },
+  });
+  return {
+    success: true,
+    data: count,
+  };
+}
+
+export async function fetchAnalystPodcastsCountOfStudyUserChat({
+  studyUserChatToken,
+}: {
+  studyUserChatToken: string;
+}): Promise<ServerActionResult<number>> {
+  const studyUserChat = await prisma.userChat.findUnique({
+    where: { token: studyUserChatToken, kind: "study" },
+    include: { analyst: { select: { id: true } } },
+  });
+  if (!studyUserChat?.analyst) {
+    return {
+      success: true,
+      data: 0,
+    };
+  }
+  const count = await prisma.analystPodcast.count({
+    where: {
+      analystId: studyUserChat.analyst.id,
+      generatedAt: { not: null },
+    },
+  });
+  return {
+    success: true,
+    data: count,
+  };
 }
