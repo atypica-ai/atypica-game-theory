@@ -1,7 +1,6 @@
 import {
-  backgroundGeneratePodcast,
-  backgroundGeneratePodcastAudio,
   fetchAnalystPodcasts,
+  generatePodcastAction,
   getPodcastSignedUrl,
 } from "@/app/(podcast)/actions";
 import { TokenAlertDialog } from "@/components/TokenAlertDialog";
@@ -28,10 +27,11 @@ export function AnalystPodcastsSection({
   defaultPodcastSystem: string;
 }) {
   const router = useRouter();
-  const [isPodcastDialogOpen, setIsPodcastDialogOpen] = useState<AnalystPodcast | null>(null);
+  const [isPodcastDialogOpen, setIsPodcastDialogOpen] = useState<{
+    analystPodcast: AnalystPodcast;
+  } | null>(null);
   const [isPromptDialogOpen, setIsPromptDialogOpen] = useState(false);
   const [systemPrompt, setSystemPrompt] = useState("");
-  const [generatingAudio, setGeneratingAudio] = useState<string | null>(null);
   const [playingAudio, setPlayingAudio] = useState<string | null>(null);
   const [isPolling, setIsPolling] = useState(false);
   const [podcasts, setPodcasts] = useState<AnalystPodcast[]>(initialPodcasts);
@@ -45,33 +45,18 @@ export function AnalystPodcastsSection({
 
   const generatePodcast = useCallback(async () => {
     try {
-      await backgroundGeneratePodcast({
+      await generatePodcastAction({
         analystId: analyst.id,
         systemPrompt,
       });
+
+      // Start polling to track progress
+      setIsPolling(true);
       router.refresh();
     } catch (error) {
       toast.error(`${error}`);
     }
   }, [analyst.id, router, systemPrompt]);
-
-  const generateAudio = useCallback(async (podcastToken: string) => {
-    try {
-      setGeneratingAudio(podcastToken);
-
-      // Use server action instead of API call
-      await backgroundGeneratePodcastAudio({ podcastToken });
-
-      toast.success("Audio generation started");
-
-      // Start polling for completion
-      setIsPolling(true);
-    } catch (error) {
-      toast.error(`Failed to generate audio: ${error}`);
-      setGeneratingAudio(null);
-      setIsPolling(false);
-    }
-  }, []);
 
   const playAudio = useCallback(
     async (podcastToken: string) => {
@@ -150,54 +135,46 @@ export function AnalystPodcastsSection({
     [downloadUrls],
   );
 
-
-  // Polling effect for audio generation status
+  // Polling effect for podcast generation status (script + audio)
   useEffect(() => {
-    if (!isPolling || !generatingAudio) return;
+    if (!isPolling) return;
 
     const pollInterval = setInterval(async () => {
       try {
         // Refresh the page to check for updates
         router.refresh();
 
-        // Check if any podcast now has audio that was being generated
+        // Check for any podcasts that are still being generated
         const updatedPodcasts = await fetchAnalystPodcasts({ analystId: analyst.id });
         if (updatedPodcasts.success) {
-          const generatingPodcast = updatedPodcasts.data.find((p) => p.token === generatingAudio);
-          if (generatingPodcast?.objectUrl && generatingPodcast?.generatedAt) {
-            toast.success("Audio generation completed!");
-            setGeneratingAudio(null);
+          // Check if any podcast is still processing
+          const stillProcessing = updatedPodcasts.data.some((podcast) => {
+            return !!podcast.extra?.processing;
+          });
+
+          // If no podcasts are processing, stop polling
+          if (!stillProcessing) {
             setIsPolling(false);
-            router.refresh();
+            toast.success("Podcast generation completed!");
           }
         }
       } catch (error) {
         console.error("Polling error:", error);
         // Stop polling on error to prevent infinite retries
         setIsPolling(false);
-        setGeneratingAudio(null);
-        toast.error("Failed to check audio generation status");
+        toast.error("Failed to check generation status");
       }
     }, 3000);
 
     return () => {
       clearInterval(pollInterval);
     };
-  }, [isPolling, generatingAudio, analyst.id, router]);
+  }, [isPolling, analyst.id, router]);
 
   // Update local state when initial podcasts change
   useEffect(() => {
     setPodcasts(initialPodcasts);
-
-    // Check if any podcast we think is generating already has audio
-    if (generatingAudio) {
-      const podcast = initialPodcasts.find((p) => p.token === generatingAudio);
-      if (podcast?.objectUrl && podcast?.generatedAt) {
-        setGeneratingAudio(null);
-        setIsPolling(false);
-      }
-    }
-  }, [initialPodcasts, generatingAudio]);
+  }, [initialPodcasts]);
 
   // Clean up audio on unmount
   useEffect(() => {
@@ -218,27 +195,15 @@ export function AnalystPodcastsSection({
       </div>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {podcasts.map((podcast) => (
-          <div
-            key={podcast.id}
-            className="w-full cursor-pointer"
-            onClick={() => {
-              if (!podcast.generatedAt) {
-                setIsPodcastDialogOpen(podcast);
-              } else {
-                setIsPodcastDialogOpen(podcast);
-              }
-            }}
-          >
-            <div className="block w-full aspect-[2/1] cursor-pointer border border-input rounded-md overflow-hidden transition-all hover:border-primary/50 hover:shadow-sm bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900/20 dark:to-blue-900/20 flex items-center justify-center">
-              <div className="flex flex-col items-center justify-center text-center p-4">
-                {podcast.objectUrl ? (
-                  <Volume2Icon className="size-8 mb-2 text-green-600 dark:text-green-400" />
-                ) : (
-                  <PlayIcon className="size-8 mb-2 text-purple-600 dark:text-purple-400" />
-                )}
-                <div className="text-xs font-medium text-purple-800 dark:text-purple-200">
-                  {podcast.objectUrl ? "Podcast Audio" : "Podcast Script"}
-                </div>
+          <div key={podcast.id} className="cursor-pointer" onClick={() => setIsPodcastDialogOpen({ analystPodcast: podcast })}>
+            <div className="aspect-[2/1] border border-input rounded-md overflow-hidden transition-all hover:border-primary/50 hover:shadow-sm bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900/20 dark:to-blue-900/20 flex flex-col items-center justify-center text-center p-4">
+              {podcast.objectUrl ? (
+                <Volume2Icon className="size-8 mb-2 text-green-600 dark:text-green-400" />
+              ) : (
+                <PlayIcon className="size-8 mb-2 text-purple-600 dark:text-purple-400" />
+              )}
+              <div className="text-xs font-medium text-purple-800 dark:text-purple-200">
+                {podcast.objectUrl ? "Podcast Audio" : "Podcast Script"}
               </div>
             </div>
             <div className="mt-1 ml-1 font-mono text-xs text-muted-foreground flex items-center justify-between">
@@ -263,105 +228,86 @@ export function AnalystPodcastsSection({
         <DialogContent className="sm:max-w-[80vw]" onPointerDownOutside={(e) => e.preventDefault()}>
           <DialogHeader>
             <DialogTitle>
-              {isPodcastDialogOpen?.generatedAt ? "Podcast Script" : "Generating podcast script"}
+              {isPodcastDialogOpen?.analystPodcast.generatedAt
+                ? "Podcast Script"
+                : "Generating podcast script"}
             </DialogTitle>
           </DialogHeader>
           {isPodcastDialogOpen && (
             <div className="h-[70vh]">
-              {isPodcastDialogOpen.generatedAt ? (
+              {isPodcastDialogOpen.analystPodcast.generatedAt ? (
                 <div className="w-full h-full flex flex-col">
                   {/* Audio controls section */}
-                  {isPodcastDialogOpen.script && (
-                    <div className="border-b p-4 bg-muted/30">
-                      <div className="flex items-center justify-between gap-4">
-                        <div className="flex items-center gap-3">
-                          {isPodcastDialogOpen.objectUrl ? (
-                            <>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => playAudio(isPodcastDialogOpen.token)}
-                                disabled={generatingAudio === isPodcastDialogOpen.token}
-                              >
-                                {playingAudio === isPodcastDialogOpen.token ? (
-                                  <>
-                                    <PauseIcon className="size-4 mr-1" />
-                                    Pause
-                                  </>
-                                ) : (
-                                  <>
-                                    <PlayIcon className="size-4 mr-1" />
-                                    Play Audio
-                                  </>
-                                )}
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={async () => {
-                                  const url = await getDownloadUrl(isPodcastDialogOpen.token);
-                                  if (url) {
-                                    const link = document.createElement("a");
-                                    link.href = url;
-                                    link.download = `podcast-${isPodcastDialogOpen.token}.mp3`;
-                                    link.click();
-                                  } else {
-                                    toast.error("Failed to get download URL");
-                                  }
-                                }}
-                              >
-                                <DownloadIcon className="size-4 mr-1" />
-                                Download
-                              </Button>
-                            </>
-                          ) : (
+                  {isPodcastDialogOpen.analystPodcast.script && (
+                    <div className="border-b p-4 bg-muted/30 flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        {isPodcastDialogOpen.analystPodcast.objectUrl ? (
+                          <>
                             <Button
-                              variant="default"
+                              variant="outline"
                               size="sm"
-                              onClick={() => generateAudio(isPodcastDialogOpen.token)}
-                              disabled={
-                                generatingAudio === isPodcastDialogOpen.token ||
-                                !isPodcastDialogOpen.script
-                              }
+                              onClick={() => playAudio(isPodcastDialogOpen.analystPodcast.token)}
+                              disabled={!!isPodcastDialogOpen.analystPodcast.extra?.processing}
                             >
-                              {generatingAudio === isPodcastDialogOpen.token ? (
+                              {playingAudio === isPodcastDialogOpen.analystPodcast.token ? (
                                 <>
-                                  <Loader2Icon className="size-4 mr-1 animate-spin" />
-                                  Generating Audio...
+                                  <PauseIcon className="size-4 mr-1" />
+                                  Pause
                                 </>
                               ) : (
                                 <>
-                                  <Volume2Icon className="size-4 mr-1" />
-                                  Generate Audio
+                                  <PlayIcon className="size-4 mr-1" />
+                                  Play Audio
                                 </>
                               )}
                             </Button>
-                          )}
-                        </div>
-                        {generatingAudio === isPodcastDialogOpen.token && (
-                          <div className="text-sm text-muted-foreground">
-                            Audio generation may take 2-5 minutes...
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={async () => {
+                                const url = await getDownloadUrl(
+                                  isPodcastDialogOpen.analystPodcast.token,
+                                );
+                                if (url) {
+                                  const link = document.createElement("a");
+                                  link.href = url;
+                                  link.download = `podcast-${isPodcastDialogOpen.analystPodcast.token}.mp3`;
+                                  link.click();
+                                } else {
+                                  toast.error("Failed to get download URL");
+                                }
+                              }}
+                            >
+                              <DownloadIcon className="size-4 mr-1" />
+                              Download
+                            </Button>
+                          </>
+                        ) : (
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <Volume2Icon className="size-4" />
+                            Audio will be generated automatically
                           </div>
                         )}
                       </div>
+                      {!!isPodcastDialogOpen.analystPodcast.extra?.processing && (
+                        <div className="text-sm text-muted-foreground">
+                          Podcast generation in progress...
+                        </div>
+                      )}
                     </div>
                   )}
 
                   {/* Script content */}
-                  <div className="flex-1 overflow-y-auto scrollbar-thin">
-                    <div className="prose prose-sm max-w-none dark:prose-invert p-4">
-                      <div className="whitespace-pre-wrap text-sm">
-                        {isPodcastDialogOpen.script || "Script content not available"}
-                      </div>
+                  <div className="flex-1 overflow-y-auto scrollbar-thin prose prose-sm max-w-none dark:prose-invert p-4">
+                    <div className="whitespace-pre-wrap text-sm">
+                      {isPodcastDialogOpen.analystPodcast.script || "Script content not available"}
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center justify-center h-full">
-                  <div className="text-center">
-                    <Loader2Icon className="size-8 animate-spin mx-auto mb-4" />
-                    <p>Generating podcast script...</p>
-                  </div>
+                <div className="flex flex-col items-center justify-center h-full text-center">
+                  <Loader2Icon className="size-8 animate-spin mb-4" />
+                  <p>Generating podcast script...</p>
                 </div>
               )}
             </div>

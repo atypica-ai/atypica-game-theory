@@ -1,18 +1,15 @@
 "use server";
 
+import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
-import { Analyst, AnalystPodcast } from "@/prisma/client";
+import { Analyst, AnalystPodcast, AnalystPodcastExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
-import {
-  fetchPodcastsForAnalyst,
-  generatePodcastAudio,
-  generatePodcastScript,
-  PodcastGenerationParams,
-  podcastObjectUrlToHttpUrl,
-  validatePodcastRequest,
-} from "./lib";
+import { fetchPodcastsForAnalyst } from "./lib/data";
+import { generatePodcast } from "./lib/generation";
+import { PodcastGenerationParams } from "./lib/types";
+import { podcastObjectUrlToHttpUrl } from "./lib/utils";
 
 // ========================================
 // SERVER ACTIONS (WITH AUTH)
@@ -35,7 +32,10 @@ export async function fetchAnalystPodcasts({
       | "generatedAt"
       | "createdAt"
       | "updatedAt"
-    > & { analyst: Analyst })[]
+    > & {
+      analyst: Analyst;
+      extra: AnalystPodcastExtra;
+    })[]
   >
 > {
   return withAuth(async (user) => {
@@ -62,8 +62,8 @@ export async function fetchAnalystPodcasts({
   });
 }
 
-// Server action: Generate podcast script with auth and background processing
-export async function backgroundGeneratePodcast(params: PodcastGenerationParams): Promise<void> {
+// Server action: Generate complete podcast (script + audio) with auth and background processing
+export async function generatePodcastAction(params: PodcastGenerationParams): Promise<void> {
   return withAuth(async (user) => {
     // Verify the user owns the analyst
     const analyst = await prisma.analyst.findUnique({
@@ -78,40 +78,21 @@ export async function backgroundGeneratePodcast(params: PodcastGenerationParams)
     waitUntil(
       (async () => {
         try {
-          await generatePodcastScript({
+          await generatePodcast({
             analystId: params.analystId,
             instruction: params.instruction,
             systemPrompt: params.systemPrompt,
           });
         } catch (error) {
           // Log error but don't throw since this is background processing
-          console.error("Background podcast script generation failed", {
+          rootLogger.error({
+            msg: "Background podcast generation failed",
             analystId: params.analystId,
             error: error instanceof Error ? error.message : String(error),
           });
         }
       })(),
     );
-  });
-}
-
-// Server action: Generate podcast audio with auth
-export async function backgroundGeneratePodcastAudio(params: {
-  podcastToken: string;
-}): Promise<void> {
-  return withAuth(async (user) => {
-    const { podcastToken } = params;
-
-    // Validate request and get podcast data
-    const { podcast, locale } = await validatePodcastRequest(podcastToken, user.id);
-
-    // Call the pure business logic function
-    await generatePodcastAudio({
-      podcastId: podcast.id,
-      podcastToken: podcast.token,
-      script: podcast.script,
-      locale,
-    });
   });
 }
 
@@ -158,49 +139,4 @@ export async function getPodcastSignedUrl({
       };
     }
   });
-}
-
-// ========================================
-// BATCH PODCAST GENERATION (NO AUTH - FOR CRON JOBS)
-// ========================================
-
-// Server action: Batch generate podcasts for multiple analysts (no auth - called by cron)
-export async function backgroundBatchGeneratePodcasts(
-  params: {
-    batchSize?: number;
-    targetCount?: number;
-    poolLimit?: number;
-  } = {},
-): Promise<void> {
-  // This action is called by CronJob → API → Server Action
-  // Authentication is handled at the API level using internal secret
-
-  const { batchSize = 10, targetCount = 10, poolLimit = 10 } = params;
-
-  // Use waitUntil for background processing - returns immediately
-  waitUntil(
-    (async () => {
-      try {
-        const { batchGeneratePodcasts } = await import("./lib");
-
-        const result = await batchGeneratePodcasts({
-          batchSize,
-          targetCount,
-          poolLimit,
-        });
-
-        console.log("Batch podcast generation completed", {
-          totalProcessed: result.totalProcessed,
-          successful: result.successful,
-          failed: result.failed,
-          processingTimeMs: result.summary.processingTimeMs,
-        });
-      } catch (error) {
-        console.error("Batch podcast generation failed", {
-          error: error instanceof Error ? error.message : String(error),
-          params: { batchSize, targetCount, poolLimit },
-        });
-      }
-    })(),
-  );
 }

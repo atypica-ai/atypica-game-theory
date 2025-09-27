@@ -1,4 +1,4 @@
-import { backgroundBatchGeneratePodcasts } from "@/app/(podcast)/actions";
+import { batchGeneratePodcasts } from "@/app/(podcast)/lib/batch";
 import { rootLogger } from "@/lib/logging";
 import { NextRequest } from "next/server";
 
@@ -47,35 +47,51 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    logger.info("Batch podcast generation request received", {
+    logger.info({
+      msg: "Batch podcast generation request received",
       batchSize,
       targetCount,
       poolLimit,
     });
 
-    // Start background processing using server action
-    await backgroundBatchGeneratePodcasts({
+    // Start background processing directly using lib function
+    const result = await batchGeneratePodcasts({
       batchSize,
       targetCount,
       poolLimit,
     });
 
-    // Return immediately after initiating the job
+    logger.info({
+      msg: "Batch podcast generation completed",
+      totalProcessed: result.totalProcessed,
+      successful: result.successful,
+      failed: result.failed,
+      processingTimeMs: result.summary.processingTimeMs,
+    });
+
+    // Return result after completion
     return Response.json({
       success: true,
-      message: "Batch podcast generation started successfully",
+      message: "Batch podcast generation completed successfully",
+      result: {
+        totalProcessed: result.totalProcessed,
+        successful: result.successful,
+        failed: result.failed,
+        processingTimeMs: result.summary.processingTimeMs,
+      },
       params: {
         batchSize,
         targetCount,
         poolLimit,
       },
-      startedAt: new Date().toISOString(),
+      completedAt: new Date().toISOString(),
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     const errorStack = error instanceof Error ? error.stack : undefined;
 
-    logger.error("Batch podcast generation API error", {
+    logger.error({
+      msg: "Batch podcast generation API error",
       error: errorMessage,
       stack: errorStack,
     });
