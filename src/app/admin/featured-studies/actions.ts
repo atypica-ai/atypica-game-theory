@@ -1,11 +1,15 @@
 "use server";
 import { convertDBMessageToAIMessage } from "@/ai/messageUtils";
+import { StatReporter } from "@/ai/tools/types";
+import { generatePodcast } from "@/app/(podcast)/lib/generation";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { s3SignedUrl } from "@/lib/attachments/s3";
+import { rootLogger } from "@/lib/logging";
 import { ServerActionResult } from "@/lib/serverAction";
 import { Analyst, FeaturedStudy, User, UserChat } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { AnalystKind } from "@/prisma/types";
+import { waitUntil } from "@vercel/functions";
 import { Message } from "ai";
 import { Locale } from "next-intl";
 import { getLocale } from "next-intl/server";
@@ -225,6 +229,14 @@ export async function fetchAnalysts(
       user: Pick<User, "email"> | null;
       featuredStudy: FeaturedStudy | null;
       studyUserChat: Pick<UserChat, "token" | "title" | "extra"> | null;
+      reports: Pick<
+        import("@/prisma/client").AnalystReport,
+        "id" | "token" | "createdAt" | "generatedAt"
+      >[];
+      podcasts: Pick<
+        import("@/prisma/client").AnalystPodcast,
+        "id" | "token" | "createdAt" | "generatedAt"
+      >[];
     })[]
   >
 > {
@@ -293,6 +305,24 @@ export async function fetchAnalysts(
         select: {
           email: true,
         },
+      },
+      reports: {
+        select: {
+          id: true,
+          token: true,
+          createdAt: true,
+          generatedAt: true,
+        },
+        orderBy: { createdAt: "desc" },
+      },
+      podcasts: {
+        select: {
+          id: true,
+          token: true,
+          createdAt: true,
+          generatedAt: true,
+        },
+        orderBy: { createdAt: "desc" },
       },
     },
     orderBy: { createdAt: "desc" },
@@ -537,4 +567,42 @@ export async function fetchBriefChatMessages(
     success: true,
     data: briefChat.messages.map(convertDBMessageToAIMessage),
   };
+}
+
+// Admin version of generatePodcastAction - bypasses user ownership check
+export async function generatePodcastActionAdmin(params: {
+  analystId: number;
+  instruction?: string;
+  systemPrompt?: string;
+}): Promise<void> {
+  await checkAdminAuth([AdminPermission.MANAGE_STUDIES]);
+
+  // Get the analyst (no user ownership check needed for admin)
+  const analyst = await prisma.analyst.findUnique({
+    where: { id: params.analystId },
+  });
+
+  if (!analyst) {
+    throw new Error("Analyst not found");
+  }
+
+  // Start podcast generation in background
+  waitUntil(
+    generatePodcast({
+      analystId: params.analystId,
+      instruction: params.instruction,
+      systemPrompt: params.systemPrompt,
+      abortSignal: new AbortController().signal,
+      statReport: (async (dimension, value, extra) => {
+        rootLogger.info({
+          msg: `[LIMITED FREE] statReport: ${dimension}=${value}`,
+          extra,
+          analystId: params.analystId,
+          note: "Podcast generation is currently free - tokens not deducted",
+        });
+      }) as StatReporter,
+    }),
+  );
+
+  revalidatePath("/admin/featured-studies");
 }

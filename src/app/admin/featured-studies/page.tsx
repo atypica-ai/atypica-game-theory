@@ -1,6 +1,9 @@
 "use client";
+import PodcastsListPanel from "@/app/(study)/study/components/PodcastsListPanel";
+import ReportsListPanel from "@/app/(study)/study/components/ReportsListPanel";
 import { PaginationInfo } from "@/app/admin/types";
 import { ChatMessage } from "@/components/chat/ChatMessage";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -23,6 +26,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { ExtractServerActionData } from "@/lib/serverAction";
+import { truncateForTitle } from "@/lib/textUtils";
 import { formatDate } from "@/lib/utils";
 import { Analyst, UserChatExtra } from "@/prisma/client";
 import { AnalystKind } from "@/prisma/types";
@@ -31,6 +35,9 @@ import {
   ChevronDown,
   ChevronUp,
   FileText,
+  FileTextIcon,
+  MicIcon,
+  PlusIcon,
   SearchIcon,
   Star,
   ThumbsDownIcon,
@@ -41,13 +48,34 @@ import { useLocale } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
-import { fetchAnalysts, fetchBriefChatMessages, toggleFeaturedStatus } from "./actions";
+import {
+  fetchAnalysts,
+  fetchBriefChatMessages,
+  generatePodcastActionAdmin,
+  toggleFeaturedStatus,
+} from "./actions";
 
 type AnalystWithFeature = ExtractServerActionData<typeof fetchAnalysts>[number];
 
 export default function FeaturedStudiesPage() {
   const { status } = useSession();
   const locale = useLocale();
+
+  // Helper function to format counts with generating status
+  const formatCountWithStatus = (
+    items: { generatedAt: Date | null }[],
+    type: "reports" | "podcasts",
+  ) => {
+    const all = items.length;
+    const generating = items.filter((item) => item.generatedAt === null).length;
+    let text = "";
+    text += `${all} ${type}`;
+    if (generating > 0) {
+      if (all > 0) text += " ";
+      text += `(${generating} generating)`;
+    }
+    return text;
+  };
   const router = useRouter();
   const [analysts, setAnalysts] = useState<AnalystWithFeature[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -205,6 +233,17 @@ export default function FeaturedStudiesPage() {
 
   const hasActiveFilters = searchQuery || selectedKind !== "all" || featuredOnly;
 
+  const handleGeneratePodcast = async (analyst: AnalystWithFeature) => {
+    try {
+      await generatePodcastActionAdmin({
+        analystId: analyst.id,
+      });
+      await fetchData();
+    } catch (error) {
+      console.error("Failed to generate podcast:", error);
+    }
+  };
+
   const handleShowBrief = async (analyst: AnalystWithFeature) => {
     const extra = analyst.studyUserChat?.extra as UserChatExtra;
     const briefUserChatId = extra?.briefUserChatId;
@@ -338,8 +377,8 @@ export default function FeaturedStudiesPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between w-full overflow-hidden">
                     <div className="flex-1 min-w-0">
-                      <div className="leading-normal truncate font-semibold">
-                        <span className="text-xs text-muted-foreground font-normal">Brief: </span>
+                      <div className="leading-normal line-clamp-2 font-semibold">
+                        {/*<span className="text-xs text-muted-foreground font-normal">Brief: </span>*/}
                         {analyst.studyUserChat?.title || "Untitled Study"}
                       </div>
                     </div>
@@ -375,7 +414,7 @@ export default function FeaturedStudiesPage() {
                     </div>
                   </CardTitle>
                   <CardDescription>
-                    <span className="text-xs text-muted-foreground">Role: </span>
+                    {/*<span className="text-xs text-muted-foreground">Role: </span>*/}
                     {analyst.role}
                   </CardDescription>
                 </CardHeader>
@@ -438,6 +477,81 @@ export default function FeaturedStudiesPage() {
                     >
                       {analyst.studySummary}
                     </p>
+                  </div>
+
+                  {/* Stats section */}
+                  <div className="mb-4 p-3 bg-zinc-50 dark:bg-zinc-700/50 rounded-lg space-y-2">
+                    {(() => {
+                      const reportsText = analyst.reports
+                        ? formatCountWithStatus(analyst.reports, "reports")
+                        : null;
+                      const podcastsText = analyst.podcasts
+                        ? formatCountWithStatus(analyst.podcasts, "podcasts")
+                        : null;
+
+                      return (
+                        <>
+                          {/* Reports row */}
+                          {reportsText && (
+                            <div className="flex items-center">
+                              <ReportsListPanel
+                                studyUserChatToken={analyst.studyUserChat?.token}
+                                download={true}
+                              >
+                                <div className="flex items-center gap-1.5 text-sm cursor-pointer">
+                                  <FileTextIcon className="h-4 w-4" />
+                                  <span className="font-medium">{reportsText}</span>
+                                </div>
+                              </ReportsListPanel>
+                            </div>
+                          )}
+
+                          {/* Podcasts row with generate button */}
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center">
+                              {podcastsText ? (
+                                <PodcastsListPanel
+                                  studyUserChatToken={analyst.studyUserChat?.token}
+                                >
+                                  <div className="flex items-center gap-1.5 text-sm text-violet-600 dark:text-violet-400 cursor-pointer">
+                                    <MicIcon className="h-4 w-4" />
+                                    <span className="font-medium">{podcastsText}</span>
+                                  </div>
+                                </PodcastsListPanel>
+                              ) : (
+                                <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                                  <MicIcon className="h-4 w-4" />
+                                  <span className="font-medium">0 podcasts</span>
+                                </div>
+                              )}
+                            </div>
+                            <ConfirmDialog
+                              title="Generate Podcast"
+                              description={`Are you sure you want to generate a podcast for "${truncateForTitle(
+                                analyst.topic,
+                                {
+                                  maxDisplayWidth: 50,
+                                  suffix: "...",
+                                },
+                              )}"? This will use AI tokens.`}
+                              onConfirm={() => handleGeneratePodcast(analyst)}
+                            >
+                              <Button variant="ghost" size="sm">
+                                <PlusIcon className="h-3 w-3" />
+                                Generate Podcast
+                              </Button>
+                            </ConfirmDialog>
+                          </div>
+
+                          {/* Show message when no reports and no podcasts */}
+                          {!reportsText && !podcastsText && (
+                            <div className="text-sm text-muted-foreground">
+                              No reports or podcasts yet
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()}
                   </div>
 
                   {/* Feedback Stats */}
