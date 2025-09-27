@@ -165,6 +165,12 @@ psql -d postgres -c "SELECT * FROM pg_extension WHERE extname = 'vector';"
 
 详细说明：[Monthly Tokens Reset](./docs/monthly-tokens-reset.md)
 
+### 批量播客生成
+
+自动为多个分析师生成播客内容，包括脚本和音频，支持智能分析师选择。
+
+详细说明：[Batch Podcast Generation](./docs/batch-podcast-generation.md)
+
 ### 管理员工具
 
 项目提供了管理员工具脚本用于用户管理：
