@@ -5,7 +5,7 @@ import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage } from "@/lib/textUtils";
 import { generateToken } from "@/lib/utils";
 import { createVolcanoClient } from "@/lib/volcano/client";
-import { Analyst, AnalystPodcast } from "@/prisma/client";
+import { Analyst, AnalystPodcast, AnalystPodcastExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
 import { Logger } from "pino";
@@ -30,14 +30,12 @@ export async function podcastObjectUrlToHttpUrl(podcast: AnalystPodcast): Promis
   }
 
   const { id, objectUrl } = podcast;
-  let extra = podcast.extra as Record<string, unknown>;
+  let extra = (podcast.extra || {}) as AnalystPodcastExtra;
   let url: string;
 
   if (
-    extra?.s3SignedUrl &&
-    extra?.s3SignedUrlExpiresAt &&
-    typeof extra.s3SignedUrl === 'string' &&
-    typeof extra.s3SignedUrlExpiresAt === 'number' &&
+    extra.s3SignedUrl &&
+    extra.s3SignedUrlExpiresAt &&
     extra.s3SignedUrlExpiresAt > Date.now() + 60 * 60 * 1000
   ) {
     // s3SignedUrl exists and expires in the next hour
@@ -54,7 +52,7 @@ export async function podcastObjectUrlToHttpUrl(podcast: AnalystPodcast): Promis
     waitUntil(
       new Promise((resolve) => {
         prisma.analystPodcast
-          .update({ where: { id }, data: { extra: extra as never } })
+          .update({ where: { id }, data: { extra } })
           .finally(() => resolve(null));
       }),
     );
@@ -419,7 +417,21 @@ export async function generatePodcastScript(
       logger.info(`statReport: ${dimension}=${value}`, extra);
     });
 
-  // Step 5: Core script generation logic
+  // Step 5: Initialize processing status
+  const processingExtra: AnalystPodcastExtra = {
+    processing: {
+      startsAt: Date.now(),
+      scriptGeneration: false,
+      audioGeneration: false,
+    },
+  };
+
+  await prisma.analystPodcast.update({
+    where: { id: podcast.id },
+    data: { extra: processingExtra },
+  });
+
+  // Step 6: Core script generation logic
   logger.info("Starting podcast script generation", {
     analystId: analyst.id,
     podcastId: podcast.id,
@@ -554,12 +566,28 @@ Please generate a comprehensive, engaging podcast script based on the above rese
           });
         }
       },
-      onError: ({ error }) => {
+      onError: async ({ error }) => {
         const msg = (error as Error).message;
         if ((error as Error).name === "AbortError") {
           logger.warn(`Script generation aborted: ${msg}`);
         } else {
           logger.error(`Script generation error: ${msg}`);
+
+          // Update status: script generation failed
+          const errorExtra: AnalystPodcastExtra = {
+            processing: false,
+            error: msg,
+          };
+
+          try {
+            await prisma.analystPodcast.update({
+              where: { id: podcast.id },
+              data: { extra: errorExtra },
+            });
+          } catch (dbError) {
+            logger.error("Failed to update podcast record with error", { dbError });
+          }
+
           reject(error);
         }
       },
@@ -584,9 +612,21 @@ Please generate a comprehensive, engaging podcast script based on the above rese
     logger.warn("Podcast script generation hit length limit but completed");
   }
 
+  // Update status: script generation completed
+  const completedExtra: AnalystPodcastExtra = {
+    processing: {
+      startsAt: (processingExtra.processing !== false && processingExtra.processing) ? processingExtra.processing.startsAt : Date.now(),
+      scriptGeneration: true,
+      audioGeneration: false,
+    },
+  };
+
   await prisma.analystPodcast.update({
     where: { id: podcast.id },
-    data: { generatedAt: new Date() },
+    data: {
+      generatedAt: new Date(),
+      extra: completedExtra,
+    },
   });
 
   logger.info("Podcast script generation completed successfully");

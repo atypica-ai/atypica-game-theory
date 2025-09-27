@@ -112,6 +112,22 @@ declare module "@/prisma/client" {
     }>;
   }>;
 
+  export type AnalystPodcastExtra = Partial<{
+    // S3 签名URL缓存（音频文件）
+    s3SignedUrl: string;
+    s3SignedUrlExpiresAt: number; // timestamp millis
+
+    // 处理状态 - 参考 PersonaImportExtra 的详细模式
+    processing: {
+      startsAt: number; // timestamp, typeof Date.now()
+      scriptGeneration: boolean; // 脚本生成是否完成
+      audioGeneration: boolean;  // 音频生成是否完成
+    } | false; // false 表示未开始或已完成
+
+    // 错误信息 - 保持与其他 extra 一致
+    error: string;
+  }>;
+
   // Removed
   // export type ProductExtra = Partial<{
   //   stripePriceId: string;
