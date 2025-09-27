@@ -1,0 +1,139 @@
+{
+  "StudyPage": {
+    "NewStudy": {
+      "startYourStudy": "Start Your Study",
+      "newStudyHint": "Ask about any consumer decision - we'll interview AI Personas to uncover the real motivations",
+      "viewFeaturedStudies": "View Featured Studies",
+      "viewMyProjects": "View My Projects",
+      "or": "or"
+    },
+    "ShareReplayButton": {
+      "shareReplay": "Share Replay",
+      "title": "Replay URL",
+      "shareTipMessage": "You can access the study replay through this link, or copy the link to share with others:",
+      "copyButton": "Copy",
+      "openInstructions": "You can also click the \"Open\" button below to view in a new tab.",
+      "closeButton": "Close",
+      "openButton": "Open",
+      "copySuccess": "Link copied to clipboard"
+    },
+    "AnalystReportShareButton": {
+      "viewReport": "Share Report",
+      "title": "Report URL",
+      "successMessage": "Report URL is ready. You can access the report at this address or share it with others:",
+      "copyButton": "Copy",
+      "downloadPDF": "Download as PDF",
+      "generatingPDF": "Generating PDF",
+      "pdfDownloadSuccess": "PDF downloaded to your device",
+      "pdfGenerationFailed": "PDF generation failed",
+      "openInstructions": "You can also click the \"Open\" button below to view in a new tab.",
+      "closeButton": "Close",
+      "openButton": "Open",
+      "copySuccess": "Link copied to clipboard"
+    },
+    "ChatBox": {
+      "placeholder": "Ask a follow-up question or reply",
+      "noneOfTheAbove": "None of the above",
+      "multiSelectHint": "Select 1 or more options",
+      "continueStudy": "Continue",
+      "startNewStudy": "Start New Study",
+      "confirm": "Confirm"
+    },
+    "Feedback": {
+      "title": "Was this study useful?",
+      "useful": "Useful",
+      "notUseful": "Not useful",
+      "submitting": "Submitting...",
+      "thankYou": "Thanks for your feedback!"
+    },
+    "ChatReplay": {
+      "skipToEnd": "Skip to End",
+      "continueStudyTitle": "Continue Your Study",
+      "continueStudyDescription": "Pick up where you left off and continue exploring your study topic.",
+      "continueStudy": "Continue Study",
+      "startNewStudyTitle": "Start Your Own Study",
+      "startNewStudyDescription": "This study belongs to another user. Create your own study to get started.",
+      "startNewStudy": "Start New Study"
+    },
+    "SingleMessage": {
+      "viewToolCall": "View process"
+    },
+    "StatusDisplay": {
+      "background": "Running",
+      "outOfQuota": "You have reached your quota",
+      "waitForUser": "Wait for your interaction",
+      "thinking": "Thinking",
+      "processing": "Processing your request",
+      "complete": "Processing complete ✨",
+      "error": "An error occurred, please refresh the page and try again",
+      "ready": "atypica is ready",
+      "addMoreTokens": "Add more tokens",
+      "confirmAbortTitle": "Stop Background Task?",
+      "confirmAbortDescription": "This will stop the current background task. The results may be incomplete.",
+      "confirmAbort": "Stop Task",
+      "aborting": "Stopping...",
+      "cancel": "Cancel",
+      "continueInstructions": "To continue later, type \"continue\" in the chat box.",
+      "evictionWarningTitle": "No updates detected",
+      "evictionWarningMessage": "The background task may have stalled. Consider canceling and restarting by typing \"continue\"."
+    },
+    "RequestPaymentMessage": {
+      "outOfQuotaHintCoffee": "You've used up your free research quota. How about buying me a coffee for another research?",
+      "outOfQuotaHint": "You've used up your free research tokens. You can purchase more tokens to continue.",
+      "addMoreTokens": "Add more tokens",
+      "paymentSuccess": "🎉 Payment successful, atypica.AI research is about to begin!"
+    },
+    "ToolConsole": {
+      "autoFollow": "Follow latest progress",
+      "viewConsole": "View console",
+      "deepThinking": "Deep Thinking",
+      "buildingPersona": "Building Persona",
+      "buildPersonaResult": "Built {count} AI Personas",
+      "searchPersonasResult": "Matched {count} AI Personas",
+      "personaSource": "Source",
+      "personaPrompt": "AI Persona",
+      "interviewStarting": "Interview starting..",
+      "researchConclusion": "Research Conclusion",
+      "researchTopic": "Research Topic",
+      "interviewing": "Interviewing with {count} people",
+      "reportBeingGenerated": "Report being generated...",
+      "humanPersonaPrivate": "Human AI Persona (Proprietary)",
+      "highPrecisionPersona": "AI Persona (Deep Interview)",
+      "learnMore": "Learn More",
+      "highPrecisionPersonaCount": "including {count} AI Persona (Deep Interview)",
+      "highPrecisionPersonaCountPlural": "including {count} AI Personas (Deep Interview)"
+    }
+  },
+  "StudyListPage": {
+    "title": "My Projects",
+    "description": "Browse and access your studies",
+    "noTopic": "Study topic not yet defined",
+    "viewStudy": "View Study",
+    "startNewStudy": "Start New Study",
+    "noSearchResults": "No studies match your search",
+    "searchPlaceholder": "Search studies",
+    "search": "Search",
+    "status": {
+      "backgroundRunning": "Study in Progress",
+      "reportGenerated": "Report Available",
+      "notCompleted": "Not Completed"
+    },
+    "emptyState": {
+      "title": "No Research Studies Yet",
+      "description": "Create your first AI-powered research study to unlock business insights and market intelligence."
+    },
+    "newStudyCard": {
+      "title": "New Research",
+      "description": "Start exploring a new topic with AI-powered research and analysis",
+      "badge": "Quick Start"
+    }
+  },
+  "ReportSharePage": {
+    "title": "Research Report",
+    "attribution": "Report from research \"{topic}\".",
+    "viewReplay": "Replay Study",
+    "shareReport": "Share Report",
+    "copyLink": "Copy Link",
+    "linkCopied": "Link copied!"
+  }
+}

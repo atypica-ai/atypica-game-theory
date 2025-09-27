@@ -3,6 +3,7 @@ import authMessages from "../app/(auth)/messages/zh-CN.json";
 import interviewProjectMessages from "../app/(interviewProject)/messages/zh-CN.json";
 import personaMessages from "../app/(persona)/messages/zh-CN.json";
 import publicMessages from "../app/(public)/messages/zh-CN.json";
+import studyMessages from "../app/(study)/messages/zh-CN.json";
 import accountMessages from "../app/account/messages/zh-CN.json";
 import teamMessages from "../app/team/messages/zh-CN.json";
 import { locales } from "./routing";
@@ -15,6 +16,7 @@ declare module "next-intl" {
       typeof authMessages &
       typeof interviewProjectMessages &
       typeof personaMessages &
+      typeof studyMessages &
       typeof publicMessages &
       typeof accountMessages &
       typeof teamMessages;

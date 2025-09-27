@@ -20,7 +20,7 @@ export default function ReportSharePageClient({
   studyReplayUrl: string;
   analystTopic: string;
 }) {
-  const t = useTranslations("Artifacts.ReportSharePage");
+  const t = useTranslations("ReportSharePage");
   const tCompliance = useTranslations("AICompliance");
   const pathname = usePathname();
   const [isLoading, setIsLoading] = useState(true);
