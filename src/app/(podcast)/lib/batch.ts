@@ -2,17 +2,36 @@ import "server-only";
 
 import { rootLogger } from "@/lib/logging";
 import { waitUntil } from "@vercel/functions";
+import { StatReporter } from "@/ai/tools/types";
 import { getAnalystPool } from "./data";
 import { generatePodcast } from "./generation";
 import { selectAnalystsInBatches } from "./selection";
-import type { BatchPodcastGenerationParams, BatchPodcastGenerationResult } from "./types";
 
 /**
  * Core batch podcast generation function (pure business logic)
  */
-export async function batchGeneratePodcasts(
-  params: BatchPodcastGenerationParams = {},
-): Promise<BatchPodcastGenerationResult> {
+export async function batchGeneratePodcasts(params: {
+  batchSize?: number;
+  targetCount?: number;
+  poolLimit?: number;
+} = {}): Promise<{
+  totalProcessed: number;
+  successful: number;
+  failed: number;
+  selectedAnalystIds: number[];
+  results: Array<{
+    analystId: number;
+    status: "success" | "error";
+    error?: string;
+    podcastId?: number;
+    podcastToken?: string;
+  }>;
+  summary: {
+    poolSize: number;
+    selectedCount: number;
+    processingTimeMs: number;
+  };
+}> {
   const { batchSize = 10, targetCount = 10, poolLimit = 10 } = params;
 
   const startTime = Date.now();
@@ -71,7 +90,13 @@ export async function batchGeneratePodcasts(
     });
 
     // Step 3: Process each analyst in background using waitUntil
-    const results: BatchPodcastGenerationResult["results"] = [];
+    const results: Array<{
+      analystId: number;
+      status: "success" | "error";
+      error?: string;
+      podcastId?: number;
+      podcastToken?: string;
+    }> = [];
     let successful = 0;
     let failed = 0;
 
@@ -92,9 +117,24 @@ export async function batchGeneratePodcasts(
           try {
             analystLogger.info("Starting unified podcast generation for analyst");
 
+            // Mock stat reporter for batch generation (also free)
+            const batchStatReport: StatReporter = async (dimension, value, extra) => {
+              analystLogger.info({
+                msg: `[BATCH FREE] statReport: ${dimension}=${value}`,
+                extra,
+                note: "Batch podcast generation is currently free - tokens not deducted"
+              });
+            };
+
+            // Create abort signal for this analyst
+            const abortController = new AbortController();
+            const abortSignal = abortController.signal;
+
             // Use the new unified method
             const podcast = await generatePodcast({
               analystId,
+              abortSignal,
+              statReport: batchStatReport,
             });
 
             analystLogger.info("Unified podcast generation completed successfully", {

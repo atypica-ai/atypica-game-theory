@@ -1,5 +1,6 @@
 "use server";
 
+import { StatReporter } from "@/ai/tools/types";
 import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
@@ -8,7 +9,6 @@ import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
 import { fetchPodcastsForAnalyst } from "./lib/data";
 import { generatePodcast } from "./lib/generation";
-import { PodcastGenerationParams } from "./lib/types";
 import { podcastObjectUrlToHttpUrl } from "./lib/utils";
 
 // ========================================
@@ -16,11 +16,7 @@ import { podcastObjectUrlToHttpUrl } from "./lib/utils";
 // ========================================
 
 // Server action: Fetch analyst podcasts with auth
-export async function fetchAnalystPodcasts({
-  analystId,
-}: {
-  analystId: number;
-}): Promise<
+export async function fetchAnalystPodcasts({ analystId }: { analystId: number }): Promise<
   ServerActionResult<
     (Pick<
       AnalystPodcast,
@@ -63,7 +59,11 @@ export async function fetchAnalystPodcasts({
 }
 
 // Server action: Generate complete podcast (script + audio) with auth and background processing
-export async function generatePodcastAction(params: PodcastGenerationParams): Promise<void> {
+export async function generatePodcastAction(params: {
+  analystId: number;
+  instruction?: string;
+  systemPrompt?: string;
+}): Promise<void> {
   return withAuth(async (user) => {
     // Verify the user owns the analyst
     const analyst = await prisma.analyst.findUnique({
@@ -74,7 +74,20 @@ export async function generatePodcastAction(params: PodcastGenerationParams): Pr
       throw new Error("Analyst not found or unauthorized");
     }
 
+    // Mock stat reporter for limited free podcast generation
+    const statReport: StatReporter = async (dimension, value, extra) => {
+      rootLogger.info({
+        msg: `[LIMITED FREE] statReport: ${dimension}=${value}`,
+        extra,
+        analystId: params.analystId,
+        note: "Podcast generation is currently free - tokens not deducted",
+      });
+    };
+
     // Handle background processing at the server action level
+    const abortController = new AbortController();
+    const abortSignal = abortController.signal;
+
     waitUntil(
       (async () => {
         try {
@@ -82,6 +95,8 @@ export async function generatePodcastAction(params: PodcastGenerationParams): Pr
             analystId: params.analystId,
             instruction: params.instruction,
             systemPrompt: params.systemPrompt,
+            abortSignal,
+            statReport,
           });
         } catch (error) {
           // Log error but don't throw since this is background processing

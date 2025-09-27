@@ -1,110 +1,61 @@
 import "server-only";
 
 import { llm, LLMModelName, providerOptions } from "@/ai/provider";
+import { StatReporter } from "@/ai/tools/types";
 import { fileUrlToDataUrl } from "@/lib/attachments/actions";
 import { uploadToS3 } from "@/lib/attachments/s3";
 import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage } from "@/lib/textUtils";
 import { generateToken } from "@/lib/utils";
-import {
-  Analyst,
-  AnalystPodcast,
-  AnalystPodcastExtra,
-  ChatMessageAttachment,
-} from "@/prisma/client";
+import { AnalystPodcast, AnalystPodcastExtra, ChatMessageAttachment } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { AnalystKind } from "@/prisma/types";
 import { FinishReason, Message, streamText } from "ai";
 import { Locale } from "next-intl";
+import { Logger } from "pino";
 import { podcastScriptSystem } from "../prompt";
 import { createPodcastRecord } from "./data";
-import type { PodcastAudioGenerationParams, PodcastScriptGenerationParams } from "./types";
 import { preprocessScriptForAudio } from "./utils";
 import { createVolcanoClient } from "./volcano/client";
 
-/**
- * Unified podcast script generation function that handles both use cases:
- * 1. Direct analyst ID (fetches analyst, creates podcast record)
- * 2. Pre-provided analyst and podcast objects (for advanced use cases)
- *
- * This function is now simplified and purely synchronous.
- */
-export async function generatePodcastScript(
-  params: PodcastScriptGenerationParams,
-): Promise<AnalystPodcast> {
-  const {
-    analystId,
-    analyst: providedAnalyst,
-    podcast: providedPodcast,
-    instruction = "",
-    systemPrompt,
-    locale: providedLocale,
-    abortSignal,
-    statReport,
-    logger: providedLogger,
-  } = params;
+// Internal function for podcast script generation
+async function generatePodcastScript(params: {
+  analystId: number;
+  instruction?: string;
+  systemPrompt?: string;
+  abortSignal: AbortSignal;
+  statReport: StatReporter;
+  logger: Logger;
+}): Promise<AnalystPodcast> {
+  const { analystId, instruction = "", systemPrompt, abortSignal, statReport, logger } = params;
 
-  // Step 1: Get or fetch analyst
-  let analyst: Analyst & { interviews: { conclusion: string }[] };
-
-  if (providedAnalyst) {
-    analyst = providedAnalyst;
-  } else if (analystId) {
-    const fetchedAnalyst = await prisma.analyst.findUnique({
-      where: { id: analystId },
-      include: {
-        interviews: {
-          select: {
-            conclusion: true,
-          },
+  // Step 1: Fetch analyst
+  const analyst = await prisma.analyst.findUnique({
+    where: { id: analystId },
+    include: {
+      interviews: {
+        select: {
+          conclusion: true,
         },
       },
-    });
+    },
+  });
 
-    if (!fetchedAnalyst) {
-      throw new Error("Analyst not found");
-    }
-    analyst = fetchedAnalyst;
-  } else {
-    throw new Error("Either analystId or analyst object must be provided");
+  if (!analyst) {
+    throw new Error("Analyst not found");
   }
 
-  // Step 2: Get or create podcast record
-  let podcast: AnalystPodcast;
+  // Step 2: Create podcast record
+  const podcastToken = generateToken();
+  const podcast = await createPodcastRecord(analyst.id, instruction, podcastToken);
 
-  if (providedPodcast) {
-    podcast = providedPodcast;
-  } else {
-    const podcastToken = generateToken();
-    podcast = await createPodcastRecord({
-      analystId: analyst.id,
-      instruction,
-      token: podcastToken,
-    });
-  }
-
-  // Step 3: Setup logging and locale
-  const logger =
-    providedLogger ||
-    rootLogger.child({
-      analystId: analyst.id,
-      podcastToken: podcast.token,
-      method: "generatePodcastScript",
-    });
+  // Step 3: Setup locale
 
   const locale: Locale =
-    providedLocale ||
-    (analyst.locale === "zh-CN" || analyst.locale === "en-US"
+    analyst.locale === "zh-CN" || analyst.locale === "en-US"
       ? (analyst.locale as Locale)
-      : ((await detectInputLanguage({ text: analyst.brief })) as Locale));
+      : ((await detectInputLanguage({ text: analyst.brief })) as Locale);
 
-  // Step 4: Setup abort signal and stat reporting
-  const finalAbortSignal = abortSignal || new AbortController().signal;
-  const finalStatReport =
-    statReport ||
-    (async (dimension: string, value: number, extra?: unknown) => {
-      logger.info(`statReport: ${dimension}=${value}`, extra);
-    });
 
   // Step 5: Initialize processing status
   const processingExtra: AnalystPodcastExtra = {
@@ -248,8 +199,8 @@ Please generate a comprehensive, engaging podcast script based on the above rese
         logger.info({ msg: "Script generation completed", finishReason, usage });
         const totalTokens =
           (usage.completionTokens ?? 0) * 3 + (usage.promptTokens ?? 0) || usage.totalTokens;
-        if (totalTokens > 0 && finalStatReport) {
-          await finalStatReport("tokens", totalTokens, {
+        if (totalTokens > 0) {
+          await statReport("tokens", totalTokens, {
             reportedBy: "generatePodcastScript",
             part: "script",
             usage,
@@ -281,10 +232,10 @@ Please generate a comprehensive, engaging podcast script based on the above rese
           reject(error);
         }
       },
-      abortSignal: finalAbortSignal,
+      abortSignal: abortSignal,
     });
 
-    finalAbortSignal.addEventListener("abort", () => {
+    abortSignal.addEventListener("abort", () => {
       reject(new Error("Script generation aborted"));
     });
 
@@ -334,8 +285,10 @@ export async function generatePodcast(params: {
   analystId: number;
   instruction?: string;
   systemPrompt?: string;
+  abortSignal: AbortSignal;
+  statReport: StatReporter;
 }): Promise<AnalystPodcast> {
-  const { analystId, instruction, systemPrompt } = params;
+  const { analystId, instruction, systemPrompt, abortSignal, statReport } = params;
 
   const logger = rootLogger.child({
     analystId,
@@ -349,6 +302,8 @@ export async function generatePodcast(params: {
     analystId,
     instruction,
     systemPrompt,
+    abortSignal,
+    statReport,
     logger,
   });
 
@@ -374,12 +329,12 @@ export async function generatePodcast(params: {
       throw new Error("Script not available for audio generation");
     }
 
-    await generatePodcastAudio({
-      podcastId: updatedPodcast.id,
-      podcastToken: updatedPodcast.token,
-      script: updatedPodcast.script,
+    await generatePodcastAudio(
+      updatedPodcast.id,
+      updatedPodcast.token,
+      updatedPodcast.script,
       locale,
-    });
+    );
 
     logger.info("Unified podcast generation completed successfully");
     return updatedPodcast;
@@ -406,9 +361,12 @@ export async function generatePodcast(params: {
 }
 
 // Pure podcast audio generation function (no auth, renamed from backgroundGeneratePodcastAudioImpl)
-export async function generatePodcastAudio(params: PodcastAudioGenerationParams): Promise<void> {
-  const { podcastId, podcastToken, script, locale } = params;
-
+export async function generatePodcastAudio(
+  podcastId: number,
+  podcastToken: string,
+  script: string,
+  locale: string,
+): Promise<void> {
   const logger = rootLogger.child({
     podcastId,
     podcastToken,

@@ -3,7 +3,6 @@ import "server-only";
 import { generateToken } from "@/lib/utils";
 import type { Analyst, AnalystPodcast, AnalystPodcastExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
-import type { PodcastCreationParams } from "./types";
 
 // Pure data fetching function (no auth)
 export async function fetchPodcastsForAnalyst(
@@ -53,12 +52,18 @@ export async function fetchPodcastsForAnalyst(
     orderBy: { createdAt: "desc" },
   });
 
-  return podcasts;
+  return podcasts.map(podcast => ({
+    ...podcast,
+    extra: (podcast.extra || {}) as AnalystPodcastExtra,
+  }));
 }
 
 // Core podcast record creation
-export async function createPodcastRecord(params: PodcastCreationParams): Promise<AnalystPodcast> {
-  const { analystId, instruction, token = generateToken() } = params;
+export async function createPodcastRecord(
+  analystId: number,
+  instruction: string,
+  token: string = generateToken(),
+): Promise<AnalystPodcast> {
 
   return await prisma.analystPodcast.create({
     data: {

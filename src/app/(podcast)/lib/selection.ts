@@ -3,10 +3,10 @@ import "server-only";
 import { llm, providerOptions } from "@/ai/provider";
 import { rootLogger } from "@/lib/logging";
 import { prisma } from "@/prisma/prisma";
+import { Analyst } from "@/prisma/client";
 import { generateObject } from "ai";
 import { Logger } from "pino";
 import { z } from "zod";
-import type { AnalystSelectionParams, AnalystSelectionResult } from "./types";
 import { chunkArray } from "./utils";
 
 /**
@@ -14,17 +14,19 @@ import { chunkArray } from "./utils";
  * Uses generateObject to ensure consistent, structured results.
  */
 export async function selectTopAnalysts(
-  params: AnalystSelectionParams,
-): Promise<AnalystSelectionResult> {
-  const { analysts, topN = 1, systemPrompt, logger: providedLogger } = params;
-
-  const logger =
-    providedLogger ||
-    rootLogger.child({
-      method: "selectTopAnalysts",
-      analystCount: analysts.length,
-      topN,
-    });
+  analysts: Analyst[],
+  topN: number = 1,
+  systemPrompt?: string,
+  logger?: Logger,
+): Promise<{
+  selectedAnalystIds: number[];
+  reasoning?: string;
+}> {
+  const log = logger || rootLogger.child({
+    method: "selectTopAnalysts",
+    analystCount: analysts.length,
+    topN,
+  });
 
   // Validate inputs
   if (!analysts || analysts.length === 0) {
@@ -36,12 +38,12 @@ export async function selectTopAnalysts(
   }
 
   if (topN > analysts.length) {
-    logger.warn("topN is greater than available analysts, selecting all analysts");
+    log.warn("topN is greater than available analysts, selecting all analysts");
   }
 
   const effectiveTopN = Math.min(topN, analysts.length);
 
-  logger.info({
+  log.info({
     msg: "Starting analyst selection",
     totalAnalysts: analysts.length,
     requestedTopN: topN,
@@ -113,7 +115,7 @@ Please select the top ${effectiveTopN} most interesting analyst${effectiveTopN >
       maxRetries: 2,
     });
 
-    logger.info({
+    log.info({
       msg: "Analyst selection completed successfully",
       selectedCount: result.object.selectedAnalysts.length,
       selectedIds: result.object.selectedAnalysts.map((a) => a.analystId),
@@ -128,7 +130,7 @@ Please select the top ${effectiveTopN} most interesting analyst${effectiveTopN >
     const invalidIds = selectedAnalystIds.filter((id) => !validIds.includes(id));
 
     if (invalidIds.length > 0) {
-      logger.warn({ msg: "LLM selected invalid analyst IDs", invalidIds });
+      log.warn({ msg: "LLM selected invalid analyst IDs", invalidIds });
       throw new Error(`LLM selected invalid analyst IDs: ${invalidIds.join(", ")}`);
     }
 
@@ -137,7 +139,7 @@ Please select the top ${effectiveTopN} most interesting analyst${effectiveTopN >
       reasoning: result.object.overallReasoning,
     };
   } catch (error) {
-    logger.error({
+    log.error({
       msg: "Analyst selection failed",
       error: error instanceof Error ? error.message : String(error),
     });
@@ -209,11 +211,12 @@ export async function selectAnalystsInBatches(
         currentSelectedCount: allSelectedIds.length,
       });
 
-      const batchResult = await selectTopAnalysts({
-        analysts: batch,
-        topN: batchTargetCount,
-        logger: log,
-      });
+      const batchResult = await selectTopAnalysts(
+        batch,
+        batchTargetCount,
+        undefined,
+        log,
+      );
 
       allSelectedIds.push(...batchResult.selectedAnalystIds);
 
