@@ -19,7 +19,7 @@ import { toast } from "sonner";
 export function ShareReplayButton({
   studyUserChat,
 }: {
-  studyUserChat: Omit<UserChat, "kind"> & { kind: "study" };
+  studyUserChat: Pick<UserChat, "id" | "token"> & { kind: "study" };
 }) {
   const t = useTranslations("StudyPage.ShareReplayButton");
   const [open, setOpen] = useState(false);

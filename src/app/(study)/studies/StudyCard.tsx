@@ -16,7 +16,6 @@ type TStudy = ExtractServerActionData<typeof fetchUserStudies>[number];
 
 export function StudyCard({ study: { studyUserChat, analyst } }: { study: TStudy }) {
   const t = useTranslations("StudyListPage");
-  const tRoot = useTranslations();
   const locale = useLocale();
 
   // Determine study status

@@ -155,10 +155,6 @@
       "balance": "{balance}个Token可用",
       "viewHistory": "查看Token历史"
     },
-    "ReportsListPanel": {
-      "title": "本次研究的报告",
-      "noReportsYet": "暂无报告"
-    },
     "GlobalHeader": {
       "login": "登录",
       "logout": "退出登录",

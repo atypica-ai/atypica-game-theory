@@ -1,6 +1,7 @@
 import { GenerateReportResult } from "@/ai/tools/types";
 import { fetchAnalystReportByToken } from "@/app/(study)/study/actions";
 import { AnalystReportShareButton } from "@/app/(study)/study/components/AnalystReportShareButton";
+import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { ToolInvocation } from "ai";
 import { useTranslations } from "next-intl";
@@ -11,6 +12,7 @@ export const GenerateReportResultMessage: FC<{
     result: GenerateReportResult;
   };
 }> = ({ toolInvocation }) => {
+  const { replay } = useStudyContext();
   const t = useTranslations("Components.GenerateReportResultMessage");
   const [report, setReport] = useState<ExtractServerActionData<
     typeof fetchAnalystReportByToken
@@ -40,7 +42,7 @@ export const GenerateReportResultMessage: FC<{
         target="_blank"
         dangerouslySetInnerHTML={{ __html: report.coverSvg }}
       ></Link> */}
-      <AnalystReportShareButton reportToken={report.token}>
+      <AnalystReportShareButton reportToken={report.token} download={!replay}>
         <div
           className="block mb-4 w-[360px] h-[180px] [&>svg]:w-[360px] [&>svg]:h-[180px] cursor-pointer border border-input/50 rounded-md overflow-hidden"
           dangerouslySetInnerHTML={{ __html: report.coverSvg }}

@@ -3,7 +3,6 @@ import GlobalHeader from "@/components/layout/GlobalHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import UserMenu from "@/components/UserMenu";
-import UserTokensBalance from "@/components/UserTokensBalance";
 import { truncateForTitle } from "@/lib/textUtils";
 import { Analyst, AnalystPodcast } from "@/prisma/client";
 import { Loader2Icon, Pause, Play, RotateCcw, RotateCw, Share2, Volume2 } from "lucide-react";
@@ -152,7 +151,7 @@ export default function PodcastSharePageClient({
             <Share2 size={14} />
             <span className="hidden sm:inline">{t("copyLink")}</span>
           </Button>
-          <UserTokensBalance />
+          {/*<UserTokensBalance />*/}
           <UserMenu />
         </div>
       </GlobalHeader>

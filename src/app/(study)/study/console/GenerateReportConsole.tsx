@@ -1,12 +1,14 @@
 import { fetchAnalystReportByToken } from "@/app/(study)/study/actions";
+import { AnalystReportShareButton } from "@/app/(study)/study/components/AnalystReportShareButton";
+import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn } from "@/lib/utils";
 import { ToolInvocation } from "ai";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { AnalystReportShareButton } from "../components/AnalystReportShareButton";
 
 export const GenerateReportConsole = ({ toolInvocation }: { toolInvocation: ToolInvocation }) => {
+  const { replay } = useStudyContext();
   const t = useTranslations("StudyPage.ToolConsole");
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -89,7 +91,7 @@ export const GenerateReportConsole = ({ toolInvocation }: { toolInvocation: Tool
               {t("shareReport")}
             </Link>
           </Button> */}
-          <AnalystReportShareButton reportToken={analystReport.token} />
+          <AnalystReportShareButton reportToken={analystReport.token} download={!replay} />
         </div>
       )}
     </div>

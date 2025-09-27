@@ -69,17 +69,13 @@ export default function PodcastsListPanel({
   studyUserChatToken?: string;
 }) {
   const t = useTranslations("StudyPage.PodcastsListPanel");
-
-  if (!studyUserChatToken) {
-    // If no token provided, we can't show anything meaningful
-    return null;
-  }
   const [isOpen, setIsOpen] = useState(false);
   const [podcasts, setPodcasts] = useState<
     ExtractServerActionData<typeof fetchAnalystPodcastsOfStudyUserChat>
   >([]);
 
   const fetchPodcasts = useCallback(async () => {
+    if (!studyUserChatToken) return;
     try {
       const result = await fetchAnalystPodcastsOfStudyUserChat({
         studyUserChatToken: studyUserChatToken,
@@ -98,6 +94,11 @@ export default function PodcastsListPanel({
       fetchPodcasts();
     }
   }, [isOpen, fetchPodcasts]);
+
+  if (!studyUserChatToken) {
+    // If no token provided, we can't show anything meaningful
+    return null;
+  }
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>

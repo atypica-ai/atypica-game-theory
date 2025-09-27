@@ -21,7 +21,7 @@ export type InterviewProjectData = {
 
 export async function fetchInterviewProjects(
   page: number = 1,
-  pageSize: number = 20,
+  pageSize: number = 10,
   searchQuery: string = "",
 ): Promise<ServerActionResult<InterviewProjectData[]>> {
   // Ensure only admins with proper permissions can access this data

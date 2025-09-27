@@ -15,16 +15,16 @@ import { ClipboardCopyIcon, EyeIcon, FileDownIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useState, useTransition } from "react";
 import { toast } from "sonner";
-import { useStudyContext } from "../hooks/StudyContext";
 
 export function AnalystReportShareButton({
   reportToken,
   children,
+  download = false,
 }: {
   reportToken: string;
   children?: React.ReactNode;
+  download?: boolean;
 }) {
-  const { replay } = useStudyContext();
   const publicReportUrl = `/artifacts/report/${reportToken}/share`;
   const t = useTranslations("StudyPage.AnalystReportShareButton");
   const [open, setOpen] = useState(false);
@@ -101,7 +101,7 @@ export function AnalystReportShareButton({
         </div>
         <AlertDialogFooter>
           <AlertDialogCancel onClick={() => setOpen(false)}>{t("closeButton")}</AlertDialogCancel>
-          {!replay && (
+          {download && (
             <Button variant="outline" onClick={handleDownloadPDF} disabled={isPending}>
               <FileDownIcon size={16} className="mr-1" />
               {isPending ? t("generatingPDF") : t("downloadPDF")}

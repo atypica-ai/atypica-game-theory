@@ -2,7 +2,6 @@
 import GlobalHeader from "@/components/layout/GlobalHeader";
 import { Button } from "@/components/ui/button";
 import UserMenu from "@/components/UserMenu";
-import UserTokensBalance from "@/components/UserTokensBalance";
 import { truncateForTitle } from "@/lib/textUtils";
 import { Loader2Icon, Play, Share2 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -62,7 +61,7 @@ export default function ReportSharePageClient({
             <Share2 size={14} />
             <span className="hidden sm:inline">{t("copyLink")}</span>
           </Button>
-          <UserTokensBalance />
+          {/*<UserTokensBalance />*/}
           <UserMenu />
         </div>
       </GlobalHeader>

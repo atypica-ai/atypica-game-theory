@@ -155,10 +155,6 @@
       "balance": "{balance} available tokens",
       "viewHistory": "View token history"
     },
-    "ReportsListPanel": {
-      "title": "Reports for this study",
-      "noReportsYet": "No reports yet"
-    },
     "GlobalHeader": {
       "login": "Login",
       "logout": "Logout",

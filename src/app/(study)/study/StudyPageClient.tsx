@@ -97,14 +97,14 @@ const Agent = () => {
       <GlobalHeader className="h-12 border-border/50">
         {!replay ? (
           <div className="flex items-center gap-2 sm:gap-4">
-            <ReportsListPanel />
+            <ReportsListPanel download={!replay} />
             <ShareReplayButton studyUserChat={studyUserChat} />
             <UserTokensBalance />
             <UserMenu />
           </div>
         ) : (
           <div className="flex items-center gap-2 sm:gap-4">
-            <ReportsListPanel />
+            <ReportsListPanel download={!replay} />
             <NerdStats />
             <UserTokensBalance />
             <UserMenu />
