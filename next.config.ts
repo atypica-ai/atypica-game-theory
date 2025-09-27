@@ -4,6 +4,14 @@ import createNextIntlPlugin from "next-intl/plugin";
 const nextConfig: NextConfig = {
   output: "standalone",
   devIndicators: false,
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      // Ensure WebSocket library is handled correctly on server side
+      config.externals = config.externals || [];
+      config.externals.push('ws');
+    }
+    return config;
+  },
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "*bmrlab*" },
