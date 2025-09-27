@@ -102,6 +102,14 @@
       "learnMore": "Learn More",
       "highPrecisionPersonaCount": "including {count} AI Persona (Deep Interview)",
       "highPrecisionPersonaCountPlural": "including {count} AI Personas (Deep Interview)"
+    },
+    "ReportsListPanel": {
+      "title": "Reports for this study",
+      "noReportsYet": "No reports yet"
+    },
+    "PodcastsListPanel": {
+      "title": "Podcasts for this study",
+      "noPodcastsYet": "No podcasts yet"
     }
   },
   "StudyListPage": {
@@ -126,6 +134,11 @@
       "title": "New Research",
       "description": "Start exploring a new topic with AI-powered research and analysis",
       "badge": "Quick Start"
+    },
+    "stats": {
+      "reports": "{count} reports",
+      "podcasts": "{count} podcasts",
+      "attachments": "{count} attachments"
     }
   },
   "ReportSharePage": {
@@ -135,5 +148,14 @@
     "shareReport": "Share Report",
     "copyLink": "Copy Link",
     "linkCopied": "Link copied!"
+  },
+  "PodcastSharePage": {
+    "title": "Research Podcast",
+    "attribution": "Podcast from research \"{topic}\".",
+    "viewReplay": "Replay Study",
+    "copyLink": "Copy Link",
+    "linkCopied": "Link copied!",
+    "audioPlayer": "Audio Player",
+    "transcript": "Transcript"
   }
 }

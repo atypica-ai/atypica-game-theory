@@ -102,6 +102,14 @@
       "learnMore": "了解更多",
       "highPrecisionPersonaCount": "含 {count} 个 AI 人设 (深度访谈)",
       "highPrecisionPersonaCountPlural": "含 {count} 个 AI 人设 (深度访谈)"
+    },
+    "ReportsListPanel": {
+      "title": "本次研究的报告",
+      "noReportsYet": "暂无报告"
+    },
+    "PodcastsListPanel": {
+      "title": "本次研究的播客",
+      "noPodcastsYet": "暂无播客"
     }
   },
   "StudyListPage": {
@@ -126,14 +134,28 @@
       "title": "新研究",
       "description": "开始探索新主题，通过AI驱动的研究和分析获得洞察",
       "badge": "快速开始"
+    },
+    "stats": {
+      "reports": "{count} 个报告",
+      "podcasts": "{count} 个播客",
+      "attachments": "{count} 个附件"
     }
   },
   "ReportSharePage": {
     "title": "研究报告",
-    "attribution": "报告来自研究“{topic}”。",
+    "attribution": "报告来自研究\"{topic}\"。",
     "viewReplay": "研究回放",
     "shareReport": "分享报告",
     "copyLink": "复制链接",
     "linkCopied": "链接已复制！"
+  },
+  "PodcastSharePage": {
+    "title": "研究播客",
+    "attribution": "播客来自研究\"{topic}\"。",
+    "viewReplay": "研究回放",
+    "copyLink": "复制链接",
+    "linkCopied": "链接已复制！",
+    "audioPlayer": "音频播放器",
+    "transcript": "文字稿"
   }
 }

@@ -87,7 +87,7 @@ export default function ReportSharePageClient({
       <footer className="py-2 px-4 text-center text-xs text-muted-foreground border-t border-border">
         {t("attribution", {
           topic: truncateForTitle(analystTopic, { maxDisplayWidth: 30, suffix: "..." }),
-        })}
+        })}{" "}
         {tCompliance("shortDisclaimer")}
         {tCompliance("period")}
       </footer>

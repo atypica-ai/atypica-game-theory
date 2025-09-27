@@ -7,7 +7,7 @@ import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
 
 // Helper function to convert podcast objectUrl to signed HTTP URL
-export async function podcastObjectUrlToHttpUrl(podcast: AnalystPodcast): Promise<string | null> {
+export async function podcastObjectUrlToHttpUrl(podcast: Pick<AnalystPodcast, "id" | "objectUrl" | "extra">): Promise<string | null> {
   if (!podcast.objectUrl) {
     return null;
   }
