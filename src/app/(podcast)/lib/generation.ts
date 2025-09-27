@@ -18,18 +18,27 @@ import { createPodcastRecord } from "./data";
 import { preprocessScriptForAudio } from "./utils";
 import { createVolcanoClient } from "./volcano/client";
 
-// Internal function for podcast script generation
-async function generatePodcastScript(params: {
+/**
+ * Main podcast generation function that handles both script and audio generation
+ * Updates processing status throughout the pipeline
+ */
+export async function generatePodcast(params: {
   analystId: number;
   instruction?: string;
   systemPrompt?: string;
   abortSignal: AbortSignal;
   statReport: StatReporter;
-  logger: Logger;
 }): Promise<AnalystPodcast> {
-  const { analystId, instruction = "", systemPrompt, abortSignal, statReport, logger } = params;
+  const { analystId, instruction, systemPrompt, abortSignal, statReport } = params;
 
-  // Step 1: Fetch analyst
+  const logger = rootLogger.child({
+    analystId,
+    method: "generatePodcast",
+  });
+
+  logger.info("Starting unified podcast generation");
+
+  // Step 1: Get analyst and create podcast record
   const analyst = await prisma.analyst.findUnique({
     where: { id: analystId },
     include: {
@@ -45,40 +54,148 @@ async function generatePodcastScript(params: {
     throw new Error("Analyst not found");
   }
 
-  // Step 2: Create podcast record
+  // Create podcast record
   const podcastToken = generateToken();
-  const podcast = await createPodcastRecord(analyst.id, instruction, podcastToken);
+  let podcast = await createPodcastRecord(analyst.id, instruction || "", podcastToken);
 
-  // Step 3: Setup locale
-
+  // Setup locale
   const locale: Locale =
     analyst.locale === "zh-CN" || analyst.locale === "en-US"
       ? (analyst.locale as Locale)
       : ((await detectInputLanguage({ text: analyst.brief })) as Locale);
 
+  // Initialize processing status
+  podcast = await prisma.analystPodcast
+    .update({
+      where: { id: podcast.id },
+      data: {
+        extra: {
+          ...podcast.extra,
+          processing: {
+            startsAt: Date.now(),
+            scriptGeneration: false,
+            audioGeneration: false,
+          },
+        },
+      },
+    })
+    .then(({ extra, ...podcast }) => ({ ...podcast, extra: extra as AnalystPodcastExtra }));
 
-  // Step 5: Initialize processing status
-  const processingExtra: AnalystPodcastExtra = {
-    processing: {
-      startsAt: Date.now(),
-      scriptGeneration: false,
-      audioGeneration: false,
-    },
-  };
+  try {
+    // Step 2: Generate script
+    logger.info("Starting script generation");
+    const script = await generatePodcastScript({
+      podcast,
+      analyst,
+      locale,
+      instruction,
+      systemPrompt,
+      abortSignal,
+      statReport,
+      logger,
+    });
 
-  await prisma.analystPodcast.update({
-    where: { id: podcast.id },
-    data: { extra: processingExtra },
-  });
+    podcast = await prisma.analystPodcast
+      .update({
+        where: { id: podcast.id },
+        data: {
+          extra: {
+            ...podcast.extra,
+            processing: {
+              ...podcast.extra.processing,
+              scriptGeneration: true,
+              audioGeneration: false,
+            },
+          },
+        },
+      })
+      .then(({ extra, ...podcast }) => ({ ...podcast, extra: extra as AnalystPodcastExtra }));
 
-  // Step 6: Core script generation logic
+    // Step 3: Generate audio
+    logger.info("Starting audio generation");
+    const objectUrl = await generatePodcastAudio(podcast.id, podcast.token, script, locale);
+
+    // Step 4: Mark as completely finished with generatedAt
+    podcast = await prisma.analystPodcast
+      .update({
+        where: { id: podcast.id },
+        data: {
+          objectUrl: objectUrl,
+          generatedAt: new Date(), // Only set generatedAt when audio is ready
+          extra: {
+            ...podcast.extra,
+            processing: false,
+            // processing: {
+            //   ...podcast.extra.processing,
+            //   scriptGeneration: true,
+            //   audioGeneration: true,
+            // },
+          },
+        },
+      })
+      .then(({ extra, ...podcast }) => ({ ...podcast, extra: extra as AnalystPodcastExtra }));
+
+    logger.info("Unified podcast generation completed successfully");
+
+    // Return the final podcast
+    const finalPodcast = await prisma.analystPodcast.findUnique({
+      where: { id: podcast.id },
+    });
+
+    return finalPodcast!;
+  } catch (error) {
+    logger.error({
+      msg: "Podcast generation failed",
+      error: error instanceof Error ? error.message : String(error),
+      podcastId: podcast.id,
+    });
+
+    // Mark as failed, preserving other extra fields
+    const currentExtra =
+      ((
+        await prisma.analystPodcast.findUnique({
+          where: { id: podcast.id },
+          select: { extra: true },
+        })
+      )?.extra as AnalystPodcastExtra) || {};
+
+    const errorExtra: AnalystPodcastExtra = {
+      ...currentExtra,
+      processing: false,
+      error: error instanceof Error ? error.message : String(error),
+    };
+
+    await prisma.analystPodcast.update({
+      where: { id: podcast.id },
+      data: { extra: errorExtra },
+    });
+
+    return podcast;
+  }
+}
+
+// Internal function for podcast script generation
+async function generatePodcastScript(params: {
+  podcast: AnalystPodcast;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  analyst: any;
+  locale: Locale;
+  instruction?: string;
+  systemPrompt?: string;
+  abortSignal: AbortSignal;
+  statReport: StatReporter;
+  logger: Logger;
+}): Promise<string> {
+  const { podcast, analyst, locale, systemPrompt, abortSignal, statReport, logger } = params;
+
+  // Core script generation logic
   logger.info({
     msg: "Starting podcast script generation",
     analystId: analyst.id,
     podcastId: podcast.id,
   });
 
-  let script = podcast.script; // If podcast has content, continue from existing script
+  let script = podcast.script || ""; // If podcast has content, continue from existing script
 
   const throttleSaveScript = (() => {
     let timerId: NodeJS.Timeout | null = null;
@@ -101,7 +218,7 @@ async function generatePodcastScript(params: {
         timerId = setTimeout(() => {
           timerId = null;
           saveNow();
-        }, 5000); // 5 second throttle
+        }, 15000); // 15 second throttle
       }
 
       async function saveNow() {
@@ -208,29 +325,7 @@ Please generate a comprehensive, engaging podcast script based on the above rese
         }
       },
       onError: async ({ error }) => {
-        const msg = (error as Error).message;
-        if ((error as Error).name === "AbortError") {
-          logger.warn(`Script generation aborted: ${msg}`);
-        } else {
-          logger.error(`Script generation error: ${msg}`);
-
-          // Update status: script generation failed
-          const errorExtra: AnalystPodcastExtra = {
-            processing: false,
-            error: msg,
-          };
-
-          try {
-            await prisma.analystPodcast.update({
-              where: { id: podcast.id },
-              data: { extra: errorExtra },
-            });
-          } catch (dbError) {
-            logger.error({ msg: "Failed to update podcast record with error", dbError });
-          }
-
-          reject(error);
-        }
+        reject(error);
       },
       abortSignal: abortSignal,
     });
@@ -246,118 +341,16 @@ Please generate a comprehensive, engaging podcast script based on the above rese
   });
 
   const { finishReason } = await streamTextPromise;
-  // Save final script
+
+  // Save final script immediately
   await throttleSaveScript(podcast.id, script, { immediate: true });
 
   if (finishReason === "length") {
     logger.warn("Podcast script generation hit length limit but completed");
   }
 
-  // Update status: script generation completed
-  const completedExtra: AnalystPodcastExtra = {
-    processing: {
-      startsAt:
-        processingExtra.processing !== false && processingExtra.processing
-          ? processingExtra.processing.startsAt
-          : Date.now(),
-      scriptGeneration: true,
-      audioGeneration: false,
-    },
-  };
-
-  await prisma.analystPodcast.update({
-    where: { id: podcast.id },
-    data: {
-      generatedAt: new Date(),
-      extra: completedExtra,
-    },
-  });
-
   logger.info("Podcast script generation completed successfully");
-  return podcast;
-}
-
-/**
- * Unified podcast generation function that handles both script and audio generation
- * Updates processing status throughout the pipeline
- */
-export async function generatePodcast(params: {
-  analystId: number;
-  instruction?: string;
-  systemPrompt?: string;
-  abortSignal: AbortSignal;
-  statReport: StatReporter;
-}): Promise<AnalystPodcast> {
-  const { analystId, instruction, systemPrompt, abortSignal, statReport } = params;
-
-  const logger = rootLogger.child({
-    analystId,
-    method: "generatePodcast",
-  });
-
-  logger.info("Starting unified podcast generation");
-
-  // Step 1: Generate script
-  const podcast = await generatePodcastScript({
-    analystId,
-    instruction,
-    systemPrompt,
-    abortSignal,
-    statReport,
-    logger,
-  });
-
-  // Step 2: Generate audio
-  try {
-    // Get analyst locale for audio generation
-    const analyst = await prisma.analyst.findUnique({
-      where: { id: analystId },
-      select: { locale: true },
-    });
-
-    const locale =
-      analyst?.locale === "zh-CN" || analyst?.locale === "en-US"
-        ? analyst.locale
-        : await detectInputLanguage({ text: podcast.script });
-
-    // Refetch the latest podcast data to ensure we have the current script
-    const updatedPodcast = await prisma.analystPodcast.findUnique({
-      where: { id: podcast.id },
-    });
-
-    if (!updatedPodcast?.script) {
-      throw new Error("Script not available for audio generation");
-    }
-
-    await generatePodcastAudio(
-      updatedPodcast.id,
-      updatedPodcast.token,
-      updatedPodcast.script,
-      locale,
-    );
-
-    logger.info("Unified podcast generation completed successfully");
-    return updatedPodcast;
-  } catch (error) {
-    logger.error({
-      msg: "Audio generation failed in unified flow",
-      error: error instanceof Error ? error.message : String(error),
-      podcastId: podcast.id,
-    });
-
-    // Mark audio generation as failed but don't throw - script is still available
-    const errorExtra: AnalystPodcastExtra = {
-      processing: false,
-      error: `Audio generation failed: ${error instanceof Error ? error.message : String(error)}`,
-    };
-
-    await prisma.analystPodcast.update({
-      where: { id: podcast.id },
-      data: { extra: errorExtra },
-    });
-
-    return podcast;
-  }
+  return script;
 }
 
 // Pure podcast audio generation function (no auth, renamed from backgroundGeneratePodcastAudioImpl)
@@ -366,7 +359,7 @@ export async function generatePodcastAudio(
   podcastToken: string,
   script: string,
   locale: string,
-): Promise<void> {
+): Promise<string> {
   const logger = rootLogger.child({
     podcastId,
     podcastToken,
@@ -456,55 +449,18 @@ export async function generatePodcastAudio(
       mimeType: "audio/mpeg",
     });
 
-    // Get current extra data to preserve existing processing info
-    const currentPodcast = await prisma.analystPodcast.findUnique({
-      where: { id: podcastId },
-      select: { extra: true },
-    });
-
-    const currentExtra = (currentPodcast?.extra || {}) as AnalystPodcastExtra;
-
-    // Update processing status: complete generation (set processing to false)
-    const completedExtra: AnalystPodcastExtra = {
-      ...currentExtra,
-      processing: false, // Mark as completely finished
-    };
-
-    // Update database with objectUrl and completed processing status
-    await prisma.analystPodcast.update({
-      where: { id: podcastId },
-      data: {
-        objectUrl: objectUrl,
-        generatedAt: new Date(),
-        extra: completedExtra,
-      },
-    });
-
     logger.info({
       msg: "Podcast audio generation completed successfully",
       finalUrl: "[REDACTED]",
       duration: result.duration,
     });
+
+    return objectUrl;
   } catch (error) {
     logger.error({
       msg: "Podcast audio generation failed",
       error: error instanceof Error ? error.message : String(error),
     });
-
-    // Mark as failed by updating the record
-    try {
-      await prisma.analystPodcast.update({
-        where: { id: podcastId },
-        data: {
-          extra: {
-            error: error instanceof Error ? error.message : String(error),
-            failedAt: new Date().toISOString(),
-          },
-        },
-      });
-    } catch (dbError) {
-      logger.error({ msg: "Failed to update podcast record with error", dbError });
-    }
 
     throw error;
   }

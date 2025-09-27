@@ -52,7 +52,7 @@ export async function fetchPodcastsForAnalyst(
     orderBy: { createdAt: "desc" },
   });
 
-  return podcasts.map(podcast => ({
+  return podcasts.map((podcast) => ({
     ...podcast,
     extra: (podcast.extra || {}) as AnalystPodcastExtra,
   }));
@@ -63,9 +63,8 @@ export async function createPodcastRecord(
   analystId: number,
   instruction: string,
   token: string = generateToken(),
-): Promise<AnalystPodcast> {
-
-  return await prisma.analystPodcast.create({
+): Promise<Omit<AnalystPodcast, "extra"> & { extra: AnalystPodcastExtra }> {
+  const { extra, ...podcast } = await prisma.analystPodcast.create({
     data: {
       analystId,
       instruction,
@@ -73,6 +72,10 @@ export async function createPodcastRecord(
       script: "",
     },
   });
+  return {
+    ...podcast,
+    extra: (extra || {}) as AnalystPodcastExtra,
+  };
 }
 
 // Get analyst pool - analysts with reports, ordered by most recent updates

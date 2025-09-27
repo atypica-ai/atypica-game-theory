@@ -492,38 +492,27 @@ export default function FeaturedStudiesPage() {
                       return (
                         <>
                           {/* Reports row */}
-                          {reportsText && (
-                            <div className="flex items-center">
-                              <ReportsListPanel
-                                studyUserChatToken={analyst.studyUserChat?.token}
-                                download={true}
-                              >
-                                <div className="flex items-center gap-1.5 text-sm cursor-pointer">
-                                  <FileTextIcon className="h-4 w-4" />
-                                  <span className="font-medium">{reportsText}</span>
-                                </div>
-                              </ReportsListPanel>
-                            </div>
-                          )}
+                          <div className="flex items-center">
+                            <ReportsListPanel
+                              studyUserChatToken={analyst.studyUserChat?.token}
+                              download={true}
+                            >
+                              <div className="flex items-center gap-1.5 text-sm cursor-pointer">
+                                <FileTextIcon className="h-4 w-4" />
+                                <span className="font-normal">{reportsText}</span>
+                              </div>
+                            </ReportsListPanel>
+                          </div>
 
                           {/* Podcasts row with generate button */}
                           <div className="flex items-center justify-between">
                             <div className="flex items-center">
-                              {podcastsText ? (
-                                <PodcastsListPanel
-                                  studyUserChatToken={analyst.studyUserChat?.token}
-                                >
-                                  <div className="flex items-center gap-1.5 text-sm text-violet-600 dark:text-violet-400 cursor-pointer">
-                                    <MicIcon className="h-4 w-4" />
-                                    <span className="font-medium">{podcastsText}</span>
-                                  </div>
-                                </PodcastsListPanel>
-                              ) : (
-                                <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                              <PodcastsListPanel studyUserChatToken={analyst.studyUserChat?.token}>
+                                <div className="flex items-center gap-1.5 text-sm cursor-pointer">
                                   <MicIcon className="h-4 w-4" />
-                                  <span className="font-medium">0 podcasts</span>
+                                  <span className="font-normal">{podcastsText}</span>
                                 </div>
-                              )}
+                              </PodcastsListPanel>
                             </div>
                             <ConfirmDialog
                               title="Generate Podcast"
