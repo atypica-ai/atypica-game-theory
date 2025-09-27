@@ -13,7 +13,7 @@ import { AnalystKind } from "@/prisma/types";
 import { FinishReason, Message, streamText } from "ai";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
-import { podcastScriptSystem } from "../prompt";
+import { podcastScriptPrologue, podcastScriptSystem } from "../prompt";
 import { createPodcastRecord } from "./data";
 import { preprocessScriptForAudio } from "./utils";
 import { createVolcanoClient } from "./volcano/client";
@@ -186,7 +186,8 @@ async function generatePodcastScript(params: {
   statReport: StatReporter;
   logger: Logger;
 }): Promise<string> {
-  const { podcast, analyst, locale, systemPrompt, abortSignal, statReport, logger } = params;
+  const { podcast, analyst, locale, instruction, systemPrompt, abortSignal, statReport, logger } =
+    params;
 
   // Core script generation logic
   logger.info({
@@ -252,26 +253,12 @@ async function generatePodcastScript(params: {
         )
       : undefined;
 
-    // Create podcast script prompt content
-    const podcastContent = `# Podcast Script Generation Request
-
-<User Brief>
-${analyst.brief}
-</User Brief>
-
-<Research Topic>
-${analyst.topic}
-</Research Topic>
-
-<Study Summary>
-${analyst.studySummary}
-</Study Summary>
-
-<Research Process>
-${analyst.studyLog}
-</Research Process>
-
-Please generate a comprehensive, engaging podcast script based on the above research findings.`;
+    // Create podcast script prompt content using the prologue function
+    const podcastContent = podcastScriptPrologue({
+      locale,
+      analyst,
+      instruction,
+    });
 
     const messages: Omit<Message, "id">[] = [
       {
