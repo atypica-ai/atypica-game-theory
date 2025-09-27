@@ -112,7 +112,7 @@ export class VolcanoTTSClient {
       this.logger = logger;
     }
 
-    this.logger?.info("Starting podcast audio generation", { podcastToken });
+    this.logger?.info({ msg: "Starting podcast audio generation", podcastToken });
 
     const headers: VolcanoHeaders = {
       "X-Api-App-Id": this.config.appId,
@@ -241,7 +241,8 @@ export class VolcanoTTSClient {
                 if (endData.audio_duration) {
                   duration = (duration || 0) + endData.audio_duration;
                 }
-                this.logger?.info(`Podcast round ${currentRound} completed`, {
+                this.logger?.info({
+                  msg: `Podcast round ${currentRound} completed`,
                   duration: endData.audio_duration,
                 });
                 break;
@@ -249,7 +250,8 @@ export class VolcanoTTSClient {
               case EventType.PodcastEnd:
                 const podcastData = JSON.parse(new TextDecoder().decode(msg.payload));
                 audioUrl = podcastData.meta_info?.audio_url;
-                this.logger?.info("Podcast generation completed", {
+                this.logger?.info({
+                  msg: "Podcast generation completed",
                   audioUrl: audioUrl ? "[URL_PROVIDED]" : "[NO_URL]",
                   totalDuration: duration,
                 });
@@ -269,7 +271,7 @@ export class VolcanoTTSClient {
 
               case EventType.UsageResponse:
                 const usageData = JSON.parse(new TextDecoder().decode(msg.payload));
-                this.logger?.info("Usage info", usageData);
+                this.logger?.info({ msg: "Usage info received", usageData });
                 break;
 
               default:
