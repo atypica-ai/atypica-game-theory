@@ -9,8 +9,8 @@ function validateInternalAuth(request: NextRequest): boolean {
 }
 
 export async function POST(request: NextRequest) {
-  const logger = rootLogger.child({ api: "podcast-batch-generate" });
-  
+  const logger = rootLogger.child({ api: "batch-generate-podcasts" });
+
   try {
     // Validate internal authentication
     if (!validateInternalAuth(request)) {
@@ -22,10 +22,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Parse optional parameters
-    const { 
-      batchSize = 10, 
-      targetCount = 10, 
-      poolLimit = 10 
+    const {
+      batchSize = 10,
+      targetCount = 10,
+      poolLimit = 10
     } = await request.json().catch(() => ({}));
 
     // Validate parameters
@@ -50,10 +50,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    logger.info("Batch podcast generation request received", { 
-      batchSize, 
-      targetCount, 
-      poolLimit 
+    logger.info("Batch podcast generation request received", {
+      batchSize,
+      targetCount,
+      poolLimit
     });
 
     // Start background processing using server action
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
     // Return immediately after initiating the job
     return Response.json({
       success: true,
-      message: "Batch podcast generation started",
+      message: "Batch podcast generation started successfully",
       params: {
         batchSize,
         targetCount,
@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     const errorStack = error instanceof Error ? error.stack : undefined;
-    
+
     logger.error("Batch podcast generation API error", {
       error: errorMessage,
       stack: errorStack,
@@ -89,4 +89,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-} 
+}
