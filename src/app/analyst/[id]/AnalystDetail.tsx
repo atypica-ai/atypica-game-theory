@@ -1,5 +1,7 @@
 "use client";
 import { fetchAnalystInterviews } from "@/app/(agents)/interview/actions";
+import { fetchAnalystPodcasts } from "@/app/(podcast)/actions";
+import { AnalystPodcastsSection } from "@/app/(podcast)/components/PodcastsSection";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { Analyst } from "@/prisma/client";
 import { useTranslations } from "next-intl";
@@ -8,8 +10,6 @@ import { useEffect, useState } from "react";
 import { AnalystInterviewsSection } from "./AnalystInterviewsSection";
 import { AnalystReportsSection } from "./AnalystReportsSection";
 import { fetchAnalystReports } from "./actions";
-import { fetchAnalystPodcasts } from "@/app/(podcast)/actions";
-import { AnalystPodcastsSection } from "@/app/(podcast)/components/PodcastsSection";
 
 type AnalystInterview = ExtractServerActionData<typeof fetchAnalystInterviews>[number];
 type AnalystReport = ExtractServerActionData<typeof fetchAnalystReports>[number];

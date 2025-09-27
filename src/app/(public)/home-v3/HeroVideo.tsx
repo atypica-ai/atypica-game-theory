@@ -2,8 +2,8 @@
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
 import "plyr/dist/plyr.css";
+import { useEffect, useState } from "react";
 
 const LoadingVideo = () => {
   const t = useTranslations("HomePageV3.HeroSection");

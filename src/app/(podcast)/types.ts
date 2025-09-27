@@ -22,7 +22,7 @@ export interface PodcastCreationParams {
   analystId: number;
   instruction: string;
   token?: string;
-} 
+}
 
 export interface BatchPodcastGenerationParams {
   batchSize?: number;
@@ -37,7 +37,7 @@ export interface BatchPodcastGenerationResult {
   selectedAnalystIds: number[];
   results: Array<{
     analystId: number;
-    status: 'success' | 'error';
+    status: "success" | "error";
     error?: string;
     podcastId?: number;
     podcastToken?: string;
@@ -47,4 +47,4 @@ export interface BatchPodcastGenerationResult {
     selectedCount: number;
     processingTimeMs: number;
   };
-} 
+}

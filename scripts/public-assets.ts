@@ -1,5 +1,5 @@
+import { ListObjectsV2Command, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { loadEnvConfig } from "@next/env";
-import { S3Client, PutObjectCommand, ListObjectsV2Command } from "@aws-sdk/client-s3";
 import { readFileSync } from "fs";
 import { resolve } from "path";
 
@@ -106,7 +106,9 @@ async function uploadFile(region: string, filePath: string) {
     await s3Client.send(putObjectCommand);
 
     // Generate object URL
-    const objectUrl = s3Config.origin.endsWith('/') ? `${s3Config.origin}${key}` : `${s3Config.origin}/${key}`;
+    const objectUrl = s3Config.origin.endsWith("/")
+      ? `${s3Config.origin}${key}`
+      : `${s3Config.origin}/${key}`;
 
     console.log(`✅ File uploaded successfully!`);
     console.log(`📍 Object URL: ${objectUrl}`);
@@ -147,7 +149,9 @@ async function listFiles(region: string) {
       const fileName = object.Key?.replace("atypica/public/", "") || "";
       const size = object.Size ? `${(object.Size / 1024).toFixed(2)} KB` : "Unknown size";
       const lastModified = object.LastModified?.toLocaleString() || "Unknown date";
-      const objectUrl = s3Config.origin.endsWith('/') ? `${s3Config.origin}${object.Key}` : `${s3Config.origin}/${object.Key}`;
+      const objectUrl = s3Config.origin.endsWith("/")
+        ? `${s3Config.origin}${object.Key}`
+        : `${s3Config.origin}/${object.Key}`;
 
       console.log(`${index + 1}. ${fileName}`);
       console.log(`   📏 Size: ${size}`);
@@ -166,8 +170,12 @@ async function listFiles(region: string) {
 
 function printUsage() {
   console.log("📚 Usage:");
-  console.log("  Upload file: npx tsx scripts/public-assets.ts --region mainland --upload <file-path>");
-  console.log("  Upload file: npx tsx scripts/public-assets.ts --region global --upload <file-path>");
+  console.log(
+    "  Upload file: npx tsx scripts/public-assets.ts --region mainland --upload <file-path>",
+  );
+  console.log(
+    "  Upload file: npx tsx scripts/public-assets.ts --region global --upload <file-path>",
+  );
   console.log("  List files:  npx tsx scripts/public-assets.ts --region mainland --list");
   console.log("  List files:  npx tsx scripts/public-assets.ts --region global --list");
   console.log("");

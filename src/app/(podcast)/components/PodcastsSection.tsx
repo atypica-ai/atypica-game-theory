@@ -1,3 +1,9 @@
+import {
+  backgroundGeneratePodcast,
+  backgroundGeneratePodcastAudio,
+  fetchAnalystPodcasts,
+  getPodcastSignedUrl,
+} from "@/app/(podcast)/actions";
 import { TokenAlertDialog } from "@/components/TokenAlertDialog";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -5,12 +11,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDistanceToNow } from "@/lib/utils";
 import { Analyst } from "@/prisma/client";
-import { Loader2Icon, PlayIcon, VolumeXIcon, Volume2Icon, PauseIcon, DownloadIcon } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { DownloadIcon, Loader2Icon, PauseIcon, PlayIcon, Volume2Icon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useState, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { backgroundGeneratePodcast, backgroundGeneratePodcastAudio, fetchAnalystPodcasts, getPodcastSignedUrl } from "@/app/(podcast)/actions";
 
 type AnalystPodcast = ExtractServerActionData<typeof fetchAnalystPodcasts>[number];
 
@@ -23,14 +27,12 @@ export function AnalystPodcastsSection({
   podcasts: AnalystPodcast[];
   defaultPodcastSystem: string;
 }) {
-  const t = useTranslations("AnalystPage");
   const router = useRouter();
   const [isPodcastDialogOpen, setIsPodcastDialogOpen] = useState<AnalystPodcast | null>(null);
   const [isPromptDialogOpen, setIsPromptDialogOpen] = useState(false);
   const [systemPrompt, setSystemPrompt] = useState("");
   const [generatingAudio, setGeneratingAudio] = useState<string | null>(null);
   const [playingAudio, setPlayingAudio] = useState<string | null>(null);
-  const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(null);
   const [isPolling, setIsPolling] = useState(false);
   const [podcasts, setPodcasts] = useState<AnalystPodcast[]>(initialPodcasts);
   const [downloadUrls, setDownloadUrls] = useState<Record<string, string>>({});
@@ -56,15 +58,14 @@ export function AnalystPodcastsSection({
   const generateAudio = useCallback(async (podcastToken: string) => {
     try {
       setGeneratingAudio(podcastToken);
-      
+
       // Use server action instead of API call
       await backgroundGeneratePodcastAudio({ podcastToken });
-      
-      toast.success('Audio generation started');
-      
+
+      toast.success("Audio generation started");
+
       // Start polling for completion
       setIsPolling(true);
-      
     } catch (error) {
       toast.error(`Failed to generate audio: ${error}`);
       setGeneratingAudio(null);
@@ -72,81 +73,83 @@ export function AnalystPodcastsSection({
     }
   }, []);
 
-  const playAudio = useCallback(async (podcastToken: string) => {
-    if (playingAudio === podcastToken) {
-      // Stop current audio
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0;
-      }
-      setPlayingAudio(null);
-      return;
-    }
-
-    try {
-      // Get signed URL for the podcast
-      const result = await getPodcastSignedUrl({ podcastToken });
-      if (!result.success || !result.data) {
-        toast.error('Failed to get audio URL');
+  const playAudio = useCallback(
+    async (podcastToken: string) => {
+      if (playingAudio === podcastToken) {
+        // Stop current audio
+        if (audioRef.current) {
+          audioRef.current.pause();
+          audioRef.current.currentTime = 0;
+        }
+        setPlayingAudio(null);
         return;
       }
 
-      // Stop any currently playing audio
-      if (audioRef.current) {
-        audioRef.current.pause();
+      try {
+        // Get signed URL for the podcast
+        const result = await getPodcastSignedUrl({ podcastToken });
+        if (!result.success || !result.data) {
+          toast.error("Failed to get audio URL");
+          return;
+        }
+
+        // Stop any currently playing audio
+        if (audioRef.current) {
+          audioRef.current.pause();
+        }
+
+        // Create new audio element
+        const audio = new Audio(result.data);
+        audioRef.current = audio;
+
+        audio.addEventListener("ended", () => {
+          setPlayingAudio(null);
+        });
+
+        audio.addEventListener("error", () => {
+          toast.error("Failed to play audio");
+          setPlayingAudio(null);
+        });
+
+        audio
+          .play()
+          .then(() => {
+            setPlayingAudio(podcastToken);
+          })
+          .catch(() => {
+            toast.error("Failed to play audio");
+            setPlayingAudio(null);
+          });
+      } catch (error) {
+        toast.error("Failed to play audio");
+        console.error("Play audio error:", error);
+      }
+    },
+    [playingAudio],
+  );
+
+  const getDownloadUrl = useCallback(
+    async (podcastToken: string) => {
+      // Return cached URL if available
+      if (downloadUrls[podcastToken]) {
+        return downloadUrls[podcastToken];
       }
 
-      // Create new audio element
-      const audio = new Audio(result.data);
-      audioRef.current = audio;
-
-      audio.addEventListener('ended', () => {
-        setPlayingAudio(null);
-      });
-
-      audio.addEventListener('error', () => {
-        toast.error('Failed to play audio');
-        setPlayingAudio(null);
-      });
-
-      audio.play().then(() => {
-        setPlayingAudio(podcastToken);
-      }).catch(() => {
-        toast.error('Failed to play audio');
-        setPlayingAudio(null);
-      });
-    } catch (error) {
-      toast.error('Failed to play audio');
-      console.error('Play audio error:', error);
-    }
-  }, [playingAudio]);
-
-  const getDownloadUrl = useCallback(async (podcastToken: string) => {
-    // Return cached URL if available
-    if (downloadUrls[podcastToken]) {
-      return downloadUrls[podcastToken];
-    }
-
-    try {
-      const result = await getPodcastSignedUrl({ podcastToken });
-      if (result.success && result.data) {
-        setDownloadUrls(prev => ({ ...prev, [podcastToken]: result.data! }));
-        return result.data;
+      try {
+        const result = await getPodcastSignedUrl({ podcastToken });
+        if (result.success && result.data) {
+          setDownloadUrls((prev) => ({ ...prev, [podcastToken]: result.data! }));
+          return result.data;
+        }
+        return null;
+      } catch (error) {
+        console.error("Get download URL error:", error);
+        return null;
       }
-      return null;
-    } catch (error) {
-      console.error('Get download URL error:', error);
-      return null;
-    }
-  }, [downloadUrls]);
+    },
+    [downloadUrls],
+  );
 
-  const stopAudio = useCallback(() => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-    }
-    setPlayingAudio(null);
-  }, []);
 
   // Polling effect for audio generation status
   useEffect(() => {
@@ -156,24 +159,24 @@ export function AnalystPodcastsSection({
       try {
         // Refresh the page to check for updates
         router.refresh();
-        
+
         // Check if any podcast now has audio that was being generated
         const updatedPodcasts = await fetchAnalystPodcasts({ analystId: analyst.id });
         if (updatedPodcasts.success) {
-          const generatingPodcast = updatedPodcasts.data.find(p => p.token === generatingAudio);
+          const generatingPodcast = updatedPodcasts.data.find((p) => p.token === generatingAudio);
           if (generatingPodcast?.objectUrl && generatingPodcast?.generatedAt) {
-            toast.success('Audio generation completed!');
+            toast.success("Audio generation completed!");
             setGeneratingAudio(null);
             setIsPolling(false);
             router.refresh();
           }
         }
       } catch (error) {
-        console.error('Polling error:', error);
+        console.error("Polling error:", error);
         // Stop polling on error to prevent infinite retries
         setIsPolling(false);
         setGeneratingAudio(null);
-        toast.error('Failed to check audio generation status');
+        toast.error("Failed to check audio generation status");
       }
     }, 3000);
 
@@ -185,10 +188,10 @@ export function AnalystPodcastsSection({
   // Update local state when initial podcasts change
   useEffect(() => {
     setPodcasts(initialPodcasts);
-    
+
     // Check if any podcast we think is generating already has audio
     if (generatingAudio) {
-      const podcast = initialPodcasts.find(p => p.token === generatingAudio);
+      const podcast = initialPodcasts.find((p) => p.token === generatingAudio);
       if (podcast?.objectUrl && podcast?.generatedAt) {
         setGeneratingAudio(null);
         setIsPolling(false);
@@ -298,12 +301,12 @@ export function AnalystPodcastsSection({
                                 onClick={async () => {
                                   const url = await getDownloadUrl(isPodcastDialogOpen.token);
                                   if (url) {
-                                    const link = document.createElement('a');
+                                    const link = document.createElement("a");
                                     link.href = url;
                                     link.download = `podcast-${isPodcastDialogOpen.token}.mp3`;
                                     link.click();
                                   } else {
-                                    toast.error('Failed to get download URL');
+                                    toast.error("Failed to get download URL");
                                   }
                                 }}
                               >
@@ -316,7 +319,10 @@ export function AnalystPodcastsSection({
                               variant="default"
                               size="sm"
                               onClick={() => generateAudio(isPodcastDialogOpen.token)}
-                              disabled={generatingAudio === isPodcastDialogOpen.token || !isPodcastDialogOpen.script}
+                              disabled={
+                                generatingAudio === isPodcastDialogOpen.token ||
+                                !isPodcastDialogOpen.script
+                              }
                             >
                               {generatingAudio === isPodcastDialogOpen.token ? (
                                 <>
@@ -340,7 +346,7 @@ export function AnalystPodcastsSection({
                       </div>
                     </div>
                   )}
-                  
+
                   {/* Script content */}
                   <div className="flex-1 overflow-y-auto scrollbar-thin">
                     <div className="prose prose-sm max-w-none dark:prose-invert p-4">
@@ -376,8 +382,8 @@ export function AnalystPodcastsSection({
               onChange={(e) => setSystemPrompt(e.target.value)}
             />
             <p className="text-xs text-muted-foreground mt-2">
-              Additional instructions will be passed to the AI when generating your podcast script. These
-              will supplement the standard podcast template.
+              Additional instructions will be passed to the AI when generating your podcast script.
+              These will supplement the standard podcast template.
             </p>
           </div>
           <div className="flex justify-end gap-2">
@@ -398,4 +404,4 @@ export function AnalystPodcastsSection({
       </Dialog>
     </>
   );
-} 
+}

@@ -1,11 +1,10 @@
 import "server-only";
 
-import { createVolcanoClient } from "@/lib/volcano/client";
+import { s3SignedUrl, uploadToS3 } from "@/lib/attachments/s3";
 import { rootLogger } from "@/lib/logging";
-import { ServerActionResult } from "@/lib/serverAction";
 import { detectInputLanguage } from "@/lib/textUtils";
 import { generateToken } from "@/lib/utils";
-import { uploadToS3, s3SignedUrl } from "@/lib/attachments/s3";
+import { createVolcanoClient } from "@/lib/volcano/client";
 import { Analyst, AnalystPodcast } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
@@ -14,10 +13,9 @@ import { Logger } from "pino";
 // Import required dependencies for script generation
 import { llm, LLMModelName, providerOptions } from "@/ai/provider";
 import { fileUrlToDataUrl } from "@/lib/attachments/actions";
-import { fixMalformedUnicodeString } from "@/lib/utils";
 import { ChatMessageAttachment } from "@/prisma/client";
 import { AnalystKind } from "@/prisma/types";
-import { FinishReason, Message, streamText, generateObject } from "ai";
+import { FinishReason, generateObject, Message, streamText } from "ai";
 import { z } from "zod";
 
 // Import from the prompt location
@@ -32,12 +30,14 @@ export async function podcastObjectUrlToHttpUrl(podcast: AnalystPodcast): Promis
   }
 
   const { id, objectUrl } = podcast;
-  let extra = podcast.extra as Record<string, any>;
+  let extra = podcast.extra as Record<string, unknown>;
   let url: string;
 
   if (
     extra?.s3SignedUrl &&
     extra?.s3SignedUrlExpiresAt &&
+    typeof extra.s3SignedUrl === 'string' &&
+    typeof extra.s3SignedUrlExpiresAt === 'number' &&
     extra.s3SignedUrlExpiresAt > Date.now() + 60 * 60 * 1000
   ) {
     // s3SignedUrl exists and expires in the next hour
@@ -54,7 +54,7 @@ export async function podcastObjectUrlToHttpUrl(podcast: AnalystPodcast): Promis
     waitUntil(
       new Promise((resolve) => {
         prisma.analystPodcast
-          .update({ where: { id }, data: { extra } })
+          .update({ where: { id }, data: { extra: extra as never } })
           .finally(() => resolve(null));
       }),
     );
@@ -88,14 +88,14 @@ export interface PodcastScriptGenerationParams {
   // Option 1: Provide analystId (will fetch analyst and create podcast record)
   analystId?: number;
   // Option 2: Provide pre-fetched analyst and podcast (for advanced use cases)
-  analyst?: Analyst & { interviews: { conclusion: string; }[] };
+  analyst?: Analyst & { interviews: { conclusion: string }[] };
   podcast?: AnalystPodcast;
   // Common parameters
   instruction?: string;
   systemPrompt?: string;
   locale?: Locale;
   abortSignal?: AbortSignal;
-  statReport?: (dimension: string, value: number, extra?: any) => Promise<void>;
+  statReport?: (dimension: string, value: number, extra?: unknown) => Promise<void>;
   logger?: Logger;
 }
 
@@ -118,12 +118,20 @@ export interface AnalystSelectionResult {
 
 // Pure data fetching function (no auth)
 export async function fetchPodcastsForAnalyst(
-  analystId: number, 
-  userId: number
+  analystId: number,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _userId: number,
 ): Promise<
   (Pick<
     AnalystPodcast,
-    "id" | "token" | "analystId" | "script" | "objectUrl" | "generatedAt" | "createdAt" | "updatedAt"
+    | "id"
+    | "token"
+    | "analystId"
+    | "script"
+    | "objectUrl"
+    | "generatedAt"
+    | "createdAt"
+    | "updatedAt"
   > & { analyst: Analyst })[]
 > {
   // Verify ownership
@@ -151,14 +159,14 @@ export async function fetchPodcastsForAnalyst(
     },
     orderBy: { createdAt: "desc" },
   });
-  
+
   return podcasts;
 }
 
 // Core podcast record creation
 export async function createPodcastRecord(params: PodcastCreationParams): Promise<AnalystPodcast> {
   const { analystId, instruction, token = generateToken() } = params;
-  
+
   return await prisma.analystPodcast.create({
     data: {
       analystId,
@@ -171,13 +179,15 @@ export async function createPodcastRecord(params: PodcastCreationParams): Promis
 
 // Script preprocessing for audio generation
 function preprocessScriptForAudio(script: string): string {
-  return script
-    // Remove speaker labels like 【A】【B】
-    .replace(/【[^】]*】/g, '')
-    // Remove excessive newlines (keep single \n, remove multiple)
-    .replace(/\n{2,}/g, '\n')
-    // Trim whitespace from beginning and end
-    .trim();
+  return (
+    script
+      // Remove speaker labels like 【A】【B】
+      .replace(/【[^】]*】/g, "")
+      // Remove excessive newlines (keep single \n, remove multiple)
+      .replace(/\n{2,}/g, "\n")
+      // Trim whitespace from beginning and end
+      .trim()
+  );
 }
 
 // ========================================
@@ -188,14 +198,18 @@ function preprocessScriptForAudio(script: string): string {
  * Selects the most interesting analysts from a given array using LLM with structured output.
  * Uses generateObject to ensure consistent, structured results.
  */
-export async function selectTopAnalysts(params: AnalystSelectionParams): Promise<AnalystSelectionResult> {
+export async function selectTopAnalysts(
+  params: AnalystSelectionParams,
+): Promise<AnalystSelectionResult> {
   const { analysts, topN = 1, systemPrompt, logger: providedLogger } = params;
 
-  const logger = providedLogger || rootLogger.child({
-    method: "selectTopAnalysts",
-    analystCount: analysts.length,
-    topN,
-  });
+  const logger =
+    providedLogger ||
+    rootLogger.child({
+      method: "selectTopAnalysts",
+      analystCount: analysts.length,
+      topN,
+    });
 
   // Validate inputs
   if (!analysts || analysts.length === 0) {
@@ -212,24 +226,26 @@ export async function selectTopAnalysts(params: AnalystSelectionParams): Promise
 
   const effectiveTopN = Math.min(topN, analysts.length);
 
-  logger.info("Starting analyst selection", { 
-    totalAnalysts: analysts.length, 
+  logger.info("Starting analyst selection", {
+    totalAnalysts: analysts.length,
     requestedTopN: topN,
-    effectiveTopN 
+    effectiveTopN,
   });
 
   // Convert analysts to readable format for LLM
-  const analystDescriptions = analysts.map((analyst, index) => {
-    return `Analyst ${index + 1} (ID: ${analyst.id}):
-- Topic: ${analyst.topic || 'Not specified'}
-- Brief: ${analyst.brief || 'No brief available'}
-- Role: ${analyst.role || 'Not specified'}
-- Kind: ${analyst.kind || 'misc'}
-- Study Summary: ${analyst.studySummary ? analyst.studySummary.substring(0, 300) + '...' : 'No summary available'}`;
-  }).join('\n\n');
+  const analystDescriptions = analysts
+    .map((analyst, index) => {
+      return `Analyst ${index + 1} (ID: ${analyst.id}):
+- Topic: ${analyst.topic || "Not specified"}
+- Brief: ${analyst.brief || "No brief available"}
+- Role: ${analyst.role || "Not specified"}
+- Kind: ${analyst.kind || "misc"}
+- Study Summary: ${analyst.studySummary ? analyst.studySummary.substring(0, 300) + "..." : "No summary available"}`;
+    })
+    .join("\n\n");
 
   // Create the prompt
-  const selectionPrompt = `You are tasked with selecting the ${effectiveTopN} most interesting analyst${effectiveTopN > 1 ? 's' : ''} from the following list based on their research topics, briefs, and content quality.
+  const selectionPrompt = `You are tasked with selecting the ${effectiveTopN} most interesting analyst${effectiveTopN > 1 ? "s" : ""} from the following list based on their research topics, briefs, and content quality.
 
 Consider these criteria for "interesting":
 1. Unique or innovative research topics
@@ -242,23 +258,38 @@ Here are the analysts to choose from:
 
 ${analystDescriptions}
 
-Please select the top ${effectiveTopN} most interesting analyst${effectiveTopN > 1 ? 's' : ''} and provide their IDs.`;
+Please select the top ${effectiveTopN} most interesting analyst${effectiveTopN > 1 ? "s" : ""} and provide their IDs.`;
 
   // Define the schema for structured output
   const selectionSchema = z.object({
-    selectedAnalysts: z.array(z.object({
-      analystId: z.number().describe("The ID of the selected analyst"),
-      rank: z.number().min(1).max(effectiveTopN).describe("The rank of this analyst (1 being the most interesting)"),
-      reason: z.string().describe("Brief reason why this analyst was selected")
-    })).length(effectiveTopN).describe(`Exactly ${effectiveTopN} selected analyst${effectiveTopN > 1 ? 's' : ''} in order of interest`),
-    overallReasoning: z.string().describe("Brief explanation of the selection criteria and decision process")
+    selectedAnalysts: z
+      .array(
+        z.object({
+          analystId: z.number().describe("The ID of the selected analyst"),
+          rank: z
+            .number()
+            .min(1)
+            .max(effectiveTopN)
+            .describe("The rank of this analyst (1 being the most interesting)"),
+          reason: z.string().describe("Brief reason why this analyst was selected"),
+        }),
+      )
+      .length(effectiveTopN)
+      .describe(
+        `Exactly ${effectiveTopN} selected analyst${effectiveTopN > 1 ? "s" : ""} in order of interest`,
+      ),
+    overallReasoning: z
+      .string()
+      .describe("Brief explanation of the selection criteria and decision process"),
   });
 
   try {
     const result = await generateObject({
       model: llm("gpt-4.1-nano"),
       providerOptions: providerOptions,
-      system: systemPrompt || `You are an expert analyst evaluator. Your task is to identify the most interesting and engaging analysts based on their research topics, content quality, and potential appeal to a broad audience. Be objective and consider factors like innovation, clarity, comprehensiveness, and significance.`,
+      system:
+        systemPrompt ||
+        `You are an expert analyst evaluator. Your task is to identify the most interesting and engaging analysts based on their research topics, content quality, and potential appeal to a broad audience. Be objective and consider factors like innovation, clarity, comprehensiveness, and significance.`,
       prompt: selectionPrompt,
       schema: selectionSchema,
       schemaName: "AnalystSelection",
@@ -270,32 +301,33 @@ Please select the top ${effectiveTopN} most interesting analyst${effectiveTopN >
 
     logger.info("Analyst selection completed successfully", {
       selectedCount: result.object.selectedAnalysts.length,
-      selectedIds: result.object.selectedAnalysts.map(a => a.analystId),
+      selectedIds: result.object.selectedAnalysts.map((a) => a.analystId),
     });
 
     // Sort by rank and extract IDs
     const sortedAnalysts = result.object.selectedAnalysts.sort((a, b) => a.rank - b.rank);
-    const selectedAnalystIds = sortedAnalysts.map(analyst => analyst.analystId);
+    const selectedAnalystIds = sortedAnalysts.map((analyst) => analyst.analystId);
 
     // Validate that all selected IDs exist in the original analyst array
-    const validIds = analysts.map(a => a.id);
-    const invalidIds = selectedAnalystIds.filter(id => !validIds.includes(id));
-    
+    const validIds = analysts.map((a) => a.id);
+    const invalidIds = selectedAnalystIds.filter((id) => !validIds.includes(id));
+
     if (invalidIds.length > 0) {
       logger.warn("LLM selected invalid analyst IDs", { invalidIds });
-      throw new Error(`LLM selected invalid analyst IDs: ${invalidIds.join(', ')}`);
+      throw new Error(`LLM selected invalid analyst IDs: ${invalidIds.join(", ")}`);
     }
 
     return {
       selectedAnalystIds,
       reasoning: result.object.overallReasoning,
     };
-
   } catch (error) {
     logger.error("Analyst selection failed", {
       error: error instanceof Error ? error.message : String(error),
     });
-    throw new Error(`Failed to select analysts: ${error instanceof Error ? error.message : String(error)}`);
+    throw new Error(
+      `Failed to select analysts: ${error instanceof Error ? error.message : String(error)}`,
+    );
   }
 }
 
@@ -307,25 +339,27 @@ Please select the top ${effectiveTopN} most interesting analyst${effectiveTopN >
  * Unified podcast script generation function that handles both use cases:
  * 1. Direct analyst ID (fetches analyst, creates podcast record)
  * 2. Pre-provided analyst and podcast objects (for advanced use cases)
- * 
+ *
  * This function is now simplified and purely synchronous.
  */
-export async function generatePodcastScript(params: PodcastScriptGenerationParams): Promise<AnalystPodcast> {
-  const { 
-    analystId, 
-    analyst: providedAnalyst, 
+export async function generatePodcastScript(
+  params: PodcastScriptGenerationParams,
+): Promise<AnalystPodcast> {
+  const {
+    analystId,
+    analyst: providedAnalyst,
     podcast: providedPodcast,
-    instruction = "", 
+    instruction = "",
     systemPrompt,
     locale: providedLocale,
     abortSignal,
     statReport,
-    logger: providedLogger
+    logger: providedLogger,
   } = params;
 
   // Step 1: Get or fetch analyst
-  let analyst: Analyst & { interviews: { conclusion: string; }[] };
-  
+  let analyst: Analyst & { interviews: { conclusion: string }[] };
+
   if (providedAnalyst) {
     analyst = providedAnalyst;
   } else if (analystId) {
@@ -339,7 +373,7 @@ export async function generatePodcastScript(params: PodcastScriptGenerationParam
         },
       },
     });
-    
+
     if (!fetchedAnalyst) {
       throw new Error("Analyst not found");
     }
@@ -350,7 +384,7 @@ export async function generatePodcastScript(params: PodcastScriptGenerationParam
 
   // Step 2: Get or create podcast record
   let podcast: AnalystPodcast;
-  
+
   if (providedPodcast) {
     podcast = providedPodcast;
   } else {
@@ -363,27 +397,32 @@ export async function generatePodcastScript(params: PodcastScriptGenerationParam
   }
 
   // Step 3: Setup logging and locale
-  const logger = providedLogger || rootLogger.child({
-    analystId: analyst.id,
-    podcastToken: podcast.token,
-    method: "generatePodcastScript",
-  });
+  const logger =
+    providedLogger ||
+    rootLogger.child({
+      analystId: analyst.id,
+      podcastToken: podcast.token,
+      method: "generatePodcastScript",
+    });
 
-  const locale: Locale = providedLocale || 
+  const locale: Locale =
+    providedLocale ||
     (analyst.locale === "zh-CN" || analyst.locale === "en-US"
-      ? analyst.locale as Locale
-      : await detectInputLanguage({ text: analyst.brief }) as Locale);
+      ? (analyst.locale as Locale)
+      : ((await detectInputLanguage({ text: analyst.brief })) as Locale));
 
   // Step 4: Setup abort signal and stat reporting
   const finalAbortSignal = abortSignal || new AbortController().signal;
-  const finalStatReport = statReport || (async (dimension: string, value: number, extra?: any) => {
-    logger.info(`statReport: ${dimension}=${value}`, extra);
-  });
+  const finalStatReport =
+    statReport ||
+    (async (dimension: string, value: number, extra?: unknown) => {
+      logger.info(`statReport: ${dimension}=${value}`, extra);
+    });
 
   // Step 5: Core script generation logic
-  logger.info("Starting podcast script generation", { 
-    analystId: analyst.id, 
-    podcastId: podcast.id 
+  logger.info("Starting podcast script generation", {
+    analystId: analyst.id,
+    podcastId: podcast.id,
   });
 
   let script = podcast.script; // If podcast has content, continue from existing script
@@ -426,8 +465,8 @@ export async function generatePodcastScript(params: PodcastScriptGenerationParam
     };
   })();
 
-  let modelName: LLMModelName = "claude-sonnet-4";
-  
+  const modelName: LLMModelName = "claude-sonnet-4";
+
   const streamTextPromise = new Promise<{
     finishReason: FinishReason;
     content: string;
@@ -476,7 +515,8 @@ Please generate a comprehensive, engaging podcast script based on the above rese
       messages.push({ role: "assistant", content: script });
       messages.push({
         role: "user",
-        content: "Please continue with the remaining podcast script content without repeating what's already been generated.",
+        content:
+          "Please continue with the remaining podcast script content without repeating what's already been generated.",
       });
     }
 
@@ -559,7 +599,7 @@ Please generate a comprehensive, engaging podcast script based on the above rese
 // Pure podcast audio generation function (no auth, renamed from backgroundGeneratePodcastAudioImpl)
 export async function generatePodcastAudio(params: PodcastAudioGenerationParams): Promise<void> {
   const { podcastId, podcastToken, script, locale } = params;
-  
+
   const logger = rootLogger.child({
     podcastId,
     podcastToken,
@@ -571,8 +611,8 @@ export async function generatePodcastAudio(params: PodcastAudioGenerationParams)
 
     // Preprocess script for audio generation
     const preprocessedScript = preprocessScriptForAudio(script);
-    logger.info("Script preprocessed for audio generation", { 
-      processedLength: preprocessedScript.length
+    logger.info("Script preprocessed for audio generation", {
+      processedLength: preprocessedScript.length,
     });
 
     // Create Volcano TTS client
@@ -599,7 +639,7 @@ export async function generatePodcastAudio(params: PodcastAudioGenerationParams)
     }
 
     // Check content length if available
-    const contentLength = audioResponse.headers.get('content-length');
+    const contentLength = audioResponse.headers.get("content-length");
     if (contentLength && parseInt(contentLength) > 10 * 1024 * 1024) {
       throw new Error(`Audio file too large: ${contentLength} bytes (max 10MB)`);
     }
@@ -642,7 +682,7 @@ export async function generatePodcastAudio(params: PodcastAudioGenerationParams)
 
     // Upload to S3 using standardized function
     const keySuffix = `podcasts/${podcastToken}.mp3` as const;
-    const { getObjectUrl, objectUrl } = await uploadToS3({
+    const { objectUrl } = await uploadToS3({
       keySuffix,
       fileBody: audioBuffer,
       mimeType: "audio/mpeg",
@@ -661,7 +701,6 @@ export async function generatePodcastAudio(params: PodcastAudioGenerationParams)
       finalUrl: "[REDACTED]",
       duration: result.duration,
     });
-
   } catch (error) {
     logger.error("Podcast audio generation failed", {
       error: error instanceof Error ? error.message : String(error),
@@ -675,7 +714,7 @@ export async function generatePodcastAudio(params: PodcastAudioGenerationParams)
           extra: {
             error: error instanceof Error ? error.message : String(error),
             failedAt: new Date().toISOString(),
-          }
+          },
         },
       });
     } catch (dbError) {
@@ -705,7 +744,7 @@ export interface BatchPodcastGenerationResult {
   selectedAnalystIds: number[];
   results: Array<{
     analystId: number;
-    status: 'success' | 'error';
+    status: "success" | "error";
     error?: string;
     podcastId?: number;
     podcastToken?: string;
@@ -720,33 +759,35 @@ export interface BatchPodcastGenerationResult {
 /**
  * Get analyst pool - analysts with reports, ordered by most recent updates
  */
-export async function getAnalystPool(limit: number = 10): Promise<Array<{id: number, topic: string}>> {
+export async function getAnalystPool(
+  limit: number = 10,
+): Promise<Array<{ id: number; topic: string }>> {
   const logger = rootLogger.child({ method: "getAnalystPool", limit });
-  
+
   try {
     const analysts = await prisma.analyst.findMany({
       where: {
         reports: {
-          some: {} // Has at least one AnalystReport
-        }
+          some: {}, // Has at least one AnalystReport
+        },
       },
-      select: { 
-        id: true, 
-        topic: true 
+      select: {
+        id: true,
+        topic: true,
       },
-      orderBy: { updatedAt: 'desc' },
-      take: limit
+      orderBy: { updatedAt: "desc" },
+      take: limit,
     });
 
-    logger.info("Analyst pool retrieved", { 
+    logger.info("Analyst pool retrieved", {
       poolSize: analysts.length,
-      analystIds: analysts.map(a => a.id)
+      analystIds: analysts.map((a) => a.id),
     });
 
     return analysts;
   } catch (error) {
     logger.error("Failed to get analyst pool", {
-      error: error instanceof Error ? error.message : String(error)
+      error: error instanceof Error ? error.message : String(error),
     });
     throw error;
   }
@@ -767,17 +808,19 @@ function chunkArray<T>(array: T[], chunkSize: number): T[][] {
  * Select analysts across batches until target count is reached
  */
 export async function selectAnalystsInBatches(
-  pool: Array<{id: number, topic: string}>, 
-  batchSize: number = 10, 
+  pool: Array<{ id: number; topic: string }>,
+  batchSize: number = 10,
   targetCount: number = 10,
-  logger?: Logger
+  logger?: Logger,
 ): Promise<number[]> {
-  const log = logger || rootLogger.child({ 
-    method: "selectAnalystsInBatches",
-    poolSize: pool.length,
-    batchSize,
-    targetCount
-  });
+  const log =
+    logger ||
+    rootLogger.child({
+      method: "selectAnalystsInBatches",
+      poolSize: pool.length,
+      batchSize,
+      targetCount,
+    });
 
   if (pool.length === 0) {
     log.warn("Empty analyst pool provided");
@@ -787,25 +830,25 @@ export async function selectAnalystsInBatches(
   // Convert pool to full Analyst objects for selectTopAnalysts
   const fullAnalysts = await prisma.analyst.findMany({
     where: {
-      id: { in: pool.map(p => p.id) }
-    }
+      id: { in: pool.map((p) => p.id) },
+    },
   });
 
   const batches = chunkArray(fullAnalysts, batchSize);
   const allSelectedIds: number[] = [];
 
-  log.info("Starting batch selection", { 
+  log.info("Starting batch selection", {
     batchCount: batches.length,
-    targetCount 
+    targetCount,
   });
 
   for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
     const batch = batches[batchIndex];
-    
+
     if (allSelectedIds.length >= targetCount) {
       log.info("Target count reached, stopping batch processing", {
         currentCount: allSelectedIds.length,
-        targetCount
+        targetCount,
       });
       break;
     }
@@ -817,26 +860,25 @@ export async function selectAnalystsInBatches(
       log.info(`Processing batch ${batchIndex + 1}/${batches.length}`, {
         batchSize: batch.length,
         batchTargetCount,
-        currentSelectedCount: allSelectedIds.length
+        currentSelectedCount: allSelectedIds.length,
       });
 
       const batchResult = await selectTopAnalysts({
         analysts: batch,
         topN: batchTargetCount,
-        logger: log
+        logger: log,
       });
 
       allSelectedIds.push(...batchResult.selectedAnalystIds);
 
       log.info(`Batch ${batchIndex + 1} completed`, {
         batchSelectedCount: batchResult.selectedAnalystIds.length,
-        totalSelectedCount: allSelectedIds.length
+        totalSelectedCount: allSelectedIds.length,
       });
-
     } catch (error) {
       log.error(`Batch ${batchIndex + 1} selection failed`, {
         error: error instanceof Error ? error.message : String(error),
-        batchSize: batch.length
+        batchSize: batch.length,
       });
       // Continue with next batch on error
     }
@@ -845,7 +887,7 @@ export async function selectAnalystsInBatches(
   log.info("Batch selection completed", {
     finalSelectedCount: allSelectedIds.length,
     targetCount,
-    selectedIds: allSelectedIds
+    selectedIds: allSelectedIds,
   });
 
   return allSelectedIds.slice(0, targetCount); // Ensure we don't exceed target
@@ -854,19 +896,17 @@ export async function selectAnalystsInBatches(
 /**
  * Core batch podcast generation function (pure business logic)
  */
-export async function batchGeneratePodcasts(params: BatchPodcastGenerationParams = {}): Promise<BatchPodcastGenerationResult> {
-  const {
-    batchSize = 10,
-    targetCount = 10,
-    poolLimit = 10 
-  } = params;
+export async function batchGeneratePodcasts(
+  params: BatchPodcastGenerationParams = {},
+): Promise<BatchPodcastGenerationResult> {
+  const { batchSize = 10, targetCount = 10, poolLimit = 10 } = params;
 
   const startTime = Date.now();
   const logger = rootLogger.child({
     method: "batchGeneratePodcasts",
     batchSize,
     targetCount,
-    poolLimit
+    poolLimit,
   });
 
   logger.info("Starting batch podcast generation");
@@ -874,7 +914,7 @@ export async function batchGeneratePodcasts(params: BatchPodcastGenerationParams
   try {
     // Step 1: Get analyst pool
     const pool = await getAnalystPool(poolLimit);
-    
+
     if (pool.length === 0) {
       logger.warn("No analysts found in pool");
       return {
@@ -886,18 +926,13 @@ export async function batchGeneratePodcasts(params: BatchPodcastGenerationParams
         summary: {
           poolSize: 0,
           selectedCount: 0,
-          processingTimeMs: Date.now() - startTime
-        }
+          processingTimeMs: Date.now() - startTime,
+        },
       };
     }
 
     // Step 2: Select analysts in batches
-    const selectedAnalystIds = await selectAnalystsInBatches(
-      pool, 
-      batchSize, 
-      targetCount,
-      logger
-    );
+    const selectedAnalystIds = await selectAnalystsInBatches(pool, batchSize, targetCount, logger);
 
     if (selectedAnalystIds.length === 0) {
       logger.warn("No analysts selected from pool");
@@ -910,26 +945,26 @@ export async function batchGeneratePodcasts(params: BatchPodcastGenerationParams
         summary: {
           poolSize: pool.length,
           selectedCount: 0,
-          processingTimeMs: Date.now() - startTime
-        }
+          processingTimeMs: Date.now() - startTime,
+        },
       };
     }
 
     logger.info("Starting podcast generation for selected analysts", {
       selectedCount: selectedAnalystIds.length,
-      selectedIds: selectedAnalystIds
+      selectedIds: selectedAnalystIds,
     });
 
     // Step 3: Process each analyst sequentially
-    const results: BatchPodcastGenerationResult['results'] = [];
+    const results: BatchPodcastGenerationResult["results"] = [];
     let successful = 0;
     let failed = 0;
 
     for (let i = 0; i < selectedAnalystIds.length; i++) {
       const analystId = selectedAnalystIds[i];
-      const analystLogger = logger.child({ 
-        analystId, 
-        progress: `${i + 1}/${selectedAnalystIds.length}` 
+      const analystLogger = logger.child({
+        analystId,
+        progress: `${i + 1}/${selectedAnalystIds.length}`,
       });
 
       try {
@@ -938,7 +973,7 @@ export async function batchGeneratePodcasts(params: BatchPodcastGenerationParams
         // Step 3a: Generate podcast script
         const podcast = await generatePodcastScript({
           analystId,
-          logger: analystLogger
+          logger: analystLogger,
         });
 
         // Step 3b: Refetch updated podcast data from database
@@ -956,79 +991,81 @@ export async function batchGeneratePodcasts(params: BatchPodcastGenerationParams
         }
 
         if (!updatedPodcast.generatedAt) {
-          throw new Error(`Script generation incomplete - no generatedAt timestamp (podcastId: ${podcast.id})`);
+          throw new Error(
+            `Script generation incomplete - no generatedAt timestamp (podcastId: ${podcast.id})`,
+          );
         }
 
         analystLogger.info("Script generation completed", {
           podcastId: updatedPodcast.id,
           podcastToken: updatedPodcast.token,
           scriptLength: updatedPodcast.script.length,
-          generatedAt: updatedPodcast.generatedAt
+          generatedAt: updatedPodcast.generatedAt,
         });
 
         // Step 3c: Get analyst locale for audio generation
         const analyst = await prisma.analyst.findUnique({
           where: { id: analystId },
-          select: { locale: true }
+          select: { locale: true },
         });
-        
-        const locale = analyst?.locale === "zh-CN" || analyst?.locale === "en-US" 
-          ? analyst.locale 
-          : await detectInputLanguage({ text: updatedPodcast.script });
+
+        const locale =
+          analyst?.locale === "zh-CN" || analyst?.locale === "en-US"
+            ? analyst.locale
+            : await detectInputLanguage({ text: updatedPodcast.script });
 
         // Step 3d: Generate podcast audio using updated data
         analystLogger.info("Starting audio generation", {
           podcastId: updatedPodcast.id,
           podcastToken: updatedPodcast.token,
           scriptLength: updatedPodcast.script.length,
-          locale
+          locale,
         });
 
         await generatePodcastAudio({
           podcastId: updatedPodcast.id,
           podcastToken: updatedPodcast.token,
           script: updatedPodcast.script,
-          locale
+          locale,
         });
 
         analystLogger.info("Audio generation completed successfully", {
           podcastId: updatedPodcast.id,
-          podcastToken: updatedPodcast.token
+          podcastToken: updatedPodcast.token,
         });
 
         results.push({
           analystId,
-          status: 'success',
+          status: "success",
           podcastId: updatedPodcast.id,
-          podcastToken: updatedPodcast.token
+          podcastToken: updatedPodcast.token,
         });
         successful++;
-
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
-        
+
         analystLogger.error("Podcast generation failed for analyst", {
-          error: errorMessage
+          error: errorMessage,
         });
 
         results.push({
           analystId,
-          status: 'error',
-          error: errorMessage
+          status: "error",
+          error: errorMessage,
         });
         failed++;
-        
+
         // Continue with next analyst (no interruption)
       }
     }
 
     const processingTimeMs = Date.now() - startTime;
-    
+
     logger.info("Batch podcast generation completed", {
       totalProcessed: selectedAnalystIds.length,
       successful,
       failed,
-      processingTimeMs
+      processingTimeMs,
     });
 
     return {
@@ -1040,20 +1077,22 @@ export async function batchGeneratePodcasts(params: BatchPodcastGenerationParams
       summary: {
         poolSize: pool.length,
         selectedCount: selectedAnalystIds.length,
-        processingTimeMs
-      }
+        processingTimeMs,
+      },
     };
-
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     logger.error("Batch podcast generation failed", { error: errorMessage });
-    
+
     throw new Error(`Batch podcast generation failed: ${errorMessage}`);
   }
 }
 
 // Validation helper for API routes (no auth, just validation)
-export async function validatePodcastRequest(podcastToken: string, userId: number): Promise<{
+export async function validatePodcastRequest(
+  podcastToken: string,
+  userId: number,
+): Promise<{
   podcast: AnalystPodcast & { analyst: Analyst };
   locale: string;
 }> {
@@ -1085,4 +1124,4 @@ export async function validatePodcastRequest(podcastToken: string, userId: numbe
       : await detectInputLanguage({ text: podcast.script });
 
   return { podcast, locale };
-} 
+}

@@ -179,72 +179,77 @@ export function SelectPersonaDialog({ open, onOpenChange, onSelect }: SelectPers
             <>
               <div className="flex-1 overflow-y-auto scrollbar-thin relative min-h-0">
                 <div className="grid lg:grid-cols-3 gap-4 mt-4">
-              {loading && (currentPage > 1 || (mode === "public" && searchQuery)) && (
-                <div className="absolute inset-0 bg-background/80 flex justify-center items-center z-10">
-                  <Loader2Icon className="size-8 animate-spin mx-auto mb-4" />
-                </div>
-              )}
-              {personas.length === 0 && !loading ? (
-                <div className="col-span-3 py-12 text-center">
-                  <p className="text-muted-foreground">
-                    {mode === "public" && searchQuery
-                      ? `No results found for "${searchQuery}"`
-                      : mode === "private"
-                        ? "No private personas available"
-                        : "No personas available"}
-                  </p>
-                  {mode === "public" && searchQuery && (
-                    <Button variant="ghost" onClick={handleClearSearch} size="sm" className="mt-2">
-                      Clear search
-                    </Button>
+                  {loading && (currentPage > 1 || (mode === "public" && searchQuery)) && (
+                    <div className="absolute inset-0 bg-background/80 flex justify-center items-center z-10">
+                      <Loader2Icon className="size-8 animate-spin mx-auto mb-4" />
+                    </div>
                   )}
-                </div>
-              ) : (
-                personas.map((persona) => (
-                  <Card
-                    key={persona.id}
-                    className={`gap-3 cursor-pointer transition-colors duration-300 ${
-                      selectedIds.includes(persona.id) ? "bg-accent" : "hover:bg-accent/50"
-                    } hover:shadow-md`}
-                    onClick={() => {
-                      setSelectedIds((prev) =>
-                        prev.includes(persona.id)
-                          ? prev.filter((id) => id !== persona.id)
-                          : [...prev, persona.id],
-                      );
-                    }}
-                  >
-                    <CardHeader>
-                      <CardTitle className="flex items-center overflow-hidden gap-1">
-                        <div className="flex-1 truncate">{persona.name}</div>
-                        <Badge variant="secondary" className="whitespace-nowrap text-xs">
-                          Tier: {persona.tier ?? "N/A"}
-                        </Badge>
-                      </CardTitle>
-                      {persona.source && (
-                        <div className="text-xs text-muted-foreground">
-                          Source：{persona.source}
-                        </div>
+                  {personas.length === 0 && !loading ? (
+                    <div className="col-span-3 py-12 text-center">
+                      <p className="text-muted-foreground">
+                        {mode === "public" && searchQuery
+                          ? `No results found for "${searchQuery}"`
+                          : mode === "private"
+                            ? "No private personas available"
+                            : "No personas available"}
+                      </p>
+                      {mode === "public" && searchQuery && (
+                        <Button
+                          variant="ghost"
+                          onClick={handleClearSearch}
+                          size="sm"
+                          className="mt-2"
+                        >
+                          Clear search
+                        </Button>
                       )}
-                    </CardHeader>
-                    <CardContent className="text-muted-foreground text-xs line-clamp-2">
-                      {persona.prompt}
-                    </CardContent>
-                    <CardFooter className="text-xs text-muted-foreground">
-                      <div className="flex flex-wrap gap-1">
-                        {(persona.tags as string[])?.map((tag, index) => (
-                          <span
-                            key={index}
-                            className="bg-muted px-1.5 py-0.5 rounded text-xs inline-block"
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    </CardFooter>
-                  </Card>
-                ))
-              )}
+                    </div>
+                  ) : (
+                    personas.map((persona) => (
+                      <Card
+                        key={persona.id}
+                        className={`gap-3 cursor-pointer transition-colors duration-300 ${
+                          selectedIds.includes(persona.id) ? "bg-accent" : "hover:bg-accent/50"
+                        } hover:shadow-md`}
+                        onClick={() => {
+                          setSelectedIds((prev) =>
+                            prev.includes(persona.id)
+                              ? prev.filter((id) => id !== persona.id)
+                              : [...prev, persona.id],
+                          );
+                        }}
+                      >
+                        <CardHeader>
+                          <CardTitle className="flex items-center overflow-hidden gap-1">
+                            <div className="flex-1 truncate">{persona.name}</div>
+                            <Badge variant="secondary" className="whitespace-nowrap text-xs">
+                              Tier: {persona.tier ?? "N/A"}
+                            </Badge>
+                          </CardTitle>
+                          {persona.source && (
+                            <div className="text-xs text-muted-foreground">
+                              Source：{persona.source}
+                            </div>
+                          )}
+                        </CardHeader>
+                        <CardContent className="text-muted-foreground text-xs line-clamp-2">
+                          {persona.prompt}
+                        </CardContent>
+                        <CardFooter className="text-xs text-muted-foreground">
+                          <div className="flex flex-wrap gap-1">
+                            {(persona.tags as string[])?.map((tag, index) => (
+                              <span
+                                key={index}
+                                className="bg-muted px-1.5 py-0.5 rounded text-xs inline-block"
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        </CardFooter>
+                      </Card>
+                    ))
+                  )}
                 </div>
               </div>
               <div className="flex flex-wrap justify-between items-center mt-4 flex-shrink-0">

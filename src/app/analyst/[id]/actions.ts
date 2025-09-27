@@ -240,5 +240,3 @@ export async function backgroundGenerateReport({
     );
   });
 }
-
-

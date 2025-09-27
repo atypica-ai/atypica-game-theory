@@ -193,4 +193,4 @@ Adjust content focus based on research type (${analystKind}):
 - **planning**: Concentrate on strategic planning and execution paths
 - **misc**: Balance multiple dimensions in comprehensive analysis
 
-Please create a professional, engaging podcast script suitable for audio playback.`; 
+Please create a professional, engaging podcast script suitable for audio playback.`;

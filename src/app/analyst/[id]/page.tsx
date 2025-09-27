@@ -1,6 +1,7 @@
 import { reportHTMLSystem } from "@/ai/prompt";
-import { podcastScriptSystem } from "@/app/(podcast)/prompt";
 import { fetchAnalystInterviews } from "@/app/(agents)/interview/actions";
+import { fetchAnalystPodcasts } from "@/app/(podcast)/actions";
+import { podcastScriptSystem } from "@/app/(podcast)/prompt";
 import { checkTezignAuth } from "@/app/admin/actions";
 import { throwServerActionError } from "@/lib/serverAction";
 import { AnalystKind } from "@/prisma/types";
@@ -8,7 +9,6 @@ import { getLocale } from "next-intl/server";
 import { fetchAnalystById } from "../actions";
 import { AnalystDetail } from "./AnalystDetail";
 import { fetchAnalystReports } from "./actions";
-import { fetchAnalystPodcasts } from "@/app/(podcast)/actions";
 
 export const dynamic = "force-dynamic";
 
