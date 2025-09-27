@@ -5,7 +5,7 @@ import { rootLogger } from "@/lib/logging";
 import { ServerActionResult } from "@/lib/serverAction";
 import { detectInputLanguage } from "@/lib/textUtils";
 import { generateToken } from "@/lib/utils";
-import { uploadToS3 } from "@/lib/attachments/s3";
+import { uploadToS3, s3SignedUrl } from "@/lib/attachments/s3";
 import { Analyst, AnalystPodcast } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
@@ -24,6 +24,44 @@ import { z } from "zod";
 import { podcastScriptSystem } from "./prompt";
 // Import Locale type for proper typing
 import { Locale } from "next-intl";
+
+// Helper function to convert podcast objectUrl to signed HTTP URL
+export async function podcastObjectUrlToHttpUrl(podcast: AnalystPodcast): Promise<string | null> {
+  if (!podcast.objectUrl) {
+    return null;
+  }
+
+  const { id, objectUrl } = podcast;
+  let extra = podcast.extra as Record<string, any>;
+  let url: string;
+
+  if (
+    extra?.s3SignedUrl &&
+    extra?.s3SignedUrlExpiresAt &&
+    extra.s3SignedUrlExpiresAt > Date.now() + 60 * 60 * 1000
+  ) {
+    // s3SignedUrl exists and expires in the next hour
+    url = extra.s3SignedUrl;
+  } else {
+    const signingDate = new Date();
+    const expiresIn = 7 * 24 * 3600; // in seconds
+    url = await s3SignedUrl(objectUrl, { signingDate, expiresIn });
+    extra = {
+      ...extra,
+      s3SignedUrl: url,
+      s3SignedUrlExpiresAt: signingDate.valueOf() + expiresIn * 1000,
+    };
+    waitUntil(
+      new Promise((resolve) => {
+        prisma.analystPodcast
+          .update({ where: { id }, data: { extra } })
+          .finally(() => resolve(null));
+      }),
+    );
+  }
+
+  return url;
+}
 
 // Types
 export interface PodcastGenerationParams {
@@ -85,7 +123,7 @@ export async function fetchPodcastsForAnalyst(
 ): Promise<
   (Pick<
     AnalystPodcast,
-    "id" | "token" | "analystId" | "script" | "podcastUrl" | "generatedAt" | "createdAt" | "updatedAt"
+    "id" | "token" | "analystId" | "script" | "objectUrl" | "generatedAt" | "createdAt" | "updatedAt"
   > & { analyst: Analyst })[]
 > {
   // Verify ownership
@@ -106,7 +144,7 @@ export async function fetchPodcastsForAnalyst(
       analystId: true,
       analyst: true,
       script: true,
-      podcastUrl: true,
+      objectUrl: true,
       generatedAt: true,
       createdAt: true,
       updatedAt: true,
@@ -610,14 +648,11 @@ export async function generatePodcastAudio(params: PodcastAudioGenerationParams)
       mimeType: "audio/mpeg",
     });
 
-    // Use signed URL for audio playback and download
-    const finalUrl = getObjectUrl;
-
-    // Update database with final URL
+    // Update database with objectUrl (not signed URL)
     await prisma.analystPodcast.update({
       where: { id: podcastId },
       data: {
-        podcastUrl: finalUrl,
+        objectUrl: objectUrl,
         generatedAt: new Date(),
       },
     });

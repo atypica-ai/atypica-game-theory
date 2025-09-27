@@ -192,7 +192,7 @@ model AnalystPodcast {
   analyst     Analyst   @relation(fields: [analystId], references: [id])
   instruction String    @db.Text
   script      String    @db.Text
-  podcastUrl  String?   @db.VarChar(500)
+  objectUrl   String?   @db.VarChar(255)
   generatedAt DateTime? @db.Timestamptz(6)
   extra       Json      @default("{}")
 

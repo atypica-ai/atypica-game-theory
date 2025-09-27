@@ -10,7 +10,7 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useCallback, useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
-import { backgroundGeneratePodcast, backgroundGeneratePodcastAudio, fetchAnalystPodcasts } from "@/app/(podcast)/actions";
+import { backgroundGeneratePodcast, backgroundGeneratePodcastAudio, fetchAnalystPodcasts, getPodcastSignedUrl } from "@/app/(podcast)/actions";
 
 type AnalystPodcast = ExtractServerActionData<typeof fetchAnalystPodcasts>[number];
 
@@ -33,6 +33,7 @@ export function AnalystPodcastsSection({
   const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(null);
   const [isPolling, setIsPolling] = useState(false);
   const [podcasts, setPodcasts] = useState<AnalystPodcast[]>(initialPodcasts);
+  const [downloadUrls, setDownloadUrls] = useState<Record<string, string>>({});
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const openPromptDialog = useCallback(() => {
@@ -71,7 +72,7 @@ export function AnalystPodcastsSection({
     }
   }, []);
 
-  const playAudio = useCallback((podcastUrl: string, podcastToken: string) => {
+  const playAudio = useCallback(async (podcastToken: string) => {
     if (playingAudio === podcastToken) {
       // Stop current audio
       if (audioRef.current) {
@@ -82,31 +83,62 @@ export function AnalystPodcastsSection({
       return;
     }
 
-    // Stop any currently playing audio
-    if (audioRef.current) {
-      audioRef.current.pause();
+    try {
+      // Get signed URL for the podcast
+      const result = await getPodcastSignedUrl({ podcastToken });
+      if (!result.success || !result.data) {
+        toast.error('Failed to get audio URL');
+        return;
+      }
+
+      // Stop any currently playing audio
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+
+      // Create new audio element
+      const audio = new Audio(result.data);
+      audioRef.current = audio;
+
+      audio.addEventListener('ended', () => {
+        setPlayingAudio(null);
+      });
+
+      audio.addEventListener('error', () => {
+        toast.error('Failed to play audio');
+        setPlayingAudio(null);
+      });
+
+      audio.play().then(() => {
+        setPlayingAudio(podcastToken);
+      }).catch(() => {
+        toast.error('Failed to play audio');
+        setPlayingAudio(null);
+      });
+    } catch (error) {
+      toast.error('Failed to play audio');
+      console.error('Play audio error:', error);
+    }
+  }, [playingAudio]);
+
+  const getDownloadUrl = useCallback(async (podcastToken: string) => {
+    // Return cached URL if available
+    if (downloadUrls[podcastToken]) {
+      return downloadUrls[podcastToken];
     }
 
-    // Create new audio element
-    const audio = new Audio(podcastUrl);
-    audioRef.current = audio;
-    
-    audio.addEventListener('ended', () => {
-      setPlayingAudio(null);
-    });
-
-    audio.addEventListener('error', () => {
-      toast.error('Failed to play audio');
-      setPlayingAudio(null);
-    });
-
-    audio.play().then(() => {
-      setPlayingAudio(podcastToken);
-    }).catch(() => {
-      toast.error('Failed to play audio');
-      setPlayingAudio(null);
-    });
-  }, [playingAudio]);
+    try {
+      const result = await getPodcastSignedUrl({ podcastToken });
+      if (result.success && result.data) {
+        setDownloadUrls(prev => ({ ...prev, [podcastToken]: result.data! }));
+        return result.data;
+      }
+      return null;
+    } catch (error) {
+      console.error('Get download URL error:', error);
+      return null;
+    }
+  }, [downloadUrls]);
 
   const stopAudio = useCallback(() => {
     if (audioRef.current) {
@@ -129,7 +161,7 @@ export function AnalystPodcastsSection({
         const updatedPodcasts = await fetchAnalystPodcasts({ analystId: analyst.id });
         if (updatedPodcasts.success) {
           const generatingPodcast = updatedPodcasts.data.find(p => p.token === generatingAudio);
-          if (generatingPodcast?.podcastUrl && generatingPodcast?.generatedAt) {
+          if (generatingPodcast?.objectUrl && generatingPodcast?.generatedAt) {
             toast.success('Audio generation completed!');
             setGeneratingAudio(null);
             setIsPolling(false);
@@ -157,7 +189,7 @@ export function AnalystPodcastsSection({
     // Check if any podcast we think is generating already has audio
     if (generatingAudio) {
       const podcast = initialPodcasts.find(p => p.token === generatingAudio);
-      if (podcast?.podcastUrl && podcast?.generatedAt) {
+      if (podcast?.objectUrl && podcast?.generatedAt) {
         setGeneratingAudio(null);
         setIsPolling(false);
       }
@@ -196,13 +228,13 @@ export function AnalystPodcastsSection({
           >
             <div className="block w-full aspect-[2/1] cursor-pointer border border-input rounded-md overflow-hidden transition-all hover:border-primary/50 hover:shadow-sm bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900/20 dark:to-blue-900/20 flex items-center justify-center">
               <div className="flex flex-col items-center justify-center text-center p-4">
-                {podcast.podcastUrl ? (
+                {podcast.objectUrl ? (
                   <Volume2Icon className="size-8 mb-2 text-green-600 dark:text-green-400" />
                 ) : (
                   <PlayIcon className="size-8 mb-2 text-purple-600 dark:text-purple-400" />
                 )}
                 <div className="text-xs font-medium text-purple-800 dark:text-purple-200">
-                  {podcast.podcastUrl ? "Podcast Audio" : "Podcast Script"}
+                  {podcast.objectUrl ? "Podcast Audio" : "Podcast Script"}
                 </div>
               </div>
             </div>
@@ -240,12 +272,12 @@ export function AnalystPodcastsSection({
                     <div className="border-b p-4 bg-muted/30">
                       <div className="flex items-center justify-between gap-4">
                         <div className="flex items-center gap-3">
-                          {isPodcastDialogOpen.podcastUrl ? (
+                          {isPodcastDialogOpen.objectUrl ? (
                             <>
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => playAudio(isPodcastDialogOpen.podcastUrl!, isPodcastDialogOpen.token)}
+                                onClick={() => playAudio(isPodcastDialogOpen.token)}
                                 disabled={generatingAudio === isPodcastDialogOpen.token}
                               >
                                 {playingAudio === isPodcastDialogOpen.token ? (
@@ -260,16 +292,24 @@ export function AnalystPodcastsSection({
                                   </>
                                 )}
                               </Button>
-                              <a
-                                href={isPodcastDialogOpen.podcastUrl}
-                                download={`podcast-${isPodcastDialogOpen.token}.mp3`}
-                                className="inline-flex"
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={async () => {
+                                  const url = await getDownloadUrl(isPodcastDialogOpen.token);
+                                  if (url) {
+                                    const link = document.createElement('a');
+                                    link.href = url;
+                                    link.download = `podcast-${isPodcastDialogOpen.token}.mp3`;
+                                    link.click();
+                                  } else {
+                                    toast.error('Failed to get download URL');
+                                  }
+                                }}
                               >
-                                <Button variant="outline" size="sm">
-                                  <DownloadIcon className="size-4 mr-1" />
-                                  Download
-                                </Button>
-                              </a>
+                                <DownloadIcon className="size-4 mr-1" />
+                                Download
+                              </Button>
                             </>
                           ) : (
                             <Button

@@ -4,12 +4,13 @@ import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
-import { 
-  fetchPodcastsForAnalyst, 
+import {
+  fetchPodcastsForAnalyst,
   generatePodcastScript,
   generatePodcastAudio,
   validatePodcastRequest,
-  PodcastGenerationParams 
+  podcastObjectUrlToHttpUrl,
+  PodcastGenerationParams
 } from "./lib";
 import { AnalystPodcast, Analyst } from "@/prisma/client";
 
@@ -22,7 +23,7 @@ export async function fetchAnalystPodcasts({ analystId }: { analystId: number })
   ServerActionResult<
     (Pick<
       AnalystPodcast,
-      "id" | "token" | "analystId" | "script" | "podcastUrl" | "generatedAt" | "createdAt" | "updatedAt"
+      "id" | "token" | "analystId" | "script" | "objectUrl" | "generatedAt" | "createdAt" | "updatedAt"
     > & { analyst: Analyst })[]
   >
 > {
@@ -99,7 +100,50 @@ export async function backgroundGeneratePodcastAudio(params: { podcastToken: str
       locale,
     });
   });
-} 
+}
+
+// Server action: Get signed URL for podcast audio
+export async function getPodcastSignedUrl({ podcastToken }: { podcastToken: string }): Promise<
+  ServerActionResult<string | null>
+> {
+  return withAuth(async (user) => {
+    try {
+      const podcast = await prisma.analystPodcast.findUnique({
+        where: { token: podcastToken },
+        include: {
+          analyst: true,
+        },
+      });
+
+      if (!podcast) {
+        return {
+          success: false,
+          code: "not_found",
+          message: "Podcast not found.",
+        };
+      }
+
+      if (podcast.analyst.userId !== user.id) {
+        return {
+          success: false,
+          code: "forbidden",
+          message: "You are not authorized to access this resource.",
+        };
+      }
+
+      const signedUrl = await podcastObjectUrlToHttpUrl(podcast);
+      return {
+        success: true,
+        data: signedUrl,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : String(error),
+      };
+    }
+  });
+}
 
 // ========================================
 // BATCH PODCAST GENERATION (NO AUTH - FOR CRON JOBS)

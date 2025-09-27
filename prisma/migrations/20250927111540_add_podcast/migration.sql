@@ -5,7 +5,7 @@ CREATE TABLE "AnalystPodcast" (
     "analystId" INTEGER NOT NULL,
     "instruction" TEXT NOT NULL,
     "script" TEXT NOT NULL,
-    "podcastUrl" VARCHAR(500),
+    "objectUrl" VARCHAR(255),
     "generatedAt" TIMESTAMPTZ(6),
     "extra" JSONB NOT NULL DEFAULT '{}',
     "createdAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
