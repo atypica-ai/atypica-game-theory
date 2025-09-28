@@ -17,11 +17,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { VALID_LOCALES } from "@/i18n/routing";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { useChat } from "@ai-sdk/react";
 import { Message } from "ai";
 import { Info, Shield, UsersIcon } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { Locale, useLocale, useTranslations } from "next-intl";
 import { useEffect, useMemo, useRef } from "react";
 
 export function InterviewSessionChatClient({
@@ -29,10 +30,19 @@ export function InterviewSessionChatClient({
   intervieweeUser,
   userChatToken,
   initialMessages = [],
+  extra: { preferredLanguage },
 }: ExtractServerActionData<typeof fetchInterviewSessionChat> & {
   userChatToken: string;
   initialMessages?: Message[];
 }) {
+  const _locale = useLocale();
+
+  const locale = useMemo(() => {
+    return preferredLanguage && VALID_LOCALES.includes(preferredLanguage as Locale)
+      ? (preferredLanguage as Locale)
+      : _locale;
+  }, [_locale, preferredLanguage]);
+
   const t = useTranslations("InterviewProject.sessionChat");
   const tDetails = useTranslations("InterviewProject.projectDetails");
   const tSessionViewer = useTranslations("InterviewProject.sessionViewer");
@@ -227,6 +237,7 @@ export function InterviewSessionChatClient({
   return (
     <FitToViewport>
       <FocusedInterviewChat
+        locale={locale}
         useChatHelpers={useChatHelpers}
         useChatRef={useChatRef}
         showTimer={false} // Interviews don't need timer pressure

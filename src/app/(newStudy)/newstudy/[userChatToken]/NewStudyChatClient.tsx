@@ -6,7 +6,7 @@ import { UserChat } from "@/prisma/client";
 import { useChat } from "@ai-sdk/react";
 import { Message } from "ai";
 import { motion } from "framer-motion";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useMemo, useRef } from "react";
 import { CountdownRedirect } from "./CountdownRedirect";
 
@@ -18,6 +18,7 @@ export function NewStudyChatClient({
   initialMessages: Message[];
   user: { id: number; email: string };
 }) {
+  const locale = useLocale();
   const t = useTranslations("NewStudyChatPage");
 
   const initialRequestBody = {
@@ -110,6 +111,7 @@ export function NewStudyChatClient({
         useChatHelpers={useChatHelpers}
         useChatRef={useChatRef}
         showTimer={true}
+        locale={locale}
       />
     </FitToViewport>
   );

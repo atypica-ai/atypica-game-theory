@@ -10,12 +10,14 @@ import { fetchInterviewSessionChat } from "@/app/(interviewProject)/actions";
 import { interviewAgentSystemPrompt } from "@/app/(interviewProject)/prompt";
 import { interviewSessionTools } from "@/app/(interviewProject)/tools";
 import { InterviewToolName } from "@/app/(interviewProject)/types";
+import { VALID_LOCALES } from "@/i18n/routing";
 import { rootLogger } from "@/lib/logging";
 import { throwServerActionError } from "@/lib/serverAction";
 import { detectInputLanguage } from "@/lib/textUtils";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import { CoreMessage, generateId, smoothStream, streamText } from "ai";
+import { Locale } from "next-intl";
 import { after, NextResponse } from "next/server";
 
 function setBedrockCache(model: `claude-${string}`, coreMessages: CoreMessage[]) {
@@ -94,7 +96,14 @@ export async function POST(req: Request) {
   });
 
   // 动态检测用户输入的语言
-  const locale = await detectInputLanguage({ text: newMessage.content });
+  const locale = await detectInputLanguage({
+    text: newMessage.content,
+    fallbackLocale:
+      sessionExtra.preferredLanguage &&
+      VALID_LOCALES.includes(sessionExtra.preferredLanguage as Locale)
+        ? (sessionExtra.preferredLanguage as Locale)
+        : undefined,
+  });
   const { coreMessages: _coreMessages, streamingMessage } =
     await prepareMessagesForStreaming(userChatId);
   const coreMessages = setBedrockCache("claude-3-7-sonnet", _coreMessages);

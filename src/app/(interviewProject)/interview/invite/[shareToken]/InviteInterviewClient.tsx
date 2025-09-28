@@ -179,7 +179,9 @@ export function InviteInterviewClient({
                       <GlobeIcon className="h-5 w-5" />
                       {t("selectLanguage")}
                     </DialogTitle>
-                    <DialogDescription>{t("languageDescription")}</DialogDescription>
+                    <DialogDescription className="text-left">
+                      {t("languageDescription")}
+                    </DialogDescription>
                   </DialogHeader>
 
                   <div className="py-4">

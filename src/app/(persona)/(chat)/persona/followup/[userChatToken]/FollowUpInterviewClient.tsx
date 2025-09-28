@@ -5,7 +5,7 @@ import { FitToViewport } from "@/components/layout/FitToViewport";
 import { useChat } from "@ai-sdk/react";
 import { Message } from "ai";
 import { ShieldIcon } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 
 interface FollowUpInterviewClientProps {
@@ -17,6 +17,7 @@ export default function FollowUpInterviewClient({
   userChatToken,
   initialMessages = [],
 }: FollowUpInterviewClientProps) {
+  const locale = useLocale();
   const t = useTranslations("PersonaImport.followUpInterview");
   const [isInterviewComplete, setIsInterviewComplete] = useState(false);
 
@@ -115,6 +116,7 @@ export default function FollowUpInterviewClient({
         useChatHelpers={useChatHelpers}
         useChatRef={useChatRef}
         showTimer={false}
+        locale={locale}
       />
     </FitToViewport>
   );

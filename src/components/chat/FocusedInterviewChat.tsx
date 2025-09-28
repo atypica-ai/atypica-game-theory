@@ -10,7 +10,7 @@ import { useChat } from "@ai-sdk/react";
 import { generateId } from "ai";
 import { AnimatePresence, motion } from "framer-motion";
 import { CheckIcon, Ear, Keyboard, Loader2Icon, Send, XIcon } from "lucide-react";
-import { useLocale, useTranslations } from "next-intl";
+import { Locale, useTranslations } from "next-intl";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 const DEFAULT_TIME_LEFT = 300; // seconds
@@ -43,6 +43,7 @@ const CustomTextarea = React.forwardRef<HTMLTextAreaElement, CustomTextareaProps
 CustomTextarea.displayName = "CustomTextarea";
 
 interface FocusedInterviewChatProps {
+  locale: Locale;
   useChatHelpers: Omit<ReturnType<typeof useChat>, "append" | "reload" | "setMessages">;
   useChatRef: React.RefObject<
     Pick<ReturnType<typeof useChat>, "append" | "reload" | "setMessages">
@@ -53,13 +54,14 @@ interface FocusedInterviewChatProps {
 }
 
 export function FocusedInterviewChat({
+  locale,
   useChatHelpers,
   useChatRef,
   showTimer = true,
   topRightButton,
   className = "",
 }: FocusedInterviewChatProps) {
-  const locale = useLocale();
+  // const locale = useLocale();
   const { isMobile } = useDevice();
   const t = useTranslations("Components.FocusedInterviewChat");
   const tCompliance = useTranslations("AICompliance");
