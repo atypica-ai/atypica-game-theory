@@ -8,6 +8,7 @@ import { StatReporter } from "@/ai/tools/types";
 import { interviewAgentSystemPrompt } from "@/app/(interviewProject)/prompt";
 import { interviewSessionTools } from "@/app/(interviewProject)/tools";
 import { InterviewToolName } from "@/app/(interviewProject)/types";
+import { VALID_LOCALES } from "@/i18n/routing";
 import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage } from "@/lib/textUtils";
 import { InterviewProjectExtra, InterviewSessionExtra } from "@/prisma/client";
@@ -93,8 +94,8 @@ export async function runAutoPersonaInterview({
 
   // 优先使用 persona 的语言，然后通过 project brief 猜测语言
   const locale: Locale =
-    persona.locale === "zh-CN" || persona.locale === "en-US"
-      ? persona.locale
+    persona.locale && VALID_LOCALES.includes(persona.locale as Locale)
+      ? (persona.locale as Locale)
       : await detectInputLanguage({ text: project.brief });
 
   // Set background token to prevent concurrent executions

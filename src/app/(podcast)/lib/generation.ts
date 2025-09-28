@@ -2,6 +2,7 @@ import "server-only";
 
 import { llm, LLMModelName, providerOptions } from "@/ai/provider";
 import { StatReporter } from "@/ai/tools/types";
+import { VALID_LOCALES } from "@/i18n/routing";
 import { fileUrlToDataUrl } from "@/lib/attachments/actions";
 import { uploadToS3 } from "@/lib/attachments/s3";
 import { rootLogger } from "@/lib/logging";
@@ -60,7 +61,7 @@ export async function generatePodcast(params: {
 
   // Setup locale
   const locale: Locale =
-    analyst.locale === "zh-CN" || analyst.locale === "en-US"
+    analyst.locale && VALID_LOCALES.includes(analyst.locale as Locale)
       ? (analyst.locale as Locale)
       : ((await detectInputLanguage({ text: analyst.brief })) as Locale);
 

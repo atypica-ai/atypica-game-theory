@@ -1,10 +1,12 @@
 import "server-only";
 
+import { VALID_LOCALES } from "@/i18n/routing";
 import { s3SignedUrl } from "@/lib/attachments/s3";
 import { detectInputLanguage } from "@/lib/textUtils";
 import type { Analyst, AnalystPodcast, AnalystPodcastExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
+import { Locale } from "next-intl";
 
 // Helper function to convert podcast objectUrl to signed HTTP URL
 export async function podcastObjectUrlToHttpUrl(podcast: Pick<AnalystPodcast, "id" | "objectUrl" | "extra">): Promise<string | null> {
@@ -88,8 +90,8 @@ export async function validatePodcastRequest(
 
   // Detect locale
   const locale =
-    podcast.analyst.locale === "zh-CN" || podcast.analyst.locale === "en-US"
-      ? podcast.analyst.locale
+    podcast.analyst.locale && VALID_LOCALES.includes(podcast.analyst.locale as Locale)
+      ? (podcast.analyst.locale as Locale)
       : await detectInputLanguage({ text: podcast.script });
 
   return { podcast, locale };

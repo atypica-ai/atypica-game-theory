@@ -6,11 +6,11 @@ import publicMessages from "../app/(public)/messages/zh-CN.json";
 import studyMessages from "../app/(study)/messages/zh-CN.json";
 import accountMessages from "../app/account/messages/zh-CN.json";
 import teamMessages from "../app/team/messages/zh-CN.json";
-import { locales } from "./routing";
+import { VALID_LOCALES } from "./routing";
 
 declare module "next-intl" {
   interface AppConfig {
-    Locale: (typeof locales)[number];
+    Locale: (typeof VALID_LOCALES)[number];
     // https://next-intl.dev/docs/workflows/typescript#messages
     Messages: typeof messages &
       typeof authMessages &

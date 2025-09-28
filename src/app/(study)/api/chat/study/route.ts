@@ -1,6 +1,7 @@
 import { persistentAIMessageToDB, prepareMessagesForStreaming } from "@/ai/messageUtils";
 import { clientMessagePayloadSchema } from "@/ai/messageUtilsClient";
 import authOptions from "@/app/(auth)/authOptions";
+import { VALID_LOCALES } from "@/i18n/routing";
 import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage } from "@/lib/textUtils";
 import { UserChatExtra } from "@/prisma/client";
@@ -83,8 +84,8 @@ export async function POST(req: Request) {
   const locale: Locale = await detectInputLanguage({
     text: newMessage.content,
     fallbackLocale:
-      userChat.analyst.locale === "zh-CN" || userChat.analyst.locale === "en-US"
-        ? userChat.analyst.locale
+      userChat.analyst.locale && VALID_LOCALES.includes(userChat.analyst.locale as Locale)
+        ? (userChat.analyst.locale as Locale)
         : undefined,
   });
 

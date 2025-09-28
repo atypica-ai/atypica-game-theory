@@ -4,6 +4,7 @@ import { prepareDBForInterview, runInterview } from "@/ai/tools/experts/intervie
 import { generateCover, generateReport } from "@/ai/tools/experts/report";
 import { StatReporter } from "@/ai/tools/types";
 import { generateReportScreenshot } from "@/app/(study)/artifacts/lib/screenshot";
+import { VALID_LOCALES } from "@/i18n/routing";
 import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
@@ -12,6 +13,7 @@ import { generateToken } from "@/lib/utils";
 import { Analyst, AnalystReport, AnalystReportExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
+import { Locale } from "next-intl";
 import { forbidden } from "next/navigation";
 import { Logger } from "pino";
 
@@ -71,8 +73,8 @@ export async function batchBackgroundInterview({
     const abortController = new AbortController();
     const abortSignal = abortController.signal;
     const locale =
-      analyst.locale === "zh-CN" || analyst.locale === "en-US"
-        ? analyst.locale
+      analyst.locale && VALID_LOCALES.includes(analyst.locale as Locale)
+        ? (analyst.locale as Locale)
         : await detectInputLanguage({ text: analyst.brief });
 
     for (const personaId of personaIds) {
@@ -205,8 +207,8 @@ export async function backgroundGenerateReport({
       reportLog.info(`statReport: ${dimension}=${value} ${JSON.stringify(extra)}`);
     };
     const locale =
-      analyst.locale === "zh-CN" || analyst.locale === "en-US"
-        ? analyst.locale
+      analyst.locale && VALID_LOCALES.includes(analyst.locale as Locale)
+        ? (analyst.locale as Locale)
         : await detectInputLanguage({ text: analyst.brief });
 
     backgroundWait(

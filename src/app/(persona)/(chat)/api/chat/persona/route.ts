@@ -9,10 +9,12 @@ import { llm, providerOptions } from "@/ai/provider";
 import { initGenericUserChatStatReporter } from "@/ai/tools/stats";
 import authOptions from "@/app/(auth)/authOptions";
 import { fetchUserPersonaChatByToken } from "@/app/(persona)/actions";
+import { VALID_LOCALES } from "@/i18n/routing";
 import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage } from "@/lib/textUtils";
 import { generateId, smoothStream, streamText } from "ai";
 import { getServerSession } from "next-auth";
+import { Locale } from "next-intl";
 import { after, NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -76,7 +78,9 @@ export async function POST(req: Request) {
   const locale = await detectInputLanguage({
     text: newMessage.content,
     fallbackLocale:
-      persona.locale === "zh-CN" || persona.locale === "en-US" ? persona.locale : undefined,
+      persona.locale && VALID_LOCALES.includes(persona.locale as Locale)
+        ? (persona.locale as Locale)
+        : undefined,
   });
 
   const { coreMessages, streamingMessage } = await prepareMessagesForStreaming(userChat.id);

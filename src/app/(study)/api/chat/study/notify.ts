@@ -1,8 +1,10 @@
 import { sendReportCompletionEmail } from "@/email/reportCompletion";
 import { sendStudyInterruptionEmail } from "@/email/studyInterruption";
+import { VALID_LOCALES } from "@/i18n/routing";
 import { getRequestOrigin } from "@/lib/request/headers";
 import { truncateForTitle } from "@/lib/textUtils";
 import { prisma } from "@/prisma/prisma";
+import { Locale } from "next-intl";
 import { getLocale } from "next-intl/server";
 import { Logger } from "pino";
 
@@ -52,8 +54,8 @@ export async function notifyReportCompletion({
     return;
   }
   const locale =
-    report.analyst.locale === "zh-CN" || report.analyst.locale === "en-US"
-      ? report.analyst.locale
+    report.analyst.locale && VALID_LOCALES.includes(report.analyst.locale as Locale)
+      ? (report.analyst.locale as Locale)
       : await getLocale();
   await sendReportCompletionEmail({
     email: studyUserChat.user.email,
@@ -106,8 +108,8 @@ export async function _notifyStudyInterruption({
     return;
   }
   const locale =
-    studyUserChat.analyst?.locale === "zh-CN" || studyUserChat.analyst?.locale === "en-US"
-      ? studyUserChat.analyst.locale
+    studyUserChat.analyst?.locale && VALID_LOCALES.includes(studyUserChat.analyst.locale as Locale)
+      ? (studyUserChat.analyst.locale as Locale)
       : await getLocale();
   await sendStudyInterruptionEmail({
     email: studyUserChat.user.email,
