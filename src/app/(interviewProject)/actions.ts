@@ -1,4 +1,5 @@
 "use server";
+import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { createUserChat } from "@/lib/userChat/lib";
@@ -98,7 +99,7 @@ export async function createInterviewProject(
     // Start question optimization in background
     waitUntil(
       processInterviewQuestionOptimization(project.id).catch((error) => {
-        console.error("Question optimization failed:", error);
+        rootLogger.error({ msg: "Question optimization failed:", error: (error as Error).message });
       }),
     );
 
@@ -141,7 +142,7 @@ export async function updateInterviewProject(
     // Start question optimization in background after brief update
     waitUntil(
       processInterviewQuestionOptimization(projectId).catch((error) => {
-        console.error("Question optimization failed:", error);
+        rootLogger.error({ msg: "Question optimization failed:", error: (error as Error).message });
       }),
     );
 
@@ -177,7 +178,7 @@ export async function optimizeInterviewQuestions(
     // Start question optimization in background
     waitUntil(
       processInterviewQuestionOptimization(projectId).catch((error) => {
-        console.error("Question optimization failed:", error);
+        rootLogger.error({ msg: "Question optimization failed:", error: (error as Error).message });
       }),
     );
 

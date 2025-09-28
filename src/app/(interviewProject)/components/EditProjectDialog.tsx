@@ -1,4 +1,4 @@
-import { createInterviewProject } from "@/app/(interviewProject)/actions";
+import { createInterviewProject, updateInterviewProject } from "@/app/(interviewProject)/actions";
 import { createInterviewProjectSchema } from "@/app/(interviewProject)/types";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,31 +14,77 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-interface CreateProjectDialogProps {
+interface EditProjectDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onProjectCreated: (project: { token: string }) => void;
+  onProjectCreated?: (project: { token: string }) => void;
+  onProjectUpdated?: () => void;
+  mode: "create" | "edit";
+  projectId?: number;
+  initialBrief?: string;
 }
 
-export function CreateProjectDialog({
+// Helper function to split brief and questions
+function splitBriefAndQuestions(text: string): { brief: string; questions: string } {
+  // Look for the "## Interview Questions" section (matches the combine format)
+  const questionsSectionMarker = "\n\n## Interview Questions\n\n";
+  const questionsSectionIndex = text.indexOf(questionsSectionMarker);
+
+  if (questionsSectionIndex !== -1) {
+    const briefPart = text.substring(0, questionsSectionIndex).trim();
+    const questionsPart = text.substring(questionsSectionIndex + questionsSectionMarker.length).trim();
+    return {
+      brief: briefPart,
+      questions: questionsPart,
+    };
+  }
+
+  return {
+    brief: text.trim(),
+    questions: "",
+  };
+}
+
+export function EditProjectDialog({
   open,
   onOpenChange,
   onProjectCreated,
-}: CreateProjectDialogProps) {
+  onProjectUpdated,
+  mode,
+  projectId,
+  initialBrief = "",
+}: EditProjectDialogProps) {
   const t = useTranslations("InterviewProject.createProjectDialog");
   const [brief, setBrief] = useState("");
   const [questions, setQuestions] = useState("");
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
 
+  // Initialize form data when dialog opens or mode changes
+  useEffect(() => {
+    if (open) {
+      if (mode === "edit" && initialBrief) {
+        const { brief: splitBrief, questions: splitQuestions } = splitBriefAndQuestions(initialBrief);
+        setBrief(splitBrief);
+        setQuestions(splitQuestions);
+      } else {
+        setBrief("");
+        setQuestions("");
+      }
+      setErrors([]);
+    }
+  }, [open, mode, initialBrief]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     // Combine brief and questions
     const combinedBrief =
       brief.trim() + (questions.trim() ? `\n\n## Interview Questions\n\n${questions.trim()}` : "");
+
     // Validate input
     const validationResult = createInterviewProjectSchema.safeParse({ brief: combinedBrief });
     if (!validationResult.success) {
@@ -46,19 +92,30 @@ export function CreateProjectDialog({
       setErrors(fieldErrors);
       return;
     }
+
     setLoading(true);
     setErrors([]);
+
     try {
-      const result = await createInterviewProject({ brief: combinedBrief });
-      if (!result.success) throw result;
-      toast.success(t("success"));
-      setBrief("");
-      setQuestions("");
-      onOpenChange(false);
-      onProjectCreated({ token: result.data.token });
+      if (mode === "create") {
+        const result = await createInterviewProject({ brief: combinedBrief });
+        if (!result.success) throw result;
+        toast.success(t("success"));
+        setBrief("");
+        setQuestions("");
+        onOpenChange(false);
+        onProjectCreated?.({ token: result.data.token });
+      } else if (mode === "edit" && projectId) {
+        const result = await updateInterviewProject(projectId, { brief: combinedBrief });
+        if (!result.success) throw result;
+        toast.success(t("updateSuccess"));
+        onOpenChange(false);
+        onProjectUpdated?.();
+      }
     } catch (error) {
-      toast.error((error as Error).message || t("error"));
-      setErrors([(error as Error).message || t("error")]);
+      const errorMessage = (error as Error).message || t("error");
+      toast.error(errorMessage);
+      setErrors([errorMessage]);
     } finally {
       setLoading(false);
     }
@@ -78,14 +135,19 @@ export function CreateProjectDialog({
   const totalCharacterCount = brief.length + questions.length;
   const maxLength = 2000;
   const isOverLimit = totalCharacterCount > maxLength;
+  const isFormValid = brief.trim() && !isOverLimit;
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="max-sm:p-4 sm:max-w-[600px] max-h-screen overflow-y-scroll">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>{t("title")}</DialogTitle>
-            <DialogDescription>{t("description")}</DialogDescription>
+            <DialogTitle>
+              {mode === "create" ? t("title") : t("editTitle")}
+            </DialogTitle>
+            <DialogDescription>
+              {mode === "create" ? t("description") : t("editDescription")}
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
@@ -95,7 +157,7 @@ export function CreateProjectDialog({
                 placeholder={t("briefPlaceholder")}
                 value={brief}
                 onChange={(e) => setBrief(e.target.value)}
-                className="min-h-[100px] resize-none"
+                className="h-40 resize-none"
                 disabled={loading}
               />
             </div>
@@ -106,7 +168,7 @@ export function CreateProjectDialog({
                 placeholder={t("questionsPlaceholder")}
                 value={questions}
                 onChange={(e) => setQuestions(e.target.value)}
-                className="min-h-[100px] resize-none"
+                className="h-40 resize-none"
                 disabled={loading}
               />
             </div>
@@ -134,9 +196,12 @@ export function CreateProjectDialog({
             >
               {t("cancel")}
             </Button>
-            <Button type="submit" disabled={loading || !brief.trim() || isOverLimit}>
+            <Button type="submit" disabled={loading || !isFormValid}>
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {loading ? t("creating") : t("create")}
+              {loading
+                ? (mode === "create" ? t("creating") : t("updating"))
+                : (mode === "create" ? t("create") : t("update"))
+              }
             </Button>
           </DialogFooter>
         </form>

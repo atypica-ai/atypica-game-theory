@@ -27,13 +27,17 @@
     "createProjectDialog": {
       "title": "Create Interview Project",
       "description": "Create a new interview project with a detailed research brief and predefined questions.",
+      "editTitle": "Edit Interview Project",
+      "editDescription": "Update your interview project details",
       "projectBrief": "Project Brief",
       "briefPlaceholder": "Describe your research objectives and target audience...",
       "predefinedQuestions": "Predefined Questions",
       "questionsPlaceholder": "Enter interview questions you want to ask...",
       "create": "Create Project",
+      "update": "Update",
       "cancel": "Cancel",
       "creating": "Creating...",
+      "updating": "Updating...",
       "maxCharacters": "characters",
       "validation": {
         "briefRequired": "Project brief is required",
@@ -41,6 +45,7 @@
         "briefTooLong": "Brief must be less than 2000 characters"
       },
       "success": "Project created successfully",
+      "updateSuccess": "Project updated successfully",
       "error": "Failed to create project"
     },
     "projectsList": {
@@ -92,7 +97,10 @@
       "optimizedQuestionsDescription": "Generated interview questions based on the project brief",
       "optimizationReason": "Optimization Reasoning",
       "reoptimizeQuestions": "Re-optimize Questions",
-      "reoptimizeQuestionsDescription": "Regenerate optimized interview questions based on the current project brief"
+      "reoptimizeQuestionsDescription": "Regenerate optimized interview questions based on the current project brief",
+      "editProject": "Edit",
+      "showMore": "Show More",
+      "showLess": "Show Less"
     },
     "ShareInterviewProjectButton": {
       "shareProject": "Share",

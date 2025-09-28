@@ -27,7 +27,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { CreateProjectDialog } from "./CreateProjectDialog";
+import { EditProjectDialog } from "@/app/(interviewProject)/components/EditProjectDialog";
 
 export function InterviewProjectsClient({ isCreateEnabled }: { isCreateEnabled: boolean }) {
   const locale = useLocale();
@@ -186,10 +186,11 @@ export function InterviewProjectsClient({ isCreateEnabled }: { isCreateEnabled: 
           </div>
         )}
 
-        <CreateProjectDialog
+        <EditProjectDialog
           open={createDialogOpen}
           onOpenChange={setCreateDialogOpen}
           onProjectCreated={handleProjectCreated}
+          mode="create"
         />
       </div>
     </div>

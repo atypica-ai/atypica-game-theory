@@ -27,13 +27,17 @@
     "createProjectDialog": {
       "title": "创建访谈项目",
       "description": "创建一个新的访谈项目，包含详细的研究简介和预设问题。",
+      "editTitle": "编辑访谈项目",
+      "editDescription": "更新您的访谈项目详情",
       "projectBrief": "项目简介",
       "briefPlaceholder": "描述您的研究目标和目标受众...",
       "predefinedQuestions": "预设问题",
       "questionsPlaceholder": "输入您想要询问的访谈问题...",
       "create": "创建项目",
+      "update": "更新",
       "cancel": "取消",
       "creating": "创建中...",
+      "updating": "更新中...",
       "maxCharacters": "字符",
       "validation": {
         "briefRequired": "项目简介为必填项",
@@ -41,6 +45,7 @@
         "briefTooLong": "简介不能超过2000个字符"
       },
       "success": "项目创建成功",
+      "updateSuccess": "项目更新成功",
       "error": "创建项目失败"
     },
     "projectsList": {
@@ -92,7 +97,10 @@
       "optimizedQuestionsDescription": "基于项目简介生成的优化访谈问题",
       "optimizationReason": "优化原因",
       "reoptimizeQuestions": "重新优化问题",
-      "reoptimizeQuestionsDescription": "基于当前项目简介重新生成优化的访谈问题"
+      "reoptimizeQuestionsDescription": "基于当前项目简介重新生成优化的访谈问题",
+      "editProject": "编辑",
+      "showMore": "显示更多",
+      "showLess": "收起"
     },
     "ShareInterviewProjectButton": {
       "shareProject": "分享",

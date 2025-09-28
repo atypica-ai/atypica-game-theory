@@ -3,6 +3,7 @@ import {
   createPersonaInterviewSession,
   optimizeInterviewQuestions,
 } from "@/app/(interviewProject)/actions";
+import { EditProjectDialog } from "@/app/(interviewProject)/components/EditProjectDialog";
 import { SelectPersonaDialog } from "@/components/SelectPersonaDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,6 +12,9 @@ import { formatDate } from "@/lib/utils";
 import { InterviewProjectExtra } from "@/prisma/client";
 import {
   BotIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+  EditIcon,
   InfoIcon,
   Loader2Icon,
   MessageSquareIcon,
@@ -45,6 +49,8 @@ export function ProjectDetails({
   const router = useRouter();
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [personaDialogOpen, setPersonaDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [briefExpanded, setBriefExpanded] = useState(false);
   const [, setCreatingPersonaSessions] = useState(false);
   const [optimizing, setOptimizing] = useState(false);
 
@@ -92,6 +98,19 @@ export function ProjectDetails({
     }
   }, [project.id, t]);
 
+  const handleProjectUpdated = useCallback(() => {
+    // Refresh the page to show updated data
+    router.refresh();
+  }, [router]);
+
+  // Check if brief text is long (roughly estimate if it would exceed 10 lines)
+  const isBriefLong = project.brief.length > 600 || project.brief.split("\n").length > 10;
+
+  // Format brief for display - replace markdown headers with emojis
+  const formatBriefForDisplay = (text: string) => {
+    return text.replace(/\n*## Interview Questions\n*/g, "\n\n💬\n");
+  };
+
   return (
     <div className="space-y-6 my-6 container max-w-6xl mx-auto">
       {/* Header */}
@@ -128,22 +147,54 @@ export function ProjectDetails({
               {t("projectBrief")}
             </div>
             {!readOnly && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleReoptimizeQuestions}
-                disabled={optimizing || project.extra?.processing}
-              >
-                <SparklesIcon className="h-3 w-3 mr-1" />
-                {t("reoptimizeQuestions")}
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" size="sm" onClick={() => setEditDialogOpen(true)}>
+                  <EditIcon className="h-3 w-3 mr-1" />
+                  {t("editProject")}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleReoptimizeQuestions}
+                  disabled={optimizing || project.extra?.processing}
+                >
+                  <SparklesIcon className="h-3 w-3 mr-1" />
+                  {t("reoptimizeQuestions")}
+                </Button>
+              </div>
             )}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="whitespace-pre-wrap leading-relaxed text-sm max-h-64 overflow-scroll scrollbar-thin">
-            {project.brief}
-          </p>
+          <div className="space-y-3">
+            <p
+              className={`whitespace-pre-wrap leading-relaxed text-sm ${
+                !briefExpanded && isBriefLong ? "line-clamp-10" : ""
+              }`}
+            >
+              {formatBriefForDisplay(project.brief)}
+            </p>
+            {isBriefLong && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setBriefExpanded(!briefExpanded)}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                {briefExpanded ? (
+                  <>
+                    <ChevronUpIcon className="h-4 w-4 mr-1" />
+                    {t("showLess")}
+                  </>
+                ) : (
+                  <>
+                    <ChevronDownIcon className="h-4 w-4 mr-1" />
+                    {t("showMore")}
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
         </CardContent>
       </Card>
 
@@ -225,6 +276,17 @@ export function ProjectDetails({
           open={personaDialogOpen}
           onOpenChange={setPersonaDialogOpen}
           onSelect={onSelectPersonas}
+        />
+      )}
+
+      {!readOnly && (
+        <EditProjectDialog
+          open={editDialogOpen}
+          onOpenChange={setEditDialogOpen}
+          onProjectUpdated={handleProjectUpdated}
+          mode="edit"
+          projectId={project.id}
+          initialBrief={project.brief}
         />
       )}
     </div>
