@@ -3,9 +3,19 @@ import { createHumanInterviewSession } from "@/app/(interviewProject)/actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { motion } from "framer-motion";
-import { ArrowRight, CheckCircle, MessageSquare, Shield, Users } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { ArrowRight, CheckCircle, GlobeIcon, MessageSquare, Shield, Users } from "lucide-react";
+import { Locale, useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -28,14 +38,17 @@ export function InviteInterviewClient({
 }) {
   const t = useTranslations("InterviewProject.shareInvite");
   const router = useRouter();
+  const locale = useLocale();
   const [loading, setLoading] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState<Locale>(locale);
 
-  const handleStartInterview = async () => {
+  const handleLanguageConfirm = async () => {
     setLoading(true);
+
     try {
       const result = await createHumanInterviewSession({
-        // projectId: projectInfo.projectId,
         shareToken,
+        preferredLanguage: selectedLanguage,
       });
       if (!result.success) throw result;
       router.push(`/interview/session/chat/${result.data.chatToken}`);
@@ -153,21 +166,55 @@ export function InviteInterviewClient({
                   <span className="text-sm font-medium">{user?.name || user?.email}</span>
                 </div>
               </div>
-              <Button
-                onClick={handleStartInterview}
-                disabled={loading}
-                size="lg"
-                className="w-full sm:w-auto"
-              >
-                {loading ? (
-                  t("startingInterview")
-                ) : (
-                  <>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button disabled={loading} size="lg" className="w-full sm:w-auto">
                     {t("startInterview")}
                     <ArrowRight className="h-4 w-4" />
-                  </>
-                )}
-              </Button>
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2">
+                      <GlobeIcon className="h-5 w-5" />
+                      {t("selectLanguage")}
+                    </DialogTitle>
+                    <DialogDescription>{t("languageDescription")}</DialogDescription>
+                  </DialogHeader>
+
+                  <div className="py-4">
+                    <RadioGroup
+                      value={selectedLanguage}
+                      onValueChange={(language: Locale) => setSelectedLanguage(language)}
+                    >
+                      <label
+                        htmlFor="zh-CN"
+                        className="flex items-center space-x-3 p-3 rounded-lg border cursor-pointer hover:bg-muted/50 transition-colors"
+                      >
+                        <RadioGroupItem value="zh-CN" id="zh-CN" />
+                        <span className="text-sm font-medium">中文</span>
+                      </label>
+                      <label
+                        htmlFor="en-US"
+                        className="flex items-center space-x-3 p-3 rounded-lg border cursor-pointer hover:bg-muted/50 transition-colors"
+                      >
+                        <RadioGroupItem value="en-US" id="en-US" />
+                        <span className="text-sm font-medium">English</span>
+                      </label>
+                    </RadioGroup>
+                  </div>
+
+                  <DialogFooter>
+                    <Button
+                      onClick={handleLanguageConfirm}
+                      disabled={loading || !selectedLanguage}
+                      className="w-full"
+                    >
+                      {loading ? t("startingInterview") : t("confirm")}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
 
               <p className="text-xs text-muted-foreground mt-3">{t("agreementText")}</p>
             </>

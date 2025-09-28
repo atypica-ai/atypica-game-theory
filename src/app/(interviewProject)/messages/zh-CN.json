@@ -144,7 +144,10 @@
       "humanInterview": "真人",
       "loginDescription": "请登录以参与此次访谈",
       "loginButton": "登录参与",
-      "invalidToken": "分享链接无效或已过期"
+      "invalidToken": "分享链接无效或已过期",
+      "selectLanguage": "选择语言",
+      "languageDescription": "选择您在访谈中的首选语言",
+      "confirm": "确认"
     },
     "sessionChat": {
       "interviewDetails": "访谈会话聊天",

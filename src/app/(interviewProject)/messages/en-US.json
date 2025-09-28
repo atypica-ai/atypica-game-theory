@@ -144,7 +144,10 @@
       "humanInterview": "Human",
       "loginDescription": "Please log in to participate in this interview",
       "loginButton": "Login to Participate",
-      "invalidToken": "Invalid or expired share link"
+      "invalidToken": "Invalid or expired share link",
+      "selectLanguage": "Select Language",
+      "languageDescription": "Choose your preferred language for the interview",
+      "confirm": "Confirm"
     },
     "sessionChat": {
       "interviewDetails": "Interview Session Chat",

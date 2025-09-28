@@ -103,6 +103,7 @@ declare module "@/prisma/client" {
     ongoing: boolean; // 是否正在进行中
     startsAt: number; // 开始时间戳（首次消息时设置）
     pdfObjectUrl: string; // PDF文件的S3对象URL
+    preferredLanguage: string; // 用户偏好的访谈语言
   }>;
 
   export type InterviewReportExtra = Partial<{
@@ -118,11 +119,13 @@ declare module "@/prisma/client" {
     s3SignedUrlExpiresAt: number; // timestamp millis
 
     // 处理状态 - 参考 PersonaImportExtra 的详细模式
-    processing: {
-      startsAt: number; // timestamp, typeof Date.now()
-      scriptGeneration: boolean; // 脚本生成是否完成
-      audioGeneration: boolean;  // 音频生成是否完成
-    } | false; // false 表示未开始或已完成
+    processing:
+      | {
+          startsAt: number; // timestamp, typeof Date.now()
+          scriptGeneration: boolean; // 脚本生成是否完成
+          audioGeneration: boolean; // 音频生成是否完成
+        }
+      | false; // false 表示未开始或已完成
 
     // 错误信息 - 保持与其他 extra 一致
     error: string;

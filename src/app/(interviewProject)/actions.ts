@@ -14,6 +14,7 @@ import {
 } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
+import { Locale } from "next-intl";
 import { notFound } from "next/navigation";
 import { runAutoPersonaInterview } from "./(session)/api/chat/interview-agent/auto-persona";
 import { generateInterviewReportContent } from "./artifacts/generateReport";
@@ -445,9 +446,11 @@ export async function createPersonaInterviewSession({
 export async function createHumanInterviewSession({
   // projectId,
   shareToken,
+  preferredLanguage,
 }: {
   // projectId: number;
   shareToken: string;
+  preferredLanguage: Locale;
 }): Promise<ServerActionResult<{ sessionId: number; chatToken: string }>> {
   return withAuth(async (user) => {
     const tokenValidation = await validateInterviewShareToken(shareToken);
@@ -465,11 +468,25 @@ export async function createHumanInterviewSession({
       select: {
         id: true,
         userChat: { select: { id: true, token: true } },
+        extra: true,
       },
       orderBy: { createdAt: "desc" },
     });
 
     if (existingSession?.userChat) {
+      if (
+        (existingSession.extra as InterviewSessionExtra)?.preferredLanguage !== preferredLanguage
+      ) {
+        await prisma.interviewSession.update({
+          where: { id: existingSession.id },
+          data: {
+            extra: {
+              ...(existingSession.extra as InterviewSessionExtra),
+              preferredLanguage,
+            },
+          },
+        });
+      }
       return {
         success: true,
         data: {
@@ -490,6 +507,7 @@ export async function createHumanInterviewSession({
         projectId,
         intervieweeUserId: user.id,
         userChatId: userChat.id,
+        extra: { preferredLanguage } as InterviewSessionExtra,
       },
     });
 
