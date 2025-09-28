@@ -3,6 +3,7 @@ import { sendStudyInterruptionEmail } from "@/email/studyInterruption";
 import { getRequestOrigin } from "@/lib/request/headers";
 import { truncateForTitle } from "@/lib/textUtils";
 import { prisma } from "@/prisma/prisma";
+import { getLocale } from "next-intl/server";
 import { Logger } from "pino";
 
 export async function notifyReportCompletion({
@@ -21,7 +22,7 @@ export async function notifyReportCompletion({
       },
       select: {
         analyst: {
-          select: { topic: true },
+          select: { topic: true, locale: true },
         },
       },
     }),
@@ -50,6 +51,10 @@ export async function notifyReportCompletion({
     // TODO: team user 没有邮箱，需要取出 personalUser 的 邮箱，目前先跳过
     return;
   }
+  const locale =
+    report.analyst.locale === "zh-CN" || report.analyst.locale === "en-US"
+      ? report.analyst.locale
+      : await getLocale();
   await sendReportCompletionEmail({
     email: studyUserChat.user.email,
     topic: truncateForTitle(report.analyst.topic, {
@@ -57,6 +62,7 @@ export async function notifyReportCompletion({
       suffix: "...",
     }),
     studyUrl: `${siteOrigin}/study/${studyUserChat.token}`,
+    locale,
   });
 }
 
@@ -83,7 +89,7 @@ export async function _notifyStudyInterruption({
         select: { email: true, id: true },
       },
       analyst: {
-        select: { topic: true },
+        select: { topic: true, locale: true },
       },
     },
   });
@@ -99,6 +105,10 @@ export async function _notifyStudyInterruption({
     // TODO: team user 没有邮箱，需要取出 personalUser 的 邮箱，目前先跳过
     return;
   }
+  const locale =
+    studyUserChat.analyst?.locale === "zh-CN" || studyUserChat.analyst?.locale === "en-US"
+      ? studyUserChat.analyst.locale
+      : await getLocale();
   await sendStudyInterruptionEmail({
     email: studyUserChat.user.email,
     topic: truncateForTitle(studyUserChat.analyst?.topic ?? "", {
@@ -106,5 +116,6 @@ export async function _notifyStudyInterruption({
       suffix: "...",
     }),
     studyUrl: `${siteOrigin}/study/${studyUserChat.token}`,
+    locale,
   });
 }

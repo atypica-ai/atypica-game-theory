@@ -4,11 +4,12 @@ import { encryptText } from "@/lib/cipher";
 import { getRequestOrigin } from "@/lib/request/headers";
 import { ServerActionResult } from "@/lib/serverAction";
 import { prisma } from "@/prisma/prisma";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 
 export const sendPasswordResetEmailAction = async (
   email: string,
 ): Promise<ServerActionResult<boolean>> => {
+  const locale = await getLocale();
   const t = await getTranslations("Auth.ForgotPassword");
   email = email.toLowerCase();
 
@@ -41,7 +42,7 @@ export const sendPasswordResetEmailAction = async (
 
   // Send email using the extracted email module
   try {
-    await sendPasswordResetEmail({ email, resetUrl });
+    await sendPasswordResetEmail({ email, resetUrl, locale });
   } catch {
     return {
       success: false,

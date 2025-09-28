@@ -3,6 +3,7 @@ import "server-only";
 import { sendVerificationEmail } from "@/email/verification";
 import { rootLogger } from "@/lib/logging";
 import { prisma } from "@/prisma/prisma";
+import { getLocale } from "next-intl/server";
 
 /**
  * Generates a random 6-digit verification code
@@ -22,10 +23,12 @@ export const sendVerificationCode = async (userEmail: string) => {
     },
   });
 
+  const locale = await getLocale();
   try {
     await sendVerificationEmail({
       email: userEmail,
       verificationCode,
+      locale,
     });
   } catch (error) {
     rootLogger.error(

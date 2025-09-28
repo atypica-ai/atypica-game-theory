@@ -62,50 +62,6 @@
       "viewInterview": "View Interview"
     }
   },
-  "Email": {
-    "PasswordReset": {
-      "subjectLine": "Your atypica.AI Password Reset Link",
-      "resetLinkText": "Click here to reset your password",
-      "expirationNote": "This link will expire in 30 minutes.",
-      "ignoreMessage": "If you didn't request this password reset, please ignore this email.",
-      "emailTitle": "Password Reset Request",
-      "resetInstructions": "We received a request to reset your password. Click the button below to create a new password:",
-      "resetButtonText": "Reset Password",
-      "automatedEmailDisclaimer": "This is an automated email from atypica.AI. Please do not reply to this email."
-    },
-    "Verification": {
-      "subjectLine": "Your atypica.AI Verification Code",
-      "verificationCodeText": "Your verification code is: {code}",
-      "expirationNote": "This code will expire in 30 minutes.",
-      "ignoreMessage": "If you didn't request this code, please ignore this email.",
-      "emailTitle": "Your Verification Code",
-      "useCodeInstructions": "Please use the following code to verify your email address:",
-      "automatedEmailDisclaimer": "This is an automated email from atypica.AI. Please do not reply to this email."
-    },
-    "ReportCompletion": {
-      "subjectLine": "Your atypica.AI Report is Ready",
-      "greeting": "Hello,",
-      "emailTitle": "Study Report Ready",
-      "reportReadyText": "Your study report for \"{topic}\" has been successfully generated and is now available for viewing.",
-      "viewStudyText": "You can access your report by visiting the study",
-      "viewStudyMessage": "Please visit the study to view your report:",
-      "viewStudyButtonText": "View Study",
-      "thanksMessage": "Thank you for using atypica.AI for your study needs. We hope the insights provided are valuable to you.",
-      "automatedEmailDisclaimer": "This is an automated email from atypica.AI. Please do not reply to this email."
-    },
-    "StudyInterruption": {
-      "subjectLine": "Your atypica.AI Study Was Interrupted",
-      "greeting": "Hello,",
-      "emailTitle": "Study Interruption Notification",
-      "interruptionText": "Your study on \"{topic}\" was unexpectedly interrupted. Don't worry, your progress has been saved.",
-      "continueInstructionsText": "You can continue your study by clicking the button below and then typing \"continue\" in the chat box or clicking the Continue button.",
-      "studyLinkText": "Access your study here",
-      "continueButtonText": "View Study",
-      "supportText": "If you encounter any issues, please click the chat icon in the bottom right corner of the study page for assistance.",
-      "thanksMessage": "Thank you for your patience and for using atypica.AI for your study needs.",
-      "automatedEmailDisclaimer": "This is an automated email from atypica.AI. Please do not reply to this email."
-    }
-  },
   "ScoutPage": {
     "title": "Find Target Users",
     "viewPersonas": "View personas found in this search",

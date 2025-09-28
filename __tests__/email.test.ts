@@ -7,10 +7,12 @@ import { loadEnvConfig } from "@next/env";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const FAKE_URL = "https://atypica.ai/fake";
+// const locale = "zh-CN";
+const locale = "en-US";
 
 vi.mock("next-intl/server", () => ({
   getTranslations: vi.fn(async (key: string) => {
-    const messages = (await import(`../messages/zh-CN.json`)).default;
+    const messages = (await import(`../messages/${locale}.json`)).default;
     const keys = key.split(".");
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const subMessages = keys.reduce((acc: any, key: string) => acc[key], messages);
@@ -48,12 +50,14 @@ describe.skip("Email Module Tests", () => {
       await sendPasswordResetEmail({
         email: process.env.EMAIL_TEST_RECEIVER!,
         resetUrl: FAKE_URL,
+        locale,
       });
     });
     it("sendVerificationEmail", async () => {
       await sendVerificationEmail({
         email: process.env.EMAIL_TEST_RECEIVER!,
         verificationCode: "123456",
+        locale,
       });
     });
     it("sendReportCompletionEmail", async () => {
@@ -61,6 +65,7 @@ describe.skip("Email Module Tests", () => {
         email: process.env.EMAIL_TEST_RECEIVER!,
         topic: "测试研究",
         studyUrl: FAKE_URL,
+        locale,
       });
     });
     it("sendStudyInterruptionEmail", async () => {
@@ -68,6 +73,7 @@ describe.skip("Email Module Tests", () => {
         email: process.env.EMAIL_TEST_RECEIVER!,
         topic: "测试研究",
         studyUrl: FAKE_URL,
+        locale,
       });
     });
   });
