@@ -85,7 +85,7 @@ export function InterviewReportsSection({
             </div>
           ) : (
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between flex-wrap gap-4">
                 <div>
                   <h3 className="text-lg font-medium flex items-center">
                     <FileTextIcon className="h-5 w-5 mr-2" />

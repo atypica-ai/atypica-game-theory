@@ -157,9 +157,9 @@ export function InterviewSessionsSection({
               return (
                 <div
                   key={session.id}
-                  className="flex items-center justify-between flex-wrap p-4 border rounded-lg hover:bg-muted transition-colors"
+                  className="flex items-center justify-between flex-wrap gap-4 p-4 border rounded-lg hover:bg-muted transition-colors"
                 >
-                  <div className="flex items-center space-x-3">
+                  <div className="max-sm:space-y-3 sm:flex sm:items-center sm:gap-3">
                     {session.intervieweePersona ? (
                       <Badge variant="secondary" className="text-xs w-20 flex-shrink-0">
                         <BotIcon className="h-3 w-3 mr-1" />
@@ -173,29 +173,30 @@ export function InterviewSessionsSection({
                     ) : (
                       <div className="w-20 h-1" />
                     )}
-                    <div className="flex items-center space-x-2">
-                      <div>
-                        <p className="font-medium text-sm">
-                          {session.title
-                            ? `${session.title} (${getSessionDisplayName(session)})`
-                            : getSessionDisplayName(session)}
-                        </p>
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <span className="mr-2">{formatDate(session.createdAt, locale)}</span>
-                          {isCompleted ? (
-                            <CheckCircleIcon className="h-3 w-3 text-green-500" />
-                          ) : (
-                            <ClockIcon className="h-3 w-3 text-amber-500" />
+                    <div className="space-y-2">
+                      <div className="font-medium text-sm">
+                        {session.title
+                          ? `${session.title} (${getSessionDisplayName(session)})`
+                          : getSessionDisplayName(session)}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <div className="text-xs text-muted-foreground mr-2">
+                          {formatDate(session.createdAt, locale)}
+                        </div>
+                        {isCompleted ? (
+                          <CheckCircleIcon className="h-3 w-3 text-green-500" />
+                        ) : (
+                          <ClockIcon className="h-3 w-3 text-amber-500" />
+                        )}
+                        <div
+                          className={cn(
+                            "text-xs",
+                            isCompleted
+                              ? "text-green-600 dark:text-green-400"
+                              : "text-amber-600 dark:text-amber-400",
                           )}
-                          <span
-                            className={cn(
-                              isCompleted
-                                ? "text-green-600 dark:text-green-400"
-                                : "text-amber-600 dark:text-amber-400",
-                            )}
-                          >
-                            {isCompleted ? t("completed") : t("inProgress")}
-                          </span>
+                        >
+                          {isCompleted ? t("completed") : t("inProgress")}
                         </div>
                       </div>
                     </div>

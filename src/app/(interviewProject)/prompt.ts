@@ -412,26 +412,22 @@ export const interviewReportPrologue = ({
 
   return locale === "zh-CN"
     ? `
-请根据以下访谈项目简介和对话记录，生成一份专业的访谈报告：
-
 【访谈项目简介】
 ${projectBrief}
 
 【访谈对话记录】
 ${conversationText}
 
-请按照系统指示的格式和要求，生成一份结构清晰、观点鲜明的访谈报告。
+请直接输出完整HTML代码，从<!DOCTYPE html>开始，不要包含任何解释、前言或markdown标记。
 `
     : `
-Please generate a professional interview report based on the following interview project brief and conversation records:
-
 【Interview Project Brief】
 ${projectBrief}
 
 【Interview Conversation Records】
 ${conversationText}
 
-Please follow the format and requirements specified in the system instructions to generate a well-structured, insightful interview report.
+Please directly output complete HTML code, starting with <!DOCTYPE html>, without any explanations, preface, or markdown formatting.
 `;
 };
 

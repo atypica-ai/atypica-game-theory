@@ -112,20 +112,20 @@ export function ProjectDetails({
   };
 
   return (
-    <div className="space-y-6 my-6 container max-w-6xl mx-auto">
+    <div className="space-y-6 my-6 container max-w-6xl mx-auto px-3 sm:px-6">
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold flex items-center gap-4">
+          <h1 className="text-xl sm:text-3xl font-bold flex items-center gap-4">
             <span>
               {t("title")} #{project.id}
             </span>
             <ShareInterviewProjectButton interviewProject={project} />
           </h1>
-          <p className="text-muted-foreground">{formatDate(project.createdAt, locale)}</p>
+          <p className="text-muted-foreground text-sm">{formatDate(project.createdAt, locale)}</p>
         </div>
         {!readOnly ? (
-          <div className="ml-auto flex items-center space-x-2">
+          <div className="flex items-center gap-4 flex-wrap">
             <Button variant="outline" onClick={() => setInviteDialogOpen(true)}>
               <Share2Icon className="h-4 w-4" />
               {t("interviewHuman")}
@@ -141,13 +141,14 @@ export function ProjectDetails({
       {/* Project Brief */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2 flex-wrap">
             <div className="flex items-center">
               <MessageSquareIcon className="h-5 w-5 mr-2" />
               {t("projectBrief")}
             </div>
             {!readOnly && (
-              <div className="flex items-center gap-2">
+              <>
+                <div className="ml-auto" />
                 <Button variant="ghost" size="sm" onClick={() => setEditDialogOpen(true)}>
                   <EditIcon className="h-3 w-3 mr-1" />
                   {t("editProject")}
@@ -161,7 +162,7 @@ export function ProjectDetails({
                   <SparklesIcon className="h-3 w-3 mr-1" />
                   {t("reoptimizeQuestions")}
                 </Button>
-              </div>
+              </>
             )}
           </CardTitle>
         </CardHeader>

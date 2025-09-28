@@ -10,6 +10,17 @@ import { streamText } from "ai";
 import { interviewReportPrologue, interviewReportSystemPrompt } from "../prompt";
 
 /**
+ * Clean up markdown code blocks that AI models (especially Gemini) often add around HTML content
+ */
+function cleanHtmlFromMarkdown(html: string): string {
+  return html
+    .trim()
+    .replace(/^```html\s*/i, "")
+    .replace(/\s*```\s*$/i, "")
+    .trim();
+}
+
+/**
  * Generate report content (background task)
  */
 export async function generateInterviewReportContent({
@@ -68,7 +79,7 @@ export async function generateInterviewReportContent({
         try {
           await prisma.interviewReport.update({
             where: { id: reportId },
-            data: { onePageHtml },
+            data: { onePageHtml: cleanHtmlFromMarkdown(onePageHtml) },
           });
           logger.info("Interview report HTML persisted successfully");
         } catch (error) {
@@ -136,7 +147,7 @@ export async function generateInterviewReportContent({
 
   await response.consumeStream();
 
-  await throttleSaveHTML(report.id, onePageHtml, { immediate: true });
+  await throttleSaveHTML(report.id, cleanHtmlFromMarkdown(onePageHtml), { immediate: true });
   await prisma.interviewReport.update({
     where: { id: report.id },
     data: { generatedAt: new Date() },
