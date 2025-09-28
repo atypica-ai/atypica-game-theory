@@ -10,6 +10,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { useTheme } from "next-themes";
 import { getPodcastAudioUrl } from "../../actions";
 
 interface PodcastSharePageClientProps {
@@ -28,6 +29,7 @@ export default function PodcastSharePageClient({
   const t = useTranslations("PodcastSharePage");
   const tCompliance = useTranslations("AICompliance");
   const pathname = usePathname();
+  const { theme } = useTheme();
 
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -226,12 +228,11 @@ export default function PodcastSharePageClient({
                         max={duration || 100}
                         value={currentTime}
                         onChange={(e) => seekTo(Number(e.target.value))}
-                        className="w-full h-3 rounded-lg appearance-none cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 touch-manipulation [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-zinc-900 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-lg [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-zinc-900 [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:shadow-lg dark:[&::-webkit-slider-thumb]:bg-zinc-100 dark:[&::-moz-range-thumb]:bg-zinc-100"
+                        className="w-full h-3 rounded-lg appearance-none cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 touch-manipulation bg-gradient-to-r from-zinc-900 to-zinc-900 dark:from-zinc-100 dark:to-zinc-100 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-zinc-900 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-lg [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-zinc-900 [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:shadow-lg dark:[&::-webkit-slider-thumb]:bg-zinc-100 dark:[&::-moz-range-thumb]:bg-zinc-100"
                         style={{
-                          background: `linear-gradient(to right, rgb(24 24 27) 0%, rgb(24 24 27) ${(currentTime / (duration || 100)) * 100}%, rgb(209 213 219) ${(currentTime / (duration || 100)) * 100}%, rgb(209 213 219) 100%)`,
-                          ...(document.documentElement.classList.contains('dark') && {
-                            background: `linear-gradient(to right, rgb(244 244 245) 0%, rgb(244 244 245) ${(currentTime / (duration || 100)) * 100}%, rgb(63 63 70) ${(currentTime / (duration || 100)) * 100}%, rgb(63 63 70) 100%)`,
-                          }),
+                          background: theme === 'dark'
+                            ? `linear-gradient(to right, rgb(244 244 245) 0%, rgb(244 244 245) ${(currentTime / (duration || 100)) * 100}%, rgb(63 63 70) ${(currentTime / (duration || 100)) * 100}%, rgb(63 63 70) 100%)`
+                            : `linear-gradient(to right, rgb(24 24 27) 0%, rgb(24 24 27) ${(currentTime / (duration || 100)) * 100}%, rgb(209 213 219) ${(currentTime / (duration || 100)) * 100}%, rgb(209 213 219) 100%)`
                         }}
                         disabled={isLoading || !audioUrl}
                       />
