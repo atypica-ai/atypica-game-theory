@@ -21,7 +21,7 @@ export const reportHTMLSystemInsights = ({ locale }: { locale: Locale }) =>
 2. 信息收集过程展示
 - 这个部分的目的是给后续分析过程提供信息来源的支撑，否则读者看分析过程会找不到支撑。
 - 数据来源概览：展示关键数据来源和样本规模，增强报告权威性
-- 网络搜索结果：展示关键搜索结果的来源网站、数据时间、权威性说明
+- 网络搜索结果：展示关键搜索结果的数据来源、权威性说明
 - 用户访谈过程：展示访谈样本构成、关键原始回答片段、数据统计方法
 
 3. 研究分析过程详细还原（逻辑主线）
@@ -98,7 +98,7 @@ Based on the user questions, output objectives, research process, online search 
 2. **Information Collection Process Display**
 - The purpose of this section is to provide informational source support for the subsequent analysis process, otherwise readers will lack supporting evidence when viewing the analysis process
 - Data source overview: Display key data sources and sample sizes to enhance report authority
-- Online search results: Show source websites of key search results, data timestamps, and authority explanations
+- Online search results: Show data sources of key search results and authority explanations
 - User interview process: Display interview sample composition, key original response segments, and data statistical methods
 
 3. **Detailed Research Analysis Process Restoration (Logical Main Thread)**

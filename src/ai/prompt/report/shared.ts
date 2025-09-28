@@ -3,10 +3,6 @@ import { Locale } from "next-intl";
 export const sharedTechnicalSpecs = ({ locale }: { locale: Locale }) =>
   locale === "zh-CN"
     ? `
-【技术实现要求】
-- 使用 Tailwind CSS 构建响应式布局
-- 为不同屏幕尺寸优化布局
-
 【核心设计原则】
 - **设计哲学**：追求极致简约，用最少的视觉元素（字体、间距、结构）表达最丰富的信息层次，而非依赖颜色。
 - **专业美学**：报告应体现出高端、专业、可信的美学标准。无论是创意报告的优雅，还是分析报告的严谨，都应保持克制与精致。
@@ -43,22 +39,17 @@ export const sharedTechnicalSpecs = ({ locale }: { locale: Locale }) =>
 - 比例：square/landscape/portrait
 
 【技术实现】
+- 使用 Tailwind CSS 构建响应式布局
+- 为不同屏幕尺寸优化布局
 - 所有样式和内容都应在单一HTML文件内完成
 - 不使用外部图片链接和资源（图片生成API除外）
 - 避免生成无效链接和URL
 - 不使用复杂的CSS图表或可视化
-
-【底部信息】
-- 报告末尾包含："报告由 atypica.AI 提供技术支持"
-- 生成日期
+- 报告正文开篇不要包含日期信息
 
 你的回复应该只包含可直接使用的HTML代码，从<!DOCTYPE html>开始。
 `
     : `
-【Technical Implementation Requirements】
-- Use Tailwind CSS for responsive layouts
-- Optimize layouts for different screen sizes
-
 【Core Design Principles】
 - **Design Philosophy**: Strive for ultimate simplicity, using the fewest visual elements (typography, spacing, structure) to convey the richest information hierarchy, rather than relying on color.
 - **Professional Aesthetics**: Reports must adhere to a high-end, professional, and credible aesthetic standard. Whether it's the elegance of a creative report or the rigor of an analytical one, the design should remain restrained and refined.
@@ -95,14 +86,13 @@ English Prompt Creation Requirements (Professional Text-to-Image Artist Perspect
 - Ratios: square/landscape/portrait
 
 【Technical Implementation】
+- Use Tailwind CSS for responsive layouts
+- Optimize layouts for different screen sizes
 - All styles and content should be contained within a single HTML file
 - No external image links or resources (except image generation API)
 - Avoid generating invalid links and URLs
 - Do not use complex CSS charts or visualizations
-
-【Footer Information】
-- Include at the end of report: "Report powered by atypica.AI"
-- Generation date
+- Do not include date information in the report opening
 
 Your response should contain only ready-to-use HTML code, starting with <!DOCTYPE html>.
 `;
