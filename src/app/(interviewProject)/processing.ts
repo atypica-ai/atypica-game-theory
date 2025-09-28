@@ -4,7 +4,6 @@ import { llm, providerOptions } from "@/ai/provider";
 import { initInterviewProjectStatReporter } from "@/ai/tools/stats";
 import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage } from "@/lib/textUtils";
-import { InterviewProjectExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { CoreMessage, streamText } from "ai";
 import { interviewQuestionRefinementPrompt } from "./prompt";
@@ -14,19 +13,21 @@ export async function processInterviewQuestionOptimization(projectId: number): P
   const logger = rootLogger.child({ projectId });
 
   // Get project data
-  let project = await prisma.interviewProject
-    .findUniqueOrThrow({ where: { id: projectId } })
-    .then(({ extra, ...project }) => ({ ...project, extra: extra as InterviewProjectExtra }));
+  const project = await prisma.interviewProject.findUniqueOrThrow({
+    where: { id: projectId },
+    select: {
+      id: true,
+      brief: true,
+      userId: true,
+    },
+  });
 
   // Set processing status to true
-  project = await prisma.interviewProject
-    .update({
-      where: { id: projectId },
-      data: {
-        extra: { ...project.extra, processing: true },
-      },
-    })
-    .then(({ extra, ...project }) => ({ ...project, extra: extra as InterviewProjectExtra }));
+  await prisma.$executeRaw`
+    UPDATE "InterviewProject"
+    SET extra = jsonb_set(extra, '{processing}', 'true', true)
+    WHERE id = ${projectId}
+  `;
 
   // 优先使用 brief 一样的语言
   const locale = await detectInputLanguage({ text: project.brief });
@@ -93,33 +94,23 @@ export async function processInterviewQuestionOptimization(projectId: number): P
       response.consumeStream().catch((error) => reject(error));
     });
 
-    project = await prisma.interviewProject
-      .update({
-        where: { id: projectId },
-        data: {
-          extra: { ...project.extra, processing: false },
-        },
-      })
-      .then(({ extra, ...project }) => ({ ...project, extra: extra as InterviewProjectExtra }));
+    // ⚠️ 这里要额外注意，因为上面 questionOptimizationTools 里也会往 extra 里面写数据，
+    // 这里通过 { ...project.extra, processing: false } 这样的方式写数据是不安全的，会覆盖 questionOptimizationTools 写入的内容
+    // 安全的做法是使用 raw sql 直接更新 json 的一个字段
 
+    await prisma.$executeRaw`
+      UPDATE "InterviewProject"
+      SET extra = extra - 'processing'
+      WHERE id = ${projectId}
+    `;
     logger.info("Question optimization process completed successfully");
   } catch (error) {
     logger.error(`Question optimization failed: ${(error as Error).message}`);
-
-    // Clear processing status on error
-    project = await prisma.interviewProject
-      .update({
-        where: { id: projectId },
-        data: {
-          extra: {
-            ...project.extra,
-            error: (error as Error).message,
-            processing: false,
-          },
-        },
-      })
-      .then(({ extra, ...project }) => ({ ...project, extra: extra as InterviewProjectExtra }));
-
+    await prisma.$executeRaw`
+      UPDATE "InterviewProject"
+      SET extra = jsonb_set(extra - 'processing', '{error}', ${JSON.stringify((error as Error).message)})
+      WHERE id = ${projectId}
+    `;
     throw error;
   }
 }

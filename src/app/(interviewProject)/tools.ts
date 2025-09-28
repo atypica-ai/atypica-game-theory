@@ -119,7 +119,7 @@ export const questionOptimizationTools = ({ projectId }: { projectId: number }) 
               optimizedQuestions,
               optimizationReason: reason,
               lastOptimizedAt: Date.now(),
-            } as InputJsonValue,
+            } as InterviewProjectExtra,
           },
         });
 
