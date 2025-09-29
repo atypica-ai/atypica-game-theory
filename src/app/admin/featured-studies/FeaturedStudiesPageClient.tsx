@@ -492,12 +492,12 @@ export function FeaturedStudiesPageClient({ initialSearchParams }: FeaturedStudi
                         ? formatCountWithStatus(analyst.podcasts, "podcasts")
                         : null;
 
-                      return (
+                      return analyst.studyUserChat ? (
                         <>
                           {/* Reports row */}
                           <div className="flex items-center">
                             <ReportsListPanel
-                              studyUserChatToken={analyst.studyUserChat?.token}
+                              studyUserChatToken={analyst.studyUserChat.token}
                               download={true}
                             >
                               <div className="flex items-center gap-1.5 text-sm cursor-pointer">
@@ -510,7 +510,7 @@ export function FeaturedStudiesPageClient({ initialSearchParams }: FeaturedStudi
                           {/* Podcasts row with generate button */}
                           <div className="flex items-center justify-between">
                             <div className="flex items-center">
-                              <PodcastsListPanel studyUserChatToken={analyst.studyUserChat?.token}>
+                              <PodcastsListPanel studyUserChatToken={analyst.studyUserChat.token}>
                                 <div className="flex items-center gap-1.5 text-sm cursor-pointer">
                                   <MicIcon className="h-4 w-4 shrink-0" />
                                   <span className="font-normal">{podcastsText}</span>
@@ -542,7 +542,7 @@ export function FeaturedStudiesPageClient({ initialSearchParams }: FeaturedStudi
                             </div>
                           )}
                         </>
-                      );
+                      ) : null;
                     })()}
                   </div>
 

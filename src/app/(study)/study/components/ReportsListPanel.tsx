@@ -65,8 +65,8 @@ export default function ReportsListPanel({
   download = false,
 }: {
   children?: React.ReactNode;
-  studyUserChatToken?: string;
-  download?: boolean;
+  studyUserChatToken: string;
+  download: boolean;
 }) {
   const t = useTranslations("StudyPage.ReportsListPanel");
   const [isOpen, setIsOpen] = useState(false);
@@ -98,11 +98,6 @@ export default function ReportsListPanel({
       fetchReports();
     }
   }, [isOpen, fetchReports]);
-
-  if (!studyUserChatToken) {
-    // If no token provided, we can't show anything meaningful
-    return null;
-  }
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
