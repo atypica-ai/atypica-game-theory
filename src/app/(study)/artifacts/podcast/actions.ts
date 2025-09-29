@@ -1,16 +1,14 @@
 "use server";
 import { podcastObjectUrlToHttpUrl } from "@/app/(podcast)/lib/utils";
 import { ServerActionResult } from "@/lib/serverAction";
-import { Analyst, AnalystPodcast } from "@/prisma/client";
+import { Analyst, AnalystPodcast, UserChat } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 
-export async function fetchPodcastByToken(
-  podcastToken: string,
-): Promise<
+export async function fetchPodcastByToken(podcastToken: string): Promise<
   ServerActionResult<{
     podcast: Pick<AnalystPodcast, "id" | "token" | "script" | "objectUrl" | "generatedAt">;
-    analyst: Pick<Analyst, "id" | "topic" | "studySummary">;
-    studyReplayUrl: string;
+    analyst: Pick<Analyst, "id" | "topic">;
+    studyUserChat: Pick<UserChat, "token" | "title">;
   }>
 > {
   try {
@@ -26,9 +24,8 @@ export async function fetchPodcastByToken(
           select: {
             id: true,
             topic: true,
-            studySummary: true,
             studyUserChat: {
-              select: { token: true },
+              select: { token: true, title: true },
             },
           },
         },
@@ -51,8 +48,6 @@ export async function fetchPodcastByToken(
       };
     }
 
-    const studyReplayUrl = `/study/${podcast.analyst.studyUserChat.token}/share?replay=1`;
-
     return {
       success: true,
       data: {
@@ -66,9 +61,11 @@ export async function fetchPodcastByToken(
         analyst: {
           id: podcast.analyst.id,
           topic: podcast.analyst.topic,
-          studySummary: podcast.analyst.studySummary,
         },
-        studyReplayUrl,
+        studyUserChat: {
+          token: podcast.analyst.studyUserChat.token,
+          title: podcast.analyst.studyUserChat.title,
+        },
       },
     };
   } catch (error) {
@@ -79,7 +76,9 @@ export async function fetchPodcastByToken(
   }
 }
 
-export async function getPodcastAudioUrl(podcastToken: string): Promise<ServerActionResult<string | null>> {
+export async function getPodcastAudioUrl(
+  podcastToken: string,
+): Promise<ServerActionResult<string | null>> {
   try {
     const podcast = await prisma.analystPodcast.findUnique({
       where: { token: podcastToken },

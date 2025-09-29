@@ -1,4 +1,5 @@
 import { generatePageMetadata } from "@/lib/request/metadata";
+import { truncateForTitle } from "@/lib/textUtils";
 import { prisma } from "@/prisma/prisma";
 import { Metadata } from "next";
 import { getLocale } from "next-intl/server";
@@ -19,22 +20,26 @@ export async function generateMetadata({
     select: {
       analyst: {
         select: {
+          brief: true,
           topic: true,
-          studySummary: true,
+          studyUserChat: { select: { title: true } },
         },
       },
     },
   });
-  if (!report?.analyst) {
+  if (!report) {
     return {};
   }
-  const topic = report.analyst.topic;
-  const summary = report.analyst.studySummary;
-  const title = "📝 " + (topic.length > 20 ? topic.substring(0, 30) + "..." : topic);
-  const description = (summary.length > 100 ? summary.substring(0, 100) + "..." : summary).replace(
-    /[\n\r]/g,
-    " ",
-  );
+  const title =
+    "📝 " +
+    truncateForTitle(report.analyst.studyUserChat?.title || report.analyst.brief, {
+      maxDisplayWidth: 100,
+      suffix: "...",
+    });
+  const description = truncateForTitle(report.analyst.topic, {
+    maxDisplayWidth: 300,
+    suffix: "...",
+  }).replace(/[\n\r]/g, " ");
   return generatePageMetadata({ title, description, locale });
 }
 

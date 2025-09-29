@@ -3,28 +3,28 @@ import GlobalHeader from "@/components/layout/GlobalHeader";
 import { Button } from "@/components/ui/button";
 import UserMenu from "@/components/UserMenu";
 import { truncateForTitle } from "@/lib/textUtils";
-import { Analyst, AnalystPodcast } from "@/prisma/client";
+import { Analyst, AnalystPodcast, UserChat } from "@/prisma/client";
 import { Loader2Icon, Pause, Play, RotateCcw, RotateCw, Share2 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useTheme } from "next-themes";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { useTheme } from "next-themes";
 import { getPodcastAudioUrl } from "../../actions";
 
 interface PodcastSharePageClientProps {
   podcastToken: string;
   podcast: Pick<AnalystPodcast, "id" | "token" | "script" | "objectUrl" | "generatedAt">;
-  analyst: Pick<Analyst, "id" | "topic" | "studySummary">;
-  studyReplayUrl: string;
+  analyst: Pick<Analyst, "id" | "topic">;
+  studyUserChat: Pick<UserChat, "token" | "title">;
 }
 
 export default function PodcastSharePageClient({
   podcastToken,
   podcast,
   analyst,
-  studyReplayUrl,
+  studyUserChat,
 }: PodcastSharePageClientProps) {
   const t = useTranslations("PodcastSharePage");
   const tCompliance = useTranslations("AICompliance");
@@ -143,7 +143,7 @@ export default function PodcastSharePageClient({
       <GlobalHeader className="h-12">
         <div className="flex items-center gap-2 sm:gap-4">
           <Button variant="outline" size="sm" className="h-8 gap-1" asChild>
-            <Link href={studyReplayUrl}>
+            <Link href={`/study/${studyUserChat.token}/share?replay=1`}>
               <Play size={14} />
               <span className="max-sm:text-xs max-sm:tracking-tighter">{t("viewReplay")}</span>
             </Link>
@@ -162,8 +162,8 @@ export default function PodcastSharePageClient({
         {/* Hero Section */}
         <section className="container mx-auto px-4 py-8 md:py-12">
           <div className="max-w-4xl mx-auto">
-            <h1 className="text-xl md:text-2xl font-medium text-zinc-900 dark:text-zinc-50 leading-tight line-clamp-3">
-              {truncateForTitle(analyst.topic, { maxDisplayWidth: 200, suffix: "..." })}
+            <h1 className="text-xl md:text-2xl font-medium text-zinc-900 dark:text-zinc-50 leading-tight line-clamp-3 text-center">
+              {studyUserChat.title}
             </h1>
           </div>
         </section>
@@ -230,9 +230,10 @@ export default function PodcastSharePageClient({
                         onChange={(e) => seekTo(Number(e.target.value))}
                         className="w-full h-3 rounded-lg appearance-none cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 touch-manipulation bg-gradient-to-r from-zinc-900 to-zinc-900 dark:from-zinc-100 dark:to-zinc-100 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-zinc-900 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-lg [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-zinc-900 [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:shadow-lg dark:[&::-webkit-slider-thumb]:bg-zinc-100 dark:[&::-moz-range-thumb]:bg-zinc-100"
                         style={{
-                          background: theme === 'dark'
-                            ? `linear-gradient(to right, rgb(244 244 245) 0%, rgb(244 244 245) ${(currentTime / (duration || 100)) * 100}%, rgb(63 63 70) ${(currentTime / (duration || 100)) * 100}%, rgb(63 63 70) 100%)`
-                            : `linear-gradient(to right, rgb(24 24 27) 0%, rgb(24 24 27) ${(currentTime / (duration || 100)) * 100}%, rgb(209 213 219) ${(currentTime / (duration || 100)) * 100}%, rgb(209 213 219) 100%)`
+                          background:
+                            theme === "dark"
+                              ? `linear-gradient(to right, rgb(244 244 245) 0%, rgb(244 244 245) ${(currentTime / (duration || 100)) * 100}%, rgb(63 63 70) ${(currentTime / (duration || 100)) * 100}%, rgb(63 63 70) 100%)`
+                              : `linear-gradient(to right, rgb(24 24 27) 0%, rgb(24 24 27) ${(currentTime / (duration || 100)) * 100}%, rgb(209 213 219) ${(currentTime / (duration || 100)) * 100}%, rgb(209 213 219) 100%)`,
                         }}
                         disabled={isLoading || !audioUrl}
                       />

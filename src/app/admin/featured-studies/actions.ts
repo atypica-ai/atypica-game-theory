@@ -6,6 +6,7 @@ import { checkAdminAuth } from "@/app/admin/actions";
 import { s3SignedUrl } from "@/lib/attachments/s3";
 import { rootLogger } from "@/lib/logging";
 import { ServerActionResult } from "@/lib/serverAction";
+import { generateChatTitle } from "@/lib/userChat/lib";
 import { Analyst, FeaturedStudy, User, UserChat } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { AnalystKind } from "@/prisma/types";
@@ -14,6 +15,7 @@ import { Message } from "ai";
 import { Locale } from "next-intl";
 import { getLocale } from "next-intl/server";
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { AdminPermission } from "../types";
 
 type TFeaturedStudyResult = Pick<FeaturedStudy, "id" | "displayOrder"> & {
@@ -382,6 +384,19 @@ export async function toggleFeaturedStatus(analyst: Analyst): Promise<ServerActi
   }
 
   revalidatePath("/admin/featured-studies");
+  return {
+    success: true,
+    data: undefined,
+  };
+}
+
+export async function generateChatTitleAction(
+  userChatId: number,
+): Promise<ServerActionResult<void>> {
+  await checkAdminAuth([AdminPermission.MANAGE_STUDIES]);
+
+  after(generateChatTitle(userChatId));
+
   return {
     success: true,
     data: undefined,

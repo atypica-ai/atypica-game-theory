@@ -63,7 +63,7 @@ describe.skip("Email Module Tests", () => {
     it("sendReportCompletionEmail", async () => {
       await sendReportCompletionEmail({
         email: process.env.EMAIL_TEST_RECEIVER!,
-        topic: "测试研究",
+        title: "测试研究",
         studyUrl: FAKE_URL,
         locale,
       });
@@ -71,7 +71,7 @@ describe.skip("Email Module Tests", () => {
     it("sendStudyInterruptionEmail", async () => {
       await sendStudyInterruptionEmail({
         email: process.env.EMAIL_TEST_RECEIVER!,
-        topic: "测试研究",
+        title: "测试研究",
         studyUrl: FAKE_URL,
         locale,
       });

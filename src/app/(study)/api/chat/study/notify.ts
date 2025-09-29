@@ -38,6 +38,7 @@ export async function notifyReportCompletion({
         user: {
           select: { email: true, id: true },
         },
+        title: true,
       },
     }),
   ]);
@@ -59,7 +60,7 @@ export async function notifyReportCompletion({
       : await getLocale();
   await sendReportCompletionEmail({
     email: studyUserChat.user.email,
-    topic: truncateForTitle(report.analyst.topic, {
+    title: truncateForTitle(studyUserChat.title, {
       maxDisplayWidth: 100,
       suffix: "...",
     }),
@@ -87,6 +88,7 @@ export async function _notifyStudyInterruption({
     },
     select: {
       token: true,
+      title: true,
       user: {
         select: { email: true, id: true },
       },
@@ -113,7 +115,7 @@ export async function _notifyStudyInterruption({
       : await getLocale();
   await sendStudyInterruptionEmail({
     email: studyUserChat.user.email,
-    topic: truncateForTitle(studyUserChat.analyst?.topic ?? "", {
+    title: truncateForTitle(studyUserChat.title ?? "", {
       maxDisplayWidth: 100,
       suffix: "...",
     }),

@@ -1,8 +1,10 @@
 import "server-only";
 
 import { PlainTextToolResult } from "@/ai/tools/types";
+import { generateChatTitle } from "@/lib/userChat/lib";
 import { fixMalformedUnicodeString } from "@/lib/utils";
 import { prisma } from "@/prisma/prisma";
+import { waitUntil } from "@vercel/functions";
 import { tool } from "ai";
 import { z } from "zod";
 import { SaveAnalystToolResult } from "./types";
@@ -87,6 +89,8 @@ export const saveAnalystTool = ({
           locale,
         },
       });
+      // save analyst 以后，有了足够的信息，这时候可以生成一下 chat title
+      waitUntil(generateChatTitle(studyUserChatId));
       return {
         analystId: analyst.id,
         plainText: `Study topic and analyst configuration ${isUpdate ? "updated" : "saved"} successfully with analystId: ${analyst.id}`,
@@ -127,6 +131,8 @@ export const saveAnalystStudySummaryTool = ({ studyUserChatId }: { studyUserChat
         where: { id: analystId },
         data: { studySummary },
       });
+      // save summary 以后，有了更多的信息，这时候可以更新一下 chat title
+      waitUntil(generateChatTitle(studyUserChatId));
       return {
         // analystId,
         plainText: `Study summary saved successfully for analyst ${analystId}`,

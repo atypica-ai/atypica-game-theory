@@ -39,6 +39,7 @@ import {
   FileTextIcon,
   MicIcon,
   PlusIcon,
+  RefreshCcwIcon,
   SearchIcon,
   Star,
   ThumbsDownIcon,
@@ -52,6 +53,7 @@ import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import {
   fetchAnalysts,
   fetchBriefChatMessages,
+  generateChatTitleAction,
   generatePodcastActionAdmin,
   toggleFeaturedStatus,
 } from "./actions";
@@ -159,14 +161,30 @@ export function FeaturedStudiesPageClient({ initialSearchParams }: FeaturedStudi
     [setParams],
   );
 
-  const handleToggleFeatured = async (analyst: Analyst) => {
-    const result = await toggleFeaturedStatus(analyst);
-    if (!result.success) {
-      setError(result.message);
-    } else {
-      await fetchData();
-    }
-  };
+  const handleToggleFeatured = useCallback(
+    async (analyst: Analyst) => {
+      const result = await toggleFeaturedStatus(analyst);
+      if (!result.success) {
+        setError(result.message);
+      } else {
+        await fetchData();
+      }
+    },
+    [fetchData],
+  );
+
+  const handleGenerateChatTitle = useCallback(
+    async (analyst: Analyst) => {
+      if (!analyst.studyUserChatId) return;
+      const result = await generateChatTitleAction(analyst.studyUserChatId);
+      if (!result.success) {
+        setError(result.message);
+      } else {
+        await fetchData();
+      }
+    },
+    [fetchData],
+  );
 
   const handleKindChange = (value: string) => {
     setParams({ kind: value as AnalystKind | "all", page: 1 });
@@ -355,7 +373,7 @@ export function FeaturedStudiesPageClient({ initialSearchParams }: FeaturedStudi
                 className={analyst.featuredStudy ? "border-2 border-blue-400" : ""}
               >
                 <CardHeader>
-                  <CardTitle className="flex items-center justify-between w-full overflow-hidden">
+                  <CardTitle className="flex items-start justify-between gap-2 w-full overflow-hidden">
                     <div className="flex-1 min-w-0">
                       <div className="leading-normal line-clamp-2 font-semibold">
                         {analyst.studyUserChat?.title || "Untitled Study"}
@@ -377,19 +395,28 @@ export function FeaturedStudiesPageClient({ initialSearchParams }: FeaturedStudi
                           </div>
                         ) : null;
                       })()}
-                      <button
-                        onClick={() => handleToggleFeatured(analyst)}
-                        className="p-1 hover:bg-gray-100 rounded transition-colors"
-                        title={analyst.featuredStudy ? "Remove from featured" : "Add to featured"}
-                      >
-                        <Star
-                          className={`h-5 w-5 ${
-                            analyst.featuredStudy
-                              ? "fill-yellow-400 text-yellow-400"
-                              : "text-gray-400 hover:text-yellow-400"
-                          } transition-colors`}
-                        />
-                      </button>
+                      <div className="flex flex-col items-center">
+                        <button
+                          onClick={() => handleToggleFeatured(analyst)}
+                          className="p-1 hover:bg-gray-100 rounded transition-colors"
+                          title={analyst.featuredStudy ? "Remove from featured" : "Add to featured"}
+                        >
+                          <Star
+                            className={`h-5 w-5 ${
+                              analyst.featuredStudy
+                                ? "fill-yellow-400 text-yellow-400"
+                                : "text-gray-400 hover:text-yellow-400"
+                            } transition-colors`}
+                          />
+                        </button>
+                        <button
+                          onClick={() => handleGenerateChatTitle(analyst)}
+                          className="p-1 hover:bg-gray-100 rounded transition-colors"
+                          title="re-generate chat title"
+                        >
+                          <RefreshCcwIcon className="size-4 text-gray-400" />
+                        </button>
+                      </div>
                     </div>
                   </CardTitle>
                   <CardDescription>{analyst.role}</CardDescription>
@@ -485,7 +512,7 @@ export function FeaturedStudiesPageClient({ initialSearchParams }: FeaturedStudi
                             <div className="flex items-center">
                               <PodcastsListPanel studyUserChatToken={analyst.studyUserChat?.token}>
                                 <div className="flex items-center gap-1.5 text-sm cursor-pointer">
-                                  <MicIcon className="h-4 w-4" />
+                                  <MicIcon className="h-4 w-4 shrink-0" />
                                   <span className="font-normal">{podcastsText}</span>
                                 </div>
                               </PodcastsListPanel>
@@ -503,7 +530,7 @@ export function FeaturedStudiesPageClient({ initialSearchParams }: FeaturedStudi
                             >
                               <Button variant="ghost" size="sm">
                                 <PlusIcon className="h-3 w-3" />
-                                Generate Podcast
+                                Generate
                               </Button>
                             </ConfirmDialog>
                           </div>

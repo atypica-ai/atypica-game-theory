@@ -1,6 +1,6 @@
 import { Analyst } from "@/prisma/client";
 import { Locale } from "next-intl";
-import { promptSystemConfig } from "./systemConfig";
+import { promptSystemConfig } from "../systemConfig";
 
 export const studyLogPrologue = ({
   locale,

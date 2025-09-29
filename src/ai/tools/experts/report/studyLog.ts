@@ -1,6 +1,6 @@
 import "server-only";
 
-import { studyLogPrologue, studyLogSystem } from "@/ai/prompt/studyLog";
+import { studyLogPrologue, studyLogSystem } from "@/ai/prompt";
 import { llm, providerOptions } from "@/ai/provider";
 import { AgentToolConfigArgs } from "@/ai/tools/types";
 import { Analyst } from "@/prisma/client";
