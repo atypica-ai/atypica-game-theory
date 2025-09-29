@@ -152,12 +152,18 @@ export function useListQueryParams<T extends Record<string, unknown>>(
    */
   const paramsRef = useRef(params);
 
+  /**
+   * initialValues 也使用 ref 是因为 initialValues 其实是不需要响应式的
+   * page.tsx 里面会频繁产生新的 initialValues 对象，但其实值是一样的，这里索性就用 useRef 消除影响
+   */
+  const initialValuesRef = useRef(initialValues);
+
   // Initialize with server-parsed values if provided, otherwise use defaults
   const [values, setValues] = useState<T>(() => {
     const result = Object.keys(paramsRef.current).reduce((acc, key) => {
       const config = paramsRef.current[key as keyof T];
       // Use initialValues if provided, otherwise use defaultValue
-      acc[key as keyof T] = initialValues?.[key as keyof T] ?? config.defaultValue;
+      acc[key as keyof T] = initialValuesRef.current?.[key as keyof T] ?? config.defaultValue;
       return acc;
     }, {} as T);
     return result;
@@ -200,10 +206,26 @@ export function useListQueryParams<T extends Record<string, unknown>>(
 
       const newUrl = url.pathname + url.search;
 
+      /**
+       * 使用原生 window.history API 而不是 Next.js 的 router API
+       *
+       * 原因：在 Next.js App Router 的并发渲染环境下，router.replace() 可能会与正在执行的 Server Action 产生冲突，
+       * 导致异步请求被中断。特别是当组件多次渲染且 initialValues 对象引用不稳定时，
+       * useEffect 会频繁触发 URL 更新，router.replace() 的调用可能会取消正在进行的异步操作。
+       *
+       * 具体表现：在 studies 页面，fetchUserStudies 这个 Server Action 执行到一半就被中断，
+       * 客户端能看到 "fetchUserStudies start" 的 log，但看不到服务端的任何 log，
+       * 这是因为 router.replace() 触发了路由系统的某种取消机制。
+       *
+       * 解决方案：直接使用 window.history API 绕过 Next.js 路由系统，
+       * 只更新浏览器 URL 而不影响正在进行的异步请求。
+       */
       if (replaceState) {
-        router.replace(newUrl, { scroll: false });
+        // router.replace(newUrl, { scroll: false });
+        window.history.replaceState(null, "", newUrl);
       } else {
-        router.push(newUrl, { scroll: false });
+        // router.push(newUrl, { scroll: false });
+        window.history.pushState(null, "", newUrl);
       }
     };
 
