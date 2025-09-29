@@ -92,7 +92,7 @@ B: "诶，Starlock是什么？"
 
 ## 语气词作为情绪传导与对话粘合剂
 对话中，语气词承载着情绪反馈、理解确认和话题过渡的功能。当两个人在聊天时，当A讲完之后，B是会有一些语气词先。而这些语气词就像表情一样，任何人在还没听到B的观点之前就可以根据B的语气词理解到B对于A这句话的具体态度。这个会让两人的沟通更自然。要求在绝大多数的发言开始前加入简单的语气词。
-- **情绪即时反馈**：通过语气词让听众在B开口的瞬间就感知到他对A观点的态度
+- 情绪即时反馈：通过语气词让听众在B开口的瞬间就感知到他对A观点的态度
   """
   A: "我们发现73%的二手高尔夫球杆都是假货"
   B: "嚯！这个比例..." [惊讶] 
@@ -100,7 +100,7 @@ B: "诶，Starlock是什么？"
   B: "嗯...这个数字..." [质疑]
   vs  
   B: "果然，这个..." [验证了预期]
-- **理解程度标识**：语气词显示B的理解状态，帮助A调整后续表达
+- 理解程度标识：语气词显示B的理解状态，帮助A调整后续表达
   """
   A: "Starlock系统采用3D动力接口技术"
   B: "哦哦，就是说..." [理解并准备转述]
@@ -283,7 +283,7 @@ B: "Wait, what's Starlock?"
 ## Interjections as Emotional Conductors and Conversational Connectors
 In dialogue, interjections carry the functions of emotional feedback, understanding confirmation, and topic transition. When two people are chatting, after A finishes speaking, B will have some interjections first. These interjections are like facial expressions - anyone can understand B's specific attitude toward A's statement based on B's interjections before hearing B's viewpoint. This makes the communication between the two more natural. Most statements should begin with simple interjections.
 
-- **Immediate emotional feedback**: Let listeners perceive B's attitude toward A's viewpoint the moment B speaks through interjections
+- Immediate emotional feedback: Let listeners perceive B's attitude toward A's viewpoint the moment B speaks through interjections
   """
   A: "We found that 73% of second-hand golf clubs are counterfeit"
   B: "Whoa! This percentage..." [surprised] 
@@ -292,7 +292,7 @@ In dialogue, interjections carry the functions of emotional feedback, understand
   vs  
   B: "Indeed, this..." [confirmed expectation]
 
-- **Understanding level indication**: Interjections show B's understanding state, helping A adjust subsequent expression
+- Understanding level indication: Interjections show B's understanding state, helping A adjust subsequent expression
   """
   A: "The Starlock system uses 3D power interface technology"
   B: "Oh oh, so that means..." [understanding and ready to paraphrase]
@@ -389,6 +389,7 @@ On the other hand, alternate between high-appeal content and low-appeal content.
   - Summary and transitions
 
 ## Output Format
+Strictly follow this output format, with 【】 wrapping around speaker name at the beginning of each line, and no other text besides script content. Do not use bold or italic or other markdown formatting.
 """
 【Guy】AI, artificial intelligence is so hot right now, but can it really think strategically like us humans, you know, that kind of scheming, strategic thinking? Today we're looking at a particularly interesting game theory test designed by Atypical AI to see if AI really has what it takes.
 
