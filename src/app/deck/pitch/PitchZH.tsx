@@ -1,5 +1,7 @@
 "use client";
-import { cn } from "@/lib/utils";
+import { useDeckScale } from "@/app/deck/hooks/useDeckScale";
+import { cn, useDevice } from "@/lib/utils";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
 const totalSlides = 12;
@@ -22,6 +24,8 @@ const slideNotes: { [key: number]: string } = {
 
 export function PitchZH({ showPresenterNotes = false }: { showPresenterNotes?: boolean }) {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const { deckStyles } = useDeckScale({ deckWidth: 1200 });
+  const { isMobile } = useDevice();
 
   const goToNextSlide = useCallback(() => {
     if (currentSlide >= totalSlides - 1) return;
@@ -951,7 +955,7 @@ const capabilities = {
                 {`// 100x Impact
 const impact = {
   cost: { reduction: "100x" },
-  speed: { improvement: "100x" },  
+  speed: { improvement: "100x" },
   coverage: { expansion: "100x" }
 };
 
@@ -1345,7 +1349,7 @@ const transformation = {
   return (
     <div className="flex-1 bg-[#0a0a0a] relative flex flex-col overflow-hidden">
       {/* Main slide content */}
-      <div className="flex-1 flex items-center justify-center p-4">
+      <div className="flex-1 flex items-center justify-center p-4" style={deckStyles}>
         {/* PPT Container with responsive aspect ratio */}
         <div
           className="w-full max-w-7xl aspect-[16/10] bg-[#121212] relative flex flex-col shadow-2xl border border-zinc-600"
@@ -1378,8 +1382,45 @@ const transformation = {
         </div>
       </div>
 
+      {/* Navigation buttons */}
+      {isMobile && (
+        <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 flex items-center gap-4 max-sm:scale-75">
+          <button
+            onClick={goToPrevSlide}
+            disabled={currentSlide === 0}
+            className={cn(
+              "w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200",
+              "bg-zinc-800/90 backdrop-blur-sm border border-zinc-600 shadow-xl",
+              currentSlide === 0
+                ? "opacity-50 cursor-not-allowed"
+                : "hover:bg-zinc-700 hover:scale-110 hover:border-[#1bff1b]",
+            )}
+          >
+            <ChevronLeft className="w-5 h-5 text-zinc-300" />
+          </button>
+          <button
+            onClick={goToNextSlide}
+            disabled={currentSlide === totalSlides - 1}
+            className={cn(
+              "w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200",
+              "bg-zinc-800/90 backdrop-blur-sm border border-zinc-600 shadow-xl",
+              currentSlide === totalSlides - 1
+                ? "opacity-50 cursor-not-allowed"
+                : "hover:bg-zinc-700 hover:scale-110 hover:border-[#1bff1b]",
+            )}
+          >
+            <ChevronRight className="w-5 h-5 text-zinc-300" />
+          </button>
+        </div>
+      )}
+
       {/* Controls - minimalist bottom indicators */}
-      <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex items-center gap-2 bg-zinc-800/90 backdrop-blur-sm px-4 py-2 rounded-full border border-zinc-600 shadow-xl">
+      <div
+        className={cn(
+          "absolute bottom-6 left-1/2 transform -translate-x-1/2 max-sm:scale-75",
+          "flex items-center gap-2 bg-zinc-800/90 backdrop-blur-sm px-4 py-2 rounded-full border border-zinc-600 shadow-xl",
+        )}
+      >
         {Array.from({ length: totalSlides }, (_, index) => (
           <button
             key={index}

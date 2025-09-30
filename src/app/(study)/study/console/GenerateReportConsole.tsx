@@ -20,7 +20,7 @@ export const GenerateReportConsole = ({ toolInvocation }: { toolInvocation: Tool
     const containerHeight = containerRef.current?.clientHeight;
     const ratio = Math.floor((containerWidth ? containerWidth / 1200 : 1) * 100);
     setRatio(ratio);
-    setIframeHeight(containerHeight ? (containerHeight / ratio) * 100 : 1200);
+    setIframeHeight(containerHeight ? Math.floor((containerHeight / ratio) * 100) : 1200);
   }, []);
 
   // Update dimensions when component mounts and when container changes
