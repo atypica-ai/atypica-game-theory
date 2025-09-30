@@ -57,8 +57,8 @@ export class VolcanoTTSClient {
   }
 
   /**
-   * Parse markdown podcast script into NLP texts format
-   */
+ * Parse markdown podcast script into NLP texts format
+ */
   private parseScriptToNLPTexts(script: string, locale: string = "zh-CN"): PodcastNLPText[] {
     const speakers =
       DEFAULT_SPEAKERS[locale as keyof typeof DEFAULT_SPEAKERS] || DEFAULT_SPEAKERS["zh-CN"];
@@ -72,34 +72,127 @@ export class VolcanoTTSClient {
       const trimmedLine = line.trim();
 
       // Skip markdown headers, stage directions, etc.
-      if (
-        trimmedLine.startsWith("#") ||
-        trimmedLine.startsWith("[") ||
-        trimmedLine.startsWith("*") ||
-        trimmedLine.startsWith("**") ||
-        trimmedLine.length < 10 // Skip very short lines
-      ) {
+      if (trimmedLine.startsWith("#")) {
         continue;
       }
 
       // Clean up the text
       const text = trimmedLine
-        .replace(/^\*\*.*?\*\*:?\s*/, "") // Remove speaker labels like **Host:**
-        .replace(/^\w+:\s*/, "") // Remove simple speaker labels like Host:
-        .replace(/\[.*?\]/g, "") // Remove stage directions
+        // Remove all lines starting with # (fixed regex to work with multiline)
+        .replace(/^#.*$/gm, "")
+        // Remove all *
+        .replace(/\*/g, "")
+        // Remove speaker labels like 【A】【B】
+        .replace(/【[^】]*】/g, "")
+        // Trim whitespace from beginning and end
         .trim();
 
       if (text.length > 0) {
-        nlpTexts.push({
-          speaker: speakers[currentSpeakerIndex % speakers.length],
-          text: text.substring(0, 300), // Volcano TTS limit per round
-        });
+        const speaker = speakers[currentSpeakerIndex % speakers.length];
+
+        // Split long text into chunks if needed
+        const textChunks = this.splitTextIntoChunks(text, 300, locale);
+
+        // Add each chunk as a separate NLP text with the same speaker
+        for (const chunk of textChunks) {
+          nlpTexts.push({
+            speaker: speaker,
+            text: chunk,
+          });
+        }
 
         currentSpeakerIndex++;
       }
     }
 
     return nlpTexts;
+  }
+
+  /**
+   * Split text into chunks respecting language-specific boundaries
+   */
+  private splitTextIntoChunks(text: string, maxLength: number, locale: string): string[] {
+    if (text.length <= maxLength) {
+      return [text];
+    }
+
+    const chunks: string[] = [];
+    const isChinese = locale.startsWith('zh');
+
+    let remainingText = text;
+
+    while (remainingText.length > maxLength) {
+      let splitIndex = this.findBestSplitPoint(remainingText, maxLength, isChinese);
+
+      // If no good split point found, force split at maxLength
+      if (splitIndex === -1) {
+        splitIndex = maxLength;
+      }
+
+      chunks.push(remainingText.substring(0, splitIndex).trim());
+      remainingText = remainingText.substring(splitIndex).trim();
+    }
+
+    // Add remaining text if any
+    if (remainingText.length > 0) {
+      chunks.push(remainingText);
+    }
+
+    return chunks.filter(chunk => chunk.length > 0);
+  }
+
+  /**
+   * Find the best point to split text based on language rules
+   */
+  private findBestSplitPoint(text: string, maxLength: number, isChinese: boolean): number {
+    // Define sentence endings and punctuation based on language
+    const sentenceEndings = isChinese
+      ? ['。', '！', '？', '...', '……']
+      : ['. ', '! ', '? ', '.\n', '!\n', '?\n'];
+
+    const clauseSeparators = isChinese
+      ? ['，', '、', '；', '：', '，\n', '；\n', '：\n']
+      : [', ', '; ', ': ', ',\n', ';\n', ':\n'];
+
+    const searchText = text.substring(0, maxLength);
+
+    // 1. Try to find sentence endings (best option)
+    for (const ending of sentenceEndings) {
+      const lastIndex = searchText.lastIndexOf(ending);
+      if (lastIndex > maxLength * 0.5) { // Don't split too early
+        return lastIndex + ending.length;
+      }
+    }
+
+    // 2. Try to find clause separators (good option)
+    for (const separator of clauseSeparators) {
+      const lastIndex = searchText.lastIndexOf(separator);
+      if (lastIndex > maxLength * 0.6) { // Don't split too early
+        return lastIndex + separator.length;
+      }
+    }
+
+    // 3. For English, try word boundaries
+    if (!isChinese) {
+      const lastSpaceIndex = searchText.lastIndexOf(' ');
+      if (lastSpaceIndex > maxLength * 0.7) { // Don't split too early
+        return lastSpaceIndex + 1;
+      }
+    }
+
+    // 4. For Chinese, try common punctuation
+    if (isChinese) {
+      const commonPunctuation = ['的', '了', '在', '是', '和', '与', '或'];
+      for (const punct of commonPunctuation) {
+        const lastIndex = searchText.lastIndexOf(punct);
+        if (lastIndex > maxLength * 0.8) {
+          return lastIndex + punct.length;
+        }
+      }
+    }
+
+    // 5. No good split point found
+    return -1;
   }
 
   /**
@@ -131,6 +224,7 @@ export class VolcanoTTSClient {
         try {
           // Parse script to NLP texts
           const nlpTexts = this.parseScriptToNLPTexts(script, locale);
+          this.logger?.info({ msg: "Parsed script to NLP texts", nlpTexts });
 
           if (nlpTexts.length === 0) {
             throw new Error("No dialogue content found in script");

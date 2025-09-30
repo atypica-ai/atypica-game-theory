@@ -357,19 +357,12 @@ export async function generatePodcastAudio(
   try {
     logger.info("Starting podcast audio generation");
 
-    // Preprocess script for audio generation
-    const preprocessedScript = preprocessScriptForAudio(script);
-    logger.info({
-      msg: "Script preprocessed for audio generation",
-      processedLength: preprocessedScript.length,
-    });
-
     // Create Volcano TTS client
     const volcanoClient = createVolcanoClient(logger);
 
     // Generate audio
     const result = await volcanoClient.generatePodcastAudio({
-      script: preprocessedScript,
+      script: script,
       podcastToken,
       locale,
       logger,
