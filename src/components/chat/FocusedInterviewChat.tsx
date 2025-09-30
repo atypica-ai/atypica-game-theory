@@ -3,9 +3,10 @@
 import { correctSpeechText } from "@/app/api/transcribe/actions";
 import { RecordButton } from "@/components/chat/RecordButton";
 import { Button } from "@/components/ui/button";
+import { useDevice } from "@/hooks/use-device";
 import { useDocumentVisibility } from "@/hooks/use-document-visibility";
 import { getDisplayWidth } from "@/lib/textUtils";
-import { cn, useDevice } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
 import { generateId } from "ai";
 import { AnimatePresence, motion } from "framer-motion";

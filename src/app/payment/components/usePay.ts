@@ -1,6 +1,6 @@
 import { stripeSessionCreatePayloadSchema } from "@/app/payment/(stripe)/types";
 import { PingxxNewPaymentParams, ProductName } from "@/app/payment/data";
-import { useDevice } from "@/lib/utils";
+import { useDevice } from "@/hooks/use-device";
 import { Currency } from "@/prisma/client";
 import { useSession } from "next-auth/react";
 import { useCallback, useState } from "react";

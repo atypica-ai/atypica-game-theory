@@ -1,7 +1,9 @@
 "use client";
 import { reginalS3Url } from "@/app/(public)/home-v3/actions";
 import { useDeckScale } from "@/app/deck/hooks/useDeckScale";
-import { cn, useDevice } from "@/lib/utils";
+import { FitToViewport } from "@/components/layout/FitToViewport";
+import { useDevice } from "@/hooks/use-device";
+import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
@@ -1601,7 +1603,7 @@ class SubjectiveAgent {
   };
 
   return (
-    <div className="flex-1 bg-[#0a0a0a] relative flex flex-col items-center justify-center overflow-hidden">
+    <FitToViewport className="bg-[#0a0a0a] relative flex flex-col items-center justify-center">
       {/* Main slide content */}
       <div className="p-4" style={deckStyles}>
         {/* PPT Container with responsive aspect ratio */}
@@ -1700,6 +1702,6 @@ class SubjectiveAgent {
           {currentSlide + 1} / {totalSlides}
         </div>
       </div>
-    </div>
+    </FitToViewport>
   );
 }

@@ -1,5 +1,6 @@
 "use client";
-import { cn, useDevice } from "@/lib/utils";
+import { useDevice } from "@/hooks/use-device";
+import { cn } from "@/lib/utils";
 import { Attachment } from "ai";
 import { FileIcon, XIcon } from "lucide-react";
 import Image from "next/image";

@@ -22,9 +22,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useDevice } from "@/hooks/use-device";
 import { useFileUploadManager } from "@/hooks/use-file-upload-manager";
 import { useMediaQuery } from "@/hooks/use-media-query";
-import { cn, useDevice } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { ArrowRightIcon, NotebookTextIcon, RotateCwIcon, SparklesIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";

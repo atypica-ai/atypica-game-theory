@@ -1,6 +1,8 @@
 "use client";
 import { useDeckScale } from "@/app/deck/hooks/useDeckScale";
-import { cn, useDevice } from "@/lib/utils";
+import { FitToViewport } from "@/components/layout/FitToViewport";
+import { useDevice } from "@/hooks/use-device";
+import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
@@ -1670,8 +1672,8 @@ class SubjectiveAgent {
   };
 
   return (
-    <div className="flex-1 bg-[#0a0a0a] relative flex flex-col overflow-hidden">
-      <div className="flex-1 flex items-center justify-center p-4" style={deckStyles}>
+    <FitToViewport className="bg-[#0a0a0a] relative flex flex-col items-center justify-center">
+      <div className="p-4" style={deckStyles}>
         <div
           className="w-full max-w-7xl aspect-[16/10] bg-[#121212] relative flex flex-col shadow-2xl border border-zinc-600"
           key={currentSlide}
@@ -1761,6 +1763,6 @@ class SubjectiveAgent {
           {currentSlide + 1} / {totalSlides}
         </div>
       </div>
-    </div>
+    </FitToViewport>
   );
 }

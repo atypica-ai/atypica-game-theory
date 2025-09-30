@@ -1,7 +1,8 @@
 "use client";
 import { FitToViewport } from "@/components/layout/FitToViewport";
 import { Textarea } from "@/components/ui/textarea";
-import { cn, useDevice } from "@/lib/utils";
+import { useDevice } from "@/hooks/use-device";
+import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";

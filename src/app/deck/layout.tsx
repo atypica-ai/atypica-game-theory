@@ -1,9 +1,14 @@
 import { DefaultLayout } from "@/components/layout/DefaultLayout";
-import { ReactNode } from "react";
+import { FitToViewport } from "@/components/layout/FitToViewport";
+import { ReactElement } from "react";
 
-export default async function PublicPagesLayout({ children }: { children: ReactNode }) {
+export default async function PublicPagesLayout({
+  children,
+}: {
+  children: ReactElement<React.ComponentProps<typeof FitToViewport>>;
+}) {
   return (
-    <DefaultLayout header={false} footer={false}>
+    <DefaultLayout header={false} fitToViewport={true}>
       {children}
     </DefaultLayout>
   );
