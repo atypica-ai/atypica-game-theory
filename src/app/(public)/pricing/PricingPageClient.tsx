@@ -185,6 +185,7 @@ export default function PricingPageClient({
             <FeatureItem text={t("features.analysisModel.enhanced")} />
             <FeatureItem text={t("features.personaImport.basic")} />
             <FeatureItem text={t("features.interviewProject.basic")} />
+            <FeatureItemWithPreview text={t("features.podcastPreview")} />
           </CardContent>
         </Card>
 
@@ -238,6 +239,7 @@ export default function PricingPageClient({
             <FeatureItem text={t("features.reports.followUp")} />
             <FeatureItem text={t("features.personaImport.full")} />
             <FeatureItem text={t("features.interviewProject.full")} />
+            <FeatureItemWithPreview text={t("features.podcastPreview")} />
             <FeatureItemWithPreview text={t("features.productRnDPreview")} />
           </CardContent>
         </Card>
@@ -271,6 +273,7 @@ export default function PricingPageClient({
             <FeatureItem text={t("features.knowledgeBase")} />
             <FeatureItem text={t("features.personaImport.full")} />
             <FeatureItem text={t("features.interviewProject.full")} />
+            <FeatureItemWithPreview text={t("features.podcastPreview")} />
             <FeatureItemWithPreview text={t("features.productRnDPreview")} />
           </CardContent>
         </Card>

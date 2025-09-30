@@ -4,6 +4,7 @@ import { llm, providerOptions } from "@/ai/provider";
 import { StatReporter } from "@/ai/tools/types";
 import { podcastEvaluationSystem } from "@/app/(podcast)/prompt";
 import { PodcastEvaluationScores, podcastEvaluationScoresSchema } from "@/app/(podcast)/types";
+import { fetchActiveSubscription } from "@/app/account/lib";
 import { rootLogger } from "@/lib/logging";
 import type { Analyst, AnalystExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
@@ -96,6 +97,15 @@ export async function evaluateAndGenerate({
     const analyst = await prisma.analyst
       .findUniqueOrThrow({ where: { id: analystId } })
       .then(({ extra, ...analyst }) => ({ ...analyst, extra: extra as AnalystExtra }));
+
+    // step 0: check if user has active subscription, podcast 功能还处于 preview 状态，暂时只给付费用户使用
+    const { activeSubscription } = await fetchActiveSubscription({
+      userId: analyst.userId,
+    });
+    if (!activeSubscription) {
+      logger.info("User does not have active subscription, skipping podcast generation");
+      return;
+    }
 
     if (!dryRun) {
       await prisma.analyst.update({

@@ -193,6 +193,7 @@
         "basic": "Conduct professional interviews with real people and AI Personas (limited features)",
         "full": "Conduct professional interviews with real people and AI Personas (full features)"
       },
+      "podcastPreview": "Generate podcasts from studies",
       "productRnDPreview": "Product R&D research workflow for innovation and ideation",
       "allMaxFeatures": "All features from Max plan",
       "interviews": {

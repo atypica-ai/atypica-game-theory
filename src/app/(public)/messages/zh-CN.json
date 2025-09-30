@@ -193,6 +193,7 @@
         "basic": "使用AI专家与真人和AI人设进行自动访谈（基础功能）",
         "full": "使用AI专家与真人和AI人设进行自动访谈（完整功能）"
       },
+      "podcastPreview": "研究播客自动生成",
       "productRnDPreview": "产品创新研发流程用于创新和创意生成",
       "allMaxFeatures": "包含Max版所有功能",
       "interviews": {

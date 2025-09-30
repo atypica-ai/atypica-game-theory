@@ -6,6 +6,8 @@
 
 - **🧪 Alpha Testing: Product R&D Flow**
   - A new "Product R&D" research template focusing on market trends, user needs, and creative ideation.
+- **🎧 Beta Preview: Study-to-Podcast Generation**
+  - Automatically converts selected studies into podcasts so insights can be reviewed and shared quickly. Pro, Max, and Team subscribers can currently try the beta preview.
 
 ---
 
