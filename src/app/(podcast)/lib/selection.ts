@@ -8,7 +8,7 @@ import { generateObject } from "ai";
 import { Logger } from "pino";
 import { z } from "zod";
 import { chunkArray } from "./utils";
-
+import { podcastEvaluationSystem } from "@/app/(podcast)/prompt";
 /**
  * Selects the most interesting analysts from a given array using LLM with structured output.
  * Uses generateObject to ensure consistent, structured results.
@@ -243,4 +243,149 @@ export async function selectAnalystsInBatches(
   });
 
   return allSelectedIds.slice(0, targetCount); // Ensure we don't exceed target
+}
+
+/**
+ * Evaluates a single analyst using a detailed rubric scoring system.
+ * Scores 8 criteria (0-4 points each) and makes selection based on total score threshold.
+ */
+export async function evaluateAnalystForPodcast(
+  analyst: Analyst,
+  scoreThreshold: number = 20, // Out of 32 total points (62.5%)
+  systemPrompt?: string,
+  logger?: Logger,
+): Promise<{
+  shouldSelect: boolean;
+  totalScore: number;
+  overallReason: string;
+}> {
+  const log = logger || rootLogger.child({
+    method: "evaluateAnalystForPodcast",
+    analystId: analyst.id,
+    topic: analyst.topic,
+  });
+
+  // Validate input
+  if (!analyst) {
+    throw new Error("No analyst provided for evaluation");
+  }
+
+  if (scoreThreshold < 0 || scoreThreshold > 32) {
+    throw new Error("Score threshold must be between 0 and 32");
+  }
+
+  log.info({
+    msg: "Starting analyst evaluation with rubric scoring",
+    analystId: analyst.id,
+    topic: analyst.topic || "Not specified",
+    threshold: scoreThreshold,
+  });
+
+  // Create the evaluation prompt with analyst details
+  const evaluationPrompt = `Please evaluate this research using the rubric scoring system:
+
+**Topic**: ${analyst.topic || "Not specified"}
+
+**Brief**: ${analyst.brief || "No brief available"}
+
+**Study Summary**: ${analyst.studySummary || "No summary available"}
+
+**Study Log**: ${analyst.studyLog || "No study log available"}
+
+Score each of the 8 criteria according to the rubric (0-4 points each). Provide specific reasoning for each score based on the content provided.`;
+
+  // Define the schema for structured output with detailed scoring
+  const evaluationSchema = z.object({
+    scores: z.object({
+      topicRelevanceNews: z.object({
+        score: z.number().min(0).max(4).describe("Score for news/controversy relevance (0 or 4 points)"),
+        reason: z.string().describe("Explanation for this score"),
+      }),
+      topicRelevanceAudience: z.object({
+        score: z.number().min(0).max(4).describe("Score for audience size/care level (0-4 points)"),
+        reason: z.string().describe("Explanation for this score"),
+      }),
+      surpriseContradiction: z.object({
+        score: z.number().min(0).max(4).describe("Score for contradicting common beliefs (0-4 points)"),
+        reason: z.string().describe("Explanation for this score"),
+      }),
+      surpriseApproach: z.object({
+        score: z.number().min(0).max(4).describe("Score for unusual research approach (0-4 points)"),
+        reason: z.string().describe("Explanation for this score"),
+      }),
+      qualityLogic: z.object({
+        score: z.number().min(0).max(4).describe("Score for logical soundness (0-4 points)"),
+        reason: z.string().describe("Explanation for this score"),
+      }),
+      qualityEvidence: z.object({
+        score: z.number().min(0).max(4).describe("Score for evidence reliability (0-4 points)"),
+        reason: z.string().describe("Explanation for this score"),
+      }),
+      insightDifficulty: z.object({
+        score: z.number().min(0).max(4).describe("Score for research difficulty/expertise needed (0-4 points)"),
+        reason: z.string().describe("Explanation for this score"),
+      }),
+      insightPractical: z.object({
+        score: z.number().min(0).max(4).describe("Score for practical application value (0-4 points)"),
+        reason: z.string().describe("Explanation for this score"),
+      }),
+    }),
+    overallReason: z.string().describe("Summary of why this research should or shouldn't be selected based on total score"),
+  });
+
+  try {
+    const result = await generateObject({
+      model: llm("gpt-4.1-nano"),
+      providerOptions: providerOptions,
+      system: podcastEvaluationSystem,
+      prompt: evaluationPrompt,
+      schema: evaluationSchema,
+      schemaName: "PodcastEvaluation",
+      schemaDescription: "Detailed rubric-based evaluation for podcast suitability",
+      maxRetries: 2,
+    });
+
+    const scores = result.object.scores;
+    
+    // Calculate total score
+    const totalScore = 
+      scores.topicRelevanceNews.score +
+      scores.topicRelevanceAudience.score +
+      scores.surpriseContradiction.score +
+      scores.surpriseApproach.score +
+      scores.qualityLogic.score +
+      scores.qualityEvidence.score +
+      scores.insightDifficulty.score +
+      scores.insightPractical.score;
+
+    const maxScore = 32;
+    const shouldSelect = totalScore >= scoreThreshold;
+
+    log.info({
+      msg: "Analyst rubric evaluation completed",
+      analystId: analyst.id,
+      totalScore,
+      maxScore,
+      threshold: scoreThreshold,
+      shouldSelect,
+      scoreBreakdown: Object.fromEntries(
+        Object.entries(scores).map(([key, value]) => [key, value.score])
+      ),
+    });
+
+    return {
+      shouldSelect,
+      totalScore,
+      overallReason: `Score: ${totalScore}/${maxScore} (threshold: ${scoreThreshold}). ${result.object.overallReason}`,
+    };
+  } catch (error) {
+    log.error({
+      msg: "Analyst rubric evaluation failed",
+      analystId: analyst.id,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    throw new Error(
+      `Failed to evaluate analyst ${analyst.id}: ${error instanceof Error ? error.message : String(error)}`,
+    );
+  }
 }
