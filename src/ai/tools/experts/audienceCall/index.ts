@@ -1,7 +1,11 @@
 import { createTextEmbedding } from "@/ai/embedding";
 import { reasoningPrologue, reasoningSystem } from "@/ai/prompt";
 import { llm, providerOptions } from "@/ai/provider";
-import { PlainTextToolResult, ReasoningThinkingResult, StatReporter } from "@/ai/tools/types";
+import {
+  AgentToolConfigArgs,
+  PlainTextToolResult,
+  ReasoningThinkingResult,
+} from "@/ai/tools/types";
 import { fixMalformedUnicodeString } from "@/lib/utils";
 import { prisma } from "@/prisma/prisma";
 import { streamText, tool } from "ai";
@@ -25,78 +29,64 @@ async function audienceCall({
   personas,
   abortSignal,
   statReport,
+  logger,
 }: {
-  locale: Locale;
   background: string;
   question: string;
   personas: TPersonaForStudy[];
-  abortSignal?: AbortSignal;
-  statReport?: StatReporter;
-}): Promise<ReasoningThinkingResult> {
-  try {
-    return new Promise(async (resolve, reject) => {
-      // Use the first persona's prompt as the system prompt, or fallback to default
-      const systemPrompt = personas.length > 0 ? personas[0].prompt : reasoningSystem({ locale });
-      const response = streamText({
-        // model: llm("o3-mini"),
-        model: llm("gemini-2.5-pro", {
-          useSearchGrounding: true,
-          dynamicRetrievalConfig: {
-            mode: "MODE_DYNAMIC",
-            dynamicThreshold: 0, // threshold 越小，使用搜索的可能性就越高，0就是一定会搜索
-          },
-        }),
-        providerOptions: providerOptions,
-        system: systemPrompt,
-        messages: [
-          {
-            role: "user",
-            content: reasoningPrologue({
-              locale,
-              background: background,
-              question,
-            }),
-          },
-        ],
-        // maxTokens: 500,
-        // onChunk: (chunk) => console.log("[Reasoning]", JSON.stringify(chunk)),
-        onFinish: async (result) => {
-          const reasoning = result.reasoning ?? "";
-          const text = result.text ?? "";
-          resolve({
-            reasoning,
-            text,
-            plainText: text,
+} & AgentToolConfigArgs): Promise<ReasoningThinkingResult> {
+  return new Promise(async (resolve, reject) => {
+    // Use the first persona's prompt as the system prompt, or fallback to default
+    const systemPrompt = personas.length > 0 ? personas[0].prompt : reasoningSystem({ locale });
+    const response = streamText({
+      // model: llm("o3-mini"),
+      model: llm("gemini-2.5-pro", {
+        useSearchGrounding: true,
+        dynamicRetrievalConfig: {
+          mode: "MODE_DYNAMIC",
+          dynamicThreshold: 0, // threshold 越小，使用搜索的可能性就越高，0就是一定会搜索
+        },
+      }),
+      providerOptions: providerOptions,
+      system: systemPrompt,
+      messages: [
+        {
+          role: "user",
+          content: reasoningPrologue({
+            locale,
+            background: background,
+            question,
+          }),
+        },
+      ],
+      // maxTokens: 500,
+      // onChunk: (chunk) => console.log("[Reasoning]", JSON.stringify(chunk)),
+      onFinish: async (result) => {
+        logger.info("audienceCall streamText onFinish");
+        const reasoning = result.reasoning ?? "";
+        const text = result.text ?? "";
+        if (result.usage.totalTokens > 0 && statReport) {
+          await statReport("tokens", result.usage.totalTokens, {
+            reportedBy: "audienceCall tool",
           });
-          if (result.usage.totalTokens > 0 && statReport) {
-            await statReport("tokens", result.usage.totalTokens, {
-              reportedBy: "audienceCall tool",
-            });
-          }
-        },
-        onError: (error) => {
-          console.log("Error generating audience call reasoning:", error);
-          reject(error);
-        },
-        abortSignal,
-      });
-      await response.consumeStream();
+        }
+        resolve({
+          reasoning,
+          text,
+          plainText: text,
+        });
+      },
+      onError: ({ error }) => {
+        logger.error(`audienceCall streamText onError: ${(error as Error).message}`);
+        reject(error);
+      },
+      abortSignal,
     });
-  } catch (error) {
-    console.log("Error generating audience call reasoning:", error);
-    throw error;
-  }
+    await response.consumeStream();
+  });
 }
 
-export const audienceCallTool = ({
-  locale,
-  abortSignal,
-  statReport,
-}: {
-  locale: Locale;
-  abortSignal?: AbortSignal;
-  statReport?: StatReporter;
-}) =>
+export const audienceCallTool = (toolCallConfigArgs: AgentToolConfigArgs) =>
   tool({
     description:
       "Search for relevant user personas and get expert consultation with persona-informed analysis for complex problems or decisions. Provides detailed thinking process and professional insights based on specific user personas found in the database.",
@@ -132,7 +122,9 @@ export const audienceCallTool = ({
       },
     ) => {
       const searchResults = await Promise.all(
-        audienceSearchQueries.map((searchQuery) => searchPersonas(locale, searchQuery)),
+        audienceSearchQueries.map((searchQuery) =>
+          searchPersonas(toolCallConfigArgs.locale, searchQuery),
+        ),
       );
       let personas: TPersonaForStudy[] = [];
       const seenPersonaIds = new Set<number>();
@@ -151,20 +143,18 @@ export const audienceCallTool = ({
       }
       personas = personas.slice(0, 10);
 
-      if (statReport) {
-        await statReport("personas", personas.length, {
+      if (toolCallConfigArgs.statReport) {
+        await toolCallConfigArgs.statReport("personas", personas.length, {
           reportedBy: "audienceCall tool",
           personaIds: personas.map((persona) => persona.personaId),
         });
       }
 
       const result = await audienceCall({
-        locale,
         background,
         question,
         personas,
-        abortSignal,
-        statReport,
+        ...toolCallConfigArgs,
       });
 
       // // Include persona information in the result

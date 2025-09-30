@@ -65,7 +65,7 @@ export async function POST(req: Request) {
       }
     },
     abortSignal: req.signal,
-    onError: (error) => {
+    onError: ({ error }) => {
       console.log(error);
     },
   });

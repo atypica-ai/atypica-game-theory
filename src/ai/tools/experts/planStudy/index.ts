@@ -2,11 +2,14 @@ import "server-only";
 
 import { planStudyPrologue, planStudySystem } from "@/ai/prompt";
 import { llm, providerOptions } from "@/ai/provider";
-import { PlainTextToolResult, ReasoningThinkingResult, StatReporter } from "@/ai/tools/types";
+import {
+  AgentToolConfigArgs,
+  PlainTextToolResult,
+  ReasoningThinkingResult,
+} from "@/ai/tools/types";
 import { fixMalformedUnicodeString } from "@/lib/utils";
 import { prisma } from "@/prisma/prisma";
 import { streamText, tool } from "ai";
-import { Locale } from "next-intl";
 import { z } from "zod";
 
 async function planStudy({
@@ -15,77 +18,66 @@ async function planStudy({
   question,
   abortSignal,
   statReport,
+  logger,
 }: {
-  locale: Locale;
   background: string;
   question: string;
-  abortSignal?: AbortSignal;
-  statReport?: StatReporter;
-}): Promise<ReasoningThinkingResult> {
-  try {
-    return new Promise(async (resolve, reject) => {
-      const systemPrompt = planStudySystem({ locale });
-      const response = streamText({
-        model: llm("gemini-2.5-pro", {
-          useSearchGrounding: true,
-          dynamicRetrievalConfig: {
-            mode: "MODE_DYNAMIC",
-            dynamicThreshold: 0, // threshold 越小，使用搜索的可能性就越高，0就是一定会搜索
-          },
-        }),
-        providerOptions: providerOptions,
-        system: systemPrompt,
-        messages: [
-          {
-            role: "user",
-            content: planStudyPrologue({
-              locale,
-              background: background,
-              question,
-            }),
-          },
-        ],
-        // maxTokens: 500,
-        // onChunk: (chunk) => console.log("[Reasoning]", JSON.stringify(chunk)),
-        onFinish: async (result) => {
-          const reasoning = result.reasoning ?? "";
-          const text = result.text ?? "";
-          resolve({
-            reasoning,
-            text,
-            plainText: text,
+} & AgentToolConfigArgs): Promise<ReasoningThinkingResult> {
+  return new Promise(async (resolve, reject) => {
+    const systemPrompt = planStudySystem({ locale });
+    const response = streamText({
+      model: llm("gemini-2.5-pro", {
+        useSearchGrounding: true,
+        dynamicRetrievalConfig: {
+          mode: "MODE_DYNAMIC",
+          dynamicThreshold: 0, // threshold 越小，使用搜索的可能性就越高，0就是一定会搜索
+        },
+      }),
+      providerOptions: providerOptions,
+      system: systemPrompt,
+      messages: [
+        {
+          role: "user",
+          content: planStudyPrologue({
+            locale,
+            background: background,
+            question,
+          }),
+        },
+      ],
+      // maxTokens: 500,
+      // onChunk: (chunk) => console.log("[Reasoning]", JSON.stringify(chunk)),
+      onFinish: async (result) => {
+        logger.info(`planStudy streamText onFinish`);
+        const reasoning = result.reasoning ?? "";
+        const text = result.text ?? "";
+        if (result.usage.totalTokens > 0 && statReport) {
+          await statReport("tokens", result.usage.totalTokens, {
+            reportedBy: "planStudy tool",
           });
-          if (result.usage.totalTokens > 0 && statReport) {
-            await statReport("tokens", result.usage.totalTokens, {
-              reportedBy: "audienceCall tool",
-            });
-          }
-        },
-        onError: (error) => {
-          console.log("Error generating audience call reasoning:", error);
-          reject(error);
-        },
-        abortSignal,
-      });
-      await response.consumeStream();
+        }
+        resolve({
+          reasoning,
+          text,
+          plainText: text,
+        });
+      },
+      onError: ({ error }) => {
+        logger.error(`planStudy streamText onError: ${(error as Error).message}`);
+        reject(error);
+      },
+      abortSignal,
     });
-  } catch (error) {
-    console.log("Error generating audience call reasoning:", error);
-    throw error;
-  }
+    await response.consumeStream();
+  });
 }
 
 export const planStudyTool = ({
   studyUserChatId,
-  locale,
-  abortSignal,
-  statReport,
+  ...toolCallConfigArgs
 }: {
   studyUserChatId: number;
-  locale: Locale;
-  abortSignal?: AbortSignal;
-  statReport?: StatReporter;
-}) =>
+} & AgentToolConfigArgs) =>
   tool({
     description:
       "Ask the professional consultant to plan a research plan based on the user's question.",
@@ -108,11 +100,9 @@ export const planStudyTool = ({
     },
     execute: async ({ background, question }) => {
       const result = await planStudy({
-        locale,
         background,
         question,
-        abortSignal,
-        statReport,
+        ...toolCallConfigArgs,
       });
       const { analyst } = await prisma.userChat.findUniqueOrThrow({
         where: { id: studyUserChatId, kind: "study" },
@@ -135,7 +125,7 @@ export const planStudyTool = ({
         data: {
           topic:
             analyst.topic +
-            (locale === "zh-CN" ? "\n\n研究计划：\n" : "\n\nStudy Plan: \n") +
+            (toolCallConfigArgs.locale === "zh-CN" ? "\n\n研究计划：\n" : "\n\nStudy Plan: \n") +
             result.text,
         },
       });
