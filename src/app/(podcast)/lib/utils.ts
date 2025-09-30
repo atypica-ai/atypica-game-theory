@@ -48,23 +48,6 @@ export async function podcastObjectUrlToHttpUrl(
   return url;
 }
 
-// Script preprocessing for audio generation
-export function preprocessScriptForAudio(script: string): string {
-  return (
-    script
-      // Remove all lines starting with # (fixed regex to work with multiline)
-      .replace(/^#.*$/gm, "")
-      // Remove all *
-      .replace(/\*/g, "")
-      // Remove speaker labels like 【A】【B】
-      .replace(/【[^】]*】/g, "")
-      // Remove excessive newlines (keep single \n, remove multiple)
-      // .replace(/\n{2,}/g, "\n")
-      // Trim whitespace from beginning and end
-      .trim()
-  );
-}
-
 // Validation helper for API routes (no auth, just validation)
 export async function validatePodcastRequest(
   podcastToken: string,
