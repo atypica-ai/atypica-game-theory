@@ -1,5 +1,6 @@
 import { sendEmail } from "@/email/lib";
 import { sendPasswordResetEmail } from "@/email/passwordReset";
+import { sendPodcastReadyEmail } from "@/email/podcastReady";
 import { sendReportCompletionEmail } from "@/email/reportCompletion";
 import { sendStudyInterruptionEmail } from "@/email/studyInterruption";
 import { sendVerificationEmail } from "@/email/verification";
@@ -72,6 +73,15 @@ describe.skip("Email Module Tests", () => {
       await sendStudyInterruptionEmail({
         email: process.env.EMAIL_TEST_RECEIVER!,
         title: "测试研究",
+        studyUrl: FAKE_URL,
+        locale,
+      });
+    });
+    it("sendPodcastReadyEmail", async () => {
+      await sendPodcastReadyEmail({
+        email: process.env.EMAIL_TEST_RECEIVER!,
+        title: "测试播客",
+        podcastUrl: `${FAKE_URL}/podcast`,
         studyUrl: FAKE_URL,
         locale,
       });

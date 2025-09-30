@@ -10,6 +10,7 @@ import { prisma } from "@/prisma/prisma";
 import { OpenAIResponsesProviderOptions } from "@ai-sdk/openai";
 import { generateObject } from "ai";
 import { generatePodcast } from "./generation";
+import { notifyPodcastReady } from "./notify";
 
 async function evaluateAnalystForPodcast(
   analyst: Pick<Analyst, "id" | "topic" | "brief" | "studySummary" | "studyLog">,
@@ -141,6 +142,12 @@ export async function evaluateAndGenerate({
     });
 
     logger.info({ msg: "Podcast generated after evaluation", podcastId: podcast.id });
+
+    await notifyPodcastReady({
+      analystId: analyst.id,
+      podcast: { token: podcast.token },
+      logger,
+    });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     logger.error({ msg: "evaluateAndGenerate failed", error: errorMessage });
