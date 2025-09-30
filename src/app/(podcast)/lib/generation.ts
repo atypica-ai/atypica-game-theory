@@ -15,7 +15,7 @@ import { FinishReason, Message, streamText } from "ai";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
 import { podcastScriptPrologue, podcastScriptSystem } from "../prompt";
-import { createPodcastRecord } from "./data";
+import { createPodcastRecord } from "./utils";
 import { createVolcanoClient } from "./volcano/client";
 
 /**

@@ -1,5 +1,7 @@
-import { batchGeneratePodcasts } from "@/app/(podcast)/lib/batch";
+import { evaluateAndGenerate } from "@/app/(podcast)/lib/evaluate";
 import { rootLogger } from "@/lib/logging";
+import { prisma } from "@/prisma/prisma";
+import { waitUntil } from "@vercel/functions";
 import { NextRequest } from "next/server";
 
 // Internal auth validation helper
@@ -11,91 +13,87 @@ function validateInternalAuth(request: NextRequest): boolean {
 export async function POST(request: NextRequest) {
   const logger = rootLogger.child({ api: "batch-generate-podcasts" });
 
-  try {
-    // Validate internal authentication
-    if (!validateInternalAuth(request)) {
-      logger.warn("Unauthorized access to batch podcast generate API");
-      return Response.json({ success: false, error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Parse optional parameters
-    const {
-      batchSize = 10,
-      targetCount = 10,
-      poolLimit = 10,
-    } = await request.json().catch(() => ({}));
-
-    // Validate parameters
-    if (batchSize < 1 || batchSize > 50) {
-      return Response.json(
-        { success: false, error: "batchSize must be between 1 and 50" },
-        { status: 400 },
-      );
-    }
-
-    if (targetCount < 1 || targetCount > 100) {
-      return Response.json(
-        { success: false, error: "targetCount must be between 1 and 100" },
-        { status: 400 },
-      );
-    }
-
-    if (poolLimit < 1 || poolLimit > 100) {
-      return Response.json(
-        { success: false, error: "poolLimit must be between 1 and 100" },
-        { status: 400 },
-      );
-    }
-
-    logger.info({
-      msg: "Batch podcast generation request received",
-      batchSize,
-      targetCount,
-      poolLimit,
-    });
-
-    // Start background processing directly using lib function
-    const result = await batchGeneratePodcasts({
-      batchSize,
-      targetCount,
-      poolLimit,
-    });
-
-    logger.info({
-      msg: "Batch podcast generation completed",
-      totalProcessed: result.totalProcessed,
-      successful: result.successful,
-      failed: result.failed,
-      processingTimeMs: result.summary.processingTimeMs,
-    });
-
-    // Return result after completion
-    return Response.json({
-      success: true,
-      message: "Batch podcast generation completed successfully",
-      result: {
-        totalProcessed: result.totalProcessed,
-        successful: result.successful,
-        failed: result.failed,
-        processingTimeMs: result.summary.processingTimeMs,
-      },
-      params: {
-        batchSize,
-        targetCount,
-        poolLimit,
-      },
-      completedAt: new Date().toISOString(),
-    });
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    const errorStack = error instanceof Error ? error.stack : undefined;
-
-    logger.error({
-      msg: "Batch podcast generation API error",
-      error: errorMessage,
-      stack: errorStack,
-    });
-
-    return Response.json({ success: false, error: "Internal server error" }, { status: 500 });
+  // Validate internal authentication
+  if (!validateInternalAuth(request)) {
+    logger.warn("Unauthorized access to batch podcast generate API");
+    return Response.json({ success: false, error: "Unauthorized" }, { status: 401 });
   }
+
+  // Parse optional parameters
+  const body = await request.json().catch(() => ({}));
+
+  const limit = typeof body.limit === "number" ? body.limit : 20;
+  const scoreThreshold = typeof body.scoreThreshold === "number" ? body.scoreThreshold : 0.625;
+  const dryRun = body.dryRun === true;
+
+  if (limit < 1 || limit > 100) {
+    return Response.json(
+      { success: false, error: "limit must be between 1 and 100" },
+      { status: 400 },
+    );
+  }
+
+  if (scoreThreshold < 0 || scoreThreshold > 1) {
+    return Response.json(
+      { success: false, error: "scoreThreshold must be between 0 and 1" },
+      { status: 400 },
+    );
+  }
+
+  logger.info({
+    msg: "batch evaluate-and-generate podcasts request received",
+    limit,
+    scoreThreshold,
+    dryRun,
+  });
+
+  const analysts = await prisma.$queryRaw<Array<{ id: number; extra: unknown }>>`
+    SELECT a.id, a.extra
+    FROM "Analyst" AS a
+    WHERE NOT (a.extra ? 'podcastEvaluation')
+      AND EXISTS (
+        SELECT 1
+        FROM "AnalystReport" r
+        WHERE r."analystId" = a.id
+      )
+    ORDER BY a.id DESC
+    LIMIT ${limit}
+  `;
+
+  const promises: Promise<void>[] = [];
+  for (let i = 0; i < analysts.length; i++) {
+    const analyst = analysts[i];
+    if (!dryRun) {
+      await prisma.$executeRaw`
+        UPDATE "Analyst"
+        SET "extra" = jsonb_set(COALESCE("extra", '{}'::jsonb), '{podcastEvaluation}', '{}'::jsonb, true)
+        WHERE "id" = ${analyst.id}
+      `;
+    }
+    promises.push(
+      (async (delaySeconds, analystId) => {
+        await new Promise((resolve) => setTimeout(resolve, delaySeconds * 1000));
+        await evaluateAndGenerate({ analystId, scoreThreshold, dryRun });
+      })(i * 1, analyst.id),
+    );
+  }
+
+  waitUntil(Promise.all(promises));
+
+  logger.info({
+    msg: "batch evaluate-and-generate podcasts jobs scheduled",
+    found: analysts.length,
+    scoreThreshold,
+    dryRun,
+  });
+
+  return Response.json({
+    success: true,
+    message: `Found ${analysts.length} analysts with reports. evaluateAndGenerate podcasting...`,
+    params: {
+      limit,
+      scoreThreshold,
+      dryRun,
+    },
+  });
 }

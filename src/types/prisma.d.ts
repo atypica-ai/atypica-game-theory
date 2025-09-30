@@ -132,8 +132,7 @@ declare module "@/prisma/client" {
   }>;
 
   export type AnalystExtra = Partial<{
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    podcastEvaluation: any;
+    podcastEvaluation: { processing?: boolean } & Record<string, unknown>;
   }>;
 
   // Removed

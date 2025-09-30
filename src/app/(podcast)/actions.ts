@@ -7,7 +7,6 @@ import { ServerActionResult } from "@/lib/serverAction";
 import { Analyst, AnalystPodcast, AnalystPodcastExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
-import { fetchPodcastsForAnalyst } from "./lib/data";
 import { generatePodcast } from "./lib/generation";
 import { podcastObjectUrlToHttpUrl } from "./lib/utils";
 
@@ -35,26 +34,32 @@ export async function fetchAnalystPodcasts({ analystId }: { analystId: number })
   >
 > {
   return withAuth(async (user) => {
-    try {
-      const podcasts = await fetchPodcastsForAnalyst(analystId, user.id);
-      return {
-        success: true,
-        data: podcasts,
-      };
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      if (errorMessage.includes("unauthorized") || errorMessage.includes("not found")) {
-        return {
-          success: false,
-          code: "forbidden",
-          message: "You are not authorized to access this resource.",
-        };
-      }
-      return {
-        success: false,
-        message: errorMessage,
-      };
-    }
+    const podcasts = await prisma.analystPodcast.findMany({
+      where: {
+        analystId,
+        analyst: { userId: user.id },
+      },
+      select: {
+        id: true,
+        token: true,
+        analystId: true,
+        analyst: true,
+        script: true,
+        objectUrl: true,
+        generatedAt: true,
+        createdAt: true,
+        updatedAt: true,
+        extra: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    return {
+      success: true,
+      data: podcasts.map((podcast) => ({
+        ...podcast,
+        extra: (podcast.extra || {}) as AnalystPodcastExtra,
+      })),
+    };
   });
 }
 

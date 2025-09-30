@@ -1,12 +1,10 @@
 import "server-only";
 
-import { VALID_LOCALES } from "@/i18n/routing";
 import { s3SignedUrl } from "@/lib/attachments/s3";
-import { detectInputLanguage } from "@/lib/textUtils";
-import type { Analyst, AnalystPodcast, AnalystPodcastExtra } from "@/prisma/client";
+import { generateToken } from "@/lib/utils";
+import type { AnalystPodcast, AnalystPodcastExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
-import { Locale } from "next-intl";
 
 // Helper function to convert podcast objectUrl to signed HTTP URL
 export async function podcastObjectUrlToHttpUrl(
@@ -48,49 +46,22 @@ export async function podcastObjectUrlToHttpUrl(
   return url;
 }
 
-// Validation helper for API routes (no auth, just validation)
-export async function validatePodcastRequest(
-  podcastToken: string,
-  userId: number,
-): Promise<{
-  podcast: AnalystPodcast & { analyst: Analyst };
-  locale: string;
-}> {
-  // Fetch podcast and validate ownership
-  const podcast = await prisma.analystPodcast.findUnique({
-    where: { token: podcastToken },
-    include: {
-      analyst: true,
+// Core podcast record creation
+export async function createPodcastRecord(
+  analystId: number,
+  instruction: string,
+  token: string = generateToken(),
+): Promise<Omit<AnalystPodcast, "extra"> & { extra: AnalystPodcastExtra }> {
+  const { extra, ...podcast } = await prisma.analystPodcast.create({
+    data: {
+      analystId,
+      instruction,
+      token,
+      script: "",
     },
   });
-
-  if (!podcast) {
-    throw new Error("Podcast not found");
-  }
-
-  if (podcast.analyst.userId !== userId) {
-    throw new Error("Unauthorized");
-  }
-
-  // Check if script exists
-  if (!podcast.script || podcast.script.trim().length === 0) {
-    throw new Error("No script available for audio generation");
-  }
-
-  // Detect locale
-  const locale =
-    podcast.analyst.locale && VALID_LOCALES.includes(podcast.analyst.locale as Locale)
-      ? (podcast.analyst.locale as Locale)
-      : await detectInputLanguage({ text: podcast.script });
-
-  return { podcast, locale };
-}
-
-// Utility function to chunk array into batches
-export function chunkArray<T>(array: T[], chunkSize: number): T[][] {
-  const chunks: T[][] = [];
-  for (let i = 0; i < array.length; i += chunkSize) {
-    chunks.push(array.slice(i, i + chunkSize));
-  }
-  return chunks;
+  return {
+    ...podcast,
+    extra: (extra || {}) as AnalystPodcastExtra,
+  };
 }
