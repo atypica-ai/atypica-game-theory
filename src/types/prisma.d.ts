@@ -131,6 +131,11 @@ declare module "@/prisma/client" {
     error: string;
   }>;
 
+  export type AnalystExtra = Partial<{
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    podcastEvaluation: any;
+  }>;
+
   // Removed
   // export type ProductExtra = Partial<{
   //   stripePriceId: string;

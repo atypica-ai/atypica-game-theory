@@ -147,6 +147,7 @@ model Analyst {
   attachments     Json      @default("[]")
   kind            String?   @db.VarChar(16)
   locale          String?   @db.VarChar(16)
+  extra           Json      @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
