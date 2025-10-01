@@ -13,22 +13,35 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { getPodcastAudioUrl } from "../../actions";
 
-interface PodcastSharePageClientProps {
-  podcastToken: string;
-  podcast: Pick<AnalystPodcast, "id" | "token" | "script" | "objectUrl" | "generatedAt">;
-  analyst: Pick<Analyst, "id" | "topic">;
-  studyUserChat: Pick<UserChat, "token" | "title">;
+function SharePageHeader({
+  studyReplayUrl,
+  copyShareLink,
+}: {
+  studyReplayUrl: string;
+  copyShareLink: () => void;
+}) {
+  const t = useTranslations("PodcastSharePage");
+  return (
+    <GlobalHeader className="h-12">
+      <div className="flex items-center gap-2 sm:gap-4">
+        <Button variant="outline" size="sm" className="h-8 gap-1" asChild>
+          <Link href={studyReplayUrl}>
+            <Play size={14} />
+            <span className="max-sm:text-xs max-sm:tracking-tighter">{t("viewReplay")}</span>
+          </Link>
+        </Button>
+        <Button variant="outline" size="sm" className="h-8 gap-1" onClick={copyShareLink}>
+          <Share2 size={14} />
+          <span className="hidden sm:inline">{t("copyLink")}</span>
+        </Button>
+        {/*<UserTokensBalance />*/}
+        <UserMenu />
+      </div>
+    </GlobalHeader>
+  );
 }
 
-export default function PodcastSharePageClient({
-  podcastToken,
-  podcast,
-  analyst,
-  studyUserChat,
-}: PodcastSharePageClientProps) {
-  const t = useTranslations("PodcastSharePage");
-  const tCompliance = useTranslations("AICompliance");
-  const pathname = usePathname();
+function AudioPlayer({ podcastToken }: { podcastToken: string }) {
   const { theme } = useTheme();
 
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -125,6 +138,106 @@ export default function PodcastSharePageClient({
     seekTo(newTime);
   }, [seekTo]);
 
+  const formatTime = useCallback((time: number) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+  }, []);
+
+  if (error) {
+    return (
+      <div className="text-center py-16">
+        <p className="text-destructive text-lg">{error}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-8 md:space-y-12">
+      {/* Hidden audio element */}
+      {audioUrl && <audio ref={audioRef} src={audioUrl} preload="metadata" />}
+
+      {/* Play controls */}
+      <div className="flex items-center justify-center gap-8 md:gap-12">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={skipBackward}
+          disabled={isLoading || !audioUrl}
+          className="h-14 w-14 md:h-16 md:w-16 touch-manipulation hover:bg-zinc-200 dark:hover:bg-zinc-700"
+        >
+          <RotateCcw className="size-5" />
+        </Button>
+
+        <Button
+          size="lg"
+          onClick={togglePlayPause}
+          disabled={isLoading || !audioUrl}
+          className="size-20 rounded-full touch-manipulation active:scale-95 transition-transform"
+        >
+          {isLoading ? (
+            <Loader2Icon className="size-6 animate-spin" />
+          ) : isPlaying ? (
+            <Pause className="size-6" />
+          ) : (
+            <Play className="size-6 ml-1" />
+          )}
+        </Button>
+
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={skipForward}
+          disabled={isLoading || !audioUrl}
+          className="h-14 w-14 md:h-16 md:w-16 touch-manipulation hover:bg-zinc-200 dark:hover:bg-zinc-700"
+        >
+          <RotateCw className="size-5" />
+        </Button>
+      </div>
+
+      {/* Progress bar */}
+      <div className="space-y-4 md:space-y-6">
+        <div className="relative">
+          <input
+            type="range"
+            min={0}
+            max={duration || 100}
+            value={currentTime}
+            onChange={(e) => seekTo(Number(e.target.value))}
+            className="w-full h-3 rounded-lg appearance-none cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 touch-manipulation bg-gradient-to-r from-zinc-900 to-zinc-900 dark:from-zinc-100 dark:to-zinc-100 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-zinc-900 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-lg [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-zinc-900 [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:shadow-lg dark:[&::-webkit-slider-thumb]:bg-zinc-100 dark:[&::-moz-range-thumb]:bg-zinc-100"
+            style={{
+              background:
+                theme === "dark"
+                  ? `linear-gradient(to right, rgb(244 244 245) 0%, rgb(244 244 245) ${(currentTime / (duration || 100)) * 100}%, rgb(63 63 70) ${(currentTime / (duration || 100)) * 100}%, rgb(63 63 70) 100%)`
+                  : `linear-gradient(to right, rgb(24 24 27) 0%, rgb(24 24 27) ${(currentTime / (duration || 100)) * 100}%, rgb(209 213 219) ${(currentTime / (duration || 100)) * 100}%, rgb(209 213 219) 100%)`,
+            }}
+            disabled={isLoading || !audioUrl}
+          />
+        </div>
+        <div className="flex justify-between text-xs text-zinc-600 dark:text-zinc-400 font-mono">
+          <span>{formatTime(currentTime)}</span>
+          <span>{formatTime(duration)}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function PodcastSharePageClient({
+  podcastToken,
+  podcast,
+  analyst,
+  studyUserChat,
+}: {
+  podcastToken: string;
+  podcast: Pick<AnalystPodcast, "id" | "token" | "script" | "objectUrl" | "generatedAt">;
+  analyst: Pick<Analyst, "id" | "topic">;
+  studyUserChat: Pick<UserChat, "token" | "title">;
+}) {
+  const t = useTranslations("PodcastSharePage");
+  const tCompliance = useTranslations("AICompliance");
+  const pathname = usePathname();
+
   const copyShareLink = useCallback(() => {
     const url = window.location.origin + pathname;
     navigator.clipboard.writeText(url).then(() => {
@@ -132,30 +245,12 @@ export default function PodcastSharePageClient({
     });
   }, [pathname, t]);
 
-  const formatTime = useCallback((time: number) => {
-    const minutes = Math.floor(time / 60);
-    const seconds = Math.floor(time % 60);
-    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
-  }, []);
-
   return (
     <div className="h-dvh flex flex-col items-stretch justify-start bg-muted/20">
-      <GlobalHeader className="h-12">
-        <div className="flex items-center gap-2 sm:gap-4">
-          <Button variant="outline" size="sm" className="h-8 gap-1" asChild>
-            <Link href={`/study/${studyUserChat.token}/share?replay=1`}>
-              <Play size={14} />
-              <span className="max-sm:text-xs max-sm:tracking-tighter">{t("viewReplay")}</span>
-            </Link>
-          </Button>
-          <Button variant="outline" size="sm" className="h-8 gap-1" onClick={copyShareLink}>
-            <Share2 size={14} />
-            <span className="hidden sm:inline">{t("copyLink")}</span>
-          </Button>
-          {/*<UserTokensBalance />*/}
-          <UserMenu />
-        </div>
-      </GlobalHeader>
+      <SharePageHeader
+        studyReplayUrl={`/study/${studyUserChat.token}/share?replay=1`}
+        copyShareLink={copyShareLink}
+      />
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-y-auto">
@@ -172,79 +267,7 @@ export default function PodcastSharePageClient({
         <section className="border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/20">
           <div className="container mx-auto px-4 py-16 md:py-24">
             <div className="max-w-2xl mx-auto">
-              {error ? (
-                <div className="text-center py-16">
-                  <p className="text-destructive text-lg">{error}</p>
-                </div>
-              ) : (
-                <div className="space-y-8 md:space-y-12">
-                  {/* Hidden audio element */}
-                  {audioUrl && <audio ref={audioRef} src={audioUrl} preload="metadata" />}
-
-                  {/* Play controls */}
-                  <div className="flex items-center justify-center gap-8 md:gap-12">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={skipBackward}
-                      disabled={isLoading || !audioUrl}
-                      className="h-14 w-14 md:h-16 md:w-16 touch-manipulation hover:bg-zinc-200 dark:hover:bg-zinc-700"
-                    >
-                      <RotateCcw className="size-5" />
-                    </Button>
-
-                    <Button
-                      size="lg"
-                      onClick={togglePlayPause}
-                      disabled={isLoading || !audioUrl}
-                      className="size-20 rounded-full touch-manipulation active:scale-95 transition-transform"
-                    >
-                      {isLoading ? (
-                        <Loader2Icon className="size-6 animate-spin" />
-                      ) : isPlaying ? (
-                        <Pause className="size-6" />
-                      ) : (
-                        <Play className="size-6 ml-1" />
-                      )}
-                    </Button>
-
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={skipForward}
-                      disabled={isLoading || !audioUrl}
-                      className="h-14 w-14 md:h-16 md:w-16 touch-manipulation hover:bg-zinc-200 dark:hover:bg-zinc-700"
-                    >
-                      <RotateCw className="size-5" />
-                    </Button>
-                  </div>
-
-                  {/* Progress bar */}
-                  <div className="space-y-4 md:space-y-6">
-                    <div className="relative">
-                      <input
-                        type="range"
-                        min={0}
-                        max={duration || 100}
-                        value={currentTime}
-                        onChange={(e) => seekTo(Number(e.target.value))}
-                        className="w-full h-3 rounded-lg appearance-none cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 touch-manipulation bg-gradient-to-r from-zinc-900 to-zinc-900 dark:from-zinc-100 dark:to-zinc-100 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-zinc-900 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-lg [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-zinc-900 [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:shadow-lg dark:[&::-webkit-slider-thumb]:bg-zinc-100 dark:[&::-moz-range-thumb]:bg-zinc-100"
-                        style={{
-                          background:
-                            theme === "dark"
-                              ? `linear-gradient(to right, rgb(244 244 245) 0%, rgb(244 244 245) ${(currentTime / (duration || 100)) * 100}%, rgb(63 63 70) ${(currentTime / (duration || 100)) * 100}%, rgb(63 63 70) 100%)`
-                              : `linear-gradient(to right, rgb(24 24 27) 0%, rgb(24 24 27) ${(currentTime / (duration || 100)) * 100}%, rgb(209 213 219) ${(currentTime / (duration || 100)) * 100}%, rgb(209 213 219) 100%)`,
-                        }}
-                        disabled={isLoading || !audioUrl}
-                      />
-                    </div>
-                    <div className="flex justify-between text-xs text-zinc-600 dark:text-zinc-400 font-mono">
-                      <span>{formatTime(currentTime)}</span>
-                      <span>{formatTime(duration)}</span>
-                    </div>
-                  </div>
-                </div>
-              )}
+              <AudioPlayer podcastToken={podcastToken} />
             </div>
           </div>
         </section>

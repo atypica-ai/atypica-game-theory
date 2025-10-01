@@ -10,6 +10,34 @@ import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
+function SharePageHeader({
+  studyReplayUrl,
+  copyShareLink,
+}: {
+  studyReplayUrl: string;
+  copyShareLink: () => void;
+}) {
+  const t = useTranslations("ReportSharePage");
+  return (
+    <GlobalHeader className="h-12">
+      <div className="flex items-center gap-2 sm:gap-4">
+        <Button variant="outline" size="sm" className="h-8 gap-1" asChild>
+          <Link href={studyReplayUrl}>
+            <Play size={14} />
+            <span className="max-sm:text-xs max-sm:tracking-tighter">{t("viewReplay")}</span>
+          </Link>
+        </Button>
+        <Button variant="outline" size="sm" className="h-8 gap-1" onClick={copyShareLink}>
+          <Share2 size={14} />
+          <span className="hidden sm:inline">{t("copyLink")}</span>
+        </Button>
+        {/*<UserTokensBalance />*/}
+        <UserMenu />
+      </div>
+    </GlobalHeader>
+  );
+}
+
 export default function ReportSharePageClient({
   reportToken,
   studyReplayUrl,
@@ -83,22 +111,7 @@ export default function ReportSharePageClient({
 
   return (
     <div className="h-dvh flex flex-col items-stretch justify-start bg-muted/20">
-      <GlobalHeader className="h-12">
-        <div className="flex items-center gap-2 sm:gap-4">
-          <Button variant="outline" size="sm" className="h-8 gap-1" asChild>
-            <Link href={studyReplayUrl}>
-              <Play size={14} />
-              <span className="max-sm:text-xs max-sm:tracking-tighter">{t("viewReplay")}</span>
-            </Link>
-          </Button>
-          <Button variant="outline" size="sm" className="h-8 gap-1" onClick={copyShareLink}>
-            <Share2 size={14} />
-            <span className="hidden sm:inline">{t("copyLink")}</span>
-          </Button>
-          {/*<UserTokensBalance />*/}
-          <UserMenu />
-        </div>
-      </GlobalHeader>
+      <SharePageHeader studyReplayUrl={studyReplayUrl} copyShareLink={copyShareLink} />
 
       <div className="flex-1 w-full relative overflow-hidden" ref={containerRef}>
         {isLoading && (
