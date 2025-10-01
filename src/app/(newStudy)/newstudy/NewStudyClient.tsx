@@ -19,13 +19,18 @@ export function NewStudyClient() {
         </div>
         <div className="mt-8 text-center text-sm">
           <Link
+            prefetch={true}
             href="/featured-studies"
             className="text-primary underline-offset-4 hover:underline"
           >
             {t("viewFeaturedStudies")}
           </Link>
           <span className="mx-2 text-muted-foreground">{t("or")}</span>
-          <Link href="/studies" className="text-primary underline-offset-4 hover:underline">
+          <Link
+            prefetch={true}
+            href="/studies"
+            className="text-primary underline-offset-4 hover:underline"
+          >
             {t("viewMyProjects")}
           </Link>
         </div>

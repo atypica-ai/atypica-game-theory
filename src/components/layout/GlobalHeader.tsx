@@ -76,6 +76,7 @@ const MenuLink = ({
   ...props
 }: React.ComponentProps<typeof Link> & { children: React.ReactNode }) => (
   <Link
+    prefetch={true}
     {...props}
     className={cn("p-1 text-sm font-normal hover:text-foreground/80 whitespace-nowrap", className)}
   >
