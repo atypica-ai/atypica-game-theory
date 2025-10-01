@@ -35,7 +35,9 @@ function splitBriefAndQuestions(text: string): { brief: string; questions: strin
 
   if (questionsSectionIndex !== -1) {
     const briefPart = text.substring(0, questionsSectionIndex).trim();
-    const questionsPart = text.substring(questionsSectionIndex + questionsSectionMarker.length).trim();
+    const questionsPart = text
+      .substring(questionsSectionIndex + questionsSectionMarker.length)
+      .trim();
     return {
       brief: briefPart,
       questions: questionsPart,
@@ -67,7 +69,8 @@ export function EditProjectDialog({
   useEffect(() => {
     if (open) {
       if (mode === "edit" && initialBrief) {
-        const { brief: splitBrief, questions: splitQuestions } = splitBriefAndQuestions(initialBrief);
+        const { brief: splitBrief, questions: splitQuestions } =
+          splitBriefAndQuestions(initialBrief);
         setBrief(splitBrief);
         setQuestions(splitQuestions);
       } else {
@@ -142,9 +145,7 @@ export function EditProjectDialog({
       <DialogContent className="max-sm:p-4 sm:max-w-[600px] max-h-screen overflow-y-scroll">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>
-              {mode === "create" ? t("title") : t("editTitle")}
-            </DialogTitle>
+            <DialogTitle>{mode === "create" ? t("title") : t("editTitle")}</DialogTitle>
             <DialogDescription>
               {mode === "create" ? t("description") : t("editDescription")}
             </DialogDescription>
@@ -199,9 +200,12 @@ export function EditProjectDialog({
             <Button type="submit" disabled={loading || !isFormValid}>
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {loading
-                ? (mode === "create" ? t("creating") : t("updating"))
-                : (mode === "create" ? t("create") : t("update"))
-              }
+                ? mode === "create"
+                  ? t("creating")
+                  : t("updating")
+                : mode === "create"
+                  ? t("create")
+                  : t("update")}
             </Button>
           </DialogFooter>
         </form>

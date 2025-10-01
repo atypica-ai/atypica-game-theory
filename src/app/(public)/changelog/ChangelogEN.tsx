@@ -24,10 +24,13 @@ export const ChangelogEN: React.FC = () => {
                   </p>
                 </li>
                 <li>
-                  <h4 className="font-semibold text-lg">🎧 Beta Preview: Study-to-Podcast Generation</h4>
+                  <h4 className="font-semibold text-lg">
+                    🎧 Beta Preview: Study-to-Podcast Generation
+                  </h4>
                   <p className="text-gray-700 dark:text-gray-300 mt-1 pl-1">
-                    Automatically converts selected studies into podcasts so insights can be reviewed and shared
-                    quickly. Pro, Max, and Team subscribers can currently try the beta preview.
+                    Automatically converts selected studies into podcasts so insights can be
+                    reviewed and shared quickly. Pro, Max, and Team subscribers can currently try
+                    the beta preview.
                   </p>
                 </li>
               </ul>

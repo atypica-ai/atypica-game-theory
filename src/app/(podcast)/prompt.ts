@@ -3,12 +3,7 @@ import "server-only";
 import { Analyst } from "@/prisma/client";
 import { Locale } from "next-intl";
 
-export const podcastScriptSystem = ({
-  locale,
-}: {
-  locale: Locale;
-  analystKind?: string;
-}) =>
+export const podcastScriptSystem = ({ locale }: { locale: Locale; analystKind?: string }) =>
   locale === "zh-CN"
     ? `## 任务
 需要你根据商业研究分析过程和背景信息，撰写有趣吸引人的播客脚本，目标是以任何人都能听懂且感兴趣的方式，一步步展开还原整个专业研究过程，并呈现最终的研究产出，从而展现整个研究的强逻辑性和专业性。
@@ -474,7 +469,6 @@ ${instruction}
 
 Please generate a comprehensive, engaging podcast script based on the above research findings.`;
 
-
 export const podcastEvaluationSystem = `
 You are an expert podcast content evaluator. Your task is to determine if a research is suitable for podcast generation based on these criteria:
 
@@ -543,4 +537,4 @@ How Much Can Listeners Use These Insights To Make Better Decisions (4 points)
 - 0 pts: Pure entertainment value with no practical use for decision-making
 
 Provide clear reasoning that references specific criteria and explains your decision.
-`
+`;

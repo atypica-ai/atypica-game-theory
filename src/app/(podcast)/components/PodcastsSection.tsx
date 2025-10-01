@@ -195,7 +195,11 @@ export function AnalystPodcastsSection({
       </div>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {podcasts.map((podcast) => (
-          <div key={podcast.id} className="cursor-pointer" onClick={() => setIsPodcastDialogOpen({ analystPodcast: podcast })}>
+          <div
+            key={podcast.id}
+            className="cursor-pointer"
+            onClick={() => setIsPodcastDialogOpen({ analystPodcast: podcast })}
+          >
             <div className="aspect-[2/1] border border-input rounded-md overflow-hidden transition-all hover:border-primary/50 hover:shadow-sm bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900/20 dark:to-blue-900/20 flex flex-col items-center justify-center text-center p-4">
               {podcast.objectUrl ? (
                 <Volume2Icon className="size-8 mb-2 text-green-600 dark:text-green-400" />

@@ -27,8 +27,8 @@ export const ChangelogZH: React.FC = () => {
                 <li>
                   <h4 className="font-semibold text-lg">🎧 Beta 测试中：研究播客自动生成</h4>
                   <p className="text-gray-700 dark:text-gray-300 mt-1 pl-1">
-                    支持将特定研究自动转成播客，便于快速浏览和传播研究成果。目前由 Pro、Max 与 Team 套餐用户
-                    抢先体验。
+                    支持将特定研究自动转成播客，便于快速浏览和传播研究成果。目前由 Pro、Max 与 Team
+                    套餐用户 抢先体验。
                   </p>
                 </li>
               </ul>

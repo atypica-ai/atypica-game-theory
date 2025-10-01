@@ -57,8 +57,8 @@ export class VolcanoTTSClient {
   }
 
   /**
- * Parse markdown podcast script into NLP texts format
- */
+   * Parse markdown podcast script into NLP texts format
+   */
   private parseScriptToNLPTexts(script: string, locale: string = "zh-CN"): PodcastNLPText[] {
     const speakers =
       DEFAULT_SPEAKERS[locale as keyof typeof DEFAULT_SPEAKERS] || DEFAULT_SPEAKERS["zh-CN"];
@@ -117,7 +117,7 @@ export class VolcanoTTSClient {
     }
 
     const chunks: string[] = [];
-    const isChinese = locale.startsWith('zh');
+    const isChinese = locale.startsWith("zh");
 
     let remainingText = text;
 
@@ -138,7 +138,7 @@ export class VolcanoTTSClient {
       chunks.push(remainingText);
     }
 
-    return chunks.filter(chunk => chunk.length > 0);
+    return chunks.filter((chunk) => chunk.length > 0);
   }
 
   /**
@@ -147,19 +147,20 @@ export class VolcanoTTSClient {
   private findBestSplitPoint(text: string, maxLength: number, isChinese: boolean): number {
     // Define sentence endings and punctuation based on language
     const sentenceEndings = isChinese
-      ? ['。', '！', '？', '...', '……']
-      : ['. ', '! ', '? ', '.\n', '!\n', '?\n'];
+      ? ["。", "！", "？", "...", "……"]
+      : [". ", "! ", "? ", ".\n", "!\n", "?\n"];
 
     const clauseSeparators = isChinese
-      ? ['，', '、', '；', '：', '，\n', '；\n', '：\n']
-      : [', ', '; ', ': ', ',\n', ';\n', ':\n'];
+      ? ["，", "、", "；", "：", "，\n", "；\n", "：\n"]
+      : [", ", "; ", ": ", ",\n", ";\n", ":\n"];
 
     const searchText = text.substring(0, maxLength);
 
     // 1. Try to find sentence endings (best option)
     for (const ending of sentenceEndings) {
       const lastIndex = searchText.lastIndexOf(ending);
-      if (lastIndex > maxLength * 0.5) { // Don't split too early
+      if (lastIndex > maxLength * 0.5) {
+        // Don't split too early
         return lastIndex + ending.length;
       }
     }
@@ -167,22 +168,24 @@ export class VolcanoTTSClient {
     // 2. Try to find clause separators (good option)
     for (const separator of clauseSeparators) {
       const lastIndex = searchText.lastIndexOf(separator);
-      if (lastIndex > maxLength * 0.6) { // Don't split too early
+      if (lastIndex > maxLength * 0.6) {
+        // Don't split too early
         return lastIndex + separator.length;
       }
     }
 
     // 3. For English, try word boundaries
     if (!isChinese) {
-      const lastSpaceIndex = searchText.lastIndexOf(' ');
-      if (lastSpaceIndex > maxLength * 0.7) { // Don't split too early
+      const lastSpaceIndex = searchText.lastIndexOf(" ");
+      if (lastSpaceIndex > maxLength * 0.7) {
+        // Don't split too early
         return lastSpaceIndex + 1;
       }
     }
 
     // 4. For Chinese, try common punctuation
     if (isChinese) {
-      const commonPunctuation = ['的', '了', '在', '是', '和', '与', '或'];
+      const commonPunctuation = ["的", "了", "在", "是", "和", "与", "或"];
       for (const punct of commonPunctuation) {
         const lastIndex = searchText.lastIndexOf(punct);
         if (lastIndex > maxLength * 0.8) {

@@ -1,5 +1,6 @@
 "use client";
 import { fetchUserInterviewProjects } from "@/app/(interviewProject)/actions";
+import { EditProjectDialog } from "@/app/(interviewProject)/components/EditProjectDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,7 +28,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { EditProjectDialog } from "@/app/(interviewProject)/components/EditProjectDialog";
 
 export function InterviewProjectsClient({ isCreateEnabled }: { isCreateEnabled: boolean }) {
   const locale = useLocale();

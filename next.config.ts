@@ -8,7 +8,7 @@ const nextConfig: NextConfig = {
     if (isServer) {
       // Ensure WebSocket library is handled correctly on server side
       config.externals = config.externals || [];
-      config.externals.push('ws');
+      config.externals.push("ws");
     }
     return config;
   },
