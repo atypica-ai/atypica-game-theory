@@ -1,32 +1,35 @@
 import { convertDBMessageToAIMessage } from "@/ai/messageUtils";
 import authOptions from "@/app/(auth)/authOptions";
+import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { prisma } from "@/prisma/prisma";
 import { Message } from "ai";
+import { Session } from "next-auth";
 import { getServerSession } from "next-auth/next";
 import { notFound, redirect } from "next/navigation";
-import { fetchMiscUserChat } from "../actions";
+import { Suspense } from "react";
 import { NewStudyChatClient } from "./NewStudyChatClient";
 
-export const dynamic = "force-dynamic";
+// 因为 build 阶段用户没有登录，所以不会进入 NewStudyPlanningPage，因此不需要设置 dynamic
+// export const dynamic = "force-dynamic";
 
-export default async function NewStudyPlanningPage({
-  params,
+async function NewStudyPlanningPage({
+  userChatToken,
+  sessionUser,
 }: {
-  params: Promise<{ userChatToken: string }>;
+  userChatToken: string;
+  sessionUser: NonNullable<Session["user"]>;
 }) {
-  const { userChatToken } = await params;
+  const userChat = await prisma.userChat.findUnique({
+    where: {
+      token: userChatToken,
+      userId: sessionUser.id,
+      kind: "misc",
+    },
+  });
 
-  const session = await getServerSession(authOptions);
-  if (!session?.user) {
-    const callbackUrl = `/newstudy/${userChatToken}`;
-    redirect(`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`);
-  }
-
-  const result = await fetchMiscUserChat(userChatToken);
-  if (!result.success) {
+  if (!userChat) {
     notFound();
   }
-  const userChat = result.data;
 
   const dbMessages = await prisma.chatMessage.findMany({
     where: { userChatId: userChat.id },
@@ -36,6 +39,24 @@ export default async function NewStudyPlanningPage({
   const initialMessages: Message[] = dbMessages.map(convertDBMessageToAIMessage);
 
   return (
-    <NewStudyChatClient userChat={userChat} initialMessages={initialMessages} user={session.user} />
+    <NewStudyChatClient userChat={userChat} initialMessages={initialMessages} user={sessionUser} />
+  );
+}
+
+export default async function NewStudyPlanningPageWithLoading({
+  params,
+}: {
+  params: Promise<{ userChatToken: string }>;
+}) {
+  const { userChatToken } = await params;
+  const session = await getServerSession(authOptions);
+  if (!session?.user) {
+    const callbackUrl = `/newstudy/${userChatToken}`;
+    redirect(`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`);
+  }
+  return (
+    <Suspense fallback={<PageLoadingFallback />}>
+      <NewStudyPlanningPage userChatToken={userChatToken} sessionUser={session.user} />
+    </Suspense>
   );
 }

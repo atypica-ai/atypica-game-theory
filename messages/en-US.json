@@ -335,7 +335,6 @@
     "continueStudyError": "Failed to continue to study chat:",
     "couldNotStartStudy": "Could not start study. Please try again.",
     "newStudyPlanningTitle": "New Study Planning",
-    "userChatNotFound": "UserChat not found or access denied",
     "chatNotFound": "Chat not found.",
     "studyPlanningComplete": "Your study planning is complete.",
     "execEndInterviewTool": "Summarizing the study brief"

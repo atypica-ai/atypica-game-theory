@@ -3,19 +3,20 @@ import { fetchAnalystInterviews } from "@/app/(agents)/interview/actions";
 import { fetchAnalystPodcasts } from "@/app/(podcast)/actions";
 import { podcastScriptSystem } from "@/app/(podcast)/prompt";
 import { checkTezignAuth } from "@/app/admin/actions";
+import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { throwServerActionError } from "@/lib/serverAction";
 import { AnalystKind } from "@/prisma/types";
 import { getLocale } from "next-intl/server";
+import { Suspense } from "react";
 import { fetchAnalystById } from "../actions";
 import { AnalystDetail } from "./AnalystDetail";
 import { fetchAnalystReports } from "./actions";
 
-export const dynamic = "force-dynamic";
+// export const dynamic = "force-dynamic";
 
-export default async function AnalystPage({ params }: { params: Promise<{ id: string }> }) {
+async function AnalystPage({ analystId }: { analystId: number }) {
   await checkTezignAuth();
 
-  const analystId = parseInt((await params).id);
   const analystResult = await fetchAnalystById(analystId);
   if (!analystResult.success) {
     throwServerActionError(analystResult);
@@ -60,5 +61,18 @@ export default async function AnalystPage({ params }: { params: Promise<{ id: st
       defaultReportHTMLSystem={defaultReportHTMLSystem}
       defaultPodcastSystem={defaultPodcastSystem}
     />
+  );
+}
+
+export default async function AnalystPageWithLoading({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const analystId = parseInt((await params).id);
+  return (
+    <Suspense fallback={<PageLoadingFallback />}>
+      <AnalystPage analystId={analystId} />
+    </Suspense>
   );
 }

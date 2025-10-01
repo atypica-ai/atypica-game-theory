@@ -1,43 +1,57 @@
 import { fetchUserChatByIdAction } from "@/app/(agents)/agents/actions";
 import authOptions from "@/app/(auth)/authOptions";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
+import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { throwServerActionError } from "@/lib/serverAction";
+import { Session } from "next-auth";
 import { getServerSession } from "next-auth/next";
-import { forbidden, redirect } from "next/navigation";
+import { redirect } from "next/navigation";
+import { Suspense } from "react";
 import { AgentChatPage } from "../../AgentChatPage";
 
 export const dynamic = "force-dynamic";
 
-export default async function HelloAgentPage({ params }: { params: Promise<{ id: string }> }) {
-  const userChatId = parseInt((await params).id);
-
+async function HelloAgentPage({
+  userChatId,
+  sessionUser,
+}: {
+  userChatId: number;
+  sessionUser: NonNullable<Session["user"]>;
+}) {
   const result = await fetchUserChatByIdAction(userChatId, "misc");
   if (!result.success) {
     throwServerActionError(result);
   }
   const userChat = result.data;
-
-  const session = await getServerSession(authOptions);
-  if (!session?.user) {
-    const callbackUrl = `/agents/hello/${userChatId}`;
-    redirect(`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`);
-  }
-
-  if (userChat.userId !== session.user.id) {
-    forbidden();
-  }
-
   return (
     <AgentChatPage
       chatId={userChat.id.toString()}
       chatTitle={userChat.title}
-      nickname={{ user: session.user.email, assistant: "atypica.AI" }}
+      nickname={{ user: sessionUser.email, assistant: "atypica.AI" }}
       avatar={{
-        user: <HippyGhostAvatar className="size-8" seed={session.user.id} />,
+        user: <HippyGhostAvatar className="size-8" seed={sessionUser.id} />,
         assistant: <HippyGhostAvatar className="size-8" seed={userChat.id} />,
       }}
       initialMessages={userChat.messages}
       useChatAPI="/api/chat/hello"
     />
+  );
+}
+
+export default async function HelloAgentPageWithLoading({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const userChatId = parseInt((await params).id);
+  const session = await getServerSession(authOptions);
+  if (!session?.user) {
+    const callbackUrl = `/agents/hello/${userChatId}`;
+    redirect(`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`);
+  }
+  return (
+    <Suspense fallback={<PageLoadingFallback />}>
+      <HelloAgentPage userChatId={userChatId} sessionUser={session.user} />
+    </Suspense>
   );
 }

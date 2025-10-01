@@ -1,9 +1,12 @@
 import { extractInterviewTranscript, InterviewTranscript } from "@/app/(interviewProject)/lib";
+import { PageLoadingFallback } from "@/components/PageLoadingFallback";
+import { VALID_LOCALES } from "@/i18n/routing";
 import { formatDate } from "@/lib/utils";
 import { prisma } from "@/prisma/prisma";
 import { Locale } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 
 async function getTranscriptData(userChatToken: string): Promise<{
   transcript: InterviewTranscript;
@@ -70,21 +73,18 @@ async function getTranscriptData(userChatToken: string): Promise<{
   };
 }
 
-export default async function InterviewTranscriptPage({
-  params,
-  searchParams,
+async function InterviewTranscriptPage({
+  userChatToken,
+  localeParam,
 }: {
-  params: Promise<{
-    userChatToken: string;
-  }>;
-  searchParams: Promise<{
-    locale?: string;
-  }>;
+  userChatToken: string;
+  localeParam?: string;
 }) {
-  const { userChatToken } = await params;
-  const { locale: localeParam } = await searchParams;
   const locale: Locale =
-    localeParam === "zh-CN" ? "zh-CN" : localeParam === "en-US" ? "en-US" : await getLocale();
+    localeParam && VALID_LOCALES.includes(localeParam as Locale)
+      ? (localeParam as Locale)
+      : await getLocale();
+
   const t = await getTranslations({
     namespace: "InterviewProject.transcriptDisplay",
     locale,
@@ -180,5 +180,21 @@ export default async function InterviewTranscriptPage({
         </p>
       </div>
     </div>
+  );
+}
+
+export default async function InterviewTranscriptPageWithLoading({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ userChatToken: string }>;
+  searchParams: Promise<{ locale?: string }>;
+}) {
+  const { userChatToken } = await params;
+  const { locale: localeParam } = await searchParams;
+  return (
+    <Suspense fallback={<PageLoadingFallback />}>
+      <InterviewTranscriptPage userChatToken={userChatToken} localeParam={localeParam} />
+    </Suspense>
   );
 }

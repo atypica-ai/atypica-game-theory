@@ -1,18 +1,14 @@
 import authOptions from "@/app/(auth)/authOptions";
+import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { prisma } from "@/prisma/prisma";
-import { getServerSession } from "next-auth";
+import { getServerSession, Session } from "next-auth";
 import { forbidden, redirect } from "next/navigation";
+import { Suspense } from "react";
 import { TeamDetailPageClient } from "./TeamDetailPageClient";
 
-export default async function TeamDetailPage() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) {
-    const callbackUrl = `/team`;
-    redirect(`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`);
-  }
-
+async function TeamDetailPage({ sessionUser }: { sessionUser: NonNullable<Session["user"]> }) {
   const user = await prisma.user.findUniqueOrThrow({
-    where: { id: session.user.id },
+    where: { id: sessionUser.id },
   });
 
   if (user.teamIdAsMember) {
@@ -30,4 +26,17 @@ export default async function TeamDetailPage() {
 
   // 不是团队用户，切换到个人页面
   redirect("/account");
+}
+
+export default async function TeamDetailPageWithLoading() {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) {
+    const callbackUrl = `/team`;
+    redirect(`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`);
+  }
+  return (
+    <Suspense fallback={<PageLoadingFallback />}>
+      <TeamDetailPage sessionUser={session.user} />
+    </Suspense>
+  );
 }

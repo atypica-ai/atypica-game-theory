@@ -47,28 +47,6 @@ export async function createNewStudyChat(): Promise<
   });
 }
 
-export async function fetchMiscUserChat(token: string): Promise<ServerActionResult<UserChat>> {
-  return withAuth(async (user) => {
-    const t = await getTranslations("NewStudyChatPage");
-    const userChat = await prisma.userChat.findUnique({
-      where: { token, userId: user.id, kind: "misc" },
-    });
-
-    if (!userChat) {
-      return {
-        success: false,
-        code: "not_found",
-        message: t("userChatNotFound"),
-      };
-    }
-
-    return {
-      success: true,
-      data: userChat,
-    };
-  });
-}
-
 export async function continueToStudyUserChat(
   userChatId: number,
   studyBrief: string,

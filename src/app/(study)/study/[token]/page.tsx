@@ -2,7 +2,6 @@ import authOptions from "@/app/(auth)/authOptions";
 import { StudyPageClient } from "@/app/(study)/study/StudyPageClient";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { generatePageMetadata } from "@/lib/request/metadata";
-import { throwServerActionError } from "@/lib/serverAction";
 import { getServerSession } from "next-auth/next";
 import { getLocale } from "next-intl/server";
 import { forbidden, notFound, redirect } from "next/navigation";
@@ -10,6 +9,7 @@ import { Metadata } from "next/types";
 import { Suspense } from "react";
 import { fetchUserChatByToken } from "../actions";
 
+// generateMetadata 需要访问数据库
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
@@ -33,26 +33,21 @@ export async function generateMetadata({
   });
 }
 
-async function StudyPage({ params }: { params: Promise<{ token: string }> }) {
-  const { token: studyUserChatToken } = await params;
-  if (!studyUserChatToken) {
-    // redirect("/");
-    notFound();
-  }
-
+async function StudyPage({
+  studyUserChatToken,
+  sessionUserId,
+}: {
+  studyUserChatToken: string;
+  sessionUserId: number;
+}) {
   const result = await fetchUserChatByToken(studyUserChatToken, "study");
   if (!result.success) {
-    throwServerActionError(result);
+    notFound();
+    // throwServerActionError(result);
   }
   const studyUserChat = result.data;
 
-  const session = await getServerSession(authOptions);
-  if (!session?.user) {
-    const callbackUrl = `/study/${studyUserChatToken}`;
-    redirect(`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`);
-  }
-
-  if (studyUserChat.userId !== session.user.id) {
+  if (studyUserChat.userId !== sessionUserId) {
     forbidden();
   }
 
@@ -65,9 +60,16 @@ export default async function StudyPageWithLoading({
 }: {
   params: Promise<{ token: string }>;
 }) {
+  const { token: studyUserChatToken } = await params;
+  const session = await getServerSession(authOptions);
+  if (!session?.user) {
+    const callbackUrl = `/study/${studyUserChatToken}`;
+    redirect(`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`);
+  }
+
   return (
     <Suspense fallback={<PageLoadingFallback />}>
-      <StudyPage params={params} />
+      <StudyPage studyUserChatToken={studyUserChatToken} sessionUserId={session.user.id} />
     </Suspense>
   );
 }

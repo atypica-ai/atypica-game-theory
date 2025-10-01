@@ -1,25 +1,22 @@
 import { fetchUserChatByIdAction } from "@/app/(agents)/agents/actions";
+import { AgentChatPage } from "@/app/(agents)/agents/AgentChatPage";
 import { checkTezignAuth } from "@/app/admin/actions";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
+import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { prisma } from "@/prisma/prisma";
-import { forbidden, notFound } from "next/navigation";
-import { AgentChatPage } from "../../AgentChatPage";
+import { notFound } from "next/navigation";
+import { Suspense } from "react";
 
-export const dynamic = "force-dynamic";
+// 因为 build 阶段用户没有登录，所以不会进入 NewStudyPlanningPage，因此不需要设置 dynamic
+// export const dynamic = "force-dynamic";
 
-export default async function InterviewAgentPage({ params }: { params: Promise<{ id: string }> }) {
-  const user = await checkTezignAuth(); // 内部人员可以和 persona 聊天
-
-  const userChatId = parseInt((await params).id);
+async function InterviewAgentPage({ userChatId }: { userChatId: number }) {
+  // server action 已经确保所有权
   const result = await fetchUserChatByIdAction(userChatId, "interview");
   if (!result.success) {
     notFound();
   }
   const userChat = result.data;
-
-  if (userChat.userId !== user.id) {
-    forbidden();
-  }
 
   const interview = await prisma.analystInterview.findUniqueOrThrow({
     where: {
@@ -53,5 +50,20 @@ export default async function InterviewAgentPage({ params }: { params: Promise<{
       initialMessages={userChat.messages}
       readOnly={true}
     />
+  );
+}
+
+export default async function InterviewAgentPageWithLoading({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  await checkTezignAuth(); // tezign 内部测试功能
+
+  const userChatId = parseInt((await params).id);
+  return (
+    <Suspense fallback={<PageLoadingFallback />}>
+      <InterviewAgentPage userChatId={userChatId} />
+    </Suspense>
   );
 }

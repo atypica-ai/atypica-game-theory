@@ -1,7 +1,9 @@
 import { checkTezignAuth } from "@/app/admin/actions";
+import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { generatePageMetadata } from "@/lib/request/metadata";
 import { Metadata } from "next";
 import { getLocale } from "next-intl/server";
+import { Suspense } from "react";
 import { AboutEN } from "./AboutEN";
 import { AboutZH } from "./AboutZH";
 
@@ -20,7 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
-export default async function AboutPage() {
+async function AboutPage() {
   const locale = await getLocale();
   let showPresenterNotes = false;
 
@@ -35,5 +37,13 @@ export default async function AboutPage() {
     <AboutZH showPresenterNotes={showPresenterNotes} />
   ) : (
     <AboutEN showPresenterNotes={showPresenterNotes} />
+  );
+}
+
+export default async function AboutPageWithLoading() {
+  return (
+    <Suspense fallback={<PageLoadingFallback />}>
+      <AboutPage />
+    </Suspense>
   );
 }

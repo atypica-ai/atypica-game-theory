@@ -1,7 +1,9 @@
 import { checkTezignAuth } from "@/app/admin/actions";
+import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { generatePageMetadata } from "@/lib/request/metadata";
 import { Metadata } from "next";
 import { getLocale } from "next-intl/server";
+import { Suspense } from "react";
 import { PitchEN } from "./PitchEN";
 import { PitchZH } from "./PitchZH";
 
@@ -20,7 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
-export default async function PitchPage() {
+async function PitchPage() {
   const locale = await getLocale();
   let showPresenterNotes = false;
 
@@ -35,5 +37,13 @@ export default async function PitchPage() {
     <PitchZH showPresenterNotes={showPresenterNotes} />
   ) : (
     <PitchEN showPresenterNotes={showPresenterNotes} />
+  );
+}
+
+export default async function PitchPageWithLoading() {
+  return (
+    <Suspense fallback={<PageLoadingFallback />}>
+      <PitchPage />
+    </Suspense>
   );
 }

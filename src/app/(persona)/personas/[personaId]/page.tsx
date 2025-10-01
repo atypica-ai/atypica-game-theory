@@ -9,6 +9,7 @@ import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
 import { PersonaDetailClient } from "./PersonaDetailClient";
 
+// generateMetadata 需要访问数据库
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({

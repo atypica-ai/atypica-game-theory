@@ -2,24 +2,20 @@ import { AgentChatPage } from "@/app/(agents)/agents/AgentChatPage";
 import { fetchUserChatByIdAction } from "@/app/(agents)/agents/actions";
 import { checkTezignAuth } from "@/app/admin/actions";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
-import { forbidden, notFound } from "next/navigation";
+import { PageLoadingFallback } from "@/components/PageLoadingFallback";
+import { notFound } from "next/navigation";
+import { Suspense } from "react";
 
-export const dynamic = "force-dynamic";
+// export const dynamic = "force-dynamic";
 
-export default async function ScoutAgentPage({ params }: { params: Promise<{ id: string }> }) {
+async function ScoutAgentPage({ userChatId }: { userChatId: number }) {
   const user = await checkTezignAuth(); // 内部人员可以和 acout agent 聊天
-  const userChatId = parseInt((await params).id);
-
+  // server action 已确保所有权
   const result = await fetchUserChatByIdAction(userChatId, "scout");
   if (!result.success) {
     notFound();
   }
   const userChat = result.data;
-
-  if (userChat.userId !== user.id) {
-    forbidden();
-  }
-
   return (
     <AgentChatPage
       chatId={userChat.id.toString()}
@@ -32,5 +28,18 @@ export default async function ScoutAgentPage({ params }: { params: Promise<{ id:
       initialMessages={userChat.messages}
       useChatAPI="/api/chat/scout"
     />
+  );
+}
+
+export default async function ScoutAgentPageWithLoading({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const userChatId = parseInt((await params).id);
+  return (
+    <Suspense fallback={<PageLoadingFallback />}>
+      <ScoutAgentPage userChatId={userChatId} />
+    </Suspense>
   );
 }

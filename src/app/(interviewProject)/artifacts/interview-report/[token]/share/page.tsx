@@ -1,10 +1,13 @@
+import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { generatePageMetadata } from "@/lib/request/metadata";
 import { prisma } from "@/prisma/prisma";
 import { Metadata } from "next";
 import { getLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import InterviewReportSharePageClient from "./InterviewReportSharePageClient";
 
+// generateMetadata 需要访问数据库
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
@@ -36,12 +39,7 @@ export async function generateMetadata({
   return generatePageMetadata({ title, description, locale });
 }
 
-export default async function InterviewReportSharePage({
-  params,
-}: {
-  params: Promise<{ token: string }>;
-}) {
-  const { token: reportToken } = await params;
+async function InterviewReportSharePage({ reportToken }: { reportToken: string }) {
   const report = await prisma.interviewReport.findUnique({
     where: { token: reportToken },
     select: {
@@ -54,6 +52,18 @@ export default async function InterviewReportSharePage({
     },
   });
   if (!report) notFound();
-
   return <InterviewReportSharePageClient reportToken={reportToken} />;
+}
+
+export default async function InterviewReportSharePageWithLoading({
+  params,
+}: {
+  params: Promise<{ token: string }>;
+}) {
+  const { token } = await params;
+  return (
+    <Suspense fallback={<PageLoadingFallback />}>
+      <InterviewReportSharePage reportToken={token} />
+    </Suspense>
+  );
 }

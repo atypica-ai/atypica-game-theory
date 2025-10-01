@@ -1,13 +1,18 @@
 import { convertDBMessageToAIMessage } from "@/ai/messageUtils";
+import authOptions from "@/app/(auth)/authOptions";
 import { fetchUserPersonaChatByToken } from "@/app/(persona)/actions";
+import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { generatePageMetadata } from "@/lib/request/metadata";
 import { prisma } from "@/prisma/prisma";
 import { Message } from "ai";
 import { Metadata } from "next";
+import { getServerSession } from "next-auth";
 import { getLocale, getTranslations } from "next-intl/server";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { Suspense } from "react";
 import { PersonaChatClient } from "./PersonaChatClient";
 
+// generateMetadata 需要访问数据库
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
@@ -33,17 +38,7 @@ export async function generateMetadata({
   });
 }
 
-export default async function PersonaChatTokenPage({
-  params,
-}: {
-  params: Promise<{ userChatToken: string }>;
-}) {
-  const { userChatToken } = await params;
-
-  if (!userChatToken) {
-    notFound();
-  }
-
+async function PersonaChatTokenPage({ userChatToken }: { userChatToken: string }) {
   const result = await fetchUserPersonaChatByToken(userChatToken);
   if (!result.success) {
     if (result.code === "not_found") {
@@ -53,7 +48,6 @@ export default async function PersonaChatTokenPage({
     // For now, let's just show not found to avoid exposing chat existence
     notFound();
   }
-
   const { userChat, persona } = result.data;
 
   // Fetch existing chat messages
@@ -66,5 +60,23 @@ export default async function PersonaChatTokenPage({
 
   return (
     <PersonaChatClient userChatToken={userChatToken} persona={persona} initialMessages={messages} />
+  );
+}
+
+export default async function PersonaChatTokenPageWithLoading({
+  params,
+}: {
+  params: Promise<{ userChatToken: string }>;
+}) {
+  const { userChatToken } = await params;
+  const session = await getServerSession(authOptions);
+  if (!session?.user) {
+    const callbackUrl = `/persona/chat/${userChatToken}`;
+    redirect(`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`);
+  }
+  return (
+    <Suspense fallback={<PageLoadingFallback />}>
+      <PersonaChatTokenPage userChatToken={userChatToken} />
+    </Suspense>
   );
 }

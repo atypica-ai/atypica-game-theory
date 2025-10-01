@@ -1,8 +1,10 @@
+import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { generatePageMetadata } from "@/lib/request/metadata";
 import { truncateForTitle } from "@/lib/textUtils";
 import { Metadata } from "next";
 import { getLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import { fetchPodcastByToken } from "../../actions";
 import PodcastSharePageClient from "./PodcastSharePageClient";
 
@@ -35,17 +37,12 @@ export async function generateMetadata({
   return generatePageMetadata({ title, description, locale });
 }
 
-export default async function PodcastSharePage({ params }: { params: Promise<{ token: string }> }) {
-  const { token: podcastToken } = await params;
-
+async function PodcastSharePage({ podcastToken }: { podcastToken: string }) {
   const result = await fetchPodcastByToken(podcastToken);
-
   if (!result.success) {
     notFound();
   }
-
   const { podcast, analyst, studyUserChat } = result.data;
-
   return (
     <PodcastSharePageClient
       podcastToken={podcastToken}
@@ -53,5 +50,18 @@ export default async function PodcastSharePage({ params }: { params: Promise<{ t
       analyst={analyst}
       studyUserChat={studyUserChat}
     />
+  );
+}
+
+export default async function PodcastSharePageWithLoading({
+  params,
+}: {
+  params: Promise<{ token: string }>;
+}) {
+  const { token } = await params;
+  return (
+    <Suspense fallback={<PageLoadingFallback />}>
+      <PodcastSharePage podcastToken={token} />
+    </Suspense>
   );
 }
