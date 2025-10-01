@@ -38,6 +38,51 @@ export const ChangelogEN: React.FC = () => {
           </div>
         </section>
 
+        {/* v9.x */}
+        <section>
+          <h2 className="text-2xl font-bold mb-8">v9.x: Guided Research Strategy & Transparency</h2>
+          <div className="space-y-10">
+            <article>
+              <h3 className="font-semibold text-xl mb-4">
+                <code>v9.0.0</code> —{" "}
+                <em className="text-gray-600 dark:text-gray-400 font-normal">2025-09-15</em>
+              </h3>
+              <ul className="list-disc list-outside pl-6 space-y-4 text-gray-800 dark:text-gray-200">
+                <li>
+                  <strong className="font-semibold text-gray-900 dark:text-gray-100">
+                    🗺️ Guided Planning Before AI Research Starts
+                  </strong>
+                  <p className="text-gray-700 dark:text-gray-300 mt-1">
+                    Previously, AI research jumped straight into interviews and search. Now every
+                    study begins with a visible plan that outlines who will be contacted, what will
+                    be investigated, and why each step matters.
+                  </p>
+                </li>
+                <li>
+                  <strong className="font-semibold text-gray-900 dark:text-gray-100">
+                    🧠 AI Research Strategy Templates
+                  </strong>
+                  <p className="text-gray-700 dark:text-gray-300 mt-1">
+                    The planning step automatically selects the right business analysis frameworks
+                    (JTBD, STP, GE matrix, etc.) so teams understand the strategic lens behind the
+                    upcoming interviews and desk research.
+                  </p>
+                </li>
+                <li>
+                  <strong className="font-semibold text-gray-900 dark:text-gray-100">
+                    📝 Pre-Report Research Log
+                  </strong>
+                  <p className="text-gray-700 dark:text-gray-300 mt-1">
+                    Before the final report is generated, the AI prepares a detailed research log
+                    that summarizes collected information and key decisions to give context behind
+                    the conclusions.
+                  </p>
+                </li>
+              </ul>
+            </article>
+          </div>
+        </section>
+
         {/* v8.x */}
         <section>
           <h2 className="text-2xl font-bold mb-8">v8.x: AI Interview & AI Persona Full Launch</h2>
@@ -47,7 +92,7 @@ export const ChangelogEN: React.FC = () => {
                 <code>v8.0.0</code> —{" "}
                 <em className="text-gray-600 dark:text-gray-400 font-normal">2025-09-04</em>
               </h3>
-              <ul className="space-y-4 text-gray-800 dark:text-gray-200">
+              <ul className="list-disc list-outside pl-6 space-y-4 text-gray-800 dark:text-gray-200">
                 <li>
                   <h4 className="font-semibold text-lg">
                     🚀 Full Launch: Interview Project & AI Persona Import

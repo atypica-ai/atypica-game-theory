@@ -11,6 +11,19 @@
 
 ---
 
+## v9.x: Guided Research Strategy & Transparency
+
+### `v9.0.0` — _2025-09-15_
+
+- **🗺️ Guided Planning Before AI Research Starts**
+  - Previously, AI research jumped straight into interviews and search. Now every study begins with a visible plan that explains what will be asked, who will be researched, and why those steps matter.
+- **🧠 AI Research Strategy Templates**
+  - The planning step now selects the right business analysis frameworks (JTBD, STP, GE matrix, etc.) for each question, helping teams understand the strategic lens behind the upcoming interviews and desk research.
+- **📝 Pre-Report Research Log**
+  - Before the final report is generated, the AI prepares a detailed research log that summarizes information gathered and decisions made, so teams get the context behind the conclusions instead of just the finished deliverable.
+
+---
+
 ## v8.x: AI Interview & AI Persona Full Launch
 
 ### `v8.0.0` — _2025-09-04_
