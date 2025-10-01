@@ -77,7 +77,7 @@ export default function UserMenu() {
     return (
       <>
         <DropdownMenuItem asChild>
-          <Link href="/pricing">
+          <Link href="/pricing" prefetch={true}>
             <CreditCardIcon className="h-4 w-4 mr-2" />
             {t("pricing")}
           </Link>
@@ -116,7 +116,7 @@ export default function UserMenu() {
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link href="/account">
+          <Link prefetch={true} href="/account">
             <UserIcon className="h-4 w-4 mr-2" />
             <span>{t("viewAccount")}</span>
           </Link>
@@ -131,19 +131,19 @@ export default function UserMenu() {
         )}
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link href="/studies">
+          <Link prefetch={true} href="/studies">
             <HistoryIcon className="h-4 w-4 mr-2" />
             {t("myStudies")}
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link href="/personas">
+          <Link prefetch={true} href="/personas">
             <Users2Icon className="h-4 w-4 mr-2" />
             {t("myPersonas")}
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link href="/interview/projects">
+          <Link prefetch={true} href="/interview/projects">
             <MicIcon className="h-4 w-4 mr-2" />
             {t("myInterviews")}
           </Link>

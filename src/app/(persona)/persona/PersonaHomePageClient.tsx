@@ -227,7 +227,7 @@ export default function PersonaImportClient({ isUploadEnabled }: PersonaImportCl
                       {t("uploadPDFFile")}
                     </FileUploadButton>
                     <Button size="lg" variant="outline" asChild className="w-full h-12">
-                      <Link href="/personas">
+                      <Link href="/personas" prefetch={true}>
                         {t("viewMyPersonas")}
                         <ArrowRight className="h-4 w-4" />
                       </Link>
@@ -268,7 +268,7 @@ export default function PersonaImportClient({ isUploadEnabled }: PersonaImportCl
                       <ArrowRight className="h-4 w-4" />
                     </Button>
                     <Button size="lg" variant="outline" asChild className="w-full h-12">
-                      <Link href="/personas">
+                      <Link href="/personas" prefetch={true}>
                         {t("viewMyPersonas")}
                         <ArrowRight className="h-4 w-4" />
                       </Link>

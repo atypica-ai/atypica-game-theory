@@ -34,7 +34,7 @@ export default function GlobalHeader({
           <div className="md:hidden mt-1">
             <GlobalHeaderMenusMobile />
           </div>
-          <Link href="/" className={cn("block h-4 w-24 mb-0.5 relative")}>
+          <Link prefetch={true} href="/" className={cn("block h-4 w-24 mb-0.5 relative")}>
             <div className="font-EuclidCircularA font-medium tracking-tight text-xl leading-none">
               atypica.AI
             </div>

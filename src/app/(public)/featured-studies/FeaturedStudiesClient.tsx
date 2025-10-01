@@ -10,7 +10,7 @@ import { AnalystKind } from "@/prisma/types";
 import { ExternalLinkIcon, FileTextIcon, Loader2Icon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 type TStudies = ExtractServerActionData<typeof fetchPublicFeaturedStudies>;
@@ -18,7 +18,6 @@ type TStudies = ExtractServerActionData<typeof fetchPublicFeaturedStudies>;
 export default function FeaturedStudiesClient() {
   const locale = useLocale();
   const t = useTranslations("FeaturedStudiesPage");
-  const router = useRouter();
   const [studies, setStudies] = useState<TStudies>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeAnalystKind, setActiveAnalystKind] = useState<AnalystKind | "all">("all");
@@ -112,9 +111,10 @@ export default function FeaturedStudiesClient() {
                 />
               </div>
             ) : null}
-            <div
+            <Link
+              prefetch={true}
               className="absolute inset-0 bg-background/30 backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center rounded-xl cursor-pointer"
-              onClick={() => router.push(`/study/${study.studyUserChat.token}/share?replay=1`)}
+              href={`/study/${study.studyUserChat.token}/share?replay=1`}
             >
               <Button
                 variant="secondary"
@@ -125,7 +125,7 @@ export default function FeaturedStudiesClient() {
                 <span>{t("viewStudy")}</span>
                 <ExternalLinkIcon className="h-3 w-3" />
               </Button>
-            </div>
+            </Link>
           </Card>
         ))}
       </div>

@@ -8,7 +8,7 @@ import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-export default function InterviewPageClient() {
+export default function InterviewProjectHomePageClient() {
   const t = useTranslations("InterviewProject.homepage");
   const [videoSrc, setVideoSrc] = useState<string | undefined>();
 
@@ -77,7 +77,7 @@ export default function InterviewPageClient() {
           </p>
           <div className="pt-4">
             <Button size="lg" variant="default" asChild>
-              <Link href="/interview/projects">
+              <Link href="/interview/projects" prefetch={true}>
                 {t("getStarted")}
                 <ArrowRight className="h-4 w-4" />
               </Link>
@@ -183,7 +183,7 @@ export default function InterviewPageClient() {
               </p>
             </div>
             <Button size="lg" variant="default" asChild>
-              <Link href="/interview/projects">
+              <Link href="/interview/projects" prefetch={true}>
                 {t("createFirstProject")}
                 <ArrowRight className="h-4 w-4" />
               </Link>

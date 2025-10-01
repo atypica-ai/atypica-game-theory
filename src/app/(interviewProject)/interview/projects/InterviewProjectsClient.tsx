@@ -174,7 +174,9 @@ export function InterviewProjectsClient({ isCreateEnabled }: { isCreateEnabled: 
                 </CardContent>
                 <CardFooter>
                   <Button variant="outline" size="sm" className="w-full" asChild>
-                    <Link href={`/interview/project/${project.token}`}>{t("viewDetails")}</Link>
+                    <Link prefetch={true} href={`/interview/project/${project.token}`}>
+                      {t("viewDetails")}
+                    </Link>
                   </Button>
                 </CardFooter>
               </Card>

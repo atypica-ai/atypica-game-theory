@@ -75,14 +75,6 @@ export default function PersonasClient() {
     [router, t],
   );
 
-  const handleViewPersona = (persona: PersonaWithStatus) => {
-    if (persona.personaImportProcessing) {
-      toast.warning(t("updating"));
-      return;
-    }
-    router.push(`/personas/${persona.id}`);
-  };
-
   const NewPersonaCard = () => (
     <Card className="transition-all duration-300 hover:shadow-md border-dashed border-primary/30 min-w-80">
       <CardHeader>
@@ -213,17 +205,15 @@ export default function PersonasClient() {
                           <MessageCircleIcon className="size-3" />
                           {chatCreating[persona.id] ? t("starting") : t("startChat")}
                         </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex-1"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleViewPersona(persona);
-                          }}
-                        >
-                          <FileTextIcon className="size-3" />
-                          {t("viewDetails")}
+                        <Button variant="outline" size="sm" className="flex-1" asChild>
+                          {persona.personaImportProcessing ? (
+                            <div>{t("updating")}</div>
+                          ) : (
+                            <Link prefetch={true} href={`/personas/${persona.id}`}>
+                              <FileTextIcon className="size-3" />
+                              {t("viewDetails")}
+                            </Link>
+                          )}
                         </Button>
                       </>
                     )}
