@@ -3,11 +3,9 @@ import "server-only";
 import { reasoningPrologue, reasoningSystem } from "@/ai/prompt";
 import { defaultProviderOptions, llm } from "@/ai/provider";
 import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
-import { fixMalformedUnicodeString } from "@/lib/utils";
 import { google } from "@ai-sdk/google";
 import { streamText, tool } from "ai";
-import { z } from "zod/v3";
-import { ReasoningThinkingResult } from "./types";
+import { reasoningThinkingInputSchema, reasoningThinkingOutputSchema } from "./types";
 
 export const reasoningThinkingTool = ({
   locale,
@@ -18,22 +16,11 @@ export const reasoningThinkingTool = ({
   tool({
     description:
       "Get expert consultation and step-by-step reasoning analysis for complex problems or decisions. Provides detailed thinking process and professional insights on specific research questions or challenges.",
-    inputSchema: z.object({
-      background: z
-        .string()
-        .describe(
-          "Current context, findings so far, and relevant background information to help the expert understand the situation",
-        )
-        .transform(fixMalformedUnicodeString),
-      question: z
-        .string()
-        .describe(
-          "Specific question, problem, or topic that requires expert analysis and reasoning",
-        )
-        .transform(fixMalformedUnicodeString),
-    }),
-    experimental_toToolResultContent: (result: PlainTextToolResult) => {
-      return [{ type: "text", text: result.plainText }];
+    inputSchema: reasoningThinkingInputSchema,
+    outputSchema: reasoningThinkingOutputSchema,
+    // 这里设置 PlainTextToolResult 类型，强制 reasoningThinkingOutputSchema 里定义 plainText 字段
+    toModelOutput: (result: PlainTextToolResult) => {
+      return { type: "text", value: result.plainText };
     },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     execute: async ({ background, question }, { messages }) => {
@@ -103,6 +90,6 @@ export const reasoningThinkingTool = ({
         reasoning: reasoningText ?? "",
         text: text ?? "",
         plainText: text,
-      } as ReasoningThinkingResult;
+      };
     },
   });
