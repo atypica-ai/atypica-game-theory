@@ -1,6 +1,6 @@
 import "server-only";
 
-import { llm, LLMModelName, providerOptions } from "@/ai/provider";
+import { defaultProviderOptions, llm, LLMModelName } from "@/ai/provider";
 import { StatReporter } from "@/ai/tools/types";
 import { VALID_LOCALES } from "@/i18n/routing";
 import { fileUrlToDataUrl } from "@/lib/attachments/actions";
@@ -281,7 +281,7 @@ async function generatePodcastScript(params: {
 
     const response = streamText({
       model: llm(modelName),
-      providerOptions: providerOptions,
+      providerOptions: defaultProviderOptions,
 
       system: systemPrompt
         ? systemPrompt

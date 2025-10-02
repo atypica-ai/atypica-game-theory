@@ -1,6 +1,6 @@
 import "server-only";
 
-import { llm, providerOptions } from "@/ai/provider";
+import { defaultProviderOptions, llm } from "@/ai/provider";
 import { VALID_LOCALES } from "@/i18n/routing";
 import { getRequestClientIp, getRequestGeo, getRequestUserAgent } from "@/lib/request/headers";
 import { generateToken } from "@/lib/utils";
@@ -116,7 +116,7 @@ export async function generateChatTitle(userChatId: number): Promise<string> {
     model: llm("gpt-5-nano"),
     providerOptions: {
       openai: {
-        ...providerOptions.openai,
+        ...defaultProviderOptions.openai,
         reasoningSummary: "auto",
         reasoningEffort: "minimal",
       } satisfies OpenAIResponsesProviderOptions,

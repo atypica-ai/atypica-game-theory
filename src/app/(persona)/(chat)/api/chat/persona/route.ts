@@ -5,13 +5,14 @@ import {
 } from "@/ai/messageUtils";
 import { clientMessagePayloadSchema } from "@/ai/messageUtilsClient";
 import { personaAgentSystem } from "@/ai/prompt";
-import { llm, providerOptions } from "@/ai/provider";
+import { defaultProviderOptions, llm } from "@/ai/provider";
 import { initGenericUserChatStatReporter } from "@/ai/tools/stats";
 import authOptions from "@/app/(auth)/authOptions";
 import { fetchUserPersonaChatByToken } from "@/app/(persona)/actions";
 import { VALID_LOCALES } from "@/i18n/routing";
 import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage } from "@/lib/textUtils";
+import { google } from "@ai-sdk/google";
 import { generateId, smoothStream, stepCountIs, streamText } from "ai";
 import { getServerSession } from "next-auth";
 import { Locale } from "next-intl";
@@ -96,28 +97,17 @@ export async function POST(req: Request) {
   const streamTextResult = streamText({
     // model: fixFileNameInMessageToUsePromptCache(llm("claude-3-7-sonnet")),
     // model: llm("gpt-4.1-mini"),
-    model: llm("gemini-2.5-flash", {
-      useSearchGrounding: true,
-      dynamicRetrievalConfig: {
-        mode: "MODE_DYNAMIC",
-        dynamicThreshold: 0.3, // threshold 越小，使用搜索的可能性就越高
-      },
-    }),
-
-    providerOptions: {
-      ...providerOptions,
-      // google: {
-      //   thinkingConfig: {
-      //     thinkingBudget: 2048, // Optional
-      //     includeThoughts: true,
-      //   },
-      // } satisfies GoogleGenerativeAIProviderOptions,
-    },
+    model: llm("gemini-2.5-flash"),
+    providerOptions: defaultProviderOptions,
 
     system: personaAgentSystem({ persona, locale }),
     messages: coreMessages,
 
     tools: {
+      google_search: google.tools.googleSearch({
+        mode: "MODE_DYNAMIC",
+        dynamicThreshold: 0.3, // threshold 越小，使用搜索的可能性就越高
+      }),
       // [ToolName.dySearch]: dySearchTool,
       // [ToolName.insSearch]: insSearchTool,
       // [ToolName.tiktokSearch]: tiktokSearchTool,

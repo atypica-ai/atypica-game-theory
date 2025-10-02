@@ -1,6 +1,6 @@
 import "server-only";
 
-import { llm, providerOptions } from "@/ai/provider";
+import { defaultProviderOptions, llm } from "@/ai/provider";
 import { initInterviewProjectStatReporter } from "@/ai/tools/stats";
 import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage } from "@/lib/textUtils";
@@ -52,9 +52,7 @@ export async function processInterviewQuestionOptimization(projectId: number): P
       const response = streamText({
         model: llm("claude-3-7-sonnet"),
 
-        providerOptions: {
-          ...providerOptions,
-        },
+        providerOptions: defaultProviderOptions,
 
         system: interviewQuestionRefinementPrompt({ locale }),
         messages: messages,

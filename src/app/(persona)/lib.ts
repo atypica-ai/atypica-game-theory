@@ -1,7 +1,7 @@
 import "server-only";
 
 import { createTextEmbedding } from "@/ai/embedding";
-import { llm, providerOptions } from "@/ai/provider";
+import { defaultProviderOptions, llm } from "@/ai/provider";
 import { rootLogger } from "@/lib/logging";
 import { Persona } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
@@ -114,7 +114,7 @@ export async function scorePersona(persona: Persona) {
     const locale = (persona.locale as Locale) ?? (await getLocale());
     const result = await generateObject({
       model: llm("gpt-4.1-mini"),
-      providerOptions,
+      providerOptions: defaultProviderOptions,
       system: personaScoringPrompt({ locale }),
       schema: personaScoringSchema,
       messages: [

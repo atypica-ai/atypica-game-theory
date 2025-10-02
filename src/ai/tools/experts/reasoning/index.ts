@@ -1,9 +1,10 @@
 import "server-only";
 
 import { reasoningPrologue, reasoningSystem } from "@/ai/prompt";
-import { llm, providerOptions } from "@/ai/provider";
+import { defaultProviderOptions, llm } from "@/ai/provider";
 import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
 import { fixMalformedUnicodeString } from "@/lib/utils";
+import { google } from "@ai-sdk/google";
 import { streamText, tool } from "ai";
 import { z } from "zod/v3";
 import { ReasoningThinkingResult } from "./types";
@@ -40,14 +41,14 @@ export const reasoningThinkingTool = ({
         async (resolve, reject) => {
           const response = streamText({
             // model: llm("o3-mini"),
-            model: llm("gemini-2.5-pro", {
-              useSearchGrounding: true,
-              dynamicRetrievalConfig: {
+            model: llm("gemini-2.5-pro"),
+            providerOptions: defaultProviderOptions,
+            tools: {
+              google_search: google.tools.googleSearch({
                 mode: "MODE_DYNAMIC",
                 dynamicThreshold: 0.1, // threshold 越小，使用搜索的可能性就越高，0就是一定会搜索
-              },
-            }),
-            providerOptions: providerOptions,
+              }),
+            },
             system: reasoningSystem({ locale }),
             messages: [
               {

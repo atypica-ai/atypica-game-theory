@@ -12,7 +12,7 @@ import {
   scoutSocialTrendsSummarySystem,
   scoutSocialTrendsSystem,
 } from "@/ai/prompt/scout/socialTrends";
-import { llm, LLMModelName, providerOptions } from "@/ai/provider";
+import { defaultProviderOptions, llm, LLMModelName } from "@/ai/provider";
 import {
   dyPostCommentsTool,
   dySearchTool,
@@ -252,17 +252,7 @@ async function runScoutSocialTrendsStream({
 
     let toolChoice: ToolChoice<typeof allTools> = "auto";
     let maxSteps = 2; // 不要一下子很多 steps 因为现在会并行调用 tools，每一轮 steps 少一点，方便及时判断 coreMessages 长度
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let [reduceTokens, llmOptions]: [TReduceTokens, any] = [
-      { model: "gemini-2.5-flash", ratio: 10 },
-      {
-        // useSearchGrounding: true,
-        // dynamicRetrievalConfig: {
-        //   mode: "MODE_DYNAMIC",
-        //   dynamicThreshold: 0.5,
-        // },
-      },
-    ];
+    let reduceTokens: TReduceTokens = { model: "gemini-2.5-flash", ratio: 10 };
     if (coreMessages.length > 2 && Object.keys(toolUseCount).length === 0) {
       // 两条消息以后，必须开始使用工具，但是为了不一直使用工具，调用2次先停下来，后面好重新判断 toolUseCount
       toolChoice = "required";
@@ -272,15 +262,25 @@ async function runScoutSocialTrendsStream({
       createDebouncePersistentMessage(scoutUserChatId, 5000, logger); // 5000 debounce
     const streamTextPromise = new Promise<Omit<UIMessage, "role">>((resolve, reject) => {
       const response = streamText({
-        model: reduceTokens ? llm(reduceTokens.model, llmOptions) : llm("claude-3-7-sonnet"),
+        model: reduceTokens ? llm(reduceTokens.model) : llm("claude-3-7-sonnet"),
 
         // model: llm("claude-3-7-sonnet-beta")  // 这个模型不大好用，savePersona 总是返回一半输入
-        providerOptions: providerOptions,
+        providerOptions: defaultProviderOptions,
 
         system: systemPrompt,
         temperature: 0.5,
         messages: coreMessages,
-        tools: tools,
+        tools:
+          reduceTokens && reduceTokens.model.startsWith("gemini")
+            ? {
+                ...tools,
+                // 暂时不使用
+                // google_search: google.tools.googleSearch({
+                //   mode: "MODE_DYNAMIC",
+                //   dynamicThreshold: 0.5, // threshold 越小，使用搜索的可能性就越高
+                // }),
+              }
+            : tools,
         toolChoice: toolChoice,
         experimental_repairToolCall: handleToolCallError,
         stopWhen: stepCountIs(maxSteps),
@@ -468,7 +468,7 @@ async function runScoutSocialTrendsSummarize({
       model: reduceTokens ? llm(reduceTokens.model, llmOptions) : llm("claude-3-7-sonnet"),
 
       // model: llm("claude-3-7-sonnet-beta")  // 这个模型不大好用，savePersona 总是返回一半输入
-      providerOptions: providerOptions,
+      providerOptions: defaultProviderOptions,
 
       system: summarizationSystemPrompt,
       temperature: 0.5,

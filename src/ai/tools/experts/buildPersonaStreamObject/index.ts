@@ -2,7 +2,7 @@ import "server-only";
 
 import { CONTINUE_ASSISTANT_STEPS, prepareMessagesForStreaming } from "@/ai/messageUtils";
 import { buildPersonaSystem } from "@/ai/prompt";
-import { llm, providerOptions } from "@/ai/provider";
+import { defaultProviderOptions, llm } from "@/ai/provider";
 import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
 import { prisma } from "@/prisma/prisma";
 import { streamObject, tool } from "ai";
@@ -118,7 +118,7 @@ export async function runBuildPersonaStreamObject({
     model: llm("gemini-2.5-pro"),
     // model: llm("gpt-4.1"), // gpt 可以对一个字段的值进行 stream，这样在 prompt 生成部分的时候就可以看到结果，比较快
     // temperature: 0,
-    providerOptions: providerOptions,
+    providerOptions: defaultProviderOptions,
     system: buildPersonaSystem({
       locale,
       parallel: true,

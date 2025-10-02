@@ -6,7 +6,7 @@ import {
   reportHTMLPrologue,
   reportHTMLSystem,
 } from "@/ai/prompt";
-import { llm, LLMModelName, providerOptions } from "@/ai/provider";
+import { defaultProviderOptions, llm, LLMModelName } from "@/ai/provider";
 import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
 import { triggerImagegenInReport } from "@/app/(study)/artifacts/lib/imagegen";
 import { generateReportScreenshot } from "@/app/(study)/artifacts/lib/screenshot";
@@ -288,7 +288,7 @@ export async function generateReport({
       }
       const response = streamText({
         model: llm(modelName),
-        providerOptions: providerOptions,
+        providerOptions: defaultProviderOptions,
 
         system: systemPrompt
           ? systemPrompt
@@ -394,7 +394,7 @@ export async function generateCover({
 } & AgentToolConfigArgs) {
   const response = streamText({
     model: llm("claude-3-7-sonnet"),
-    providerOptions: providerOptions,
+    providerOptions: defaultProviderOptions,
     system: reportCoverSystem({ locale }),
     messages: [
       {

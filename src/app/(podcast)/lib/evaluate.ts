@@ -1,6 +1,6 @@
 import "server-only";
 
-import { llm, providerOptions } from "@/ai/provider";
+import { defaultProviderOptions, llm } from "@/ai/provider";
 import { StatReporter } from "@/ai/tools/types";
 import { podcastEvaluationSystem } from "@/app/(podcast)/prompt";
 import { PodcastEvaluationScores, podcastEvaluationScoresSchema } from "@/app/(podcast)/types";
@@ -44,7 +44,7 @@ Score each of the 8 criteria according to the rubric (0-4 points each). Provide 
     model: llm("gpt-5-mini"),
     providerOptions: {
       openai: {
-        ...providerOptions.openai,
+        ...defaultProviderOptions.openai,
         reasoningSummary: "auto",
         reasoningEffort: "minimal",
       } satisfies OpenAIResponsesProviderOptions,

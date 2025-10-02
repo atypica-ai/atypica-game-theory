@@ -4,7 +4,7 @@ import {
   prepareMessagesForStreaming,
 } from "@/ai/messageUtils";
 import { helloSystem } from "@/ai/prompt";
-import { llm, providerOptions } from "@/ai/provider";
+import { defaultProviderOptions, llm } from "@/ai/provider";
 import { thanksTool } from "@/ai/tools/tools";
 import { ToolName } from "@/ai/tools/types";
 import authOptions from "@/app/(auth)/authOptions";
@@ -46,7 +46,7 @@ export async function POST(req: Request) {
 
   const streamTextResult = streamText({
     model: llm("claude-3-7-sonnet"),
-    providerOptions: providerOptions,
+    providerOptions: defaultProviderOptions,
     system: helloSystem({ locale }),
     messages: coreMessages,
 

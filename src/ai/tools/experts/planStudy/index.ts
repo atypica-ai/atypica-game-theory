@@ -1,7 +1,7 @@
 import "server-only";
 
 import { planStudyPrologue, planStudySystem } from "@/ai/prompt";
-import { llm, providerOptions } from "@/ai/provider";
+import { defaultProviderOptions, llm } from "@/ai/provider";
 import {
   AgentToolConfigArgs,
   PlainTextToolResult,
@@ -9,6 +9,7 @@ import {
 } from "@/ai/tools/types";
 import { fixMalformedUnicodeString } from "@/lib/utils";
 import { prisma } from "@/prisma/prisma";
+import { google } from "@ai-sdk/google";
 import { streamText, tool } from "ai";
 import { z } from "zod/v3";
 
@@ -26,14 +27,14 @@ async function planStudy({
   return new Promise(async (resolve, reject) => {
     const systemPrompt = planStudySystem({ locale });
     const response = streamText({
-      model: llm("gemini-2.5-pro", {
-        useSearchGrounding: true,
-        dynamicRetrievalConfig: {
+      model: llm("gemini-2.5-pro"),
+      providerOptions: defaultProviderOptions,
+      tools: {
+        google_search: google.tools.googleSearch({
           mode: "MODE_DYNAMIC",
           dynamicThreshold: 0, // threshold 越小，使用搜索的可能性就越高，0就是一定会搜索
-        },
-      }),
-      providerOptions: providerOptions,
+        }),
+      },
       system: systemPrompt,
       messages: [
         {

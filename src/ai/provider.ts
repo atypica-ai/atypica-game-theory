@@ -9,6 +9,7 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createVertex } from "@ai-sdk/google-vertex";
 import { createOpenAI } from "@ai-sdk/openai";
 import { createXai } from "@ai-sdk/xai";
+import { LanguageModel } from "ai";
 
 const openai = createOpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -45,7 +46,7 @@ const azureEastUS2 = createAzure({
 });
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
-const google = (modelId: string, settings?: any) => {
+const google = (modelId: string) => {
   const apiKeys: string[] = (process.env.GOOGLE_GENERATIVE_AI_API_KEYS ?? "")
     .split(/\s+/)
     .map((key) => key.trim())
@@ -57,7 +58,7 @@ const google = (modelId: string, settings?: any) => {
     apiKey: apiKeys[Math.floor(Math.random() * apiKeys.length)],
     fetch: proxiedFetch,
   });
-  return googleGenerativeAI(modelId, settings);
+  return googleGenerativeAI(modelId);
 };
 
 const vertex = createVertex({
@@ -93,7 +94,8 @@ const xai = createXai({
 //   }
 // };
 
-export const providerOptions = {
+export const defaultProviderOptions = {
+  // 这个只是给 litellm 的 openai provider 用的，直连模型的情况下不需要
   openai: {
     stream_options: { include_usage: true },
     // IMPORTANT: litellm 不支持这个 bedrock 的参数输入，但是在 litellm model 配置里设置了，它会发给 bedrock api
@@ -130,7 +132,7 @@ export type LLMModelName =
   | "qwen3-235b-a22b";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function llm(modelName: LLMModelName, options?: any) {
+export function llm(modelName: LLMModelName) {
   const deployRegion = getDeployRegion();
   if (deployRegion === "mainland") {
     switch (modelName) {
@@ -141,7 +143,7 @@ export function llm(modelName: LLMModelName, options?: any) {
         if (process.env.AZURE_EASTUS2_API_KEY) {
           break;
         } else {
-          return openai(modelName, options);
+          return openai(modelName);
         }
       case "gpt-4.1":
       case "gpt-4.1-mini":
@@ -150,21 +152,21 @@ export function llm(modelName: LLMModelName, options?: any) {
         if (process.env.AZURE_API_KEY) {
           break;
         } else {
-          return openai(modelName, options);
+          return openai(modelName);
         }
       case "claude-3-7-sonnet":
       case "claude-sonnet-4":
         if (process.env.AWS_BEDROCK_ACCESS_KEY_ID) {
           break;
         } else {
-          return openai(modelName, options);
+          return openai(modelName);
         }
       case "gemini-2.5-flash":
       case "gemini-2.5-pro":
         if (process.env.GOOGLE_VERTEX_PRIVATE_KEY) {
           break;
         } else {
-          return openai(modelName, options);
+          return openai(modelName);
         }
       case "grok-4":
       case "grok-3":
@@ -172,7 +174,7 @@ export function llm(modelName: LLMModelName, options?: any) {
         if (process.env.XAI_API_KEY) {
           break;
         } else {
-          return openai(modelName, options);
+          return openai(modelName);
         }
       case "deepseek-v3":
       case "deepseek-r1":
@@ -180,30 +182,30 @@ export function llm(modelName: LLMModelName, options?: any) {
       //   break;
       // }
       case "qwen3-235b-a22b":
-        return openai(modelName, options); // options 支持 parallelToolCalls 参数
+        return openai(modelName); // options 支持 parallelToolCalls 参数
     }
   }
   switch (modelName) {
     case "gpt-4o":
-      return azureEastUS2("gpt-4o", options); // gpt-4o 自动支持 prompt cache，gpt-4.1 还不支持
+      return azureEastUS2("gpt-4o"); // gpt-4o 自动支持 prompt cache，gpt-4.1 还不支持
     case "gpt-5":
-      return azureEastUS2("gpt-5", options);
+      return azureEastUS2("gpt-5");
     case "gpt-5-mini":
-      return azureEastUS2("gpt-5-mini", options);
+      return azureEastUS2("gpt-5-mini");
     case "gpt-5-nano":
-      return azureEastUS2("gpt-5-nano", options);
+      return azureEastUS2("gpt-5-nano");
     case "gpt-4.1":
-      return azure("gpt-4.1", options); // options 支持 parallelToolCalls 参数
+      return azure("gpt-4.1"); // options 支持 parallelToolCalls 参数
     case "gpt-4.1-mini":
-      return azure("gpt-4.1-mini", options);
+      return azure("gpt-4.1-mini");
     case "gpt-4.1-nano":
-      return azure("gpt-4.1-nano", options);
+      return azure("gpt-4.1-nano");
     case "o3-mini":
-      return azure("o3-mini", options);
+      return azure("o3-mini");
     case "claude-3-5-haiku":
-      return bedrock("us.anthropic.claude-3-5-haiku-20241022-v1:0", options);
+      return bedrock("us.anthropic.claude-3-5-haiku-20241022-v1:0");
     case "claude-3-7-sonnet":
-      return bedrock("us.anthropic.claude-3-7-sonnet-20250219-v1:0", options);
+      return bedrock("us.anthropic.claude-3-7-sonnet-20250219-v1:0");
     // case "claude-3-7-sonnet-beta":
     //   return bedrock("us.anthropic.claude-3-7-sonnet-20250219-v1:0", {
     //     additionalModelRequestFields: {
@@ -211,41 +213,40 @@ export function llm(modelName: LLMModelName, options?: any) {
     //     },
     //   });
     case "claude-sonnet-4":
-      return bedrock("us.anthropic.claude-sonnet-4-20250514-v1:0", options);
+      return bedrock("us.anthropic.claude-sonnet-4-20250514-v1:0");
     // case "gemini-2.5-flash":
-    //   return google("gemini-2.5-flash-preview-04-17", options);
+    //   return google("gemini-2.5-flash-preview-04-17");
     // case "gemini-2.5-pro":
-    //   return google("gemini-2.5-pro-preview-03-25", options);
+    //   return google("gemini-2.5-pro-preview-03-25");
     case "gemini-2.5-flash":
-      return vertex("gemini-2.5-flash", options);
+      return vertex("gemini-2.5-flash");
     case "gemini-2.5-pro":
-      return vertex("gemini-2.5-pro", options);
+      return vertex("gemini-2.5-pro");
     case "grok-4":
-      return xai("grok-3-mini", options);
+      return xai("grok-3-mini");
     case "grok-3":
-      return xai("grok-3-mini", options);
+      return xai("grok-3-mini");
     case "grok-3-mini":
-      return xai("grok-3-mini", options);
+      return xai("grok-3-mini");
     case "deepseek-v3":
-      return deepseek("Pro/deepseek-ai/DeepSeek-V3", options);
+      return deepseek("Pro/deepseek-ai/DeepSeek-V3");
     case "deepseek-r1":
-      return deepseek("Pro/deepseek-ai/DeepSeek-R1", options);
+      return deepseek("Pro/deepseek-ai/DeepSeek-R1");
     case "qwen3-235b-a22b":
-      return siliconflow("Qwen/Qwen3-235B-A22B", options);
+      return siliconflow("Qwen/Qwen3-235B-A22B");
   }
 }
 
 export type ImageModelName = "gpt-image-1" | "imagen-4.0-ultra" | "imagen-4.0";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function imageModel(modelName: ImageModelName, options?: any) {
+export function imageModel(modelName: ImageModelName) {
   switch (modelName) {
     case "gpt-image-1":
-      return azure.imageModel("gpt-image-1", options);
+      return azure.imageModel("gpt-image-1");
     case "imagen-4.0-ultra":
-      return vertex.image("imagen-4.0-ultra-generate-001", options);
+      return vertex.image("imagen-4.0-ultra-generate-001");
     case "imagen-4.0":
-      return vertex.image("imagen-4.0-generate-001", options);
+      return vertex.image("imagen-4.0-generate-001");
   }
 }
 
@@ -254,7 +255,10 @@ export function imageModel(modelName: ImageModelName, options?: any) {
  * bedrock 有个问题，file 的 name 在每次准备 bedrock api payload 的时候会产生一个新的，导致包含这个消息的 prompt cache checkpoint 失效
  * 这里简单修复下，固定文件名
  */
-export function fixFileNameInMessageToUsePromptCache(model: LanguageModelV1) {
+export function fixFileNameInMessageToUsePromptCache(model: LanguageModel) {
+  if (typeof model === "string") {
+    return model;
+  }
   if (!/\.anthropic\.claude/.test(model.modelId)) {
     // 只修复使用 bedrock provider 时的 claude 模型
     return model;

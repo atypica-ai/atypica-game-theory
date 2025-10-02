@@ -1,6 +1,6 @@
 import { createTextEmbedding } from "@/ai/embedding";
 import { reasoningPrologue, reasoningSystem } from "@/ai/prompt";
-import { llm, providerOptions } from "@/ai/provider";
+import { defaultProviderOptions, llm } from "@/ai/provider";
 import {
   AgentToolConfigArgs,
   PlainTextToolResult,
@@ -8,6 +8,7 @@ import {
 } from "@/ai/tools/types";
 import { fixMalformedUnicodeString } from "@/lib/utils";
 import { prisma } from "@/prisma/prisma";
+import { google } from "@ai-sdk/google";
 import { streamText, tool } from "ai";
 import { Locale } from "next-intl";
 import "server-only";
@@ -40,14 +41,14 @@ async function audienceCall({
     const systemPrompt = personas.length > 0 ? personas[0].prompt : reasoningSystem({ locale });
     const response = streamText({
       // model: llm("o3-mini"),
-      model: llm("gemini-2.5-pro", {
-        useSearchGrounding: true,
-        dynamicRetrievalConfig: {
+      model: llm("gemini-2.5-pro"),
+      providerOptions: defaultProviderOptions,
+      tools: {
+        google_search: google.tools.googleSearch({
           mode: "MODE_DYNAMIC",
           dynamicThreshold: 0, // threshold 越小，使用搜索的可能性就越高，0就是一定会搜索
-        },
-      }),
-      providerOptions: providerOptions,
+        }),
+      },
       system: systemPrompt,
       messages: [
         {

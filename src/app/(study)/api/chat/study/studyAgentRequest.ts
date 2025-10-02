@@ -4,7 +4,7 @@ import {
   persistentAIMessageToDB,
 } from "@/ai/messageUtils";
 import { studySystem } from "@/ai/prompt";
-import { fixFileNameInMessageToUsePromptCache, llm, providerOptions } from "@/ai/provider";
+import { defaultProviderOptions, fixFileNameInMessageToUsePromptCache, llm } from "@/ai/provider";
 import { initStudyStatReporter } from "@/ai/tools/stats";
 import {
   buildPersonaTool,
@@ -281,7 +281,7 @@ export async function studyAgentRequest({
     // model: llm("claude-sonnet-4"),
     model: fixFileNameInMessageToUsePromptCache(llm("claude-3-7-sonnet")),
 
-    providerOptions: providerOptions,
+    providerOptions: defaultProviderOptions,
     system: system,
     messages: cachedCoreMessages,
     tools: tools,

@@ -9,10 +9,10 @@ import {
   personaAgentSystem,
 } from "@/ai/prompt";
 import {
+  defaultProviderOptions,
   fixFileNameInMessageToUsePromptCache,
   llm,
   LLMModelName,
-  providerOptions,
 } from "@/ai/provider";
 import {
   dySearchTool,
@@ -34,6 +34,7 @@ import { fixMalformedUnicodeString } from "@/lib/utils";
 import { ChatMessageAttachment } from "@/prisma/client";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
+import { google } from "@ai-sdk/google";
 import {
   convertToModelMessages,
   generateId,
@@ -177,7 +178,7 @@ async function generateDigest(
   const digest = await generateText({
     // model: llm("gpt-4.1-nano"),
     model: llm("gpt-4.1-mini"),
-    providerOptions,
+    providerOptions: defaultProviderOptions,
     prompt: interviewDigestSystem({ locale, results }),
     maxOutputTokens: 2000,
   });
@@ -343,7 +344,7 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: UIMessage[]) 
         : // gpt-4.1 系列都不支持 pdf，目前只有 gemini 和 claude 支持
           fixFileNameInMessageToUsePromptCache(llm("claude-3-7-sonnet")),
 
-      providerOptions: providerOptions,
+      providerOptions: defaultProviderOptions,
 
       // maxRetries: 0, // 不要自动重试？不，gemini 偶尔连不上，还是得自动重试，慢是慢了点
       system: interviewerPrompt,
@@ -434,22 +435,12 @@ async function chatWithPersona(chatProps: ChatProps, messages: UIMessage[]) {
   const streamTextPromise = new Promise<Omit<UIMessage, "role">>(async (resolve, reject) => {
     // const hasAttachments = !!messages.find((message) => (message.experimental_attachments ?? []).length > 0);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const [reduceTokens, options]: [TReduceTokens, any] = [
-      { model: "gemini-2.5-flash", ratio: 10 },
-      {
-        useSearchGrounding: true,
-        dynamicRetrievalConfig: {
-          mode: "MODE_DYNAMIC",
-          // threshold 越小，使用搜索的可能性就越高
-          dynamicThreshold: messages.length <= 2 ? 0.1 : messages.length <= 4 ? 0.3 : 0.5,
-        },
-      },
-    ];
+    const reduceTokens: TReduceTokens = { model: "gemini-2.5-flash", ratio: 10 };
     const response = streamText({
       // gpt 4.1 不支持 pdf，目前只有 gemini 和 claude 支持
-      model: reduceTokens ? llm(reduceTokens.model, options) : llm("claude-3-7-sonnet"),
+      model: reduceTokens ? llm(reduceTokens.model) : llm("claude-3-7-sonnet"),
 
-      providerOptions: providerOptions,
+      providerOptions: defaultProviderOptions,
       system: personaPrompt,
 
       // maxRetries: 0,  // 不要自动重试？不，gemini 偶尔连不上，还是得自动重试，慢是慢了点
@@ -463,6 +454,15 @@ async function chatWithPersona(chatProps: ChatProps, messages: UIMessage[]) {
         [ToolName.insSearch]: insSearchTool,
         [ToolName.twitterSearch]: twitterSearchTool,
         // [ToolName.xhsSearch]: xhsSearchTool, // 因为有 grounding 了，tools 可以去掉一些
+        ...(reduceTokens && reduceTokens.model.startsWith("gemini")
+          ? {
+              google_search: google.tools.googleSearch({
+                mode: "MODE_DYNAMIC",
+                // threshold 越小，使用搜索的可能性就越高
+                dynamicThreshold: messages.length <= 2 ? 0.1 : messages.length <= 4 ? 0.3 : 0.5,
+              }),
+            }
+          : {}),
       },
 
       stopWhen: stepCountIs(2),

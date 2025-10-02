@@ -2,7 +2,7 @@ import "server-only";
 
 import { convertStepsToAIMessage } from "@/ai/messageUtils";
 import { personaAgentSystem } from "@/ai/prompt";
-import { llm, providerOptions } from "@/ai/provider";
+import { defaultProviderOptions, llm } from "@/ai/provider";
 import { initInterviewProjectStatReporter } from "@/ai/tools/stats";
 import { StatReporter } from "@/ai/tools/types";
 import { interviewAgentSystemPrompt } from "@/app/(interviewProject)/prompt";
@@ -14,6 +14,7 @@ import { detectInputLanguage } from "@/lib/textUtils";
 import { InterviewProjectExtra, InterviewSessionExtra } from "@/prisma/client";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
+import { google } from "@ai-sdk/google";
 import { generateId, stepCountIs, streamText, UIMessage } from "ai";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
@@ -282,16 +283,13 @@ async function generatePersonaResponse({
 }) {
   const promise = new Promise<Omit<UIMessage, "role">>((resolve, reject) => {
     const streamTextPromise = streamText({
-      model: llm("gemini-2.5-flash", {
-        useSearchGrounding: true,
-        dynamicRetrievalConfig: {
+      model: llm("gemini-2.5-flash"),
+      providerOptions: defaultProviderOptions,
+      tools: {
+        google_search: google.tools.googleSearch({
           mode: "MODE_DYNAMIC",
-          dynamicThreshold: 0.3,
-        },
-      }),
-
-      providerOptions: {
-        ...providerOptions,
+          dynamicThreshold: 0.3, // threshold 越小，使用搜索的可能性就越高
+        }),
       },
 
       system: systemPrompt,
@@ -358,7 +356,7 @@ async function generateInterviewerResponse({
       model: llm("claude-3-7-sonnet"),
 
       providerOptions: {
-        ...providerOptions,
+        ...defaultProviderOptions,
       },
 
       system: systemPrompt,

@@ -4,7 +4,7 @@ import {
   prepareMessagesForStreaming,
 } from "@/ai/messageUtils";
 import { clientMessagePayloadSchema } from "@/ai/messageUtilsClient";
-import { llm, providerOptions } from "@/ai/provider";
+import { defaultProviderOptions, llm } from "@/ai/provider";
 import { reasoningThinkingTool } from "@/ai/tools/experts/reasoning";
 import { initPersonaImportStatReporter } from "@/ai/tools/stats";
 import { ToolName } from "@/ai/tools/types";
@@ -93,7 +93,7 @@ export async function POST(req: NextRequest) {
   // Generate response from LLM
   const streamTextResult = streamText({
     model: llm("gpt-4.1-mini"),
-    providerOptions,
+    providerOptions: defaultProviderOptions,
     system: systemPrompt,
     messages: coreMessages,
 

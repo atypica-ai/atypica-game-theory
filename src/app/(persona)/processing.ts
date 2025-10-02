@@ -1,6 +1,6 @@
 import "server-only";
 
-import { llm, providerOptions } from "@/ai/provider";
+import { defaultProviderOptions, llm } from "@/ai/provider";
 import { initPersonaImportStatReporter } from "@/ai/tools/stats";
 import { savePersonaTool } from "@/ai/tools/tools";
 import { ToolName } from "@/ai/tools/types";
@@ -192,7 +192,7 @@ async function attachmentToContext(
   await new Promise((resolve, reject) => {
     const response = streamText({
       model: llm("gemini-2.5-flash"),
-      providerOptions: providerOptions,
+      providerOptions: defaultProviderOptions,
 
       system: parseAttachmentPrompt({
         locale,
@@ -300,7 +300,7 @@ async function buildPersonaAgentPrompt(
   await new Promise((resolve, reject) => {
     const response = streamText({
       model: llm("claude-3-7-sonnet"),
-      providerOptions: providerOptions,
+      providerOptions: defaultProviderOptions,
 
       system: personaGenerationPrompt({
         locale,

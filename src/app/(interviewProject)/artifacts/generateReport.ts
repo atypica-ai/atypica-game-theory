@@ -1,6 +1,6 @@
 import "server-only";
 
-import { llm, providerOptions } from "@/ai/provider";
+import { defaultProviderOptions, llm } from "@/ai/provider";
 import { initInterviewProjectStatReporter } from "@/ai/tools/stats";
 import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage } from "@/lib/textUtils";
@@ -108,8 +108,7 @@ export async function generateInterviewReportContent({
     // model: llm("claude-sonnet-4"),
     // 当访谈有 100 左右时，claude 的 input token context 不够，需要用 gemini
     model: llm("gemini-2.5-pro"),
-
-    providerOptions: providerOptions,
+    providerOptions: defaultProviderOptions,
     system: interviewReportSystemPrompt({ locale }),
 
     messages: [

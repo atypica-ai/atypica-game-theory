@@ -2,7 +2,7 @@ import "server-only";
 
 import { prepareMessagesForStreaming } from "@/ai/messageUtils";
 import { buildPersonaSystem } from "@/ai/prompt";
-import { llm, LLMModelName, providerOptions } from "@/ai/provider";
+import { defaultProviderOptions, llm, LLMModelName } from "@/ai/provider";
 import { handleToolCallError, savePersonaTool, toolCallError } from "@/ai/tools/tools";
 import { AgentToolConfigArgs, PlainTextToolResult, ToolName } from "@/ai/tools/types";
 import { prisma } from "@/prisma/prisma";
@@ -156,7 +156,6 @@ export async function runBuildPersona({
     const reduceTokens = noPersonaFallback
       ? (null as TReduceTokens)
       : ({ model: "gemini-2.5-flash", ratio: 10 } as TReduceTokens);
-    const llmOptions = undefined;
     const maxSteps = 5;
     const temperature = 0.5;
     const tools = {
@@ -174,9 +173,9 @@ export async function runBuildPersona({
     const toolChoice = "auto";
     const response = streamText({
       // claude-3-7-sonnet 目前会遇到 input tokens context 不够大的问题，但 gpt 4.1 mini 和 gemini 2.5 flash 没问题
-      model: reduceTokens ? llm(reduceTokens.model, llmOptions) : llm("claude-3-7-sonnet"),
+      model: reduceTokens ? llm(reduceTokens.model) : llm("claude-3-7-sonnet"),
 
-      providerOptions: providerOptions,
+      providerOptions: defaultProviderOptions,
 
       system: buildPersonaSystem({
         locale,

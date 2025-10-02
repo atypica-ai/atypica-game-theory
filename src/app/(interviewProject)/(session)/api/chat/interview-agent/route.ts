@@ -4,7 +4,7 @@ import {
   prepareMessagesForStreaming,
 } from "@/ai/messageUtils";
 import { clientMessagePayloadSchema } from "@/ai/messageUtilsClient";
-import { llm, providerOptions } from "@/ai/provider";
+import { defaultProviderOptions, llm } from "@/ai/provider";
 import { initInterviewProjectStatReporter } from "@/ai/tools/stats";
 import { fetchInterviewSessionChat } from "@/app/(interviewProject)/actions";
 import { interviewAgentSystemPrompt } from "@/app/(interviewProject)/prompt";
@@ -123,9 +123,7 @@ export async function POST(req: Request) {
   const streamTextResult = streamText({
     model: llm("claude-3-7-sonnet"),
 
-    providerOptions: {
-      ...providerOptions,
-    },
+    providerOptions: defaultProviderOptions,
 
     system: systemPrompt,
     messages: coreMessages,
