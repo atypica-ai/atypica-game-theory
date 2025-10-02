@@ -1,11 +1,19 @@
-import { PlainTextToolResult, SocialPost } from "@/ai/tools/types";
+import { socialPostSchema } from "@/ai/tools/social/types";
+import { fixMalformedUnicodeString } from "@/lib/utils";
+import z from "zod/v3";
 
-export interface XHSNote extends SocialPost {
-  title: string;
-  type: string;
-}
+export const xhsSearchInputSchema = z.object({
+  keyword: z.string().describe("Search keywords").transform(fixMalformedUnicodeString),
+});
 
-export interface XHSSearchResult extends PlainTextToolResult {
-  notes: XHSNote[];
-  plainText: string;
-}
+export const xhsSearchOutputSchema = z.object({
+  notes: z.array(
+    socialPostSchema.extend({
+      title: z.string(),
+      type: z.string(),
+    }),
+  ),
+  plainText: z.string(),
+});
+
+export type XHSSearchResult = z.infer<typeof xhsSearchOutputSchema>;

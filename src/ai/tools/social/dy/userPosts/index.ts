@@ -3,9 +3,8 @@ import "server-only";
 import { PlainTextToolResult } from "@/ai/tools/types";
 import { rootLogger } from "@/lib/logging";
 import { tool } from "ai";
-import { z } from "zod/v3";
 import { tryFindValidImage } from "../utils";
-import { DYUserPost, DYUserPostsResult } from "./types";
+import { DYUserPostsResult, dyUserPostsInputSchema, dyUserPostsOutputSchema } from "./types";
 
 const toolLog = rootLogger.child({
   tool: "dyUserPosts",
@@ -15,7 +14,7 @@ function parseDYUserPosts(result: {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   aweme_list: any[];
 }): DYUserPostsResult {
-  const posts: DYUserPost[] = [];
+  const posts: DYUserPostsResult["posts"] = [];
   // 只取前十条
   const topUserPosts = (result?.aweme_list ?? []).slice(0, 10);
   topUserPosts.forEach((aweme_info) => {
@@ -83,11 +82,10 @@ async function dyUserPosts({ secret_userid }: { secret_userid: string }) {
 
 export const dyUserPostsTool = tool({
   description: "获取抖音特定用户的帖子",
-  inputSchema: z.object({
-    secret_userid: z.string().describe("The secret user ID to fetch posts from"),
-  }),
-  experimental_toToolResultContent: (result: PlainTextToolResult) => {
-    return [{ type: "text", text: result.plainText }];
+  inputSchema: dyUserPostsInputSchema,
+  outputSchema: dyUserPostsOutputSchema,
+  toModelOutput: (result: PlainTextToolResult) => {
+    return { type: "text", value: result.plainText };
   },
   execute: async ({ secret_userid }) => {
     const result = await dyUserPosts({ secret_userid });

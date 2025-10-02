@@ -1,25 +1,36 @@
-export interface SocialUser {
-  userid: string;
-  nickname: string;
-  image: string;
-}
+import z from "zod/v3";
 
-export interface SocialPost {
-  id: string;
-  desc: string;
-  liked_count: number;
-  collected_count: number;
-  comments_count: number;
-  user: SocialUser;
-  images_list: {
-    url: string;
-  }[];
-}
+// Common Zod schemas for social media tools
+export const socialUserSchema = z.object({
+  userid: z.string(),
+  nickname: z.string(),
+  image: z.string(),
+});
 
-export interface SocialPostComment {
-  id: string;
-  content: string;
-  user: SocialUser;
-  like_count: number;
-  sub_comment_count: number;
-}
+export const socialPostSchema = z.object({
+  id: z.string(),
+  desc: z.string(),
+  liked_count: z.number(),
+  collected_count: z.number(),
+  comments_count: z.number(),
+  user: socialUserSchema,
+  images_list: z.array(
+    z.object({
+      url: z.string(),
+    }),
+  ),
+});
+
+export const socialPostCommentSchema = z.object({
+  id: z.string(),
+  content: z.string(),
+  user: socialUserSchema,
+  like_count: z.number(),
+  sub_comment_count: z.number(),
+});
+
+export interface SocialUser extends z.infer<typeof socialUserSchema> {}
+
+export interface SocialPost extends z.infer<typeof socialPostSchema> {}
+
+export interface SocialPostComment extends z.infer<typeof socialPostCommentSchema> {}

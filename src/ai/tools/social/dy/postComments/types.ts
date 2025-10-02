@@ -1,11 +1,21 @@
-import { PlainTextToolResult, SocialPostComment, SocialUser } from "@/ai/tools/types";
+import { socialPostCommentSchema, socialUserSchema } from "@/ai/tools/social/types";
+import z from "zod/v3";
 
-interface DYComment extends SocialPostComment {
-  user: SocialUser & {
-    secret_userid: string;
-  };
-}
+// Input schema
+export const dyPostCommentsInputSchema = z.object({
+  postid: z.string().describe("The post ID to fetch comments from"),
+});
 
-export interface DYPostCommentsResult extends PlainTextToolResult {
-  comments: DYComment[];
-}
+// Output schema
+export const dyPostCommentsOutputSchema = z.object({
+  comments: z.array(
+    socialPostCommentSchema.extend({
+      user: socialUserSchema.extend({
+        secret_userid: z.string(),
+      }),
+    }),
+  ),
+  plainText: z.string(),
+});
+
+export type DYPostCommentsResult = z.infer<typeof dyPostCommentsOutputSchema>;

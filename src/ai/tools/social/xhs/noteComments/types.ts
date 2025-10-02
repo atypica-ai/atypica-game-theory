@@ -1,5 +1,13 @@
-import { PlainTextToolResult, SocialPostComment } from "@/ai/tools/types";
+import { socialPostCommentSchema } from "@/ai/tools/social/types";
+import z from "zod/v3";
 
-export interface XHSNoteCommentsResult extends PlainTextToolResult {
-  comments: SocialPostComment[];
-}
+export const xhsNoteCommentsInputSchema = z.object({
+  noteid: z.string().describe("The note ID to fetch comments from"),
+});
+
+export const xhsNoteCommentsOutputSchema = z.object({
+  comments: z.array(socialPostCommentSchema),
+  plainText: z.string(),
+});
+
+export type XHSNoteCommentsResult = z.infer<typeof xhsNoteCommentsOutputSchema>;

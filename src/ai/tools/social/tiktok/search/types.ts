@@ -1,12 +1,22 @@
-import { PlainTextToolResult, SocialPost, SocialUser } from "@/ai/tools/types";
+import { socialPostSchema, socialUserSchema } from "@/ai/tools/social/types";
+import { fixMalformedUnicodeString } from "@/lib/utils";
+import z from "zod/v3";
 
-export interface TikTokPost extends SocialPost {
-  user: SocialUser & {
-    secret_userid: string;
-  };
-}
+// Input schema
+export const tiktokSearchInputSchema = z.object({
+  keyword: z.string().describe("Search keywords").transform(fixMalformedUnicodeString),
+});
 
-export interface TikTokSearchResult extends PlainTextToolResult {
-  posts: TikTokPost[];
-  plainText: string;
-}
+// Output schema
+export const tiktokSearchOutputSchema = z.object({
+  posts: z.array(
+    socialPostSchema.extend({
+      user: socialUserSchema.extend({
+        secret_userid: z.string(),
+      }),
+    }),
+  ),
+  plainText: z.string(),
+});
+
+export type TikTokSearchResult = z.infer<typeof tiktokSearchOutputSchema>;

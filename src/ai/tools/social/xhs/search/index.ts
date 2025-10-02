@@ -2,10 +2,8 @@ import "server-only";
 
 import { PlainTextToolResult } from "@/ai/tools/types";
 import { rootLogger } from "@/lib/logging";
-import { fixMalformedUnicodeString } from "@/lib/utils";
 import { tool } from "ai";
-import { z } from "zod/v3";
-import { XHSNote, XHSSearchResult } from "./types";
+import { xhsSearchInputSchema, xhsSearchOutputSchema, type XHSSearchResult } from "./types";
 
 const toolLog = rootLogger.child({
   tool: "xhsSearch",
@@ -18,7 +16,7 @@ function parseXHSSearchResult(data: {
     note: any;
   }[];
 }): XHSSearchResult {
-  const notes: XHSNote[] = [];
+  const notes: XHSSearchResult["notes"] = [];
   // 过滤并取前十条
   const topNotes = (data?.items ?? []).filter((item) => item.model_type === "note").slice(0, 10);
   topNotes.forEach(({ note }) => {
@@ -126,12 +124,11 @@ async function xhsSearchTikhub({ keyword }: { keyword: string }) {
 
 export const xhsSearchTool = tool({
   description: "在小红书上搜索笔记，可以搜索特定的主题，也可以搜索一个品牌",
-  inputSchema: z.object({
-    keyword: z.string().describe("Search keywords").transform(fixMalformedUnicodeString),
-  }),
+  inputSchema: xhsSearchInputSchema,
+  outputSchema: xhsSearchOutputSchema,
   // 这个方法返回的结果会发给 LLM 用来生成回复，只需要把 LLM 能够使用的文本给它就行，节省很多 tokens
-  experimental_toToolResultContent: (result: PlainTextToolResult) => {
-    return [{ type: "text", text: result.plainText }];
+  toModelOutput: (result: PlainTextToolResult) => {
+    return { type: "text", value: result.plainText };
   },
   execute: async ({ keyword }) => {
     const result = await xhsSearch({ keyword });

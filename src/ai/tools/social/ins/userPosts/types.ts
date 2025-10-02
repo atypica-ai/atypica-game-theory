@@ -1,10 +1,19 @@
-import { PlainTextToolResult, SocialPost } from "@/ai/tools/types";
+import { socialPostSchema } from "@/ai/tools/social/types";
+import z from "zod/v3";
 
-export interface InsUserPost extends SocialPost {
-  code: string;
-}
+// Input schema
+export const insUserPostsInputSchema = z.object({
+  userid: z.string().describe("The user ID to fetch posts from"),
+});
 
-export interface InsUserPostsResult extends PlainTextToolResult {
-  posts: InsUserPost[];
-  plainText: string;
-}
+// Output schema
+export const insUserPostsOutputSchema = z.object({
+  posts: z.array(
+    socialPostSchema.extend({
+      code: z.string(),
+    }),
+  ),
+  plainText: z.string(),
+});
+
+export type InsUserPostsResult = z.infer<typeof insUserPostsOutputSchema>;

@@ -3,9 +3,12 @@ import "server-only";
 import { PlainTextToolResult } from "@/ai/tools/types";
 import { rootLogger } from "@/lib/logging";
 import { tool } from "ai";
-import { z } from "zod/v3";
 import { tryFindValidImage } from "../utils";
-import { TikTokPostCommentsResult } from "./types";
+import {
+  TikTokPostCommentsResult,
+  tiktokPostCommentsInputSchema,
+  tiktokPostCommentsOutputSchema,
+} from "./types";
 
 const toolLog = rootLogger.child({
   tool: "tiktokPostComments",
@@ -79,11 +82,10 @@ async function tiktokPostComments({ postid }: { postid: string }) {
 
 export const tiktokPostCommentsTool = tool({
   description: "Fetch comments from specific TikTok post",
-  inputSchema: z.object({
-    postid: z.string().describe("The post ID to fetch comments from"),
-  }),
-  experimental_toToolResultContent: (result: PlainTextToolResult) => {
-    return [{ type: "text", text: result.plainText }];
+  inputSchema: tiktokPostCommentsInputSchema,
+  outputSchema: tiktokPostCommentsOutputSchema,
+  toModelOutput: (result: PlainTextToolResult) => {
+    return { type: "text", value: result.plainText };
   },
   execute: async ({ postid }) => {
     const result = await tiktokPostComments({ postid });

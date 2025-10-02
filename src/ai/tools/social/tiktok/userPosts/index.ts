@@ -3,9 +3,12 @@ import "server-only";
 import { PlainTextToolResult } from "@/ai/tools/types";
 import { rootLogger } from "@/lib/logging";
 import { tool } from "ai";
-import { z } from "zod/v3";
 import { tryFindValidImage } from "../utils";
-import { TikTokUserPost, TikTokUserPostsResult } from "./types";
+import {
+  TikTokUserPostsResult,
+  tiktokUserPostsInputSchema,
+  tiktokUserPostsOutputSchema,
+} from "./types";
 
 const toolLog = rootLogger.child({
   tool: "tiktokUserPosts",
@@ -15,7 +18,7 @@ function parseTikTokUserPosts(result: {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   aweme_list: any[];
 }): TikTokUserPostsResult {
-  const posts: TikTokUserPost[] = [];
+  const posts: TikTokUserPostsResult["posts"] = [];
   // 只取前十条
   const topUserPosts = (result?.aweme_list ?? []).slice(0, 10);
   topUserPosts.forEach((aweme_info) => {
@@ -82,13 +85,12 @@ async function tiktokUserPosts({ secret_userid }: { secret_userid: string }) {
 
 export const tiktokUserPostsTool = tool({
   description: "Fetch posts from specific TikTok user",
-  inputSchema: z.object({
-    secret_userid: z.string().describe("The secret user ID to fetch posts from"),
-  }),
-  experimental_toToolResultContent: (result: PlainTextToolResult) => {
-    return [{ type: "text", text: result.plainText }];
+  inputSchema: tiktokUserPostsInputSchema,
+  outputSchema: tiktokUserPostsOutputSchema,
+  toModelOutput: (result: PlainTextToolResult) => {
+    return { type: "text", value: result.plainText };
   },
-  execute: async ({ secret_userid }) => {
+  execute: async ({ secret_userid }): Promise<TikTokUserPostsResult> => {
     const result = await tiktokUserPosts({ secret_userid });
     return result;
   },

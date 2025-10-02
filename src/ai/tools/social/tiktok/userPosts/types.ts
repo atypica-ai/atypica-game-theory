@@ -1,12 +1,21 @@
-import { PlainTextToolResult, SocialPost, SocialUser } from "@/ai/tools/types";
+import { socialPostSchema, socialUserSchema } from "@/ai/tools/social/types";
+import z from "zod/v3";
 
-export interface TikTokUserPost extends SocialPost {
-  user: SocialUser & {
-    secret_userid: string;
-  };
-}
+// Input schema
+export const tiktokUserPostsInputSchema = z.object({
+  secret_userid: z.string().describe("The secret user ID to fetch posts from"),
+});
 
-export interface TikTokUserPostsResult extends PlainTextToolResult {
-  posts: TikTokUserPost[];
-  plainText: string;
-}
+// Output schema
+export const tiktokUserPostsOutputSchema = z.object({
+  posts: z.array(
+    socialPostSchema.extend({
+      user: socialUserSchema.extend({
+        secret_userid: z.string(),
+      }),
+    }),
+  ),
+  plainText: z.string(),
+});
+
+export type TikTokUserPostsResult = z.infer<typeof tiktokUserPostsOutputSchema>;

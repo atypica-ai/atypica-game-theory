@@ -3,9 +3,12 @@ import "server-only";
 import { PlainTextToolResult } from "@/ai/tools/types";
 import { rootLogger } from "@/lib/logging";
 import { tool } from "ai";
-import { z } from "zod/v3";
 import { tryFindValidImage } from "../utils";
-import { DYPostCommentsResult } from "./types";
+import {
+  DYPostCommentsResult,
+  dyPostCommentsInputSchema,
+  dyPostCommentsOutputSchema,
+} from "./types";
 
 const toolLog = rootLogger.child({
   tool: "dyPostComments",
@@ -79,11 +82,10 @@ async function dyPostComments({ postid }: { postid: string }) {
 
 export const dyPostCommentsTool = tool({
   description: "获取抖音特定帖子的评论",
-  inputSchema: z.object({
-    postid: z.string().describe("The post ID to fetch comments from"),
-  }),
-  experimental_toToolResultContent: (result: PlainTextToolResult) => {
-    return [{ type: "text", text: result.plainText }];
+  inputSchema: dyPostCommentsInputSchema,
+  outputSchema: dyPostCommentsOutputSchema,
+  toModelOutput: (result: PlainTextToolResult) => {
+    return { type: "text", value: result.plainText };
   },
   execute: async ({ postid }) => {
     const result = await dyPostComments({ postid });

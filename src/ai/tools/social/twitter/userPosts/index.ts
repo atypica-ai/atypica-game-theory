@@ -1,10 +1,13 @@
 import "server-only";
 
-import { PlainTextToolResult, SocialPost } from "@/ai/tools/types";
+import { PlainTextToolResult } from "@/ai/tools/types";
 import { rootLogger } from "@/lib/logging";
 import { tool } from "ai";
-import { z } from "zod/v3";
-import { TwitterUserPostsResult } from "./types";
+import {
+  TwitterUserPostsResult,
+  twitterUserPostsInputSchema,
+  twitterUserPostsOutputSchema,
+} from "./types";
 
 const toolLog = rootLogger.child({
   tool: "twitterUserPosts",
@@ -15,7 +18,7 @@ function parseTwitterUserPosts(result: {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   timeline: any[];
 }): TwitterUserPostsResult {
-  const posts: SocialPost[] = [];
+  const posts: TwitterUserPostsResult["posts"] = [];
   // 只取前十条
   const topUserPosts = (result?.timeline ?? []).slice(0, 10);
   topUserPosts.forEach((item) => {
@@ -80,11 +83,10 @@ async function twitterUserPosts({ userid }: { userid: string }) {
 
 export const twitterUserPostsTool = tool({
   description: "Fetch posts from specific Twitter user",
-  inputSchema: z.object({
-    userid: z.string().describe("The user ID to fetch posts from"),
-  }),
-  experimental_toToolResultContent: (result: PlainTextToolResult) => {
-    return [{ type: "text", text: result.plainText }];
+  inputSchema: twitterUserPostsInputSchema,
+  outputSchema: twitterUserPostsOutputSchema,
+  toModelOutput: (result: PlainTextToolResult) => {
+    return { type: "text", value: result.plainText };
   },
   execute: async ({ userid }) => {
     const result = await twitterUserPosts({ userid });

@@ -1,12 +1,22 @@
-import { PlainTextToolResult, SocialPost, SocialUser } from "@/ai/tools/types";
+import { socialPostSchema, socialUserSchema } from "@/ai/tools/social/types";
+import { fixMalformedUnicodeString } from "@/lib/utils";
+import z from "zod/v3";
 
-export interface DYPost extends SocialPost {
-  user: SocialUser & {
-    secret_userid: string;
-  };
-}
+// Input schema
+export const dySearchInputSchema = z.object({
+  keyword: z.string().describe("Search keywords").transform(fixMalformedUnicodeString),
+});
 
-export interface DYSearchResult extends PlainTextToolResult {
-  posts: DYPost[];
-  plainText: string;
-}
+// Output schema
+export const dySearchOutputSchema = z.object({
+  posts: z.array(
+    socialPostSchema.extend({
+      user: socialUserSchema.extend({
+        secret_userid: z.string(),
+      }),
+    }),
+  ),
+  plainText: z.string(),
+});
+
+export type DYSearchResult = z.infer<typeof dySearchOutputSchema>;

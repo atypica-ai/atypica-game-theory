@@ -3,8 +3,11 @@ import "server-only";
 import { PlainTextToolResult } from "@/ai/tools/types";
 import { rootLogger } from "@/lib/logging";
 import { tool } from "ai";
-import { z } from "zod/v3";
-import { XHSUserNote, XHSUserNotesResult } from "./types";
+import {
+  xhsUserNotesInputSchema,
+  xhsUserNotesOutputSchema,
+  type XHSUserNotesResult,
+} from "./types";
 
 const toolLog = rootLogger.child({
   tool: "xhsUserNotes",
@@ -16,7 +19,7 @@ function parseXHSUserNotes(data: {
     notes: any[];
   };
 }): XHSUserNotesResult {
-  const notes: XHSUserNote[] = [];
+  const notes: XHSUserNotesResult["notes"] = [];
   // 只取前十条
   const topUserNotes = (data?.data?.notes ?? []).slice(0, 10);
   topUserNotes.forEach((note) => {
@@ -90,11 +93,10 @@ async function xhsUserNotes({ userid }: { userid: string }) {
 
 export const xhsUserNotesTool = tool({
   description: "获取小红书特定用户的帖子",
-  inputSchema: z.object({
-    userid: z.string().describe("The user ID to fetch notes from"),
-  }),
-  experimental_toToolResultContent: (result: PlainTextToolResult) => {
-    return [{ type: "text", text: result.plainText }];
+  inputSchema: xhsUserNotesInputSchema,
+  outputSchema: xhsUserNotesOutputSchema,
+  toModelOutput: (result: PlainTextToolResult) => {
+    return { type: "text", value: result.plainText };
   },
   execute: async ({ userid }) => {
     const result = await xhsUserNotes({ userid });

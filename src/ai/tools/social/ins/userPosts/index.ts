@@ -3,8 +3,7 @@ import "server-only";
 import { PlainTextToolResult } from "@/ai/tools/types";
 import { rootLogger } from "@/lib/logging";
 import { tool } from "ai";
-import { z } from "zod/v3";
-import { InsUserPost, InsUserPostsResult } from "./types";
+import { InsUserPostsResult, insUserPostsInputSchema, insUserPostsOutputSchema } from "./types";
 
 const toolLog = rootLogger.child({
   tool: "insUserPosts",
@@ -16,7 +15,7 @@ function parseInsUserPosts(result: {
     items: any[];
   };
 }): InsUserPostsResult {
-  const posts: InsUserPost[] = [];
+  const posts: InsUserPostsResult["posts"] = [];
   // 只取前十条
   const topUserPosts = (result?.data.items ?? []).slice(0, 10);
   topUserPosts.forEach((item) => {
@@ -85,11 +84,10 @@ async function insUserPosts({ userid }: { userid: string }) {
 
 export const insUserPostsTool = tool({
   description: "Fetch posts from specific Instagram user",
-  inputSchema: z.object({
-    userid: z.string().describe("The user ID to fetch posts from"),
-  }),
-  experimental_toToolResultContent: (result: PlainTextToolResult) => {
-    return [{ type: "text", text: result.plainText }];
+  inputSchema: insUserPostsInputSchema,
+  outputSchema: insUserPostsOutputSchema,
+  toModelOutput: (result: PlainTextToolResult) => {
+    return { type: "text", value: result.plainText };
   },
   execute: async ({ userid }) => {
     const result = await insUserPosts({ userid });

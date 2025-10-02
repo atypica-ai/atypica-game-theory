@@ -1,11 +1,21 @@
-import { PlainTextToolResult, SocialPostComment, SocialUser } from "@/ai/tools/types";
+import { socialPostCommentSchema, socialUserSchema } from "@/ai/tools/social/types";
+import z from "zod/v3";
 
-export interface TikTokComment extends SocialPostComment {
-  user: SocialUser & {
-    secret_userid: string;
-  };
-}
+// Input schema
+export const tiktokPostCommentsInputSchema = z.object({
+  postid: z.string().describe("The post ID to fetch comments from"),
+});
 
-export interface TikTokPostCommentsResult extends PlainTextToolResult {
-  comments: TikTokComment[];
-}
+// Output schema
+export const tiktokPostCommentsOutputSchema = z.object({
+  comments: z.array(
+    socialPostCommentSchema.extend({
+      user: socialUserSchema.extend({
+        secret_userid: z.string(),
+      }),
+    }),
+  ),
+  plainText: z.string(),
+});
+
+export type TikTokPostCommentsResult = z.infer<typeof tiktokPostCommentsOutputSchema>;

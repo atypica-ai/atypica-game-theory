@@ -2,11 +2,9 @@ import "server-only";
 
 import { PlainTextToolResult } from "@/ai/tools/types";
 import { rootLogger } from "@/lib/logging";
-import { fixMalformedUnicodeString } from "@/lib/utils";
 import { tool } from "ai";
-import { z } from "zod/v3";
 import { tryFindValidImage } from "../utils";
-import { DYPost, DYSearchResult } from "./types";
+import { DYSearchResult, dySearchInputSchema, dySearchOutputSchema } from "./types";
 
 const toolLog = rootLogger.child({
   tool: "dySearch",
@@ -19,7 +17,7 @@ function parseDYSearchResult(result: {
     aweme_info: any;
   }[];
 }): DYSearchResult {
-  const posts: DYPost[] = [];
+  const posts: DYSearchResult["posts"] = [];
   // 过滤并取前十条
   const topPosts = (result?.data ?? [])
     .filter((item) => item.type === 1) // 有 aweme_info
@@ -131,12 +129,11 @@ async function dySearchSX({ keyword }: { keyword: string }) {
 
 export const dySearchTool = tool({
   description: "在抖音上搜索内容，可以搜索特定的主题，也可以搜索一个品牌",
-  inputSchema: z.object({
-    keyword: z.string().describe("Search keywords").transform(fixMalformedUnicodeString),
-  }),
+  inputSchema: dySearchInputSchema,
+  outputSchema: dySearchOutputSchema,
   // 这个方法返回的结果会发给 LLM 用来生成回复，只需要把 LLM 能够使用的文本给它就行，节省很多 tokens
-  experimental_toToolResultContent: (result: PlainTextToolResult) => {
-    return [{ type: "text", text: result.plainText }];
+  toModelOutput: (result: PlainTextToolResult) => {
+    return { type: "text", value: result.plainText };
   },
   execute: async ({ keyword }) => {
     // const result = await dySearchTikhub({ keyword });

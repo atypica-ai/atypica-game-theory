@@ -3,8 +3,11 @@ import "server-only";
 import { PlainTextToolResult } from "@/ai/tools/types";
 import { rootLogger } from "@/lib/logging";
 import { tool } from "ai";
-import { z } from "zod/v3";
-import { InsPostCommentsResult } from "./types";
+import {
+  InsPostCommentsResult,
+  insPostCommentsInputSchema,
+  insPostCommentsOutputSchema,
+} from "./types";
 
 const toolLog = rootLogger.child({
   tool: "insPostComments",
@@ -80,11 +83,10 @@ async function insPostComments({ postcode }: { postcode: string }) {
 
 export const insPostCommentsTool = tool({
   description: "Fetch comments from specific Instagram post",
-  inputSchema: z.object({
-    postcode: z.string().describe("The post slug to fetch comments from"),
-  }),
-  experimental_toToolResultContent: (result: PlainTextToolResult) => {
-    return [{ type: "text", text: result.plainText }];
+  inputSchema: insPostCommentsInputSchema,
+  outputSchema: insPostCommentsOutputSchema,
+  toModelOutput: (result: PlainTextToolResult) => {
+    return { type: "text", value: result.plainText };
   },
   execute: async ({ postcode }) => {
     const result = await insPostComments({ postcode });

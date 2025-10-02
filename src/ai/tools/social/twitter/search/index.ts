@@ -1,11 +1,9 @@
 import "server-only";
 
-import { PlainTextToolResult, SocialPost } from "@/ai/tools/types";
+import { PlainTextToolResult } from "@/ai/tools/types";
 import { rootLogger } from "@/lib/logging";
-import { fixMalformedUnicodeString } from "@/lib/utils";
 import { tool } from "ai";
-import { z } from "zod/v3";
-import { TwitterSearchResult } from "./types";
+import { TwitterSearchResult, twitterSearchInputSchema, twitterSearchOutputSchema } from "./types";
 
 const toolLog = rootLogger.child({
   tool: "twitterSearch",
@@ -15,7 +13,7 @@ function parseTwitterSearchResult(result: {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   timeline: any[];
 }): TwitterSearchResult {
-  const posts: SocialPost[] = [];
+  const posts: TwitterSearchResult["posts"] = [];
   // 过滤并取前十条
   const topPosts = (result?.timeline ?? [])
     .filter((item) => item.type === "tweet") //
@@ -82,12 +80,11 @@ async function twitterSearch({ keyword }: { keyword: string }) {
 
 export const twitterSearchTool = tool({
   description: "Search for content on Twitter, including specific topics or brands",
-  inputSchema: z.object({
-    keyword: z.string().describe("Search keywords").transform(fixMalformedUnicodeString),
-  }),
+  inputSchema: twitterSearchInputSchema,
+  outputSchema: twitterSearchOutputSchema,
   // 这个方法返回的结果会发给 LLM 用来生成回复，只需要把 LLM 能够使用的文本给它就行，节省很多 tokens
-  experimental_toToolResultContent: (result: PlainTextToolResult) => {
-    return [{ type: "text", text: result.plainText }];
+  toModelOutput: (result: PlainTextToolResult) => {
+    return { type: "text", value: result.plainText };
   },
   execute: async ({ keyword }) => {
     const result = await twitterSearch({ keyword });
