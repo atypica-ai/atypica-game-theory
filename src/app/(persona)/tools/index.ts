@@ -4,8 +4,8 @@ import { PlainTextToolResult } from "@/ai/tools/types";
 import { waitUntil } from "@vercel/functions";
 import { tool } from "ai";
 import { Logger } from "pino";
-import { z } from "zod/v3";
-import { processPersonaImport } from "./processing";
+import { processPersonaImport } from "../processing";
+import { followUpEndInterviewInputSchema, followUpEndInterviewOutputSchema } from "./types";
 
 export const followUpInterviewTools = ({
   personaImportId,
@@ -16,11 +16,10 @@ export const followUpInterviewTools = ({
 }) => ({
   endInterview: tool({
     description: "结束后续访谈并重新生成人物画像",
-    inputSchema: z.object({
-      followUpSummary: z.string().describe("后续访谈的总结"),
-    }),
-    experimental_toToolResultContent: (result: PlainTextToolResult) => {
-      return [{ type: "text", text: result.plainText }];
+    inputSchema: followUpEndInterviewInputSchema,
+    outputSchema: followUpEndInterviewOutputSchema,
+    toModelOutput: (result: PlainTextToolResult) => {
+      return { type: "text", value: result.plainText };
     },
     execute: async ({ followUpSummary }) => {
       waitUntil(

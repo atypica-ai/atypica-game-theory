@@ -1,4 +1,4 @@
-import { RequestInteractionFormResult } from "@/app/(interviewProject)/types";
+import { RequestInteractionFormResult } from "@/app/(interviewProject)/tools/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
