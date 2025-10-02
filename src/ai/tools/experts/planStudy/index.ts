@@ -2,16 +2,11 @@ import "server-only";
 
 import { planStudyPrologue, planStudySystem } from "@/ai/prompt";
 import { defaultProviderOptions, llm } from "@/ai/provider";
-import {
-  AgentToolConfigArgs,
-  PlainTextToolResult,
-  ReasoningThinkingResult,
-} from "@/ai/tools/types";
-import { fixMalformedUnicodeString } from "@/lib/utils";
+import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
 import { prisma } from "@/prisma/prisma";
 import { google } from "@ai-sdk/google";
 import { streamText, tool } from "ai";
-import { z } from "zod/v3";
+import { planStudyInputSchema, planStudyOutputSchema, type PlanStudyResult } from "./types";
 
 async function planStudy({
   locale,
@@ -23,7 +18,7 @@ async function planStudy({
 }: {
   background: string;
   question: string;
-} & AgentToolConfigArgs): Promise<ReasoningThinkingResult> {
+} & AgentToolConfigArgs): Promise<PlanStudyResult> {
   return new Promise(async (resolve, reject) => {
     const systemPrompt = planStudySystem({ locale });
     const response = streamText({
@@ -89,22 +84,10 @@ export const planStudyTool = ({
   tool({
     description:
       "Ask the professional consultant to plan a research plan based on the user's question.",
-    inputSchema: z.object({
-      background: z
-        .string()
-        .describe(
-          "Current context, findings so far, and relevant background information to help the expert understand the situation",
-        )
-        .transform(fixMalformedUnicodeString),
-      question: z
-        .string()
-        .describe(
-          "Specific question, problem, or topic that requires expert analysis and reasoning",
-        )
-        .transform(fixMalformedUnicodeString),
-    }),
-    experimental_toToolResultContent: (result: PlainTextToolResult) => {
-      return [{ type: "text", text: result.plainText }];
+    inputSchema: planStudyInputSchema,
+    outputSchema: planStudyOutputSchema,
+    toModelOutput: (result: PlainTextToolResult) => {
+      return { type: "text", value: result.plainText };
     },
     execute: async ({ background, question }) => {
       const result = await planStudy({

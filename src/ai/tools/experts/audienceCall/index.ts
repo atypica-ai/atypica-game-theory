@@ -1,18 +1,17 @@
 import { createTextEmbedding } from "@/ai/embedding";
 import { reasoningPrologue, reasoningSystem } from "@/ai/prompt";
 import { defaultProviderOptions, llm } from "@/ai/provider";
-import {
-  AgentToolConfigArgs,
-  PlainTextToolResult,
-  ReasoningThinkingResult,
-} from "@/ai/tools/types";
-import { fixMalformedUnicodeString } from "@/lib/utils";
+import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
 import { prisma } from "@/prisma/prisma";
 import { google } from "@ai-sdk/google";
 import { streamText, tool } from "ai";
 import { Locale } from "next-intl";
 import "server-only";
-import { z } from "zod/v3";
+import {
+  audienceCallInputSchema,
+  audienceCallOutputSchema,
+  type AudienceCallResult,
+} from "./types";
 
 // Updated type to include prompt field
 type TPersonaForStudy = {
@@ -35,7 +34,7 @@ async function audienceCall({
   background: string;
   question: string;
   personas: TPersonaForStudy[];
-} & AgentToolConfigArgs): Promise<ReasoningThinkingResult> {
+} & AgentToolConfigArgs): Promise<AudienceCallResult> {
   return new Promise(async (resolve, reject) => {
     // Use the first persona's prompt as the system prompt, or fallback to default
     const systemPrompt = personas.length > 0 ? personas[0].prompt : reasoningSystem({ locale });
@@ -53,7 +52,6 @@ async function audienceCall({
       messages: [
         {
           role: "user",
-
           parts: [
             {
               type: "text",
@@ -97,29 +95,10 @@ export const audienceCallTool = (toolCallConfigArgs: AgentToolConfigArgs) =>
   tool({
     description:
       "Search for relevant user personas and get expert consultation with persona-informed analysis for complex problems or decisions. Provides detailed thinking process and professional insights based on specific user personas found in the database.",
-    inputSchema: z.object({
-      background: z
-        .string()
-        .describe(
-          "Current context, findings so far, and relevant background information to help the expert understand the situation",
-        )
-        .transform(fixMalformedUnicodeString),
-      question: z
-        .string()
-        .describe(
-          "Specific question, problem, or topic that requires expert analysis and reasoning",
-        )
-        .transform(fixMalformedUnicodeString),
-      audienceSearchQueries: z
-        .array(z.string()) // 英文比中文字符数多很多，这里不要加 .max(300)
-        .min(2)
-        .max(3)
-        .describe(
-          "Detailed descriptions of target user profiles to find. Each description should be specific and comprehensive, describing user characteristics, demographics, interests, behaviors, goals, and context. The more detailed and specific, the better the search results (provide 2-3 diverse detailed descriptions)",
-        ),
-    }),
-    experimental_toToolResultContent: (result: PlainTextToolResult) => {
-      return [{ type: "text", text: result.plainText }];
+    inputSchema: audienceCallInputSchema,
+    outputSchema: audienceCallOutputSchema,
+    toModelOutput: (result: PlainTextToolResult) => {
+      return { type: "text", value: result.plainText };
     },
     execute: async (
       { background, question, audienceSearchQueries },

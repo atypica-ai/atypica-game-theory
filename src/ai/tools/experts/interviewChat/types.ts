@@ -1,17 +1,34 @@
-import { PlainTextToolResult } from "@/ai/tools/types";
+import { fixMalformedUnicodeString } from "@/lib/utils";
+import z from "zod/v3";
 
-export interface InterviewChatResult extends PlainTextToolResult {
-  // interviews: {
-  //   analystId: number;
-  //   persona: {
-  //     id: number;
-  //     name: string;
-  //   };
-  //   // personaId: number;
-  //   // personaName: string;
-  //   // conclusion?: string;  // 不再返回 conclusion，study agent 用不到
-  //   result: string;
-  // }[];
-  issues: { name: string; issue: string }[];
-  plainText: string;
-}
+export const interviewChatInputSchema = z.object({
+  personas: z
+    .array(
+      z.object({
+        id: z.number().describe("The personaId value from previously built or found personas"),
+        name: z.string().describe("Display name of the persona corresponding to the personaId"),
+      }),
+    )
+    // .max(5) // 去掉，防止 zod 在 validate 的时候报错，有时候模型会不遵守，但其实问题不大
+    .describe(
+      "List of study participants (maximum 5). Must use personas that have been built or found in the current study - do not create fictional ones",
+    ),
+  instruction: z
+    .string()
+    .describe(
+      "Interview focus and specific questions or topics to explore based on the study objectives",
+    )
+    .transform(fixMalformedUnicodeString),
+});
+
+export const interviewChatOutputSchema = z.object({
+  issues: z.array(
+    z.object({
+      name: z.string(),
+      issue: z.string(),
+    }),
+  ),
+  plainText: z.string(),
+});
+
+export type InterviewChatResult = z.infer<typeof interviewChatOutputSchema>;

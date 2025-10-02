@@ -6,8 +6,12 @@ import { defaultProviderOptions, llm } from "@/ai/provider";
 import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
 import { prisma } from "@/prisma/prisma";
 import { streamObject, tool } from "ai";
-import { z } from "zod/v3";
-import { BuildPersonaToolResult, personaBuildSchemaStreamObject } from "./types";
+import {
+  buildPersonaStreamObjectInputSchema,
+  buildPersonaStreamObjectOutputSchema,
+  type BuildPersonaToolResult,
+  personaBuildSchemaStreamObject,
+} from "./types";
 
 export const buildPersonaStreamObjectTool = ({
   userId,
@@ -21,15 +25,10 @@ export const buildPersonaStreamObjectTool = ({
   tool({
     description:
       "Analyze social media research data and build detailed user personas with AI agent simulation capabilities using streaming object generation",
-    inputSchema: z.object({
-      scoutUserChatToken: z
-        .string()
-        .describe(
-          "Token from the completed user profile search task (scoutTaskChat). Must use the actual token from current research session - do not fabricate or reuse old tokens",
-        ),
-    }),
-    experimental_toToolResultContent: (result: PlainTextToolResult) => {
-      return [{ type: "text", text: result.plainText }];
+    inputSchema: buildPersonaStreamObjectInputSchema,
+    outputSchema: buildPersonaStreamObjectOutputSchema,
+    toModelOutput: (result: PlainTextToolResult) => {
+      return { type: "text", value: result.plainText };
     },
     execute: async ({ scoutUserChatToken }): Promise<BuildPersonaToolResult> => {
       const scoutUserChat = await prisma.userChat.findUnique({

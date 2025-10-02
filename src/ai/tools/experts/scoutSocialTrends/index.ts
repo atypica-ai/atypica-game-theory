@@ -33,7 +33,6 @@ import {
 } from "@/ai/tools/tools";
 import { AgentToolConfigArgs, PlainTextToolResult, ToolName, TPlatform } from "@/ai/tools/types";
 import { createUserChat } from "@/lib/userChat/lib";
-import { generateToken } from "@/lib/utils";
 import { prisma } from "@/prisma/prisma";
 import {
   generateId,
@@ -47,9 +46,12 @@ import {
   UIMessage,
   UIMessageStreamWriter,
 } from "ai";
-import { z } from "zod/v3";
 import { createBackgroundToken } from "../scoutTaskChat";
-import { ScoutSocialTrendsResult } from "./types";
+import {
+  scoutSocialTrendsInputSchema,
+  scoutSocialTrendsOutputSchema,
+  type ScoutSocialTrendsResult,
+} from "./types";
 
 const TOKENS_COMSUME_LIMIT = 250_000; // 限制 15w token 消耗量
 const SCOUT_TOOLS_LIMIT = 15; // 进行 15 次搜索，结束以后保存画像
@@ -92,23 +94,10 @@ export const scoutSocialTrendsTool = ({
   tool({
     description:
       "Conduct comprehensive social media research to discover emerging trends, learn about emerging products, and listen to user preferences across multiple platforms.",
-    inputSchema: z.object({
-      scoutUserChatToken: z
-        .string()
-        .optional()
-        .describe(
-          "Unique identifier for the search task used to create the task. You don't need to provide this - the system will automatically generate it.",
-        )
-        .transform(() => generateToken()),
-      // 始终生成一个新的 token，并且这个会直接覆盖 message 里面 toolInvocation.args 上的参数
-      description: z
-        .string()
-        .describe(
-          "Tell your detailed Research objective to this research agent. Use descriptive phrases like 'Help me find users who...', 'Research people interested in...', '帮我寻找...', or similar research requests.",
-        ),
-    }),
-    experimental_toToolResultContent: (result: PlainTextToolResult) => {
-      return [{ type: "text", text: result.plainText }];
+    inputSchema: scoutSocialTrendsInputSchema,
+    outputSchema: scoutSocialTrendsOutputSchema,
+    toModelOutput: (result: PlainTextToolResult) => {
+      return { type: "text", value: result.plainText };
     },
     execute: async ({ scoutUserChatToken, description }) => {
       const title = description.substring(0, 50);

@@ -8,8 +8,12 @@ import { AgentToolConfigArgs, PlainTextToolResult, ToolName } from "@/ai/tools/t
 import { prisma } from "@/prisma/prisma";
 import { ModelMessage, stepCountIs, streamText, tool, UIMessageStreamWriter } from "ai";
 import { Locale } from "next-intl";
-import { z } from "zod/v3";
-import { BuildPersonaToolResult, TPersonaForStudy } from "./types";
+import {
+  buildPersonaInputSchema,
+  buildPersonaOutputSchema,
+  type BuildPersonaToolResult,
+  type TPersonaForStudy,
+} from "./types";
 
 type TReduceTokens = {
   model: LLMModelName;
@@ -28,15 +32,10 @@ export const buildPersonaTool = ({
   tool({
     description:
       "Analyze social media data from user profile search tasks, create detailed user personas, and build AI agents that simulate realistic user behavior and decision-making patterns",
-    inputSchema: z.object({
-      scoutUserChatToken: z
-        .string()
-        .describe(
-          "Token from the completed user profile search task (scoutTaskChat). Must use the actual token from current research session - do not fabricate or reuse old tokens",
-        ),
-    }),
-    experimental_toToolResultContent: (result: PlainTextToolResult) => {
-      return [{ type: "text", text: result.plainText }];
+    inputSchema: buildPersonaInputSchema,
+    outputSchema: buildPersonaOutputSchema,
+    toModelOutput: (result: PlainTextToolResult) => {
+      return { type: "text", value: result.plainText };
     },
     execute: async ({ scoutUserChatToken }): Promise<BuildPersonaToolResult> => {
       const scoutUserChat = await prisma.userChat.findUnique({

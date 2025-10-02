@@ -1,5 +1,9 @@
-import { PlainTextToolResult } from "@/ai/tools/types";
+import z from "zod/v3";
 
-export interface RequestPaymentResult extends PlainTextToolResult {
-  plainText: string;
-}
+export const requestPaymentInputSchema = z.object({});
+
+export const requestPaymentOutputSchema = z.object({
+  plainText: z.string(),
+});
+
+export type RequestPaymentResult = z.infer<typeof requestPaymentOutputSchema>;

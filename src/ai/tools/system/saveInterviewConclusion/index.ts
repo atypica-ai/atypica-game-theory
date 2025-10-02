@@ -3,21 +3,16 @@ import "server-only";
 import { PlainTextToolResult } from "@/ai/tools/types";
 import { prisma } from "@/prisma/prisma";
 import { tool } from "ai";
-import { z } from "zod/v3";
+import { saveInterviewConclusionInputSchema, saveInterviewConclusionOutputSchema } from "./types";
 
 export const saveInterviewConclusionTool = (interviewId: number) =>
   tool({
     description:
       "Save comprehensive interview summary and key insights to conclude the user interview session",
-    inputSchema: z.object({
-      conclusion: z
-        .string()
-        .describe(
-          "Detailed interview conclusion including key findings, user insights, behavioral patterns, and memorable quotes in markdown format",
-        ),
-    }),
-    experimental_toToolResultContent: (result: PlainTextToolResult) => {
-      return [{ type: "text", text: result.plainText }];
+    inputSchema: saveInterviewConclusionInputSchema,
+    outputSchema: saveInterviewConclusionOutputSchema,
+    toModelOutput: (result: PlainTextToolResult) => {
+      return { type: "text", value: result.plainText };
     },
     execute: async ({ conclusion }) => {
       await prisma.analystInterview.update({

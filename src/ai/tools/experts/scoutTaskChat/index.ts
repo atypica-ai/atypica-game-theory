@@ -32,7 +32,6 @@ import {
 import { AgentToolConfigArgs, PlainTextToolResult, ToolName } from "@/ai/tools/types";
 import { truncateForTitle } from "@/lib/textUtils";
 import { createUserChat } from "@/lib/userChat/lib";
-import { generateToken } from "@/lib/utils";
 import { prisma } from "@/prisma/prisma";
 import {
   generateId,
@@ -46,8 +45,12 @@ import {
   UIMessageStreamWriter,
 } from "ai";
 import { Logger } from "pino";
-import { z } from "zod/v3";
-import { type ScoutTaskChatResult, type TPlatform } from "./types";
+import {
+  scoutTaskChatInputSchema,
+  scoutTaskChatOutputSchema,
+  type ScoutTaskChatResult,
+  type TPlatform,
+} from "./types";
 
 export const createBackgroundToken = async ({
   scoutUserChatId,
@@ -126,25 +129,10 @@ export const scoutTaskChatTool = ({
   tool({
     description:
       "Conduct comprehensive social media research to discover user behavioral patterns, decision-making processes, and cognitive frameworks across multiple platforms for building representative user personas",
-    inputSchema: z.object({
-      scoutUserChatToken: z
-        .string()
-        .optional()
-        .describe(
-          "Unique identifier for the search task used to create the task. You don't need to provide this - the system will automatically generate it.",
-        )
-        .transform(() => generateToken()),
-      // 始终生成一个新的 token，并且这个会直接覆盖 message 里面 toolInvocation.args 上的参数
-      // "用户画像搜索任务 (scoutTask) 的 token，用于创建任务，如果上一个 scoutTaskChat 任务未完成，请提供上一个 scoutUserChatToken，否则忽略这个参数，系统会自动生成",
-      // .default(() => generateToken()),
-      description: z
-        .string()
-        .describe(
-          "Research objective describing the target user groups or behavioral patterns to investigate. Use descriptive phrases like 'Help me find users who...', 'Research people interested in...', '帮我寻找...', or similar research requests.",
-        ),
-    }),
-    experimental_toToolResultContent: (result: PlainTextToolResult) => {
-      return [{ type: "text", text: result.plainText }];
+    inputSchema: scoutTaskChatInputSchema,
+    outputSchema: scoutTaskChatOutputSchema,
+    toModelOutput: (result: PlainTextToolResult) => {
+      return { type: "text", value: result.plainText };
     },
     execute: async ({ scoutUserChatToken, description }) => {
       // 现在不需要复用一个 scoutTask 了，因为可以随时对一个 scoutTask 构建人设 buildPersona，所以每次都创建新的

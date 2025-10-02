@@ -22,15 +22,9 @@ import {
   tiktokSearchTool,
   twitterSearchTool,
 } from "@/ai/tools/tools";
-import {
-  AgentToolConfigArgs,
-  InterviewChatResult,
-  PlainTextToolResult,
-  ToolName,
-} from "@/ai/tools/types";
+import { AgentToolConfigArgs, PlainTextToolResult, ToolName } from "@/ai/tools/types";
 import { fileUrlToDataUrl } from "@/lib/attachments/actions";
 import { createUserChat } from "@/lib/userChat/lib";
-import { fixMalformedUnicodeString } from "@/lib/utils";
 import { ChatMessageAttachment } from "@/prisma/client";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
@@ -48,7 +42,11 @@ import {
 } from "ai";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
-import { z } from "zod/v3";
+import {
+  interviewChatInputSchema,
+  interviewChatOutputSchema,
+  type InterviewChatResult,
+} from "./types";
 
 const MAX_MESSAGES_LIMIT = 14; // 访谈双方消息总数限制，到达之后必须 saveInterviewConclusion
 type TReduceTokens = {
@@ -71,27 +69,10 @@ export const interviewChatTool = ({
   tool({
     description:
       "Conduct in-depth user interviews by having expert agents interview user persona agents to understand decision-making patterns, preferences, and behavioral insights for the study topic",
-    inputSchema: z.object({
-      personas: z
-        .array(
-          z.object({
-            id: z.number().describe("The personaId value from previously built or found personas"),
-            name: z.string().describe("Display name of the persona corresponding to the personaId"),
-          }),
-        )
-        // .max(5) // 去掉，防止 zod 在 validate 的时候报错，有时候模型会不遵守，但其实问题不大
-        .describe(
-          "List of study participants (maximum 5). Must use personas that have been built or found in the current study - do not create fictional ones",
-        ),
-      instruction: z
-        .string()
-        .describe(
-          "Interview focus and specific questions or topics to explore based on the study objectives",
-        )
-        .transform(fixMalformedUnicodeString),
-    }),
-    experimental_toToolResultContent: (result: PlainTextToolResult) => {
-      return [{ type: "text", text: result.plainText }];
+    inputSchema: interviewChatInputSchema,
+    outputSchema: interviewChatOutputSchema,
+    toModelOutput: (result: PlainTextToolResult) => {
+      return { type: "text", value: result.plainText };
     },
     execute: async ({ personas, instruction }): Promise<InterviewChatResult> => {
       const { analyst } = await prisma.userChat.findUniqueOrThrow({

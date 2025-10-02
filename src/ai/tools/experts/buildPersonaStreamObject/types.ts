@@ -1,16 +1,27 @@
-import { PlainTextToolResult } from "@/ai/tools/types";
 import { fixMalformedUnicodeString } from "@/lib/utils";
 import { z } from "zod/v3";
 
-export interface BuildPersonaToolResult extends PlainTextToolResult {
-  personas: {
-    personaId: number;
-    name: string;
-    tags: string[];
-    source: string;
-  }[];
-  plainText: string;
-}
+export const buildPersonaStreamObjectInputSchema = z.object({
+  scoutUserChatToken: z
+    .string()
+    .describe(
+      "Token from the completed user profile search task (scoutTaskChat). Must use the actual token from current research session - do not fabricate or reuse old tokens",
+    ),
+});
+
+export const buildPersonaStreamObjectOutputSchema = z.object({
+  personas: z.array(
+    z.object({
+      personaId: z.number(),
+      name: z.string(),
+      tags: z.array(z.string()),
+      source: z.string(),
+    }),
+  ),
+  plainText: z.string(),
+});
+
+export type BuildPersonaToolResult = z.infer<typeof buildPersonaStreamObjectOutputSchema>;
 
 export const personaBuildSchemaStreamObject = () =>
   z.object({

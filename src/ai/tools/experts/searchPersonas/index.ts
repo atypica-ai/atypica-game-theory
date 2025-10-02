@@ -6,8 +6,11 @@ import { prisma } from "@/prisma/prisma";
 import { tool } from "ai";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
-import { z } from "zod/v3";
-import { type SearchPersonasToolResult } from "./types";
+import {
+  searchPersonasInputSchema,
+  searchPersonasOutputSchema,
+  type SearchPersonasToolResult,
+} from "./types";
 
 export const searchPersonasTool = ({
   userId,
@@ -18,23 +21,10 @@ export const searchPersonasTool = ({
   tool({
     description:
       "Search existing user persona database using semantic similarity matching to find relevant user profiles that match research criteria",
-    inputSchema: z.object({
-      searchQueries: z
-        .array(z.string()) // 英文比中文字符数多很多，这里不要加 .max(300)
-        .min(2)
-        .max(3)
-        .describe(
-          "Detailed descriptions of target user profiles to find. Each description should be specific and comprehensive, describing user characteristics, demographics, interests, behaviors, goals, and context. The more detailed and specific, the better the search results (provide 2-3 diverse detailed descriptions)",
-        ),
-      usePrivatePersonas: z
-        .boolean()
-        .default(false)
-        .describe(
-          "Set to true only when the user has explicitly chosen to prioritize using their private personas (真人画像) at the beginning of the study.",
-        ),
-    }),
-    experimental_toToolResultContent: (result: PlainTextToolResult) => {
-      return [{ type: "text", text: result.plainText }];
+    inputSchema: searchPersonasInputSchema,
+    outputSchema: searchPersonasOutputSchema,
+    toModelOutput: (result: PlainTextToolResult) => {
+      return { type: "text", value: result.plainText };
     },
     execute: async ({ searchQueries, usePrivatePersonas }): Promise<SearchPersonasToolResult> => {
       const searchResults = await Promise.all(
