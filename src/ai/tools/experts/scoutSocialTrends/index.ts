@@ -381,7 +381,6 @@ async function runScoutSocialTrendsStream({
         // 如果遇到了用量限制，不报错，换个模型
         logger.warn(`Resource exhausted, switching to alternative model without token reduction`);
         reduceTokens = null;
-        llmOptions = null;
       } else {
         throw error;
       }
@@ -452,22 +451,12 @@ async function runScoutSocialTrendsSummarize({
   // Create a simple system prompt for summarization
   const summarizationSystemPrompt = scoutSocialTrendsSummarySystem({ locale });
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [reduceTokens, llmOptions]: [TReduceTokens, any] = [
-    { model: "gemini-2.5-flash", ratio: 10 },
-    {
-      // useSearchGrounding: true,
-      // dynamicRetrievalConfig: {
-      //   mode: "MODE_DYNAMIC",
-      //   dynamicThreshold: 0.5,
-      // },
-    },
-  ];
+  const reduceTokens: TReduceTokens = { model: "gemini-2.5-flash", ratio: 10 };
 
   // Use streamText just like the main loop
   const streamTextPromise = new Promise<string>((resolve, reject) => {
     const response = streamText({
-      model: reduceTokens ? llm(reduceTokens.model, llmOptions) : llm("claude-3-7-sonnet"),
+      model: reduceTokens ? llm(reduceTokens.model) : llm("claude-3-7-sonnet"),
 
       // model: llm("claude-3-7-sonnet-beta")  // 这个模型不大好用，savePersona 总是返回一半输入
       providerOptions: defaultProviderOptions,
@@ -542,7 +531,11 @@ async function runScoutSocialTrendsSummarize({
       abortSignal,
     });
     if (streamWriter) {
-      response.mergeIntoUIMessageStream(streamWriter);
+      streamWriter.merge(
+        response.toUIMessageStream({
+          // generateMessageId: () => streamingMessage.id, // 需要 streamWriter 的那个测试页面，不需要保存消息，这里不需要设置
+        }),
+      );
     }
     abortSignal.addEventListener("abort", () => {
       reject(new Error("runScoutSocialTrendsSummarize abortSignal received"));

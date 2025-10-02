@@ -144,7 +144,7 @@ export async function productRnDAgentRequest({
       // 到了这里的 tool calling step 一定是有 result 的，所以得在上面 onChunk 里面获取 call 阶段的 tool
       const toolCalls = step.toolCalls.map((call) => call.toolName);
       const usage = step.usage;
-      const cache = step.providerOptions?.bedrock?.usage as
+      const cache = step.providerMetadata?.bedrock?.usage as
         | { cacheReadInputTokens: number; cacheWriteInputTokens: number }
         | undefined;
       studyLog.info({
@@ -192,8 +192,8 @@ export async function productRnDAgentRequest({
       }
     },
 
-    onFinish: async ({ usage, providerOptions }) => {
-      const cache = providerOptions?.bedrock?.usage;
+    onFinish: async ({ usage, providerMetadata }) => {
+      const cache = providerMetadata?.bedrock?.usage;
       studyLog.info({ msg: "productRnDAgentRequest streamText onFinish", usage, cache });
       await clearBackgroundToken();
     },

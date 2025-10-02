@@ -154,7 +154,7 @@ export async function POST(req: Request) {
       }
       // 👆 persist message to db
       const { usage, toolCalls } = step;
-      const cache = step.providerOptions?.bedrock?.usage as
+      const cache = step.providerMetadata?.bedrock?.usage as
         | { cacheReadInputTokens: number; cacheWriteInputTokens: number }
         | undefined;
       chatLogger.info({

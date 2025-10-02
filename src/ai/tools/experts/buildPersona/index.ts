@@ -197,7 +197,7 @@ export async function runBuildPersona({
       },
 
       onStepFinish: async (step) => {
-        const cache = step.providerOptions?.bedrock?.usage as
+        const cache = step.providerMetadata?.bedrock?.usage as
           | { cacheReadInputTokens: number; cacheWriteInputTokens: number }
           | undefined;
         const toolCalls = step.toolCalls.map((call) => call.toolName);
@@ -248,8 +248,8 @@ export async function runBuildPersona({
         }
       },
 
-      onFinish: async ({ usage, providerOptions }) => {
-        const cache = providerOptions?.bedrock?.usage;
+      onFinish: async ({ usage, providerMetadata }) => {
+        const cache = providerMetadata?.bedrock?.usage;
         logger.info({ msg: "runBuildPersona streamText onFinish", usage, cache });
         resolve(null);
       },
@@ -266,7 +266,11 @@ export async function runBuildPersona({
       abortSignal: mergedAbortSignal,
     });
     if (streamWriter) {
-      response.mergeIntoUIMessageStream(streamWriter);
+      streamWriter.merge(
+        response.toUIMessageStream({
+          // generateMessageId: () => streamingMessage.id,  // 需要 streamWriter 的那个测试页面，不需要保存消息，这里不需要设置
+        }),
+      );
     }
     // 这里没有监听 stopController.signal，只监听了 abortSignal，只有 abortSignal abort 了才是 reject
     abortSignal.addEventListener("abort", () => {

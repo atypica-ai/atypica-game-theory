@@ -356,7 +356,7 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: UIMessage[]) 
       stopWhen: stepCountIs(maxSteps),
 
       onStepFinish: async ({ usage, toolCalls, ...step }) => {
-        const cache = step.providerOptions?.bedrock?.usage as
+        const cache = step.providerMetadata?.bedrock?.usage as
           | { cacheReadInputTokens: number; cacheWriteInputTokens: number }
           | undefined;
         logger.info({
