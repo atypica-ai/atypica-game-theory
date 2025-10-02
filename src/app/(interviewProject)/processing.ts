@@ -74,7 +74,7 @@ export async function processInterviewQuestionOptimization(projectId: number): P
             usage,
             toolCalls: toolCalls.map((call) => call.toolName),
           });
-          if (usage.totalTokens > 0) {
+          if (usage.totalTokens && usage.totalTokens > 0) {
             const tokens = usage.totalTokens;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const extra: any = {

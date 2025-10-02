@@ -35,7 +35,7 @@ export const analysisSchema = z.object({
     questions: z
       .array(z.string())
       .describe("Array of supplementary questions to improve persona completeness"),
-    reasoningText: z
+    reasoning: z
       .string()
       .describe(
         "Explanation of why these particular questions were chosen and how they address the gaps in the current interview",

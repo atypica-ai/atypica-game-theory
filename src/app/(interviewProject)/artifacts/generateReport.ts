@@ -143,7 +143,7 @@ export async function generateInterviewReportContent({
       logger.info({ msg: "Interview report generation streamText onFinish", finishReason, usage });
       // svg 生成耗费的 output tokens 比较多，不能和 input tokens 一样计算
       const totalTokens =
-        (usage.outputTokens ?? 0) * 3 + (usage.inputTokens ?? 0) || usage.totalTokens;
+        (usage.outputTokens ?? 0) * 3 + (usage.inputTokens ?? 0) || (usage.totalTokens ?? 0);
       if (totalTokens > 0 && statReport) {
         await statReport("tokens", totalTokens, {
           reportedBy: "interview report",

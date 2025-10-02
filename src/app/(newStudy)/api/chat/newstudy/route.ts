@@ -149,7 +149,7 @@ export async function POST(req: NextRequest) {
       if (statReport) {
         const { usage } = step;
         const reportedBy = "newstudy planning chat";
-        if (usage.totalTokens > 0) {
+        if (usage.totalTokens && usage.totalTokens > 0) {
           const tokens = usage.totalTokens;
           await statReport("tokens", tokens, { reportedBy, usage });
         }

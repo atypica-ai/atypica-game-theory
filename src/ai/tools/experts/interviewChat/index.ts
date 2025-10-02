@@ -366,7 +366,7 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: UIMessage[]) 
           usage,
           cache,
         });
-        if (usage.totalTokens > 0) {
+        if (usage.totalTokens && usage.totalTokens > 0) {
           let tokens =
             usage.totalTokens +
             Math.floor((cache?.cacheReadInputTokens || 0) / 10) +
@@ -474,7 +474,7 @@ async function chatWithPersona(chatProps: ChatProps, messages: UIMessage[]) {
           toolCalls: step.toolCalls.map((call) => call.toolName),
           usage: step.usage,
         });
-        if (step.usage.totalTokens > 0) {
+        if (step.usage.totalTokens && step.usage.totalTokens > 0) {
           let tokens = step.usage.totalTokens;
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const extra: any = {

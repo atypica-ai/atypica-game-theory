@@ -303,7 +303,7 @@ async function generatePersonaResponse({
           toolCalls: toolCalls.map((call) => call.toolName),
           usage: usage,
         });
-        if (usage.totalTokens > 0) {
+        if (usage.totalTokens && usage.totalTokens > 0) {
           const tokens = usage.totalTokens;
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const extra: any = {
@@ -379,7 +379,7 @@ async function generateInterviewerResponse({
           toolCalls: toolCalls.map((call) => call.toolName),
           usage: usage,
         });
-        if (usage.totalTokens > 0) {
+        if (usage.totalTokens && usage.totalTokens > 0) {
           const tokens = usage.totalTokens;
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const extra: any = {

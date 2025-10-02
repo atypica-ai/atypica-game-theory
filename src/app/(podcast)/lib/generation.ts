@@ -308,7 +308,7 @@ async function generatePodcastScript(params: {
         });
         logger.info({ msg: "Script generation completed", finishReason, usage });
         const totalTokens =
-          (usage.outputTokens ?? 0) * 3 + (usage.inputTokens ?? 0) || usage.totalTokens;
+          (usage.outputTokens ?? 0) * 3 + (usage.inputTokens ?? 0) || (usage.totalTokens ?? 0);
         if (totalTokens > 0) {
           await statReport("tokens", totalTokens, {
             reportedBy: "generatePodcastScript",

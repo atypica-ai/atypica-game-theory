@@ -133,7 +133,7 @@ export async function runBuildPersonaStreamObject({
         // object: result.object,
         usage: result.usage,
       });
-      if (result.usage.totalTokens > 0 && statReport) {
+      if (result.usage.totalTokens && result.usage.totalTokens > 0 && statReport) {
         await statReport("tokens", result.usage.totalTokens, {
           reportedBy: "buildPersona tool",
           scoutUserChatId,

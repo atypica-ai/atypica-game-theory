@@ -352,7 +352,7 @@ export async function runScoutTaskChatStream({
             const promises = [
               statReport("steps", toolCalls.length, { reportedBy, scoutUserChatId, toolCalls }),
             ];
-            if (usage.totalTokens > 0) {
+            if (usage.totalTokens && usage.totalTokens > 0) {
               let tokens = usage.totalTokens;
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               const extra: any = { reportedBy, scoutUserChatId, usage };

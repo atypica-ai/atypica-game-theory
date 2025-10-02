@@ -57,15 +57,15 @@ async function planStudy({
       // onChunk: (chunk) => console.log("[Reasoning]", JSON.stringify(chunk)),
       onFinish: async (result) => {
         logger.info(`planStudy streamText onFinish`);
-        const reasoning = result.reasoningText ?? "";
+        const reasoningText = result.reasoningText ?? "";
         const text = result.text ?? "";
-        if (result.usage.totalTokens > 0 && statReport) {
+        if (result.usage.totalTokens && result.usage.totalTokens > 0 && statReport) {
           await statReport("tokens", result.usage.totalTokens, {
             reportedBy: "planStudy tool",
           });
         }
         resolve({
-          reasoningText,
+          reasoning: reasoningText,
           text,
           plainText: text,
         });

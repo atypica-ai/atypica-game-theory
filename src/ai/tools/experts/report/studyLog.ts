@@ -56,7 +56,7 @@ export async function generateAndSaveStudyLog({
         // resolve({ reasoning, text, plainText: text });
         const studyLog = text ?? "";
         logger.info({ msg: "studyLog streamText onFinish", finishReason, usage });
-        if (usage.totalTokens > 0 && statReport) {
+        if (usage.totalTokens && usage.totalTokens > 0 && statReport) {
           await statReport("tokens", usage.totalTokens, {
             reportedBy: "studyLog tool",
             usage,

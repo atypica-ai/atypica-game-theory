@@ -332,7 +332,7 @@ export async function studyAgentRequest({
           statReport("duration", seconds, { reportedBy }),
           statReport("steps", toolCalls.length, { reportedBy, toolCalls }),
         ];
-        if (usage.totalTokens > 0) {
+        if (usage.totalTokens && usage.totalTokens > 0) {
           const tokens =
             usage.totalTokens +
             Math.floor((cache?.cacheReadInputTokens || 0) / 10) +

@@ -70,7 +70,7 @@ export function SupplementaryQuestions({
         {t("title")}
       </h2>
       <div className="p-3 bg-amber-50 dark:bg-amber-950/30 rounded-lg text-sm text-amber-800 dark:text-amber-200">
-        {supplementaryQuestions.reasoningText}
+        {supplementaryQuestions.reasoning}
       </div>
       <div className="space-y-3">
         <h4 className="font-medium text-sm">{t("suggestedQuestions")}</h4>

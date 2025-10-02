@@ -37,7 +37,7 @@ export const reasoningThinkingTool = ({
     },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     execute: async ({ background, question }, { messages }) => {
-      const streamTextPromise = new Promise<{ reasoning?: string; text: string }>(
+      const streamTextPromise = new Promise<{ reasoningText?: string; text: string }>(
         async (resolve, reject) => {
           const response = streamText({
             // model: llm("o3-mini"),
@@ -71,7 +71,7 @@ export const reasoningThinkingTool = ({
             // onChunk: (chunk) => logger.info(`[Reasoning] ${JSON.stringify(chunk)}`),
             onFinish: async ({ reasoningText, text, usage }) => {
               logger.info({ msg: "reasoningThinking streamText onFinish", usage });
-              if (usage.totalTokens > 0 && statReport) {
+              if (usage.totalTokens && usage.totalTokens > 0 && statReport) {
                 await statReport("tokens", usage.totalTokens, {
                   reportedBy: "reasoningThinking tool",
                 });
@@ -100,7 +100,7 @@ export const reasoningThinkingTool = ({
 
       const { reasoningText, text } = await streamTextPromise;
       return {
-        reasoningText: reasoning ?? "",
+        reasoning: reasoningText ?? "",
         text: text ?? "",
         plainText: text,
       } as ReasoningThinkingResult;

@@ -71,15 +71,14 @@ async function audienceCall({
       // onChunk: (chunk) => console.log("[Reasoning]", JSON.stringify(chunk)),
       onFinish: async (result) => {
         logger.info("audienceCall streamText onFinish");
-        const reasoning = result.reasoningText ?? "";
         const text = result.text ?? "";
-        if (result.usage.totalTokens > 0 && statReport) {
+        if (result.usage.totalTokens && result.usage.totalTokens > 0 && statReport) {
           await statReport("tokens", result.usage.totalTokens, {
             reportedBy: "audienceCall tool",
           });
         }
         resolve({
-          reasoningText,
+          reasoning: result.reasoningText ?? "",
           text,
           plainText: text,
         });

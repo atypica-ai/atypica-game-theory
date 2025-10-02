@@ -25,7 +25,7 @@ export const ReasoningThinkingConsole: FC<{
         <div className={cn("flex flex-rows items-start justify-start gap-2")}>
           <HippyGhostAvatar seed={toolInvocation.toolCallId} className="size-6" />
           <div className="flex-1 overflow-hidden">
-            <div>{toolInvocation.result.reasoningText}</div>
+            <div>{toolInvocation.result.reasoning}</div>
             <Markdown>{toolInvocation.result.text}</Markdown>
           </div>
         </div>
