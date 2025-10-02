@@ -1,3 +1,5 @@
+import { V4MessagePart, V5MessagePart } from "@/ai/v4";
+
 declare module "@/prisma/client" {
   export * from "@/prisma/client/index";
 
@@ -63,6 +65,8 @@ declare module "@/prisma/client" {
     mimeType: string;
     size: number; // bytes
   };
+
+  export type ChatMessagePart = V4MessagePart | V5MessagePart;
 
   export type ImageGenerationExtra = Partial<{
     ratio: string;

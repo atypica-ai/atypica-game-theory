@@ -3,7 +3,7 @@ import "server-only";
 import { ToolName } from "@/ai/tools/types";
 import { fileUrlToDataUrl } from "@/lib/attachments/actions";
 import { s3SignedUrl } from "@/lib/attachments/s3";
-import { ChatMessage, ChatMessageAttachment } from "@/prisma/client";
+import { ChatMessage, ChatMessageAttachment, ChatMessagePart } from "@/prisma/client";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import {
@@ -11,11 +11,11 @@ import {
   generateId,
   StepResult,
   TextStreamPart,
-  ToolInvocation,
   ToolSet,
   UIMessage,
 } from "ai";
 import { Logger } from "pino";
+import { convertToV5MessagePart } from "./v4";
 
 // 事实上，bedrock 虽然支持很多文件格式，但 gpt 和 gemini 只支持 pdf，所以这样 fix 也没用，只能限制上传的文件类型
 // https://github.com/vercel/ai/blob/2669f00b8e9acf8352bd07d930fbd181e5219500/packages/amazon-bedrock/src/convert-to-bedrock-chat-messages.ts#L114
@@ -398,6 +398,50 @@ export async function convertDBMessagesToAIMessages(
   return aiMessages;
 }
 
+async function _calculateToolUseCount(
+  dbMessages: (Omit<ChatMessage, "parts"> & {
+    parts: ChatMessagePart[];
+  })[],
+) {
+  const toolUseCount = dbMessages.reduce(
+    (_count, message) => {
+      const count = { ..._count };
+      message.parts.forEach((_part) => {
+        const part = convertToV5MessagePart(_part);
+        if (
+          part.type.startsWith("tool-") &&
+          "toolCallId" in part &&
+          part.state === "output-available"
+        ) {
+          const toolName = part.type.slice(5) as ToolName;
+          count[toolName] = (count[toolName] || 0) + 1;
+        }
+        // if (_part.type === "tool-invocation") {
+        //   // v4 message
+        //   const part = _part as unknown as Extract<V4MessagePart, { type: "tool-invocation" }>;
+        //   if (part.toolInvocation.state === "result") {
+        //     const toolName = part.toolInvocation.toolName as ToolName;
+        //     count[toolName] = (count[toolName] || 0) + 1;
+        //   }
+        // } else if (_part.type.startsWith("tool-")) {
+        //   // v5 message, see https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#tool-part-type-changes-uimessage
+        //   const part = _part as unknown as Extract<
+        //     UIMessage["parts"][number],
+        //     { type: `tool-${string}` }
+        //   >;
+        //   // aka: const part = part as unknown as { type: `tool-${string}` } & UIToolInvocation<Tool>;
+        //   if (part.state === "output-available") {
+        //     const toolName = part.type.slice(5) as ToolName;
+        //     count[toolName] = (count[toolName] || 0) + 1;
+        //   }
+        // }
+      });
+      return count;
+    },
+    {} as Partial<Record<ToolName, number>>,
+  );
+}
+
 /*
  * 接收客户端发送的消息，可能是 user 或者 assistant 的
  * 保存到数据库，取出完整的消息列表
@@ -411,33 +455,18 @@ export async function prepareMessagesForStreaming(
     checkpointId?: number; // 给 LLM 的消息从 id > checkpointId 开始取，这里不是 messageId 而是 ChatMessage 的数据库 id，并且 id 是递增的
   } = {},
 ) {
-  const dbMessages = await prisma.chatMessage.findMany({
-    where: checkpointId
-      ? {
-          userChatId,
-          id: {
-            gt: checkpointId,
-          },
-        }
-      : { userChatId },
-    orderBy: { id: "asc" },
-  });
-  // 使用 fix 之前的统计数据，因为 fix 会把没完成的 tool calls 变成完成
-  const toolUseCount = dbMessages.reduce(
-    (_count, message) => {
-      const count = { ..._count };
-      ((message.parts ?? []) as NonNullable<UIMessage["parts"]>).forEach((part) => {
-        /* FIXME(@ai-sdk-upgrade-v5): The `part.toolInvocation.state` property has been removed. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#tool-part-type-changes-uimessage */
-        if (part.type === "tool-invocation" && part.toolInvocation.state === "result") {
-          /* FIXME(@ai-sdk-upgrade-v5): The `part.toolInvocation.toolName` property has been removed. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#tool-part-type-changes-uimessage */
-          const toolName = part.toolInvocation.toolName as ToolName;
-          count[toolName] = (count[toolName] || 0) + 1;
-        }
-      });
-      return count;
-    },
-    {} as Partial<Record<ToolName, number>>,
-  );
+  const dbMessages = (
+    await prisma.chatMessage.findMany({
+      where: checkpointId ? { userChatId, id: { gt: checkpointId } } : { userChatId },
+      orderBy: { id: "asc" },
+    })
+  ).map(({ parts, attachments, ...message }) => ({
+    ...message,
+    parts: (parts ?? []) as ChatMessagePart[],
+    attachments: (attachments ?? []) as ChatMessageAttachment[],
+  }));
+  // 使用 fixChatMessages 之前的统计数据，因为 fixChatMessages 会把没完成的 tool calls 变成完成
+  const toolUseCount = _calculateToolUseCount(dbMessages);
   const aiMessages = fixChatMessages(await convertDBMessagesToAIMessages(dbMessages)); // 传给 LLM 的时候需要修复
   let streamingMessage: Omit<UIMessage, "role"> & {
     parts: NonNullable<UIMessage["parts"]>;
