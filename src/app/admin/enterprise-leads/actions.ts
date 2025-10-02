@@ -5,7 +5,7 @@ import { AdminPermission } from "@/app/admin/types";
 import { ServerActionResult } from "@/lib/serverAction";
 import { User, UserChat } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
-import { Message } from "ai";
+import { UIMessage } from "ai";
 
 // Fetch enterprise leads with pagination
 export async function fetchEnterpriseLeads(
@@ -15,7 +15,7 @@ export async function fetchEnterpriseLeads(
   ServerActionResult<
     (UserChat & {
       user: Pick<User, "id" | "email">;
-      messages: Message[];
+      messages: UIMessage[];
     })[]
   >
 > {

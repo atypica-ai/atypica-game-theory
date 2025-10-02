@@ -6,7 +6,7 @@ import { prisma } from "@/prisma/prisma";
 import { tool } from "ai";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { type SearchPersonasToolResult } from "./types";
 
 export const searchPersonasTool = ({
@@ -18,7 +18,7 @@ export const searchPersonasTool = ({
   tool({
     description:
       "Search existing user persona database using semantic similarity matching to find relevant user profiles that match research criteria",
-    parameters: z.object({
+    inputSchema: z.object({
       searchQueries: z
         .array(z.string()) // 英文比中文字符数多很多，这里不要加 .max(300)
         .min(2)

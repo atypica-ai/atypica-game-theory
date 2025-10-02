@@ -15,13 +15,14 @@ import { AgentToolConfigArgs, ToolName } from "@/ai/tools/types";
 import { setUserChatError } from "@/lib/userChat/lib";
 import { safeAbort } from "@/lib/utils";
 import {
-  CoreMessage,
-  Message,
+  ModelMessage,
   smoothStream,
+  stepCountIs,
   StepResult,
   streamText,
   TextStreamPart,
   ToolChoice,
+  UIMessage,
 } from "ai";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
@@ -43,9 +44,9 @@ export async function productRnDAgentRequest({
   locale,
 }: {
   studyUserChatId: number;
-  coreMessages: CoreMessage[];
-  streamingMessage: Omit<Message, "role"> & {
-    parts: NonNullable<Message["parts"]>;
+  coreMessages: ModelMessage[];
+  streamingMessage: Omit<UIMessage, "role"> & {
+    parts: NonNullable<UIMessage["parts"]>;
     role: "assistant";
   };
   toolUseCount: Partial<Record<ToolName, number>>;
@@ -109,23 +110,27 @@ export async function productRnDAgentRequest({
   const streamTextResult = streamText({
     // model: llm("claude-sonnet-4"),
     model: fixFileNameInMessageToUsePromptCache(llm("claude-3-7-sonnet")),
+
     providerOptions: providerOptions,
     system: system,
     messages: cachedCoreMessages,
     tools: tools,
     toolChoice: toolChoice,
     experimental_repairToolCall: handleToolCallError,
-    maxSteps: maxSteps,
-    maxTokens: maxTokens,
+    stopWhen: stepCountIs(maxSteps),
+    maxOutputTokens: maxTokens,
+
     // 注意，这里要使用 streamingMessage 的 id，虽然目前不指定只有 study agent 会遇到问题
     // 问题是这样，保存数据库用的是 streamingMessage.id，但是 streamText 会给新的 assistant 消息生成一个新的 id，并且在 toDataStreamResponse 里返回给前端
     // 当前端调用 addToolResult 的时候，会返回来一条新 id 的 assistang 消息，然后调用 persistentAIMessageToDB 插入的时候，会插入一条新的消息
     experimental_generateMessageId: () => streamingMessage.id,
+
     // https://sdk.vercel.ai/docs/ai-sdk-ui/smooth-stream-chinese
     experimental_transform: smoothStream({
       delayInMs: 30,
       chunking: /[\u4E00-\u9FFF]|\S+\s+/,
     }),
+
     onChunk: async ({ chunk }: { chunk: TextStreamPart<typeof allTools> }) => {
       appendChunkToStreamingMessage(streamingMessage, chunk);
       await debouncePersistentMessage(streamingMessage, {
@@ -134,6 +139,7 @@ export async function productRnDAgentRequest({
         // immediate: chunk.type === "tool-call" || chunk.type === "tool-result",
       });
     },
+
     onStepFinish: async (step: StepResult<typeof allTools>) => {
       await immediatePersistentMessage();
       // 注意，stepFinish 一定要保存，并且 immediate:true，前面等待中的 chunk persistent 会被去掉，没影响
@@ -143,7 +149,7 @@ export async function productRnDAgentRequest({
       // 到了这里的 tool calling step 一定是有 result 的，所以得在上面 onChunk 里面获取 call 阶段的 tool
       const toolCalls = step.toolCalls.map((call) => call.toolName);
       const usage = step.usage;
-      const cache = step.providerMetadata?.bedrock?.usage as
+      const cache = step.providerOptions?.bedrock?.usage as
         | { cacheReadInputTokens: number; cacheWriteInputTokens: number }
         | undefined;
       studyLog.info({
@@ -191,11 +197,13 @@ export async function productRnDAgentRequest({
         }
       }
     },
-    onFinish: async ({ usage, providerMetadata }) => {
-      const cache = providerMetadata?.bedrock?.usage;
+
+    onFinish: async ({ usage, providerOptions }) => {
+      const cache = providerOptions?.bedrock?.usage;
       studyLog.info({ msg: "productRnDAgentRequest streamText onFinish", usage, cache });
       await clearBackgroundToken();
     },
+
     onError: async ({ error }) => {
       // 如果 tool calling 里面直接 throw 异常，会进入这里的 onError
       if (/Error executing tool.*abortSignal received/.test((error as Error).message)) {
@@ -221,6 +229,7 @@ export async function productRnDAgentRequest({
         studyLog,
       }).catch(() => {}); //不 await
     },
+
     abortSignal: studyAbortController.signal,
   });
 
@@ -237,5 +246,5 @@ export async function productRnDAgentRequest({
     studyAbortController,
   });
 
-  return streamTextResult.toDataStreamResponse();
+  return streamTextResult.toUIMessageStreamResponse();
 }

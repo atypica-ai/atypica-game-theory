@@ -11,7 +11,7 @@ import { prisma } from "@/prisma/prisma";
 import { streamText, tool } from "ai";
 import { Locale } from "next-intl";
 import "server-only";
-import { z } from "zod";
+import { z } from "zod/v3";
 
 // Updated type to include prompt field
 type TPersonaForStudy = {
@@ -52,18 +52,25 @@ async function audienceCall({
       messages: [
         {
           role: "user",
-          content: reasoningPrologue({
-            locale,
-            background: background,
-            question,
-          }),
+
+          parts: [
+            {
+              type: "text",
+
+              text: reasoningPrologue({
+                locale,
+                background: background,
+                question,
+              }),
+            },
+          ],
         },
       ],
       // maxTokens: 500,
       // onChunk: (chunk) => console.log("[Reasoning]", JSON.stringify(chunk)),
       onFinish: async (result) => {
         logger.info("audienceCall streamText onFinish");
-        const reasoning = result.reasoning ?? "";
+        const reasoning = result.reasoningText ?? "";
         const text = result.text ?? "";
         if (result.usage.totalTokens > 0 && statReport) {
           await statReport("tokens", result.usage.totalTokens, {
@@ -71,7 +78,7 @@ async function audienceCall({
           });
         }
         resolve({
-          reasoning,
+          reasoningText,
           text,
           plainText: text,
         });
@@ -90,7 +97,7 @@ export const audienceCallTool = (toolCallConfigArgs: AgentToolConfigArgs) =>
   tool({
     description:
       "Search for relevant user personas and get expert consultation with persona-informed analysis for complex problems or decisions. Provides detailed thinking process and professional insights based on specific user personas found in the database.",
-    parameters: z.object({
+    inputSchema: z.object({
       background: z
         .string()
         .describe(

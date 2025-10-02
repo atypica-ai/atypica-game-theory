@@ -4,7 +4,6 @@ import { ToolInvocationMessage } from "@/components/chat/ToolInvocationMessage";
 // 给 chat 类型的 tool call 用的组件，比如 scout chat 和 interview chat
 import { Markdown } from "@/components/markdown";
 import { cn } from "@/lib/utils";
-import { Message as MessageType } from "ai";
 import { motion } from "framer-motion";
 import { BotIcon, CpuIcon, UserIcon } from "lucide-react";
 import React, { PropsWithChildren, ReactNode, useCallback } from "react";
@@ -28,9 +27,9 @@ export const StreamSteps = ({
   nickname?: string;
   role: "assistant" | "user" | "system" | "data";
   content: string | ReactNode;
-  parts?: MessageType["parts"];
+  parts?: undefined["parts"];
 }) => {
-  const renderedParts = useCallback((parts: NonNullable<MessageType["parts"]>) => {
+  const renderedParts = useCallback((parts: NonNullable<undefined["parts"]>) => {
     return (
       <div className={cn("flex flex-col gap-4")}>
         {parts.map((part, i) => {
@@ -39,7 +38,7 @@ export const StreamSteps = ({
             case "text":
               return <PlainText key={i}>{part.text}</PlainText>;
             case "reasoning":
-              return <PlainText key={i}>{part.reasoning}</PlainText>;
+              return <PlainText key={i}>{part.reasoningText}</PlainText>;
             case "source":
               return <PlainText key={i}>{JSON.stringify(part.source)}</PlainText>;
             case "tool-invocation":

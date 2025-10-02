@@ -11,7 +11,7 @@ import { waitUntil } from "@vercel/functions";
 import { experimental_generateImage as generateImage } from "ai";
 import { createHash } from "crypto";
 import { Logger } from "pino";
-import { z } from "zod";
+import { z } from "zod/v3";
 
 import { s3SignedUrl } from "@/lib/attachments/s3";
 import { ImageGeneration } from "@/prisma/client";

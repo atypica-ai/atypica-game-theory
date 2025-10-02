@@ -32,7 +32,7 @@ Requirements:
 1. Carefully analyze the core objectives and content of the research topic
 2. Return only one word as the result: testing, insights, creation, planning, or misc
 3. Do not include any explanations or other text`,
-    maxTokens: 50,
+    maxOutputTokens: 50,
   });
 
   let kind = result.text.trim().toLowerCase();

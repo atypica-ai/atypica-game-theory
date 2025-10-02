@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v3";
 
 const podcastEvaluationScoreSchema = z.object({
   score: z.number().min(0).max(4),

@@ -1,6 +1,6 @@
 const { PrismaClient } = require("../src/prisma/client");
 import { createOpenAI } from "@ai-sdk/openai";
-import { streamText } from "ai";
+import { streamText, stepCountIs } from "ai";
 import { dirname } from "path";
 import { fileURLToPath } from "url";
 
@@ -13,8 +13,7 @@ const prisma = new PrismaClient();
 
 const openai = createOpenAI({
   apiKey: process.env.OPENAI_API_KEY,
-  baseURL: process.env.OPENAI_BASE_URL,
-  compatibility: "strict", // so stream_options will be sent
+  baseURL: process.env.OPENAI_BASE_URL
 });
 
 const reportCoverSystem = () => `
@@ -59,13 +58,23 @@ async function generateCover({ analyst, report }) {
   console.log(`Generating cover SVG for report ${report.id}`);
   const response = streamText({
     model: openai("claude-3-7-sonnet"),
+
     providerOptions: {
       openai: { stream_options: { include_usage: true } },
     },
+
     system: reportCoverSystem(),
-    messages: [{ role: "user", content: reportCoverPrologue({ analyst, report }) }],
-    maxSteps: 3,
-    maxTokens: 20000,
+    messages: [{
+      role: "user",
+
+      parts: [{
+        type: 'text',
+        text: reportCoverPrologue({ analyst, report })
+      }]
+    }],
+    stopWhen: stepCountIs(3),
+    maxOutputTokens: 20000,
+
     // onChunk: ({ chunk }) => {
     //   process.stdout.write(chunk.textDelta);
     // },
@@ -75,7 +84,7 @@ async function generateCover({ analyst, report }) {
         data: { coverSvg: result.text },
       });
       console.log(`\nCover SVG generated successfully for report ${report.id}!\n`);
-    },
+    }
   });
   await response.consumeStream();
 }

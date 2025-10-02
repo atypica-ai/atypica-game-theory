@@ -270,7 +270,7 @@ ${
     : "暂无具体补充问题"
 }
 
-${analysis?.supplementaryQuestions?.reasoning ? `\n理由：${analysis.supplementaryQuestions.reasoning}` : ""}
+${analysis?.supplementaryQuestions?.reasoningText ? `\n理由：${analysis.supplementaryQuestions.reasoningText}` : ""}
 
 # 访谈指南
 1. **自然引导**：以轻松友好的方式开始对话，不要直接抛出问题列表
@@ -319,7 +319,7 @@ ${
     : "No specific supplementary questions available"
 }
 
-${analysis?.supplementaryQuestions?.reasoning ? `\nReasoning: ${analysis.supplementaryQuestions.reasoning}` : ""}
+${analysis?.supplementaryQuestions?.reasoningText ? `\nReasoning: ${analysis.supplementaryQuestions.reasoningText}` : ""}
 
 # Interview Guidelines
 1. **Natural Flow**: Start the conversation in a relaxed and friendly manner, don't directly present a list of questions

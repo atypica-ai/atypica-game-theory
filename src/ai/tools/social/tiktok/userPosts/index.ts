@@ -3,7 +3,7 @@ import "server-only";
 import { PlainTextToolResult } from "@/ai/tools/types";
 import { rootLogger } from "@/lib/logging";
 import { tool } from "ai";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { tryFindValidImage } from "../utils";
 import { TikTokUserPost, TikTokUserPostsResult } from "./types";
 
@@ -82,7 +82,7 @@ async function tiktokUserPosts({ secret_userid }: { secret_userid: string }) {
 
 export const tiktokUserPostsTool = tool({
   description: "Fetch posts from specific TikTok user",
-  parameters: z.object({
+  inputSchema: z.object({
     secret_userid: z.string().describe("The secret user ID to fetch posts from"),
   }),
   experimental_toToolResultContent: (result: PlainTextToolResult) => {

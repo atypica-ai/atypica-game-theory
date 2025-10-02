@@ -5,7 +5,7 @@ import { llm, providerOptions } from "@/ai/provider";
 import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
 import { fixMalformedUnicodeString } from "@/lib/utils";
 import { streamText, tool } from "ai";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { ReasoningThinkingResult } from "./types";
 
 export const reasoningThinkingTool = ({
@@ -17,7 +17,7 @@ export const reasoningThinkingTool = ({
   tool({
     description:
       "Get expert consultation and step-by-step reasoning analysis for complex problems or decisions. Provides detailed thinking process and professional insights on specific research questions or challenges.",
-    parameters: z.object({
+    inputSchema: z.object({
       background: z
         .string()
         .describe(
@@ -52,23 +52,30 @@ export const reasoningThinkingTool = ({
             messages: [
               {
                 role: "user",
-                content: reasoningPrologue({
-                  locale,
-                  background,
-                  question,
-                }),
+
+                parts: [
+                  {
+                    type: "text",
+
+                    text: reasoningPrologue({
+                      locale,
+                      background,
+                      question,
+                    }),
+                  },
+                ],
               },
             ],
             // maxTokens: 500,
             // onChunk: (chunk) => logger.info(`[Reasoning] ${JSON.stringify(chunk)}`),
-            onFinish: async ({ reasoning, text, usage }) => {
+            onFinish: async ({ reasoningText, text, usage }) => {
               logger.info({ msg: "reasoningThinking streamText onFinish", usage });
               if (usage.totalTokens > 0 && statReport) {
                 await statReport("tokens", usage.totalTokens, {
                   reportedBy: "reasoningThinking tool",
                 });
               }
-              resolve({ reasoning, text });
+              resolve({ reasoningText, text });
             },
             onError: ({ error }) => {
               if ((error as Error).name === "AbortError") {
@@ -90,9 +97,9 @@ export const reasoningThinkingTool = ({
         },
       );
 
-      const { reasoning, text } = await streamTextPromise;
+      const { reasoningText, text } = await streamTextPromise;
       return {
-        reasoning: reasoning ?? "",
+        reasoningText: reasoning ?? "",
         text: text ?? "",
         plainText: text,
       } as ReasoningThinkingResult;

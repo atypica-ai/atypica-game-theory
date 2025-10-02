@@ -4,7 +4,7 @@ import { fetchFollowUpInterviewChat } from "@/app/(persona)/actions";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { generatePageMetadata } from "@/lib/request/metadata";
 import { prisma } from "@/prisma/prisma";
-import { Message } from "ai";
+import { UIMessage } from "ai";
 import { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -33,7 +33,7 @@ async function FollowUpInterviewPage({ userChatToken }: { userChatToken: string 
   const userChat = result.data;
 
   const userChatId = userChat.id;
-  let messages: Message[] | undefined = undefined;
+  let messages: UIMessage[] | undefined = undefined;
   if (userChatId) {
     messages = (
       await prisma.chatMessage.findMany({

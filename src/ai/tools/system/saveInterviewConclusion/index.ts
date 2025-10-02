@@ -3,13 +3,13 @@ import "server-only";
 import { PlainTextToolResult } from "@/ai/tools/types";
 import { prisma } from "@/prisma/prisma";
 import { tool } from "ai";
-import { z } from "zod";
+import { z } from "zod/v3";
 
 export const saveInterviewConclusionTool = (interviewId: number) =>
   tool({
     description:
       "Save comprehensive interview summary and key insights to conclude the user interview session",
-    parameters: z.object({
+    inputSchema: z.object({
       conclusion: z
         .string()
         .describe(

@@ -4,7 +4,7 @@ import { fetchUserPersonaChatByToken } from "@/app/(persona)/actions";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { generatePageMetadata } from "@/lib/request/metadata";
 import { prisma } from "@/prisma/prisma";
-import { Message } from "ai";
+import { UIMessage } from "ai";
 import { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -51,7 +51,7 @@ async function PersonaChatTokenPage({ userChatToken }: { userChatToken: string }
   const { userChat, persona } = result.data;
 
   // Fetch existing chat messages
-  const messages: Message[] = (
+  const messages: UIMessage[] = (
     await prisma.chatMessage.findMany({
       where: { userChatId: userChat.id },
       orderBy: { id: "asc" },

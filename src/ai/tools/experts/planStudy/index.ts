@@ -10,7 +10,7 @@ import {
 import { fixMalformedUnicodeString } from "@/lib/utils";
 import { prisma } from "@/prisma/prisma";
 import { streamText, tool } from "ai";
-import { z } from "zod";
+import { z } from "zod/v3";
 
 async function planStudy({
   locale,
@@ -38,18 +38,25 @@ async function planStudy({
       messages: [
         {
           role: "user",
-          content: planStudyPrologue({
-            locale,
-            background: background,
-            question,
-          }),
+
+          parts: [
+            {
+              type: "text",
+
+              text: planStudyPrologue({
+                locale,
+                background: background,
+                question,
+              }),
+            },
+          ],
         },
       ],
       // maxTokens: 500,
       // onChunk: (chunk) => console.log("[Reasoning]", JSON.stringify(chunk)),
       onFinish: async (result) => {
         logger.info(`planStudy streamText onFinish`);
-        const reasoning = result.reasoning ?? "";
+        const reasoning = result.reasoningText ?? "";
         const text = result.text ?? "";
         if (result.usage.totalTokens > 0 && statReport) {
           await statReport("tokens", result.usage.totalTokens, {
@@ -57,7 +64,7 @@ async function planStudy({
           });
         }
         resolve({
-          reasoning,
+          reasoningText,
           text,
           plainText: text,
         });
@@ -81,7 +88,7 @@ export const planStudyTool = ({
   tool({
     description:
       "Ask the professional consultant to plan a research plan based on the user's question.",
-    parameters: z.object({
+    inputSchema: z.object({
       background: z
         .string()
         .describe(

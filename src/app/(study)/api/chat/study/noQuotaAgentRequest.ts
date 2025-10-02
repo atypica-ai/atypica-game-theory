@@ -1,5 +1,5 @@
 import { ToolName } from "@/ai/tools/types";
-import { CoreMessage, createDataStreamResponse, formatDataStreamPart, Message } from "ai";
+import { createUIMessageStreamResponse, formatDataStreamPart, ModelMessage, UIMessage } from "ai";
 
 export async function noQuotaAgentRequest(
   {
@@ -10,9 +10,9 @@ export async function noQuotaAgentRequest(
     // reqSignal,
   }: {
     studyUserChatId: number;
-    coreMessages: CoreMessage[];
-    streamingMessage: Omit<Message, "role"> & {
-      parts: NonNullable<Message["parts"]>;
+    coreMessages: ModelMessage[];
+    streamingMessage: Omit<UIMessage, "role"> & {
+      parts: NonNullable<UIMessage["parts"]>;
       role: "assistant";
     };
     userId: number;
@@ -38,7 +38,7 @@ export async function noQuotaAgentRequest(
   // });
   // return streamTextResult.toDataStreamResponse();
 
-  return createDataStreamResponse({
+  return createUIMessageStreamResponse({
     execute: async (dataStream) => {
       dataStream.write(formatDataStreamPart("start_step", { messageId: "tokens-not-enough" }));
       dataStream.write(

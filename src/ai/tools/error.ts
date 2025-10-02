@@ -7,7 +7,7 @@ import {
   ToolCallRepairFunction,
   ToolSet,
 } from "ai";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { llm } from "../provider";
 
 export const handleToolCallError: ToolCallRepairFunction<ToolSet> = async <T extends ToolSet>(
@@ -45,7 +45,7 @@ export const handleToolCallError: ToolCallRepairFunction<ToolSet> = async <T ext
 export const toolCallError = tool({
   description:
     "System tool for reporting tool execution errors. This tool is automatically invoked and should not be used directly",
-  parameters: z.object({
+  inputSchema: z.object({
     plainText: z.string(),
   }),
   execute: async ({ plainText }) => {

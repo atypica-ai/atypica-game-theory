@@ -14,7 +14,7 @@ import { PersonaImportAnalysis } from "@/app/(persona)/types";
 import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage } from "@/lib/textUtils";
 import { prisma } from "@/prisma/prisma";
-import { generateId, smoothStream, streamText } from "ai";
+import { generateId, smoothStream, stepCountIs, streamText } from "ai";
 import { after, NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
@@ -96,6 +96,7 @@ export async function POST(req: NextRequest) {
     providerOptions,
     system: systemPrompt,
     messages: coreMessages,
+
     tools: {
       [ToolName.reasoningThinking]: reasoningThinkingTool({
         locale,
@@ -108,16 +109,21 @@ export async function POST(req: NextRequest) {
         logger: chatLogger,
       }),
     },
+
     experimental_toolCallStreaming: true,
+
     // 关键修改：当消息数量达到19条时强制结束访谈
     toolChoice: coreMessages.length < 19 ? "auto" : { type: "tool", toolName: "endInterview" },
-    maxSteps: 3,
+
+    stopWhen: stepCountIs(3),
     temperature: 0.7,
     experimental_generateMessageId: () => streamingMessage.id,
+
     experimental_transform: smoothStream({
       delayInMs: 30,
       chunking: /[\u4E00-\u9FFF]|\S+\s+/,
     }),
+
     onStepFinish: async (step) => {
       appendStepToStreamingMessage(streamingMessage, step);
       if (streamingMessage.parts?.length && streamingMessage.content.trim()) {
@@ -140,9 +146,11 @@ export async function POST(req: NextRequest) {
         await statReport("tokens", tokens, extra);
       }
     },
+
     onError: ({ error }) => {
       chatLogger.error(`follow-up interview streamText onError: ${(error as Error).message}`);
     },
+
     onFinish: async () => {},
     abortSignal,
   });
@@ -157,5 +165,5 @@ export async function POST(req: NextRequest) {
   // );
   after(streamTextResult.consumeStream());
 
-  return streamTextResult.toDataStreamResponse();
+  return streamTextResult.toUIMessageStreamResponse();
 }

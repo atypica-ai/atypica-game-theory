@@ -256,6 +256,8 @@ export function FocusedInterviewChat({
     });
   };
 
+  /* FIXME(@ai-sdk-upgrade-v5): The `part.toolInvocation.toolName` property has been removed. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#tool-part-type-changes-uimessage */
+  /* FIXME(@ai-sdk-upgrade-v5): The `part.toolInvocation.state` property has been removed. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#tool-part-type-changes-uimessage */
   return (
     <div
       className={cn(
@@ -270,10 +272,8 @@ export function FocusedInterviewChat({
           {locale === "zh-CN" ? "中文" : "English"}
         </div>
       </div>
-
       {/* Top right button */}
       {topRightButton && <div className="absolute top-4 right-4 z-10">{topRightButton}</div>}
-
       {/* Stop button when streaming */}
       {status === "streaming" && (
         <div className={`absolute top-4 z-10 ${topRightButton ? "right-16" : "right-4"}`}>
@@ -287,7 +287,6 @@ export function FocusedInterviewChat({
           </Button>
         </div>
       )}
-
       {/* Main content area */}
       <div
         className={cn(
@@ -366,7 +365,6 @@ export function FocusedInterviewChat({
           )}
         </AnimatePresence>
       </div>
-
       {/* Bottom input area - fixed to bottom */}
       <div className="shrink-0 w-full max-w-3xl mx-auto px-4 pt-0 sm:px-8 relative space-y-3">
         {/* Timer progress indicator */}

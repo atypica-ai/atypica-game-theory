@@ -2,7 +2,7 @@ import { convertDBMessageToAIMessage } from "@/ai/messageUtils";
 import authOptions from "@/app/(auth)/authOptions";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { prisma } from "@/prisma/prisma";
-import { Message } from "ai";
+import { UIMessage } from "ai";
 import { Session } from "next-auth";
 import { getServerSession } from "next-auth/next";
 import { notFound, redirect } from "next/navigation";
@@ -36,7 +36,7 @@ async function NewStudyPlanningPage({
     orderBy: { id: "asc" },
   });
 
-  const initialMessages: Message[] = dbMessages.map(convertDBMessageToAIMessage);
+  const initialMessages: UIMessage[] = dbMessages.map(convertDBMessageToAIMessage);
 
   return (
     <NewStudyChatClient userChat={userChat} initialMessages={initialMessages} user={sessionUser} />

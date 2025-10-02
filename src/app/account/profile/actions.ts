@@ -4,7 +4,7 @@ import { ServerActionResult } from "@/lib/serverAction";
 import { User } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { hash } from "bcryptjs";
-import { z } from "zod";
+import { z } from "zod/v3";
 
 const nameFormSchema = z.object({
   name: z.string().min(2, {

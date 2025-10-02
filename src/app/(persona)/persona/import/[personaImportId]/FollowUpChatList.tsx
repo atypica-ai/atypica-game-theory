@@ -12,7 +12,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Message } from "ai";
+import { UIMessage } from "ai";
 import { MessageSquareIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
@@ -30,7 +30,7 @@ export function FollowUpChatList({ personaImportId }: { personaImportId: number 
   } | null>(null);
   const [loadingFollowUpHistory, setLoadingFollowUpHistory] = useState(false);
   const [followUpChatOpen, setFollowUpChatOpen] = useState(false);
-  const [followUpChatMessages, setFollowUpChatMessages] = useState<Message[]>([]);
+  const [followUpChatMessages, setFollowUpChatMessages] = useState<UIMessage[]>([]);
   const [loadingFollowUpChat, setLoadingFollowUpChat] = useState(false);
 
   const loadFollowUpHistory = useCallback(async () => {

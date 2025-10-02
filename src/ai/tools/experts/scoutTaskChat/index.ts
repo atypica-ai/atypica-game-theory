@@ -35,17 +35,18 @@ import { createUserChat } from "@/lib/userChat/lib";
 import { generateToken } from "@/lib/utils";
 import { prisma } from "@/prisma/prisma";
 import {
-  DataStreamWriter,
   generateId,
-  Message,
   smoothStream,
+  stepCountIs,
   streamText,
   TextStreamPart,
   tool,
   ToolChoice,
+  UIMessage,
+  UIMessageStreamWriter,
 } from "ai";
 import { Logger } from "pino";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { type ScoutTaskChatResult, type TPlatform } from "./types";
 
 export const createBackgroundToken = async ({
@@ -125,7 +126,7 @@ export const scoutTaskChatTool = ({
   tool({
     description:
       "Conduct comprehensive social media research to discover user behavioral patterns, decision-making processes, and cognitive frameworks across multiple platforms for building representative user personas",
-    parameters: z.object({
+    inputSchema: z.object({
       scoutUserChatToken: z
         .string()
         .optional()
@@ -188,8 +189,9 @@ export const scoutTaskChatTool = ({
       const stats = messages.reduce(
         (_stats, message) => {
           const stats = { ..._stats };
-          ((message.parts ?? []) as NonNullable<Message["parts"]>).forEach((part) => {
+          ((message.parts ?? []) as NonNullable<UIMessage["parts"]>).forEach((part) => {
             if (part.type === "tool-invocation") {
+              /* FIXME(@ai-sdk-upgrade-v5): The `part.toolInvocation.toolName` property has been removed. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#tool-part-type-changes-uimessage */
               const toolName = part.toolInvocation.toolName as ToolName;
               const platform = toolPlatform(toolName);
               if (platform) {
@@ -217,7 +219,7 @@ export async function runScoutTaskChatStream({
   streamWriter,
 }: {
   scoutUserChatId: number;
-  streamWriter?: DataStreamWriter;
+  streamWriter?: UIMessageStreamWriter;
 } & AgentToolConfigArgs): Promise<void> {
   const allTools = {
     [ToolName.dySearch]: dySearchTool,
@@ -297,23 +299,30 @@ export async function runScoutTaskChatStream({
     }
     const { debouncePersistentMessage, immediatePersistentMessage } =
       createDebouncePersistentMessage(scoutUserChatId, 5000, logger); // 5000 debounce
-    const streamTextPromise = new Promise<Omit<Message, "role">>((resolve, reject) => {
+    const streamTextPromise = new Promise<Omit<UIMessage, "role">>((resolve, reject) => {
       const response = streamText({
         model: reduceTokens ? llm(reduceTokens.model, llmOptions) : llm("claude-3-7-sonnet"),
+
         // model: llm("claude-3-7-sonnet-beta")  // 这个模型不大好用，savePersona 总是返回一半输入
         providerOptions: providerOptions,
+
         system: systemPrompt,
         temperature: 0.5,
         messages: coreMessages,
         tools: tools,
         toolChoice: toolChoice,
-        experimental_repairToolCall: handleToolCallError, // 这个要求 tools 里面有 [ToolName.toolCallError]
-        maxSteps: maxSteps,
+
+        // 这个要求 tools 里面有 [ToolName.toolCallError]
+        experimental_repairToolCall: handleToolCallError,
+
+        stopWhen: stepCountIs(maxSteps),
         experimental_generateMessageId: () => streamingMessage.id,
+
         experimental_transform: smoothStream({
           delayInMs: 30,
           chunking: /[\u4E00-\u9FFF]|\S+\s+/,
         }),
+
         onChunk: async ({ chunk }: { chunk: TextStreamPart<typeof allTools> }) => {
           appendChunkToStreamingMessage(streamingMessage, chunk);
           await debouncePersistentMessage(streamingMessage, {
@@ -322,6 +331,7 @@ export async function runScoutTaskChatStream({
             // immediate: chunk.type === "tool-call" || chunk.type === "tool-result",
           });
         },
+
         onStepFinish: async (step) => {
           await immediatePersistentMessage();
           // 注意，stepFinish 一定要保存，并且强制 immediate:true
@@ -359,11 +369,13 @@ export async function runScoutTaskChatStream({
           //   await persistentAIMessageToDB(scoutUserChatId, streamingMessage);
           // }
         },
+
         onFinish: async ({ steps, usage }) => {
           logger.info({ msg: "runScoutTaskChatStream streamText onFinish", usage });
           const message = convertStepsToAIMessage(steps);
           resolve(message);
         },
+
         onError: ({ error }) => {
           if ((error as Error).name === "AbortError") {
             logger.warn(`runScoutTaskChatStream streamText aborted: ${(error as Error).message}`);
@@ -372,10 +384,11 @@ export async function runScoutTaskChatStream({
             reject(error);
           }
         },
+
         abortSignal,
       });
       if (streamWriter) {
-        response.mergeIntoDataStream(streamWriter);
+        response.mergeIntoUIMessageStream(streamWriter);
       }
       // abortSignal 发生了以后，可能会进 consumeStream 的 then 也可能进 catch，搞不明白
       // 由于 abort 了以后就不会触发 onFinish，如果这里不 resolve/reject 就会导致 promise 一直不退出

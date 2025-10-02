@@ -15,10 +15,11 @@ import { prisma } from "@/prisma/prisma";
 import { getUserTokens } from "@/tokens/lib";
 import { OpenAIResponsesProviderOptions } from "@ai-sdk/openai";
 import {
-  createDataStreamResponse,
+  createUIMessageStreamResponse,
   formatDataStreamPart,
   generateId,
   smoothStream,
+  stepCountIs,
   streamText,
 } from "ai";
 import { getServerSession } from "next-auth";
@@ -90,7 +91,7 @@ export async function POST(req: NextRequest) {
         locale === "zh-CN"
           ? "您的余额不足，请充值后再继续。"
           : "Your balance is insufficient, please recharge and try again.";
-      return createDataStreamResponse({
+      return createUIMessageStreamResponse({
         execute: async (dataStream) => {
           dataStream.write(
             formatDataStreamPart("start_step", { messageId: "insufficient_balance" }),
@@ -111,6 +112,7 @@ export async function POST(req: NextRequest) {
     //     : { useSearchGrounding: true, dynamicRetrievalConfig: { mode: "MODE_DYNAMIC" } },
     // ),
     model: llm("gpt-5-mini"),
+
     providerOptions: {
       openai: {
         ...providerOptions.openai,
@@ -118,17 +120,21 @@ export async function POST(req: NextRequest) {
         reasoningEffort: "minimal", // 'minimal' | 'low' | 'medium' | 'high'
       } satisfies OpenAIResponsesProviderOptions,
     },
+
     system: newStudySystem({ locale }),
     messages: coreMessages,
     tools: newStudyTools,
     toolChoice: shouldEndInterview ? "required" : "auto",
-    maxSteps: 2,
+    stopWhen: stepCountIs(2),
+
     // temperature: 0,  // gpt-5 不支持 temperature
     experimental_generateMessageId: () => streamingMessage.id,
+
     experimental_transform: smoothStream({
       delayInMs: 30,
       chunking: /[\u4E00-\u9FFF]|\S+\s+/,
     }),
+
     onStepFinish: async (step) => {
       appendStepToStreamingMessage(streamingMessage, step);
       // Persist the assistant's message parts as they are generated.
@@ -150,11 +156,13 @@ export async function POST(req: NextRequest) {
         }
       }
     },
+
     onError: ({ error }) => {
       chatLogger.error(`newstudy planning streamText onError: ${(error as Error).message}`);
     },
+
     abortSignal,
   });
 
-  return streamTextResult.toDataStreamResponse();
+  return streamTextResult.toUIMessageStreamResponse();
 }

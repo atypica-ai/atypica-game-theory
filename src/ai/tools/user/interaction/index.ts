@@ -2,13 +2,13 @@ import "server-only";
 
 import { PlainTextToolResult } from "@/ai/tools/types";
 import { tool } from "ai";
-import { z } from "zod";
+import { z } from "zod/v3";
 // import { RequestInteractionResult } from "./types";
 
 export const requestInteractionTool = tool({
   description:
     "Present multiple-choice questions to users for collecting specific feedback, preferences, or decisions during research workflow",
-  parameters: z.object({
+  inputSchema: z.object({
     question: z.string().describe("Clear question asking for user input, preference, or decision"),
     options: z
       .array(z.string())

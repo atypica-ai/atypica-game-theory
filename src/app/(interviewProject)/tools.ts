@@ -5,13 +5,13 @@ import { InterviewProjectExtra, InterviewSessionExtra } from "@/prisma/client";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import { tool } from "ai";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { RequestInteractionFormResult } from "./types";
 
 export const interviewSessionTools = ({ interviewSessionId }: { interviewSessionId: number }) => ({
   endInterview: tool({
     description: "End the interview session and generate the interview summary and title",
-    parameters: z.object({
+    inputSchema: z.object({
       title: z
         .string()
         .describe(
@@ -55,7 +55,7 @@ export const interviewSessionTools = ({ interviewSessionId }: { interviewSession
   requestInteractionForm: tool({
     description:
       "Generate a dynamic form with various input types (text, choice, boolean) for collecting user input during research workflows",
-    parameters: z.object({
+    inputSchema: z.object({
       prologue: z
         .string()
         .describe(
@@ -89,7 +89,7 @@ export const interviewSessionTools = ({ interviewSessionId }: { interviewSession
 export const questionOptimizationTools = ({ projectId }: { projectId: number }) => ({
   updateQuestions: tool({
     description: "Save the optimized interview questions and optimization reasoning to the project",
-    parameters: z.object({
+    inputSchema: z.object({
       optimizedQuestions: z.array(z.string()).describe("Array of optimized interview questions"),
       reason: z
         .string()

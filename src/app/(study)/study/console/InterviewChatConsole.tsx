@@ -13,7 +13,7 @@ import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
 import { Analyst, Persona } from "@/prisma/client";
-import { Message, ToolInvocation } from "ai";
+import { ToolInvocation, UIMessage } from "ai";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { StreamSteps } from "./StreamSteps";
@@ -113,7 +113,7 @@ const SingleInterviewChat = ({
 
   // const [interviewId, setInterviewId] = useState<number | null>(null);
   const [backgroundToken, setBackgroundToken] = useState<string | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<UIMessage[]>([]);
   const [conclusion, setConclusion] = useState<string | null>(null);
   const [persona, setPersona] = useState<Persona>();
 

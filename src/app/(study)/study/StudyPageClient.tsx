@@ -7,7 +7,7 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
 import { cn } from "@/lib/utils";
 import { UserChat } from "@/prisma/client";
-import { Message } from "ai";
+import { UIMessage } from "ai";
 import { EyeIcon, EyeOffIcon, ScanIcon, XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { ChatBox } from "./ChatBox";
@@ -132,7 +132,7 @@ export function StudyPageClient({
 }: {
   studyUserChat: Omit<UserChat, "kind"> & {
     kind: "study";
-    messages: Message[];
+    messages: UIMessage[];
   };
   replay: boolean;
 }) {

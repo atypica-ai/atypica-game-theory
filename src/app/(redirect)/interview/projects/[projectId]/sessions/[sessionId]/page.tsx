@@ -2,7 +2,7 @@ import authOptions from "@/app/(auth)/authOptions";
 import { prisma } from "@/prisma/prisma";
 import { getServerSession } from "next-auth";
 import { forbidden, redirect } from "next/navigation";
-import { z } from "zod";
+import { z } from "zod/v3";
 
 const paramsSchema = z.object({
   projectId: z.string().transform((val) => {

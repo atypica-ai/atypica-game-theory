@@ -4,7 +4,7 @@ import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { UserChat } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
-import { Message } from "ai";
+import { UIMessage } from "ai";
 
 export async function fetchUserChatByIdAction<Tkind extends UserChat["kind"]>(
   userChatId: number,
@@ -13,7 +13,7 @@ export async function fetchUserChatByIdAction<Tkind extends UserChat["kind"]>(
   ServerActionResult<
     Omit<UserChat, "kind"> & {
       kind: Tkind;
-      messages: Message[];
+      messages: UIMessage[];
     }
   >
 > {

@@ -5,7 +5,7 @@ import { createUserChat } from "@/lib/userChat/lib";
 import { UserChat } from "@/prisma/client";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
-import { generateId, Message } from "ai";
+import { generateId, UIMessage } from "ai";
 
 export async function createHelloUserChatAction({
   role,
@@ -15,7 +15,7 @@ export async function createHelloUserChatAction({
   content: string;
 }): Promise<ServerActionResult<Omit<UserChat, "kind"> & { kind: "misc" }>> {
   return withAuth(async (user) => {
-    const message: Message = {
+    const message: UIMessage = {
       id: generateId(),
       role,
       content,

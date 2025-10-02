@@ -35,18 +35,19 @@ import { ChatMessageAttachment } from "@/prisma/client";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import {
-  convertToCoreMessages,
-  CoreMessage,
+  convertToModelMessages,
   generateId,
   generateText,
-  Message,
+  ModelMessage,
+  stepCountIs,
   streamText,
   tool,
   ToolChoice,
+  UIMessage,
 } from "ai";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
-import { z } from "zod";
+import { z } from "zod/v3";
 
 const MAX_MESSAGES_LIMIT = 14; // 访谈双方消息总数限制，到达之后必须 saveInterviewConclusion
 type TReduceTokens = {
@@ -69,7 +70,7 @@ export const interviewChatTool = ({
   tool({
     description:
       "Conduct in-depth user interviews by having expert agents interview user persona agents to understand decision-making patterns, preferences, and behavioral insights for the study topic",
-    parameters: z.object({
+    inputSchema: z.object({
       personas: z
         .array(
           z.object({
@@ -178,7 +179,7 @@ async function generateDigest(
     model: llm("gpt-4.1-mini"),
     providerOptions,
     prompt: interviewDigestSystem({ locale, results }),
-    maxTokens: 2000,
+    maxOutputTokens: 2000,
   });
   return digest.text;
 }
@@ -259,7 +260,7 @@ type ChatProps = {
 } & AgentToolConfigArgs;
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-function setBedrockCache(model: `claude-${string}`, coreMessages: CoreMessage[]) {
+function setBedrockCache(model: `claude-${string}`, coreMessages: ModelMessage[]) {
   if (!model) return coreMessages; // 这句话没意义，只是为了用一下 model
   const checkpoints = {
     ">=1": false,
@@ -290,7 +291,7 @@ function setBedrockCache(model: `claude-${string}`, coreMessages: CoreMessage[])
   return cachedCoreMessages;
 }
 
-async function chatWithInterviewer(chatProps: ChatProps, messages: Message[]) {
+async function chatWithInterviewer(chatProps: ChatProps, messages: UIMessage[]) {
   const {
     locale,
     analystInterviewId,
@@ -299,6 +300,7 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: Message[]) {
     statReport,
     logger,
   } = chatProps;
+  /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
   const hasAttachments = !!messages.find(
     (message) => (message.experimental_attachments ?? []).length > 0,
   );
@@ -311,7 +313,7 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: Message[]) {
   // gpt 无法使用 pdf 文件，claude 和 gemini 可以, 并且，3.7 比较消耗 tokens，改用 gemini 和 gpt 吧
   // null as TReduceTokens;
   // const coreMessages = setBedrockCache("claude-3-7-sonnet", convertToCoreMessages(messages));
-  const coreMessages = convertToCoreMessages(messages);
+  const coreMessages = convertToModelMessages(messages);
   const tools = {
     [ToolName.reasoningThinking]: reasoningThinkingTool({
       locale,
@@ -334,22 +336,26 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: Message[]) {
     // LLM 始终没有 saveInterviewConclusion, 强制退出
     throw new Error("Interview exceeded maximum message limit and failed to conclude properly");
   }
-  const streamTextPromise = new Promise<Omit<Message, "role">>(async (resolve, reject) => {
+  const streamTextPromise = new Promise<Omit<UIMessage, "role">>(async (resolve, reject) => {
     const response = streamText({
       model: reduceTokens
         ? llm(reduceTokens.model)
         : // gpt-4.1 系列都不支持 pdf，目前只有 gemini 和 claude 支持
           fixFileNameInMessageToUsePromptCache(llm("claude-3-7-sonnet")),
+
       providerOptions: providerOptions,
+
       // maxRetries: 0, // 不要自动重试？不，gemini 偶尔连不上，还是得自动重试，慢是慢了点
       system: interviewerPrompt,
+
       temperature: 0.3,
       messages: coreMessages,
       tools,
       toolChoice,
-      maxSteps,
+      stopWhen: stepCountIs(maxSteps),
+
       onStepFinish: async ({ usage, stepType, toolCalls, ...step }) => {
-        const cache = step.providerMetadata?.bedrock?.usage as
+        const cache = step.providerOptions?.bedrock?.usage as
           | { cacheReadInputTokens: number; cacheWriteInputTokens: number }
           | undefined;
         logger.info({
@@ -379,11 +385,13 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: Message[]) {
           await statReport("tokens", tokens, extra);
         }
       },
+
       onFinish: async ({ steps, usage }) => {
         logger.info({ msg: "chatWithInterviewer streamText onFinish", usage });
         const message = convertStepsToAIMessage(steps);
         resolve(message);
       },
+
       onError: ({ error }) => {
         if ((error as Error).name === "AbortError") {
           logger.warn(`chatWithInterviewer streamText aborted: ${(error as Error).message}`);
@@ -392,6 +400,7 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: Message[]) {
           reject(error);
         }
       },
+
       abortSignal,
     });
     // abortSignal 发生了以后，会进 consumeStream 的 then 而不是 catch，
@@ -414,7 +423,7 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: Message[]) {
   return message;
 }
 
-async function chatWithPersona(chatProps: ChatProps, messages: Message[]) {
+async function chatWithPersona(chatProps: ChatProps, messages: UIMessage[]) {
   const {
     analystInterviewId,
     prompt: { personaPrompt },
@@ -422,7 +431,7 @@ async function chatWithPersona(chatProps: ChatProps, messages: Message[]) {
     statReport,
     logger,
   } = chatProps;
-  const streamTextPromise = new Promise<Omit<Message, "role">>(async (resolve, reject) => {
+  const streamTextPromise = new Promise<Omit<UIMessage, "role">>(async (resolve, reject) => {
     // const hasAttachments = !!messages.find((message) => (message.experimental_attachments ?? []).length > 0);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [reduceTokens, options]: [TReduceTokens, any] = [
@@ -437,12 +446,17 @@ async function chatWithPersona(chatProps: ChatProps, messages: Message[]) {
       },
     ];
     const response = streamText({
-      model: reduceTokens ? llm(reduceTokens.model, options) : llm("claude-3-7-sonnet"), // gpt 4.1 不支持 pdf，目前只有 gemini 和 claude 支持
+      // gpt 4.1 不支持 pdf，目前只有 gemini 和 claude 支持
+      model: reduceTokens ? llm(reduceTokens.model, options) : llm("claude-3-7-sonnet"),
+
       providerOptions: providerOptions,
       system: personaPrompt,
+
       // maxRetries: 0,  // 不要自动重试？不，gemini 偶尔连不上，还是得自动重试，慢是慢了点
       temperature: 0.3,
+
       messages: messages,
+
       tools: {
         [ToolName.tiktokSearch]: tiktokSearchTool,
         [ToolName.dySearch]: dySearchTool,
@@ -450,7 +464,9 @@ async function chatWithPersona(chatProps: ChatProps, messages: Message[]) {
         [ToolName.twitterSearch]: twitterSearchTool,
         // [ToolName.xhsSearch]: xhsSearchTool, // 因为有 grounding 了，tools 可以去掉一些
       },
-      maxSteps: 2,
+
+      stopWhen: stepCountIs(2),
+
       onStepFinish: async (step) => {
         logger.info({
           msg: "chatWithPersona streamText onStepFinish",
@@ -474,11 +490,13 @@ async function chatWithPersona(chatProps: ChatProps, messages: Message[]) {
           await statReport("tokens", tokens, extra);
         }
       },
+
       onFinish: ({ steps, usage }) => {
         logger.info({ msg: "chatWithPersona streamText onFinish", usage });
         const message = convertStepsToAIMessage(steps);
         resolve(message);
       },
+
       onError: ({ error }) => {
         if ((error as Error).name === "AbortError") {
           logger.warn(`chatWithPersona streamText aborted: ${(error as Error).message}`);
@@ -487,6 +505,7 @@ async function chatWithPersona(chatProps: ChatProps, messages: Message[]) {
           reject(error);
         }
       },
+
       abortSignal,
     });
     abortSignal.addEventListener("abort", () => {
@@ -508,7 +527,7 @@ async function saveMessage({
   backgroundToken,
   logger,
 }: {
-  message: Message;
+  message: UIMessage;
   analystInterviewId: number;
   interviewUserChatId: number;
   backgroundToken: string;
@@ -546,6 +565,7 @@ export async function runInterview(chatProps: ChatProps) {
     where: { id: interviewUserChatId, kind: "interview" },
     data: { backgroundToken },
   });
+  /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
   const experimental_attachments = attachments
     ? await Promise.all(
         attachments.map(async ({ name, objectUrl, mimeType }: ChatMessageAttachment) => {
@@ -554,6 +574,7 @@ export async function runInterview(chatProps: ChatProps) {
         }),
       )
     : undefined;
+  /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
   const personaAgent = {
     messages: [
       {
@@ -562,8 +583,9 @@ export async function runInterview(chatProps: ChatProps) {
         content: prompt.interviewerProloguePrompt,
         experimental_attachments,
       },
-    ] as Message[],
+    ] as UIMessage[],
   };
+  /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
   const interviewer = {
     messages: (experimental_attachments
       ? [
@@ -574,7 +596,7 @@ export async function runInterview(chatProps: ChatProps) {
             experimental_attachments,
           },
         ]
-      : []) as Message[],
+      : []) as UIMessage[],
   };
   const saveParams = { analystInterviewId, interviewUserChatId, backgroundToken, logger };
 
@@ -616,7 +638,7 @@ export async function runInterview(chatProps: ChatProps) {
   }
 }
 
-function fixEmptyTextIssue(message: Omit<Message, "role">) {
+function fixEmptyTextIssue(message: Omit<UIMessage, "role">) {
   // 有时候 personaReply 或 interviewerReply 的 content 是空的，这时候一般是调用了一次工具但还没有文本回复
   // 由于 interviewer 的 assistant 消息会转换成 user 消息给 persona，反过来也是一样，user role message 转换成 coreMessage 的时候，tool 的内容会被忽略，这样就产生了一条空消息，没意义
   // 还没太好的解决方案，有一种方案就是让 interviewer 或者 persona 继续生成，直到输出文本，然后再让另一方继续

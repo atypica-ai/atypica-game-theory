@@ -15,7 +15,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ExtractServerActionData } from "@/lib/serverAction";
-import { Message } from "ai";
+import { UIMessage } from "ai";
 import { ChevronLeftIcon, ChevronRightIcon, LoaderIcon, SparklesIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { FC, useCallback, useEffect, useRef, useState } from "react";
@@ -250,7 +250,7 @@ export const PersonaGridsWithScoutHistory: FC<{
 
 const ScoutTaskChatMessages = ({ scoutUserChatToken }: { scoutUserChatToken: string | null }) => {
   const { studyUserChat } = useStudyContext();
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<UIMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const { partialMessages: messagesDisplay } = useProgressiveMessages({

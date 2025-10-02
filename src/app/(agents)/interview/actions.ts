@@ -4,7 +4,7 @@ import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { AnalystInterview, Persona } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
-import { Message } from "ai";
+import { UIMessage } from "ai";
 
 interface PersonaWithTags extends Omit<Persona, "tags"> {
   tags: string[];
@@ -69,7 +69,7 @@ export async function fetchAnalystInterviewById(interviewId: number): Promise<
       interviewUserChat: {
         token: string;
         backgroundToken: string | null;
-        messages: Message[];
+        messages: UIMessage[];
       } | null;
     }
   >

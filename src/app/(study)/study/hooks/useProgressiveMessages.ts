@@ -1,5 +1,5 @@
 import { ToolName } from "@/ai/tools/types";
-import { Message } from "ai";
+import { UIMessage } from "ai";
 import { useEffect, useMemo, useState } from "react";
 
 export const consoleStreamWaitTime = (name?: ToolName) => {
@@ -17,7 +17,7 @@ export function useProgressiveMessages({
   enabled,
 }: {
   uniqueId: string; // 用于区分不同的消息流，比监听 messages 靠谱点
-  messages: Message[];
+  messages: UIMessage[];
   fixedDuration?: number;
   enabled: boolean;
 }) {
@@ -94,6 +94,7 @@ export function useProgressiveMessages({
       } else if (parts) {
         const part = parts[partIndex];
         if (part?.type === "tool-invocation") {
+          /* FIXME(@ai-sdk-upgrade-v5): The `part.toolInvocation.toolName` property has been removed. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#tool-part-type-changes-uimessage */
           waitTime = consoleStreamWaitTime(part.toolInvocation.toolName as ToolName);
         }
       }

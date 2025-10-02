@@ -7,14 +7,14 @@ import {
 } from "@/app/(study)/study/hooks/useProgressiveMessages";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { useDocumentVisibility } from "@/hooks/use-document-visibility";
-import { Message, ToolInvocation } from "ai";
+import { ToolInvocation, UIMessage } from "ai";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { StreamSteps } from "./StreamSteps";
 
 export const ScoutTaskChatConsole = ({ toolInvocation }: { toolInvocation: ToolInvocation }) => {
   const { studyUserChat } = useStudyContext();
   const scoutUserChatToken = toolInvocation.args.scoutUserChatToken as string;
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<UIMessage[]>([]);
   const [backgroundToken, setBackgroundToken] = useState<string | null>(null);
   const backgroundRunning = useMemo(() => !!backgroundToken, [backgroundToken]);
 

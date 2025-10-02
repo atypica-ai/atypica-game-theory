@@ -36,17 +36,18 @@ import { createUserChat } from "@/lib/userChat/lib";
 import { generateToken } from "@/lib/utils";
 import { prisma } from "@/prisma/prisma";
 import {
-  CoreMessage,
-  DataStreamWriter,
   generateId,
-  Message,
+  ModelMessage,
   smoothStream,
+  stepCountIs,
   streamText,
   TextStreamPart,
   tool,
   ToolChoice,
+  UIMessage,
+  UIMessageStreamWriter,
 } from "ai";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { createBackgroundToken } from "../scoutTaskChat";
 import { ScoutSocialTrendsResult } from "./types";
 
@@ -91,7 +92,7 @@ export const scoutSocialTrendsTool = ({
   tool({
     description:
       "Conduct comprehensive social media research to discover emerging trends, learn about emerging products, and listen to user preferences across multiple platforms.",
-    parameters: z.object({
+    inputSchema: z.object({
       scoutUserChatToken: z
         .string()
         .optional()
@@ -153,8 +154,9 @@ export const scoutSocialTrendsTool = ({
       const stats = messages.reduce(
         (_stats, message) => {
           const stats = { ..._stats };
-          ((message.parts ?? []) as NonNullable<Message["parts"]>).forEach((part) => {
+          ((message.parts ?? []) as NonNullable<UIMessage["parts"]>).forEach((part) => {
             if (part.type === "tool-invocation") {
+              /* FIXME(@ai-sdk-upgrade-v5): The `part.toolInvocation.toolName` property has been removed. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#tool-part-type-changes-uimessage */
               const toolName = part.toolInvocation.toolName as ToolName;
               const platform = toolPlatform(toolName);
               if (platform) {
@@ -183,7 +185,7 @@ async function runScoutSocialTrendsStream({
   streamWriter,
 }: {
   scoutUserChatId: number;
-  streamWriter?: DataStreamWriter;
+  streamWriter?: UIMessageStreamWriter;
 } & AgentToolConfigArgs): Promise<string> {
   const allTools = {
     [ToolName.dySearch]: dySearchTool,
@@ -268,23 +270,27 @@ async function runScoutSocialTrendsStream({
     }
     const { debouncePersistentMessage, immediatePersistentMessage } =
       createDebouncePersistentMessage(scoutUserChatId, 5000, logger); // 5000 debounce
-    const streamTextPromise = new Promise<Omit<Message, "role">>((resolve, reject) => {
+    const streamTextPromise = new Promise<Omit<UIMessage, "role">>((resolve, reject) => {
       const response = streamText({
         model: reduceTokens ? llm(reduceTokens.model, llmOptions) : llm("claude-3-7-sonnet"),
+
         // model: llm("claude-3-7-sonnet-beta")  // 这个模型不大好用，savePersona 总是返回一半输入
         providerOptions: providerOptions,
+
         system: systemPrompt,
         temperature: 0.5,
         messages: coreMessages,
         tools: tools,
         toolChoice: toolChoice,
         experimental_repairToolCall: handleToolCallError,
-        maxSteps: maxSteps,
+        stopWhen: stepCountIs(maxSteps),
         experimental_generateMessageId: () => streamingMessage.id,
+
         experimental_transform: smoothStream({
           delayInMs: 30,
           chunking: /[\u4E00-\u9FFF]|\S+\s+/,
         }),
+
         onChunk: async ({ chunk }: { chunk: TextStreamPart<typeof allTools> }) => {
           appendChunkToStreamingMessage(streamingMessage, chunk);
           await debouncePersistentMessage(streamingMessage, {
@@ -293,6 +299,7 @@ async function runScoutSocialTrendsStream({
             // immediate: chunk.type === "tool-call" || chunk.type === "tool-result",
           });
         },
+
         onStepFinish: async (step) => {
           await immediatePersistentMessage();
           // 注意，stepFinish 一定要保存，并且强制 immediate:true
@@ -330,11 +337,13 @@ async function runScoutSocialTrendsStream({
           //   await persistentAIMessageToDB(scoutUserChatId, streamingMessage);
           // }
         },
+
         onFinish: async ({ steps, usage }) => {
           logger.info({ msg: "runScoutSocialTrendsStream streamText onFinish", usage });
           const message = convertStepsToAIMessage(steps);
           resolve(message);
         },
+
         onError: ({ error }) => {
           if ((error as Error).name === "AbortError") {
             logger.warn(
@@ -347,10 +356,11 @@ async function runScoutSocialTrendsStream({
             reject(error);
           }
         },
+
         abortSignal,
       });
       if (streamWriter) {
-        response.mergeIntoDataStream(streamWriter);
+        response.mergeIntoUIMessageStream(streamWriter);
       }
       abortSignal.addEventListener("abort", () => {
         reject(new Error("runScoutSocialTrendsStream abortSignal received"));
@@ -405,7 +415,7 @@ async function runScoutSocialTrendsSummarize({
   streamWriter,
 }: {
   scoutUserChatId: number;
-  streamWriter?: DataStreamWriter;
+  streamWriter?: UIMessageStreamWriter;
 } & AgentToolConfigArgs) {
   // Use the same message preparation as the main loop
   const { coreMessages } = await prepareMessagesForStreaming(scoutUserChatId);
@@ -427,7 +437,7 @@ async function runScoutSocialTrendsSummarize({
   }
 
   // Push a user message to the coreMessages array at the bottom, requesting summarizing according to history messages
-  const summarizeRequestMessage: CoreMessage = {
+  const summarizeRequestMessage: ModelMessage = {
     role: "user",
     content:
       locale === "zh-CN"
@@ -456,17 +466,23 @@ async function runScoutSocialTrendsSummarize({
   const streamTextPromise = new Promise<string>((resolve, reject) => {
     const response = streamText({
       model: reduceTokens ? llm(reduceTokens.model, llmOptions) : llm("claude-3-7-sonnet"),
+
       // model: llm("claude-3-7-sonnet-beta")  // 这个模型不大好用，savePersona 总是返回一半输入
       providerOptions: providerOptions,
+
       system: summarizationSystemPrompt,
       temperature: 0.5,
       messages: finalMessages,
+
       // No tools needed for summarization
       experimental_repairToolCall: handleToolCallError,
-      maxSteps: 1,
+
+      stopWhen: stepCountIs(1),
+
       onChunk: async ({ chunk }) => {
         logger.debug({ chunk });
       },
+
       onStepFinish: async (step) => {
         const toolCalls = step.toolCalls.map((call) => call.toolName);
         const usage = step.usage;
@@ -503,10 +519,12 @@ async function runScoutSocialTrendsSummarize({
         //   await persistentAIMessageToDB(scoutUserChatId, streamingMessage);
         // }
       },
+
       onFinish: async ({ usage, text }) => {
         logger.info({ msg: "runScoutSocialTrendsSummarize streamText onFinish", usage });
         resolve(text);
       },
+
       onError: ({ error }) => {
         if ((error as Error).name === "AbortError") {
           logger.warn(
@@ -519,10 +537,11 @@ async function runScoutSocialTrendsSummarize({
           reject(error);
         }
       },
+
       abortSignal,
     });
     if (streamWriter) {
-      response.mergeIntoDataStream(streamWriter);
+      response.mergeIntoUIMessageStream(streamWriter);
     }
     abortSignal.addEventListener("abort", () => {
       reject(new Error("runScoutSocialTrendsSummarize abortSignal received"));

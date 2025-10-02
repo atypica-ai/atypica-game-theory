@@ -3,7 +3,7 @@ import { runScoutTaskChatStream } from "@/ai/tools/experts/scoutTaskChat";
 import authOptions from "@/app/(auth)/authOptions";
 import { rootLogger } from "@/lib/logging";
 import { prisma } from "@/prisma/prisma";
-import { createDataStreamResponse, CreateMessage, generateId, Message } from "ai";
+import { CreateUIMessage, createUIMessageStreamResponse, generateId, UIMessage } from "ai";
 import { getServerSession } from "next-auth";
 import { getLocale } from "next-intl/server";
 import { NextResponse } from "next/server";
@@ -16,7 +16,7 @@ export async function POST(req: Request) {
   const userId = session.user.id;
   const payload = await req.json();
   const scoutUserChatId = parseInt(payload["id"]);
-  const newMessage = payload["message"] as Message | CreateMessage;
+  const newMessage = payload["message"] as UIMessage | CreateUIMessage;
   if (!scoutUserChatId || !newMessage) {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
@@ -39,7 +39,7 @@ export async function POST(req: Request) {
     id: newMessage.id ?? generateId(),
   });
   const scoutLog = rootLogger.child({ scoutUserChatId: scoutUserChatId });
-  return createDataStreamResponse({
+  return createUIMessageStreamResponse({
     execute: async (dataStream) => {
       await runScoutTaskChatStream({
         scoutUserChatId,

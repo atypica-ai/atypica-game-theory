@@ -9,7 +9,7 @@ import { thanksTool } from "@/ai/tools/tools";
 import { ToolName } from "@/ai/tools/types";
 import authOptions from "@/app/(auth)/authOptions";
 import { prisma } from "@/prisma/prisma";
-import { Message, smoothStream, streamText } from "ai";
+import { UIMessage, smoothStream, stepCountIs, streamText } from "ai";
 import { getServerSession } from "next-auth/next";
 import { getLocale } from "next-intl/server";
 import { NextResponse } from "next/server";
@@ -22,7 +22,7 @@ export async function POST(req: Request) {
   const userId = session.user.id;
   const payload = await req.json();
   const userChatId = parseInt(payload["id"]);
-  const newMessage = payload["message"] as Message;
+  const newMessage = payload["message"] as UIMessage;
   if (!userChatId || !newMessage) {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
@@ -49,26 +49,32 @@ export async function POST(req: Request) {
     providerOptions: providerOptions,
     system: helloSystem({ locale }),
     messages: coreMessages,
+
     tools: {
       [ToolName.thanks]: thanksTool,
     },
-    maxSteps: 2,
+
+    stopWhen: stepCountIs(2),
     experimental_generateMessageId: () => streamingMessage.id,
+
     experimental_transform: smoothStream({
       delayInMs: 30,
       chunking: /[\u4E00-\u9FFF]|\S+\s+/,
     }),
+
     onStepFinish: async (step) => {
       appendStepToStreamingMessage(streamingMessage, step);
       if (streamingMessage.parts?.length && streamingMessage.content.trim()) {
         await persistentAIMessageToDB(userChatId, streamingMessage);
       }
     },
+
     abortSignal: req.signal,
+
     onError: ({ error }) => {
       console.log(error);
     },
   });
 
-  return streamTextResult.toDataStreamResponse();
+  return streamTextResult.toUIMessageStreamResponse();
 }

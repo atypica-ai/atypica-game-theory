@@ -3,7 +3,7 @@ import "server-only";
 import { PlainTextToolResult } from "@/ai/tools/types";
 import { rootLogger } from "@/lib/logging";
 import { tool } from "ai";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { tryFindValidImage } from "../utils";
 import { DYUserPost, DYUserPostsResult } from "./types";
 
@@ -83,7 +83,7 @@ async function dyUserPosts({ secret_userid }: { secret_userid: string }) {
 
 export const dyUserPostsTool = tool({
   description: "获取抖音特定用户的帖子",
-  parameters: z.object({
+  inputSchema: z.object({
     secret_userid: z.string().describe("The secret user ID to fetch posts from"),
   }),
   experimental_toToolResultContent: (result: PlainTextToolResult) => {

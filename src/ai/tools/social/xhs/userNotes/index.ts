@@ -3,7 +3,7 @@ import "server-only";
 import { PlainTextToolResult } from "@/ai/tools/types";
 import { rootLogger } from "@/lib/logging";
 import { tool } from "ai";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { XHSUserNote, XHSUserNotesResult } from "./types";
 
 const toolLog = rootLogger.child({
@@ -90,7 +90,7 @@ async function xhsUserNotes({ userid }: { userid: string }) {
 
 export const xhsUserNotesTool = tool({
   description: "获取小红书特定用户的帖子",
-  parameters: z.object({
+  inputSchema: z.object({
     userid: z.string().describe("The user ID to fetch notes from"),
   }),
   experimental_toToolResultContent: (result: PlainTextToolResult) => {

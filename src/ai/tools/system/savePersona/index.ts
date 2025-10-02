@@ -2,7 +2,7 @@ import { PlainTextToolResult } from "@/ai/tools/types";
 import { createPersonaWithPostProcess } from "@/app/(persona)/lib";
 import { fixMalformedUnicodeString } from "@/lib/utils";
 import { tool } from "ai";
-import { z } from "zod";
+import { z } from "zod/v3";
 
 export interface SavePersonaToolResult extends PlainTextToolResult {
   personaId: number;
@@ -19,7 +19,7 @@ export const savePersonaTool = ({
   tool({
     description:
       "Save a detailed user persona and its corresponding AI agent system prompt to the database for future interview simulations",
-    parameters: z.object({
+    inputSchema: z.object({
       name: z
         .string()
         .describe(

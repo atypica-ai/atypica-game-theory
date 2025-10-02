@@ -19,8 +19,8 @@ import {
 } from "@/components/ui/dialog";
 import { VALID_LOCALES } from "@/i18n/routing";
 import { ExtractServerActionData } from "@/lib/serverAction";
-import { useChat } from "@ai-sdk/react";
-import { Message } from "ai";
+import { DefaultChatTransport, useChat } from "@ai-sdk/react";
+import { UIMessage } from "ai";
 import { Info, Shield, UsersIcon } from "lucide-react";
 import { Locale, useLocale, useTranslations } from "next-intl";
 import { useEffect, useMemo, useRef } from "react";
@@ -33,7 +33,7 @@ export function InterviewSessionChatClient({
   extra: { preferredLanguage },
 }: ExtractServerActionData<typeof fetchInterviewSessionChat> & {
   userChatToken: string;
-  initialMessages?: Message[];
+  initialMessages?: UIMessage[];
 }) {
   const _locale = useLocale();
 
@@ -52,11 +52,12 @@ export function InterviewSessionChatClient({
   };
 
   const useChatHelpers = useChat({
-    api: "/api/chat/interview-agent",
     initialMessages,
+
     body: {
       ...initialRequestBody,
     },
+
     experimental_prepareRequestBody({ messages, requestBody: _requestBody }) {
       const requestBody: typeof initialRequestBody = { ...initialRequestBody, ..._requestBody };
       const lastMessage = messages[messages.length - 1];
@@ -71,6 +72,10 @@ export function InterviewSessionChatClient({
       };
       return body;
     },
+
+    transport: new DefaultChatTransport({
+      api: "/api/chat/interview-agent",
+    }),
   });
 
   const useChatRef = useRef({
@@ -93,6 +98,8 @@ export function InterviewSessionChatClient({
   // Determine planning state based on messages content
   const interviewState = useMemo(() => {
     // Check if any message has endInterview tool result
+    /* FIXME(@ai-sdk-upgrade-v5): The `part.toolInvocation.toolName` property has been removed. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#tool-part-type-changes-uimessage */
+    /* FIXME(@ai-sdk-upgrade-v5): The `part.toolInvocation.state` property has been removed. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#tool-part-type-changes-uimessage */
     const hasEndInterviewResult = messages.some((message) =>
       message.parts?.some(
         (part) =>

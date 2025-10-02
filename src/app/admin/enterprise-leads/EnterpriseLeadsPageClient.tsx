@@ -7,7 +7,7 @@ import { Pagination } from "@/components/ui/pagination";
 import { createParamConfig, useListQueryParams } from "@/hooks/use-list-query-params";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDate } from "@/lib/utils";
-import { Message } from "ai";
+import { UIMessage } from "ai";
 import { useSession } from "next-auth/react";
 import { useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
@@ -76,7 +76,7 @@ export function EnterpriseLeadsPageClient({ initialSearchParams }: EnterpriseLea
     }
   };
 
-  const renderFullConversation = (messages: Message[]) => {
+  const renderFullConversation = (messages: UIMessage[]) => {
     return (
       <div className="space-y-2 max-h-96 overflow-y-auto border rounded-md p-3 mt-2 bg-muted/30">
         {messages.map((message) => (
@@ -92,7 +92,7 @@ export function EnterpriseLeadsPageClient({ initialSearchParams }: EnterpriseLea
     );
   };
 
-  const extractContactInfo = (messages: Message[]) => {
+  const extractContactInfo = (messages: UIMessage[]) => {
     let contactInfo:
       | {
           name: string;
@@ -106,6 +106,7 @@ export function EnterpriseLeadsPageClient({ initialSearchParams }: EnterpriseLea
     for (const message of messages) {
       if (message.parts) {
         for (const part of message.parts) {
+          /* FIXME(@ai-sdk-upgrade-v5): The `part.toolInvocation.toolName` property has been removed. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#tool-part-type-changes-uimessage */
           if (part.type === "tool-invocation" && part.toolInvocation.toolName === ToolName.thanks) {
             contactInfo = part.toolInvocation.args;
           }
@@ -126,7 +127,6 @@ export function EnterpriseLeadsPageClient({ initialSearchParams }: EnterpriseLea
       {error && (
         <div className="mb-4 rounded-lg bg-destructive/10 p-4 text-destructive">{error}</div>
       )}
-
       <div className="space-y-4">
         {leads.length === 0 ? (
           <div className="text-center py-10">
@@ -134,7 +134,7 @@ export function EnterpriseLeadsPageClient({ initialSearchParams }: EnterpriseLea
           </div>
         ) : (
           leads.map((lead) => {
-            const messages = lead.messages as unknown as Message[];
+            const messages = lead.messages as unknown as UIMessage[];
             const contactInfo = extractContactInfo(messages);
             return (
               <Card key={lead.id} className="overflow-hidden py-0 gap-1">
@@ -193,7 +193,6 @@ export function EnterpriseLeadsPageClient({ initialSearchParams }: EnterpriseLea
           })
         )}
       </div>
-
       {pagination && pagination.totalPages > 1 && (
         <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4">
           <Pagination

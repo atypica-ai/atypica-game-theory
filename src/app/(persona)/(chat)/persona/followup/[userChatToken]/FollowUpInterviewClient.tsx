@@ -2,15 +2,15 @@
 import { ClientMessagePayload } from "@/ai/messageUtilsClient";
 import { FocusedInterviewChat } from "@/components/chat/FocusedInterviewChat";
 import { FitToViewport } from "@/components/layout/FitToViewport";
-import { useChat } from "@ai-sdk/react";
-import { Message } from "ai";
+import { DefaultChatTransport, useChat } from "@ai-sdk/react";
+import { UIMessage } from "ai";
 import { ShieldIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 
 interface FollowUpInterviewClientProps {
   userChatToken: string;
-  initialMessages?: Message[];
+  initialMessages?: UIMessage[];
 }
 
 export default function FollowUpInterviewClient({
@@ -27,11 +27,12 @@ export default function FollowUpInterviewClient({
 
   // 正确使用 useChat hook
   const useChatHelpers = useChat({
-    api: "/api/chat/persona-followup",
     initialMessages,
+
     body: {
       ...initialRequestBody,
     },
+
     experimental_prepareRequestBody({ messages, requestBody: _requestBody }) {
       const requestBody: typeof initialRequestBody = { ...initialRequestBody, ..._requestBody };
       const body: ClientMessagePayload = {
@@ -40,6 +41,10 @@ export default function FollowUpInterviewClient({
       };
       return body;
     },
+
+    transport: new DefaultChatTransport({
+      api: "/api/chat/persona-followup",
+    }),
   });
 
   const useChatRef = useRef({
@@ -54,6 +59,7 @@ export default function FollowUpInterviewClient({
       // 检查最后一条消息是否包含结束标识
       const messages = useChatHelpers.messages || [];
       const lastMessage = messages[messages.length - 1];
+      /* FIXME(@ai-sdk-upgrade-v5): The `part.toolInvocation.toolName` property has been removed. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#tool-part-type-changes-uimessage */
       if (
         lastMessage &&
         (lastMessage.content.includes(t("interviewCompleted")) ||
@@ -73,6 +79,7 @@ export default function FollowUpInterviewClient({
   useEffect(() => {
     const messages = useChatHelpers.messages || [];
     const lastMessage = messages[messages.length - 1];
+    /* FIXME(@ai-sdk-upgrade-v5): The `part.toolInvocation.toolName` property has been removed. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#tool-part-type-changes-uimessage */
     if (
       lastMessage &&
       (lastMessage.content.includes(t("interviewCompleted")) ||

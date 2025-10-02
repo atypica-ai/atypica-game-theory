@@ -8,7 +8,7 @@ import { UserChat, UserChatExtra, UserChatKind } from "@/prisma/client";
 import { ITXClientDenyList } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import { OpenAIResponsesProviderOptions } from "@ai-sdk/openai";
-import { generateText, Message } from "ai";
+import { generateText, UIMessage } from "ai";
 import { Locale } from "next-intl";
 import { getLocale } from "next-intl/server";
 import { truncateForTitle } from "../textUtils";
@@ -100,7 +100,7 @@ export async function generateChatTitle(userChatId: number): Promise<string> {
   const messagesText = messages
     .map(
       (msg) =>
-        `#${msg.role}:\n${((msg.parts as Message["parts"]) ?? [])
+        `#${msg.role}:\n${((msg.parts as UIMessage["parts"]) ?? [])
           .filter((part) => part.type === "text")
           .map((part) => part.text)
           .join("")}\n\n`,
@@ -176,7 +176,8 @@ Directly output the title text without explanation or prefix. The title should a
     messages: [
       {
         role: "user",
-        content: [
+
+        parts: [
           {
             type: "text",
             text: locale === "zh-CN" ? "以下是对话内容" : "Here are the conversation details",

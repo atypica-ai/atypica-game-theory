@@ -5,7 +5,7 @@ import { createUserChat } from "@/lib/userChat/lib";
 import { UserChat, type UserChatKind } from "@/prisma/client";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
-import { generateId, Message } from "ai";
+import { generateId, UIMessage } from "ai";
 
 export async function fetchUserChatsAction<Tkind extends UserChatKind>(
   kind: Tkind,
@@ -43,7 +43,7 @@ export async function createScoutUserChatAction({
   content: string;
 }): Promise<ServerActionResult<Omit<UserChat, "kind"> & { kind: "scout" }>> {
   return withAuth(async (user) => {
-    const message: Message = {
+    const message: UIMessage = {
       id: generateId(),
       role,
       content,

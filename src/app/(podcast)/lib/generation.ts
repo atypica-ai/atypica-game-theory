@@ -11,7 +11,7 @@ import { generateToken } from "@/lib/utils";
 import { AnalystPodcast, AnalystPodcastExtra, ChatMessageAttachment } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { AnalystKind } from "@/prisma/types";
-import { FinishReason, Message, streamText } from "ai";
+import { FinishReason, stepCountIs, streamText, UIMessage } from "ai";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
 import { podcastScriptPrologue, podcastScriptSystem } from "../prompt";
@@ -242,6 +242,7 @@ async function generatePodcastScript(params: {
     finishReason: FinishReason;
     content: string;
   }>(async (resolve, reject) => {
+    /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
     const experimental_attachments = analyst.attachments
       ? await Promise.all(
           (analyst.attachments as ChatMessageAttachment[]).map(
@@ -260,7 +261,8 @@ async function generatePodcastScript(params: {
       instruction,
     });
 
-    const messages: Omit<Message, "id">[] = [
+    /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
+    const messages: Omit<UIMessage, "id">[] = [
       {
         role: "user",
         content: podcastContent,
@@ -280,21 +282,25 @@ async function generatePodcastScript(params: {
     const response = streamText({
       model: llm(modelName),
       providerOptions: providerOptions,
+
       system: systemPrompt
         ? systemPrompt
         : podcastScriptSystem({
             locale,
             analystKind: (analyst.kind as AnalystKind) || AnalystKind.misc,
           }),
+
       messages: messages,
-      maxSteps: 1,
-      maxTokens: 30000,
+      stopWhen: stepCountIs(1),
+      maxOutputTokens: 30000,
+
       onChunk: async ({ chunk }) => {
         if (chunk.type === "text-delta") {
           script += chunk.textDelta.toString();
           await throttleSaveScript(podcast.id, script);
         }
       },
+
       onFinish: async ({ finishReason, text, usage }) => {
         resolve({
           finishReason: finishReason,
@@ -302,7 +308,7 @@ async function generatePodcastScript(params: {
         });
         logger.info({ msg: "Script generation completed", finishReason, usage });
         const totalTokens =
-          (usage.completionTokens ?? 0) * 3 + (usage.promptTokens ?? 0) || usage.totalTokens;
+          (usage.outputTokens ?? 0) * 3 + (usage.inputTokens ?? 0) || usage.totalTokens;
         if (totalTokens > 0) {
           await statReport("tokens", totalTokens, {
             reportedBy: "generatePodcastScript",
@@ -311,9 +317,11 @@ async function generatePodcastScript(params: {
           });
         }
       },
+
       onError: async ({ error }) => {
         reject(error);
       },
+
       abortSignal: abortSignal,
     });
 

@@ -6,7 +6,7 @@ import { fixMalformedUnicodeString } from "@/lib/utils";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
 import { tool } from "ai";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { SaveAnalystToolResult } from "./types";
 
 export const saveAnalystTool = ({
@@ -19,7 +19,7 @@ export const saveAnalystTool = ({
   tool({
     description:
       "Save comprehensive study topic definition and expert analyst role configuration for the study. This is a FOUNDATIONAL tool that establishes the complete study context - all subsequent study activities depend on the completeness and quality of information saved here. MUST include all background information, webSearch findings, and contextual details.",
-    parameters: z.object({
+    inputSchema: z.object({
       role: z
         .string()
         .describe(
@@ -107,7 +107,7 @@ export const saveAnalystStudySummaryTool = ({ studyUserChatId }: { studyUserChat
   tool({
     description:
       "Save an objective summary of the completed study methodology and process workflow for report generation",
-    parameters: z.object({
+    inputSchema: z.object({
       studySummary: z
         .string()
         .describe(
@@ -144,7 +144,7 @@ export const saveInnovationSummaryTool = ({ studyUserChatId }: { studyUserChatId
   tool({
     description:
       "Save an objective summary of the completed study methodology and process workflow for report generation",
-    parameters: z.object({
+    inputSchema: z.object({
       studySummary: z
         .string()
         .describe(

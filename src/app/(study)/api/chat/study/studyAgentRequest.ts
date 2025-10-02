@@ -27,17 +27,18 @@ import { safeAbort } from "@/lib/utils";
 import { prisma } from "@/prisma/prisma";
 import { getUserTokens } from "@/tokens/lib";
 import {
-  CoreMessage,
-  createDataStreamResponse,
+  createUIMessageStreamResponse,
   formatDataStreamPart,
   generateId,
-  Message,
+  ModelMessage,
   smoothStream,
+  stepCountIs,
   StepResult,
   streamText,
   TextStreamPart,
   ToolChoice,
   ToolInvocation,
+  UIMessage,
 } from "ai";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
@@ -57,7 +58,7 @@ export async function outOfBalance({ userId }: { userId: number }) {
  * claude 模型支持 cache https://docs.aws.amazon.com/bedrock/latest/userguide/prompt-caching.html
  * 最多 4 个 checkpoints，checkpoint 至少 1024 tokens, study agent 第一个 assistant 消息回复以后至少有这个 token 量
  */
-export function setBedrockCache(model: `claude-${string}`, coreMessages: CoreMessage[]) {
+export function setBedrockCache(model: `claude-${string}`, coreMessages: ModelMessage[]) {
   if (!model) return coreMessages; // 这句话没意义，只是为了用一下 model
   const checkpoints = {
     firstAssistant: false,
@@ -144,7 +145,7 @@ async function shouldDecidePersonaTier({
     content: toolInvocation.args.question,
     parts: [{ type: "tool-invocation", toolInvocation }],
   });
-  return createDataStreamResponse({
+  return createUIMessageStreamResponse({
     execute: async (dataStream) => {
       dataStream.write(formatDataStreamPart("start_step", { messageId }));
       dataStream.write(formatDataStreamPart("tool_call", toolInvocation));
@@ -167,9 +168,9 @@ export async function studyAgentRequest({
 }: {
   briefStatus?: "CLARIFIED" | "DRAFT";
   studyUserChatId: number;
-  coreMessages: CoreMessage[];
-  streamingMessage: Omit<Message, "role"> & {
-    parts: NonNullable<Message["parts"]>;
+  coreMessages: ModelMessage[];
+  streamingMessage: Omit<UIMessage, "role"> & {
+    parts: NonNullable<UIMessage["parts"]>;
     role: "assistant";
   };
   toolUseCount: Partial<Record<ToolName, number>>;
@@ -279,23 +280,27 @@ export async function studyAgentRequest({
   const streamTextResult = streamText({
     // model: llm("claude-sonnet-4"),
     model: fixFileNameInMessageToUsePromptCache(llm("claude-3-7-sonnet")),
+
     providerOptions: providerOptions,
     system: system,
     messages: cachedCoreMessages,
     tools: tools,
     toolChoice: toolChoice,
     experimental_repairToolCall: handleToolCallError,
-    maxSteps: maxSteps,
-    maxTokens: maxTokens,
+    stopWhen: stepCountIs(maxSteps),
+    maxOutputTokens: maxTokens,
+
     // 注意，这里要使用 streamingMessage 的 id，虽然目前不指定只有 study agent 会遇到问题
     // 问题是这样，保存数据库用的是 streamingMessage.id，但是 streamText 会给新的 assistant 消息生成一个新的 id，并且在 toDataStreamResponse 里返回给前端
     // 当前端调用 addToolResult 的时候，会返回来一条新 id 的 assistang 消息，然后调用 persistentAIMessageToDB 插入的时候，会插入一条新的消息
     experimental_generateMessageId: () => streamingMessage.id,
+
     // https://sdk.vercel.ai/docs/ai-sdk-ui/smooth-stream-chinese
     experimental_transform: smoothStream({
       delayInMs: 30,
       chunking: /[\u4E00-\u9FFF]|\S+\s+/,
     }),
+
     onChunk: async ({ chunk }: { chunk: TextStreamPart<typeof allTools> }) => {
       appendChunkToStreamingMessage(streamingMessage, chunk);
       await debouncePersistentMessage(streamingMessage, {
@@ -304,6 +309,7 @@ export async function studyAgentRequest({
         // immediate: chunk.type === "tool-call" || chunk.type === "tool-result",
       });
     },
+
     onStepFinish: async (step: StepResult<typeof allTools>) => {
       await immediatePersistentMessage();
       // 注意，stepFinish 一定要保存，并且 immediate:true，前面等待中的 chunk persistent 会被去掉，没影响
@@ -313,7 +319,7 @@ export async function studyAgentRequest({
       // 到了这里的 tool calling step 一定是有 result 的，所以得在上面 onChunk 里面获取 call 阶段的 tool
       const toolCalls = step.toolCalls.map((call) => call.toolName);
       const usage = step.usage;
-      const cache = step.providerMetadata?.bedrock?.usage as
+      const cache = step.providerOptions?.bedrock?.usage as
         | { cacheReadInputTokens: number; cacheWriteInputTokens: number }
         | undefined;
       studyLog.info({
@@ -361,11 +367,13 @@ export async function studyAgentRequest({
         }
       }
     },
-    onFinish: async ({ usage, providerMetadata }) => {
-      const cache = providerMetadata?.bedrock?.usage;
+
+    onFinish: async ({ usage, providerOptions }) => {
+      const cache = providerOptions?.bedrock?.usage;
       studyLog.info({ msg: "studyAgentRequest streamText onFinish", usage, cache });
       await clearBackgroundToken();
     },
+
     onError: async ({ error }) => {
       // 如果 tool calling 里面直接 throw 异常，会进入这里的 onError
       if (/Error executing tool.*abortSignal received/.test((error as Error).message)) {
@@ -391,6 +399,7 @@ export async function studyAgentRequest({
         studyLog,
       }).catch(() => {}); //不 await
     },
+
     abortSignal: studyAbortController.signal,
   });
 
@@ -407,5 +416,5 @@ export async function studyAgentRequest({
     studyAbortController,
   });
 
-  return streamTextResult.toDataStreamResponse();
+  return streamTextResult.toUIMessageStreamResponse();
 }

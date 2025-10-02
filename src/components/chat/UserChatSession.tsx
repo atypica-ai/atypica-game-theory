@@ -62,6 +62,7 @@ export function UserChatSession({
       const filesToAttach = [...uploadedFiles];
       if (filesToAttach.length > 0) {
         if (!persistMessages) {
+          /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
           useChatRef.current?.append({
             role: "user",
             content: input.trim(),

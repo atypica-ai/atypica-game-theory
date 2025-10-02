@@ -5,7 +5,7 @@ import { getRequestOrigin } from "@/lib/request/headers";
 import { ImageGeneration } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { createHash } from "crypto";
-import { z } from "zod";
+import { z } from "zod/v3";
 
 async function optimizedImageUrl(imageGeneration: ImageGeneration) {
   const url = await imageGenerationObjectUrlToHttpUrl(imageGeneration);

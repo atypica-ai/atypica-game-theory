@@ -19,7 +19,7 @@ import {
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import { AnalystKind } from "@/prisma/types";
-import { generateId, Message } from "ai";
+import { generateId, UIMessage } from "ai";
 
 export async function createStudyUserChat(
   {
@@ -151,7 +151,7 @@ export async function fetchUserChatByToken<Tkind extends UserChat["kind"]>(
   ServerActionResult<
     Omit<UserChat, "kind"> & {
       kind: Tkind;
-      messages: Message[];
+      messages: UIMessage[];
     }
   >
 > {
@@ -272,7 +272,7 @@ export async function fetchInterviewOfStudyUserChatByPersonaId({
       interviewUserChat: {
         token: string;
         backgroundToken: string | null;
-        messages: Message[];
+        messages: UIMessage[];
       } | null;
     }
   >

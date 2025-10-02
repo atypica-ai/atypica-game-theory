@@ -1,5 +1,5 @@
 import { PlainTextToolResult } from "@/ai/tools/types";
-import { z } from "zod";
+import { z } from "zod/v3";
 
 // Create Interview Project schema
 export const createInterviewProjectSchema = z.object({

@@ -12,7 +12,7 @@ import { fetchUserPersonaChatByToken } from "@/app/(persona)/actions";
 import { VALID_LOCALES } from "@/i18n/routing";
 import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage } from "@/lib/textUtils";
-import { generateId, smoothStream, streamText } from "ai";
+import { generateId, smoothStream, stepCountIs, streamText } from "ai";
 import { getServerSession } from "next-auth";
 import { Locale } from "next-intl";
 import { after, NextResponse } from "next/server";
@@ -103,6 +103,7 @@ export async function POST(req: Request) {
         dynamicThreshold: 0.3, // threshold 越小，使用搜索的可能性就越高
       },
     }),
+
     providerOptions: {
       ...providerOptions,
       // google: {
@@ -112,8 +113,10 @@ export async function POST(req: Request) {
       //   },
       // } satisfies GoogleGenerativeAIProviderOptions,
     },
+
     system: personaAgentSystem({ persona, locale }),
     messages: coreMessages,
+
     tools: {
       // [ToolName.dySearch]: dySearchTool,
       // [ToolName.insSearch]: insSearchTool,
@@ -121,13 +124,17 @@ export async function POST(req: Request) {
       // [ToolName.xhsSearch]: xhsSearchTool,  // 太贵了，先不用
       // [ToolName.reasoningThinking]: reasoningThinkingTool(),
     },
-    maxSteps: 2,
+
+    stopWhen: stepCountIs(2),
     experimental_generateMessageId: () => streamingMessage.id,
+
     experimental_transform: smoothStream({
       delayInMs: 30,
       chunking: /[\u4E00-\u9FFF]|\S+\s+/,
     }),
+
     abortSignal: mergedAbortSignal,
+
     onStepFinish: async (step) => {
       appendStepToStreamingMessage(streamingMessage, step);
       if (streamingMessage.parts?.length && streamingMessage.content.trim()) {
@@ -149,6 +156,7 @@ export async function POST(req: Request) {
         await statReport("tokens", tokens, extra);
       }
     },
+
     // onFinish: async () => {
     //   console.log("persona chat streamTextResult onFinish");
     // },
@@ -172,5 +180,5 @@ export async function POST(req: Request) {
     }),
   );
 
-  return streamTextResult.toDataStreamResponse();
+  return streamTextResult.toUIMessageStreamResponse();
 }

@@ -5,7 +5,7 @@ import { initInterviewProjectStatReporter } from "@/ai/tools/stats";
 import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage } from "@/lib/textUtils";
 import { prisma } from "@/prisma/prisma";
-import { CoreMessage, streamText } from "ai";
+import { ModelMessage, stepCountIs, streamText } from "ai";
 import { interviewQuestionRefinementPrompt } from "./prompt";
 import { questionOptimizationTools } from "./tools";
 
@@ -39,7 +39,7 @@ export async function processInterviewQuestionOptimization(projectId: number): P
     logger: logger,
   });
 
-  const messages: CoreMessage[] = [
+  const messages: ModelMessage[] = [
     {
       role: "user",
       content: [{ type: "text", text: project.brief }],
@@ -51,18 +51,23 @@ export async function processInterviewQuestionOptimization(projectId: number): P
     await new Promise((resolve, reject) => {
       const response = streamText({
         model: llm("claude-3-7-sonnet"),
+
         providerOptions: {
           ...providerOptions,
         },
+
         system: interviewQuestionRefinementPrompt({ locale }),
         messages: messages,
         tools: questionOptimizationTools({ projectId }),
+
         toolChoice: {
           type: "tool",
           toolName: "updateQuestions",
         },
-        maxSteps: 1,
+
+        stopWhen: stepCountIs(1),
         temperature: 0.3,
+
         onStepFinish: async (step) => {
           const { usage, stepType, toolCalls } = step;
           logger.info({
@@ -81,10 +86,12 @@ export async function processInterviewQuestionOptimization(projectId: number): P
             await statReport("tokens", tokens, extra);
           }
         },
+
         onFinish: async () => {
           logger.info("Question optimization completed successfully");
           resolve(null);
         },
+
         onError: ({ error }) => {
           logger.error(`Question optimization error: ${(error as Error).message}`);
           reject(error);

@@ -3,7 +3,7 @@ import "server-only";
 import { PlainTextToolResult } from "@/ai/tools/types";
 import { rootLogger } from "@/lib/logging";
 import { tool } from "ai";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { XHSNoteCommentsResult } from "./types";
 
 const toolLog = rootLogger.child({
@@ -79,7 +79,7 @@ async function xhsNoteComments({ noteid }: { noteid: string }) {
 
 export const xhsNoteCommentsTool = tool({
   description: "获取小红书特定帖子的评论",
-  parameters: z.object({
+  inputSchema: z.object({
     noteid: z.string().describe("The note ID to fetch comments from"),
   }),
   experimental_toToolResultContent: (result: PlainTextToolResult) => {

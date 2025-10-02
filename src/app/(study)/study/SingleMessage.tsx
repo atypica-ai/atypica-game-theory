@@ -7,7 +7,7 @@ import ToolResultTable from "@/components/chat/ToolResultTable";
 import { Markdown } from "@/components/markdown";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
-import { Message, Message as MessageType, ToolInvocation } from "ai";
+import { ToolInvocation, UIMessage } from "ai";
 import { motion } from "framer-motion";
 import { BotIcon, ChevronRight, EyeIcon, LoaderIcon, XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -105,7 +105,8 @@ const PlainText = ({ children }: PropsWithChildren) => {
   ) : null;
 };
 
-export const SingleMessage = ({
+export /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
+const SingleMessage = ({
   message: { role, content, parts, experimental_attachments },
   addToolResult,
   avatar,
@@ -116,7 +117,7 @@ export const SingleMessage = ({
   // role: "assistant" | "user" | "system" | "data";
   // content: string | ReactNode;
   // parts?: MessageType["parts"];
-  message: Message;
+  message: UIMessage;
   addToolResult: ({
     toolCallId,
     result,
@@ -129,8 +130,10 @@ export const SingleMessage = ({
   onDelete?: () => void;
   isLastMessage?: boolean;
 }) => {
+  /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
   const renderUserMessage = useCallback(() => {
     const contentLength = (content?.toString() ?? "").length;
+    /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
     return (
       <div
         className={cn(
@@ -176,7 +179,7 @@ export const SingleMessage = ({
   }, [content, onDelete, experimental_attachments]);
 
   // const { replay } = useStudyContext();
-  const renderParts = (parts: NonNullable<MessageType["parts"]>) => {
+  const renderParts = (parts: NonNullable<undefined["parts"]>) => {
     // if (replay) {
     //   parts = parts.filter(
     //     (part) =>
@@ -194,7 +197,7 @@ export const SingleMessage = ({
             case "text":
               return <PlainText key={i}>{part.text}</PlainText>;
             case "reasoning":
-              return <PlainText key={i}>{part.reasoning}</PlainText>;
+              return <PlainText key={i}>{part.reasoningText}</PlainText>;
             case "source":
               return <PlainText key={i}>{JSON.stringify(part.source)}</PlainText>;
             case "tool-invocation":

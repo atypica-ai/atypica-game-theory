@@ -3,7 +3,7 @@ import "server-only";
 import { PlainTextToolResult, SocialPost } from "@/ai/tools/types";
 import { rootLogger } from "@/lib/logging";
 import { tool } from "ai";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { TwitterUserPostsResult } from "./types";
 
 const toolLog = rootLogger.child({
@@ -80,7 +80,7 @@ async function twitterUserPosts({ userid }: { userid: string }) {
 
 export const twitterUserPostsTool = tool({
   description: "Fetch posts from specific Twitter user",
-  parameters: z.object({
+  inputSchema: z.object({
     userid: z.string().describe("The user ID to fetch posts from"),
   }),
   experimental_toToolResultContent: (result: PlainTextToolResult) => {

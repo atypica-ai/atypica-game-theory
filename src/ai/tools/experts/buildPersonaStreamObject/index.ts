@@ -6,7 +6,7 @@ import { llm, providerOptions } from "@/ai/provider";
 import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
 import { prisma } from "@/prisma/prisma";
 import { streamObject, tool } from "ai";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { BuildPersonaToolResult, personaBuildSchemaStreamObject } from "./types";
 
 export const buildPersonaStreamObjectTool = ({
@@ -21,7 +21,7 @@ export const buildPersonaStreamObjectTool = ({
   tool({
     description:
       "Analyze social media research data and build detailed user personas with AI agent simulation capabilities using streaming object generation",
-    parameters: z.object({
+    inputSchema: z.object({
       scoutUserChatToken: z
         .string()
         .describe(

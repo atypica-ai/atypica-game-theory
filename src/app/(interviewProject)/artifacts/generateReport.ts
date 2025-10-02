@@ -6,7 +6,7 @@ import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage } from "@/lib/textUtils";
 import { ChatMessage } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
-import { streamText } from "ai";
+import { stepCountIs, streamText } from "ai";
 import { interviewReportPrologue, interviewReportSystemPrompt } from "../prompt";
 
 /**
@@ -106,32 +106,45 @@ export async function generateInterviewReportContent({
   let onePageHtml = "";
   const response = streamText({
     // model: llm("claude-sonnet-4"),
-    model: llm("gemini-2.5-pro"), // 当访谈有 100 左右时，claude 的 input token context 不够，需要用 gemini
+    // 当访谈有 100 左右时，claude 的 input token context 不够，需要用 gemini
+    model: llm("gemini-2.5-pro"),
+
     providerOptions: providerOptions,
     system: interviewReportSystemPrompt({ locale }),
+
     messages: [
       {
         role: "user",
-        content: interviewReportPrologue({
-          locale,
-          projectBrief: project.brief,
-          conversations,
-        }),
+
+        parts: [
+          {
+            type: "text",
+
+            text: interviewReportPrologue({
+              locale,
+              projectBrief: project.brief,
+              conversations,
+            }),
+          },
+        ],
       },
     ],
-    maxSteps: 1,
-    maxTokens: 30000,
+
+    stopWhen: stepCountIs(1),
+    maxOutputTokens: 30000,
+
     onChunk: async ({ chunk }) => {
       if (chunk.type === "text-delta") {
         onePageHtml += chunk.textDelta.toString();
         await throttleSaveHTML(report.id, onePageHtml);
       }
     },
+
     onFinish: async ({ finishReason, usage }) => {
       logger.info({ msg: "Interview report generation streamText onFinish", finishReason, usage });
       // svg 生成耗费的 output tokens 比较多，不能和 input tokens 一样计算
       const totalTokens =
-        (usage.completionTokens ?? 0) * 3 + (usage.promptTokens ?? 0) || usage.totalTokens;
+        (usage.outputTokens ?? 0) * 3 + (usage.inputTokens ?? 0) || usage.totalTokens;
       if (totalTokens > 0 && statReport) {
         await statReport("tokens", totalTokens, {
           reportedBy: "interview report",
@@ -140,6 +153,7 @@ export async function generateInterviewReportContent({
         });
       }
     },
+
     onError: ({ error }) => {
       logger.error(`Interview report generation streamText onError: ${(error as Error).message}`);
     },

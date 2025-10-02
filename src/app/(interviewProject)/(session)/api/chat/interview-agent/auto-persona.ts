@@ -14,13 +14,13 @@ import { detectInputLanguage } from "@/lib/textUtils";
 import { InterviewProjectExtra, InterviewSessionExtra } from "@/prisma/client";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
-import { generateId, Message, streamText } from "ai";
+import { generateId, stepCountIs, streamText, UIMessage } from "ai";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
 
 const MAX_CONVERSATION_TURNS = 20;
 
-function fixEmptyTextIssue(message: Omit<Message, "role">) {
+function fixEmptyTextIssue(message: Omit<UIMessage, "role">) {
   // 有时候 personaReply 或 interviewerReply 的 content 是空的，这时候一般是调用了一次工具但还没有文本回复
   // 由于 interviewer 的 assistant 消息会转换成 user 消息给 persona，反过来也是一样，user role message 转换成 coreMessage 的时候，tool 的内容会被忽略，这样就产生了一条空消息，没意义
   // 还没太好的解决方案，有一种方案就是让 interviewer 或者 persona 继续生成，直到输出文本，然后再让另一方继续
@@ -40,7 +40,7 @@ async function saveMessage({
   backgroundToken,
   logger,
 }: {
-  message: Message;
+  message: UIMessage;
   userChatId: number;
   backgroundToken: string;
   logger: Logger;
@@ -157,10 +157,10 @@ export async function runAutoPersonaInterview({
     let conversationTurns = 0;
     let lastSpeaker: "interviewer" | "persona" = "persona"; // Start with interviewer
     const interviewerAgent = {
-      messages: [{ id: generateId(), role: "user", content: "[READY]" }] as Message[],
+      messages: [{ id: generateId(), role: "user", content: "[READY]" }] as UIMessage[],
     };
     const personaAgent = {
-      messages: [] as Message[],
+      messages: [] as UIMessage[],
     };
 
     while (conversationTurns < MAX_CONVERSATION_TURNS) {
@@ -220,8 +220,9 @@ export async function runAutoPersonaInterview({
         orderBy: { createdAt: "desc" },
       });
 
+      /* FIXME(@ai-sdk-upgrade-v5): The `part.toolInvocation.toolName` property has been removed. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#tool-part-type-changes-uimessage */
       if (
-        ((lastMessage?.parts || []) as NonNullable<Message["parts"]>).some(
+        ((lastMessage?.parts || []) as NonNullable<UIMessage["parts"]>).some(
           (part) =>
             part.type === "tool-invocation" &&
             part.toolInvocation.toolName === InterviewToolName.endInterview,
@@ -274,12 +275,12 @@ async function generatePersonaResponse({
   logger,
 }: {
   systemPrompt: string;
-  messages: Message[];
+  messages: UIMessage[];
   interviewSessionId: number;
   statReport: StatReporter;
   logger: Logger;
 }) {
-  const promise = new Promise<Omit<Message, "role">>((resolve, reject) => {
+  const promise = new Promise<Omit<UIMessage, "role">>((resolve, reject) => {
     const streamTextPromise = streamText({
       model: llm("gemini-2.5-flash", {
         useSearchGrounding: true,
@@ -288,12 +289,15 @@ async function generatePersonaResponse({
           dynamicThreshold: 0.3,
         },
       }),
+
       providerOptions: {
         ...providerOptions,
       },
+
       system: systemPrompt,
       messages,
-      maxSteps: 1,
+      stopWhen: stepCountIs(1),
+
       onStepFinish: async ({ usage, stepType, toolCalls }) => {
         logger.info({
           msg: "generatePersonaResponse streamText onStepFinish",
@@ -313,11 +317,13 @@ async function generatePersonaResponse({
           await statReport("tokens", tokens, extra);
         }
       },
+
       onFinish: ({ steps, usage }) => {
         logger.info({ msg: "generatePersonaResponse streamText onFinish", usage });
         const message = convertStepsToAIMessage(steps);
         resolve(message);
       },
+
       onError: ({ error }) => {
         logger.error(`generatePersonaResponse streamText onError: ${(error as Error).message}`);
         reject(error);
@@ -337,7 +343,7 @@ async function generateInterviewerResponse({
   logger,
 }: {
   systemPrompt: string;
-  messages: Message[];
+  messages: UIMessage[];
   shouldEndInterview: boolean;
   interviewSessionId: number;
   statReport: StatReporter;
@@ -347,21 +353,27 @@ async function generateInterviewerResponse({
   const { endInterview } = interviewSessionTools({
     interviewSessionId,
   });
-  const promise = new Promise<Omit<Message, "role">>((resolve, reject) => {
+  const promise = new Promise<Omit<UIMessage, "role">>((resolve, reject) => {
     const streamTextPromise = streamText({
       model: llm("claude-3-7-sonnet"),
+
       providerOptions: {
         ...providerOptions,
       },
+
       system: systemPrompt,
       messages,
+
       toolChoice: shouldEndInterview
         ? { type: "tool", toolName: InterviewToolName.endInterview }
         : "auto",
+
       tools: {
         endInterview,
       },
-      maxSteps: 1,
+
+      stopWhen: stepCountIs(1),
+
       onStepFinish: async ({ usage, stepType, toolCalls }) => {
         logger.info({
           msg: "generateInterviewerResponse streamText onStepFinish",
@@ -381,11 +393,13 @@ async function generateInterviewerResponse({
           await statReport("tokens", tokens, extra);
         }
       },
+
       onFinish: ({ steps, usage }) => {
         logger.info({ msg: "generateInterviewerResponse streamText onFinish", usage });
         const message = convertStepsToAIMessage(steps);
         resolve(message);
       },
+
       onError: ({ error }) => {
         logger.error(`generateInterviewerResponse streamText onError: ${(error as Error).message}`);
         reject(error);

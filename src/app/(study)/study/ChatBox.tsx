@@ -9,7 +9,7 @@ import { useDevice } from "@/hooks/use-device";
 import { useDocumentVisibility } from "@/hooks/use-document-visibility";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
 import { cn } from "@/lib/utils";
-import { Message, useChat } from "@ai-sdk/react";
+import { DefaultChatTransport, Message, useChat } from "@ai-sdk/react";
 import { ArrowRightIcon, PlayIcon, PlusIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -53,12 +53,13 @@ export function ChatBox() {
     [studyUserChatToken],
   );
 
+  const [input, setInput] = useState("");
+
   const {
     messages,
     setMessages,
     error,
     handleSubmit,
-    input,
     setInput,
     status: useChatStatus,
     reload,
@@ -67,13 +68,13 @@ export function ChatBox() {
   } = useChat({
     id: studyUserChatId.toString(),
     initialMessages: initialMessages,
-    sendExtraMessageFields: true, // send id and createdAt for each message
-    api: "/api/chat/study",
     experimental_throttle: 300,
+
     // maxSteps: 15,  // 后端 chat api 设置了 maxSteps 并且会控制，这里不能再设置，会覆盖后端的配置！
     body: {
       ...initialRequestBody,
     },
+
     // see https://sdk.vercel.ai/docs/ai-sdk-ui/chatbot-message-persistence#sending-only-the-last-message
     experimental_prepareRequestBody({ messages, id, requestBody: _requestBody }) {
       // requestBody 这个字段不靠谱，虽然上面配置了 body，首次提交的时候这里的 requestBody 却是空的
@@ -87,12 +88,17 @@ export function ChatBox() {
       console.debug("study experimental_prepareRequestBody", messages, id, _requestBody);
       return body;
     },
+
     onError(error) {
       if (/network error/.test(error?.message)) {
         // 这里应该不会无限循环，因为 onError 的时候肯定是 assistant 消息在回复，所以 reload 以后最后一条消息不会是 user，也就不会立即开始 chat
         location.reload();
       }
     },
+
+    transport: new DefaultChatTransport({
+      api: "/api/chat/study",
+    }),
   });
 
   const [backgroundToken, setBackgroundToken] = useState<string | null>(initialBackgroundToken);

@@ -1,5 +1,5 @@
 import { ProductName } from "@/app/payment/data";
-import { z } from "zod";
+import { z } from "zod/v3";
 
 export const stripeSessionCreatePayloadSchema = z
   .object({

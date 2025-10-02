@@ -31,7 +31,7 @@ import { truncateForTitle } from "@/lib/textUtils";
 import { formatDate } from "@/lib/utils";
 import { Analyst, UserChatExtra } from "@/prisma/client";
 import { AnalystKind } from "@/prisma/types";
-import { Message } from "ai";
+import { UIMessage } from "ai";
 import {
   ChevronDown,
   ChevronUp,
@@ -96,7 +96,7 @@ export function FeaturedStudiesPageClient({ initialSearchParams }: FeaturedStudi
   const [expandedTopics, setExpandedTopics] = useState<Set<number>>(new Set());
   const [expandedSummaries, setExpandedSummaries] = useState<Set<number>>(new Set());
   const [briefDialogOpen, setBriefDialogOpen] = useState(false);
-  const [briefMessages, setBriefMessages] = useState<Message[]>([]);
+  const [briefMessages, setBriefMessages] = useState<UIMessage[]>([]);
   const [loadingBrief, setLoadingBrief] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -259,7 +259,7 @@ export function FeaturedStudiesPageClient({ initialSearchParams }: FeaturedStudi
     setLoadingBrief(false);
   };
 
-  const renderBriefConversation = (messages: Message[]) => {
+  const renderBriefConversation = (messages: UIMessage[]) => {
     return (
       <div className="h-full overflow-hidden flex flex-col">
         <div className="flex-1 overflow-y-auto space-y-4 p-4 border rounded-lg bg-muted/30">

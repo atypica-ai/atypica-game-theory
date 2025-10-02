@@ -3,7 +3,7 @@ import "server-only";
 import { PlainTextToolResult } from "@/ai/tools/types";
 import { rootLogger } from "@/lib/logging";
 import { tool } from "ai";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { tryFindValidImage } from "../utils";
 import { TikTokPostCommentsResult } from "./types";
 
@@ -79,7 +79,7 @@ async function tiktokPostComments({ postid }: { postid: string }) {
 
 export const tiktokPostCommentsTool = tool({
   description: "Fetch comments from specific TikTok post",
-  parameters: z.object({
+  inputSchema: z.object({
     postid: z.string().describe("The post ID to fetch comments from"),
   }),
   experimental_toToolResultContent: (result: PlainTextToolResult) => {

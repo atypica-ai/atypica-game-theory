@@ -11,7 +11,7 @@ import { Analyst, FeaturedStudy, User, UserChat } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { AnalystKind } from "@/prisma/types";
 import { waitUntil } from "@vercel/functions";
-import { Message } from "ai";
+import { UIMessage } from "ai";
 import { Locale } from "next-intl";
 import { getLocale } from "next-intl/server";
 import { revalidatePath } from "next/cache";
@@ -559,7 +559,7 @@ export async function updatePositionDirect(
 // Fetch brief chat messages by chat ID
 export async function fetchBriefChatMessages(
   briefUserChatId: number,
-): Promise<ServerActionResult<Message[]>> {
+): Promise<ServerActionResult<UIMessage[]>> {
   await checkAdminAuth([AdminPermission.MANAGE_STUDIES]);
 
   const briefChat = await prisma.userChat.findUnique({

@@ -3,7 +3,7 @@ import "server-only";
 import { decryptText, encryptText } from "@/lib/cipher";
 import { truncateForTitle } from "@/lib/textUtils";
 import { prisma } from "@/prisma/prisma";
-import { Message } from "ai";
+import { UIMessage } from "ai";
 import { InterviewSharePayload, InterviewToolName, RequestInteractionFormResult } from "./types";
 
 /**
@@ -153,7 +153,7 @@ export async function extractInterviewTranscript(userChatId: number): Promise<In
   }> = [];
 
   for (const message of messages) {
-    const parts = message.parts as Message["parts"];
+    const parts = message.parts as UIMessage["parts"];
     if (parts) {
       for (const part of parts) {
         // Extract text content

@@ -17,7 +17,7 @@ import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { changePassword, getCurrentUser, updateName } from "./actions";
 
 const nameFormSchema = z.object({

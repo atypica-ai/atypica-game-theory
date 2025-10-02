@@ -3,7 +3,7 @@ import "server-only";
 import { PlainTextToolResult } from "@/ai/tools/types";
 import { rootLogger } from "@/lib/logging";
 import { tool } from "ai";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { TwitterPostCommentsResult } from "./types";
 
 const toolLog = rootLogger.child({
@@ -78,7 +78,7 @@ async function twitterPostComments({ tweetid }: { tweetid: string }) {
 
 export const twitterPostCommentsTool = tool({
   description: "Fetch comments from specific Twitter post",
-  parameters: z.object({
+  inputSchema: z.object({
     tweetid: z.string().describe("The tweet ID to fetch comments from"),
   }),
   experimental_toToolResultContent: (result: PlainTextToolResult) => {

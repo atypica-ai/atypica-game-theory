@@ -7,13 +7,13 @@ import { ChatMessage, ChatMessageAttachment } from "@/prisma/client";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import {
-  convertToCoreMessages,
+  convertToModelMessages,
   generateId,
-  Message,
   StepResult,
   TextStreamPart,
   ToolInvocation,
   ToolSet,
+  UIMessage,
 } from "ai";
 import { Logger } from "pino";
 
@@ -33,13 +33,14 @@ import { Logger } from "pino";
 //   return convert[mimeType] || mimeType;
 // }
 
-function fixChatMessages(messages: Message[]) {
+function fixChatMessages(messages: UIMessage[]) {
   let fixed = messages.map((message) => {
     if (!message.parts) {
       return message;
     }
     // 给 pending 的 tool 都标记下
     let parts = message.parts.map((part) => {
+      /* FIXME(@ai-sdk-upgrade-v5): The `part.toolInvocation.state` property has been removed. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#tool-part-type-changes-uimessage */
       if (part.type !== "tool-invocation" || part.toolInvocation.state == "result") {
         return part;
       }
@@ -98,8 +99,8 @@ function fixChatMessages(messages: Message[]) {
 
 export function convertStepsToAIMessage<T extends ToolSet>(
   steps: StepResult<T>[],
-): Omit<Message, "role"> {
-  const parts: Message["parts"] = [];
+): Omit<UIMessage, "role"> {
+  const parts: UIMessage["parts"] = [];
   const contents = [];
   for (const step of steps) {
     // 这三步其实是可以合并的
@@ -146,10 +147,10 @@ export function convertStepsToAIMessage<T extends ToolSet>(
 }
 
 export function appendStepToStreamingMessage<T extends ToolSet>(
-  streamingMessage: Omit<Message, "role">,
+  streamingMessage: Omit<UIMessage, "role">,
   step: StepResult<T>,
 ) {
-  const parts: Message["parts"] = streamingMessage.parts ?? [];
+  const parts: UIMessage["parts"] = streamingMessage.parts ?? [];
   const contents = streamingMessage.content ? [streamingMessage.content] : [];
   // 这三步其实是可以合并的
   if (step.stepType === "initial") {
@@ -200,7 +201,7 @@ export function appendStepToStreamingMessage<T extends ToolSet>(
 }
 
 export function appendChunkToStreamingMessage<T extends ToolSet>(
-  streamingMessage: Omit<Message, "role"> & { parts: NonNullable<Message["parts"]> },
+  streamingMessage: Omit<UIMessage, "role"> & { parts: NonNullable<UIMessage["parts"]> },
   chunk: TextStreamPart<T>,
 ) {
   if (chunk.type === "text-delta") {
@@ -251,9 +252,10 @@ export function appendChunkToStreamingMessage<T extends ToolSet>(
  */
 export const persistentAIMessageToDB = async (
   userChatId: number,
-  message: Message,
+  message: UIMessage,
   attachments?: ChatMessageAttachment[], // 暂时还没地方用到，现在唯一存储 attachments 的地方，在 createStudyUserChat 里直接实现了
 ) => {
+  /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
   const {
     id: messageId,
     role,
@@ -264,7 +266,7 @@ export const persistentAIMessageToDB = async (
     experimental_attachments: _experimental_attachments, // 忽略，用不到，不用保存，而且里面会有 base64 file content, 保存下来太大了
     ...extra
   } = message;
-  const parts: NonNullable<Message["parts"]> = _parts?.length
+  const parts: NonNullable<UIMessage["parts"]> = _parts?.length
     ? _parts
     : [{ type: "text", text: content }];
   const dataToPersist = {
@@ -324,7 +326,7 @@ export const createDebouncePersistentMessage = (
   let timeout: NodeJS.Timeout | null = null;
   let func: () => Promise<void>;
   const debouncePersistentMessage = async (
-    message: Message,
+    message: UIMessage,
     { immediate }: { immediate?: boolean } = {},
   ) => {
     if (timeout) {
@@ -364,10 +366,10 @@ export function convertDBMessageToAIMessage({
   parts: _parts,
   extra: _extra,
   createdAt,
-}: ChatMessage): Message {
-  const parts = _parts as Message["parts"];
-  const extra = _extra as Omit<Message, "id" | "role" | "content" | "parts" | "createdAt"> | null;
-  const message: Message = { ...extra, id, role, content, parts, createdAt };
+}: ChatMessage): UIMessage {
+  const parts = _parts as UIMessage["parts"];
+  const extra = _extra as Omit<UIMessage, "id" | "role" | "content" | "parts" | "createdAt"> | null;
+  const message: UIMessage = { ...extra, id, role, content, parts, createdAt };
   return message;
 }
 
@@ -376,7 +378,7 @@ export async function convertDBMessagesToAIMessages(
   options: {
     convertObjectUrl?: "HttpUrl" | "DataUrl";
   } = {},
-): Promise<Message[]> {
+): Promise<UIMessage[]> {
   const {
     // 默认会把文件转换为 DataUrl，一般是服务端要给 LLM 的时候用 DataUrl，但是客户端读取消息的时候，用 FileUrl 就行
     convertObjectUrl = "DataUrl",
@@ -392,12 +394,12 @@ export async function convertDBMessagesToAIMessages(
         attachments: _attachments,
         createdAt,
       }) => {
-        const parts = _parts as Message["parts"];
+        const parts = _parts as UIMessage["parts"];
         const extra = _extra
-          ? (_extra as Omit<Message, "id" | "role" | "content" | "parts" | "createdAt">)
+          ? (_extra as Omit<UIMessage, "id" | "role" | "content" | "parts" | "createdAt">)
           : undefined;
         const attachments = _attachments ? (_attachments as ChatMessageAttachment[]) : undefined;
-        const message: Message = { ...extra, id, role, content, parts, createdAt };
+        const message: UIMessage = { ...extra, id, role, content, parts, createdAt };
         if (attachments) {
           message["experimental_attachments"] = await Promise.all(
             attachments.map(async ({ name, objectUrl, mimeType, size }: ChatMessageAttachment) => {
@@ -447,8 +449,10 @@ export async function prepareMessagesForStreaming(
   const toolUseCount = dbMessages.reduce(
     (_count, message) => {
       const count = { ..._count };
-      ((message.parts ?? []) as NonNullable<Message["parts"]>).forEach((part) => {
+      ((message.parts ?? []) as NonNullable<UIMessage["parts"]>).forEach((part) => {
+        /* FIXME(@ai-sdk-upgrade-v5): The `part.toolInvocation.state` property has been removed. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#tool-part-type-changes-uimessage */
         if (part.type === "tool-invocation" && part.toolInvocation.state === "result") {
+          /* FIXME(@ai-sdk-upgrade-v5): The `part.toolInvocation.toolName` property has been removed. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#tool-part-type-changes-uimessage */
           const toolName = part.toolInvocation.toolName as ToolName;
           count[toolName] = (count[toolName] || 0) + 1;
         }
@@ -458,8 +462,8 @@ export async function prepareMessagesForStreaming(
     {} as Partial<Record<ToolName, number>>,
   );
   const aiMessages = fixChatMessages(await convertDBMessagesToAIMessages(dbMessages)); // 传给 LLM 的时候需要修复
-  let streamingMessage: Omit<Message, "role"> & {
-    parts: NonNullable<Message["parts"]>;
+  let streamingMessage: Omit<UIMessage, "role"> & {
+    parts: NonNullable<UIMessage["parts"]>;
     role: "assistant";
   } = {
     id: generateId(),
@@ -479,7 +483,7 @@ export async function prepareMessagesForStreaming(
   // 一个 role: assistant 的 tool calling 内容 + 一个 role: tool 的 toll result 内容
   // 这样 LLM 才能理解，否则直接把 aiMessages 给 LLM 它会认为 tool 没执行 ...
   // 不知道之前没有一条条保存信息的时候，vercel ai sdk 是哪个阶段处理的，现在一定要人工转一次
-  const coreMessages = convertToCoreMessages(aiMessages);
+  const coreMessages = convertToModelMessages(aiMessages);
   return {
     coreMessages,
     streamingMessage,

@@ -16,11 +16,11 @@ import { throwServerActionError } from "@/lib/serverAction";
 import { detectInputLanguage } from "@/lib/textUtils";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
-import { CoreMessage, generateId, smoothStream, streamText } from "ai";
+import { generateId, ModelMessage, smoothStream, stepCountIs, streamText } from "ai";
 import { Locale } from "next-intl";
 import { after, NextResponse } from "next/server";
 
-function setBedrockCache(model: `claude-${string}`, coreMessages: CoreMessage[]) {
+function setBedrockCache(model: `claude-${string}`, coreMessages: ModelMessage[]) {
   if (!model) return coreMessages; // 这句话没意义，只是为了用一下 model
   const checkpoints = {
     ">=1": false,
@@ -122,26 +122,34 @@ export async function POST(req: Request) {
   });
   const streamTextResult = streamText({
     model: llm("claude-3-7-sonnet"),
+
     providerOptions: {
       ...providerOptions,
     },
+
     system: systemPrompt,
     messages: coreMessages,
+
     toolChoice:
       coreMessages.length < 19
         ? "auto"
         : { type: "tool", toolName: InterviewToolName.endInterview },
+
     tools: {
       endInterview,
       requestInteractionForm,
     },
-    maxSteps: 1, // Keep it simple for interviews
+
+    stopWhen: stepCountIs(1),
     experimental_generateMessageId: () => streamingMessage.id,
+
     experimental_transform: smoothStream({
       delayInMs: 30,
       chunking: /[\u4E00-\u9FFF]|\S+\s+/,
     }),
+
     abortSignal: mergedAbortSignal,
+
     onStepFinish: async (step) => {
       appendStepToStreamingMessage(streamingMessage, step);
       if (streamingMessage.parts?.length && streamingMessage.content.trim()) {
@@ -149,7 +157,7 @@ export async function POST(req: Request) {
       }
       // 👆 persist message to db
       const { usage, stepType, toolCalls } = step;
-      const cache = step.providerMetadata?.bedrock?.usage as
+      const cache = step.providerOptions?.bedrock?.usage as
         | { cacheReadInputTokens: number; cacheWriteInputTokens: number }
         | undefined;
       chatLogger.info({
@@ -174,9 +182,11 @@ export async function POST(req: Request) {
         await statReport("tokens", tokens, extra);
       }
     },
+
     onFinish: async () => {
       chatLogger.info("human interview session streamText onFinish");
     },
+
     onError: ({ error }) => {
       chatLogger.error(`human interview session streamText onError: ${(error as Error).message}`);
     },
@@ -195,5 +205,5 @@ export async function POST(req: Request) {
     }),
   );
 
-  return streamTextResult.toDataStreamResponse();
+  return streamTextResult.toUIMessageStreamResponse();
 }

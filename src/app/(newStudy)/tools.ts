@@ -2,12 +2,12 @@ import "server-only";
 
 import { PlainTextToolResult } from "@/ai/tools/types";
 import { tool } from "ai";
-import { z } from "zod";
+import { z } from "zod/v3";
 
 export const newStudyTools = {
   endInterview: tool({
     description: "End the planning session and generate the user's study brief",
-    parameters: z.object({
+    inputSchema: z.object({
       studyBrief: z
         .string()
         .describe(

@@ -11,9 +11,9 @@ import { getDeployRegion } from "@/lib/request/deployRegion";
 import { detectInputLanguage } from "@/lib/textUtils";
 import { ChatMessageAttachment, PersonaImport, PersonaImportExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
-import { CoreMessage, generateObject, streamText } from "ai";
+import { ModelMessage, generateObject, stepCountIs, streamText } from "ai";
 import { getLocale } from "next-intl/server";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { parseAttachmentPrompt, personaAnalysisPrompt, personaGenerationPrompt } from "./prompt";
 import { analysisSchema } from "./types";
 
@@ -193,16 +193,20 @@ async function attachmentToContext(
     const response = streamText({
       model: llm("gemini-2.5-flash"),
       providerOptions: providerOptions,
+
       system: parseAttachmentPrompt({
         locale,
       }),
+
       messages: [
         {
           role: "user",
-          content: [{ type: "file", filename: fileName, data: dataUrl, mimeType }],
+          parts: [{ type: "file", filename: fileName, data: dataUrl, mediaType }],
         },
       ],
-      maxSteps: 1,
+
+      stopWhen: stepCountIs(1),
+
       onChunk: async ({ chunk }) => {
         if (chunk.type === "text-delta") {
           parsedContext += chunk.textDelta.toString();
@@ -210,6 +214,7 @@ async function attachmentToContext(
           // logger.info(`Parsed context updated: ${parsedContext.length} characters`);
         }
       },
+
       onStepFinish: async (step) => {
         const { usage, stepType } = step;
         logger.info({
@@ -227,11 +232,13 @@ async function attachmentToContext(
           await statReport("tokens", tokens, extra);
         }
       },
+
       onFinish: async (result) => {
         logger.info("attachmentToContext completed");
         resolve(null);
         parsedContext = result.text;
       },
+
       onError: ({ error }) => {
         logger.error(`attachmentToContext error: ${(error as Error).message}`);
         reject(error);
@@ -265,7 +272,7 @@ async function buildPersonaAgentPrompt(
     logger: logger,
   });
 
-  const personaMessages: CoreMessage[] = [
+  const personaMessages: ModelMessage[] = [
     {
       role: "user",
       content: [
@@ -294,20 +301,26 @@ async function buildPersonaAgentPrompt(
     const response = streamText({
       model: llm("claude-3-7-sonnet"),
       providerOptions: providerOptions,
+
       system: personaGenerationPrompt({
         locale,
       }),
+
       messages: personaMessages,
+
       tools: {
         [ToolName.savePersona]: savePersonaTool({
           personaImportId: personaImport.id,
         }),
       },
+
       toolChoice: {
         type: "tool",
         toolName: ToolName.savePersona,
       },
-      maxSteps: 1,
+
+      stopWhen: stepCountIs(1),
+
       onStepFinish: async (step) => {
         const { usage, stepType, toolCalls } = step;
         logger.info({
@@ -326,10 +339,12 @@ async function buildPersonaAgentPrompt(
           await statReport("tokens", tokens, extra);
         }
       },
+
       onFinish: async () => {
         logger.info("buildPersonaAgentPrompt completed");
         resolve(null);
       },
+
       onError: ({ error }) => {
         logger.error(`buildPersonaAgentPrompt error: ${(error as Error).message}`);
         reject(error);
@@ -361,7 +376,7 @@ async function analyzeInterviewCompleteness(
     logger: logger,
   });
 
-  const messages: CoreMessage[] = [
+  const messages: ModelMessage[] = [
     {
       role: "user",
       content: [

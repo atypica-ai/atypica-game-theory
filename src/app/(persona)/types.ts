@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v3";
 
 export enum PersonaTier {
   Tier0 = 0, // 是普通的 ai persona
@@ -35,7 +35,7 @@ export const analysisSchema = z.object({
     questions: z
       .array(z.string())
       .describe("Array of supplementary questions to improve persona completeness"),
-    reasoning: z
+    reasoningText: z
       .string()
       .describe(
         "Explanation of why these particular questions were chosen and how they address the gaps in the current interview",

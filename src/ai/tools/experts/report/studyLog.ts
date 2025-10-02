@@ -38,7 +38,13 @@ export async function generateAndSaveStudyLog({
       messages: [
         {
           role: "user",
-          content: prologue,
+
+          parts: [
+            {
+              type: "text",
+              text: prologue,
+            },
+          ],
         },
       ],
       // maxTokens: 500,

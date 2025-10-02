@@ -25,9 +25,9 @@ export const ReasoningThinkingResultMessage: FC<{
       <div className="flex flex-rows items-start justify-start gap-2">
         <HippyGhostAvatar seed={toolInvocation.toolCallId} className="size-6" />
         <div className="flex-1 overflow-hidden space-y-2">
-          {toolInvocation.result.reasoning && (
+          {toolInvocation.result.reasoningText && (
             <div className="text-xs text-zinc-600 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-700 p-2 rounded">
-              {toolInvocation.result.reasoning}
+              {toolInvocation.result.reasoningText}
             </div>
           )}
           <div className="text-xs">

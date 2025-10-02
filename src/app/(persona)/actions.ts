@@ -16,7 +16,7 @@ import {
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
-import { generateId, Message } from "ai";
+import { generateId, UIMessage } from "ai";
 import { getServerSession } from "next-auth";
 import { notFound } from "next/navigation";
 import { processPersonaImport } from "./processing";
@@ -587,7 +587,7 @@ export async function fetchFollowUpInterviewHistory(personaImportId: number): Pr
 // 获取后续访谈聊天消息
 export async function fetchFollowUpInterviewChatMessages(
   personaImportId: number,
-): Promise<ServerActionResult<{ messages: Message[] }>> {
+): Promise<ServerActionResult<{ messages: UIMessage[] }>> {
   return withAuth(async (user) => {
     // 查找PersonaImport及其关联的extraUserChat
     const personaImport = await prisma.personaImport.findUnique({

@@ -3,8 +3,8 @@ import { ClientMessagePayload } from "@/ai/messageUtilsClient";
 import { FocusedInterviewChat } from "@/components/chat/FocusedInterviewChat";
 import { FitToViewport } from "@/components/layout/FitToViewport";
 import { UserChat } from "@/prisma/client";
-import { useChat } from "@ai-sdk/react";
-import { Message } from "ai";
+import { DefaultChatTransport, useChat } from "@ai-sdk/react";
+import { UIMessage } from "ai";
 import { motion } from "framer-motion";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useMemo, useRef } from "react";
@@ -15,7 +15,7 @@ export function NewStudyChatClient({
   initialMessages,
 }: {
   userChat: UserChat;
-  initialMessages: Message[];
+  initialMessages: UIMessage[];
   user: { id: number; email: string };
 }) {
   const locale = useLocale();
@@ -27,10 +27,12 @@ export function NewStudyChatClient({
 
   const useChatHelpers = useChat({
     id: userChat.id.toString(),
-    api: `/api/chat/newstudy`,
+
     // experimental_throttle: 30,
     initialMessages,
+
     body: initialRequestBody,
+
     experimental_prepareRequestBody({ messages, requestBody: _requestBody }) {
       const requestBody: typeof initialRequestBody = { ...initialRequestBody, ..._requestBody };
       const body: ClientMessagePayload = {
@@ -39,13 +41,19 @@ export function NewStudyChatClient({
       };
       return body;
     },
+
     onFinish() {
       // Logic to run when the AI finishes its response.
     },
+
     onError(err) {
       console.error("Chat error:", err);
       // TODO: Implement user-facing error feedback (e.g., a toast notification).
     },
+
+    transport: new DefaultChatTransport({
+      api: `/api/chat/newstudy`,
+    }),
   });
 
   const useChatRef = useRef({
@@ -59,6 +67,8 @@ export function NewStudyChatClient({
   // Determine planning state based on messages content
   const planningState = useMemo(() => {
     // Check if any message has endInterview tool result
+    /* FIXME(@ai-sdk-upgrade-v5): The `part.toolInvocation.toolName` property has been removed. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#tool-part-type-changes-uimessage */
+    /* FIXME(@ai-sdk-upgrade-v5): The `part.toolInvocation.state` property has been removed. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#tool-part-type-changes-uimessage */
     const hasEndInterviewResult = messages.some((message) =>
       message.parts?.some(
         (part) =>
@@ -79,6 +89,8 @@ export function NewStudyChatClient({
     for (const message of messages) {
       if (message.parts) {
         for (const part of message.parts) {
+          /* FIXME(@ai-sdk-upgrade-v5): The `part.toolInvocation.toolName` property has been removed. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#tool-part-type-changes-uimessage */
+          /* FIXME(@ai-sdk-upgrade-v5): The `part.toolInvocation.state` property has been removed. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#tool-part-type-changes-uimessage */
           if (
             part.type === "tool-invocation" &&
             part.toolInvocation.toolName === "endInterview" &&

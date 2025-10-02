@@ -20,7 +20,7 @@ import {
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
-import { Message } from "ai";
+import { UIMessage } from "ai";
 import { BotIcon, InfoIcon, RefreshCwIcon, ShieldIcon, UsersIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useRef, useState, useTransition } from "react";
@@ -34,7 +34,7 @@ export function InterviewSessionViewer({
   className,
 }: {
   interviewSession: InterviewSessionDetails;
-  initialMessages?: Message[];
+  initialMessages?: UIMessage[];
   className?: string;
 }) {
   const t = useTranslations("InterviewProject.sessionViewer");

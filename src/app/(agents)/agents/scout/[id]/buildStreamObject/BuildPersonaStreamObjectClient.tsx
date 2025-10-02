@@ -6,7 +6,7 @@ import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
 import { cn } from "@/lib/utils";
 import { experimental_useObject as useObject } from "@ai-sdk/react";
 import { useCallback } from "react";
-import { z } from "zod";
+import { z } from "zod/v3";
 
 export function BuildPersonaStreamObjectClient({
   chatId,

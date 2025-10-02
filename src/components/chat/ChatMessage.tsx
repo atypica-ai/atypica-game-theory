@@ -1,7 +1,7 @@
 "use client";
 import { Markdown } from "@/components/markdown";
 import { cn } from "@/lib/utils";
-import { Message, Message as MessageType } from "ai";
+import { UIMessage } from "ai";
 import { motion } from "framer-motion";
 import { BotIcon, CpuIcon, UserIcon } from "lucide-react";
 import React, { PropsWithChildren, ReactNode } from "react";
@@ -22,11 +22,12 @@ export const ChatMessage = (message: {
   nickname?: string;
   avatar?: ReactNode;
   content: string | ReactNode;
-  parts?: MessageType["parts"];
-  extra?: Omit<Message, "id" | "role" | "content" | "parts">;
+  parts?: undefined["parts"];
+  extra?: Omit<UIMessage, "id" | "role" | "content" | "parts">;
 }) => {
   const { nickname, role, avatar, content, parts, extra } = message;
 
+  /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
   return (
     <motion.div
       className={cn(
@@ -55,7 +56,6 @@ export const ChatMessage = (message: {
           ))}
         </div>
       )}
-
       <div className={cn("flex-1 overflow-hidden flex flex-col gap-3 px-1")}>
         {parts ? (
           parts.map((part, i) => {
@@ -64,7 +64,7 @@ export const ChatMessage = (message: {
               case "text":
                 return <PlainText key={i}>{part.text}</PlainText>;
               case "reasoning":
-                return <PlainText key={i}>{part.reasoning}</PlainText>;
+                return <PlainText key={i}>{part.reasoningText}</PlainText>;
               case "source":
                 return <PlainText key={i}>{JSON.stringify(part.source)}</PlainText>;
               case "tool-invocation":

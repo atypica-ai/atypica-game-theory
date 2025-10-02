@@ -1,11 +1,11 @@
 "use client";
 import { UserChat } from "@/prisma/client";
-import { Message, ToolInvocation } from "ai";
+import { ToolInvocation, UIMessage } from "ai";
 import { createContext, Dispatch, ReactNode, SetStateAction, useContext, useState } from "react";
 
 type TStudyUserChat = Omit<UserChat, "kind"> & {
   kind: "study";
-  messages: Message[];
+  messages: UIMessage[];
 };
 
 interface StudyContextType {

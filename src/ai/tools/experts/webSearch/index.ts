@@ -3,7 +3,7 @@ import "server-only";
 import { AgentToolConfigArgs, PlainTextToolResult, ToolName } from "@/ai/tools/types";
 import { tavily, TavilyClient } from "@tavily/core";
 import { tool } from "ai";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { WebSearchToolResult } from "./types";
 
 const globalForTavily = global as unknown as {
@@ -57,7 +57,7 @@ export const webSearchTool = ({
   tool({
     description:
       "Search the internet for current information, facts, or data that might be relevant to the study topic",
-    parameters: z.object({
+    inputSchema: z.object({
       query: z.string().describe("The search query to find relevant information on the internet"),
     }),
     experimental_toToolResultContent: (result: PlainTextToolResult) => {

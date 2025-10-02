@@ -120,7 +120,13 @@ export async function scorePersona(persona: Persona) {
       messages: [
         {
           role: "user",
-          content: `Prompt: ${persona.prompt}\n\nTags: ${(persona.tags as string[]).join(", ")}`,
+
+          parts: [
+            {
+              type: "text",
+              text: `Prompt: ${persona.prompt}\n\nTags: ${(persona.tags as string[]).join(", ")}`,
+            },
+          ],
         },
       ],
     });

@@ -15,8 +15,8 @@ import {
 } from "@/components/ui/dialog";
 import { formatDate } from "@/lib/utils";
 import { Persona } from "@/prisma/client";
-import { useChat } from "@ai-sdk/react";
-import { Message } from "ai";
+import { DefaultChatTransport, useChat } from "@ai-sdk/react";
+import { UIMessage } from "ai";
 import { BotIcon, CalendarIcon, InfoIcon, RefreshCwIcon, TagIcon, TrashIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
@@ -31,7 +31,7 @@ export function PersonaChatClient({
 }: {
   userChatToken: string;
   persona: Persona;
-  initialMessages?: Message[];
+  initialMessages?: UIMessage[];
 }) {
   const locale = useLocale();
   const t = useTranslations("PersonaImport.personaChat");
@@ -45,11 +45,12 @@ export function PersonaChatClient({
 
   // Chat hooks
   const useChatHelpers = useChat({
-    api: "/api/chat/persona",
     initialMessages,
+
     body: {
       ...initialRequestBody,
     },
+
     experimental_prepareRequestBody({ messages, requestBody: _requestBody }) {
       const requestBody: typeof initialRequestBody = { ...initialRequestBody, ..._requestBody };
       const body: ClientMessagePayload = {
@@ -58,6 +59,10 @@ export function PersonaChatClient({
       };
       return body;
     },
+
+    transport: new DefaultChatTransport({
+      api: "/api/chat/persona",
+    }),
   });
 
   const useChatRef = useRef({

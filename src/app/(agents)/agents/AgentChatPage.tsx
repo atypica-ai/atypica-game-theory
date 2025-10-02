@@ -1,7 +1,7 @@
 "use client";
 import { UserChatSession } from "@/components/chat/UserChatSession";
 import { FitToViewport } from "@/components/layout/FitToViewport";
-import { Message, useChat } from "@ai-sdk/react";
+import { DefaultChatTransport, Message, useChat } from "@ai-sdk/react";
 import { useEffect, useRef } from "react";
 
 export function AgentChatPage({
@@ -25,14 +25,18 @@ export function AgentChatPage({
 }) {
   const useChatHelpers = useChat({
     id: chatId,
-    api: useChatAPI,
     experimental_throttle: 300,
     initialMessages,
+
     experimental_prepareRequestBody: persistMessages
       ? ({ messages, id }) => {
           return { message: messages[messages.length - 1], id };
         }
       : undefined,
+
+    transport: new DefaultChatTransport({
+      api: useChatAPI,
+    }),
   });
   const useChatRef = useRef({
     reload: useChatHelpers.reload,

@@ -4,7 +4,7 @@ import { useDevice } from "@/hooks/use-device";
 import { Currency } from "@/prisma/client";
 import { useSession } from "next-auth/react";
 import { useCallback, useState } from "react";
-import { z } from "zod";
+import { z } from "zod/v3";
 
 type StripeSessionCreatePayload = z.input<typeof stripeSessionCreatePayloadSchema>;
 

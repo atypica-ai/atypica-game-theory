@@ -247,6 +247,7 @@ async function fixPaymentParts() {
         if (part.type === "text") {
           return !part.text.includes("免费研究额度已经用完，不如请一杯咖啡再做一份研究？");
         } else if (part.type === "tool-invocation") {
+          /* FIXME(@ai-sdk-upgrade-v5): The `part.toolInvocation.toolName` property has been removed. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#tool-part-type-changes-uimessage */
           return !part.toolInvocation.toolName === "requestPayment";
         }
       });

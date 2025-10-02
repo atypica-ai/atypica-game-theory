@@ -15,8 +15,8 @@ import { fixMalformedUnicodeString, generateToken } from "@/lib/utils";
 import { Analyst, AnalystReport, AnalystReportExtra, ChatMessageAttachment } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { AnalystKind } from "@/prisma/types";
-import { FinishReason, Message, streamText, tool } from "ai";
-import { z } from "zod";
+import { FinishReason, stepCountIs, streamText, tool, UIMessage } from "ai";
+import { z } from "zod/v3";
 import { generateAndSaveStudyLog } from "./studyLog";
 import { type GenerateReportResult } from "./types";
 
@@ -32,7 +32,7 @@ export const generateReportTool = ({
   tool({
     description:
       "Generate a comprehensive study report synthesizing all interview data, user insights, and findings from the completed study.",
-    parameters: z.object({
+    inputSchema: z.object({
       instruction: z
         .string()
         .describe(
@@ -254,6 +254,7 @@ export async function generateReport({
       finishReason: FinishReason | "Too many tokens";
       content: string;
     }>(async (resolve, reject) => {
+      /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
       const experimental_attachments = analyst.attachments
         ? await Promise.all(
             (analyst.attachments as ChatMessageAttachment[]).map(
@@ -264,7 +265,8 @@ export async function generateReport({
             ),
           )
         : undefined;
-      const messages: Omit<Message, "id">[] = [
+      /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
+      const messages: Omit<UIMessage, "id">[] = [
         {
           role: "user",
           content: reportHTMLPrologue({
@@ -287,21 +289,25 @@ export async function generateReport({
       const response = streamText({
         model: llm(modelName),
         providerOptions: providerOptions,
+
         system: systemPrompt
           ? systemPrompt
           : reportHTMLSystem({
               locale,
               analystKind: (analyst.kind as AnalystKind) || AnalystKind.misc,
             }),
+
         messages: messages,
-        maxSteps: 1,
-        maxTokens: 30000,
+        stopWhen: stepCountIs(1),
+        maxOutputTokens: 30000,
+
         onChunk: async ({ chunk }) => {
           if (chunk.type === "text-delta") {
             onePageHtml += chunk.textDelta.toString();
             await throttleSaveHTML(report.id, onePageHtml);
           }
         },
+
         onFinish: async ({ finishReason, text, usage }) => {
           resolve({
             finishReason: finishReason,
@@ -310,7 +316,7 @@ export async function generateReport({
           logger.info({ msg: "generateReport streamText onFinish", finishReason, usage });
           // svg 生成耗费的 output tokens 比较多，不能和 input tokens 一样计算
           const totalTokens =
-            (usage.completionTokens ?? 0) * 3 + (usage.promptTokens ?? 0) || usage.totalTokens;
+            (usage.outputTokens ?? 0) * 3 + (usage.inputTokens ?? 0) || usage.totalTokens;
           if (totalTokens > 0 && statReport) {
             await statReport("tokens", totalTokens, {
               reportedBy: "generateReport tool",
@@ -319,6 +325,7 @@ export async function generateReport({
             });
           }
         },
+
         onError: ({ error }) => {
           const msg = (error as Error).message;
           if (msg.includes("Too many tokens")) {
@@ -337,6 +344,7 @@ export async function generateReport({
             reject(error);
           }
         },
+
         abortSignal,
       });
       abortSignal.addEventListener("abort", () => {
@@ -388,9 +396,21 @@ export async function generateCover({
     model: llm("claude-3-7-sonnet"),
     providerOptions: providerOptions,
     system: reportCoverSystem({ locale }),
-    messages: [{ role: "user", content: reportCoverPrologue({ locale, analyst, instruction }) }],
-    maxSteps: 1,
-    maxTokens: 10000,
+    messages: [
+      {
+        role: "user",
+
+        parts: [
+          {
+            type: "text",
+            text: reportCoverPrologue({ locale, analyst, instruction }),
+          },
+        ],
+      },
+    ],
+    stopWhen: stepCountIs(1),
+    maxOutputTokens: 10000,
+
     onFinish: async ({ text, usage }) => {
       logger.info("Report cover SVG generated");
       await prisma.analystReport.update({
@@ -399,7 +419,7 @@ export async function generateCover({
       });
       // svg 生成耗费的 output tokens 比较多，不能和 input tokens 一样计算
       const totalTokens =
-        (usage.completionTokens ?? 0) * 3 + (usage.promptTokens ?? 0) || usage.totalTokens;
+        (usage.outputTokens ?? 0) * 3 + (usage.inputTokens ?? 0) || usage.totalTokens;
       if (totalTokens > 0 && statReport) {
         await statReport("tokens", totalTokens, {
           reportedBy: "generateReport tool",
@@ -408,9 +428,11 @@ export async function generateCover({
         });
       }
     },
+
     onError: ({ error }) => {
       logger.warn(`Cover SVG error: ${(error as Error).message}`);
     },
+
     abortSignal,
   });
   await response.consumeStream();

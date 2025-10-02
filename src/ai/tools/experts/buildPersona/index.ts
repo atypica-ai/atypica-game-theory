@@ -6,9 +6,9 @@ import { llm, LLMModelName, providerOptions } from "@/ai/provider";
 import { handleToolCallError, savePersonaTool, toolCallError } from "@/ai/tools/tools";
 import { AgentToolConfigArgs, PlainTextToolResult, ToolName } from "@/ai/tools/types";
 import { prisma } from "@/prisma/prisma";
-import { CoreMessage, DataStreamWriter, streamText, tool } from "ai";
+import { ModelMessage, stepCountIs, streamText, tool, UIMessageStreamWriter } from "ai";
 import { Locale } from "next-intl";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { BuildPersonaToolResult, TPersonaForStudy } from "./types";
 
 type TReduceTokens = {
@@ -28,7 +28,7 @@ export const buildPersonaTool = ({
   tool({
     description:
       "Analyze social media data from user profile search tasks, create detailed user personas, and build AI agents that simulate realistic user behavior and decision-making patterns",
-    parameters: z.object({
+    inputSchema: z.object({
       scoutUserChatToken: z
         .string()
         .describe(
@@ -100,7 +100,7 @@ export const buildPersonaTool = ({
     },
   });
 
-function appendBuildPersonaPrologue(_coreMessages: CoreMessage[], locale: Locale) {
+function appendBuildPersonaPrologue(_coreMessages: ModelMessage[], locale: Locale) {
   let i = _coreMessages.length - 1;
   while (i >= 0 && _coreMessages[i].role === "user") {
     i--;
@@ -127,7 +127,7 @@ export async function runBuildPersona({
   noPersonaFallback,
 }: {
   scoutUserChatId: number;
-  streamWriter?: DataStreamWriter;
+  streamWriter?: UIMessageStreamWriter;
   noPersonaFallback?: boolean;
 } & AgentToolConfigArgs) {
   const { coreMessages: _coreMessages } = await prepareMessagesForStreaming(scoutUserChatId);
@@ -175,23 +175,30 @@ export async function runBuildPersona({
     const response = streamText({
       // claude-3-7-sonnet 目前会遇到 input tokens context 不够大的问题，但 gpt 4.1 mini 和 gemini 2.5 flash 没问题
       model: reduceTokens ? llm(reduceTokens.model, llmOptions) : llm("claude-3-7-sonnet"),
+
       providerOptions: providerOptions,
+
       system: buildPersonaSystem({
         locale,
         parallel: false, // gemini 可以开启, claude 不支持
       }),
+
       temperature,
       messages: coreMessages,
       tools,
       toolChoice,
-      maxSteps,
+      stopWhen: stepCountIs(maxSteps),
+
       // toolCallStreaming: true,  // gemini 这个会有问题，会出现所有字段值都是 placeholder
-      experimental_repairToolCall: handleToolCallError, // claude-3-7-sonnet 需要这个，savePersona 有时候会用 json 字符串作为参数
+      // claude-3-7-sonnet 需要这个，savePersona 有时候会用 json 字符串作为参数
+      experimental_repairToolCall: handleToolCallError,
+
       onChunk: async ({ chunk }) => {
         logger.debug({ chunk });
       },
+
       onStepFinish: async (step) => {
-        const cache = step.providerMetadata?.bedrock?.usage as
+        const cache = step.providerOptions?.bedrock?.usage as
           | { cacheReadInputTokens: number; cacheWriteInputTokens: number }
           | undefined;
         const toolCalls = step.toolCalls.map((call) => call.toolName);
@@ -242,11 +249,13 @@ export async function runBuildPersona({
           resolve(null);
         }
       },
-      onFinish: async ({ usage, providerMetadata }) => {
-        const cache = providerMetadata?.bedrock?.usage;
+
+      onFinish: async ({ usage, providerOptions }) => {
+        const cache = providerOptions?.bedrock?.usage;
         logger.info({ msg: "runBuildPersona streamText onFinish", usage, cache });
         resolve(null);
       },
+
       onError: ({ error }) => {
         if ((error as Error).name === "AbortError") {
           logger.warn(`runBuildPersona streamText aborted: ${(error as Error).message}`);
@@ -255,10 +264,11 @@ export async function runBuildPersona({
           reject(error);
         }
       },
+
       abortSignal: mergedAbortSignal,
     });
     if (streamWriter) {
-      response.mergeIntoDataStream(streamWriter);
+      response.mergeIntoUIMessageStream(streamWriter);
     }
     // 这里没有监听 stopController.signal，只监听了 abortSignal，只有 abortSignal abort 了才是 reject
     abortSignal.addEventListener("abort", () => {

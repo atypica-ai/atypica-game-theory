@@ -1,7 +1,7 @@
 import { PlainTextToolResult } from "@/ai/tools/types";
 
 export interface ReasoningThinkingResult extends PlainTextToolResult {
-  reasoning: string;
+  reasoningText: string;
   text: string;
   plainText: string;
 }

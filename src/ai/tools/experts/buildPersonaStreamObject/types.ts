@@ -1,6 +1,6 @@
 import { PlainTextToolResult } from "@/ai/tools/types";
 import { fixMalformedUnicodeString } from "@/lib/utils";
-import { z } from "zod";
+import { z } from "zod/v3";
 
 export interface BuildPersonaToolResult extends PlainTextToolResult {
   personas: {

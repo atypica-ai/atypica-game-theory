@@ -69,11 +69,9 @@ export function SupplementaryQuestions({
         </div>
         {t("title")}
       </h2>
-
       <div className="p-3 bg-amber-50 dark:bg-amber-950/30 rounded-lg text-sm text-amber-800 dark:text-amber-200">
-        {supplementaryQuestions.reasoning}
+        {supplementaryQuestions.reasoningText}
       </div>
-
       <div className="space-y-3">
         <h4 className="font-medium text-sm">{t("suggestedQuestions")}</h4>
         <div className="grid gap-3">
@@ -100,7 +98,6 @@ export function SupplementaryQuestions({
           ))}
         </div>
       </div>
-
       <div className="pt-4 border-t space-y-2">
         <AlertDialog
           open={open}
