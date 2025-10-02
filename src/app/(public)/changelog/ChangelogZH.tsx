@@ -52,7 +52,8 @@ export const ChangelogZH: React.FC = () => {
                     🗺️ AI 研究启动前的引导规划
                   </strong>
                   <p className="text-gray-700 dark:text-gray-300 mt-1">
-                    过去 AI 研究会直接进入访谈和搜索。现在每个研究都会先展示执行计划，说明会访谈谁、查哪些资料，以及每一步的目的。
+                    过去 AI
+                    研究会直接进入访谈和搜索。现在每个研究都会先展示执行计划，说明会访谈谁、查哪些资料，以及每一步的目的。
                   </p>
                 </li>
                 <li>
@@ -60,7 +61,8 @@ export const ChangelogZH: React.FC = () => {
                     🧠 AI 研究策略模板
                   </strong>
                   <p className="text-gray-700 dark:text-gray-300 mt-1">
-                    规划阶段会自动匹配最适合的商业分析框架（如 JTBD、STP、GE 矩阵等），帮助团队提前理解后续访谈与桌面研究的策略视角。
+                    规划阶段会自动匹配最适合的商业分析框架（如 JTBD、STP、GE
+                    矩阵等），帮助团队提前理解后续访谈与桌面研究的策略视角。
                   </p>
                 </li>
                 <li>
@@ -68,7 +70,8 @@ export const ChangelogZH: React.FC = () => {
                     📝 报告前的研究过程汇总
                   </strong>
                   <p className="text-gray-700 dark:text-gray-300 mt-1">
-                    在生成最终报告前，AI 会整理一份研究日志，记录收集到的信息与关键判断，让团队在看到结论的同时理解过程。
+                    在生成最终报告前，AI
+                    会整理一份研究日志，记录收集到的信息与关键判断，让团队在看到结论的同时理解过程。
                   </p>
                 </li>
               </ul>
