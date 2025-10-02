@@ -319,7 +319,6 @@ export async function studyAgentRequest({
         | undefined;
       studyLog.info({
         msg: "studyAgentRequest streamText onStepFinish",
-        stepType: step.stepType,
         toolCalls,
         usage,
         cache,

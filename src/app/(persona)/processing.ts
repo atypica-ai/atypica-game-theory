@@ -216,10 +216,9 @@ async function attachmentToContext(
       },
 
       onStepFinish: async (step) => {
-        const { usage, stepType } = step;
+        const { usage } = step;
         logger.info({
           msg: "attachmentToContext streamText onStepFinish",
-          stepType,
           usage,
         });
         if (usage.totalTokens && usage.totalTokens > 0) {
@@ -322,10 +321,9 @@ async function buildPersonaAgentPrompt(
       stopWhen: stepCountIs(1),
 
       onStepFinish: async (step) => {
-        const { usage, stepType, toolCalls } = step;
+        const { usage, toolCalls } = step;
         logger.info({
           msg: "buildPersonaAgentPrompt streamText onStepFinish",
-          stepType,
           usage,
           toolCalls: toolCalls.map((call) => call.toolName),
         });

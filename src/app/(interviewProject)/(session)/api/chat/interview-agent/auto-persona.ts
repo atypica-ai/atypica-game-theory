@@ -296,10 +296,9 @@ async function generatePersonaResponse({
       messages,
       stopWhen: stepCountIs(1),
 
-      onStepFinish: async ({ usage, stepType, toolCalls }) => {
+      onStepFinish: async ({ usage, toolCalls }) => {
         logger.info({
           msg: "generatePersonaResponse streamText onStepFinish",
-          stepType,
           toolCalls: toolCalls.map((call) => call.toolName),
           usage: usage,
         });
@@ -372,10 +371,9 @@ async function generateInterviewerResponse({
 
       stopWhen: stepCountIs(1),
 
-      onStepFinish: async ({ usage, stepType, toolCalls }) => {
+      onStepFinish: async ({ usage, toolCalls }) => {
         logger.info({
           msg: "generateInterviewerResponse streamText onStepFinish",
-          stepType,
           toolCalls: toolCalls.map((call) => call.toolName),
           usage: usage,
         });

@@ -129,10 +129,9 @@ export async function POST(req: Request) {
       if (streamingMessage.parts?.length && streamingMessage.content.trim()) {
         await persistentAIMessageToDB(userChat.id, streamingMessage);
       }
-      const { usage, stepType } = step;
+      const { usage } = step;
       chatLogger.info({
         msg: "persona user chat streamText onStepFinish",
-        stepType,
         usage,
       });
       if (usage.totalTokens && usage.totalTokens > 0) {

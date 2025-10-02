@@ -142,7 +142,6 @@ export async function POST(req: NextRequest) {
       }
       chatLogger.info({
         msg: "newstudy planning streamText onStepFinish",
-        stepType: step.stepType,
         toolCalls: step.toolCalls.map((call) => call.toolName),
         usage: step.usage,
       });

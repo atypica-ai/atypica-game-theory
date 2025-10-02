@@ -153,13 +153,12 @@ export async function POST(req: Request) {
         await persistentAIMessageToDB(userChatId, streamingMessage);
       }
       // 👆 persist message to db
-      const { usage, stepType, toolCalls } = step;
+      const { usage, toolCalls } = step;
       const cache = step.providerOptions?.bedrock?.usage as
         | { cacheReadInputTokens: number; cacheWriteInputTokens: number }
         | undefined;
       chatLogger.info({
         msg: "human interview session streamText onStepFinish",
-        stepType,
         usage,
         cache,
         toolCalls: toolCalls.map((call) => call.toolName),

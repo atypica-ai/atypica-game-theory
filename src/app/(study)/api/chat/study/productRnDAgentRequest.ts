@@ -149,7 +149,6 @@ export async function productRnDAgentRequest({
         | undefined;
       studyLog.info({
         msg: "productRnDAgentRequest streamText onStepFinish",
-        stepType: step.stepType,
         toolCalls,
         usage,
         cache,

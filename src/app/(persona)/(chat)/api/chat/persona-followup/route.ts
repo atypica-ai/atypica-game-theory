@@ -128,10 +128,9 @@ export async function POST(req: NextRequest) {
       if (streamingMessage.parts?.length && streamingMessage.content.trim()) {
         await persistentAIMessageToDB(userChat.id, streamingMessage);
       }
-      const { usage, stepType, toolCalls } = step;
+      const { usage, toolCalls } = step;
       chatLogger.info({
         msg: "follow-up interview streamText onStepFinish",
-        stepType,
         usage,
         toolCalls: toolCalls.map((call) => call.toolName),
       });

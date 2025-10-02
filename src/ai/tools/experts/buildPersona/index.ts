@@ -204,7 +204,6 @@ export async function runBuildPersona({
         const usage = step.usage;
         logger.info({
           msg: "runBuildPersona streamText onStepFinish",
-          stepType: step.stepType,
           toolCalls,
           usage,
           cache,

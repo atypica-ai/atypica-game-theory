@@ -309,7 +309,6 @@ async function runScoutSocialTrendsStream({
           const usage = step.usage;
           logger.info({
             msg: "runScoutSocialTrendsStream streamText onStepFinish",
-            stepType: step.stepType,
             toolCalls,
             usage,
           });
@@ -491,7 +490,6 @@ async function runScoutSocialTrendsSummarize({
         const usage = step.usage;
         logger.info({
           msg: "runScoutSocialTrendsSummarize streamText onStepFinish",
-          stepType: step.stepType,
           toolCalls,
           usage,
         });

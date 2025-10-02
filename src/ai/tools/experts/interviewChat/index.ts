@@ -355,13 +355,12 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: UIMessage[]) 
       toolChoice,
       stopWhen: stepCountIs(maxSteps),
 
-      onStepFinish: async ({ usage, stepType, toolCalls, ...step }) => {
+      onStepFinish: async ({ usage, toolCalls, ...step }) => {
         const cache = step.providerOptions?.bedrock?.usage as
           | { cacheReadInputTokens: number; cacheWriteInputTokens: number }
           | undefined;
         logger.info({
           msg: "chatWithInterviewer streamText onStepFinish",
-          stepType: stepType,
           toolCalls: toolCalls.map((call) => call.toolName),
           usage,
           cache,
@@ -470,7 +469,6 @@ async function chatWithPersona(chatProps: ChatProps, messages: UIMessage[]) {
       onStepFinish: async (step) => {
         logger.info({
           msg: "chatWithPersona streamText onStepFinish",
-          stepType: step.stepType,
           toolCalls: step.toolCalls.map((call) => call.toolName),
           usage: step.usage,
         });

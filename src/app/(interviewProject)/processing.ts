@@ -67,10 +67,9 @@ export async function processInterviewQuestionOptimization(projectId: number): P
         temperature: 0.3,
 
         onStepFinish: async (step) => {
-          const { usage, stepType, toolCalls } = step;
+          const { usage, toolCalls } = step;
           logger.info({
             msg: "processInterviewQuestionOptimization streamText onStepFinish",
-            stepType,
             usage,
             toolCalls: toolCalls.map((call) => call.toolName),
           });

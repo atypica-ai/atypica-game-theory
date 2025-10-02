@@ -343,7 +343,6 @@ export async function runScoutTaskChatStream({
           const usage = step.usage;
           logger.info({
             msg: "runScoutTaskChatStream streamText onStepFinish",
-            stepType: step.stepType,
             toolCalls,
             usage,
           });
