@@ -134,9 +134,7 @@ export async function detectInputLanguage({
   }
 
   // 处理系统消息，只允许单个空格转下划线，不允许连续空格或前后空格
-  const trimmedText = text.trim();
-  const normalizedText = trimmedText.replace(/(\w)\s(\w)/g, "$1_$2");
-  if (/^\[(READY|USER_HESITATED|CONTINUE|CONTINUE_ASSISTANT_STEPS)\]$/i.test(normalizedText)) {
+  if (isSystemMessage(text)) {
     return fallbackLocale || (await getLocale());
   }
 
@@ -154,4 +152,10 @@ export async function detectInputLanguage({
 
   const chineseRatio = getChineseCharacterRatio(text);
   return chineseRatio > adjustedThreshold ? "zh-CN" : "en-US";
+}
+
+export function isSystemMessage(text: string): boolean {
+  const trimmedText = text.trim();
+  const normalizedText = trimmedText.replace(/(\w)\s(\w)/g, "$1_$2");
+  return /^\[(READY|USER_HESITATED|CONTINUE|CONTINUE_ASSISTANT_STEPS)\]$/i.test(normalizedText);
 }
