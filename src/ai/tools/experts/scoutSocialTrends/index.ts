@@ -284,7 +284,6 @@ async function runScoutSocialTrendsStream({
         toolChoice: toolChoice,
         experimental_repairToolCall: handleToolCallError,
         stopWhen: stepCountIs(maxSteps),
-        experimental_generateMessageId: () => streamingMessage.id,
 
         experimental_transform: smoothStream({
           delayInMs: 30,
@@ -360,7 +359,11 @@ async function runScoutSocialTrendsStream({
         abortSignal,
       });
       if (streamWriter) {
-        response.mergeIntoUIMessageStream(streamWriter);
+        streamWriter.merge(
+          response.toUIMessageStream({
+            generateMessageId: () => streamingMessage.id,
+          }),
+        );
       }
       abortSignal.addEventListener("abort", () => {
         reject(new Error("runScoutSocialTrendsStream abortSignal received"));

@@ -290,11 +290,6 @@ export async function studyAgentRequest({
     stopWhen: stepCountIs(maxSteps),
     maxOutputTokens: maxTokens,
 
-    // 注意，这里要使用 streamingMessage 的 id，虽然目前不指定只有 study agent 会遇到问题
-    // 问题是这样，保存数据库用的是 streamingMessage.id，但是 streamText 会给新的 assistant 消息生成一个新的 id，并且在 toDataStreamResponse 里返回给前端
-    // 当前端调用 addToolResult 的时候，会返回来一条新 id 的 assistang 消息，然后调用 persistentAIMessageToDB 插入的时候，会插入一条新的消息
-    experimental_generateMessageId: () => streamingMessage.id,
-
     // https://sdk.vercel.ai/docs/ai-sdk-ui/smooth-stream-chinese
     experimental_transform: smoothStream({
       delayInMs: 30,
@@ -416,5 +411,10 @@ export async function studyAgentRequest({
     studyAbortController,
   });
 
-  return streamTextResult.toUIMessageStreamResponse();
+  return streamTextResult.toUIMessageStreamResponse({
+    // 注意，这里要使用 streamingMessage 的 id，虽然目前不指定只有 study agent 会遇到问题
+    // 问题是这样，保存数据库用的是 streamingMessage.id，但是 streamText 会给新的 assistant 消息生成一个新的 id，并且在 toDataStreamResponse 里返回给前端
+    // 当前端调用 addToolResult 的时候，会返回来一条新 id 的 assistang 消息，然后调用 persistentAIMessageToDB 插入的时候，会插入一条新的消息
+    generateMessageId: () => streamingMessage.id,
+  });
 }

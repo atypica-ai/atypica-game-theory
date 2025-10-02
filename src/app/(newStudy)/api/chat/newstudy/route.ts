@@ -128,7 +128,6 @@ export async function POST(req: NextRequest) {
     stopWhen: stepCountIs(2),
 
     // temperature: 0,  // gpt-5 不支持 temperature
-    experimental_generateMessageId: () => streamingMessage.id,
 
     experimental_transform: smoothStream({
       delayInMs: 30,
@@ -164,5 +163,7 @@ export async function POST(req: NextRequest) {
     abortSignal,
   });
 
-  return streamTextResult.toUIMessageStreamResponse();
+  return streamTextResult.toUIMessageStreamResponse({
+    generateMessageId: () => streamingMessage.id,
+  });
 }

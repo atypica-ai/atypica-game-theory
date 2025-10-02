@@ -318,7 +318,6 @@ export async function runScoutTaskChatStream({
         experimental_repairToolCall: handleToolCallError,
 
         stopWhen: stepCountIs(maxSteps),
-        experimental_generateMessageId: () => streamingMessage.id,
 
         experimental_transform: smoothStream({
           delayInMs: 30,
@@ -390,7 +389,11 @@ export async function runScoutTaskChatStream({
         abortSignal,
       });
       if (streamWriter) {
-        response.mergeIntoUIMessageStream(streamWriter);
+        streamWriter.merge(
+          response.toUIMessageStream({
+            generateMessageId: () => streamingMessage.id,
+          }),
+        );
       }
       // abortSignal 发生了以后，可能会进 consumeStream 的 then 也可能进 catch，搞不明白
       // 由于 abort 了以后就不会触发 onFinish，如果这里不 resolve/reject 就会导致 promise 一直不退出

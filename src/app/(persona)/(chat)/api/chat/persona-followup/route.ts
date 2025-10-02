@@ -117,7 +117,6 @@ export async function POST(req: NextRequest) {
 
     stopWhen: stepCountIs(3),
     temperature: 0.7,
-    experimental_generateMessageId: () => streamingMessage.id,
 
     experimental_transform: smoothStream({
       delayInMs: 30,
@@ -165,5 +164,7 @@ export async function POST(req: NextRequest) {
   // );
   after(streamTextResult.consumeStream());
 
-  return streamTextResult.toUIMessageStreamResponse();
+  return streamTextResult.toUIMessageStreamResponse({
+    generateMessageId: () => streamingMessage.id,
+  });
 }
