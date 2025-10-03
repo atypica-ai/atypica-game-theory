@@ -319,7 +319,7 @@ ${
     : "No specific supplementary questions available"
 }
 
-${analysis?.supplementaryQuestions?.reasoningText ? `\nReasoning: ${analysis.supplementaryQuestions.reasoningText}` : ""}
+${analysis?.supplementaryQuestions?.reasoning ? `\nReasoning: ${analysis.supplementaryQuestions.reasoning}` : ""}
 
 # Interview Guidelines
 1. **Natural Flow**: Start the conversation in a relaxed and friendly manner, don't directly present a list of questions

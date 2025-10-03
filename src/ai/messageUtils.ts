@@ -419,7 +419,7 @@ export async function convertDBMessagesToAIMessages(
   return aiMessages;
 }
 
-async function _calculateToolUseCount(dbMessages: ChatMessage[]) {
+function _calculateToolUseCount(dbMessages: ChatMessage[]) {
   const toolUseCount = dbMessages.reduce(
     (_count, message) => {
       const count = { ..._count };
@@ -457,6 +457,7 @@ async function _calculateToolUseCount(dbMessages: ChatMessage[]) {
     },
     {} as Partial<Record<ToolName, number>>,
   );
+  return toolUseCount;
 }
 
 /*
