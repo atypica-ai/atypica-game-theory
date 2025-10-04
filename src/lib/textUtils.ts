@@ -1,3 +1,4 @@
+import { isSystemMessage } from "@/ai/messageUtilsClient";
 import { Locale } from "next-intl";
 import { getLocale } from "next-intl/server";
 
@@ -152,10 +153,4 @@ export async function detectInputLanguage({
 
   const chineseRatio = getChineseCharacterRatio(text);
   return chineseRatio > adjustedThreshold ? "zh-CN" : "en-US";
-}
-
-export function isSystemMessage(text: string): boolean {
-  const trimmedText = text.trim();
-  const normalizedText = trimmedText.replace(/(\w)\s(\w)/g, "$1_$2");
-  return /^\[(READY|USER_HESITATED|CONTINUE|CONTINUE_ASSISTANT_STEPS)\]$/i.test(normalizedText);
 }

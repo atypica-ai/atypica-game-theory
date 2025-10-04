@@ -269,7 +269,6 @@ export async function runScoutTaskChatStream({
 
     let toolChoice: ToolChoice<typeof allTools> = "auto";
     let maxSteps = 2; // 不要一下子很多 steps 因为现在会并行调用 tools，每一轮 steps 少一点，方便及时判断 coreMessages 长度
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let reduceTokens: TReduceTokens = { model: "gemini-2.5-flash", ratio: 10 };
 
     if (coreMessages.length > 2 && Object.keys(toolUseCount).length === 0) {

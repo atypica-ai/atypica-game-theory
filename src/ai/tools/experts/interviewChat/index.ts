@@ -414,7 +414,6 @@ async function chatWithPersona(chatProps: ChatProps, messages: UIMessage[]) {
   } = chatProps;
   const streamTextPromise = new Promise<Omit<UIMessage, "role">>(async (resolve, reject) => {
     // const hasAttachments = !!messages.find((message) => (message.experimental_attachments ?? []).length > 0);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const reduceTokens: TReduceTokens = { model: "gemini-2.5-flash", ratio: 10 };
     const response = streamText({
       // gpt 4.1 不支持 pdf，目前只有 gemini 和 claude 支持

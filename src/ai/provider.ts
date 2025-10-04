@@ -45,7 +45,7 @@ const azureEastUS2 = createAzure({
   fetch: proxiedFetch,
 });
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const google = (modelId: string) => {
   const apiKeys: string[] = (process.env.GOOGLE_GENERATIVE_AI_API_KEYS ?? "")
     .split(/\s+/)
@@ -131,7 +131,6 @@ export type LLMModelName =
   | "deepseek-r1"
   | "qwen3-235b-a22b";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function llm(modelName: LLMModelName) {
   const deployRegion = getDeployRegion();
   if (deployRegion === "mainland") {

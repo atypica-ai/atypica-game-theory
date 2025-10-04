@@ -1,3 +1,4 @@
+import { isSystemMessage } from "@/ai/messageUtilsClient";
 import { extractInterviewTranscript, InterviewTranscript } from "@/app/(interviewProject)/lib";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { VALID_LOCALES } from "@/i18n/routing";
@@ -142,7 +143,7 @@ async function InterviewTranscriptPage({
             {t("interviewContent")}
           </h2>
           {messages
-            .filter((message) => !/\[READY\]|\[CONTINUE\]|\[USER_HESITATED\]/.test(message.content))
+            .filter((message) => !isSystemMessage(message.content))
             .map((message, index) => (
               <div key={index} className="leading-relaxed text-sm">
                 {message.role === "assistant" ? (

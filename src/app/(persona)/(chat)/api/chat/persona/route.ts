@@ -31,7 +31,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ error }, { status: 400 });
   }
 
-  const { message: newMessage, userChatToken } = parseResult.data;
+  const {
+    // id, // 没用到
+    message: newMessage,
+    userChatToken,
+  } = parseResult.data;
 
   if (!userChatToken || !newMessage) {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });

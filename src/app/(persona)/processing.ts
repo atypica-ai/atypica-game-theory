@@ -201,7 +201,7 @@ async function attachmentToContext(
       messages: [
         {
           role: "user",
-          parts: [{ type: "file", filename: fileName, data: dataUrl, mediaType }],
+          parts: [{ type: "file", filename: fileName, data: dataUrl, mediaType: mimeType }],
         },
       ],
 
