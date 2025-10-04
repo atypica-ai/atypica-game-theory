@@ -1,17 +1,21 @@
-import { GenerateReportResult } from "@/ai/tools/types";
+import { ToolName, UIToolConfigs } from "@/ai/tools/types";
+import { ToolUIPart } from "ai";
+import { useTranslations } from "next-intl";
+
 import { fetchAnalystReportByToken } from "@/app/(study)/study/actions";
 import { AnalystReportShareButton } from "@/app/(study)/study/components/AnalystReportShareButton";
 import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
 import { ExtractServerActionData } from "@/lib/serverAction";
-import { ToolInvocation } from "ai";
-import { useTranslations } from "next-intl";
-import { FC, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
-export const GenerateReportResultMessage: FC<{
-  toolInvocation: Omit<Extract<ToolInvocation, { state: "result" }>, "result"> & {
-    result: GenerateReportResult;
-  };
-}> = ({ toolInvocation }) => {
+export const GenerateReportResultMessage = ({
+  toolInvocation,
+}: {
+  toolInvocation: Extract<
+    ToolUIPart<Pick<UIToolConfigs, ToolName.generateReport>>,
+    { state: "output-available" }
+  >;
+}) => {
   const { replay } = useStudyContext();
   const t = useTranslations("Components.GenerateReportResultMessage");
   const [report, setReport] = useState<ExtractServerActionData<
@@ -19,7 +23,7 @@ export const GenerateReportResultMessage: FC<{
   > | null>(null);
 
   useEffect(() => {
-    const reportToken = toolInvocation.result.reportToken;
+    const reportToken = toolInvocation.output.reportToken;
     if (reportToken) {
       fetchAnalystReportByToken(reportToken)
         .then((result) => {
@@ -29,7 +33,7 @@ export const GenerateReportResultMessage: FC<{
         .catch((error) => console.log(error));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [toolInvocation.args.reportToken, toolInvocation.state]);
+  }, [toolInvocation.input.reportToken, toolInvocation.state]);
 
   if (!report) return null;
 

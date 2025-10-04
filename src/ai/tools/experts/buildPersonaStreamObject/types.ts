@@ -9,6 +9,8 @@ export const buildPersonaStreamObjectInputSchema = z.object({
     ),
 });
 
+export type BuildPersonaStreamObjectToolInput = z.infer<typeof buildPersonaStreamObjectInputSchema>;
+
 export const buildPersonaStreamObjectOutputSchema = z.object({
   personas: z.array(
     z.object({
@@ -21,7 +23,9 @@ export const buildPersonaStreamObjectOutputSchema = z.object({
   plainText: z.string(),
 });
 
-export type BuildPersonaToolResult = z.infer<typeof buildPersonaStreamObjectOutputSchema>;
+export type BuildPersonaStreamObjectToolResult = z.infer<
+  typeof buildPersonaStreamObjectOutputSchema
+>;
 
 export const personaBuildSchemaStreamObject = () =>
   z.object({

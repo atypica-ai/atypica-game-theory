@@ -15,6 +15,8 @@ export const buildPersonaInputSchema = z.object({
     ),
 });
 
+export type BuildPersonaToolInput = z.infer<typeof buildPersonaInputSchema>;
+
 export const buildPersonaOutputSchema = z.object({
   personas: z.array(
     z.object({

@@ -1,19 +1,22 @@
-import { BuildPersonaToolResult } from "@/ai/tools/types";
-import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
+import { ToolName, UIToolConfigs } from "@/ai/tools/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
-import { Button } from "@/components/ui/button";
-import { ToolInvocation } from "ai";
+import { ToolUIPart } from "ai";
 import { useTranslations } from "next-intl";
-import { FC } from "react";
 
-export const BuildPersonaResultMessage: FC<{
-  toolInvocation: Omit<Extract<ToolInvocation, { state: "result" }>, "result"> & {
-    result: BuildPersonaToolResult;
-  };
-}> = ({ toolInvocation }) => {
+import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
+import { Button } from "@/components/ui/button";
+
+export const BuildPersonaResultMessage = ({
+  toolInvocation,
+}: {
+  toolInvocation: Extract<
+    ToolUIPart<Pick<UIToolConfigs, ToolName.buildPersona>>,
+    { state: "output-available" }
+  >;
+}) => {
   const t = useTranslations("Components.BuildPersonaResultMessage");
   const { setViewToolInvocation, setConsoleOpen } = useStudyContext();
-  const { personas } = toolInvocation.result;
+  const { personas } = toolInvocation.output;
   if (!personas?.length) {
     return <div className="text-sm text-muted-foreground">No persona built</div>;
   }
@@ -26,7 +29,11 @@ export const BuildPersonaResultMessage: FC<{
           size="sm"
           className="px-2 h-6 text-xs"
           onClick={() => {
-            setViewToolInvocation(toolInvocation);
+            setViewToolInvocation({
+              toolName: ToolName.buildPersona,
+              toolCallId: toolInvocation.toolCallId,
+              state: toolInvocation.state,
+            });
             setConsoleOpen(true);
           }}
         >

@@ -1,17 +1,19 @@
-import { ScoutTaskChatResult } from "@/ai/tools/types";
+import { ToolName, UIToolConfigs } from "@/ai/tools/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Badge } from "@/components/ui/badge";
-import { ToolInvocation } from "ai";
+import { ToolUIPart } from "ai";
 import { useTranslations } from "next-intl";
-import { FC } from "react";
 
-export const ScoutTaskChatResultMessage: FC<{
-  toolInvocation: Omit<Extract<ToolInvocation, { state: "result" }>, "result"> & {
-    result: ScoutTaskChatResult;
-  };
-}> = ({ toolInvocation }) => {
+export const ScoutTaskChatResultMessage = ({
+  toolInvocation,
+}: {
+  toolInvocation: Extract<
+    ToolUIPart<Pick<UIToolConfigs, ToolName.scoutTaskChat>>,
+    { state: "output-available" }
+  >;
+}) => {
   const t = useTranslations("Components.ScoutTaskChatResultMessage");
-  const { personas, stats } = toolInvocation.result as ScoutTaskChatResult;
+  const { personas, stats } = toolInvocation.output;
   // if (!personas || personas.length === 0) {
   //   return <div className="text-sm text-muted-foreground">No personas found.</div>;
   // }

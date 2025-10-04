@@ -1,21 +1,16 @@
-import { ToolInvocation } from "ai";
+import { ToolName, UIToolConfigs } from "@/ai/tools/types";
+import { TAddToolResult } from "@/components/chat/ToolInvocationDisplay";
+import { ToolUIPart } from "ai";
 import { LinkIcon } from "lucide-react";
 import Link from "next/link";
-import { FC } from "react";
 
-export const ThanksMessage: FC<{
-  toolInvocation: ToolInvocation;
-  // addToolResult: ({
-  //   toolCallId,
-  //   result,
-  // }: {
-  //   toolCallId: string;
-  //   result: RequestInteractionResult;
-  // }) => void;
-}> = (
+export const ThanksMessage = <T extends ToolUIPart<Pick<UIToolConfigs, ToolName.thanks>>>(
   {
     // toolInvocation,
-    // addToolResult
+    // addToolResult,
+  }: {
+    toolInvocation: T;
+    addToolResult?: TAddToolResult<T>;
   },
 ) => {
   return (

@@ -21,6 +21,8 @@ export const audienceCallInputSchema = z.object({
     ),
 });
 
+export type AudienceCallToolInput = z.infer<typeof audienceCallInputSchema>;
+
 export const audienceCallOutputSchema = z.object({
   reasoning: z.string(),
   text: z.string(),

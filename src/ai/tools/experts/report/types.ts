@@ -18,6 +18,8 @@ export const generateReportInputSchema = z.object({
     .transform(() => generateToken()),
 });
 
+export type GenerateReportToolInput = z.infer<typeof generateReportInputSchema>;
+
 export const generateReportOutputSchema = z.object({
   reportToken: z.string().optional(),
   plainText: z.string(),

@@ -1,21 +1,31 @@
-import { SocialPost } from "@/ai/tools/types";
+import { ToolName, UIToolConfigs } from "@/ai/tools/types";
 import { cn, formatTokensNumber, proxiedImageLoader } from "@/lib/utils";
-import { ToolInvocation } from "ai";
+import { ToolUIPart } from "ai";
 import Image from "next/image";
-import { FC } from "react";
 
-export const SocialPostsResultMessage: FC<{
-  toolInvocation: Omit<Extract<ToolInvocation, { state: "result" }>, "result"> & {
-    result: {
-      notes?: SocialPost[];
-      posts?: SocialPost[];
-    };
-  };
-}> = ({
-  toolInvocation: {
-    result: { notes, posts },
-  },
+export const SocialPostsResultMessage = ({
+  toolInvocation,
+}: {
+  toolInvocation: Extract<
+    ToolUIPart<
+      Pick<
+        UIToolConfigs,
+        | ToolName.xhsSearch
+        | ToolName.dySearch
+        | ToolName.tiktokSearch
+        | ToolName.insSearch
+        | ToolName.xhsUserNotes
+        | ToolName.dyUserPosts
+        | ToolName.tiktokUserPosts
+        | ToolName.insUserPosts
+        | ToolName.twitterSearch
+        | ToolName.twitterUserPosts
+      >
+    >,
+    { state: "output-available" }
+  >;
 }) => {
+  const { notes, posts } = toolInvocation.output;
   return (
     <div
       className={cn(

@@ -21,6 +21,8 @@ export const interviewChatInputSchema = z.object({
     .transform(fixMalformedUnicodeString),
 });
 
+export type InterviewChatToolInput = z.infer<typeof interviewChatInputSchema>;
+
 export const interviewChatOutputSchema = z.object({
   issues: z.array(
     z.object({

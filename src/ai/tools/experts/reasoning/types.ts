@@ -14,6 +14,8 @@ export const reasoningThinkingInputSchema = z.object({
     .transform(fixMalformedUnicodeString),
 });
 
+export type ReasoningThinkingToolInput = z.infer<typeof reasoningThinkingInputSchema>;
+
 export const reasoningThinkingOutputSchema = z.object({
   reasoning: z.string(),
   text: z.string(),

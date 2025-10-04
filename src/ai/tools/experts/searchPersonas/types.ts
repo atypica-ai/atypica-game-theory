@@ -1,4 +1,3 @@
-import { TPersonaForStudy } from "@/ai/tools/types";
 import z from "zod/v3";
 
 export const searchPersonasInputSchema = z.object({
@@ -16,6 +15,8 @@ export const searchPersonasInputSchema = z.object({
       "Set to true only when the user has explicitly chosen to prioritize using their private personas (真人画像) at the beginning of the study.",
     ),
 });
+
+export type SearchPersonasToolInput = z.infer<typeof searchPersonasInputSchema>;
 
 export const searchPersonasOutputSchema = z.object({
   personas: z.array(

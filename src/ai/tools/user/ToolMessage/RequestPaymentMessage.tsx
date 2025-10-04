@@ -1,25 +1,22 @@
-import { RequestPaymentResult } from "@/ai/tools/types";
+import { ToolName, UIToolConfigs } from "@/ai/tools/types";
 import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
 import { getUserTokensBalanceAction } from "@/app/account/actions";
+import { TAddToolResult } from "@/components/chat/ToolInvocationDisplay";
 import { Button } from "@/components/ui/button";
-import { ToolInvocation } from "ai";
+import { ToolUIPart } from "ai";
 import { CoinsIcon, MessageCircleQuestionIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { FC, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
-export const RequestPaymentMessage: FC<{
-  toolInvocation: ToolInvocation;
-  addToolResult?: ({
-    toolCallId,
-    result,
-  }: {
-    toolCallId: string;
-    result: RequestPaymentResult;
-  }) => void;
-}> = ({
+export const RequestPaymentMessage = <
+  T extends ToolUIPart<Pick<UIToolConfigs, ToolName.requestPayment>>,
+>({
   toolInvocation,
-  // addToolResult
+  // addToolResult,
+}: {
+  toolInvocation: T;
+  addToolResult?: TAddToolResult<T>;
 }) => {
   const t = useTranslations("StudyPage.RequestPaymentMessage");
   const {
@@ -28,7 +25,7 @@ export const RequestPaymentMessage: FC<{
   const [paymentSuccess, setPaymentSuccess] = useState(false); // toolInvocation.state === "result"
 
   useEffect(() => {
-    if (toolInvocation.state === "result") {
+    if (toolInvocation.state === "output-available") {
       return;
     }
     let timeoutId: NodeJS.Timeout;

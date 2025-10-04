@@ -1,22 +1,25 @@
-import { RequestInteractionResult } from "@/ai/tools/types";
+import { ToolName, UIToolConfigs } from "@/ai/tools/types";
 import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
+import { TAddToolResult } from "@/components/chat/ToolInvocationDisplay";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { ToolInvocation } from "ai";
+import { ToolUIPart } from "ai";
 import { MessageCircleQuestionIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { FC, useCallback, useState } from "react";
+import { useCallback, useState } from "react";
 
-export const RequestInteractionMessage: FC<{
-  toolInvocation: ToolInvocation;
-  addToolResult?: ({
-    toolCallId,
-    result,
-  }: {
-    toolCallId: string;
-    result: RequestInteractionResult;
-  }) => void;
-}> = ({ toolInvocation, addToolResult }) => {
+export const RequestInteractionMessage = <
+  T extends ToolUIPart<
+    // {[ToolName.requestInteraction]: UIToolConfigs[ToolName.requestInteraction]},
+    Pick<UIToolConfigs, ToolName.requestInteraction>
+  >,
+>({
+  toolInvocation,
+  addToolResult,
+}: {
+  toolInvocation: T;
+  addToolResult?: TAddToolResult<T>;
+}) => {
   const t = useTranslations("StudyPage.ChatBox");
   const question = toolInvocation.args.question as string;
   const options = toolInvocation.args.options as string[];

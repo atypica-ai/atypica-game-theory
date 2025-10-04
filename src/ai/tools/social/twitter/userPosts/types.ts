@@ -1,5 +1,4 @@
 import { socialPostSchema } from "@/ai/tools/social/types";
-import { PlainTextToolResult, SocialPost } from "@/ai/tools/types";
 import z from "zod/v3";
 
 // Input schema

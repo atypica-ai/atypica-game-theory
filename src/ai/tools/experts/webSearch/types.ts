@@ -4,6 +4,8 @@ export const webSearchInputSchema = z.object({
   query: z.string().describe("The search query to find relevant information on the internet"),
 });
 
+export type WebSearchToolInput = z.infer<typeof webSearchInputSchema>;
+
 export const webSearchOutputSchema = z.object({
   answer: z.string().optional(),
   results: z.array(

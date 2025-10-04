@@ -1,16 +1,18 @@
-import { ScoutSocialTrendsResult } from "@/ai/tools/types";
+import { ToolName, UIToolConfigs } from "@/ai/tools/types";
 import { Markdown } from "@/components/markdown";
-import { ToolInvocation } from "ai";
-import { FC } from "react";
+import { ToolUIPart } from "ai";
 
-export const ScoutSocialTrendsResultMessage: FC<{
-  toolInvocation: Omit<Extract<ToolInvocation, { state: "result" }>, "result"> & {
-    result: ScoutSocialTrendsResult;
-  };
-}> = ({ toolInvocation }) => {
+export const ScoutSocialTrendsResultMessage = ({
+  toolInvocation,
+}: {
+  toolInvocation: Extract<
+    ToolUIPart<Pick<UIToolConfigs, ToolName.scoutSocialTrends>>,
+    { state: "output-available" }
+  >;
+}) => {
   return (
     <div className="p-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 rounded-lg text-xs whitespace-pre-wrap">
-      <Markdown>{toolInvocation.result.summary}</Markdown>
+      <Markdown>{toolInvocation.output.summary}</Markdown>
     </div>
   );
 };

@@ -32,6 +32,8 @@ export const saveAnalystInputSchema = (productRnD?: boolean) =>
       ),
   });
 
+export type SaveAnalystToolInput = z.infer<ReturnType<typeof saveAnalystInputSchema>>;
+
 export const saveAnalystOutputSchema = z.object({
   analystId: z.number(),
   plainText: z.string(),
@@ -53,9 +55,7 @@ export const saveAnalystStudySummaryOutputSchema = z.object({
   plainText: z.string(),
 });
 
-export type SaveAnalystStudySummaryToolResult = z.infer<
-  typeof saveAnalystStudySummaryOutputSchema
->;
+export type SaveAnalystStudySummaryToolResult = z.infer<typeof saveAnalystStudySummaryOutputSchema>;
 
 // saveInnovationSummary tool schemas
 export const saveInnovationSummaryInputSchema = z.object({

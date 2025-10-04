@@ -19,6 +19,8 @@ export const scoutTaskChatInputSchema = z.object({
     ),
 });
 
+export type ScoutTaskChatToolInput = z.infer<typeof scoutTaskChatInputSchema>;
+
 export const scoutTaskChatOutputSchema = z.object({
   personas: z
     .array(
@@ -30,10 +32,7 @@ export const scoutTaskChatOutputSchema = z.object({
     )
     .optional()
     .describe("Historical messages may have personas"), // 历史消息的任务里是有 personas 的，新的没了，不过这个需要长期保留，不做迁移
-  stats: z
-    .record(z.string(), z.number())
-    .optional()
-    .describe("Platform usage statistics"),
+  stats: z.record(z.string(), z.number()).optional().describe("Platform usage statistics"),
   plainText: z.string(),
 });
 

@@ -1,19 +1,21 @@
-import { BuildPersonaToolResult } from "@/ai/tools/types";
+import { ToolName, UIToolConfigs } from "@/ai/tools/types";
 import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Button } from "@/components/ui/button";
-import { ToolInvocation } from "ai";
+import { ToolUIPart } from "ai";
 import { useTranslations } from "next-intl";
-import { FC } from "react";
 
-export const SearchPersonasResultMessage: FC<{
-  toolInvocation: Omit<Extract<ToolInvocation, { state: "result" }>, "result"> & {
-    result: BuildPersonaToolResult;
-  };
-}> = ({ toolInvocation }) => {
+export const SearchPersonasResultMessage = ({
+  toolInvocation,
+}: {
+  toolInvocation: Extract<
+    ToolUIPart<Pick<UIToolConfigs, ToolName.searchPersonas>>,
+    { state: "output-available" }
+  >;
+}) => {
   const t = useTranslations("Components.SearchPersonasResultMessage");
   const { setViewToolInvocation, setConsoleOpen } = useStudyContext();
-  const { personas } = toolInvocation.result;
+  const { personas } = toolInvocation.output;
   if (!personas?.length) {
     return <div className="text-sm text-muted-foreground">No persona found</div>;
   }
@@ -26,7 +28,11 @@ export const SearchPersonasResultMessage: FC<{
           size="sm"
           className="px-2 h-6 text-xs"
           onClick={() => {
-            setViewToolInvocation(toolInvocation);
+            setViewToolInvocation({
+              toolName: ToolName.searchPersonas,
+              toolCallId: toolInvocation.toolCallId,
+              state: toolInvocation.state,
+            });
             setConsoleOpen(true);
           }}
         >

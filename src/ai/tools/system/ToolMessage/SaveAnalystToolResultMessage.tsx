@@ -1,16 +1,18 @@
-import { SaveAnalystToolResult } from "@/ai/tools/types";
-import { ToolInvocation } from "ai";
-import { FC } from "react";
+import { ToolName, UIToolConfigs } from "@/ai/tools/types";
+import { ToolUIPart } from "ai";
 
-export const SaveAnalystToolResultMessage: FC<{
-  toolInvocation: Omit<Extract<ToolInvocation, { state: "result" }>, "result"> & {
-    result: SaveAnalystToolResult;
-  };
-}> = ({ toolInvocation }) => {
+export const SaveAnalystToolResultMessage = ({
+  toolInvocation,
+}: {
+  toolInvocation: Extract<
+    ToolUIPart<Pick<UIToolConfigs, ToolName.saveAnalyst>>,
+    { state: "output-available" }
+  >;
+}) => {
   // const { result: { analystId } } = toolInvocation;
   return (
     <div className="p-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 rounded-lg text-xs whitespace-pre-wrap">
-      📝 {toolInvocation.args.topic}
+      📝 {toolInvocation.input.topic}
       {/* <Link href={`/analyst/${analystId}`} target="_blank" className="text-blue-500">
         点击查看研究主题
       </Link>

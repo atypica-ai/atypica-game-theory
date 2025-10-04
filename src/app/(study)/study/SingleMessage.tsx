@@ -1,5 +1,5 @@
 import { CONTINUE_ASSISTANT_STEPS } from "@/ai/messageUtilsClient";
-import { PlainTextToolResult } from "@/ai/tools/types";
+import { UIToolConfigs } from "@/ai/tools/types";
 import { FileAttachment } from "@/components/chat/FileAttachment";
 import ToolArgsTable, { ExpandableText } from "@/components/chat/ToolArgsTable";
 import { TAddToolResult, ToolInvocationDisplay } from "@/components/chat/ToolInvocationDisplay";
@@ -7,7 +7,7 @@ import ToolResultTable from "@/components/chat/ToolResultTable";
 import { Markdown } from "@/components/markdown";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
-import { ToolInvocation, UIMessage } from "ai";
+import { ToolUIPart, UIMessage } from "ai";
 import { motion } from "framer-motion";
 import { BotIcon, ChevronRight, EyeIcon, LoaderIcon, XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -19,8 +19,8 @@ const ToolInvocationMessage = ({
   addToolResult,
   isLastToolPart,
 }: {
-  toolInvocation: ToolInvocation;
-  addToolResult: TAddToolResult;
+  toolInvocation: ToolUIPart<UIToolConfigs>;
+  addToolResult: TAddToolResult<ToolUIPart<UIToolConfigs>>;
   isLastToolPart?: boolean;
 }) => {
   const t = useTranslations("StudyPage.SingleMessage");
@@ -59,13 +59,17 @@ const ToolInvocationMessage = ({
         <CollapsibleTrigger className="w-full flex items-center justify-between gap-2 hover:opacity-90 group">
           <ChevronRight className="h-3 w-3 transition-transform group-data-[state=open]:rotate-90 text-primary" />
           <div className="ml-1 my-2 font-bold text-xs text-primary truncate">
-            exec {toolInvocation.toolName}
+            exec {toolInvocation.type.slice(5) /* dirty way to extract toolName */}
           </div>
           <div
             className="shrink-0 text-foreground/70 ml-auto mr-2 p-2 hover:bg-zinc-100 hover:dark:bg-zinc-900 rounded-md flex items-center gap-2 cursor-pointer"
             onClick={(e) => {
               e.stopPropagation();
-              setViewToolInvocation(toolInvocation);
+              setViewToolInvocation({
+                toolName: toolInvocation.type.slice(5),
+                toolCallId: toolInvocation.toolCallId,
+                state: toolInvocation.state,
+              });
               setConsoleOpen(true);
             }}
           >
@@ -77,12 +81,12 @@ const ToolInvocationMessage = ({
           <div className="ml-1 mt-1 mb-1 text-primary not-dark:font-bold">&gt;_ args</div>
           <ToolArgsTable toolInvocation={toolInvocation} />
           <div className="ml-1 mt-2 mb-1 text-primary not-dark:font-bold">&gt;_ result</div>
-          {toolInvocation.state === "result" ? (
+          {toolInvocation.state === "output-available" ? (
             <>
               <ToolResultTable toolInvocation={toolInvocation} />
               <div className="ml-1 mt-2 mb-1 text-primary not-dark:font-bold">&gt;_ message</div>
               <div className="text-xs p-1 not-dark:text-muted-foreground">
-                <ExpandableText text={toolInvocation.result.plainText ?? ""} />
+                <ExpandableText text={toolInvocation.output.plainText ?? ""} />
               </div>
             </>
           ) : (
@@ -118,13 +122,7 @@ const SingleMessage = ({
   // content: string | ReactNode;
   // parts?: MessageType["parts"];
   message: UIMessage;
-  addToolResult: ({
-    toolCallId,
-    result,
-  }: {
-    toolCallId: string;
-    result: PlainTextToolResult;
-  }) => void;
+  addToolResult: TAddToolResult<ToolUIPart<UIToolConfigs>>;
   avatar?: ReactNode;
   nickname?: string;
   onDelete?: () => void;

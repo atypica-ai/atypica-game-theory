@@ -1,16 +1,18 @@
-import { WebSearchToolResult } from "@/ai/tools/experts/webSearch/types";
+import { ToolName, UIToolConfigs } from "@/ai/tools/types";
 import { Markdown } from "@/components/markdown";
-import { ToolInvocation } from "ai";
+import { ToolUIPart } from "ai";
 import { ExternalLinkIcon, ListIcon, MessageSquareIcon, SearchIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { FC } from "react";
 
-export const WebSearchResultMessage: FC<{
-  toolInvocation: Omit<Extract<ToolInvocation, { state: "result" }>, "result"> & {
-    result: WebSearchToolResult;
-  };
-}> = ({ toolInvocation }) => {
+export const WebSearchResultMessage = ({
+  toolInvocation,
+}: {
+  toolInvocation: Extract<
+    ToolUIPart<Pick<UIToolConfigs, ToolName.webSearch>>,
+    { state: "output-available" }
+  >;
+}) => {
   const t = useTranslations("Components.WebSearchResultMessage");
 
   return (
@@ -18,26 +20,26 @@ export const WebSearchResultMessage: FC<{
       <div className="mt-2 mb-3 flex flex-rows items-center justify-start gap-2">
         <SearchIcon className="size-3 shrink-0 mt-0.5" />
         <div className="text-foreground/80">{t("searchQuery")}:</div>
-        <div className="flex-1 font-medium overflow-hidden">{toolInvocation.args.query}</div>
+        <div className="flex-1 font-medium overflow-hidden">{toolInvocation.input.query}</div>
       </div>
 
-      {toolInvocation.result.answer && (
+      {toolInvocation.output.answer && (
         <div className="flex flex-rows items-start justify-start gap-2 mb-2">
           <MessageSquareIcon className="size-3 shrink-0 mt-0.5" />
           <div className="flex-1 overflow-hidden">
             <div className="leading-3 text-foreground/80 mb-1">{t("summary")}:</div>
-            <Markdown>{toolInvocation.result.answer}</Markdown>
+            <Markdown>{toolInvocation.output.answer}</Markdown>
           </div>
         </div>
       )}
 
-      {toolInvocation.result.results && toolInvocation.result.results.length > 0 && (
+      {toolInvocation.output.results && toolInvocation.output.results.length > 0 && (
         <div className="space-y-2">
           <div className="flex flex-rows items-center justify-start gap-2 mb-1">
             <ListIcon className="size-3 shrink-0 mt-0.5" />
             <h4 className="text-xs text-foreground/80">{t("searchResults")}</h4>
           </div>
-          {toolInvocation.result.results.map((result, index) => (
+          {toolInvocation.output.results.map((result, index) => (
             <div key={index} className="flex items-start gap-2 mb-1">
               <ExternalLinkIcon className="size-3 text-zinc-500 shrink-0 mt-0.5" />
               <div className="flex-1 overflow-hidden truncate">
@@ -55,7 +57,7 @@ export const WebSearchResultMessage: FC<{
         </div>
       )}
 
-      {/* {toolInvocation.result.results && toolInvocation.result.results.length > 0 && (
+      {/* {toolInvocation.output.results && toolInvocation.result.results.length > 0 && (
         <div className="space-y-2">
           <h4 className="text-xs font-medium">{t("searchResults")}</h4>
           {toolInvocation.result.results.map((result, index) => (
