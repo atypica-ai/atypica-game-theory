@@ -1,5 +1,5 @@
 import { ToolName, UIToolConfigs } from "@/ai/tools/types";
-import { TAddToolResult } from "@/components/chat/ToolInvocationDisplay";
+import { TAddToolResult } from "@/app/(study)/study/types";
 import { ToolUIPart } from "ai";
 import { LinkIcon } from "lucide-react";
 import Link from "next/link";
@@ -10,7 +10,7 @@ export const ThanksMessage = <T extends ToolUIPart<Pick<UIToolConfigs, ToolName.
     // addToolResult,
   }: {
     toolInvocation: T;
-    addToolResult?: TAddToolResult<T>;
+    addToolResult?: TAddToolResult;
   },
 ) => {
   return (

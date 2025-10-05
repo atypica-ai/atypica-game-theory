@@ -1,26 +1,35 @@
 import { CONTINUE_ASSISTANT_STEPS } from "@/ai/messageUtilsClient";
 import { UIToolConfigs } from "@/ai/tools/types";
+import { TAddToolResult, TMessageWithTool } from "@/app/(study)/study/types";
 import { FileAttachment } from "@/components/chat/FileAttachment";
 import ToolArgsTable, { ExpandableText } from "@/components/chat/ToolArgsTable";
-import { TAddToolResult, ToolInvocationDisplay } from "@/components/chat/ToolInvocationDisplay";
+import { ToolInvocationDisplay } from "@/components/chat/ToolInvocationDisplay";
 import ToolResultTable from "@/components/chat/ToolResultTable";
 import { Markdown } from "@/components/markdown";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
-import { ToolUIPart, UIMessage } from "ai";
+import { ToolUIPart, UITools } from "ai";
 import { motion } from "framer-motion";
 import { BotIcon, ChevronRight, EyeIcon, LoaderIcon, XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { PropsWithChildren, ReactNode, useCallback, useEffect, useRef, useState } from "react";
+import {
+  PropsWithChildren,
+  ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useStudyContext } from "./hooks/StudyContext";
 
-const ToolInvocationMessage = ({
+const ToolInvocationMessage = <T extends UITools>({
   toolInvocation,
   addToolResult,
   isLastToolPart,
 }: {
   toolInvocation: ToolUIPart<UIToolConfigs>;
-  addToolResult: TAddToolResult<ToolUIPart<UIToolConfigs>>;
+  addToolResult: TAddToolResult<T>;
   isLastToolPart?: boolean;
 }) => {
   const t = useTranslations("StudyPage.SingleMessage");
@@ -109,9 +118,8 @@ const PlainText = ({ children }: PropsWithChildren) => {
   ) : null;
 };
 
-export /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
-const SingleMessage = ({
-  message: { role, content, parts, experimental_attachments },
+export const SingleMessage = <T extends UITools>({
+  message: { role, parts },
   addToolResult,
   avatar,
   nickname,
@@ -121,17 +129,26 @@ const SingleMessage = ({
   // role: "assistant" | "user" | "system" | "data";
   // content: string | ReactNode;
   // parts?: MessageType["parts"];
-  message: UIMessage;
-  addToolResult: TAddToolResult<ToolUIPart<UIToolConfigs>>;
+  message: TMessageWithTool;
+  addToolResult: TAddToolResult<T>;
   avatar?: ReactNode;
   nickname?: string;
   onDelete?: () => void;
   isLastMessage?: boolean;
 }) => {
-  /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
+  const fileParts = useMemo(() => {
+    return parts?.filter((part) => part.type === "file");
+  }, [parts]);
+
   const renderUserMessage = useCallback(() => {
-    const contentLength = (content?.toString() ?? "").length;
-    /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
+    // 用户输入的消息（如果有多条，其实不会有）合并在一起显示
+    const textContent = useMemo(() => {
+      return parts.map((part) => (part.type === "text" ? part.text : "")).join("\n");
+    }, [parts]);
+    const contentLength = (textContent.toString() ?? "").length;
+    if (textContent !== CONTINUE_ASSISTANT_STEPS) {
+      return null;
+    }
     return (
       <div
         className={cn(
@@ -154,7 +171,7 @@ const SingleMessage = ({
               "font-medium whitespace-pre-wrap",
             )}
           >
-            {content}
+            {textContent}
           </span>
           {onDelete ? (
             <div
@@ -165,19 +182,19 @@ const SingleMessage = ({
             </div>
           ) : null}
         </div>
-        {experimental_attachments && (
+        {fileParts.length && (
           <div className="mt-4 flex flex-wrap gap-2 max-w-full overflow-x-auto">
-            {experimental_attachments.map((attachment, index) => (
+            {fileParts.map((attachment, index) => (
               <FileAttachment key={index} attachment={attachment} />
             ))}
           </div>
         )}
       </div>
     );
-  }, [content, onDelete, experimental_attachments]);
+  }, [parts, onDelete, fileParts]);
 
   // const { replay } = useStudyContext();
-  const renderParts = (parts: NonNullable<undefined["parts"]>) => {
+  const renderParts = (parts: TMessageWithTool["parts"]) => {
     // if (replay) {
     //   parts = parts.filter(
     //     (part) =>
@@ -187,28 +204,32 @@ const SingleMessage = ({
     //       ) && !(part.type === "text" && part.text.includes("免费研究额度已经用完")),
     //   );
     // }
-    const lastToolPartIndex = parts.findLastIndex((part) => part.type === "tool-invocation");
+    const lastToolPartIndex = parts.findLastIndex(
+      (part) => part.type.startsWith("tool-") && "toolCallId" in part,
+    );
     return (
       <div className="flex flex-col gap-4">
         {parts.map((part, i) => {
-          switch (part.type) {
-            case "text":
-              return <PlainText key={i}>{part.text}</PlainText>;
-            case "reasoning":
-              return <PlainText key={i}>{part.reasoningText}</PlainText>;
-            case "source":
-              return <PlainText key={i}>{JSON.stringify(part.source)}</PlainText>;
-            case "tool-invocation":
-              return (
-                <ToolInvocationMessage
-                  key={i}
-                  toolInvocation={part.toolInvocation}
-                  isLastToolPart={isLastMessage && i === lastToolPartIndex}
-                  addToolResult={addToolResult}
-                />
-              );
-            default:
-              return null;
+          if (part.type === "text") {
+            return <PlainText key={i}>{part.text}</PlainText>;
+          } else if (part.type === "reasoning") {
+            return <PlainText key={i}>{part.text}</PlainText>;
+            // } else if (part.type === "source") {
+            //   return <PlainText key={i}>{JSON.stringify(part.source)}</PlainText>;
+          } else if (part.type === "dynamic-tool") {
+            // 为下面的 else if 条件分支排除 dynamic tool
+            return <PlainText key={i}>{part.toolName}</PlainText>;
+          } else if (part.type.startsWith("tool-") && "toolCallId" in part) {
+            return (
+              <ToolInvocationMessage
+                key={i}
+                toolInvocation={part}
+                isLastToolPart={isLastMessage && i === lastToolPartIndex}
+                addToolResult={addToolResult}
+              />
+            );
+          } else {
+            return null;
           }
         })}
       </div>
@@ -216,9 +237,7 @@ const SingleMessage = ({
   };
 
   if (role === "user") {
-    if (content !== CONTINUE_ASSISTANT_STEPS) {
-      return renderUserMessage();
-    }
+    return renderUserMessage();
   } else if (role === "assistant") {
     return (
       <motion.div
@@ -235,9 +254,7 @@ const SingleMessage = ({
             </div>
           )}
         </div>
-        <div className="sm:flex-1 overflow-hidden">
-          {parts ? renderParts(parts) : <PlainText>{content}</PlainText>}
-        </div>
+        <div className="sm:flex-1 overflow-hidden">{renderParts(parts)}</div>
       </motion.div>
     );
   } else {

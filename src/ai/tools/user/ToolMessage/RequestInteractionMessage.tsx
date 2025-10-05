@@ -1,6 +1,6 @@
 import { ToolName, UIToolConfigs } from "@/ai/tools/types";
 import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
-import { TAddToolResult } from "@/components/chat/ToolInvocationDisplay";
+import { TAddToolResult } from "@/app/(study)/study/types";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ToolUIPart } from "ai";
@@ -18,11 +18,12 @@ export const RequestInteractionMessage = <
   addToolResult,
 }: {
   toolInvocation: T;
-  addToolResult?: TAddToolResult<T>;
+  addToolResult?: TAddToolResult;
 }) => {
   const t = useTranslations("StudyPage.ChatBox");
-  const question = toolInvocation.args.question as string;
-  const options = toolInvocation.args.options as string[];
+  // input 有可能为空, 当 state === "input-streaming" 时
+  const question = toolInvocation.input?.question ?? "";
+  const options = toolInvocation.input?.options ?? [];
   const { replay } = useStudyContext();
 
   // 用户操作中的 answer，不是 tool result 里面的 answer
@@ -39,10 +40,11 @@ export const RequestInteractionMessage = <
 
   const confirmAnswer = useCallback(
     (pendingAnswer: string[]) => {
-      if (toolInvocation.state !== "result" && addToolResult) {
+      if (toolInvocation.state === "input-available" && addToolResult) {
         addToolResult({
+          tool: ToolName.requestInteraction,
           toolCallId: toolInvocation.toolCallId,
-          result:
+          output:
             pendingAnswer.length > 0
               ? {
                   answer: pendingAnswer,
@@ -61,7 +63,7 @@ export const RequestInteractionMessage = <
   const isActiveOption = useCallback(
     (option: string) => {
       const answer: string | string[] =
-        toolInvocation.state === "result" ? toolInvocation.result.answer : pendingAnswer;
+        toolInvocation.state === "output-available" ? toolInvocation.output.answer : pendingAnswer;
       if (
         (answer === "以上都不是" ||
           answer === "None of the above" ||
@@ -83,20 +85,20 @@ export const RequestInteractionMessage = <
       <div className="text-sm text-foreground/80 mb-3 flex items-center justify-start gap-1">
         <div className="flex-1">
           <strong>{question}</strong>
-          {toolInvocation.state !== "result" && (
+          {toolInvocation.state === "input-available" && (
             <span className="ml-2 text-xs">({t("multiSelectHint")})</span>
           )}
         </div>
         <MessageCircleQuestionIcon className="size-4" />
       </div>
-      {toolInvocation.state === "result" || replay ? (
+      {toolInvocation.state === "output-available" || replay ? (
         <div className="flex flex-col items-start gap-2">
           {[...options].map((option, index) => (
             <div
               key={index}
               className={cn(
                 "w-full text-xs p-2 rounded-md border border-zinc-200 dark:border-zinc-700",
-                isActiveOption(option) && "bg-zinc-100 dark:bg-zinc-700 font-bold",
+                isActiveOption(option!) && "bg-zinc-100 dark:bg-zinc-700 font-bold",
               )}
             >
               {option}
@@ -119,11 +121,11 @@ export const RequestInteractionMessage = <
           {[...options].map((option, index) => (
             <div
               key={index}
-              onClick={() => toggleAnswer(option)}
+              onClick={() => toggleAnswer(option!)}
               className={cn(
                 "w-full text-xs p-2 rounded-md border border-zinc-200 dark:border-zinc-700",
                 "cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-700",
-                isActiveOption(option) && "bg-zinc-100 dark:bg-zinc-700 font-bold",
+                isActiveOption(option!) && "bg-zinc-100 dark:bg-zinc-700 font-bold",
               )}
             >
               {option}

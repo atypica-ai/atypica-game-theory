@@ -3,7 +3,6 @@ import "server-only";
 import { ToolName } from "@/ai/tools/types";
 import { fileUrlToDataUrl } from "@/lib/attachments/actions";
 import { s3SignedUrl } from "@/lib/attachments/s3";
-import { isSystemMessage } from "@/lib/textUtils";
 import { ChatMessage, ChatMessageAttachment, ChatMessagePart } from "@/prisma/client";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
@@ -17,6 +16,7 @@ import {
   UIMessage,
 } from "ai";
 import { Logger } from "pino";
+import { isSystemMessage } from "./messageUtilsClient";
 import { convertToV5MessagePart } from "./v4";
 
 // 事实上，bedrock 虽然支持很多文件格式，但 gpt 和 gemini 只支持 pdf，所以这样 fix 也没用，只能限制上传的文件类型
@@ -447,6 +447,7 @@ function _calculateToolUseCount(dbMessages: ChatMessage[]) {
         //     { type: `tool-${string}` }
         //   >;
         //   // aka: const part = part as unknown as { type: `tool-${string}` } & UIToolInvocation<Tool>;
+        //   // aka: const part = part as unknown as ToolUIPart // better
         //   if (part.state === "output-available") {
         //     const toolName = part.type.slice(5) as ToolName;
         //     count[toolName] = (count[toolName] || 0) + 1;

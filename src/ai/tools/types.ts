@@ -23,7 +23,7 @@ import {
 } from "./system/saveAnalyst/types";
 import { SaveInterviewConclusionToolResult } from "./system/saveInterviewConclusion/types";
 import { SavePersonaToolResult } from "./system/savePersona/types";
-import { RequestInteractionResult } from "./user/interaction/types";
+import { RequestInteractionResult, RequestInteractionToolInput } from "./user/interaction/types";
 import { RequestPaymentResult } from "./user/payment/types";
 import { ThanksResult } from "./user/thanks/types";
 
@@ -127,7 +127,10 @@ export type UIToolConfigs = {
   [ToolName.savePersona]: { input: unknown; output: SavePersonaToolResult };
   [ToolName.saveInterviewSessionSummary]: { input: unknown; output: PlainTextToolResult };
   [ToolName.updateInterviewProject]: { input: unknown; output: PlainTextToolResult };
-  [ToolName.requestInteraction]: { input: unknown; output: RequestInteractionResult };
+  [ToolName.requestInteraction]: {
+    input: RequestInteractionToolInput;
+    output: RequestInteractionResult;
+  };
   [ToolName.requestPayment]: { input: unknown; output: RequestPaymentResult };
   [ToolName.thanks]: { input: unknown; output: ThanksResult };
   [ToolName.webSearch]: { input: WebSearchToolInput; output: WebSearchToolResult };

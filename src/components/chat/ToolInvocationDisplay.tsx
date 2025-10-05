@@ -20,35 +20,8 @@ import {
   RequestPaymentMessage,
   ThanksMessage,
 } from "@/ai/tools/user/ToolMessage";
-import { ToolUIPart, UITools } from "ai";
-
-// ⚠️ 把 ToolUIPart<X> 里面的 X 取出来，比如大部分地方使用的定义在 ai/tools/types.ts 里的 UIToolConfigs
-type InferUIMessageTools<T extends ToolUIPart> =
-  T extends ToolUIPart<infer TOOLS> ? TOOLS : UITools;
-
-export type TAddToolResult<UI_PART extends ToolUIPart> = <
-  TName extends keyof InferUIMessageTools<UI_PART>,
->({
-  state,
-  tool,
-  toolCallId,
-  output,
-  errorText,
-}:
-  | {
-      state?: "output-available";
-      tool: TName;
-      toolCallId: string;
-      output: InferUIMessageTools<UI_PART>[TName]["output"];
-      errorText?: never;
-    }
-  | {
-      state: "output-error";
-      tool: TName;
-      toolCallId: string;
-      output?: never;
-      errorText: string;
-    }) => Promise<void>;
+import { TAddToolResult } from "@/app/(study)/study/types";
+import { ToolUIPart } from "ai";
 
 export const ToolInvocationDisplay = ({
   toolInvocation,
@@ -56,7 +29,7 @@ export const ToolInvocationDisplay = ({
 }: {
   // toolInvocation: Extract<UIMessage["parts"][number], { type: `tool-${string}` }>;
   toolInvocation: ToolUIPart<UIToolConfigs>;
-  addToolResult?: TAddToolResult<ToolUIPart<UIToolConfigs>>;
+  addToolResult?: TAddToolResult;
 }) => {
   switch (toolInvocation.type) {
     case `tool-${ToolName.requestInteraction}`:

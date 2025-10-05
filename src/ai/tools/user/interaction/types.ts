@@ -9,6 +9,8 @@ export const requestInteractionInputSchema = z.object({
     ),
 });
 
+export type RequestInteractionToolInput = z.infer<typeof requestInteractionInputSchema>;
+
 export const requestInteractionOutputSchema = z.object({
   answer: z.union([z.string(), z.array(z.string())]),
   plainText: z.string(),

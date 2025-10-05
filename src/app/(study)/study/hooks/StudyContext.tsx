@@ -1,11 +1,18 @@
 "use client";
+import { TMessageWithTool } from "@/app/(study)/study/types";
 import { UserChat } from "@/prisma/client";
-import { ToolInvocation, UIMessage } from "ai";
+import { ToolUIPart } from "ai";
 import { createContext, Dispatch, ReactNode, SetStateAction, useContext, useState } from "react";
 
 type TStudyUserChat = Omit<UserChat, "kind"> & {
   kind: "study";
-  messages: UIMessage[];
+  messages: TMessageWithTool[];
+};
+
+export type TLastToolInvocation = {
+  toolCallId: string;
+  toolName: string; // ToolName; 这里没必要用 ToolName 类型，简单一些
+  state: ToolUIPart["state"];
 };
 
 interface StudyContextType {
@@ -13,10 +20,12 @@ interface StudyContextType {
   replay: boolean;
   consoleOpen: boolean;
   setConsoleOpen: (open: boolean) => void;
-  lastToolInvocation: ToolInvocation | null;
-  setLastToolInvocation: Dispatch<SetStateAction<ToolInvocation | null>>; //(toolInvocation: ToolInvocation | null) => void;
-  viewToolInvocation: ToolInvocation | null;
-  setViewToolInvocation: (toolInvocation: ToolInvocation | null) => void;
+  lastToolInvocation: TLastToolInvocation | null;
+  setLastToolInvocation: Dispatch<SetStateAction<TLastToolInvocation | null>>; // 支持 setLastToolInvocation(prev => {})
+  // setLastToolInvocation: (toolInvocation: TLastToolInvocation | null) => void;
+  viewToolInvocation: TLastToolInvocation | null;
+  setViewToolInvocation: Dispatch<SetStateAction<TLastToolInvocation | null>>;
+  // setViewToolInvocation: (toolInvocation: TLastToolInvocation | null) => void;
   unsetViewToolInvocation: () => void;
 }
 
@@ -32,8 +41,8 @@ export function StudyProvider({
   replay: boolean;
 }) {
   const [consoleOpen, setConsoleOpen] = useState(false);
-  const [lastToolInvocation, setLastToolInvocation] = useState<ToolInvocation | null>(null);
-  const [viewToolInvocation, setViewToolInvocation] = useState<ToolInvocation | null>(null);
+  const [lastToolInvocation, setLastToolInvocation] = useState<TLastToolInvocation | null>(null);
+  const [viewToolInvocation, setViewToolInvocation] = useState<TLastToolInvocation | null>(null);
   const unsetViewToolInvocation = () => setViewToolInvocation(null);
   return (
     <StudyContext.Provider
