@@ -1,10 +1,10 @@
 import { CONTINUE_ASSISTANT_STEPS } from "@/ai/messageUtilsClient";
 import { UIToolConfigs } from "@/ai/tools/types";
-import { TAddToolResult, TMessageWithTool } from "@/app/(study)/study/types";
 import { FileAttachment } from "@/components/chat/FileAttachment";
 import ToolArgsTable, { ExpandableText } from "@/components/chat/ToolArgsTable";
 import { ToolInvocationDisplay } from "@/components/chat/ToolInvocationDisplay";
 import ToolResultTable from "@/components/chat/ToolResultTable";
+import { TAddToolResult, TMessageWithTool } from "@/components/chat/types";
 import { Markdown } from "@/components/markdown";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
@@ -23,13 +23,13 @@ import {
 } from "react";
 import { useStudyContext } from "./hooks/StudyContext";
 
-const ToolInvocationMessage = <T extends UITools>({
+const ToolInvocationMessage = ({
   toolInvocation,
   addToolResult,
   isLastToolPart,
 }: {
   toolInvocation: ToolUIPart<UIToolConfigs>;
-  addToolResult: TAddToolResult<T>;
+  addToolResult: TAddToolResult;
   isLastToolPart?: boolean;
 }) => {
   const t = useTranslations("StudyPage.SingleMessage");
@@ -130,7 +130,7 @@ export const SingleMessage = <T extends UITools>({
   // content: string | ReactNode;
   // parts?: MessageType["parts"];
   message: TMessageWithTool;
-  addToolResult: TAddToolResult<T>;
+  addToolResult: TAddToolResult;
   avatar?: ReactNode;
   nickname?: string;
   onDelete?: () => void;

@@ -1,7 +1,9 @@
 "use client";
+import { TMessageWithTool } from "@/components/chat/types";
 import { UserChatSession } from "@/components/chat/UserChatSession";
 import { FitToViewport } from "@/components/layout/FitToViewport";
-import { DefaultChatTransport, Message, useChat } from "@ai-sdk/react";
+import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport } from "ai";
 import { useEffect, useRef } from "react";
 
 export function AgentChatPage({
@@ -20,28 +22,27 @@ export function AgentChatPage({
   avatar?: Parameters<typeof UserChatSession>[0]["avatar"];
   useChatAPI?: string;
   readOnly?: boolean;
-  initialMessages?: Message[];
+  initialMessages?: TMessageWithTool[];
   persistMessages?: boolean;
 }) {
   const useChatHelpers = useChat({
     id: chatId,
     experimental_throttle: 300,
-    initialMessages,
-
-    experimental_prepareRequestBody: persistMessages
-      ? ({ messages, id }) => {
-          return { message: messages[messages.length - 1], id };
-        }
-      : undefined,
-
+    messages: initialMessages,
     transport: new DefaultChatTransport({
       api: useChatAPI,
+      prepareSendMessagesRequest: persistMessages
+        ? ({ messages, id }) => {
+            return { body: { message: messages[messages.length - 1], id } };
+          }
+        : undefined,
     }),
   });
+
   const useChatRef = useRef({
-    reload: useChatHelpers.reload,
+    regenerate: useChatHelpers.regenerate,
     setMessages: useChatHelpers.setMessages,
-    append: useChatHelpers.append,
+    sendMessage: useChatHelpers.sendMessage,
   });
 
   const requestSentRef = useRef(false);
@@ -49,7 +50,7 @@ export function AgentChatPage({
     if (requestSentRef.current) return;
     requestSentRef.current = true;
     if (initialMessages[initialMessages.length - 1]?.role === "user" && !readOnly) {
-      useChatRef.current.reload();
+      useChatRef.current.regenerate();
     }
   }, [initialMessages, readOnly]);
 

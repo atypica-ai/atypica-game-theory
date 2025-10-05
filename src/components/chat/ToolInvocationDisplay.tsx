@@ -20,7 +20,7 @@ import {
   RequestPaymentMessage,
   ThanksMessage,
 } from "@/ai/tools/user/ToolMessage";
-import { TAddToolResult } from "@/app/(study)/study/types";
+import { TAddToolResult } from "@/components/chat/types";
 import { ToolUIPart } from "ai";
 
 export const ToolInvocationDisplay = ({

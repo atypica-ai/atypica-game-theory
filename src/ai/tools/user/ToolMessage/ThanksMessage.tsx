@@ -1,5 +1,5 @@
 import { ToolName, UIToolConfigs } from "@/ai/tools/types";
-import { TAddToolResult } from "@/app/(study)/study/types";
+import { TAddToolResult } from "@/components/chat/types";
 import { ToolUIPart } from "ai";
 import { LinkIcon } from "lucide-react";
 import Link from "next/link";

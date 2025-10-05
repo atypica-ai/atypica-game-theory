@@ -1,7 +1,7 @@
 import { ToolName, UIToolConfigs } from "@/ai/tools/types";
 import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
-import { TAddToolResult } from "@/app/(study)/study/types";
 import { getUserTokensBalanceAction } from "@/app/account/actions";
+import { TAddToolResult } from "@/components/chat/types";
 import { Button } from "@/components/ui/button";
 import { ToolUIPart } from "ai";
 import { CoinsIcon, MessageCircleQuestionIcon } from "lucide-react";

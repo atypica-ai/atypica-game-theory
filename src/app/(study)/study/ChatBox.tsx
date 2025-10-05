@@ -4,7 +4,7 @@ import {
   prepareLastUIMessageForRequest,
 } from "@/ai/messageUtilsClient";
 import { ToolName } from "@/ai/tools/types";
-import { TMessageWithTool } from "@/app/(study)/study/types";
+import { TMessageWithTool } from "@/components/chat/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { NewStudyButton } from "@/components/NewStudyInputBox";
 import { Button } from "@/components/ui/button";

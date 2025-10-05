@@ -1,10 +1,10 @@
 "use client";
+import { TMessageWithTool } from "@/components/chat/types";
 import { Markdown } from "@/components/markdown";
 import { cn } from "@/lib/utils";
-import { UIMessage } from "ai";
 import { motion } from "framer-motion";
 import { BotIcon, CpuIcon, UserIcon } from "lucide-react";
-import React, { PropsWithChildren, ReactNode } from "react";
+import React, { PropsWithChildren, ReactNode, useMemo } from "react";
 import { FileAttachment } from "./FileAttachment";
 import { ToolInvocationDisplay } from "./ToolInvocationDisplay";
 import { ToolInvocationMessage } from "./ToolInvocationMessage";
@@ -17,17 +17,21 @@ const PlainText = ({ children }: PropsWithChildren) => {
   ) : null;
 };
 
-export const ChatMessage = (message: {
-  role: "assistant" | "user" | "system" | "data";
+export const ChatMessage = ({
+  nickname,
+  message: { role, parts },
+  avatar,
+  // extra,
+}: {
+  message: Pick<TMessageWithTool, "role" | "parts">;
   nickname?: string;
   avatar?: ReactNode;
-  content: string | ReactNode;
-  parts?: undefined["parts"];
-  extra?: Omit<UIMessage, "id" | "role" | "content" | "parts">;
+  extra?: Omit<TMessageWithTool, "id" | "role" | "parts">;
 }) => {
-  const { nickname, role, avatar, content, parts, extra } = message;
+  const fileParts = useMemo(() => {
+    return parts?.filter((part) => part.type === "file");
+  }, [parts]);
 
-  /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
   return (
     <motion.div
       className={cn(
@@ -49,38 +53,35 @@ export const ChatMessage = (message: {
           {nickname ?? role}
         </div>
       </div>
-      {extra?.experimental_attachments && (
+      {fileParts && (
         <div className="mb-2 flex flex-wrap gap-2 max-w-full overflow-x-auto">
-          {extra?.experimental_attachments.map((attachment, index) => (
+          {fileParts.map((attachment, index) => (
             <FileAttachment key={index} attachment={attachment} />
           ))}
         </div>
       )}
       <div className={cn("flex-1 overflow-hidden flex flex-col gap-3 px-1")}>
-        {parts ? (
-          parts.map((part, i) => {
-            // 如果是控制台环境，只显示最后一条
-            switch (part.type) {
-              case "text":
-                return <PlainText key={i}>{part.text}</PlainText>;
-              case "reasoning":
-                return <PlainText key={i}>{part.reasoningText}</PlainText>;
-              case "source":
-                return <PlainText key={i}>{JSON.stringify(part.source)}</PlainText>;
-              case "tool-invocation":
-                return (
-                  <React.Fragment key={i}>
-                    <ToolInvocationMessage toolInvocation={part.toolInvocation} />
-                    <ToolInvocationDisplay toolInvocation={part.toolInvocation} />
-                  </React.Fragment>
-                );
-              default:
-                return null;
-            }
-          })
-        ) : (
-          <PlainText>{content}</PlainText>
-        )}
+        {parts.map((part, i) => {
+          if (part.type === "text") {
+            return <PlainText key={i}>{part.text}</PlainText>;
+          } else if (part.type === "reasoning") {
+            return <PlainText key={i}>{part.text}</PlainText>;
+            // } else if (part.type === "source") {
+            //   return <PlainText key={i}>{JSON.stringify(part.source)}</PlainText>;
+          } else if (part.type === "dynamic-tool") {
+            // 为下面的 else if 条件分支排除 dynamic tool
+            return <PlainText key={i}>{part.toolName}</PlainText>;
+          } else if (part.type.startsWith("tool-") && "toolCallId" in part) {
+            return (
+              <React.Fragment key={i}>
+                <ToolInvocationMessage toolInvocation={part} />
+                <ToolInvocationDisplay toolInvocation={part} />
+              </React.Fragment>
+            );
+          } else {
+            return null;
+          }
+        })}
       </div>
     </motion.div>
   );

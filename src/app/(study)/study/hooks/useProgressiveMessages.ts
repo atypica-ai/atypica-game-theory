@@ -1,5 +1,5 @@
 import { ToolName } from "@/ai/tools/types";
-import { TMessageWithTool } from "@/app/(study)/study/types";
+import { TMessageWithTool } from "@/components/chat/types";
 import { useEffect, useMemo, useState } from "react";
 
 export const consoleStreamWaitTime = (name?: ToolName) => {

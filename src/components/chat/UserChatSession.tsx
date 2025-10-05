@@ -2,12 +2,12 @@
 import { CONTINUE_ASSISTANT_STEPS } from "@/ai/messageUtilsClient";
 import { RecordButton } from "@/components/chat/RecordButton";
 import { StatusDisplay } from "@/components/chat/StatusDisplay";
+import { TMessageWithTool } from "@/components/chat/types";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useDevice } from "@/hooks/use-device";
 import { useFileUploadManager } from "@/hooks/use-file-upload-manager";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
-import { fileUrlToDataUrl } from "@/lib/attachments/actions";
 import { cn } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
 import { ArrowRightIcon, PlayIcon } from "lucide-react";
@@ -15,7 +15,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { ReactNode, RefObject, useCallback, useState } from "react";
 import { ChatMessage } from "./ChatMessage";
 import { FileAttachment } from "./FileAttachment";
-import { FileUploadButton, FileUploadInfo } from "./FileUploadButton";
+import { FileUploadButton } from "./FileUploadButton";
 
 export function UserChatSession({
   // chatId,
@@ -24,7 +24,7 @@ export function UserChatSession({
   avatar,
   readOnly,
   limit,
-  useChatHelpers: { messages, status, error, handleSubmit, input, setInput },
+  useChatHelpers: { messages, status, error },
   useChatRef,
   acceptAttachments,
   persistMessages = true,
@@ -35,8 +35,13 @@ export function UserChatSession({
   avatar?: Partial<{ user: ReactNode; assistant: ReactNode; system: ReactNode; data: ReactNode }>;
   readOnly?: boolean;
   limit?: number; // 向前保留的消息数量
-  useChatHelpers: Omit<ReturnType<typeof useChat>, "append" | "reload" | "setMessages">;
-  useChatRef: RefObject<Pick<ReturnType<typeof useChat>, "append" | "reload" | "setMessages">>;
+  useChatHelpers: Omit<
+    ReturnType<typeof useChat<TMessageWithTool>>,
+    "regenerate" | "setMessages" | "sendMessage"
+  >;
+  useChatRef: RefObject<
+    Pick<ReturnType<typeof useChat<TMessageWithTool>>, "regenerate" | "setMessages" | "sendMessage">
+  >;
   acceptAttachments: boolean;
   persistMessages?: boolean;
 }) {
@@ -48,43 +53,49 @@ export function UserChatSession({
 
   const handleContinueChat = useCallback(() => {
     if (messages.length > 0 && messages[messages.length - 1].role === "user") {
-      useChatRef.current.reload();
+      useChatRef.current.regenerate();
     } else {
-      useChatRef.current.append({ role: "user", content: CONTINUE_ASSISTANT_STEPS });
+      useChatRef.current.sendMessage({ text: CONTINUE_ASSISTANT_STEPS });
     }
     // 不要监听 reload, append
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messages.length]);
 
-  const handleFormSubmit = useCallback(
+  const [input, setInput] = useState("");
+
+  const handleSubmitMessage = useCallback(
     async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
       const filesToAttach = [...uploadedFiles];
       if (filesToAttach.length > 0) {
-        if (!persistMessages) {
-          /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
-          useChatRef.current?.append({
-            role: "user",
-            content: input.trim(),
-            experimental_attachments: await Promise.all(
-              filesToAttach.map(async ({ name, mimeType, objectUrl }: FileUploadInfo) => {
-                const dataUrl = (await fileUrlToDataUrl({ objectUrl, mimeType })) as string;
-                return { name, url: dataUrl, contentType: mimeType };
-              }),
-            ),
-          });
-        } else {
-          throw new Error("Not implemented");
-        }
-        setInput("");
-        clearFiles();
+        /**
+         * @todo: 暂时禁用文件上传，之后要改成 message 和 attachments 分开提交给 chat api ，然后调用 persistentAIMessageToDB
+         */
+        // if (!persistMessages) {
+        //   /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
+        //   useChatRef.current?.append({
+        //     role: "user",
+        //     content: input.trim(),
+        //     experimental_attachments: await Promise.all(
+        //       filesToAttach.map(async ({ name, mimeType, objectUrl }: FileUploadInfo) => {
+        //         const dataUrl = (await fileUrlToDataUrl({ objectUrl, mimeType })) as string;
+        //         return { name, url: dataUrl, contentType: mimeType };
+        //       }),
+        //     ),
+        //   });
+        // } else {
+        //   throw new Error("Not implemented");
+        // }
+        // setInput("");
+        // clearFiles();
       } else {
         // No files, just submit the text message normally
-        handleSubmit(e);
+        useChatRef.current.sendMessage({ text: input });
+        setInput("");
         clearFiles();
       }
     },
-    [handleSubmit, uploadedFiles, useChatRef, input, setInput, clearFiles, persistMessages],
+    [uploadedFiles, useChatRef, input, setInput, clearFiles, persistMessages],
   );
 
   const [messagesContainerRef, messagesEndRef] = useScrollToBottom<HTMLDivElement>();
@@ -102,15 +113,20 @@ export function UserChatSession({
         )}
       >
         {(limit ? messages.slice(-limit) : messages)
-          .filter(({ role, content }) => !(role === "user" && content === CONTINUE_ASSISTANT_STEPS))
-          .map(({ id, role, content, parts, ...extra }) => (
+          .filter(
+            ({ role, parts }) =>
+              !(
+                role === "user" &&
+                parts[0]?.type === "text" &&
+                parts[0].text === CONTINUE_ASSISTANT_STEPS
+              ),
+          )
+          .map(({ id, role, parts, ...extra }) => (
             <ChatMessage
               key={id}
-              role={role}
+              message={{ role, parts }}
               nickname={nickname ? nickname[role] : undefined}
               avatar={avatar ? avatar[role] : undefined}
-              content={content}
-              parts={parts}
               extra={extra}
             ></ChatMessage>
           ))}
@@ -141,7 +157,7 @@ export function UserChatSession({
           </div>
         )}
         {!readOnly && (
-          <form onSubmit={handleFormSubmit} className="relative bg-background rounded-lg">
+          <form onSubmit={handleSubmitMessage} className="relative bg-background rounded-lg">
             {uploadedFiles.length > 0 && (
               <div className="absolute bottom-full left-0 mb-2 flex flex-wrap gap-2 max-w-full">
                 {uploadedFiles.map((file, index) => (

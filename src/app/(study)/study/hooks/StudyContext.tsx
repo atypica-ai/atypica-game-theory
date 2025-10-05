@@ -1,5 +1,5 @@
 "use client";
-import { TMessageWithTool } from "@/app/(study)/study/types";
+import { TMessageWithTool } from "@/components/chat/types";
 import { UserChat } from "@/prisma/client";
 import { ToolUIPart } from "ai";
 import { createContext, Dispatch, ReactNode, SetStateAction, useContext, useState } from "react";
