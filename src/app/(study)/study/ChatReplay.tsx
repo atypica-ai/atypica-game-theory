@@ -35,12 +35,16 @@ export function ChatReplay() {
       }
       for (let j = message.parts.length - 1; j >= 0; j--) {
         const part = message.parts[j];
-        if (part.type === "tool-invocation") {
+        if (part.type.startsWith("tool-") && "toolCallId" in part) {
           setLastToolInvocation((prev) => {
-            if (prev?.toolCallId === part.toolInvocation.toolCallId) {
+            if (prev?.toolCallId === part.toolCallId && prev?.state === part.state) {
               return prev;
             }
-            return part.toolInvocation;
+            return {
+              toolCallId: part.toolCallId,
+              toolName: part.type.slice(5),
+              state: part.state,
+            };
           });
           return;
         }
@@ -61,7 +65,7 @@ export function ChatReplay() {
         {messagesDisplay.map((message, index) => (
           <SingleMessage
             key={message.id}
-            addToolResult={() => {}}
+            addToolResult={async () => {}}
             message={message}
             avatar={
               message.role === "assistant" ? (

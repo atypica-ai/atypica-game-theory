@@ -81,7 +81,9 @@ export async function POST(req: Request) {
 
   // 动态检测用户输入的语言，先检测用户输入的语言，默认使用 persona 自身的语言
   const locale = await detectInputLanguage({
-    text: newMessage.content,
+    text: newMessage.parts // 所有 text parts 的文本合在一起检测
+      .map((part) => (part.type === "text" ? part.text : ""))
+      .join(""),
     fallbackLocale:
       persona.locale && VALID_LOCALES.includes(persona.locale as Locale)
         ? (persona.locale as Locale)
@@ -130,7 +132,13 @@ export async function POST(req: Request) {
 
     onStepFinish: async (step) => {
       appendStepToStreamingMessage(streamingMessage, step);
-      if (streamingMessage.parts?.length && streamingMessage.content.trim()) {
+      if (
+        streamingMessage.parts?.length &&
+        streamingMessage.parts // 所有 text parts 的文本合在一起检测
+          .map((part) => (part.type === "text" ? part.text : ""))
+          .join("")
+          .trim()
+      ) {
         await persistentAIMessageToDB(userChat.id, streamingMessage);
       }
       const { usage } = step;

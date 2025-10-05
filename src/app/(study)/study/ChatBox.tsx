@@ -1,5 +1,10 @@
-import { ClientMessagePayload, CONTINUE_ASSISTANT_STEPS } from "@/ai/messageUtilsClient";
+import {
+  ClientMessagePayload,
+  CONTINUE_ASSISTANT_STEPS,
+  prepareLastUIMessageForRequest,
+} from "@/ai/messageUtilsClient";
 import { ToolName } from "@/ai/tools/types";
+import { TMessageWithTool } from "@/app/(study)/study/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { NewStudyButton } from "@/components/NewStudyInputBox";
 import { Button } from "@/components/ui/button";
@@ -9,7 +14,8 @@ import { useDevice } from "@/hooks/use-device";
 import { useDocumentVisibility } from "@/hooks/use-document-visibility";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
 import { cn } from "@/lib/utils";
-import { DefaultChatTransport, Message, useChat } from "@ai-sdk/react";
+import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport, UIMessage } from "ai";
 import { ArrowRightIcon, PlayIcon, PlusIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -24,7 +30,7 @@ import { StudyFeedback } from "./components/StudyFeedback";
 import { useStudyContext } from "./hooks/StudyContext";
 import { SingleMessage } from "./SingleMessage";
 
-function popLastUserMessage(messages: Message[]) {
+function popLastUserMessage(messages: UIMessage[]) {
   if (messages.length > 0 && messages[messages.length - 1].role === "user") {
     // pop 会修改 messages，导致调用 popLastUserMessage 的 currentChat 产生 state 变化，会有问题
     // const lastUserMessage = messages.pop();
@@ -48,75 +54,54 @@ export function ChatBox() {
     },
   } = useStudyContext();
 
-  const initialRequestBody = useMemo(
+  const extraRequestPayload = useMemo(
     () => ({ userChatToken: studyUserChatToken }),
     [studyUserChatToken],
   );
 
-  const [input, setInput] = useState("");
-
   const {
     messages,
+    sendMessage,
     setMessages,
     error,
-    handleSubmit,
-    setInput,
+    // handleSubmit,
+    // setInput,
     status: useChatStatus,
-    reload,
-    append,
+    regenerate,
+    // append,
     addToolResult,
   } = useChat({
     id: studyUserChatId.toString(),
-    initialMessages: initialMessages,
+    messages: initialMessages,
     experimental_throttle: 300,
-
     // maxSteps: 15,  // 后端 chat api 设置了 maxSteps 并且会控制，这里不能再设置，会覆盖后端的配置！
-    body: {
-      ...initialRequestBody,
-    },
-
-    // see https://sdk.vercel.ai/docs/ai-sdk-ui/chatbot-message-persistence#sending-only-the-last-message
-    experimental_prepareRequestBody({ messages, id, requestBody: _requestBody }) {
-      // requestBody 这个字段不靠谱，虽然上面配置了 body，首次提交的时候这里的 requestBody 却是空的
-      // 只好专门修复下
-      const requestBody: typeof initialRequestBody = { ...initialRequestBody, ..._requestBody };
-      const body: ClientMessagePayload = {
-        message: messages[messages.length - 1],
-        ...requestBody,
-      };
-      // useChat 上的 id 也在参数里，不过这里没用到，只是 debug 一下
-      console.debug("study experimental_prepareRequestBody", messages, id, _requestBody);
-      return body;
-    },
-
+    // body: { ...extraRequestPayload }, v5 现在放在 sendMessage 里直接提交
     onError(error) {
       if (/network error/.test(error?.message)) {
         // 这里应该不会无限循环，因为 onError 的时候肯定是 assistant 消息在回复，所以 reload 以后最后一条消息不会是 user，也就不会立即开始 chat
         location.reload();
       }
     },
-
     transport: new DefaultChatTransport({
       api: "/api/chat/study",
+      // see https://sdk.vercel.ai/docs/ai-sdk-ui/chatbot-message-persistence#sending-only-the-last-message
+      prepareSendMessagesRequest({ messages, id }) {
+        const body: ClientMessagePayload = {
+          id,
+          message: prepareLastUIMessageForRequest(messages),
+          ...extraRequestPayload,
+        };
+        // useChat 上的 id 也在参数里，不过这里没用到，只是 debug 一下
+        console.debug("study experimental_prepareRequestBody", messages, id);
+        return { body };
+      },
     }),
   });
 
   const [backgroundToken, setBackgroundToken] = useState<string | null>(initialBackgroundToken);
-  const useChatRef = useRef({ reload, setMessages, append });
+  const useChatRef = useRef({ regenerate, setMessages, sendMessage });
 
-  // React 在 development 模式下默认会执行两次 useEffect，这是 React 的严格模式的有意设计，帮助发现副作用
-  // 两次请求会触发争夺 backgroundToken 冲突，需要阻止
-  const requestSentRef = useRef(false);
-  useEffect(() => {
-    if (requestSentRef.current) return;
-    requestSentRef.current = true;
-    // 如果最初最后一条消息是用户消息，则立即开始聊天，但如果 backgroundToken 不为空，不要发起聊天
-    const { lastUserMessage } = popLastUserMessage(initialMessages);
-    if (lastUserMessage && !backgroundToken) {
-      useChatRef.current.reload();
-    }
-  }, [initialMessages, backgroundToken]);
-
+  const [input, setInput] = useState("");
   // 不知什么原因有时候会触发两次提交，这样就会导致 backgroundToken 被立即重置从而报错，所以加一个 2s throttle
   const [lastSubmitTime, setLastSubmitTime] = useState<number>(0);
   const handleSubmitMessage = useCallback(
@@ -128,22 +113,38 @@ export function ChatBox() {
         return;
       }
       setLastSubmitTime(now);
-      handleSubmit(event, {
-        body: initialRequestBody,
-      });
+      useChatRef.current.sendMessage({ text: input });
+      setInput("");
     },
-    // handleSubmit 不能用 ref，要监听变化
-    [handleSubmit, lastSubmitTime, initialRequestBody],
+    [input, lastSubmitTime],
   );
+
+  // React 在 development 模式下默认会执行两次 useEffect，这是 React 的严格模式的有意设计，帮助发现副作用
+  // 两次请求会触发争夺 backgroundToken 冲突，需要阻止
+  const requestSentRef = useRef(false);
+  useEffect(() => {
+    if (requestSentRef.current) return;
+    requestSentRef.current = true;
+    // 如果最初最后一条消息是用户消息，则立即开始聊天，但如果 backgroundToken 不为空，不要发起聊天
+    const { lastUserMessage } = popLastUserMessage(initialMessages);
+    if (lastUserMessage && !backgroundToken) {
+      useChatRef.current.regenerate();
+    }
+  }, [initialMessages, backgroundToken]);
 
   const handleContinueChat = useCallback(() => {
     const { lastUserMessage } = popLastUserMessage(messages);
     if (lastUserMessage) {
-      // 实际不会走到这里，因为页面刚打开如果有 lastUserMessage 就会自动 reload，而如果报错了，continue 按钮是禁用的
-      useChatRef.current.reload();
+      // 实际不会走到这里，因为页面刚打开如果有 lastUserMessage 就会自动 regenerate，而如果报错了，continue 按钮是禁用的
+      useChatRef.current.regenerate();
     } else {
       // reload(); // 不能 reload 而是 append 一个消息，reload 会在前端删除最后一条 assistant 消息，但其实后端还在
-      useChatRef.current.append({ role: "user", content: CONTINUE_ASSISTANT_STEPS });
+      useChatRef.current.sendMessage({ text: CONTINUE_ASSISTANT_STEPS });
+      // both works, see https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#message-sending-append--sendmessage
+      // useChatRef.current.sendMessage({
+      //   role: "user",
+      //   parts: [{ type: "text", text: CONTINUE_ASSISTANT_STEPS }],
+      // });
     }
   }, [messages]);
 
@@ -178,7 +179,7 @@ export function ChatBox() {
       // console.log(`StudyUserChat [${studyUserChatId}] updated at ${chatMessageUpdatedAt}, reloading messages`);
       fetchUserChatByToken(studyUserChatToken, "study").then((result) => {
         if (result.success) {
-          useChatRef.current.setMessages(result.data.messages);
+          useChatRef.current.setMessages(result.data.messages as TMessageWithTool[]);
         } else {
           console.log(result.message);
         }
@@ -212,15 +213,16 @@ export function ChatBox() {
       const message = messages[i];
       for (let j = message.parts.length - 1; j >= 0; j--) {
         const part = message.parts[j];
-        if (part.type === "tool-invocation") {
+        if (part.type.startsWith("tool-") && "toolCallId" in part) {
           setLastToolInvocation((prev) => {
-            if (
-              prev?.toolCallId === part.toolInvocation.toolCallId &&
-              prev?.state === part.toolInvocation.state
-            ) {
+            if (prev?.toolCallId === part.toolCallId && prev?.state === part.state) {
               return prev;
             }
-            return part.toolInvocation;
+            return {
+              toolCallId: part.toolCallId,
+              toolName: part.type.slice(5), // dirty method to get toolName, see https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#tool-part-type-changes-uimessage
+              state: part.state,
+            };
           });
           return;
         }
@@ -238,10 +240,12 @@ export function ChatBox() {
     if (lastMessage?.parts) {
       const lastPart = lastMessage.parts[lastMessage.parts.length - 1];
       if (
-        lastPart.type === "tool-invocation" &&
-        lastPart.toolInvocation.state !== "result" &&
+        lastPart.type.startsWith("tool-") &&
+        "toolCallId" in lastPart &&
+        lastPart.state !== "output-available" &&
         [ToolName.thanks, ToolName.requestInteraction].includes(
-          lastPart.toolInvocation.toolName as ToolName,
+          // dirty method to get toolName, see https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#tool-part-type-changes-uimessage
+          lastPart.type.slice(5) as ToolName,
         )
       ) {
         waitForUser = true;
@@ -250,9 +254,9 @@ export function ChatBox() {
     const studyCompleted = !!messages.find((message) => {
       return !!message.parts?.find(
         (part) =>
-          part.type === "tool-invocation" &&
-          part.toolInvocation.toolName === ToolName.generateReport &&
-          part.toolInvocation.state === "result",
+          part.type === `tool-${ToolName.generateReport}` &&
+          // "toolCallId" in part &&  // part.type === `tool-xxx` can infer toolInvocation type
+          part.state === "output-available",
       );
     });
     return [waitForUser, studyCompleted];
