@@ -16,7 +16,7 @@ import { SparklesIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { saveOnboardingData } from "./actions";
 
@@ -36,42 +36,55 @@ export default function OnboardingPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!session?.user?.id) return;
+  const onSubmit = useCallback(
+    async (/*e: React.FormEvent*/) => {
+      // e.preventDefault();
+      if (!session?.user?.id) return;
 
-    // Validation - all fields except companyName are required
-    if (!usageType || !role.trim() || !industry.trim() || !howDidYouHear.trim()) {
-      setError(t("requiredFields"));
-      return;
-    }
-
-    setIsLoading(true);
-    setError("");
-
-    try {
-      const data: UserOnboardingData = {
-        usageType: usageType as "work" | "personal",
-        role: role.trim(),
-        industry: industry.trim(),
-        companyName: companyName.trim(),
-        howDidYouHear: howDidYouHear.trim(),
-      };
-
-      const result = await saveOnboardingData(data);
-
-      if (!result.success) {
-        throw new Error(result.message);
+      // Validation - all fields except companyName are required
+      if (!usageType || !role.trim() || !industry.trim() || !howDidYouHear.trim()) {
+        setError(t("requiredFields"));
+        return;
       }
 
-      toast.success(t("successMessage"));
-      router.push(callbackUrl);
-    } catch (error) {
-      setError((error as Error).message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+      setIsLoading(true);
+      setError("");
+
+      try {
+        const data: UserOnboardingData = {
+          usageType: usageType as "work" | "personal",
+          role: role.trim(),
+          industry: industry.trim(),
+          companyName: companyName.trim(),
+          howDidYouHear: howDidYouHear.trim(),
+        };
+
+        const result = await saveOnboardingData(data);
+
+        if (!result.success) {
+          throw new Error(result.message);
+        }
+
+        toast.success(t("successMessage"));
+        router.push(callbackUrl);
+      } catch (error) {
+        setError((error as Error).message);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [
+      usageType,
+      role,
+      industry,
+      howDidYouHear,
+      callbackUrl,
+      companyName,
+      router,
+      session?.user?.id,
+      t,
+    ],
+  );
 
   return (
     <FitToViewport>
@@ -91,7 +104,12 @@ export default function OnboardingPage() {
 
         {/* Form */}
         <div className="bg-card rounded-2xl shadow-lg border overflow-hidden">
-          <form onSubmit={onSubmit} className="p-6 md:p-8 space-y-6">
+          {/** <form onSubmit={onSubmit} className="p-6 md:p-8 space-y-6">
+           * form 元素会让下面的 select 的 portal 失效，本来 select 应该是 button 点了以后新建一个 fixed 元素 append 到 body
+           * 但这里用 form 元素会导致 select 元素渲染在 form 里，并且是 absolute，很奇怪，
+           * 进一步的这会导致整个 body 可以滚动，因为父元素都没有刻意设置 relative
+           */}
+          <div className="p-6 md:p-8 space-y-6">
             {error && (
               <div className="rounded-lg bg-destructive/10 p-4 text-sm text-destructive border border-destructive/20">
                 {error}
@@ -208,13 +226,13 @@ export default function OnboardingPage() {
 
             {/* Submit button */}
             <Button
-              type="submit"
               className="w-full h-12 text-base font-medium"
               disabled={isLoading}
+              onClick={onSubmit}
             >
               {isLoading ? t("submittingButton") : t("submitButton")}
             </Button>
-          </form>
+          </div>
         </div>
 
         {/* Footer note */}
