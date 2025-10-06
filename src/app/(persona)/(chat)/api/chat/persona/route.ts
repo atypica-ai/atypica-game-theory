@@ -133,11 +133,10 @@ export async function POST(req: Request) {
     onStepFinish: async (step) => {
       appendStepToStreamingMessage(streamingMessage, step);
       if (
-        streamingMessage.parts?.length &&
-        streamingMessage.parts // 所有 text parts 的文本合在一起检测
-          .map((part) => (part.type === "text" ? part.text : ""))
-          .join("")
-          .trim()
+        streamingMessage.parts?.length
+        // 🤔 这个判断不一定需要，只要 parts 长度不是 0 就可以保存
+        // && streamingMessage.parts // 所有 text parts 的文本合在一起检测
+        //   .map((part) => (part.type === "text" ? part.text : "")).join("").trim()
       ) {
         await persistentAIMessageToDB(userChat.id, streamingMessage);
       }

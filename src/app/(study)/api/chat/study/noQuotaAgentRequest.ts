@@ -1,5 +1,5 @@
 import { ToolName } from "@/ai/tools/types";
-import { createUIMessageStreamResponse, formatDataStreamPart, ModelMessage, UIMessage } from "ai";
+import { createUIMessageStream, createUIMessageStreamResponse, ModelMessage, UIMessage } from "ai";
 
 export async function noQuotaAgentRequest(
   {
@@ -38,17 +38,32 @@ export async function noQuotaAgentRequest(
   // });
   // return streamTextResult.toDataStreamResponse();
 
-  return createUIMessageStreamResponse({
-    execute: async (dataStream) => {
-      dataStream.write(formatDataStreamPart("start_step", { messageId: "tokens-not-enough" }));
-      dataStream.write(
-        formatDataStreamPart("tool_call", {
-          toolCallId: "request-payment",
-          toolName: ToolName.requestPayment,
-          args: {},
-        }),
-      );
-      dataStream.write(formatDataStreamPart("finish_message", { finishReason: "stop" }));
+  // return createUIMessageStreamResponse({
+  //   execute: async (dataStream) => {
+  //     dataStream.write(formatDataStreamPart("start_step", { messageId: "tokens-not-enough" }));
+  //     dataStream.write(
+  //       formatDataStreamPart("tool_call", {
+  //         toolCallId: "request-payment",
+  //         toolName: ToolName.requestPayment,
+  //         args: {},
+  //       }),
+  //     );
+  //     dataStream.write(formatDataStreamPart("finish_message", { finishReason: "stop" }));
+  //   },
+  // });
+  const toolCallId = "request-payment";
+  const stream = createUIMessageStream({
+    execute({ writer }) {
+      writer.write({ type: "start" });
+      writer.write({ type: "tool-input-start", toolCallId, toolName: ToolName.requestPayment });
+      writer.write({
+        type: "tool-input-available",
+        toolCallId,
+        toolName: ToolName.requestPayment,
+        input: {},
+      });
+      writer.write({ type: "finish" });
     },
   });
+  return createUIMessageStreamResponse({ stream });
 }

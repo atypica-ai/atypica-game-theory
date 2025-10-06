@@ -21,14 +21,14 @@ import {
   toolCallError,
   webSearchTool,
 } from "@/ai/tools/tools";
-import { AgentToolConfigArgs, ToolName } from "@/ai/tools/types";
+import { AgentToolConfigArgs, ToolName, UIToolConfigs } from "@/ai/tools/types";
 import { setUserChatError } from "@/lib/userChat/lib";
 import { safeAbort } from "@/lib/utils";
 import { prisma } from "@/prisma/prisma";
 import { getUserTokens } from "@/tokens/lib";
 import {
+  createUIMessageStream,
   createUIMessageStreamResponse,
-  formatDataStreamPart,
   generateId,
   ModelMessage,
   smoothStream,
@@ -37,7 +37,7 @@ import {
   streamText,
   TextStreamPart,
   ToolChoice,
-  ToolInvocation,
+  ToolUIPart,
   UIMessage,
 } from "ai";
 import { Locale } from "next-intl";
@@ -118,10 +118,11 @@ async function shouldDecidePersonaTier({
   }
   const messageId = generateId();
   const toolCallId = generateId();
-  const toolInvocation: ToolInvocation = {
+  // ToolUIPart<UIToolConfigs> 会根据 type 推断出 input 类型
+  const toolPart: ToolUIPart<UIToolConfigs> = {
     toolCallId,
-    toolName: ToolName.requestInteraction,
-    args:
+    type: `tool-${ToolName.requestInteraction}`,
+    input:
       locale === "zh-CN"
         ? {
             question: `我们发现您曾导入过 ${personaImportCount} 位真人画像。在本次研究中，您希望如何使用这些画像？`,
@@ -137,21 +138,35 @@ async function shouldDecidePersonaTier({
               "Use only Atypica's synthesized AI personas",
             ],
           },
-    state: "call",
+    state: "input-available",
   };
   await persistentAIMessageToDB(studyUserChatId, {
     id: messageId,
     role: "assistant",
-    content: toolInvocation.args.question,
-    parts: [{ type: "tool-invocation", toolInvocation }],
+    // content: toolInvocation.args.question,
+    parts: [toolPart],
   });
-  return createUIMessageStreamResponse({
-    execute: async (dataStream) => {
-      dataStream.write(formatDataStreamPart("start_step", { messageId }));
-      dataStream.write(formatDataStreamPart("tool_call", toolInvocation));
-      dataStream.write(formatDataStreamPart("finish_message", { finishReason: "stop" }));
+  // return createUIMessageStreamResponse({
+  //   execute: async (dataStream) => {
+  //     dataStream.write(formatDataStreamPart("start_step", { messageId }));
+  //     dataStream.write(formatDataStreamPart("tool_call", toolInvocation));
+  //     dataStream.write(formatDataStreamPart("finish_message", { finishReason: "stop" }));
+  //   },
+  // });
+  const stream = createUIMessageStream({
+    execute({ writer }) {
+      writer.write({ type: "start" });
+      writer.write({ type: "tool-input-start", toolCallId, toolName: ToolName.requestInteraction });
+      writer.write({
+        type: "tool-input-available",
+        toolCallId,
+        toolName: ToolName.requestInteraction,
+        input: toolPart.input,
+      });
+      writer.write({ type: "finish" });
     },
   });
+  return createUIMessageStreamResponse({ stream });
 }
 
 // 参考了 https://sdk.vercel.ai/docs/ai-sdk-ui/chatbot-message-persistence#storing-messages 的设计来实现
@@ -305,14 +320,15 @@ export async function studyAgentRequest({
       });
     },
 
-    onStepFinish: async (step: StepResult<typeof allTools>) => {
+    onStepFinish: async (step: StepResult<Partial<typeof allTools>>) => {
       await immediatePersistentMessage();
       // 注意，stepFinish 一定要保存，并且 immediate:true，前面等待中的 chunk persistent 会被去掉，没影响
       // 有时候 llm 返回的消息很少，前面 onChunk 的 persistent 还在 debounce 的时候，后面 user 的 continue 消息已经保存了，这就会导致
       // - assistant 消息还来不及 create，新的 user 消息会覆盖前一条 user 消息
       // - assistant 消息还不完整，新一轮对话拿到的 messages 不完整
       // 到了这里的 tool calling step 一定是有 result 的，所以得在上面 onChunk 里面获取 call 阶段的 tool
-      const toolCalls = step.toolCalls.map((call) => call.toolName);
+      // v5 和 v4 的 step.toolCalls 的格式差不多，这一点不同于 message.parts
+      const toolCalls = step.toolCalls.map((call) => call?.toolName ?? "unknown");
       const usage = step.usage;
       const cache = step.providerMetadata?.bedrock?.usage as
         | { cacheReadInputTokens: number; cacheWriteInputTokens: number }
@@ -348,13 +364,15 @@ export async function studyAgentRequest({
       }
       {
         const generateReportTool = step.toolResults.find(
-          (tool) => tool.toolName === ToolName.generateReport,
-        );
+          (tool) => tool?.toolName === ToolName.generateReport,
+        ) as
+          | Extract<(typeof step.toolResults)[number], { toolName: ToolName.generateReport }>
+          | undefined;
         if (generateReportTool) {
           notifyReportCompletion({
             // reportToken: generateReportTool.args.reportToken,
             reportToken:
-              generateReportTool.result.reportToken || generateReportTool.args.reportToken, // 要先取 result 里的
+              generateReportTool.output.reportToken || generateReportTool.input.reportToken, // 要先取 result 里的
             studyUserChatId,
             studyLog,
           }).catch(() => {}); //不 await

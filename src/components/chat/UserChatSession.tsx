@@ -178,7 +178,7 @@ export function UserChatSession({
               <div className="absolute bottom-full left-0 mb-1 p-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg max-w-xs">
                 <div className="flex items-center gap-2 text-xs text-blue-700 dark:text-blue-300">
                   <span className="inline-block w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></span>
-                  <span className="font-medium">正在识别:</span>
+                  <span className="font-medium">🎤 </span>
                   <span className="flex-1 truncate">{partialTranscript}</span>
                 </div>
               </div>

@@ -8,7 +8,7 @@ import { useDocumentVisibility } from "@/hooks/use-document-visibility";
 import { getDisplayWidth } from "@/lib/textUtils";
 import { cn } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
-import { generateId } from "ai";
+import { UIMessage } from "ai";
 import { AnimatePresence, motion } from "framer-motion";
 import { CheckIcon, Ear, Keyboard, Loader2Icon, Send, XIcon } from "lucide-react";
 import { Locale, useTranslations } from "next-intl";
@@ -43,25 +43,23 @@ const CustomTextarea = React.forwardRef<HTMLTextAreaElement, CustomTextareaProps
 
 CustomTextarea.displayName = "CustomTextarea";
 
-interface FocusedInterviewChatProps {
-  locale: Locale;
-  useChatHelpers: Omit<ReturnType<typeof useChat>, "append" | "reload" | "setMessages">;
-  useChatRef: React.RefObject<
-    Pick<ReturnType<typeof useChat>, "append" | "reload" | "setMessages">
-  >;
-  showTimer?: boolean;
-  topRightButton?: React.ReactNode;
-  className?: string;
-}
-
-export function FocusedInterviewChat({
+export function FocusedInterviewChat<T extends UIMessage = UIMessage>({
   locale,
   useChatHelpers,
   useChatRef,
   showTimer = true,
   topRightButton,
   className = "",
-}: FocusedInterviewChatProps) {
+}: {
+  locale: Locale;
+  useChatHelpers: Omit<ReturnType<typeof useChat<T>>, "regenerate" | "setMessages" | "sendMessage">;
+  useChatRef: React.RefObject<
+    Pick<ReturnType<typeof useChat<T>>, "regenerate" | "setMessages" | "sendMessage">
+  >;
+  showTimer?: boolean;
+  topRightButton?: React.ReactNode;
+  className?: string;
+}) {
   // const locale = useLocale();
   const { isMobile } = useDevice();
   const t = useTranslations("Components.FocusedInterviewChat");
@@ -71,36 +69,25 @@ export function FocusedInterviewChat({
   const [hasTimedOut, setHasTimedOut] = useState(false);
   const [isTimerActive, setIsTimerActive] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const [lastUserMessage, setLastUserMessage] = useState<{ id: string; content: string } | null>(
-    null,
-  );
+  const [lastUserMessage, setLastUserMessage] = useState<{ content: string } | null>(null);
   const [showTextInput, setShowTextInput] = useState(false);
   const [partialTranscript, setPartialTranscript] = useState("");
   const [isProcessingTranscript, setIsProcessingTranscript] = useState(false);
 
-  const { messages, input, setInput, handleSubmit, status, stop } = useChatHelpers;
+  const { messages, status, stop } = useChatHelpers;
 
   const { isDocumentVisible } = useDocumentVisibility();
 
+  const [input, setInput] = useState("");
   // Enhanced handleSubmit with refocus
   const handleSubmitWithFocus = useCallback(
     (e: React.FormEvent) => {
+      e.preventDefault();
       const messageContent = input.trim();
       if (!messageContent) return;
+      setLastUserMessage({ content: messageContent });
 
-      const messageToSend = {
-        role: "user" as const,
-        content: messageContent,
-        id: generateId(),
-      };
-
-      setLastUserMessage(messageToSend);
-
-      handleSubmit(e, {
-        data: {
-          message: messageToSend,
-        },
-      });
+      useChatRef.current.sendMessage({ text: messageContent });
 
       // Reset timeout state when user responds
       setHasTimedOut(false);
@@ -114,7 +101,7 @@ export function FocusedInterviewChat({
         }
       }, 50);
     },
-    [handleSubmit, input, showTextInput],
+    [input, showTextInput],
   );
 
   const handleTranscriptInternal = useCallback(
@@ -128,8 +115,10 @@ export function FocusedInterviewChat({
           // Extract context from last 2 messages (recent conversation round)
           const recentContext = messages
             .slice(-2)
-            .map((m) => m.content)
-            .join(" ");
+            .map((message) =>
+              message.parts.map((part) => (part.type === "text" ? part.text : "")).join("\n"),
+            )
+            .join("\n");
 
           console.log("📝 Correcting speech text with context:", {
             originalText: text,
@@ -143,15 +132,10 @@ export function FocusedInterviewChat({
             corrected: correctedText,
           });
 
-          const messageToSend = {
-            role: "user" as const,
-            content: correctedText,
-            id: generateId(),
-          };
-          setLastUserMessage(messageToSend);
+          setLastUserMessage({ content: correctedText });
 
-          console.log("📨 Sending corrected transcript message to chat:", messageToSend.content);
-          useChatRef.current?.append(messageToSend);
+          console.log("📨 Sending corrected transcript message to chat:", correctedText);
+          useChatRef.current.sendMessage({ text: correctedText });
 
           // Reset timeout state when user responds
           setHasTimedOut(false);
@@ -194,9 +178,10 @@ export function FocusedInterviewChat({
   }, [messages]);
 
   const messageDisplayStyle = useMemo(() => {
-    const displayWidth = lastAssistantMessage?.content
-      ? getDisplayWidth(lastAssistantMessage.content)
-      : 0;
+    const textContent = lastAssistantMessage?.parts
+      ?.map((part) => (part.type === "text" ? part.text : ""))
+      .join("\n");
+    const displayWidth = textContent ? getDisplayWidth(textContent) : 0;
     const threshold = isMobile ? 40 : 120;
     return cn({
       "text-xl sm:text-2xl": displayWidth < 60,
@@ -205,7 +190,7 @@ export function FocusedInterviewChat({
       "text-center": displayWidth <= threshold,
       "text-left": displayWidth > threshold,
     });
-  }, [lastAssistantMessage?.content, isMobile]);
+  }, [lastAssistantMessage?.parts, isMobile]);
 
   // When a new assistant message is being generated, clear the last user message
   useEffect(() => {
@@ -234,7 +219,7 @@ export function FocusedInterviewChat({
     if (timeLeft <= 0 && !hasTimedOut) {
       setHasTimedOut(true);
       // Send special message to AI indicating user hesitation
-      useChatRef.current?.append({ role: "user", content: "[USER_HESITATED]" });
+      useChatRef.current.sendMessage({ text: "[USER_HESITATED]" });
       // Reset timer for next question
       setTimeLeft(DEFAULT_TIME_LEFT);
       setIsTimerActive(false);
@@ -327,7 +312,7 @@ export function FocusedInterviewChat({
             >
               {!lastAssistantMessage
                 ? t("gettingReady")
-                : lastAssistantMessage.parts?.map((part, index) =>
+                : (lastAssistantMessage.parts ?? []).map((part, index) =>
                     part.type === "text" ? (
                       <div
                         key={index}
@@ -339,18 +324,28 @@ export function FocusedInterviewChat({
                       >
                         {part.text}
                       </div>
-                    ) : part.type === "tool-invocation" ? (
+                    ) : part.type === "dynamic-tool" ? (
                       <div
                         key={index}
                         className="my-4 text-sm text-center text-muted-foreground/50 font-normal font-mono"
                       >
-                        {t("toolCalling")} {part.toolInvocation.toolName}
-                        {part.toolInvocation.state === "result" ? (
+                        {t("toolCalling")} {part.toolName}
+                        {part.state === "output-available" ? (
+                          <CheckIcon className="size-3 inline-block ml-2 text-green-500" />
+                        ) : null}
+                      </div>
+                    ) : part.type.startsWith("tool-") && "toolCallId" in part ? (
+                      <div
+                        key={index}
+                        className="my-4 text-sm text-center text-muted-foreground/50 font-normal font-mono"
+                      >
+                        {t("toolCalling")} {part.type.slice(5) /* dirty way to extract tool name */}
+                        {part.state === "output-available" ? (
                           <CheckIcon className="size-3 inline-block ml-2 text-green-500" />
                         ) : null}
                       </div>
                     ) : null,
-                  ) || lastAssistantMessage.content}
+                  )}
               {status === "streaming" && (
                 <div className="my-4 flex gap-px items-center justify-center text-muted-foreground text-xs font-mono">
                   <span className="animate-bounce">·</span>

@@ -15,8 +15,8 @@ import { prisma } from "@/prisma/prisma";
 import { getUserTokens } from "@/tokens/lib";
 import { OpenAIResponsesProviderOptions } from "@ai-sdk/openai";
 import {
+  createUIMessageStream,
   createUIMessageStreamResponse,
-  formatDataStreamPart,
   generateId,
   smoothStream,
   stepCountIs,
@@ -43,7 +43,11 @@ export async function POST(req: NextRequest) {
   const { message: newMessage, userChatToken } = parseResult.data;
 
   // 动态检测用户输入的语言
-  const locale = await detectInputLanguage({ text: newMessage.content });
+  const locale = await detectInputLanguage({
+    text: newMessage.parts // 所有 text parts 的文本合在一起检测
+      .map((part) => (part.type === "text" ? part.text : ""))
+      .join(""),
+  });
 
   // Verify user has access to this chat
   const userChat = await prisma.userChat.findUnique({
@@ -91,15 +95,19 @@ export async function POST(req: NextRequest) {
         locale === "zh-CN"
           ? "您的余额不足，请充值后再继续。"
           : "Your balance is insufficient, please recharge and try again.";
-      return createUIMessageStreamResponse({
-        execute: async (dataStream) => {
-          dataStream.write(
-            formatDataStreamPart("start_step", { messageId: "insufficient_balance" }),
-          );
-          dataStream.write(formatDataStreamPart("text", message));
-          dataStream.write(formatDataStreamPart("finish_message", { finishReason: "stop" }));
+      const stream = createUIMessageStream({
+        execute({ writer }) {
+          // writer.write(formatDataStreamPart("start_step", { messageId: "insufficient_balance" }));
+          // writer.write(formatDataStreamPart("text", message));
+          // writer.write(formatDataStreamPart("finish_message", { finishReason: "stop" }));
+          writer.write({ type: "start" });
+          writer.write({ type: "text-start", id: "insufficient_balance" });
+          writer.write({ type: "text-delta", id: "insufficient_balance", delta: message });
+          writer.write({ type: "text-end", id: "insufficient_balance" });
+          writer.write({ type: "finish" });
         },
       });
+      return createUIMessageStreamResponse({ stream });
     }
   }
 
@@ -126,9 +134,7 @@ export async function POST(req: NextRequest) {
     tools: newStudyTools,
     toolChoice: shouldEndInterview ? "required" : "auto",
     stopWhen: stepCountIs(2),
-
     // temperature: 0,  // gpt-5 不支持 temperature
-
     experimental_transform: smoothStream({
       delayInMs: 30,
       chunking: /[\u4E00-\u9FFF]|\S+\s+/,
@@ -137,7 +143,12 @@ export async function POST(req: NextRequest) {
     onStepFinish: async (step) => {
       appendStepToStreamingMessage(streamingMessage, step);
       // Persist the assistant's message parts as they are generated.
-      if (streamingMessage.parts?.length && streamingMessage.content.trim()) {
+      if (
+        streamingMessage.parts?.length
+        // 🤔 这个判断不一定需要，只要 parts 长度不是 0 就可以保存
+        // && streamingMessage.parts // 所有 text parts 的文本合在一起检测
+        //   .map((part) => (part.type === "text" ? part.text : "")).join("").trim()
+      ) {
         await persistentAIMessageToDB(userChatId, streamingMessage);
       }
       chatLogger.info({

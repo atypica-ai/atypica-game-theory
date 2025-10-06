@@ -1,10 +1,11 @@
 "use client";
-import { ClientMessagePayload } from "@/ai/messageUtilsClient";
+import { ClientMessagePayload, prepareLastUIMessageForRequest } from "@/ai/messageUtilsClient";
+import { TNewStudyMessageWithTool } from "@/app/(newStudy)/types";
 import { FocusedInterviewChat } from "@/components/chat/FocusedInterviewChat";
 import { FitToViewport } from "@/components/layout/FitToViewport";
 import { UserChat } from "@/prisma/client";
-import { DefaultChatTransport, useChat } from "@ai-sdk/react";
-import { UIMessage } from "ai";
+import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport } from "ai";
 import { motion } from "framer-motion";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useMemo, useRef } from "react";
@@ -15,51 +16,42 @@ export function NewStudyChatClient({
   initialMessages,
 }: {
   userChat: UserChat;
-  initialMessages: UIMessage[];
+  initialMessages: TNewStudyMessageWithTool[];
   user: { id: number; email: string };
 }) {
   const locale = useLocale();
   const t = useTranslations("NewStudyChatPage");
 
-  const initialRequestBody = {
-    userChatToken: userChat.token,
-  };
+  const extraRequestPayload = useMemo(() => ({ userChatToken: userChat.token }), [userChat.token]);
 
   const useChatHelpers = useChat({
     id: userChat.id.toString(),
-
     // experimental_throttle: 30,
-    initialMessages,
-
-    body: initialRequestBody,
-
-    experimental_prepareRequestBody({ messages, requestBody: _requestBody }) {
-      const requestBody: typeof initialRequestBody = { ...initialRequestBody, ..._requestBody };
-      const body: ClientMessagePayload = {
-        message: messages[messages.length - 1],
-        ...requestBody,
-      };
-      return body;
-    },
-
+    messages: initialMessages,
     onFinish() {
       // Logic to run when the AI finishes its response.
     },
-
     onError(err) {
       console.error("Chat error:", err);
       // TODO: Implement user-facing error feedback (e.g., a toast notification).
     },
-
     transport: new DefaultChatTransport({
       api: `/api/chat/newstudy`,
+      prepareSendMessagesRequest({ id, messages }) {
+        const body: ClientMessagePayload = {
+          id,
+          message: prepareLastUIMessageForRequest(messages),
+          ...extraRequestPayload,
+        };
+        return { body };
+      },
     }),
   });
 
   const useChatRef = useRef({
-    reload: useChatHelpers.reload,
+    regenerate: useChatHelpers.regenerate,
     setMessages: useChatHelpers.setMessages,
-    append: useChatHelpers.append,
+    sendMessage: useChatHelpers.sendMessage,
   });
 
   const { messages } = useChatHelpers;
@@ -67,37 +59,23 @@ export function NewStudyChatClient({
   // Determine planning state based on messages content
   const planningState = useMemo(() => {
     // Check if any message has endInterview tool result
-    /* FIXME(@ai-sdk-upgrade-v5): The `part.toolInvocation.toolName` property has been removed. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#tool-part-type-changes-uimessage */
-    /* FIXME(@ai-sdk-upgrade-v5): The `part.toolInvocation.state` property has been removed. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#tool-part-type-changes-uimessage */
     const hasEndInterviewResult = messages.some((message) =>
       message.parts?.some(
-        (part) =>
-          part.type === "tool-invocation" &&
-          part.toolInvocation.toolName === "endInterview" &&
-          part.toolInvocation.state === "result",
+        // ⚠️ 这里是兼容 v4 旧的历史消息的，因为所有消息从数据库取出给 useChat 用之前都会调用 convertToV5MessagePart
+        (part) => part.type === "tool-endInterview" && part.state === "output-available",
       ),
     );
-
     if (hasEndInterviewResult) {
       return "summary";
     }
-
     return "active";
   }, [messages]);
 
   const summary = useMemo(() => {
     for (const message of messages) {
-      if (message.parts) {
-        for (const part of message.parts) {
-          /* FIXME(@ai-sdk-upgrade-v5): The `part.toolInvocation.toolName` property has been removed. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#tool-part-type-changes-uimessage */
-          /* FIXME(@ai-sdk-upgrade-v5): The `part.toolInvocation.state` property has been removed. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#tool-part-type-changes-uimessage */
-          if (
-            part.type === "tool-invocation" &&
-            part.toolInvocation.toolName === "endInterview" &&
-            part.toolInvocation.state === "result"
-          ) {
-            return part.toolInvocation.result.studyBrief || t("studyPlanningComplete");
-          }
+      for (const part of message.parts ?? []) {
+        if (part.type === "tool-endInterview" && part.state === "output-available") {
+          return part.output.studyBrief || t("studyPlanningComplete");
         }
       }
     }
@@ -111,15 +89,15 @@ export function NewStudyChatClient({
     requestSentRef.current = true;
     if (initialMessages.length === 0) {
       // If no initial message, start the conversation with AI
-      useChatRef.current.append({ role: "user", content: "[READY]" });
+      useChatRef.current.sendMessage({ text: "[READY]" });
     } else if (initialMessages[initialMessages.length - 1]?.role === "user") {
-      useChatRef.current.reload();
+      useChatRef.current.regenerate();
     }
   }, [initialMessages]);
 
   const chatWithAIArea = (
     <FitToViewport>
-      <FocusedInterviewChat
+      <FocusedInterviewChat<TNewStudyMessageWithTool>
         useChatHelpers={useChatHelpers}
         useChatRef={useChatRef}
         showTimer={true}
