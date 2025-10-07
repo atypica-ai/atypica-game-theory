@@ -98,10 +98,11 @@ export async function trackUser() {
     waitUntil(
       _trackUser(user)
         .then(async () => {
-          await prisma.user.update({
-            where: { id: user.id },
-            data: { extra: { lastTrack: Date.now() } },
-          });
+          await prisma.$executeRaw`
+            UPDATE "User"
+            SET extra = jsonb_set(COALESCE(extra, '{}'::jsonb), '{lastTrack}', to_jsonb(${Date.now()}::bigint))
+            WHERE id = ${user.id}
+          `;
         })
         .catch(() => {}),
     );
