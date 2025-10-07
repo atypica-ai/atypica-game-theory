@@ -7,8 +7,9 @@ import { ChatMessage, ChatMessageAttachment, ChatMessagePart } from "@/prisma/cl
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import {
-  convertToModelMessages,
   generateId,
+  isToolUIPart,
+  ModelMessage,
   StepResult,
   TextStreamPart,
   ToolSet,
@@ -34,66 +35,6 @@ import { convertToV5MessagePart } from "./v4";
 //   };
 //   return convert[mimeType] || mimeType;
 // }
-
-function fixChatMessages(messages: UIMessage[]): UIMessage[] {
-  let fixed: UIMessage[] = messages.map((message) => {
-    if (!message.parts) {
-      return message;
-    }
-    // 给 pending 的 tool 都标记下
-    let parts = message.parts.map((part) => {
-      if (!part.type.startsWith("tool-") || !("toolCallId" in part)) {
-        return part;
-      }
-      if (part.state === "output-available" || part.state === "output-error") {
-        return part;
-      }
-      // 如果不是 result 或者 error，一定是执行了一半挂了，要告诉大模型
-      return {
-        ...part,
-        state: "output-error" as const,
-        errorText: "Tool execution interrupted due to unknown reasons",
-      };
-    });
-    // 去除空的 text part
-    parts = parts.filter((part) => {
-      if (part.type === "text" && !part.text.trim()) {
-        return false;
-      }
-      return true;
-    });
-    return { ...message, parts };
-  });
-
-  // 删除所有空的消息，llm 会报错
-  fixed = fixed.filter((message) => {
-    if (!message.parts?.length /* && !message.content.trim() */) {
-      return false;
-    }
-    return true;
-  });
-
-  // if (
-  //   fixed.length > 1 &&
-  //   fixed[fixed.length - 2].role === "user" &&
-  //   fixed[fixed.length - 1].role === "user"
-  // ) {
-  //   // 如果最后 2 条都是 user，一定是之前聊了一半挂了，丢掉最后一条
-  //   fixed = fixed.slice(0, -1);
-  // }
-
-  // if (
-  //   fixed.length > 1 &&
-  //   fixed[fixed.length - 1].role === "assistant" &&
-  //   !fixed[fixed.length - 1].parts?.length &&
-  //   !fixed[fixed.length - 1].content.trim()
-  // ) {
-  //   // Bedrock 不支持最后一条空的 assistant 消息
-  //   fixed = fixed.slice(0, -1);
-  // }
-
-  return fixed;
-}
 
 export function convertStepsToAIMessage<T extends ToolSet>(
   steps: StepResult<T>[],
@@ -508,7 +449,7 @@ export async function prepareMessagesForStreaming(
   // 这样 LLM 才能理解，否则直接把 aiMessages 给 LLM 它会认为 tool 没执行 ...
   // 不知道之前没有一条条保存信息的时候，vercel ai sdk 是哪个阶段处理的，现在一定要人工转一次
   // ⚠️ tools 必须提供，这样在转成 ModelMessage 的时候，会调用 tool 上的 toModelOutput 方法，只把 PlainText 部分传给 LLM
-  const coreMessages = convertToModelMessages(aiMessages, {
+  const coreMessages = convertToFlattenModelMessages(aiMessages, {
     tools,
     // ignoreIncompleteToolCalls: true,
   });
@@ -517,4 +458,106 @@ export async function prepareMessagesForStreaming(
     streamingMessage,
     toolUseCount,
   };
+}
+
+/**
+ *
+ * see https://github.com/vercel/ai/issues/8516
+ * anthropic 不支持连续的 tool-call 和 tool-result 在一个 block 里
+ * [{ type: assistant, content: [ text, tool-call(id:1), text, tool-call(id:2), text ] }]
+ * [{ type: tool, content: [ tool-result(id:1), tool-result(id:2) ] }]
+ *
+ * tool-call 后面必须接着 tool-result，要拆成这样
+ * [{ type: assistant, content: [ text, tool-call(id:1) ] }]
+ * [{ type: tool, content: [ tool-result(id:1) ] }]
+ * [{ type: assistant, content: [ text, tool-call(id:2) ] }]
+ * [{ type: tool, content: [ tool-result(id:2) ] }]
+ * [{ type: assistant, content: [ text ] }]
+ *
+ * convertToFlattenModelMessages 的实现是先把 UIMessage 拆了，一旦遇到 ToolUIPart 就拆到单独的一个 UIMessage 里
+ * 这样 convertToModelMessages 的时候，tool-call 和 tool-result 就一定是连续的了
+ */
+export function convertToFlattenModelMessages(
+  messages: Array<Omit<UIMessage, "id">>,
+  options: {
+    tools: ToolSet;
+    ignoreIncompleteToolCalls?: boolean;
+  },
+): ModelMessage[] {
+  const flattenMessages: Array<Omit<UIMessage, "id">> = [];
+  let lastMessage: Omit<UIMessage, "id">;
+  for (const { parts, ...message } of messages) {
+    lastMessage = { ...message, parts: [] };
+    for (const part of parts) {
+      if (!isToolUIPart(part)) {
+        lastMessage.parts.push(part);
+      } else {
+        flattenMessages.push(lastMessage);
+        flattenMessages.push({ ...message, parts: [part] });
+        lastMessage = { ...message, parts: [] };
+      }
+    }
+  }
+  const coreMessages = convertToFlattenModelMessages(flattenMessages, options);
+  return coreMessages;
+}
+
+function fixChatMessages(messages: UIMessage[]): UIMessage[] {
+  let fixed: UIMessage[] = messages.map((message) => {
+    if (!message.parts) {
+      return message;
+    }
+    // 给 pending 的 tool 都标记下
+    let parts = message.parts.map((part) => {
+      if (!part.type.startsWith("tool-") || !("toolCallId" in part)) {
+        return part;
+      }
+      if (part.state === "output-available" || part.state === "output-error") {
+        return part;
+      }
+      // 如果不是 result 或者 error，一定是执行了一半挂了，要告诉大模型
+      return {
+        ...part,
+        state: "output-error" as const,
+        errorText: "Tool execution interrupted due to unknown reasons",
+      };
+    });
+    // 去除空的 text part
+    parts = parts.filter((part) => {
+      if (part.type === "text" && !part.text.trim()) {
+        return false;
+      }
+      return true;
+    });
+    return { ...message, parts };
+  });
+
+  // 删除所有空的消息，llm 会报错
+  fixed = fixed.filter((message) => {
+    if (!message.parts?.length /* && !message.content.trim() */) {
+      return false;
+    }
+    return true;
+  });
+
+  // if (
+  //   fixed.length > 1 &&
+  //   fixed[fixed.length - 2].role === "user" &&
+  //   fixed[fixed.length - 1].role === "user"
+  // ) {
+  //   // 如果最后 2 条都是 user，一定是之前聊了一半挂了，丢掉最后一条
+  //   fixed = fixed.slice(0, -1);
+  // }
+
+  // if (
+  //   fixed.length > 1 &&
+  //   fixed[fixed.length - 1].role === "assistant" &&
+  //   !fixed[fixed.length - 1].parts?.length &&
+  //   !fixed[fixed.length - 1].content.trim()
+  // ) {
+  //   // Bedrock 不支持最后一条空的 assistant 消息
+  //   fixed = fixed.slice(0, -1);
+  // }
+
+  return fixed;
 }

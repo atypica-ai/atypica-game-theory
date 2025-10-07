@@ -1,6 +1,10 @@
 import "server-only";
 
-import { convertStepsToAIMessage, persistentAIMessageToDB } from "@/ai/messageUtils";
+import {
+  convertStepsToAIMessage,
+  convertToFlattenModelMessages,
+  persistentAIMessageToDB,
+} from "@/ai/messageUtils";
 import {
   interviewDigestSystem,
   interviewerAttachment,
@@ -24,7 +28,6 @@ import { ChatMessageAttachment } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { google } from "@ai-sdk/google";
 import {
-  convertToModelMessages,
   FileUIPart,
   generateId,
   generateText,
@@ -299,7 +302,7 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: UIMessage[]) 
     }),
     [ToolName.saveInterviewConclusion]: saveInterviewConclusionTool(analystInterviewId),
   };
-  const coreMessages = convertToModelMessages(messages, {
+  const coreMessages = convertToFlattenModelMessages(messages, {
     tools,
   });
   let toolChoice: ToolChoice<typeof tools> = "auto";
@@ -440,7 +443,7 @@ async function chatWithPersona(chatProps: ChatProps, messages: UIMessage[]) {
       // maxRetries: 0,  // 不要自动重试？不，gemini 偶尔连不上，还是得自动重试，慢是慢了点
       temperature: 0.3,
 
-      messages: convertToModelMessages(messages, {
+      messages: convertToFlattenModelMessages(messages, {
         tools,
       }),
 

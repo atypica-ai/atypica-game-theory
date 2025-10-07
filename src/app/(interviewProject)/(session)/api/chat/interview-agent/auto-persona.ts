@@ -3,6 +3,7 @@ import "server-only";
 import {
   convertDBMessageToAIMessage,
   convertStepsToAIMessage,
+  convertToFlattenModelMessages,
   persistentAIMessageToDB,
 } from "@/ai/messageUtils";
 import { personaAgentSystem } from "@/ai/prompt";
@@ -20,7 +21,7 @@ import { InterviewProjectExtra, InterviewSessionExtra } from "@/prisma/client";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import { google } from "@ai-sdk/google";
-import { convertToModelMessages, generateId, stepCountIs, streamText, UIMessage } from "ai";
+import { generateId, stepCountIs, streamText, UIMessage } from "ai";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
 
@@ -295,7 +296,7 @@ async function generatePersonaResponse({
       },
 
       system: systemPrompt,
-      messages: convertToModelMessages(messages, {
+      messages: convertToFlattenModelMessages(messages, {
         tools: {},
       }),
       stopWhen: stepCountIs(1),
@@ -366,7 +367,7 @@ async function generateInterviewerResponse({
       },
 
       system: systemPrompt,
-      messages: convertToModelMessages(messages, {
+      messages: convertToFlattenModelMessages(messages, {
         tools,
       }),
 
