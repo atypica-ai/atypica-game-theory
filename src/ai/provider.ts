@@ -9,7 +9,6 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createVertex } from "@ai-sdk/google-vertex";
 import { createOpenAI } from "@ai-sdk/openai";
 import { createXai } from "@ai-sdk/xai";
-import { LanguageModel } from "ai";
 
 const openai = createOpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -247,46 +246,4 @@ export function imageModel(modelName: ImageModelName) {
     case "imagen-4.0":
       return vertex.image("imagen-4.0-generate-001");
   }
-}
-
-/**
- * https://github.com/vercel/ai/blob/9b09f85143986636570e597c31903daf160608cd/packages/amazon-bedrock/src/convert-to-bedrock-chat-messages.ts#L117C1-L118C1
- * bedrock 有个问题，file 的 name 在每次准备 bedrock api payload 的时候会产生一个新的，导致包含这个消息的 prompt cache checkpoint 失效
- * 这里简单修复下，固定文件名
- */
-export function fixFileNameInMessageToUsePromptCache(model: LanguageModel) {
-  if (typeof model === "string") {
-    return model;
-  }
-  if (!/\.anthropic\.claude/.test(model.modelId)) {
-    // 只修复使用 bedrock provider 时的 claude 模型
-    return model;
-  }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const originalGetArgs = (model as any).getArgs;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (model as any).getArgs = function (params: any) {
-    const res = originalGetArgs.call(model, params);
-    const { command, warnings } = res;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const messages = command.messages.map((message: any) => {
-      if (Array.isArray(message.content)) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const content = message.content.map((part: any, index: number) => {
-          if (part.document) {
-            // 有些模型限制 name 不能一样，需要加上 index，依然可以保持命名固定
-            const document = { ...part.document, name: `document_${index}` };
-            return { ...part, document };
-          } else {
-            return part;
-          }
-        });
-        return { ...message, content };
-      } else {
-        return message;
-      }
-    });
-    return { command: { ...command, messages }, warnings };
-  };
-  return model;
 }

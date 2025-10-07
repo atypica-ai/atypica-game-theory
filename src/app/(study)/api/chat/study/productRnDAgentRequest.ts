@@ -1,6 +1,6 @@
 import { appendChunkToStreamingMessage, createDebouncePersistentMessage } from "@/ai/messageUtils";
 import { productRnDSystem } from "@/ai/prompt/study/productRnD";
-import { defaultProviderOptions, fixFileNameInMessageToUsePromptCache, llm } from "@/ai/provider";
+import { defaultProviderOptions, llm } from "@/ai/provider";
 import { initStudyStatReporter } from "@/ai/tools/stats";
 import {
   audienceCallTool,
@@ -109,7 +109,7 @@ export async function productRnDAgentRequest({
 
   const streamTextResult = streamText({
     // model: llm("claude-sonnet-4"),
-    model: fixFileNameInMessageToUsePromptCache(llm("claude-3-7-sonnet")),
+    model: llm("claude-3-7-sonnet"),
 
     providerOptions: defaultProviderOptions,
     system: system,

@@ -140,7 +140,7 @@ export const SingleMessage = <UI_MESSAGE extends TStudyMessageWithTool>({
     // 用户输入的消息（如果有多条，其实不会有）合并在一起显示
     const textContent = parts.map((part) => (part.type === "text" ? part.text : "")).join("\n");
     const contentLength = (textContent.toString() ?? "").length;
-    if (textContent !== CONTINUE_ASSISTANT_STEPS) {
+    if (textContent === CONTINUE_ASSISTANT_STEPS) {
       return null;
     }
     return (
@@ -176,13 +176,13 @@ export const SingleMessage = <UI_MESSAGE extends TStudyMessageWithTool>({
             </div>
           ) : null}
         </div>
-        {fileParts.length && (
+        {fileParts.length ? (
           <div className="mt-4 flex flex-wrap gap-2 max-w-full overflow-x-auto">
             {fileParts.map((attachment, index) => (
               <FileAttachment key={index} attachment={attachment} />
             ))}
           </div>
-        )}
+        ) : null}
       </div>
     );
   }, [parts, onDelete, fileParts]);

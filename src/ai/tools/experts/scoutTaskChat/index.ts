@@ -2,13 +2,13 @@ import "server-only";
 
 import {
   appendChunkToStreamingMessage,
-  CONTINUE_ASSISTANT_STEPS,
   convertDBMessageToAIMessage,
   convertStepsToAIMessage,
   createDebouncePersistentMessage,
   persistentAIMessageToDB,
   prepareMessagesForStreaming,
 } from "@/ai/messageUtils";
+import { CONTINUE_ASSISTANT_STEPS } from "@/ai/messageUtilsClient";
 import { scoutSystem } from "@/ai/prompt";
 import { defaultProviderOptions, llm, LLMModelName } from "@/ai/provider";
 import {

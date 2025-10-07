@@ -8,12 +8,7 @@ import {
   interviewerSystem,
   personaAgentSystem,
 } from "@/ai/prompt";
-import {
-  defaultProviderOptions,
-  fixFileNameInMessageToUsePromptCache,
-  llm,
-  LLMModelName,
-} from "@/ai/provider";
+import { defaultProviderOptions, llm, LLMModelName } from "@/ai/provider";
 import {
   dySearchTool,
   insSearchTool,
@@ -323,7 +318,7 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: UIMessage[]) 
       model: reduceTokens
         ? llm(reduceTokens.model)
         : // gpt-4.1 系列都不支持 pdf，目前只有 gemini 和 claude 支持
-          fixFileNameInMessageToUsePromptCache(llm("claude-3-7-sonnet")),
+          llm("claude-3-7-sonnet"),
 
       providerOptions: defaultProviderOptions,
 

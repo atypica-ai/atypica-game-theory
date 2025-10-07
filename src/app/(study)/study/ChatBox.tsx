@@ -229,7 +229,7 @@ export function ChatBox() {
     }
     let waitForUser = false;
     const lastMessage = messages[messages.length - 1];
-    if (lastMessage?.parts) {
+    if (lastMessage?.parts?.length) {
       const lastPart = lastMessage.parts[lastMessage.parts.length - 1];
       if (
         lastPart.type.startsWith("tool-") &&

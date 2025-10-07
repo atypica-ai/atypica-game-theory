@@ -19,7 +19,7 @@ export const ScoutTaskChatResultMessage = ({
   // }
   return (
     <div className="space-y-4">
-      {personas?.length && (
+      {personas?.length ? (
         <>
           <h3 className="text-sm font-medium">Personas</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-3">
@@ -43,7 +43,7 @@ export const ScoutTaskChatResultMessage = ({
             ))}
           </div>
         </>
-      )}
+      ) : null}
       {stats && (
         <>
           <h3 className="text-sm font-medium">📊 {t("searchStats")}</h3>

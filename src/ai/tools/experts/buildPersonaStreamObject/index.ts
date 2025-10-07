@@ -1,6 +1,7 @@
 import "server-only";
 
-import { CONTINUE_ASSISTANT_STEPS, prepareMessagesForStreaming } from "@/ai/messageUtils";
+import { prepareMessagesForStreaming } from "@/ai/messageUtils";
+import { CONTINUE_ASSISTANT_STEPS } from "@/ai/messageUtilsClient";
 import { buildPersonaSystem } from "@/ai/prompt";
 import { defaultProviderOptions, llm } from "@/ai/provider";
 import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
