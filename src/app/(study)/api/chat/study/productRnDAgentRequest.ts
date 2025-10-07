@@ -1,4 +1,8 @@
-import { appendChunkToStreamingMessage, createDebouncePersistentMessage } from "@/ai/messageUtils";
+import {
+  appendChunkToStreamingMessage,
+  createDebouncePersistentMessage,
+  prepareMessagesForStreaming,
+} from "@/ai/messageUtils";
 import { productRnDSystem } from "@/ai/prompt/study/productRnD";
 import { defaultProviderOptions, llm } from "@/ai/provider";
 import { initStudyStatReporter } from "@/ai/tools/stats";
@@ -14,16 +18,7 @@ import {
 import { AgentToolConfigArgs, ToolName } from "@/ai/tools/types";
 import { setUserChatError } from "@/lib/userChat/lib";
 import { safeAbort } from "@/lib/utils";
-import {
-  ModelMessage,
-  smoothStream,
-  stepCountIs,
-  StepResult,
-  streamText,
-  TextStreamPart,
-  ToolChoice,
-  UIMessage,
-} from "ai";
+import { smoothStream, stepCountIs, StepResult, streamText, TextStreamPart, ToolChoice } from "ai";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
 import { backgroundChatUntilCancel, raceForUserChat } from "./background";
@@ -35,21 +30,12 @@ const MAX_STEPS_EACH_ROUND = 15; // streamText 默认 15 步
 // 参考了 https://sdk.vercel.ai/docs/ai-sdk-ui/chatbot-message-persistence#storing-messages 的设计来实现
 export async function productRnDAgentRequest({
   studyUserChatId,
-  coreMessages,
-  streamingMessage,
-  toolUseCount,
   userId,
   // reqSignal,
   studyLog,
   locale,
 }: {
   studyUserChatId: number;
-  coreMessages: ModelMessage[];
-  streamingMessage: Omit<UIMessage, "role"> & {
-    parts: NonNullable<UIMessage["parts"]>;
-    role: "assistant";
-  };
-  toolUseCount: Partial<Record<ToolName, number>>;
   userId: number;
   reqSignal: AbortSignal | null;
   studyLog: Logger;
@@ -79,6 +65,11 @@ export async function productRnDAgentRequest({
     [ToolName.generateReport]: generateReportTool({ studyUserChatId, ...agentToolArgs }),
     [ToolName.toolCallError]: toolCallError,
   };
+  const { coreMessages, streamingMessage, toolUseCount } = await prepareMessagesForStreaming(
+    studyUserChatId,
+    { tools: allTools },
+  );
+
   let tools: Partial<typeof allTools> = allTools;
   const toolChoice: ToolChoice<typeof allTools> = "auto";
   const maxTokens: number | undefined = undefined;

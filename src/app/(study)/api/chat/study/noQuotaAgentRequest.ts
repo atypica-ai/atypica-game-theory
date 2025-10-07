@@ -1,5 +1,5 @@
 import { ToolName } from "@/ai/tools/types";
-import { createUIMessageStream, createUIMessageStreamResponse, ModelMessage, UIMessage } from "ai";
+import { createUIMessageStream, createUIMessageStreamResponse } from "ai";
 
 export async function noQuotaAgentRequest(
   {
@@ -10,11 +10,6 @@ export async function noQuotaAgentRequest(
     // reqSignal,
   }: {
     studyUserChatId: number;
-    coreMessages: ModelMessage[];
-    streamingMessage: Omit<UIMessage, "role"> & {
-      parts: NonNullable<UIMessage["parts"]>;
-      role: "assistant";
-    };
     userId: number;
     reqSignal: AbortSignal;
   },

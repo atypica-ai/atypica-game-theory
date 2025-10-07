@@ -195,7 +195,8 @@ export function appendChunkToStreamingMessage<T extends ToolSet>(
   } else if (chunk.type === "tool-result") {
     // streamingMessage.content += "";
     const index = streamingMessage.parts.findIndex(
-      (part) => part.type === "tool-invocation" && part.toolCallId === chunk.toolCallId,
+      // 通过 toolCallId 字段寻找，兼容 v4 和 v5
+      (part) => "toolCallId" in part && part.toolCallId === chunk.toolCallId,
     );
     if (index !== -1) {
       streamingMessage.parts[index] = {
@@ -208,7 +209,8 @@ export function appendChunkToStreamingMessage<T extends ToolSet>(
     }
   } else if (chunk.type === "tool-error") {
     const index = streamingMessage.parts.findIndex(
-      (part) => part.type === "tool-invocation" && part.toolCallId === chunk.toolCallId,
+      // 通过 toolCallId 字段寻找，兼容 v4 和 v5
+      (part) => "toolCallId" in part && part.toolCallId === chunk.toolCallId,
     );
     if (index !== -1) {
       streamingMessage.parts[index] = {
@@ -470,9 +472,11 @@ export async function prepareMessagesForStreaming(
   userChatId: number,
   {
     checkpointId,
+    tools,
   }: {
     checkpointId?: number; // 给 LLM 的消息从 id > checkpointId 开始取，这里不是 messageId 而是 ChatMessage 的数据库 id，并且 id 是递增的
-  } = {},
+    tools: ToolSet; // tools 必须提供，这样在转成 ModelMessage 的时候，会调用 tool 上的 toModelOutput 方法，只把 PlainText 部分传给 LLM
+  },
 ) {
   const dbMessages = await prisma.chatMessage.findMany({
     where: checkpointId ? { userChatId, id: { gt: checkpointId } } : { userChatId },
@@ -503,7 +507,11 @@ export async function prepareMessagesForStreaming(
   // 一个 role: assistant 的 tool calling 内容 + 一个 role: tool 的 toll result 内容
   // 这样 LLM 才能理解，否则直接把 aiMessages 给 LLM 它会认为 tool 没执行 ...
   // 不知道之前没有一条条保存信息的时候，vercel ai sdk 是哪个阶段处理的，现在一定要人工转一次
-  const coreMessages = convertToModelMessages(aiMessages);
+  // ⚠️ tools 必须提供，这样在转成 ModelMessage 的时候，会调用 tool 上的 toModelOutput 方法，只把 PlainText 部分传给 LLM
+  const coreMessages = convertToModelMessages(aiMessages, {
+    tools,
+    // ignoreIncompleteToolCalls: true,
+  });
   return {
     coreMessages,
     streamingMessage,

@@ -2,6 +2,7 @@ import {
   appendChunkToStreamingMessage,
   createDebouncePersistentMessage,
   persistentAIMessageToDB,
+  prepareMessagesForStreaming,
 } from "@/ai/messageUtils";
 import { studySystem } from "@/ai/prompt";
 import { defaultProviderOptions, llm } from "@/ai/provider";
@@ -38,7 +39,6 @@ import {
   TextStreamPart,
   ToolChoice,
   ToolUIPart,
-  UIMessage,
 } from "ai";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
@@ -173,9 +173,6 @@ async function shouldDecidePersonaTier({
 export async function studyAgentRequest({
   briefStatus = "DRAFT",
   studyUserChatId,
-  coreMessages,
-  streamingMessage,
-  toolUseCount,
   userId,
   // reqSignal,
   studyLog,
@@ -183,12 +180,6 @@ export async function studyAgentRequest({
 }: {
   briefStatus?: "CLARIFIED" | "DRAFT";
   studyUserChatId: number;
-  coreMessages: ModelMessage[];
-  streamingMessage: Omit<UIMessage, "role"> & {
-    parts: NonNullable<UIMessage["parts"]>;
-    role: "assistant";
-  };
-  toolUseCount: Partial<Record<ToolName, number>>;
   userId: number;
   reqSignal: AbortSignal | null;
   studyLog: Logger;
@@ -224,6 +215,11 @@ export async function studyAgentRequest({
     [ToolName.planStudy]: planStudyTool({ studyUserChatId, ...agentToolArgs }),
     [ToolName.toolCallError]: toolCallError,
   };
+  const { coreMessages, streamingMessage, toolUseCount } = await prepareMessagesForStreaming(
+    studyUserChatId,
+    { tools: allTools },
+  );
+
   let tools: Partial<typeof allTools> = allTools;
   const toolChoice: ToolChoice<typeof allTools> = "auto";
   const maxTokens: number | undefined = undefined;

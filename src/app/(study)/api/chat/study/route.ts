@@ -1,4 +1,4 @@
-import { persistentAIMessageToDB, prepareMessagesForStreaming } from "@/ai/messageUtils";
+import { persistentAIMessageToDB } from "@/ai/messageUtils";
 import { clientMessagePayloadSchema } from "@/ai/messageUtilsClient";
 import authOptions from "@/app/(auth)/authOptions";
 import { VALID_LOCALES } from "@/i18n/routing";
@@ -73,8 +73,6 @@ export async function POST(req: Request) {
     ...newMessage,
     id: newMessage.id ?? generateId(),
   });
-  const { coreMessages, streamingMessage, toolUseCount } =
-    await prepareMessagesForStreaming(studyUserChatId);
 
   const briefStatus: "CLARIFIED" | "DRAFT" = (userChat.extra as UserChatExtra)?.briefUserChatId
     ? "CLARIFIED"
@@ -97,9 +95,6 @@ export async function POST(req: Request) {
     locale,
     briefStatus,
     studyUserChatId,
-    coreMessages,
-    toolUseCount,
-    streamingMessage,
     userId,
     reqSignal,
     studyLog,
