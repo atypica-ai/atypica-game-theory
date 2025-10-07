@@ -47,6 +47,7 @@ import {
   TextStreamPart,
   tool,
   ToolChoice,
+  ToolSet,
   UIMessage,
   UIMessageStreamWriter,
 } from "ai";
@@ -211,8 +212,10 @@ async function runScoutSocialTrendsStream({
   let breakReason = "";
 
   while (true) {
-    const { coreMessages, streamingMessage, toolUseCount } =
-      await prepareMessagesForStreaming(scoutUserChatId);
+    const { coreMessages, streamingMessage, toolUseCount } = await prepareMessagesForStreaming(
+      scoutUserChatId,
+      { tools: allTools },
+    );
 
     if (tokensConsumed > TOKENS_COMSUME_LIMIT) {
       // 达到了离谱的 token 消耗，无条件退出
@@ -413,7 +416,9 @@ async function runScoutSocialTrendsSummarize({
   streamWriter?: UIMessageStreamWriter;
 } & AgentToolConfigArgs) {
   // Use the same message preparation as the main loop
-  const { coreMessages } = await prepareMessagesForStreaming(scoutUserChatId);
+  const { coreMessages } = await prepareMessagesForStreaming(scoutUserChatId, {
+    tools: {} as ToolSet, // 没用到任何 tool
+  });
 
   // Filter out all user messages except the first ever user message, which is the initial request
   const filteredMessages = coreMessages.filter((message, index) => {

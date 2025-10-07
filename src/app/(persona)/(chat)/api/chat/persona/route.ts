@@ -90,7 +90,20 @@ export async function POST(req: Request) {
         : undefined,
   });
 
-  const { coreMessages, streamingMessage } = await prepareMessagesForStreaming(userChat.id);
+  const tools = {
+    google_search: google.tools.googleSearch({
+      mode: "MODE_DYNAMIC",
+      dynamicThreshold: 0.3, // threshold 越小，使用搜索的可能性就越高
+    }),
+    // [ToolName.dySearch]: dySearchTool,
+    // [ToolName.insSearch]: insSearchTool,
+    // [ToolName.tiktokSearch]: tiktokSearchTool,
+    // [ToolName.xhsSearch]: xhsSearchTool,  // 太贵了，先不用
+    // [ToolName.reasoningThinking]: reasoningThinkingTool(),
+  };
+  const { coreMessages, streamingMessage } = await prepareMessagesForStreaming(userChat.id, {
+    tools,
+  });
 
   const mergedAbortSignal = AbortSignal.any([
     req.signal,
@@ -109,17 +122,7 @@ export async function POST(req: Request) {
     system: personaAgentSystem({ persona, locale }),
     messages: coreMessages,
 
-    tools: {
-      google_search: google.tools.googleSearch({
-        mode: "MODE_DYNAMIC",
-        dynamicThreshold: 0.3, // threshold 越小，使用搜索的可能性就越高
-      }),
-      // [ToolName.dySearch]: dySearchTool,
-      // [ToolName.insSearch]: insSearchTool,
-      // [ToolName.tiktokSearch]: tiktokSearchTool,
-      // [ToolName.xhsSearch]: xhsSearchTool,  // 太贵了，先不用
-      // [ToolName.reasoningThinking]: reasoningThinkingTool(),
-    },
+    tools,
 
     stopWhen: stepCountIs(2),
 

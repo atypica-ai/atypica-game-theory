@@ -290,7 +290,6 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: UIMessage[]) 
   // gpt 无法使用 pdf 文件，claude 和 gemini 可以, 并且，3.7 比较消耗 tokens，改用 gemini 和 gpt 吧
   // null as TReduceTokens;
   // const coreMessages = setBedrockCache("claude-3-7-sonnet", convertToCoreMessages(messages));
-  const coreMessages = convertToModelMessages(messages);
   const tools = {
     [ToolName.reasoningThinking]: reasoningThinkingTool({
       locale,
@@ -300,6 +299,9 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: UIMessage[]) 
     }),
     [ToolName.saveInterviewConclusion]: saveInterviewConclusionTool(analystInterviewId),
   };
+  const coreMessages = convertToModelMessages(messages, {
+    tools,
+  });
   let toolChoice: ToolChoice<typeof tools> = "auto";
   let maxSteps = 2;
   if (coreMessages.length >= MAX_MESSAGES_LIMIT) {
@@ -407,9 +409,27 @@ async function chatWithPersona(chatProps: ChatProps, messages: UIMessage[]) {
     statReport,
     logger,
   } = chatProps;
+
+  const reduceTokens: TReduceTokens = { model: "gemini-2.5-flash", ratio: 10 };
+  const tools = {
+    [ToolName.tiktokSearch]: tiktokSearchTool,
+    [ToolName.dySearch]: dySearchTool,
+    [ToolName.insSearch]: insSearchTool,
+    [ToolName.twitterSearch]: twitterSearchTool,
+    // [ToolName.xhsSearch]: xhsSearchTool, // 因为有 grounding 了，tools 可以去掉一些
+    ...(reduceTokens && reduceTokens.model.startsWith("gemini")
+      ? {
+          google_search: google.tools.googleSearch({
+            mode: "MODE_DYNAMIC",
+            // threshold 越小，使用搜索的可能性就越高
+            dynamicThreshold: messages.length <= 2 ? 0.1 : messages.length <= 4 ? 0.3 : 0.5,
+          }),
+        }
+      : {}),
+  };
+
   const streamTextPromise = new Promise<Omit<UIMessage, "role">>(async (resolve, reject) => {
     // const hasAttachments = !!messages.find((message) => (message.experimental_attachments ?? []).length > 0);
-    const reduceTokens: TReduceTokens = { model: "gemini-2.5-flash", ratio: 10 };
     const response = streamText({
       // gpt 4.1 不支持 pdf，目前只有 gemini 和 claude 支持
       model: reduceTokens ? llm(reduceTokens.model) : llm("claude-3-7-sonnet"),
@@ -420,24 +440,11 @@ async function chatWithPersona(chatProps: ChatProps, messages: UIMessage[]) {
       // maxRetries: 0,  // 不要自动重试？不，gemini 偶尔连不上，还是得自动重试，慢是慢了点
       temperature: 0.3,
 
-      messages: convertToModelMessages(messages),
+      messages: convertToModelMessages(messages, {
+        tools,
+      }),
 
-      tools: {
-        [ToolName.tiktokSearch]: tiktokSearchTool,
-        [ToolName.dySearch]: dySearchTool,
-        [ToolName.insSearch]: insSearchTool,
-        [ToolName.twitterSearch]: twitterSearchTool,
-        // [ToolName.xhsSearch]: xhsSearchTool, // 因为有 grounding 了，tools 可以去掉一些
-        ...(reduceTokens && reduceTokens.model.startsWith("gemini")
-          ? {
-              google_search: google.tools.googleSearch({
-                mode: "MODE_DYNAMIC",
-                // threshold 越小，使用搜索的可能性就越高
-                dynamicThreshold: messages.length <= 2 ? 0.1 : messages.length <= 4 ? 0.3 : 0.5,
-              }),
-            }
-          : {}),
-      },
+      tools,
 
       stopWhen: stepCountIs(2),
 

@@ -72,7 +72,6 @@ export async function POST(req: NextRequest) {
   const abortSignal = req.signal;
 
   const { personaImport } = userChat;
-  const { coreMessages, streamingMessage } = await prepareMessagesForStreaming(userChat.id);
 
   // 动态检测用户输入的语言，先检测用户输入的语言，默认使用用户导入的访谈文件的语言 (context 内容)
   const locale = await detectInputLanguage({
@@ -92,6 +91,23 @@ export async function POST(req: NextRequest) {
     locale,
   });
 
+  const tools = {
+    [ToolName.reasoningThinking]: reasoningThinkingTool({
+      locale,
+      abortSignal,
+      statReport: () => Promise.resolve(), // No-op for follow-up interviews
+      logger: chatLogger,
+    }),
+    ...followUpInterviewTools({
+      personaImportId: personaImport.id,
+      logger: chatLogger,
+    }),
+  };
+
+  const { coreMessages, streamingMessage } = await prepareMessagesForStreaming(userChat.id, {
+    tools,
+  });
+
   // Generate response from LLM
   const streamTextResult = streamText({
     model: llm("gpt-4.1-mini"),
@@ -99,18 +115,7 @@ export async function POST(req: NextRequest) {
     system: systemPrompt,
     messages: coreMessages,
 
-    tools: {
-      [ToolName.reasoningThinking]: reasoningThinkingTool({
-        locale,
-        abortSignal,
-        statReport: () => Promise.resolve(), // No-op for follow-up interviews
-        logger: chatLogger,
-      }),
-      ...followUpInterviewTools({
-        personaImportId: personaImport.id,
-        logger: chatLogger,
-      }),
-    },
+    tools,
 
     // 现在这个是默认强制启用的，不支持设置了, see https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#tool-call-streaming-now-default-toolcallstreaming-removed
     // toolCallStreaming: true,

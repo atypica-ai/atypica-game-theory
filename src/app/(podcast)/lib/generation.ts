@@ -11,14 +11,7 @@ import { generateToken } from "@/lib/utils";
 import { AnalystPodcast, AnalystPodcastExtra, ChatMessageAttachment } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { AnalystKind } from "@/prisma/types";
-import {
-  convertToModelMessages,
-  FileUIPart,
-  FinishReason,
-  stepCountIs,
-  streamText,
-  UIMessage,
-} from "ai";
+import { FilePart, FinishReason, ModelMessage, stepCountIs, streamText } from "ai";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
 import { podcastScriptPrologue, podcastScriptSystem } from "../prompt";
@@ -249,11 +242,12 @@ async function generatePodcastScript(params: {
     finishReason: FinishReason;
     content: string;
   }>(async (resolve, reject) => {
-    const fileParts: FileUIPart[] = await Promise.all(
+    // 注意，这里不是 FileUIPart，是 ModelMessage 里的 FilePart
+    const fileParts: FilePart[] = await Promise.all(
       ((analyst.attachments ?? []) as ChatMessageAttachment[]).map(
         async ({ name, objectUrl, mimeType }) => {
           const url = await fileUrlToDataUrl({ objectUrl, mimeType });
-          return { type: "file", filename: name, url, mediaType: mimeType };
+          return { type: "file", filename: name, data: url, mediaType: mimeType };
         },
       ),
     );
@@ -265,21 +259,21 @@ async function generatePodcastScript(params: {
       instruction,
     });
 
-    const messages: Omit<UIMessage, "id">[] = [
+    const messages: ModelMessage[] = [
       {
         role: "user",
-        parts: [{ type: "text", text: podcastContent }, ...fileParts],
+        content: [{ type: "text", text: podcastContent }, ...fileParts],
       },
     ];
 
     if (script) {
       messages.push({
         role: "assistant",
-        parts: [{ type: "text", text: script }],
+        content: [{ type: "text", text: script }],
       });
       messages.push({
         role: "user",
-        parts: [
+        content: [
           {
             type: "text",
             text: "Please continue with the remaining podcast script content without repeating what's already been generated.",
@@ -299,7 +293,7 @@ async function generatePodcastScript(params: {
             analystKind: (analyst.kind as AnalystKind) || AnalystKind.misc,
           }),
 
-      messages: convertToModelMessages(messages),
+      messages,
       stopWhen: stepCountIs(1),
       maxOutputTokens: 30000,
 

@@ -295,7 +295,9 @@ async function generatePersonaResponse({
       },
 
       system: systemPrompt,
-      messages: convertToModelMessages(messages),
+      messages: convertToModelMessages(messages, {
+        tools: {},
+      }),
       stopWhen: stepCountIs(1),
 
       onStepFinish: async ({ usage, toolCalls }) => {
@@ -352,6 +354,9 @@ async function generateInterviewerResponse({
   const { endInterview } = interviewSessionTools({
     interviewSessionId,
   });
+  const tools = {
+    endInterview,
+  };
   const promise = new Promise<Omit<UIMessage, "role">>((resolve, reject) => {
     const streamTextPromise = streamText({
       model: llm("claude-3-7-sonnet"),
@@ -361,15 +366,15 @@ async function generateInterviewerResponse({
       },
 
       system: systemPrompt,
-      messages: convertToModelMessages(messages),
+      messages: convertToModelMessages(messages, {
+        tools,
+      }),
 
       toolChoice: shouldEndInterview
         ? { type: "tool", toolName: InterviewToolName.endInterview }
         : "auto",
 
-      tools: {
-        endInterview,
-      },
+      tools,
 
       stopWhen: stepCountIs(1),
 

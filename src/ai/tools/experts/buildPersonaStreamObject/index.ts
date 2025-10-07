@@ -4,6 +4,7 @@ import { prepareMessagesForStreaming } from "@/ai/messageUtils";
 import { CONTINUE_ASSISTANT_STEPS } from "@/ai/messageUtilsClient";
 import { buildPersonaSystem } from "@/ai/prompt";
 import { defaultProviderOptions, llm } from "@/ai/provider";
+import { scoutChatTools } from "@/ai/tools/experts/scoutTaskChat";
 import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
 import { prisma } from "@/prisma/prisma";
 import { streamObject, tool } from "ai";
@@ -95,7 +96,9 @@ export async function runBuildPersonaStreamObject({
 }: {
   scoutUserChatId: number;
 } & AgentToolConfigArgs) {
-  const { coreMessages } = await prepareMessagesForStreaming(scoutUserChatId);
+  const { coreMessages } = await prepareMessagesForStreaming(scoutUserChatId, {
+    tools: scoutChatTools,
+  });
   let messages = coreMessages.filter(
     (message) => !(message.role === "user" && message.content === CONTINUE_ASSISTANT_STEPS),
   );

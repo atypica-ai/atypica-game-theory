@@ -120,6 +120,26 @@ const toolPlatform = (toolName: ToolName): TPlatform | undefined => {
   return platforms[toolName];
 };
 
+// 要给 buildPersona tool 的 prepareMessagesForStreaming 用，在转成 model message 的时候调用 toModelOutput
+export const scoutChatTools = {
+  [ToolName.dySearch]: dySearchTool,
+  [ToolName.dyPostComments]: dyPostCommentsTool,
+  [ToolName.dyUserPosts]: dyUserPostsTool,
+  [ToolName.tiktokSearch]: tiktokSearchTool,
+  [ToolName.tiktokPostComments]: tiktokPostCommentsTool,
+  [ToolName.tiktokUserPosts]: tiktokUserPostsTool,
+  [ToolName.insSearch]: insSearchTool,
+  [ToolName.insUserPosts]: insUserPostsTool,
+  [ToolName.insPostComments]: insPostCommentsTool,
+  [ToolName.xhsSearch]: xhsSearchTool,
+  [ToolName.xhsUserNotes]: xhsUserNotesTool,
+  [ToolName.xhsNoteComments]: xhsNoteCommentsTool,
+  [ToolName.twitterSearch]: twitterSearchTool,
+  [ToolName.twitterUserPosts]: twitterUserPostsTool,
+  [ToolName.twitterPostComments]: twitterPostCommentsTool,
+  [ToolName.toolCallError]: toolCallError,
+};
+
 export const scoutTaskChatTool = ({
   userId,
   locale,
@@ -214,24 +234,7 @@ export async function runScoutTaskChatStream({
   scoutUserChatId: number;
   streamWriter?: UIMessageStreamWriter;
 } & AgentToolConfigArgs): Promise<void> {
-  const allTools = {
-    [ToolName.dySearch]: dySearchTool,
-    [ToolName.dyPostComments]: dyPostCommentsTool,
-    [ToolName.dyUserPosts]: dyUserPostsTool,
-    [ToolName.tiktokSearch]: tiktokSearchTool,
-    [ToolName.tiktokPostComments]: tiktokPostCommentsTool,
-    [ToolName.tiktokUserPosts]: tiktokUserPostsTool,
-    [ToolName.insSearch]: insSearchTool,
-    [ToolName.insUserPosts]: insUserPostsTool,
-    [ToolName.insPostComments]: insPostCommentsTool,
-    [ToolName.xhsSearch]: xhsSearchTool,
-    [ToolName.xhsUserNotes]: xhsUserNotesTool,
-    [ToolName.xhsNoteComments]: xhsNoteCommentsTool,
-    [ToolName.twitterSearch]: twitterSearchTool,
-    [ToolName.twitterUserPosts]: twitterUserPostsTool,
-    [ToolName.twitterPostComments]: twitterPostCommentsTool,
-    [ToolName.toolCallError]: toolCallError,
-  };
+  const allTools = { ...scoutChatTools };
   const systemPrompt = scoutSystem({ locale });
   const tools = allTools;
   // const tools =
@@ -242,8 +245,10 @@ export async function runScoutTaskChatStream({
   //       ) as typeof allTools);
   let tokensConsumed = 0;
   while (true) {
-    const { coreMessages, streamingMessage, toolUseCount } =
-      await prepareMessagesForStreaming(scoutUserChatId);
+    const { coreMessages, streamingMessage, toolUseCount } = await prepareMessagesForStreaming(
+      scoutUserChatId,
+      { tools: allTools },
+    );
 
     if (tokensConsumed > TOKENS_COMSUME_LIMIT) {
       // 达到了离谱的 token 消耗，无条件退出
@@ -281,6 +286,7 @@ export async function runScoutTaskChatStream({
       toolChoice = "required";
       maxSteps = 1;
     }
+
     const { debouncePersistentMessage, immediatePersistentMessage } =
       createDebouncePersistentMessage(scoutUserChatId, 5000, logger); // 5000 debounce
     const streamTextPromise = new Promise<Omit<UIMessage, "role">>((resolve, reject) => {

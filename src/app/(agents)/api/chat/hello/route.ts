@@ -6,8 +6,6 @@ import {
 import { clientMessagePayloadSchema } from "@/ai/messageUtilsClient";
 import { helloSystem } from "@/ai/prompt";
 import { defaultProviderOptions, llm } from "@/ai/provider";
-import { thanksTool } from "@/ai/tools/tools";
-import { ToolName } from "@/ai/tools/types";
 import authOptions from "@/app/(auth)/authOptions";
 import { prisma } from "@/prisma/prisma";
 import { generateId, smoothStream, stepCountIs, streamText } from "ai";
@@ -49,7 +47,13 @@ export async function POST(req: Request) {
     ...newMessage,
     id: newMessage.id ?? generateId(),
   });
-  const { coreMessages, streamingMessage } = await prepareMessagesForStreaming(userChatId);
+
+  const tools = {
+    [ToolName.thanks]: thanksTool,
+  };
+  const { coreMessages, streamingMessage } = await prepareMessagesForStreaming(userChatId, {
+    tools,
+  });
 
   const streamTextResult = streamText({
     model: llm("claude-3-7-sonnet"),
@@ -57,9 +61,7 @@ export async function POST(req: Request) {
     system: helloSystem({ locale }),
     messages: coreMessages,
 
-    tools: {
-      [ToolName.thanks]: thanksTool,
-    },
+    tools,
 
     stopWhen: stepCountIs(2),
 

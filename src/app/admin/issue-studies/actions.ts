@@ -1,9 +1,6 @@
 "use server";
-import {
-  CONTINUE_ASSISTANT_STEPS,
-  persistentAIMessageToDB,
-  prepareMessagesForStreaming,
-} from "@/ai/messageUtils";
+import { persistentAIMessageToDB } from "@/ai/messageUtils";
+import { CONTINUE_ASSISTANT_STEPS } from "@/ai/messageUtilsClient";
 import { studyAgentRequest } from "@/app/(study)/api/chat/study/studyAgentRequest";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { rootLogger } from "@/lib/logging";
@@ -207,8 +204,6 @@ export async function retryStudy(studyUserChatId: number): Promise<ServerActionR
       role: "user",
       parts: [{ type: "text", text: CONTINUE_ASSISTANT_STEPS }],
     });
-    const { coreMessages, streamingMessage, toolUseCount } =
-      await prepareMessagesForStreaming(studyUserChatId);
 
     // Clear the backgroundToken to allow a new study to start
     await prisma.userChat.update({
@@ -227,9 +222,6 @@ export async function retryStudy(studyUserChatId: number): Promise<ServerActionR
     studyAgentRequest({
       locale,
       studyUserChatId,
-      coreMessages,
-      streamingMessage,
-      toolUseCount,
       userId: studyUserChat.userId,
       reqSignal: null,
       studyLog: rootLogger.child({ studyUserChatId, studyUserChatToken: studyUserChat.token }),

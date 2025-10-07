@@ -15,13 +15,12 @@ import { Analyst, AnalystReport, AnalystReportExtra, ChatMessageAttachment } fro
 import { prisma } from "@/prisma/prisma";
 import { AnalystKind } from "@/prisma/types";
 import {
-  convertToModelMessages,
-  FileUIPart,
+  FilePart,
   FinishReason,
+  ModelMessage,
   stepCountIs,
   streamText,
   tool,
-  UIMessage,
   UserModelMessage,
 } from "ai";
 import { generateAndSaveStudyLog } from "./studyLog";
@@ -245,36 +244,34 @@ export async function generateReport({
       finishReason: FinishReason | "Too many tokens";
       content: string;
     }>(async (resolve, reject) => {
-      const fileParts: FileUIPart[] = await Promise.all(
+      const fileParts: FilePart[] = await Promise.all(
         ((analyst.attachments ?? []) as ChatMessageAttachment[]).map(
           async ({ name, objectUrl, mimeType }) => {
             const url = await fileUrlToDataUrl({ objectUrl, mimeType });
-            return { type: "file", filename: name, url, mediaType: mimeType };
+            return { type: "file", filename: name, data: url, mediaType: mimeType };
           },
         ),
       );
-      const messages: Omit<UIMessage, "id">[] = [
+      const messages: ModelMessage[] = [
         {
           role: "user",
-          parts: [
+          content: [
             {
               type: "text",
-              text: reportHTMLPrologue({
-                locale,
-                analyst,
-                instruction,
-                lastReport,
-              }),
+              text: reportHTMLPrologue({ locale, analyst, instruction, lastReport }),
             },
             ...fileParts,
           ],
         },
       ];
       if (onePageHtml) {
-        messages.push({ role: "assistant", parts: [{ type: "text", text: onePageHtml }] });
+        messages.push({
+          role: "assistant",
+          content: [{ type: "text", text: onePageHtml }],
+        });
         messages.push({
           role: "user",
-          parts: [
+          content: [
             {
               type: "text",
               text: "Please continue with the remaining webpage content without repeating what's already been generated.",
@@ -293,7 +290,7 @@ export async function generateReport({
               analystKind: (analyst.kind as AnalystKind) || AnalystKind.misc,
             }),
 
-        messages: convertToModelMessages(messages),
+        messages,
         stopWhen: stepCountIs(1),
         maxOutputTokens: 30000,
 

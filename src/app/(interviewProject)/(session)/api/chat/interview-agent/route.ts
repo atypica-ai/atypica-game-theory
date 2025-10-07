@@ -106,9 +106,6 @@ export async function POST(req: Request) {
         ? (sessionExtra.preferredLanguage as Locale)
         : undefined,
   });
-  const { coreMessages: _coreMessages, streamingMessage } =
-    await prepareMessagesForStreaming(userChatId);
-  const coreMessages = setBedrockCache("claude-3-7-sonnet", _coreMessages);
 
   // Generate system prompt based on interview context
   const systemPrompt = interviewAgentSystemPrompt({
@@ -122,6 +119,17 @@ export async function POST(req: Request) {
   const { endInterview, requestInteractionForm } = interviewSessionTools({
     interviewSessionId,
   });
+
+  const tools = {
+    endInterview,
+    requestInteractionForm,
+  };
+  const { coreMessages: _coreMessages, streamingMessage } = await prepareMessagesForStreaming(
+    userChatId,
+    { tools },
+  );
+  const coreMessages = setBedrockCache("claude-3-7-sonnet", _coreMessages);
+
   const streamTextResult = streamText({
     model: llm("claude-3-7-sonnet"),
 
@@ -135,10 +143,7 @@ export async function POST(req: Request) {
         ? "auto"
         : { type: "tool", toolName: InterviewToolName.endInterview },
 
-    tools: {
-      endInterview,
-      requestInteractionForm,
-    },
+    tools,
 
     stopWhen: stepCountIs(1),
 

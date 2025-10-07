@@ -8,6 +8,7 @@ import { AgentToolConfigArgs, PlainTextToolResult, ToolName } from "@/ai/tools/t
 import { prisma } from "@/prisma/prisma";
 import { ModelMessage, stepCountIs, streamText, tool, UIMessageStreamWriter } from "ai";
 import { Locale } from "next-intl";
+import { scoutChatTools } from "../scoutTaskChat";
 import {
   buildPersonaInputSchema,
   buildPersonaOutputSchema,
@@ -129,7 +130,20 @@ export async function runBuildPersona({
   streamWriter?: UIMessageStreamWriter;
   noPersonaFallback?: boolean;
 } & AgentToolConfigArgs) {
-  const { coreMessages: _coreMessages } = await prepareMessagesForStreaming(scoutUserChatId);
+  const stopController = new AbortController();
+  const mergedAbortSignal = AbortSignal.any([abortSignal, stopController.signal]);
+
+  const tools = {
+    [ToolName.savePersona]: savePersonaTool({ scoutUserChatId }),
+    [ToolName.toolCallError]: toolCallError,
+  };
+
+  const { coreMessages: _coreMessages } = await prepareMessagesForStreaming(scoutUserChatId, {
+    tools: {
+      ...tools,
+      ...scoutChatTools,
+    },
+  });
   const coreMessages = appendBuildPersonaPrologue(_coreMessages, locale);
   // set prompt cache checkpoint for bedrock claude 3.7 sonnet
   const lastAssistantMessage = coreMessages.findLast((message) => message.role === "assistant");
@@ -140,8 +154,7 @@ export async function runBuildPersona({
       },
     };
   }
-  const stopController = new AbortController();
-  const mergedAbortSignal = AbortSignal.any([abortSignal, stopController.signal]);
+
   const streamTextPromise = new Promise((resolve, reject) => {
     /**
      * 模型选择：
@@ -157,10 +170,6 @@ export async function runBuildPersona({
       : ({ model: "gemini-2.5-flash", ratio: 10 } as TReduceTokens);
     const maxSteps = 5;
     const temperature = 0.5;
-    const tools = {
-      [ToolName.savePersona]: savePersonaTool({ scoutUserChatId }),
-      [ToolName.toolCallError]: toolCallError,
-    };
     /**
      * 给 gemini 2.5 flash 设置 toolChoice 时要注意:
      * gemini 不支持指定 tool 只能用 required

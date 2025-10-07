@@ -70,23 +70,6 @@ export async function POST(req: NextRequest) {
     id: newMessage.id ?? generateId(),
   });
 
-  const { coreMessages, streamingMessage } = await prepareMessagesForStreaming(userChatId);
-
-  const abortSignal = req.signal;
-  const chatLogger = rootLogger.child({
-    userChatId,
-    userChatToken: userChat.token,
-    kind: "misc",
-  });
-
-  const { statReport } = initGenericUserChatStatReporter({
-    userId,
-    userChatId,
-    logger: chatLogger,
-  });
-
-  const shouldEndInterview = coreMessages.length > 24;
-
   {
     // checkUserTokenBalance
     const { balance } = await getUserTokens({ userId });
@@ -111,6 +94,26 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  const abortSignal = req.signal;
+  const chatLogger = rootLogger.child({
+    userChatId,
+    userChatToken: userChat.token,
+    kind: "misc",
+  });
+
+  const { statReport } = initGenericUserChatStatReporter({
+    userId,
+    userChatId,
+    logger: chatLogger,
+  });
+
+  const tools = { ...newStudyTools };
+  const { coreMessages, streamingMessage } = await prepareMessagesForStreaming(userChatId, {
+    tools,
+  });
+
+  const shouldEndInterview = coreMessages.length > 24;
+
   const streamTextResult = streamText({
     // model: llm("claude-3-7-sonnet"),
     // model: llm(
@@ -131,7 +134,7 @@ export async function POST(req: NextRequest) {
 
     system: newStudySystem({ locale }),
     messages: coreMessages,
-    tools: newStudyTools,
+    tools,
     toolChoice: shouldEndInterview ? "required" : "auto",
     stopWhen: stepCountIs(2),
     // temperature: 0,  // gpt-5 不支持 temperature
