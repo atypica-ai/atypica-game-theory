@@ -1,4 +1,4 @@
-import { ToolName, UIToolConfigs } from "@/ai/tools/types";
+import { StudyUITools, ToolName } from "@/ai/tools/types";
 import { Markdown } from "@/components/markdown";
 import { ToolUIPart } from "ai";
 
@@ -6,7 +6,7 @@ export const ScoutSocialTrendsResultMessage = ({
   toolInvocation,
 }: {
   toolInvocation: Extract<
-    ToolUIPart<Pick<UIToolConfigs, ToolName.scoutSocialTrends>>,
+    ToolUIPart<Pick<StudyUITools, ToolName.scoutSocialTrends>>,
     { state: "output-available" }
   >;
 }) => {

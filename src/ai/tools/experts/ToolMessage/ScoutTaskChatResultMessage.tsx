@@ -1,4 +1,4 @@
-import { ToolName, UIToolConfigs } from "@/ai/tools/types";
+import { StudyUITools, ToolName } from "@/ai/tools/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Badge } from "@/components/ui/badge";
 import { ToolUIPart } from "ai";
@@ -8,7 +8,7 @@ export const ScoutTaskChatResultMessage = ({
   toolInvocation,
 }: {
   toolInvocation: Extract<
-    ToolUIPart<Pick<UIToolConfigs, ToolName.scoutTaskChat>>,
+    ToolUIPart<Pick<StudyUITools, ToolName.scoutTaskChat>>,
     { state: "output-available" }
   >;
 }) => {

@@ -1,7 +1,6 @@
-import { ToolName, UIToolConfigs } from "@/ai/tools/types";
+import { StudyUITools, TAddStudyUIToolResult, ToolName } from "@/ai/tools/types";
 import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
 import { getUserTokensBalanceAction } from "@/app/account/actions";
-import { TAddToolResult } from "@/components/chat/types";
 import { Button } from "@/components/ui/button";
 import { ToolUIPart } from "ai";
 import { CoinsIcon, MessageCircleQuestionIcon } from "lucide-react";
@@ -10,13 +9,13 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 export const RequestPaymentMessage = <
-  T extends ToolUIPart<Pick<UIToolConfigs, ToolName.requestPayment>>,
+  T extends ToolUIPart<Pick<StudyUITools, ToolName.requestPayment>>,
 >({
   toolInvocation,
   // addToolResult,
 }: {
   toolInvocation: T;
-  addToolResult?: TAddToolResult;
+  addToolResult?: TAddStudyUIToolResult;
 }) => {
   const t = useTranslations("StudyPage.RequestPaymentMessage");
   const {

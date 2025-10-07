@@ -1,4 +1,4 @@
-import { ToolName, UIToolConfigs } from "@/ai/tools/types";
+import { StudyUITools, ToolName } from "@/ai/tools/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Markdown } from "@/components/markdown";
 import { ToolUIPart } from "ai";
@@ -9,7 +9,7 @@ export const ReasoningThinkingResultMessage = ({
   toolInvocation,
 }: {
   toolInvocation: Extract<
-    ToolUIPart<Pick<UIToolConfigs, ToolName.reasoningThinking | ToolName.audienceCall>>,
+    ToolUIPart<Pick<StudyUITools, ToolName.reasoningThinking | ToolName.audienceCall>>,
     { state: "output-available" }
   >;
 }) => {

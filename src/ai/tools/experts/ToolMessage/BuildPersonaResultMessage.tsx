@@ -1,4 +1,4 @@
-import { ToolName, UIToolConfigs } from "@/ai/tools/types";
+import { StudyUITools, ToolName } from "@/ai/tools/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { ToolUIPart } from "ai";
 import { useTranslations } from "next-intl";
@@ -10,7 +10,7 @@ export const BuildPersonaResultMessage = ({
   toolInvocation,
 }: {
   toolInvocation: Extract<
-    ToolUIPart<Pick<UIToolConfigs, ToolName.buildPersona>>,
+    ToolUIPart<Pick<StudyUITools, ToolName.buildPersona>>,
     { state: "output-available" }
   >;
 }) => {
@@ -29,11 +29,7 @@ export const BuildPersonaResultMessage = ({
           size="sm"
           className="px-2 h-6 text-xs"
           onClick={() => {
-            setViewToolInvocation({
-              toolName: ToolName.buildPersona,
-              toolCallId: toolInvocation.toolCallId,
-              state: toolInvocation.state,
-            });
+            setViewToolInvocation(toolInvocation);
             setConsoleOpen(true);
           }}
         >

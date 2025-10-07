@@ -1,11 +1,11 @@
-import { ToolName, UIToolConfigs } from "@/ai/tools/types";
+import { StudyUITools, ToolName } from "@/ai/tools/types";
 import { ToolUIPart } from "ai";
 
 export const SaveAnalystToolResultMessage = ({
   toolInvocation,
 }: {
   toolInvocation: Extract<
-    ToolUIPart<Pick<UIToolConfigs, ToolName.saveAnalyst>>,
+    ToolUIPart<Pick<StudyUITools, ToolName.saveAnalyst>>,
     { state: "output-available" }
   >;
 }) => {

@@ -1,4 +1,4 @@
-import { ToolName, UIToolConfigs } from "@/ai/tools/types";
+import { StudyUITools, ToolName } from "@/ai/tools/types";
 import { ToolUIPart } from "ai";
 import { useTranslations } from "next-intl";
 
@@ -12,7 +12,7 @@ export const GenerateReportResultMessage = ({
   toolInvocation,
 }: {
   toolInvocation: Extract<
-    ToolUIPart<Pick<UIToolConfigs, ToolName.generateReport>>,
+    ToolUIPart<Pick<StudyUITools, ToolName.generateReport>>,
     { state: "output-available" }
   >;
 }) => {

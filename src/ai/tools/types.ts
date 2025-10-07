@@ -1,7 +1,7 @@
 import { AgentStatisticsExtra } from "@/prisma/client";
+import { UIDataTypes, UIMessage } from "ai";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
-
 import { AudienceCallResult, AudienceCallToolInput } from "./experts/audienceCall/types";
 import { BuildPersonaToolInput, BuildPersonaToolResult } from "./experts/buildPersona/types";
 import { InterviewChatResult, InterviewChatToolInput } from "./experts/interviewChat/types";
@@ -27,40 +27,29 @@ import { RequestInteractionResult, RequestInteractionToolInput } from "./user/in
 import { RequestPaymentResult } from "./user/payment/types";
 import { ThanksResult } from "./user/thanks/types";
 
-// export * from "./experts/buildPersona/types";
-// export * from "./experts/interviewChat/types";
-// export * from "./experts/reasoning/types";
-// export * from "./experts/report/types";
-// export * from "./experts/scoutSocialTrends/types";
-// export * from "./experts/scoutTaskChat/types";
-// export * from "./experts/searchPersonas/types";
-
-// export * from "./system/saveAnalyst/types";
-// export * from "./system/saveInterviewConclusion/types";
-// export * from "./system/savePersona/types";
-
-// export * from "./user/interaction/types";
-// export * from "./user/payment/types";
-// export * from "./user/thanks/types";
-
-// export * from "./social/types";
-
-// export * from "./social/dy/postComments/types";
-// export * from "./social/dy/search/types";
-// export * from "./social/dy/userPosts/types";
-// export * from "./social/ins/postComments/types";
-// export * from "./social/ins/search/types";
-// export * from "./social/ins/userPosts/types";
-// export * from "./social/tiktok/postComments/types";
-// export * from "./social/tiktok/search/types";
-// export * from "./social/tiktok/userPosts/types";
-// export * from "./social/xhs/noteComments/types";
-// export * from "./social/xhs/search/types";
-// export * from "./social/xhs/userNotes/types";
+/**
+ * 整个项目约定的 Tool 格式及 UI 类型
+ */
 
 export interface PlainTextToolResult {
   plainText: string;
 }
+
+// T extends UITools,
+export type PlainTextUITools = {
+  // Omit<UITool, "input" | "output"> &
+  [x: string]: {
+    input: Record<any, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
+    output: PlainTextToolResult; // 返回 plainText 字段的 tool 都可以使用
+  };
+};
+
+export type TMessageWithPlainTextTool<TOOLS extends PlainTextUITools = PlainTextUITools> =
+  UIMessage<unknown, UIDataTypes, TOOLS>;
+
+/**
+ * 主要用于 AI Study 的 Tool 格式及 UI 类型
+ */
 
 export enum ToolName {
   planStudy = "planStudy",
@@ -105,7 +94,10 @@ export enum ToolName {
   toolCallError = "toolCallError",
 }
 
-export type UIToolConfigs = {
+// 因为很多前端组件用不到 tool 的 input，这里就定义一个简单的类型，以避免使用 unknown 或者 any
+type GenericInputType = Record<any, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
+
+export type StudyUITools = {
   [ToolName.planStudy]: { input: PlanStudyToolInput; output: PlanStudyResult };
   [ToolName.interviewChat]: { input: InterviewChatToolInput; output: InterviewChatResult };
   [ToolName.generateReport]: { input: GenerateReportToolInput; output: GenerateReportResult };
@@ -122,35 +114,72 @@ export type UIToolConfigs = {
   };
   [ToolName.audienceCall]: { input: AudienceCallToolInput; output: AudienceCallResult };
   [ToolName.saveAnalyst]: { input: SaveAnalystToolInput; output: SaveAnalystToolResult };
-  [ToolName.saveAnalystStudySummary]: { input: unknown; output: SaveInnovationSummaryToolResult };
-  [ToolName.saveInterviewConclusion]: { input: unknown; output: SaveInterviewConclusionToolResult };
-  [ToolName.savePersona]: { input: unknown; output: SavePersonaToolResult };
-  [ToolName.saveInterviewSessionSummary]: { input: unknown; output: PlainTextToolResult };
-  [ToolName.updateInterviewProject]: { input: unknown; output: PlainTextToolResult };
+  [ToolName.saveAnalystStudySummary]: {
+    input: GenericInputType;
+    output: SaveInnovationSummaryToolResult;
+  };
+  [ToolName.saveInterviewConclusion]: {
+    input: GenericInputType;
+    output: SaveInterviewConclusionToolResult;
+  };
+  [ToolName.savePersona]: { input: GenericInputType; output: SavePersonaToolResult };
+  [ToolName.saveInterviewSessionSummary]: { input: GenericInputType; output: PlainTextToolResult };
+  [ToolName.updateInterviewProject]: { input: GenericInputType; output: PlainTextToolResult };
   [ToolName.requestInteraction]: {
     input: RequestInteractionToolInput;
     output: RequestInteractionResult;
   };
-  [ToolName.requestPayment]: { input: unknown; output: RequestPaymentResult };
-  [ToolName.thanks]: { input: unknown; output: ThanksResult };
+  [ToolName.requestPayment]: { input: GenericInputType; output: RequestPaymentResult };
+  [ToolName.thanks]: { input: GenericInputType; output: ThanksResult };
   [ToolName.webSearch]: { input: WebSearchToolInput; output: WebSearchToolResult };
-  [ToolName.xhsNoteComments]: { input: unknown; output: SocialPostCommentToolResult };
-  [ToolName.xhsSearch]: { input: unknown; output: SocialPostToolResult };
-  [ToolName.xhsUserNotes]: { input: unknown; output: SocialPostToolResult };
-  [ToolName.dySearch]: { input: unknown; output: SocialPostToolResult };
-  [ToolName.dyPostComments]: { input: unknown; output: SocialPostCommentToolResult };
-  [ToolName.dyUserPosts]: { input: unknown; output: SocialPostToolResult };
-  [ToolName.tiktokSearch]: { input: unknown; output: SocialPostToolResult };
-  [ToolName.tiktokPostComments]: { input: unknown; output: SocialPostCommentToolResult };
-  [ToolName.tiktokUserPosts]: { input: unknown; output: SocialPostToolResult };
-  [ToolName.insSearch]: { input: unknown; output: SocialPostToolResult };
-  [ToolName.insUserPosts]: { input: unknown; output: SocialPostToolResult };
-  [ToolName.insPostComments]: { input: unknown; output: SocialPostCommentToolResult };
-  [ToolName.twitterSearch]: { input: unknown; output: SocialPostToolResult };
-  [ToolName.twitterUserPosts]: { input: unknown; output: SocialPostToolResult };
-  [ToolName.twitterPostComments]: { input: unknown; output: SocialPostCommentToolResult };
-  [ToolName.toolCallError]: { input: unknown; output: PlainTextToolResult };
+  [ToolName.xhsNoteComments]: { input: GenericInputType; output: SocialPostCommentToolResult };
+  [ToolName.xhsSearch]: { input: GenericInputType; output: SocialPostToolResult };
+  [ToolName.xhsUserNotes]: { input: GenericInputType; output: SocialPostToolResult };
+  [ToolName.dySearch]: { input: GenericInputType; output: SocialPostToolResult };
+  [ToolName.dyPostComments]: { input: GenericInputType; output: SocialPostCommentToolResult };
+  [ToolName.dyUserPosts]: { input: GenericInputType; output: SocialPostToolResult };
+  [ToolName.tiktokSearch]: { input: GenericInputType; output: SocialPostToolResult };
+  [ToolName.tiktokPostComments]: { input: GenericInputType; output: SocialPostCommentToolResult };
+  [ToolName.tiktokUserPosts]: { input: GenericInputType; output: SocialPostToolResult };
+  [ToolName.insSearch]: { input: GenericInputType; output: SocialPostToolResult };
+  [ToolName.insUserPosts]: { input: GenericInputType; output: SocialPostToolResult };
+  [ToolName.insPostComments]: { input: GenericInputType; output: SocialPostCommentToolResult };
+  [ToolName.twitterSearch]: { input: GenericInputType; output: SocialPostToolResult };
+  [ToolName.twitterUserPosts]: { input: GenericInputType; output: SocialPostToolResult };
+  [ToolName.twitterPostComments]: { input: GenericInputType; output: SocialPostCommentToolResult };
+  [ToolName.toolCallError]: { input: GenericInputType; output: PlainTextToolResult };
 };
+
+export type TStudyMessageWithTool = UIMessage<unknown, UIDataTypes, StudyUITools>;
+
+// ⚠️ 把 ToolUIPart<X> 里面的 X 取出来，比如大部分地方使用的定义在 ai/tools/types.ts 里的 UIToolConfigs
+// type InferUIMessageTools<T extends ToolUIPart> =
+//   T extends ToolUIPart<infer TOOLS> ? TOOLS : UITools;
+export type TAddStudyUIToolResult = <TOOL extends keyof StudyUITools>({
+  state,
+  tool,
+  toolCallId,
+  output,
+  errorText,
+}:
+  | {
+      state?: "output-available";
+      tool: TOOL;
+      toolCallId: string;
+      output: StudyUITools[TOOL]["output"];
+      errorText?: never;
+    }
+  | {
+      state: "output-error";
+      tool: TOOL;
+      toolCallId: string;
+      output?: never;
+      errorText: string;
+    }) => Promise<void>;
+
+/**
+ * stat
+ */
 
 export type StatReporter = (
   dimension: "tokens" | "duration" | "steps" | "personas",

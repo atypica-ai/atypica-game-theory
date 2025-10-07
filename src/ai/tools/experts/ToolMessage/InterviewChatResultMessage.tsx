@@ -1,11 +1,11 @@
-import { ToolName, UIToolConfigs } from "@/ai/tools/types";
+import { StudyUITools, ToolName } from "@/ai/tools/types";
 import { ToolUIPart } from "ai";
 
 export const InterviewChatResultMessage = ({
   toolInvocation,
 }: {
   toolInvocation: Extract<
-    ToolUIPart<Pick<UIToolConfigs, ToolName.interviewChat>>,
+    ToolUIPart<Pick<StudyUITools, ToolName.interviewChat>>,
     { state: "output-available" }
   >;
 }) => {

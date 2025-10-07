@@ -1,12 +1,10 @@
-"use client";
-import { TMessageWithTool } from "@/components/chat/types";
+import { TMessageWithPlainTextTool } from "@/ai/tools/types";
 import { Markdown } from "@/components/markdown";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { BotIcon, CpuIcon, UserIcon } from "lucide-react";
 import React, { PropsWithChildren, ReactNode, useMemo } from "react";
 import { FileAttachment } from "./FileAttachment";
-import { ToolInvocationDisplay } from "./ToolInvocationDisplay";
 import { ToolInvocationMessage } from "./ToolInvocationMessage";
 
 const PlainText = ({ children }: PropsWithChildren) => {
@@ -17,16 +15,18 @@ const PlainText = ({ children }: PropsWithChildren) => {
   ) : null;
 };
 
-export const ChatMessage = ({
+export const ChatMessage = <UI_MESSAGE extends TMessageWithPlainTextTool>({
   nickname,
-  message: { role, parts },
   avatar,
+  message: { role, parts },
+  renderToolUIPart,
   // extra,
 }: {
-  message: Pick<TMessageWithTool, "role" | "parts">;
   nickname?: string;
   avatar?: ReactNode;
-  extra?: Omit<TMessageWithTool, "id" | "role" | "parts">;
+  message: Pick<UI_MESSAGE, "role" | "parts">;
+  extra?: Omit<UI_MESSAGE, "id" | "role" | "parts">;
+  renderToolUIPart: (toolPart: UI_MESSAGE["parts"][number]) => ReactNode;
 }) => {
   const fileParts = useMemo(() => {
     return parts?.filter((part) => part.type === "file");
@@ -75,7 +75,8 @@ export const ChatMessage = ({
             return (
               <React.Fragment key={i}>
                 <ToolInvocationMessage toolInvocation={part} />
-                <ToolInvocationDisplay toolInvocation={part} />
+                {/*<ToolInvocationDisplay toolInvocation={part} />*/}
+                {renderToolUIPart(part)}
               </React.Fragment>
             );
           } else {

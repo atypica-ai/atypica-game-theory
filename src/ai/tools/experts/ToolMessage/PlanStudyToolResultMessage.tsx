@@ -1,4 +1,4 @@
-import { ToolName, UIToolConfigs } from "@/ai/tools/types";
+import { StudyUITools, ToolName } from "@/ai/tools/types";
 import { Markdown } from "@/components/markdown";
 import { ToolUIPart } from "ai";
 import { useTranslations } from "next-intl";
@@ -7,7 +7,7 @@ export const PlanStudyToolResultMessage = ({
   toolInvocation,
 }: {
   toolInvocation: Extract<
-    ToolUIPart<Pick<UIToolConfigs, ToolName.planStudy>>,
+    ToolUIPart<Pick<StudyUITools, ToolName.planStudy>>,
     { state: "output-available" }
   >;
 }) => {

@@ -1,16 +1,15 @@
-import { ToolName, UIToolConfigs } from "@/ai/tools/types";
-import { TAddToolResult } from "@/components/chat/types";
+import { StudyUITools, TAddStudyUIToolResult, ToolName } from "@/ai/tools/types";
 import { ToolUIPart } from "ai";
 import { LinkIcon } from "lucide-react";
 import Link from "next/link";
 
-export const ThanksMessage = <T extends ToolUIPart<Pick<UIToolConfigs, ToolName.thanks>>>(
+export const ThanksMessage = <T extends ToolUIPart<Pick<StudyUITools, ToolName.thanks>>>(
   {
     // toolInvocation,
     // addToolResult,
   }: {
     toolInvocation: T;
-    addToolResult?: TAddToolResult;
+    addToolResult?: TAddStudyUIToolResult;
   },
 ) => {
   return (

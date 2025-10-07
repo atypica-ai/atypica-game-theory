@@ -1,6 +1,5 @@
-import { ToolName, UIToolConfigs } from "@/ai/tools/types";
+import { StudyUITools, TAddStudyUIToolResult, ToolName } from "@/ai/tools/types";
 import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
-import { TAddToolResult } from "@/components/chat/types";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ToolUIPart } from "ai";
@@ -11,14 +10,14 @@ import { useCallback, useState } from "react";
 export const RequestInteractionMessage = <
   T extends ToolUIPart<
     // {[ToolName.requestInteraction]: UIToolConfigs[ToolName.requestInteraction]},
-    Pick<UIToolConfigs, ToolName.requestInteraction>
+    Pick<StudyUITools, ToolName.requestInteraction>
   >,
 >({
   toolInvocation,
   addToolResult,
 }: {
   toolInvocation: T;
-  addToolResult?: TAddToolResult;
+  addToolResult?: TAddStudyUIToolResult;
 }) => {
   const t = useTranslations("StudyPage.ChatBox");
   // input 有可能为空, 当 state === "input-streaming" 时

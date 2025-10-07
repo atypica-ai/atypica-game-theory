@@ -45,7 +45,7 @@ CustomTextarea.displayName = "CustomTextarea";
 
 export function FocusedInterviewChat<T extends UIMessage = UIMessage>({
   locale,
-  useChatHelpers,
+  useChatHelpers: { messages, status, stop },
   useChatRef,
   showTimer = true,
   topRightButton,
@@ -74,8 +74,6 @@ export function FocusedInterviewChat<T extends UIMessage = UIMessage>({
   const [partialTranscript, setPartialTranscript] = useState("");
   const [isProcessingTranscript, setIsProcessingTranscript] = useState(false);
 
-  const { messages, status, stop } = useChatHelpers;
-
   const { isDocumentVisible } = useDocumentVisibility();
 
   const [input, setInput] = useState("");
@@ -101,7 +99,7 @@ export function FocusedInterviewChat<T extends UIMessage = UIMessage>({
         }
       }, 50);
     },
-    [input, showTextInput],
+    [input, showTextInput, useChatRef],
   );
 
   const handleTranscriptInternal = useCallback(

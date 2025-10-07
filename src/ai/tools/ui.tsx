@@ -14,65 +14,69 @@ import {
   SocialPostsResultMessage,
 } from "@/ai/tools/social/ToolMessage";
 import { SaveAnalystToolResultMessage } from "@/ai/tools/system/ToolMessage";
-import { ToolName, UIToolConfigs } from "@/ai/tools/types";
+import { TAddStudyUIToolResult, ToolName, TStudyMessageWithTool } from "@/ai/tools/types";
 import {
   RequestInteractionMessage,
   RequestPaymentMessage,
   ThanksMessage,
 } from "@/ai/tools/user/ToolMessage";
-import { TAddToolResult } from "@/components/chat/types";
-import { ToolUIPart } from "ai";
 
-export const ToolInvocationDisplay = ({
-  toolInvocation,
+/**
+ * 因为 v5 sdk 的 UIMessage 类型改复杂，这里没法精确定义和 UIMessage 的 TOOLS 对应的 ToolUIPart 类型，但是可以定义 UIMessagePart 的泛型类型
+ * 问题也不大，在这个方法里判断一下类型，然后再渲染就好
+ */
+export const StudyToolUIPartDisplay = ({
+  toolUIPart,
   addToolResult,
 }: {
   // toolInvocation: Extract<UIMessage["parts"][number], { type: `tool-${string}` }>;
-  toolInvocation: ToolUIPart<UIToolConfigs>;
-  addToolResult?: TAddToolResult;
+  toolUIPart: TStudyMessageWithTool["parts"][number];
+  addToolResult?: TAddStudyUIToolResult;
 }) => {
-  switch (toolInvocation.type) {
-    case `tool-${ToolName.requestInteraction}`:
-      return (
-        <RequestInteractionMessage toolInvocation={toolInvocation} addToolResult={addToolResult} />
-      );
-    case `tool-${ToolName.requestPayment}`:
-      return (
-        <RequestPaymentMessage toolInvocation={toolInvocation} addToolResult={addToolResult} />
-      );
-    case `tool-${ToolName.thanks}`:
-      return <ThanksMessage toolInvocation={toolInvocation} />;
-  }
-
-  if (toolInvocation.state !== "output-available") {
+  if (!("toolCallId" in toolUIPart)) {
     return null;
   }
 
-  switch (toolInvocation.type) {
+  switch (toolUIPart.type) {
+    case `tool-${ToolName.requestInteraction}`:
+      return (
+        <RequestInteractionMessage toolInvocation={toolUIPart} addToolResult={addToolResult} />
+      );
+    case `tool-${ToolName.requestPayment}`:
+      return <RequestPaymentMessage toolInvocation={toolUIPart} addToolResult={addToolResult} />;
+    case `tool-${ToolName.thanks}`:
+      return <ThanksMessage toolInvocation={toolUIPart} />;
+  }
+
+  if (toolUIPart.state !== "output-available") {
+    return null;
+  }
+
+  switch (toolUIPart.type) {
     case `tool-${ToolName.reasoningThinking}`:
-      return <ReasoningThinkingResultMessage toolInvocation={toolInvocation} />;
+      return <ReasoningThinkingResultMessage toolInvocation={toolUIPart} />;
     case `tool-${ToolName.webSearch}`:
-      return <WebSearchResultMessage toolInvocation={toolInvocation} />;
+      return <WebSearchResultMessage toolInvocation={toolUIPart} />;
 
     case `tool-${ToolName.generateReport}`:
-      return <GenerateReportResultMessage toolInvocation={toolInvocation} />;
+      return <GenerateReportResultMessage toolInvocation={toolUIPart} />;
     case `tool-${ToolName.scoutTaskChat}`:
-      return <ScoutTaskChatResultMessage toolInvocation={toolInvocation} />;
+      return <ScoutTaskChatResultMessage toolInvocation={toolUIPart} />;
     case `tool-${ToolName.scoutSocialTrends}`:
-      return <ScoutSocialTrendsResultMessage toolInvocation={toolInvocation} />;
+      return <ScoutSocialTrendsResultMessage toolInvocation={toolUIPart} />;
     case `tool-${ToolName.audienceCall}`:
-      return <ReasoningThinkingResultMessage toolInvocation={toolInvocation} />;
+      return <ReasoningThinkingResultMessage toolInvocation={toolUIPart} />;
     case `tool-${ToolName.buildPersona}`:
-      return <BuildPersonaResultMessage toolInvocation={toolInvocation} />;
+      return <BuildPersonaResultMessage toolInvocation={toolUIPart} />;
     case `tool-${ToolName.searchPersonas}`:
-      return <SearchPersonasResultMessage toolInvocation={toolInvocation} />;
+      return <SearchPersonasResultMessage toolInvocation={toolUIPart} />;
     case `tool-${ToolName.interviewChat}`:
-      return <InterviewChatResultMessage toolInvocation={toolInvocation} />;
+      return <InterviewChatResultMessage toolInvocation={toolUIPart} />;
 
     case `tool-${ToolName.saveAnalyst}`:
-      return <SaveAnalystToolResultMessage toolInvocation={toolInvocation} />;
+      return <SaveAnalystToolResultMessage toolInvocation={toolUIPart} />;
     case `tool-${ToolName.planStudy}`:
-      return <PlanStudyToolResultMessage toolInvocation={toolInvocation} />;
+      return <PlanStudyToolResultMessage toolInvocation={toolUIPart} />;
 
     case `tool-${ToolName.xhsSearch}`:
     case `tool-${ToolName.dySearch}`:
@@ -84,14 +88,14 @@ export const ToolInvocationDisplay = ({
     case `tool-${ToolName.insUserPosts}`:
     case `tool-${ToolName.twitterSearch}`:
     case `tool-${ToolName.twitterUserPosts}`:
-      return <SocialPostsResultMessage toolInvocation={toolInvocation} />;
+      return <SocialPostsResultMessage toolInvocation={toolUIPart} />;
 
     case `tool-${ToolName.xhsNoteComments}`:
     case `tool-${ToolName.dyPostComments}`:
     case `tool-${ToolName.tiktokPostComments}`:
     case `tool-${ToolName.insPostComments}`:
     case `tool-${ToolName.twitterPostComments}`:
-      return <SocialPostCommentsResultMessage toolInvocation={toolInvocation} />;
+      return <SocialPostCommentsResultMessage toolInvocation={toolUIPart} />;
 
     default:
       return null;

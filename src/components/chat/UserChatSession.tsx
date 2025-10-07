@@ -1,8 +1,7 @@
-"use client";
 import { CONTINUE_ASSISTANT_STEPS } from "@/ai/messageUtilsClient";
+import { TMessageWithPlainTextTool } from "@/ai/tools/types";
 import { RecordButton } from "@/components/chat/RecordButton";
 import { StatusDisplay } from "@/components/chat/StatusDisplay";
-import { TMessageWithTool } from "@/components/chat/types";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useDevice } from "@/hooks/use-device";
@@ -17,7 +16,7 @@ import { ChatMessage } from "./ChatMessage";
 import { FileAttachment } from "./FileAttachment";
 import { FileUploadButton } from "./FileUploadButton";
 
-export function UserChatSession({
+export function UserChatSession<UI_MESSAGE extends TMessageWithPlainTextTool>({
   // chatId,
   chatTitle,
   nickname,
@@ -26,6 +25,7 @@ export function UserChatSession({
   limit,
   useChatHelpers: { messages, status, error },
   useChatRef,
+  renderToolUIPart,
   acceptAttachments,
   persistMessages = true,
 }: {
@@ -36,12 +36,13 @@ export function UserChatSession({
   readOnly?: boolean;
   limit?: number; // 向前保留的消息数量
   useChatHelpers: Omit<
-    ReturnType<typeof useChat<TMessageWithTool>>,
+    ReturnType<typeof useChat<UI_MESSAGE>>,
     "regenerate" | "setMessages" | "sendMessage"
   >;
   useChatRef: RefObject<
-    Pick<ReturnType<typeof useChat<TMessageWithTool>>, "regenerate" | "setMessages" | "sendMessage">
+    Pick<ReturnType<typeof useChat<UI_MESSAGE>>, "regenerate" | "setMessages" | "sendMessage">
   >;
+  renderToolUIPart: (toolPart: UI_MESSAGE["parts"][number]) => ReactNode;
   acceptAttachments: boolean;
   persistMessages?: boolean;
 }) {
@@ -68,26 +69,30 @@ export function UserChatSession({
       e.preventDefault();
       const filesToAttach = [...uploadedFiles];
       if (filesToAttach.length > 0) {
-        /**
-         * @todo: 暂时禁用文件上传，之后要改成 message 和 attachments 分开提交给 chat api ，然后调用 persistentAIMessageToDB
-         */
-        // if (!persistMessages) {
-        //   /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
-        //   useChatRef.current?.append({
-        //     role: "user",
-        //     content: input.trim(),
-        //     experimental_attachments: await Promise.all(
-        //       filesToAttach.map(async ({ name, mimeType, objectUrl }: FileUploadInfo) => {
-        //         const dataUrl = (await fileUrlToDataUrl({ objectUrl, mimeType })) as string;
-        //         return { name, url: dataUrl, contentType: mimeType };
-        //       }),
-        //     ),
-        //   });
-        // } else {
-        //   throw new Error("Not implemented");
-        // }
-        // setInput("");
-        // clearFiles();
+        if (!persistMessages) {
+          /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
+          // useChatRef.current?.append({
+          //   role: "user",
+          //   content: input.trim(),
+          //   experimental_attachments: await Promise.all(
+          //     filesToAttach.map(async ({ name, mimeType, objectUrl }: FileUploadInfo) => {
+          //       const dataUrl = (await fileUrlToDataUrl({ objectUrl, mimeType })) as string;
+          //       return { name, url: dataUrl, contentType: mimeType };
+          //     }),
+          //   ),
+          // });
+          /**
+           * @todo: 目前禁用文件上传，哪怕是不保存 message 的情况，之后要改成把 attachments 放进 message.parts 的 type: file 里
+           */
+          throw new Error("Not implemented");
+        } else {
+          /**
+           * @todo: 目前禁用文件上传，之后要改成 message 和 attachments 分开提交给 chat api ，然后调用 persistentAIMessageToDB
+           */
+          throw new Error("Not implemented");
+        }
+        setInput("");
+        clearFiles();
       } else {
         // No files, just submit the text message normally
         useChatRef.current.sendMessage({ text: input });
@@ -124,10 +129,11 @@ export function UserChatSession({
           .map(({ id, role, parts, ...extra }) => (
             <ChatMessage
               key={id}
-              message={{ role, parts }}
               nickname={nickname ? nickname[role] : undefined}
               avatar={avatar ? avatar[role] : undefined}
+              message={{ role, parts }}
               extra={extra}
+              renderToolUIPart={renderToolUIPart}
             ></ChatMessage>
           ))}
         {/* AI Compliance Disclaimer */}
@@ -165,8 +171,8 @@ export function UserChatSession({
                     key={index}
                     attachment={{
                       url: file.url, // 注意，这里直接用了上传以后的 s3 url, 没用 fileUrlToCdnUrl 以及 fileUrlToDataUrl
-                      name: file.name,
-                      contentType: file.mimeType,
+                      filename: file.name,
+                      mediaType: file.mimeType,
                     }}
                     onRemove={() => handleRemoveFile(index)}
                   />

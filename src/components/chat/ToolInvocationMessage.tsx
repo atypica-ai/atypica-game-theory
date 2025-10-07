@@ -1,4 +1,4 @@
-import { UIToolConfigs } from "@/ai/tools/types";
+import { PlainTextUITools } from "@/ai/tools/types";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 import { ToolUIPart } from "ai";
@@ -10,7 +10,7 @@ import ToolResultTable from "./ToolResultTable";
 export const ToolInvocationMessage = ({
   toolInvocation,
 }: {
-  toolInvocation: ToolUIPart<UIToolConfigs>;
+  toolInvocation: ToolUIPart<PlainTextUITools>; // 返回 plainText 字段的 tool 都可以使用
 }) => {
   const [prevState, setPrevState] = useState(toolInvocation.state);
   const [open, setOpen] = useState(toolInvocation.state !== "output-available");

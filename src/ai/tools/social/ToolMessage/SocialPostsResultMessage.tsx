@@ -1,4 +1,4 @@
-import { ToolName, UIToolConfigs } from "@/ai/tools/types";
+import { StudyUITools, ToolName } from "@/ai/tools/types";
 import { cn, formatTokensNumber, proxiedImageLoader } from "@/lib/utils";
 import { ToolUIPart } from "ai";
 import Image from "next/image";
@@ -9,7 +9,7 @@ export const SocialPostsResultMessage = ({
   toolInvocation: Extract<
     ToolUIPart<
       Pick<
-        UIToolConfigs,
+        StudyUITools,
         | ToolName.xhsSearch
         | ToolName.dySearch
         | ToolName.tiktokSearch

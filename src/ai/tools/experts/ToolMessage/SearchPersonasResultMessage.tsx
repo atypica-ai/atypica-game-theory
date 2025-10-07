@@ -1,4 +1,4 @@
-import { ToolName, UIToolConfigs } from "@/ai/tools/types";
+import { StudyUITools, ToolName } from "@/ai/tools/types";
 import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,7 @@ export const SearchPersonasResultMessage = ({
   toolInvocation,
 }: {
   toolInvocation: Extract<
-    ToolUIPart<Pick<UIToolConfigs, ToolName.searchPersonas>>,
+    ToolUIPart<Pick<StudyUITools, ToolName.searchPersonas>>,
     { state: "output-available" }
   >;
 }) => {
@@ -28,11 +28,7 @@ export const SearchPersonasResultMessage = ({
           size="sm"
           className="px-2 h-6 text-xs"
           onClick={() => {
-            setViewToolInvocation({
-              toolName: ToolName.searchPersonas,
-              toolCallId: toolInvocation.toolCallId,
-              state: toolInvocation.state,
-            });
+            setViewToolInvocation(toolInvocation);
             setConsoleOpen(true);
           }}
         >

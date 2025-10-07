@@ -1,4 +1,4 @@
-import { ToolName, UIToolConfigs } from "@/ai/tools/types";
+import { StudyUITools, ToolName } from "@/ai/tools/types";
 import { Markdown } from "@/components/markdown";
 import { ToolUIPart } from "ai";
 import { ExternalLinkIcon, ListIcon, MessageSquareIcon, SearchIcon } from "lucide-react";
@@ -9,7 +9,7 @@ export const WebSearchResultMessage = ({
   toolInvocation,
 }: {
   toolInvocation: Extract<
-    ToolUIPart<Pick<UIToolConfigs, ToolName.webSearch>>,
+    ToolUIPart<Pick<StudyUITools, ToolName.webSearch>>,
     { state: "output-available" }
   >;
 }) => {
