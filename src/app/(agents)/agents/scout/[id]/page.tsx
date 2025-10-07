@@ -1,3 +1,4 @@
+import { TStudyMessageWithTool } from "@/ai/tools/types";
 import { AgentChatPage } from "@/app/(agents)/agents/AgentChatPage";
 import { fetchUserChatByIdAction } from "@/app/(agents)/agents/actions";
 import { checkTezignAuth } from "@/app/admin/actions";
@@ -18,14 +19,14 @@ async function ScoutAgentPage({ userChatId }: { userChatId: number }) {
   const userChat = result.data;
   return (
     <AgentChatPage
-      chatId={userChat.id.toString()}
+      userChatToken={userChat.token}
       chatTitle={userChat.title}
       nickname={{ user: user.email, assistant: "atypica.AI" }}
       avatar={{
         user: <HippyGhostAvatar className="size-8" seed={user.id} />,
         assistant: <HippyGhostAvatar className="size-8" seed={userChat.id} />,
       }}
-      initialMessages={userChat.messages}
+      initialMessages={userChat.messages as TStudyMessageWithTool[]}
       useChatAPI="/api/chat/scout"
     />
   );

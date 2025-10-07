@@ -1,6 +1,7 @@
 import { convertDBMessageToAIMessage } from "@/ai/messageUtils";
 import authOptions from "@/app/(auth)/authOptions";
 import { fetchUserPersonaChatByToken } from "@/app/(persona)/actions";
+import { TPersonaMessageWithTool } from "@/app/(persona)/types";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { generatePageMetadata } from "@/lib/request/metadata";
 import { prisma } from "@/prisma/prisma";
@@ -59,7 +60,11 @@ async function PersonaChatTokenPage({ userChatToken }: { userChatToken: string }
   ).map(convertDBMessageToAIMessage);
 
   return (
-    <PersonaChatClient userChatToken={userChatToken} persona={persona} initialMessages={messages} />
+    <PersonaChatClient
+      userChatToken={userChatToken}
+      persona={persona}
+      initialMessages={messages as TPersonaMessageWithTool[]}
+    />
   );
 }
 

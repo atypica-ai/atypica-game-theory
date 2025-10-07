@@ -11,7 +11,7 @@ import { getDeployRegion } from "@/lib/request/deployRegion";
 import { detectInputLanguage } from "@/lib/textUtils";
 import { ChatMessageAttachment, PersonaImport, PersonaImportExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
-import { ModelMessage, generateObject, stepCountIs, streamText } from "ai";
+import { ModelMessage, UserModelMessage, generateObject, stepCountIs, streamText } from "ai";
 import { getLocale } from "next-intl/server";
 import { z } from "zod/v3";
 import { parseAttachmentPrompt, personaAnalysisPrompt, personaGenerationPrompt } from "./prompt";
@@ -201,15 +201,15 @@ async function attachmentToContext(
       messages: [
         {
           role: "user",
-          parts: [{ type: "file", filename: fileName, data: dataUrl, mediaType: mimeType }],
+          content: [{ type: "file", filename: fileName, data: dataUrl, mediaType: mimeType }],
         },
-      ],
+      ] as UserModelMessage[],
 
       stopWhen: stepCountIs(1),
 
       onChunk: async ({ chunk }) => {
         if (chunk.type === "text-delta") {
-          parsedContext += chunk.textDelta.toString();
+          parsedContext += chunk.text.toString();
           await throttleSaveParsedContext();
           // logger.info(`Parsed context updated: ${parsedContext.length} characters`);
         }

@@ -3,6 +3,8 @@ import {
   fetchFollowUpInterviewChatMessages,
   fetchFollowUpInterviewHistory,
 } from "@/app/(persona)/actions";
+import { PersonaToolUIPartDisplay } from "@/app/(persona)/tools/ui";
+import { TPersonaMessageWithTool } from "@/app/(persona)/types";
 import { ChatMessage } from "@/components/chat/ChatMessage";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,7 +14,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { UIMessage } from "ai";
 import { MessageSquareIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
@@ -30,7 +31,7 @@ export function FollowUpChatList({ personaImportId }: { personaImportId: number 
   } | null>(null);
   const [loadingFollowUpHistory, setLoadingFollowUpHistory] = useState(false);
   const [followUpChatOpen, setFollowUpChatOpen] = useState(false);
-  const [followUpChatMessages, setFollowUpChatMessages] = useState<UIMessage[]>([]);
+  const [followUpChatMessages, setFollowUpChatMessages] = useState<TPersonaMessageWithTool[]>([]);
   const [loadingFollowUpChat, setLoadingFollowUpChat] = useState(false);
 
   const loadFollowUpHistory = useCallback(async () => {
@@ -57,7 +58,7 @@ export function FollowUpChatList({ personaImportId }: { personaImportId: number 
     try {
       const result = await fetchFollowUpInterviewChatMessages(personaImportId);
       if (!result.success) throw result;
-      setFollowUpChatMessages(result.data.messages);
+      setFollowUpChatMessages(result.data.messages as TPersonaMessageWithTool[]);
     } catch (error) {
       console.log("Failed to load follow-up chat messages:", error);
       toast.error(t("loading"));
@@ -125,13 +126,14 @@ export function FollowUpChatList({ personaImportId }: { personaImportId: number 
                   <div className="text-muted-foreground">{t("noRecord")}</div>
                 </div>
               ) : (
-                followUpChatMessages.map(({ id, role, content, parts, ...extra }) => (
-                  <ChatMessage
+                followUpChatMessages.map(({ id, role, parts, ...extra }) => (
+                  <ChatMessage<TPersonaMessageWithTool>
                     key={id}
-                    role={role}
-                    content={content}
-                    parts={parts}
+                    message={{ role, parts }}
                     extra={extra}
+                    renderToolUIPart={(toolUIPart) => (
+                      <PersonaToolUIPartDisplay toolUIPart={toolUIPart} />
+                    )}
                   ></ChatMessage>
                 ))
               )}

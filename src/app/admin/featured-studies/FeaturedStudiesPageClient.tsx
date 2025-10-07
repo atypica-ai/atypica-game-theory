@@ -1,4 +1,5 @@
 "use client";
+import { TMessageWithPlainTextTool } from "@/ai/tools/types";
 import PodcastsListPanel from "@/app/(study)/study/components/PodcastsListPanel";
 import ReportsListPanel from "@/app/(study)/study/components/ReportsListPanel";
 import { PaginationInfo } from "@/app/admin/types";
@@ -31,7 +32,6 @@ import { truncateForTitle } from "@/lib/textUtils";
 import { formatDate } from "@/lib/utils";
 import { Analyst, UserChatExtra } from "@/prisma/client";
 import { AnalystKind } from "@/prisma/types";
-import { UIMessage } from "ai";
 import {
   ChevronDown,
   ChevronUp,
@@ -96,7 +96,7 @@ export function FeaturedStudiesPageClient({ initialSearchParams }: FeaturedStudi
   const [expandedTopics, setExpandedTopics] = useState<Set<number>>(new Set());
   const [expandedSummaries, setExpandedSummaries] = useState<Set<number>>(new Set());
   const [briefDialogOpen, setBriefDialogOpen] = useState(false);
-  const [briefMessages, setBriefMessages] = useState<UIMessage[]>([]);
+  const [briefMessages, setBriefMessages] = useState<TMessageWithPlainTextTool[]>([]);
   const [loadingBrief, setLoadingBrief] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -252,14 +252,14 @@ export function FeaturedStudiesPageClient({ initialSearchParams }: FeaturedStudi
 
     const result = await fetchBriefChatMessages(chatId);
     if (result.success) {
-      setBriefMessages(result.data);
+      setBriefMessages(result.data as TMessageWithPlainTextTool[]);
     } else {
       setBriefMessages([]);
     }
     setLoadingBrief(false);
   };
 
-  const renderBriefConversation = (messages: UIMessage[]) => {
+  const renderBriefConversation = (messages: TMessageWithPlainTextTool[]) => {
     return (
       <div className="h-full overflow-hidden flex flex-col">
         <div className="flex-1 overflow-y-auto space-y-4 p-4 border rounded-lg bg-muted/30">
@@ -269,10 +269,9 @@ export function FeaturedStudiesPageClient({ initialSearchParams }: FeaturedStudi
               className="border-b border-muted-foreground/10 last:border-b-0 pb-3 last:pb-0"
             >
               <ChatMessage
-                role={message.role}
                 nickname={message.role}
-                content={message.content}
-                parts={message.parts}
+                message={message}
+                renderToolUIPart={() => <></>}
               />
             </div>
           ))}

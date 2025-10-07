@@ -5,6 +5,8 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { createTextEmbedding } from "@/ai/embedding";
 import { llm } from "@/ai/provider";
+import { WebSearchToolResult } from "@/ai/tools/experts/webSearch/types";
+import { SocialPostToolResult } from "@/ai/tools/social/types";
 import {
   dySearchTool,
   insSearchTool,
@@ -75,13 +77,25 @@ const API_CONFIGS = {
         statReport: async () => {},
       });
 
-      const result = await testTool.execute(
-        { query: "test health check" },
-        { toolCallId: "health-check", messages: [] },
-      );
+      const toolResponse = testTool.execute
+        ? await testTool.execute(
+            { query: "test health check" },
+            { toolCallId: "health-check", messages: [] },
+          )
+        : null;
+
+      let result: WebSearchToolResult | undefined;
+      if (!toolResponse) {
+      } else if (Symbol.asyncIterator in toolResponse) {
+        for await (const item of toolResponse) {
+          result = item;
+        }
+      } else {
+        result = toolResponse;
+      }
 
       return {
-        hasResults: Array.isArray(result.results) && result.results.length > 0,
+        hasResults: Array.isArray(result?.results) && result.results.length > 0,
         timestamp: new Date().toISOString(),
       };
     },
@@ -246,7 +260,19 @@ async function testSocialTool(apiName: string) {
     throw new Error("Social tool not found");
   }
 
-  const result = await toolConfig.tool.execute(toolConfig.params, { toolCallId: "", messages: [] });
+  const toolResponse = toolConfig.tool.execute
+    ? await toolConfig.tool.execute(toolConfig.params, { toolCallId: "", messages: [] })
+    : null;
+
+  let result: SocialPostToolResult | undefined;
+  if (!toolResponse) {
+  } else if (Symbol.asyncIterator in toolResponse) {
+    for await (const item of toolResponse) {
+      result = item;
+    }
+  } else {
+    result = toolResponse;
+  }
 
   const healthy = isSocialToolHealthy(result);
   return { healthy, result };

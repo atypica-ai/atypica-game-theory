@@ -1,3 +1,4 @@
+import { TStudyMessageWithTool } from "@/ai/tools/types";
 import { fetchUserChatByIdAction } from "@/app/(agents)/agents/actions";
 import authOptions from "@/app/(auth)/authOptions";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
@@ -25,14 +26,14 @@ async function HelloAgentPage({
   const userChat = result.data;
   return (
     <AgentChatPage
-      chatId={userChat.id.toString()}
+      userChatToken={userChat.token}
       chatTitle={userChat.title}
       nickname={{ user: sessionUser.email, assistant: "atypica.AI" }}
       avatar={{
         user: <HippyGhostAvatar className="size-8" seed={sessionUser.id} />,
         assistant: <HippyGhostAvatar className="size-8" seed={userChat.id} />,
       }}
-      initialMessages={userChat.messages}
+      initialMessages={userChat.messages as TStudyMessageWithTool[]}
       useChatAPI="/api/chat/hello"
     />
   );

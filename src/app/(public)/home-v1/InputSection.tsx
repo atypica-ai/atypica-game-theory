@@ -110,8 +110,8 @@ export function InputSection() {
               key={index}
               attachment={{
                 url: file.url,
-                name: file.name,
-                contentType: file.mimeType,
+                filename: file.name,
+                mediaType: file.mimeType,
               }}
               onRemove={() => handleRemoveFile(index)}
             />

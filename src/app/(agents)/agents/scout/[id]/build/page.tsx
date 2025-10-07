@@ -1,3 +1,4 @@
+import { TStudyMessageWithTool } from "@/ai/tools/types";
 import { fetchUserChatByIdAction } from "@/app/(agents)/agents/actions";
 import { AgentChatPage } from "@/app/(agents)/agents/AgentChatPage";
 import authOptions from "@/app/(auth)/authOptions";
@@ -27,9 +28,9 @@ async function BuildPersonaPage({
 
   return (
     <AgentChatPage
-      chatId={userChat.id.toString()}
+      userChatToken={userChat.token}
       chatTitle={userChat.title}
-      initialMessages={userChat.messages}
+      initialMessages={userChat.messages as TStudyMessageWithTool[]}
       useChatAPI="/api/chat/scout/build"
     />
   );

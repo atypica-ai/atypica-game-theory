@@ -1,3 +1,4 @@
+import { TStudyMessageWithTool } from "@/ai/tools/types";
 import { fetchUserChatByIdAction } from "@/app/(agents)/agents/actions";
 import { AgentChatPage } from "@/app/(agents)/agents/AgentChatPage";
 import { checkTezignAuth } from "@/app/admin/actions";
@@ -40,14 +41,14 @@ async function InterviewAgentPage({ userChatId }: { userChatId: number }) {
 
   return (
     <AgentChatPage
-      chatId={userChat.id.toString()}
+      userChatToken={userChat.token}
       chatTitle={userChat.title}
       nickname={{ user: interview.analyst.role, assistant: interview.persona.name }}
       avatar={{
         user: <HippyGhostAvatar className="size-8" seed={interview.analyst.id} />,
         assistant: <HippyGhostAvatar className="size-8" seed={interview.persona.id} />,
       }}
-      initialMessages={userChat.messages}
+      initialMessages={userChat.messages as TStudyMessageWithTool[]}
       readOnly={true}
     />
   );

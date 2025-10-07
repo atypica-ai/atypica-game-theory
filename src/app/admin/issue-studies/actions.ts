@@ -205,7 +205,7 @@ export async function retryStudy(studyUserChatId: number): Promise<ServerActionR
     await persistentAIMessageToDB(studyUserChatId, {
       id: generateId(),
       role: "user",
-      content: CONTINUE_ASSISTANT_STEPS,
+      parts: [{ type: "text", text: CONTINUE_ASSISTANT_STEPS }],
     });
     const { coreMessages, streamingMessage, toolUseCount } =
       await prepareMessagesForStreaming(studyUserChatId);

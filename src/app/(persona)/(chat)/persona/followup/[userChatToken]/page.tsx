@@ -1,6 +1,7 @@
 import { convertDBMessageToAIMessage } from "@/ai/messageUtils";
 import authOptions from "@/app/(auth)/authOptions";
 import { fetchFollowUpInterviewChat } from "@/app/(persona)/actions";
+import { TPersonaMessageWithTool } from "@/app/(persona)/types";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { generatePageMetadata } from "@/lib/request/metadata";
 import { prisma } from "@/prisma/prisma";
@@ -43,7 +44,12 @@ async function FollowUpInterviewPage({ userChatToken }: { userChatToken: string 
     ).map(convertDBMessageToAIMessage);
   }
 
-  return <FollowUpInterviewClient userChatToken={userChatToken} initialMessages={messages} />;
+  return (
+    <FollowUpInterviewClient
+      userChatToken={userChatToken}
+      initialMessages={messages as TPersonaMessageWithTool[]}
+    />
+  );
 }
 
 export default async function FollowUpInterviewPageWithLoading({

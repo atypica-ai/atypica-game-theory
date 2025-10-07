@@ -20,7 +20,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { zodResolver } from "@hookform/resolvers/zod";
+// import { zodResolver } from "@hookform/resolvers/zod";
+// see https://github.com/react-hook-form/resolvers/issues/768
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -71,7 +73,7 @@ export default function MaintenancePage() {
 
   // Initialize the form
   const form = useForm<MaintenanceFormValues>({
-    resolver: zodResolver(maintenanceFormSchema),
+    resolver: standardSchemaResolver(maintenanceFormSchema),
     defaultValues: {
       isActive: false,
       startTime: formatDateForInput(new Date(Date.now() + 3600000)), // Default to 1 hour from now

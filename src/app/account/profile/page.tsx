@@ -12,12 +12,14 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { zodResolver } from "@hookform/resolvers/zod";
+// import { zodResolver } from "@hookform/resolvers/zod";
+// see https://github.com/react-hook-form/resolvers/issues/768
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { z } from "zod/v3";
+import { z } from "zod";
 import { changePassword, getCurrentUser, updateName } from "./actions";
 
 const nameFormSchema = z.object({
@@ -44,14 +46,14 @@ export default function ProfilePage() {
   const [userEmail, setUserEmail] = useState("");
 
   const nameForm = useForm<z.infer<typeof nameFormSchema>>({
-    resolver: zodResolver(nameFormSchema),
+    resolver: standardSchemaResolver(nameFormSchema),
     defaultValues: {
       name: "",
     },
   });
 
-  const passwordForm = useForm<z.infer<typeof passwordFormSchema>>({
-    resolver: zodResolver(passwordFormSchema),
+  const passwordForm = useForm({
+    resolver: standardSchemaResolver(passwordFormSchema),
     defaultValues: {
       newPassword: "",
       confirmPassword: "",
