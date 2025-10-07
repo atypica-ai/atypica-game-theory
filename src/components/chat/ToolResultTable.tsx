@@ -1,15 +1,19 @@
-import { ToolInvocation } from "ai";
+import { PlainTextUITools } from "@/ai/tools/types";
+import { ToolUIPart } from "ai";
 import { ExpandableText } from "./ToolArgsTable";
 
 export default function ToolResultTable({
   toolInvocation,
 }: {
-  toolInvocation: ToolInvocation & { state: "result" };
+  toolInvocation: Omit<
+    Extract<ToolUIPart<PlainTextUITools>, { state: "output-available" }>,
+    "type"
+  >;
 }) {
   return (
     <table className="text-left not-dark:text-muted-foreground">
       <tbody>
-        {Object.entries(toolInvocation.result)
+        {Object.entries(toolInvocation.output ?? {})
           .filter(([key]) => key !== "plainText")
           .map(([key, value]) => (
             <tr key={key}>

@@ -46,13 +46,13 @@ export function InterviewSessionViewer({
   // Use a dummy useChat for readonly viewing (no API calls)
   const useChatHelpers = useChat({
     // api: "/api/dummy", // This won't be called since we're readonly
-    initialMessages,
+    messages: initialMessages,
   });
 
   const useChatRef = useRef({
-    reload: useChatHelpers.reload,
+    regenerate: useChatHelpers.regenerate,
     setMessages: useChatHelpers.setMessages,
-    append: useChatHelpers.append,
+    sendMessage: useChatHelpers.sendMessage,
   });
 
   const handleRestartChat = useCallback(async () => {

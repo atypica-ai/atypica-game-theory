@@ -1,3 +1,4 @@
+import { StudyUITools, ToolName } from "@/ai/tools/types";
 import { fetchPersonasByScoutUserChatToken } from "@/app/(study)/study/actions";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +13,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ExtractServerActionData } from "@/lib/serverAction";
-import { ToolInvocation } from "ai";
+import { ToolUIPart } from "ai";
 import { SparklesIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { FC, useCallback, useEffect, useState } from "react";
@@ -20,10 +21,10 @@ import { FC, useCallback, useEffect, useState } from "react";
 type TPersonaDetail = ExtractServerActionData<typeof fetchPersonasByScoutUserChatToken>[number];
 
 export const BuildPersonaConsole: FC<{
-  toolInvocation: ToolInvocation;
+  toolInvocation: ToolUIPart<Pick<StudyUITools, ToolName.buildPersona>>;
 }> = ({ toolInvocation }) => {
   const t = useTranslations("StudyPage.ToolConsole");
-  const scoutUserChatToken = toolInvocation.args.scoutUserChatToken as string;
+  const scoutUserChatToken = toolInvocation.input?.scoutUserChatToken;
   const [promptPersona, setPromptPersona] = useState<TPersonaDetail | null>(null);
   const [personasDetails, setPersonasDetails] = useState<TPersonaDetail[]>([]);
 
@@ -38,6 +39,7 @@ export const BuildPersonaConsole: FC<{
   );
 
   const fetchPersonasInProgress = useCallback(async () => {
+    if (!scoutUserChatToken) return;
     const result = await fetchPersonasByScoutUserChatToken({ scoutUserChatToken });
     if (result.success) {
       setPersonasDetails(result.data);
@@ -47,7 +49,7 @@ export const BuildPersonaConsole: FC<{
   }, [scoutUserChatToken]);
 
   useEffect(() => {
-    if (toolInvocation.state === "result") {
+    if (toolInvocation.state === "output-available") {
       fetchPersonasInProgress();
       return;
     }
@@ -115,7 +117,8 @@ export const BuildPersonaConsole: FC<{
         ))}
 
         {/* Loading Card */}
-        {toolInvocation.state !== "result" && (
+        {(toolInvocation.state === "input-streaming" ||
+          toolInvocation.state === "input-available") && (
           <Card className="flex flex-col p-4 border-dashed border-2 bg-muted/20">
             <CardHeader className="px-0">
               <CardTitle className="flex items-center gap-2 overflow-hidden">

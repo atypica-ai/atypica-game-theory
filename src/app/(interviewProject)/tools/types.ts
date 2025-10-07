@@ -49,8 +49,9 @@ export const requestInteractionFormOutputSchema = z.object({
   plainText: z.string(),
 });
 
-export interface RequestInteractionFormResult
-  extends z.infer<typeof requestInteractionFormOutputSchema> {}
+// export interface RequestInteractionFormResult
+//   extends z.infer<typeof requestInteractionFormOutputSchema> {}
+export type RequestInteractionFormResult = z.infer<typeof requestInteractionFormOutputSchema>;
 
 // updateQuestions tool schemas
 export const updateQuestionsInputSchema = z.object({

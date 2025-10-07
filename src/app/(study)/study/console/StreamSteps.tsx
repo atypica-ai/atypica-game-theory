@@ -1,5 +1,4 @@
-"use client";
-import { ToolInvocationDisplay } from "@/components/chat/ToolInvocationDisplay";
+import { TMessageWithPlainTextTool, TStudyMessageWithTool } from "@/ai/tools/types";
 import { ToolInvocationMessage } from "@/components/chat/ToolInvocationMessage";
 // 给 chat 类型的 tool call 用的组件，比如 scout chat 和 interview chat
 import { Markdown } from "@/components/markdown";
@@ -16,45 +15,61 @@ const PlainText = ({ children }: PropsWithChildren) => {
   );
 };
 
-export const StreamSteps = ({
+// 这个组件是在 console 里被调用的，和 SingleMessage 一样，会需要渲染所有类型的 tool
+type T = TStudyMessageWithTool;
+// UIMessage<
+//   unknown,
+//   UIDataTypes,
+//   {
+//     [x: string]: Omit<UITool, "input" | "output"> & {
+//       input: Record<any, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
+//       output: PlainTextToolResult; // 返回 plainText 字段的 tool 都可以使用
+//     };
+//   }
+// >;
+
+export const StreamSteps = <UI_MESSAGE extends TMessageWithPlainTextTool>({
   avatar,
   nickname,
-  role,
-  content,
-  parts,
+  message: { role, parts },
+  renderToolUIPart,
 }: {
   avatar?: ReactNode;
   nickname?: string;
-  role: "assistant" | "user" | "system" | "data";
-  content: string | ReactNode;
-  parts?: undefined["parts"];
+  message: Pick<T, "role" | "parts">;
+  renderToolUIPart: (toolPart: UI_MESSAGE["parts"][number]) => ReactNode;
 }) => {
-  const renderedParts = useCallback((parts: NonNullable<undefined["parts"]>) => {
-    return (
-      <div className={cn("flex flex-col gap-4")}>
-        {parts.map((part, i) => {
-          // 小红书搜索任务之类的，是多个 step 一起显示，搜索结果和总结，所以需要显示超过1条在一起，更好
-          switch (part.type) {
-            case "text":
+  const renderedParts = useCallback(
+    (parts: T["parts"]) => {
+      return (
+        <div className={cn("flex flex-col gap-4")}>
+          {parts.map((part, i) => {
+            // 小红书搜索任务之类的，是多个 step 一起显示，搜索结果和总结，所以需要显示超过1条在一起，更好
+            if (part.type === "text") {
               return <PlainText key={i}>{part.text}</PlainText>;
-            case "reasoning":
-              return <PlainText key={i}>{part.reasoningText}</PlainText>;
-            case "source":
-              return <PlainText key={i}>{JSON.stringify(part.source)}</PlainText>;
-            case "tool-invocation":
+            } else if (part.type === "reasoning") {
+              return <PlainText key={i}>{part.text}</PlainText>;
+              // } else if (part.type === "source") {
+              //   return <PlainText key={i}>{JSON.stringify(part.source)}</PlainText>;
+            } else if (part.type === "dynamic-tool") {
+              // 为下面的 else if 条件分支排除 dynamic tool
+              return <PlainText key={i}>{part.toolName}</PlainText>;
+            } else if (part.type.startsWith("tool-") && "toolCallId" in part) {
               return (
                 <React.Fragment key={i}>
-                  <ToolInvocationMessage toolInvocation={part.toolInvocation} />
-                  <ToolInvocationDisplay toolInvocation={part.toolInvocation} />
+                  <ToolInvocationMessage toolInvocation={part} />
+                  {renderToolUIPart(part)}
                 </React.Fragment>
               );
-            default:
+            } else {
               return null;
-          }
-        })}
-      </div>
-    );
-  }, []);
+            }
+          })}
+        </div>
+      );
+    },
+    [renderToolUIPart],
+  );
 
   return (
     <motion.div
@@ -93,7 +108,7 @@ export const StreamSteps = ({
               : "",
         )}
       >
-        {parts ? renderedParts(parts) : <PlainText>{content}</PlainText>}
+        {renderedParts(parts)}
       </div>
     </motion.div>
   );

@@ -1,4 +1,4 @@
-import { ToolName } from "@/ai/tools/types";
+import { StudyUITools, ToolName, TStudyMessageWithTool } from "@/ai/tools/types";
 import { fetchPersonaById } from "@/app/(persona)/actions";
 import {
   fetchAnalystByStudyUserChatToken,
@@ -13,15 +13,22 @@ import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
 import { Analyst, Persona } from "@/prisma/client";
-import { ToolInvocation, UIMessage } from "ai";
+import { ToolUIPart } from "ai";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { StreamSteps } from "./StreamSteps";
 
-export const InterviewChatConsole = ({ toolInvocation }: { toolInvocation: ToolInvocation }) => {
+export const InterviewChatConsole = ({
+  toolInvocation,
+}: {
+  toolInvocation: ToolUIPart<Pick<StudyUITools, ToolName.interviewChat>>;
+}) => {
   const t = useTranslations("StudyPage.ToolConsole");
   const { studyUserChat } = useStudyContext();
-  const personasArg = toolInvocation.args.personas as { id: number; name: string }[];
+  // streaming 中的 tool，input.personas 可能是 undefined，personas 里面的 item 也可能是 undefined, 所以要过滤下
+  const personasArg = (toolInvocation.input?.personas ?? []).filter(
+    (persona) => !!persona?.id,
+  ) as StudyUITools[ToolName.interviewChat]["input"]["personas"];
 
   const [analyst, setAnalyst] = useState<Analyst>();
   useEffect(() => {
@@ -62,7 +69,8 @@ export const InterviewChatConsole = ({ toolInvocation }: { toolInvocation: ToolI
           </TabsContent>
         ))}
         <div className="flex items-center gap-6">
-          {toolInvocation.state !== "result" && (
+          {(toolInvocation.state === "input-streaming" ||
+            toolInvocation.state === "input-available") && (
             <div className="flex py-2 gap-px items-center justify-start text-zinc-500 dark:text-zinc-300 text-xs font-mono">
               <span className="animate-bounce">✨ </span>
               <span className="ml-2">{t("interviewing", { count: personasArg.length })} </span>
@@ -106,14 +114,14 @@ const SingleInterviewChat = ({
 }: {
   analyst: Analyst;
   personaId: number;
-  toolInvocation: ToolInvocation;
+  toolInvocation: ToolUIPart<Pick<StudyUITools, ToolName.interviewChat>>;
 }) => {
   const t = useTranslations("StudyPage.ToolConsole");
   const { studyUserChat } = useStudyContext();
 
   // const [interviewId, setInterviewId] = useState<number | null>(null);
   const [backgroundToken, setBackgroundToken] = useState<string | null>(null);
-  const [messages, setMessages] = useState<UIMessage[]>([]);
+  const [messages, setMessages] = useState<TStudyMessageWithTool[]>([]);
   const [conclusion, setConclusion] = useState<string | null>(null);
   const [persona, setPersona] = useState<Persona>();
 
@@ -133,7 +141,9 @@ const SingleInterviewChat = ({
       if (!personaResult.success) {
         throw interviewResult;
       }
-      setMessages(interviewResult.data.interviewUserChat?.messages || []);
+      setMessages(
+        (interviewResult.data.interviewUserChat?.messages || []) as TStudyMessageWithTool[],
+      );
       setPersona(personaResult.data);
       setBackgroundToken(interviewResult.data.interviewUserChat?.backgroundToken ?? null);
       // setInterviewId(interviewResult.data.id);
@@ -184,25 +194,27 @@ const SingleInterviewChat = ({
             ) : undefined
           }
           nickname={message.role === "assistant" ? persona?.name : analyst.role}
-          role={message.role}
-          content={message.content}
-          parts={message.parts}
+          message={message}
         ></StreamSteps>
       ))}
       {backgroundToken && messagesDisplay.length === 0 ? (
         <StreamSteps
           key="message-start"
           nickname="System"
-          role="system"
-          content="Interview starting.."
+          message={{
+            role: "system",
+            parts: [{ type: "text", text: "Interview starting.." }],
+          }}
         ></StreamSteps>
       ) : null}
       {!backgroundToken && conclusion && (!replay || messagesDisplay.length === messages.length) ? (
         <StreamSteps
           key="message-conclusion"
           nickname={t("researchConclusion")}
-          role="system"
-          content={conclusion}
+          message={{
+            role: "system",
+            parts: [{ type: "text", text: conclusion }],
+          }}
         ></StreamSteps>
       ) : null}
       <div ref={messagesEndRef} />

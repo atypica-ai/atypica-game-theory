@@ -1,5 +1,5 @@
 import { ToolName } from "@/ai/tools/types";
-import { TMessageWithTool } from "@/components/chat/types";
+import { UIMessage } from "ai";
 import { useEffect, useMemo, useState } from "react";
 
 export const consoleStreamWaitTime = (name?: ToolName) => {
@@ -10,18 +10,18 @@ export const consoleStreamWaitTime = (name?: ToolName) => {
   return name && vals[name] ? vals[name] : 1000;
 };
 
-export function useProgressiveMessages({
+export function useProgressiveMessages<T extends UIMessage>({
   uniqueId,
   messages,
   fixedDuration,
   enabled,
 }: {
   uniqueId: string; // 用于区分不同的消息流，比监听 messages 靠谱点
-  messages: TMessageWithTool[];
+  messages: T[];
   fixedDuration?: number;
   enabled: boolean;
 }): {
-  partialMessages: TMessageWithTool[];
+  partialMessages: T[];
   skipToEnd: () => void;
   isCompleted: boolean;
 } {

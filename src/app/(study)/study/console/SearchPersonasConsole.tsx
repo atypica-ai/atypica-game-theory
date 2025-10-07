@@ -1,11 +1,13 @@
-import { BuildPersonaToolResult, TPersonaForStudy } from "@/ai/tools/types";
+import { StudyUITools, ToolName } from "@/ai/tools/types";
 import { fetchPersonasByIds } from "@/app/(study)/study/actions";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ExtractServerActionData } from "@/lib/serverAction";
-import { ToolInvocation } from "ai";
+
+import { TPersonaForStudy } from "@/ai/tools/experts/buildPersona/types";
+import { ToolUIPart } from "ai";
 import { LoaderIcon, UserCheckIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { FC, useCallback, useEffect, useState } from "react";
@@ -193,11 +195,11 @@ const PersonaGrids: FC<{
 };
 
 export const SearchPersonasConsole: FC<{
-  toolInvocation: ToolInvocation;
+  toolInvocation: ToolUIPart<Pick<StudyUITools, ToolName.searchPersonas>>;
 }> = ({ toolInvocation }) => {
   const t = useTranslations("StudyPage.ToolConsole");
 
-  if (toolInvocation.state !== "result") {
+  if (toolInvocation.state === "input-streaming" || toolInvocation.state === "input-available") {
     return (
       <div className="flex gap-2">
         <div className="text-sm">{t("buildingPersona")}</div>
@@ -208,9 +210,10 @@ export const SearchPersonasConsole: FC<{
         </div>
       </div>
     );
+  } else if (toolInvocation.state === "output-available") {
+    return <PersonaGrids personas={toolInvocation.output.personas} />;
+  } else {
+    // toolInvocation.state === "output-error"
+    return null;
   }
-
-  const { personas } = toolInvocation.result as BuildPersonaToolResult;
-
-  return <PersonaGrids personas={personas} />;
 };

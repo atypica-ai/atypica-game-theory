@@ -1,14 +1,12 @@
 import { CONTINUE_ASSISTANT_STEPS } from "@/ai/messageUtilsClient";
-import { UIToolConfigs } from "@/ai/tools/types";
+import { StudyUITools, TStudyMessageWithTool } from "@/ai/tools/types";
 import { FileAttachment } from "@/components/chat/FileAttachment";
 import ToolArgsTable, { ExpandableText } from "@/components/chat/ToolArgsTable";
-import { ToolInvocationDisplay } from "@/components/chat/ToolInvocationDisplay";
 import ToolResultTable from "@/components/chat/ToolResultTable";
-import { TAddToolResult, TMessageWithTool } from "@/components/chat/types";
 import { Markdown } from "@/components/markdown";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
-import { ToolUIPart, UITools } from "ai";
+import { ToolUIPart } from "ai";
 import { motion } from "framer-motion";
 import { BotIcon, ChevronRight, EyeIcon, LoaderIcon, XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -23,13 +21,14 @@ import {
 } from "react";
 import { useStudyContext } from "./hooks/StudyContext";
 
-const ToolInvocationMessage = ({
+const ToolInvocationMessage = <UI_MESSAGE extends TStudyMessageWithTool>({
   toolInvocation,
-  addToolResult,
+  // addToolResult,
+  renderToolUIPart,
   isLastToolPart,
 }: {
-  toolInvocation: ToolUIPart<UIToolConfigs>;
-  addToolResult: TAddToolResult;
+  toolInvocation: ToolUIPart<StudyUITools>;
+  renderToolUIPart: (toolPart: UI_MESSAGE["parts"][number]) => ReactNode;
   isLastToolPart?: boolean;
 }) => {
   const t = useTranslations("StudyPage.SingleMessage");
@@ -74,11 +73,7 @@ const ToolInvocationMessage = ({
             className="shrink-0 text-foreground/70 ml-auto mr-2 p-2 hover:bg-zinc-100 hover:dark:bg-zinc-900 rounded-md flex items-center gap-2 cursor-pointer"
             onClick={(e) => {
               e.stopPropagation();
-              setViewToolInvocation({
-                toolName: toolInvocation.type.slice(5),
-                toolCallId: toolInvocation.toolCallId,
-                state: toolInvocation.state,
-              });
+              setViewToolInvocation(toolInvocation);
               setConsoleOpen(true);
             }}
           >
@@ -105,7 +100,8 @@ const ToolInvocationMessage = ({
           )}
         </CollapsibleContent>
       </Collapsible>
-      <ToolInvocationDisplay toolInvocation={toolInvocation} addToolResult={addToolResult} />
+      {/*<ToolInvocationDisplay toolInvocation={toolInvocation} addToolResult={addToolResult} />*/}
+      {renderToolUIPart(toolInvocation)}
     </>
   );
 };
@@ -118,9 +114,9 @@ const PlainText = ({ children }: PropsWithChildren) => {
   ) : null;
 };
 
-export const SingleMessage = <T extends UITools>({
+export const SingleMessage = <UI_MESSAGE extends TStudyMessageWithTool>({
   message: { role, parts },
-  addToolResult,
+  renderToolUIPart,
   avatar,
   nickname,
   onDelete,
@@ -129,8 +125,8 @@ export const SingleMessage = <T extends UITools>({
   // role: "assistant" | "user" | "system" | "data";
   // content: string | ReactNode;
   // parts?: MessageType["parts"];
-  message: TMessageWithTool;
-  addToolResult: TAddToolResult;
+  message: TStudyMessageWithTool;
+  renderToolUIPart: (toolPart: UI_MESSAGE["parts"][number]) => ReactNode;
   avatar?: ReactNode;
   nickname?: string;
   onDelete?: () => void;
@@ -142,9 +138,7 @@ export const SingleMessage = <T extends UITools>({
 
   const renderUserMessage = useCallback(() => {
     // 用户输入的消息（如果有多条，其实不会有）合并在一起显示
-    const textContent = useMemo(() => {
-      return parts.map((part) => (part.type === "text" ? part.text : "")).join("\n");
-    }, [parts]);
+    const textContent = parts.map((part) => (part.type === "text" ? part.text : "")).join("\n");
     const contentLength = (textContent.toString() ?? "").length;
     if (textContent !== CONTINUE_ASSISTANT_STEPS) {
       return null;
@@ -194,7 +188,7 @@ export const SingleMessage = <T extends UITools>({
   }, [parts, onDelete, fileParts]);
 
   // const { replay } = useStudyContext();
-  const renderParts = (parts: TMessageWithTool["parts"]) => {
+  const renderParts = (parts: TStudyMessageWithTool["parts"]) => {
     // if (replay) {
     //   parts = parts.filter(
     //     (part) =>
@@ -225,7 +219,8 @@ export const SingleMessage = <T extends UITools>({
                 key={i}
                 toolInvocation={part}
                 isLastToolPart={isLastMessage && i === lastToolPartIndex}
-                addToolResult={addToolResult}
+                // addToolResult={addToolResult}
+                renderToolUIPart={renderToolUIPart}
               />
             );
           } else {

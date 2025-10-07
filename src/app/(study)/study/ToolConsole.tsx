@@ -17,21 +17,21 @@ export function ToolConsole() {
     return viewToolInvocation || lastToolInvocation || null;
   }, [viewToolInvocation, lastToolInvocation]);
 
-  switch (activeTool?.toolName) {
-    case ToolName.scoutTaskChat:
-    case ToolName.scoutSocialTrends:
+  switch (activeTool?.type) {
+    case `tool-${ToolName.scoutTaskChat}`:
+    case `tool-${ToolName.scoutSocialTrends}`:
       return <ScoutTaskChatConsole toolInvocation={activeTool} />;
-    case ToolName.interviewChat:
+    case `tool-${ToolName.interviewChat}`:
       return <InterviewChatConsole toolInvocation={activeTool} />;
-    case ToolName.reasoningThinking:
+    case `tool-${ToolName.reasoningThinking}`:
       return <ReasoningThinkingConsole toolInvocation={activeTool} />;
-    case ToolName.generateReport:
+    case `tool-${ToolName.generateReport}`:
       return <GenerateReportConsole toolInvocation={activeTool} />;
-    case ToolName.buildPersona:
+    case `tool-${ToolName.buildPersona}`:
       return <BuildPersonaConsole toolInvocation={activeTool} />;
-    case ToolName.searchPersonas:
+    case `tool-${ToolName.searchPersonas}`:
       return <SearchPersonasConsole toolInvocation={activeTool} />;
-    case ToolName.webSearch:
+    case `tool-${ToolName.webSearch}`:
       return <WebSearchConsole toolInvocation={activeTool} />;
     default:
       return activeTool ? <ToolInvocationMessage toolInvocation={activeTool} /> : null;

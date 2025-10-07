@@ -1,13 +1,18 @@
+import { StudyUITools, ToolName } from "@/ai/tools/types";
 import { fetchAnalystReportByToken } from "@/app/(study)/study/actions";
 import { AnalystReportShareButton } from "@/app/(study)/study/components/AnalystReportShareButton";
 import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn } from "@/lib/utils";
-import { ToolInvocation } from "ai";
+import { ToolUIPart } from "ai";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-export const GenerateReportConsole = ({ toolInvocation }: { toolInvocation: ToolInvocation }) => {
+export const GenerateReportConsole = ({
+  toolInvocation,
+}: {
+  toolInvocation: ToolUIPart<Pick<StudyUITools, ToolName.generateReport>>;
+}) => {
   const { replay } = useStudyContext();
   const t = useTranslations("StudyPage.ToolConsole");
 
@@ -49,9 +54,9 @@ export const GenerateReportConsole = ({ toolInvocation }: { toolInvocation: Tool
   > | null>(null);
 
   useEffect(() => {
-    let reportToken = toolInvocation.args.reportToken as string;
-    if (toolInvocation.state === "result") {
-      reportToken = toolInvocation.result.reportToken as string;
+    let reportToken = toolInvocation.input?.reportToken;
+    if (toolInvocation.state === "output-available") {
+      reportToken = toolInvocation.output.reportToken;
     }
     if (reportToken) {
       fetchAnalystReportByToken(reportToken)
@@ -62,7 +67,7 @@ export const GenerateReportConsole = ({ toolInvocation }: { toolInvocation: Tool
         .catch((error) => console.log(error));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [toolInvocation.args.reportToken, toolInvocation.state]);
+  }, [toolInvocation.input?.reportToken, toolInvocation.state]);
 
   return (
     <div className={cn("h-full relative", !analystReport?.generatedAt ? "pb-10" : "pb-10")}>

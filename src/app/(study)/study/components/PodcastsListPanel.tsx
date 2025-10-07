@@ -42,8 +42,8 @@ function PodcastsCountBadge() {
   // Refresh when tool invocations complete
   useEffect(() => {
     if (
-      lastToolInvocation?.toolName === ToolName.generateReport &&
-      lastToolInvocation.state === "result"
+      lastToolInvocation?.type === `tool-${ToolName.generateReport}` &&
+      lastToolInvocation.state === "output-available"
     ) {
       fetchPodcastCount();
     }

@@ -1,12 +1,13 @@
+import { StudyUITools, ToolName } from "@/ai/tools/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Markdown } from "@/components/markdown";
 import { cn } from "@/lib/utils";
-import { ToolInvocation } from "ai";
+import { ToolUIPart } from "ai";
 import { useTranslations } from "next-intl";
 import { FC } from "react";
 
 export const ReasoningThinkingConsole: FC<{
-  toolInvocation: ToolInvocation;
+  toolInvocation: ToolUIPart<Pick<StudyUITools, ToolName.reasoningThinking>>;
 }> = ({ toolInvocation }) => {
   const t = useTranslations("StudyPage.ToolConsole");
   return (
@@ -18,15 +19,15 @@ export const ReasoningThinkingConsole: FC<{
       <div className="mt-2 mb-3 font-medium flex flex-rows items-start justify-start gap-2">
         <HippyGhostAvatar seed={toolInvocation.toolCallId.substring(1)} className="size-6" />
         <div className="flex-1 overflow-hidden">
-          {t("deepThinking")}: {toolInvocation.args.question}
+          {t("deepThinking")}: {toolInvocation.input?.question}
         </div>
       </div>
-      {toolInvocation.state === "result" ? (
+      {toolInvocation.state === "output-available" ? (
         <div className={cn("flex flex-rows items-start justify-start gap-2")}>
           <HippyGhostAvatar seed={toolInvocation.toolCallId} className="size-6" />
           <div className="flex-1 overflow-hidden">
-            <div>{toolInvocation.result.reasoning}</div>
-            <Markdown>{toolInvocation.result.text}</Markdown>
+            <div>{toolInvocation.output.reasoning}</div>
+            <Markdown>{toolInvocation.output.text}</Markdown>
           </div>
         </div>
       ) : null}

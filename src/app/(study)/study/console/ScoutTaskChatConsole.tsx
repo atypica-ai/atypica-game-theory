@@ -1,4 +1,4 @@
-import { ToolName } from "@/ai/tools/types";
+import { StudyUITools, ToolName, TStudyMessageWithTool } from "@/ai/tools/types";
 import { fetchUserChatByToken, fetchUserChatStateByToken } from "@/app/(study)/study/actions";
 import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
 import {
@@ -7,14 +7,20 @@ import {
 } from "@/app/(study)/study/hooks/useProgressiveMessages";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { useDocumentVisibility } from "@/hooks/use-document-visibility";
-import { ToolInvocation, UIMessage } from "ai";
+import { ToolUIPart } from "ai";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { StreamSteps } from "./StreamSteps";
 
-export const ScoutTaskChatConsole = ({ toolInvocation }: { toolInvocation: ToolInvocation }) => {
+export const ScoutTaskChatConsole = ({
+  toolInvocation,
+}: {
+  toolInvocation: ToolUIPart<
+    Pick<StudyUITools, ToolName.scoutTaskChat | ToolName.scoutSocialTrends>
+  >;
+}) => {
   const { studyUserChat } = useStudyContext();
-  const scoutUserChatToken = toolInvocation.args.scoutUserChatToken as string;
-  const [messages, setMessages] = useState<UIMessage[]>([]);
+  const scoutUserChatToken = toolInvocation.input?.scoutUserChatToken;
+  const [messages, setMessages] = useState<TStudyMessageWithTool[]>([]);
   const [backgroundToken, setBackgroundToken] = useState<string | null>(null);
   const backgroundRunning = useMemo(() => !!backgroundToken, [backgroundToken]);
 
@@ -27,9 +33,10 @@ export const ScoutTaskChatConsole = ({ toolInvocation }: { toolInvocation: ToolI
   });
 
   const reloadMessages = useCallback(async () => {
+    if (!scoutUserChatToken) return;
     const result = await fetchUserChatByToken(scoutUserChatToken, "scout");
     if (result.success) {
-      setMessages(result.data.messages);
+      setMessages(result.data.messages as TStudyMessageWithTool[]);
     } else {
       console.log(result.message);
     }
@@ -38,6 +45,7 @@ export const ScoutTaskChatConsole = ({ toolInvocation }: { toolInvocation: ToolI
   // 使用 ref，确保 useCallback 里面取到最新值，并且变化了以后不触发 refreshStudyUserChat 和 useEffect 更新
   const chatUpdatedAt = useRef<number | null>(null);
   const refreshScoutUserChat = useCallback(async () => {
+    if (!scoutUserChatToken) return;
     const result = await fetchUserChatStateByToken(scoutUserChatToken, "scout");
     if (!result.success) {
       console.log(result.message);
@@ -91,12 +99,12 @@ export const ScoutTaskChatConsole = ({ toolInvocation }: { toolInvocation: ToolI
               <HippyGhostAvatar seed={studyUserChat.token} />
             ) : undefined
           }
-          role={message.role}
-          content={message.content}
-          parts={message.parts}
+          message={message}
         ></StreamSteps>
       ))}
-      {(toolInvocation.state !== "result" || backgroundRunning) && (
+      {(toolInvocation.state === "input-streaming" ||
+        toolInvocation.state === "input-available" ||
+        backgroundRunning) && (
         <div className="w-full flex py-4 gap-px items-center justify-start text-zinc-500 text-xs font-mono">
           <span className="mr-2">Looking for target users </span>
           <span className="animate-bounce">✨ </span>

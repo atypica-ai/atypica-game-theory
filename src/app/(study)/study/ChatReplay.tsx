@@ -1,3 +1,4 @@
+import { StudyToolUIPartDisplay } from "@/ai/tools/ui";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Button } from "@/components/ui/button";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
@@ -35,17 +36,9 @@ export function ChatReplay() {
       }
       for (let j = message.parts.length - 1; j >= 0; j--) {
         const part = message.parts[j];
-        if (part.type.startsWith("tool-") && "toolCallId" in part) {
-          setLastToolInvocation((prev) => {
-            if (prev?.toolCallId === part.toolCallId && prev?.state === part.state) {
-              return prev;
-            }
-            return {
-              toolCallId: part.toolCallId,
-              toolName: part.type.slice(5),
-              state: part.state,
-            };
-          });
+        // dynamic-tool 的格式不兼容，目前暂时也没这种类型的 tool，可以忽略
+        if (part.type !== "dynamic-tool" && part.type.startsWith("tool-") && "toolCallId" in part) {
+          setLastToolInvocation(part);
           return;
         }
       }
@@ -65,8 +58,8 @@ export function ChatReplay() {
         {messagesDisplay.map((message, index) => (
           <SingleMessage
             key={message.id}
-            addToolResult={async () => {}}
             message={message}
+            renderToolUIPart={(toolPart) => <StudyToolUIPartDisplay toolUIPart={toolPart} />}
             avatar={
               message.role === "assistant" ? (
                 <HippyGhostAvatar seed={studyUserChat.token} />

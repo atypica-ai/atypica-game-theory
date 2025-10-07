@@ -21,7 +21,7 @@ import {
   toolCallError,
   webSearchTool,
 } from "@/ai/tools/tools";
-import { AgentToolConfigArgs, ToolName, UIToolConfigs } from "@/ai/tools/types";
+import { AgentToolConfigArgs, StudyUITools, ToolName } from "@/ai/tools/types";
 import { setUserChatError } from "@/lib/userChat/lib";
 import { safeAbort } from "@/lib/utils";
 import { prisma } from "@/prisma/prisma";
@@ -119,7 +119,7 @@ async function shouldDecidePersonaTier({
   const messageId = generateId();
   const toolCallId = generateId();
   // ToolUIPart<UIToolConfigs> 会根据 type 推断出 input 类型
-  const toolPart: ToolUIPart<UIToolConfigs> = {
+  const toolPart: ToolUIPart<StudyUITools> = {
     toolCallId,
     type: `tool-${ToolName.requestInteraction}`,
     input:

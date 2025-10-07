@@ -1,12 +1,13 @@
 "use client";
-import { TMessageWithTool } from "@/components/chat/types";
+import { StudyUITools, TMessageWithPlainTextTool } from "@/ai/tools/types";
+import { StudyToolUIPartDisplay } from "@/ai/tools/ui";
 import { UserChatSession } from "@/components/chat/UserChatSession";
 import { FitToViewport } from "@/components/layout/FitToViewport";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { useEffect, useRef } from "react";
 
-export function AgentChatPage({
+export function AgentChatPage<UI_MESSAGE extends TMessageWithPlainTextTool<StudyUITools>>({
   chatId,
   chatTitle,
   nickname,
@@ -22,10 +23,10 @@ export function AgentChatPage({
   avatar?: Parameters<typeof UserChatSession>[0]["avatar"];
   useChatAPI?: string;
   readOnly?: boolean;
-  initialMessages?: TMessageWithTool[];
+  initialMessages?: UI_MESSAGE[];
   persistMessages?: boolean;
 }) {
-  const useChatHelpers = useChat({
+  const useChatHelpers = useChat<TMessageWithPlainTextTool<StudyUITools>>({
     id: chatId,
     experimental_throttle: 300,
     messages: initialMessages,
@@ -56,7 +57,7 @@ export function AgentChatPage({
 
   return (
     <FitToViewport className="flex-1 overflow-hidden flex flex-col items-stretch justify-start container mx-auto">
-      <UserChatSession
+      <UserChatSession<TMessageWithPlainTextTool<StudyUITools>>
         chatId={chatId}
         chatTitle={chatTitle}
         nickname={nickname}
@@ -64,6 +65,7 @@ export function AgentChatPage({
         readOnly={readOnly}
         useChatHelpers={useChatHelpers}
         useChatRef={useChatRef}
+        renderToolUIPart={(toolPart) => <StudyToolUIPartDisplay toolUIPart={toolPart} />}
         persistMessages={persistMessages}
         acceptAttachments={false}
       />

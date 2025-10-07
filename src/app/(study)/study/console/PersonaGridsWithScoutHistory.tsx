@@ -1,4 +1,5 @@
-import { TPersonaForStudy } from "@/ai/tools/types";
+import { TPersonaForStudy } from "@/ai/tools/experts/buildPersona/types";
+import { TStudyMessageWithTool } from "@/ai/tools/types";
 import { fetchPersonasByIds, fetchUserChatByToken } from "@/app/(study)/study/actions";
 import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
 import { useProgressiveMessages } from "@/app/(study)/study/hooks/useProgressiveMessages";
@@ -15,7 +16,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ExtractServerActionData } from "@/lib/serverAction";
-import { UIMessage } from "ai";
 import { ChevronLeftIcon, ChevronRightIcon, LoaderIcon, SparklesIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { FC, useCallback, useEffect, useRef, useState } from "react";
@@ -250,7 +250,7 @@ export const PersonaGridsWithScoutHistory: FC<{
 
 const ScoutTaskChatMessages = ({ scoutUserChatToken }: { scoutUserChatToken: string | null }) => {
   const { studyUserChat } = useStudyContext();
-  const [messages, setMessages] = useState<UIMessage[]>([]);
+  const [messages, setMessages] = useState<TStudyMessageWithTool[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const { partialMessages: messagesDisplay } = useProgressiveMessages({
@@ -268,7 +268,7 @@ const ScoutTaskChatMessages = ({ scoutUserChatToken }: { scoutUserChatToken: str
     setIsLoading(true);
     const result = await fetchUserChatByToken(scoutUserChatToken, "scout");
     if (result.success) {
-      setMessages(result.data.messages);
+      setMessages(result.data.messages as TStudyMessageWithTool[]);
     } else {
       console.log(result.message);
     }
@@ -295,9 +295,7 @@ const ScoutTaskChatMessages = ({ scoutUserChatToken }: { scoutUserChatToken: str
               <HippyGhostAvatar seed={studyUserChat.token} />
             ) : undefined
           }
-          role={message.role}
-          content={message.content}
-          parts={message.parts}
+          message={message}
         ></StreamSteps>
       ))}
     </div>

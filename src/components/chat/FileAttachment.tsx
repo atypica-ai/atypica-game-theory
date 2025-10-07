@@ -1,7 +1,7 @@
 "use client";
 import { useDevice } from "@/hooks/use-device";
 import { cn } from "@/lib/utils";
-import { Attachment } from "ai";
+import { FileUIPart } from "ai";
 import { FileIcon, XIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -12,12 +12,12 @@ export function FileAttachment({
   onRemove,
   className,
 }: {
-  attachment: Attachment;
+  attachment: Omit<FileUIPart, "type">;
   onRemove?: () => void;
   className?: string;
 }) {
   const { isMobile } = useDevice();
-  const isImage = attachment.contentType?.startsWith("image/");
+  const isImage = attachment.mediaType?.startsWith("image/");
   // const isPdf = attachment.contentType === "application/pdf";
 
   return (
@@ -36,7 +36,7 @@ export function FileAttachment({
         >
           <Image
             src={attachment.url}
-            alt={attachment.name ?? "Image"}
+            alt={attachment.filename ?? "Image"}
             fill
             sizes="100%"
             priority
@@ -50,7 +50,7 @@ export function FileAttachment({
           target="_blank"
         >
           <FileIcon className="shrink-0 w-4 h-4" />
-          <div className="text-xs break-all tracking-tighter truncate">{attachment.name}</div>
+          <div className="text-xs break-all tracking-tighter truncate">{attachment.filename}</div>
         </Link>
       )}
 

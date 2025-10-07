@@ -3,8 +3,8 @@ import {
   CONTINUE_ASSISTANT_STEPS,
   prepareLastUIMessageForRequest,
 } from "@/ai/messageUtilsClient";
-import { ToolName } from "@/ai/tools/types";
-import { TMessageWithTool } from "@/components/chat/types";
+import { ToolName, TStudyMessageWithTool } from "@/ai/tools/types";
+import { StudyToolUIPartDisplay } from "@/ai/tools/ui";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { NewStudyButton } from "@/components/NewStudyInputBox";
 import { Button } from "@/components/ui/button";
@@ -179,7 +179,7 @@ export function ChatBox() {
       // console.log(`StudyUserChat [${studyUserChatId}] updated at ${chatMessageUpdatedAt}, reloading messages`);
       fetchUserChatByToken(studyUserChatToken, "study").then((result) => {
         if (result.success) {
-          useChatRef.current.setMessages(result.data.messages as TMessageWithTool[]);
+          useChatRef.current.setMessages(result.data.messages as TStudyMessageWithTool[]);
         } else {
           console.log(result.message);
         }
@@ -213,17 +213,9 @@ export function ChatBox() {
       const message = messages[i];
       for (let j = message.parts.length - 1; j >= 0; j--) {
         const part = message.parts[j];
-        if (part.type.startsWith("tool-") && "toolCallId" in part) {
-          setLastToolInvocation((prev) => {
-            if (prev?.toolCallId === part.toolCallId && prev?.state === part.state) {
-              return prev;
-            }
-            return {
-              toolCallId: part.toolCallId,
-              toolName: part.type.slice(5), // dirty method to get toolName, see https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#tool-part-type-changes-uimessage
-              state: part.state,
-            };
-          });
+        // dynamic-tool 的格式不兼容，目前暂时也没这种类型的 tool，可以忽略
+        if (part.type !== "dynamic-tool" && part.type.startsWith("tool-") && "toolCallId" in part) {
+          setLastToolInvocation(part);
           return;
         }
       }
@@ -303,7 +295,10 @@ export function ChatBox() {
             key={message.id}
             message={message}
             nickname={message.role === "assistant" ? "atypica.AI" : undefined}
-            addToolResult={addToolResult}
+            // addToolResult={addToolResult}
+            renderToolUIPart={(toolPart) => (
+              <StudyToolUIPartDisplay toolUIPart={toolPart} addToolResult={addToolResult} />
+            )}
             avatar={
               message.role === "assistant" ? (
                 <HippyGhostAvatar seed={studyUserChatToken} />

@@ -1,4 +1,5 @@
 "use client";
+import { TStudyMessageWithTool } from "@/ai/tools/types";
 import GlobalHeader from "@/components/layout/GlobalHeader";
 import { Button } from "@/components/ui/button";
 import UserMenu from "@/components/UserMenu";
@@ -117,7 +118,9 @@ const Agent = () => {
         onClick={() => setConsoleOpen(!consoleOpen)}
       >
         <span className="text-xs font-bold">
-          {lastToolInvocation ? ">_ exec " + lastToolInvocation.toolName : ""}
+          {lastToolInvocation
+            ? ">_ exec " + lastToolInvocation.type.slice(5) // dirty wa to extract tool name
+            : ""}
         </span>
         <span className="ml-auto mr-1 text-xs font-bold">{t("viewConsole")}</span>
         <ScanIcon className="size-3" />
@@ -127,7 +130,7 @@ const Agent = () => {
 };
 
 export function StudyPageClient({
-  studyUserChat,
+  studyUserChat: { messages, ...studyUserChat },
   replay,
 }: {
   studyUserChat: Omit<UserChat, "kind"> & {
@@ -141,7 +144,10 @@ export function StudyPageClient({
   // }, []);
 
   return (
-    <StudyProvider studyUserChat={studyUserChat} replay={replay}>
+    <StudyProvider
+      studyUserChat={{ ...studyUserChat, messages: messages as TStudyMessageWithTool[] }}
+      replay={replay}
+    >
       <main className="relative flex-1 flex flex-rows w-dvw h-dvh overflow-hidden">
         <Agent />
         <Console />
