@@ -341,12 +341,12 @@ export const createDebouncePersistentMessage = (
 export function convertDBMessageToAIMessage({
   messageId: id,
   role: _role,
-  // content,
   parts: _parts,
   extra: _extra,
+  // content,
   // attachments,
   // createdAt,
-}: ChatMessage): UIMessage {
+}: Pick<ChatMessage, "messageId" | "role" | "parts" | "extra">): UIMessage {
   const role = _role as UIMessage["role"]; // 直接忽略 role: data，这个不可能出现
   const parts = ((_parts ?? []) as ChatMessagePart[]).map(convertToV5MessagePart);
   const extra = _extra as Omit<UIMessage, "id" | "role" | "parts"> | null;

@@ -1,97 +1,65 @@
 "use client";
-import { ClientMessagePayload } from "@/ai/messageUtilsClient";
+import { ClientMessagePayload, prepareLastUIMessageForRequest } from "@/ai/messageUtilsClient";
+import { TPersonaMessageWithTool } from "@/app/(persona)/types";
 import { FocusedInterviewChat } from "@/components/chat/FocusedInterviewChat";
 import { FitToViewport } from "@/components/layout/FitToViewport";
-import { DefaultChatTransport, useChat } from "@ai-sdk/react";
-import { UIMessage } from "ai";
+import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport } from "ai";
 import { ShieldIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { useEffect, useRef, useState } from "react";
-
-interface FollowUpInterviewClientProps {
-  userChatToken: string;
-  initialMessages?: UIMessage[];
-}
+import { useEffect, useMemo, useRef, useState } from "react";
 
 export default function FollowUpInterviewClient({
   userChatToken,
   initialMessages = [],
-}: FollowUpInterviewClientProps) {
+}: {
+  userChatToken: string;
+  initialMessages?: TPersonaMessageWithTool[];
+}) {
   const locale = useLocale();
   const t = useTranslations("PersonaImport.followUpInterview");
   const [isInterviewComplete, setIsInterviewComplete] = useState(false);
 
-  const initialRequestBody = {
-    userChatToken,
-  };
+  const extraRequestPayload = useMemo(() => ({ userChatToken: userChatToken }), [userChatToken]);
 
   // 正确使用 useChat hook
   const useChatHelpers = useChat({
-    initialMessages,
-
-    body: {
-      ...initialRequestBody,
-    },
-
-    experimental_prepareRequestBody({ messages, requestBody: _requestBody }) {
-      const requestBody: typeof initialRequestBody = { ...initialRequestBody, ..._requestBody };
-      const body: ClientMessagePayload = {
-        message: messages[messages.length - 1],
-        ...requestBody,
-      };
-      return body;
-    },
-
+    messages: initialMessages,
     transport: new DefaultChatTransport({
       api: "/api/chat/persona-followup",
+      prepareSendMessagesRequest({ id, messages }) {
+        const body: ClientMessagePayload = {
+          id,
+          message: prepareLastUIMessageForRequest(messages),
+          ...extraRequestPayload,
+        };
+        return { body };
+      },
     }),
   });
 
   const useChatRef = useRef({
-    reload: useChatHelpers.reload,
+    regenerate: useChatHelpers.regenerate,
     setMessages: useChatHelpers.setMessages,
-    append: useChatHelpers.append,
+    sendMessage: useChatHelpers.sendMessage,
   });
-
-  // Check interview completion status
-  useEffect(() => {
-    const checkInterviewStatus = async () => {
-      // 检查最后一条消息是否包含结束标识
-      const messages = useChatHelpers.messages || [];
-      const lastMessage = messages[messages.length - 1];
-      /* FIXME(@ai-sdk-upgrade-v5): The `part.toolInvocation.toolName` property has been removed. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#tool-part-type-changes-uimessage */
-      if (
-        lastMessage &&
-        (lastMessage.content.includes(t("interviewCompleted")) ||
-          lastMessage.content.includes(t("thankYouParticipation")) ||
-          lastMessage.parts?.some(
-            (part) =>
-              part.type === "tool-invocation" && part.toolInvocation.toolName === "endInterview",
-          ))
-      ) {
-        setIsInterviewComplete(true);
-      }
-    };
-    checkInterviewStatus();
-  }, [userChatToken, useChatHelpers.messages, t]);
 
   // Monitor message changes to detect interview completion
   useEffect(() => {
     const messages = useChatHelpers.messages || [];
     const lastMessage = messages[messages.length - 1];
-    /* FIXME(@ai-sdk-upgrade-v5): The `part.toolInvocation.toolName` property has been removed. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#tool-part-type-changes-uimessage */
+    const lastMessageContent = (lastMessage.parts ?? [])
+      .map((part) => (part.type === "text" ? part.text : ""))
+      .join("\n");
     if (
       lastMessage &&
-      (lastMessage.content.includes(t("interviewCompleted")) ||
-        lastMessage.content.includes(t("thankYouParticipation")) ||
-        lastMessage.parts?.some(
-          (part) =>
-            part.type === "tool-invocation" && part.toolInvocation.toolName === "endInterview",
-        ))
+      (lastMessageContent.includes(t("interviewCompleted")) ||
+        lastMessageContent.includes(t("thankYouParticipation")) ||
+        lastMessage.parts?.some((part) => part.type === "tool-endInterview"))
     ) {
       setIsInterviewComplete(true);
     }
-  }, [useChatHelpers.messages, userChatToken, t]);
+  }, [userChatToken, useChatHelpers.messages, t]);
 
   // Interview completion interface
   if (isInterviewComplete) {
@@ -119,7 +87,7 @@ export default function FollowUpInterviewClient({
 
   return (
     <FitToViewport>
-      <FocusedInterviewChat
+      <FocusedInterviewChat<TPersonaMessageWithTool>
         useChatHelpers={useChatHelpers}
         useChatRef={useChatRef}
         showTimer={false}

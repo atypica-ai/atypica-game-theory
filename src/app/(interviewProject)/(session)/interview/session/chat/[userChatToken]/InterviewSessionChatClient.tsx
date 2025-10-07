@@ -1,8 +1,9 @@
 "use client";
-import { ClientMessagePayload } from "@/ai/messageUtilsClient";
+import { ClientMessagePayload, prepareLastUIMessageForRequest } from "@/ai/messageUtilsClient";
 import { fetchInterviewSessionChat } from "@/app/(interviewProject)/actions";
 import { RequestInteractionFormToolMessage } from "@/app/(interviewProject)/components/RequestInteractionFormToolMessage";
-import { InterviewToolName } from "@/app/(interviewProject)/types";
+import { InterviewToolName } from "@/app/(interviewProject)/tools/types";
+import { TInterviewMessageWithTool } from "@/app/(interviewProject)/types";
 import { FocusedInterviewChat } from "@/components/chat/FocusedInterviewChat";
 import { FitToViewport } from "@/components/layout/FitToViewport";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -19,8 +20,8 @@ import {
 } from "@/components/ui/dialog";
 import { VALID_LOCALES } from "@/i18n/routing";
 import { ExtractServerActionData } from "@/lib/serverAction";
-import { DefaultChatTransport, useChat } from "@ai-sdk/react";
-import { UIMessage } from "ai";
+import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport } from "ai";
 import { Info, Shield, UsersIcon } from "lucide-react";
 import { Locale, useLocale, useTranslations } from "next-intl";
 import { useEffect, useMemo, useRef } from "react";
@@ -33,7 +34,7 @@ export function InterviewSessionChatClient({
   extra: { preferredLanguage },
 }: ExtractServerActionData<typeof fetchInterviewSessionChat> & {
   userChatToken: string;
-  initialMessages?: UIMessage[];
+  initialMessages?: TInterviewMessageWithTool[];
 }) {
   const _locale = useLocale();
 
@@ -47,65 +48,45 @@ export function InterviewSessionChatClient({
   const tDetails = useTranslations("InterviewProject.projectDetails");
   const tSessionViewer = useTranslations("InterviewProject.sessionViewer");
 
-  const initialRequestBody = {
-    userChatToken,
-  };
+  const extraRequestPayload = useMemo(() => ({ userChatToken: userChatToken }), [userChatToken]);
 
   const useChatHelpers = useChat({
-    initialMessages,
-
-    body: {
-      ...initialRequestBody,
-    },
-
-    experimental_prepareRequestBody({ messages, requestBody: _requestBody }) {
-      const requestBody: typeof initialRequestBody = { ...initialRequestBody, ..._requestBody };
-      const lastMessage = messages[messages.length - 1];
-      const body: ClientMessagePayload = {
-        message: {
-          id: lastMessage.id,
-          role: lastMessage.role as "user" | "assistant",
-          content: lastMessage.content,
-          parts: lastMessage.parts, // 这个需要，addToolResult 的信息不在 content 里，在 parts 里
-        },
-        ...requestBody,
-      };
-      return body;
-    },
-
+    messages: initialMessages,
     transport: new DefaultChatTransport({
       api: "/api/chat/interview-agent",
+      prepareSendMessagesRequest({ messages, id }) {
+        const body: ClientMessagePayload = {
+          id,
+          message: prepareLastUIMessageForRequest(messages),
+          ...extraRequestPayload,
+        };
+        return { body };
+      },
     }),
   });
 
   const useChatRef = useRef({
-    append: useChatHelpers.append,
-    reload: useChatHelpers.reload,
+    regenerate: useChatHelpers.regenerate,
     setMessages: useChatHelpers.setMessages,
+    sendMessage: useChatHelpers.sendMessage,
   });
 
   const { messages } = useChatHelpers;
   const requestInteractionToolInvocation = useMemo(() => {
     const lastPart = messages.at(-1)?.parts?.at(-1);
-    if (
-      lastPart?.type === "tool-invocation" &&
-      lastPart.toolInvocation.toolName === InterviewToolName.requestInteractionForm
-    ) {
-      return lastPart.toolInvocation;
+    if (lastPart?.type === `tool-${InterviewToolName.requestInteractionForm}`) {
+      return lastPart;
     }
   }, [messages]);
 
   // Determine planning state based on messages content
   const interviewState = useMemo(() => {
     // Check if any message has endInterview tool result
-    /* FIXME(@ai-sdk-upgrade-v5): The `part.toolInvocation.toolName` property has been removed. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#tool-part-type-changes-uimessage */
-    /* FIXME(@ai-sdk-upgrade-v5): The `part.toolInvocation.state` property has been removed. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#tool-part-type-changes-uimessage */
     const hasEndInterviewResult = messages.some((message) =>
       message.parts?.some(
         (part) =>
-          part.type === "tool-invocation" &&
-          part.toolInvocation.toolName === InterviewToolName.endInterview &&
-          part.toolInvocation.state === "result",
+          part.type === `tool-${InterviewToolName.endInterview}` &&
+          part.state === "output-available",
       ),
     );
     if (hasEndInterviewResult) {
@@ -121,9 +102,9 @@ export function InterviewSessionChatClient({
     requestSentRef.current = true;
     if (initialMessages.length === 0) {
       // If no initial message, start the conversation with AI
-      useChatRef.current.append({ role: "user", content: "[READY]" });
+      useChatRef.current.sendMessage({ text: "[READY]" });
     } else if (initialMessages[initialMessages.length - 1]?.role === "user") {
-      useChatRef.current.reload();
+      useChatRef.current.regenerate();
     }
   }, [initialMessages]);
 

@@ -1,4 +1,6 @@
+import { UIDataTypes, UIMessage } from "ai";
 import { z } from "zod/v3";
+import { TInterviewUITools } from "./tools/types";
 
 // Create Interview Project schema
 export const createInterviewProjectSchema = z.object({
@@ -27,7 +29,4 @@ export interface InterviewSharePayload {
   expiresAt: number;
 }
 
-export enum InterviewToolName {
-  endInterview = "endInterview",
-  requestInteractionForm = "requestInteractionForm",
-}
+export type TInterviewMessageWithTool = UIMessage<unknown, UIDataTypes, TInterviewUITools>;

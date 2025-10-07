@@ -9,3 +9,10 @@ export const followUpEndInterviewOutputSchema = z.object({
   followUpSummary: z.string(),
   plainText: z.string(),
 });
+
+export type TPersonaUITools = {
+  endInterview: {
+    input: z.infer<typeof followUpEndInterviewInputSchema>;
+    output: z.infer<typeof followUpEndInterviewOutputSchema>;
+  };
+};

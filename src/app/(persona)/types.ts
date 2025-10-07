@@ -1,4 +1,6 @@
+import { UIDataTypes, UIMessage } from "ai";
 import { z } from "zod/v3";
+import { TPersonaUITools } from "./tools/types";
 
 export enum PersonaTier {
   Tier0 = 0, // 是普通的 ai persona
@@ -59,3 +61,5 @@ export const personaScoringSchema = z.object({
   techAcceptance: z.number().min(0).max(1).describe("1 if present, 0 if not"),
   socialRelations: z.number().min(0).max(1).describe("1 if present, 0 if not"),
 });
+
+export type TPersonaMessageWithTool = UIMessage<unknown, UIDataTypes, TPersonaUITools>;

@@ -1,13 +1,18 @@
 import "server-only";
 
-import { convertStepsToAIMessage } from "@/ai/messageUtils";
+import {
+  convertDBMessageToAIMessage,
+  convertStepsToAIMessage,
+  persistentAIMessageToDB,
+} from "@/ai/messageUtils";
 import { personaAgentSystem } from "@/ai/prompt";
 import { defaultProviderOptions, llm } from "@/ai/provider";
 import { initInterviewProjectStatReporter } from "@/ai/tools/stats";
 import { StatReporter } from "@/ai/tools/types";
 import { interviewAgentSystemPrompt } from "@/app/(interviewProject)/prompt";
 import { interviewSessionTools } from "@/app/(interviewProject)/tools";
-import { InterviewToolName } from "@/app/(interviewProject)/types";
+import { InterviewToolName } from "@/app/(interviewProject)/tools/types";
+import { TInterviewMessageWithTool } from "@/app/(interviewProject)/types";
 import { VALID_LOCALES } from "@/i18n/routing";
 import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage } from "@/lib/textUtils";
@@ -15,7 +20,7 @@ import { InterviewProjectExtra, InterviewSessionExtra } from "@/prisma/client";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import { google } from "@ai-sdk/google";
-import { generateId, stepCountIs, streamText, UIMessage } from "ai";
+import { convertToModelMessages, generateId, stepCountIs, streamText, UIMessage } from "ai";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
 
@@ -30,9 +35,9 @@ function fixEmptyTextIssue(message: Omit<UIMessage, "role">) {
       part.text = "[CONTINUE]";
     }
   }
-  if (!message.content) {
-    message.content = "[CONTINUE]";
-  }
+  // if (!message.content) {
+  //   message.content = "[CONTINUE]";
+  // }
 }
 
 async function saveMessage({
@@ -47,22 +52,14 @@ async function saveMessage({
   logger: Logger;
 }) {
   try {
-    const { id: messageId, role, content, parts: _parts } = message;
-    const parts = _parts?.length ? _parts : [{ type: "text", text: content }];
+    // const { id: messageId, role, content, parts: _parts } = message;
+    // const parts = _parts?.length ? _parts : [{ type: "text", text: content }];
     await prisma.$transaction(async (tx) => {
       // 先确保 backgroundToken 是当前的
       await tx.userChat.findUniqueOrThrow({
         where: { id: userChatId, kind: "interviewSession", backgroundToken },
       });
-      await tx.chatMessage.create({
-        data: {
-          userChatId: userChatId,
-          messageId,
-          role,
-          content,
-          parts: parts as InputJsonValue,
-        },
-      });
+      await persistentAIMessageToDB(userChatId, message);
     });
   } catch (error) {
     logger.error(
@@ -158,7 +155,9 @@ export async function runAutoPersonaInterview({
     let conversationTurns = 0;
     let lastSpeaker: "interviewer" | "persona" = "persona"; // Start with interviewer
     const interviewerAgent = {
-      messages: [{ id: generateId(), role: "user", content: "[READY]" }] as UIMessage[],
+      messages: [
+        { id: generateId(), role: "user", parts: [{ type: "text", text: "[READY]" }] },
+      ] as UIMessage[],
     };
     const personaAgent = {
       messages: [] as UIMessage[],
@@ -216,23 +215,26 @@ export async function runAutoPersonaInterview({
       // await new Promise((resolve) => setTimeout(resolve, 2000));
 
       // Check if interview was ended by interviewer
-      const lastMessage = await prisma.chatMessage.findFirst({
-        where: { userChatId },
-        orderBy: { createdAt: "desc" },
-      });
+      const lastMessage = (
+        await prisma.chatMessage.findMany({
+          where: { userChatId },
+          orderBy: { createdAt: "desc" },
+          take: 1,
+        })
+      ).map(convertDBMessageToAIMessage)[0] as TInterviewMessageWithTool | undefined;
 
-      /* FIXME(@ai-sdk-upgrade-v5): The `part.toolInvocation.toolName` property has been removed. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#tool-part-type-changes-uimessage */
       if (
-        ((lastMessage?.parts || []) as NonNullable<UIMessage["parts"]>).some(
-          (part) =>
-            part.type === "tool-invocation" &&
-            part.toolInvocation.toolName === InterviewToolName.endInterview,
-        )
+        lastMessage?.parts &&
+        lastMessage.parts.some((part) => part.type === `tool-${InterviewToolName.endInterview}`)
       ) {
         logger.info({
           msg: "Interview ended by interviewer tool",
-          messageId: lastMessage?.messageId,
-          content: lastMessage?.content.substring(0, 100) + "...",
+          messageId: lastMessage.id,
+          content:
+            lastMessage.parts
+              .map((part) => (part.type === "text" ? part.text : ""))
+              .join("\n")
+              .substring(0, 100) + "...",
         });
         break;
       }
@@ -293,7 +295,7 @@ async function generatePersonaResponse({
       },
 
       system: systemPrompt,
-      messages,
+      messages: convertToModelMessages(messages),
       stopWhen: stepCountIs(1),
 
       onStepFinish: async ({ usage, toolCalls }) => {
@@ -359,7 +361,7 @@ async function generateInterviewerResponse({
       },
 
       system: systemPrompt,
-      messages,
+      messages: convertToModelMessages(messages),
 
       toolChoice: shouldEndInterview
         ? { type: "tool", toolName: InterviewToolName.endInterview }

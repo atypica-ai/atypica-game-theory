@@ -1,39 +1,43 @@
-import { RequestInteractionFormResult } from "@/app/(interviewProject)/tools/types";
+import {
+  InterviewToolName,
+  RequestInteractionFormToolInput,
+  TInterviewUITools,
+} from "@/app/(interviewProject)/tools/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { ToolInvocation } from "ai";
+import { ToolUIPart } from "ai";
 import { Check, FileText } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { FC, useCallback, useState } from "react";
 
-interface FormField {
-  id: string;
-  label: string;
-  type: "text" | "choice" | "boolean";
-  placeholder?: string;
-  options?: string[];
-}
-
-interface FormData {
-  prologue: string;
-  fields: FormField[];
-}
-
 export const RequestInteractionFormToolMessage: FC<{
-  toolInvocation: ToolInvocation;
-  addToolResult?: ({
+  toolInvocation: ToolUIPart<Pick<TInterviewUITools, InterviewToolName.requestInteractionForm>>;
+  addToolResult?: <TOOL extends keyof TInterviewUITools>({
+    state,
+    tool,
     toolCallId,
-    result,
-  }: {
-    toolCallId: string;
-    result: RequestInteractionFormResult;
-  }) => void;
+    output,
+    errorText,
+  }:
+    | {
+        state?: "output-available";
+        tool: TOOL;
+        toolCallId: string;
+        output: TInterviewUITools[TOOL]["output"];
+        errorText?: never;
+      }
+    | {
+        state: "output-error";
+        tool: TOOL;
+        toolCallId: string;
+        output?: never;
+        errorText: string;
+      }) => Promise<void>;
 }> = ({ toolInvocation, addToolResult }) => {
   const t = useTranslations("InterviewProject.requestInteractionForm");
-  const formData = toolInvocation.args as FormData;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [formResponses, setFormResponses] = useState<Record<string, any>>({});
@@ -68,10 +72,11 @@ export const RequestInteractionFormToolMessage: FC<{
   }, []);
 
   const submitForm = useCallback(() => {
-    if (toolInvocation.state !== "result" && addToolResult) {
+    if (toolInvocation.state === "input-available" && addToolResult) {
       addToolResult({
+        tool: InterviewToolName.requestInteractionForm,
         toolCallId: toolInvocation.toolCallId,
-        result: {
+        output: {
           formResponses: formResponses,
           plainText: Object.entries(formResponses)
             .map(([key, value]) => `${key}: ${value}`)
@@ -81,10 +86,11 @@ export const RequestInteractionFormToolMessage: FC<{
     }
   }, [toolInvocation.state, toolInvocation.toolCallId, addToolResult, formResponses]);
 
-  const isFormCompleted = toolInvocation.state === "result";
-  const resultData = isFormCompleted ? toolInvocation.result?.formData : undefined;
+  const isFormCompleted = toolInvocation.state === "output-available";
+  const resultData =
+    toolInvocation.state === "output-available" ? toolInvocation.output.formResponses : undefined;
 
-  const renderField = (field: FormField) => {
+  const renderField = (field: RequestInteractionFormToolInput["fields"][number]) => {
     const isCompleted = isFormCompleted;
     const fieldValue = isCompleted ? resultData?.[field.id] : formResponses[field.id];
 
@@ -189,13 +195,15 @@ export const RequestInteractionFormToolMessage: FC<{
               <FileText className="h-5 w-5 text-primary" />
             </div>
             <CardTitle className="text-sm sm:text-base font-normal leading-tight">
-              {formData.prologue || t("defaultPrologue")}
+              {toolInvocation.input?.prologue || t("defaultPrologue")}
             </CardTitle>
           </div>
         </CardHeader>
 
         <CardContent className="space-y-6">
-          <div className="space-y-6">{formData.fields.map(renderField)}</div>
+          {toolInvocation.state === "input-available" && (
+            <div className="space-y-6">{toolInvocation.input.fields.map(renderField)}</div>
+          )}
 
           {!isFormCompleted && (
             <div className="flex justify-end pt-4 border-t">

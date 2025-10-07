@@ -1,5 +1,6 @@
 "use client";
 
+import { TMessageWithPlainTextTool } from "@/ai/tools/types";
 import { correctSpeechText } from "@/app/api/transcribe/actions";
 import { RecordButton } from "@/components/chat/RecordButton";
 import { Button } from "@/components/ui/button";
@@ -8,7 +9,6 @@ import { useDocumentVisibility } from "@/hooks/use-document-visibility";
 import { getDisplayWidth } from "@/lib/textUtils";
 import { cn } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
-import { UIMessage } from "ai";
 import { AnimatePresence, motion } from "framer-motion";
 import { CheckIcon, Ear, Keyboard, Loader2Icon, Send, XIcon } from "lucide-react";
 import { Locale, useTranslations } from "next-intl";
@@ -43,7 +43,9 @@ const CustomTextarea = React.forwardRef<HTMLTextAreaElement, CustomTextareaProps
 
 CustomTextarea.displayName = "CustomTextarea";
 
-export function FocusedInterviewChat<T extends UIMessage = UIMessage>({
+export function FocusedInterviewChat<
+  T extends TMessageWithPlainTextTool = TMessageWithPlainTextTool,
+>({
   locale,
   useChatHelpers: { messages, status, stop },
   useChatRef,

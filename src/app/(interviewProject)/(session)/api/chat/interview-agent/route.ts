@@ -9,7 +9,7 @@ import { initInterviewProjectStatReporter } from "@/ai/tools/stats";
 import { fetchInterviewSessionChat } from "@/app/(interviewProject)/actions";
 import { interviewAgentSystemPrompt } from "@/app/(interviewProject)/prompt";
 import { interviewSessionTools } from "@/app/(interviewProject)/tools";
-import { InterviewToolName } from "@/app/(interviewProject)/types";
+import { InterviewToolName } from "@/app/(interviewProject)/tools/types";
 import { VALID_LOCALES } from "@/i18n/routing";
 import { rootLogger } from "@/lib/logging";
 import { throwServerActionError } from "@/lib/serverAction";
@@ -97,7 +97,9 @@ export async function POST(req: Request) {
 
   // 动态检测用户输入的语言
   const locale = await detectInputLanguage({
-    text: newMessage.content,
+    text: newMessage.parts // 所有 text parts 的文本合在一起检测
+      .map((part) => (part.type === "text" ? part.text : ""))
+      .join(""),
     fallbackLocale:
       sessionExtra.preferredLanguage &&
       VALID_LOCALES.includes(sessionExtra.preferredLanguage as Locale)
@@ -149,7 +151,7 @@ export async function POST(req: Request) {
 
     onStepFinish: async (step) => {
       appendStepToStreamingMessage(streamingMessage, step);
-      if (streamingMessage.parts?.length && streamingMessage.content.trim()) {
+      if (streamingMessage.parts?.length) {
         await persistentAIMessageToDB(userChatId, streamingMessage);
       }
       // 👆 persist message to db

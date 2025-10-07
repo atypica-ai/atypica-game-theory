@@ -44,6 +44,8 @@ export const requestInteractionFormInputSchema = z.object({
     .describe("Array of form fields"),
 });
 
+export type RequestInteractionFormToolInput = z.infer<typeof requestInteractionFormInputSchema>;
+
 export const requestInteractionFormOutputSchema = z.object({
   formResponses: z.record(z.string()),
   plainText: z.string(),
@@ -51,7 +53,7 @@ export const requestInteractionFormOutputSchema = z.object({
 
 // export interface RequestInteractionFormResult
 //   extends z.infer<typeof requestInteractionFormOutputSchema> {}
-export type RequestInteractionFormResult = z.infer<typeof requestInteractionFormOutputSchema>;
+export type RequestInteractionFormToolResult = z.infer<typeof requestInteractionFormOutputSchema>;
 
 // updateQuestions tool schemas
 export const updateQuestionsInputSchema = z.object({
@@ -67,3 +69,19 @@ export const updateQuestionsOutputSchema = z.object({
   success: z.boolean(),
   message: z.string(),
 });
+
+export enum InterviewToolName {
+  endInterview = "endInterview",
+  requestInteractionForm = "requestInteractionForm",
+}
+
+export type TInterviewUITools = {
+  [InterviewToolName.endInterview]: {
+    input: z.infer<typeof interviewEndInterviewInputSchema>;
+    output: z.infer<typeof interviewEndInterviewOutputSchema>;
+  };
+  [InterviewToolName.requestInteractionForm]: {
+    input: z.infer<typeof requestInteractionFormInputSchema>;
+    output: z.infer<typeof requestInteractionFormOutputSchema>;
+  };
+};

@@ -14,7 +14,7 @@ export const endInterviewOutputSchema = z.object({
   plainText: z.string(),
 });
 
-export type NewStudyUIToolConfigs = {
+export type TNewStudyUITools = {
   endInterview: {
     input: z.infer<typeof endInterviewInputSchema>;
     output: z.infer<typeof endInterviewOutputSchema>;

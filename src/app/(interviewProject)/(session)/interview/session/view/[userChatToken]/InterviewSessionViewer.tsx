@@ -3,6 +3,8 @@ import {
   fetchInterviewSessionDetails,
   restartPersonaInterviewSession,
 } from "@/app/(interviewProject)/actions";
+import { InterviewToolUIPartDisplay } from "@/app/(interviewProject)/tools/ui";
+import { TInterviewMessageWithTool } from "@/app/(interviewProject)/types";
 import { UserChatSession } from "@/components/chat/UserChatSession";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { FitToViewport } from "@/components/layout/FitToViewport";
@@ -20,7 +22,6 @@ import {
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
-import { UIMessage } from "ai";
 import { BotIcon, InfoIcon, RefreshCwIcon, ShieldIcon, UsersIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useRef, useState, useTransition } from "react";
@@ -34,7 +35,7 @@ export function InterviewSessionViewer({
   className,
 }: {
   interviewSession: InterviewSessionDetails;
-  initialMessages?: UIMessage[];
+  initialMessages?: TInterviewMessageWithTool[];
   className?: string;
 }) {
   const t = useTranslations("InterviewProject.sessionViewer");
@@ -278,6 +279,7 @@ export function InterviewSessionViewer({
           readOnly={true}
           useChatHelpers={useChatHelpers}
           useChatRef={useChatRef}
+          renderToolUIPart={(toolUIPart) => <InterviewToolUIPartDisplay toolUIPart={toolUIPart} />}
           acceptAttachments={false}
           persistMessages={false}
         />

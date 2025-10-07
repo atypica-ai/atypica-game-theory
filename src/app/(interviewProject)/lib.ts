@@ -1,10 +1,11 @@
 import "server-only";
 
+import { convertDBMessageToAIMessage } from "@/ai/messageUtils";
 import { decryptText, encryptText } from "@/lib/cipher";
 import { truncateForTitle } from "@/lib/textUtils";
 import { prisma } from "@/prisma/prisma";
-import { UIMessage } from "ai";
-import { InterviewSharePayload, InterviewToolName, RequestInteractionFormResult } from "./types";
+import { InterviewToolName } from "./tools/types";
+import { InterviewSharePayload, TInterviewMessageWithTool } from "./types";
 
 /**
  * Generate an encrypted share token for an interview project
@@ -123,8 +124,7 @@ export type InterviewTranscript = {
   participantInfo: Record<string, string | number> | null;
   messages: Array<{
     role: "user" | "assistant";
-    content: string;
-    timestamp: Date;
+    textContent: string;
   }>;
 };
 
@@ -132,78 +132,72 @@ export type InterviewTranscript = {
  * Extract interview transcript from UserChat
  */
 export async function extractInterviewTranscript(userChatId: number): Promise<InterviewTranscript> {
-  const messages = await prisma.chatMessage.findMany({
-    where: { userChatId },
-    orderBy: { createdAt: "asc" },
-    select: {
-      role: true,
-      content: true,
-      parts: true,
-      createdAt: true,
-    },
-  });
+  const uiMessages = (
+    await prisma.chatMessage.findMany({
+      where: { userChatId },
+      orderBy: { createdAt: "asc" },
+      select: {
+        messageId: true,
+        role: true,
+        parts: true,
+        extra: true,
+      },
+    })
+  ).map(convertDBMessageToAIMessage) as TInterviewMessageWithTool[];
 
   let title: string | null = null;
   let summary: string | null = null;
   let participantInfo: Record<string, string | number> | null = null;
   const transcriptMessages: Array<{
     role: "user" | "assistant";
-    content: string;
-    timestamp: Date;
+    textContent: string;
   }> = [];
 
-  for (const message of messages) {
-    const parts = message.parts as UIMessage["parts"];
-    if (parts) {
-      for (const part of parts) {
-        // Extract text content
-        if (part.type === "text") {
-          transcriptMessages.push({
-            role: message.role as "user" | "assistant",
-            content: part.text,
-            timestamp: message.createdAt,
-          });
+  for (const uiMessage of uiMessages) {
+    for (const part of uiMessage.parts ?? []) {
+      // Extract text content
+      if (part.type === "text") {
+        transcriptMessages.push({
+          role: uiMessage.role as "user" | "assistant",
+          textContent: part.text,
+          // timestamp: uiMessage.createdAt,
+        });
+      }
+
+      // Extract tool invocation results
+      if (
+        part.type.startsWith("tool-") &&
+        "toolCallId" in part &&
+        part.state === "output-available"
+      ) {
+        if (part.type === `tool-${InterviewToolName.endInterview}`) {
+          title = part.output.title || null;
+          summary = part.output.interviewSummary || null;
         }
-
-        // Extract tool invocation results
-        if (part.type === "tool-invocation" && part.toolInvocation?.state === "result") {
-          const toolInvocation = part.toolInvocation;
-
-          if (toolInvocation.toolName === InterviewToolName.endInterview) {
-            const result = toolInvocation.result;
-            title = result.title || null;
-            summary = result.interviewSummary || null;
-          }
-
-          if (toolInvocation.toolName === InterviewToolName.requestInteractionForm) {
-            const result = toolInvocation.result as RequestInteractionFormResult;
-            const args = toolInvocation.args as { fields?: Array<{ id: string; label: string }> };
-
-            if (result.formResponses && args.fields) {
-              // Map response keys to field labels
-              const labeledResponses: Record<string, string | number> = {};
-              Object.entries(result.formResponses).forEach(([key, value]) => {
-                const field = args.fields?.find((f) => f.id === key);
-                const label = field?.label || key;
-                labeledResponses[label] = value;
-              });
-              participantInfo = labeledResponses;
-            } else {
-              participantInfo = result.formResponses || null;
-            }
+        if (part.type === `tool-${InterviewToolName.requestInteractionForm}`) {
+          if (part.output?.formResponses && part.input?.fields) {
+            // Map response keys to field labels
+            const labeledResponses: Record<string, string | number> = {};
+            Object.entries(part.output.formResponses).forEach(([key, value]) => {
+              const field = part.input.fields.find((f) => f.id === key);
+              const label = field?.label || key;
+              labeledResponses[label] = value;
+            });
+            participantInfo = labeledResponses;
+          } else {
+            participantInfo = part.output?.formResponses || null;
           }
         }
       }
     }
-
     // Fallback: if no text parts found, use content directly
-    if (!parts && message.content) {
-      transcriptMessages.push({
-        role: message.role as "user" | "assistant",
-        content: message.content,
-        timestamp: message.createdAt,
-      });
-    }
+    // if (!parts && message.content) {
+    //   transcriptMessages.push({
+    //     role: message.role as "user" | "assistant",
+    //     content: message.content,
+    //     timestamp: message.createdAt,
+    //   });
+    // }
   }
 
   return {
@@ -245,8 +239,9 @@ export function generateTranscriptMarkdown(transcript: InterviewTranscript): str
     markdown += `## 访谈对话\n\n`;
     messages.forEach((message) => {
       const role = message.role === "user" ? "👤 用户" : "🤖 助手";
-      const timestamp = message.timestamp.toLocaleString("zh-CN");
-      markdown += `### ${role} (${timestamp})\n\n${message.content}\n\n---\n\n`;
+      // const timestamp = message.timestamp.toLocaleString("zh-CN");
+      // markdown += `### ${role} (${timestamp})\n\n${message.content}\n\n---\n\n`;
+      markdown += `### ${role}\n\n${message.textContent}\n\n---\n\n`;
     });
   }
 

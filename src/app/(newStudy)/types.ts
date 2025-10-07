@@ -1,4 +1,4 @@
 import { UIDataTypes, UIMessage } from "ai";
-import { NewStudyUIToolConfigs } from "./tools/types";
+import { TNewStudyUITools } from "./tools/types";
 
-export type TNewStudyMessageWithTool = UIMessage<unknown, UIDataTypes, NewStudyUIToolConfigs>;
+export type TNewStudyMessageWithTool = UIMessage<unknown, UIDataTypes, TNewStudyUITools>;

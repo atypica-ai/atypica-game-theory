@@ -1,6 +1,7 @@
 import { convertDBMessagesToAIMessages } from "@/ai/messageUtils";
 import authOptions from "@/app/(auth)/authOptions";
 import { fetchInterviewSessionChat } from "@/app/(interviewProject)/actions";
+import { TInterviewMessageWithTool } from "@/app/(interviewProject)/types";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { throwServerActionError } from "@/lib/serverAction";
 import { prisma } from "@/prisma/prisma";
@@ -38,7 +39,7 @@ async function InterviewSessionChatPage({ userChatToken }: { userChatToken: stri
     <InterviewSessionChatClient
       {...interviewSession}
       userChatToken={userChatToken}
-      initialMessages={initialMessages}
+      initialMessages={initialMessages as TInterviewMessageWithTool[]}
     />
   );
 }

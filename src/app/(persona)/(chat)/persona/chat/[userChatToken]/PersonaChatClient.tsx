@@ -1,6 +1,8 @@
 "use client";
-import { ClientMessagePayload } from "@/ai/messageUtilsClient";
+import { ClientMessagePayload, prepareLastUIMessageForRequest } from "@/ai/messageUtilsClient";
 import { clearPersonaChatHistory } from "@/app/(persona)/actions";
+import { PersonaToolUIPartDisplay } from "@/app/(persona)/tools/ui";
+import { TPersonaMessageWithTool } from "@/app/(persona)/types";
 import { UserChatSession } from "@/components/chat/UserChatSession";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { FitToViewport } from "@/components/layout/FitToViewport";
@@ -15,13 +17,13 @@ import {
 } from "@/components/ui/dialog";
 import { formatDate } from "@/lib/utils";
 import { Persona } from "@/prisma/client";
-import { DefaultChatTransport, useChat } from "@ai-sdk/react";
-import { UIMessage } from "ai";
+import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport } from "ai";
 import { BotIcon, CalendarIcon, InfoIcon, RefreshCwIcon, TagIcon, TrashIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 export function PersonaChatClient({
@@ -31,7 +33,7 @@ export function PersonaChatClient({
 }: {
   userChatToken: string;
   persona: Persona;
-  initialMessages?: UIMessage[];
+  initialMessages?: TPersonaMessageWithTool[];
 }) {
   const locale = useLocale();
   const t = useTranslations("PersonaImport.personaChat");
@@ -39,36 +41,28 @@ export function PersonaChatClient({
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
 
-  const initialRequestBody = {
-    userChatToken,
-  };
+  const extraRequestPayload = useMemo(() => ({ userChatToken: userChatToken }), [userChatToken]);
 
   // Chat hooks
   const useChatHelpers = useChat({
-    initialMessages,
-
-    body: {
-      ...initialRequestBody,
-    },
-
-    experimental_prepareRequestBody({ messages, requestBody: _requestBody }) {
-      const requestBody: typeof initialRequestBody = { ...initialRequestBody, ..._requestBody };
-      const body: ClientMessagePayload = {
-        message: messages[messages.length - 1],
-        ...requestBody,
-      };
-      return body;
-    },
-
+    messages: initialMessages,
     transport: new DefaultChatTransport({
       api: "/api/chat/persona",
+      prepareSendMessagesRequest({ id, messages }) {
+        const body: ClientMessagePayload = {
+          id,
+          message: prepareLastUIMessageForRequest(messages),
+          ...extraRequestPayload,
+        };
+        return { body };
+      },
     }),
   });
 
   const useChatRef = useRef({
-    reload: useChatHelpers.reload,
+    regenerate: useChatHelpers.regenerate,
     setMessages: useChatHelpers.setMessages,
-    append: useChatHelpers.append,
+    sendMessage: useChatHelpers.sendMessage,
   });
 
   const handleClearHistory = async () => {
@@ -230,6 +224,7 @@ export function PersonaChatClient({
           }}
           useChatHelpers={useChatHelpers}
           useChatRef={useChatRef}
+          renderToolUIPart={(toolPart) => <PersonaToolUIPartDisplay toolUIPart={toolPart} />}
           acceptAttachments={false}
         />
       </div>

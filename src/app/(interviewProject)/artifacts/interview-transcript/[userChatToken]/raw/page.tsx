@@ -143,18 +143,18 @@ async function InterviewTranscriptPage({
             {t("interviewContent")}
           </h2>
           {messages
-            .filter((message) => !isSystemMessage(message.content))
+            .filter((message) => !isSystemMessage(message.textContent))
             .map((message, index) => (
               <div key={index} className="leading-relaxed text-sm">
                 {message.role === "assistant" ? (
                   <div className="mb-2">
                     <strong className="font-bold">{t("interviewer")}</strong>
-                    <strong className="font-bold ml-1">{message.content}</strong>
+                    <strong className="font-bold ml-1">{message.textContent}</strong>
                   </div>
                 ) : (
                   <div className="text-foreground/80 mb-8">
                     <span>{t("interviewee")}</span>
-                    <span className="ml-1">{message.content}</span>
+                    <span className="ml-1">{message.textContent}</span>
                   </div>
                 )}
               </div>
