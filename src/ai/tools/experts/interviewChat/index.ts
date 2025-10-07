@@ -1,6 +1,6 @@
 import "server-only";
 
-import { convertStepsToAIMessage } from "@/ai/messageUtils";
+import { convertStepsToAIMessage, persistentAIMessageToDB } from "@/ai/messageUtils";
 import {
   interviewDigestSystem,
   interviewerAttachment,
@@ -26,11 +26,11 @@ import { AgentToolConfigArgs, PlainTextToolResult, ToolName } from "@/ai/tools/t
 import { fileUrlToDataUrl } from "@/lib/attachments/actions";
 import { createUserChat } from "@/lib/userChat/lib";
 import { ChatMessageAttachment } from "@/prisma/client";
-import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import { google } from "@ai-sdk/google";
 import {
   convertToModelMessages,
+  FileUIPart,
   generateId,
   generateText,
   ModelMessage,
@@ -282,9 +282,9 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: UIMessage[]) 
     statReport,
     logger,
   } = chatProps;
-  /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
   const hasAttachments = !!messages.find(
-    (message) => (message.experimental_attachments ?? []).length > 0,
+    (message) => message.parts.some((part) => part.type === "file"),
+    // (message) => (message.experimental_attachments ?? []).length > 0,
   );
   const reduceTokens: TReduceTokens = hasAttachments
     ? { model: "gemini-2.5-flash", ratio: 10 }
@@ -425,7 +425,7 @@ async function chatWithPersona(chatProps: ChatProps, messages: UIMessage[]) {
       // maxRetries: 0,  // 不要自动重试？不，gemini 偶尔连不上，还是得自动重试，慢是慢了点
       temperature: 0.3,
 
-      messages: messages,
+      messages: convertToModelMessages(messages),
 
       tools: {
         [ToolName.tiktokSearch]: tiktokSearchTool,
@@ -449,7 +449,7 @@ async function chatWithPersona(chatProps: ChatProps, messages: UIMessage[]) {
       onStepFinish: async (step) => {
         logger.info({
           msg: "chatWithPersona streamText onStepFinish",
-          toolCalls: step.toolCalls.map((call) => call.toolName),
+          toolCalls: step.toolCalls.map((call) => call?.toolName ?? "unknown"),
           usage: step.usage,
         });
         if (step.usage.totalTokens && step.usage.totalTokens > 0) {
@@ -512,22 +512,14 @@ async function saveMessage({
   logger: Logger;
 }) {
   try {
-    const { id: messageId, role, content, parts: _parts } = message;
-    const parts = _parts?.length ? _parts : [{ type: "text", text: content }];
+    // const { id: messageId, role, content, parts: _parts } = message;
+    // const parts = _parts?.length ? _parts : [{ type: "text", text: content }];
     await prisma.$transaction(async (tx) => {
       // 先确保 backgroundToken 是当前的
       await tx.userChat.findUniqueOrThrow({
         where: { id: interviewUserChatId, kind: "interview", backgroundToken },
       });
-      await tx.chatMessage.create({
-        data: {
-          userChatId: interviewUserChatId,
-          messageId,
-          role,
-          content,
-          parts: parts as InputJsonValue,
-        },
-      });
+      await persistentAIMessageToDB(interviewUserChatId, message);
     });
   } catch (error) {
     logger.error(
@@ -543,35 +535,28 @@ export async function runInterview(chatProps: ChatProps) {
     where: { id: interviewUserChatId, kind: "interview" },
     data: { backgroundToken },
   });
-  /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
-  const experimental_attachments = attachments
-    ? await Promise.all(
-        attachments.map(async ({ name, objectUrl, mimeType }: ChatMessageAttachment) => {
-          const url = await fileUrlToDataUrl({ objectUrl, mimeType });
-          return { name, url, contentType: mimeType };
-        }),
-      )
-    : undefined;
-  /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
+  const fileParts: FileUIPart[] = await Promise.all(
+    (attachments ?? []).map(async ({ name, objectUrl, mimeType }: ChatMessageAttachment) => {
+      const url = await fileUrlToDataUrl({ objectUrl, mimeType });
+      return { type: "file", filename: name, url, mediaType: mimeType };
+    }),
+  );
   const personaAgent = {
     messages: [
       {
         id: generateId(),
         role: "user",
-        content: prompt.interviewerProloguePrompt,
-        experimental_attachments,
+        parts: [{ type: "text", text: prompt.interviewerProloguePrompt }, ...fileParts],
       },
     ] as UIMessage[],
   };
-  /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
   const interviewer = {
-    messages: (experimental_attachments
+    messages: (fileParts.length
       ? [
           {
             id: generateId(),
             role: "user",
-            content: prompt.interviewerAttachmentPrompt,
-            experimental_attachments,
+            parts: [{ type: "text", text: prompt.interviewerAttachmentPrompt }, ...fileParts],
           },
         ]
       : []) as UIMessage[],
@@ -625,7 +610,7 @@ function fixEmptyTextIssue(message: Omit<UIMessage, "role">) {
       part.text = "[CONTINUE]";
     }
   }
-  if (!message.content) {
-    message.content = "[CONTINUE]";
-  }
+  // if (!message.content) {
+  //   message.content = "[CONTINUE]";
+  // }
 }

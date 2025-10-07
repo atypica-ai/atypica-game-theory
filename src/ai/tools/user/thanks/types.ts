@@ -7,8 +7,10 @@ export const thanksInputSchema = z.object({
   contact: z.string().describe("Contact information (email or phone number for follow-up)"),
 });
 
+export type ThanksToolInput = z.infer<typeof thanksInputSchema>;
+
 export const thanksOutputSchema = z.object({
   plainText: z.string(),
 });
 
-export type ThanksResult = z.infer<typeof thanksOutputSchema>;
+export type ThanksToolResult = z.infer<typeof thanksOutputSchema>;

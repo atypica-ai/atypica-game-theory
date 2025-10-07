@@ -1,11 +1,11 @@
 "use server";
 
+import { persistentAIMessageToDB } from "@/ai/messageUtils";
 import { createStudyUserChat } from "@/app/(study)/study/actions";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { createUserChat } from "@/lib/userChat/lib";
 import { UserChat, UserChatExtra } from "@/prisma/client";
-import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import { generateId } from "ai";
 import { getTranslations } from "next-intl/server";
@@ -15,8 +15,6 @@ export async function createNewStudyChat(): Promise<
 > {
   return withAuth(async (user) => {
     const t = await getTranslations("NewStudyChatPage");
-    const content = "[READY]";
-    const parts = [{ type: "text", text: content }];
     const userChat = await prisma.$transaction(async (tx) => {
       const userChat = await createUserChat({
         userId: user.id,
@@ -24,15 +22,10 @@ export async function createNewStudyChat(): Promise<
         kind: "misc",
         tx,
       });
-
-      await tx.chatMessage.create({
-        data: {
-          messageId: generateId(),
-          userChatId: userChat.id,
-          role: "user",
-          content,
-          parts: parts as InputJsonValue,
-        },
+      await persistentAIMessageToDB(userChat.id, {
+        id: generateId(),
+        role: "user",
+        parts: [{ type: "text", text: "[READY]" }],
       });
       return userChat;
     });

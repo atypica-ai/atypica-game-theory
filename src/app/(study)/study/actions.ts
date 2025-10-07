@@ -1,5 +1,9 @@
 "use server";
-import { convertDBMessagesToAIMessages, convertDBMessageToAIMessage } from "@/ai/messageUtils";
+import {
+  convertDBMessagesToAIMessages,
+  convertDBMessageToAIMessage,
+  persistentAIMessageToDB,
+} from "@/ai/messageUtils";
 import { categorizeFiles, FILE_UPLOAD_LIMITS } from "@/lib/fileUploadLimits";
 import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
@@ -16,7 +20,6 @@ import {
   UserChat,
   UserChatExtra,
 } from "@/prisma/client";
-import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import { AnalystKind } from "@/prisma/types";
 import { generateId, UIMessage } from "ai";
@@ -75,7 +78,6 @@ export async function createStudyUserChat(
       text: content,
     });
 
-    const parts = [{ type: "text", text: content }];
     const userChat = await prisma.$transaction(async (tx) => {
       const userChat = await createUserChat({
         userId: user.id,
@@ -87,16 +89,25 @@ export async function createStudyUserChat(
         tx,
         extra,
       });
-      await tx.chatMessage.create({
-        data: {
-          messageId: generateId(),
-          userChatId: userChat.id,
+      // await tx.chatMessage.create({
+      //   data: {
+      //     messageId: generateId(),
+      //     userChatId: userChat.id,
+      //     role,
+      //     content,
+      //     parts: parts as InputJsonValue,
+      //     attachments: attachments,
+      //   },
+      // });
+      await persistentAIMessageToDB(
+        userChat.id,
+        {
+          id: generateId(),
           role,
-          content,
-          parts: parts as InputJsonValue,
-          attachments: attachments,
+          parts: [{ type: "text", text: content }],
         },
-      });
+        attachments, // attachments 单独保存
+      );
       await tx.analyst.create({
         data: {
           userId: user.id,

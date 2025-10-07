@@ -1,5 +1,5 @@
 "use client";
-import { ToolName } from "@/ai/tools/types";
+import { ToolName, TStudyMessageWithTool } from "@/ai/tools/types";
 import { ChatMessage } from "@/components/chat/ChatMessage";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -7,7 +7,6 @@ import { Pagination } from "@/components/ui/pagination";
 import { createParamConfig, useListQueryParams } from "@/hooks/use-list-query-params";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDate } from "@/lib/utils";
-import { UIMessage } from "ai";
 import { useSession } from "next-auth/react";
 import { useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
@@ -25,11 +24,11 @@ export type EnterpriseLeadsSearchParams = {
   page: number;
 };
 
-interface EnterpriseLeadsPageClientProps {
+export function EnterpriseLeadsPageClient({
+  initialSearchParams,
+}: {
   initialSearchParams: Record<string, string | number>;
-}
-
-export function EnterpriseLeadsPageClient({ initialSearchParams }: EnterpriseLeadsPageClientProps) {
+}) {
   const { status } = useSession();
   const locale = useLocale();
   const router = useRouter();
@@ -76,23 +75,22 @@ export function EnterpriseLeadsPageClient({ initialSearchParams }: EnterpriseLea
     }
   };
 
-  const renderFullConversation = (messages: UIMessage[]) => {
+  const renderFullConversation = (messages: TStudyMessageWithTool[]) => {
     return (
       <div className="space-y-2 max-h-96 overflow-y-auto border rounded-md p-3 mt-2 bg-muted/30">
         {messages.map((message) => (
           <ChatMessage
             key={message.id}
-            role={message.role}
             nickname={message.role}
-            content={message.content}
-            parts={message.parts}
+            message={message}
+            renderToolUIPart={() => <></>}
           ></ChatMessage>
         ))}
       </div>
     );
   };
 
-  const extractContactInfo = (messages: UIMessage[]) => {
+  const extractContactInfo = (messages: TStudyMessageWithTool[]) => {
     let contactInfo:
       | {
           name: string;
@@ -106,9 +104,12 @@ export function EnterpriseLeadsPageClient({ initialSearchParams }: EnterpriseLea
     for (const message of messages) {
       if (message.parts) {
         for (const part of message.parts) {
-          /* FIXME(@ai-sdk-upgrade-v5): The `part.toolInvocation.toolName` property has been removed. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#tool-part-type-changes-uimessage */
-          if (part.type === "tool-invocation" && part.toolInvocation.toolName === ToolName.thanks) {
-            contactInfo = part.toolInvocation.args;
+          if (
+            part.type === `tool-${ToolName.thanks}` &&
+            "toolCallId" in part &&
+            part.state === "input-available"
+          ) {
+            contactInfo = part.input;
           }
         }
       }
@@ -134,7 +135,7 @@ export function EnterpriseLeadsPageClient({ initialSearchParams }: EnterpriseLea
           </div>
         ) : (
           leads.map((lead) => {
-            const messages = lead.messages as unknown as UIMessage[];
+            const messages = lead.messages;
             const contactInfo = extractContactInfo(messages);
             return (
               <Card key={lead.id} className="overflow-hidden py-0 gap-1">

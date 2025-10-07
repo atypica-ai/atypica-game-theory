@@ -1,9 +1,10 @@
 "use server";
+import { persistentAIMessageToDB } from "@/ai/messageUtils";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
+import { truncateForTitle } from "@/lib/textUtils";
 import { createUserChat } from "@/lib/userChat/lib";
 import { UserChat, type UserChatKind } from "@/prisma/client";
-import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import { generateId, UIMessage } from "ai";
 
@@ -46,23 +47,17 @@ export async function createScoutUserChatAction({
     const message: UIMessage = {
       id: generateId(),
       role,
-      content,
       parts: [{ type: "text", text: content }],
     };
     const userChat = await createUserChat({
       userId: user.id,
-      title: message.content.substring(0, 50),
+      title: truncateForTitle(content, {
+        maxDisplayWidth: 50,
+        suffix: "...",
+      }),
       kind: "scout",
     });
-    await prisma.chatMessage.create({
-      data: {
-        messageId: generateId(),
-        userChatId: userChat.id,
-        role,
-        content,
-        parts: message.parts as InputJsonValue,
-      },
-    });
+    await persistentAIMessageToDB(userChat.id, message);
     return {
       success: true,
       data: {

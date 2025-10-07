@@ -25,7 +25,7 @@ import { SaveInterviewConclusionToolResult } from "./system/saveInterviewConclus
 import { SavePersonaToolResult } from "./system/savePersona/types";
 import { RequestInteractionResult, RequestInteractionToolInput } from "./user/interaction/types";
 import { RequestPaymentResult } from "./user/payment/types";
-import { ThanksResult } from "./user/thanks/types";
+import { ThanksToolInput, ThanksToolResult } from "./user/thanks/types";
 
 /**
  * 整个项目约定的 Tool 格式及 UI 类型
@@ -130,7 +130,7 @@ export type StudyUITools = {
     output: RequestInteractionResult;
   };
   [ToolName.requestPayment]: { input: GenericInputType; output: RequestPaymentResult };
-  [ToolName.thanks]: { input: GenericInputType; output: ThanksResult };
+  [ToolName.thanks]: { input: ThanksToolInput; output: ThanksToolResult };
   [ToolName.webSearch]: { input: WebSearchToolInput; output: WebSearchToolResult };
   [ToolName.xhsNoteComments]: { input: GenericInputType; output: SocialPostCommentToolResult };
   [ToolName.xhsSearch]: { input: GenericInputType; output: SocialPostToolResult };

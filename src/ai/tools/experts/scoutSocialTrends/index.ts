@@ -3,6 +3,7 @@ import "server-only";
 import {
   appendChunkToStreamingMessage,
   CONTINUE_ASSISTANT_STEPS,
+  convertDBMessageToAIMessage,
   convertStepsToAIMessage,
   createDebouncePersistentMessage,
   persistentAIMessageToDB,
@@ -13,6 +14,7 @@ import {
   scoutSocialTrendsSystem,
 } from "@/ai/prompt/scout/socialTrends";
 import { defaultProviderOptions, llm, LLMModelName } from "@/ai/provider";
+import { TPlatform } from "@/ai/tools/experts/scoutTaskChat/types";
 import {
   dyPostCommentsTool,
   dySearchTool,
@@ -31,11 +33,13 @@ import {
   xhsSearchTool,
   xhsUserNotesTool,
 } from "@/ai/tools/tools";
-import { AgentToolConfigArgs, PlainTextToolResult, ToolName, TPlatform } from "@/ai/tools/types";
+import { AgentToolConfigArgs, PlainTextToolResult, ToolName } from "@/ai/tools/types";
 import { createUserChat } from "@/lib/userChat/lib";
 import { prisma } from "@/prisma/prisma";
 import {
   generateId,
+  getToolName,
+  isToolUIPart,
   ModelMessage,
   smoothStream,
   stepCountIs,
@@ -114,7 +118,7 @@ export const scoutSocialTrendsTool = ({
       await persistentAIMessageToDB(scoutUserChatId, {
         id: generateId(),
         role: "user",
-        content: description,
+        parts: [{ type: "text", text: description }],
       });
       const { clearBackgroundToken } = await createBackgroundToken({ scoutUserChatId, scoutLog });
       // let hasError = false;
@@ -136,17 +140,18 @@ export const scoutSocialTrendsTool = ({
       } finally {
         await clearBackgroundToken();
       }
-      const messages = await prisma.chatMessage.findMany({
-        where: { userChatId: scoutUserChatId },
-        orderBy: { id: "asc" },
-      });
+      const messages = (
+        await prisma.chatMessage.findMany({
+          where: { userChatId: scoutUserChatId },
+          orderBy: { id: "asc" },
+        })
+      ).map(convertDBMessageToAIMessage);
       const stats = messages.reduce(
         (_stats, message) => {
           const stats = { ..._stats };
-          ((message.parts ?? []) as NonNullable<UIMessage["parts"]>).forEach((part) => {
-            if (part.type === "tool-invocation") {
-              /* FIXME(@ai-sdk-upgrade-v5): The `part.toolInvocation.toolName` property has been removed. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#tool-part-type-changes-uimessage */
-              const toolName = part.toolInvocation.toolName as ToolName;
+          message.parts.forEach((part) => {
+            if (isToolUIPart(part)) {
+              const toolName = getToolName(part) as ToolName;
               const platform = toolPlatform(toolName);
               if (platform) {
                 stats[platform] = (stats[platform] || 0) + 1;
@@ -379,7 +384,7 @@ async function runScoutSocialTrendsStream({
     await persistentAIMessageToDB(scoutUserChatId, {
       id: generateId(),
       role: "user",
-      content: CONTINUE_ASSISTANT_STEPS,
+      parts: [{ type: "text", text: CONTINUE_ASSISTANT_STEPS }],
     });
   }
   // while loop end

@@ -1,11 +1,11 @@
 "use server";
 import { convertDBMessageToAIMessage } from "@/ai/messageUtils";
+import { TStudyMessageWithTool } from "@/ai/tools/types";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
 import { ServerActionResult } from "@/lib/serverAction";
 import { User, UserChat } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
-import { UIMessage } from "ai";
 
 // Fetch enterprise leads with pagination
 export async function fetchEnterpriseLeads(
@@ -15,7 +15,7 @@ export async function fetchEnterpriseLeads(
   ServerActionResult<
     (UserChat & {
       user: Pick<User, "id" | "email">;
-      messages: UIMessage[];
+      messages: TStudyMessageWithTool[];
     })[]
   >
 > {
@@ -61,7 +61,7 @@ export async function fetchEnterpriseLeads(
     success: true,
     data: leads.map((lead) => ({
       ...lead,
-      messages: lead.messages.map(convertDBMessageToAIMessage),
+      messages: lead.messages.map(convertDBMessageToAIMessage) as TStudyMessageWithTool[],
     })),
     pagination: {
       page,

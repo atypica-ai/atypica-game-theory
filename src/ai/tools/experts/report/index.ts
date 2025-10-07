@@ -14,7 +14,16 @@ import { fileUrlToDataUrl } from "@/lib/attachments/actions";
 import { Analyst, AnalystReport, AnalystReportExtra, ChatMessageAttachment } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { AnalystKind } from "@/prisma/types";
-import { FinishReason, stepCountIs, streamText, tool, UIMessage } from "ai";
+import {
+  convertToModelMessages,
+  FileUIPart,
+  FinishReason,
+  ModelMessage,
+  stepCountIs,
+  streamText,
+  tool,
+  UIMessage,
+} from "ai";
 import { generateAndSaveStudyLog } from "./studyLog";
 import {
   generateReportInputSchema,
@@ -236,36 +245,41 @@ export async function generateReport({
       finishReason: FinishReason | "Too many tokens";
       content: string;
     }>(async (resolve, reject) => {
-      /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
-      const experimental_attachments = analyst.attachments
-        ? await Promise.all(
-            (analyst.attachments as ChatMessageAttachment[]).map(
-              async ({ name, objectUrl, mimeType }) => {
-                const url = await fileUrlToDataUrl({ objectUrl, mimeType });
-                return { name, url, contentType: mimeType };
-              },
-            ),
-          )
-        : undefined;
-      /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
+      const fileParts: FileUIPart[] = await Promise.all(
+        ((analyst.attachments ?? []) as ChatMessageAttachment[]).map(
+          async ({ name, objectUrl, mimeType }) => {
+            const url = await fileUrlToDataUrl({ objectUrl, mimeType });
+            return { type: "file", filename: name, url, mediaType: mimeType };
+          },
+        ),
+      );
       const messages: Omit<UIMessage, "id">[] = [
         {
           role: "user",
-          content: reportHTMLPrologue({
-            locale,
-            analyst,
-            instruction,
-            lastReport,
-          }),
-          experimental_attachments,
+          parts: [
+            {
+              type: "text",
+              text: reportHTMLPrologue({
+                locale,
+                analyst,
+                instruction,
+                lastReport,
+              }),
+            },
+            ...fileParts,
+          ],
         },
       ];
       if (onePageHtml) {
-        messages.push({ role: "assistant", content: onePageHtml });
+        messages.push({ role: "assistant", parts: [{ type: "text", text: onePageHtml }] });
         messages.push({
           role: "user",
-          content:
-            "Please continue with the remaining webpage content without repeating what's already been generated.",
+          parts: [
+            {
+              type: "text",
+              text: "Please continue with the remaining webpage content without repeating what's already been generated.",
+            },
+          ],
         });
       }
       const response = streamText({
@@ -279,13 +293,13 @@ export async function generateReport({
               analystKind: (analyst.kind as AnalystKind) || AnalystKind.misc,
             }),
 
-        messages: messages,
+        messages: convertToModelMessages(messages),
         stopWhen: stepCountIs(1),
         maxOutputTokens: 30000,
 
         onChunk: async ({ chunk }) => {
           if (chunk.type === "text-delta") {
-            onePageHtml += chunk.textDelta.toString();
+            onePageHtml += chunk.text.toString();
             await throttleSaveHTML(report.id, onePageHtml);
           }
         },
@@ -381,15 +395,14 @@ export async function generateCover({
     messages: [
       {
         role: "user",
-
-        parts: [
+        content: [
           {
             type: "text",
             text: reportCoverPrologue({ locale, analyst, instruction }),
           },
         ],
       },
-    ],
+    ] as ModelMessage[],
     stopWhen: stepCountIs(1),
     maxOutputTokens: 10000,
 

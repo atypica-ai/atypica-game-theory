@@ -1,4 +1,5 @@
 "use server";
+import { convertDBMessageToAIMessage, persistentAIMessageToDB } from "@/ai/messageUtils";
 import authOptions from "@/app/(auth)/authOptions";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
@@ -13,7 +14,6 @@ import {
   PersonaImportExtra,
   UserChat,
 } from "@/prisma/client";
-import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
 import { generateId, UIMessage } from "ai";
@@ -187,7 +187,6 @@ export async function createFollowUpInterviewChat(
         ? "您好！我想了解一些额外的信息。让我们开始吧！"
         : "Hello! I want to learn some additional information. Let's get started!";
     const content = firstQuestion ? `${prologue}\n${firstQuestion}` : prologue;
-    const parts = [{ type: "text", text: content }];
 
     const userChat = await prisma.$transaction(async (tx) => {
       const userChat = await createUserChat({
@@ -197,14 +196,10 @@ export async function createFollowUpInterviewChat(
         tx,
       });
 
-      await tx.chatMessage.create({
-        data: {
-          messageId: generateId(),
-          userChatId: userChat.id,
-          role: "assistant", // 改为助手角色
-          content,
-          parts: parts as InputJsonValue,
-        },
+      await persistentAIMessageToDB(userChat.id, {
+        id: generateId(),
+        role: "assistant", // 改为助手角色
+        parts: [{ type: "text", text: content }],
       });
 
       // Update persona import with the chat reference
@@ -619,12 +614,7 @@ export async function fetchFollowUpInterviewChatMessages(
     }
 
     // 转换消息格式以匹配前端期望的格式
-    const messages = personaImport.extraUserChat.messages.map((msg) => ({
-      id: msg.messageId,
-      role: msg.role,
-      content: msg.content,
-      createdAt: msg.createdAt,
-    }));
+    const messages = personaImport.extraUserChat.messages.map(convertDBMessageToAIMessage);
 
     return {
       success: true,
