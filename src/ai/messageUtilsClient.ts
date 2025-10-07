@@ -20,6 +20,9 @@ export const clientMessagePayloadSchema = z.object({
     role: z.enum(["user", "assistant"]),
     parts: z.array(
       z.union([
+        z.object({
+          type: z.literal("step-start"),
+        }),
         z
           .object({
             type: z.literal("text"),

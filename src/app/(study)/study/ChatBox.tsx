@@ -15,7 +15,7 @@ import { useDocumentVisibility } from "@/hooks/use-document-visibility";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
 import { cn } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport, UIMessage } from "ai";
+import { DefaultChatTransport, lastAssistantMessageIsCompleteWithToolCalls, UIMessage } from "ai";
 import { ArrowRightIcon, PlayIcon, PlusIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -72,6 +72,7 @@ export function ChatBox() {
     addToolResult,
   } = useChat({
     id: studyUserChatId.toString(),
+    sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls, // addToolResult 调用以后，立即调用 sendMessage
     messages: initialMessages,
     experimental_throttle: 300,
     // maxSteps: 15,  // 后端 chat api 设置了 maxSteps 并且会控制，这里不能再设置，会覆盖后端的配置！
