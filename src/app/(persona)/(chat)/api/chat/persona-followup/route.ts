@@ -76,7 +76,9 @@ export async function POST(req: NextRequest) {
 
   // 动态检测用户输入的语言，先检测用户输入的语言，默认使用用户导入的访谈文件的语言 (context 内容)
   const locale = await detectInputLanguage({
-    text: newMessage.content,
+    text: newMessage.parts // 所有 text parts 的文本合在一起检测
+      .map((part) => (part.type === "text" ? part.text : ""))
+      .join(""),
     fallbackLocale: await detectInputLanguage({
       text: personaImport.context,
     }),
@@ -110,7 +112,8 @@ export async function POST(req: NextRequest) {
       }),
     },
 
-    experimental_toolCallStreaming: true,
+    // 现在这个是默认强制启用的，不支持设置了, see https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#tool-call-streaming-now-default-toolcallstreaming-removed
+    // toolCallStreaming: true,
 
     // 关键修改：当消息数量达到19条时强制结束访谈
     toolChoice: coreMessages.length < 19 ? "auto" : { type: "tool", toolName: "endInterview" },
@@ -125,7 +128,7 @@ export async function POST(req: NextRequest) {
 
     onStepFinish: async (step) => {
       appendStepToStreamingMessage(streamingMessage, step);
-      if (streamingMessage.parts?.length && streamingMessage.content.trim()) {
+      if (streamingMessage.parts?.length) {
         await persistentAIMessageToDB(userChat.id, streamingMessage);
       }
       const { usage, toolCalls } = step;

@@ -3,13 +3,14 @@ import {
   persistentAIMessageToDB,
   prepareMessagesForStreaming,
 } from "@/ai/messageUtils";
+import { clientMessagePayloadSchema } from "@/ai/messageUtilsClient";
 import { helloSystem } from "@/ai/prompt";
 import { defaultProviderOptions, llm } from "@/ai/provider";
 import { thanksTool } from "@/ai/tools/tools";
 import { ToolName } from "@/ai/tools/types";
 import authOptions from "@/app/(auth)/authOptions";
 import { prisma } from "@/prisma/prisma";
-import { UIMessage, smoothStream, stepCountIs, streamText } from "ai";
+import { generateId, smoothStream, stepCountIs, streamText } from "ai";
 import { getServerSession } from "next-auth/next";
 import { getLocale } from "next-intl/server";
 import { NextResponse } from "next/server";
@@ -21,14 +22,16 @@ export async function POST(req: Request) {
   }
   const userId = session.user.id;
   const payload = await req.json();
-  const userChatId = parseInt(payload["id"]);
-  const newMessage = payload["message"] as UIMessage;
-  if (!userChatId || !newMessage) {
-    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+
+  const parseResult = clientMessagePayloadSchema.safeParse(payload);
+  if (!parseResult.success) {
+    const error = { message: "Invalid request", details: parseResult.error.format() };
+    return NextResponse.json({ error }, { status: 400 });
   }
+  const { message: newMessage, userChatToken } = parseResult.data;
 
   const userChat = await prisma.userChat.findUnique({
-    where: { id: userChatId, kind: "misc" },
+    where: { token: userChatToken, kind: "misc" },
   });
   if (!userChat) {
     return NextResponse.json({ error: "UserChat not found" }, { status: 404 });
@@ -40,8 +43,12 @@ export async function POST(req: Request) {
     );
   }
 
+  const userChatId = userChat.id;
   const locale = await getLocale();
-  await persistentAIMessageToDB(userChatId, newMessage);
+  await persistentAIMessageToDB(userChatId, {
+    ...newMessage,
+    id: newMessage.id ?? generateId(),
+  });
   const { coreMessages, streamingMessage } = await prepareMessagesForStreaming(userChatId);
 
   const streamTextResult = streamText({
@@ -63,7 +70,7 @@ export async function POST(req: Request) {
 
     onStepFinish: async (step) => {
       appendStepToStreamingMessage(streamingMessage, step);
-      if (streamingMessage.parts?.length && streamingMessage.content.trim()) {
+      if (streamingMessage.parts?.length) {
         await persistentAIMessageToDB(userChatId, streamingMessage);
       }
     },

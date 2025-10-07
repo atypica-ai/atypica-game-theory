@@ -1,5 +1,6 @@
 import { TPersonaForStudy } from "@/ai/tools/experts/buildPersona/types";
 import { TStudyMessageWithTool } from "@/ai/tools/types";
+import { StudyToolUIPartDisplay } from "@/ai/tools/ui";
 import { fetchPersonasByIds, fetchUserChatByToken } from "@/app/(study)/study/actions";
 import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
 import { useProgressiveMessages } from "@/app/(study)/study/hooks/useProgressiveMessages";
@@ -286,7 +287,7 @@ const ScoutTaskChatMessages = ({ scoutUserChatToken }: { scoutUserChatToken: str
   ) : scoutUserChatToken ? (
     <div className="space-y-6 w-full">
       {messagesDisplay.map((message) => (
-        <StreamSteps
+        <StreamSteps<TStudyMessageWithTool>
           key={`message-${message.id}`}
           avatar={
             message.role === "assistant" ? (
@@ -296,6 +297,7 @@ const ScoutTaskChatMessages = ({ scoutUserChatToken }: { scoutUserChatToken: str
             ) : undefined
           }
           message={message}
+          renderToolUIPart={(toolPart) => <StudyToolUIPartDisplay toolUIPart={toolPart} />}
         ></StreamSteps>
       ))}
     </div>

@@ -1,9 +1,10 @@
+import { clientMessagePayloadSchema } from "@/ai/messageUtilsClient";
 import { runBuildPersona } from "@/ai/tools/experts/buildPersona";
 import { StatReporter } from "@/ai/tools/types";
 import authOptions from "@/app/(auth)/authOptions";
 import { rootLogger } from "@/lib/logging";
 import { prisma } from "@/prisma/prisma";
-import { createDataStreamResponse } from "ai";
+import { createUIMessageStream, createUIMessageStreamResponse } from "ai";
 import { getServerSession } from "next-auth";
 import { getLocale } from "next-intl/server";
 import { NextResponse } from "next/server";
@@ -15,14 +16,19 @@ export async function POST(req: Request) {
   }
   const userId = session.user.id;
   const payload = await req.json();
-  const scoutUserChatId = parseInt(payload["id"]);
-  if (!scoutUserChatId) {
-    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+
+  const parseResult = clientMessagePayloadSchema.safeParse(payload);
+  if (!parseResult.success) {
+    const error = { message: "Invalid request", details: parseResult.error.format() };
+    return NextResponse.json({ error }, { status: 400 });
   }
+  // newMessage 没用到，这个接口不是聊天，只是在 scoutChat 已有消息的基础上调用 buildPersona 工具
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { message: newMessage, userChatToken } = parseResult.data;
 
   // 找到有效的 userChat，并确保有权限
   const userChat = await prisma.userChat.findUnique({
-    where: { id: scoutUserChatId, kind: "scout" },
+    where: { token: userChatToken, kind: "scout" },
   });
   if (!userChat) {
     return NextResponse.json({ error: "UserChat not found" }, { status: 404 });
@@ -33,22 +39,23 @@ export async function POST(req: Request) {
       { status: 403 },
     );
   }
-
+  const scoutUserChatId = userChat.id;
   const scoutLog = rootLogger.child({ scoutUserChatId: scoutUserChatId });
   const statReport: StatReporter = async (dimension, value, extra) => {
     console.log(
       `Mock StatReport, dimension: ${dimension}, value: ${value}, extra: ${JSON.stringify(extra)}`,
     );
   };
-  return createDataStreamResponse({
-    execute: async (dataStream) => {
+
+  const stream = createUIMessageStream({
+    async execute({ writer }) {
       await runBuildPersona({
         scoutUserChatId,
         locale: await getLocale(),
         statReport,
         abortSignal: req.signal,
         logger: scoutLog,
-        streamWriter: dataStream,
+        streamWriter: writer,
       });
     },
     onError: (error) => {
@@ -57,4 +64,6 @@ export async function POST(req: Request) {
       return errorMsg;
     },
   });
+
+  return createUIMessageStreamResponse({ stream });
 }

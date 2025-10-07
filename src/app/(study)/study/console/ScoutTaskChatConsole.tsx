@@ -1,4 +1,5 @@
 import { StudyUITools, ToolName, TStudyMessageWithTool } from "@/ai/tools/types";
+import { StudyToolUIPartDisplay } from "@/ai/tools/ui";
 import { fetchUserChatByToken, fetchUserChatStateByToken } from "@/app/(study)/study/actions";
 import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
 import {
@@ -90,7 +91,7 @@ export const ScoutTaskChatConsole = ({
   return (
     <div className="space-y-6 w-full">
       {messagesDisplay.map((message) => (
-        <StreamSteps
+        <StreamSteps<TStudyMessageWithTool>
           key={`message-${message.id}`}
           avatar={
             message.role === "assistant" ? (
@@ -100,6 +101,7 @@ export const ScoutTaskChatConsole = ({
             ) : undefined
           }
           message={message}
+          renderToolUIPart={(toolPart) => <StudyToolUIPartDisplay toolUIPart={toolPart} />}
         ></StreamSteps>
       ))}
       {(toolInvocation.state === "input-streaming" ||

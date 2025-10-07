@@ -1,4 +1,5 @@
 import { StudyUITools, ToolName, TStudyMessageWithTool } from "@/ai/tools/types";
+import { StudyToolUIPartDisplay } from "@/ai/tools/ui";
 import { fetchPersonaById } from "@/app/(persona)/actions";
 import {
   fetchAnalystByStudyUserChatToken,
@@ -184,7 +185,7 @@ const SingleInterviewChat = ({
   return (
     <div ref={messagesContainerRef} className="flex-1 overflow-y-auto space-y-8 scrollbar-thin">
       {messagesDisplay.map((message) => (
-        <StreamSteps
+        <StreamSteps<TStudyMessageWithTool>
           key={`message-${message.id}`}
           avatar={
             message.role === "assistant" ? (
@@ -195,26 +196,29 @@ const SingleInterviewChat = ({
           }
           nickname={message.role === "assistant" ? persona?.name : analyst.role}
           message={message}
+          renderToolUIPart={(toolPart) => <StudyToolUIPartDisplay toolUIPart={toolPart} />}
         ></StreamSteps>
       ))}
       {backgroundToken && messagesDisplay.length === 0 ? (
-        <StreamSteps
+        <StreamSteps<TStudyMessageWithTool>
           key="message-start"
           nickname="System"
           message={{
             role: "system",
             parts: [{ type: "text", text: "Interview starting.." }],
           }}
+          renderToolUIPart={(toolPart) => <StudyToolUIPartDisplay toolUIPart={toolPart} />}
         ></StreamSteps>
       ) : null}
       {!backgroundToken && conclusion && (!replay || messagesDisplay.length === messages.length) ? (
-        <StreamSteps
+        <StreamSteps<TStudyMessageWithTool>
           key="message-conclusion"
           nickname={t("researchConclusion")}
           message={{
             role: "system",
             parts: [{ type: "text", text: conclusion }],
           }}
+          renderToolUIPart={(toolPart) => <StudyToolUIPartDisplay toolUIPart={toolPart} />}
         ></StreamSteps>
       ) : null}
       <div ref={messagesEndRef} />

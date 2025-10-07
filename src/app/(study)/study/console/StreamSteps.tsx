@@ -1,4 +1,4 @@
-import { TMessageWithPlainTextTool, TStudyMessageWithTool } from "@/ai/tools/types";
+import { TMessageWithPlainTextTool } from "@/ai/tools/types";
 import { ToolInvocationMessage } from "@/components/chat/ToolInvocationMessage";
 // 给 chat 类型的 tool call 用的组件，比如 scout chat 和 interview chat
 import { Markdown } from "@/components/markdown";
@@ -15,19 +15,6 @@ const PlainText = ({ children }: PropsWithChildren) => {
   );
 };
 
-// 这个组件是在 console 里被调用的，和 SingleMessage 一样，会需要渲染所有类型的 tool
-type T = TStudyMessageWithTool;
-// UIMessage<
-//   unknown,
-//   UIDataTypes,
-//   {
-//     [x: string]: Omit<UITool, "input" | "output"> & {
-//       input: Record<any, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
-//       output: PlainTextToolResult; // 返回 plainText 字段的 tool 都可以使用
-//     };
-//   }
-// >;
-
 export const StreamSteps = <UI_MESSAGE extends TMessageWithPlainTextTool>({
   avatar,
   nickname,
@@ -36,11 +23,11 @@ export const StreamSteps = <UI_MESSAGE extends TMessageWithPlainTextTool>({
 }: {
   avatar?: ReactNode;
   nickname?: string;
-  message: Pick<T, "role" | "parts">;
+  message: Pick<UI_MESSAGE, "role" | "parts">;
   renderToolUIPart: (toolPart: UI_MESSAGE["parts"][number]) => ReactNode;
 }) => {
   const renderedParts = useCallback(
-    (parts: T["parts"]) => {
+    (parts: UI_MESSAGE["parts"]) => {
       return (
         <div className={cn("flex flex-col gap-4")}>
           {parts.map((part, i) => {

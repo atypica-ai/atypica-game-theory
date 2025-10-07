@@ -17,7 +17,6 @@ import { FileAttachment } from "./FileAttachment";
 import { FileUploadButton } from "./FileUploadButton";
 
 export function UserChatSession<UI_MESSAGE extends TMessageWithPlainTextTool>({
-  // chatId,
   chatTitle,
   nickname,
   avatar,
@@ -29,7 +28,6 @@ export function UserChatSession<UI_MESSAGE extends TMessageWithPlainTextTool>({
   acceptAttachments,
   persistMessages = true,
 }: {
-  chatId?: string;
   chatTitle?: string;
   nickname?: Partial<{ user: string; assistant: string; system: string; data: string }>;
   avatar?: Partial<{ user: ReactNode; assistant: ReactNode; system: ReactNode; data: ReactNode }>;

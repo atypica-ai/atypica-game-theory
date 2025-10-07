@@ -1,9 +1,10 @@
 import { persistentAIMessageToDB } from "@/ai/messageUtils";
+import { clientMessagePayloadSchema } from "@/ai/messageUtilsClient";
 import { runScoutTaskChatStream } from "@/ai/tools/experts/scoutTaskChat";
 import authOptions from "@/app/(auth)/authOptions";
 import { rootLogger } from "@/lib/logging";
 import { prisma } from "@/prisma/prisma";
-import { CreateUIMessage, createUIMessageStreamResponse, generateId, UIMessage } from "ai";
+import { createUIMessageStream, createUIMessageStreamResponse, generateId } from "ai";
 import { getServerSession } from "next-auth";
 import { getLocale } from "next-intl/server";
 import { NextResponse } from "next/server";
@@ -15,15 +16,17 @@ export async function POST(req: Request) {
   }
   const userId = session.user.id;
   const payload = await req.json();
-  const scoutUserChatId = parseInt(payload["id"]);
-  const newMessage = payload["message"] as UIMessage | CreateUIMessage;
-  if (!scoutUserChatId || !newMessage) {
-    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+
+  const parseResult = clientMessagePayloadSchema.safeParse(payload);
+  if (!parseResult.success) {
+    const error = { message: "Invalid request", details: parseResult.error.format() };
+    return NextResponse.json({ error }, { status: 400 });
   }
+  const { message: newMessage, userChatToken } = parseResult.data;
 
   // 找到有效的 userChat，并确保有权限
   const userChat = await prisma.userChat.findUnique({
-    where: { id: scoutUserChatId, kind: "scout" },
+    where: { token: userChatToken, kind: "scout" },
   });
   if (!userChat) {
     return NextResponse.json({ error: "UserChat not found" }, { status: 404 });
@@ -34,20 +37,22 @@ export async function POST(req: Request) {
       { status: 403 },
     );
   }
+  const scoutUserChatId = userChat.id;
   await persistentAIMessageToDB(scoutUserChatId, {
     ...newMessage,
     id: newMessage.id ?? generateId(),
   });
   const scoutLog = rootLogger.child({ scoutUserChatId: scoutUserChatId });
-  return createUIMessageStreamResponse({
-    execute: async (dataStream) => {
+
+  const stream = createUIMessageStream({
+    async execute({ writer }) {
       await runScoutTaskChatStream({
         scoutUserChatId,
         locale: await getLocale(),
         abortSignal: req.signal,
         statReport: async () => {},
         logger: scoutLog,
-        streamWriter: dataStream,
+        streamWriter: writer,
       });
     },
     onError: (error) => {
@@ -56,4 +61,6 @@ export async function POST(req: Request) {
       return errorMsg;
     },
   });
+
+  return createUIMessageStreamResponse({ stream });
 }
