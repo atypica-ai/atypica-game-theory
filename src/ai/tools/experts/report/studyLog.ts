@@ -6,7 +6,7 @@ import { AgentToolConfigArgs } from "@/ai/tools/types";
 import { Analyst } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { google } from "@ai-sdk/google";
-import { streamText } from "ai";
+import { streamText, UserModelMessage } from "ai";
 
 export async function generateAndSaveStudyLog({
   analyst,
@@ -39,15 +39,9 @@ export async function generateAndSaveStudyLog({
       messages: [
         {
           role: "user",
-
-          parts: [
-            {
-              type: "text",
-              text: prologue,
-            },
-          ],
+          content: [{ type: "text", text: prologue }],
         },
-      ],
+      ] as UserModelMessage[],
       // maxTokens: 500,
       // onChunk: (chunk) => console.log("[Reasoning]", JSON.stringify(chunk)),
       onFinish: async ({ finishReason, text, usage }) => {

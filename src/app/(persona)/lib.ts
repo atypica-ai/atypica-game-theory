@@ -5,7 +5,7 @@ import { defaultProviderOptions, llm } from "@/ai/provider";
 import { rootLogger } from "@/lib/logging";
 import { Persona } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
-import { generateObject } from "ai";
+import { generateObject, UserModelMessage } from "ai";
 import { Locale } from "next-intl";
 import { getLocale } from "next-intl/server";
 import { personaScoringPrompt } from "./prompt";
@@ -120,15 +120,14 @@ export async function scorePersona(persona: Persona) {
       messages: [
         {
           role: "user",
-
-          parts: [
+          content: [
             {
               type: "text",
               text: `Prompt: ${persona.prompt}\n\nTags: ${(persona.tags as string[]).join(", ")}`,
             },
           ],
         },
-      ],
+      ] as UserModelMessage[],
     });
 
     const totalScore =

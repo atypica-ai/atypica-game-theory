@@ -18,11 +18,11 @@ import {
   convertToModelMessages,
   FileUIPart,
   FinishReason,
-  ModelMessage,
   stepCountIs,
   streamText,
   tool,
   UIMessage,
+  UserModelMessage,
 } from "ai";
 import { generateAndSaveStudyLog } from "./studyLog";
 import {
@@ -402,7 +402,7 @@ export async function generateCover({
           },
         ],
       },
-    ] as ModelMessage[],
+    ] as UserModelMessage[],
     stopWhen: stepCountIs(1),
     maxOutputTokens: 10000,
 

@@ -4,7 +4,7 @@ import { reasoningPrologue, reasoningSystem } from "@/ai/prompt";
 import { defaultProviderOptions, llm } from "@/ai/provider";
 import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
 import { google } from "@ai-sdk/google";
-import { streamText, tool } from "ai";
+import { streamText, tool, UserModelMessage } from "ai";
 import { reasoningThinkingInputSchema, reasoningThinkingOutputSchema } from "./types";
 
 export const reasoningThinkingTool = ({
@@ -40,20 +40,14 @@ export const reasoningThinkingTool = ({
             messages: [
               {
                 role: "user",
-
-                parts: [
+                content: [
                   {
                     type: "text",
-
-                    text: reasoningPrologue({
-                      locale,
-                      background,
-                      question,
-                    }),
+                    text: reasoningPrologue({ locale, background, question }),
                   },
                 ],
               },
-            ],
+            ] as UserModelMessage[],
             // maxTokens: 500,
             // onChunk: (chunk) => logger.info(`[Reasoning] ${JSON.stringify(chunk)}`),
             onFinish: async ({ reasoningText, text, usage }) => {

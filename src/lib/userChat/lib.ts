@@ -8,7 +8,7 @@ import { UserChat, UserChatExtra, UserChatKind } from "@/prisma/client";
 import { ITXClientDenyList } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import { OpenAIResponsesProviderOptions } from "@ai-sdk/openai";
-import { generateText, UIMessage } from "ai";
+import { generateText, UIMessage, UserModelMessage } from "ai";
 import { Locale } from "next-intl";
 import { getLocale } from "next-intl/server";
 import { truncateForTitle } from "../textUtils";
@@ -176,8 +176,7 @@ Directly output the title text without explanation or prefix. The title should a
     messages: [
       {
         role: "user",
-
-        parts: [
+        content: [
           {
             type: "text",
             text: locale === "zh-CN" ? "以下是对话内容" : "Here are the conversation details",
@@ -185,7 +184,7 @@ Directly output the title text without explanation or prefix. The title should a
           { type: "text", text: messagesText },
         ],
       },
-    ],
+    ] as UserModelMessage[],
   });
 
   await prisma.userChat.update({

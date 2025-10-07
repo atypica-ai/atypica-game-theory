@@ -21,7 +21,10 @@ import {
   SaveAnalystToolResult,
   SaveInnovationSummaryToolResult,
 } from "./system/saveAnalyst/types";
-import { SaveInterviewConclusionToolResult } from "./system/saveInterviewConclusion/types";
+import {
+  SaveInterviewConclusionToolInput,
+  SaveInterviewConclusionToolResult,
+} from "./system/saveInterviewConclusion/types";
 import { SavePersonaToolResult } from "./system/savePersona/types";
 import { RequestInteractionResult, RequestInteractionToolInput } from "./user/interaction/types";
 import { RequestPaymentResult } from "./user/payment/types";
@@ -119,7 +122,7 @@ export type StudyUITools = {
     output: SaveInnovationSummaryToolResult;
   };
   [ToolName.saveInterviewConclusion]: {
-    input: GenericInputType;
+    input: SaveInterviewConclusionToolInput;
     output: SaveInterviewConclusionToolResult;
   };
   [ToolName.savePersona]: { input: GenericInputType; output: SavePersonaToolResult };

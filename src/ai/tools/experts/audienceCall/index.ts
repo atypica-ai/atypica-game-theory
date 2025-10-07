@@ -4,7 +4,7 @@ import { defaultProviderOptions, llm } from "@/ai/provider";
 import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
 import { prisma } from "@/prisma/prisma";
 import { google } from "@ai-sdk/google";
-import { streamText, tool } from "ai";
+import { streamText, tool, UserModelMessage } from "ai";
 import { Locale } from "next-intl";
 import "server-only";
 import {
@@ -52,19 +52,14 @@ async function audienceCall({
       messages: [
         {
           role: "user",
-          parts: [
+          content: [
             {
               type: "text",
-
-              text: reasoningPrologue({
-                locale,
-                background: background,
-                question,
-              }),
+              text: reasoningPrologue({ locale, background, question }),
             },
           ],
         },
-      ],
+      ] as UserModelMessage[],
       // maxTokens: 500,
       // onChunk: (chunk) => console.log("[Reasoning]", JSON.stringify(chunk)),
       onFinish: async (result) => {

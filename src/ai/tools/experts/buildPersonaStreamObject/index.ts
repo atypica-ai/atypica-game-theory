@@ -9,7 +9,7 @@ import { streamObject, tool } from "ai";
 import {
   buildPersonaStreamObjectInputSchema,
   buildPersonaStreamObjectOutputSchema,
-  type BuildPersonaToolResult,
+  type BuildPersonaStreamObjectToolResult,
   personaBuildSchemaStreamObject,
 } from "./types";
 
@@ -30,7 +30,7 @@ export const buildPersonaStreamObjectTool = ({
     toModelOutput: (result: PlainTextToolResult) => {
       return { type: "text", value: result.plainText };
     },
-    execute: async ({ scoutUserChatToken }): Promise<BuildPersonaToolResult> => {
+    execute: async ({ scoutUserChatToken }) => {
       const scoutUserChat = await prisma.userChat.findUnique({
         where: { token: scoutUserChatToken, kind: "scout", userId },
       });
@@ -49,7 +49,7 @@ export const buildPersonaStreamObjectTool = ({
         logger,
       });
       const object = await response.object;
-      const personas: BuildPersonaToolResult["personas"] = [];
+      const personas: BuildPersonaStreamObjectToolResult["personas"] = [];
       // for (const [key, data] of Object.entries(object)) {
       //   logger.info(`Persona ${key} generated, ${data.name}`);
       for (const data of object) {

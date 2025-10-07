@@ -8,11 +8,11 @@ export const saveInterviewConclusionInputSchema = z.object({
     ),
 });
 
+export type SaveInterviewConclusionToolInput = z.infer<typeof saveInterviewConclusionInputSchema>;
+
 export const saveInterviewConclusionOutputSchema = z.object({
   id: z.number(),
   plainText: z.string(),
 });
 
-export type SaveInterviewConclusionToolResult = z.infer<
-  typeof saveInterviewConclusionOutputSchema
->;
+export type SaveInterviewConclusionToolResult = z.infer<typeof saveInterviewConclusionOutputSchema>;

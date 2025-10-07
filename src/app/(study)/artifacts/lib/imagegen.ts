@@ -333,7 +333,7 @@ export async function generateGPTImage({
   const { getObjectUrl, objectUrl } = await uploadToS3({
     keySuffix: `imagegen/${promptHash}.png`,
     fileBody: image.uint8Array,
-    mimeType: image.mimeType,
+    mimeType: image.mediaType,
   });
   return { getObjectUrl, objectUrl };
 }

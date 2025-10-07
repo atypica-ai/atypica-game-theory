@@ -6,7 +6,7 @@ import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage } from "@/lib/textUtils";
 import { ChatMessage } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
-import { stepCountIs, streamText } from "ai";
+import { stepCountIs, streamText, UserModelMessage } from "ai";
 import { interviewReportPrologue, interviewReportSystemPrompt } from "../prompt";
 
 /**
@@ -114,27 +114,21 @@ export async function generateInterviewReportContent({
     messages: [
       {
         role: "user",
-
-        parts: [
+        content: [
           {
             type: "text",
-
-            text: interviewReportPrologue({
-              locale,
-              projectBrief: project.brief,
-              conversations,
-            }),
+            text: interviewReportPrologue({ locale, projectBrief: project.brief, conversations }),
           },
         ],
       },
-    ],
+    ] as UserModelMessage[],
 
     stopWhen: stepCountIs(1),
     maxOutputTokens: 30000,
 
     onChunk: async ({ chunk }) => {
       if (chunk.type === "text-delta") {
-        onePageHtml += chunk.textDelta.toString();
+        onePageHtml += chunk.text.toString();
         await throttleSaveHTML(report.id, onePageHtml);
       }
     },

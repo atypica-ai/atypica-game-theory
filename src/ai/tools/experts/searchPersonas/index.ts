@@ -1,7 +1,8 @@
 import "server-only";
 
 import { createTextEmbedding } from "@/ai/embedding";
-import { AgentToolConfigArgs, PlainTextToolResult, TPersonaForStudy } from "@/ai/tools/types";
+import { TPersonaForStudy } from "@/ai/tools/experts/buildPersona/types";
+import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
 import { prisma } from "@/prisma/prisma";
 import { tool } from "ai";
 import { Locale } from "next-intl";

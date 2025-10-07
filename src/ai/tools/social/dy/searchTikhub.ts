@@ -1,27 +1,15 @@
 import "server-only";
 
 // tikhub douyin 搜索接口是 $0.01 太贵了
-import { PlainTextToolResult, SocialPost, SocialUser } from "@/ai/tools/types";
+import { PlainTextToolResult } from "@/ai/tools/types";
 import { rootLogger } from "@/lib/logging";
-import { fixMalformedUnicodeString } from "@/lib/utils";
 import { tool } from "ai";
-import { z } from "zod/v3";
+import { dySearchInputSchema, dySearchOutputSchema, DYSearchResult } from "./search/types";
 import { tryFindValidImage } from "./utils";
 
 const toolLog = rootLogger.child({
   tool: "dySearch",
 });
-
-interface DYPost extends SocialPost {
-  user: SocialUser & {
-    secret_userid: string;
-  };
-}
-
-export interface DYSearchResult extends PlainTextToolResult {
-  posts: DYPost[];
-  plainText: string;
-}
 
 function parseDYSearchResult(result: {
   business_data: {
@@ -32,7 +20,7 @@ function parseDYSearchResult(result: {
     };
   }[];
 }): DYSearchResult {
-  const posts: DYPost[] = [];
+  const posts: DYSearchResult["posts"] = [];
   // 过滤并取前十条
   const topPosts = (result?.business_data ?? [])
     .filter(({ data }) => data?.type === 1) // 有 aweme_info
@@ -114,14 +102,17 @@ async function dySearch({ keyword }: { keyword: string }) {
   };
 }
 
-export const dySearchTool = tool({
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const dySearchTool = tool({
   description: "在抖音上搜索内容，可以搜索特定的主题，也可以搜索一个品牌",
-  inputSchema: z.object({
-    keyword: z.string().describe("Search keywords").transform(fixMalformedUnicodeString),
-  }),
+  // inputSchema: z.object({
+  //   keyword: z.string().describe("Search keywords").transform(fixMalformedUnicodeString),
+  // }),
+  inputSchema: dySearchInputSchema,
+  outputSchema: dySearchOutputSchema,
   // 这个方法返回的结果会发给 LLM 用来生成回复，只需要把 LLM 能够使用的文本给它就行，节省很多 tokens
-  experimental_toToolResultContent: (result: PlainTextToolResult) => {
-    return [{ type: "text", text: result.plainText }];
+  toModelOutput: (result: PlainTextToolResult) => {
+    return { type: "text", value: result.plainText };
   },
   execute: async ({ keyword }) => {
     const result = await dySearch({ keyword });

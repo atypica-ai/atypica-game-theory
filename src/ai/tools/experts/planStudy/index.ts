@@ -5,7 +5,7 @@ import { defaultProviderOptions, llm } from "@/ai/provider";
 import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
 import { prisma } from "@/prisma/prisma";
 import { google } from "@ai-sdk/google";
-import { streamText, tool } from "ai";
+import { streamText, tool, UserModelMessage } from "ai";
 import { planStudyInputSchema, planStudyOutputSchema, type PlanStudyResult } from "./types";
 
 async function planStudy({
@@ -34,20 +34,14 @@ async function planStudy({
       messages: [
         {
           role: "user",
-
-          parts: [
+          content: [
             {
               type: "text",
-
-              text: planStudyPrologue({
-                locale,
-                background: background,
-                question,
-              }),
+              text: planStudyPrologue({ locale, background, question }),
             },
           ],
         },
-      ],
+      ] as UserModelMessage[],
       // maxTokens: 500,
       // onChunk: (chunk) => console.log("[Reasoning]", JSON.stringify(chunk)),
       onFinish: async (result) => {
