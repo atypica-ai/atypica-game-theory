@@ -1,4 +1,4 @@
-import { FileUIPart, UIMessage } from "ai";
+import { UIMessage } from "ai";
 import { z } from "zod/v3";
 
 export const CONTINUE_ASSISTANT_STEPS = "[CONTINUE ASSISTANT STEPS]";
@@ -12,7 +12,7 @@ export const CONTINUE_ASSISTANT_STEPS = "[CONTINUE ASSISTANT STEPS]";
 //   }),
 //   userChatToken: z.string(),
 // });
-type T = FileUIPart;
+
 export const clientMessagePayloadSchema = z.object({
   id: z.string().optional(), // 在 useChat 上设置的 id，类型四 string，不一定要用到
   message: z.object({

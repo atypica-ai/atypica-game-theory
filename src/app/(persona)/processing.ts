@@ -4,6 +4,7 @@ import { defaultProviderOptions, llm } from "@/ai/provider";
 import { initPersonaImportStatReporter } from "@/ai/tools/stats";
 import { savePersonaTool } from "@/ai/tools/tools";
 import { ToolName } from "@/ai/tools/types";
+import { calculateStepTokensUsage } from "@/ai/usage";
 import { s3SignedUrl } from "@/lib/attachments/s3";
 import { rootLogger } from "@/lib/logging";
 import { proxiedFetch } from "@/lib/proxy/fetch";
@@ -216,19 +217,17 @@ async function attachmentToContext(
       },
 
       onStepFinish: async (step) => {
-        const { usage } = step;
+        const { tokens, extra } = calculateStepTokensUsage(step);
         logger.info({
           msg: "attachmentToContext streamText onStepFinish",
-          usage,
+          usage: extra.usage,
+          cache: extra.cache,
         });
-        if (usage.totalTokens && usage.totalTokens > 0) {
-          const tokens = usage.totalTokens;
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const extra: any = {
+        if (statReport) {
+          await statReport("tokens", tokens, {
             reportedBy: "parse attachment",
-            usage,
-          };
-          await statReport("tokens", tokens, extra);
+            ...extra,
+          });
         }
       },
 
@@ -321,20 +320,19 @@ async function buildPersonaAgentPrompt(
       stopWhen: stepCountIs(1),
 
       onStepFinish: async (step) => {
-        const { usage, toolCalls } = step;
+        const { toolCalls } = step;
+        const { tokens, extra } = calculateStepTokensUsage(step);
         logger.info({
           msg: "buildPersonaAgentPrompt streamText onStepFinish",
-          usage,
+          usage: extra.usage,
+          cache: extra.cache,
           toolCalls: toolCalls.map((call) => call.toolName),
         });
-        if (usage.totalTokens && usage.totalTokens > 0) {
-          const tokens = usage.totalTokens;
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const extra: any = {
+        if (statReport) {
+          await statReport("tokens", tokens, {
             reportedBy: "build persona agent",
-            usage,
-          };
-          await statReport("tokens", tokens, extra);
+            ...extra,
+          });
         }
       },
 
@@ -408,19 +406,16 @@ async function analyzeInterviewCompleteness(
       schema: analysisSchema,
       messages: messages,
     });
-    const { usage } = result;
     logger.info({
       msg: "analyzeInterviewCompleteness generateObject finish",
-      usage,
+      usage: result.usage,
     });
-    if (usage.totalTokens && usage.totalTokens > 0) {
-      const tokens = usage.totalTokens;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const extra: any = {
+    if (statReport) {
+      const { tokens, extra } = calculateStepTokensUsage(result);
+      await statReport("tokens", tokens, {
         reportedBy: "analyze interview completeness",
-        usage,
-      };
-      await statReport("tokens", tokens, extra);
+        ...extra,
+      });
     }
     analysisResult = result.object;
   } catch (error) {

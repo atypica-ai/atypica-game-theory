@@ -6,6 +6,7 @@ import {
 import { clientMessagePayloadSchema } from "@/ai/messageUtilsClient";
 import { defaultProviderOptions, llm } from "@/ai/provider";
 import { initGenericUserChatStatReporter } from "@/ai/tools/stats";
+import { calculateStepTokensUsage } from "@/ai/usage";
 import authOptions from "@/app/(auth)/authOptions";
 import { newStudySystem } from "@/app/(newStudy)/prompt";
 import { newStudyTools } from "@/app/(newStudy)/tools";
@@ -160,18 +161,16 @@ export async function POST(req: NextRequest) {
           message: streamingMessage,
         });
       }
+      const { tokens, extra } = calculateStepTokensUsage(step);
       chatLogger.info({
         msg: "newstudy planning streamText onStepFinish",
         toolCalls: step.toolCalls.map((call) => call.toolName),
-        usage: step.usage,
+        usage: extra.usage,
+        cache: extra.cache,
       });
       if (statReport) {
-        const { usage } = step;
         const reportedBy = "newstudy planning chat";
-        if (usage.totalTokens && usage.totalTokens > 0) {
-          const tokens = usage.totalTokens;
-          await statReport("tokens", tokens, { reportedBy, usage });
-        }
+        await statReport("tokens", tokens, { reportedBy, ...extra });
       }
     },
 

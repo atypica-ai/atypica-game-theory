@@ -3,6 +3,7 @@ import "server-only";
 import { studyLogPrologue, studyLogSystem } from "@/ai/prompt";
 import { defaultProviderOptions, llm } from "@/ai/provider";
 import { AgentToolConfigArgs } from "@/ai/tools/types";
+import { calculateStepTokensUsage } from "@/ai/usage";
 import { Analyst } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { google } from "@ai-sdk/google";
@@ -44,17 +45,20 @@ export async function generateAndSaveStudyLog({
       ] as UserModelMessage[],
       // maxTokens: 500,
       // onChunk: (chunk) => console.log("[Reasoning]", JSON.stringify(chunk)),
-      onFinish: async ({ finishReason, text, usage }) => {
+      onFinish: async (result) => {
         // const reasoning = result.reasoning ?? "";
         // const text = result.text ?? "";
         // resolve({ reasoning, text, plainText: text });
-        const studyLog = text ?? "";
-        logger.info({ msg: "studyLog streamText onFinish", finishReason, usage });
-        if (usage.totalTokens && usage.totalTokens > 0 && statReport) {
-          await statReport("tokens", usage.totalTokens, {
-            reportedBy: "studyLog tool",
-            usage,
-          });
+        const { tokens, extra } = calculateStepTokensUsage(result);
+        const studyLog = result.text ?? "";
+        logger.info({
+          msg: "studyLog streamText onFinish",
+          finishReason: result.finishReason,
+          usage: extra.usage,
+          cache: extra.cache,
+        });
+        if (statReport) {
+          await statReport("tokens", tokens, { reportedBy: "studyLog tool", ...extra });
         }
         await prisma.analyst.update({
           where: { id: analyst.id },

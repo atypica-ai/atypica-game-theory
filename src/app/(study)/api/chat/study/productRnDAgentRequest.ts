@@ -16,6 +16,7 @@ import {
   toolCallError,
 } from "@/ai/tools/tools";
 import { AgentToolConfigArgs, ToolName } from "@/ai/tools/types";
+import { calculateStepTokensUsage } from "@/ai/usage";
 import { setUserChatError } from "@/lib/userChat/lib";
 import { safeAbort } from "@/lib/utils";
 import { smoothStream, stepCountIs, StepResult, streamText, TextStreamPart, ToolChoice } from "ai";
@@ -134,15 +135,12 @@ export async function productRnDAgentRequest({
       // - assistant 消息还不完整，新一轮对话拿到的 messages 不完整
       // 到了这里的 tool calling step 一定是有 result 的，所以得在上面 onChunk 里面获取 call 阶段的 tool
       const toolCalls = step.toolCalls.map((call) => call?.toolName ?? "unknown");
-      const usage = step.usage;
-      const cache = step.providerMetadata?.bedrock?.usage as
-        | { cacheReadInputTokens: number; cacheWriteInputTokens: number }
-        | undefined;
+      const { tokens, extra } = calculateStepTokensUsage(step);
       studyLog.info({
         msg: "productRnDAgentRequest streamText onStepFinish",
         toolCalls,
-        usage,
-        cache,
+        usage: extra.usage,
+        cache: extra.cache,
       });
       if (statReport) {
         const reportedBy = "study chat";
@@ -151,14 +149,8 @@ export async function productRnDAgentRequest({
         const promises = [
           statReport("duration", seconds, { reportedBy }),
           statReport("steps", toolCalls.length, { reportedBy, toolCalls }),
+          statReport("tokens", tokens, { reportedBy, ...extra }),
         ];
-        if (usage.totalTokens && usage.totalTokens > 0) {
-          const tokens =
-            usage.totalTokens +
-            Math.floor((cache?.cacheReadInputTokens || 0) / 10) +
-            Math.floor((cache?.cacheWriteInputTokens || 0) * 1.25);
-          promises.push(statReport("tokens", tokens, { reportedBy, usage, cache }));
-        }
         await Promise.all(promises);
       }
       if (await outOfBalance({ userId })) {

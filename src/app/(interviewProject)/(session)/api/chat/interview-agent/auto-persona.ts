@@ -10,6 +10,7 @@ import { personaAgentSystem } from "@/ai/prompt";
 import { defaultProviderOptions, llm } from "@/ai/provider";
 import { initInterviewProjectStatReporter } from "@/ai/tools/stats";
 import { StatReporter } from "@/ai/tools/types";
+import { calculateStepTokensUsage } from "@/ai/usage";
 import { interviewAgentSystemPrompt } from "@/app/(interviewProject)/prompt";
 import { interviewSessionTools } from "@/app/(interviewProject)/tools";
 import { InterviewToolName } from "@/app/(interviewProject)/tools/types";
@@ -301,22 +302,21 @@ async function generatePersonaResponse({
       }),
       stopWhen: stepCountIs(1),
 
-      onStepFinish: async ({ usage, toolCalls }) => {
+      onStepFinish: async (step) => {
+        const { tokens, extra } = calculateStepTokensUsage(step);
         logger.info({
           msg: "generatePersonaResponse streamText onStepFinish",
-          toolCalls: toolCalls.map((call) => call.toolName),
-          usage: usage,
+          toolCalls: step.toolCalls.map((call) => call.toolName),
+          usage: extra.usage,
+          cache: extra.cache,
         });
-        if (usage.totalTokens && usage.totalTokens > 0) {
-          const tokens = usage.totalTokens;
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const extra: any = {
+        if (statReport) {
+          await statReport("tokens", tokens, {
             reportedBy: "persona interview session",
             interviewSessionId,
             role: "interviewer",
-            usage: usage,
-          };
-          await statReport("tokens", tokens, extra);
+            ...extra,
+          });
         }
       },
 
@@ -379,22 +379,21 @@ async function generateInterviewerResponse({
 
       stopWhen: stepCountIs(1),
 
-      onStepFinish: async ({ usage, toolCalls }) => {
+      onStepFinish: async (step) => {
+        const { tokens, extra } = calculateStepTokensUsage(step);
         logger.info({
           msg: "generateInterviewerResponse streamText onStepFinish",
-          toolCalls: toolCalls.map((call) => call.toolName),
-          usage: usage,
+          toolCalls: step.toolCalls.map((call) => call.toolName),
+          usage: extra.usage,
+          cache: extra.cache,
         });
-        if (usage.totalTokens && usage.totalTokens > 0) {
-          const tokens = usage.totalTokens;
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const extra: any = {
+        if (statReport) {
+          await statReport("tokens", tokens, {
             reportedBy: "persona interview session",
             interviewSessionId,
             role: "interviewer",
-            usage: usage,
-          };
-          await statReport("tokens", tokens, extra);
+            ...extra,
+          });
         }
       },
 

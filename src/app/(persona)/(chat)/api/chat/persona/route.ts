@@ -7,6 +7,7 @@ import { clientMessagePayloadSchema } from "@/ai/messageUtilsClient";
 import { personaAgentSystem } from "@/ai/prompt";
 import { defaultProviderOptions, llm } from "@/ai/provider";
 import { initGenericUserChatStatReporter } from "@/ai/tools/stats";
+import { calculateStepTokensUsage } from "@/ai/usage";
 import authOptions from "@/app/(auth)/authOptions";
 import { fetchUserPersonaChatByToken } from "@/app/(persona)/actions";
 import { VALID_LOCALES } from "@/i18n/routing";
@@ -149,19 +150,17 @@ export async function POST(req: Request) {
           message: streamingMessage,
         });
       }
-      const { usage } = step;
+      const { tokens, extra } = calculateStepTokensUsage(step);
       chatLogger.info({
         msg: "persona user chat streamText onStepFinish",
-        usage,
+        usage: extra.usage,
+        cache: extra.cache,
       });
-      if (usage.totalTokens && usage.totalTokens > 0) {
-        const tokens = usage.totalTokens;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const extra: any = {
+      if (statReport) {
+        await statReport("tokens", tokens, {
           reportedBy: "persona user chat",
-          usage,
-        };
-        await statReport("tokens", tokens, extra);
+          ...extra,
+        });
       }
     },
 

@@ -23,6 +23,7 @@ import {
   webSearchTool,
 } from "@/ai/tools/tools";
 import { AgentToolConfigArgs, StudyUITools, ToolName } from "@/ai/tools/types";
+import { calculateStepTokensUsage } from "@/ai/usage";
 import { setUserChatError } from "@/lib/userChat/lib";
 import { safeAbort } from "@/lib/utils";
 import { prisma } from "@/prisma/prisma";
@@ -328,15 +329,12 @@ export async function studyAgentRequest({
       // 到了这里的 tool calling step 一定是有 result 的，所以得在上面 onChunk 里面获取 call 阶段的 tool
       // v5 和 v4 的 step.toolCalls 的格式差不多，这一点不同于 message.parts
       const toolCalls = step.toolCalls.map((call) => call?.toolName ?? "unknown");
-      const usage = step.usage;
-      const cache = step.providerMetadata?.bedrock?.usage as
-        | { cacheReadInputTokens: number; cacheWriteInputTokens: number }
-        | undefined;
+      const { tokens, extra } = calculateStepTokensUsage(step);
       studyLog.info({
         msg: "studyAgentRequest streamText onStepFinish",
         toolCalls,
-        usage,
-        cache,
+        usage: extra.usage,
+        cache: extra.cache,
       });
       if (statReport) {
         const reportedBy = "study chat";
@@ -345,14 +343,8 @@ export async function studyAgentRequest({
         const promises = [
           statReport("duration", seconds, { reportedBy }),
           statReport("steps", toolCalls.length, { reportedBy, toolCalls }),
+          statReport("tokens", tokens, { reportedBy, ...extra }),
         ];
-        if (usage.totalTokens && usage.totalTokens > 0) {
-          const tokens =
-            usage.totalTokens +
-            Math.floor((cache?.cacheReadInputTokens || 0) / 10) +
-            Math.floor((cache?.cacheWriteInputTokens || 0) * 1.25);
-          promises.push(statReport("tokens", tokens, { reportedBy, usage, cache }));
-        }
         await Promise.all(promises);
       }
       if (await outOfBalance({ userId })) {

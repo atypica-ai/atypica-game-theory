@@ -2,6 +2,7 @@ import "server-only";
 
 import { defaultProviderOptions, llm } from "@/ai/provider";
 import { initInterviewProjectStatReporter } from "@/ai/tools/stats";
+import { calculateStepTokensUsage } from "@/ai/usage";
 import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage } from "@/lib/textUtils";
 import { prisma } from "@/prisma/prisma";
@@ -67,20 +68,19 @@ export async function processInterviewQuestionOptimization(projectId: number): P
         temperature: 0.3,
 
         onStepFinish: async (step) => {
-          const { usage, toolCalls } = step;
+          const { toolCalls } = step;
+          const { tokens, extra } = calculateStepTokensUsage(step);
           logger.info({
             msg: "processInterviewQuestionOptimization streamText onStepFinish",
-            usage,
+            usage: extra.usage,
+            cache: extra.cache,
             toolCalls: toolCalls.map((call) => call.toolName),
           });
-          if (usage.totalTokens && usage.totalTokens > 0) {
-            const tokens = usage.totalTokens;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const extra: any = {
+          if (statReport) {
+            await statReport("tokens", tokens, {
               reportedBy: "question optimization",
-              usage,
-            };
-            await statReport("tokens", tokens, extra);
+              ...extra,
+            });
           }
         },
 

@@ -1,4 +1,4 @@
-import { StepResult } from "ai";
+import { StepResult, ToolSet } from "ai";
 import { LLMModelName } from "./provider";
 
 export type TReduceTokens = {
@@ -8,7 +8,7 @@ export type TReduceTokens = {
 
 type TUsageExtra = {
   reduceTokens?: NonNullable<TReduceTokens> & { originalTokens: number };
-  usage?: StepResult<{}>["usage"];
+  usage?: StepResult<ToolSet>["usage"];
   cache?: {
     cacheWriteInputTokens: number;
     cacheReadInputTokens: number;
@@ -16,13 +16,13 @@ type TUsageExtra = {
 };
 
 export function calculateStepTokensUsage(
-  step: Pick<StepResult<{}>, "usage" | "providerMetadata">,
+  step: Pick<StepResult<ToolSet>, "usage" | "providerMetadata">,
   { reduceTokens }: { reduceTokens?: TReduceTokens } = {},
 ): {
   tokens: number;
   extra: TUsageExtra;
 } {
-  let extra: TUsageExtra = {
+  const extra: TUsageExtra = {
     usage: { ...step.usage },
   };
 

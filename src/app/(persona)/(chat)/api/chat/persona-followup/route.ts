@@ -8,6 +8,7 @@ import { defaultProviderOptions, llm } from "@/ai/provider";
 import { reasoningThinkingTool } from "@/ai/tools/experts/reasoning";
 import { initPersonaImportStatReporter } from "@/ai/tools/stats";
 import { ToolName } from "@/ai/tools/types";
+import { calculateStepTokensUsage } from "@/ai/usage";
 import { personaFollowUpSystemPrompt } from "@/app/(persona)/prompt";
 import { followUpInterviewTools } from "@/app/(persona)/tools";
 import { PersonaImportAnalysis } from "@/app/(persona)/types";
@@ -142,20 +143,19 @@ export async function POST(req: NextRequest) {
           message: streamingMessage,
         });
       }
-      const { usage, toolCalls } = step;
+      const { toolCalls } = step;
+      const { tokens, extra } = calculateStepTokensUsage(step);
       chatLogger.info({
         msg: "follow-up interview streamText onStepFinish",
-        usage,
+        usage: extra.usage,
+        cache: extra.cache,
         toolCalls: toolCalls.map((call) => call.toolName),
       });
-      if (usage.totalTokens && usage.totalTokens > 0) {
-        const tokens = usage.totalTokens;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const extra: any = {
+      if (statReport) {
+        await statReport("tokens", tokens, {
           reportedBy: "persona follow-up interview",
-          usage,
-        };
-        await statReport("tokens", tokens, extra);
+          ...extra,
+        });
       }
     },
 

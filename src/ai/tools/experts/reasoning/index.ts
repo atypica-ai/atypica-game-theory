@@ -3,6 +3,7 @@ import "server-only";
 import { reasoningPrologue, reasoningSystem } from "@/ai/prompt";
 import { defaultProviderOptions, llm } from "@/ai/provider";
 import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
+import { calculateStepTokensUsage } from "@/ai/usage";
 import { google } from "@ai-sdk/google";
 import { streamText, tool, UserModelMessage } from "ai";
 import { reasoningThinkingInputSchema, reasoningThinkingOutputSchema } from "./types";
@@ -50,14 +51,16 @@ export const reasoningThinkingTool = ({
             ] as UserModelMessage[],
             // maxTokens: 500,
             // onChunk: (chunk) => logger.info(`[Reasoning] ${JSON.stringify(chunk)}`),
-            onFinish: async ({ reasoningText, text, usage }) => {
-              logger.info({ msg: "reasoningThinking streamText onFinish", usage });
-              if (usage.totalTokens && usage.totalTokens > 0 && statReport) {
-                await statReport("tokens", usage.totalTokens, {
+            onFinish: async (result) => {
+              const { tokens, extra } = calculateStepTokensUsage(result);
+              logger.info({ msg: "reasoningThinking streamText onFinish", usage: extra.usage });
+              if (statReport) {
+                await statReport("tokens", tokens, {
                   reportedBy: "reasoningThinking tool",
+                  ...extra,
                 });
               }
-              resolve({ reasoningText, text });
+              resolve({ reasoningText: result.reasoningText, text: result.text });
             },
             onError: ({ error }) => {
               if ((error as Error).name === "AbortError") {

@@ -6,6 +6,7 @@ import { buildPersonaSystem } from "@/ai/prompt";
 import { defaultProviderOptions, llm } from "@/ai/provider";
 import { scoutChatTools } from "@/ai/tools/experts/scoutTaskChat/types";
 import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
+import { calculateStepTokensUsage } from "@/ai/usage";
 import { prisma } from "@/prisma/prisma";
 import { streamObject, tool } from "ai";
 import {
@@ -136,10 +137,12 @@ export async function runBuildPersonaStreamObject({
         // object: result.object,
         usage: result.usage,
       });
-      if (result.usage.totalTokens && result.usage.totalTokens > 0 && statReport) {
-        await statReport("tokens", result.usage.totalTokens, {
+      if (statReport) {
+        const { tokens, extra } = calculateStepTokensUsage(result);
+        await statReport("tokens", tokens, {
           reportedBy: "buildPersona tool",
           scoutUserChatId,
+          ...extra,
         });
       }
     },

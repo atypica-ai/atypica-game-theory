@@ -6,6 +6,7 @@ import {
 import { clientMessagePayloadSchema } from "@/ai/messageUtilsClient";
 import { defaultProviderOptions, llm } from "@/ai/provider";
 import { initInterviewProjectStatReporter } from "@/ai/tools/stats";
+import { calculateStepTokensUsage } from "@/ai/usage";
 import { fetchInterviewSessionChat } from "@/app/(interviewProject)/actions";
 import { interviewAgentSystemPrompt } from "@/app/(interviewProject)/prompt";
 import { interviewSessionTools } from "@/app/(interviewProject)/tools";
@@ -166,29 +167,20 @@ export async function POST(req: Request) {
         });
       }
       // 👆 persist message to db
-      const { usage, toolCalls } = step;
-      const cache = step.providerMetadata?.bedrock?.usage as
-        | { cacheReadInputTokens: number; cacheWriteInputTokens: number }
-        | undefined;
+      const { toolCalls } = step;
+      const { tokens, extra } = calculateStepTokensUsage(step);
       chatLogger.info({
         msg: "human interview session streamText onStepFinish",
-        usage,
-        cache,
+        usage: extra.usage,
+        cache: extra.cache,
         toolCalls: toolCalls.map((call) => call.toolName),
       });
-      if (usage.totalTokens && usage.totalTokens > 0) {
-        const tokens =
-          usage.totalTokens +
-          Math.floor((cache?.cacheReadInputTokens || 0) / 10) +
-          Math.floor((cache?.cacheWriteInputTokens || 0) * 1.25);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const extra: any = {
+      if (statReport) {
+        await statReport("tokens", tokens, {
           reportedBy: "human interview session",
           interviewSessionId,
-          usage,
-          cache,
-        };
-        await statReport("tokens", tokens, extra);
+          ...extra,
+        });
       }
     },
 

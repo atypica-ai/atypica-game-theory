@@ -3,6 +3,7 @@ import "server-only";
 import { planStudyPrologue, planStudySystem } from "@/ai/prompt";
 import { defaultProviderOptions, llm } from "@/ai/provider";
 import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
+import { calculateStepTokensUsage } from "@/ai/usage";
 import { prisma } from "@/prisma/prisma";
 import { google } from "@ai-sdk/google";
 import { streamText, tool, UserModelMessage } from "ai";
@@ -48,9 +49,11 @@ async function planStudy({
         logger.info(`planStudy streamText onFinish`);
         const reasoningText = result.reasoningText ?? "";
         const text = result.text ?? "";
-        if (result.usage.totalTokens && result.usage.totalTokens > 0 && statReport) {
-          await statReport("tokens", result.usage.totalTokens, {
+        if (statReport) {
+          const { tokens, extra } = calculateStepTokensUsage(result);
+          await statReport("tokens", tokens, {
             reportedBy: "planStudy tool",
+            ...extra,
           });
         }
         resolve({

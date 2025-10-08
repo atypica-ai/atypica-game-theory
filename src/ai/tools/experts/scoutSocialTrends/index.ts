@@ -17,6 +17,7 @@ import { defaultProviderOptions, llm, LLMModelName } from "@/ai/provider";
 import { scoutChatTools, TPlatform } from "@/ai/tools/experts/scoutTaskChat/types";
 import { handleToolCallError } from "@/ai/tools/tools";
 import { AgentToolConfigArgs, PlainTextToolResult, ToolName } from "@/ai/tools/types";
+import { calculateStepTokensUsage } from "@/ai/usage";
 import { createUserChat } from "@/lib/userChat/lib";
 import { prisma } from "@/prisma/prisma";
 import {
@@ -274,28 +275,20 @@ async function runScoutSocialTrendsStream({
           // - assistant 消息还来不及 create，新的 user 消息会覆盖前一条 user 消息
           // - assistant 消息还不完整，新一轮对话拿到的 messages 不完整
           const toolCalls = step.toolCalls.map((call) => call.toolName);
-          const usage = step.usage;
+          const { tokens, extra } = calculateStepTokensUsage(step, { reduceTokens });
           logger.info({
             msg: "runScoutSocialTrendsStream streamText onStepFinish",
             toolCalls,
-            usage,
+            usage: extra.usage,
+            cache: extra.cache,
           });
           if (statReport) {
             const reportedBy = "scoutSocialTrends tool";
             const promises = [
               statReport("steps", toolCalls.length, { reportedBy, scoutUserChatId, toolCalls }),
+              statReport("tokens", tokens, { reportedBy, scoutUserChatId, ...extra }),
             ];
-            if (usage.totalTokens && usage.totalTokens > 0) {
-              let tokens = usage.totalTokens;
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              const extra: any = { reportedBy, scoutUserChatId, usage };
-              if (reduceTokens) {
-                extra["reduceTokens"] = { originalTokens: tokens, ...reduceTokens };
-                tokens = Math.ceil(tokens / reduceTokens.ratio);
-              }
-              tokensConsumed += tokens;
-              promises.push(statReport("tokens", tokens, extra));
-            }
+            tokensConsumed += tokens;
             await Promise.all(promises);
           }
           // appendStepToStreamingMessage(streamingMessage, step);
@@ -449,11 +442,12 @@ async function runScoutSocialTrendsSummarize({
 
       onStepFinish: async (step) => {
         const toolCalls = step.toolCalls.map((call) => call.toolName);
-        const usage = step.usage;
+        const { tokens, extra } = calculateStepTokensUsage(step, { reduceTokens });
         logger.info({
           msg: "runScoutSocialTrendsSummarize streamText onStepFinish",
           toolCalls,
-          usage,
+          usage: extra.usage,
+          cache: extra.cache,
         });
         if (statReport) {
           const reportedBy = "scoutSocialTrends tool";
@@ -464,17 +458,13 @@ async function runScoutSocialTrendsSummarize({
               toolCalls,
               step: "summary",
             }),
+            statReport("tokens", tokens, {
+              reportedBy,
+              scoutUserChatId,
+              step: "summary",
+              ...extra,
+            }),
           ];
-          if (usage.totalTokens && usage.totalTokens > 0) {
-            let tokens = usage.totalTokens;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const extra: any = { reportedBy, scoutUserChatId, usage, step: "summary" };
-            if (reduceTokens) {
-              extra["reduceTokens"] = { originalTokens: tokens, ...reduceTokens };
-              tokens = Math.ceil(tokens / reduceTokens.ratio);
-            }
-            promises.push(statReport("tokens", tokens, extra));
-          }
           await Promise.all(promises);
         }
         // appendStepToStreamingMessage(streamingMessage, step);
