@@ -95,7 +95,7 @@ export function UseCases() {
                   href={`/study/${study.studyUserChat.token}/share?replay=1`}
                   className="absolute inset-0 z-10"
                 >
-                  <span className="sr-only">View Case Study: {study.analyst.topic}</span>
+                  <span className="sr-only">View Case Study: {study.studyUserChat.title}</span>
                 </Link>
                 <div className="relative aspect-[16/9] overflow-hidden">
                   {study.analyst.latestReport?.coverUrl ? (
@@ -127,7 +127,7 @@ export function UseCases() {
                     {study.analyst.kind}
                   </span>
                   <h3 className="text-lg font-bold line-clamp-2 leading-snug flex-grow">
-                    {study.analyst.topic}
+                    {study.studyUserChat.title}
                   </h3>
                 </div>
               </Card>

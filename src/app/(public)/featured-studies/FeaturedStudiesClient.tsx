@@ -94,10 +94,8 @@ export default function FeaturedStudiesClient() {
               </div>
             </CardHeader>
             <CardContent className="flex-1">
-              <p className="font-medium mb-2 line-clamp-1">{study.analyst.topic}</p>
-              <p className="text-xs text-muted-foreground line-clamp-3">
-                {study.analyst.studySummary}
-              </p>
+              <p className="font-medium mb-2 line-clamp-1">{study.studyUserChat.title}</p>
+              <p className="text-xs text-muted-foreground line-clamp-3">{study.analyst.topic}</p>
             </CardContent>
             {study.analyst.latestReport?.coverUrl ? (
               <div className="relative aspect-video rounded-t-xl overflow-hidden mt-4 mx-16 border">
