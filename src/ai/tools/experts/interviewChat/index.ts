@@ -22,6 +22,7 @@ import {
   twitterSearchTool,
 } from "@/ai/tools/tools";
 import { AgentToolConfigArgs, PlainTextToolResult, ToolName } from "@/ai/tools/types";
+import { calculateStepTokensUsage } from "@/ai/usage";
 import { fileUrlToDataUrl } from "@/lib/attachments/actions";
 import { createUserChat } from "@/lib/userChat/lib";
 import { ChatMessageAttachment } from "@/prisma/client";
@@ -337,33 +338,20 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: UIMessage[]) 
       stopWhen: stepCountIs(maxSteps),
 
       onStepFinish: async ({ usage, toolCalls, ...step }) => {
-        const cache = step.providerMetadata?.bedrock?.usage as
-          | { cacheReadInputTokens: number; cacheWriteInputTokens: number }
-          | undefined;
+        const { tokens, extra } = calculateStepTokensUsage({ usage, ...step }, { reduceTokens });
         logger.info({
           msg: "chatWithInterviewer streamText onStepFinish",
           toolCalls: toolCalls.map((call) => call.toolName),
-          usage,
-          cache,
+          usage: extra.usage,
+          cache: extra.cache,
         });
-        if (usage.totalTokens && usage.totalTokens > 0) {
-          let tokens =
-            usage.totalTokens +
-            Math.floor((cache?.cacheReadInputTokens || 0) / 10) +
-            Math.floor((cache?.cacheWriteInputTokens || 0) * 1.25);
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const extra: any = {
+        if (statReport) {
+          await statReport("tokens", tokens, {
             reportedBy: "interview tool",
             analystInterviewId,
             role: "interviewer",
-            usage,
-            cache,
-          };
-          if (reduceTokens) {
-            extra["reduceTokens"] = { originalTokens: tokens, ...reduceTokens }; // originalTokens 用于 admin 后台计算省下的 tokens
-            tokens = Math.ceil(tokens / reduceTokens.ratio);
-          }
-          await statReport("tokens", tokens, extra);
+            ...extra,
+          });
         }
       },
 
@@ -452,25 +440,20 @@ async function chatWithPersona(chatProps: ChatProps, messages: UIMessage[]) {
       stopWhen: stepCountIs(2),
 
       onStepFinish: async (step) => {
+        const { tokens, extra } = calculateStepTokensUsage(step, { reduceTokens });
         logger.info({
           msg: "chatWithPersona streamText onStepFinish",
           toolCalls: step.toolCalls.map((call) => call?.toolName ?? "unknown"),
-          usage: step.usage,
+          usage: extra.usage,
+          cache: extra.cache,
         });
-        if (step.usage.totalTokens && step.usage.totalTokens > 0) {
-          let tokens = step.usage.totalTokens;
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const extra: any = {
+        if (statReport) {
+          await statReport("tokens", tokens, {
             reportedBy: "interview tool",
             analystInterviewId,
             role: "persona",
-            usage: step.usage,
-          };
-          if (reduceTokens) {
-            extra["reduceTokens"] = { originalTokens: tokens, ...reduceTokens };
-            tokens = Math.ceil(tokens / reduceTokens.ratio);
-          }
-          await statReport("tokens", tokens, extra);
+            ...extra,
+          });
         }
       },
 

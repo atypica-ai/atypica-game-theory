@@ -6,6 +6,7 @@ import { defaultProviderOptions, llm, LLMModelName } from "@/ai/provider";
 import { scoutChatTools } from "@/ai/tools/experts/scoutTaskChat/types";
 import { handleToolCallError, savePersonaTool, toolCallError } from "@/ai/tools/tools";
 import { AgentToolConfigArgs, PlainTextToolResult, ToolName } from "@/ai/tools/types";
+import { calculateStepTokensUsage } from "@/ai/usage";
 import { prisma } from "@/prisma/prisma";
 import { ModelMessage, stepCountIs, streamText, tool, UIMessageStreamWriter } from "ai";
 import { Locale } from "next-intl";
@@ -205,36 +206,20 @@ export async function runBuildPersona({
       },
 
       onStepFinish: async (step) => {
-        const cache = step.providerMetadata?.bedrock?.usage as
-          | { cacheReadInputTokens: number; cacheWriteInputTokens: number }
-          | undefined;
+        const { tokens, extra } = calculateStepTokensUsage(step, { reduceTokens });
         const toolCalls = step.toolCalls.map((call) => call.toolName);
-        const usage = step.usage;
         logger.info({
           msg: "runBuildPersona streamText onStepFinish",
           toolCalls,
-          usage,
-          cache,
-          // providerMetadata: step.providerMetadata,
+          usage: extra.usage,
+          cache: extra.cache,
         });
         if (statReport) {
           const reportedBy = "buildPersona tool";
           const promises = [
             statReport("steps", toolCalls.length, { reportedBy, scoutUserChatId, toolCalls }),
+            statReport("tokens", tokens, { reportedBy, scoutUserChatId, ...extra }),
           ];
-          if (usage.totalTokens && usage.totalTokens > 0) {
-            let tokens = usage.totalTokens;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const extra: any = { reportedBy, scoutUserChatId, usage };
-            if (reduceTokens) {
-              extra["reduceTokens"] = { originalTokens: tokens, ...reduceTokens };
-              tokens = Math.ceil(tokens / reduceTokens.ratio);
-            }
-            tokens +=
-              Math.floor((cache?.cacheReadInputTokens || 0) / 10) +
-              Math.floor((cache?.cacheWriteInputTokens || 0) * 1.25);
-            promises.push(statReport("tokens", tokens, extra));
-          }
           await Promise.all(promises);
         }
 
