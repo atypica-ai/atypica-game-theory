@@ -29,6 +29,7 @@ export async function createNewStudyChat(): Promise<
           role: "user",
           parts: [{ type: "text", text: "[READY]" }],
         },
+        tx,
       });
       return userChat;
     });

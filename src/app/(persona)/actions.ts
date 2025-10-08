@@ -203,6 +203,7 @@ export async function createFollowUpInterviewChat(
           role: "assistant", // 改为助手角色
           parts: [{ type: "text", text: content }],
         },
+        tx,
       });
 
       // Update persona import with the chat reference
