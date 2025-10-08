@@ -8,6 +8,7 @@ import { useDevice } from "@/hooks/use-device";
 import { useFileUploadManager } from "@/hooks/use-file-upload-manager";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
 import { cn } from "@/lib/utils";
+import { ChatMessageAttachment } from "@/prisma/client";
 import { useChat } from "@ai-sdk/react";
 import { ArrowRightIcon, PlayIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
@@ -26,7 +27,7 @@ export function UserChatSession<UI_MESSAGE extends TMessageWithPlainTextTool>({
   useChatRef,
   renderToolUIPart,
   acceptAttachments,
-  persistMessages = true,
+  // persistMessages = true,
 }: {
   chatTitle?: string;
   nickname?: Partial<{ user: string; assistant: string; system: string; data: string }>;
@@ -65,30 +66,21 @@ export function UserChatSession<UI_MESSAGE extends TMessageWithPlainTextTool>({
   const handleSubmitMessage = useCallback(
     async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
-      const filesToAttach = [...uploadedFiles];
-      if (filesToAttach.length > 0) {
-        if (!persistMessages) {
-          /* FIXME(@ai-sdk-upgrade-v5): The `experimental_attachments` property has been replaced with the parts array. Please manually migrate following https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#attachments--file-parts */
-          // useChatRef.current?.append({
-          //   role: "user",
-          //   content: input.trim(),
-          //   experimental_attachments: await Promise.all(
-          //     filesToAttach.map(async ({ name, mimeType, objectUrl }: FileUploadInfo) => {
-          //       const dataUrl = (await fileUrlToDataUrl({ objectUrl, mimeType })) as string;
-          //       return { name, url: dataUrl, contentType: mimeType };
-          //     }),
-          //   ),
-          // });
-          /**
-           * @todo: 目前禁用文件上传，哪怕是不保存 message 的情况，之后要改成把 attachments 放进 message.parts 的 type: file 里
-           */
-          throw new Error("Not implemented");
-        } else {
-          /**
-           * @todo: 目前禁用文件上传，之后要改成 message 和 attachments 分开提交给 chat api ，然后调用 persistentAIMessageToDB
-           */
-          throw new Error("Not implemented");
-        }
+      if (!input.trim()) {
+        return;
+      }
+      if (uploadedFiles.length > 0) {
+        useChatRef.current?.sendMessage(
+          { text: input },
+          {
+            body: {
+              attachments: uploadedFiles.map(
+                ({ name, size, objectUrl, mimeType }) =>
+                  ({ name, size, objectUrl, mimeType }) as ChatMessageAttachment,
+              ),
+            },
+          },
+        );
         setInput("");
         clearFiles();
       } else {
@@ -98,7 +90,7 @@ export function UserChatSession<UI_MESSAGE extends TMessageWithPlainTextTool>({
         clearFiles();
       }
     },
-    [uploadedFiles, useChatRef, input, setInput, clearFiles, persistMessages],
+    [uploadedFiles, useChatRef, input, setInput, clearFiles],
   );
 
   const [messagesContainerRef, messagesEndRef] = useScrollToBottom<HTMLDivElement>();
@@ -162,7 +154,7 @@ export function UserChatSession<UI_MESSAGE extends TMessageWithPlainTextTool>({
         )}
         {!readOnly && (
           <form onSubmit={handleSubmitMessage} className="relative bg-background rounded-lg">
-            {uploadedFiles.length > 0 && (
+            {uploadedFiles.length > 0 ? (
               <div className="absolute bottom-full left-0 mb-2 flex flex-wrap gap-2 max-w-full">
                 {uploadedFiles.map((file, index) => (
                   <FileAttachment
@@ -176,9 +168,9 @@ export function UserChatSession<UI_MESSAGE extends TMessageWithPlainTextTool>({
                   />
                 ))}
               </div>
-            )}
+            ) : null}
             {/* Partial transcript indicator */}
-            {partialTranscript && (
+            {partialTranscript ? (
               <div className="absolute bottom-full left-0 mb-1 p-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg max-w-xs">
                 <div className="flex items-center gap-2 text-xs text-blue-700 dark:text-blue-300">
                   <span className="inline-block w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></span>
@@ -186,7 +178,7 @@ export function UserChatSession<UI_MESSAGE extends TMessageWithPlainTextTool>({
                   <span className="flex-1 truncate">{partialTranscript}</span>
                 </div>
               </div>
-            )}
+            ) : null}
             <Textarea
               className={cn(
                 "block min-h-24 max-lg:min-h-20 resize-none focus-visible:border-primary/20 transition-colors",

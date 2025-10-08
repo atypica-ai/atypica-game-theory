@@ -1,4 +1,4 @@
-import { convertDBMessageToAIMessage } from "@/ai/messageUtils";
+import { convertDBMessagesToAIMessages } from "@/ai/messageUtils";
 import authOptions from "@/app/(auth)/authOptions";
 import { fetchUserPersonaChatByToken } from "@/app/(persona)/actions";
 import { TPersonaMessageWithTool } from "@/app/(persona)/types";
@@ -52,12 +52,13 @@ async function PersonaChatTokenPage({ userChatToken }: { userChatToken: string }
   const { userChat, persona } = result.data;
 
   // Fetch existing chat messages
-  const messages: UIMessage[] = (
-    await prisma.chatMessage.findMany({
-      where: { userChatId: userChat.id },
-      orderBy: { id: "asc" },
-    })
-  ).map(convertDBMessageToAIMessage);
+  const dbMessages = await prisma.chatMessage.findMany({
+    where: { userChatId: userChat.id },
+    orderBy: { id: "asc" },
+  });
+  const messages: UIMessage[] = await convertDBMessagesToAIMessages(dbMessages, {
+    convertObjectUrl: "HttpUrl", // messages 只是给前端显示用，使用 httpurl
+  });
 
   return (
     <PersonaChatClient

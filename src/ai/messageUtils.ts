@@ -292,6 +292,7 @@ export const createDebouncePersistentMessage = (
 
 /**
  * Deprecated, use async function convertDBMessagesToAIMessages instead
+ * ⚠️ 这个方法会忽略 attachments
  */
 export function convertDBMessageToAIMessage({
   messageId: id,

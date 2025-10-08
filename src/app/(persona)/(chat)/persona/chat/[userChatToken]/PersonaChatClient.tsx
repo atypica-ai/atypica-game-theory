@@ -48,12 +48,15 @@ export function PersonaChatClient({
     messages: initialMessages,
     transport: new DefaultChatTransport({
       api: "/api/chat/persona",
-      prepareSendMessagesRequest({ id, messages }) {
+      prepareSendMessagesRequest({ id, messages, body: extraBody }) {
         const body: ClientMessagePayload = {
           id,
           message: prepareLastUIMessageForRequest(messages),
           ...extraRequestPayload,
         };
+        if (extraBody && "attachments" in extraBody) {
+          body["attachments"] = extraBody.attachments;
+        }
         return { body };
       },
     }),
@@ -225,7 +228,7 @@ export function PersonaChatClient({
           useChatHelpers={useChatHelpers}
           useChatRef={useChatRef}
           renderToolUIPart={(toolPart) => <PersonaToolUIPartDisplay toolUIPart={toolPart} />}
-          acceptAttachments={false}
+          acceptAttachments={true}
         />
       </div>
     </FitToViewport>

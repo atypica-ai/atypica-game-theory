@@ -1,3 +1,4 @@
+import { ChatMessageAttachment } from "@/prisma/client";
 import { UIDataTypes, UIMessage, UIMessagePart, UITools } from "ai";
 import { z } from "zod/v3";
 
@@ -81,6 +82,19 @@ export const clientMessagePayloadSchema = z.object({
     // ),
   }),
   userChatToken: z.string(),
+  attachments: z
+    .array(
+      z
+        .object({
+          objectUrl: z.string(), // s3 object url without signature
+          name: z.string(),
+          mimeType: z.string(),
+          size: z.number(), // bytes
+        })
+        .transform((v) => v as ChatMessageAttachment),
+    )
+
+    .optional(),
 });
 
 export type ClientMessagePayload = z.infer<typeof clientMessagePayloadSchema>;

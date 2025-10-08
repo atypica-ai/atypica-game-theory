@@ -36,6 +36,7 @@ export async function POST(req: Request) {
     // id, // 没用到
     message: newMessage,
     userChatToken,
+    attachments: newAttachments,
   } = parseResult.data;
 
   if (!userChatToken || !newMessage) {
@@ -81,6 +82,7 @@ export async function POST(req: Request) {
       ...newMessage,
       id: newMessage.id ?? generateId(),
     },
+    attachments: newAttachments,
   });
 
   // 动态检测用户输入的语言，先检测用户输入的语言，默认使用 persona 自身的语言
