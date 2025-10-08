@@ -1,3 +1,22 @@
+import {
+  dyPostCommentsTool,
+  dySearchTool,
+  dyUserPostsTool,
+  insPostCommentsTool,
+  insSearchTool,
+  insUserPostsTool,
+  tiktokPostCommentsTool,
+  tiktokSearchTool,
+  tiktokUserPostsTool,
+  toolCallError,
+  twitterPostCommentsTool,
+  twitterSearchTool,
+  twitterUserPostsTool,
+  xhsNoteCommentsTool,
+  xhsSearchTool,
+  xhsUserNotesTool,
+} from "@/ai/tools/tools";
+import { ToolName } from "@/ai/tools/types";
 import { generateToken } from "@/lib/utils";
 import z from "zod/v3";
 
@@ -37,3 +56,24 @@ export const scoutTaskChatOutputSchema = z.object({
 });
 
 export type ScoutTaskChatResult = z.infer<typeof scoutTaskChatOutputSchema>;
+
+// 要给 buildPersona tool 的 prepareMessagesForStreaming 用，在转成 model message 的时候调用 toModelOutput
+// 不能直接 export，不然 build 阶段会报错
+export const scoutChatTools = () => ({
+  [ToolName.dySearch]: dySearchTool,
+  [ToolName.dyPostComments]: dyPostCommentsTool,
+  [ToolName.dyUserPosts]: dyUserPostsTool,
+  [ToolName.tiktokSearch]: tiktokSearchTool,
+  [ToolName.tiktokPostComments]: tiktokPostCommentsTool,
+  [ToolName.tiktokUserPosts]: tiktokUserPostsTool,
+  [ToolName.insSearch]: insSearchTool,
+  [ToolName.insUserPosts]: insUserPostsTool,
+  [ToolName.insPostComments]: insPostCommentsTool,
+  [ToolName.xhsSearch]: xhsSearchTool,
+  [ToolName.xhsUserNotes]: xhsUserNotesTool,
+  [ToolName.xhsNoteComments]: xhsNoteCommentsTool,
+  [ToolName.twitterSearch]: twitterSearchTool,
+  [ToolName.twitterUserPosts]: twitterUserPostsTool,
+  [ToolName.twitterPostComments]: twitterPostCommentsTool,
+  [ToolName.toolCallError]: toolCallError,
+});

@@ -14,25 +14,8 @@ import {
   scoutSocialTrendsSystem,
 } from "@/ai/prompt/scout/socialTrends";
 import { defaultProviderOptions, llm, LLMModelName } from "@/ai/provider";
-import { TPlatform } from "@/ai/tools/experts/scoutTaskChat/types";
-import {
-  dyPostCommentsTool,
-  dySearchTool,
-  dyUserPostsTool,
-  handleToolCallError,
-  insPostCommentsTool,
-  insSearchTool,
-  insUserPostsTool,
-  tiktokPostCommentsTool,
-  tiktokSearchTool,
-  tiktokUserPostsTool,
-  twitterPostCommentsTool,
-  twitterSearchTool,
-  twitterUserPostsTool,
-  xhsNoteCommentsTool,
-  xhsSearchTool,
-  xhsUserNotesTool,
-} from "@/ai/tools/tools";
+import { scoutChatTools, TPlatform } from "@/ai/tools/experts/scoutTaskChat/types";
+import { handleToolCallError } from "@/ai/tools/tools";
 import { AgentToolConfigArgs, PlainTextToolResult, ToolName } from "@/ai/tools/types";
 import { createUserChat } from "@/lib/userChat/lib";
 import { prisma } from "@/prisma/prisma";
@@ -183,22 +166,7 @@ async function runScoutSocialTrendsStream({
   streamWriter?: UIMessageStreamWriter;
 } & AgentToolConfigArgs): Promise<string> {
   const allTools = {
-    [ToolName.dySearch]: dySearchTool,
-    [ToolName.dyPostComments]: dyPostCommentsTool,
-    [ToolName.dyUserPosts]: dyUserPostsTool,
-    [ToolName.tiktokSearch]: tiktokSearchTool,
-    [ToolName.tiktokPostComments]: tiktokPostCommentsTool,
-    [ToolName.tiktokUserPosts]: tiktokUserPostsTool,
-    [ToolName.insSearch]: insSearchTool,
-    [ToolName.insUserPosts]: insUserPostsTool,
-    [ToolName.insPostComments]: insPostCommentsTool,
-    [ToolName.xhsSearch]: xhsSearchTool,
-    [ToolName.xhsUserNotes]: xhsUserNotesTool,
-    [ToolName.xhsNoteComments]: xhsNoteCommentsTool,
-    [ToolName.twitterSearch]: twitterSearchTool,
-    [ToolName.twitterUserPosts]: twitterUserPostsTool,
-    [ToolName.twitterPostComments]: twitterPostCommentsTool,
-    // [ToolName.toolCallError]: toolCallError,
+    ...scoutChatTools(),
   };
   const systemPrompt = scoutSocialTrendsSystem({ locale });
   const tools =

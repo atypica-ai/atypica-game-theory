@@ -88,6 +88,7 @@ export function FocusedInterviewChat<
       setLastUserMessage({ content: messageContent });
 
       useChatRef.current.sendMessage({ text: messageContent });
+      setInput("");
 
       // Reset timeout state when user responds
       setHasTimedOut(false);

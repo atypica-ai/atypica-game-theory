@@ -7,6 +7,7 @@ import { ChatMessage, ChatMessageAttachment, ChatMessagePart } from "@/prisma/cl
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import {
+  convertToModelMessages,
   generateId,
   isToolUIPart,
   ModelMessage,
@@ -486,19 +487,22 @@ export function convertToFlattenModelMessages(
 ): ModelMessage[] {
   const flattenMessages: Array<Omit<UIMessage, "id">> = [];
   let lastMessage: Omit<UIMessage, "id">;
-  for (const { parts, ...message } of messages) {
-    lastMessage = { ...message, parts: [] };
+  for (const { parts, role, metadata } of messages) {
+    lastMessage = { role, metadata, parts: [] };
     for (const part of parts) {
       if (!isToolUIPart(part)) {
         lastMessage.parts.push(part);
       } else {
         flattenMessages.push(lastMessage);
-        flattenMessages.push({ ...message, parts: [part] });
-        lastMessage = { ...message, parts: [] };
+        flattenMessages.push({ role, metadata, parts: [part] });
+        lastMessage = { role, metadata, parts: [] };
       }
     }
+    if (lastMessage.parts.length > 0) {
+      flattenMessages.push(lastMessage);
+    }
   }
-  const coreMessages = convertToFlattenModelMessages(flattenMessages, options);
+  const coreMessages = convertToModelMessages(flattenMessages, options);
   return coreMessages;
 }
 

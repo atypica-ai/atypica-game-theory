@@ -3,12 +3,12 @@ import "server-only";
 import { prepareMessagesForStreaming } from "@/ai/messageUtils";
 import { buildPersonaSystem } from "@/ai/prompt";
 import { defaultProviderOptions, llm, LLMModelName } from "@/ai/provider";
+import { scoutChatTools } from "@/ai/tools/experts/scoutTaskChat/types";
 import { handleToolCallError, savePersonaTool, toolCallError } from "@/ai/tools/tools";
 import { AgentToolConfigArgs, PlainTextToolResult, ToolName } from "@/ai/tools/types";
 import { prisma } from "@/prisma/prisma";
 import { ModelMessage, stepCountIs, streamText, tool, UIMessageStreamWriter } from "ai";
 import { Locale } from "next-intl";
-import { scoutChatTools } from "../scoutTaskChat";
 import {
   buildPersonaInputSchema,
   buildPersonaOutputSchema,
@@ -141,7 +141,7 @@ export async function runBuildPersona({
   const { coreMessages: _coreMessages } = await prepareMessagesForStreaming(scoutUserChatId, {
     tools: {
       ...tools,
-      ...scoutChatTools,
+      ...scoutChatTools(),
     },
   });
   const coreMessages = appendBuildPersonaPrologue(_coreMessages, locale);

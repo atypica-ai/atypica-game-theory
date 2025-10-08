@@ -11,25 +11,7 @@ import {
 import { CONTINUE_ASSISTANT_STEPS } from "@/ai/messageUtilsClient";
 import { scoutSystem } from "@/ai/prompt";
 import { defaultProviderOptions, llm, LLMModelName } from "@/ai/provider";
-import {
-  dyPostCommentsTool,
-  dySearchTool,
-  dyUserPostsTool,
-  handleToolCallError,
-  insPostCommentsTool,
-  insSearchTool,
-  insUserPostsTool,
-  tiktokPostCommentsTool,
-  tiktokSearchTool,
-  tiktokUserPostsTool,
-  toolCallError,
-  twitterPostCommentsTool,
-  twitterSearchTool,
-  twitterUserPostsTool,
-  xhsNoteCommentsTool,
-  xhsSearchTool,
-  xhsUserNotesTool,
-} from "@/ai/tools/tools";
+import { handleToolCallError } from "@/ai/tools/tools";
 import { AgentToolConfigArgs, PlainTextToolResult, ToolName } from "@/ai/tools/types";
 import { truncateForTitle } from "@/lib/textUtils";
 import { createUserChat } from "@/lib/userChat/lib";
@@ -49,6 +31,7 @@ import {
 } from "ai";
 import { Logger } from "pino";
 import {
+  scoutChatTools,
   scoutTaskChatInputSchema,
   scoutTaskChatOutputSchema,
   type ScoutTaskChatResult,
@@ -118,26 +101,6 @@ const toolPlatform = (toolName: ToolName): TPlatform | undefined => {
     [ToolName.twitterPostComments]: "Twitter",
   };
   return platforms[toolName];
-};
-
-// 要给 buildPersona tool 的 prepareMessagesForStreaming 用，在转成 model message 的时候调用 toModelOutput
-export const scoutChatTools = {
-  [ToolName.dySearch]: dySearchTool,
-  [ToolName.dyPostComments]: dyPostCommentsTool,
-  [ToolName.dyUserPosts]: dyUserPostsTool,
-  [ToolName.tiktokSearch]: tiktokSearchTool,
-  [ToolName.tiktokPostComments]: tiktokPostCommentsTool,
-  [ToolName.tiktokUserPosts]: tiktokUserPostsTool,
-  [ToolName.insSearch]: insSearchTool,
-  [ToolName.insUserPosts]: insUserPostsTool,
-  [ToolName.insPostComments]: insPostCommentsTool,
-  [ToolName.xhsSearch]: xhsSearchTool,
-  [ToolName.xhsUserNotes]: xhsUserNotesTool,
-  [ToolName.xhsNoteComments]: xhsNoteCommentsTool,
-  [ToolName.twitterSearch]: twitterSearchTool,
-  [ToolName.twitterUserPosts]: twitterUserPostsTool,
-  [ToolName.twitterPostComments]: twitterPostCommentsTool,
-  [ToolName.toolCallError]: toolCallError,
 };
 
 export const scoutTaskChatTool = ({
@@ -234,7 +197,7 @@ export async function runScoutTaskChatStream({
   scoutUserChatId: number;
   streamWriter?: UIMessageStreamWriter;
 } & AgentToolConfigArgs): Promise<void> {
-  const allTools = { ...scoutChatTools };
+  const allTools = { ...scoutChatTools() };
   const systemPrompt = scoutSystem({ locale });
   const tools = allTools;
   // const tools =
