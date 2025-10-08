@@ -245,9 +245,9 @@ export function imageModel(modelName: ImageModelName, options?: any) {
     case "gpt-image-1":
       return azure.imageModel("gpt-image-1", options);
     case "imagen-4.0-ultra":
-      return vertex.image("imagen-4.0-ultra-generate-preview-06-06", options);
+      return vertex.image("imagen-4.0-ultra-generate-001", options);
     case "imagen-4.0":
-      return vertex.image("imagen-4.0-generate-preview-06-06", options);
+      return vertex.image("imagen-4.0-generate-001", options);
   }
 }
 
