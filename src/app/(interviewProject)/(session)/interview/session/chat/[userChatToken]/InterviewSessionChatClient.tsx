@@ -24,7 +24,7 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { Info, Shield, UsersIcon } from "lucide-react";
 import { Locale, useLocale, useTranslations } from "next-intl";
-import { useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 
 export function InterviewSessionChatClient({
   project,
@@ -50,7 +50,7 @@ export function InterviewSessionChatClient({
 
   const extraRequestPayload = useMemo(() => ({ userChatToken: userChatToken }), [userChatToken]);
 
-  const useChatHelpers = useChat({
+  const { addToolResult: _addToolResult, ...useChatHelpers } = useChat({
     messages: initialMessages,
     transport: new DefaultChatTransport({
       api: "/api/chat/interview-agent",
@@ -70,6 +70,14 @@ export function InterviewSessionChatClient({
     setMessages: useChatHelpers.setMessages,
     sendMessage: useChatHelpers.sendMessage,
   });
+
+  const addToolResult = useCallback(
+    async (...args: Parameters<typeof _addToolResult>) => {
+      await _addToolResult(...args); // 首先调用 useChat 上的 addToolResult 修改 ToolUIPart 的状态
+      useChatRef.current.sendMessage(); // 不传参数调用 sendMessage 直接发送最后一条 assistant 消息
+    },
+    [_addToolResult],
+  );
 
   const { messages } = useChatHelpers;
   const requestInteractionToolInvocation = useMemo(() => {
@@ -191,7 +199,7 @@ export function InterviewSessionChatClient({
       <FitToViewport className="flex flex-col items-center justify-start h-full p-4 sm:p-8">
         <RequestInteractionFormToolMessage
           toolInvocation={requestInteractionToolInvocation}
-          addToolResult={useChatHelpers.addToolResult}
+          addToolResult={addToolResult}
         />
       </FitToViewport>
     );

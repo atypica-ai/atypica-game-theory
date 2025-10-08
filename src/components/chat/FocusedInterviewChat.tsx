@@ -54,7 +54,7 @@ export function FocusedInterviewChat<
   className = "",
 }: {
   locale: Locale;
-  useChatHelpers: Omit<ReturnType<typeof useChat<T>>, "regenerate" | "setMessages" | "sendMessage">;
+  useChatHelpers: Pick<ReturnType<typeof useChat<T>>, "messages" | "status" | "stop">;
   useChatRef: React.RefObject<
     Pick<ReturnType<typeof useChat<T>>, "regenerate" | "setMessages" | "sendMessage">
   >;

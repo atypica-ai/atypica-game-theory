@@ -33,9 +33,9 @@ export function UserChatSession<UI_MESSAGE extends TMessageWithPlainTextTool>({
   avatar?: Partial<{ user: ReactNode; assistant: ReactNode; system: ReactNode; data: ReactNode }>;
   readOnly?: boolean;
   limit?: number; // 向前保留的消息数量
-  useChatHelpers: Omit<
+  useChatHelpers: Pick<
     ReturnType<typeof useChat<UI_MESSAGE>>,
-    "regenerate" | "setMessages" | "sendMessage"
+    "messages" | "status" | "stop" | "error"
   >;
   useChatRef: RefObject<
     Pick<ReturnType<typeof useChat<UI_MESSAGE>>, "regenerate" | "setMessages" | "sendMessage">

@@ -59,6 +59,14 @@ export const clientMessagePayloadSchema = z.object({
                 input: z.record(z.any()),
                 errorText: z.string(),
               }),
+              z.object({
+                state: z.literal("input-available"),
+                input: z.record(z.any()),
+              }),
+              z.object({
+                state: z.literal("input-streaming"),
+                input: z.record(z.any().or(z.undefined())),
+              }),
             ]),
           )
           .describe("user addToolResult"),

@@ -15,7 +15,7 @@ import { useDocumentVisibility } from "@/hooks/use-document-visibility";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
 import { cn } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport, lastAssistantMessageIsCompleteWithToolCalls, UIMessage } from "ai";
+import { DefaultChatTransport, UIMessage } from "ai";
 import { ArrowRightIcon, PlayIcon, PlusIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -69,10 +69,11 @@ export function ChatBox() {
     status: useChatStatus,
     regenerate,
     // append,
-    addToolResult,
+    addToolResult: _addToolResult,
   } = useChat({
     id: studyUserChatId.toString(),
-    sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls, // addToolResult 调用以后，立即调用 sendMessage
+    // 下面这行设置了以后可以实现：addToolResult 调用以后，立即调用 sendMessage，但是它个有问题，在工具调用出错以后，会进入死循环，所以改成人工 sendMessage
+    // sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
     messages: initialMessages,
     experimental_throttle: 300,
     // maxSteps: 15,  // 后端 chat api 设置了 maxSteps 并且会控制，这里不能再设置，会覆盖后端的配置！
@@ -118,6 +119,14 @@ export function ChatBox() {
       setInput("");
     },
     [input, lastSubmitTime],
+  );
+
+  const addToolResult = useCallback(
+    async (...args: Parameters<typeof _addToolResult>) => {
+      await _addToolResult(...args); // 首先调用 useChat 上的 addToolResult 修改 ToolUIPart 的状态
+      useChatRef.current.sendMessage(); // 不传参数调用 sendMessage 直接发送最后一条 assistant 消息
+    },
+    [_addToolResult],
   );
 
   // React 在 development 模式下默认会执行两次 useEffect，这是 React 的严格模式的有意设计，帮助发现副作用
