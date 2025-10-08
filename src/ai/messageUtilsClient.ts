@@ -1,4 +1,4 @@
-import { UIMessage } from "ai";
+import { UIDataTypes, UIMessage, UIMessagePart, UITools } from "ai";
 import { z } from "zod/v3";
 
 export const CONTINUE_ASSISTANT_STEPS = "[CONTINUE ASSISTANT STEPS]";
@@ -18,65 +18,84 @@ export const clientMessagePayloadSchema = z.object({
   message: z.object({
     id: z.string().optional(),
     role: z.enum(["user", "assistant"]),
-    parts: z.array(
-      z.union([
-        z.object({
-          type: z.literal("step-start"),
-        }),
-        z
-          .object({
-            type: z.literal("text"),
-            text: z.string(),
-          })
-          .describe("user text input"),
-        z
-          .object({
-            type: z.literal("file"),
-            mediaType: z.string(),
-            filename: z.string().optional(),
-            url: z.string(),
-            providerMetadata: z.any().optional(),
-          })
-          .describe("user uploaded file"),
-        z
-          .object({
-            type: z.custom<`tool-${string}`>(
-              (val) => typeof val === "string" && /^tool-[a-zA-Z0-9_-]+$/.test(val),
-            ),
-            toolCallId: z.string(),
-            providerExecuted: z.any().optional(),
-            callProviderMetadata: z.any().optional(),
-          })
-          .and(
-            z.union([
-              z.object({
-                state: z.literal("output-available"),
-                input: z.record(z.any()),
-                output: z.record(z.any()),
-              }),
-              z.object({
-                state: z.literal("output-error"),
-                input: z.record(z.any()),
-                errorText: z.string(),
-              }),
-              z.object({
-                state: z.literal("input-available"),
-                input: z.record(z.any()),
-              }),
-              z.object({
-                state: z.literal("input-streaming"),
-                input: z.record(z.any().or(z.undefined())),
-              }),
-            ]),
-          )
-          .describe("user addToolResult"),
-      ]),
-    ),
+    parts: z.custom<UIMessagePart<UIDataTypes, UITools>[]>(() => true),
+    // parts: z.array(
+    //   z.union([
+    //     z.object({
+    //       type: z.literal("step-start"),
+    //     }),
+    //     z
+    //       .object({
+    //         type: z.literal("text"),
+    //         text: z.string(),
+    //       })
+    //       .describe("TextUIPart"),
+    //     z
+    //       .object({
+    //         type: z.literal("reasoning"),
+    //         text: z.string(),
+    //       })
+    //       .describe("ReasoningUIPart"),
+    //     z
+    //       .object({
+    //         type: z.literal("file"),
+    //         mediaType: z.string(),
+    //         filename: z.string().optional(),
+    //         url: z.string(),
+    //         providerMetadata: z.any().optional(),
+    //       })
+    //       .describe("FileUIPart"),
+    //     z
+    //       .object({
+    //         type: z.custom<`tool-${string}`>(
+    //           (val) => typeof val === "string" && /^tool-[a-zA-Z0-9_-]+$/.test(val),
+    //         ),
+    //         toolCallId: z.string(),
+    //         providerExecuted: z.boolean().optional(),
+    //         callProviderMetadata: z.any().optional(),
+    //       })
+    //       .and(
+    //         z.union([
+    //           z.object({
+    //             state: z.literal("output-available"),
+    //             input: z.union([z.string(), z.record(z.any())]),
+    //             output: z.union([z.string(), z.record(z.any())]),
+    //           }),
+    //           z.object({
+    //             state: z.literal("output-error"),
+    //             input: z.union([z.string(), z.record(z.any())]),
+    //             errorText: z.string(),
+    //           }),
+    //           z.object({
+    //             state: z.literal("input-available"),
+    //             input: z.union([z.string(), z.record(z.any())]),
+    //           }),
+    //           z.object({
+    //             state: z.literal("input-streaming"),
+    //             input: z.union([z.string(), z.record(z.any()), z.undefined()]),
+    //           }),
+    //         ]),
+    //       )
+    //       .describe("ToolUIPart"),
+    //   ]),
+    // ),
   }),
   userChatToken: z.string(),
 });
 
 export type ClientMessagePayload = z.infer<typeof clientMessagePayloadSchema>;
+
+// // eslint-disable-next-line @typescript-eslint/no-unused-vars
+// type VERIFY =
+//   Extract<
+//     UIMessage["parts"][number],
+//     { type: "step-start" | "text" | "reasoning" | "file" | `tool-${string}` }
+//   > extends Extract<
+//     ClientMessagePayload["message"]["parts"][number],
+//     { type: "step-start" | "text" | "reasoning" | "file" | `tool-${string}` }
+//   >
+//     ? true
+//     : false;
 
 export function isSystemMessage(text: string): boolean {
   const trimmedText = text.trim();
