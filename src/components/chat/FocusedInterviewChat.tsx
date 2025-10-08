@@ -6,9 +6,9 @@ import { RecordButton } from "@/components/chat/RecordButton";
 import { Button } from "@/components/ui/button";
 import { useDevice } from "@/hooks/use-device";
 import { useDocumentVisibility } from "@/hooks/use-document-visibility";
-import { getDisplayWidth } from "@/lib/textUtils";
 import { cn } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
+import { getToolName, isToolUIPart } from "ai";
 import { AnimatePresence, motion } from "framer-motion";
 import { CheckIcon, Ear, Keyboard, Loader2Icon, Send, XIcon } from "lucide-react";
 import { Locale, useTranslations } from "next-intl";
@@ -89,6 +89,10 @@ export function FocusedInterviewChat<
 
       useChatRef.current.sendMessage({ text: messageContent });
       setInput("");
+      if (textareaRef.current) {
+        // 回复 textarea 的高度
+        textareaRef.current.style.height = "auto";
+      }
 
       // Reset timeout state when user responds
       setHasTimedOut(false);
@@ -178,20 +182,21 @@ export function FocusedInterviewChat<
     return messages.findLast((m) => m.role === "assistant");
   }, [messages]);
 
-  const messageDisplayStyle = useMemo(() => {
-    const textContent = lastAssistantMessage?.parts
-      ?.map((part) => (part.type === "text" ? part.text : ""))
-      .join("\n");
-    const displayWidth = textContent ? getDisplayWidth(textContent) : 0;
-    const threshold = isMobile ? 40 : 120;
-    return cn({
-      "text-xl sm:text-2xl": displayWidth < 60,
-      "text-lg sm:text-xl": displayWidth >= 60 && displayWidth < 120,
-      "text-base sm:text-lg": displayWidth >= 120,
-      "text-center": displayWidth <= threshold,
-      "text-left": displayWidth > threshold,
-    });
-  }, [lastAssistantMessage?.parts, isMobile]);
+  // streaming 显示的时候，样式变化体验不好，字在乱跳，先固定样式 text-base sm:text-lg
+  // const messageDisplayStyle = useMemo(() => {
+  //   const textContent = lastAssistantMessage?.parts
+  //     ?.map((part) => (part.type === "text" ? part.text : ""))
+  //     .join("\n");
+  //   const displayWidth = textContent ? getDisplayWidth(textContent) : 0;
+  //   const threshold = isMobile ? 40 : 120;
+  //   return cn({
+  //     "text-xl sm:text-2xl": displayWidth < 60,
+  //     "text-lg sm:text-xl": displayWidth >= 60 && displayWidth < 120,
+  //     "text-base sm:text-lg": displayWidth >= 120,
+  //     "text-center": displayWidth <= threshold,
+  //     "text-left": displayWidth > threshold,
+  //   });
+  // }, [lastAssistantMessage?.parts, isMobile]);
 
   // When a new assistant message is being generated, clear the last user message
   useEffect(() => {
@@ -246,13 +251,18 @@ export function FocusedInterviewChat<
     <div
       className={cn(
         "w-full h-full flex flex-col relative bg-zinc-50 dark:bg-zinc-900 pb-8",
-        "flex-1 overflow-auto",
+        "flex-1 overflow-hidden",
         className,
       )}
     >
       {/* Top bar with language indicator and controls */}
       <div className="absolute top-6 left-1/2 -translate-x-1/2">
-        <div className="text-xs text-zinc-500 dark:text-zinc-400 font-mono bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded">
+        <div
+          className={cn(
+            "text-xs text-zinc-500 dark:text-zinc-400 font-mono bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded",
+            "bg-background/30 backdrop-blur-md",
+          )}
+        >
           {locale === "zh-CN" ? "中文" : "English"}
         </div>
       </div>
@@ -274,8 +284,8 @@ export function FocusedInterviewChat<
       {/* Main content area */}
       <div
         className={cn(
-          "flex-1 flex flex-col items-center justify-center text-center max-w-4xl w-full mx-auto px-4",
-          "min-h-96",
+          "flex-1 overflow-scroll scrollbar-thin p-4",
+          // "min-h-96",
         )}
       >
         <AnimatePresence mode="wait">
@@ -285,7 +295,7 @@ export function FocusedInterviewChat<
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="flex flex-col items-center gap-4 text-zinc-600 dark:text-zinc-400"
+              className="min-h-full flex flex-col items-center justify-center gap-4 text-zinc-600 dark:text-zinc-400"
             >
               <div className="flex items-center gap-2">
                 <Ear className="w-4 h-4 text-primary" />
@@ -306,7 +316,9 @@ export function FocusedInterviewChat<
               transition={{ duration: 0.4, ease: "circOut" }}
               className={cn(
                 "font-EuclidCircularA font-medium text-zinc-900 dark:text-zinc-100 leading-relaxed",
-                messageDisplayStyle,
+                "min-h-full flex flex-col items-center justify-center max-w-4xl w-full mx-auto",
+                "text-base sm:text-lg text-center",
+                // messageDisplayStyle,
               )}
             >
               {!lastAssistantMessage
@@ -316,7 +328,8 @@ export function FocusedInterviewChat<
                       <div
                         key={index}
                         className={cn(
-                          "whitespace-normal",
+                          // "whitespace-normal",
+                          "whitespace-pre-wrap",
                           index < lastAssistantMessage.parts.length - 1 &&
                             "mx-4 text-sm font-normal text-muted-foreground/50",
                         )}
@@ -333,12 +346,12 @@ export function FocusedInterviewChat<
                           <CheckIcon className="size-3 inline-block ml-2 text-green-500" />
                         ) : null}
                       </div>
-                    ) : part.type.startsWith("tool-") && "toolCallId" in part ? (
+                    ) : isToolUIPart(part) ? (
                       <div
                         key={index}
                         className="my-4 text-sm text-center text-muted-foreground/50 font-normal font-mono"
                       >
-                        {t("toolCalling")} {part.type.slice(5) /* dirty way to extract tool name */}
+                        {t("toolCalling")} {getToolName(part)}
                         {part.state === "output-available" ? (
                           <CheckIcon className="size-3 inline-block ml-2 text-green-500" />
                         ) : null}
@@ -352,15 +365,12 @@ export function FocusedInterviewChat<
                   <span className="animate-bounce [animation-delay:0.4s]">·</span>
                 </div>
               )}
-              <div className="w-full text-xs text-center font-normal text-zinc-500 dark:text-zinc-400 px-4 my-4">
-                {tCompliance("shortDisclaimer")}
-              </div>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
       {/* Bottom input area - fixed to bottom */}
-      <div className="shrink-0 w-full max-w-3xl mx-auto px-4 pt-0 sm:px-8 relative space-y-3">
+      <div className="shrink-0 w-full max-w-3xl mx-auto px-4 pt-4 sm:px-8 relative space-y-3">
         {/* Timer progress indicator */}
         {showTimer && (
           <div
@@ -417,7 +427,7 @@ export function FocusedInterviewChat<
             >
               <form
                 onSubmit={handleSubmitWithFocus}
-                className="relative flex items-center bg-white dark:bg-zinc-800 backdrop-blur-sm rounded-md p-2 w-full border border-zinc-200 dark:border-zinc-700"
+                className="relative flex items-center bg-white dark:bg-zinc-800 backdrop-blur-sm rounded-sm p-2 w-full border border-zinc-200 dark:border-zinc-700"
               >
                 <CustomTextarea
                   ref={textareaRef}
@@ -428,10 +438,12 @@ export function FocusedInterviewChat<
                   disabled={
                     status === "streaming" || status === "submitted" || isProcessingTranscript
                   }
-                  className="flex min-h-[48px] w-full resize-none bg-transparent border-none
-                  focus-visible:ring-0 focus-visible:ring-offset-0 outline-none
-                  text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-500 dark:placeholder:text-zinc-400 py-3 px-3 max-h-32
-                  text-base leading-relaxed overflow-hidden"
+                  className={cn(
+                    "flex w-full resize-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 outline-none",
+                    "text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-500 dark:placeholder:text-zinc-400",
+                    "py-1 px-1 max-h-32 text-base leading-relaxed overflow-hidden",
+                    "text-[15px] md:text-[15px] placeholder:text-[15px]", // 15px 可以让页面不自动放大
+                  )}
                   onKeyDown={(e) => {
                     if (
                       !isMobile &&
@@ -456,12 +468,11 @@ export function FocusedInterviewChat<
                     isProcessingTranscript ||
                     !input.trim()
                   }
-                  className="rounded-xl text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-700 flex-shrink-0 w-12 h-12 transition-colors"
                 >
                   {status === "submitted" ? (
-                    <Loader2Icon className="h-6 w-6 animate-spin" />
+                    <Loader2Icon className="size-4 animate-spin" />
                   ) : (
-                    <Send className="h-6 w-6" />
+                    <Send className="size-4" />
                   )}
                 </Button>
               </form>
@@ -487,6 +498,15 @@ export function FocusedInterviewChat<
             </motion.div>
           )}
         </AnimatePresence>
+      </div>
+
+      <div
+        className={cn(
+          "position absolute -bottom-2.5 left-1/2 -translate-x-1/2",
+          "w-full text-xs text-center font-normal text-zinc-400 dark:text-zinc-600 px-4 my-4",
+        )}
+      >
+        {tCompliance("shortDisclaimer")}
       </div>
     </div>
   );
