@@ -118,23 +118,23 @@ export async function checkMaintenanceStatus(): Promise<{
 
   const config = configRecord.value as unknown as MaintenanceConfig;
 
-  if (!config.isActive) {
-    return {
-      isInMaintenance: false,
-      showNotification: false,
-      maintenanceData: null,
-    };
-  }
+  // if (!config.isActive) {
+  //   return {
+  //     isInMaintenance: false,
+  //     showNotification: false,
+  //     maintenanceData: null,
+  //   };
+  // }
 
   const startTime = new Date(config.startTime);
   const endTime = new Date(config.endTime);
   const notificationTime = new Date(config.notificationTime);
 
   // Check if current time is within maintenance window
-  const isInMaintenance = now >= startTime && now <= endTime;
+  const isInMaintenance = config.isActive && now >= startTime && now <= endTime;
 
   // Check if notification should be shown (after notification time but before maintenance ends)
-  const showNotification = now >= notificationTime && now <= endTime;
+  const showNotification = config.isActive && now >= notificationTime && now <= endTime;
 
   return {
     isInMaintenance,
