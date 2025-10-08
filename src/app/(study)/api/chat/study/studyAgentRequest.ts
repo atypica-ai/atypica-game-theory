@@ -140,11 +140,14 @@ async function shouldDecidePersonaTier({
           },
     state: "input-available",
   };
-  await persistentAIMessageToDB(studyUserChatId, {
-    id: messageId,
-    role: "assistant",
-    // content: toolInvocation.args.question,
-    parts: [toolPart],
+  await persistentAIMessageToDB({
+    userChatId: studyUserChatId,
+    message: {
+      id: messageId,
+      role: "assistant",
+      // content: toolInvocation.args.question,
+      parts: [toolPart],
+    },
   });
   // return createUIMessageStreamResponse({
   //   execute: async (dataStream) => {

@@ -74,9 +74,12 @@ export async function POST(req: Request) {
   });
 
   // Save the latest user message to database
-  await persistentAIMessageToDB(userChat.id, {
-    ...newMessage,
-    id: newMessage.id ?? generateId(),
+  await persistentAIMessageToDB({
+    userChatId: userChat.id,
+    message: {
+      ...newMessage,
+      id: newMessage.id ?? generateId(),
+    },
   });
 
   // 动态检测用户输入的语言，先检测用户输入的语言，默认使用 persona 自身的语言
@@ -141,7 +144,10 @@ export async function POST(req: Request) {
         // && streamingMessage.parts // 所有 text parts 的文本合在一起检测
         //   .map((part) => (part.type === "text" ? part.text : "")).join("").trim()
       ) {
-        await persistentAIMessageToDB(userChat.id, streamingMessage);
+        await persistentAIMessageToDB({
+          userChatId: userChat.id,
+          message: streamingMessage,
+        });
       }
       const { usage } = step;
       chatLogger.info({

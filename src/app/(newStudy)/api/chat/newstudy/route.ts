@@ -65,9 +65,12 @@ export async function POST(req: NextRequest) {
   const userChatId = userChat.id;
 
   // Persist the new message
-  await persistentAIMessageToDB(userChatId, {
-    ...newMessage,
-    id: newMessage.id ?? generateId(),
+  await persistentAIMessageToDB({
+    userChatId,
+    message: {
+      ...newMessage,
+      id: newMessage.id ?? generateId(),
+    },
   });
 
   {
@@ -152,7 +155,10 @@ export async function POST(req: NextRequest) {
         // && streamingMessage.parts // 所有 text parts 的文本合在一起检测
         //   .map((part) => (part.type === "text" ? part.text : "")).join("").trim()
       ) {
-        await persistentAIMessageToDB(userChatId, streamingMessage);
+        await persistentAIMessageToDB({
+          userChatId,
+          message: streamingMessage,
+        });
       }
       chatLogger.info({
         msg: "newstudy planning streamText onStepFinish",

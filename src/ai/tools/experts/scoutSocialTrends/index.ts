@@ -99,10 +99,13 @@ export const scoutSocialTrendsTool = ({
       const scoutUserChatId = scoutUserChat.id;
       const scoutLog = logger.child({ scoutUserChatId, scoutUserChatToken });
       // 插入一条新的消息
-      await persistentAIMessageToDB(scoutUserChatId, {
-        id: generateId(),
-        role: "user",
-        parts: [{ type: "text", text: description }],
+      await persistentAIMessageToDB({
+        userChatId: scoutUserChatId,
+        message: {
+          id: generateId(),
+          role: "user",
+          parts: [{ type: "text", text: description }],
+        },
       });
       const { clearBackgroundToken } = await createBackgroundToken({ scoutUserChatId, scoutLog });
       // let hasError = false;
@@ -352,10 +355,13 @@ async function runScoutSocialTrendsStream({
     }
 
     // 开始一轮新的搜索，插入一条新消息，下一次循环开始的时候会从数据库里读取新的 messages 记录
-    await persistentAIMessageToDB(scoutUserChatId, {
-      id: generateId(),
-      role: "user",
-      parts: [{ type: "text", text: CONTINUE_ASSISTANT_STEPS }],
+    await persistentAIMessageToDB({
+      userChatId: scoutUserChatId,
+      message: {
+        id: generateId(),
+        role: "user",
+        parts: [{ type: "text", text: CONTINUE_ASSISTANT_STEPS }],
+      },
     });
   }
   // while loop end

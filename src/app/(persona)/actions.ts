@@ -196,10 +196,13 @@ export async function createFollowUpInterviewChat(
         tx,
       });
 
-      await persistentAIMessageToDB(userChat.id, {
-        id: generateId(),
-        role: "assistant", // 改为助手角色
-        parts: [{ type: "text", text: content }],
+      await persistentAIMessageToDB({
+        userChatId: userChat.id,
+        message: {
+          id: generateId(),
+          role: "assistant", // 改为助手角色
+          parts: [{ type: "text", text: content }],
+        },
       });
 
       // Update persona import with the chat reference

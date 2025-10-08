@@ -60,7 +60,7 @@ async function saveMessage({
       await tx.userChat.findUniqueOrThrow({
         where: { id: userChatId, kind: "interviewSession", backgroundToken },
       });
-      await persistentAIMessageToDB(userChatId, message);
+      await persistentAIMessageToDB({ userChatId, message });
     });
   } catch (error) {
     logger.error(

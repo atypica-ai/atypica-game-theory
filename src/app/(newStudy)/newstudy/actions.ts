@@ -22,10 +22,13 @@ export async function createNewStudyChat(): Promise<
         kind: "misc",
         tx,
       });
-      await persistentAIMessageToDB(userChat.id, {
-        id: generateId(),
-        role: "user",
-        parts: [{ type: "text", text: "[READY]" }],
+      await persistentAIMessageToDB({
+        userChatId: userChat.id,
+        message: {
+          id: generateId(),
+          role: "user",
+          parts: [{ type: "text", text: "[READY]" }],
+        },
       });
       return userChat;
     });

@@ -199,10 +199,13 @@ export async function retryStudy(studyUserChatId: number): Promise<ServerActionR
       };
     }
 
-    await persistentAIMessageToDB(studyUserChatId, {
-      id: generateId(),
-      role: "user",
-      parts: [{ type: "text", text: CONTINUE_ASSISTANT_STEPS }],
+    await persistentAIMessageToDB({
+      userChatId: studyUserChatId,
+      message: {
+        id: generateId(),
+        role: "user",
+        parts: [{ type: "text", text: CONTINUE_ASSISTANT_STEPS }],
+      },
     });
 
     // Clear the backgroundToken to allow a new study to start

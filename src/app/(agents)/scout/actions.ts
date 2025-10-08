@@ -57,7 +57,10 @@ export async function createScoutUserChatAction({
       }),
       kind: "scout",
     });
-    await persistentAIMessageToDB(userChat.id, message);
+    await persistentAIMessageToDB({
+      userChatId: userChat.id,
+      message,
+    });
     return {
       success: true,
       data: {

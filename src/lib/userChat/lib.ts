@@ -80,8 +80,6 @@ export async function setUserChatError(userChatId: number, error: string | null)
 }
 
 export async function generateChatTitle(userChatId: number): Promise<string> {
-  console.log(userChatId);
-
   const { analyst, messages } = await prisma.userChat.findUniqueOrThrow({
     where: { id: userChatId },
     select: {

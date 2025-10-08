@@ -45,9 +45,12 @@ export async function POST(req: Request) {
 
   const userChatId = userChat.id;
   const locale = await getLocale();
-  await persistentAIMessageToDB(userChatId, {
-    ...newMessage,
-    id: newMessage.id ?? generateId(),
+  await persistentAIMessageToDB({
+    userChatId,
+    message: {
+      ...newMessage,
+      id: newMessage.id ?? generateId(),
+    },
   });
 
   const tools = {
@@ -75,7 +78,10 @@ export async function POST(req: Request) {
     onStepFinish: async (step) => {
       appendStepToStreamingMessage(streamingMessage, step);
       if (streamingMessage.parts?.length) {
-        await persistentAIMessageToDB(userChatId, streamingMessage);
+        await persistentAIMessageToDB({
+          userChatId,
+          message: streamingMessage,
+        });
       }
     },
 

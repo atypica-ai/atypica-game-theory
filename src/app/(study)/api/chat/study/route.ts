@@ -69,9 +69,12 @@ export async function POST(req: Request) {
   // 首先要把新提交的消息保存
   // 如果是 user message，会新建一条，
   // 如果是 assistant message，一般是 addToolResult 的结果，这时候 messageId 已存在，则更新 tool 的交互结果
-  await persistentAIMessageToDB(studyUserChatId, {
-    ...newMessage,
-    id: newMessage.id ?? generateId(),
+  await persistentAIMessageToDB({
+    userChatId: studyUserChatId,
+    message: {
+      ...newMessage,
+      id: newMessage.id ?? generateId(),
+    },
   });
 
   const briefStatus: "CLARIFIED" | "DRAFT" = (userChat.extra as UserChatExtra)?.briefUserChatId

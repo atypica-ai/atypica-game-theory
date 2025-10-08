@@ -4,7 +4,7 @@ import { ToolName } from "@/ai/tools/types";
 import { fileUrlToDataUrl } from "@/lib/attachments/actions";
 import { s3SignedUrl } from "@/lib/attachments/s3";
 import { ChatMessage, ChatMessageAttachment, ChatMessagePart } from "@/prisma/client";
-import { InputJsonValue } from "@/prisma/client/runtime/library";
+import { InputJsonValue, ITXClientDenyList } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import {
   convertToModelMessages,
@@ -173,11 +173,21 @@ export function appendChunkToStreamingMessage<T extends ToolSet>(
  * v5 AI message 的 parts 里，type: file 的部分会被忽略，使用 attachments
  * 重要：这是唯一会保存 ChatMessage 的地方，这一点要始终遵循，确保保存 ChatMessage 的规则一致
  */
-export const persistentAIMessageToDB = async (
-  userChatId: number,
-  message: UIMessage,
-  attachments?: ChatMessageAttachment[], // 暂时还没地方用到，现在唯一存储 attachments 的地方，在 createStudyUserChat 里直接实现了
-) => {
+export const persistentAIMessageToDB = async ({
+  userChatId,
+  message,
+  attachments,
+  tx,
+}: {
+  userChatId: number;
+  message: UIMessage;
+  attachments?: ChatMessageAttachment[]; // 暂时还没地方用到，现在唯一存储 attachments 的地方，在 createStudyUserChat 里直接实现了
+  tx?: Omit<typeof prisma, ITXClientDenyList>;
+}) => {
+  if (!tx) {
+    tx = prisma;
+  }
+
   const {
     id: messageId,
     role,
@@ -199,7 +209,7 @@ export const persistentAIMessageToDB = async (
   };
 
   if (role === "user") {
-    const lastUserMessage = await prisma.chatMessage.findFirst({
+    const lastUserMessage = await tx.chatMessage.findFirst({
       where: { userChatId },
       orderBy: { id: "desc" },
     });
@@ -208,7 +218,7 @@ export const persistentAIMessageToDB = async (
       if (parts[0] && parts[0].type === "text" && isSystemMessage(parts[0].text)) {
         return;
       } else {
-        await prisma.chatMessage.update({
+        await tx.chatMessage.update({
           where: { id: lastUserMessage.id },
           data: {
             messageId,
@@ -221,12 +231,13 @@ export const persistentAIMessageToDB = async (
       }
     }
   }
+
   const compatibleContent =
     parts
       .map((part) => (part.type === "text" || part.type === "reasoning" ? part.text : ""))
       .filter((text) => text.trim().length > 0)
       .join("\n") || "[EMPTY]";
-  await prisma.chatMessage.upsert({
+  await tx.chatMessage.upsert({
     where: { userChatId, messageId },
     create: {
       userChatId,
@@ -257,7 +268,7 @@ export const createDebouncePersistentMessage = (
     }
     func = async () => {
       try {
-        await persistentAIMessageToDB(userChatId, message);
+        await persistentAIMessageToDB({ userChatId, message });
         logger.info(`Message ${message.id} persisted successfully`);
       } catch (error) {
         logger.info(`Error persisting message ${message.id}: ${(error as Error).message}`);

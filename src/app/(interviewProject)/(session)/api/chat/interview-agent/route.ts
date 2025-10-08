@@ -90,9 +90,12 @@ export async function POST(req: Request) {
   });
 
   // Save the latest user message to database
-  await persistentAIMessageToDB(userChatId, {
-    ...newMessage,
-    id: newMessage.id ?? generateId(),
+  await persistentAIMessageToDB({
+    userChatId,
+    message: {
+      ...newMessage,
+      id: newMessage.id ?? generateId(),
+    },
   });
 
   // 动态检测用户输入的语言
@@ -157,7 +160,10 @@ export async function POST(req: Request) {
     onStepFinish: async (step) => {
       appendStepToStreamingMessage(streamingMessage, step);
       if (streamingMessage.parts?.length) {
-        await persistentAIMessageToDB(userChatId, streamingMessage);
+        await persistentAIMessageToDB({
+          userChatId,
+          message: streamingMessage,
+        });
       }
       // 👆 persist message to db
       const { usage, toolCalls } = step;

@@ -64,9 +64,12 @@ export async function POST(req: NextRequest) {
   });
 
   // Save the user message
-  await persistentAIMessageToDB(userChat.id, {
-    ...newMessage,
-    id: newMessage.id ?? generateId(),
+  await persistentAIMessageToDB({
+    userChatId: userChat.id,
+    message: {
+      ...newMessage,
+      id: newMessage.id ?? generateId(),
+    },
   });
 
   const abortSignal = req.signal;
@@ -134,7 +137,10 @@ export async function POST(req: NextRequest) {
     onStepFinish: async (step) => {
       appendStepToStreamingMessage(streamingMessage, step);
       if (streamingMessage.parts?.length) {
-        await persistentAIMessageToDB(userChat.id, streamingMessage);
+        await persistentAIMessageToDB({
+          userChatId: userChat.id,
+          message: streamingMessage,
+        });
       }
       const { usage, toolCalls } = step;
       chatLogger.info({

@@ -89,25 +89,16 @@ export async function createStudyUserChat(
         tx,
         extra,
       });
-      // await tx.chatMessage.create({
-      //   data: {
-      //     messageId: generateId(),
-      //     userChatId: userChat.id,
-      //     role,
-      //     content,
-      //     parts: parts as InputJsonValue,
-      //     attachments: attachments,
-      //   },
-      // });
-      await persistentAIMessageToDB(
-        userChat.id,
-        {
+      await persistentAIMessageToDB({
+        userChatId: userChat.id,
+        message: {
           id: generateId(),
           role,
           parts: [{ type: "text", text: content }],
         },
         attachments, // attachments 单独保存
-      );
+        tx,
+      });
       await tx.analyst.create({
         data: {
           userId: user.id,

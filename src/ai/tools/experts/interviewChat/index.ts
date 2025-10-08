@@ -524,7 +524,11 @@ async function saveMessage({
       await tx.userChat.findUniqueOrThrow({
         where: { id: interviewUserChatId, kind: "interview", backgroundToken },
       });
-      await persistentAIMessageToDB(interviewUserChatId, message);
+      await persistentAIMessageToDB({
+        userChatId: interviewUserChatId,
+        message,
+        tx,
+      });
     });
   } catch (error) {
     logger.error(
