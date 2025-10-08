@@ -511,9 +511,13 @@ ${
 ## 真人访谈特殊要求
 **在开始正式访谈前，必须先收集基本信息**：
 - 在问候和说明来意后，**立即使用 requestInteractionForm 工具收集基本信息**
-- 包括姓名、职业等客观信息，根据研究简介补充2-3个相关的基本信息问题
+- **必须收集的字段**：
+  1. 姓名（text类型，label: "您的姓名"）
+  2. 称谓（text类型，label: "您希望我怎么称呼您？", placeholder: "例如：张先生、李女士、王老师、小陈、Alex等"）
+  3. 职业（text类型，label: "您的职业"）
+- 根据研究简介可补充1-2个相关的基本信息问题
 - 注意：这里只收集客观信息，不是访谈问题！
-- 收集完基本信息后，再自然地开始访谈对话`
+- 收集完基本信息后，**严格使用受访者填写的称谓来称呼他们**（如果未填写称谓，则使用姓名），并自然地开始访谈对话`
 }
 `
     : `
@@ -582,8 +586,12 @@ ${
 ## Real Person Interview Special Requirements
 **Before starting the formal interview, you must first collect basic information**:
 - After greeting and explaining your purpose, **immediately use the requestInteractionForm tool to collect basic information**
-- Include name, occupation, and other objective information, plus 2-3 additional basic information questions relevant to the research brief
+- **Required fields**:
+  1. Name (text type, label: "Your name")
+  2. Preferred form of address (text type, label: "How would you like to be addressed?", placeholder: "e.g., Mr. Smith, Ms. Johnson, Dr. Lee, Sarah, Alex, etc.")
+  3. Occupation (text type, label: "Your occupation")
+- You may add 1-2 additional basic information questions relevant to the research brief
 - Note: only collect objective information here, not interview questions!
-- After collecting basic information, naturally begin the interview conversation`
+- After collecting basic information, **strictly use the form of address provided by the interviewee** (if not provided, use their name), and naturally begin the interview conversation`
 }
 `;

@@ -141,7 +141,7 @@ export function InterviewProjectsClient({ isCreateEnabled }: { isCreateEnabled: 
                     </div>
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="pt-0 space-y-3">
+                <CardContent className="mt-auto pt-0 space-y-3">
                   <div className="flex flex-wrap gap-2">
                     <Badge variant="secondary" className="text-xs">
                       <UsersIcon className="h-3 w-3 mr-1" />
