@@ -1,7 +1,7 @@
 import { rootLogger } from "@/lib/logging";
 import {
   generateObject,
-  InvalidArgumentError,
+  InvalidToolInputError,
   NoSuchToolError,
   tool,
   ToolCallRepairFunction,
@@ -14,10 +14,10 @@ export const handleToolCallError: ToolCallRepairFunction<ToolSet> = async <T ext
   ...[{ toolCall, tools, error }]: Parameters<ToolCallRepairFunction<T>>
 ) => {
   let plainText = `Failed to execute tool "${toolCall.toolName}" with parameters ${toolCall.input}: ${error.message}`;
-  if (InvalidArgumentError.isInstance(error)) {
+  if (InvalidToolInputError.isInstance(error)) {
     try {
       const { object } = await generateObject({
-        model: llm("gpt-4.1-nano"),
+        model: llm("gpt-5-nano"),
         prompt: `Fix the invalid arguments for tool "${toolCall.toolName}". The original parameters were \n\n${toolCall.input}\n\n but they caused an error: ${error.message}. Generate a corrected JSON object that matches the expected schema.`,
         schema: tools[toolCall.toolName].inputSchema,
       });
@@ -26,7 +26,7 @@ export const handleToolCallError: ToolCallRepairFunction<ToolSet> = async <T ext
         args: toolCall.input,
         fixedArgs: JSON.stringify(object),
       });
-      return { ...toolCall, args: JSON.stringify(object) };
+      return { ...toolCall, input: JSON.stringify(object) };
     } catch (error) {
       rootLogger.error(`Failed to generate object: ${(error as Error).message}`);
     }
@@ -38,7 +38,7 @@ export const handleToolCallError: ToolCallRepairFunction<ToolSet> = async <T ext
   return {
     ...toolCall,
     toolName: "toolCallError",
-    args: JSON.stringify({ plainText }),
+    input: JSON.stringify({ plainText }),
   };
 };
 
