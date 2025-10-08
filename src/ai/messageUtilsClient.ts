@@ -1,4 +1,4 @@
-import { UIMessage } from "ai";
+import { FileUIPart, UIMessage } from "ai";
 import { z } from "zod/v3";
 
 export const CONTINUE_ASSISTANT_STEPS = "[CONTINUE ASSISTANT STEPS]";
@@ -12,7 +12,7 @@ export const CONTINUE_ASSISTANT_STEPS = "[CONTINUE ASSISTANT STEPS]";
 //   }),
 //   userChatToken: z.string(),
 // });
-
+type T = FileUIPart;
 export const clientMessagePayloadSchema = z.object({
   id: z.string().optional(), // 在 useChat 上设置的 id，类型四 string，不一定要用到
   message: z.object({
@@ -29,6 +29,15 @@ export const clientMessagePayloadSchema = z.object({
             text: z.string(),
           })
           .describe("user text input"),
+        z
+          .object({
+            type: z.literal("file"),
+            mediaType: z.string(),
+            filename: z.string().optional(),
+            url: z.string(),
+            providerMetadata: z.any().optional(),
+          })
+          .describe("user uploaded file"),
         z
           .object({
             type: z.custom<`tool-${string}`>(

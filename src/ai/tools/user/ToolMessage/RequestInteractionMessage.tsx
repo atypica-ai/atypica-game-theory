@@ -1,5 +1,6 @@
 import { StudyUITools, TAddStudyUIToolResult, ToolName } from "@/ai/tools/types";
 import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
+import { LoadingPulse } from "@/components/LoadingPulse";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ToolUIPart } from "ai";
@@ -115,7 +116,7 @@ export const RequestInteractionMessage = <
             </div>
           )}
         </div>
-      ) : (
+      ) : toolInvocation.state === "input-available" ? (
         <div className="flex flex-col items-start gap-2">
           {[...options].map((option, index) => (
             <div
@@ -153,6 +154,9 @@ export const RequestInteractionMessage = <
             )}
           </div>
         </div>
+      ) : (
+        // toolInvocation.state === "input-streaming", 选项还不完整，什么也不显示
+        <LoadingPulse />
       )}
     </div>
   );
