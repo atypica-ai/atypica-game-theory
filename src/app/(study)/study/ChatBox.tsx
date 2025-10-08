@@ -335,16 +335,16 @@ export function ChatBox() {
         ))}
 
         {/* Study Feedback */}
-        {studyCompleted && uiStatus !== "background" && uiStatus !== "streaming" && (
+        {studyCompleted && uiStatus === "ready" ? (
           <StudyFeedback studyUserChatId={studyUserChatId} className="mt-12 max-w-full" />
-        )}
+        ) : null}
 
         {/* AI Compliance Disclaimer */}
-        {messages.length > 0 && (
+        {messages.length > 0 && uiStatus === "ready" ? (
           <div className="w-full text-xs text-center text-zinc-500 dark:text-zinc-400 px-4 mt-4 mb-8">
             {tCompliance("fullDisclaimer")}
           </div>
-        )}
+        ) : null}
 
         <div ref={messagesEndRef} />
       </div>

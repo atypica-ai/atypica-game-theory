@@ -15,9 +15,12 @@ export const InterviewToolUIPartDisplay = ({
   switch (toolUIPart.type) {
     case `tool-${InterviewToolName.requestInteractionForm}`:
       return <RequestInteractionFormToolMessage toolInvocation={toolUIPart} />;
-      return null;
     case `tool-${InterviewToolName.endInterview}`:
-      <div className="font-mono text-xs text-muted-foreground">exec {getToolName(toolUIPart)}</div>;
+      return (
+        <div className="font-mono text-xs text-muted-foreground">
+          exec {getToolName(toolUIPart)}
+        </div>
+      );
     default:
       return null;
   }

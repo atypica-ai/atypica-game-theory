@@ -135,16 +135,16 @@ export function UserChatSession<UI_MESSAGE extends TMessageWithPlainTextTool>({
             ></ChatMessage>
           ))}
         {/* AI Compliance Disclaimer */}
-        {messages.length > 0 && (
+        {messages.length > 0 && status === "ready" ? (
           <div className="w-full text-xs text-center text-zinc-500 dark:text-zinc-400 px-4 mt-4 mb-8">
             {tCompliance("fullDisclaimer")}
           </div>
-        )}
-        {error && (
+        ) : null}
+        {error ? (
           <div className="flex justify-center items-center text-red-500 dark:text-red-400 text-sm">
             {error.toString()}
           </div>
-        )}
+        ) : null}
         <div ref={messagesEndRef} />
       </div>
 

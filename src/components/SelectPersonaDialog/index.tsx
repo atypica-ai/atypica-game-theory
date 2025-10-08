@@ -77,7 +77,7 @@ export function SelectPersonaDialog({ open, onOpenChange, onSelect }: SelectPers
       setCurrentPage(1);
       loadPersonas(1, "");
     }
-  }, [mode, open, loadPersonas]);
+  }, [open, loadPersonas]);
 
   // Load personas when page or search changes
   useEffect(() => {

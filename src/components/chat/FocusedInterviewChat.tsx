@@ -3,6 +3,7 @@
 import { TMessageWithPlainTextTool } from "@/ai/tools/types";
 import { correctSpeechText } from "@/app/api/transcribe/actions";
 import { RecordButton } from "@/components/chat/RecordButton";
+import { LoadingPulse } from "@/components/LoadingPulse";
 import { Button } from "@/components/ui/button";
 import { useDevice } from "@/hooks/use-device";
 import { useDocumentVisibility } from "@/hooks/use-document-visibility";
@@ -358,13 +359,7 @@ export function FocusedInterviewChat<
                       </div>
                     ) : null,
                   )}
-              {status === "streaming" && (
-                <div className="my-4 flex gap-px items-center justify-center text-muted-foreground text-xs font-mono">
-                  <span className="animate-bounce">·</span>
-                  <span className="animate-bounce [animation-delay:0.2s]">·</span>
-                  <span className="animate-bounce [animation-delay:0.4s]">·</span>
-                </div>
-              )}
+              {status === "streaming" && <LoadingPulse className="mt-4 text-muted-foreground" />}
             </motion.div>
           )}
         </AnimatePresence>
@@ -441,7 +436,7 @@ export function FocusedInterviewChat<
                   className={cn(
                     "flex w-full resize-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 outline-none",
                     "text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-500 dark:placeholder:text-zinc-400",
-                    "py-1 px-1 max-h-32 text-base leading-relaxed overflow-hidden",
+                    "py-1 pl-2 pr-1 max-h-32 text-base leading-relaxed overflow-hidden",
                     "text-[15px] md:text-[15px] placeholder:text-[15px]", // 15px 可以让页面不自动放大
                   )}
                   onKeyDown={(e) => {
@@ -502,7 +497,7 @@ export function FocusedInterviewChat<
 
       <div
         className={cn(
-          "position absolute -bottom-2.5 left-1/2 -translate-x-1/2",
+          "absolute -bottom-2.5 left-1/2 -translate-x-1/2",
           "w-full text-xs text-center font-normal text-zinc-400 dark:text-zinc-600 px-4 my-4",
         )}
       >
