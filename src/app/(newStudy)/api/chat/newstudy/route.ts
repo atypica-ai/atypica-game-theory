@@ -4,7 +4,7 @@ import {
   prepareMessagesForStreaming,
 } from "@/ai/messageUtils";
 import { clientMessagePayloadSchema } from "@/ai/messageUtilsClient";
-import { defaultProviderOptions, llm } from "@/ai/provider";
+import { llm } from "@/ai/provider";
 import { initGenericUserChatStatReporter } from "@/ai/tools/stats";
 import { calculateStepTokensUsage } from "@/ai/usage";
 import authOptions from "@/app/(auth)/authOptions";
@@ -130,7 +130,7 @@ export async function POST(req: NextRequest) {
 
     providerOptions: {
       openai: {
-        ...defaultProviderOptions.openai,
+        // ...defaultProviderOptions.openai,
         reasoningSummary: "auto", // 'auto' | 'detailed'
         reasoningEffort: "minimal", // 'minimal' | 'low' | 'medium' | 'high'
       } satisfies OpenAIResponsesProviderOptions,

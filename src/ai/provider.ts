@@ -7,22 +7,26 @@ import { createAzure } from "@ai-sdk/azure";
 import { createDeepSeek } from "@ai-sdk/deepseek";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createVertex } from "@ai-sdk/google-vertex";
-import { createOpenAI } from "@ai-sdk/openai";
+import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { createXai } from "@ai-sdk/xai";
 
-const openai = createOpenAI({
+const openai = createOpenAICompatible({
+  name: "litellm",
   apiKey: process.env.OPENAI_API_KEY,
-  baseURL: process.env.OPENAI_BASE_URL,
+  baseURL: process.env.OPENAI_BASE_URL!,
+  includeUsage: true,
 });
 
-const siliconflow = createOpenAI({
+const siliconflow = createOpenAICompatible({
+  name: "siliconflow",
   apiKey: process.env.SILICONFLOW_API_KEY,
-  baseURL: process.env.SILICONFLOW_BASE_URL,
+  baseURL: process.env.SILICONFLOW_BASE_URL!,
+  includeUsage: true,
 });
 
 const deepseek = createDeepSeek({
   apiKey: process.env.SILICONFLOW_API_KEY,
-  baseURL: process.env.SILICONFLOW_BASE_URL,
+  baseURL: process.env.SILICONFLOW_BASE_URL!,
 });
 
 const bedrock = createAmazonBedrock({
@@ -95,11 +99,12 @@ const xai = createXai({
 
 export const defaultProviderOptions = {
   // 这个只是给 litellm 的 openai provider 用的，直连模型的情况下不需要
-  openai: {
-    stream_options: { include_usage: true },
-    // IMPORTANT: litellm 不支持这个 bedrock 的参数输入，但是在 litellm model 配置里设置了，它会发给 bedrock api
-    // anthropic_beta: ["token-efficient-tools-2025-02-19"],
-  },
+  // 目前用了 openai-compatible 上的 includeUsage 参数，这里就不需要配置了
+  // openai: {
+  //   stream_options: { include_usage: true },
+  //   // IMPORTANT: litellm 不支持这个 bedrock 的参数输入，但是在 litellm model 配置里设置了，它会发给 bedrock api
+  //   // anthropic_beta: ["token-efficient-tools-2025-02-19"],
+  // },
   // google: {
   //   // Options are nested under 'google' for Vertex provider
   //   thinkingConfig: {
