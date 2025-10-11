@@ -1,10 +1,10 @@
 {
-  "name": "html-to-pdf-server",
+  "name": "browser-function",
   "version": "1.0.0",
   "description": "HTTP server for converting HTML to PDF",
-  "main": "html-to-pdf.js",
+  "main": "index.js",
   "scripts": {
-    "start": "node html-to-pdf.js"
+    "start": "node index.js"
   },
   "dependencies": {
     "express": "^5.1.0",

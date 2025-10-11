@@ -9,6 +9,57 @@ app.use(
   }),
 );
 
+// Global browser instance and queue
+let globalBrowser = null;
+const requestQueue = [];
+let isProcessing = false;
+
+/**
+ * Initialize the global browser instance
+ */
+async function initializeBrowser() {
+  if (!globalBrowser) {
+    console.log("Initializing global browser instance...");
+    globalBrowser = await puppeteer.launch();
+    console.log("Global browser instance initialized");
+  }
+  return globalBrowser;
+}
+
+/**
+ * Process the request queue one by one
+ */
+async function processQueue() {
+  if (isProcessing || requestQueue.length === 0) {
+    return;
+  }
+
+  isProcessing = true;
+
+  while (requestQueue.length > 0) {
+    const { task, resolve, reject } = requestQueue.shift();
+
+    try {
+      const result = await task();
+      resolve(result);
+    } catch (error) {
+      reject(error);
+    }
+  }
+
+  isProcessing = false;
+}
+
+/**
+ * Add a task to the queue and return a Promise
+ */
+function enqueueTask(task) {
+  return new Promise((resolve, reject) => {
+    requestQueue.push({ task, resolve, reject });
+    processQueue();
+  });
+}
+
 /**
  * Takes a screenshot of a webpage
  * @param {string} url - The URL of the webpage to screenshot
@@ -23,8 +74,7 @@ async function takeScreenshot({ url, html, filename }) {
     console.log(`Taking screenshot of URL: ${url}`);
   }
 
-  // Launch browser
-  const browser = await puppeteer.launch();
+  const browser = globalBrowser;
   const page = await browser.newPage();
 
   // Set viewport to 1280x800 (classic desktop size)
@@ -60,7 +110,7 @@ async function takeScreenshot({ url, html, filename }) {
     console.error("Error taking screenshot:", error);
     throw error;
   } finally {
-    await browser.close();
+    await page.close();
   }
 }
 
@@ -77,8 +127,7 @@ async function htmlToPDF({ url, html, filename }) {
     console.log(`Converting URL: ${url} to PDF`);
   }
 
-  // Launch browser
-  const browser = await puppeteer.launch();
+  const browser = globalBrowser;
   const page = await browser.newPage();
   const printWidth = 1440;
 
@@ -130,7 +179,7 @@ async function htmlToPDF({ url, html, filename }) {
     console.error("Error generating PDF:", error);
     throw error;
   } finally {
-    await browser.close();
+    await page.close();
   }
 }
 
@@ -160,8 +209,7 @@ async function htmlToPaginatedPDF({
     console.log(`Converting URL: ${url} to paginated PDF`);
   }
 
-  // Launch browser
-  const browser = await puppeteer.launch();
+  const browser = globalBrowser;
   const page = await browser.newPage();
 
   try {
@@ -239,7 +287,7 @@ async function htmlToPaginatedPDF({
     console.error("Error generating paginated PDF:", error);
     throw error;
   } finally {
-    await browser.close();
+    await page.close();
   }
 }
 
@@ -256,8 +304,8 @@ app.post("/screenshot", async (req, res) => {
       });
     }
 
-    // Generate screenshot buffer
-    const screenshotBuffer = await takeScreenshot({ url, html, filename });
+    // Generate screenshot buffer (will be queued and executed in order)
+    const screenshotBuffer = await enqueueTask(() => takeScreenshot({ url, html, filename }));
 
     // Return the screenshot buffer as a response
     res.set({
@@ -289,8 +337,8 @@ app.post("/html-to-pdf", async (req, res) => {
       });
     }
 
-    // Generate PDF buffer directly
-    const pdfBuffer = await htmlToPDF({ url, html, filename });
+    // Generate PDF buffer directly (will be queued and executed in order)
+    const pdfBuffer = await enqueueTask(() => htmlToPDF({ url, html, filename }));
 
     // Return the PDF buffer as a response
     res.set({
@@ -330,16 +378,18 @@ app.post("/html-to-paginated-pdf", async (req, res) => {
       });
     }
 
-    // Generate paginated PDF buffer
-    const pdfBuffer = await htmlToPaginatedPDF({
-      url,
-      html,
-      filename,
-      format,
-      displayHeaderFooter,
-      headerTemplate,
-      footerTemplate,
-    });
+    // Generate paginated PDF buffer (will be queued and executed in order)
+    const pdfBuffer = await enqueueTask(() =>
+      htmlToPaginatedPDF({
+        url,
+        html,
+        filename,
+        format,
+        displayHeaderFooter,
+        headerTemplate,
+        footerTemplate,
+      }),
+    );
 
     // Return the PDF buffer as a response
     res.set({
@@ -358,17 +408,54 @@ app.post("/html-to-paginated-pdf", async (req, res) => {
   }
 });
 
+// Graceful shutdown - close browser when process exits
+process.on("SIGINT", async () => {
+  console.log("Received SIGINT, shutting down gracefully...");
+  if (globalBrowser) {
+    await globalBrowser.close();
+    console.log("Global browser instance closed");
+  }
+  process.exit(0);
+});
+
+process.on("SIGTERM", async () => {
+  console.log("Received SIGTERM, shutting down gracefully...");
+  if (globalBrowser) {
+    await globalBrowser.close();
+    console.log("Global browser instance closed");
+  }
+  process.exit(0);
+});
+
 // Start server
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, (error) => {
-  if (error) {
-    console.error("Error starting server:", error);
-  } else {
-    console.log(`browser function server running on port ${PORT}`);
-    console.log(`PDF generation endpoint: http://localhost:${PORT}/html-to-pdf`);
-    console.log(
-      `Paginated PDF generation endpoint: http://localhost:${PORT}/html-to-paginated-pdf`,
-    );
-    console.log(`Screenshot endpoint: http://localhost:${PORT}/screenshot`);
+
+async function startServer() {
+  try {
+    // Initialize browser instance before starting server
+    console.log("Starting server initialization...");
+    await initializeBrowser();
+
+    // Start the HTTP server after browser is ready
+    app.listen(PORT, (error) => {
+      if (error) {
+        console.error("Error starting server:", error);
+        process.exit(1);
+      } else {
+        console.log(`browser function server running on port ${PORT}`);
+        console.log(`PDF generation endpoint: http://localhost:${PORT}/html-to-pdf`);
+        console.log(
+          `Paginated PDF generation endpoint: http://localhost:${PORT}/html-to-paginated-pdf`,
+        );
+        console.log(`Screenshot endpoint: http://localhost:${PORT}/screenshot`);
+        console.log("Server initialization complete - ready to accept requests");
+      }
+    });
+  } catch (error) {
+    console.error("Failed to initialize browser:", error);
+    process.exit(1);
   }
-});
+}
+
+// Start the server
+startServer();
