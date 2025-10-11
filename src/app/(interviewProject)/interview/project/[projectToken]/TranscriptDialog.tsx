@@ -1,4 +1,4 @@
-import { generateInterviewTranscriptPDFAction } from "@/app/(interviewProject)/artifacts/interview-transcript/actions";
+import { generateInterviewTranscriptPDFAction } from "@/app/(interviewProject)/artifacts/actions";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,

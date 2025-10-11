@@ -2,7 +2,6 @@
 import { s3SignedUrl, uploadToS3 } from "@/lib/attachments/s3";
 import { getRequestOrigin } from "@/lib/request/headers";
 import { AnalystReportExtra } from "@/prisma/client";
-import { InputJsonObject } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import { createHash } from "node:crypto";
 
@@ -58,15 +57,17 @@ export async function generateReportPDF(report: {
     mimeType: "application/pdf",
   });
 
-  await prisma.analystReport.update({
-    where: { token: reportToken },
-    data: {
-      extra: {
-        ...(report.extra as InputJsonObject),
-        pdfObjectUrl: objectUrl,
-      },
-    },
-  });
+  // 使用原生 SQL 和 || 操作符安全地只更新 JSON extra 字段中的 pdfObjectUrl。
+  // 这种方法的优势：1) 避免并发更新时的竞态条件，2) 优雅地处理 null 值，3) 只更新指定字段而不覆盖 extra 中的其他数据。
+  //
+  // 其他可选写法：
+  // 方法1 - 使用 jsonb_set(): SET extra = jsonb_set(extra, '{pdfObjectUrl}', '"url"'::jsonb, true)
+  // 方法2 - 使用 COALESCE: SET extra = COALESCE(extra, '{}'::jsonb) || '{"pdfObjectUrl":"url"}'::jsonb
+  await prisma.$executeRaw`
+    UPDATE "AnalystReport"
+    SET extra = extra || ${JSON.stringify({ pdfObjectUrl: objectUrl })}::jsonb
+    WHERE token = ${reportToken}
+  `;
 
   return {
     // pdfBlob,

@@ -204,6 +204,20 @@
       "loadingReports": "Loading reports...",
       "basedOnSessions": "Based on {count} interviews"
     },
+    "InterviewReportShareButton": {
+      "viewReport": "Share Report",
+      "title": "Report URL",
+      "successMessage": "Interview report URL is ready. You can access the report at this address or share it with others:",
+      "copyButton": "Copy",
+      "downloadPDF": "Download as PDF",
+      "generatingPDF": "Generating PDF",
+      "pdfDownloadSuccess": "PDF downloaded to your device",
+      "pdfGenerationFailed": "PDF generation failed",
+      "openInstructions": "You can also click the \"Open\" button below to view in a new tab.",
+      "closeButton": "Close",
+      "openButton": "Open",
+      "copySuccess": "Link copied to clipboard"
+    },
     "statistics": {
       "failedToLoadStats": "Failed to load statistics",
       "retry": "Retry"

@@ -2,7 +2,6 @@
 import { s3SignedUrl, uploadToS3 } from "@/lib/attachments/s3";
 import { getRequestOrigin } from "@/lib/request/headers";
 import { AnalystReportExtra } from "@/prisma/client";
-import { InputJsonObject } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import { createHash } from "node:crypto";
 
@@ -58,15 +57,11 @@ export async function generateReportScreenshot(report: {
     mimeType: "image/png",
   });
 
-  await prisma.analystReport.update({
-    where: { token: reportToken },
-    data: {
-      extra: {
-        ...(report.extra as InputJsonObject),
-        coverObjectUrl: objectUrl,
-      },
-    },
-  });
+  await prisma.$executeRaw`
+    UPDATE "AnalystReport"
+    SET extra = extra || ${JSON.stringify({ coverObjectUrl: objectUrl })}::jsonb
+    WHERE token = ${reportToken}
+  `;
 
   return {
     // screenshotBlob,

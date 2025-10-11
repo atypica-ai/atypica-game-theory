@@ -13,6 +13,7 @@ import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { InterviewReportShareButton } from "./InterviewReportShareButton";
 
 interface ReportItem {
   id: number;
@@ -129,60 +130,86 @@ export function InterviewReportsSection({
                   {(readOnly
                     ? reports.filter((report) => !!report.generatedAt) // 如果是分享，只显示已生成的
                     : reports
-                  ).map((report) => (
-                    <div
-                      key={report.token}
-                      className="relative border rounded-lg p-4 hover:bg-muted/50 transition-colors cursor-pointer group"
-                      onClick={() => {
-                        if (!report.generatedAt) {
-                          setIsReportDialogOpen(report);
-                        } else {
-                          window.open(
-                            `/artifacts/interview-report/${report.token}/share`,
-                            "_blank",
-                          );
-                        }
-                      }}
-                    >
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center space-x-2">
-                          <div className="p-2 bg-primary/10 rounded-lg">
-                            <FileTextIcon className="h-4 w-4 text-primary" />
+                  ).map((report) =>
+                    report.generatedAt ? (
+                      <InterviewReportShareButton
+                        key={report.token}
+                        reportToken={report.token}
+                        download={!readOnly}
+                      >
+                        <div className="relative border rounded-lg p-4 hover:bg-muted/50 transition-colors cursor-pointer group">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex items-center space-x-2">
+                              <div className="p-2 bg-primary/10 rounded-lg">
+                                <FileTextIcon className="h-4 w-4 text-primary" />
+                              </div>
+                              <div>
+                                <h4 className="font-medium text-sm">
+                                  {t("reportNumber")}
+                                  {report.token.slice(-8)}
+                                </h4>
+                                <p className="text-xs text-muted-foreground">
+                                  {formatDate(report.createdAt, locale)}
+                                </p>
+                                {report.extra?.sessions && (
+                                  <p className="text-xs text-muted-foreground">
+                                    {t("basedOnSessions", { count: report.extra.sessions.length })}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
                           </div>
-                          <div>
-                            <h4 className="font-medium text-sm">
-                              {t("reportNumber")}
-                              {report.token.slice(-8)}
-                            </h4>
-                            <p className="text-xs text-muted-foreground">
-                              {formatDate(report.createdAt, locale)}
-                            </p>
-                            {report.extra?.sessions && (
-                              <p className="text-xs text-muted-foreground">
-                                {t("basedOnSessions", { count: report.extra.sessions.length })}
-                              </p>
-                            )}
+
+                          <div className="text-xs text-muted-foreground">
+                            <span className="text-green-600 dark:text-green-400">
+                              ✓ {t("generated")} {formatDistanceToNow(report.generatedAt)}{" "}
+                              {t("ago")}
+                            </span>
                           </div>
                         </div>
+                      </InterviewReportShareButton>
+                    ) : (
+                      <div
+                        key={report.token}
+                        className="relative border rounded-lg p-4 hover:bg-muted/50 transition-colors cursor-pointer group"
+                        onClick={() => {
+                          if (!readOnly) {
+                            setIsReportDialogOpen(report);
+                          }
+                        }}
+                      >
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex items-center space-x-2">
+                            <div className="p-2 bg-primary/10 rounded-lg">
+                              <FileTextIcon className="h-4 w-4 text-primary" />
+                            </div>
+                            <div>
+                              <h4 className="font-medium text-sm">
+                                {t("reportNumber")}
+                                {report.token.slice(-8)}
+                              </h4>
+                              <p className="text-xs text-muted-foreground">
+                                {formatDate(report.createdAt, locale)}
+                              </p>
+                              {report.extra?.sessions && (
+                                <p className="text-xs text-muted-foreground">
+                                  {t("basedOnSessions", { count: report.extra.sessions.length })}
+                                </p>
+                              )}
+                            </div>
+                          </div>
 
-                        {!report.generatedAt && (
                           <Loader2Icon className="h-4 w-4 animate-spin text-amber-500" />
-                        )}
-                      </div>
+                        </div>
 
-                      <div className="text-xs text-muted-foreground">
-                        {report.generatedAt ? (
-                          <span className="text-green-600 dark:text-green-400">
-                            ✓ {t("generated")} {formatDistanceToNow(report.generatedAt)} {t("ago")}
-                          </span>
-                        ) : (
+                        <div className="text-xs text-muted-foreground">
                           <span className="text-amber-600 dark:text-amber-400">
                             ⏳ {t("generating")}
                           </span>
-                        )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ),
+                  )}
                 </div>
               )}
             </div>

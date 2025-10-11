@@ -115,6 +115,7 @@ declare module "@/prisma/client" {
       id: number;
       title: string;
     }>;
+    pdfObjectUrl: string;
   }>;
 
   export type AnalystPodcastExtra = Partial<{
