@@ -4,6 +4,7 @@ import { clearPersonaChatHistory } from "@/app/(persona)/actions";
 import { PersonaToolUIPartDisplay } from "@/app/(persona)/tools/ui";
 import { TPersonaMessageWithTool } from "@/app/(persona)/types";
 import { UserChatSession } from "@/components/chat/UserChatSession";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { FitToViewport } from "@/components/layout/FitToViewport";
 import { Badge } from "@/components/ui/badge";
@@ -69,10 +70,6 @@ export function PersonaChatClient({
   });
 
   const handleClearHistory = async () => {
-    if (!confirm(t("confirmClearHistory"))) {
-      return;
-    }
-
     setIsClearing(true);
     try {
       const result = await clearPersonaChatHistory(userChatToken);
@@ -169,13 +166,17 @@ export function PersonaChatClient({
                 <div className="space-y-3">
                   <div className="flex gap-2">
                     {/* 只有当有聊天记录时才显示清除按钮 */}
-                    {persona.personaImportId && useChatHelpers.messages.length > 0 && (
+                    <ConfirmDialog
+                      title={t("confirmClearHistory")}
+                      onConfirm={async () => {
+                        await handleClearHistory();
+                      }}
+                    >
                       <Button
                         variant="outline"
                         size="sm"
                         className="flex-1"
-                        onClick={handleClearHistory}
-                        disabled={isClearing}
+                        disabled={!useChatHelpers.messages.length || isClearing}
                       >
                         {isClearing ? (
                           <>
@@ -189,7 +190,7 @@ export function PersonaChatClient({
                           </>
                         )}
                       </Button>
-                    )}
+                    </ConfirmDialog>
 
                     {persona.personaImportId && (
                       <Button

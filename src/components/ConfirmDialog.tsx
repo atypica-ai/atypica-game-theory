@@ -13,7 +13,7 @@ import { ReactNode } from "react";
 
 interface ConfirmDialogProps {
   title: string;
-  description: string;
+  description?: string;
   children: ReactNode;
   onConfirm: () => void;
   onCancel?: () => void;
@@ -32,7 +32,7 @@ export function ConfirmDialog({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>
-          <AlertDialogDescription>{description}</AlertDialogDescription>
+          {description ? <AlertDialogDescription>{description}</AlertDialogDescription> : null}
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel onClick={onCancel}>Cancel</AlertDialogCancel>
