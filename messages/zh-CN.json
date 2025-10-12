@@ -305,7 +305,7 @@
       "publicPersonas": "公共人设",
       "myPersonas": "我的人设",
       "search": "搜索",
-      "searchPlaceholder": "搜索人设或按 Shift+Enter 添加标签...",
+      "searchPlaceholder": "搜索人设名称或标签...",
       "searchAriaLabel": "通过名称或标签搜索人设",
       "searchResultsFor": "搜索结果",
       "searchFirstPrompt": "请先输入搜索关键词来查找人设",

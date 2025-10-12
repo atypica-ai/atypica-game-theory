@@ -36,7 +36,6 @@ export function SelectPersonaDialog({ open, onOpenChange, onSelect }: SelectPers
   const [totalPages, setTotalPages] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [mode, setMode] = useState<"public" | "private">("public");
-  const [activeTags, setActiveTags] = useState<string[]>([]);
   const [previewPersona, setPreviewPersona] = useState<TPersona | null>(null);
   const [showSelectedList, setShowSelectedList] = useState(false);
 
@@ -61,8 +60,8 @@ export function SelectPersonaDialog({ open, onOpenChange, onSelect }: SelectPers
 
   useEffect(() => {
     if (open) {
+      setSelectedIds([]);
       setSearchQuery("");
-      setActiveTags([]);
       setMode("public");
       setCurrentPage(1);
       if (inputRef.current) inputRef.current.value = "";
@@ -73,7 +72,6 @@ export function SelectPersonaDialog({ open, onOpenChange, onSelect }: SelectPers
     if (!open) return;
 
     setSearchQuery("");
-    setActiveTags([]);
     setCurrentPage(1);
     if (inputRef.current) inputRef.current.value = "";
 
@@ -92,16 +90,6 @@ export function SelectPersonaDialog({ open, onOpenChange, onSelect }: SelectPers
       loadPersonas(currentPage, searchQuery);
     }
   }, [currentPage, searchQuery, open, loadPersonas, mode]);
-
-  const filteredPersonas = useMemo(() => {
-    if (mode !== "public" || activeTags.length === 0) return personas;
-
-    return personas.filter((persona) =>
-      activeTags.every((tag) =>
-        (persona.tags as string[]).some((t) => t.toLowerCase().includes(tag.toLowerCase())),
-      ),
-    );
-  }, [personas, activeTags, mode]);
 
   const selectedPersonas = useMemo(
     () => personas.filter((p) => selectedIds.includes(p.id)),
@@ -130,33 +118,8 @@ export function SelectPersonaDialog({ open, onOpenChange, onSelect }: SelectPers
   const handleClearSearch = useCallback(() => {
     if (inputRef.current) inputRef.current.value = "";
     setSearchQuery("");
-    setActiveTags([]);
     setCurrentPage(1);
   }, []);
-
-  const handleAddTag = useCallback((tag: string) => {
-    const trimmedTag = tag.trim();
-    if (!trimmedTag) return;
-
-    setActiveTags((prev) => (prev.includes(trimmedTag) ? prev : [...prev, trimmedTag]));
-    setSearchQuery(trimmedTag);
-    setCurrentPage(1);
-
-    if (inputRef.current) inputRef.current.value = "";
-  }, []);
-
-  const handleRemoveTag = useCallback(
-    (tag: string) => {
-      const newTags = activeTags.filter((t) => t !== tag);
-      setActiveTags(newTags);
-
-      if (newTags.length === 0) {
-        setSearchQuery("");
-        setCurrentPage(1);
-      }
-    },
-    [activeTags],
-  );
 
   const togglePersonaSelection = useCallback((id: number) => {
     setSelectedIds((prev) =>
@@ -164,8 +127,8 @@ export function SelectPersonaDialog({ open, onOpenChange, onSelect }: SelectPers
     );
   }, []);
 
-  const showEmptyState = mode === "public" && !searchQuery.trim() && activeTags.length === 0;
-  const showNoResults = !loading && filteredPersonas.length === 0 && !showEmptyState;
+  const showEmptyState = mode === "public" && !searchQuery.trim();
+  const showNoResults = !loading && personas.length === 0 && !showEmptyState;
 
   return (
     <>
@@ -183,55 +146,24 @@ export function SelectPersonaDialog({ open, onOpenChange, onSelect }: SelectPers
           </Tabs>
 
           {mode === "public" && (
-            <>
-              <form onSubmit={handleSearch} className="flex gap-2">
-                <div className="flex-1 relative">
-                  <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    ref={inputRef}
-                    placeholder={t("searchPlaceholder")}
-                    className="pl-9"
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && e.shiftKey) {
-                        e.preventDefault();
-                        const value = inputRef.current?.value?.trim();
-                        if (value) handleAddTag(value);
-                      }
-                    }}
-                  />
-                  {searchQuery && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
-                      onClick={handleClearSearch}
-                      type="button"
-                    >
-                      <XIcon className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-                <Button type="submit">{t("search")}</Button>
-              </form>
-
-              {activeTags.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {activeTags.map((tag) => (
-                    <Badge key={tag} variant="secondary">
-                      {tag}
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-4 w-4 ml-1"
-                        onClick={() => handleRemoveTag(tag)}
-                      >
-                        <XIcon className="h-3 w-3" />
-                      </Button>
-                    </Badge>
-                  ))}
-                </div>
-              )}
-            </>
+            <form onSubmit={handleSearch} className="flex gap-2">
+              <div className="flex-1 relative">
+                <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input ref={inputRef} placeholder={t("searchPlaceholder")} className="pl-9" />
+                {searchQuery && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+                    onClick={handleClearSearch}
+                    type="button"
+                  >
+                    <XIcon className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+              <Button type="submit">{t("search")}</Button>
+            </form>
           )}
 
           <div className="flex-1 flex flex-col min-h-0">
@@ -269,7 +201,7 @@ export function SelectPersonaDialog({ open, onOpenChange, onSelect }: SelectPers
                       )}
                     </div>
                   ) : (
-                    filteredPersonas.map((persona) => {
+                    personas.map((persona) => {
                       const isSelected = selectedIds.includes(persona.id);
                       const displayTags = filterDisplayTags(persona.tags as string[]);
 

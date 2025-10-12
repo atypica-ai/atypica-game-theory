@@ -305,7 +305,7 @@
       "publicPersonas": "Public Personas",
       "myPersonas": "My Personas",
       "search": "Search",
-      "searchPlaceholder": "Search personas or press Shift+Enter to add as tag...",
+      "searchPlaceholder": "Search personas by name or tags...",
       "searchAriaLabel": "Search personas by name or tags",
       "searchResultsFor": "Search results for",
       "searchFirstPrompt": "Please enter search keywords to find personas",
