@@ -100,6 +100,7 @@ declare module "@/prisma/client" {
     optimizedQuestions: string[];
     optimizationReason: string;
     lastOptimizedAt: number;
+    questionTypePreference: "open-ended" | "multiple-choice" | "mixed"; // 问题类型偏好
   }>;
 
   export type InterviewSessionExtra = Partial<{
@@ -108,6 +109,7 @@ declare module "@/prisma/client" {
     startsAt: number; // 开始时间戳（首次消息时设置）
     pdfObjectUrl: string; // PDF文件的S3对象URL
     preferredLanguage: string; // 用户偏好的访谈语言
+    personalInfo: Array<{ label: string; text: string }>; // 个人信息字段（灵活结构）
   }>;
 
   export type InterviewReportExtra = Partial<{

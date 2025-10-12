@@ -195,6 +195,18 @@ export function ProjectDetails({
                 )}
               </Button>
             )}
+            {project.extra?.questionTypePreference && (
+              <div className="mt-4 pt-2 border-t text-sm">
+                <span className="text-muted-foreground mr-1">{t("questionTypePreference")}</span>
+                <span>
+                  {project.extra.questionTypePreference === "open-ended" &&
+                    t("questionTypeOpenEnded")}
+                  {project.extra.questionTypePreference === "multiple-choice" &&
+                    t("questionTypeMultipleChoice")}
+                  {project.extra.questionTypePreference === "mixed" && t("questionTypeMixed")}
+                </span>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -288,6 +300,7 @@ export function ProjectDetails({
           mode="edit"
           projectId={project.id}
           initialBrief={project.brief}
+          initialQuestionTypePreference={project.extra?.questionTypePreference}
         />
       )}
     </div>

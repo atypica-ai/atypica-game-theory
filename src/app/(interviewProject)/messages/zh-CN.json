@@ -33,6 +33,11 @@
       "briefPlaceholder": "描述您的研究目标和目标受众...",
       "predefinedQuestions": "预设问题",
       "questionsPlaceholder": "输入您想要询问的访谈问题...",
+      "questionTypePreference": "问题类型偏好",
+      "questionTypePreferenceDescription": "选择访谈中使用的问题类型",
+      "questionTypeOpenEnded": "开放式问题",
+      "questionTypeMultipleChoice": "选择题",
+      "questionTypeMixed": "混合类型",
       "create": "创建项目",
       "update": "更新",
       "cancel": "取消",
@@ -100,7 +105,11 @@
       "reoptimizeQuestionsDescription": "基于当前项目简介重新生成优化的访谈问题",
       "editProject": "编辑",
       "showMore": "显示更多",
-      "showLess": "收起"
+      "showLess": "收起",
+      "questionTypePreference": "问题类型偏好",
+      "questionTypeOpenEnded": "开放式问题",
+      "questionTypeMultipleChoice": "选择题",
+      "questionTypeMixed": "混合类型"
     },
     "ShareInterviewProjectButton": {
       "shareProject": "分享",

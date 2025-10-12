@@ -8,6 +8,10 @@ export const createInterviewProjectSchema = z.object({
     .string()
     .min(10, "Brief must be at least 10 characters")
     .max(2000, "Brief must be less than 2000 characters"),
+  questionTypePreference: z
+    .enum(["open-ended", "multiple-choice", "mixed"])
+    .optional()
+    .default("open-ended"),
 });
 
 export type CreateInterviewProjectInput = z.infer<typeof createInterviewProjectSchema>;
@@ -18,6 +22,7 @@ export const updateInterviewProjectSchema = z.object({
     .string()
     .min(10, "Brief must be at least 10 characters")
     .max(2000, "Brief must be less than 2000 characters"),
+  questionTypePreference: z.enum(["open-ended", "multiple-choice", "mixed"]).optional(),
 });
 
 export type UpdateInterviewProjectInput = z.infer<typeof updateInterviewProjectSchema>;

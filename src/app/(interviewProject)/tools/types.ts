@@ -12,11 +12,23 @@ export const interviewEndInterviewInputSchema = z.object({
     .describe(
       "A summary of the interview, including key points, insights, participant responses, notable observations, and overall interview quality. This summary will be passed to another agent for analysis and feedback.",
     ),
+  personalInfo: z
+    .array(
+      z.object({
+        label: z.string().describe("The field label, e.g., 'Name', 'Age', 'Occupation'"),
+        text: z.string().describe("The collected information for this field"),
+      }),
+    )
+    .optional()
+    .describe(
+      "Optional array of personal information collected during the interview. Each entry contains a label and the corresponding text value. Use this to capture any relevant demographic or contextual information about the interviewee that emerged during the conversation.",
+    ),
 });
 
 export const interviewEndInterviewOutputSchema = z.object({
   title: z.string(),
   interviewSummary: z.string(),
+  personalInfo: z.array(z.object({ label: z.string(), text: z.string() })).optional(),
   plainText: z.string(),
 });
 

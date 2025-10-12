@@ -1,8 +1,6 @@
 import "server-only";
 
 import { PlainTextToolResult } from "@/ai/tools/types";
-import { InterviewProjectExtra, InterviewSessionExtra } from "@/prisma/client";
-import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import { tool } from "ai";
 import {
@@ -22,28 +20,27 @@ export const interviewSessionTools = ({ interviewSessionId }: { interviewSession
     toModelOutput: (result: PlainTextToolResult) => {
       return { type: "text", value: result.plainText };
     },
-    execute: async ({ title, interviewSummary }) => {
-      // Get current session to preserve existing extra data
-      const currentSession = await prisma.interviewSession
-        .findUniqueOrThrow({ where: { id: interviewSessionId } })
-        .then(({ extra, ...session }) => ({ extra: extra as InterviewSessionExtra, ...session }));
+    execute: async ({ title, interviewSummary, personalInfo }) => {
+      const trimmedTitle = (title ?? "").slice(0, 200);
+      const extraUpdate = personalInfo && personalInfo.length > 0 ? { personalInfo } : {};
+
       await Promise.all([
         // 故意等10s，这样前端可以感觉到工具正在被执行。
         new Promise((resolve) => setTimeout(resolve, 10_000)),
-        prisma.interviewSession.update({
-          where: { id: interviewSessionId },
-          data: {
-            title: (title ?? "").slice(0, 200),
-            extra: {
-              ...currentSession.extra,
-              ongoing: undefined,
-            } as InputJsonValue,
-          },
-        }),
+        // Use raw SQL to update title and extra fields atomically
+        // Remove 'ongoing' field and optionally add 'personalInfo'
+        prisma.$executeRaw`
+          UPDATE "InterviewSession"
+          SET "title" = ${trimmedTitle},
+              "extra" = (COALESCE("extra", '{}') - 'ongoing') || ${JSON.stringify(extraUpdate)}::jsonb,
+              "updatedAt" = NOW()
+          WHERE "id" = ${interviewSessionId}
+        `,
       ]);
       return {
         title,
         interviewSummary,
+        personalInfo,
         plainText: "",
       };
     },
@@ -66,7 +63,7 @@ export const questionOptimizationTools = ({ projectId }: { projectId: number }) 
     outputSchema: updateQuestionsOutputSchema,
     execute: async ({ optimizedQuestions, reason }) => {
       try {
-        // Get current project data
+        // Verify project exists
         const project = await prisma.interviewProject.findUnique({
           where: { id: projectId },
         });
@@ -75,20 +72,18 @@ export const questionOptimizationTools = ({ projectId }: { projectId: number }) 
           throw new Error(`InterviewProject ${projectId} not found`);
         }
 
-        const currentExtra = (project.extra as InterviewProjectExtra) || {};
-
-        // Update project with optimized questions and reason
-        await prisma.interviewProject.update({
-          where: { id: projectId },
-          data: {
-            extra: {
-              ...currentExtra,
-              optimizedQuestions,
-              optimizationReason: reason,
-              lastOptimizedAt: Date.now(),
-            } as InterviewProjectExtra,
-          },
-        });
+        // Use raw SQL to update extra field with JSON operators
+        // This safely merges new fields into existing extra without race conditions
+        await prisma.$executeRaw`
+          UPDATE "InterviewProject"
+          SET "extra" = COALESCE("extra", '{}') || ${JSON.stringify({
+            optimizedQuestions,
+            optimizationReason: reason,
+            lastOptimizedAt: Date.now(),
+          })}::jsonb,
+              "updatedAt" = NOW()
+          WHERE "id" = ${projectId}
+        `;
 
         return {
           success: true,

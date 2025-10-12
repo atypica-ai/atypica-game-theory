@@ -115,6 +115,7 @@ export async function POST(req: Request) {
   const systemPrompt = interviewAgentSystemPrompt({
     brief: project.brief,
     optimizedQuestions: project.extra?.optimizedQuestions,
+    questionTypePreference: project.extra?.questionTypePreference,
     isPersonaInterview: false,
     locale,
   });

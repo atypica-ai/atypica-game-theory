@@ -434,12 +434,14 @@ Please directly output complete HTML code, starting with <!DOCTYPE html>, withou
 export const interviewAgentSystemPrompt = ({
   brief,
   optimizedQuestions,
+  questionTypePreference,
   isPersonaInterview,
   personaName,
   locale,
 }: {
   brief: string;
   optimizedQuestions?: string[];
+  questionTypePreference?: "open-ended" | "multiple-choice" | "mixed";
   isPersonaInterview: boolean;
   personaName?: string;
   locale?: Locale;
@@ -473,6 +475,36 @@ ${optimizedQuestions.map((q, i) => `${i + 1}. ${q}`).join("\n")}
 - 保持对话式但专注的语调
 - 帮助受访者感到舒适，愿意分享他们的想法
 - 引导对话以收集与研究简介相关的见解
+
+${
+  !isPersonaInterview && // persona 永远用开放性问题，不做选择题
+  (questionTypePreference === "multiple-choice" || questionTypePreference === "mixed")
+    ? `
+## 问题类型要求
+${
+  questionTypePreference === "multiple-choice"
+    ? `本次访谈**优先使用选择题**形式进行提问。你应该：
+- 主要使用选择题（2-4个选项）来收集信息
+- 使用 requestInteractionForm 工具来呈现选择题
+- 确保选项覆盖常见情况，并包含"其他"选项允许受访者补充
+- 在必要时穿插少量开放式问题来深入了解细节`
+    : `本次访谈采用**混合问题类型**。你应该：
+- 灵活混合使用开放式问题和选择题
+- 对于分类、偏好、频率等适合用选择题快速收集
+- 对于深层动机、体验细节等用开放式问题深入探讨
+- 使用 requestInteractionForm 工具来呈现选择题
+- 保持访谈节奏，避免连续过多的选择题或开放式问题`
+}
+
+**使用 requestInteractionForm 工具呈现选择题**：
+- 当需要收集选择题答案时，使用 requestInteractionForm 工具
+- 在 prologue 中说明为什么要问这个问题
+- 使用 type: "choice" 创建选择题字段，提供 2-4 个选项
+- 选项应该清晰、互斥，并考虑包含"其他"或"以上都不是"选项
+- 可以在一个表单中组合多个相关的选择题
+`
+    : ""
+}
 
 指导原则：
 - 建立融洽关系，但不要用传统的"介绍性问题"，而是通过自然对话建立联系
@@ -548,6 +580,36 @@ Your role is to be a professional interviewer who:
 - Maintains a conversational but focused tone
 - Helps the interviewee feel comfortable sharing their thoughts
 - Guides the conversation to gather insights relevant to the research brief
+
+${
+  !isPersonaInterview && // persona 永远用开放性问题，不做选择题
+  (questionTypePreference === "multiple-choice" || questionTypePreference === "mixed")
+    ? `
+## Question Type Requirements
+${
+  questionTypePreference === "multiple-choice"
+    ? `This interview **prioritizes multiple-choice questions**. You should:
+- Primarily use multiple-choice questions (2-4 options) to collect information
+- Use the requestInteractionForm tool to present multiple-choice questions
+- Ensure options cover common scenarios and include an "Other" option for additional input
+- Intersperse occasional open-ended questions when deeper details are needed`
+    : `This interview uses a **mixed question approach**. You should:
+- Flexibly mix open-ended and multiple-choice questions
+- Use multiple-choice for quick collection of categories, preferences, frequencies
+- Use open-ended questions to deeply explore motivations and experiential details
+- Use the requestInteractionForm tool to present multiple-choice questions
+- Maintain interview rhythm, avoiding too many consecutive questions of the same type`
+}
+
+**Using requestInteractionForm tool for multiple-choice questions**:
+- When collecting multiple-choice answers, use the requestInteractionForm tool
+- Explain in the prologue why you're asking this question
+- Use type: "choice" to create choice fields with 2-4 options
+- Options should be clear, mutually exclusive, and consider including "Other" or "None of the above"
+- You can combine multiple related choice questions in one form
+`
+    : ""
+}
 
 Guidelines:
 - Build rapport through natural conversation, not traditional "introductory questions"

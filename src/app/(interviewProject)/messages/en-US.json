@@ -33,6 +33,11 @@
       "briefPlaceholder": "Describe your research objectives and target audience...",
       "predefinedQuestions": "Predefined Questions",
       "questionsPlaceholder": "Enter interview questions you want to ask...",
+      "questionTypePreference": "Question Type Preference",
+      "questionTypePreferenceDescription": "Choose the type of questions to use in the interview",
+      "questionTypeOpenEnded": "Open-ended",
+      "questionTypeMultipleChoice": "Multiple Choice",
+      "questionTypeMixed": "Mixed",
       "create": "Create Project",
       "update": "Update",
       "cancel": "Cancel",
@@ -100,7 +105,11 @@
       "reoptimizeQuestionsDescription": "Regenerate optimized interview questions based on the current project brief",
       "editProject": "Edit",
       "showMore": "Show More",
-      "showLess": "Show Less"
+      "showLess": "Show Less",
+      "questionTypePreference": "Question Type Preference",
+      "questionTypeOpenEnded": "Open-ended",
+      "questionTypeMultipleChoice": "Multiple Choice",
+      "questionTypeMixed": "Mixed"
     },
     "ShareInterviewProjectButton": {
       "shareProject": "Share",

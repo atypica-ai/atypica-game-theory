@@ -88,12 +88,17 @@ export async function fetchUserInterviewProjects(): Promise<
 export async function createInterviewProject(
   input: CreateInterviewProjectInput,
 ): Promise<ServerActionResult<InterviewProject>> {
-  const { brief } = createInterviewProjectSchema.parse(input);
+  const { brief, questionTypePreference } = createInterviewProjectSchema.parse(input);
   const token = generateToken();
   return withAuth(async (user) => {
     const userId = user.id;
     const project = await prisma.interviewProject.create({
-      data: { brief, userId, token },
+      data: {
+        brief,
+        userId,
+        token,
+        extra: questionTypePreference ? { questionTypePreference } : {},
+      },
     });
 
     // Start question optimization in background
@@ -120,7 +125,7 @@ export async function updateInterviewProject(
   projectId: number,
   input: UpdateInterviewProjectInput,
 ): Promise<ServerActionResult<InterviewProject>> {
-  const { brief } = updateInterviewProjectSchema.parse(input);
+  const { brief, questionTypePreference } = updateInterviewProjectSchema.parse(input);
   return withAuth(async (user) => {
     const project = await prisma.interviewProject.findUnique({
       where: { id: projectId, userId: user.id },
@@ -134,9 +139,18 @@ export async function updateInterviewProject(
       };
     }
 
-    const updatedProject = await prisma.interviewProject.update({
+    // Use rawSQL to update brief and questionTypePreference atomically
+    const extraUpdate = questionTypePreference ? { questionTypePreference } : {};
+    await prisma.$executeRaw`
+      UPDATE "InterviewProject"
+      SET "brief" = ${brief},
+          "extra" = COALESCE("extra", '{}') || ${JSON.stringify(extraUpdate)}::jsonb,
+          "updatedAt" = NOW()
+      WHERE "id" = ${projectId}
+    `;
+
+    const updatedProject = await prisma.interviewProject.findUniqueOrThrow({
       where: { id: projectId },
-      data: { brief },
     });
 
     // Start question optimization in background after brief update
