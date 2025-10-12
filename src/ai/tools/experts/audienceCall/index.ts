@@ -160,10 +160,10 @@ SELECT
   "tags",
   "prompt"
 FROM "Persona"
-WHERE "embedding" <=> ${JSON.stringify(embedding)}::vector < 0.9
+WHERE "embedding" <=> ${JSON.stringify(embedding)}::halfvec < 0.9
   AND locale = ${locale}
   AND tier in (1, 2)
-ORDER BY "embedding" <=> ${JSON.stringify(embedding)}::vector ASC
+ORDER BY "embedding" <=> ${JSON.stringify(embedding)}::halfvec ASC
 LIMIT 5
 `;
   return { searchQuery, personas };

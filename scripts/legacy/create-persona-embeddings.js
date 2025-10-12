@@ -60,7 +60,7 @@ async function createEmbedding() {
           const embedding = await embeddingRequest(text, "retrieval.passage");
           await prisma.$executeRaw`
             UPDATE "Persona"
-            SET "embedding" = ${JSON.stringify(embedding)}::vector
+            SET "embedding" = ${JSON.stringify(embedding)}::halfvec
             WHERE "id" = ${persona.id}
           `;
           console.log(`Updated embedding for persona ${persona.id}`);
@@ -83,9 +83,9 @@ async function searchPersona(keyword) {
     SELECT
       id,
       name,
-      "embedding" <=> ${JSON.stringify(embedding)}::vector AS distance
+      "embedding" <=> ${JSON.stringify(embedding)}::halfvec AS distance
     FROM "Persona"
-    WHERE embedding IS NOT NULL AND ("embedding" <=> ${JSON.stringify(embedding)}::vector) < 0.9
+    WHERE embedding IS NOT NULL AND ("embedding" <=> ${JSON.stringify(embedding)}::halfvec) < 0.9
     ORDER BY distance ASC
     LIMIT 5
   `;

@@ -80,17 +80,17 @@ export async function fetchPersonas({
         FROM "Persona" p
         LEFT JOIN "PersonaImport" pi ON p."personaImportId" = pi.id
         LEFT JOIN "User" u ON pi."userId" = u.id
-        WHERE p."embedding" <=> ${JSON.stringify(embedding)}::vector < 0.9
+        WHERE p."embedding" <=> ${JSON.stringify(embedding)}::halfvec < 0.9
           AND p.locale = ANY(${selectedLocales})
           AND p.tier = ANY(${selectedTiers})
-        ORDER BY p."embedding" <=> ${JSON.stringify(embedding)}::vector ASC
+        ORDER BY p."embedding" <=> ${JSON.stringify(embedding)}::halfvec ASC
         LIMIT ${pageSize}
         OFFSET ${skip}
       `;
       const totalCountResult = await prisma.$queryRaw<{ count: number }[]>`
         SELECT COUNT(*) as count
         FROM "Persona" p
-        WHERE p."embedding" <=> ${JSON.stringify(embedding)}::vector < 0.9
+        WHERE p."embedding" <=> ${JSON.stringify(embedding)}::halfvec < 0.9
           AND p.locale = ANY(${selectedLocales})
           AND p.tier = ANY(${selectedTiers})
       `;

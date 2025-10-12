@@ -72,7 +72,7 @@ async function createPersonaEmbedding(persona: Persona) {
     const embedding = await createTextEmbedding(text, "retrieval.passage");
     await prisma.$executeRaw`
       UPDATE "Persona"
-      SET "embedding" = ${JSON.stringify(embedding)}::vector
+      SET "embedding" = ${JSON.stringify(embedding)}::halfvec
       WHERE "id" = ${persona.id}
     `;
     rootLogger.info(`Updated semantic embedding for persona ${persona.id}`);

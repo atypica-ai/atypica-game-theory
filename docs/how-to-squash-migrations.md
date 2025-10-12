@@ -43,7 +43,8 @@ npx prisma migrate diff \
 -- Prisma generates (incorrect):
 -- CREATE INDEX "Persona_embedding_idx" ON "Persona"("embedding");
 -- Manually replace with (correct):
-CREATE INDEX "Persona_embedding_idx" on "Persona" USING hnsw ("embedding" vector_cosine_ops);
+-- CREATE INDEX "Persona_embedding_idx" on "Persona" USING hnsw ("embedding" vector_cosine_ops);
+CREATE INDEX "Persona_embedding_idx" ON "Persona" USING hnsw ("embedding" halfvec_cosine_ops) WITH (m = 16, ef_construction = 64);
 ```
 
 5. Mark this migration as having been applied on production, to prevent it from being run there:

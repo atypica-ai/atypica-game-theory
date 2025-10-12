@@ -14,6 +14,7 @@ export async function createTextEmbedding(
         task: task,
         truncate: true,
         input: [text],
+        // dimensions: 1024  // 默认是 1024
       }),
     });
     if (!res.ok) {

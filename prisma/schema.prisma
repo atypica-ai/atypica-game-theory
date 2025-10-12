@@ -119,7 +119,7 @@ model Persona {
   personaImportId Int?           @db.Integer
   personaImport   PersonaImport? @relation(fields: [personaImportId], references: [id]) // 是否需要 onDelete: SetNull ?
 
-  embedding Unsupported("vector(1024)")? // 使用 Unsupported 类型表示向量
+  embedding Unsupported("halfvec(1024)")? // 使用 Unsupported 类型表示向量
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
