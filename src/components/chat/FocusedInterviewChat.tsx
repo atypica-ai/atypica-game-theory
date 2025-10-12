@@ -310,19 +310,16 @@ export function FocusedInterviewChat<
               )}
             </motion.div>
           ) : !lastAssistantMessage ? (
-            <motion.div
-              key="initial"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="min-h-full flex items-center justify-center text-base sm:text-lg text-center"
-            >
+            <div className="min-h-full flex items-center justify-center text-base sm:text-lg">
               {t("gettingReady")}
-            </motion.div>
+            </div>
+          ) : !lastAssistantMessage.parts.length ? (
+            <div className="min-h-full flex items-center justify-center">
+              <LoadingPulse className="text-muted-foreground text-xl" />
+            </div>
           ) : (
             <motion.div
-              key={lastAssistantMessage.id}
+              key={`message-${lastAssistantMessage.id}`}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
@@ -333,60 +330,52 @@ export function FocusedInterviewChat<
                 "text-base sm:text-lg text-center",
               )}
             >
-              {(lastAssistantMessage.parts ?? []).map((part, index) => {
-                // 只显示最后一个 part
-                if (index < lastAssistantMessage.parts.length - 1) {
-                  return null;
-                }
+              {(lastAssistantMessage.parts ?? [])
+                .slice(-1) // 只显示最后一个 part
+                .map((part, index) => {
+                  if (part.type === "text" && part.text.trim()) {
+                    return (
+                      <TypewriterText key={index} id={lastAssistantMessage.id} text={part.text} />
+                    );
+                  }
 
-                if (part.type === "text") {
-                  // Show tool-related text parts without typewriter effect
-                  if (index < lastAssistantMessage.parts.length - 1) {
+                  if (part.type === "dynamic-tool") {
                     return (
                       <div
                         key={index}
-                        className={cn("mx-4 text-sm font-normal text-muted-foreground/50")}
+                        className="my-4 text-sm text-center text-muted-foreground/50 font-normal font-mono"
                       >
-                        {part.text}
+                        {t("toolCalling")} {part.toolName}
+                        {part.state === "output-available" ? (
+                          <CheckIcon className="size-3 inline-block ml-2 text-green-500" />
+                        ) : null}
                       </div>
                     );
                   }
-                  // Apply typewriter effect only to the last text part
-                  return <TypewriterText key={index} text={part.text} />;
-                }
 
-                if (part.type === "dynamic-tool") {
-                  return (
-                    <div
-                      key={index}
-                      className="my-4 text-sm text-center text-muted-foreground/50 font-normal font-mono"
-                    >
-                      {t("toolCalling")} {part.toolName}
-                      {part.state === "output-available" ? (
-                        <CheckIcon className="size-3 inline-block ml-2 text-green-500" />
-                      ) : null}
-                    </div>
-                  );
-                }
+                  if (isToolUIPart(part)) {
+                    return (
+                      <div
+                        key={index}
+                        className="my-4 text-sm text-center text-muted-foreground/50 font-normal font-mono"
+                      >
+                        {t("toolCalling")} {getToolName(part)}
+                        {part.state === "output-available" ? (
+                          <CheckIcon className="size-3 inline-block ml-2 text-green-500" />
+                        ) : null}
+                      </div>
+                    );
+                  }
 
-                if (isToolUIPart(part)) {
-                  return (
-                    <div
-                      key={index}
-                      className="my-4 text-sm text-center text-muted-foreground/50 font-normal font-mono"
-                    >
-                      {t("toolCalling")} {getToolName(part)}
-                      {part.state === "output-available" ? (
-                        <CheckIcon className="size-3 inline-block ml-2 text-green-500" />
-                      ) : null}
-                    </div>
-                  );
-                }
+                  return null;
+                })}
 
-                return null;
-              })}
-
-              {status === "streaming" && <LoadingPulse className="mt-4 text-muted-foreground" />}
+              {
+                // 先不显示了，这个会导致文本上下跳一下，从显示到不显示
+                // status === "streaming" ? (
+                //   <LoadingPulse className="mt-4 text-muted-foreground" />
+                // ) : null
+              }
             </motion.div>
           )}
         </AnimatePresence>

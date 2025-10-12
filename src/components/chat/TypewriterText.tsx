@@ -1,110 +1,63 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface TypewriterTextProps {
   text: string;
+  id?: string; // Used to distinguish different messages
   className?: string;
-  onComplete?: () => void;
 }
 
-export function TypewriterText({ text, className = "", onComplete }: TypewriterTextProps) {
-  const [displayedCount, setDisplayedCount] = useState(0);
+interface TextSegment {
+  text: string;
+  visible: boolean;
+}
 
-  // Tokenize text once and cache it
-  const tokens = useMemo(() => {
-    if (!text) return [];
+export function TypewriterText({ text, id, className = "" }: TypewriterTextProps) {
+  const [segments, setSegments] = useState<TextSegment[]>([]);
+  const previousIdRef = useRef<string | undefined>(id);
+  const previousTextLengthRef = useRef(0);
 
-    const result: string[] = [];
-    let i = 0;
-
-    while (i < text.length) {
-      const char = text[i];
-
-      // If it's a Chinese character, collect 8 Chinese chars at a time
-      if (/[\u4e00-\u9fa5]/.test(char)) {
-        const chunkSize = 8;
-        let chunk = "";
-        let count = 0;
-
-        while (i < text.length && count < chunkSize) {
-          if (/[\u4e00-\u9fa5]/.test(text[i])) {
-            chunk += text[i];
-            i++;
-            count++;
-          } else {
-            break;
-          }
-        }
-
-        if (chunk) result.push(chunk);
-      } else {
-        // Collect non-Chinese text - 18 characters at a time
-        const maxChars = 18;
-        let chunk = "";
-
-        while (i < text.length && chunk.length < maxChars) {
-          if (/[\u4e00-\u9fa5]/.test(text[i])) {
-            break;
-          }
-          chunk += text[i];
-          i++;
-        }
-
-        if (chunk) result.push(chunk);
-      }
+  // Reset when message changes
+  useEffect(() => {
+    const isNewMessage = id !== previousIdRef.current;
+    if (isNewMessage) {
+      previousIdRef.current = id;
+      setSegments([]);
+      previousTextLengthRef.current = 0;
     }
+  }, [id]);
 
-    return result;
+  // Monitor text changes and create new segments
+  useEffect(() => {
+    // If text hasn't changed or got shorter, do nothing
+    if (text.length <= previousTextLengthRef.current) return;
+
+    const newText = text.substring(previousTextLengthRef.current);
+    previousTextLengthRef.current = text.length;
+
+    // Add new segment (immediately visible)
+    setSegments((prev) => [...prev, { text: newText, visible: true }]);
   }, [text]);
 
-  // Typewriter effect - same for both streaming and non-streaming
-  useEffect(() => {
-    if (!text || tokens.length === 0) {
-      setDisplayedCount(0);
-      return;
-    }
-
-    // Reset and start from beginning
-    setDisplayedCount(0);
-
-    let idx = 0;
-    const step = () => {
-      if (idx >= tokens.length) {
-        onComplete?.();
-        return;
-      }
-
-      setDisplayedCount(idx + 1);
-      idx += 1;
-
-      setTimeout(step, 300);
-    };
-
-    // Start after a short delay
-    const timer = setTimeout(step, 300);
-
-    return () => clearTimeout(timer);
-  }, [text, tokens, onComplete]);
-
-  const displayedChunks = tokens.slice(0, displayedCount);
-  const displayedText = displayedChunks.join("");
+  const visibleText = segments.map((seg) => seg.text).join("");
+  const hiddenText = text.substring(visibleText.length);
 
   return (
     <div className={className}>
-      {displayedChunks.map((chunk, index) => (
+      {segments.map((segment, index) => (
         <motion.span
-          key={index}
+          key={`${id}-${index}`}
           initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          animate={{ opacity: segment.visible ? 1 : 0 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
         >
-          {chunk}
+          {segment.text}
         </motion.span>
       ))}
       {/* Reserve space for remaining text to prevent layout shift */}
-      <span className="invisible">{text.substring(displayedText.length)}</span>
+      <span className="invisible">{hiddenText}</span>
     </div>
   );
 }

@@ -5,7 +5,6 @@ import {
 } from "@/app/(interviewProject)/tools/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { ToolUIPart } from "ai";
@@ -129,7 +128,7 @@ export const RequestInteractionFormToolMessage: FC<{
                 </Badge>
               )}
             </div>
-            <div className="grid gap-2">
+            <div className="grid grid-cols-2 gap-2">
               {field.options?.map((option, index) => {
                 const isSelected = Array.isArray(fieldValue)
                   ? fieldValue.includes(option)
@@ -187,40 +186,36 @@ export const RequestInteractionFormToolMessage: FC<{
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto">
-      <Card className="border-0 shadow-lg">
-        <CardHeader className="pb-4">
-          <div className="flex items-center space-x-3">
-            <div className="shrink-0 w-10 h-10 bg-zinc-100 dark:bg-zinc-800 rounded-full flex items-center justify-center">
-              <FileText className="h-5 w-5 text-primary" />
-            </div>
-            <CardTitle className="text-sm sm:text-base font-normal leading-tight">
-              {toolInvocation.input?.prologue || t("defaultPrologue")}
-            </CardTitle>
+    <div className="w-full max-w-2xl mx-auto border py-6 px-4 space-y-6 rounded-md">
+      <div className="flex items-center space-x-3">
+        <div className="shrink-0 w-10 h-10 bg-zinc-100 dark:bg-zinc-800 rounded-full flex items-center justify-center">
+          <FileText className="h-5 w-5 text-primary" />
+        </div>
+        <div className="text-sm sm:text-base font-normal leading-tight">
+          {toolInvocation.input?.prologue || t("defaultPrologue")}
+        </div>
+      </div>
+
+      <div className="space-y-6">
+        {toolInvocation.state === "input-available" && (
+          <div className="space-y-6">{toolInvocation.input.fields.map(renderField)}</div>
+        )}
+
+        {!isFormCompleted && (
+          <div className="flex justify-end pt-4 border-t">
+            <Button onClick={submitForm}>{t("submitForm")}</Button>
           </div>
-        </CardHeader>
+        )}
 
-        <CardContent className="space-y-6">
-          {toolInvocation.state === "input-available" && (
-            <div className="space-y-6">{toolInvocation.input.fields.map(renderField)}</div>
-          )}
-
-          {!isFormCompleted && (
-            <div className="flex justify-end pt-4 border-t">
-              <Button onClick={submitForm}>{t("submitForm")}</Button>
+        {isFormCompleted && (
+          <div className="flex items-center justify-center pt-4 border-t">
+            <div className="flex items-center space-x-2 text-primary">
+              <Check className="h-5 w-5" />
+              <span className="text-sm font-medium">{t("formSubmitted")}</span>
             </div>
-          )}
-
-          {isFormCompleted && (
-            <div className="flex items-center justify-center pt-4 border-t">
-              <div className="flex items-center space-x-2 text-primary">
-                <Check className="h-5 w-5" />
-                <span className="text-sm font-medium">{t("formSubmitted")}</span>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

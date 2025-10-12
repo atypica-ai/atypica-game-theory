@@ -63,6 +63,7 @@ export function InterviewSessionChatClient({
         return { body };
       },
     }),
+    experimental_throttle: 1000,
   });
 
   const useChatRef = useRef({
