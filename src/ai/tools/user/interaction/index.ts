@@ -2,10 +2,7 @@ import "server-only";
 
 import { PlainTextToolResult } from "@/ai/tools/types";
 import { tool } from "ai";
-import {
-  requestInteractionInputSchema,
-  requestInteractionOutputSchema,
-} from "./types";
+import { requestInteractionInputSchema, requestInteractionOutputSchema } from "./types";
 
 export const requestInteractionTool = tool({
   description:

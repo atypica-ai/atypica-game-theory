@@ -2,10 +2,7 @@ import "server-only";
 
 import { PlainTextToolResult } from "@/ai/tools/types";
 import { tool } from "ai";
-import {
-  requestPaymentInputSchema,
-  requestPaymentOutputSchema,
-} from "./types";
+import { requestPaymentInputSchema, requestPaymentOutputSchema } from "./types";
 
 export const requestPaymentTool = tool({
   description:

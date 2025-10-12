@@ -12,8 +12,8 @@ import {
   saveAnalystStudySummaryOutputSchema,
   saveInnovationSummaryInputSchema,
   saveInnovationSummaryOutputSchema,
-  type SaveAnalystToolResult,
   type SaveAnalystStudySummaryToolResult,
+  type SaveAnalystToolResult,
   type SaveInnovationSummaryToolResult,
 } from "./types";
 

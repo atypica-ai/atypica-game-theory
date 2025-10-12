@@ -3,11 +3,7 @@ import "server-only";
 import { AgentToolConfigArgs, PlainTextToolResult, ToolName } from "@/ai/tools/types";
 import { tavily, TavilyClient } from "@tavily/core";
 import { tool } from "ai";
-import {
-  webSearchInputSchema,
-  webSearchOutputSchema,
-  type WebSearchToolResult,
-} from "./types";
+import { webSearchInputSchema, webSearchOutputSchema, type WebSearchToolResult } from "./types";
 
 const globalForTavily = global as unknown as {
   tavily: TavilyClient | undefined;
