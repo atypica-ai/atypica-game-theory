@@ -300,7 +300,30 @@
     "SelectPersonaDialog": {
       "title": "Select Interview Subjects",
       "cancel": "Cancel",
-      "confirm": "Confirm"
+      "confirm": "Confirm",
+      "selected": "Selected",
+      "publicPersonas": "Public Personas",
+      "myPersonas": "My Personas",
+      "search": "Search",
+      "searchPlaceholder": "Search personas or press Shift+Enter to add as tag...",
+      "searchAriaLabel": "Search personas by name or tags",
+      "searchResultsFor": "Search results for",
+      "searchFirstPrompt": "Please enter search keywords to find personas",
+      "clearSearch": "Clear search",
+      "noResultsFound": "No results found for \"{query}\"",
+      "noPrivatePersonas": "No private personas available",
+      "noPersonasAvailable": "No personas available",
+      "removeTag": "Remove tag {tag}",
+      "view": "View",
+      "source": "Source",
+      "prompt": "Prompt",
+      "tags": "Tags",
+      "addToSelection": "Add to Selection",
+      "removeFromSelection": "Remove from Selection",
+      "remove": "Remove",
+      "close": "Close",
+      "selectedPersonasTitle": "Selected Personas",
+      "noSelectedPersonas": "No personas selected"
     }
   },
   "Maintenance": {

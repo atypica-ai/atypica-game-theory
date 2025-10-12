@@ -300,7 +300,30 @@
     "SelectPersonaDialog": {
       "title": "选择访谈对象",
       "cancel": "取消",
-      "confirm": "确定"
+      "confirm": "确定",
+      "selected": "已选择",
+      "publicPersonas": "公共人设",
+      "myPersonas": "我的人设",
+      "search": "搜索",
+      "searchPlaceholder": "搜索人设或按 Shift+Enter 添加标签...",
+      "searchAriaLabel": "通过名称或标签搜索人设",
+      "searchResultsFor": "搜索结果",
+      "searchFirstPrompt": "请先输入搜索关键词来查找人设",
+      "clearSearch": "清除搜索",
+      "noResultsFound": "未找到「{query}」的搜索结果",
+      "noPrivatePersonas": "暂无私有人设",
+      "noPersonasAvailable": "暂无可用人设",
+      "removeTag": "移除标签 {tag}",
+      "view": "查看",
+      "source": "来源",
+      "prompt": "提示词",
+      "tags": "标签",
+      "addToSelection": "添加到选择",
+      "removeFromSelection": "从选择中移除",
+      "remove": "移除",
+      "close": "关闭",
+      "selectedPersonasTitle": "已选择的人设",
+      "noSelectedPersonas": "暂无已选择的人设"
     }
   },
   "Maintenance": {
