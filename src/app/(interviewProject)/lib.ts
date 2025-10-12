@@ -121,11 +121,21 @@ export async function validateInterviewShareToken(
 export type InterviewTranscript = {
   title: string | null;
   summary: string | null;
-  participantInfo: Record<string, string | number> | null;
-  messages: Array<{
-    role: "user" | "assistant";
-    textContent: string;
-  }>;
+  personalInfo: Array<{ label: string; text: string }> | null; // Changed from participantInfo
+  messages: Array<
+    | {
+        type: "message";
+        role: "user" | "assistant";
+        textContent: string;
+      }
+    | {
+        type: "form";
+        formData: {
+          prologue: string;
+          fields: Array<{ label: string; value: string | number }>;
+        };
+      }
+  >;
 };
 
 /**
@@ -147,20 +157,17 @@ export async function extractInterviewTranscript(userChatId: number): Promise<In
 
   let title: string | null = null;
   let summary: string | null = null;
-  let participantInfo: Record<string, string | number> | null = null;
-  const transcriptMessages: Array<{
-    role: "user" | "assistant";
-    textContent: string;
-  }> = [];
+  let personalInfo: Array<{ label: string; text: string }> | null = null;
+  const transcriptMessages: InterviewTranscript["messages"] = [];
 
   for (const uiMessage of uiMessages) {
     for (const part of uiMessage.parts ?? []) {
       // Extract text content
       if (part.type === "text") {
         transcriptMessages.push({
+          type: "message",
           role: uiMessage.role as "user" | "assistant",
           textContent: part.text,
-          // timestamp: uiMessage.createdAt,
         });
       }
 
@@ -173,77 +180,38 @@ export async function extractInterviewTranscript(userChatId: number): Promise<In
         if (part.type === `tool-${InterviewToolName.endInterview}`) {
           title = part.output.title || null;
           summary = part.output.interviewSummary || null;
+          // Extract personalInfo from endInterview tool
+          if (part.output.personalInfo && Array.isArray(part.output.personalInfo)) {
+            personalInfo = part.output.personalInfo;
+          }
         }
+        // Add form interactions to messages
         if (part.type === `tool-${InterviewToolName.requestInteractionForm}`) {
           if (part.output?.formResponses && part.input?.fields) {
-            // Map response keys to field labels
-            const labeledResponses: Record<string, string | number> = {};
+            // Map response keys to field labels with values
+            const fields: Array<{ label: string; value: string | number }> = [];
             Object.entries(part.output.formResponses).forEach(([key, value]) => {
               const field = part.input.fields.find((f) => f.id === key);
               const label = field?.label || key;
-              labeledResponses[label] = value;
+              fields.push({ label, value });
             });
-            participantInfo = labeledResponses;
-          } else {
-            participantInfo = part.output?.formResponses || null;
+            transcriptMessages.push({
+              type: "form",
+              formData: {
+                prologue: part.input.prologue || "",
+                fields,
+              },
+            });
           }
         }
       }
     }
-    // Fallback: if no text parts found, use content directly
-    // if (!parts && message.content) {
-    //   transcriptMessages.push({
-    //     role: message.role as "user" | "assistant",
-    //     content: message.content,
-    //     timestamp: message.createdAt,
-    //   });
-    // }
   }
 
   return {
     title,
     summary,
-    participantInfo,
+    personalInfo,
     messages: transcriptMessages,
   };
-}
-
-/**
- * Generate markdown transcript for an interview session
- */
-export function generateTranscriptMarkdown(transcript: InterviewTranscript): string {
-  const { title, summary, participantInfo, messages } = transcript;
-
-  let markdown = "";
-
-  // Title
-  if (title) {
-    markdown += `# ${title}\n\n`;
-  }
-
-  // Summary
-  if (summary) {
-    markdown += `## 访谈总结\n\n${summary}\n\n`;
-  }
-
-  // Participant Info
-  if (participantInfo && Object.keys(participantInfo).length > 0) {
-    markdown += `## 参与者信息\n\n`;
-    Object.entries(participantInfo).forEach(([key, value]) => {
-      markdown += `**${key}:** ${value}\n\n`;
-    });
-  }
-
-  // Messages
-  if (messages.length > 0) {
-    markdown += `## 访谈对话\n\n`;
-    messages.forEach((message) => {
-      const role = message.role === "user" ? "👤 用户" : "🤖 助手";
-      // const timestamp = message.timestamp.toLocaleString("zh-CN");
-      // markdown += `### ${role} (${timestamp})\n\n${message.content}\n\n---\n\n`;
-      markdown += `### ${role}\n\n${message.textContent}\n\n---\n\n`;
-    });
-  }
-
-  return markdown;
 }

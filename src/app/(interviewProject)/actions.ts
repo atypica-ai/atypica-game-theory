@@ -19,12 +19,7 @@ import { Locale } from "next-intl";
 import { notFound } from "next/navigation";
 import { runAutoPersonaInterview } from "./(session)/api/chat/interview-agent/auto-persona";
 import { generateInterviewReportContent } from "./artifacts/generateReport";
-import {
-  extractInterviewTranscript,
-  generateInterviewShareToken,
-  generateTranscriptMarkdown,
-  validateInterviewShareToken,
-} from "./lib";
+import { generateInterviewShareToken, validateInterviewShareToken } from "./lib";
 import { processInterviewQuestionOptimization } from "./processing";
 import {
   CreateInterviewProjectInput,
@@ -913,50 +908,5 @@ export async function generateInterviewReport(projectId: number): Promise<
         createdAt: report.createdAt,
       },
     };
-  });
-}
-
-/**
- * Get interview transcript as markdown
- * 暂时没用了
- */
-export async function getInterviewTranscriptMarkdown(
-  sessionId: number,
-): Promise<ServerActionResult<string>> {
-  return withAuth(async (user) => {
-    // Verify session ownership and get userChatId
-    const session = await prisma.interviewSession.findUnique({
-      where: {
-        id: sessionId,
-        project: { userId: user.id },
-      },
-      select: {
-        userChatId: true,
-      },
-    });
-
-    if (!session || !session.userChatId) {
-      return {
-        success: false,
-        code: "not_found",
-        message: "Interview session not found or chat not found",
-      };
-    }
-
-    try {
-      const transcript = await extractInterviewTranscript(session.userChatId);
-      const markdown = generateTranscriptMarkdown(transcript);
-
-      return {
-        success: true,
-        data: markdown,
-      };
-    } catch {
-      return {
-        success: false,
-        code: "internal_server_error",
-        message: "Failed to extract transcript",
-      };
-    }
   });
 }

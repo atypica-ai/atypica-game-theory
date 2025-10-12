@@ -92,7 +92,7 @@ async function InterviewTranscriptPage({
   });
 
   const { transcript, sessionInfo } = await getTranscriptData(userChatToken);
-  const { title, summary, participantInfo, messages } = transcript;
+  const { title, summary, personalInfo, messages } = transcript;
 
   return (
     <div className="min-h-screen max-w-5xl mx-auto px-8 py-8">
@@ -109,27 +109,17 @@ async function InterviewTranscriptPage({
         </div>
       </div>
 
-      {/* Research Objective */}
-      {/*<section className="mb-8">
-        <h2 className="text-xl font-semibold text-foreground/90 mb-3 pb-1 border-b border-gray-300">
-          {t("researchObjective")}
-        </h2>
-        <div className="text-foreground/80 text-sm">
-          <Markdown>{sessionInfo.projectBrief}</Markdown>
-        </div>
-      </section>*/}
-
-      {/* Participant Information */}
-      {participantInfo && Object.keys(participantInfo).length > 0 && (
+      {/* Personal Information (from endInterview) */}
+      {personalInfo && personalInfo.length > 0 && (
         <section className="mb-12">
           <h2 className="text-xl font-semibold text-foreground/80 mb-3 pb-1 border-b border-border">
             {t("intervieweeInfo")}
           </h2>
           <div className="space-y-2 text-foreground/80">
-            {Object.entries(participantInfo).map(([label, value]) => (
-              <p key={label} className="text-foreground/80">
-                <span>{label}：</span>
-                {String(value)}
+            {personalInfo.map(({ label, text }, index) => (
+              <p key={index} className="text-foreground/80">
+                <span className="font-medium">{label}：</span>
+                {text}
               </p>
             ))}
           </div>
@@ -142,23 +132,51 @@ async function InterviewTranscriptPage({
           <h2 className="text-xl font-semibold text-foreground/90 mb-3 pb-1 border-b border-border">
             {t("interviewContent")}
           </h2>
-          {messages
-            .filter((message) => !isSystemMessage(message.textContent))
-            .map((message, index) => (
-              <div key={index} className="leading-relaxed text-sm">
-                {message.role === "assistant" ? (
-                  <div className="mb-2">
-                    <strong className="font-bold">{t("interviewer")}</strong>
-                    <strong className="font-bold ml-1">{message.textContent}</strong>
+          {messages.map((message, index) => {
+            if (message.type === "message") {
+              // Skip system messages
+              if (isSystemMessage(message.textContent)) return null;
+
+              return (
+                <div key={index} className="leading-relaxed text-sm">
+                  {message.role === "assistant" ? (
+                    <div className="mb-2">
+                      <strong className="font-bold">{t("interviewer")}</strong>
+                      <strong className="font-bold ml-1">{message.textContent}</strong>
+                    </div>
+                  ) : (
+                    <div className="text-foreground/80 mb-8">
+                      <span>{t("interviewee")}</span>
+                      <span className="ml-1">{message.textContent}</span>
+                    </div>
+                  )}
+                </div>
+              );
+            } else if (message.type === "form") {
+              // Display form interactions
+              return (
+                <div
+                  key={index}
+                  className="my-6 p-4 bg-muted/30 border border-border rounded-lg space-y-3"
+                >
+                  {message.formData.prologue && (
+                    <p className="text-sm text-foreground/70 italic mb-3">
+                      {message.formData.prologue}
+                    </p>
+                  )}
+                  <div className="space-y-2">
+                    {message.formData.fields.map((field, fieldIndex) => (
+                      <div key={fieldIndex} className="text-sm">
+                        <span className="font-medium text-foreground/80">{field.label}：</span>
+                        <span className="text-foreground/70">{String(field.value)}</span>
+                      </div>
+                    ))}
                   </div>
-                ) : (
-                  <div className="text-foreground/80 mb-8">
-                    <span>{t("interviewee")}</span>
-                    <span className="ml-1">{message.textContent}</span>
-                  </div>
-                )}
-              </div>
-            ))}
+                </div>
+              );
+            }
+            return null;
+          })}
         </section>
       )}
 

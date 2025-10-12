@@ -113,8 +113,10 @@ export type ClientMessagePayload = z.infer<typeof clientMessagePayloadSchema>;
 
 export function isSystemMessage(text: string): boolean {
   const trimmedText = text.trim();
-  const normalizedText = trimmedText.replace(/(\w)\s(\w)/g, "$1_$2");
-  return /^\[(READY|USER_HESITATED|CONTINUE|CONTINUE_ASSISTANT_STEPS)\]$/i.test(normalizedText);
+  const normalizedText = trimmedText.replace(/([a-zA-Z0-9]+)(?:\s|-)([a-zA-Z0-9]+)/g, "$1_$2");
+  return /^\[(READY|USER_HESITATED|CONTINUE|CONTINUE_ASSISTANT_STEPS|TOOL_RESULT|TEXT)\]$/i.test(
+    normalizedText,
+  );
 }
 
 /**
