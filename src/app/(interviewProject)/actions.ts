@@ -810,8 +810,13 @@ export async function fetchInterviewReportsByProjectToken({
 
 /**
  * Generate interview report
+ * @param projectId - The project ID
+ * @param includePersonaSessions - Whether to include AI Persona sessions. Default true (include all sessions).
  */
-export async function generateInterviewReport(projectId: number): Promise<
+export async function generateInterviewReport(
+  projectId: number,
+  includePersonaSessions: boolean = true,
+): Promise<
   ServerActionResult<{
     id: number;
     token: string;
@@ -829,14 +834,22 @@ export async function generateInterviewReport(projectId: number): Promise<
       })
       .catch(() => notFound());
 
-    // First get completed session IDs using raw SQL for efficient filtering
+    // Get completed session IDs using raw SQL for efficient filtering
     // extra->>'ongoing' IS NULL 需要，如果 ongoing key 不存在，会导致 extra->>'ongoing' != 'true' 不成立
-    const completedSessionIds = await prisma.$queryRaw<{ id: number }[]>`
-      SELECT id FROM "InterviewSession"
-      WHERE "projectId" = ${project.id}
-      AND (extra->>'ongoing' IS NULL OR extra->>'ongoing' != 'true')
-      AND title IS NOT NULL AND title != ''
-    `;
+    const completedSessionIds = includePersonaSessions
+      ? await prisma.$queryRaw<{ id: number }[]>`
+          SELECT id FROM "InterviewSession"
+          WHERE "projectId" = ${project.id}
+          AND (extra->>'ongoing' IS NULL OR extra->>'ongoing' != 'true')
+          AND title IS NOT NULL AND title != ''
+        `
+      : await prisma.$queryRaw<{ id: number }[]>`
+          SELECT id FROM "InterviewSession"
+          WHERE "projectId" = ${project.id}
+          AND "intervieweeUserId" IS NOT NULL
+          AND (extra->>'ongoing' IS NULL OR extra->>'ongoing' != 'true')
+          AND title IS NOT NULL AND title != ''
+        `;
 
     const sessions = await prisma.interviewSession.findMany({
       where: {

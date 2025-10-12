@@ -6,6 +6,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { cn, formatDate, formatDistanceToNow } from "@/lib/utils";
 import { InterviewReportExtra } from "@/prisma/client";
 import { ExternalLinkIcon, FileTextIcon, Loader2Icon, PlusIcon, RefreshCwIcon } from "lucide-react";
@@ -40,6 +42,7 @@ export function InterviewReportsSection({
   const [isReportDialogOpen, setIsReportDialogOpen] = useState<ReportItem | null>(null);
   const [generatingReport, setGeneratingReport] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [includePersonaSessions, setIncludePersonaSessions] = useState<string>("all"); // "all" or "human-only"
 
   const loadReports = useCallback(async () => {
     setLoadingReports(true);
@@ -64,7 +67,8 @@ export function InterviewReportsSection({
     setGeneratingReport(true);
     setShowConfirmDialog(false);
     try {
-      const result = await generateInterviewReport(project.id);
+      const includePersona = includePersonaSessions === "all";
+      const result = await generateInterviewReport(project.id, includePersona);
       if (!result.success) throw result;
       setIsReportDialogOpen(result.data);
       loadReports();
@@ -73,7 +77,7 @@ export function InterviewReportsSection({
     } finally {
       setGeneratingReport(false);
     }
-  }, [project.id, loadReports, t]);
+  }, [project.id, includePersonaSessions, loadReports, t]);
 
   return (
     <>
@@ -272,16 +276,44 @@ export function InterviewReportsSection({
         </Dialog>
       )}
 
-      {/* Confirmation Dialog */}
+      {/* Data Source Selection Dialog */}
       {!readOnly && (
         <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
               <DialogTitle>{t("generateReportConfirmTitle")}</DialogTitle>
-              <p className="text-sm text-muted-foreground">
-                {t("generateReportConfirmDescription")}
-              </p>
+              <p className="text-sm text-muted-foreground">{t("selectDataSourceDescription")}</p>
             </DialogHeader>
+
+            <div className="py-4">
+              <RadioGroup value={includePersonaSessions} onValueChange={setIncludePersonaSessions}>
+                <Label
+                  htmlFor="includePersonaSessions/all-sessions"
+                  className="flex items-start space-x-3 space-y-0 rounded-md border p-4 cursor-pointer hover:bg-muted/50"
+                >
+                  <RadioGroupItem value="all" id="includePersonaSessions/all-sessions" />
+                  <div className="flex-1">
+                    <div className="font-medium">{t("allInterviews")}</div>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {t("allInterviewsDescription")}
+                    </p>
+                  </div>
+                </Label>
+                <Label
+                  htmlFor="includePersonaSessions/human-only"
+                  className="flex items-start space-x-3 space-y-0 rounded-md border p-4 mt-3 cursor-pointer hover:bg-muted/50"
+                >
+                  <RadioGroupItem value="human-only" id="includePersonaSessions/human-only" />
+                  <div className="flex-1">
+                    <div className="font-medium">{t("humanInterviewsOnly")}</div>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {t("humanInterviewsOnlyDescription")}
+                    </p>
+                  </div>
+                </Label>
+              </RadioGroup>
+            </div>
+
             <div className="flex justify-end gap-2 pt-4">
               <Button variant="outline" onClick={() => setShowConfirmDialog(false)}>
                 {t("cancel")}
