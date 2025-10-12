@@ -3,6 +3,7 @@
 import { TMessageWithPlainTextTool } from "@/ai/tools/types";
 import { correctSpeechText } from "@/app/api/transcribe/actions";
 import { RecordButton } from "@/components/chat/RecordButton";
+import { TypewriterText } from "@/components/chat/TypewriterText";
 import { LoadingPulse } from "@/components/LoadingPulse";
 import { Button } from "@/components/ui/button";
 import { useDevice } from "@/hooks/use-device";
@@ -308,9 +309,20 @@ export function FocusedInterviewChat<
                 </p>
               )}
             </motion.div>
+          ) : !lastAssistantMessage ? (
+            <motion.div
+              key="initial"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="min-h-full flex items-center justify-center text-base sm:text-lg text-center"
+            >
+              {t("gettingReady")}
+            </motion.div>
           ) : (
             <motion.div
-              key={lastAssistantMessage?.id ?? "initial"}
+              key={lastAssistantMessage.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
@@ -319,46 +331,61 @@ export function FocusedInterviewChat<
                 "font-EuclidCircularA font-medium text-zinc-900 dark:text-zinc-100 leading-relaxed",
                 "min-h-full flex flex-col items-center justify-center max-w-4xl w-full mx-auto",
                 "text-base sm:text-lg text-center",
-                // messageDisplayStyle,
               )}
             >
-              {!lastAssistantMessage
-                ? t("gettingReady")
-                : (lastAssistantMessage.parts ?? []).map((part, index) =>
-                    part.type === "text" ? (
+              {(lastAssistantMessage.parts ?? []).map((part, index) => {
+                // 只显示最后一个 part
+                if (index < lastAssistantMessage.parts.length - 1) {
+                  return null;
+                }
+
+                if (part.type === "text") {
+                  // Show tool-related text parts without typewriter effect
+                  if (index < lastAssistantMessage.parts.length - 1) {
+                    return (
                       <div
                         key={index}
-                        className={cn(
-                          // "whitespace-normal",
-                          "whitespace-pre-wrap",
-                          index < lastAssistantMessage.parts.length - 1 &&
-                            "mx-4 text-sm font-normal text-muted-foreground/50",
-                        )}
+                        className={cn("mx-4 text-sm font-normal text-muted-foreground/50")}
                       >
                         {part.text}
                       </div>
-                    ) : part.type === "dynamic-tool" ? (
-                      <div
-                        key={index}
-                        className="my-4 text-sm text-center text-muted-foreground/50 font-normal font-mono"
-                      >
-                        {t("toolCalling")} {part.toolName}
-                        {part.state === "output-available" ? (
-                          <CheckIcon className="size-3 inline-block ml-2 text-green-500" />
-                        ) : null}
-                      </div>
-                    ) : isToolUIPart(part) ? (
-                      <div
-                        key={index}
-                        className="my-4 text-sm text-center text-muted-foreground/50 font-normal font-mono"
-                      >
-                        {t("toolCalling")} {getToolName(part)}
-                        {part.state === "output-available" ? (
-                          <CheckIcon className="size-3 inline-block ml-2 text-green-500" />
-                        ) : null}
-                      </div>
-                    ) : null,
-                  )}
+                    );
+                  }
+                  // Apply typewriter effect only to the last text part
+                  return <TypewriterText key={index} text={part.text} />;
+                }
+
+                if (part.type === "dynamic-tool") {
+                  return (
+                    <div
+                      key={index}
+                      className="my-4 text-sm text-center text-muted-foreground/50 font-normal font-mono"
+                    >
+                      {t("toolCalling")} {part.toolName}
+                      {part.state === "output-available" ? (
+                        <CheckIcon className="size-3 inline-block ml-2 text-green-500" />
+                      ) : null}
+                    </div>
+                  );
+                }
+
+                if (isToolUIPart(part)) {
+                  return (
+                    <div
+                      key={index}
+                      className="my-4 text-sm text-center text-muted-foreground/50 font-normal font-mono"
+                    >
+                      {t("toolCalling")} {getToolName(part)}
+                      {part.state === "output-available" ? (
+                        <CheckIcon className="size-3 inline-block ml-2 text-green-500" />
+                      ) : null}
+                    </div>
+                  );
+                }
+
+                return null;
+              })}
+
               {status === "streaming" && <LoadingPulse className="mt-4 text-muted-foreground" />}
             </motion.div>
           )}

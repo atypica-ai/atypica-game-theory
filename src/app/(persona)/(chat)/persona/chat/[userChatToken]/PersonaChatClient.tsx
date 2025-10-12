@@ -61,6 +61,7 @@ export function PersonaChatClient({
         return { body };
       },
     }),
+    experimental_throttle: 300,
   });
 
   const useChatRef = useRef({
