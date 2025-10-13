@@ -88,12 +88,12 @@ async function takeScreenshot({ url, html, filename }) {
     // Navigate to the URL and wait for the page to load
     if (html) {
       await page.setContent(html, {
-        waitUntil: "networkidle0",
+        waitUntil: "domcontentloaded",
         timeout: 10000, // 10 second timeout
       });
     } else {
       await page.goto(url, {
-        waitUntil: "networkidle0",
+        waitUntil: "domcontentloaded",
         timeout: 60000, // 60 second timeout
       });
     }
@@ -142,12 +142,12 @@ async function htmlToPDF({ url, html, filename }) {
     // Navigate to the URL and wait for the page to load
     if (html) {
       await page.setContent(html, {
-        waitUntil: "networkidle0",
+        waitUntil: "domcontentloaded",
         timeout: 10000, // 10 second timeout
       });
     } else {
       await page.goto(url, {
-        waitUntil: "networkidle0",
+        waitUntil: "domcontentloaded",
         timeout: 60000, // 60 second timeout
       });
     }
@@ -216,12 +216,12 @@ async function htmlToPaginatedPDF({
     // Navigate to the URL and wait for the page to load
     if (html) {
       await page.setContent(html, {
-        waitUntil: "networkidle0",
+        waitUntil: "domcontentloaded",
         timeout: 10000, // 10 second timeout
       });
     } else {
       await page.goto(url, {
-        waitUntil: "networkidle0",
+        waitUntil: "domcontentloaded",
         timeout: 60000, // 60 second timeout
       });
     }

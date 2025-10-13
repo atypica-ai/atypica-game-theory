@@ -45,7 +45,7 @@ const API_CONFIGS = {
     type: "email-service",
     test: async () => {
       await sendEmail(
-        { to: "hi@atypica.ai", subject: "[atypica.AI health check]", text: "", html: "" },
+        { to: "xd@atypica.ai", subject: "[atypica.AI health check]", text: "", html: "" },
         { throwError: true },
       );
       return { message: "Email sent successfully" };
