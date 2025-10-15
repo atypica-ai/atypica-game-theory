@@ -95,7 +95,8 @@ jobs:
           username: ${{ secrets.AZURE_REGISTRY_USERNAME }}
           password: ${{ secrets.AZURE_REGISTRY_PASSWORD }}
 
-      - name: Sync main app image to Azure Registry
+      - name: Sync Main App Image to Azure Registry
+        timeout-minutes: 5  # 5 分钟超时
         run: |
           # Pull from ghcr.io
           docker pull ghcr.io/bmrlab/atypica-llm-app:${{ env.VERSION }}
@@ -111,7 +112,8 @@ jobs:
           docker tag ghcr.io/bmrlab/atypica-llm-app:latest musecr.azurecr.cn/bmrlab/atypica-llm-app:latest
           docker push musecr.azurecr.cn/bmrlab/atypica-llm-app:latest
 
-      - name: Sync jobs image to Azure Registry
+      - name: Sync Jobs Image to Azure Registry
+        timeout-minutes: 5  # 5 分钟超时
         run: |
           # Pull from ghcr.io
           docker pull ghcr.io/bmrlab/atypica-llm-app:${{ env.VERSION }}-job
