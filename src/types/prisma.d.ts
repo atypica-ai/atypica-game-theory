@@ -101,6 +101,7 @@ declare module "@/prisma/client" {
     optimizationReason: string;
     lastOptimizedAt: number;
     questionTypePreference: "open-ended" | "multiple-choice" | "mixed"; // 问题类型偏好
+    permanentShareToken: string; // 永久链接令牌，用于验证永久链接
   }>;
 
   export type InterviewSessionExtra = Partial<{

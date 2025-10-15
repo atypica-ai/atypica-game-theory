@@ -3,17 +3,46 @@ import "server-only";
 import { convertDBMessageToAIMessage } from "@/ai/messageUtils";
 import { decryptText, encryptText } from "@/lib/cipher";
 import { truncateForTitle } from "@/lib/textUtils";
+import { InterviewProjectExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { InterviewToolName } from "./tools/types";
 import { InterviewSharePayload, TInterviewMessageWithTool } from "./types";
 
 /**
- * Generate an encrypted share token for an interview project
+ * Generate an encrypted share token for an interview project with expiration time
  * @param projectId - The project ID to generate token for
- * @param expiryHours - Token expiry time in hours (default: 24 hours)
+ * @param expiryHours - Token expiry time in hours
  * @returns Encrypted share token
  */
-export function generateInterviewShareToken(projectId: number, expiryHours: number = 24): string {
+export function generateInterviewShareToken(projectId: number, expiryHours: number): string;
+
+/**
+ * Generate an encrypted permanent share token for an interview project
+ * @param projectId - The project ID to generate token for
+ * @param permanentToken - Permanent token for validation
+ * @returns Encrypted share token
+ */
+export function generateInterviewShareToken(projectId: number, permanentToken: string): string;
+
+/**
+ * Implementation of generateInterviewShareToken
+ */
+export function generateInterviewShareToken(
+  projectId: number,
+  expiryHoursOrPermanentToken: number | string
+): string {
+  // 处理永久链接 (第二个参数是字符串)
+  if (typeof expiryHoursOrPermanentToken === 'string') {
+    const permanentToken = expiryHoursOrPermanentToken;
+    const payload: InterviewSharePayload = {
+      projectId,
+      permanent: permanentToken
+    };
+    return encryptText(JSON.stringify(payload));
+  }
+
+  // 处理临时链接 (第二个参数是数字)
+  const expiryHours = expiryHoursOrPermanentToken;
   const now = Date.now();
   const expiresAt = now + expiryHours * 60 * 60 * 1000; // Convert hours to milliseconds
 
@@ -36,16 +65,28 @@ export function decryptInterviewShareToken(token: string): InterviewSharePayload
     const decrypted = decryptText(token);
     const payload: InterviewSharePayload = JSON.parse(decrypted);
 
-    // Validate payload structure
+    // 验证项目ID始终是必须的
+    if (typeof payload.projectId !== "number") {
+      return null;
+    }
+
+    // 处理永久链接 (有permanent字段)
+    if (payload.permanent !== undefined) {
+      if (typeof payload.permanent !== "string") {
+        return null;
+      }
+      return payload;
+    }
+
+    // 处理临时链接 (有timestamp和expiresAt字段)
     if (
-      typeof payload.projectId !== "number" ||
       typeof payload.timestamp !== "number" ||
       typeof payload.expiresAt !== "number"
     ) {
       return null;
     }
 
-    // Check if token has expired
+    // 检查链接是否过期
     const now = Date.now();
     if (now > payload.expiresAt) {
       return null;
@@ -96,6 +137,7 @@ export async function validateInterviewShareToken(
     where: { id: payload.projectId },
     select: {
       id: true,
+      extra: true,
       user: {
         select: {
           name: true,
@@ -107,6 +149,21 @@ export async function validateInterviewShareToken(
 
   if (!project) {
     return null;
+  }
+
+  const projectExtra = project.extra as InterviewProjectExtra;
+
+  // 如果是永久链接 (有permanent字段)，验证项目中存储的永久令牌
+  if (payload.permanent !== undefined) {
+    // 检查项目中是否存储了永久分享令牌
+    if (!projectExtra?.permanentShareToken) {
+      return null;
+    }
+
+    // 验证令牌是否匹配
+    if (payload.permanent !== projectExtra.permanentShareToken) {
+      return null;
+    }
   }
 
   return {

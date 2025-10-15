@@ -30,8 +30,9 @@ export type UpdateInterviewProjectInput = z.infer<typeof updateInterviewProjectS
 // Share link payload
 export interface InterviewSharePayload {
   projectId: number;
-  timestamp: number;
-  expiresAt: number;
+  timestamp?: number;
+  expiresAt?: number;
+  permanent?: string; // 永久链接标识，存储 permanentShareToken
 }
 
 export type TInterviewMessageWithTool = UIMessage<unknown, UIDataTypes, TInterviewUITools>;

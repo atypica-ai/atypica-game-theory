@@ -281,6 +281,7 @@ export function ProjectDetails({
           open={inviteDialogOpen}
           onOpenChange={setInviteDialogOpen}
           projectId={project.id}
+          projectExtra={project.extra}
         />
       )}
 
