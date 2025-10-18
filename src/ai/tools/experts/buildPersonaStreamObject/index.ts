@@ -7,6 +7,7 @@ import { defaultProviderOptions, llm } from "@/ai/provider";
 import { scoutChatTools } from "@/ai/tools/experts/scoutTaskChat/types";
 import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
+import { createPersonaWithPostProcess } from "@/app/(persona)/lib";
 import { prisma } from "@/prisma/prisma";
 import { streamObject, tool } from "ai";
 import {
@@ -62,8 +63,13 @@ export const buildPersonaStreamObjectTool = ({
         }
         try {
           const { name, source, tags, personaPrompt: prompt } = data;
-          const persona = await prisma.persona.create({
-            data: { name, source, tags, prompt, samples: [], scoutUserChatId },
+          const persona = await createPersonaWithPostProcess({
+            name: name.slice(0, 50),
+            source: source.slice(0, 200), // 为了数据库不报错，防御性的截断一下
+            tags: tags.map((tag) => tag.slice(0, 50)),
+            prompt,
+            locale,
+            scoutUserChatId,
           });
           personas.push({ personaId: persona.id, name, tags, source });
         } catch (error) {

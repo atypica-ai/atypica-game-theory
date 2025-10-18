@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { Subscription, SubscriptionPlan, UserType } from "@/prisma/client";
-import { CheckIcon, GiftIcon, InfoIcon } from "lucide-react";
+import { CheckIcon, CoinsIcon, GiftIcon, InfoIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useCallback, useState } from "react";
@@ -63,8 +63,9 @@ export default function PricingPageClient({
             <CardDescription className="h-12">{t("freeSubtitle")}</CardDescription>
             <div className="mt-4 h-30">
               <div className="text-3xl font-bold">{t("freePrice")}</div>
-              <div className="mt-1 flex items-center gap-1">
-                {t("freeTokens")}
+              <div className="mt-1 flex items-center">
+                <CoinsIcon className="size-4 mr-2" />
+                <span className="mr-1">{t("freeTokens")}</span>
                 <TokenUsageTooltip />
               </div>
             </div>
@@ -150,7 +151,10 @@ export default function PricingPageClient({
                 </span>
                 <span className="text-lg">/{t("month")}</span>
               </div>
-              <div className="mt-1">{t("proMonthlyTokens")}</div>
+              <div className="mt-1 flex items-center">
+                <CoinsIcon className="size-4 mr-2" />
+                <span>{t("proMonthlyTokens")}</span>
+              </div>
               <div className="mt-2 flex items-start text-sm">
                 <GiftIcon className="size-4 text-primary mr-2 mt-0.5" />
                 <span className="flex-1 font-semibold">{t("features.tokens.proGift")}</span>
@@ -203,7 +207,10 @@ export default function PricingPageClient({
                 </span>
                 <span className="text-lg">/{t("month")}</span>
               </div>
-              <div className="mt-1">{t("maxMonthlyTokens")}</div>
+              <div className="mt-1 flex items-center">
+                <CoinsIcon className="size-4 mr-2" />
+                <span>{t("maxMonthlyTokens")}</span>
+              </div>
               <div className="mt-2 flex items-start text-sm">
                 <GiftIcon className="size-4 text-primary mr-2 mt-0.5" />
                 <span className="flex-1 font-semibold">{t("features.tokens.maxGift")}</span>
@@ -251,14 +258,35 @@ export default function PricingPageClient({
             <CardDescription className="h-12">{t("teamSubtitle")}</CardDescription>
             <div className="mt-4 h-30">
               <div>
-                <span className="text-3xl font-bold">
-                  {locale === "zh-CN"
-                    ? `¥${productPrices["TEAMSEAT1MONTH"]["CNY"]}`
-                    : `$${productPrices["TEAMSEAT1MONTH"]["USD"]}`}
-                </span>
-                <span className="text-lg">{t("perSeat")}</span>
+                {locale === "zh-CN" ? (
+                  <>
+                    <span className="text-3xl font-bold">
+                      {t("currency")}
+                      {productPrices["TEAMSEAT1MONTH"]["CNY"] * 3}
+                    </span>
+                    <span className="text-lg">{t("startingFrom")}</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-lg">{t("startingFrom")} </span>
+                    <span className="text-3xl font-bold">
+                      {t("currency")}
+                      {productPrices["TEAMSEAT1MONTH"]["USD"] * 3}
+                    </span>
+                  </>
+                )}
               </div>
-              <div className="mt-1">{t("teamMonthlyTokens")}</div>
+              <div className="mt-1 text-sm font-medium">
+                {t("currency")}
+                {locale === "zh-CN"
+                  ? productPrices["TEAMSEAT1MONTH"]["CNY"]
+                  : productPrices["TEAMSEAT1MONTH"]["USD"]}
+                {t("perSeat")} · {t("teamMinimumSeats")}
+              </div>
+              <div className="mt-1 flex items-start">
+                <CoinsIcon className="size-4 mt-1 mr-2 shrink-0" />
+                <span className="leading-5">{t("teamMonthlyTokens")}</span>
+              </div>
             </div>
           </CardHeader>
           <CardContent className="flex-grow space-y-4">

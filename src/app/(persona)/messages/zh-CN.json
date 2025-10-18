@@ -98,7 +98,7 @@
     "personaDetails": {
       "title": "AI 人设详情",
       "description": "查看该 AI 人设的详细资料。",
-      "viewFullReport": "查看完整分析报告",
+      "viewFullReport": "完善人设",
       "chatWithPersona": "与该人设对话",
       "personaInfo": "人设信息",
       "analysisSummary": "分析摘要"
