@@ -14,29 +14,15 @@ async function main() {
 
   console.log("Starting persona token generation...");
 
-  // Count personas without tokens
-  const totalCount = await prisma.persona.count({
-    where: {
-      token: null,
-    },
-  });
-
-  console.log(`Total personas without tokens: ${totalCount}`);
-
-  if (totalCount === 0) {
-    console.log("All personas already have tokens. Nothing to do.");
-    return;
-  }
-
   const batchSize = 100;
-  const totalBatches = Math.ceil(totalCount / batchSize);
-  let processedCount = 0;
+  let batchNumber = 0;
+  let totalProcessed = 0;
   let successCount = 0;
   let errorCount = 0;
 
-  for (let i = 0; i < totalBatches; i++) {
-    const skip = i * batchSize;
-    console.log(`\nProcessing batch ${i + 1}/${totalBatches} (skip: ${skip})`);
+  while (true) {
+    batchNumber++;
+    console.log(`\nProcessing batch ${batchNumber}...`);
 
     // Fetch current batch of personas without tokens
     const personas = await prisma.persona.findMany({
@@ -47,9 +33,14 @@ async function main() {
         id: true,
       },
       orderBy: { id: "asc" },
-      skip,
       take: batchSize,
     });
+
+    // No more personas without tokens, we're done
+    if (personas.length === 0) {
+      console.log("No more personas without tokens. All done!");
+      break;
+    }
 
     console.log(`Found ${personas.length} personas in this batch`);
 
@@ -67,7 +58,9 @@ async function main() {
         attempts++;
 
         if (attempts > 100) {
-          console.error(`✗ Failed to generate unique token for persona ${persona.id} after 100 attempts`);
+          console.error(
+            `✗ Failed to generate unique token for persona ${persona.id} after 100 attempts`,
+          );
           errorCount++;
           break;
         }
@@ -79,9 +72,9 @@ async function main() {
       }
     }
 
-    // Batch update using transaction
+    // Batch update
     try {
-      await prisma.$transaction(
+      await Promise.all(
         updates.map((update) =>
           prisma.persona.update({
             where: { id: update.id },
@@ -91,37 +84,22 @@ async function main() {
       );
 
       successCount += updates.length;
-      processedCount += personas.length;
+      totalProcessed += personas.length;
 
       for (const update of updates) {
         console.log(`✓ Persona ${update.id} assigned token: ${update.token}`);
       }
 
-      console.log(`Batch ${i + 1} completed. Progress: ${processedCount}/${totalCount}`);
+      console.log(`Batch ${batchNumber} completed. Total processed: ${totalProcessed}`);
     } catch (error) {
-      console.error(`✗ Error in batch ${i + 1}: ${(error as Error).message}`);
-      console.error(`  Attempting individual updates for this batch...`);
-
-      // Fallback: update one by one if batch fails
-      for (const update of updates) {
-        try {
-          await prisma.persona.update({
-            where: { id: update.id },
-            data: { token: update.token },
-          });
-          successCount++;
-          console.log(`✓ Persona ${update.id} assigned token: ${update.token}`);
-        } catch (err) {
-          console.error(`✗ Failed to update persona ${update.id}: ${(err as Error).message}`);
-          errorCount++;
-        }
-        processedCount++;
-      }
+      console.error(`✗ Error in batch ${batchNumber}: ${(error as Error).message}`);
+      errorCount += updates.length;
+      throw error;
     }
   }
 
   console.log("\n=== Summary ===");
-  console.log(`Total processed: ${processedCount}`);
+  console.log(`Total processed: ${totalProcessed}`);
   console.log(`Successfully assigned tokens: ${successCount}`);
   console.log(`Errors: ${errorCount}`);
   console.log("Done!");
