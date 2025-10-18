@@ -38,7 +38,11 @@
       "submittingButton": "注册中...",
       "haveAccountText": "已有账号？",
       "signInLink": "立即登录",
-      "userAlreadyExists": "用户已存在"
+      "userAlreadyExists": "用户已存在",
+      "agreementText": "继续即表示您同意我们的",
+      "termsOfService": "用户协议",
+      "and": "和",
+      "privacyPolicy": "隐私政策"
     },
     "Verify": {
       "title": "验证您的邮箱",

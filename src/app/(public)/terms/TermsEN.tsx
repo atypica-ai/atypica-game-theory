@@ -181,11 +181,46 @@ export const TermsEN: React.FC = () => {
               invoice after payment, you can contact us separately. The invoice header must be
               consistent with the paying entity.
             </p>
-            <p>
-              The services we provide are all virtual services. Unless otherwise provided by laws
-              and regulations, subscription fees will not be refunded once paid.
-            </p>
-            <p>
+
+            <div>
+              <h3 className="text-lg font-semibold mb-3 mt-6">Refund Policy</h3>
+
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-semibold mb-2">Refund Window</h4>
+                  <ul className="space-y-1 text-sm ml-4">
+                    <li>• All purchases and subscriptions are eligible for refunds within 7 days</li>
+                    <li>• Refund requests after 7 days will not be accepted</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h4 className="font-semibold mb-2">One-Time Token Purchase Refunds</h4>
+                  <ul className="space-y-1 text-sm ml-4">
+                    <li>• Purchased tokens (including bonus tokens) can be refunded within 7 days</li>
+                    <li>• Refund amount will deduct the cost of tokens already used</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h4 className="font-semibold mb-2">Subscription Refunds</h4>
+                  <ul className="space-y-1 text-sm ml-4">
+                    <li>• Pro/Max/Team subscriptions can be refunded within 7 days of purchase</li>
+                    <li>• Refund amount will deduct the cost of tokens used and the validity period elapsed</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h4 className="font-semibold mb-2">Team Subscription Refunds</h4>
+                  <ul className="space-y-1 text-sm ml-4">
+                    <li>• Team subscription refunds must be initiated by the team administrator</li>
+                    <li>• Refunds are calculated based on the entire team&apos;s usage</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <p className="mt-6">
               You should properly keep your account and password, and must not disclose your account
               and password to third parties. If your account and password are leaked due to your own
               reasons, you shall bear all losses caused thereby.

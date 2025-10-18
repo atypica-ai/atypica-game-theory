@@ -120,8 +120,46 @@ export const TermsZH: React.FC = () => {
             <p>
               您可按照页面展示的价格，依约支付。若您在支付后需要发票的，您可与我们单独联系。发票的抬头需要和付款主体相一致。
             </p>
-            <p>我们提供的服务均为虚拟服务，除法律法规另有规定外，订阅费用一经支付，不予退还。</p>
-            <p>
+
+            <div>
+              <h3 className="text-lg font-semibold mb-3 mt-6">退款政策</h3>
+
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-semibold mb-2">退款期限</h4>
+                  <ul className="space-y-1 text-sm ml-4">
+                    <li>• 所有购买和订阅均支持 7 天内申请退款</li>
+                    <li>• 超过 7 天将不再接受退款申请</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h4 className="font-semibold mb-2">一次性购买 Tokens 退款</h4>
+                  <ul className="space-y-1 text-sm ml-4">
+                    <li>• 购买的 tokens（包括赠送部分）在 7 天内可申请退款</li>
+                    <li>• 退款金额将扣除已使用的 tokens 对应的费用</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h4 className="font-semibold mb-2">订阅会员退款</h4>
+                  <ul className="space-y-1 text-sm ml-4">
+                    <li>• Pro/Max/Team 订阅在购买后 7 天内可申请退款</li>
+                    <li>• 退款金额将扣除已使用的 tokens 和已过去的有效期对应的费用</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h4 className="font-semibold mb-2">团队订阅退款</h4>
+                  <ul className="space-y-1 text-sm ml-4">
+                    <li>• 团队订阅的退款需由团队管理员发起</li>
+                    <li>• 退款按整个团队的使用情况计算</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <p className="mt-6">
               您应当妥善保管自己的账号和密码，不得将账号和密码泄露给第三方。如因您自身原因导致账号和密码被泄露，造成的一切损失由您自行承担。
             </p>
           </div>

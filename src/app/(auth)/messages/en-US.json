@@ -38,7 +38,11 @@
       "submittingButton": "Signing up...",
       "haveAccountText": "Already have an account?",
       "signInLink": "Sign in now",
-      "userAlreadyExists": "User already exists"
+      "userAlreadyExists": "User already exists",
+      "agreementText": "By continuing, you agree to the",
+      "termsOfService": "Terms of Service",
+      "and": "and",
+      "privacyPolicy": "Privacy Policy"
     },
     "Verify": {
       "title": "Verify Your Email",
