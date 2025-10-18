@@ -3,6 +3,7 @@ import "server-only";
 import { createTextEmbedding } from "@/ai/embedding";
 import { defaultProviderOptions, llm } from "@/ai/provider";
 import { rootLogger } from "@/lib/logging";
+import { generateToken } from "@/lib/utils";
 import { Persona } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { generateObject, UserModelMessage } from "ai";
@@ -54,7 +55,10 @@ export async function createPersonaWithPostProcess({
     });
   } else {
     persona = await prisma.persona.create({
-      data: data,
+      data: {
+        ...data,
+        token: generateToken(),
+      },
     });
   }
 
