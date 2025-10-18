@@ -1,3 +1,11 @@
+/**
+ * 11月注意
+ * 团队版的订单现在没有统计，因为没有 email
+ * 这个人的的8月和9月的订单分别是 ATP5511755600969896, ATP5511755600969896-1 都是团队版的
+ *
+ * 退款订单 ATP1021753148031772-1, 需要标记
+ */
+
 // pnpm tsx scripts/payment-stats.ts > payment-stats.csv
 
 import { TokensLogResourceType } from "@/tokens/types";
