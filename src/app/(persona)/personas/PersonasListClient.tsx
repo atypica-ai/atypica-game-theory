@@ -23,13 +23,13 @@ import { toast } from "sonner";
 
 type PersonaWithStatus = ExtractServerActionData<typeof fetchUserPersonas>[number];
 
-export default function PersonasClient() {
+export function PersonasListClient() {
   const t = useTranslations("PersonaImport.personas");
   const locale = useLocale();
   const router = useRouter();
   const [personas, setPersonas] = useState<PersonaWithStatus[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [chatCreating, setChatCreating] = useState<Record<number, boolean>>({});
+  const [chatCreating, setChatCreating] = useState<Record<string, boolean>>({});
 
   const loadPersonas = useCallback(async () => {
     try {
@@ -58,18 +58,16 @@ export default function PersonasClient() {
         toast.warning(t("updating"));
         return;
       }
-      setChatCreating((prev) => ({ ...prev, [persona.id]: true }));
+      setChatCreating((prev) => ({ ...prev, [persona.token]: true }));
       try {
-        const result = await createOrGetUserPersonaChat(persona.id);
-        if (!result.success) {
-          throw new Error(result.message);
-        }
+        const result = await createOrGetUserPersonaChat(persona.token);
+        if (!result.success) throw result;
         router.push(`/persona/chat/${result.data.token}`);
       } catch (error) {
         console.log("Failed to start chat:", error);
         toast.error("Failed to start chat");
       } finally {
-        setChatCreating((prev) => ({ ...prev, [persona.id]: false }));
+        setChatCreating((prev) => ({ ...prev, [persona.token]: false }));
       }
     },
     [router, t],
@@ -129,7 +127,7 @@ export default function PersonasClient() {
             <NewPersonaCard />
             {personas.map((persona) => (
               <Card
-                key={persona.id}
+                key={persona.token}
                 className={cn(
                   "transition-all duration-300",
                   persona.personaImportProcessing
@@ -199,17 +197,17 @@ export default function PersonasClient() {
                             e.stopPropagation();
                             handleStartChat(persona);
                           }}
-                          disabled={chatCreating[persona.id]}
+                          disabled={persona.token in chatCreating}
                           variant="outline"
                         >
                           <MessageCircleIcon className="size-3" />
-                          {chatCreating[persona.id] ? t("starting") : t("startChat")}
+                          {persona.token in chatCreating ? t("starting") : t("startChat")}
                         </Button>
                         <Button variant="outline" size="sm" className="flex-1" asChild>
                           {persona.personaImportProcessing ? (
                             <div>{t("updating")}</div>
                           ) : (
-                            <Link prefetch={true} href={`/personas/${persona.id}`}>
+                            <Link prefetch={true} href={`/personas/${persona.token}`}>
                               <FileTextIcon className="size-3" />
                               {t("viewDetails")}
                             </Link>

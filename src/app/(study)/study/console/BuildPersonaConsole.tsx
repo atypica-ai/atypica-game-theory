@@ -64,17 +64,6 @@ export const BuildPersonaConsole: FC<{
     };
   }, [toolInvocation.state, fetchPersonasInProgress]);
 
-  // 因为 scoutTask 就是本次研究的，不重复显示了，这样也可以和 searchPersonas 工具的显示方式区分开
-  // if (toolInvocation.state === "result") {
-  //   const { personas } = toolInvocation.result as BuildPersonaToolResult;
-  //   return (
-  //     <div className="py-2 h-full flex flex-col items-stretch justify-start gap-4">
-  //       <h3 className="text-sm">🤖 {t("buildPersonaResult", { count: personas.length })}</h3>
-  //       <PersonaGridsWithScoutHistory personas={personas} />
-  //     </div>
-  //   );
-  // }
-
   return (
     <div>
       <div className="mb-4 text-sm">

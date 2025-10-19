@@ -15,17 +15,13 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ personaId: string }>;
+  params: Promise<{ personaToken: string }>;
 }): Promise<Metadata> {
   const locale = await getLocale();
   const t = await getTranslations("PersonaImport.personaDetails");
-  const personaId = parseInt((await params).personaId, 10);
+  const { personaToken } = await params;
 
-  if (isNaN(personaId)) {
-    return {};
-  }
-
-  const result = await fetchPersonaWithDetails(personaId);
+  const result = await fetchPersonaWithDetails(personaToken);
 
   if (!result.success) {
     return {};
@@ -39,8 +35,8 @@ export async function generateMetadata({
   });
 }
 
-async function PersonaDetailPage({ personaId }: { personaId: number }) {
-  const result = await fetchPersonaWithDetails(personaId);
+async function PersonaDetailPage({ personaToken }: { personaToken: string }) {
+  const result = await fetchPersonaWithDetails(personaToken);
   if (!result.success) {
     // Gracefully handle not_found, unauthorized, forbidden without leaking info
     notFound();
@@ -56,25 +52,22 @@ async function PersonaDetailPage({ personaId }: { personaId: number }) {
 export default async function PersonaDetailPageWithLoading({
   params,
 }: {
-  params: Promise<{ personaId: string }>;
+  params: Promise<{ personaToken: string }>;
 }) {
-  const personaId = parseInt((await params).personaId, 10);
-  if (isNaN(personaId)) {
-    notFound();
-  }
+  const { personaToken } = await params;
 
   // 当页面放在 Suspense 里的时候，withAuth 里的 redirect exception 可能会导致前端闪现 client error
   // notFound error 没这个问题
   // 所以这里先提前判断下用户是否登录
   const session = await getServerSession(authOptions);
   if (!session?.user) {
-    const callbackUrl = `/personas/${personaId}`;
+    const callbackUrl = `/personas/${personaToken}`;
     redirect(`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`);
   }
 
   return (
     <Suspense fallback={<PageLoadingFallback />}>
-      <PersonaDetailPage personaId={personaId} />
+      <PersonaDetailPage personaToken={personaToken} />
     </Suspense>
   );
 }

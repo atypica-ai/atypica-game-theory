@@ -471,17 +471,17 @@ export async function disablePermanentInviteLinkAction(
  */
 export async function createPersonaInterviewSession({
   projectId,
-  personaId,
+  personaToken,
 }: {
   projectId: number;
-  personaId: number;
+  personaToken: string;
 }): Promise<ServerActionResult<{ sessionId: number; chatToken: string }>> {
   return withAuth(async (user) => {
     const [project, persona] = await Promise.all([
       prisma.interviewProject
         .findUniqueOrThrow({ where: { id: projectId, userId: user.id } })
         .catch(() => notFound()),
-      prisma.persona.findUniqueOrThrow({ where: { id: personaId } }).catch(() => notFound()),
+      prisma.persona.findUniqueOrThrow({ where: { token: personaToken } }).catch(() => notFound()),
     ]);
 
     const userChat = await createUserChat({

@@ -4,6 +4,7 @@ import {
   convertDBMessageToAIMessage,
   persistentAIMessageToDB,
 } from "@/ai/messageUtils";
+import { ToolName, TStudyMessageWithTool } from "@/ai/tools/types";
 import { categorizeFiles, FILE_UPLOAD_LIMITS } from "@/lib/fileUploadLimits";
 import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
@@ -12,7 +13,6 @@ import { detectInputLanguage, truncateForTitle } from "@/lib/textUtils";
 import { createUserChat } from "@/lib/userChat/lib";
 import {
   Analyst,
-  AnalystInterview,
   AnalystPodcast,
   AnalystReport,
   ChatMessageAttachment,
@@ -260,24 +260,30 @@ export async function fetchAnalystByStudyUserChatToken({
   };
 }
 
-export async function fetchInterviewOfStudyUserChatByPersonaId({
+/**
+ * 这个方法接收一个 personaId 用于过滤，同时不需要权限，这是安全的。
+ * 前端无法通过遍历 personaId 来获取所有 analystInterview，
+ * personaId 仅用于过滤 studyUserChatToken 对应研究里的所有访谈（这些访谈在拥有 studyUserChatToken 的情况下，都是直接可读的）
+ */
+export async function fetchAnalystInterviewForPersona({
   studyUserChatToken,
-  analystId,
-  personaId,
+  forPersonaId,
 }: {
   studyUserChatToken: string;
-  analystId: number;
-  personaId: number;
+  forPersonaId: number;
 }): Promise<
-  ServerActionResult<
-    AnalystInterview & {
-      interviewUserChat: {
-        token: string;
-        backgroundToken: string | null;
-        messages: UIMessage[];
-      } | null;
-    }
-  >
+  ServerActionResult<{
+    conclusion: string;
+    interviewUserChat: {
+      token: string;
+      backgroundToken: string | null;
+      messages: UIMessage[];
+    } | null;
+    persona: {
+      token: string;
+      name: string;
+    };
+  }>
 > {
   const studyUserChat = await prisma.userChat.findUnique({
     where: { token: studyUserChatToken, kind: "study" },
@@ -291,28 +297,30 @@ export async function fetchInterviewOfStudyUserChatByPersonaId({
     return {
       success: false,
       code: "not_found",
-      message: "User chat not found",
-    };
-  }
-  if (studyUserChat.analyst.id !== analystId) {
-    return {
-      success: false,
-      message: "Something went wrong, analyst ID mismatch",
+      message: "User chat not found or analyst not found",
     };
   }
   const interview = await prisma.analystInterview.findUnique({
     where: {
       analystId_personaId: {
         analystId: studyUserChat.analyst.id,
-        personaId,
+        personaId: forPersonaId,
       },
     },
-    include: {
+    select: {
+      id: true,
+      conclusion: true,
       interviewUserChat: {
         select: {
           token: true,
           backgroundToken: true,
           messages: { orderBy: { id: "asc" } },
+        },
+      },
+      persona: {
+        select: {
+          token: true,
+          name: true,
         },
       },
     },
@@ -324,16 +332,28 @@ export async function fetchInterviewOfStudyUserChatByPersonaId({
       message: "AnalystInterview not found",
     };
   }
+  const { persona, interviewUserChat, conclusion } = interview;
+  if (!persona.token) {
+    return {
+      success: false,
+      code: "internal_server_error",
+      message: "Persona token is missing",
+    };
+  }
   return {
     success: true,
     data: {
-      ...interview,
-      interviewUserChat: interview.interviewUserChat
+      conclusion,
+      interviewUserChat: interviewUserChat
         ? {
-            ...interview.interviewUserChat,
-            messages: interview.interviewUserChat.messages.map(convertDBMessageToAIMessage),
+            ...interviewUserChat,
+            messages: interviewUserChat.messages.map(convertDBMessageToAIMessage),
           }
         : null,
+      persona: {
+        token: persona.token,
+        name: persona.name,
+      },
     },
   };
 }
@@ -422,35 +442,74 @@ export async function fetchAnalystReportsOfStudyUserChat({
   };
 }
 
-export async function fetchPersonasByIds({ ids }: { ids: number[] }): Promise<
+/**
+ * 和 fetchAnalystInterviewForPersona 一样，这个方法是安全的，无法通过遍历 personaId 来获取所有 Persona
+ */
+export async function fetchPersonasSearchInStudy({
+  studyUserChatToken,
+  filterByPersonaIds,
+}: {
+  studyUserChatToken: string;
+  filterByPersonaIds?: number[];
+}): Promise<
   ServerActionResult<
-    (Pick<Persona, "id" | "name" | "source" | "tier" | "prompt"> & {
+    (Pick<Persona, "name" | "source" | "tier" | "prompt"> & {
+      token: string;
       tags: string[];
-      scoutUserChatToken: string | null;
     })[]
   >
 > {
-  const personas = await prisma.persona.findMany({
-    where: { id: { in: ids } },
+  const studyUserChat = await prisma.userChat.findUnique({
+    where: { token: studyUserChatToken, kind: "study" },
     select: {
-      id: true,
+      messages: {
+        where: { role: "assistant" },
+      },
+    },
+  });
+  if (!studyUserChat) {
+    return {
+      success: false,
+      code: "not_found",
+      message: "Study user chat not found",
+    };
+  }
+
+  const uiMessages = studyUserChat.messages.map(
+    convertDBMessageToAIMessage,
+  ) as TStudyMessageWithTool[];
+
+  let personaIds = new Set<number>();
+  for (const message of uiMessages) {
+    for (const part of message.parts) {
+      if (part.type === `tool-${ToolName.searchPersonas}` && part.state === "output-available") {
+        const ids = part.output.personas.map((persona) => persona.personaId);
+        personaIds = personaIds.union(new Set(ids));
+      }
+    }
+  }
+  personaIds = personaIds.intersection(new Set(filterByPersonaIds ?? []));
+
+  const personas = await prisma.persona.findMany({
+    where: {
+      token: { not: null },
+      id: { in: Array.from(personaIds) },
+    },
+    select: {
+      token: true,
       name: true,
       source: true,
       prompt: true,
       tags: true,
       tier: true,
-      scoutUserChat: {
-        select: {
-          token: true,
-        },
-      },
     },
   });
+
   return {
     success: true,
-    data: personas.map(({ tags, scoutUserChat, ...persona }) => ({
+    data: personas.map(({ token, tags, ...persona }) => ({
       ...persona,
-      scoutUserChatToken: scoutUserChat?.token ?? null,
+      token: token!,
       tags: tags as string[],
     })),
   };

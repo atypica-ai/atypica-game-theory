@@ -30,7 +30,7 @@ import { useRouter } from "next/navigation";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { createOrGetUserPersonaChat } from "../../(persona)/actions";
-import { fetchPersonas, rescorePersona } from "./actions";
+import { fetchAdminPersonas, rescorePersona } from "./actions";
 import { PersonaImportDialog } from "./PersonaImportDialog";
 
 type PaginationInfo = {
@@ -40,7 +40,7 @@ type PaginationInfo = {
   totalPages: number;
 };
 
-type TPersona = ExtractServerActionData<typeof fetchPersonas>[number];
+type TAdminPersona = ExtractServerActionData<typeof fetchAdminPersonas>[number];
 
 export default function PersonasList({
   scoutUserChat,
@@ -50,12 +50,12 @@ export default function PersonasList({
   initialParams: Record<string, string | number>;
 }) {
   const router = useRouter();
-  const [selectedPersona, setSelectedPersona] = useState<TPersona | null>(null);
-  const [personas, setPersonas] = useState<TPersona[]>([]);
+  const [selectedPersona, setSelectedPersona] = useState<TAdminPersona | null>(null);
+  const [personas, setPersonas] = useState<TAdminPersona[]>([]);
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [rescoringId, setRescoringId] = useState<number | null>(null);
-  const [chatCreating, setChatCreating] = useState<Record<number, boolean>>({});
+  const [rescoringToken, setRescoringToken] = useState<string | null>(null);
+  const [chatCreating, setChatCreating] = useState<Record<string, boolean>>({});
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [selectedImportId, setSelectedImportId] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -104,7 +104,7 @@ export default function PersonasList({
   const fetchPersonasForPage = useCallback(async () => {
     setIsLoading(true);
     try {
-      const result = await fetchPersonas({
+      const result = await fetchAdminPersonas({
         locales: selectedLocales,
         tiers: selectedTiers,
         scoutUserChatId: scoutUserChat?.id,
@@ -145,10 +145,10 @@ export default function PersonasList({
     setParams({ search: "", page: 1 });
   };
 
-  const handleRescore = async (personaId: number) => {
-    setRescoringId(personaId);
+  const handleRescore = async (personaToken: string) => {
+    setRescoringToken(personaToken);
     try {
-      const result = await rescorePersona(personaId);
+      const result = await rescorePersona(personaToken);
       if (result.success) {
         // Refresh the list after a successful rescore
         await fetchPersonasForPage();
@@ -158,15 +158,15 @@ export default function PersonasList({
     } catch (error) {
       alert(`An error occurred: ${(error as Error).message}`);
     } finally {
-      setRescoringId(null);
+      setRescoringToken(null);
     }
   };
 
   const handleStartChat = useCallback(
-    async (personaId: number) => {
-      setChatCreating((prev) => ({ ...prev, [personaId]: true }));
+    async (personaToken: string) => {
+      setChatCreating((prev) => ({ ...prev, [personaToken]: true }));
       try {
-        const result = await createOrGetUserPersonaChat(personaId);
+        const result = await createOrGetUserPersonaChat(personaToken);
         if (!result.success) {
           throw new Error(result.message);
         }
@@ -175,7 +175,7 @@ export default function PersonasList({
         console.log("Failed to start chat:", error);
         toast.error("Failed to start chat");
       } finally {
-        setChatCreating((prev) => ({ ...prev, [personaId]: false }));
+        setChatCreating((prev) => ({ ...prev, [personaToken]: false }));
       }
     },
     [router],
@@ -309,7 +309,7 @@ export default function PersonasList({
         ) : personas.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {personas.map((persona) => (
-              <Card key={persona.id}>
+              <Card key={persona.token}>
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between text-lg overflow-hidden">
                     <span className="truncate flex-1">{persona.name}</span>
@@ -333,13 +333,13 @@ export default function PersonasList({
                         size="sm"
                         variant="secondary"
                         className="text-xs h-5"
-                        disabled={rescoringId === persona.id}
+                        disabled={rescoringToken === persona.token}
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleRescore(persona.id);
+                          handleRescore(persona.token);
                         }}
                       >
-                        {rescoringId === persona.id ? "Scoring..." : "Re-score"}
+                        {rescoringToken === persona.token ? "Scoring..." : "Re-score"}
                       </Button>
                       {persona.tier === 3 && persona.personaImport && (
                         <>
@@ -433,10 +433,10 @@ export default function PersonasList({
           <DialogFooter className="justify-between sm:justify-between">
             <Button
               size="sm"
-              onClick={() => selectedPersona && handleStartChat(selectedPersona.id)}
-              disabled={selectedPersona ? chatCreating[selectedPersona.id] : false}
+              onClick={() => selectedPersona && handleStartChat(selectedPersona.token)}
+              disabled={selectedPersona ? chatCreating[selectedPersona.token] : false}
             >
-              {selectedPersona && chatCreating[selectedPersona.id] ? "Starting..." : "Chat"}
+              {selectedPersona && chatCreating[selectedPersona.token] ? "Starting..." : "Chat"}
             </Button>
             <div className="flex flex-wrap gap-2">
               {(selectedPersona?.tags as string[])?.map((tag, index) => (

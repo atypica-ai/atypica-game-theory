@@ -1,12 +1,12 @@
 "use client";
-import { createOrGetUserPersonaChat } from "@/app/(persona)/actions";
+import { createOrGetUserPersonaChat, fetchPersonaWithDetails } from "@/app/(persona)/actions";
 import { AnalysisResult } from "@/app/(persona)/persona/import/[personaImportId]/AnalysisResult";
 import { PersonaImportAnalysis } from "@/app/(persona)/types";
 import { Markdown } from "@/components/markdown";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDate } from "@/lib/utils";
-import { Persona } from "@/prisma/client";
 import {
   BrainIcon,
   CalendarIcon,
@@ -20,17 +20,15 @@ import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
-interface PersonaDetailClientProps {
-  persona: Omit<Persona, "tags"> & { tags: string[] };
-  analysis: Partial<PersonaImportAnalysis> | null;
-  personaImportId: number | null;
-}
-
 export function PersonaDetailClient({
   persona,
   analysis,
   personaImportId,
-}: PersonaDetailClientProps) {
+}: {
+  persona: ExtractServerActionData<typeof fetchPersonaWithDetails>["persona"];
+  analysis: Partial<PersonaImportAnalysis> | null;
+  personaImportId: number | null;
+}) {
   const t = useTranslations("PersonaImport.personaDetails");
   const tCommon = useTranslations("PersonaImport.personaChat");
   const tPersona = useTranslations("PersonaImport.personas");
@@ -41,7 +39,7 @@ export function PersonaDetailClient({
   const handleStartChat = useCallback(async () => {
     setIsChatCreating(true);
     try {
-      const result = await createOrGetUserPersonaChat(persona.id);
+      const result = await createOrGetUserPersonaChat(persona.token);
       if (!result.success) {
         throw new Error(result.message);
       }
@@ -52,7 +50,7 @@ export function PersonaDetailClient({
     } finally {
       setIsChatCreating(false);
     }
-  }, [persona.id, router]);
+  }, [persona.token, router]);
 
   const handleViewReport = () => {
     if (personaImportId) {

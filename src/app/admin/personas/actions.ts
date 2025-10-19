@@ -9,13 +9,16 @@ import { ChatMessageAttachment, Persona, PersonaImport, PersonaImportExtra } fro
 import { prisma } from "@/prisma/prisma";
 import { AdminPermission } from "../types";
 
-type TPersona = Pick<Persona, "id" | "name" | "source" | "prompt" | "tier"> & { tags: string[] };
+type TPersona = Pick<Persona, "name" | "source" | "prompt" | "locale" | "tier"> & {
+  token: string;
+  tags: string[];
+};
 
-export async function rescorePersona(personaId: number): Promise<ServerActionResult<void>> {
+export async function rescorePersona(personaToken: string): Promise<ServerActionResult<void>> {
   await checkAdminAuth([AdminPermission.MANAGE_PERSONAS]);
 
   const persona = await prisma.persona.findUniqueOrThrow({
-    where: { id: personaId },
+    where: { token: personaToken },
   });
 
   await scorePersona(persona);
@@ -39,9 +42,9 @@ type TPersonaWithImport = TPersona & {
 };
 
 /**
- * Admin-only fetchPersonas with tier and locale filtering
+ * Admin-only fetchAdminPersonas with tier and locale filtering
  */
-export async function fetchPersonas({
+export async function fetchAdminPersonas({
   locales,
   tiers,
   scoutUserChatId,
@@ -71,7 +74,7 @@ export async function fetchPersonas({
       const embedding = await createTextEmbedding(searchQuery, "retrieval.query");
       const personas = await prisma.$queryRaw<TPersonaWithImport[]>`
         SELECT
-          p.id, p.name, p.source, p.prompt, p.tags, p.tier, p.locale,
+          p.token, p.name, p.source, p.prompt, p.tags, p.locale, p.tier, p.locale,
           pi.id as "personaImportId",
           pi.analysis as "personaImportAnalysis",
           pi.extra as "personaImportExtra",
@@ -98,10 +101,11 @@ export async function fetchPersonas({
       return {
         success: true,
         data: personas.map((row: Record<string, unknown>) => ({
-          id: row.id as number,
+          token: row.token as string,
           name: row.name as string,
           source: row.source as string,
           prompt: row.prompt as string,
+          locale: row.locale as string,
           tags: row.tags as string[],
           tier: row.tier as number,
           personaImport: row.personaImportId
@@ -150,10 +154,11 @@ export async function fetchPersonas({
         createdAt: "desc",
       },
       select: {
-        id: true,
+        token: true,
         name: true,
         source: true,
         prompt: true,
+        locale: true,
         tags: true,
         tier: true,
         personaImport: {
@@ -178,17 +183,16 @@ export async function fetchPersonas({
 
   return {
     success: true,
-    data: personas.map((persona) => ({
+    data: personas.map(({ token, tags, personaImport, ...persona }) => ({
       ...persona,
-      tags: persona.tags as string[],
-      personaImport: persona.personaImport
+      token: token!,
+      tags: tags as string[],
+      personaImport: personaImport
         ? {
-            ...persona.personaImport,
-            analysis: persona.personaImport.analysis,
-            extra: persona.personaImport.extra,
-            user: persona.personaImport.user?.email
-              ? { email: persona.personaImport.user.email }
-              : undefined,
+            ...personaImport,
+            analysis: personaImport.analysis,
+            extra: personaImport.extra,
+            user: personaImport.user?.email ? { email: personaImport.user.email } : undefined,
           }
         : null,
     })),

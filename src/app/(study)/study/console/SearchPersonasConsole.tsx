@@ -1,12 +1,12 @@
+import { TPersonaForStudy } from "@/ai/tools/experts/buildPersona/types";
 import { StudyUITools, ToolName } from "@/ai/tools/types";
-import { fetchPersonasByIds } from "@/app/(study)/study/actions";
+import { fetchPersonasSearchInStudy } from "@/app/(study)/study/actions";
+import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ExtractServerActionData } from "@/lib/serverAction";
-
-import { TPersonaForStudy } from "@/ai/tools/experts/buildPersona/types";
 import { ToolUIPart } from "ai";
 import { LoaderIcon, UserCheckIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -14,12 +14,13 @@ import { FC, useCallback, useEffect, useState } from "react";
 import { HighPrecisionPersonaMethodology } from "./HighPrecisionPersonaMethodology";
 import "./styles/RealPersonCard.css";
 
-type TPersonaDetail = ExtractServerActionData<typeof fetchPersonasByIds>[number];
+type TPersonaDetail = ExtractServerActionData<typeof fetchPersonasSearchInStudy>[number];
 
 const PersonaGrids: FC<{
   personas: TPersonaForStudy[];
 }> = ({ personas }) => {
   const t = useTranslations("StudyPage.ToolConsole");
+  const { studyUserChat } = useStudyContext();
   const [promptPersona, setPromptPersona] = useState<TPersonaDetail | null>(null);
   const [personasDetails, setPersonasDetails] = useState<TPersonaDetail[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -46,17 +47,12 @@ const PersonaGrids: FC<{
   // );
   // const realPersonCount = realPersonaIds.size;
 
-  const personaTier = useCallback(
-    (personaId: number) => personasDetails.find((persona) => persona.id === personaId)?.tier ?? 0,
-    [personasDetails],
-  );
-
   const tier2Count = personasDetails.filter((persona) => persona.tier === 2).length;
   // const tier3Count = personasDetails.filter((persona) => persona.tier === 3).length;
 
   const onPromptPersona = useCallback(
-    (personaId: number) => {
-      const promptPersona = personasDetails.find((persona) => persona.id === personaId);
+    (personaToken: string) => {
+      const promptPersona = personasDetails.find((persona) => persona.token === personaToken);
       if (promptPersona) {
         setPromptPersona(promptPersona);
       }
@@ -66,13 +62,12 @@ const PersonaGrids: FC<{
 
   useEffect(() => {
     setIsLoading(true);
-    fetchPersonasByIds({
-      ids: personas.map(({ personaId }) => personaId),
+    fetchPersonasSearchInStudy({
+      studyUserChatToken: studyUserChat.token,
+      filterByPersonaIds: personas.map(({ personaId }) => personaId),
     })
       .then((result) => {
-        if (!result.success) {
-          throw new Error(result.message);
-        }
+        if (!result.success) throw result;
         const personas = result.data;
         setPersonasDetails(personas);
       })
@@ -82,7 +77,7 @@ const PersonaGrids: FC<{
       .finally(() => {
         setIsLoading(false);
       });
-  }, [personas]);
+  }, [personas, studyUserChat.token]);
 
   if (isLoading) {
     return (
@@ -108,34 +103,32 @@ const PersonaGrids: FC<{
       </h3>
       {tier2Count > 0 && <HighPrecisionPersonaMethodology />}
       <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-2 2xl:grid-cols-3 gap-4">
-        {personas.map(({ personaId, name, source, tags }) => (
+        {personasDetails.map((persona) => (
           <Card
-            key={personaId}
+            key={persona.token}
             className="duration-300 hover:bg-accent/50 hover:shadow-md p-4 cursor-pointer flex flex-col relative"
-            onClick={() => onPromptPersona(personaId)}
+            onClick={() => onPromptPersona(persona.token)}
           >
             <CardHeader className="px-0">
               <CardTitle className="flex items-start gap-2 overflow-hidden">
-                {personaTier(personaId) >= 2 ? (
+                {persona.tier >= 2 ? (
                   <div className="real-person-avatar p-1">
                     <div className="avatar-inner">
-                      <HippyGhostAvatar seed={personaId} className="size-8" />
+                      <HippyGhostAvatar seed={persona.token} className="size-8" />
                     </div>
                   </div>
                 ) : (
-                  <HippyGhostAvatar seed={personaId} className="size-8" />
+                  <HippyGhostAvatar seed={persona.token} className="size-8" />
                 )}
                 <div className="flex-1 flex flex-col justify-center min-w-0">
-                  <div className="truncate text-sm font-medium">{name}</div>
-                  {personaTier(personaId) >= 2 ? (
+                  <div className="truncate text-sm font-medium">{persona.name}</div>
+                  {persona.tier >= 2 ? (
                     <div className="text-xs text-violet-700 dark:text-violet-300 flex items-center gap-1 font-normal">
-                      {personaTier(personaId) === 3
-                        ? t("humanPersonaPrivate")
-                        : t("highPrecisionPersona")}
+                      {persona.tier === 3 ? t("humanPersonaPrivate") : t("highPrecisionPersona")}
                     </div>
                   ) : (
                     <div className="text-xs text-muted-foreground font-normal truncate">
-                      {t("personaSource")}：{source}
+                      {t("personaSource")}：{persona.source}
                     </div>
                   )}
                 </div>
@@ -143,7 +136,7 @@ const PersonaGrids: FC<{
             </CardHeader>
             <CardFooter className="mt-auto px-0">
               <div className="flex flex-wrap gap-1.5">
-                {(tags as string[])?.map((tag, index) => (
+                {persona.tags.map((tag, index) => (
                   <Badge key={index} variant="outline" className="text-xs">
                     {tag}
                   </Badge>
@@ -159,24 +152,24 @@ const PersonaGrids: FC<{
           <DialogContent className="sm:max-w-2xl">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-3">
-                {personaTier(promptPersona.id) >= 2 ? (
+                {promptPersona.tier >= 2 ? (
                   <div className="real-person-avatar p-1">
                     <div className="avatar-inner">
-                      <HippyGhostAvatar seed={promptPersona.id} className="size-8" />
+                      <HippyGhostAvatar seed={promptPersona.token} className="size-8" />
                     </div>
                   </div>
                 ) : (
-                  <HippyGhostAvatar seed={promptPersona.id} className="size-8" />
+                  <HippyGhostAvatar seed={promptPersona.token} className="size-8" />
                 )}
                 <div className="flex items-center gap-3">
-                  {promptPersona?.name}
-                  {personaTier(promptPersona.id) >= 2 ? (
+                  {promptPersona.name}
+                  {promptPersona.tier >= 2 ? (
                     <Badge
                       variant="secondary"
                       className="text-xs bg-gradient-to-r from-violet-50 to-fuchsia-50 text-violet-700 border-violet-200 font-semibold dark:from-violet-950/50 dark:to-fuchsia-950/50 dark:text-violet-300 dark:border-violet-800/50"
                     >
                       <UserCheckIcon className="size-3 mr-1" />
-                      {personaTier(promptPersona.id) === 3
+                      {promptPersona.tier === 3
                         ? t("humanPersonaPrivate")
                         : t("highPrecisionPersona")}
                     </Badge>
@@ -185,7 +178,7 @@ const PersonaGrids: FC<{
               </DialogTitle>
             </DialogHeader>
             <div className="bg-muted/50 rounded-lg p-4 max-h-[60vh] overflow-y-auto">
-              <pre className="text-sm whitespace-pre-wrap font-mono">{promptPersona?.prompt}</pre>
+              <pre className="text-sm whitespace-pre-wrap font-mono">{promptPersona.prompt}</pre>
             </div>
           </DialogContent>
         )}

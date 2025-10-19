@@ -5,6 +5,7 @@ import { ServerActionResult } from "@/lib/serverAction";
 import { AnalystInterview, Persona } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { UIMessage } from "ai";
+import { notFound } from "next/navigation";
 
 interface PersonaWithTags extends Omit<Persona, "tags"> {
   tags: string[];
@@ -127,12 +128,15 @@ export async function fetchAnalystInterviewById(interviewId: number): Promise<
 
 export async function upsertAnalystInterview({
   analystId,
-  personaId,
+  personaToken,
 }: {
   analystId: number;
-  personaId: number;
+  personaToken: string;
 }): Promise<ServerActionResult<AnalystInterview>> {
   return withAuth(async (user) => {
+    const { id: personaId } = await prisma.persona
+      .findUniqueOrThrow({ where: { token: personaToken }, select: { id: true } })
+      .catch(() => notFound());
     await prisma.analyst.findUniqueOrThrow({
       where: {
         id: analystId,

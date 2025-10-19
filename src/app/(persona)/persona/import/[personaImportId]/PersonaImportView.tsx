@@ -240,7 +240,18 @@ export function PersonaImportView({
           {personas.length > 0 && !isProcessing && (
             <section id="persona-summary" className="scroll-mt-24 relative">
               <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 w-20 h-px bg-gradient-to-r from-transparent via-border to-transparent"></div>
-              <PersonaSummary personas={personas} />
+              <PersonaSummary
+                personas={
+                  // TODO: 后面等 token nullable 属性去掉以后，可以去掉这个判断
+                  personas
+                    .filter((persona) => !!persona.token)
+                    .map(
+                      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                      ({ id, ...persona }) =>
+                        persona as Omit<Persona, "id" | "token"> & { id: undefined; token: string },
+                    )
+                }
+              />
             </section>
           )}
 

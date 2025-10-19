@@ -1,9 +1,8 @@
 import { StudyUITools, ToolName, TStudyMessageWithTool } from "@/ai/tools/types";
 import { StudyToolUIPartDisplay } from "@/ai/tools/ui";
-import { fetchPersonaById } from "@/app/(persona)/actions";
 import {
   fetchAnalystByStudyUserChatToken,
-  fetchInterviewOfStudyUserChatByPersonaId,
+  fetchAnalystInterviewForPersona,
 } from "@/app/(study)/study/actions";
 import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
 import {
@@ -13,7 +12,8 @@ import {
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
-import { Analyst, Persona } from "@/prisma/client";
+import { ExtractServerActionData } from "@/lib/serverAction";
+import { Analyst } from "@/prisma/client";
 import { ToolUIPart } from "ai";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
@@ -124,35 +124,26 @@ const SingleInterviewChat = ({
   const [backgroundToken, setBackgroundToken] = useState<string | null>(null);
   const [messages, setMessages] = useState<TStudyMessageWithTool[]>([]);
   const [conclusion, setConclusion] = useState<string | null>(null);
-  const [persona, setPersona] = useState<Persona>();
+  const [persona, setPersona] =
+    useState<ExtractServerActionData<typeof fetchAnalystInterviewForPersona>["persona"]>();
 
   const fetchUpdate = useCallback(async () => {
     try {
-      const [interviewResult, personaResult] = await Promise.all([
-        await fetchInterviewOfStudyUserChatByPersonaId({
-          studyUserChatToken: studyUserChat.token,
-          analystId: analyst.id,
-          personaId,
-        }),
-        await fetchPersonaById(personaId),
-      ]);
-      if (!interviewResult.success) {
-        throw interviewResult;
-      }
-      if (!personaResult.success) {
-        throw interviewResult;
-      }
-      setMessages(
-        (interviewResult.data.interviewUserChat?.messages || []) as TStudyMessageWithTool[],
-      );
-      setPersona(personaResult.data);
-      setBackgroundToken(interviewResult.data.interviewUserChat?.backgroundToken ?? null);
+      const result = await fetchAnalystInterviewForPersona({
+        studyUserChatToken: studyUserChat.token,
+        forPersonaId: personaId,
+      });
+      if (!result.success) throw result;
+      const { persona, interviewUserChat, conclusion } = result.data;
+      setMessages((interviewUserChat?.messages || []) as TStudyMessageWithTool[]);
+      setBackgroundToken(interviewUserChat?.backgroundToken ?? null);
+      setPersona(persona);
       // setInterviewId(interviewResult.data.id);
-      setConclusion(interviewResult.data.conclusion);
+      setConclusion(conclusion);
     } catch (error) {
       console.log("Error fetching interview:", (error as Error).message);
     }
-  }, [studyUserChat.token, analyst.id, personaId]);
+  }, [studyUserChat.token, personaId]);
 
   const { replay } = useStudyContext();
   const { partialMessages: messagesDisplay } = useProgressiveMessages({

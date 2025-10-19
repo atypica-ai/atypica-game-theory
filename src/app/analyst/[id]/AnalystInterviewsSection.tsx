@@ -31,9 +31,9 @@ export function AnalystInterviewsSection({
   }, [setIsPersonaDialogOpen]);
 
   const onSelectPersonas = useCallback(
-    async (personaIds: number[]) => {
-      for (const personaId of personaIds) {
-        await upsertAnalystInterview({ analystId, personaId });
+    async (personaTokens: string[]) => {
+      for (const personaToken of personaTokens) {
+        await upsertAnalystInterview({ analystId, personaToken });
       }
       router.refresh();
     },

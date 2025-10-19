@@ -9,7 +9,10 @@ import { Locale } from "next-intl";
 import { getLocale } from "next-intl/server";
 import { forbidden } from "next/navigation";
 
-type TPersona = Pick<Persona, "id" | "name" | "source" | "prompt" | "tier"> & { tags: string[] };
+type TPersona = Pick<Persona, "name" | "source" | "prompt" | "tier"> & {
+  token: string;
+  tags: string[];
+};
 
 export async function fetchPersonas({
   locale,
@@ -49,7 +52,7 @@ export async function fetchPersonas({
           id: "desc",
         },
         select: {
-          id: true,
+          token: true,
           name: true,
           source: true,
           prompt: true,
@@ -64,10 +67,11 @@ export async function fetchPersonas({
 
     return {
       success: true,
-      data: personas.map((persona) => {
+      data: personas.map(({ token, tags, ...persona }) => {
         return {
           ...persona,
-          tags: persona.tags as string[],
+          token: token!,
+          tags: tags as string[],
         };
       }),
       pagination: {
@@ -84,7 +88,7 @@ export async function fetchPersonas({
     try {
       const embedding = await createTextEmbedding(searchQuery, "retrieval.query");
       const personas = await prisma.$queryRaw<TPersona[]>`
-        SELECT id, name, source, prompt, tags, tier
+        SELECT token, name, source, prompt, tags, tier
         FROM "Persona"
         WHERE "embedding" <=> ${JSON.stringify(embedding)}::halfvec < 0.9 AND locale = ${locale} AND tier = ANY(${[1, 2]})
         ORDER BY "embedding" <=> ${JSON.stringify(embedding)}::halfvec ASC
@@ -134,7 +138,7 @@ export async function fetchPersonas({
         id: "desc",
       },
       select: {
-        id: true,
+        token: true,
         name: true,
         source: true,
         prompt: true,
@@ -149,10 +153,11 @@ export async function fetchPersonas({
 
   return {
     success: true,
-    data: personas.map((persona) => {
+    data: personas.map(({ token, tags, ...persona }) => {
       return {
         ...persona,
-        tags: persona.tags as string[],
+        token: token!,
+        tags: tags as string[],
       };
     }),
     pagination: {

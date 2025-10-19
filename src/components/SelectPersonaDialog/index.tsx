@@ -17,21 +17,23 @@ import { useLocale, useTranslations } from "next-intl";
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { fetchPersonas } from "./actions";
 
-interface SelectPersonaDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onSelect: (personaIds: number[]) => void;
-}
-
 type TPersona = ExtractServerActionData<typeof fetchPersonas>[number];
 
-export function SelectPersonaDialog({ open, onOpenChange, onSelect }: SelectPersonaDialogProps) {
+export function SelectPersonaDialog({
+  open,
+  onOpenChange,
+  onSelect,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSelect: (personaTokens: string[]) => void;
+}) {
   const locale = useLocale();
   const t = useTranslations("Components.SelectPersonaDialog");
 
   const [loading, setLoading] = useState(false);
   const [personas, setPersonas] = useState<TPersona[]>([]);
-  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [selectedTokens, setSelectedTokens] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
@@ -60,7 +62,7 @@ export function SelectPersonaDialog({ open, onOpenChange, onSelect }: SelectPers
 
   useEffect(() => {
     if (open) {
-      setSelectedIds([]);
+      setSelectedTokens([]);
       setSearchQuery("");
       setMode("public");
       setCurrentPage(1);
@@ -92,8 +94,8 @@ export function SelectPersonaDialog({ open, onOpenChange, onSelect }: SelectPers
   }, [currentPage, searchQuery, open, loadPersonas, mode]);
 
   const selectedPersonas = useMemo(
-    () => personas.filter((p) => selectedIds.includes(p.id)),
-    [personas, selectedIds],
+    () => personas.filter((p) => selectedTokens.includes(p.token)),
+    [personas, selectedTokens],
   );
 
   const filterDisplayTags = useCallback(
@@ -103,7 +105,7 @@ export function SelectPersonaDialog({ open, onOpenChange, onSelect }: SelectPers
 
   const handleSubmit = () => {
     onOpenChange(false);
-    onSelect(selectedIds);
+    onSelect(selectedTokens);
   };
 
   const handleSearch = useCallback((e: FormEvent) => {
@@ -121,9 +123,9 @@ export function SelectPersonaDialog({ open, onOpenChange, onSelect }: SelectPers
     setCurrentPage(1);
   }, []);
 
-  const togglePersonaSelection = useCallback((id: number) => {
-    setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((pid) => pid !== id) : [...prev, id],
+  const togglePersonaSelection = useCallback((token: string) => {
+    setSelectedTokens((prev) =>
+      prev.includes(token) ? prev.filter((pid) => pid !== token) : [...prev, token],
     );
   }, []);
 
@@ -202,16 +204,16 @@ export function SelectPersonaDialog({ open, onOpenChange, onSelect }: SelectPers
                     </div>
                   ) : (
                     personas.map((persona) => {
-                      const isSelected = selectedIds.includes(persona.id);
+                      const isSelected = selectedTokens.includes(persona.token);
                       const displayTags = filterDisplayTags(persona.tags as string[]);
 
                       return (
                         <Card
-                          key={persona.id}
+                          key={persona.token}
                           className={`cursor-pointer transition-colors ${
                             isSelected ? "bg-accent" : "hover:bg-accent/50"
                           }`}
-                          onClick={() => togglePersonaSelection(persona.id)}
+                          onClick={() => togglePersonaSelection(persona.token)}
                         >
                           <CardHeader>
                             <CardTitle className="flex items-center gap-2">
@@ -271,11 +273,11 @@ export function SelectPersonaDialog({ open, onOpenChange, onSelect }: SelectPers
                 <Button
                   variant="outline"
                   onClick={() => setShowSelectedList(true)}
-                  disabled={selectedIds.length === 0}
+                  disabled={selectedTokens.length === 0}
                 >
-                  {t("selected")} ({selectedIds.length})
+                  {t("selected")} ({selectedTokens.length})
                 </Button>
-                <Button onClick={handleSubmit} disabled={selectedIds.length === 0}>
+                <Button onClick={handleSubmit} disabled={selectedTokens.length === 0}>
                   {t("confirm")}
                 </Button>
               </div>
@@ -320,10 +322,10 @@ export function SelectPersonaDialog({ open, onOpenChange, onSelect }: SelectPers
               <DialogFooter>
                 <Button
                   size="sm"
-                  variant={selectedIds.includes(previewPersona.id) ? "outline" : "default"}
-                  onClick={() => togglePersonaSelection(previewPersona.id)}
+                  variant={selectedTokens.includes(previewPersona.token) ? "outline" : "default"}
+                  onClick={() => togglePersonaSelection(previewPersona.token)}
                 >
-                  {selectedIds.includes(previewPersona.id)
+                  {selectedTokens.includes(previewPersona.token)
                     ? t("removeFromSelection")
                     : t("addToSelection")}
                 </Button>
@@ -338,7 +340,7 @@ export function SelectPersonaDialog({ open, onOpenChange, onSelect }: SelectPers
         <DialogContent className="sm:max-w-lg max-h-[80vh] flex flex-col">
           <DialogHeader>
             <DialogTitle>
-              {t("selectedPersonasTitle")} ({selectedIds.length})
+              {t("selectedPersonasTitle")} ({selectedTokens.length})
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-3 overflow-y-auto scrollbar-thin flex-1">
@@ -348,7 +350,7 @@ export function SelectPersonaDialog({ open, onOpenChange, onSelect }: SelectPers
               </p>
             ) : (
               selectedPersonas.map((persona) => (
-                <div key={persona.id} className="border rounded-md p-3 space-y-2">
+                <div key={persona.token} className="border rounded-md p-3 space-y-2">
                   <div className="flex items-center justify-between gap-2">
                     <span className="font-medium text-sm truncate flex-1">{persona.name}</span>
                     <div className="flex gap-2">
@@ -358,7 +360,7 @@ export function SelectPersonaDialog({ open, onOpenChange, onSelect }: SelectPers
                       <Button
                         size="sm"
                         variant="ghost"
-                        onClick={() => togglePersonaSelection(persona.id)}
+                        onClick={() => togglePersonaSelection(persona.token)}
                       >
                         <XIcon className="h-3 w-3" />
                       </Button>

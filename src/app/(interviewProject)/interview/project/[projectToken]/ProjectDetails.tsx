@@ -64,13 +64,13 @@ export function ProjectDetails({
   }, [project.extra?.processing, router]);
 
   const onSelectPersonas = useCallback(
-    async (selectedIds: number[]) => {
+    async (selectedTokens: string[]) => {
       setCreatingPersonaSessions(true);
       try {
-        for (const personaId of selectedIds) {
+        for (const personaToken of selectedTokens) {
           const result = await createPersonaInterviewSession({
             projectId: project.id,
-            personaId,
+            personaToken,
           });
           if (!result.success) throw result;
         }

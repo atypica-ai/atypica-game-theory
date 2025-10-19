@@ -83,31 +83,12 @@ export async function processPersonaImportAction(
   });
 }
 
-export async function fetchPersonaById(
-  personaId: number,
-): Promise<ServerActionResult<Omit<Persona, "tags"> & { tags: string[] }>> {
-  const persona = await prisma.persona.findUnique({
-    where: { id: personaId },
-  });
-  if (!persona) {
-    return {
-      success: false,
-      code: "not_found",
-      message: "Persona not found",
-    };
-  }
-  return {
-    success: true,
-    data: {
-      ...persona,
-      tags: persona.tags as string[],
-    },
-  };
-}
-
-export async function fetchPersonaWithDetails(personaId: number): Promise<
+export async function fetchPersonaWithDetails(personaToken: string): Promise<
   ServerActionResult<{
-    persona: Omit<Persona, "tags"> & { tags: string[] };
+    persona: Pick<Persona, "name" | "source" | "prompt" | "locale" | "tier" | "createdAt"> & {
+      token: string;
+      tags: string[];
+    };
     analysis: Partial<PersonaImportAnalysis> | null;
     personaImportId: number | null;
   }>
@@ -115,7 +96,7 @@ export async function fetchPersonaWithDetails(personaId: number): Promise<
   // `withAuth` will handle session check
   return withAuth(async () => {
     // This function already checks for admin or ownership
-    const accessResult = await checkPersonaAccess(personaId);
+    const accessResult = await checkPersonaAccess(personaToken);
     if (!accessResult.success) {
       return {
         success: false,
@@ -126,13 +107,20 @@ export async function fetchPersonaWithDetails(personaId: number): Promise<
 
     const personaWithImport = accessResult.data;
 
-    const { personaImport, tags, ...persona } = personaWithImport;
+    const { personaImport, token, name, source, prompt, locale, tier, tags, createdAt } =
+      personaWithImport;
 
     return {
       success: true,
       data: {
         persona: {
-          ...persona,
+          token: token!,
+          name,
+          source,
+          prompt,
+          locale,
+          tier,
+          createdAt,
           tags: tags as string[],
         },
         analysis: personaImport
@@ -253,7 +241,7 @@ export async function fetchFollowUpInterviewChat(
 }
 
 async function checkPersonaAccess(
-  personaId: number,
+  personaToken: string,
 ): Promise<ServerActionResult<Persona & { personaImport: PersonaImport | null }>> {
   const session = await getServerSession(authOptions);
   if (!session?.user) {
@@ -265,7 +253,9 @@ async function checkPersonaAccess(
   }
 
   const persona = await prisma.persona.findUnique({
-    where: { id: personaId },
+    where: {
+      token: personaToken,
+    },
     include: {
       personaImport: true,
     },
@@ -305,7 +295,8 @@ async function checkPersonaAccess(
 export async function fetchUserPersonas(): Promise<
   ServerActionResult<
     Array<
-      Pick<Persona, "id" | "name" | "source" | "personaImportId" | "tier" | "createdAt"> & {
+      Pick<Persona, "name" | "source" | "personaImportId" | "tier" | "createdAt"> & {
+        token: string;
         tags: string[];
         personaImportProcessing: boolean;
       }
@@ -315,6 +306,7 @@ export async function fetchUserPersonas(): Promise<
   return withAuth(async (user) => {
     const personas = await prisma.persona.findMany({
       where: {
+        token: { not: null }, // 其实不需要，现在 persona 一定有 token，尤其是回头 token null 属性去掉后，这里可以删了
         personaImport: {
           userId: user.id,
         },
@@ -323,7 +315,7 @@ export async function fetchUserPersonas(): Promise<
         createdAt: "desc",
       },
       select: {
-        id: true,
+        token: true,
         name: true,
         source: true,
         tags: true,
@@ -336,8 +328,9 @@ export async function fetchUserPersonas(): Promise<
 
     return {
       success: true,
-      data: personas.map(({ personaImport, tags, ...persona }) => ({
+      data: personas.map(({ personaImport, token, tags, ...persona }) => ({
         ...persona,
+        token: token!,
         tags: tags as string[],
         personaImportProcessing: Boolean(
           personaImport?.extra && (personaImport.extra as PersonaImportExtra).processing,
@@ -348,11 +341,11 @@ export async function fetchUserPersonas(): Promise<
 }
 
 export async function createOrGetUserPersonaChat(
-  personaId: number,
+  personaToken: string,
 ): Promise<ServerActionResult<{ token: string }>> {
   return withAuth(async (user) => {
     // Check if persona exists and user has access
-    const accessResult = await checkPersonaAccess(personaId);
+    const accessResult = await checkPersonaAccess(personaToken);
     if (!accessResult.success) {
       return {
         success: false,
@@ -368,7 +361,7 @@ export async function createOrGetUserPersonaChat(
       where: {
         userId_personaId: {
           userId: user.id,
-          personaId: personaId,
+          personaId: persona.id,
         },
       },
       include: {
@@ -395,7 +388,7 @@ export async function createOrGetUserPersonaChat(
       await tx.userPersonaChatRelation.create({
         data: {
           userId: user.id,
-          personaId: personaId,
+          personaId: persona.id,
           userChatId: userChat.id,
         },
       });
@@ -457,7 +450,7 @@ export async function fetchUserPersonaChatByToken(token: string): Promise<
   });
 }
 
-export async function fetchPersonaChatStat(personaId: number): Promise<
+export async function fetchPersonaChatStat(personaToken: string): Promise<
   ServerActionResult<
     Array<{
       messageCount: number;
@@ -468,7 +461,10 @@ export async function fetchPersonaChatStat(personaId: number): Promise<
   return withAuth(async (user) => {
     // Fetch all chat sessions for this persona
     const chatRelations = await prisma.userPersonaChatRelation.findMany({
-      where: { personaId: personaId, userId: user.id },
+      where: {
+        persona: { token: personaToken },
+        userId: user.id,
+      },
       include: {
         userChat: {
           select: {
