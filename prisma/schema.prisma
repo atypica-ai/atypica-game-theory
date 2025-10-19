@@ -46,8 +46,10 @@ model User {
   email         String?   @unique // required for personal user
   password      String
   emailVerified DateTime? @db.Timestamptz(6)
-  lastLogin     Json      @default("{}")
-  extra         Json      @default("{}")
+
+  // deprecated fields
+  lastLogin Json @default("{}")
+  extra     Json @default("{}")
 
   // teams owned by the user
   teamsAsOwner      Team[] @relation("TeamOwner")
@@ -62,22 +64,37 @@ model User {
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
-  tokensAccount            TokensAccount?
-  tokensLogs               TokensLog[]
-  adminUser                AdminUser?
-  analysts                 Analyst[]
-  userChats                UserChat[]
-  paymentRecords           PaymentRecord[]
-  subscriptions            Subscription[]
-  attachmentFiles          AttachmentFile[]
-  personaImports           PersonaImport[]
-  userPersonaChatRelations UserPersonaChatRelation[]
-  interviewProjects        InterviewProject[]
+  // as resource owner
+  profile           UserProfile?
+  adminUser         AdminUser?
+  tokensAccount     TokensAccount?
+  tokensLogs        TokensLog[]
+  analysts          Analyst[]
+  userChats         UserChat[]
+  paymentRecords    PaymentRecord[]
+  subscriptions     Subscription[]
+  attachmentFiles   AttachmentFile[]
+  personaImports    PersonaImport[]
+  interviewProjects InterviewProject[]
 
+  // relations
+  userPersonaChatRelations       UserPersonaChatRelation[]
   interviewSessionsAsInterviewee InterviewSession[]
 
   // 唯一定位一个 personal user 在一个 team 里对应的 team member 身份
   @@unique([teamIdAsMember, personalUserId])
+}
+
+model UserProfile {
+  id         Int  @id @default(autoincrement())
+  userId     Int  @unique
+  user       User @relation(fields: [userId], references: [id])
+  lastLogin  Json @default("{}")
+  onboarding Json @default("{}")
+  extra      Json @default("{}")
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
 }
 
 enum AdminRole {
