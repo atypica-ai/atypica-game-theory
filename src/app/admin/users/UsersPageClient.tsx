@@ -308,11 +308,10 @@ export function UsersPageClient({ initialSearchParams }: UsersPageClientProps) {
               <TableHead>ID</TableHead>
               <TableHead>Email</TableHead>
               <TableHead className="text-right">Paid</TableHead>
-              <TableHead className="text-right">Tokens</TableHead>
+              <TableHead className="text-center">Tokens</TableHead>
+              <TableHead>Last Login</TableHead>
               {viewMode === "actions" ? (
                 <>
-                  <TableHead></TableHead>
-                  <TableHead>Last Login</TableHead>
                   <TableHead>Admin Role</TableHead>
                   <TableHead>Impersonation Login</TableHead>
                   <TableHead>Password Reset</TableHead>
@@ -367,50 +366,50 @@ export function UsersPageClient({ initialSearchParams }: UsersPageClientProps) {
                 <TableCell className="whitespace-nowrap text-sm text-right">
                   {user.paymentRecords.reduce((acc, r) => acc + r.amount, 0)}
                 </TableCell>
-                <TableCell className="whitespace-nowrap text-sm text-right">
-                  {formatTokensNumber(
-                    user.tokensAccount
-                      ? user.tokensAccount.permanentBalance + user.tokensAccount.monthlyBalance
-                      : 0,
-                  )}{" "}
-                  <br />
-                  <span className="text-xs text-muted-foreground">
-                    {(user.tokensAccount
-                      ? user.tokensAccount.permanentBalance + user.tokensAccount.monthlyBalance
-                      : 0
-                    ).toLocaleString()}
-                  </span>
+                <TableCell className="whitespace-nowrap text-sm text-right pr-6">
+                  <div className="inline-block align-middle mr-2">
+                    {formatTokensNumber(
+                      user.tokensAccount
+                        ? user.tokensAccount.permanentBalance + user.tokensAccount.monthlyBalance
+                        : 0,
+                    )}{" "}
+                    <br />
+                    <span className="text-xs text-muted-foreground">
+                      {(user.tokensAccount
+                        ? user.tokensAccount.permanentBalance + user.tokensAccount.monthlyBalance
+                        : 0
+                      ).toLocaleString()}
+                    </span>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-6 text-xs text-amber-500 hover:text-amber-500 gap-0"
+                    onClick={() => openTokensDialog(user)}
+                    title="Add tokens"
+                  >
+                    <PlusIcon className="size-3" />
+                    <CoinsIcon className="size-4" />
+                  </Button>
+                </TableCell>
+                <TableCell className="whitespace-nowrap text-xs">
+                  {user.lastLogin?.timestamp ? (
+                    <>
+                      <div>{formatDate(new Date(user.lastLogin.timestamp), locale)}</div>
+                      <div>{user.lastLogin.clientIp}</div>
+                      {user.lastLogin.geo && (
+                        <div>
+                          {user.lastLogin.geo.city}, {user.lastLogin.geo.countryCode}
+                        </div>
+                      )}
+                      {user.lastLogin.provider && <div>{user.lastLogin.provider}</div>}
+                    </>
+                  ) : (
+                    <span className="text-muted-foreground">-</span>
+                  )}
                 </TableCell>
                 {viewMode === "actions" ? (
                   <>
-                    <TableCell className="whitespace-nowrap text-sm">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-6 text-xs text-amber-500 hover:text-amber-500 gap-0"
-                        onClick={() => openTokensDialog(user)}
-                        title="Add tokens"
-                      >
-                        <PlusIcon className="size-3" />
-                        <CoinsIcon className="size-4" />
-                      </Button>
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap text-xs">
-                      {user.lastLogin?.timestamp ? (
-                        <>
-                          <div>{formatDate(new Date(user.lastLogin.timestamp), locale)}</div>
-                          <div>{user.lastLogin.clientIp}</div>
-                          {user.lastLogin.geo && (
-                            <div>
-                              {user.lastLogin.geo.city}, {user.lastLogin.geo.countryCode}
-                            </div>
-                          )}
-                          {user.lastLogin.provider && <div>{user.lastLogin.provider}</div>}
-                        </>
-                      ) : (
-                        <span className="text-muted-foreground">-</span>
-                      )}
-                    </TableCell>
                     <TableCell className="whitespace-nowrap text-sm">
                       <div className="flex items-center gap-2">
                         {user.adminUser ? (
@@ -439,7 +438,7 @@ export function UsersPageClient({ initialSearchParams }: UsersPageClientProps) {
                         )}
                       </div>
                     </TableCell>
-                    <TableCell className="whitespace-nowrap text-center">
+                    <TableCell className="whitespace-nowrap">
                       {user.emailVerified ? (
                         <Button
                           variant="outline"
@@ -456,7 +455,7 @@ export function UsersPageClient({ initialSearchParams }: UsersPageClientProps) {
                         <span className="text-xs text-muted-foreground">Email not verified</span>
                       )}
                     </TableCell>
-                    <TableCell className="whitespace-nowrap text-center">
+                    <TableCell className="whitespace-nowrap">
                       <Button
                         variant="outline"
                         size="sm"
@@ -469,7 +468,7 @@ export function UsersPageClient({ initialSearchParams }: UsersPageClientProps) {
                         {isGeneratingReset ? "..." : "Reset"}
                       </Button>
                     </TableCell>
-                    <TableCell className="whitespace-nowrap text-center">
+                    <TableCell className="whitespace-nowrap">
                       <ConfirmDialog
                         title="Delete User Account"
                         description={`Are you sure you want to permanently delete the account for ${user.email}? This will remove all user data including tokens, payments, and subscription information.`}
