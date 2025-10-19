@@ -46,6 +46,15 @@ type UserTraits = Partial<{
   // revenue
   plan: SubscriptionPlan | null;
   planEndsAt: Date | null;
+  // acquisition
+  acquisition: Partial<{
+    utm_source: string;
+    utm_medium: string;
+    utm_campaign: string;
+    utm_term: string;
+    utm_content: string;
+    referer: string;
+  }>;
 }>;
 
 async function _trackUser({ user, userProfile }: { user: User; userProfile: UserProfile }) {
@@ -62,6 +71,23 @@ async function _trackUser({ user, userProfile }: { user: User; userProfile: User
     prisma.personaImport.count({ where: { userId: user.id } }),
     prisma.paymentRecord.count({ where: { userId: user.id, status: "succeeded" } }),
   ]);
+
+  // 提取 acquisition 数据
+  const profileExtra = userProfile.extra as UserProfileExtra;
+  const acquisitionData = profileExtra?.acquisition;
+  const acquisition: UserTraits["acquisition"] = {};
+  if (acquisitionData?.utm) {
+    if (acquisitionData.utm.utm_source) acquisition.utm_source = acquisitionData.utm.utm_source;
+    if (acquisitionData.utm.utm_medium) acquisition.utm_medium = acquisitionData.utm.utm_medium;
+    if (acquisitionData.utm.utm_campaign)
+      acquisition.utm_campaign = acquisitionData.utm.utm_campaign;
+    if (acquisitionData.utm.utm_term) acquisition.utm_term = acquisitionData.utm.utm_term;
+    if (acquisitionData.utm.utm_content) acquisition.utm_content = acquisitionData.utm.utm_content;
+  }
+  if (acquisitionData?.referer?.hostname) {
+    acquisition.referer = acquisitionData.referer.hostname;
+  }
+
   const traits: UserTraits = {
     name: user.name || "",
     email: user.email || "",
@@ -79,6 +105,8 @@ async function _trackUser({ user, userProfile }: { user: User; userProfile: User
           planEndsAt: activeSubscription.endsAt,
         }
       : { plan: null, planEndsAt: null }),
+    // acquisition
+    ...(Object.keys(acquisition).length > 0 ? { acquisition } : {}),
   };
   analytics?.identify({
     userId: user.id.toString(),

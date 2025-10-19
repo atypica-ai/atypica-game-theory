@@ -3,7 +3,7 @@ import "server-only";
 import { getRefererFromCookieStore, getUtmFromCookieStore } from "@/lib/analytics/utm";
 import { rootLogger } from "@/lib/logging";
 import { getRequestClientIp, getRequestGeo, getRequestUserAgent } from "@/lib/request/headers";
-import { DeprecatedUserExtra, Team, User, UserLastLogin } from "@/prisma/client";
+import { DeprecatedUserExtra, Team, User, UserLastLogin, UserProfileExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
 import { hash } from "bcryptjs";
@@ -65,26 +65,23 @@ export function recordAcquisition({ userId }: { userId: number }) {
     (async () => {
       try {
         const userProfile = await upsertUserProfile({ userId });
-
         // 获取 acquisition 数据
         const [utmParams, refererParams] = await Promise.all([
           getUtmFromCookieStore(),
           getRefererFromCookieStore(),
         ]);
-
         // 如果有 acquisition 数据，更新到数据库
         if (utmParams || refererParams) {
+          const extra = {
+            ...(userProfile.extra as UserProfileExtra),
+            acquisition: {
+              ...(utmParams ? { utm: utmParams } : {}),
+              ...(refererParams ? { referer: refererParams } : {}),
+            },
+          };
           await prisma.userProfile.update({
             where: { userId },
-            data: {
-              extra: {
-                ...userProfile.extra,
-                acquisition: {
-                  ...(utmParams ? { utm: utmParams } : {}),
-                  ...(refererParams ? { referer: refererParams } : {}),
-                },
-              },
-            },
+            data: { extra },
           });
         }
       } catch (error) {
