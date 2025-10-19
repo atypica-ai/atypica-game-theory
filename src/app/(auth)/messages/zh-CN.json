@@ -126,7 +126,6 @@
       "sessionRequired": "请先登录后继续",
       "requiredFields": "请填写所有必填字段。",
       "successMessage": "🎉 欢迎加入！你的账户已准备就绪。",
-      "userNotFound": "用户未找到",
       "saveFailed": "保存信息失败，请重试。",
       "backButton": "返回",
       "optionalFieldNote": "标有 * 的字段为必填项"

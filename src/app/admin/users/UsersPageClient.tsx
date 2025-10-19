@@ -24,7 +24,7 @@ import {
 import { createParamConfig, useListQueryParams } from "@/hooks/use-list-query-params";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDate, formatTokensNumber } from "@/lib/utils";
-import { AdminRole, UserExtra } from "@/prisma/client";
+import { AdminRole } from "@/prisma/client";
 import { CheckIcon, CoinsIcon, CopyIcon, LinkIcon, PlusIcon, SearchIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useLocale } from "next-intl";
@@ -393,16 +393,19 @@ export function UsersPageClient({ initialSearchParams }: UsersPageClientProps) {
                   </Button>
                 </TableCell>
                 <TableCell className="whitespace-nowrap text-xs">
-                  {user.lastLogin?.timestamp ? (
+                  {user.profile?.lastLogin?.timestamp ? (
                     <>
-                      <div>{formatDate(new Date(user.lastLogin.timestamp), locale)}</div>
-                      <div>{user.lastLogin.clientIp}</div>
-                      {user.lastLogin.geo && (
+                      <div>{formatDate(new Date(user.profile.lastLogin.timestamp), locale)}</div>
+                      <div>{user.profile.lastLogin.clientIp}</div>
+                      {user.profile.lastLogin.geo && (
                         <div>
-                          {user.lastLogin.geo.city}, {user.lastLogin.geo.countryCode}
+                          {user.profile.lastLogin.geo.city},{" "}
+                          {user.profile.lastLogin.geo.countryCode}
                         </div>
                       )}
-                      {user.lastLogin.provider && <div>{user.lastLogin.provider}</div>}
+                      {user.profile.lastLogin.provider && (
+                        <div>{user.profile.lastLogin.provider}</div>
+                      )}
                     </>
                   ) : (
                     <span className="text-muted-foreground">-</span>
@@ -488,22 +491,22 @@ export function UsersPageClient({ initialSearchParams }: UsersPageClientProps) {
                   </>
                 ) : (
                   <>
-                    {(user.extra as UserExtra)?.onboarding ? (
+                    {user.profile?.onboarding ? (
                       <>
                         <TableCell className="text-center text-xs">
-                          {(user.extra as UserExtra).onboarding?.usageType || "-"}
+                          {user.profile.onboarding.usageType || "-"}
                         </TableCell>
                         <TableCell className="text-center text-xs">
-                          {(user.extra as UserExtra).onboarding?.role || "-"}
+                          {user.profile.onboarding.role || "-"}
                         </TableCell>
                         <TableCell className="text-center text-xs">
-                          {(user.extra as UserExtra).onboarding?.industry || "-"}
+                          {user.profile.onboarding.industry || "-"}
                         </TableCell>
                         <TableCell className="text-center text-xs">
-                          {(user.extra as UserExtra).onboarding?.companyName || "-"}
+                          {user.profile.onboarding.companyName || "-"}
                         </TableCell>
                         <TableCell className="text-center text-xs">
-                          {(user.extra as UserExtra).onboarding?.howDidYouHear || "-"}
+                          {user.profile.onboarding.howDidYouHear || "-"}
                         </TableCell>
                       </>
                     ) : (

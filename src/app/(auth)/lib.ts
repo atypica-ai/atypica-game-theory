@@ -2,7 +2,7 @@ import "server-only";
 
 import { rootLogger } from "@/lib/logging";
 import { getRequestClientIp, getRequestGeo, getRequestUserAgent } from "@/lib/request/headers";
-import { Team, User, UserLastLogin } from "@/prisma/client";
+import { DeprecatedUserExtra, Team, User, UserLastLogin } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
 import { hash } from "bcryptjs";
@@ -35,11 +35,12 @@ export function recordLastLogin({
 }) {
   // 后台运行，不要 await
   waitUntil(
-    new Promise(async (resolve) => {
+    (async () => {
       try {
+        await upsertUserProfile({ userId });
         const clientInfo = await authClientInfo();
-        await prisma.user.update({
-          where: { id: userId },
+        await prisma.userProfile.update({
+          where: { userId },
           data: {
             lastLogin: {
               ...clientInfo,
@@ -50,9 +51,47 @@ export function recordLastLogin({
       } catch (error) {
         authLogger.error(`Error updating user last login: ${(error as Error).message}`);
       }
-      resolve(null);
-    }),
+    })(),
   );
+}
+
+/**
+ * 迁移阶段，在更新 lastLogin, onboarding, extra 的时候，需要先调用 upsertUserProfile
+ * 一段时间已有，当所有用户都在创建的时候有了 profile，这部分可以删除
+ */
+export async function upsertUserProfile({ userId }: { userId: number }) {
+  const profile = await prisma.$transaction(async (tx) => {
+    let profile = await tx.userProfile.findUnique({
+      where: { userId },
+    });
+    if (profile) {
+      return profile;
+    }
+    const {
+      lastLogin,
+      extra: { onboarding, ...extra },
+    } = await tx.user
+      .findUniqueOrThrow({
+        where: { id: userId },
+        select: { id: true, lastLogin: true, extra: true },
+      })
+      .then(({ extra, ...user }) => ({ ...user, extra: extra as DeprecatedUserExtra }));
+    profile = await tx.userProfile.create({
+      data: {
+        userId,
+        lastLogin: lastLogin ?? {},
+        onboarding: onboarding ?? {},
+        extra: extra ?? {},
+      },
+    });
+    // 清空 user 上的 lastLogin, onboarding, extra
+    await tx.user.update({
+      where: { id: userId },
+      data: { lastLogin: {}, extra: {} },
+    });
+    return profile;
+  });
+  return profile;
 }
 
 export async function createPersonalUser({
@@ -68,14 +107,30 @@ export async function createPersonalUser({
   const name = email.split("@")[0];
   const hashedPassword = password ? await hash(password, 10) : "";
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { password: _, ...user } = await prisma.user.create({
-    data: {
-      name,
-      email,
-      password: hashedPassword,
-      emailVerified: emailVerified ?? null,
-    },
+  const user = await prisma.$transaction(async (tx) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password: _, ...user } = await tx.user.create({
+      data: {
+        name,
+        email,
+        password: hashedPassword,
+        emailVerified: emailVerified ?? null,
+      },
+    });
+
+    await tx.userProfile.create({
+      data: { userId: user.id },
+    });
+
+    await tx.tokensAccount.create({
+      data: {
+        userId: user.id,
+        permanentBalance: 0,
+        monthlyBalance: 0,
+      },
+    });
+
+    return user;
   });
 
   // 注册赠送 1_000_000 tokens
@@ -88,11 +143,10 @@ export async function createPersonalUser({
         value: signupAmount,
       },
     });
-    await tx.tokensAccount.create({
+    await tx.tokensAccount.update({
+      where: { userId: user.id },
       data: {
-        userId: user.id,
-        permanentBalance: signupAmount,
-        monthlyBalance: 0,
+        permanentBalance: { increment: signupAmount },
       },
     });
   });
@@ -118,6 +172,8 @@ export async function createTeamMemberUser({
       personalUserId: personalUser.id,
     },
   });
+
+  // ⚠️ team user 没有 userProfile，而是关联 personalUser 的 userProfile
 
   // ⚠️ team user 没有 tokensAccount，而是关联 team 的 tokensAccount
   // await prisma.tokensAccount.create({

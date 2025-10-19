@@ -126,7 +126,6 @@
       "sessionRequired": "Please sign in to continue",
       "requiredFields": "Please fill in all required fields.",
       "successMessage": "🎉 Welcome aboard! Your account is ready to go.",
-      "userNotFound": "User not found",
       "saveFailed": "Failed to save your information. Please try again.",
       "backButton": "Back",
       "optionalFieldNote": "Fields marked with * are required"

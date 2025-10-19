@@ -1,6 +1,6 @@
 import authOptions from "@/app/(auth)/authOptions";
-import { UserExtra } from "@/prisma/client";
-import { prisma } from "@/prisma/prisma";
+import { upsertUserProfile } from "@/app/(auth)/lib";
+import { UserOnboardingData } from "@/prisma/client";
 import { getServerSession } from "next-auth/next";
 import { redirect } from "next/navigation";
 
@@ -45,11 +45,12 @@ export default async function AuthCallback({
   }
 
   // 3. Check onboarding status from the server
-  const user = await prisma.user.findUniqueOrThrow({
-    where: { id: session.user.id },
-  });
-  const extra = (user.extra as UserExtra) || {};
-  const hasCompletedOnboarding = Boolean(extra.onboarding?.completedAt);
+  const userProfile = await upsertUserProfile({ userId: session.user.id });
+  // const userProfile = await prisma.userProfile.findUniqueOrThrow({
+  //   where: { userId: session.user.id },
+  // });
+  const extra = (userProfile.onboarding ?? {}) as UserOnboardingData;
+  const hasCompletedOnboarding = Boolean(extra.completedAt);
 
   // 4. Redirect based on onboarding status
   if (!hasCompletedOnboarding) {

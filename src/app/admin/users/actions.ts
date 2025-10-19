@@ -5,7 +5,7 @@ import { AdminPermission } from "@/app/admin/types";
 import { encryptText } from "@/lib/cipher";
 import { getRequestOrigin } from "@/lib/request/headers";
 import { ServerActionResult } from "@/lib/serverAction";
-import { AdminRole, Currency, User, UserLastLogin } from "@/prisma/client";
+import { AdminRole, Currency, User, UserLastLogin, UserOnboardingData } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { revalidatePath } from "next/cache";
 
@@ -16,11 +16,14 @@ export async function fetchUsers(
   adminOnly?: boolean,
 ): Promise<
   ServerActionResult<
-    (Pick<User, "id" | "name" | "email" | "createdAt" | "emailVerified" | "extra"> & {
+    (Pick<User, "id" | "name" | "email" | "createdAt" | "emailVerified"> & {
       tokensAccount: { permanentBalance: number; monthlyBalance: number } | null;
       paymentRecords: { id: number; amount: number; currency: Currency }[];
       adminUser: { role: AdminRole; permissions: AdminPermission[] } | null;
-      lastLogin: UserLastLogin;
+      profile: {
+        lastLogin: UserLastLogin;
+        onboarding: UserOnboardingData;
+      } | null;
     })[]
   >
 > {
@@ -59,9 +62,8 @@ export async function fetchUsers(
         name: true,
         email: true,
         createdAt: true,
-        extra: true,
         emailVerified: true,
-        lastLogin: true,
+        profile: true,
         tokensAccount: {
           select: {
             permanentBalance: true,
@@ -97,7 +99,12 @@ export async function fetchUsers(
             permissions: user.adminUser.permissions as AdminPermission[],
           }
         : null,
-      lastLogin: user.lastLogin as UserLastLogin,
+      profile: user.profile
+        ? {
+            lastLogin: user.profile.lastLogin as UserLastLogin,
+            onboarding: user.profile.onboarding as UserOnboardingData,
+          }
+        : null,
     })),
     pagination: {
       page,

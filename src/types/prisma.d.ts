@@ -11,11 +11,17 @@ declare module "@/prisma/client" {
     industry: string;
     companyName: string;
     howDidYouHear: string;
+    completedAt: Date;
   }>;
 
-  export type UserExtra = Partial<{
+  // deprecated
+  export type DeprecatedUserExtra = Partial<{
     // stripeCustomerId: string; // dropped, see payment/(stripe)/create.ts
-    onboarding: UserOnboardingData & { completedAt?: Date };
+    onboarding: UserOnboardingData;
+    lastTrack: number; // timestamp of last trackUser
+  }>;
+
+  export type UserProfileExtra = Partial<{
     lastTrack: number; // timestamp of last trackUser
   }>;
 

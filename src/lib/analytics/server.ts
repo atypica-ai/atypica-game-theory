@@ -1,8 +1,15 @@
 "use server";
 import authOptions from "@/app/(auth)/authOptions";
+import { upsertUserProfile } from "@/app/(auth)/lib";
 import { rootLogger } from "@/lib/logging";
 import { proxiedFetch } from "@/lib/proxy/fetch";
-import { SubscriptionPlan, User, UserExtra, UserOnboardingData } from "@/prisma/client";
+import {
+  SubscriptionPlan,
+  User,
+  UserOnboardingData,
+  UserProfile,
+  UserProfileExtra,
+} from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { Analytics as AnalyticsServer } from "@segment/analytics-node";
 import { waitUntil } from "@vercel/functions";
@@ -41,7 +48,7 @@ type UserTraits = Partial<{
   planEndsAt: Date | null;
 }>;
 
-async function _trackUser(user: User) {
+async function _trackUser({ user, userProfile }: { user: User; userProfile: UserProfile }) {
   // prepare
   const analytics = await loadSegmentAnalytics();
   const now = new Date();
@@ -59,7 +66,7 @@ async function _trackUser(user: User) {
     name: user.name || "",
     email: user.email || "",
     createdAt: user.createdAt,
-    onboarding: (user.extra as UserExtra)?.onboarding,
+    onboarding: userProfile.onboarding as UserOnboardingData,
     // stats
     studies,
     interviews,
@@ -88,23 +95,24 @@ export async function trackUser() {
     // 只上报 Personal user
     return;
   }
-  const user = await prisma.user.findUniqueOrThrow({
-    where: { id: session.user.id },
-  });
-  const lastTrack = (user.extra as UserExtra)?.lastTrack;
-  // 10分钟只上报一次
-  if (!lastTrack || lastTrack < Date.now() - 1000 * 60 * 10) {
-    rootLogger.info(`trackUser ${user.id}`);
-    waitUntil(
-      _trackUser(user)
-        .then(async () => {
-          await prisma.$executeRaw`
-            UPDATE "User"
-            SET extra = jsonb_set(COALESCE(extra, '{}'::jsonb), '{lastTrack}', to_jsonb(${Date.now()}::bigint))
-            WHERE id = ${user.id}
-          `;
-        })
-        .catch(() => {}),
-    );
-  }
+  waitUntil(
+    (async (userId: number) => {
+      const userProfile = await upsertUserProfile({ userId });
+      const user = await prisma.user.findUniqueOrThrow({
+        where: { id: userId },
+        // include: { profile: true },
+      });
+      const lastTrack = (userProfile.extra as UserProfileExtra)?.lastTrack;
+      // 10分钟只上报一次
+      if (!lastTrack || lastTrack < Date.now() - 1000 * 60 * 10) {
+        rootLogger.info(`trackUser ${user.id}`);
+        await _trackUser({ user, userProfile });
+        await prisma.$executeRaw`
+          UPDATE "UserProfile"
+          SET extra = jsonb_set(COALESCE(extra, '{}'::jsonb), '{lastTrack}', to_jsonb(${Date.now()}::bigint))
+          WHERE "userId" = ${user.id}
+        `;
+      }
+    })(session.user.id),
+  );
 }
