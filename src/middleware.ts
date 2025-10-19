@@ -1,3 +1,10 @@
+import {
+  extractRefererFromHeader,
+  extractUtmFromSearchParams,
+  REFERER_COOKIE_NAME,
+  UTM_COOKIE_MAX_AGE,
+  UTM_COOKIE_NAME,
+} from "@/lib/analytics/utm";
 import { getDeployRegion } from "@/lib/request/deployRegion";
 import { getRequestClientIp, getRequestOrigin } from "@/lib/request/headers";
 import { Locale } from "next-intl";
@@ -29,16 +36,54 @@ async function handlePingRequest(req: NextRequest) {
   );
 }
 
-function handleLocale(req: NextRequest) {
+function handleLocale(req: NextRequest, response: NextResponse) {
   // Get the locale from cookies
   const localeCookie = req.cookies.get("locale");
   const defaultLocale = getDeployRegion() === "mainland" ? "zh-CN" : "en-US";
   const locale = (localeCookie?.value || defaultLocale) as Locale;
-  // Create a response object from the request
-  const response = NextResponse.next();
   // Set the locale in a header to be accessible in server components
   response.headers.set("x-locale", locale);
-  return { response, locale };
+  return locale;
+}
+
+function handleAcquisitionTracking(req: NextRequest, response: NextResponse) {
+  // 1. 检查 URL 中是否有 UTM 参数
+  const utmParams = extractUtmFromSearchParams(req.nextUrl.searchParams);
+  if (utmParams) {
+    // 如果有 UTM 参数，保存到 cookie（只在没有现有 UTM cookie 时保存）
+    const existingUtmCookie = req.cookies.get(UTM_COOKIE_NAME);
+    if (!existingUtmCookie) {
+      response.cookies.set(UTM_COOKIE_NAME, JSON.stringify(utmParams), {
+        maxAge: UTM_COOKIE_MAX_AGE,
+        path: "/",
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+      });
+    }
+  }
+
+  // 2. 如果没有 UTM 参数，检查 Referer 作为后备方案
+  if (!utmParams) {
+    const referer = req.headers.get("referer");
+    const refererParams = extractRefererFromHeader(referer);
+
+    if (refererParams) {
+      // 如果有外部 referer，保存到 cookie（只在没有现有 referer cookie 时保存）
+      const existingRefererCookie = req.cookies.get(REFERER_COOKIE_NAME);
+      if (!existingRefererCookie) {
+        response.cookies.set(REFERER_COOKIE_NAME, JSON.stringify(refererParams), {
+          maxAge: UTM_COOKIE_MAX_AGE,
+          path: "/",
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "lax",
+        });
+      }
+    }
+  }
+
+  return response;
 }
 
 // Cache for maintenance status
@@ -99,8 +144,14 @@ export async function middleware(req: NextRequest) {
     return maintenanceResponse;
   }
 
-  // Otherwise continue with locale handling
-  const { response, locale } = handleLocale(req);
+  // Create a response object from the request
+  const response = NextResponse.next();
+
+  // Handle locale
+  const locale = handleLocale(req, response);
+
+  // Handle acquisition tracking (UTM and Referer)
+  handleAcquisitionTracking(req, response);
 
   // Set security headers dynamically at runtime
   response.headers.set("X-Frame-Options", "SAMEORIGIN");
