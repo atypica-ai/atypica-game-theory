@@ -479,21 +479,27 @@ export async function fetchPersonasSearchInStudy({
     convertDBMessageToAIMessage,
   ) as TStudyMessageWithTool[];
 
-  let personaIds = new Set<number>();
+  // set 的 union 方法在生产环节会报错，还没定为原因，这里直接改用 add 方法
+  const personaIds = new Set<number>();
   for (const message of uiMessages) {
     for (const part of message.parts) {
       if (part.type === `tool-${ToolName.searchPersonas}` && part.state === "output-available") {
-        const ids = part.output.personas.map((persona) => persona.personaId);
-        personaIds = personaIds.union(new Set(ids));
+        part.output.personas.forEach((persona) => personaIds.add(persona.personaId));
       }
     }
   }
-  personaIds = personaIds.intersection(new Set(filterByPersonaIds ?? []));
+  let ids: number[];
+  if (filterByPersonaIds) {
+    const filterSet = new Set(filterByPersonaIds);
+    ids = Array.from(personaIds).filter((id) => filterSet.has(id));
+  } else {
+    ids = Array.from(personaIds);
+  }
 
   const personas = await prisma.persona.findMany({
     where: {
       token: { not: null },
-      id: { in: Array.from(personaIds) },
+      id: { in: ids },
     },
     select: {
       token: true,
