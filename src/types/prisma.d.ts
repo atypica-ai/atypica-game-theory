@@ -23,6 +23,21 @@ declare module "@/prisma/client" {
 
   export type UserProfileExtra = Partial<{
     lastTrack: number; // timestamp of last trackUser
+    acquisition: {
+      utm?: {
+        utm_source?: string;
+        utm_medium?: string;
+        utm_campaign?: string;
+        utm_term?: string;
+        utm_content?: string;
+        capturedAt: string;
+      };
+      referer?: {
+        referer: string;
+        hostname: string;
+        capturedAt: string;
+      };
+    };
   }>;
 
   export type UserLastLogin = Partial<{

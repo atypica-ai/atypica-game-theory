@@ -1,5 +1,6 @@
 import "server-only";
 
+import { getRefererFromCookieStore, getUtmFromCookieStore } from "@/lib/analytics/utm";
 import { rootLogger } from "@/lib/logging";
 import { getRequestClientIp, getRequestGeo, getRequestUserAgent } from "@/lib/request/headers";
 import { DeprecatedUserExtra, Team, User, UserLastLogin } from "@/prisma/client";
@@ -50,6 +51,44 @@ export function recordLastLogin({
         });
       } catch (error) {
         authLogger.error(`Error updating user last login: ${(error as Error).message}`);
+      }
+    })(),
+  );
+}
+
+/**
+ * 保存用户的 acquisition 信息（UTM 和 Referer）到 UserProfile
+ */
+export function recordAcquisition({ userId }: { userId: number }) {
+  // 后台运行，不要 await
+  waitUntil(
+    (async () => {
+      try {
+        const userProfile = await upsertUserProfile({ userId });
+
+        // 获取 acquisition 数据
+        const [utmParams, refererParams] = await Promise.all([
+          getUtmFromCookieStore(),
+          getRefererFromCookieStore(),
+        ]);
+
+        // 如果有 acquisition 数据，更新到数据库
+        if (utmParams || refererParams) {
+          await prisma.userProfile.update({
+            where: { userId },
+            data: {
+              extra: {
+                ...userProfile.extra,
+                acquisition: {
+                  ...(utmParams ? { utm: utmParams } : {}),
+                  ...(refererParams ? { referer: refererParams } : {}),
+                },
+              },
+            },
+          });
+        }
+      } catch (error) {
+        authLogger.error(`Error recording acquisition: ${(error as Error).message}`);
       }
     })(),
   );
@@ -152,6 +191,7 @@ export async function createPersonalUser({
   });
 
   recordLastLogin({ userId: user.id, provider: "email-password" });
+  recordAcquisition({ userId: user.id });
 
   return { ...user, email } as Omit<User, "email"> & { email: string };
 }
