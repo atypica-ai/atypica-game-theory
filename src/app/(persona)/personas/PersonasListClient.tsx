@@ -20,6 +20,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { SharePersonaButton } from "./SharePersonaButton";
 
 type PersonaWithStatus = ExtractServerActionData<typeof fetchUserPersonas>[number];
 
@@ -144,6 +145,11 @@ export function PersonasListClient() {
                         <div className="flex items-center gap-1 px-2 py-1 bg-amber-500/20 text-amber-700 dark:text-amber-300 rounded text-xs ml-auto">
                           <RefreshCwIcon className="w-3 h-3 animate-spin" />
                           {t("updating")}
+                        </div>
+                      )}
+                      {!persona.personaImportProcessing && (
+                        <div className="ml-auto">
+                          <SharePersonaButton persona={{ token: persona.token }} />
                         </div>
                       )}
                     </div>

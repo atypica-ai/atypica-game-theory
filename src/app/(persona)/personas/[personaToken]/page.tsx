@@ -3,9 +3,9 @@ import { fetchPersonaWithDetails } from "@/app/(persona)/actions";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { generatePageMetadata } from "@/lib/request/metadata";
 import { Metadata } from "next";
-import { getServerSession } from "next-auth";
+import { getServerSession, Session } from "next-auth";
 import { getLocale, getTranslations } from "next-intl/server";
-import { notFound, redirect } from "next/navigation";
+import { forbidden, notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
 import { PersonaDetailClient } from "./PersonaDetailClient";
 
@@ -20,13 +20,10 @@ export async function generateMetadata({
   const locale = await getLocale();
   const t = await getTranslations("PersonaImport.personaDetails");
   const { personaToken } = await params;
-
   const result = await fetchPersonaWithDetails(personaToken);
-
   if (!result.success) {
     return {};
   }
-
   const { persona } = result.data;
   return generatePageMetadata({
     title: `${t("title")} - ${persona.name}`,
@@ -35,17 +32,34 @@ export async function generateMetadata({
   });
 }
 
-async function PersonaDetailPage({ personaToken }: { personaToken: string }) {
+async function PersonaDetailPage({
+  personaToken,
+  sessionUser,
+}: {
+  personaToken: string;
+  sessionUser: NonNullable<Session["user"]>;
+}) {
   const result = await fetchPersonaWithDetails(personaToken);
   if (!result.success) {
     // Gracefully handle not_found, unauthorized, forbidden without leaking info
     notFound();
   }
 
-  const { persona, analysis, personaImportId } = result.data;
+  const { persona, personaImport } = result.data;
+  // 其实有了 personaToken 以后，数据是任何人可见的，但是这个页面只针对 personaImport 的 owner，其他情况都应该用 share 页面访问
+  if (!personaImport) {
+    notFound();
+  }
+  if (personaImport.userId !== sessionUser.id) {
+    forbidden();
+  }
 
   return (
-    <PersonaDetailClient persona={persona} analysis={analysis} personaImportId={personaImportId} />
+    <PersonaDetailClient
+      persona={persona}
+      analysis={personaImport?.analysis ?? null}
+      personaImportId={personaImport?.id ?? null}
+    />
   );
 }
 
@@ -67,7 +81,7 @@ export default async function PersonaDetailPageWithLoading({
 
   return (
     <Suspense fallback={<PageLoadingFallback />}>
-      <PersonaDetailPage personaToken={personaToken} />
+      <PersonaDetailPage personaToken={personaToken} sessionUser={session.user} />
     </Suspense>
   );
 }

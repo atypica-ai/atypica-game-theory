@@ -15,17 +15,13 @@ import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
-export function ShareInterviewProjectButton({
-  interviewProject,
-}: {
-  interviewProject: { token: string };
-}) {
-  const t = useTranslations("InterviewProject.ShareInterviewProjectButton");
+export function SharePersonaButton({ persona }: { persona: { token: string } }) {
+  const t = useTranslations("PersonaImport.SharePersonaButton");
   const [open, setOpen] = useState(false);
   const [shareUrl, setShareUrl] = useState("");
   useEffect(() => {
-    setShareUrl(`${window.location.origin}/interview/project/${interviewProject.token}/share`);
-  }, [interviewProject.token]);
+    setShareUrl(`${window.location.origin}/personas/${persona.token}/share`);
+  }, [persona.token]);
   const handleCopyUrl = useCallback(() => {
     navigator.clipboard.writeText(shareUrl);
     toast.success(t("copySuccess"));
@@ -38,9 +34,8 @@ export function ShareInterviewProjectButton({
       }}
     >
       <AlertDialogTrigger asChild>
-        <Button variant="outline" size="sm" className="h-7 text-xs rounded-full shadow-none">
+        <Button variant="ghost" size="sm" className="h-7 px-2">
           <ShareIcon className="size-3" />
-          <span className="max-sm:hidden">{t("shareProject")}</span>
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>

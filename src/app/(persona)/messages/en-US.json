@@ -101,7 +101,8 @@
       "viewFullReport": "Enhance Persona",
       "chatWithPersona": "Chat with this Persona",
       "personaInfo": "Persona Information",
-      "analysisSummary": "Analysis Summary"
+      "analysisSummary": "Analysis Summary",
+      "loginToChat": "Login to start chatting"
     },
     "followUpInterview": {
       "followUpInterviewTitle": "Follow-up Interview",
@@ -111,6 +112,15 @@
       "summaryNote": "The interview summary and analysis will be available to the researcher shortly.",
       "interviewCompleted": "Interview Complete",
       "thankYouParticipation": "Thank you for your participation"
+    },
+    "SharePersonaButton": {
+      "title": "Share Persona",
+      "shareTipMessage": "Use this link to access the persona or copy it to share with others:",
+      "copyButton": "Copy",
+      "openInstructions": "You can also click \"Open\" below to view it in a new tab.",
+      "closeButton": "Close",
+      "openButton": "Open",
+      "copySuccess": "Link copied to clipboard"
     },
     "import": {
       "title": "AI Persona Generation",

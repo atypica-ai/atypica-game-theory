@@ -1,8 +1,5 @@
 "use server";
 import { convertDBMessageToAIMessage, persistentAIMessageToDB } from "@/ai/messageUtils";
-import authOptions from "@/app/(auth)/authOptions";
-import { checkAdminAuth } from "@/app/admin/actions";
-import { AdminPermission } from "@/app/admin/types";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { detectInputLanguage } from "@/lib/textUtils";
@@ -17,7 +14,6 @@ import {
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
 import { generateId, UIMessage } from "ai";
-import { getServerSession } from "next-auth";
 import { notFound } from "next/navigation";
 import { processPersonaImport } from "./processing";
 import { PersonaImportAnalysis } from "./types";
@@ -83,53 +79,68 @@ export async function processPersonaImportAction(
   });
 }
 
+/**
+ * 接口不需要权限，也不需要登录，只要看到 personaToken 的就都可以访问
+ */
 export async function fetchPersonaWithDetails(personaToken: string): Promise<
   ServerActionResult<{
     persona: Pick<Persona, "name" | "source" | "prompt" | "locale" | "tier" | "createdAt"> & {
       token: string;
       tags: string[];
     };
-    analysis: Partial<PersonaImportAnalysis> | null;
-    personaImportId: number | null;
+    personaImport: {
+      id: number;
+      userId: number;
+      analysis: Partial<PersonaImportAnalysis> | null;
+    } | null;
   }>
 > {
-  // `withAuth` will handle session check
-  return withAuth(async () => {
-    // This function already checks for admin or ownership
-    const accessResult = await checkPersonaAccess(personaToken);
-    if (!accessResult.success) {
-      return {
-        success: false,
-        code: accessResult.code,
-        message: accessResult.message,
-      };
-    }
-
-    const personaWithImport = accessResult.data;
-
-    const { personaImport, token, name, source, prompt, locale, tier, tags, createdAt } =
-      personaWithImport;
-
-    return {
-      success: true,
-      data: {
-        persona: {
-          token: token!,
-          name,
-          source,
-          prompt,
-          locale,
-          tier,
-          createdAt,
-          tags: tags as string[],
+  const personaWithImport = await prisma.persona.findUnique({
+    where: { token: personaToken },
+    select: {
+      token: true,
+      name: true,
+      source: true,
+      prompt: true,
+      locale: true,
+      tier: true,
+      createdAt: true,
+      tags: true,
+      personaImport: {
+        select: {
+          id: true,
+          userId: true,
+          analysis: true,
         },
-        analysis: personaImport
-          ? (personaImport.analysis as Partial<PersonaImportAnalysis> | null)
-          : null,
-        personaImportId: personaImport?.id ?? null,
       },
-    };
+    },
   });
+  if (!personaWithImport) {
+    return {
+      success: false,
+      code: "not_found",
+      message: "Persona not found",
+    };
+  }
+
+  const { personaImport, token, tags, ...persona } = personaWithImport;
+
+  return {
+    success: true,
+    data: {
+      persona: {
+        ...persona,
+        token: token!,
+        tags: tags as string[],
+      },
+      personaImport: personaImport
+        ? {
+            ...personaImport,
+            analysis: personaImport.analysis as Partial<PersonaImportAnalysis> | null,
+          }
+        : null,
+    },
+  };
 }
 
 export async function createFollowUpInterviewChat(
@@ -240,58 +251,6 @@ export async function fetchFollowUpInterviewChat(
   };
 }
 
-async function checkPersonaAccess(
-  personaToken: string,
-): Promise<ServerActionResult<Persona & { personaImport: PersonaImport | null }>> {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) {
-    return {
-      success: false,
-      code: "unauthorized",
-      message: "Authentication required",
-    };
-  }
-
-  const persona = await prisma.persona.findUnique({
-    where: {
-      token: personaToken,
-    },
-    include: {
-      personaImport: true,
-    },
-  });
-
-  if (!persona) {
-    return {
-      success: false,
-      code: "not_found",
-      message: "Persona not found",
-    };
-  }
-
-  // Check if user has admin permission
-  try {
-    await checkAdminAuth([AdminPermission.MANAGE_PERSONAS]);
-    return {
-      success: true,
-      data: persona,
-    };
-  } catch {
-    // User doesn't have admin permission, check if they own the persona
-    if (persona.personaImport && persona.personaImport.userId === session.user.id) {
-      return {
-        success: true,
-        data: persona,
-      };
-    }
-    return {
-      success: false,
-      code: "forbidden",
-      message: "Access denied",
-    };
-  }
-}
-
 export async function fetchUserPersonas(): Promise<
   ServerActionResult<
     Array<
@@ -340,21 +299,25 @@ export async function fetchUserPersonas(): Promise<
   });
 }
 
+/**
+ * 接口不需要权限，但需要需要登录，人和用户只要看到 personaToken 的就都可以和它聊天
+ */
 export async function createOrGetUserPersonaChat(
   personaToken: string,
 ): Promise<ServerActionResult<{ token: string }>> {
   return withAuth(async (user) => {
     // Check if persona exists and user has access
-    const accessResult = await checkPersonaAccess(personaToken);
-    if (!accessResult.success) {
+    const persona = await prisma.persona.findUnique({
+      where: { token: personaToken },
+      select: { id: true, name: true },
+    });
+    if (!persona) {
       return {
         success: false,
-        code: accessResult.code,
-        message: accessResult.message,
+        code: "not_found",
+        message: "Persona not found",
       };
     }
-
-    const persona = accessResult.data;
 
     // Check if UserPersonaChat already exists
     const existingUserPersonaChat = await prisma.userPersonaChatRelation.findUnique({

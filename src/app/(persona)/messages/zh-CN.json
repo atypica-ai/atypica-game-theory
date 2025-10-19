@@ -101,7 +101,8 @@
       "viewFullReport": "完善人设",
       "chatWithPersona": "与该人设对话",
       "personaInfo": "人设信息",
-      "analysisSummary": "分析摘要"
+      "analysisSummary": "分析摘要",
+      "loginToChat": "登录以开始对话"
     },
     "followUpInterview": {
       "followUpInterviewTitle": "补充访谈",
@@ -111,6 +112,15 @@
       "summaryNote": "访谈摘要和分析将很快提供给研究人员。",
       "interviewCompleted": "访谈已完成",
       "thankYouParticipation": "感谢您的参与"
+    },
+    "SharePersonaButton": {
+      "title": "分享人设",
+      "shareTipMessage": "使用此链接访问人设或复制后分享给他人：",
+      "copyButton": "复制",
+      "openInstructions": "您也可以点击下方的「打开」按钮在新标签页中查看。",
+      "closeButton": "关闭",
+      "openButton": "打开",
+      "copySuccess": "链接已复制到剪贴板"
     },
     "import": {
       "title": "AI 人设生成",

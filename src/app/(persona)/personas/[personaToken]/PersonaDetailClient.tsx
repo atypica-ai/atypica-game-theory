@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDate } from "@/lib/utils";
 import {
+  ArrowRight,
   BrainIcon,
   CalendarIcon,
   FileTextIcon,
@@ -15,6 +16,7 @@ import {
   TagIcon,
   UserIcon,
 } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
@@ -34,7 +36,14 @@ export function PersonaDetailClient({
   const tPersona = useTranslations("PersonaImport.personas");
   const locale = useLocale();
   const router = useRouter();
+  const { data: session, status: sessionStatus } = useSession();
   const [isChatCreating, setIsChatCreating] = useState(false);
+
+  const handleLogin = () => {
+    const currentUrl = window.location.href;
+    const callbackUrl = encodeURIComponent(currentUrl);
+    router.push(`/auth/signin?callbackUrl=${callbackUrl}`);
+  };
 
   const handleStartChat = useCallback(async () => {
     setIsChatCreating(true);
@@ -76,16 +85,25 @@ export function PersonaDetailClient({
 
       {/* Action Buttons */}
       <div className="mt-8 flex flex-col sm:flex-row justify-center gap-4">
-        <Button onClick={handleStartChat} disabled={isChatCreating} size="lg">
-          <MessageCircleIcon className="h-4 w-4" />
-          {isChatCreating ? tPersona("starting") : t("chatWithPersona")}
-        </Button>
-        {personaImportId && (
-          <Button onClick={handleViewReport} variant="outline" size="lg">
-            <FileTextIcon className="h-4 w-4" />
-            {t("viewFullReport")}
+        {session?.user ? (
+          <>
+            <Button onClick={handleStartChat} disabled={isChatCreating} size="lg">
+              <MessageCircleIcon className="h-4 w-4" />
+              {isChatCreating ? tPersona("starting") : t("chatWithPersona")}
+            </Button>
+            {personaImportId && (
+              <Button onClick={handleViewReport} variant="outline" size="lg">
+                <FileTextIcon className="h-4 w-4" />
+                {t("viewFullReport")}
+              </Button>
+            )}
+          </>
+        ) : sessionStatus === "unauthenticated" ? (
+          <Button onClick={handleLogin} size="lg">
+            {t("loginToChat")}
+            <ArrowRight className="h-4 w-4" />
           </Button>
-        )}
+        ) : null}
       </div>
 
       {/* Details Section */}
