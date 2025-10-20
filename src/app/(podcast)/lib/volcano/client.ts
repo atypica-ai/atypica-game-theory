@@ -227,7 +227,7 @@ export class VolcanoTTSClient {
         try {
           // Parse script to NLP texts
           const nlpTexts = this.parseScriptToNLPTexts(script, locale);
-          this.logger?.info({ msg: "Parsed script to NLP texts", nlpTexts });
+          // this.logger?.info({ msg: "Parsed script to NLP texts", nlpTexts });
 
           if (nlpTexts.length === 0) {
             throw new Error("No dialogue content found in script");

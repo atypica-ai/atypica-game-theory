@@ -4,7 +4,6 @@ import PodcastsListPanel from "@/app/(study)/study/components/PodcastsListPanel"
 import ReportsListPanel from "@/app/(study)/study/components/ReportsListPanel";
 import { PaginationInfo } from "@/app/admin/types";
 import { ChatMessage } from "@/components/chat/ChatMessage";
-import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -28,7 +27,6 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { createParamConfig, useListQueryParams } from "@/hooks/use-list-query-params";
 import { ExtractServerActionData } from "@/lib/serverAction";
-import { truncateForTitle } from "@/lib/textUtils";
 import { formatDate } from "@/lib/utils";
 import { Analyst, UserChatExtra } from "@/prisma/client";
 import { AnalystKind } from "@/prisma/types";
@@ -57,6 +55,7 @@ import {
   generatePodcastActionAdmin,
   toggleFeaturedStatus,
 } from "./actions";
+import { PodcastPromptDialog } from "./PodcastPromptDialog";
 
 type AnalystWithFeature = ExtractServerActionData<typeof fetchAnalysts>[number];
 
@@ -83,9 +82,13 @@ export type FeaturedStudiesSearchParams = {
 
 interface FeaturedStudiesPageClientProps {
   initialSearchParams: Record<string, string | number>;
+  defaultPodcastPrompt: string;
 }
 
-export function FeaturedStudiesPageClient({ initialSearchParams }: FeaturedStudiesPageClientProps) {
+export function FeaturedStudiesPageClient({
+  initialSearchParams,
+  defaultPodcastPrompt,
+}: FeaturedStudiesPageClientProps) {
   const { status } = useSession();
   const locale = useLocale();
   const router = useRouter();
@@ -99,6 +102,9 @@ export function FeaturedStudiesPageClient({ initialSearchParams }: FeaturedStudi
   const [briefMessages, setBriefMessages] = useState<TMessageWithPlainTextTool[]>([]);
   const [loadingBrief, setLoadingBrief] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [podcastPromptDialogOpen, setPodcastPromptDialogOpen] = useState<{
+    analyst: AnalystWithFeature;
+  } | null>(null);
 
   // Use search params hook for URL synchronization
   const {
@@ -225,12 +231,18 @@ export function FeaturedStudiesPageClient({ initialSearchParams }: FeaturedStudi
     setParams({ search: "", kind: "all", featured: false, page: 1 });
   };
 
-  const handleGeneratePodcast = async (analyst: AnalystWithFeature) => {
+  const openPodcastPromptDialog = useCallback((analyst: AnalystWithFeature) => {
+    setPodcastPromptDialogOpen({ analyst });
+  }, []);
+
+  const handleGeneratePodcast = async (analyst: AnalystWithFeature, systemPrompt?: string) => {
     try {
       await generatePodcastActionAdmin({
         analystId: analyst.id,
+        systemPrompt,
       });
       await fetchData();
+      setPodcastPromptDialogOpen(null);
     } catch (error) {
       console.error("Failed to generate podcast:", error);
     }
@@ -516,22 +528,14 @@ export function FeaturedStudiesPageClient({ initialSearchParams }: FeaturedStudi
                                 </div>
                               </PodcastsListPanel>
                             </div>
-                            <ConfirmDialog
-                              title="Generate Podcast"
-                              description={`Are you sure you want to generate a podcast for "${truncateForTitle(
-                                analyst.topic,
-                                {
-                                  maxDisplayWidth: 50,
-                                  suffix: "...",
-                                },
-                              )}"? This will use AI tokens.`}
-                              onConfirm={() => handleGeneratePodcast(analyst)}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => openPodcastPromptDialog(analyst)}
                             >
-                              <Button variant="ghost" size="sm">
-                                <PlusIcon className="h-3 w-3" />
-                                Generate
-                              </Button>
-                            </ConfirmDialog>
+                              <PlusIcon className="h-3 w-3" />
+                              Generate
+                            </Button>
                           </div>
 
                           {/* Show message when no reports and no podcasts */}
@@ -656,6 +660,23 @@ export function FeaturedStudiesPageClient({ initialSearchParams }: FeaturedStudi
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Podcast Prompt Dialog */}
+      <PodcastPromptDialog
+        open={!!podcastPromptDialogOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setPodcastPromptDialogOpen(null);
+          }
+        }}
+        analyst={podcastPromptDialogOpen?.analyst || null}
+        defaultPrompt={defaultPodcastPrompt}
+        onConfirm={(systemPrompt) => {
+          if (podcastPromptDialogOpen?.analyst) {
+            handleGeneratePodcast(podcastPromptDialogOpen.analyst, systemPrompt);
+          }
+        }}
+      />
 
       {pagination && pagination.totalPages > 1 && (
         <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4">
