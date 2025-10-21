@@ -72,7 +72,8 @@ export function extractUtmFromSearchParams(searchParams: URLSearchParams): UtmPa
  * 从 Referer 头部提取来源信息
  */
 export function extractRefererFromHeader(referer: string | null): RefererParams | null {
-  if (!referer) {
+  // 验证 referer 必须存在且以 https:// 或 http:// 开头
+  if (!referer || !/^https?:\/\//i.test(referer)) {
     return null;
   }
 

@@ -24,7 +24,7 @@ import { Locale } from "next-intl";
 import { Logger } from "pino";
 import { backgroundChatUntilCancel, raceForUserChat } from "./background";
 import { notifyReportCompletion, notifyStudyInterruption } from "./notify";
-import { outOfBalance, setBedrockCache } from "./studyAgentRequest";
+import { outOfBalance, setBedrockCache } from "./utils";
 
 const MAX_STEPS_EACH_ROUND = 15; // streamText 默认 15 步
 
