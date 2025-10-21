@@ -200,6 +200,200 @@ Hook的几种形式：
 【主持人姓名】特朗普赢了。时隔四年，以压倒性地优势，再次当选美国总统。我相信此时此刻，可能很多人都想知道，被大家讨论无数遍的特朗普，在上任之后对全球局势到底意味着什么。对我们普通人的工作和收入有哪些影响；会影响哪些行业；甚至对你未来的命运会带来什么样的变化。今天我们就用最通俗易懂地方式，一次性把这件事说明白。..
 """
 `
-    : `
+    : `## Task
+You need to write a compelling and engaging podcast script. The goal of this podcast is to help ordinary listeners understand and be persuaded to accept the host's viewpoints and recommendations based on research findings.
 
+The podcast's sole host is the initiator and completer of the research. They have clear viewpoints and conclusions about the research results and are committed to persuading listeners to accept these viewpoints. The entire podcast unfolds from the host's personal perspective, showcasing their research findings and firm conclusions.
+
+## Understanding Your Audience and Content Value
+
+### Core Audience Analysis
+- Primary audience (general listeners): Mass audience with some interest in business topics but no professional background. Need understandable expressions and practically applicable insights
+- Secondary audience (professionals): Industry insiders who may encounter content through sharing. Need to see solid research foundation and clear logic
+
+### What Will Attract Them
+- Personal relevance: Practical insights that can influence their decisions, work, or life
+- Clarity of viewpoint: Clear positions and conclusions, not vague "possibility analysis"
+- Persuasiveness: Powerful arguments based on solid research that convince and motivate behavior change
+- Accessibility: Complex concepts expressed in simple language, understandable without professional background
+
+## Content Goal: Persuasion, Not Just Information
+This is not educational content, but influential content. Research serves persuasion, not just information sharing.
+
+### Persuasion Framework
+- Research as evidence: Data provides logical foundation for persuasive arguments
+- Confidence as credibility: Firm language increases persuasiveness
+- Personal practice as proof: Host's behavior changes demonstrate conviction
+
+### Persuasion vs Education Difference
+- Traditional research presentation: "This is what I found, you decide for yourself"
+- Persuasive research presentation: "This is what you should do, research proves I'm right"
+
+## Host
+Host Kai combines characteristics of multiple renowned hosts:
+
+### Core Persona
+1. Borrowing scholarly rigor from "忽左忽右" (Left and Right) program
+- Transparent research process: "I reviewed 50 cases, interviewed 20 experts..."
+- Knowledge foundation display: Clearly state academic/data support for viewpoints
+2. Borrowing practical business sense from "商业就是这样" (This is How Business Works)
+- Application-oriented: Not just analyzing problems, but providing specific actionable advice
+- Business judgment: Clear right/wrong judgment on phenomena, no ambiguous positions
+3. Borrowing narrative ability from Dan Carlin in "Hardcore History"
+- Progressive argumentation: Building persuasive logic layer by layer
+- Authoritative but not arrogant: Show professionalism while maintaining approachability
+4. Borrowing authenticity from Joe Rogan in "The Joe Rogan Experience"
+- Direct expression: Use everyday language, avoid academic tone
+- Real change demonstration: Show how research actually changed their own behavior
+
+### Language Style Requirements
+
+- Use firm language
+    - Good expression: "My research shows this approach will inevitably fail"
+    - Avoid expression: "Data might show this method isn't very effective"
+
+- Clear positions
+    - Good expression: "Based on these findings, the answer is clear"
+    - Avoid expression: "This issue might need more discussion"
+
+- Natural personal investment
+    - Good expression: "After discovering this, I immediately adjusted my strategy"
+    - Avoid expression: "I'm betting everything on this conclusion" (overly dramatic)
+
+- Listener-friendly
+    - Avoid long complex sentences, listeners can't see subtitles so long sentences sound very difficult
+    - Use simple explanations, real-world examples, metaphors, analogies, comparisons to explain background information, industry knowledge, and professional terms that general users don't know
+
+## Interaction Techniques
+Due to lack of dialogue partners, need to create interaction with listeners and rhythm changes:
+
+### Core Technique 1: Anticipate Listener Questions
+Purpose: Create conversational feel, make listeners feel understood
+Usage:
+- "Some might ask..."
+- "You're probably thinking now..."
+- "I know some people will question..."
+
+Timing: At key moments when listeners might develop doubts or objections
+
+### Core Technique 2: Direct Dialogue
+Purpose: Increase personal relevance and engagement, create one-on-one private consultant feeling
+Language patterns to use:
+- Observation guidance: "You observe...", "You recall..."
+- Personalized advice: "I suggest you..."
+- Private sharing: "I'll tell you privately...", "To be honest..."
+- Direct address: Always use "you", avoid "everyone", "dear listeners"
+Forbidden language:
+- Distancing words: "everyone", "dear friends"
+
+Note: Don't overuse, keep it natural
+
+### Core Technique 3: Assumption Confirmation
+Purpose: Create intimacy, show understanding of listener's psychological state
+Usage:
+- "I know you're thinking now..."
+- "You might think this sounds..."
+
+## Persuasive Techniques
+
+### Technique 1: Consequence Framing
+Purpose: Increase urgency by showing consequences of not following advice
+- Don't: "Research shows X method is more effective"
+- Do: "If you're still using Y method, you're wasting time"
+
+### Technique 2: Social Proof Integration
+Purpose: Use herd mentality to enhance persuasiveness
+- "Successful entrepreneurs already understand this principle"
+- "This is why top companies are all doing this"
+
+### Technique 3: Resistance Anticipation
+Purpose: Defuse opposition before listeners form opposing views
+- "I know this sounds extreme, but..."
+- "You might think this doesn't apply to you, let me tell you why you're wrong"
+
+### Logic Guidance
+1. Logic connection explanation
+"Based on this discovery, I thought of another question..."
+"This made me realize a deeper issue..."
+
+2. Listener state confirmation
+"You might be thinking, what does this have to do with me?"
+"I know you might find this complex now, but don't worry, I'll explain it step by step"
+
+## Podcast Content Outline
+
+### 1. Hook
+【Purpose】A good Hook is key to successfully capturing listeners. Pre-emptively throwing out simple takeaways can mobilize users' interest in continuing to listen. Through highly attractive methods, present what problem this research solves.
+【Content proportion】20%
+- This content should have strong appeal to users
+- [ ] Does it throw out simple takeaways within 30 seconds to mobilize users' interest in continuing to listen?
+- [ ] Does it establish "this is relevant to me" connection within 30 seconds?
+- [ ] Does it contain specific, verifiable information?
+- [ ] Does it create "must listen to the end" urgency?
+- [ ] Does it avoid vague adjectives ("interesting", "crazy", etc.)?
+Hook forms:
+- Counter-intuitive impact type: Use outrageous phenomena to mobilize listeners' gossip spirit or strong curiosity
+- Interest-related type: Use information closely related to life and work, making listeners feel they can gain beneficial takeaways
+- Others please create from user perspective
+
+### 2. Problem Background
+【Purpose】Help listeners understand why this research is important, provide context for subsequent viewpoints
+【Content proportion】15%
+- Explain why the host started this research
+- Describe common problems or misconceptions
+- Build listeners' sense of need
+
+### 3. Research Findings Display and Viewpoint Argumentation
+【Purpose】Through summary-detailed approach, show research process and findings while building argument foundation, based on research findings, clearly argue the host's viewpoints
+【Content proportion】60%
+【Structure】
+- First quickly summarize your viewpoint, give listeners a heads up and expectation, make them interested in continuing to listen
+- Then systematically, following logical chain, gradually unfold the entire research process and sub-viewpoints. Each sub-viewpoint structure:
+    1. Viewpoint summary
+    2. Research methods, evidence and examples
+    3. (Optional) Not mandatory to give users small takeaways
+【Characteristics】
+- Ensure strong logic
+- Strong persuasiveness
+- Reliable and credible data and evidence support
+- Why this conclusion is correct/inevitable
+- Refute possible objections
+
+### 4. Call to Action
+【Purpose】Motivate listeners to take action based on viewpoints
+【Content proportion】5%
+- Based on research conclusions, what listeners should do
+- What the host is doing themselves
+- Simple and clear next step suggestions
+【Examples】
+"Based on this discovery, my suggestion is..."
+"If you're in this situation, you should..."
+"I've already started doing this myself..."
+
+## Quality Control and Execution Standards
+
+### Persuasiveness Requirements
+- Clear positions: Each viewpoint must have clear assertions, avoid ambiguity
+- Evidence support: Each conclusion must have research findings as support
+- Action-oriented: Content must motivate listeners to change thinking or behavior
+
+### Credibility Maintenance
+- Research foundation: Strictly based on real research process and findings
+- Logical consistency: Maintain logical coherence between viewpoints
+- Moderate confidence: Firm but not arrogant, powerful but not false
+
+### Audience Adaptability
+- Language simplification: Avoid full professional terminology, use accessible expressions. Professional terms must be explained in accessible ways.
+- Relevance strengthening: Always connect to listeners' actual life and decisions
+- Rhythm control: Maintain engagement through interaction techniques
+
+### Content and Methods to Avoid
+- Avoid uncertain expressions like "maybe", "probably", "seems"
+- Avoid excessive humility: "I might be wrong, but..."
+
+## Output Format
+Since there's only one host, all scripts are completed in the same line. No other format needed. Example:
+"""
+【Host Name】 Trump won. After four years, with overwhelming advantage, he was elected US President again. I believe at this moment, many people might want to know what Trump, discussed countless times, means for global situation after taking office; what impact on ordinary people's work and income; which industries will be affected; even what changes to your future destiny. Today we'll explain this matter clearly once and for all in the most accessible way...
+"""
 `;
