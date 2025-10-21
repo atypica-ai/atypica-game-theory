@@ -121,11 +121,13 @@
       "lightTheme": "浅色主题",
       "darkTheme": "深色主题",
       "myStudies": "我的项目",
+      "myPodcasts": "我的播客",
       "myPersonas": "我的人设",
       "myInterviews": "我的访谈",
       "marketResearch": "AI 研究",
       "personaImport": "AI 人设",
       "interviewProject": "AI 访谈",
+      "podcast": "AI 播客",
       "useCases": "案例",
       "pricing": "价格"
     },
@@ -390,6 +392,29 @@
     "title": "访问被拒绝",
     "description": "很抱歉，您没有访问此页面的权限。请确认您的访问权限或联系管理员。",
     "returnHome": "返回首页"
+  },
+  "PodcastsPage": {
+    "title": "AI 播客",
+    "description": "浏览您研究的播客精选内容",
+    "noPodcasts": "暂无播客",
+    "noPodcastsDescription": "您还没有生成任何播客。开始新的研究并生成播客吧！",
+    "startNewStudy": "开始新研究",
+    "loadFailed": "加载播客失败",
+    "playFailed": "播放失败",
+    "untitledStudy": "未命名研究",
+    "play": "播放",
+    "pause": "暂停",
+    "viewDetails": "查看详情"
+  },
+  "MyPodcastsPage": {
+    "title": "我的播客",
+    "subtitle": "浏览和收听您所有的研究播客",
+    "noPodcasts": "暂无播客",
+    "noPodcastsDescription": "您还没有生成任何播客。开始新的研究并生成播客吧！",
+    "startNewStudy": "开始新研究",
+    "loadFailed": "加载播客失败",
+    "playFailed": "播放失败",
+    "untitledStudy": "未命名研究"
   },
   "AICompliance": {
     "fullDisclaimer": "以上内容由人工智能生成",

@@ -16,6 +16,7 @@ import {
   ArrowLeftRightIcon,
   CreditCardIcon,
   GlobeIcon,
+  HeadphonesIcon,
   HistoryIcon,
   LogInIcon,
   LogOutIcon,
@@ -144,6 +145,12 @@ export default function UserMenu() {
             {t("myStudies")}
           </Link>
         </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link prefetch={true} href="/my-podcasts">
+                <HeadphonesIcon className="h-4 w-4 mr-2" />
+                {t("myPodcasts")}
+              </Link>
+            </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link prefetch={true} href="/personas">
             <Users2Icon className="h-4 w-4 mr-2" />
