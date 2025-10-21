@@ -24,7 +24,6 @@ import {
   fetchUserChatStateByToken,
   userStopBackgroundStudyAction,
 } from "./actions";
-import { NerdStats } from "./components/NerdStats";
 import { CancelButton, StatusDisplay } from "./components/StatusDisplay";
 import { StudyFeedback } from "./components/StudyFeedback";
 import { useStudyContext } from "./hooks/StudyContext";
@@ -336,12 +335,14 @@ export function ChatBox() {
 
         {/* Study Feedback */}
         {studyCompleted && uiStatus === "ready" ? (
-          <StudyFeedback studyUserChatId={studyUserChatId} className="mt-12 max-w-full" />
+          <div className="w-full mt-4 flex justify-start">
+            <StudyFeedback studyUserChatId={studyUserChatId} />
+          </div>
         ) : null}
 
         {/* AI Compliance Disclaimer */}
         {messages.length > 0 && uiStatus === "ready" ? (
-          <div className="w-full text-xs text-center text-zinc-500 dark:text-zinc-400 px-4 mt-4 mb-8">
+          <div className="w-full text-xs text-center text-zinc-400 dark:text-zinc-600 px-4 mt-12 mb-8">
             {tCompliance("fullDisclaimer")}
           </div>
         ) : null}
@@ -349,7 +350,12 @@ export function ChatBox() {
         <div ref={messagesEndRef} />
       </div>
       <div className="absolute bottom-0 left-0 right-0 w-full px-4 max-lg:px-1">
-        <div className="relative flex flex-col items-center max-lg:items-start justify-center mb-3 max-lg:mb-1.5">
+        <div
+          className={cn(
+            "relative flex flex-col items-center justify-center mb-3",
+            // "max-lg:items-start max-lg:mb-1.5",
+          )}
+        >
           {error && (
             <div className="text-destructive text-xs mx-32 mb-2 line-clamp-1 text-center">
               {error?.message?.toString() || error.toString()}
@@ -358,9 +364,9 @@ export function ChatBox() {
           <div className="px-2 py-2 rounded-full shadow bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/90">
             <StatusDisplay status={uiStatus} backgroundToken={backgroundToken} />
           </div>
-          <div className="absolute right-0 bottom-0 px-1 py-1 rounded-full shadow bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/90">
+          {/*<div className="absolute right-0 bottom-0 px-1 py-1 rounded-full shadow bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/90">
             <NerdStats />
-          </div>
+          </div>*/}
         </div>
 
         <form onSubmit={handleSubmitMessage} className="relative bg-background rounded-lg">

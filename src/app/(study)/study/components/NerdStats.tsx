@@ -3,8 +3,8 @@ import { fetchStatsByStudyUserChatToken } from "@/app/(study)/study/actions";
 import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { formatDuration } from "@/lib/utils";
-import { InfoIcon } from "lucide-react";
+import { cn, formatDuration } from "@/lib/utils";
+import { ActivityIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
 type Stat = {
@@ -52,12 +52,15 @@ export function NerdStats() {
           <Button
             variant="ghost"
             size="sm"
-            className="h-6 px-2 text-xs text-muted-foreground hover:bg-transparent hover:text-primary font-mono"
+            className={cn(
+              "h-6 px-2 text-xs hover:bg-transparent hover:text-primary font-mono",
+              "gap-2 text-muted-foreground max-sm:text-foreground max-sm:px-1 max-sm:has-[>svg]:px-1 max-sm:gap-0",
+            )}
             onMouseEnter={() => setIsOpen(true)}
             onMouseLeave={() => setIsOpen(false)}
           >
-            <InfoIcon className="h-3 w-3 mr-1" />
-            Nerd Stats
+            <ActivityIcon className="size-4" />
+            <span className="max-sm:hidden">Nerd Stats</span>
           </Button>
         </PopoverTrigger>
         <PopoverContent

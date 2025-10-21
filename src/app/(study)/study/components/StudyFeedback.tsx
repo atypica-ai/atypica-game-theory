@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { CheckIcon, ThumbsDownIcon, ThumbsUpIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -77,18 +76,16 @@ export function StudyFeedback({
   }
 
   return (
-    <Card
-      className={cn(
-        "py-3 px-8 border-blue-200 bg-blue-50/30 dark:border-blue-200/40 dark:bg-blue-950/10 gap-3",
-        className,
-      )}
-    >
-      <div className="text-center text-sm font-medium text-foreground/80">{t("title")}</div>
-      <div className="flex items-center justify-center gap-2 mb-1">
+    <div className={cn("flex items-center gap-1 px-2 py-1 border rounded-sm", className)}>
+      <div className="text-xs text-muted-foreground">{t("title")}</div>
+      <div className="flex items-center gap-2">
         <Button
-          variant={feedback.rating === "useful" ? "default" : "outline"}
+          variant="ghost"
           size="sm"
-          className="h-8 text-xs"
+          className={cn(
+            "h-5 px-1 has-[>svg]:px-1 rounded-sm text-xs",
+            feedback.rating === "useful" && "text-green-600",
+          )}
           disabled={isSubmitting}
           onClick={() => handleRatingSelect("useful")}
         >
@@ -96,9 +93,12 @@ export function StudyFeedback({
           {t("useful")}
         </Button>
         <Button
-          variant={feedback.rating === "not_useful" ? "default" : "outline"}
+          variant="ghost"
           size="sm"
-          className="h-8 text-xs"
+          className={cn(
+            "h-5 px-1 has-[>svg]:px-1 rounded-sm text-xs",
+            feedback.rating === "not_useful" && "text-red-600",
+          )}
           disabled={isSubmitting}
           onClick={() => handleRatingSelect("not_useful")}
         >
@@ -107,15 +107,13 @@ export function StudyFeedback({
         </Button>
       </div>
       {/* Show feedback status */}
-      {isSubmitting && (
-        <div className="text-center text-xs text-muted-foreground">{t("submitting")}</div>
-      )}
+      {isSubmitting && <div className="text-xs text-muted-foreground">{t("submitting")}</div>}
       {justSubmitted && (
-        <div className="flex items-center justify-center gap-1 text-center text-xs text-green-600">
+        <div className="flex items-center gap-1 text-xs text-green-600">
           <CheckIcon className="size-3" />
           <span>{t("thankYou")}</span>
         </div>
       )}
-    </Card>
+    </div>
   );
 }
