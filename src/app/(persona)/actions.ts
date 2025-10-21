@@ -130,7 +130,7 @@ export async function fetchPersonaWithDetails(personaToken: string): Promise<
     data: {
       persona: {
         ...persona,
-        token: token!,
+        token: token,
         tags: tags as string[],
       },
       personaImport: personaImport
@@ -265,7 +265,6 @@ export async function fetchUserPersonas(): Promise<
   return withAuth(async (user) => {
     const personas = await prisma.persona.findMany({
       where: {
-        token: { not: null }, // 其实不需要，现在 persona 一定有 token，尤其是回头 token null 属性去掉后，这里可以删了
         personaImport: {
           userId: user.id,
         },
@@ -289,7 +288,7 @@ export async function fetchUserPersonas(): Promise<
       success: true,
       data: personas.map(({ personaImport, token, tags, ...persona }) => ({
         ...persona,
-        token: token!,
+        token: token,
         tags: tags as string[],
         personaImportProcessing: Boolean(
           personaImport?.extra && (personaImport.extra as PersonaImportExtra).processing,

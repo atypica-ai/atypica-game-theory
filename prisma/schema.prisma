@@ -124,7 +124,7 @@ model VerificationCode {
 
 model Persona {
   id              Int            @id @default(autoincrement())
-  token           String?        @unique @db.VarChar(64)
+  token           String         @unique @db.VarChar(64)
   name            String         @db.VarChar(255)
   source          String         @db.VarChar(255)
   tags            Json           @default("[]") // 存储标签数组
