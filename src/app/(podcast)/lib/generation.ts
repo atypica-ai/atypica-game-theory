@@ -10,7 +10,6 @@ import { detectInputLanguage } from "@/lib/textUtils";
 import { generateToken } from "@/lib/utils";
 import { AnalystPodcast, AnalystPodcastExtra, ChatMessageAttachment } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
-import { AnalystKind } from "@/prisma/types";
 import { FilePart, FinishReason, ModelMessage, stepCountIs, streamText } from "ai";
 import { Locale } from "next-intl";
 import { Logger } from "pino";

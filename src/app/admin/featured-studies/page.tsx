@@ -1,4 +1,4 @@
-import { podcastScriptSystem } from "@/app/(podcast)/prompt/podcastType/deepDive";
+import { podcastScriptSystem } from "@/app/(podcast)/prompt/system";
 import { parseServerSearchParams } from "@/hooks/use-list-query-params.server";
 import { getLocale } from "next-intl/server";
 import { Locale } from "next-intl";
