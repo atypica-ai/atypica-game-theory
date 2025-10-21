@@ -57,11 +57,73 @@ export class VolcanoTTSClient {
   }
 
   /**
+   * Detect the number of unique hosts in a podcast script
+   * Extracts host names from markers like 【Guy】, 【Ira】, 【凯】, 【艾拉】
+   * Returns the count, capped at 2 (Volcano TTS supports max 2 speakers)
+   * 
+   * @param script - The podcast script with host markers
+   * @returns Number of unique hosts (1 or 2)
+   * 
+   * @example
+   * // Script with 2 hosts:
+   * // 【Guy】AI, artificial intelligence is so hot right now...
+   * // 【Ira】Exactly, the core question we're discussing today...
+   * // Returns: 2
+   * 
+   * // Script with 1 host:
+   * // 【Guy】Today we're discussing...
+   * // 【Guy】In conclusion...
+   * // Returns: 1
+   */
+  private detectPodcastHostCount(script: string): number {
+    // Regular expression to match host markers like 【Guy】, 【Ira】, 【凯】, 【艾拉】
+    const hostMarkerRegex = /【([^】]+)】/g;
+    const hosts = new Set<string>();
+    
+    let match;
+    while ((match = hostMarkerRegex.exec(script)) !== null) {
+      // match[1] contains the host name inside 【】
+      const hostName = match[1].trim();
+      if (hostName) {
+        hosts.add(hostName);
+      }
+    }
+    
+    const hostCount = hosts.size;
+    
+    // Return the count, but cap at 2 (Volcano TTS limitation)
+    // If no hosts detected, default to 2 for backward compatibility
+    if (hostCount === 0) {
+      return 2; // Default to 2 speakers if no markers found
+    }
+    
+    return Math.min(hostCount, 2);
+  }
+
+  /**
    * Parse markdown podcast script into NLP texts format
+   * Automatically detects the number of hosts and adjusts speaker allocation
    */
   private parseScriptToNLPTexts(script: string, locale: string = "zh-CN"): PodcastNLPText[] {
-    const speakers =
+    // Detect the number of hosts in the script
+    const hostCount = this.detectPodcastHostCount(script);
+    
+    // Get the default speakers for the locale
+    const allSpeakers =
       DEFAULT_SPEAKERS[locale as keyof typeof DEFAULT_SPEAKERS] || DEFAULT_SPEAKERS["zh-CN"];
+    
+    // Adjust speakers array based on detected host count
+    // If only 1 host detected, use only the first speaker
+    // If 2 hosts detected (or default), use both speakers
+    const speakers = hostCount === 1 ? [allSpeakers[0]] : allSpeakers;
+    
+    this.logger?.info({ 
+      msg: "Detected podcast configuration", 
+      hostCount, 
+      speakersUsed: speakers.length,
+      locale 
+    });
+    
     const nlpTexts: PodcastNLPText[] = [];
 
     // Split script into lines and extract dialogue
