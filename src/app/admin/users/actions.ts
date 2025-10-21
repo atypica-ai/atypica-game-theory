@@ -5,7 +5,14 @@ import { AdminPermission } from "@/app/admin/types";
 import { encryptText } from "@/lib/cipher";
 import { getRequestOrigin } from "@/lib/request/headers";
 import { ServerActionResult } from "@/lib/serverAction";
-import { AdminRole, Currency, User, UserLastLogin, UserOnboardingData } from "@/prisma/client";
+import {
+  AdminRole,
+  Currency,
+  User,
+  UserLastLogin,
+  UserOnboardingData,
+  UserProfileExtra,
+} from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { revalidatePath } from "next/cache";
 
@@ -23,6 +30,7 @@ export async function fetchUsers(
       profile: {
         lastLogin: UserLastLogin;
         onboarding: UserOnboardingData;
+        extra: UserProfileExtra;
       } | null;
     })[]
   >
@@ -103,6 +111,7 @@ export async function fetchUsers(
         ? {
             lastLogin: user.profile.lastLogin as UserLastLogin,
             onboarding: user.profile.onboarding as UserOnboardingData,
+            extra: user.profile.extra as UserProfileExtra,
           }
         : null,
     })),

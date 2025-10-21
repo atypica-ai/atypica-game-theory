@@ -25,7 +25,15 @@ import { createParamConfig, useListQueryParams } from "@/hooks/use-list-query-pa
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDate, formatTokensNumber } from "@/lib/utils";
 import { AdminRole } from "@/prisma/client";
-import { CheckIcon, CoinsIcon, CopyIcon, LinkIcon, PlusIcon, SearchIcon } from "lucide-react";
+import {
+  CheckIcon,
+  CoinsIcon,
+  CopyIcon,
+  LinkIcon,
+  PlusIcon,
+  SearchIcon,
+  ShieldUserIcon,
+} from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
@@ -310,22 +318,10 @@ export function UsersPageClient({ initialSearchParams }: UsersPageClientProps) {
               <TableHead className="text-right">Paid</TableHead>
               <TableHead className="text-center">Tokens</TableHead>
               <TableHead>Last Login</TableHead>
-              {viewMode === "actions" ? (
-                <>
-                  <TableHead>Admin Role</TableHead>
-                  <TableHead>Impersonation Login</TableHead>
-                  <TableHead>Password Reset</TableHead>
-                  <TableHead>Delete</TableHead>
-                </>
-              ) : (
-                <>
-                  <TableHead className="text-center">Usage Type</TableHead>
-                  <TableHead className="text-center">Role</TableHead>
-                  <TableHead className="text-center">Industry</TableHead>
-                  <TableHead className="text-center">Company</TableHead>
-                  <TableHead className="text-center">Heard From</TableHead>
-                </>
-              )}
+              <TableHead>Onboarding</TableHead>
+              <TableHead>Acquisition</TableHead>
+              <TableHead>Actions</TableHead>
+              <TableHead>Delete</TableHead>
               {/*<TableHead>Created At</TableHead>*/}
             </TableRow>
           </TableHeader>
@@ -341,7 +337,7 @@ export function UsersPageClient({ initialSearchParams }: UsersPageClientProps) {
                     {formatDate(user.createdAt, locale)}
                   </div>
                   {user.emailVerified ? (
-                    <div className="text-green-600/80 text-xs">
+                    <div className="text-green-600/80 text-xs mt-1">
                       Verified {formatDate(user.emailVerified, locale)}
                     </div>
                   ) : (
@@ -361,6 +357,11 @@ export function UsersPageClient({ initialSearchParams }: UsersPageClientProps) {
                       </ConfirmDialog>
                     </div>
                   )}
+                  {user.adminUser ? (
+                    <div className="text-xs font-medium text-blue-500 mt-1">
+                      {user.adminUser.role}
+                    </div>
+                  ) : null}
                 </TableCell>
                 {/* TODO: 去要按照 currency 区分 */}
                 <TableCell className="whitespace-nowrap text-sm text-right">
@@ -393,129 +394,158 @@ export function UsersPageClient({ initialSearchParams }: UsersPageClientProps) {
                   </Button>
                 </TableCell>
                 <TableCell className="whitespace-nowrap text-xs">
-                  {user.profile?.lastLogin?.timestamp ? (
-                    <>
-                      <div>{formatDate(new Date(user.profile.lastLogin.timestamp), locale)}</div>
-                      <div>{user.profile.lastLogin.clientIp}</div>
-                      {user.profile.lastLogin.geo && (
-                        <div>
-                          {user.profile.lastLogin.geo.city},{" "}
-                          {user.profile.lastLogin.geo.countryCode}
-                        </div>
-                      )}
-                      {user.profile.lastLogin.provider && (
-                        <div>{user.profile.lastLogin.provider}</div>
-                      )}
-                    </>
-                  ) : (
-                    <span className="text-muted-foreground">-</span>
-                  )}
-                </TableCell>
-                {viewMode === "actions" ? (
-                  <>
-                    <TableCell className="whitespace-nowrap text-sm">
-                      <div className="flex items-center gap-2">
-                        {user.adminUser ? (
-                          <>
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                              {user.adminUser.role}
-                            </span>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="h-7"
-                              onClick={() => openAdminDialog(user)}
-                            >
-                              Edit
-                            </Button>
-                          </>
-                        ) : (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-7"
-                            onClick={() => openAdminDialog(user)}
-                          >
-                            Make Admin
-                          </Button>
+                  {((lastLogin) => {
+                    if (!lastLogin?.timestamp) {
+                      return <span className="text-muted-foreground">-</span>;
+                    }
+                    return (
+                      <>
+                        <div>{formatDate(new Date(lastLogin.timestamp), locale)}</div>
+                        <div>{lastLogin.clientIp}</div>
+                        {lastLogin.geo && (
+                          <div>
+                            {lastLogin.geo.city}, {lastLogin.geo.countryCode}
+                          </div>
                         )}
-                      </div>
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap">
-                      {user.emailVerified ? (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-7 gap-1"
-                          onClick={() => generateLoginUrl(user)}
-                          disabled={isGeneratingLogin}
-                          title="Generate impersonation login URL"
-                        >
-                          <LinkIcon className="size-3" />
-                          {isGeneratingLogin ? "..." : "Login"}
-                        </Button>
-                      ) : (
-                        <span className="text-xs text-muted-foreground">Email not verified</span>
-                      )}
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap">
+                        {lastLogin.provider && <div>{lastLogin.provider}</div>}
+                      </>
+                    );
+                  })(user.profile?.lastLogin)}
+                </TableCell>
+                <TableCell className="text-xs">
+                  {((onboarding) => {
+                    if (!onboarding) return null;
+                    return onboarding.usageType ? (
+                      <>
+                        <div>
+                          <span className="text-zinc-500">Usage Type: </span>
+                          {onboarding.usageType || "-"}
+                        </div>
+                        <div>
+                          <span className="text-zinc-500">Role: </span>
+                          {onboarding.role || "-"}
+                        </div>
+                        <div>
+                          <span className="text-zinc-500">Industry: </span>
+                          {onboarding.industry || "-"}
+                        </div>
+                        <div>
+                          <span className="text-zinc-500">Company: </span>
+                          {onboarding.companyName || "-"}
+                        </div>
+                        <div>
+                          <span className="text-zinc-500">Heard From: </span>
+                          {onboarding.howDidYouHear || "-"}
+                        </div>
+                      </>
+                    ) : (
+                      <span className="text-zinc-500">Onboarding not completed</span>
+                    );
+                  })(user.profile?.onboarding)}
+                </TableCell>
+                <TableCell className="text-xs">
+                  {((acquisition) => {
+                    if (!acquisition) return null;
+                    return (
+                      <>
+                        {acquisition.referer?.hostname && (
+                          <div>
+                            <span className="text-zinc-500">Referer: </span>
+                            {acquisition.referer.hostname || "-"}
+                          </div>
+                        )}
+                        {acquisition.utm?.utm_source && (
+                          <div>
+                            <span className="text-zinc-500">utm_source: </span>
+                            {acquisition.utm.utm_source || "-"}
+                          </div>
+                        )}
+                        {acquisition.utm?.utm_medium && (
+                          <div>
+                            <span className="text-zinc-500">utm_medium: </span>
+                            {acquisition.utm.utm_medium || "-"}
+                          </div>
+                        )}
+                        {acquisition.utm?.utm_campaign && (
+                          <div>
+                            <span className="text-zinc-500">utm_campaign: </span>
+                            {acquisition.utm.utm_campaign || "-"}
+                          </div>
+                        )}
+                        {acquisition.utm?.utm_term && (
+                          <div>
+                            <span className="text-zinc-500">utm_term: </span>
+                            {acquisition.utm.utm_term || "-"}
+                          </div>
+                        )}
+                        {acquisition.utm?.utm_content && (
+                          <div>
+                            <span className="text-zinc-500">utm_content: </span>
+                            {acquisition.utm.utm_content || "-"}
+                          </div>
+                        )}
+                      </>
+                    );
+                  })(user.profile?.extra?.acquisition)}
+                </TableCell>
+                <TableCell className="whitespace-nowrap text-sm space-y-2">
+                  <div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-6 text-xs"
+                      onClick={() => openAdminDialog(user)}
+                    >
+                      <ShieldUserIcon className="size-3" />
+                      {user.adminUser ? "Admin Permissions" : "Make Admin"}
+                    </Button>
+                  </div>
+                  <div>
+                    {user.emailVerified ? (
                       <Button
                         variant="outline"
                         size="sm"
-                        className="h-7 gap-1"
-                        onClick={() => generateResetUrl(user)}
-                        disabled={isGeneratingReset}
-                        title="Generate password reset URL"
+                        className="h-6 text-xs"
+                        onClick={() => generateLoginUrl(user)}
+                        disabled={isGeneratingLogin}
                       >
                         <LinkIcon className="size-3" />
-                        {isGeneratingReset ? "..." : "Reset"}
+                        {isGeneratingLogin ? "..." : "Impersonation Login"}
                       </Button>
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap">
-                      <ConfirmDialog
-                        title="Delete User Account"
-                        description={`Are you sure you want to permanently delete the account for ${user.email}? This will remove all user data including tokens, payments, and subscription information.`}
-                        onConfirm={async () => {
-                          const result = await deleteUserAccount(user.id);
-                          if (!result.success) {
-                            setError(result.message || "Failed to delete user");
-                          }
-                          fetchData();
-                        }}
-                      >
-                        <Button variant="destructive" size="icon" className="size-7">
-                          ×
-                        </Button>
-                      </ConfirmDialog>
-                    </TableCell>
-                  </>
-                ) : (
-                  <>
-                    {user.profile?.onboarding ? (
-                      <>
-                        <TableCell className="text-center text-xs">
-                          {user.profile.onboarding.usageType || "-"}
-                        </TableCell>
-                        <TableCell className="text-center text-xs">
-                          {user.profile.onboarding.role || "-"}
-                        </TableCell>
-                        <TableCell className="text-center text-xs">
-                          {user.profile.onboarding.industry || "-"}
-                        </TableCell>
-                        <TableCell className="text-center text-xs">
-                          {user.profile.onboarding.companyName || "-"}
-                        </TableCell>
-                        <TableCell className="text-center text-xs">
-                          {user.profile.onboarding.howDidYouHear || "-"}
-                        </TableCell>
-                      </>
                     ) : (
-                      <TableCell colSpan={5} className="text-center text-xs text-muted-foreground">
-                        Onboarding not completed
-                      </TableCell>
+                      <span className="text-xs text-muted-foreground">Email not verified</span>
                     )}
-                  </>
-                )}
+                  </div>
+                  <div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-6 text-xs"
+                      onClick={() => generateResetUrl(user)}
+                      disabled={isGeneratingReset}
+                    >
+                      <LinkIcon className="size-3" />
+                      {isGeneratingReset ? "..." : "Reset Password"}
+                    </Button>
+                  </div>
+                </TableCell>
+                <TableCell className="whitespace-nowrap">
+                  <ConfirmDialog
+                    title="Delete User Account"
+                    description={`Are you sure you want to permanently delete the account for ${user.email}? This will remove all user data including tokens, payments, and subscription information.`}
+                    onConfirm={async () => {
+                      const result = await deleteUserAccount(user.id);
+                      if (!result.success) {
+                        setError(result.message || "Failed to delete user");
+                      }
+                      fetchData();
+                    }}
+                  >
+                    <Button variant="destructive" size="icon" className="size-7">
+                      ×
+                    </Button>
+                  </ConfirmDialog>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
