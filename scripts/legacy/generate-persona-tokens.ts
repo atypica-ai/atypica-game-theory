@@ -26,8 +26,12 @@ async function main() {
 
     // Fetch current batch of personas without tokens
     const personas = await prisma.persona.findMany({
+      /**
+       * 现在数据库已经 migrate 到 persona token 为 not null，这个脚本已经不能用了
+       */
       where: {
-        token: null,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        token: null as any,
       },
       select: {
         id: true,

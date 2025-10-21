@@ -70,7 +70,7 @@ export async function fetchPersonas({
       data: personas.map(({ token, tags, ...persona }) => {
         return {
           ...persona,
-          token: token!,
+          token: token,
           tags: tags as string[],
         };
       }),
@@ -156,7 +156,7 @@ export async function fetchPersonas({
     data: personas.map(({ token, tags, ...persona }) => {
       return {
         ...persona,
-        token: token!,
+        token: token,
         tags: tags as string[],
       };
     }),

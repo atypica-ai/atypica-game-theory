@@ -498,7 +498,6 @@ export async function fetchPersonasSearchInStudy({
 
   const personas = await prisma.persona.findMany({
     where: {
-      token: { not: null },
       id: { in: ids },
     },
     select: {
@@ -515,7 +514,7 @@ export async function fetchPersonasSearchInStudy({
     success: true,
     data: personas.map(({ token, tags, ...persona }) => ({
       ...persona,
-      token: token!,
+      token: token,
       tags: tags as string[],
     })),
   };

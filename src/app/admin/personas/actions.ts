@@ -185,7 +185,7 @@ export async function fetchAdminPersonas({
     success: true,
     data: personas.map(({ token, tags, personaImport, ...persona }) => ({
       ...persona,
-      token: token!,
+      token: token,
       tags: tags as string[],
       personaImport: personaImport
         ? {
