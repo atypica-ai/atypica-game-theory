@@ -1,7 +1,7 @@
 import { reportHTMLSystem } from "@/ai/prompt";
 import { fetchAnalystInterviews } from "@/app/(agents)/interview/actions";
 import { fetchAnalystPodcasts } from "@/app/(podcast)/actions";
-import { podcastScriptSystem } from "@/app/(podcast)/prompt";
+import { podcastScriptSystem } from "@/app/(podcast)/prompt/podcastTypes/deepDive";
 import { checkTezignAuth } from "@/app/admin/actions";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { throwServerActionError } from "@/lib/serverAction";

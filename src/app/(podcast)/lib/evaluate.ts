@@ -2,7 +2,7 @@ import "server-only";
 
 import { llm } from "@/ai/provider";
 import { StatReporter } from "@/ai/tools/types";
-import { podcastEvaluationSystem } from "@/app/(podcast)/prompt";
+import { podcastEvaluationSystem } from "@/app/(podcast)/prompt/evaluation";
 import { PodcastEvaluationScores, podcastEvaluationScoresSchema } from "@/app/(podcast)/types";
 import { fetchActiveSubscription } from "@/app/account/lib";
 import { rootLogger } from "@/lib/logging";

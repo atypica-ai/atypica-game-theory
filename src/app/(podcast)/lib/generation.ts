@@ -14,7 +14,7 @@ import { AnalystKind } from "@/prisma/types";
 import { FilePart, FinishReason, ModelMessage, stepCountIs, streamText } from "ai";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
-import { podcastScriptPrologue, podcastScriptSystem } from "../prompt";
+import { podcastScriptPrologue, podcastScriptSystem } from "@/app/(podcast)/prompt";
 import { createPodcastRecord } from "./utils";
 import { createVolcanoClient } from "./volcano/client";
 
@@ -185,9 +185,20 @@ async function generatePodcastScript(params: {
   abortSignal: AbortSignal;
   statReport: StatReporter;
   logger: Logger;
+  podcastKind?: string; // optional, default handled below
 }): Promise<string> {
-  const { podcast, analyst, locale, instruction, systemPrompt, abortSignal, statReport, logger } =
-    params;
+  // Default podcastKind to "deepDive" if not provided
+  const {
+    podcast,
+    analyst,
+    locale,
+    instruction,
+    systemPrompt,
+    abortSignal,
+    statReport,
+    logger,
+    podcastKind = "deepDive",
+  } = params;
 
   // Core script generation logic
   logger.info({
@@ -290,7 +301,7 @@ async function generatePodcastScript(params: {
         ? systemPrompt
         : podcastScriptSystem({
             locale,
-            analystKind: (analyst.kind as AnalystKind) || AnalystKind.misc,
+            podcastKind: podcastKind,
           }),
 
       messages,
