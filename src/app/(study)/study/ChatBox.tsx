@@ -25,9 +25,9 @@ import {
   userStopBackgroundStudyAction,
 } from "./actions";
 import { CancelButton, StatusDisplay } from "./components/StatusDisplay";
-import { StudyFeedback } from "./components/StudyFeedback";
 import { useStudyContext } from "./hooks/StudyContext";
 import { SingleMessage } from "./SingleMessage";
+import { StudyFeedback } from "./StudyFeedback";
 import { StudyNextSteps } from "./StudyNextSteps";
 
 function popLastUserMessage(messages: UIMessage[]) {

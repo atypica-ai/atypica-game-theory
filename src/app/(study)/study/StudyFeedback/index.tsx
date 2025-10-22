@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import { CheckIcon, ThumbsDownIcon, ThumbsUpIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
-import { fetchStudyFeedback, submitStudyFeedback } from "../actions";
+import { fetchStudyFeedback, submitStudyFeedback } from "./actions";
 
 interface StudyFeedbackProps {
   studyUserChatId: number;
