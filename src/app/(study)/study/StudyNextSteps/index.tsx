@@ -1,4 +1,5 @@
 "use client";
+import { NewStudyButton } from "@/components/NewStudyInputBox";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { LightbulbIcon, MicIcon, RefreshCwIcon } from "lucide-react";
@@ -39,11 +40,6 @@ export function StudyNextSteps({
   const handleGeneratePodcast = () => {
     console.log("Generate podcast for study:", studyUserChatId);
     // TODO: Implement podcast generation
-  };
-
-  const handleStartNewResearch = (question: string) => {
-    console.log("Start new research with question:", question);
-    // TODO: Implement new research creation
   };
 
   const handleRefreshQuestions = async () => {
@@ -108,16 +104,16 @@ export function StudyNextSteps({
           </>
         ) : (
           questions.map((question, index) => (
-            <Button
-              key={index}
-              variant="ghost"
-              size="sm"
-              className="justify-start gap-2 h-9 px-3 border border-border/50 hover:border-border hover:bg-accent/50 max-w-md"
-              onClick={() => handleStartNewResearch(question)}
-            >
-              <LightbulbIcon className="size-3.5 flex-shrink-0" />
-              <span className="text-sm truncate">{question}</span>
-            </Button>
+            <NewStudyButton key={index} initialQuestion={question}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="justify-start gap-2 h-9 px-3 border border-border/50 hover:border-border hover:bg-accent/50 max-w-md"
+              >
+                <LightbulbIcon className="size-3.5 flex-shrink-0" />
+                <span className="text-sm truncate">{question}</span>
+              </Button>
+            </NewStudyButton>
           ))
         )}
       </div>

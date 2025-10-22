@@ -34,7 +34,13 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 
-export function NewStudyInputBox({ className }: { className?: string }) {
+export function NewStudyInputBox({
+  className,
+  initialQuestion,
+}: {
+  className?: string;
+  initialQuestion?: string;
+}) {
   const { data: session } = useSession();
   const locale = useLocale();
   const t = useTranslations("Components.NewStudyInputBox");
@@ -54,11 +60,16 @@ export function NewStudyInputBox({ className }: { className?: string }) {
   }, 300);
 
   useEffect(() => {
-    const savedInput = localStorage.getItem("studyInputCache");
-    if (savedInput) {
-      setInput(savedInput);
+    // If initialQuestion is provided, use it; otherwise load from cache
+    if (initialQuestion) {
+      setInput(initialQuestion);
+    } else {
+      const savedInput = localStorage.getItem("studyInputCache");
+      if (savedInput) {
+        setInput(savedInput);
+      }
     }
-  }, []);
+  }, [initialQuestion]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -242,9 +253,24 @@ export function NewStudyInputBox({ className }: { className?: string }) {
   );
 }
 
-export function NewStudyButton({ children }: { children?: React.ReactNode }) {
+export function NewStudyButton({
+  children,
+  initialQuestion,
+  open,
+  onOpenChange,
+}: {
+  children?: React.ReactNode;
+  initialQuestion?: string;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}) {
   const t = useTranslations("Components.NewStudyInputBox");
-  const [isOpen, setIsOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+
+  // Use controlled or uncontrolled state
+  const isOpen = open !== undefined ? open : internalOpen;
+  const setIsOpen = onOpenChange || setInternalOpen;
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
@@ -264,7 +290,10 @@ export function NewStudyButton({ children }: { children?: React.ReactNode }) {
         <DialogHeader className="invisible">
           <DialogTitle />
         </DialogHeader>
-        <NewStudyInputBox className="rounded-sm overflow-hidden" />
+        <NewStudyInputBox
+          className="rounded-sm overflow-hidden"
+          initialQuestion={initialQuestion}
+        />
       </DialogContent>
     </Dialog>
   );
