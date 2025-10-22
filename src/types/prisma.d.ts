@@ -162,6 +162,11 @@ declare module "@/prisma/client" {
 
   export type AnalystExtra = Partial<{
     podcastEvaluation: { processing?: boolean } & Record<string, unknown>;
+    recommendedStudies: {
+      questions: string[];
+      generatedAt?: string;
+      processing?: boolean;
+    };
   }>;
 
   // Removed

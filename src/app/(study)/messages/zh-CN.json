@@ -110,6 +110,11 @@
     "PodcastsListPanel": {
       "title": "本次研究的播客",
       "noPodcastsYet": "暂无播客"
+    },
+    "NextSteps": {
+      "title": "您可能还想了解",
+      "generatePodcast": "生成播客解读",
+      "generating": "生成中..."
     }
   },
   "StudyListPage": {

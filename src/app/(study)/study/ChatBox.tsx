@@ -28,6 +28,7 @@ import { CancelButton, StatusDisplay } from "./components/StatusDisplay";
 import { StudyFeedback } from "./components/StudyFeedback";
 import { useStudyContext } from "./hooks/StudyContext";
 import { SingleMessage } from "./SingleMessage";
+import { StudyNextSteps } from "./StudyNextSteps";
 
 function popLastUserMessage(messages: UIMessage[]) {
   if (messages.length > 0 && messages[messages.length - 1].role === "user") {
@@ -332,6 +333,13 @@ export function ChatBox() {
             isLastMessage={index === messages.length - 1}
           ></SingleMessage>
         ))}
+
+        {/* Study Next Steps */}
+        {studyCompleted && uiStatus === "ready" ? (
+          <div className="w-full mt-4">
+            <StudyNextSteps studyUserChatId={studyUserChatId} />
+          </div>
+        ) : null}
 
         {/* Study Feedback */}
         {studyCompleted && uiStatus === "ready" ? (

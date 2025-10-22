@@ -110,6 +110,11 @@
     "PodcastsListPanel": {
       "title": "Podcasts for this study",
       "noPodcastsYet": "No podcasts yet"
+    },
+    "NextSteps": {
+      "title": "You might also want to explore",
+      "generatePodcast": "Generate Podcast",
+      "generating": "Generating..."
     }
   },
   "StudyListPage": {
