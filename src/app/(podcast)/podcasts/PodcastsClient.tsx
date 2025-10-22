@@ -149,7 +149,7 @@ export function PodcastsClient() {
   const [podcastFilter, setPodcastFilter] = useState<"top" | "all">("top"); // Filter for Top vs All podcasts
   const audioRef = useRef<HTMLAudioElement | null>(null);
   
-  const ITEMS_PER_PAGE = 9; // Show 9 podcasts per page (3x3 grid)
+  const ITEMS_PER_PAGE = 5; // Show 5 podcasts per page for All Podcasts
 
   const loadPodcasts = useCallback(async () => {
     try {
@@ -241,9 +241,10 @@ export function PodcastsClient() {
   const allPodcastsToDisplay = podcasts.length > 0 ? filteredPodcasts : placeholderAllPodcasts;
   
   // Apply Top/All filter
-  const filterAppliedPodcasts = podcastFilter === "top"
-    ? [...allPodcastsToDisplay].sort((a: any, b: any) => (b.replies || 0) - (a.replies || 0))
-    : allPodcastsToDisplay;
+  const topPodcasts = [...allPodcastsToDisplay]
+    .sort((a: any, b: any) => (b.replies || 0) - (a.replies || 0))
+    .slice(0, 5);
+  const filterAppliedPodcasts = podcastFilter === "top" ? topPodcasts : allPodcastsToDisplay;
   
   // Filter by search query for placeholders
   const searchFilteredPodcasts = searchQuery
@@ -500,8 +501,8 @@ export function PodcastsClient() {
                   })}
                 </div>
 
-                {/* Pagination */}
-                {totalPages > 1 && (
+                {/* Pagination (only for All Podcasts) */}
+                {podcastFilter === "all" && totalPages > 1 && (
                   <div className="mt-8 flex items-center justify-center gap-2">
                     <Button
                       variant="outline"
@@ -693,6 +694,19 @@ export function PodcastsClient() {
                 </div>
               )}
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-16 border-t border-border">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto text-center">
+            <h3 className="text-2xl md:text-3xl font-bold mb-4">Ready to create your own podcast?</h3>
+            <p className="text-muted-foreground mb-8">Start a new research and generate your first AI podcast in minutes.</p>
+            <Button asChild size="lg">
+              <Link href="/newstudy">Create My Podcast</Link>
+            </Button>
           </div>
         </div>
       </section>
