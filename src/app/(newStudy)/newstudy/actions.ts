@@ -75,16 +75,15 @@ export async function continueToStudyUserChat(
 
     const newStudyChat = createResult.data;
 
-    await prisma.userChat.update({
-      where: { id: userChatId },
-      data: {
-        extra: {
-          ...extra,
-          newStudyUserChatId: newStudyChat.id,
-          newStudyUserChatToken: newStudyChat.token,
-        },
-      },
-    });
+    // 使用 || 操作符安全地更新 extra 字段，避免覆盖其他值
+    await prisma.$executeRaw`
+      UPDATE "UserChat"
+      SET "extra" = COALESCE("extra", '{}') || ${JSON.stringify({
+        newStudyUserChatId: newStudyChat.id,
+        newStudyUserChatToken: newStudyChat.token,
+      })}::jsonb
+      WHERE "id" = ${userChatId}
+    `;
 
     return { success: true, data: { token: newStudyChat.token } };
   });

@@ -35,7 +35,7 @@ export async function createStudyUserChat(
     attachments?: ChatMessageAttachment[];
   },
   // 任何额外要存储的信息
-  extra?: Record<string, string | number>,
+  extra?: Pick<UserChatExtra, "briefUserChatId">,
 ): Promise<ServerActionResult<Omit<UserChat, "kind"> & { kind: "study" }>> {
   return withAuth(async (user) => {
     // Validate file upload limits
