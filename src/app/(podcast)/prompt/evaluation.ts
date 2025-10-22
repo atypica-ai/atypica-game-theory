@@ -6,7 +6,7 @@ Each section scored out of 4 points
 
 ### 1. Topic Relevance & Currency
 
-Is this topic related to News or Well Knowed Controversies? (4 points)
+Is this topic related to News or Well Known Controversies? (4 points)
 - Yes: 4 pts
 - No: 0 pts
 
