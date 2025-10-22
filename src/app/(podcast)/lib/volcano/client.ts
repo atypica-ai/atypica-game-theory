@@ -62,7 +62,8 @@ export class VolcanoTTSClient {
    * Returns the count, capped at 2 (Volcano TTS supports max 2 speakers)
    * 
    * @param script - The podcast script with host markers
-   * @returns Number of unique hosts (1 or 2)
+   * @returns Number of unique hosts (1 or 2). 
+   * important: if there are more than 2 hosts, return 2; if no hosts found, return 2 for backward compatibility.
    * 
    * @example
    * // Script with 2 hosts:
