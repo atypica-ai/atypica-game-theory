@@ -1,10 +1,10 @@
 "use client";
+import { continueToStudyUserChat } from "@/app/(newStudy)/actions";
 import { Button } from "@/components/ui/button";
 import { BrainCircuitIcon, RotateCwIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
-import { continueToStudyUserChat } from "../actions";
 
 const COUNTDOWN_SECONDS = 5;
 

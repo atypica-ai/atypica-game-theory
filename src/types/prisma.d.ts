@@ -58,21 +58,25 @@ declare module "@/prisma/client" {
   }>;
 
   export type UserChatExtra = Partial<{
+    // 客户端信息
     clientIp: string;
     userAgent: string;
     locale: string;
-    feedback: {
-      rating: string;
-      submittedAt: string;
-    };
     geo: Partial<{
       country: string;
       countryCode: string;
       city: string;
     }>;
+    // user chat 通用信息
+    feedback: {
+      rating: string;
+      submittedAt: string;
+    };
+    error: string;
+    referenceUserChats: string[]; // List of chat tokens used as context
+    // study user chat 专用
     newStudyUserChatToken: string;
     briefUserChatId: number;
-    error: string;
   }>; // & Record<string, string | number>
 
   // for extra field on ChatStatistics and UserTokensLog
@@ -160,6 +164,9 @@ declare module "@/prisma/client" {
     error: string;
   }>;
 
+  // AnalystExtra 和 UserChatExtra 的关系是：
+  // 研究开始前的额外信息，都存 UserChatExtra，是发起研究或者需求相关对的
+  // 研究结束后的额外信息，都存 AnalystExtra，是产物或者下一步动作相关
   export type AnalystExtra = Partial<{
     podcastEvaluation: { processing?: boolean } & Record<string, unknown>;
     recommendedStudies: {

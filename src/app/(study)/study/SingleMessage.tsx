@@ -121,6 +121,7 @@ export const SingleMessage = <UI_MESSAGE extends TStudyMessageWithTool>({
   nickname,
   onDelete,
   isLastMessage,
+  className,
 }: {
   // role: "assistant" | "user" | "system" | "data";
   // content: string | ReactNode;
@@ -131,6 +132,7 @@ export const SingleMessage = <UI_MESSAGE extends TStudyMessageWithTool>({
   nickname?: string;
   onDelete?: () => void;
   isLastMessage?: boolean;
+  className?: string;
 }) => {
   const fileParts = useMemo(() => {
     return parts?.filter((part) => part.type === "file");
@@ -148,6 +150,7 @@ export const SingleMessage = <UI_MESSAGE extends TStudyMessageWithTool>({
         className={cn(
           "w-full mt-8 mb-6",
           "not-first-of-type:border-t not-first-of-type:border-zinc-100 not-first-of-type:dark:border-zinc-700/50 not-first-of-type:pt-12",
+          className,
         )}
       >
         <div className="w-full flex items-center justify-between">
@@ -185,7 +188,7 @@ export const SingleMessage = <UI_MESSAGE extends TStudyMessageWithTool>({
         ) : null}
       </div>
     );
-  }, [parts, onDelete, fileParts]);
+  }, [parts, onDelete, fileParts, className]);
 
   // const { replay } = useStudyContext();
   const renderParts = (parts: TStudyMessageWithTool["parts"]) => {
@@ -236,7 +239,7 @@ export const SingleMessage = <UI_MESSAGE extends TStudyMessageWithTool>({
   } else if (role === "assistant") {
     return (
       <motion.div
-        className="w-full"
+        className={cn("w-full", className)}
         initial={{ y: 15, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.4, ease: "easeOut" }}

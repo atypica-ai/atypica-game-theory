@@ -1,4 +1,5 @@
 "use client";
+import { createNewStudyChat } from "@/app/(newStudy)/actions";
 import { FitToViewport } from "@/components/layout/FitToViewport";
 import { Button } from "@/components/ui/button";
 import { EarIcon, RotateCwIcon } from "lucide-react";
@@ -6,7 +7,6 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useCallback, useTransition } from "react";
 import { toast } from "sonner";
-import { createNewStudyChat } from "./actions";
 
 export function NewStudyChatIntro() {
   const router = useRouter();

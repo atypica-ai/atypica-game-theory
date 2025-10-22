@@ -5,8 +5,9 @@ import {
 } from "@/ai/messageUtilsClient";
 import { ToolName, TStudyMessageWithTool } from "@/ai/tools/types";
 import { StudyToolUIPartDisplay } from "@/ai/tools/ui";
+import { fetchChatTitlesByTokens } from "@/app/(newStudy)/actions";
+import { NewStudyButton } from "@/app/(newStudy)/components/NewStudyInputBox";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
-import { NewStudyButton } from "@/components/NewStudyInputBox";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { UserTokensBalanceStore } from "@/components/UserTokensBalance";
@@ -14,10 +15,12 @@ import { useDevice } from "@/hooks/use-device";
 import { useDocumentVisibility } from "@/hooks/use-document-visibility";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
 import { cn } from "@/lib/utils";
+import { UserChatExtra } from "@/prisma/client";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, UIMessage } from "ai";
 import { ArrowRightIcon, PlayIcon, PlusIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   fetchUserChatByToken,
@@ -51,8 +54,27 @@ export function ChatBox() {
       token: studyUserChatToken,
       messages: initialMessages,
       backgroundToken: initialBackgroundToken,
+      extra,
     },
   } = useStudyContext();
+
+  const [referenceChatTitles, setReferenceChatTitles] = useState<
+    { token: string; title: string }[]
+  >([]);
+
+  useEffect(() => {
+    const loadReferenceChatTitles = async () => {
+      const extraData = extra as UserChatExtra;
+      const referenceTokens = extraData?.referenceUserChats;
+      if (referenceTokens && referenceTokens.length > 0) {
+        const result = await fetchChatTitlesByTokens(referenceTokens);
+        if (result.success) {
+          setReferenceChatTitles(result.data);
+        }
+      }
+    };
+    loadReferenceChatTitles();
+  }, [extra]);
 
   const extraRequestPayload = useMemo(
     () => ({ userChatToken: studyUserChatToken }),
@@ -300,8 +322,29 @@ export function ChatBox() {
           "pt-4 pb-60 px-4",
         )}
       >
+        {/* Reference Chats Display */}
+        {referenceChatTitles.length > 0 && (
+          <div className="w-full flex items-center justify-start gap-2 flex-wrap mt-4">
+            <span className="text-xs text-muted-foreground">{t("referenceContext")}:</span>
+            {referenceChatTitles.map((chat) => (
+              <Link
+                key={chat.token}
+                href={`/study/${chat.token}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs px-2 py-1 border border-border rounded-sm"
+              >
+                {chat.title}
+              </Link>
+            ))}
+          </div>
+        )}
         {messages.map((message, index) => (
           <SingleMessage
+            className={cn({
+              "not-first-of-type:border-t-0 not-first-of-type:pt-0 mt-1":
+                referenceChatTitles.length > 0 && index === 0,
+            })}
             key={message.id}
             message={message}
             nickname={message.role === "assistant" ? "atypica.AI" : undefined}
@@ -337,7 +380,7 @@ export function ChatBox() {
         {/* Study Next Steps */}
         {studyCompleted && uiStatus === "ready" ? (
           <div className="w-full mt-4">
-            <StudyNextSteps studyUserChatId={studyUserChatId} />
+            <StudyNextSteps studyUserChatToken={studyUserChatToken} />
           </div>
         ) : null}
 

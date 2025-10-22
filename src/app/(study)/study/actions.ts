@@ -35,7 +35,7 @@ export async function createStudyUserChat(
     attachments?: ChatMessageAttachment[];
   },
   // 任何额外要存储的信息
-  extra?: Pick<UserChatExtra, "briefUserChatId">,
+  extra?: Pick<UserChatExtra, "briefUserChatId" | "referenceUserChats">,
 ): Promise<ServerActionResult<Omit<UserChat, "kind"> & { kind: "study" }>> {
   return withAuth(async (user) => {
     // Validate file upload limits
@@ -124,16 +124,19 @@ export async function createStudyUserChat(
   });
 }
 
-export async function createProductRnDStudyUserChat({
-  role,
-  content,
-  attachments,
-}: {
-  role: "user" | "assistant";
-  content: string;
-  attachments?: ChatMessageAttachment[];
-}): Promise<ServerActionResult<Omit<UserChat, "kind"> & { kind: "study" }>> {
-  const result = await createStudyUserChat({ role, content, attachments });
+export async function createProductRnDStudyUserChat(
+  {
+    role,
+    content,
+    attachments,
+  }: {
+    role: "user" | "assistant";
+    content: string;
+    attachments?: ChatMessageAttachment[];
+  },
+  extra?: Pick<UserChatExtra, "briefUserChatId" | "referenceUserChats">,
+): Promise<ServerActionResult<Omit<UserChat, "kind"> & { kind: "study" }>> {
+  const result = await createStudyUserChat({ role, content, attachments }, extra);
   if (result.success) {
     const studyUserChatId = result.data.id;
     await prisma.analyst.update({

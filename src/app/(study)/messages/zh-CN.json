@@ -37,7 +37,8 @@
       "multiSelectHint": "选择1个或多个选项",
       "continueStudy": "继续",
       "startNewStudy": "开始新研究",
-      "confirm": "确认"
+      "confirm": "确认",
+      "referenceContext": "参考研究"
     },
     "Feedback": {
       "title": "这个研究对您有用吗？",

@@ -1,5 +1,5 @@
 "use client";
-import { NewStudyInputBox } from "@/components/NewStudyInputBox";
+import { NewStudyInputBox } from "@/app/(newStudy)/components/NewStudyInputBox";
 import { cn } from "@/lib/utils";
 import { CommandIcon } from "lucide-react";
 import { useTranslations } from "next-intl";

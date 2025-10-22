@@ -1,4 +1,5 @@
 "use client";
+import { fetchChatTitlesByTokens } from "@/app/(newStudy)/actions";
 import { createProductRnDStudyUserChat, createStudyUserChat } from "@/app/(study)/study/actions";
 import { FileAttachment } from "@/components/chat/FileAttachment";
 import { FileUploadButton } from "@/components/chat/FileUploadButton";
@@ -37,9 +38,11 @@ import { useDebouncedCallback } from "use-debounce";
 export function NewStudyInputBox({
   className,
   initialQuestion,
+  referenceUserChatTokens,
 }: {
   className?: string;
   initialQuestion?: string;
+  referenceUserChatTokens?: string[];
 }) {
   const { data: session } = useSession();
   const locale = useLocale();
@@ -51,6 +54,9 @@ export function NewStudyInputBox({
   const [partialTranscript, setPartialTranscript] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [studyType, setStudyType] = useState<"general" | "product-rnd">("general");
+  const [referenceChatTitles, setReferenceChatTitles] = useState<
+    { token: string; title: string }[]
+  >([]);
   const { uploadedFiles, handleFileUploaded, handleRemoveFile, isUploadDisabled } =
     useFileUploadManager();
 
@@ -71,6 +77,19 @@ export function NewStudyInputBox({
     }
   }, [initialQuestion]);
 
+  // Load reference chat titles
+  useEffect(() => {
+    const loadReferenceChatTitles = async () => {
+      if (referenceUserChatTokens && referenceUserChatTokens.length > 0) {
+        const result = await fetchChatTitlesByTokens(referenceUserChatTokens);
+        if (result.success) {
+          setReferenceChatTitles(result.data);
+        }
+      }
+    };
+    loadReferenceChatTitles();
+  }, [referenceUserChatTokens]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
@@ -82,10 +101,16 @@ export function NewStudyInputBox({
         mimeType: file.mimeType,
         size: file.size,
       }));
+      const extra = referenceUserChatTokens
+        ? { referenceUserChats: referenceUserChatTokens }
+        : undefined;
       const result =
         studyType === "product-rnd"
-          ? await createProductRnDStudyUserChat({ role: "user", content: input, attachments })
-          : await createStudyUserChat({ role: "user", content: input, attachments });
+          ? await createProductRnDStudyUserChat(
+              { role: "user", content: input, attachments },
+              extra,
+            )
+          : await createStudyUserChat({ role: "user", content: input, attachments }, extra);
       if (!result.success) {
         throw result;
       }
@@ -155,6 +180,24 @@ export function NewStudyInputBox({
           <span>{t("needHelpToClarify")}</span>
         </Link>
       </div>
+
+      {/* Reference Chats Display */}
+      {referenceChatTitles.length > 0 && (
+        <div className="px-4 py-2 border-b border-border bg-muted/30">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-xs text-muted-foreground">Reference:</span>
+            {referenceChatTitles.map((chat) => (
+              <div
+                key={chat.token}
+                className="text-xs px-2 py-1 bg-background border border-border rounded-sm"
+              >
+                {chat.title}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <Textarea
         value={input}
         onChange={(e) => {
@@ -256,11 +299,13 @@ export function NewStudyInputBox({
 export function NewStudyButton({
   children,
   initialQuestion,
+  referenceUserChatTokens,
   open,
   onOpenChange,
 }: {
   children?: React.ReactNode;
   initialQuestion?: string;
+  referenceUserChatTokens?: string[];
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }) {
@@ -293,6 +338,7 @@ export function NewStudyButton({
         <NewStudyInputBox
           className="rounded-sm overflow-hidden"
           initialQuestion={initialQuestion}
+          referenceUserChatTokens={referenceUserChatTokens}
         />
       </DialogContent>
     </Dialog>

@@ -26,7 +26,7 @@ export async function createUserChat<TKind extends UserChatKind>({
   token?: string;
   title: string;
   tx?: Omit<typeof prisma, ITXClientDenyList>;
-  extra?: Record<string, string | number>;
+  extra?: UserChatExtra;
 }): Promise<Omit<UserChat, "kind" | "extra"> & { kind: TKind; extra: UserChatExtra }> {
   if (!tx) {
     tx = prisma;

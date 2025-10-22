@@ -88,3 +88,32 @@ export async function continueToStudyUserChat(
     return { success: true, data: { token: newStudyChat.token } };
   });
 }
+
+/**
+ * Fetch chat titles by their tokens for displaying reference chats
+ */
+export async function fetchChatTitlesByTokens(
+  tokens: string[],
+): Promise<ServerActionResult<{ token: string; title: string }[]>> {
+  return withAuth(async (user) => {
+    if (!tokens || tokens.length === 0) {
+      return { success: true, data: [] };
+    }
+
+    const chats = await prisma.userChat.findMany({
+      where: {
+        token: { in: tokens },
+        userId: user.id, // Ensure user owns these chats
+      },
+      select: {
+        token: true,
+        title: true,
+      },
+    });
+
+    return {
+      success: true,
+      data: chats,
+    };
+  });
+}

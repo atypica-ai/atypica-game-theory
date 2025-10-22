@@ -21,13 +21,13 @@ const recommendedQuestionsSchema = z.object({
  * 基于研究生成并缓存推荐的研究问题
  */
 export async function generateRecommendedQuestionsAction(
-  studyUserChatId: number,
+  studyUserChatToken: string,
   forceRegenerate = false,
 ): Promise<ServerActionResult<{ questions: string[] }>> {
   try {
     // Get analyst data via studyUserChat
     const studyUserChat = await prisma.userChat.findUnique({
-      where: { id: studyUserChatId, kind: "study" },
+      where: { token: studyUserChatToken, kind: "study" },
       include: {
         analyst: true,
       },
@@ -41,13 +41,19 @@ export async function generateRecommendedQuestionsAction(
       };
     }
 
+    const studyLog = rootLogger.child({ studyUserChatId: studyUserChat.id, studyUserChatToken });
+
     const { analyst } = studyUserChat;
 
     // Check if we already have cached questions in analyst.extra
     const analystExtra = analyst.extra as AnalystExtra;
 
     // If not forcing regenerate and we have cached questions, return them
-    if (!forceRegenerate && analystExtra.recommendedStudies?.questions && !analystExtra.recommendedStudies.processing) {
+    if (
+      !forceRegenerate &&
+      analystExtra.recommendedStudies?.questions &&
+      !analystExtra.recommendedStudies.processing
+    ) {
       return {
         success: true,
         data: {
@@ -123,9 +129,7 @@ Please generate 2 follow-up research questions.
       },
     });
 
-    rootLogger.info(
-      `Generated recommended questions for analyst ${analyst.id}: ${JSON.stringify(questions)}`,
-    );
+    studyLog.info(`Generated recommended questions for analyst ${analyst.id}`);
 
     return {
       success: true,

@@ -1,17 +1,17 @@
 "use client";
-import { NewStudyButton } from "@/components/NewStudyInputBox";
+import { NewStudyButton } from "@/app/(newStudy)/components/NewStudyInputBox";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { LightbulbIcon, MicIcon, RefreshCwIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { generateRecommendedQuestionsAction } from "./actions";
 
 export function StudyNextSteps({
-  studyUserChatId,
+  studyUserChatToken,
   className,
 }: {
-  studyUserChatId: number;
+  studyUserChatToken: string;
   className?: string;
 }) {
   const t = useTranslations("StudyPage.NextSteps");
@@ -19,26 +19,32 @@ export function StudyNextSteps({
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const loadQuestions = async (forceRegenerate = false) => {
-    setIsLoading(true);
-    try {
-      const result = await generateRecommendedQuestionsAction(studyUserChatId, forceRegenerate);
-      if (result.success) {
-        setQuestions(result.data.questions);
+  const loadQuestions = useCallback(
+    async (forceRegenerate = false) => {
+      setIsLoading(true);
+      try {
+        const result = await generateRecommendedQuestionsAction(
+          studyUserChatToken,
+          forceRegenerate,
+        );
+        if (result.success) {
+          setQuestions(result.data.questions);
+        }
+      } catch (error) {
+        console.error("Failed to load questions:", error);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error("Failed to load questions:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    },
+    [studyUserChatToken],
+  );
 
   useEffect(() => {
     loadQuestions(false); // Initial load uses cache
-  }, [studyUserChatId]);
+  }, [loadQuestions]);
 
   const handleGeneratePodcast = () => {
-    console.log("Generate podcast for study:", studyUserChatId);
+    console.log("Generate podcast for study:", studyUserChatToken);
     // TODO: Implement podcast generation
   };
 
@@ -68,7 +74,7 @@ export function StudyNextSteps({
         </Button>
       </div>
 
-      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-2">
+      <div className="flex flex-col items-start justify-start gap-2 sm:flex-row sm:flex-wrap sm:gap-2">
         {/* Podcast Button */}
         <Button
           variant="ghost"
@@ -104,11 +110,15 @@ export function StudyNextSteps({
           </>
         ) : (
           questions.map((question, index) => (
-            <NewStudyButton key={index} initialQuestion={question}>
+            <NewStudyButton
+              key={index}
+              initialQuestion={question}
+              referenceUserChatTokens={[studyUserChatToken]}
+            >
               <Button
                 variant="ghost"
                 size="sm"
-                className="justify-start gap-2 h-9 px-3 border border-border/50 hover:border-border hover:bg-accent/50 max-w-md"
+                className="justify-start gap-2 h-9 px-3 border border-border/50 hover:border-border hover:bg-accent/50 max-w-sm overflow-hidden"
               >
                 <LightbulbIcon className="size-3.5 flex-shrink-0" />
                 <span className="text-sm truncate">{question}</span>
