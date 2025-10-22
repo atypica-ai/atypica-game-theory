@@ -300,7 +300,7 @@ async function generatePodcastScript(params: {
         ? systemPrompt
         : podcastScriptSystem({
             locale,
-            podcastKind: podcastKind,
+            podcastKind,
           }),
 
       messages,
