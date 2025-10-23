@@ -36,7 +36,8 @@ import HippyGhostAvatar from "./HippyGhostAvatar";
 import { Button } from "./ui/button";
 
 export default function UserMenu() {
-  const { data: session } = useSession();
+  const { status: sessionStatus, data: session } = useSession();
+  const [menuType, setMenuType] = useState<"user" | "anonymous" | null>(null);
   const t = useTranslations("Components.GlobalHeader");
   const { setTheme } = useTheme();
   const router = useRouter();
@@ -56,14 +57,19 @@ export default function UserMenu() {
 
   // 加载用户团队状态
   useEffect(() => {
-    if (session?.user) {
+    if (sessionStatus === "loading") {
+      setMenuType(null);
+    } else if (session?.user) {
+      setMenuType("user");
       getUserTeamStatusAction().then((result) => {
         if (result.success) {
           setTeamStatus(result.data);
         }
       });
+    } else {
+      setMenuType("anonymous");
     }
-  }, [session?.user]);
+  }, [sessionStatus, session?.user]);
 
   const toggleLocale = useCallback(() => {
     const newLocale = locale === "zh-CN" ? "en-US" : "zh-CN";
@@ -101,18 +107,20 @@ export default function UserMenu() {
   };
 
   const Account = () =>
-    session?.user ? (
+    menuType === "user" ? (
       <>
         <DropdownMenuItem>
           <MailIcon className="h-4 w-4 mr-2" />
           <span className="text-xs px-1 rounded-xs bg-zinc-200 dark:bg-zinc-700">
-            {session.userType === "TeamMember"
+            {session?.userType === "TeamMember"
               ? t("teamUser")
-              : session.userType === "Personal"
+              : session?.userType === "Personal"
                 ? t("personalUser")
                 : "-"}
           </span>
-          <span className="text-xs tracking-tight">{session.user.name || session.user.email}</span>
+          <span className="text-xs tracking-tight">
+            {session?.user?.name || session?.user?.email}
+          </span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
@@ -152,11 +160,11 @@ export default function UserMenu() {
     ) : null;
 
   const UserAvatar = ({ className, ...props }: React.ComponentProps<typeof Avatar>) =>
-    session?.user ? (
+    menuType === "user" ? (
       <Avatar className={cn("size-8 cursor-pointer rounded-none", className)} {...props}>
         {/* <AvatarImage src={""} /> */}
         {/* <AvatarFallback>{session.user.email.charAt(0)}</AvatarFallback> */}
-        <HippyGhostAvatar seed={session.user.id} className="size-8" />
+        <HippyGhostAvatar seed={session?.user?.id} className="size-8" />
       </Avatar>
     ) : null;
 
@@ -187,7 +195,7 @@ export default function UserMenu() {
     </DropdownMenuItem>
   );
 
-  if (!session?.user) {
+  if (menuType === "anonymous") {
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -200,22 +208,20 @@ export default function UserMenu() {
         </DropdownMenuContent>
       </DropdownMenu>
     );
-  } else {
+  } else if (menuType === "user") {
     return (
-      <>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <UserAvatar />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="min-w-36">
-            <Account />
-            <DropdownMenuSeparator />
-            <Menus />
-            <DropdownMenuSeparator />
-            <Logout />
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <UserAvatar />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="min-w-36">
+          <Account />
+          <DropdownMenuSeparator />
+          <Menus />
+          <DropdownMenuSeparator />
+          <Logout />
+        </DropdownMenuContent>
+      </DropdownMenu>
     );
   }
 }

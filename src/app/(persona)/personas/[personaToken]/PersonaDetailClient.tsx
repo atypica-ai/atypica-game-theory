@@ -19,7 +19,7 @@ import {
 import { useSession } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export function PersonaDetailClient({
@@ -38,6 +38,9 @@ export function PersonaDetailClient({
   const router = useRouter();
   const { data: session, status: sessionStatus } = useSession();
   const [isChatCreating, setIsChatCreating] = useState(false);
+  const [authStatus, setAuthStatus] = useState<"loading" | "authenticated" | "unauthenticated">(
+    "loading",
+  );
 
   const handleLogin = () => {
     const currentUrl = window.location.href;
@@ -67,6 +70,17 @@ export function PersonaDetailClient({
     }
   };
 
+  // Update auth status based on session
+  useEffect(() => {
+    if (sessionStatus === "loading") {
+      setAuthStatus("loading");
+    } else if (sessionStatus === "authenticated" && session?.user) {
+      setAuthStatus("authenticated");
+    } else {
+      setAuthStatus("unauthenticated");
+    }
+  }, [sessionStatus, session?.user]);
+
   const extractSummaryFromPrompt = (prompt: string) => {
     const match = prompt.match(/<persona>([\s\S]*?)<\/persona>/);
     return match ? match[1] : prompt;
@@ -85,7 +99,7 @@ export function PersonaDetailClient({
 
       {/* Action Buttons */}
       <div className="mt-8 flex flex-col sm:flex-row justify-center gap-4">
-        {session?.user ? (
+        {authStatus === "authenticated" ? (
           <>
             <Button onClick={handleStartChat} disabled={isChatCreating} size="lg">
               <MessageCircleIcon className="h-4 w-4" />
@@ -98,7 +112,7 @@ export function PersonaDetailClient({
               </Button>
             )}
           </>
-        ) : sessionStatus === "unauthenticated" ? (
+        ) : authStatus === "unauthenticated" ? (
           <Button onClick={handleLogin} size="lg">
             {t("loginToChat")}
             <ArrowRight className="h-4 w-4" />

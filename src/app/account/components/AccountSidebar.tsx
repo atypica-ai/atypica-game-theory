@@ -32,25 +32,47 @@ interface SidebarItem {
 }
 
 export default function AccountSidebar() {
-  const { data: session } = useSession();
   const t = useTranslations("AccountPage.sidebar");
   const pathname = usePathname();
   const isSM = useMediaQuery("sm");
 
+  const { status: sessionStatus, data: session } = useSession();
   const [teamStatus, setTeamStatus] = useState<ExtractServerActionData<
     typeof getUserTeamStatusAction
   > | null>(null);
+  const [userInfo, setUserInfo] = useState<{
+    userType: string;
+    displayName: string;
+  } | null>(null);
 
-  // 加载用户团队状态
+  // 加载用户团队状态和用户信息
   useEffect(() => {
+    if (sessionStatus === "loading") {
+      setUserInfo(null);
+      return;
+    }
+
     if (session?.user) {
+      // 更新用户信息
+      const userType =
+        session.userType === "TeamMember"
+          ? t("teamUser")
+          : session.userType === "Personal"
+            ? t("personalUser")
+            : "-";
+      const displayName = session.user.email || session.user.name || "";
+      setUserInfo({ userType, displayName });
+
+      // 加载团队状态
       getUserTeamStatusAction().then((result) => {
         if (result.success) {
           setTeamStatus(result.data);
         }
       });
+    } else {
+      setUserInfo(null);
     }
-  }, [session?.user]);
+  }, [sessionStatus, session, t]);
 
   const sidebarItems = useMemo(() => {
     const sidebarItems: SidebarItem[] = [
@@ -91,14 +113,14 @@ export default function AccountSidebar() {
     <aside className="w-full sm:w-48 lg:w-64 max-sm:border-t sm:border-r">
       <div className="flex h-16 items-center border-b px-6 justify-between">
         <div className="space-x-2 truncate">
-          <span className="text-xs px-1 py-1 rounded-xs bg-zinc-200 dark:bg-zinc-700">
-            {session?.userType === "TeamMember"
-              ? t("teamUser")
-              : session?.userType === "Personal"
-                ? t("personalUser")
-                : "-"}
-          </span>
-          <span className="text-xs">{session?.user?.email || session?.user?.name}</span>
+          {userInfo && (
+            <>
+              <span className="text-xs px-1 py-1 rounded-xs bg-zinc-200 dark:bg-zinc-700">
+                {userInfo.userType}
+              </span>
+              <span className="text-xs">{userInfo.displayName}</span>
+            </>
+          )}
         </div>
         {!isSM && (
           <DropdownMenu>

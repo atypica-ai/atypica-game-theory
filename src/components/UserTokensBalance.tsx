@@ -27,14 +27,18 @@ export const UserTokensBalanceStore = create<{
 export default function UserTokensBalance() {
   const [isOpen, setIsOpen] = useState(false);
   const t = useTranslations("Components.UserTokensBalance");
-  const { status, data: session } = useSession();
+  const { status: sessionStatus, data: session } = useSession();
   const { setBalance, balance } = UserTokensBalanceStore();
+  const [visible, setVisible] = useState(false);
 
   const { isDocumentVisible } = useDocumentVisibility();
   useEffect(() => {
-    if (!session?.user || !isDocumentVisible) {
+    if (!(sessionStatus === "authenticated" && session?.user) || !isDocumentVisible) {
+      setVisible(false);
       return;
     }
+    setVisible(true);
+
     let timeoutId: NodeJS.Timeout;
     const poll = async () => {
       if (!isDocumentVisible) {
@@ -51,11 +55,11 @@ export default function UserTokensBalance() {
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [session, setBalance, isDocumentVisible]);
+  }, [sessionStatus, session, setBalance, isDocumentVisible]);
 
   // status === "authenticated" 只是判断 session 是否存在，没判断 user 是否有效
   // 最近一次升级，user 上没有 userType 会被认为无效，这种 user session 数据的升级之后还会发生
-  return status === "authenticated" && session?.user ? (
+  return visible ? (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <div

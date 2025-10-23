@@ -32,7 +32,7 @@ import { useSession } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 
 export function NewStudyInputBox({
@@ -44,7 +44,7 @@ export function NewStudyInputBox({
   initialQuestion?: string;
   referenceUserChatTokens?: string[];
 }) {
-  const { data: session } = useSession();
+  const { status: sessionStatus, data: session } = useSession();
   const locale = useLocale();
   const t = useTranslations("Components.NewStudyInputBox");
   const router = useRouter();
@@ -54,6 +54,7 @@ export function NewStudyInputBox({
   const [partialTranscript, setPartialTranscript] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [studyType, setStudyType] = useState<"general" | "product-rnd">("general");
+  const [showStudyTypeSelector, setShowStudyTypeSelector] = useState(false);
   const [referenceChatTitles, setReferenceChatTitles] = useState<
     { token: string; title: string }[]
   >([]);
@@ -77,6 +78,17 @@ export function NewStudyInputBox({
     }
   }, [initialQuestion]);
 
+  // Check if user should see study type selector
+  useEffect(() => {
+    if (sessionStatus === "loading") {
+      setShowStudyTypeSelector(false);
+    } else if (session?.user?.email?.endsWith("@tezign.com")) {
+      setShowStudyTypeSelector(true);
+    } else {
+      setShowStudyTypeSelector(false);
+    }
+  }, [sessionStatus, session?.user?.email]);
+
   // Load reference chat titles
   useEffect(() => {
     const loadReferenceChatTitles = async () => {
@@ -90,39 +102,42 @@ export function NewStudyInputBox({
     loadReferenceChatTitles();
   }, [referenceUserChatTokens]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim()) return;
-    setIsLoading(true);
-    try {
-      const attachments = uploadedFiles.map((file) => ({
-        objectUrl: file.objectUrl,
-        name: file.name,
-        mimeType: file.mimeType,
-        size: file.size,
-      }));
-      const extra = referenceUserChatTokens
-        ? { referenceUserChats: referenceUserChatTokens }
-        : undefined;
-      const result =
-        studyType === "product-rnd"
-          ? await createProductRnDStudyUserChat(
-              { role: "user", content: input, attachments },
-              extra,
-            )
-          : await createStudyUserChat({ role: "user", content: input, attachments }, extra);
-      if (!result.success) {
-        throw result;
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!input.trim()) return;
+      setIsLoading(true);
+      try {
+        const attachments = uploadedFiles.map((file) => ({
+          objectUrl: file.objectUrl,
+          name: file.name,
+          mimeType: file.mimeType,
+          size: file.size,
+        }));
+        const extra = referenceUserChatTokens
+          ? { referenceUserChats: referenceUserChatTokens }
+          : undefined;
+        const result =
+          studyType === "product-rnd"
+            ? await createProductRnDStudyUserChat(
+                { role: "user", content: input, attachments },
+                extra,
+              )
+            : await createStudyUserChat({ role: "user", content: input, attachments }, extra);
+        if (!result.success) {
+          throw result;
+        }
+        const chat = result.data;
+        // Clear input cache after successfully creating chat
+        localStorage.removeItem("studyInputCache");
+        router.push(`/study/${chat.token}`);
+      } catch (error) {
+        console.log("Error saving input:", (error as Error).message);
       }
-      const chat = result.data;
-      // Clear input cache after successfully creating chat
-      localStorage.removeItem("studyInputCache");
-      router.push(`/study/${chat.token}`);
-    } catch (error) {
-      console.error("Error saving input:", (error as Error).message);
-    }
-    setIsLoading(false);
-  };
+      setIsLoading(false);
+    },
+    [referenceUserChatTokens, studyType, input, router, uploadedFiles],
+  );
 
   return (
     <form
@@ -131,7 +146,7 @@ export function NewStudyInputBox({
     >
       {/* Study Type Selector */}
       <div className="h-12 p-2 border-b border-border flex items-center justify-between">
-        {session?.user?.email?.endsWith("@tezign.com") ? (
+        {showStudyTypeSelector ? (
           isSM ? (
             <RadioGroup
               value={studyType}
