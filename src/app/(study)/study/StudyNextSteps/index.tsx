@@ -43,11 +43,6 @@ export function StudyNextSteps({
     loadQuestions(false); // Initial load uses cache
   }, [loadQuestions]);
 
-  const handleGeneratePodcast = () => {
-    console.log("Generate podcast for study:", studyUserChatToken);
-    // TODO: Implement podcast generation
-  };
-
   const handleRefreshQuestions = async () => {
     setIsRefreshing(true);
     await loadQuestions(true); // Force regenerate when clicking refresh

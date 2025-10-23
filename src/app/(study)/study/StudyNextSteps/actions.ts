@@ -44,7 +44,7 @@ export async function generateRecommendedQuestionsAction(
       };
     }
 
-    const studyLog = rootLogger.child({ studyUserChatId: studyUserChat.id, studyUserChatToken });
+    const logger = rootLogger.child({ studyUserChatId: studyUserChat.id, studyUserChatToken });
 
     const { analyst } = studyUserChat;
 
@@ -146,7 +146,7 @@ Please generate 2 follow-up research questions.`;
       },
     });
 
-    studyLog.info(`Generated recommended questions for analyst ${analyst.id}`);
+    logger.info(`Generated recommended questions for analyst ${analyst.id}`);
 
     return {
       success: true,

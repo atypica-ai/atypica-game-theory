@@ -11,11 +11,11 @@ import { Logger } from "pino";
 export async function notifyReportCompletion({
   reportToken,
   studyUserChatId,
-  studyLog,
+  logger,
 }: {
   reportToken: string;
   studyUserChatId: number;
-  studyLog: Logger;
+  logger: Logger;
 }) {
   const [report, studyUserChat] = await Promise.all([
     prisma.analystReport.findUnique({
@@ -43,7 +43,7 @@ export async function notifyReportCompletion({
     }),
   ]);
   if (!report || !studyUserChat) {
-    studyLog.error(
+    logger.error(
       `Something went wrong in notifyReportCompletion, report (${reportToken}) or studyUserChat (${studyUserChatId}) not found`,
     );
     return;
@@ -69,17 +69,17 @@ export async function notifyReportCompletion({
   });
 }
 
-export async function notifyStudyInterruption({}: { studyUserChatId: number; studyLog: Logger }) {
+export async function notifyStudyInterruption({}: { studyUserChatId: number; logger: Logger }) {
   // 暂停发送错误邮件
   return;
 }
 
 export async function _notifyStudyInterruption({
   studyUserChatId,
-  studyLog,
+  logger,
 }: {
   studyUserChatId: number;
-  studyLog: Logger;
+  logger: Logger;
 }) {
   const studyUserChat = await prisma.userChat.findUnique({
     where: {
@@ -98,7 +98,7 @@ export async function _notifyStudyInterruption({
     },
   });
   if (!studyUserChat) {
-    studyLog.error(
+    logger.error(
       `Something went wrong in notifyStudyInterruption, studyUserChat (${studyUserChatId}) not found`,
     );
     return;

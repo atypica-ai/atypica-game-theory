@@ -59,10 +59,10 @@ export async function POST(req: Request) {
   }
   const studyUserChatId = userChat.id;
 
-  const studyLog = rootLogger.child({ studyUserChatId, studyUserChatToken: userChat.token });
+  const logger = rootLogger.child({ studyUserChatId, studyUserChatToken: userChat.token });
   if (!userChat.analyst) {
     const msg = `UserChat ${userChat.id} does not have an analyst`;
-    studyLog.error(msg);
+    logger.error(msg);
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 
@@ -98,7 +98,7 @@ export async function POST(req: Request) {
     },
     userId,
     reqSignal,
-    studyLog,
+    logger,
   };
   const { balance } = await getUserTokens({ userId });
   if (balance <= 0) {

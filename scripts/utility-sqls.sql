@@ -206,3 +206,81 @@ GROUP BY
 	dt
 ORDER BY
 	dt DESC;
+
+
+-- 导出用户详细信息（2025-07-01 之后注册的用户）
+SELECT
+	u.id AS "用户ID",
+	u.email AS "邮箱",
+	u."createdAt" AS "注册时间",
+	-- Onboarding 信息
+	up."onboarding" ->> 'usageType' AS "使用类型",
+	up."onboarding" ->> 'role' AS "角色",
+	up."onboarding" ->> 'industry' AS "行业",
+	up."onboarding" ->> 'companyName' AS "公司名称",
+	up."onboarding" ->> 'howDidYouHear' AS "了解渠道",
+	-- 研究个数（Analyst 表中的研究）
+	COALESCE(analyst_count.count, 0) AS "研究个数",
+	-- 总消耗的 token 个数（使用 TokensLog 表，取绝对值）
+	COALESCE(token_usage.total_tokens, 0) AS "总消耗Token",
+	-- 付款成功的次数
+	COALESCE(payment_stats.payment_count, 0) AS "付款成功次数",
+	-- 付款成功的金额（USD）
+	COALESCE(payment_stats.total_usd, 0) AS "付款金额USD",
+	-- 付款成功的金额（CNY）
+	COALESCE(payment_stats.total_cny, 0) AS "付款金额CNY"
+FROM
+	"User" u
+	-- UserProfile for onboarding info
+	LEFT JOIN "UserProfile" up ON u.id = up."userId"
+	-- 研究个数统计
+	LEFT JOIN (
+		SELECT
+			"userId",
+			COUNT(*) AS count
+		FROM
+			"Analyst"
+		GROUP BY
+			"userId"
+	) analyst_count ON u.id = analyst_count."userId"
+	-- Token 使用统计（使用 TokensLog 表，consume 值为负数，需要取绝对值）
+	LEFT JOIN (
+		SELECT
+			"userId",
+			SUM(ABS(value)) AS total_tokens
+		FROM
+			"TokensLog"
+		WHERE
+			verb = 'consume'
+		GROUP BY
+			"userId"
+	) token_usage ON u.id = token_usage."userId"
+	-- 付款统计
+	LEFT JOIN (
+		SELECT
+			"userId",
+			COUNT(*) AS payment_count,
+			SUM(
+				CASE
+					WHEN currency = 'USD' THEN amount
+					ELSE 0
+				END
+			) AS total_usd,
+			SUM(
+				CASE
+					WHEN currency = 'CNY' THEN amount
+					ELSE 0
+				END
+			) AS total_cny
+		FROM
+			"PaymentRecord"
+		WHERE
+			status = 'succeeded'
+		GROUP BY
+			"userId"
+	) payment_stats ON u.id = payment_stats."userId"
+WHERE
+	u."createdAt" >= '2025-07-01'
+	AND u.email IS NOT NULL -- 只统计个人用户，排除团队用户
+ORDER BY
+	u."createdAt" DESC;

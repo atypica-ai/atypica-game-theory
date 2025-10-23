@@ -31,14 +31,14 @@ export async function raceForUserChat(studyUserChatId: number) {
 }
 
 export function backgroundChatUntilCancel<TOOLS extends ToolSet, PARTIAL_OUTPUT>({
-  studyLog,
+  logger,
   studyUserChatId,
   backgroundToken,
   toolAbortController,
   studyAbortController,
   streamTextResult,
 }: {
-  studyLog: Logger;
+  logger: Logger;
   studyUserChatId: number;
   backgroundToken: string;
   toolAbortController: AbortController;
@@ -66,7 +66,7 @@ export function backgroundChatUntilCancel<TOOLS extends ToolSet, PARTIAL_OUTPUT>
       const tick = () => {
         const elapsedSeconds = Math.floor((Date.now() - start) / 1000);
         if (elapsedSeconds > 3600) {
-          studyLog.warn(`timeout`);
+          logger.warn(`timeout`);
           abortToolsAndStudy();
           return;
         }
@@ -77,11 +77,11 @@ export function backgroundChatUntilCancel<TOOLS extends ToolSet, PARTIAL_OUTPUT>
           })
           .then((userChat) => {
             if (userChat.backgroundToken !== backgroundToken) {
-              studyLog.warn(`background token cleared or changed, aborting background running`);
+              logger.warn(`background token cleared or changed, aborting background running`);
               abortToolsAndStudy();
             }
           });
-        studyLog.info(`ongoing, ${elapsedSeconds} seconds`);
+        logger.info(`ongoing, ${elapsedSeconds} seconds`);
         timeoutTick = setTimeout(() => tick(), 5000);
       };
 
@@ -97,7 +97,7 @@ export function backgroundChatUntilCancel<TOOLS extends ToolSet, PARTIAL_OUTPUT>
           reject(error);
         })
         .finally(() => {
-          studyLog.info(`stopped`);
+          logger.info(`stopped`);
           if (timeoutTick) clearTimeout(timeoutTick);
         });
     }),

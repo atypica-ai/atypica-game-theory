@@ -124,7 +124,7 @@ async function backgroundGenerateImage({
     rootLogger.error(`Failed to find studyUserChat for analyst ${report.analyst.id}`);
     return new Response("Something went wrong", { status: 500 });
   }
-  const studyLog = rootLogger.child({
+  const logger = rootLogger.child({
     studyUserChatId: report.analyst.studyUserChat.id,
     studyUserChatToken: report.analyst.studyUserChat.token,
   });
@@ -151,7 +151,7 @@ async function backgroundGenerateImage({
   const { statReport } = initStudyStatReporter({
     userId: report.analyst.userId,
     studyUserChatId: report.analyst.studyUserChat.id,
-    studyLog,
+    logger,
   });
 
   // const abortSignal = req.signal;

@@ -565,8 +565,8 @@ export async function userStopBackgroundStudyAction(
       where: { id: studyUserChatId, userId: user.id, kind: "study" },
       data: { backgroundToken: null },
     });
-    const studyLog = rootLogger.child({ studyUserChatId, studyUserChatToken: userChat.token });
-    studyLog.info("Study stopped by user");
+    const logger = rootLogger.child({ studyUserChatId, studyUserChatToken: userChat.token });
+    logger.info("Study stopped by user");
     return {
       success: true,
       data: undefined,

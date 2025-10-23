@@ -230,7 +230,7 @@ export async function retryStudy(studyUserChatId: number): Promise<ServerActionR
       },
       userId: studyUserChat.userId,
       reqSignal: null,
-      studyLog: rootLogger.child({ studyUserChatId, studyUserChatToken: studyUserChat.token }),
+      logger: rootLogger.child({ studyUserChatId, studyUserChatToken: studyUserChat.token }),
     });
 
     revalidatePath("/admin/issue-studies");

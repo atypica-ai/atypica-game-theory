@@ -33,7 +33,7 @@ export async function productRnDAgentRequest({
   userChat: { id: studyUserChatId },
   userId,
   // reqSignal,
-  studyLog,
+  logger,
   locale,
 }: {
   userChat: {
@@ -41,14 +41,14 @@ export async function productRnDAgentRequest({
   };
   userId: number;
   reqSignal: AbortSignal | null;
-  studyLog: Logger;
+  logger: Logger;
   locale: Locale;
 }) {
-  const { statReport } = initStudyStatReporter({ userId, studyUserChatId, studyLog });
+  const { statReport } = initStudyStatReporter({ userId, studyUserChatId, logger });
   const { debouncePersistentMessage, immediatePersistentMessage } = createDebouncePersistentMessage(
     studyUserChatId,
     5000,
-    studyLog,
+    logger,
   );
 
   const toolAbortController = new AbortController();
@@ -58,7 +58,7 @@ export async function productRnDAgentRequest({
     locale,
     abortSignal: toolAbortController.signal,
     statReport,
-    logger: studyLog,
+    logger: logger,
   };
   const allTools = {
     [ToolName.saveAnalyst]: saveAnalystTool({ studyUserChatId, productRnD: true }),
@@ -138,7 +138,7 @@ export async function productRnDAgentRequest({
       // 到了这里的 tool calling step 一定是有 result 的，所以得在上面 onChunk 里面获取 call 阶段的 tool
       const toolCalls = step.toolCalls.map((call) => call?.toolName ?? "unknown");
       const { tokens, extra } = calculateStepTokensUsage(step);
-      studyLog.info({
+      logger.info({
         msg: "productRnDAgentRequest streamText onStepFinish",
         toolCalls,
         usage: extra.usage,
@@ -156,7 +156,7 @@ export async function productRnDAgentRequest({
         await Promise.all(promises);
       }
       if (await outOfBalance({ userId })) {
-        studyLog.warn("User out of balance, aborting study agent");
+        logger.warn("User out of balance, aborting study agent");
         // 用完 tokens 以后，只要停止 streamText 就行，不需要做其他事情
         // 到 onStepFinish 的时候，所有 tool 肯定都已经停止，只需要 abort study
         safeAbort(studyAbortController);
@@ -173,7 +173,7 @@ export async function productRnDAgentRequest({
             reportToken:
               generateReportTool.output.reportToken || generateReportTool.input.reportToken, // 要先取 result 里的
             studyUserChatId,
-            studyLog,
+            logger,
           }).catch(() => {}); //不 await
         }
       }
@@ -181,20 +181,20 @@ export async function productRnDAgentRequest({
 
     onFinish: async ({ usage, providerMetadata }) => {
       const cache = providerMetadata?.bedrock?.usage;
-      studyLog.info({ msg: "productRnDAgentRequest streamText onFinish", usage, cache });
+      logger.info({ msg: "productRnDAgentRequest streamText onFinish", usage, cache });
       await clearBackgroundToken();
     },
 
     onError: async ({ error }) => {
       // 如果 tool calling 里面直接 throw 异常，会进入这里的 onError
       if (/Error executing tool.*abortSignal received/.test((error as Error).message)) {
-        studyLog.warn(`productRnDAgentRequest tool call aborted: ${(error as Error).message}`);
+        logger.warn(`productRnDAgentRequest tool call aborted: ${(error as Error).message}`);
         // 不需要 abort study，发起 abort tool 的地方一定会 abort study
         // 不需要 clear background token，因为发起 abort tool 的原因就是 background token 被清空，就算不是，也会在接下来 abort study 以后被清空
         // 不需要记录错误信息或者 notifyStudyInterruption
         return;
       }
-      studyLog.error(`productRnDAgentRequest streamText onError: ${(error as Error).message}`);
+      logger.error(`productRnDAgentRequest streamText onError: ${(error as Error).message}`);
       // @IMPORTANT 这很重要, 中断所有的 tool calling 里可能还在运行的 streamText
       safeAbort(toolAbortController);
       await clearBackgroundToken();
@@ -202,12 +202,12 @@ export async function productRnDAgentRequest({
         // 记录错误信息到数据库
         await setUserChatError(studyUserChatId, (error as Error).message);
       } catch (dbError) {
-        studyLog.error(`Error saving error to database: ${(dbError as Error).message}`);
+        logger.error(`Error saving error to database: ${(dbError as Error).message}`);
       }
       // 因为 token 不足 abort 不会触发 onError，如果要通知 token 不足，需要单独触发
       notifyStudyInterruption({
         studyUserChatId,
-        studyLog,
+        logger,
       }).catch(() => {}); //不 await
     },
 
@@ -219,7 +219,7 @@ export async function productRnDAgentRequest({
   });
 
   backgroundChatUntilCancel({
-    studyLog,
+    logger,
     studyUserChatId,
     backgroundToken,
     streamTextResult,

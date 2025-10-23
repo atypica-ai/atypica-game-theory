@@ -76,8 +76,8 @@ export async function submitStudyFeedback(
     //   },
     // });
 
-    const studyLog = rootLogger.child({ studyUserChatId, studyUserChatToken: userChat.token });
-    studyLog.info("Study feedback submitted", { feedback: feedbackData });
+    const logger = rootLogger.child({ studyUserChatId, studyUserChatToken: userChat.token });
+    logger.info("Study feedback submitted", { feedback: feedbackData });
 
     return {
       success: true,

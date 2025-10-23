@@ -8,11 +8,11 @@ import { StatReporter } from "./types";
 export const initStudyStatReporter = ({
   userId,
   studyUserChatId,
-  studyLog,
+  logger,
 }: {
   userId: number;
   studyUserChatId: number;
-  studyLog: Logger;
+  logger: Logger;
 }): { statReport: StatReporter } => {
   const statReport: StatReporter = async (dimension, value, extra) => {
     await prisma.chatStatistics.create({
@@ -30,7 +30,7 @@ export const initStudyStatReporter = ({
         resourceId: studyUserChatId,
         tokens: value,
         extra,
-        logger: studyLog,
+        logger: logger,
       });
     }
   };
