@@ -1,13 +1,16 @@
 "use server";
 import { convertDBMessageToAIMessage } from "@/ai/messageUtils";
 import { StatReporter } from "@/ai/tools/types";
+import { determineKindAndGeneratePodcast } from "@/app/(podcast)/lib/evaluate";
 import { generatePodcast } from "@/app/(podcast)/lib/generation";
+import { PodcastKind } from "@/app/(podcast)/types";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { s3SignedUrl } from "@/lib/attachments/s3";
 import { rootLogger } from "@/lib/logging";
 import { ServerActionResult } from "@/lib/serverAction";
 import { generateChatTitle } from "@/lib/userChat/lib";
-import { Analyst, FeaturedStudy, User, UserChat } from "@/prisma/client";
+import { generateToken } from "@/lib/utils";
+import { Analyst, AnalystPodcastExtra, FeaturedStudy, User, UserChat } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { AnalystKind } from "@/prisma/types";
 import { waitUntil } from "@vercel/functions";
@@ -585,39 +588,78 @@ export async function fetchBriefChatMessages(
 }
 
 // Admin version of generatePodcastAction - bypasses user ownership check
-export async function generatePodcastActionAdmin(params: {
+export async function determineKindAndGeneratePodcastAdminAction({
+  analystId,
+  systemPrompt,
+  podcastKind,
+}: {
   analystId: number;
-  instruction?: string;
   systemPrompt?: string;
+  podcastKind: "auto" | PodcastKind;
 }): Promise<void> {
   await checkAdminAuth([AdminPermission.MANAGE_STUDIES]);
 
   // Get the analyst (no user ownership check needed for admin)
   const analyst = await prisma.analyst.findUnique({
-    where: { id: params.analystId },
+    where: { id: analystId },
   });
 
   if (!analyst) {
     throw new Error("Analyst not found");
   }
 
+  const statReport: StatReporter = (async (dimension, value, extra) => {
+    rootLogger.info({
+      msg: `[LIMITED FREE] statReport: ${dimension}=${value}`,
+      extra,
+      analystId: analystId,
+      note: "Podcast generation is currently free - tokens not deducted",
+    });
+  }) as StatReporter;
+
+  const abortSignal = new AbortController().signal;
+
   // Start podcast generation in background
-  waitUntil(
-    generatePodcast({
-      analystId: params.analystId,
-      instruction: params.instruction,
-      systemPrompt: params.systemPrompt,
-      abortSignal: new AbortController().signal,
-      statReport: (async (dimension, value, extra) => {
-        rootLogger.info({
-          msg: `[LIMITED FREE] statReport: ${dimension}=${value}`,
-          extra,
-          analystId: params.analystId,
-          note: "Podcast generation is currently free - tokens not deducted",
-        });
-      }) as StatReporter,
-    }),
-  );
+  if (podcastKind === "auto") {
+    // Auto-determine podcast kind
+    waitUntil(
+      determineKindAndGeneratePodcast({
+        analystId: analystId,
+        abortSignal,
+        statReport,
+      }),
+    );
+  } else {
+    const podcast = await prisma.analystPodcast
+      .create({
+        data: {
+          analystId,
+          token: generateToken(),
+          instruction: "",
+          script: "",
+          extra: {
+            kindDetermination: {
+              kind: podcastKind,
+              reason: "Manual selection",
+              systemPrompt,
+            },
+          } as AnalystPodcastExtra,
+        },
+      })
+      .then(({ extra, ...analyst }) => ({
+        ...analyst,
+        extra: extra as AnalystPodcastExtra,
+      }));
+
+    // Manual podcast kind selection
+    waitUntil(
+      generatePodcast({
+        podcast,
+        abortSignal,
+        statReport,
+      }),
+    );
+  }
 
   revalidatePath("/admin/featured-studies");
 }

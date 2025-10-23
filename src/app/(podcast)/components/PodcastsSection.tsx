@@ -1,12 +1,11 @@
 import {
+  determineKindAndGeneratePodcastAction,
   fetchAnalystPodcasts,
-  generatePodcastAction,
   getPodcastSignedUrl,
 } from "@/app/(podcast)/actions";
 import { TokenAlertDialog } from "@/components/TokenAlertDialog";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDistanceToNow } from "@/lib/utils";
 import { Analyst } from "@/prisma/client";
@@ -20,34 +19,24 @@ type AnalystPodcast = ExtractServerActionData<typeof fetchAnalystPodcasts>[numbe
 export function AnalystPodcastsSection({
   analyst,
   podcasts: initialPodcasts,
-  defaultPodcastSystem,
 }: {
   analyst: Analyst;
   podcasts: AnalystPodcast[];
-  defaultPodcastSystem: string;
 }) {
   const router = useRouter();
   const [isPodcastDialogOpen, setIsPodcastDialogOpen] = useState<{
     analystPodcast: AnalystPodcast;
   } | null>(null);
-  const [isPromptDialogOpen, setIsPromptDialogOpen] = useState(false);
-  const [systemPrompt, setSystemPrompt] = useState("");
   const [playingAudio, setPlayingAudio] = useState<string | null>(null);
   const [isPolling, setIsPolling] = useState(false);
   const [podcasts, setPodcasts] = useState<AnalystPodcast[]>(initialPodcasts);
   const [downloadUrls, setDownloadUrls] = useState<Record<string, string>>({});
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const openPromptDialog = useCallback(() => {
-    setSystemPrompt(defaultPodcastSystem);
-    setIsPromptDialogOpen(true);
-  }, [defaultPodcastSystem]);
-
-  const generatePodcast = useCallback(async () => {
+  const handleGeneratePodcast = useCallback(async () => {
     try {
-      await generatePodcastAction({
+      await determineKindAndGeneratePodcastAction({
         analystId: analyst.id,
-        systemPrompt,
       });
 
       // Start polling to track progress
@@ -56,7 +45,7 @@ export function AnalystPodcastsSection({
     } catch (error) {
       toast.error(`${error}`);
     }
-  }, [analyst.id, router, systemPrompt]);
+  }, [analyst.id, router]);
 
   const playAudio = useCallback(
     async (podcastToken: string) => {
@@ -189,9 +178,14 @@ export function AnalystPodcastsSection({
     <>
       <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
         <div className="text-lg font-medium">Podcasts</div>
-        <Button variant="default" size="sm" onClick={openPromptDialog}>
-          Generate Podcast Script
-        </Button>
+        <TokenAlertDialog
+          value={100000}
+          onConfirm={() => {
+            handleGeneratePodcast();
+          }}
+        >
+          <Button variant="default">Generate Podcast Script</Button>
+        </TokenAlertDialog>
       </div>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {podcasts.map((podcast) => (
@@ -316,40 +310,6 @@ export function AnalystPodcastsSection({
               )}
             </div>
           )}
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={isPromptDialogOpen} onOpenChange={(open) => setIsPromptDialogOpen(open)}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle>Customize Podcast Prompt</DialogTitle>
-          </DialogHeader>
-          <div className="py-4 overflow-hidden">
-            <Textarea
-              placeholder="Enter custom instructions for the podcast script generation. Leave blank to use default settings."
-              className="min-h-[200px] max-h-[400px]"
-              value={systemPrompt}
-              onChange={(e) => setSystemPrompt(e.target.value)}
-            />
-            <p className="text-xs text-muted-foreground mt-2">
-              Additional instructions will be passed to the AI when generating your podcast script.
-              These will supplement the standard podcast template.
-            </p>
-          </div>
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setIsPromptDialogOpen(false)}>
-              Cancel
-            </Button>
-            <TokenAlertDialog
-              value={100000}
-              onConfirm={() => {
-                generatePodcast();
-                setIsPromptDialogOpen(false);
-              }}
-            >
-              <Button variant="default">Generate Podcast Script</Button>
-            </TokenAlertDialog>
-          </div>
         </DialogContent>
       </Dialog>
     </>

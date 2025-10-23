@@ -1,5 +1,6 @@
 "use client";
 import { TMessageWithPlainTextTool } from "@/ai/tools/types";
+import { PodcastKind } from "@/app/(podcast)/types";
 import PodcastsListPanel from "@/app/(study)/study/components/PodcastsListPanel";
 import ReportsListPanel from "@/app/(study)/study/components/ReportsListPanel";
 import { PaginationInfo } from "@/app/admin/types";
@@ -49,10 +50,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import {
+  determineKindAndGeneratePodcastAdminAction,
   fetchAnalysts,
   fetchBriefChatMessages,
   generateChatTitleAction,
-  generatePodcastActionAdmin,
   toggleFeaturedStatus,
 } from "./actions";
 import { PodcastPromptDialog } from "./PodcastPromptDialog";
@@ -235,11 +236,15 @@ export function FeaturedStudiesPageClient({
     setPodcastPromptDialogOpen({ analyst });
   }, []);
 
-  const handleGeneratePodcast = async (analyst: AnalystWithFeature, systemPrompt?: string) => {
+  const handleGeneratePodcast = async (
+    analyst: AnalystWithFeature,
+    params: { podcastKind: "auto" | PodcastKind; systemPrompt?: string },
+  ) => {
     try {
-      await generatePodcastActionAdmin({
+      await determineKindAndGeneratePodcastAdminAction({
         analystId: analyst.id,
-        systemPrompt,
+        podcastKind: params.podcastKind,
+        systemPrompt: params.systemPrompt,
       });
       await fetchData();
       setPodcastPromptDialogOpen(null);
@@ -671,9 +676,9 @@ export function FeaturedStudiesPageClient({
         }}
         analyst={podcastPromptDialogOpen?.analyst || null}
         defaultPrompt={defaultPodcastPrompt}
-        onConfirm={(systemPrompt) => {
+        onConfirm={(params) => {
           if (podcastPromptDialogOpen?.analyst) {
-            handleGeneratePodcast(podcastPromptDialogOpen.analyst, systemPrompt);
+            handleGeneratePodcast(podcastPromptDialogOpen.analyst, params);
           }
         }}
       />

@@ -19,4 +19,13 @@ export const podcastEvaluationScoresSchema = z.object({
 
 export type PodcastEvaluationScores = z.infer<typeof podcastEvaluationScoresSchema>;
 
-export type PodcastKind = NonNullable<AnalystPodcastExtra["kind"]>;
+// LLM determination schema - only 2 kinds for now
+export const podcastKindDeterminationSchema = z.object({
+  kind: z.enum(["deepDive", "opinionOriented"]),
+  reason: z.string(),
+});
+
+export type PodcastKindDetermination = z.infer<typeof podcastKindDeterminationSchema>;
+
+// Full podcast kind type - includes all 3 kinds (debate may be used in the future)
+export type PodcastKind = NonNullable<AnalystPodcastExtra["kindDetermination"]>["kind"]; // "deepDive" | "opinionOriented" | "debate";

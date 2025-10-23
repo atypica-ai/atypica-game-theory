@@ -1,7 +1,6 @@
 import "server-only";
 
 import { s3SignedUrl } from "@/lib/attachments/s3";
-import { generateToken } from "@/lib/utils";
 import type { AnalystPodcast, AnalystPodcastExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
@@ -44,24 +43,4 @@ export async function podcastObjectUrlToHttpUrl(
   }
 
   return url;
-}
-
-// Core podcast record creation
-export async function createPodcastRecord(
-  analystId: number,
-  instruction: string,
-  token: string = generateToken(),
-): Promise<Omit<AnalystPodcast, "extra"> & { extra: AnalystPodcastExtra }> {
-  const { extra, ...podcast } = await prisma.analystPodcast.create({
-    data: {
-      analystId,
-      instruction,
-      token,
-      script: "",
-    },
-  });
-  return {
-    ...podcast,
-    extra: (extra || {}) as AnalystPodcastExtra,
-  };
 }

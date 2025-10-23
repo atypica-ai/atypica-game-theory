@@ -7,7 +7,7 @@ import { ServerActionResult } from "@/lib/serverAction";
 import { Analyst, AnalystPodcast, AnalystPodcastExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
-import { generatePodcast } from "./lib/generation";
+import { determineKindAndGeneratePodcast } from "./lib/evaluate";
 import { podcastObjectUrlToHttpUrl } from "./lib/utils";
 
 // ========================================
@@ -64,15 +64,15 @@ export async function fetchAnalystPodcasts({ analystId }: { analystId: number })
 }
 
 // Server action: Generate complete podcast (script + audio) with auth and background processing
-export async function generatePodcastAction(params: {
+export async function determineKindAndGeneratePodcastAction({
+  analystId,
+}: {
   analystId: number;
-  instruction?: string;
-  systemPrompt?: string;
 }): Promise<void> {
   return withAuth(async (user) => {
     // Verify the user owns the analyst
     const analyst = await prisma.analyst.findUnique({
-      where: { id: params.analystId },
+      where: { id: analystId },
     });
 
     if (!analyst || analyst.userId !== user.id) {
@@ -84,7 +84,7 @@ export async function generatePodcastAction(params: {
       rootLogger.info({
         msg: `[LIMITED FREE] statReport: ${dimension}=${value}`,
         extra,
-        analystId: params.analystId,
+        analystId: analystId,
         note: "Podcast generation is currently free - tokens not deducted",
       });
     };
@@ -94,24 +94,11 @@ export async function generatePodcastAction(params: {
     const abortSignal = abortController.signal;
 
     waitUntil(
-      (async () => {
-        try {
-          await generatePodcast({
-            analystId: params.analystId,
-            instruction: params.instruction,
-            systemPrompt: params.systemPrompt,
-            abortSignal,
-            statReport,
-          });
-        } catch (error) {
-          // Log error but don't throw since this is background processing
-          rootLogger.error({
-            msg: "Background podcast generation failed",
-            analystId: params.analystId,
-            error: error instanceof Error ? error.message : String(error),
-          });
-        }
-      })(),
+      determineKindAndGeneratePodcast({
+        analystId: analystId,
+        abortSignal,
+        statReport,
+      }),
     );
   });
 }

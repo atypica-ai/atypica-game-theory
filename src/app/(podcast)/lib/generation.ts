@@ -3,37 +3,39 @@ import "server-only";
 import { defaultProviderOptions, llm, LLMModelName } from "@/ai/provider";
 import { StatReporter } from "@/ai/tools/types";
 import { podcastScriptPrologue, podcastScriptSystem } from "@/app/(podcast)/prompt";
-import { PodcastKind } from "@/app/(podcast)/types";
 import { VALID_LOCALES } from "@/i18n/routing";
 import { fileUrlToDataUrl } from "@/lib/attachments/actions";
 import { uploadToS3 } from "@/lib/attachments/s3";
 import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage } from "@/lib/textUtils";
-import { generateToken } from "@/lib/utils";
-import { AnalystPodcast, AnalystPodcastExtra, ChatMessageAttachment } from "@/prisma/client";
+import {
+  Analyst,
+  AnalystPodcast,
+  AnalystPodcastExtra,
+  ChatMessageAttachment,
+} from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { FilePart, FinishReason, ModelMessage, stepCountIs, streamText } from "ai";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
-import { createPodcastRecord } from "./utils";
 import { createVolcanoClient } from "./volcano/client";
 
 /**
  * Main podcast generation function that handles both script and audio generation
  * Updates processing status throughout the pipeline
  */
-export async function generatePodcast(params: {
-  analystId: number;
-  instruction?: string;
-  systemPrompt?: string;
+export async function generatePodcast({
+  podcast,
+  abortSignal,
+  statReport,
+}: {
+  podcast: Omit<AnalystPodcast, "extra"> & { extra: AnalystPodcastExtra };
   abortSignal: AbortSignal;
   statReport: StatReporter;
-  podcastKind: PodcastKind;
-}): Promise<AnalystPodcast> {
-  const { analystId, instruction, systemPrompt, podcastKind, abortSignal, statReport } = params;
-
+}): Promise<void> {
   const logger = rootLogger.child({
-    analystId,
+    analystId: podcast.analystId,
+    podcastId: podcast.id,
     method: "generatePodcast",
   });
 
@@ -41,23 +43,12 @@ export async function generatePodcast(params: {
 
   // Step 1: Get analyst and create podcast record
   const analyst = await prisma.analyst.findUnique({
-    where: { id: analystId },
-    include: {
-      interviews: {
-        select: {
-          conclusion: true,
-        },
-      },
-    },
+    where: { id: podcast.analystId },
   });
 
   if (!analyst) {
     throw new Error("Analyst not found");
   }
-
-  // Create podcast record
-  const podcastToken = generateToken();
-  let podcast = await createPodcastRecord(analyst.id, instruction || "", podcastToken);
 
   // Setup locale
   const locale: Locale =
@@ -66,20 +57,22 @@ export async function generatePodcast(params: {
       : ((await detectInputLanguage({ text: analyst.brief })) as Locale);
 
   // Initialize processing status
-  podcast = await prisma.analystPodcast
-    .update({
-      where: { id: podcast.id },
-      data: {
-        extra: {
-          ...podcast.extra,
-          processing: {
-            startsAt: Date.now(),
-            scriptGeneration: false,
-            audioGeneration: false,
-          },
-        },
+  await prisma.$executeRaw`
+    UPDATE "AnalystPodcast"
+    SET "extra" = COALESCE("extra", '{}') || ${JSON.stringify({
+      processing: {
+        startsAt: Date.now(),
+        scriptGeneration: false,
+        audioGeneration: false,
       },
-    })
+    })}::jsonb,
+        "updatedAt" = NOW()
+    WHERE "id" = ${podcast.id}
+  `;
+
+  // Fetch updated podcast with extra
+  podcast = await prisma.analystPodcast
+    .findUniqueOrThrow({ where: { id: podcast.id } })
     .then(({ extra, ...podcast }) => ({ ...podcast, extra: extra as AnalystPodcastExtra }));
 
   try {
@@ -89,28 +82,27 @@ export async function generatePodcast(params: {
       podcast,
       analyst,
       locale,
-      instruction,
-      systemPrompt,
-      podcastKind,
       abortSignal,
       statReport,
       logger,
     });
 
-    podcast = await prisma.analystPodcast
-      .update({
-        where: { id: podcast.id },
-        data: {
-          extra: {
-            ...podcast.extra,
-            processing: {
-              ...podcast.extra.processing,
-              scriptGeneration: true,
-              audioGeneration: false,
-            },
-          },
+    await prisma.$executeRaw`
+      UPDATE "AnalystPodcast"
+      SET "extra" = COALESCE("extra", '{}') || ${JSON.stringify({
+        processing: {
+          startsAt: podcast.extra.processing ? podcast.extra.processing?.startsAt : Date.now(),
+          scriptGeneration: true,
+          audioGeneration: false,
         },
-      })
+      })}::jsonb,
+          "updatedAt" = NOW()
+      WHERE "id" = ${podcast.id}
+    `;
+
+    // Fetch updated podcast with extra
+    podcast = await prisma.analystPodcast
+      .findUniqueOrThrow({ where: { id: podcast.id } })
       .then(({ extra, ...podcast }) => ({ ...podcast, extra: extra as AnalystPodcastExtra }));
 
     // Step 3: Generate audio
@@ -118,33 +110,22 @@ export async function generatePodcast(params: {
     const objectUrl = await generatePodcastAudio(podcast.id, podcast.token, script, locale);
 
     // Step 4: Mark as completely finished with generatedAt
+    await prisma.analystPodcast.update({
+      where: { id: podcast.id },
+      data: { objectUrl, generatedAt: new Date() },
+    });
+    await prisma.$executeRaw`
+      UPDATE "AnalystPodcast"
+      SET "extra" = COALESCE("extra", '{}') || ${JSON.stringify({ processing: false })}::jsonb,
+          "updatedAt" = NOW()
+      WHERE "id" = ${podcast.id}
+    `;
+
     podcast = await prisma.analystPodcast
-      .update({
-        where: { id: podcast.id },
-        data: {
-          objectUrl: objectUrl,
-          generatedAt: new Date(), // Only set generatedAt when audio is ready
-          extra: {
-            ...podcast.extra,
-            processing: false,
-            // processing: {
-            //   ...podcast.extra.processing,
-            //   scriptGeneration: true,
-            //   audioGeneration: true,
-            // },
-          },
-        },
-      })
+      .findUniqueOrThrow({ where: { id: podcast.id } })
       .then(({ extra, ...podcast }) => ({ ...podcast, extra: extra as AnalystPodcastExtra }));
 
     logger.info("Unified podcast generation completed successfully");
-
-    // Return the final podcast
-    const finalPodcast = await prisma.analystPodcast.findUnique({
-      where: { id: podcast.id },
-    });
-
-    return finalPodcast!;
   } catch (error) {
     logger.error({
       msg: "Podcast generation failed",
@@ -152,62 +133,47 @@ export async function generatePodcast(params: {
       podcastId: podcast.id,
     });
 
-    // Mark as failed, preserving other extra fields
-    const currentExtra =
-      ((
-        await prisma.analystPodcast.findUnique({
-          where: { id: podcast.id },
-          select: { extra: true },
-        })
-      )?.extra as AnalystPodcastExtra) || {};
-
-    const errorExtra: AnalystPodcastExtra = {
-      ...currentExtra,
-      processing: false,
-      error: error instanceof Error ? error.message : String(error),
-    };
-
-    await prisma.analystPodcast.update({
-      where: { id: podcast.id },
-      data: { extra: errorExtra },
-    });
-
-    return podcast;
+    // Mark as failed, preserving other extra fields using Raw SQL
+    await prisma.$executeRaw`
+      UPDATE "AnalystPodcast"
+      SET "extra" = COALESCE("extra", '{}') || ${JSON.stringify({
+        processing: false,
+        error: error instanceof Error ? error.message : String(error),
+      })}::jsonb,
+          "updatedAt" = NOW()
+      WHERE "id" = ${podcast.id}
+    `;
   }
 }
 
 // Internal function for podcast script generation
-async function generatePodcastScript(params: {
-  podcast: AnalystPodcast;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  analyst: any;
+async function generatePodcastScript({
+  podcast,
+  analyst,
+  locale,
+  abortSignal,
+  statReport,
+  logger,
+}: {
+  podcast: Omit<AnalystPodcast, "extra"> & { extra: AnalystPodcastExtra };
+  analyst: Analyst;
   locale: Locale;
-  instruction?: string;
-  systemPrompt?: string;
   abortSignal: AbortSignal;
   statReport: StatReporter;
   logger: Logger;
-  podcastKind: PodcastKind;
 }): Promise<string> {
-  // Default podcastKind to "deepDive" if not provided
-  const {
-    podcast,
-    analyst,
-    locale,
-    instruction,
-    systemPrompt,
-    abortSignal,
-    statReport,
-    logger,
-    podcastKind,
-  } = params;
-
   // Core script generation logic
   logger.info({
     msg: "Starting podcast script generation",
     analystId: analyst.id,
     podcastId: podcast.id,
   });
+
+  const podcastKind = podcast.extra.kindDetermination?.kind;
+  const systemPrompt = podcast.extra.kindDetermination?.systemPrompt;
+  if (!podcastKind) {
+    throw new Error("Podcast kind determination is missing");
+  }
 
   let script = podcast.script || ""; // If podcast has content, continue from existing script
 
@@ -269,7 +235,7 @@ async function generatePodcastScript(params: {
     const podcastContent = podcastScriptPrologue({
       locale,
       analyst,
-      instruction,
+      instruction: podcast.instruction,
     });
 
     const messages: ModelMessage[] = [

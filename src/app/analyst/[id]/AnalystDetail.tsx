@@ -21,14 +21,12 @@ export function AnalystDetail({
   reports,
   podcasts,
   defaultReportHTMLSystem,
-  defaultPodcastSystem,
 }: {
   analyst: Analyst;
   interviews: AnalystInterview[];
   reports: AnalystReport[];
   podcasts: AnalystPodcast[];
   defaultReportHTMLSystem: string;
-  defaultPodcastSystem: string;
 }) {
   const t = useTranslations("AnalystPage");
   const router = useRouter();
@@ -86,11 +84,7 @@ export function AnalystDetail({
             reports={reports}
             defaultReportHTMLSystem={defaultReportHTMLSystem}
           />
-          <AnalystPodcastsSection
-            analyst={analyst}
-            podcasts={podcasts}
-            defaultPodcastSystem={defaultPodcastSystem}
-          />
+          <AnalystPodcastsSection analyst={analyst} podcasts={podcasts} />
           <AnalystInterviewsSection
             analystId={analyst.id}
             interviews={interviews}
