@@ -57,26 +57,32 @@ export class VolcanoTTSClient {
   }
 
   /**
-   * Detect the number of unique hosts in a podcast script
-   * Extracts host names from markers like 【Guy】, 【Ira】, 【凯】, 【艾拉】
-   * Returns the count, capped at 2 (Volcano TTS supports max 2 speakers)
-   * 
+   * Get the validated number of podcast hosts for TTS generation
+   *
+   * Extracts host names from markers like 【Guy】, 【Ira】, 【凯】, 【艾拉】 and returns
+   * a validated count suitable for Volcano TTS generation.
+   *
+   * **Important behavioral notes:**
+   * - Returns 1 if only one unique host is detected
+   * - Returns 2 if multiple hosts are detected (capped at 2 due to Volcano TTS limitation)
+   * - Returns 2 as default if no host markers found (for backward compatibility)
+   *
    * @param script - The podcast script with host markers
-   * @returns Number of unique hosts (1 or 2). 
-   * important: if there are more than 2 hosts, return 2; if no hosts found, return 2 for backward compatibility.
-   * 
+   * @returns Validated host count for TTS (always 1 or 2)
+   *
    * @example
-   * // Script with 2 hosts:
+   * // Script with 2 hosts: returns 2
    * // 【Guy】AI, artificial intelligence is so hot right now...
    * // 【Ira】Exactly, the core question we're discussing today...
-   * // Returns: 2
-   * 
-   * // Script with 1 host:
+   *
+   * // Script with 1 host: returns 1
    * // 【Guy】Today we're discussing...
    * // 【Guy】In conclusion...
-   * // Returns: 1
+   *
+   * // Script with 3+ hosts: returns 2 (capped)
+   * // Script with no markers: returns 2 (default)
    */
-  private detectPodcastHostCount(script: string): number {
+  private getValidatedHostCount(script: string): 1 | 2 {
     // Regular expression to match host markers like 【Guy】, 【Ira】, 【凯】, 【艾拉】
     const hostMarkerRegex = /【([^】]+)】/g;
     const hosts = new Set<string>();
@@ -91,14 +97,14 @@ export class VolcanoTTSClient {
     }
     
     const hostCount = hosts.size;
-    
-    // Return the count, but cap at 2 (Volcano TTS limitation)
+
+    // Return the validated count, capped at 2 (Volcano TTS limitation)
     // If no hosts detected, default to 2 for backward compatibility
     if (hostCount === 0) {
       return 2; // Default to 2 speakers if no markers found
     }
-    
-    return Math.min(hostCount, 2);
+
+    return Math.min(hostCount, 2) as 1 | 2;
   }
 
   /**
@@ -106,8 +112,8 @@ export class VolcanoTTSClient {
    * Automatically detects the number of hosts and adjusts speaker allocation
    */
   private parseScriptToNLPTexts(script: string, locale: string = "zh-CN"): PodcastNLPText[] {
-    // Detect the number of hosts in the script
-    const hostCount = this.detectPodcastHostCount(script);
+    // Get the validated number of hosts in the script
+    const hostCount = this.getValidatedHostCount(script);
     
     // Get the default speakers for the locale
     const allSpeakers =

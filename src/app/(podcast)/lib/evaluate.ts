@@ -82,7 +82,7 @@ Score each of the 8 criteria according to the rubric (0-4 points each). Provide 
   return { scores, shouldSelect };
 }
 
-export async function evaluateAndGenerate({
+export async function evaluateAndGeneratePodcast({
   analystId,
   scoreThreshold,
   dryRun = false,
@@ -91,7 +91,7 @@ export async function evaluateAndGenerate({
   scoreThreshold: number; // 0 ~ 1
   dryRun?: boolean;
 }): Promise<void> {
-  const logger = rootLogger.child({ method: "evaluateAndGenerate", analystId, dryRun });
+  const logger = rootLogger.child({ method: "evaluateAndGeneratePodcast", analystId, dryRun });
 
   try {
     const analyst = await prisma.analyst
@@ -149,6 +149,7 @@ export async function evaluateAndGenerate({
       analystId: analyst.id,
       abortSignal: abortController.signal,
       statReport: statReport,
+      podcastKind: "deepDive",
     });
 
     logger.info({ msg: "Podcast generated after evaluation", podcastId: podcast.id });

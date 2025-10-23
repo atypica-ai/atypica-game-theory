@@ -2,6 +2,8 @@ import "server-only";
 
 import { defaultProviderOptions, llm, LLMModelName } from "@/ai/provider";
 import { StatReporter } from "@/ai/tools/types";
+import { podcastScriptPrologue, podcastScriptSystem } from "@/app/(podcast)/prompt";
+import { PodcastKind } from "@/app/(podcast)/types";
 import { VALID_LOCALES } from "@/i18n/routing";
 import { fileUrlToDataUrl } from "@/lib/attachments/actions";
 import { uploadToS3 } from "@/lib/attachments/s3";
@@ -13,7 +15,6 @@ import { prisma } from "@/prisma/prisma";
 import { FilePart, FinishReason, ModelMessage, stepCountIs, streamText } from "ai";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
-import { podcastScriptPrologue, podcastScriptSystem } from "@/app/(podcast)/prompt";
 import { createPodcastRecord } from "./utils";
 import { createVolcanoClient } from "./volcano/client";
 
@@ -27,8 +28,9 @@ export async function generatePodcast(params: {
   systemPrompt?: string;
   abortSignal: AbortSignal;
   statReport: StatReporter;
+  podcastKind: PodcastKind;
 }): Promise<AnalystPodcast> {
-  const { analystId, instruction, systemPrompt, abortSignal, statReport } = params;
+  const { analystId, instruction, systemPrompt, podcastKind, abortSignal, statReport } = params;
 
   const logger = rootLogger.child({
     analystId,
@@ -89,6 +91,7 @@ export async function generatePodcast(params: {
       locale,
       instruction,
       systemPrompt,
+      podcastKind,
       abortSignal,
       statReport,
       logger,
@@ -184,7 +187,7 @@ async function generatePodcastScript(params: {
   abortSignal: AbortSignal;
   statReport: StatReporter;
   logger: Logger;
-  podcastKind?: string; // optional, default handled below
+  podcastKind: PodcastKind;
 }): Promise<string> {
   // Default podcastKind to "deepDive" if not provided
   const {
@@ -196,7 +199,7 @@ async function generatePodcastScript(params: {
     abortSignal,
     statReport,
     logger,
-    podcastKind = "deepDive",
+    podcastKind,
   } = params;
 
   // Core script generation logic

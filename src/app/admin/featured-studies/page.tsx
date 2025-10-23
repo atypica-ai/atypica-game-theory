@@ -12,7 +12,10 @@ export default async function FeaturedStudiesPage({ searchParams }: FeaturedStud
   const params = await searchParams;
   const initialSearchParams = parseServerSearchParams(params);
   const locale = await getLocale();
-  const defaultPodcastPrompt = podcastScriptSystem({ locale: locale as Locale });
+  const defaultPodcastPrompt = podcastScriptSystem({
+    locale: locale as Locale,
+    podcastKind: "deepDive",
+  });
 
   return (
     <FeaturedStudiesPageClient

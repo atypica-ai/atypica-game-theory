@@ -1,3 +1,4 @@
+import { AnalystPodcastExtra } from "@/prisma/client";
 import { z } from "zod/v3";
 
 const podcastEvaluationScoreSchema = z.object({
@@ -17,3 +18,5 @@ export const podcastEvaluationScoresSchema = z.object({
 });
 
 export type PodcastEvaluationScores = z.infer<typeof podcastEvaluationScoresSchema>;
+
+export type PodcastKind = NonNullable<AnalystPodcastExtra["kind"]>;

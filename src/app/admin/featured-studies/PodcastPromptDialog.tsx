@@ -1,13 +1,11 @@
-"use client";
-
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import type { ExtractServerActionData } from "@/lib/serverAction";
 import { truncateForTitle } from "@/lib/textUtils";
 import { useCallback, useEffect, useState } from "react";
-import type { ExtractServerActionData } from "@/lib/serverAction";
 import type { fetchAnalysts } from "./actions";
 
 type AnalystWithFeature = ExtractServerActionData<typeof fetchAnalysts>[number];

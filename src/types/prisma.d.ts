@@ -147,6 +147,8 @@ declare module "@/prisma/client" {
   }>;
 
   export type AnalystPodcastExtra = Partial<{
+    kind: "deepDive" | "opinionOriented" | "debate"; // 只是个生成前的类型记录，后面用途不大，所以先放在 extra 里面
+
     // S3 签名URL缓存（音频文件）
     s3SignedUrl: string;
     s3SignedUrlExpiresAt: number; // timestamp millis

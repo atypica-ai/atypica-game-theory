@@ -1,4 +1,4 @@
-import { evaluateAndGenerate } from "@/app/(podcast)/lib/evaluate";
+import { evaluateAndGeneratePodcast } from "@/app/(podcast)/lib/evaluate";
 import { rootLogger } from "@/lib/logging";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
@@ -11,6 +11,11 @@ function validateInternalAuth(request: NextRequest): boolean {
 }
 
 export async function POST(request: NextRequest) {
+  return Response.json(
+    { success: false, message: "Batch generate podcasts is stopped" },
+    { status: 400 },
+  );
+
   const logger = rootLogger.child({ api: "batch-generate-podcasts" });
 
   // Validate internal authentication
@@ -73,7 +78,7 @@ export async function POST(request: NextRequest) {
     promises.push(
       (async (delaySeconds, analystId) => {
         await new Promise((resolve) => setTimeout(resolve, delaySeconds * 1000));
-        await evaluateAndGenerate({ analystId, scoreThreshold, dryRun });
+        await evaluateAndGeneratePodcast({ analystId, scoreThreshold, dryRun });
       })(i * 1, analyst.id),
     );
   }

@@ -1,7 +1,7 @@
 import { reportHTMLSystem } from "@/ai/prompt";
 import { fetchAnalystInterviews } from "@/app/(agents)/interview/actions";
 import { fetchAnalystPodcasts } from "@/app/(podcast)/actions";
-import { podcastScriptSystem } from "@/app/(podcast)/prompt/podcastType/deepDive";
+import { podcastScriptSystem } from "@/app/(podcast)/prompt";
 import { checkTezignAuth } from "@/app/admin/actions";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { throwServerActionError } from "@/lib/serverAction";
@@ -49,7 +49,7 @@ async function AnalystPage({ analystId }: { analystId: number }) {
 
   const defaultPodcastSystem = podcastScriptSystem({
     locale,
-    analystKind: (analyst.kind as AnalystKind) || AnalystKind.misc,
+    podcastKind: "deepDive",
   });
 
   return (
