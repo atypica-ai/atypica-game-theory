@@ -6,6 +6,7 @@ import {
 import { ToolName, TStudyMessageWithTool } from "@/ai/tools/types";
 import { StudyToolUIPartDisplay } from "@/ai/tools/ui";
 import { fetchChatTitlesByTokens } from "@/app/(newStudy)/actions";
+import { checkStudyAvailableForNextSteps } from "./StudyNextSteps/actions";
 import { NewStudyButton } from "@/app/(newStudy)/components/NewStudyInputBox";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Button } from "@/components/ui/button";
@@ -61,6 +62,7 @@ export function ChatBox() {
   const [referenceChatTitles, setReferenceChatTitles] = useState<
     { token: string; title: string }[]
   >([]);
+  const [isStudyAvailableForNextSteps, setIsStudyAvailableForNextSteps] = useState(false);
 
   useEffect(() => {
     const loadReferenceChatTitles = async () => {
@@ -75,6 +77,16 @@ export function ChatBox() {
     };
     loadReferenceChatTitles();
   }, [extra]);
+
+  useEffect(() => {
+    const checkAvailability = async () => {
+      const result = await checkStudyAvailableForNextSteps(studyUserChatToken);
+      if (result.success) {
+        setIsStudyAvailableForNextSteps(result.data.available);
+      }
+    };
+    checkAvailability();
+  }, [studyUserChatToken]);
 
   const extraRequestPayload = useMemo(
     () => ({ userChatToken: studyUserChatToken }),
@@ -378,7 +390,7 @@ export function ChatBox() {
         ))}
 
         {/* Study Next Steps */}
-        {studyCompleted && uiStatus === "ready" ? (
+        {isStudyAvailableForNextSteps && uiStatus === "ready" ? (
           <div className="w-full mt-4">
             <StudyNextSteps studyUserChatToken={studyUserChatToken} />
           </div>

@@ -2,7 +2,7 @@
 import { NewStudyButton } from "@/app/(newStudy)/components/NewStudyInputBox";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { LightbulbIcon, MicIcon, RefreshCwIcon } from "lucide-react";
+import { LightbulbIcon, RefreshCwIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { generateRecommendedQuestionsAction } from "./actions";
@@ -76,6 +76,7 @@ export function StudyNextSteps({
 
       <div className="flex flex-col items-start justify-start gap-2 sm:flex-row sm:flex-wrap sm:gap-2">
         {/* Podcast Button */}
+        {/*
         <Button
           variant="ghost"
           size="sm"
@@ -85,6 +86,7 @@ export function StudyNextSteps({
           <MicIcon className="size-3.5" />
           <span className="text-sm">{t("generatePodcast")}</span>
         </Button>
+        */}
 
         {/* Recommended Research Questions */}
         {isLoading ? (

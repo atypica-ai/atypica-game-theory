@@ -224,7 +224,10 @@ export async function retryStudy(studyUserChatId: number): Promise<ServerActionR
     // Start the study agent request in the background
     studyAgentRequest({
       locale,
-      studyUserChatId,
+      userChat: {
+        id: studyUserChat.id,
+        extra: studyUserChat.extra as UserChatExtra,
+      },
       userId: studyUserChat.userId,
       reqSignal: null,
       studyLog: rootLogger.child({ studyUserChatId, studyUserChatToken: studyUserChat.token }),

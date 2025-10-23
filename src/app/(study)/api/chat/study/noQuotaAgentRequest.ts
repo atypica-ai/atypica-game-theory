@@ -3,13 +3,15 @@ import { createUIMessageStream, createUIMessageStreamResponse } from "ai";
 
 export async function noQuotaAgentRequest(
   {
-    // studyUserChatId,
+    // userChat: { id: studyUserChatId },
     // coreMessages,
     // streamingMessage,
     // userId,
     // reqSignal,
   }: {
-    studyUserChatId: number;
+    userChat: {
+      id: number;
+    };
     userId: number;
     reqSignal: AbortSignal;
   },

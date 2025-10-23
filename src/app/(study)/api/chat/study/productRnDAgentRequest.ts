@@ -30,13 +30,15 @@ const MAX_STEPS_EACH_ROUND = 15; // streamText 默认 15 步
 
 // 参考了 https://sdk.vercel.ai/docs/ai-sdk-ui/chatbot-message-persistence#storing-messages 的设计来实现
 export async function productRnDAgentRequest({
-  studyUserChatId,
+  userChat: { id: studyUserChatId },
   userId,
   // reqSignal,
   studyLog,
   locale,
 }: {
-  studyUserChatId: number;
+  userChat: {
+    id: number;
+  };
   userId: number;
   reqSignal: AbortSignal | null;
   studyLog: Logger;

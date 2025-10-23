@@ -77,10 +77,6 @@ export async function POST(req: Request) {
     },
   });
 
-  const briefStatus: "CLARIFIED" | "DRAFT" = (userChat.extra as UserChatExtra)?.briefUserChatId
-    ? "CLARIFIED"
-    : "DRAFT";
-
   // 首先遵循用户的输入语言，然后，如果 analyst 语言已经定了，默认使用 analyst 的语言
   const locale: Locale = await detectInputLanguage({
     text: newMessage.parts // 所有 text parts 的文本合在一起检测
@@ -96,8 +92,10 @@ export async function POST(req: Request) {
 
   const params = {
     locale,
-    briefStatus,
-    studyUserChatId,
+    userChat: {
+      ...userChat,
+      extra: userChat.extra as UserChatExtra,
+    },
     userId,
     reqSignal,
     studyLog,
