@@ -172,7 +172,7 @@ declare module "@/prisma/client" {
     recommendedStudies: {
       questions: string[];
       generatedAt?: string;
-      processing?: boolean;
+      processing?: string; // 存储开始时间戳 Date.now().toString()
     };
   }>;
 

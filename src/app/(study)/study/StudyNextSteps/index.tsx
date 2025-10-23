@@ -59,7 +59,7 @@ export function StudyNextSteps({
         <Button
           variant="ghost"
           size="sm"
-          className="h-5 w-5 p-0 hover:bg-accent/50"
+          className="h-5 w-5 p-0 hover:bg-accent/50 hidden" // 展示隐藏下，目前先不给刷新
           onClick={handleRefreshQuestions}
           disabled={isRefreshing}
         >

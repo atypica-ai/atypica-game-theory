@@ -4,9 +4,11 @@ import { studyLogPrologue, studyLogSystem } from "@/ai/prompt";
 import { defaultProviderOptions, llm } from "@/ai/provider";
 import { AgentToolConfigArgs } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
+import { generateRecommendedQuestions } from "@/app/(study)/study/StudyNextSteps/lib";
 import { Analyst } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { google } from "@ai-sdk/google";
+import { waitUntil } from "@vercel/functions";
 import { streamText, UserModelMessage } from "ai";
 
 export async function generateAndSaveStudyLog({
@@ -64,6 +66,18 @@ export async function generateAndSaveStudyLog({
           where: { id: analyst.id },
           data: { studyLog: studyLog },
         });
+
+        // Trigger recommended questions generation in background after studyLog is complete
+        // 在 studyLog 完成后，在后台触发推荐问题生成
+        waitUntil(
+          generateRecommendedQuestions({
+            analystId: analyst.id,
+            locale,
+            forceRegenerate: false,
+          }),
+        );
+        logger.info("Triggered recommended questions generation after studyLog completion");
+
         resolve({ studyLog });
       },
       onError: ({ error }) => {

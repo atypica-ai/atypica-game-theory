@@ -1,27 +1,22 @@
 "use server";
 
-import { llm } from "@/ai/provider";
 import { VALID_LOCALES } from "@/i18n/routing";
 import { rootLogger } from "@/lib/logging";
 import { ServerActionResult } from "@/lib/serverAction";
 import { AnalystExtra } from "@/prisma/client";
-import { InputJsonObject } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
-import { generateObject } from "ai";
+import { waitUntil } from "@vercel/functions";
 import { Locale } from "next-intl";
 import { getLocale } from "next-intl/server";
-import { z } from "zod";
-
-const recommendedQuestionsSchema = z.object({
-  questions: z
-    .array(z.string().describe("A research question / 一个研究问题"))
-    .length(2)
-    .describe("Two follow-up research questions / 两个后续研究问题"),
-});
+import { generateRecommendedQuestions } from "./lib";
 
 /**
  * Generate and cache recommended research questions based on the study
+ * Server action handles permission checking and data preparation,
+ * then triggers background generation using waitUntil and polls for results
+ *
  * 基于研究生成并缓存推荐的研究问题
+ * Server action 负责权限检查和数据准备，使用 waitUntil 触发后台生成，并轮询结果
  */
 export async function generateRecommendedQuestionsAction(
   studyUserChatToken: string,
@@ -45,7 +40,6 @@ export async function generateRecommendedQuestionsAction(
     }
 
     const logger = rootLogger.child({ studyUserChatId: studyUserChat.id, studyUserChatToken });
-
     const { analyst } = studyUserChat;
 
     // Determine locale
@@ -55,7 +49,7 @@ export async function generateRecommendedQuestionsAction(
         : await getLocale();
 
     // Check if we already have cached questions in analyst.extra
-    const analystExtra = analyst.extra as AnalystExtra;
+    let analystExtra = analyst.extra as AnalystExtra;
 
     // If not forcing regenerate and we have cached questions, return them
     if (
@@ -71,86 +65,72 @@ export async function generateRecommendedQuestionsAction(
       };
     }
 
-    // If already processing, return processing status
+    // Check if already processing (with timeout check - 10 minutes)
     if (analystExtra.recommendedStudies?.processing) {
-      return {
-        success: false,
-        message: "Questions are being generated",
-      };
+      const processingStartTime = parseInt(analystExtra.recommendedStudies.processing, 10);
+      const now = Date.now();
+      const tenMinutes = 10 * 60 * 1000;
+
+      // If not forcing and within timeout, just poll for results
+      if (!forceRegenerate && now - processingStartTime < tenMinutes) {
+        logger.info("Already processing, polling for results");
+      } else {
+        // Timeout or forcing, trigger new generation
+        logger.info("Processing timeout or force regenerate, triggering new generation");
+        waitUntil(
+          generateRecommendedQuestions({
+            analystId: analyst.id,
+            locale,
+            forceRegenerate: true,
+          }),
+        );
+      }
+    } else {
+      // Not processing, trigger background generation
+      logger.info(`Triggering background generation for analyst ${analyst.id}`);
+      waitUntil(
+        generateRecommendedQuestions({
+          analystId: analyst.id,
+          locale,
+          forceRegenerate,
+        }),
+      );
     }
 
-    // Set processing status
-    await prisma.analyst.update({
-      where: { id: analyst.id },
-      data: {
-        extra: {
-          ...analystExtra,
-          recommendedStudies: {
-            processing: true,
+    // Poll for results (check every 2 seconds, max 60 seconds)
+    const maxPolls = 30;
+    const pollInterval = 2000;
+
+    for (let i = 0; i < maxPolls; i++) {
+      await new Promise((resolve) => setTimeout(resolve, pollInterval));
+
+      const updatedAnalyst = await prisma.analyst.findUnique({
+        where: { id: analyst.id },
+      });
+
+      if (!updatedAnalyst) {
+        break;
+      }
+
+      analystExtra = updatedAnalyst.extra as AnalystExtra;
+
+      // If questions are ready and not processing, return them
+      if (analystExtra.recommendedStudies?.questions && !analystExtra.recommendedStudies.processing) {
+        logger.info("Questions generated successfully");
+        return {
+          success: true,
+          data: {
+            questions: analystExtra.recommendedStudies.questions,
           },
-        } as AnalystExtra as InputJsonObject,
-      },
-    });
+        };
+      }
+    }
 
-    // Generate new questions using AI
-    const systemPrompt =
-      locale === "zh-CN"
-        ? `你是一个研究助手，帮助生成后续研究问题。根据提供的研究信息，建议2个相关且有趣的后续研究问题。`
-        : `You are a research assistant helping generate follow-up research questions. Based on the study information provided, suggest 2 relevant and interesting follow-up research questions.`;
-
-    const userPrompt =
-      locale === "zh-CN"
-        ? `<研究信息>
-<简述>${analyst.brief}</简述>
-<主题>${analyst.topic.slice(0, 2000)}</主题>
-<研究日志>${analyst.studyLog.slice(0, 10000)}</研究日志>
-</研究信息>
-
-请生成2个后续研究问题。`
-        : `<study_information>
-<brief>${analyst.brief}</brief>
-<topic>${analyst.topic.slice(0, 2000)}</topic>
-<study_log>${analyst.studyLog.slice(0, 10000)}</study_log>
-</study_information>
-
-Please generate 2 follow-up research questions.`;
-
-    const result = await generateObject({
-      model: llm("gpt-5-mini"),
-      schema: recommendedQuestionsSchema,
-      messages: [
-        {
-          role: "system",
-          content: systemPrompt,
-        },
-        {
-          role: "user",
-          content: userPrompt,
-        },
-      ],
-    });
-
-    const questions = result.object.questions;
-
-    // Cache the questions in analyst.extra and remove processing flag
-    await prisma.analyst.update({
-      where: { id: analyst.id },
-      data: {
-        extra: {
-          ...analystExtra,
-          recommendedStudies: {
-            questions,
-            generatedAt: new Date().toISOString(),
-          },
-        } as AnalystExtra as InputJsonObject,
-      },
-    });
-
-    logger.info(`Generated recommended questions for analyst ${analyst.id}`);
-
+    // Polling timeout - return error but background task continues
+    logger.warn("Polling timeout, but background generation continues");
     return {
-      success: true,
-      data: { questions },
+      success: false,
+      message: "Questions are being generated in the background, please try again later",
     };
   } catch (error) {
     rootLogger.error(`Failed to generate recommended questions: ${(error as Error).message}`);
