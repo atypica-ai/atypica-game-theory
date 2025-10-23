@@ -29,14 +29,14 @@ export function generateInterviewShareToken(projectId: number, permanentToken: s
  */
 export function generateInterviewShareToken(
   projectId: number,
-  expiryHoursOrPermanentToken: number | string
+  expiryHoursOrPermanentToken: number | string,
 ): string {
   // 处理永久链接 (第二个参数是字符串)
-  if (typeof expiryHoursOrPermanentToken === 'string') {
+  if (typeof expiryHoursOrPermanentToken === "string") {
     const permanentToken = expiryHoursOrPermanentToken;
     const payload: InterviewSharePayload = {
       projectId,
-      permanent: permanentToken
+      permanent: permanentToken,
     };
     return encryptText(JSON.stringify(payload));
   }
@@ -79,10 +79,7 @@ export function decryptInterviewShareToken(token: string): InterviewSharePayload
     }
 
     // 处理临时链接 (有timestamp和expiresAt字段)
-    if (
-      typeof payload.timestamp !== "number" ||
-      typeof payload.expiresAt !== "number"
-    ) {
+    if (typeof payload.timestamp !== "number" || typeof payload.expiresAt !== "number") {
       return null;
     }
 

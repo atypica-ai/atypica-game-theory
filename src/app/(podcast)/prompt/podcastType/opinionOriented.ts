@@ -2,7 +2,12 @@ import "server-only";
 
 import { Locale } from "next-intl";
 
-export const podcastScriptOpinionOrientedSystem = ({ locale }: { locale: Locale; analystKind?: string }) =>
+export const podcastScriptOpinionOrientedSystem = ({
+  locale,
+}: {
+  locale: Locale;
+  analystKind?: string;
+}) =>
   locale === "zh-CN"
     ? `## 任务
 需要你撰写有说服力且吸引人的播客脚本。这个播客的目标是让普通听众能够理解并被说服接受主持人基于研究得出的观点和建议。

@@ -189,7 +189,9 @@ export const TermsEN: React.FC = () => {
                 <div>
                   <h4 className="font-semibold mb-2">Refund Window</h4>
                   <ul className="space-y-1 text-sm ml-4">
-                    <li>• All purchases and subscriptions are eligible for refunds within 7 days</li>
+                    <li>
+                      • All purchases and subscriptions are eligible for refunds within 7 days
+                    </li>
                     <li>• Refund requests after 7 days will not be accepted</li>
                   </ul>
                 </div>
@@ -197,7 +199,9 @@ export const TermsEN: React.FC = () => {
                 <div>
                   <h4 className="font-semibold mb-2">One-Time Token Purchase Refunds</h4>
                   <ul className="space-y-1 text-sm ml-4">
-                    <li>• Purchased tokens (including bonus tokens) can be refunded within 7 days</li>
+                    <li>
+                      • Purchased tokens (including bonus tokens) can be refunded within 7 days
+                    </li>
                     <li>• Refund amount will deduct the cost of tokens already used</li>
                   </ul>
                 </div>
@@ -206,7 +210,10 @@ export const TermsEN: React.FC = () => {
                   <h4 className="font-semibold mb-2">Subscription Refunds</h4>
                   <ul className="space-y-1 text-sm ml-4">
                     <li>• Pro/Max/Team subscriptions can be refunded within 7 days of purchase</li>
-                    <li>• Refund amount will deduct the cost of tokens used and the validity period elapsed</li>
+                    <li>
+                      • Refund amount will deduct the cost of tokens used and the validity period
+                      elapsed
+                    </li>
                   </ul>
                 </div>
 

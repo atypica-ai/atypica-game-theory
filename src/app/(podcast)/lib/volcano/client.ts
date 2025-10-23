@@ -86,7 +86,7 @@ export class VolcanoTTSClient {
     // Regular expression to match host markers like 【Guy】, 【Ira】, 【凯】, 【艾拉】
     const hostMarkerRegex = /【([^】]+)】/g;
     const hosts = new Set<string>();
-    
+
     let match;
     while ((match = hostMarkerRegex.exec(script)) !== null) {
       // match[1] contains the host name inside 【】
@@ -95,7 +95,7 @@ export class VolcanoTTSClient {
         hosts.add(hostName);
       }
     }
-    
+
     const hostCount = hosts.size;
 
     // Return the validated count, capped at 2 (Volcano TTS limitation)
@@ -114,23 +114,23 @@ export class VolcanoTTSClient {
   private parseScriptToNLPTexts(script: string, locale: string = "zh-CN"): PodcastNLPText[] {
     // Get the validated number of hosts in the script
     const hostCount = this.getValidatedHostCount(script);
-    
+
     // Get the default speakers for the locale
     const allSpeakers =
       DEFAULT_SPEAKERS[locale as keyof typeof DEFAULT_SPEAKERS] || DEFAULT_SPEAKERS["zh-CN"];
-    
+
     // Adjust speakers array based on detected host count
     // If only 1 host detected, use only the first speaker
     // If 2 hosts detected (or default), use both speakers
     const speakers = hostCount === 1 ? [allSpeakers[0]] : allSpeakers;
-    
-    this.logger?.info({ 
-      msg: "Detected podcast configuration", 
-      hostCount, 
+
+    this.logger?.info({
+      msg: "Detected podcast configuration",
+      hostCount,
       speakersUsed: speakers.length,
-      locale 
+      locale,
     });
-    
+
     const nlpTexts: PodcastNLPText[] = [];
 
     // Split script into lines and extract dialogue

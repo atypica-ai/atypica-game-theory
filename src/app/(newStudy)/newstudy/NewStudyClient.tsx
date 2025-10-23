@@ -1,5 +1,5 @@
-import { FitToViewport } from "@/components/layout/FitToViewport";
 import { NewStudyInputBox } from "@/app/(newStudy)/components/NewStudyInputBox";
+import { FitToViewport } from "@/components/layout/FitToViewport";
 import { CommandIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
