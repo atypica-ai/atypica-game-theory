@@ -42,10 +42,11 @@ export default function UserTokensBalance() {
     let timeoutId: NodeJS.Timeout;
     const poll = async () => {
       if (!isDocumentVisible) {
-        timeoutId = setTimeout(poll, 10000);
+        timeoutId = setTimeout(poll, 600 * 1000);
         return;
       }
-      timeoutId = setTimeout(poll, 5000); // 要放在前面，不然下面 return () 的时候如果 getUserTokensBalanceAction 还没完成就不会 clearTimeout 了
+      timeoutId = setTimeout(poll, 60 * 1000); // 不需要频繁刷新 tokens，这里只是用于显示，1 分钟一次就够了
+      // setTimeout 要放在前面，不然下面 return () 的时候如果 getUserTokensBalanceAction 还没完成就不会 clearTimeout 了
       const result = await getUserTokensBalanceAction();
       if (result.success) {
         setBalance(result.data);

@@ -6,7 +6,6 @@ import {
 import { ToolName, TStudyMessageWithTool } from "@/ai/tools/types";
 import { StudyToolUIPartDisplay } from "@/ai/tools/ui";
 import { fetchChatTitlesByTokens } from "@/app/(newStudy)/actions";
-import { checkStudyAvailableForNextSteps } from "./StudyNextSteps/actions";
 import { NewStudyButton } from "@/app/(newStudy)/components/NewStudyInputBox";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Button } from "@/components/ui/button";
@@ -62,7 +61,6 @@ export function ChatBox() {
   const [referenceChatTitles, setReferenceChatTitles] = useState<
     { token: string; title: string }[]
   >([]);
-  const [isStudyAvailableForNextSteps, setIsStudyAvailableForNextSteps] = useState(false);
 
   useEffect(() => {
     const loadReferenceChatTitles = async () => {
@@ -77,16 +75,6 @@ export function ChatBox() {
     };
     loadReferenceChatTitles();
   }, [extra]);
-
-  useEffect(() => {
-    const checkAvailability = async () => {
-      const result = await checkStudyAvailableForNextSteps(studyUserChatToken);
-      if (result.success) {
-        setIsStudyAvailableForNextSteps(result.data.available);
-      }
-    };
-    checkAvailability();
-  }, [studyUserChatToken]);
 
   const extraRequestPayload = useMemo(
     () => ({ userChatToken: studyUserChatToken }),
@@ -197,10 +185,6 @@ export function ChatBox() {
   const chatUpdatedAt = useRef<number | null>(null);
   const [maybeEvicted, setMaybeEvicted] = useState(false);
   const refreshStudyUserChat = useCallback(async () => {
-    if (!backgroundToken) {
-      // 在 background 状态时定期刷新
-      return;
-    }
     const result = await fetchUserChatStateByToken(studyUserChatToken, "study");
     if (!result.success) {
       console.log(result.message);
@@ -239,6 +223,10 @@ export function ChatBox() {
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
     const poll = async () => {
+      if (!backgroundToken) {
+        // 在 background 状态时定期刷新
+        return;
+      }
       if (!isDocumentVisible) {
         timeoutId = setTimeout(poll, 10000);
         return;
@@ -250,7 +238,7 @@ export function ChatBox() {
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [refreshStudyUserChat, isDocumentVisible]);
+  }, [refreshStudyUserChat, isDocumentVisible, backgroundToken]);
 
   useEffect(() => {
     for (let i = messages.length - 1; i >= 0; i--) {
@@ -390,7 +378,7 @@ export function ChatBox() {
         ))}
 
         {/* Study Next Steps */}
-        {isStudyAvailableForNextSteps && uiStatus === "ready" ? (
+        {studyCompleted && uiStatus === "ready" ? (
           <div className="w-full mt-4">
             <StudyNextSteps studyUserChatToken={studyUserChatToken} />
           </div>

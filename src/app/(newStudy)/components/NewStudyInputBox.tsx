@@ -196,23 +196,6 @@ export function NewStudyInputBox({
         </Link>
       </div>
 
-      {/* Reference Chats Display */}
-      {referenceChatTitles.length > 0 && (
-        <div className="px-4 py-2 border-b border-border bg-muted/30">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs text-muted-foreground">Reference:</span>
-            {referenceChatTitles.map((chat) => (
-              <div
-                key={chat.token}
-                className="text-xs px-2 py-1 bg-background border border-border rounded-sm"
-              >
-                {chat.title}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
       <Textarea
         value={input}
         onChange={(e) => {
@@ -222,8 +205,9 @@ export function NewStudyInputBox({
         }}
         placeholder={studyType === "product-rnd" ? t("productRnDPlaceholder") : t("placeholder")}
         className={cn(
-          "min-h-48 resize-none border-0 bg-transparent pt-4 px-4 focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/60 w-full",
+          "min-h-48 resize-none border-0 bg-transparent px-4 focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/60 w-full",
           uploadedFiles.length > 0 ? "pb-28" : "pb-18",
+          referenceChatTitles.length > 0 ? "pt-8" : "pt-4 ",
         )}
         enterKeyHint="enter"
         disabled={isLoading}
@@ -237,6 +221,20 @@ export function NewStudyInputBox({
           }
         }}
       />
+
+      {/* Reference Chats Display */}
+      {referenceChatTitles.length > 0 && (
+        <div className="absolute top-14 left-3 right-3 flex items-center gap-2 flex-wrap">
+          {referenceChatTitles.map((chat) => (
+            <div
+              key={chat.token}
+              className="text-xs px-2 pl-1 bg-muted rounded-full max-w-1/2 truncate font-medium"
+            >
+              @ {chat.title}
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Partial transcript indicator */}
       {partialTranscript && (
@@ -293,15 +291,16 @@ export function NewStudyInputBox({
           </div>
           <Button
             type="submit"
+            variant="default"
             disabled={isLoading || !input.trim()}
-            className="h-8 px-4 bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+            className="h-8 px-4"
           >
             {isLoading ? (
-              <RotateCwIcon className="h-3 w-3 animate-spin" />
+              <RotateCwIcon className="size-4 animate-spin" />
             ) : (
               <>
                 <span className="text-xs">{t("sendLabel")}</span>
-                <ArrowRightIcon className="h-3 w-3" />
+                <ArrowRightIcon className="size-4" />
               </>
             )}
           </Button>

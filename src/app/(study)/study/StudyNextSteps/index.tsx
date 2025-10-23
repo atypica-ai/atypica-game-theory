@@ -19,6 +19,8 @@ export function StudyNextSteps({
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  const [isStudyAvailableForNextSteps, setIsStudyAvailableForNextSteps] = useState(false);
+
   const loadQuestions = useCallback(
     async (forceRegenerate = false) => {
       setIsLoading(true);
@@ -27,8 +29,12 @@ export function StudyNextSteps({
           studyUserChatToken,
           forceRegenerate,
         );
-        if (result.success) {
+        if (!result.success) throw result;
+        if (result.data.availableForNextSteps) {
+          setIsStudyAvailableForNextSteps(true);
           setQuestions(result.data.questions);
+        } else {
+          setIsStudyAvailableForNextSteps(false);
         }
       } catch (error) {
         console.error("Failed to load questions:", error);
@@ -49,7 +55,7 @@ export function StudyNextSteps({
     setIsRefreshing(false);
   };
 
-  return (
+  return isStudyAvailableForNextSteps ? (
     <div className={cn("w-full", className)}>
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-1.5">
@@ -125,5 +131,5 @@ export function StudyNextSteps({
         )}
       </div>
     </div>
-  );
+  ) : null;
 }

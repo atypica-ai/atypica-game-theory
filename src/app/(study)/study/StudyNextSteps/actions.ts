@@ -21,7 +21,11 @@ import { generateRecommendedQuestions } from "./lib";
 export async function generateRecommendedQuestionsAction(
   studyUserChatToken: string,
   forceRegenerate = false,
-): Promise<ServerActionResult<{ questions: string[] }>> {
+): Promise<
+  ServerActionResult<
+    { availableForNextSteps: false } | { availableForNextSteps: true; questions: string[] }
+  >
+> {
   try {
     // Get analyst data via studyUserChat
     const studyUserChat = await prisma.userChat.findUnique({
@@ -36,6 +40,15 @@ export async function generateRecommendedQuestionsAction(
         success: false,
         code: "not_found",
         message: "Analyst not found for this study",
+      };
+    }
+
+    if (!studyUserChat.analyst.studyLog) {
+      return {
+        success: true,
+        data: {
+          availableForNextSteps: false,
+        },
       };
     }
 
@@ -60,6 +73,7 @@ export async function generateRecommendedQuestionsAction(
       return {
         success: true,
         data: {
+          availableForNextSteps: true,
           questions: analystExtra.recommendedStudies.questions,
         },
       };
@@ -115,11 +129,15 @@ export async function generateRecommendedQuestionsAction(
       analystExtra = updatedAnalyst.extra as AnalystExtra;
 
       // If questions are ready and not processing, return them
-      if (analystExtra.recommendedStudies?.questions && !analystExtra.recommendedStudies.processing) {
+      if (
+        analystExtra.recommendedStudies?.questions &&
+        !analystExtra.recommendedStudies.processing
+      ) {
         logger.info("Questions generated successfully");
         return {
           success: true,
           data: {
+            availableForNextSteps: true,
             questions: analystExtra.recommendedStudies.questions,
           },
         };
@@ -160,45 +178,36 @@ export async function startNewResearchAction(question: string) {
   return { success: true, studyId: null };
 }
 
-/**
- * Check if the study is available for next steps (recommendations, podcast, reference)
- * 检查研究是否可用于下一步操作（推荐问题、播客、作为参考）
- */
-export async function checkStudyAvailableForNextSteps(
-  studyUserChatToken: string,
-): Promise<ServerActionResult<{ available: boolean }>> {
-  const studyUserChat = await prisma.userChat.findUnique({
-    where: { token: studyUserChatToken, kind: "study" },
-    include: {
-      analyst: {
-        select: {
-          studyLog: true,
-          reports: {
-            take: 1,
-          },
-        },
-      },
-    },
-  });
-
-  if (!studyUserChat) {
-    return {
-      success: false,
-      code: "not_found",
-      message: "Study not found",
-    };
-  }
-
-  // Study is available if analyst exists and has both studyLog and at least one report
-  const available = !!(
-    studyUserChat.analyst?.studyLog &&
-    studyUserChat.analyst.studyLog.length > 0 &&
-    studyUserChat.analyst.reports &&
-    studyUserChat.analyst.reports.length > 0
-  );
-
-  return {
-    success: true,
-    data: { available },
-  };
-}
+// /**
+//  * Check if the study is available for next steps (recommendations, podcast, reference)
+//  * 检查研究是否可用于下一步操作（推荐问题、播客、作为参考）
+//  */
+// export async function checkStudyAvailableForNextSteps(
+//   studyUserChatToken: string,
+// ): Promise<ServerActionResult<{ available: boolean }>> {
+//   const studyUserChat = await prisma.userChat.findUnique({
+//     where: { token: studyUserChatToken, kind: "study" },
+//     select: {
+//       analyst: {
+//         select: {
+//           studyLog: true,
+//         },
+//       },
+//     },
+//   });
+//   if (!studyUserChat) {
+//     return {
+//       success: false,
+//       code: "not_found",
+//       message: "Study not found",
+//     };
+//   }
+//   // Study is available if analyst exists and has both studyLog and at least one report
+//   const available = !!(
+//     studyUserChat.analyst?.studyLog && studyUserChat.analyst.studyLog.length > 0
+//   );
+//   return {
+//     success: true,
+//     data: { available },
+//   };
+// }
