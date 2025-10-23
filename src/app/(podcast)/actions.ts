@@ -104,46 +104,33 @@ export async function determineKindAndGeneratePodcastAction({
 }
 
 // Server action: Get signed URL for podcast audio
-export async function getPodcastSignedUrl({
+// No auth required - podcast token itself serves as authorization
+export async function getPodcastAudioSignedUrl({
   podcastToken,
 }: {
   podcastToken: string;
 }): Promise<ServerActionResult<string | null>> {
-  return withAuth(async (user) => {
-    try {
-      const podcast = await prisma.analystPodcast.findUnique({
-        where: { token: podcastToken },
-        include: {
-          analyst: true,
-        },
-      });
-
-      if (!podcast) {
-        return {
-          success: false,
-          code: "not_found",
-          message: "Podcast not found.",
-        };
-      }
-
-      if (podcast.analyst.userId !== user.id) {
-        return {
-          success: false,
-          code: "forbidden",
-          message: "You are not authorized to access this resource.",
-        };
-      }
-
-      const signedUrl = await podcastObjectUrlToHttpUrl(podcast);
-      return {
-        success: true,
-        data: signedUrl,
-      };
-    } catch (error) {
-      return {
-        success: false,
-        message: error instanceof Error ? error.message : String(error),
-      };
-    }
+  const podcast = await prisma.analystPodcast.findUnique({
+    where: { token: podcastToken },
+    select: {
+      id: true,
+      objectUrl: true,
+      extra: true,
+      generatedAt: true,
+    },
   });
+
+  if (!podcast || !podcast.generatedAt || !podcast.objectUrl) {
+    return {
+      success: false,
+      code: "not_found",
+      message: "Podcast audio not found.",
+    };
+  }
+
+  const signedUrl = await podcastObjectUrlToHttpUrl(podcast);
+  return {
+    success: true,
+    data: signedUrl,
+  };
 }

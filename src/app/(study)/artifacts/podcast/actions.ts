@@ -1,5 +1,4 @@
 "use server";
-import { podcastObjectUrlToHttpUrl } from "@/app/(podcast)/lib/utils";
 import { ServerActionResult } from "@/lib/serverAction";
 import { Analyst, AnalystPodcast, UserChat } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
@@ -67,41 +66,6 @@ export async function fetchPodcastByToken(podcastToken: string): Promise<
           title: podcast.analyst.studyUserChat.title,
         },
       },
-    };
-  } catch (error) {
-    return {
-      success: false,
-      message: error instanceof Error ? error.message : String(error),
-    };
-  }
-}
-
-export async function getPodcastAudioUrl(
-  podcastToken: string,
-): Promise<ServerActionResult<string | null>> {
-  try {
-    const podcast = await prisma.analystPodcast.findUnique({
-      where: { token: podcastToken },
-      select: {
-        id: true,
-        objectUrl: true,
-        extra: true,
-        generatedAt: true,
-      },
-    });
-
-    if (!podcast || !podcast.generatedAt || !podcast.objectUrl) {
-      return {
-        success: false,
-        code: "not_found",
-        message: "Podcast audio not found.",
-      };
-    }
-
-    const signedUrl = await podcastObjectUrlToHttpUrl(podcast);
-    return {
-      success: true,
-      data: signedUrl,
     };
   } catch (error) {
     return {

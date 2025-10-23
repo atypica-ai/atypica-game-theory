@@ -146,7 +146,7 @@ export default function PodcastsListPanel({
                       : "-"}
                   </div>
                   <Button asChild size="sm" variant="outline">
-                    <Link href={`/artifacts/podcast/${podcast.token}/share`}>
+                    <Link href={`/artifacts/podcast/${podcast.token}/share`} target="_blank">
                       <PlayIcon className="h-4 w-4" />
                     </Link>
                   </Button>

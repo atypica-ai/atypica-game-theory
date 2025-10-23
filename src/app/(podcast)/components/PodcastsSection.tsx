@@ -1,7 +1,7 @@
 import {
   determineKindAndGeneratePodcastAction,
   fetchAnalystPodcasts,
-  getPodcastSignedUrl,
+  getPodcastAudioSignedUrl,
 } from "@/app/(podcast)/actions";
 import { TokenAlertDialog } from "@/components/TokenAlertDialog";
 import { Button } from "@/components/ui/button";
@@ -61,7 +61,7 @@ export function AnalystPodcastsSection({
 
       try {
         // Get signed URL for the podcast
-        const result = await getPodcastSignedUrl({ podcastToken });
+        const result = await getPodcastAudioSignedUrl({ podcastToken });
         if (!result.success || !result.data) {
           toast.error("Failed to get audio URL");
           return;
@@ -110,7 +110,7 @@ export function AnalystPodcastsSection({
       }
 
       try {
-        const result = await getPodcastSignedUrl({ podcastToken });
+        const result = await getPodcastAudioSignedUrl({ podcastToken });
         if (result.success && result.data) {
           setDownloadUrls((prev) => ({ ...prev, [podcastToken]: result.data! }));
           return result.data;
@@ -267,10 +267,7 @@ export function AnalystPodcastsSection({
                                   isPodcastDialogOpen.analystPodcast.token,
                                 );
                                 if (url) {
-                                  const link = document.createElement("a");
-                                  link.href = url;
-                                  link.download = `podcast-${isPodcastDialogOpen.analystPodcast.token}.mp3`;
-                                  link.click();
+                                  window.open(url, "_blank");
                                 } else {
                                   toast.error("Failed to get download URL");
                                 }

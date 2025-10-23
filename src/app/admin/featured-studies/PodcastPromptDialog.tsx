@@ -53,7 +53,7 @@ export function PodcastPromptDialog({
   const handleReset = useCallback(() => {
     setShowPromptEditor(false);
     setSystemPrompt("");
-  }, [currentDefaultPrompt]);
+  }, []);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

@@ -1,24 +1,26 @@
 "use client";
+import { getPodcastAudioSignedUrl } from "@/app/(podcast)/actions";
 import GlobalHeader from "@/components/layout/GlobalHeader";
 import { Button } from "@/components/ui/button";
 import UserMenu from "@/components/UserMenu";
 import { truncateForTitle } from "@/lib/textUtils";
 import { Analyst, AnalystPodcast, UserChat } from "@/prisma/client";
-import { Loader2Icon, Pause, Play, RotateCcw, RotateCw, Share2 } from "lucide-react";
+import { DownloadIcon, Loader2Icon, Pause, Play, RotateCcw, RotateCw, Share2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { getPodcastAudioUrl } from "../../actions";
 
 function SharePageHeader({
   studyReplayUrl,
   copyShareLink,
+  onDownload,
 }: {
   studyReplayUrl: string;
   copyShareLink: () => void;
+  onDownload?: () => void;
 }) {
   const t = useTranslations("PodcastSharePage");
   return (
@@ -34,6 +36,12 @@ function SharePageHeader({
           <Share2 size={14} />
           <span className="hidden sm:inline">{t("copyLink")}</span>
         </Button>
+        {onDownload && (
+          <Button variant="outline" size="sm" className="h-8 gap-1" onClick={onDownload}>
+            <DownloadIcon size={14} />
+            <span className="hidden sm:inline">{t("download")}</span>
+          </Button>
+        )}
         {/*<UserTokensBalance />*/}
         <UserMenu />
       </div>
@@ -41,7 +49,13 @@ function SharePageHeader({
   );
 }
 
-function AudioPlayer({ podcastToken }: { podcastToken: string }) {
+function AudioPlayer({
+  podcastToken,
+  onAudioUrlChange,
+}: {
+  podcastToken: string;
+  onAudioUrlChange?: (url: string | null) => void;
+}) {
   const { theme } = useTheme();
 
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -57,9 +71,10 @@ function AudioPlayer({ podcastToken }: { podcastToken: string }) {
     const loadAudioUrl = async () => {
       try {
         setIsLoading(true);
-        const result = await getPodcastAudioUrl(podcastToken);
+        const result = await getPodcastAudioSignedUrl({ podcastToken });
         if (result.success) {
           setAudioUrl(result.data);
+          onAudioUrlChange?.(result.data);
         } else {
           setError(result.message || "Failed to load audio");
         }
@@ -71,7 +86,7 @@ function AudioPlayer({ podcastToken }: { podcastToken: string }) {
     };
 
     loadAudioUrl();
-  }, [podcastToken]);
+  }, [podcastToken, onAudioUrlChange]);
 
   // Audio event handlers
   useEffect(() => {
@@ -237,6 +252,7 @@ export default function PodcastSharePageClient({
   const t = useTranslations("PodcastSharePage");
   const tCompliance = useTranslations("AICompliance");
   const pathname = usePathname();
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
 
   const copyShareLink = useCallback(() => {
     const url = window.location.origin + pathname;
@@ -245,11 +261,17 @@ export default function PodcastSharePageClient({
     });
   }, [pathname, t]);
 
+  const handleDownload = useCallback(() => {
+    if (!audioUrl) return;
+    window.open(audioUrl, "_blank");
+  }, [audioUrl]);
+
   return (
     <div className="h-dvh flex flex-col items-stretch justify-start bg-muted/20">
       <SharePageHeader
         studyReplayUrl={`/study/${studyUserChat.token}/share?replay=1`}
         copyShareLink={copyShareLink}
+        onDownload={handleDownload}
       />
 
       {/* Main Content */}
@@ -267,7 +289,7 @@ export default function PodcastSharePageClient({
         <section className="border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/20">
           <div className="container mx-auto px-4 py-16 md:py-24">
             <div className="max-w-2xl mx-auto">
-              <AudioPlayer podcastToken={podcastToken} />
+              <AudioPlayer podcastToken={podcastToken} onAudioUrlChange={setAudioUrl} />
             </div>
           </div>
         </section>
