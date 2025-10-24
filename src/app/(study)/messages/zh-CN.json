@@ -111,7 +111,8 @@
     "PodcastsListPanel": {
       "title": "播客",
       "noPodcastsYet": "暂无播客",
-      "generating": "生成中..."
+      "generating": "生成中...",
+      "generatingHint": "您的播客正在生成中"
     },
     "ArtifactsListPanel": {
       "title": "研究产出"

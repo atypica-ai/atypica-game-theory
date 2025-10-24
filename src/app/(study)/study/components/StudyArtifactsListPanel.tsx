@@ -9,7 +9,7 @@ import { formatDistanceToNow } from "@/lib/utils";
 import { FileType2Icon, Loader2Icon, MicIcon, PlayIcon, SparklesIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useStudyContext } from "../hooks/StudyContext";
 import { AnalystReportShareButton } from "./AnalystReportShareButton";
 
@@ -72,8 +72,12 @@ export default function StudyArtifactsListPanel({
       podcasts,
       isLoadingReports,
       isLoadingPodcasts,
+      podcastCount,
     },
   } = useStudyContext();
+
+  // Track previous podcast count to detect new podcasts
+  const prevPodcastCountRef = useRef<number>(podcastCount);
 
   // Fetch data when popover opens
   useEffect(() => {
@@ -81,6 +85,19 @@ export default function StudyArtifactsListPanel({
       refreshArtifacts();
     }
   }, [isOpen, refreshArtifacts]);
+
+  // Auto-open panel and switch to podcasts tab when new podcast is detected
+  useEffect(() => {
+    const prevCount = prevPodcastCountRef.current;
+    const currentCount = podcastCount;
+    // Check if podcast count increased (new podcast added)
+    if (prevCount > 0 && currentCount > prevCount) {
+      setIsOpen(true);
+      setActiveTab("podcasts");
+    }
+    // Update ref for next comparison
+    prevPodcastCountRef.current = currentCount;
+  }, [podcastCount]);
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
@@ -178,16 +195,18 @@ export default function StudyArtifactsListPanel({
                           isGenerating ? "opacity-60" : ""
                         }`}
                       >
-                        <div className="flex-1 text-xs line-clamp-2">
+                        <div className="flex-1 text-xs">
                           {isGenerating ? (
-                            <span className="text-muted-foreground italic">
-                              {tPodcasts("generating")}
-                            </span>
+                            <div className="text-muted-foreground italic">
+                              {tPodcasts("generatingHint")}
+                            </div>
                           ) : podcast.script ? (
-                            truncateForTitle(podcast.script, {
-                              maxDisplayWidth: 60,
-                              suffix: "...",
-                            })
+                            <div className="line-clamp-2">
+                              {truncateForTitle(podcast.script, {
+                                maxDisplayWidth: 60,
+                                suffix: "...",
+                              })}
+                            </div>
                           ) : (
                             "-"
                           )}

@@ -111,7 +111,8 @@
     "PodcastsListPanel": {
       "title": "Podcasts",
       "noPodcastsYet": "No podcasts yet",
-      "generating": "Generating..."
+      "generating": "Generating...",
+      "generatingHint": "Your podcast is being generated"
     },
     "ArtifactsListPanel": {
       "title": "Study Artifacts"
