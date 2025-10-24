@@ -10,9 +10,24 @@ import { z } from "zod";
 
 const recommendedQuestionsSchema = z.object({
   questions: z
-    .array(z.string().describe("A research question / 一个研究问题"))
+    .array(
+      z.object({
+        title: z
+          .string()
+          .describe(
+            "A title for the research question (at least 20 Chinese characters, or no more than 10 English words) / 研究问题的标题（不少于20个中文字，或不超过10个英文单词）",
+          ),
+        brief: z
+          .string()
+          .describe(
+            "A detailed research question description / 详细的研究问题描述（这就是之前的 question 字段）",
+          ),
+      }),
+    )
     .length(2)
     .describe("Two follow-up research questions / 两个后续研究问题"),
+  // Legacy field - kept for backward compatibility but not used
+  // questions_legacy: z.array(z.string()).optional(),
 });
 
 /**
@@ -30,7 +45,7 @@ export async function generateRecommendedQuestions({
   analystId: number;
   locale: Locale;
   forceRegenerate?: boolean;
-}): Promise<{ success: boolean; questions?: string[] }> {
+}): Promise<{ success: boolean; questions?: Array<{ title: string; brief: string }> }> {
   const logger = rootLogger.child({ analystId, task: "generateRecommendedQuestions" });
 
   try {
@@ -90,8 +105,16 @@ export async function generateRecommendedQuestions({
     // Generate new questions using AI
     const systemPrompt =
       locale === "zh-CN"
-        ? `你是一个研究助手，帮助生成后续研究问题。根据提供的研究信息，建议2个相关且有趣的后续研究问题。`
-        : `You are a research assistant helping generate follow-up research questions. Based on the study information provided, suggest 2 relevant and interesting follow-up research questions.`;
+        ? `你是一个研究助手，帮助生成后续研究问题。根据提供的研究信息，建议2个相关且有趣的后续研究问题。
+
+每个研究问题需要包含：
+1. title: 一个简短的标题，不少于20个中文字
+2. brief: 详细的研究问题描述，用于实际开始新研究时使用`
+        : `You are a research assistant helping generate follow-up research questions. Based on the study information provided, suggest 2 relevant and interesting follow-up research questions.
+
+Each research question should include:
+1. title: A short title, no more than 10 English words
+2. brief: A detailed research question description, used when starting the new study`;
 
     const userPrompt =
       locale === "zh-CN"
@@ -101,14 +124,14 @@ export async function generateRecommendedQuestions({
 <研究日志>${analyst.studyLog.slice(0, 10000)}</研究日志>
 </研究信息>
 
-请生成2个后续研究问题。`
+请生成2个后续研究问题，每个包含 title 和 brief。`
         : `<study_information>
 <brief>${analyst.brief}</brief>
 <topic>${analyst.topic.slice(0, 2000)}</topic>
 <study_log>${analyst.studyLog.slice(0, 10000)}</study_log>
 </study_information>
 
-Please generate 2 follow-up research questions.`;
+Please generate 2 follow-up research questions, each with title and brief.`;
 
     const result = await generateObject({
       model: llm("gpt-5-mini"),

@@ -31,7 +31,7 @@ export function StudyNextSteps({
 }) {
   const t = useTranslations("StudyPage.NextSteps");
   const { artifacts } = useStudyContext();
-  const [questions, setQuestions] = useState<string[]>([]);
+  const [questions, setQuestions] = useState<Array<{ title: string; brief: string }>>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isGeneratingPodcast, setIsGeneratingPodcast] = useState(false);
@@ -184,7 +184,7 @@ export function StudyNextSteps({
           questions.map((question, index) => (
             <NewStudyButton
               key={index}
-              initialQuestion={question}
+              initialQuestion={question.brief}
               referenceUserChatTokens={[studyUserChatToken]}
             >
               <Button
@@ -202,7 +202,7 @@ export function StudyNextSteps({
                 >
                   {t("newStudyBadge")}
                 </Badge>
-                <span className="text-xs truncate">{question}</span>
+                <span className="text-xs truncate">{question.title}</span>
               </Button>
             </NewStudyButton>
           ))

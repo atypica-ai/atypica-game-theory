@@ -178,7 +178,10 @@ declare module "@/prisma/client" {
   export type AnalystExtra = Partial<{
     podcastEvaluation: { processing?: boolean } & Record<string, unknown>;
     recommendedStudies: {
-      questions: string[];
+      questions: Array<{
+        title: string;
+        brief: string;
+      }>;
       generatedAt?: string;
       processing?: string; // 存储开始时间戳 Date.now().toString()
     };

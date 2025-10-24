@@ -23,7 +23,11 @@ export async function generateRecommendedQuestionsAction(
   forceRegenerate = false,
 ): Promise<
   ServerActionResult<
-    { availableForNextSteps: false } | { availableForNextSteps: true; questions: string[] }
+    | { availableForNextSteps: false }
+    | {
+        availableForNextSteps: true;
+        questions: Array<{ title: string; brief: string }>;
+      }
   >
 > {
   try {

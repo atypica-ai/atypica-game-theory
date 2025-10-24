@@ -77,7 +77,7 @@ export default function StudyArtifactsListPanel({
   } = useStudyContext();
 
   // Track previous podcast count to detect new podcasts
-  const prevPodcastCountRef = useRef<number>(podcastCount);
+  const prevPodcastCountRef = useRef<number | null>(null);
 
   // Fetch data when popover opens
   useEffect(() => {
@@ -91,7 +91,7 @@ export default function StudyArtifactsListPanel({
     const prevCount = prevPodcastCountRef.current;
     const currentCount = podcastCount;
     // Check if podcast count increased (new podcast added)
-    if (currentCount > prevCount) {
+    if (prevCount !== null && currentCount > prevCount) {
       setIsOpen(true);
       setActiveTab("podcasts");
     }
