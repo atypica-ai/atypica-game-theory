@@ -1,4 +1,8 @@
 import { ToolName } from "@/ai/tools/types";
+import {
+  fetchAnalystReportsCountOfStudyUserChat,
+  fetchAnalystReportsOfStudyUserChat,
+} from "@/app/(study)/study/actions";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -7,10 +11,6 @@ import { formatDistanceToNow } from "@/lib/utils";
 import { ClipboardListIcon, FileType2Icon, Loader2Icon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
-import {
-  fetchAnalystReportsCountOfStudyUserChat,
-  fetchAnalystReportsOfStudyUserChat,
-} from "../actions";
 import { useStudyContext } from "../hooks/StudyContext";
 import { AnalystReportShareButton } from "./AnalystReportShareButton";
 

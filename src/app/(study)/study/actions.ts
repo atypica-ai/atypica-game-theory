@@ -599,7 +599,8 @@ export async function fetchAnalystPodcastsOfStudyUserChat({
   const podcasts = await prisma.analystPodcast.findMany({
     where: {
       analystId: studyUserChat.analyst.id,
-      generatedAt: { not: null },
+      // Include both generated and generating podcasts
+      // generatedAt: { not: null },
     },
     select: {
       id: true,
@@ -664,7 +665,8 @@ export async function fetchAnalystPodcastsCountOfStudyUserChat({
   const count = await prisma.analystPodcast.count({
     where: {
       analystId: studyUserChat.analyst.id,
-      generatedAt: { not: null },
+      // Include both generated and generating podcasts
+      // generatedAt: { not: null },
     },
   });
   return {

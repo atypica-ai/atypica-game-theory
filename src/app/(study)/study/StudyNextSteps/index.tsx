@@ -1,11 +1,14 @@
 "use client";
+import { determineKindAndGeneratePodcastAction } from "@/app/(podcast)/actions";
 import { NewStudyButton } from "@/app/(newStudy)/components/NewStudyInputBox";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { LightbulbIcon, RefreshCwIcon } from "lucide-react";
+import { LightbulbIcon, Loader2Icon, MicIcon, RefreshCwIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 import { generateRecommendedQuestionsAction } from "./actions";
+import { fetchAnalystByStudyUserChatToken } from "../actions";
 
 export function StudyNextSteps({
   studyUserChatToken,
@@ -18,6 +21,7 @@ export function StudyNextSteps({
   const [questions, setQuestions] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isGeneratingPodcast, setIsGeneratingPodcast] = useState(false);
 
   const [isStudyAvailableForNextSteps, setIsStudyAvailableForNextSteps] = useState(false);
 
@@ -55,6 +59,27 @@ export function StudyNextSteps({
     setIsRefreshing(false);
   };
 
+  const handleGeneratePodcast = useCallback(async () => {
+    setIsGeneratingPodcast(true);
+    try {
+      // Get analyst ID from study user chat token
+      const analystResult = await fetchAnalystByStudyUserChatToken({ studyUserChatToken });
+      if (!analystResult.success) {
+        toast.error("Failed to get analyst information");
+        return;
+      }
+
+      // Trigger podcast generation in background
+      await determineKindAndGeneratePodcastAction({ analystId: analystResult.data.id });
+      toast.success(t("podcastGenerationStarted"));
+    } catch (error) {
+      console.error("Failed to generate podcast:", error);
+      toast.error("Failed to start podcast generation");
+    } finally {
+      setIsGeneratingPodcast(false);
+    }
+  }, [studyUserChatToken, t]);
+
   return isStudyAvailableForNextSteps ? (
     <div className={cn("w-full", className)}>
       <div className="flex items-center justify-between mb-3">
@@ -77,18 +102,22 @@ export function StudyNextSteps({
 
       <div className="flex flex-col items-start justify-start gap-2 sm:flex-row sm:flex-wrap sm:gap-2">
         {/* Podcast Button */}
-        {/*
         <Button
           variant="ghost"
           size="sm"
           className="justify-start gap-2 h-9 px-3 border border-border/50 hover:border-border hover:bg-accent/50"
           onClick={handleGeneratePodcast}
+          disabled={isGeneratingPodcast}
         >
-          <MicIcon className="size-3.5" />
-          <span className="text-sm">{t("generatePodcast")}</span>
+          {isGeneratingPodcast ? (
+            <Loader2Icon className="size-3.5 animate-spin" />
+          ) : (
+            <MicIcon className="size-3.5" />
+          )}
+          <span className="text-sm">
+            {isGeneratingPodcast ? t("generating") : t("generatePodcast")}
+          </span>
         </Button>
-        */}
-
         {/* Recommended Research Questions */}
         {isLoading ? (
           <>

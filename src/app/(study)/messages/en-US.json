@@ -110,7 +110,8 @@
     },
     "PodcastsListPanel": {
       "title": "Podcasts",
-      "noPodcastsYet": "No podcasts yet"
+      "noPodcastsYet": "No podcasts yet",
+      "generating": "Generating..."
     },
     "ArtifactsListPanel": {
       "title": "Study Artifacts"
@@ -118,7 +119,8 @@
     "NextSteps": {
       "title": "You might also want to explore",
       "generatePodcast": "Generate Podcast",
-      "generating": "Generating..."
+      "generating": "Generating...",
+      "podcastGenerationStarted": "Podcast generation started, please check back later"
     }
   },
   "StudyListPage": {

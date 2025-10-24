@@ -134,28 +134,43 @@ export default function PodcastsListPanel({
           <div className="p-6 text-center text-sm text-muted-foreground">{t("noPodcastsYet")}</div>
         ) : (
           <div className="p-3 grid grid-cols-1 gap-3 max-h-[400px] overflow-y-auto scrollbar-thin">
-            {podcasts.map((podcast) => (
-              <div key={podcast.id}>
-                <div className="border border-input rounded-md p-3 flex items-center justify-between gap-2">
-                  <div className="flex-1 text-xs line-clamp-2 mb-1">
-                    {podcast.script
-                      ? truncateForTitle(podcast.script, {
+            {podcasts.map((podcast) => {
+              const isGenerating = !podcast.generatedAt;
+              return (
+                <div key={podcast.id}>
+                  <div
+                    className={`border border-input rounded-md p-3 flex items-center justify-between gap-2 ${
+                      isGenerating ? "opacity-60" : ""
+                    }`}
+                  >
+                    <div className="flex-1 text-xs line-clamp-2 mb-1">
+                      {isGenerating ? (
+                        <span className="text-muted-foreground italic">{t("generating")}</span>
+                      ) : podcast.script ? (
+                        truncateForTitle(podcast.script, {
                           maxDisplayWidth: 60,
                           suffix: "...",
                         })
-                      : "-"}
+                      ) : (
+                        "-"
+                      )}
+                    </div>
+                    {isGenerating ? (
+                      <Loader2Icon className="h-4 w-4 animate-spin text-muted-foreground" />
+                    ) : (
+                      <Button asChild size="sm" variant="outline">
+                        <Link href={`/artifacts/podcast/${podcast.token}/share`} target="_blank">
+                          <PlayIcon className="h-4 w-4" />
+                        </Link>
+                      </Button>
+                    )}
                   </div>
-                  <Button asChild size="sm" variant="outline">
-                    <Link href={`/artifacts/podcast/${podcast.token}/share`} target="_blank">
-                      <PlayIcon className="h-4 w-4" />
-                    </Link>
-                  </Button>
+                  <div className="mt-1 ml-1 text-xs text-muted-foreground font-mono">
+                    {formatDistanceToNow(podcast.createdAt)}
+                  </div>
                 </div>
-                <div className="mt-1 ml-1 text-xs text-muted-foreground font-mono">
-                  {formatDistanceToNow(podcast.createdAt)}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </PopoverContent>
