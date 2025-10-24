@@ -4,53 +4,26 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { ExtractServerActionData } from "@/lib/serverAction";
 import { truncateForTitle } from "@/lib/textUtils";
 import { formatDistanceToNow } from "@/lib/utils";
 import { FileType2Icon, Loader2Icon, MicIcon, PlayIcon, SparklesIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
-import {
-  fetchAnalystPodcastsCountOfStudyUserChat,
-  fetchAnalystPodcastsOfStudyUserChat,
-  fetchAnalystReportsCountOfStudyUserChat,
-  fetchAnalystReportsOfStudyUserChat,
-} from "../actions";
+import { useEffect, useState } from "react";
 import { useStudyContext } from "../hooks/StudyContext";
 import { AnalystReportShareButton } from "./AnalystReportShareButton";
 
 // Badge component with auto-refresh logic for total artifact count
 function ArtifactsCountBadge() {
-  const { studyUserChat, lastToolInvocation } = useStudyContext();
-  const [reportCount, setReportCount] = useState(0);
-  const [podcastCount, setPodcastCount] = useState(0);
-
-  const fetchCounts = useCallback(async () => {
-    try {
-      const [reportsResult, podcastsResult] = await Promise.all([
-        fetchAnalystReportsCountOfStudyUserChat({
-          studyUserChatToken: studyUserChat.token,
-        }),
-        fetchAnalystPodcastsCountOfStudyUserChat({
-          studyUserChatToken: studyUserChat.token,
-        }),
-      ]);
-      if (reportsResult.success) {
-        setReportCount(reportsResult.data);
-      }
-      if (podcastsResult.success) {
-        setPodcastCount(podcastsResult.data);
-      }
-    } catch (error) {
-      console.log("Failed to fetch artifact counts:", error);
-    }
-  }, [studyUserChat.token]);
+  const {
+    artifacts: { refreshCount: refreshArtifactsCount, reportCount, podcastCount },
+    lastToolInvocation,
+  } = useStudyContext();
 
   // Initial fetch
   useEffect(() => {
-    fetchCounts();
-  }, [fetchCounts]);
+    refreshArtifactsCount();
+  }, [refreshArtifactsCount]);
 
   // Refresh when tool invocations complete
   useEffect(() => {
@@ -58,9 +31,9 @@ function ArtifactsCountBadge() {
       lastToolInvocation?.type === `tool-${ToolName.generateReport}` &&
       lastToolInvocation.state === "output-available"
     ) {
-      fetchCounts();
+      refreshArtifactsCount();
     }
-  }, [fetchCounts, lastToolInvocation]);
+  }, [refreshArtifactsCount, lastToolInvocation]);
 
   const totalCount = reportCount + podcastCount;
   if (totalCount === 0) return null;
@@ -80,11 +53,9 @@ function ArtifactsCountBadge() {
  */
 export default function StudyArtifactsListPanel({
   children,
-  studyUserChatToken,
   download = false,
 }: {
   children?: React.ReactNode;
-  studyUserChatToken: string;
   download?: boolean;
 }) {
   const tReports = useTranslations("StudyPage.ReportsListPanel");
@@ -94,57 +65,22 @@ export default function StudyArtifactsListPanel({
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"reports" | "podcasts">("reports");
 
-  const [isLoadingReports, setIsLoadingReports] = useState(false);
-  const [isLoadingPodcasts, setIsLoadingPodcasts] = useState(false);
-
-  const [reports, setReports] = useState<
-    ExtractServerActionData<typeof fetchAnalystReportsOfStudyUserChat>
-  >([]);
-  const [podcasts, setPodcasts] = useState<
-    ExtractServerActionData<typeof fetchAnalystPodcastsOfStudyUserChat>
-  >([]);
-
-  const fetchReports = useCallback(async () => {
-    if (!studyUserChatToken) return;
-    setIsLoadingReports(true);
-    try {
-      const result = await fetchAnalystReportsOfStudyUserChat({
-        studyUserChatToken: studyUserChatToken,
-      });
-      if (result.success) {
-        setReports(result.data);
-      }
-    } catch (error) {
-      console.log("Failed to fetch reports:", error);
-    } finally {
-      setIsLoadingReports(false);
-    }
-  }, [studyUserChatToken]);
-
-  const fetchPodcasts = useCallback(async () => {
-    if (!studyUserChatToken) return;
-    setIsLoadingPodcasts(true);
-    try {
-      const result = await fetchAnalystPodcastsOfStudyUserChat({
-        studyUserChatToken: studyUserChatToken,
-      });
-      if (result.success) {
-        setPodcasts(result.data);
-      }
-    } catch (error) {
-      console.log("Failed to fetch podcasts:", error);
-    } finally {
-      setIsLoadingPodcasts(false);
-    }
-  }, [studyUserChatToken]);
+  const {
+    artifacts: {
+      refresh: refreshArtifacts,
+      reports,
+      podcasts,
+      isLoadingReports,
+      isLoadingPodcasts,
+    },
+  } = useStudyContext();
 
   // Fetch data when popover opens
   useEffect(() => {
     if (isOpen) {
-      fetchReports();
-      fetchPodcasts();
+      refreshArtifacts();
     }
-  }, [isOpen, fetchReports, fetchPodcasts]);
+  }, [isOpen, refreshArtifacts]);
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>

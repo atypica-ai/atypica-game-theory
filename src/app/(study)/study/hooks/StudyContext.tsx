@@ -3,6 +3,7 @@ import { StudyUITools, TStudyMessageWithTool } from "@/ai/tools/types";
 import { UserChat } from "@/prisma/client";
 import { ToolUIPart } from "ai";
 import { createContext, ReactNode, useCallback, useContext, useState } from "react";
+import { ArtifactsState, useArtifacts } from "./useArtifacts";
 
 type TStudyUserChat = Omit<UserChat, "kind"> & {
   kind: "study";
@@ -28,6 +29,7 @@ interface StudyContextType {
   viewToolInvocation: TLastToolInvocation | null;
   setViewToolInvocation: (toolInvocation: TLastToolInvocation | null) => void;
   unsetViewToolInvocation: () => void;
+  artifacts: ArtifactsState;
 }
 
 const StudyContext = createContext<StudyContextType | undefined>(undefined);
@@ -44,6 +46,10 @@ export function StudyProvider({
   const [consoleOpen, setConsoleOpen] = useState(false);
   const [lastToolInvocation, _setLastToolInvocation] = useState<TLastToolInvocation | null>(null);
   const [viewToolInvocation, _setViewToolInvocation] = useState<TLastToolInvocation | null>(null);
+
+  // Use artifacts hook
+  const artifacts = useArtifacts(studyUserChat.token);
+
   const unsetViewToolInvocation = () => _setViewToolInvocation(null);
   const setLastToolInvocation = useCallback((toolInvocation: TLastToolInvocation | null) => {
     _setLastToolInvocation((prev) => {
@@ -89,6 +95,7 @@ export function StudyProvider({
         viewToolInvocation,
         setViewToolInvocation,
         unsetViewToolInvocation,
+        artifacts,
       }}
     >
       {children}

@@ -98,7 +98,7 @@ const Agent = () => {
       <GlobalHeader className="h-12 border-border/50">
         <div className="flex items-center gap-2 sm:gap-4">
           <NerdStats />
-          <StudyArtifactsListPanel studyUserChatToken={studyUserChat.token} download={!replay} />
+          <StudyArtifactsListPanel download={!replay} />
           {!replay && <ShareReplayButton studyUserChat={studyUserChat} />}
           <UserTokensBalance />
           <UserMenu />

@@ -1,6 +1,8 @@
 "use client";
-import { determineKindAndGeneratePodcastAction } from "@/app/(podcast)/actions";
 import { NewStudyButton } from "@/app/(newStudy)/components/NewStudyInputBox";
+import { determineKindAndGeneratePodcastAction } from "@/app/(podcast)/actions";
+import { fetchAnalystByStudyUserChatToken } from "@/app/(study)/study/actions";
+import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { LightbulbIcon, Loader2Icon, MicIcon, RefreshCwIcon } from "lucide-react";
@@ -8,7 +10,6 @@ import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { generateRecommendedQuestionsAction } from "./actions";
-import { fetchAnalystByStudyUserChatToken } from "../actions";
 
 export function StudyNextSteps({
   studyUserChatToken,
@@ -18,6 +19,7 @@ export function StudyNextSteps({
   className?: string;
 }) {
   const t = useTranslations("StudyPage.NextSteps");
+  const { artifacts } = useStudyContext();
   const [questions, setQuestions] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -68,17 +70,18 @@ export function StudyNextSteps({
         toast.error("Failed to get analyst information");
         return;
       }
-
       // Trigger podcast generation in background
       await determineKindAndGeneratePodcastAction({ analystId: analystResult.data.id });
       toast.success(t("podcastGenerationStarted"));
+      // Refresh artifact counts to update badge
+      await artifacts.refreshCount();
     } catch (error) {
       console.error("Failed to generate podcast:", error);
       toast.error("Failed to start podcast generation");
     } finally {
       setIsGeneratingPodcast(false);
     }
-  }, [studyUserChatToken, t]);
+  }, [studyUserChatToken, t, artifacts]);
 
   return isStudyAvailableForNextSteps ? (
     <div className={cn("w-full", className)}>
