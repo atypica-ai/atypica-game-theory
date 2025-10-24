@@ -120,9 +120,13 @@
     "NextSteps": {
       "title": "You might be interested",
       "newStudyBadge": "New Study",
-      "generatePodcast": "Generate Podcast",
+      "generatePodcast": "Generate podcast to hear insights from your research",
       "generating": "Generating...",
-      "podcastGenerationStarted": "Podcast generation started, please check back later"
+      "podcastGenerationStarted": "Podcast generation started, please check back later",
+      "podcastExistsTitle": "Podcast Already Exists",
+      "podcastExistsMessage": "You've already generated a podcast. Would you like to generate a new one?",
+      "regenerate": "Regenerate",
+      "cancel": "Cancel"
     }
   },
   "StudyListPage": {

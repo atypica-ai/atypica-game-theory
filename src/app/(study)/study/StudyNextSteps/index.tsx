@@ -3,6 +3,16 @@ import { NewStudyButton } from "@/app/(newStudy)/components/NewStudyInputBox";
 import { determineKindAndGeneratePodcastAction } from "@/app/(podcast)/actions";
 import { fetchAnalystByStudyUserChatToken } from "@/app/(study)/study/actions";
 import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -25,6 +35,7 @@ export function StudyNextSteps({
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isGeneratingPodcast, setIsGeneratingPodcast] = useState(false);
+  const [showRegenerateDialog, setShowRegenerateDialog] = useState(false);
 
   const [isStudyAvailableForNextSteps, setIsStudyAvailableForNextSteps] = useState(false);
 
@@ -56,19 +67,21 @@ export function StudyNextSteps({
     loadQuestions(false); // Initial load uses cache
   }, [loadQuestions]);
 
-  const handleRefreshQuestions = async () => {
+  const handleRefreshQuestions = useCallback(async () => {
     setIsRefreshing(true);
     await loadQuestions(true); // Force regenerate when clicking refresh
     setIsRefreshing(false);
-  };
+  }, [loadQuestions]);
 
-  const handleGeneratePodcast = useCallback(async () => {
+  // Callback to actually generate the podcast
+  const generatePodcast = useCallback(async () => {
     setIsGeneratingPodcast(true);
     try {
       // Get analyst ID from study user chat token
       const analystResult = await fetchAnalystByStudyUserChatToken({ studyUserChatToken });
       if (!analystResult.success) {
         toast.error("Failed to get analyst information");
+        setIsGeneratingPodcast(false);
         return;
       }
       // Trigger podcast generation in background
@@ -83,6 +96,29 @@ export function StudyNextSteps({
       setIsGeneratingPodcast(false);
     }
   }, [studyUserChatToken, t, artifacts]);
+
+  // Handle generate podcast button click
+  const handleGeneratePodcast = useCallback(async () => {
+    // Check if podcasts already exist
+    if (artifacts.podcastCount > 0) {
+      // Show confirmation dialog
+      setShowRegenerateDialog(true);
+    } else {
+      // No existing podcasts, generate directly
+      await generatePodcast();
+    }
+  }, [artifacts.podcastCount, generatePodcast]);
+
+  // Callback when user confirms regeneration
+  const handleConfirmRegenerate = useCallback(async () => {
+    setShowRegenerateDialog(false);
+    await generatePodcast();
+  }, [generatePodcast]);
+
+  // Callback when user cancels regeneration
+  const handleCancelRegenerate = useCallback(() => {
+    setShowRegenerateDialog(false);
+  }, []);
 
   return isStudyAvailableForNextSteps ? (
     <div className={cn("w-full", className)}>
@@ -104,7 +140,7 @@ export function StudyNextSteps({
         </Button>
       </div>
 
-      <div className="flex flex-col items-start justify-start gap-2 sm:flex-row sm:flex-wrap sm:gap-2">
+      <div className="flex flex-col items-start justify-start gap-2">
         {/* Podcast Button */}
         <Button
           variant="ghost"
@@ -118,7 +154,7 @@ export function StudyNextSteps({
           ) : (
             <MicIcon className="size-3.5" />
           )}
-          <span className="text-sm">
+          <span className="text-xs">
             {isGeneratingPodcast ? t("generating") : t("generatePodcast")}
           </span>
         </Button>
@@ -141,7 +177,7 @@ export function StudyNextSteps({
               disabled
             >
               <LightbulbIcon className="size-3.5 flex-shrink-0" />
-              <span className="text-sm">{t("generating")}</span>
+              <span className="text-xs">{t("generating")}</span>
             </Button>
           </>
         ) : (
@@ -154,7 +190,10 @@ export function StudyNextSteps({
               <Button
                 variant="ghost"
                 size="sm"
-                className="justify-start gap-2 h-9 px-3 border border-border/50 hover:border-border hover:bg-accent/50 max-w-sm overflow-hidden"
+                className={cn(
+                  "justify-start gap-2 h-9 px-3 border border-border/50 hover:border-border hover:bg-accent/50",
+                  "w-full overflow-hidden",
+                )}
               >
                 <LightbulbIcon className="size-3.5 flex-shrink-0" />
                 <Badge
@@ -163,12 +202,28 @@ export function StudyNextSteps({
                 >
                   {t("newStudyBadge")}
                 </Badge>
-                <span className="text-sm truncate">{question}</span>
+                <span className="text-xs truncate">{question}</span>
               </Button>
             </NewStudyButton>
           ))
         )}
       </div>
+
+      {/* Regenerate Confirmation Dialog */}
+      <AlertDialog open={showRegenerateDialog} onOpenChange={setShowRegenerateDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("podcastExistsTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>{t("podcastExistsMessage")}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleCancelRegenerate}>{t("cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmRegenerate}>
+              {t("regenerate")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   ) : null;
 }
