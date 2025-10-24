@@ -107,7 +107,12 @@ export async function generatePodcast({
 
     // Step 3: Generate audio
     logger.info("Starting audio generation");
-    const objectUrl = await generatePodcastAudio(podcast.id, podcast.token, script, locale);
+    const { objectUrl, mimeType } = await generatePodcastAudio(
+      podcast.id,
+      podcast.token,
+      script,
+      locale,
+    );
 
     // Step 4: Mark as completely finished with generatedAt
     await prisma.analystPodcast.update({
@@ -116,7 +121,10 @@ export async function generatePodcast({
     });
     await prisma.$executeRaw`
       UPDATE "AnalystPodcast"
-      SET "extra" = COALESCE("extra", '{}') || ${JSON.stringify({ processing: false })}::jsonb,
+      SET "extra" = COALESCE("extra", '{}') || ${JSON.stringify({
+        processing: false,
+        mimeType,
+      })}::jsonb,
           "updatedAt" = NOW()
       WHERE "id" = ${podcast.id}
     `;
@@ -336,7 +344,10 @@ export async function generatePodcastAudio(
   podcastToken: string,
   script: string,
   locale: string,
-): Promise<string> {
+): Promise<{
+  objectUrl: string;
+  mimeType: string;
+}> {
   const logger = rootLogger.child({
     podcastId,
     podcastToken,
@@ -412,11 +423,12 @@ export async function generatePodcastAudio(
     logger.info({ msg: "Audio downloaded, uploading to S3", size: audioBuffer.byteLength });
 
     // Upload to S3 using standardized function
+    const mimeType = "audio/mpeg";
     const keySuffix = `podcasts/${podcastToken}.mp3` as const;
     const { objectUrl } = await uploadToS3({
       keySuffix,
       fileBody: audioBuffer,
-      mimeType: "audio/mpeg",
+      mimeType,
     });
 
     logger.info({
@@ -425,7 +437,7 @@ export async function generatePodcastAudio(
       duration: result.duration,
     });
 
-    return objectUrl;
+    return { objectUrl, mimeType };
   } catch (error) {
     logger.error({
       msg: "Podcast audio generation failed",

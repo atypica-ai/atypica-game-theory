@@ -1,4 +1,5 @@
 import { imageGenerationObjectUrlToHttpUrl } from "@/app/(study)/artifacts/lib/imagegen";
+import { noProxiedImageCdnUrl, proxiedImageCdnUrl } from "@/app/(system)/cdn/lib";
 import { rootLogger } from "@/lib/logging";
 import { getDeployRegion } from "@/lib/request/deployRegion";
 import { getRequestOrigin } from "@/lib/request/headers";
@@ -9,12 +10,13 @@ import { z } from "zod/v3";
 
 async function optimizedImageUrl(imageGeneration: ImageGeneration) {
   const url = await imageGenerationObjectUrlToHttpUrl(imageGeneration);
-  const siteOrigin = await getRequestOrigin();
   if (getDeployRegion() === "mainland" && !/amazonaws\.com\.cn/.test(url)) {
-    const proxiedUrl = `/api/proxy-image?url=${encodeURIComponent(url)}`;
-    return `${siteOrigin}/_next/image?url=${encodeURIComponent(proxiedUrl)}&w=1920&q=100`;
+    return proxiedImageCdnUrl({ src: url });
   } else {
-    return `${siteOrigin}/_next/image?url=${encodeURIComponent(url)}&w=1920&q=100`;
+    return noProxiedImageCdnUrl({
+      src: url,
+      origin: await getRequestOrigin(), // 其实没必要，其实可以直接用 cdn 域名的
+    });
   }
 }
 

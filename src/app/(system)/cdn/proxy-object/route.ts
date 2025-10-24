@@ -50,7 +50,7 @@ export async function GET(req: Request) {
     }
   } else {
     contentType = mimeType;
-    const fileName = objectUrl.split("/").pop() as string;
+    const fileName = objectUrl.split("?")[0].split("/").pop() as string;
     const fileFullPath = path.join(cacheDir, hash, fileName);
     if (fs.existsSync(fileFullPath)) {
       buffer = await fs.promises.readFile(fileFullPath);

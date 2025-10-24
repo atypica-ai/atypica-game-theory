@@ -11,6 +11,7 @@ import type { Metadata, Viewport } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale } from "next-intl/server";
 import { Instrument_Serif } from "next/font/google";
+import { getObjectCdnOrigin } from "./(system)/cdn/lib";
 import "./globals.css";
 
 // 配置字体
@@ -76,7 +77,12 @@ export default async function RootLayout({
 }>) {
   const locale = await getLocale();
   return (
-    <html lang={locale} data-deploy-region={getDeployRegion()} suppressHydrationWarning>
+    <html
+      lang={locale}
+      data-deploy-region={getDeployRegion()}
+      data-object-cdn-origin={getObjectCdnOrigin()}
+      suppressHydrationWarning
+    >
       <body
         className={cn(
           "font-sans antialiased",

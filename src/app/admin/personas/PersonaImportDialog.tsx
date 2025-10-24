@@ -1,5 +1,6 @@
 import { AnalysisResult } from "@/app/(persona)/persona/import/[personaImportId]/AnalysisResult";
 import { PersonaImportAnalysis } from "@/app/(persona)/types";
+import { proxiedObjectCdnUrl } from "@/app/(system)/cdn/lib";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ChatMessageAttachment, PersonaImport, PersonaImportExtra } from "@/prisma/client";
@@ -53,14 +54,17 @@ export function PersonaImportDialog({
     }
   }, [open, personaImportId, loadData]);
 
-  const handleViewFile = (attachment: ChatMessageAttachment) => {
+  const handleViewFile = useCallback(async (attachment: ChatMessageAttachment) => {
     if (attachment?.objectUrl && attachment?.mimeType) {
-      const fileUrl = `/api/attachment?objectUrl=${encodeURIComponent(
-        attachment.objectUrl,
-      )}&mimeType=${encodeURIComponent(attachment.mimeType)}`;
-      window.open(fileUrl, "_blank");
+      window.open(
+        proxiedObjectCdnUrl({
+          objectUrl: attachment.objectUrl,
+          mimeType: attachment.mimeType,
+        }),
+        "_blank",
+      );
     }
-  };
+  }, []);
 
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return "0 Bytes";

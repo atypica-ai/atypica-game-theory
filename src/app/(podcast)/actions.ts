@@ -2,11 +2,13 @@
 
 import { StatReporter } from "@/ai/tools/types";
 import { rootLogger } from "@/lib/logging";
+import { getDeployRegion } from "@/lib/request/deployRegion";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { Analyst, AnalystPodcast, AnalystPodcastExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
+import { proxiedObjectCdnUrl } from "../(system)/cdn/lib";
 import { determineKindAndGeneratePodcast } from "./lib/evaluate";
 import { podcastObjectUrlToHttpUrl } from "./lib/utils";
 
@@ -128,9 +130,27 @@ export async function getPodcastAudioSignedUrl({
     };
   }
 
-  const signedUrl = await podcastObjectUrlToHttpUrl(podcast);
-  return {
-    success: true,
-    data: signedUrl,
-  };
+  const result = await podcastObjectUrlToHttpUrl(podcast);
+  if (!result) {
+    return {
+      success: true,
+      data: null,
+    };
+  }
+
+  const { signedObjectUrl, mimeType } = result;
+  if (getDeployRegion() === "mainland" && !/amazonaws\.com\.cn/.test(signedObjectUrl)) {
+    return {
+      success: true,
+      data: proxiedObjectCdnUrl({
+        objectUrl: signedObjectUrl,
+        mimeType,
+      }),
+    };
+  } else {
+    return {
+      success: true,
+      data: signedObjectUrl,
+    };
+  }
 }

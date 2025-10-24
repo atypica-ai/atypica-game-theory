@@ -154,6 +154,7 @@ declare module "@/prisma/client" {
       systemPrompt?: string; // 覆盖 systemPrompt
     };
 
+    mimeType: string; // 默认是 audio/mpeg，但是还是保存下来
     // S3 签名URL缓存（音频文件）
     s3SignedUrl: string;
     s3SignedUrlExpiresAt: number; // timestamp millis

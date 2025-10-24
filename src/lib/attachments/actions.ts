@@ -3,7 +3,7 @@ import { rootLogger } from "@/lib/logging";
 import { proxiedFetch } from "@/lib/proxy/fetch";
 import { getDeployRegion } from "@/lib/request/deployRegion";
 import { ServerActionResult } from "@/lib/serverAction";
-import { AttachmentFile, ChatMessageAttachment } from "@/prisma/client";
+import { AttachmentFile } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
@@ -191,22 +191,4 @@ export async function getSignedUrlForAttachment({
       };
     }
   });
-}
-
-/**
- * 这个暂时用不到了
- */
-export async function fileUrlToCdnUrl({
-  objectUrl,
-  mimeType,
-}: ChatMessageAttachment): Promise<{ url: string; contentType: string }> {
-  if (!process.env.ATTACHMENT_CDN) {
-    throw new Error("ATTACHMENT_CDN environment variable is not set");
-  }
-  const cdnUrl = `${process.env.ATTACHMENT_CDN}/api/attachment?objectUrl=${encodeURIComponent(objectUrl)}&mimeType=${mimeType}`;
-  return mimeType === "application/pdf"
-    ? { url: cdnUrl + "&parse=true", contentType: "xxx/txt" }
-    : mimeType === "text/plain"
-      ? { url: cdnUrl, contentType: "xxx/txt" }
-      : { url: cdnUrl, contentType: mimeType };
 }

@@ -1,6 +1,7 @@
 "use client";
 import { processPersonaImportAction } from "@/app/(persona)/actions";
 import { PersonaImportAnalysis } from "@/app/(persona)/types";
+import { proxiedObjectCdnUrl } from "@/app/(system)/cdn/lib";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -80,16 +81,19 @@ export function PersonaImportView({
     }
   }, [personaImport.id, t, router]);
 
-  const handleViewFile = () => {
+  const handleViewFile = useCallback(async () => {
     const attachment = attachments[0];
     if (attachment?.objectUrl && attachment?.mimeType) {
       // Use the existing attachment API endpoint
-      const fileUrl = `/api/attachment?objectUrl=${encodeURIComponent(
-        attachment.objectUrl,
-      )}&mimeType=${encodeURIComponent(attachment.mimeType)}`;
-      window.open(fileUrl, "_blank");
+      window.open(
+        proxiedObjectCdnUrl({
+          objectUrl: attachment.objectUrl,
+          mimeType: attachment.mimeType,
+        }),
+        "_blank",
+      );
     }
-  };
+  }, [attachments]);
 
   // Show error state
   if (hasError) {
