@@ -100,7 +100,7 @@ export function StudyNextSteps({
   // Handle generate podcast button click
   const handleGeneratePodcast = useCallback(async () => {
     // Check if podcasts already exist
-    if (artifacts.podcastCount > 0) {
+    if (artifacts.podcastCount && artifacts.podcastCount > 0) {
       // Show confirmation dialog
       setShowRegenerateDialog(true);
     } else {

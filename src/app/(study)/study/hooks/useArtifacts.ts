@@ -13,8 +13,8 @@ export type ArtifactsState = {
   podcasts: ExtractServerActionData<typeof fetchAnalystPodcastsOfStudyUserChat>;
   isLoadingReports: boolean;
   isLoadingPodcasts: boolean;
-  reportCount: number;
-  podcastCount: number;
+  reportCount: number | null;
+  podcastCount: number | null;
   isLoadingCounts: boolean;
   refresh: () => Promise<void>;
   refreshCount: () => Promise<void>;
@@ -26,8 +26,8 @@ export function useArtifacts(studyUserChatToken: string): ArtifactsState {
     podcasts: [] as ExtractServerActionData<typeof fetchAnalystPodcastsOfStudyUserChat>,
     isLoadingReports: false,
     isLoadingPodcasts: false,
-    reportCount: 0,
-    podcastCount: 0,
+    reportCount: null as number | null,
+    podcastCount: null as number | null,
     isLoadingCounts: false,
   });
 

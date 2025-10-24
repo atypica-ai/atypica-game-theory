@@ -35,7 +35,7 @@ function ArtifactsCountBadge() {
     }
   }, [refreshArtifactsCount, lastToolInvocation]);
 
-  const totalCount = reportCount + podcastCount;
+  const totalCount = (reportCount ?? 0) + (podcastCount ?? 0);
   if (totalCount === 0) return null;
 
   return (
@@ -91,7 +91,7 @@ export default function StudyArtifactsListPanel({
     const prevCount = prevPodcastCountRef.current;
     const currentCount = podcastCount;
     // Check if podcast count increased (new podcast added)
-    if (prevCount !== null && currentCount > prevCount) {
+    if (prevCount !== null && currentCount !== null && currentCount > prevCount) {
       setIsOpen(true);
       setActiveTab("podcasts");
     }
