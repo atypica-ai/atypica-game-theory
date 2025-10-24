@@ -105,12 +105,15 @@
       "highPrecisionPersonaCountPlural": "含 {count} 个 AI 人设 (深度访谈)"
     },
     "ReportsListPanel": {
-      "title": "本次研究的报告",
+      "title": "报告",
       "noReportsYet": "暂无报告"
     },
     "PodcastsListPanel": {
-      "title": "本次研究的播客",
+      "title": "播客",
       "noPodcastsYet": "暂无播客"
+    },
+    "ArtifactsListPanel": {
+      "title": "研究产出"
     },
     "NextSteps": {
       "title": "您可能还想了解",

@@ -105,12 +105,15 @@
       "highPrecisionPersonaCountPlural": "including {count} AI Personas (Deep Interview)"
     },
     "ReportsListPanel": {
-      "title": "Reports for this study",
+      "title": "Reports",
       "noReportsYet": "No reports yet"
     },
     "PodcastsListPanel": {
-      "title": "Podcasts for this study",
+      "title": "Podcasts",
       "noPodcastsYet": "No podcasts yet"
+    },
+    "ArtifactsListPanel": {
+      "title": "Study Artifacts"
     },
     "NextSteps": {
       "title": "You might also want to explore",

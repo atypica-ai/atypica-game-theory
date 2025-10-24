@@ -14,8 +14,8 @@ import { useTranslations } from "next-intl";
 import { ChatBox } from "./ChatBox";
 import { ChatReplay } from "./ChatReplay";
 import { NerdStats } from "./components/NerdStats";
-import ReportsListPanel from "./components/ReportsListPanel";
 import { ShareReplayButton } from "./components/ShareReplayButton";
+import StudyArtifactsListPanel from "./components/StudyArtifactsListPanel";
 import { StudyProvider, useStudyContext } from "./hooks/StudyContext";
 import { ToolConsole } from "./ToolConsole";
 
@@ -98,7 +98,7 @@ const Agent = () => {
       <GlobalHeader className="h-12 border-border/50">
         <div className="flex items-center gap-2 sm:gap-4">
           <NerdStats />
-          <ReportsListPanel studyUserChatToken={studyUserChat.token} download={!replay} />
+          <StudyArtifactsListPanel studyUserChatToken={studyUserChat.token} download={!replay} />
           {!replay && <ShareReplayButton studyUserChat={studyUserChat} />}
           <UserTokensBalance />
           <UserMenu />
