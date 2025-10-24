@@ -3,6 +3,7 @@ import { NewStudyButton } from "@/app/(newStudy)/components/NewStudyInputBox";
 import { determineKindAndGeneratePodcastAction } from "@/app/(podcast)/actions";
 import { fetchAnalystByStudyUserChatToken } from "@/app/(study)/study/actions";
 import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { LightbulbIcon, Loader2Icon, MicIcon, RefreshCwIcon } from "lucide-react";
@@ -156,6 +157,12 @@ export function StudyNextSteps({
                 className="justify-start gap-2 h-9 px-3 border border-border/50 hover:border-border hover:bg-accent/50 max-w-sm overflow-hidden"
               >
                 <LightbulbIcon className="size-3.5 flex-shrink-0" />
+                <Badge
+                  variant="secondary"
+                  className="h-4 px-1.5 text-[10px] font-normal flex-shrink-0"
+                >
+                  {t("newStudyBadge")}
+                </Badge>
                 <span className="text-sm truncate">{question}</span>
               </Button>
             </NewStudyButton>

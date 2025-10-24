@@ -118,7 +118,8 @@
       "title": "Study Artifacts"
     },
     "NextSteps": {
-      "title": "You might also want to explore",
+      "title": "You might be interested",
+      "newStudyBadge": "New Study",
       "generatePodcast": "Generate Podcast",
       "generating": "Generating...",
       "podcastGenerationStarted": "Podcast generation started, please check back later"

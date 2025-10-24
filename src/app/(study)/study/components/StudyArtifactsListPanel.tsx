@@ -91,7 +91,7 @@ export default function StudyArtifactsListPanel({
     const prevCount = prevPodcastCountRef.current;
     const currentCount = podcastCount;
     // Check if podcast count increased (new podcast added)
-    if (prevCount > 0 && currentCount > prevCount) {
+    if (currentCount > prevCount) {
       setIsOpen(true);
       setActiveTab("podcasts");
     }

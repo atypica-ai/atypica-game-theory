@@ -118,7 +118,8 @@
       "title": "研究产出"
     },
     "NextSteps": {
-      "title": "您可能还想了解",
+      "title": "您可能感兴趣",
+      "newStudyBadge": "新研究",
       "generatePodcast": "生成播客解读",
       "generating": "生成中...",
       "podcastGenerationStarted": "播客生成已开始，请稍后查看"
