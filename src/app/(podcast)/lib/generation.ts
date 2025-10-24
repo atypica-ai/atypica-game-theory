@@ -1,6 +1,6 @@
 import "server-only";
 
-import { defaultProviderOptions, llm, LLMModelName } from "@/ai/provider";
+import { defaultProviderOptions, llm } from "@/ai/provider";
 import { StatReporter } from "@/ai/tools/types";
 import { podcastScriptPrologue, podcastScriptSystem } from "@/app/(podcast)/prompt";
 import { VALID_LOCALES } from "@/i18n/routing";
@@ -107,12 +107,15 @@ export async function generatePodcast({
 
     // Step 3: Generate audio
     logger.info("Starting audio generation");
-    const { objectUrl, mimeType } = await generatePodcastAudio(
-      podcast.id,
-      podcast.token,
-      script,
-      locale,
-    );
+    const { objectUrl, mimeType } = await generatePodcastAudio({
+      podcastId: podcast.id,
+      podcastToken: podcast.token,
+      script: script,
+      locale: locale,
+      abortSignal: abortSignal,
+      statReport: statReport,
+      logger: logger,
+    });
 
     // Step 4: Mark as completely finished with generatedAt
     await prisma.analystPodcast.update({
@@ -171,11 +174,7 @@ async function generatePodcastScript({
   logger: Logger;
 }): Promise<string> {
   // Core script generation logic
-  logger.info({
-    msg: "Starting podcast script generation",
-    analystId: analyst.id,
-    podcastId: podcast.id,
-  });
+  logger.info({ msg: "Starting podcast script generation" });
 
   const podcastKind = podcast.extra.kindDetermination?.kind;
   const systemPrompt = podcast.extra.kindDetermination?.systemPrompt;
@@ -223,8 +222,6 @@ async function generatePodcastScript({
     };
   })();
 
-  const modelName: LLMModelName = "claude-sonnet-4";
-
   const streamTextPromise = new Promise<{
     finishReason: FinishReason;
     content: string;
@@ -270,7 +267,7 @@ async function generatePodcastScript({
     }
 
     const response = streamText({
-      model: llm(modelName),
+      model: llm("claude-sonnet-4"),
       providerOptions: defaultProviderOptions,
 
       system: systemPrompt
@@ -339,21 +336,26 @@ async function generatePodcastScript({
 }
 
 // Pure podcast audio generation function (no auth, renamed from backgroundGeneratePodcastAudioImpl)
-export async function generatePodcastAudio(
-  podcastId: number,
-  podcastToken: string,
-  script: string,
-  locale: string,
-): Promise<{
+export async function generatePodcastAudio({
+  // podcastId,
+  podcastToken,
+  script,
+  locale,
+  // abortSignal,
+  // statReport,  // TODO 目前暂时免费，不消耗 token
+  logger,
+}: {
+  podcastId: number;
+  podcastToken: string;
+  script: string;
+  locale: string;
+  abortSignal: AbortSignal;
+  statReport: StatReporter;
+  logger: Logger;
+}): Promise<{
   objectUrl: string;
   mimeType: string;
 }> {
-  const logger = rootLogger.child({
-    podcastId,
-    podcastToken,
-    method: "generatePodcastAudio",
-  });
-
   try {
     logger.info("Starting podcast audio generation");
 

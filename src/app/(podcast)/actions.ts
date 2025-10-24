@@ -1,6 +1,6 @@
 "use server";
 
-import { StatReporter } from "@/ai/tools/types";
+import { initStudyStatReporter } from "@/ai/tools/stats";
 import { rootLogger } from "@/lib/logging";
 import { getDeployRegion } from "@/lib/request/deployRegion";
 import { withAuth } from "@/lib/request/withAuth";
@@ -81,15 +81,24 @@ export async function determineKindAndGeneratePodcastAction({
       throw new Error("Analyst not found or unauthorized");
     }
 
+    if (!analyst.studyUserChatId) {
+      throw new Error("Analyst not associated with a study user chat");
+    }
+
     // Mock stat reporter for limited free podcast generation
-    const statReport: StatReporter = async (dimension, value, extra) => {
-      rootLogger.info({
-        msg: `[LIMITED FREE] statReport: ${dimension}=${value}`,
-        extra,
-        analystId: analystId,
-        note: "Podcast generation is currently free - tokens not deducted",
-      });
-    };
+    // const statReport: StatReporter = async (dimension, value, extra) => {
+    //   rootLogger.info({
+    //     msg: `[LIMITED FREE] statReport: ${dimension}=${value}`,
+    //     extra,
+    //     analystId: analystId,
+    //     note: "Podcast generation is currently free - tokens not deducted",
+    //   });
+    // };
+    const { statReport } = initStudyStatReporter({
+      userId: user.id,
+      studyUserChatId: analyst.studyUserChatId,
+      logger: rootLogger.child({ analystId, studyUserChatId: analyst.studyUserChatId }),
+    });
 
     // Handle background processing at the server action level
     const abortController = new AbortController();
