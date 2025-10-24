@@ -139,7 +139,11 @@ export async function getPodcastAudioSignedUrl({
   }
 
   const { signedObjectUrl, mimeType } = result;
-  if (getDeployRegion() === "mainland" && !/amazonaws\.com\.cn/.test(signedObjectUrl)) {
+
+  if (
+    true || // 国内和海外都用 CDN
+    (getDeployRegion() === "mainland" && !/amazonaws\.com\.cn/.test(signedObjectUrl))
+  ) {
     return {
       success: true,
       data: proxiedObjectCdnUrl({

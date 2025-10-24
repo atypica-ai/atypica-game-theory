@@ -1,12 +1,11 @@
 import { s3SignedUrl } from "@/lib/attachments/s3";
+import { proxiedFetch } from "@/lib/proxy/fetch";
 import { NextResponse } from "next/server";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 
 /**
- * 这个功能其实挺好的，现在就暂时是 persona import 里查看文件用
- *
  * @todo 现在有了一个 AttachmentFile 表，所以可以把签名缓存在那里
  * @todo 不一定要服务端下载内容，可以支持加一个参数是否能 redirect，如果是，直接 302 到签名后的 url
  */
@@ -33,7 +32,7 @@ export async function GET(req: Request) {
     if (fs.existsSync(fileFullPath)) {
       buffer = await fs.promises.readFile(fileFullPath);
     } else {
-      const response = await fetch("https://r.jina.ai/", {
+      const response = await proxiedFetch("https://r.jina.ai/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -55,7 +54,7 @@ export async function GET(req: Request) {
     if (fs.existsSync(fileFullPath)) {
       buffer = await fs.promises.readFile(fileFullPath);
     } else {
-      const response = await fetch(url);
+      const response = await proxiedFetch(url);
       if (!response.ok) {
         return NextResponse.json({ error: "Failed to fetch file" }, { status: 500 });
       }
