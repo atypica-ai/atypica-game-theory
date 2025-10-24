@@ -7,9 +7,10 @@
 
 export function getObjectCdnOrigin(): string {
   if (typeof window !== "undefined") {
-    return window.document.documentElement.getAttribute("data-object-cdn-origin") as string;
+    return (window.document.documentElement.getAttribute("data-object-cdn-origin") ?? "") as string;
   } else {
-    return process.env.OBJECT_CDN_ORIGIN as string;
+    // 可以为空字符串的，这样就是用源站域名
+    return (process.env.OBJECT_CDN_ORIGIN ?? "") as string;
   }
 }
 
@@ -21,9 +22,10 @@ export function proxiedObjectCdnUrl({
   mimeType: string;
 }) {
   const objectCdnOrigin = getObjectCdnOrigin();
-  if (!objectCdnOrigin) {
-    throw new Error("OBJECT_CDN_ORIGIN environment variable is not set");
-  }
+  // 可以为空字符串的，这样就是用源站域名
+  // if (!objectCdnOrigin) {
+  //   throw new Error("OBJECT_CDN_ORIGIN environment variable is not set");
+  // }
   const cdnUrl = `${objectCdnOrigin}/cdn/proxy-object?objectUrl=${encodeURIComponent(objectUrl)}&mimeType=${mimeType}`;
   // if (mimeType === "application/pdf") {
   //   cdnUrl += +"&parse=true";
@@ -41,9 +43,10 @@ export function proxiedImageCdnUrl({
   quality?: number;
 }) {
   const objectCdnOrigin = getObjectCdnOrigin();
-  if (!objectCdnOrigin) {
-    throw new Error("OBJECT_CDN_ORIGIN environment variable is not set");
-  }
+  // 可以为空字符串的，这样就是用源站域名
+  // if (!objectCdnOrigin) {
+  //   throw new Error("OBJECT_CDN_ORIGIN environment variable is not set");
+  // }
   const proxiedUrl = `/cdn/proxy-image?url=${encodeURIComponent(src)}`;
   // 这样可以使用 nextjs 的图像优化方法以及缓存 .next/cache/images
   return `${objectCdnOrigin}/_next/image?url=${encodeURIComponent(proxiedUrl)}&w=${width}&q=${quality}`;
@@ -61,8 +64,9 @@ export function noProxiedImageCdnUrl({
   origin?: string;
 }) {
   const objectCdnOrigin = getObjectCdnOrigin();
-  if (!objectCdnOrigin) {
-    throw new Error("OBJECT_CDN_ORIGIN environment variable is not set");
-  }
+  // 可以为空字符串的，这样就是用源站域名
+  // if (!objectCdnOrigin) {
+  //   throw new Error("OBJECT_CDN_ORIGIN environment variable is not set");
+  // }
   return `${origin ? origin : objectCdnOrigin}/_next/image?url=${encodeURIComponent(src)}&w=${width}&q=${quality}`;
 }
