@@ -1,5 +1,5 @@
-import { getTranslations } from "next-intl/server";
 import { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import MyPodcastsClient from "./MyPodcastsClient";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -12,4 +12,3 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function MyPodcastsPage() {
   return <MyPodcastsClient />;
 }
-

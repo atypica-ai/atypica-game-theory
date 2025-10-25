@@ -20,100 +20,6 @@ import { fetchMyPodcasts, getMyPodcastPlaybackUrl } from "./actions";
 
 type PodcastItem = ExtractServerActionData<typeof fetchMyPodcasts>[number];
 
-// Placeholder podcasts for demo
-const placeholderPodcasts = [
-  {
-    id: 1,
-    token: "demo-1",
-    analystId: 1,
-    script: "Sample podcast script",
-    objectUrl: null,
-    generatedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-    updatedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-    extra: {},
-    analyst: {
-      id: 1,
-      topic: "Understanding Gen Z Consumer Preferences",
-      studyUserChat: {
-        title: "Market Research: Next Generation Consumers",
-      },
-    },
-  },
-  {
-    id: 2,
-    token: "demo-2",
-    analystId: 2,
-    script: "Sample podcast script",
-    objectUrl: null,
-    generatedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-    createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-    updatedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-    extra: {},
-    analyst: {
-      id: 2,
-      topic: "The Future of Remote Work Culture",
-      studyUserChat: {
-        title: "Workplace Trends Analysis 2024",
-      },
-    },
-  },
-  {
-    id: 3,
-    token: "demo-3",
-    analystId: 3,
-    script: "Sample podcast script",
-    objectUrl: null,
-    generatedAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000),
-    createdAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000),
-    updatedAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000),
-    extra: {},
-    analyst: {
-      id: 3,
-      topic: "Sustainable Business Practices Impact",
-      studyUserChat: {
-        title: "Corporate Sustainability Research",
-      },
-    },
-  },
-  {
-    id: 4,
-    token: "demo-4",
-    analystId: 4,
-    script: "Sample podcast script",
-    objectUrl: null,
-    generatedAt: null,
-    createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
-    updatedAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
-    extra: {},
-    analyst: {
-      id: 4,
-      topic: "Social Media Influence on Purchasing Decisions",
-      studyUserChat: {
-        title: "Digital Marketing Effectiveness Study",
-      },
-    },
-  },
-  {
-    id: 5,
-    token: "demo-5",
-    analystId: 5,
-    script: "Sample podcast script",
-    objectUrl: null,
-    generatedAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000),
-    createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000),
-    updatedAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000),
-    extra: {},
-    analyst: {
-      id: 5,
-      topic: "AI-Powered Customer Service Experience",
-      studyUserChat: {
-        title: "Technology Adoption in Service Industry",
-      },
-    },
-  },
-];
-
 export default function MyPodcastsClient() {
   const t = useTranslations("MyPodcastsPage");
   const locale = useLocale();
@@ -127,10 +33,10 @@ export default function MyPodcastsClient() {
       const result = await fetchMyPodcasts();
       if (!result.success) throw result;
       // Use real data if available, otherwise use placeholder data
-      setPodcasts(result.data.length > 0 ? result.data : (placeholderPodcasts as PodcastItem[]));
+      setPodcasts(result.data);
     } catch (error) {
       // On error, show placeholder data for demo
-      setPodcasts(placeholderPodcasts as PodcastItem[]);
+      setPodcasts([]);
       console.error("Load podcasts error:", error);
     } finally {
       setLoading(false);

@@ -8,4 +8,3 @@ export default async function MyPodcastsPageLayout({ children }: { children: Rea
     </DefaultLayout>
   );
 }
-
