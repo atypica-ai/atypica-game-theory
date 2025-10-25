@@ -74,22 +74,20 @@ export const SearchParamsConfig = {
   featured: createParamConfig.boolean(false),
 } as const;
 
-export type FeaturedStudiesSearchParams = {
+export type AdminStudiesSearchParams = {
   page: number;
   search: string;
   kind: AnalystKind | "all";
   featured: boolean;
 };
 
-interface FeaturedStudiesPageClientProps {
-  initialSearchParams: Record<string, string | number>;
-  defaultPodcastPrompt: string;
-}
-
-export function FeaturedStudiesPageClient({
+export function AdminStudiesPageClient({
   initialSearchParams,
   defaultPodcastPrompt,
-}: FeaturedStudiesPageClientProps) {
+}: {
+  initialSearchParams: Record<string, string | number>;
+  defaultPodcastPrompt: string;
+}) {
   const { status } = useSession();
   const locale = useLocale();
   const router = useRouter();
@@ -112,7 +110,7 @@ export function FeaturedStudiesPageClient({
     values: { page: currentPage, search: searchQuery, kind: selectedKind, featured: featuredOnly },
     setParam,
     setParams,
-  } = useListQueryParams<FeaturedStudiesSearchParams>({
+  } = useListQueryParams<AdminStudiesSearchParams>({
     params: SearchParamsConfig,
     initialValues: initialSearchParams,
   });
@@ -154,7 +152,7 @@ export function FeaturedStudiesPageClient({
 
   useEffect(() => {
     if (status === "unauthenticated") {
-      router.push("/auth/signin?callbackUrl=/admin/featured-studies");
+      router.push("/auth/signin?callbackUrl=/admin/studies");
     } else if (status === "authenticated") {
       fetchData();
     }

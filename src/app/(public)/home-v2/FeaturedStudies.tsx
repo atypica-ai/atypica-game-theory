@@ -1,5 +1,5 @@
 "use client";
-import { fetchPublicFeaturedStudies } from "@/app/admin/featured-studies/actions";
+import { fetchPublicFeaturedStudies } from "@/app/admin/studies/actions";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";

@@ -82,14 +82,14 @@ export default function AdminSidebar({ adminRole, permissions = [] }: AdminSideb
         label: "Content",
         items: [
           {
-            label: "Analyst Reports",
+            label: "Reports",
             href: "/admin/analyst-reports",
             icon: <FileTextIcon className="mr-2 h-4 w-4" />,
             permission: AdminPermission.MANAGE_STUDIES,
           },
           {
-            label: "Featured Studies",
-            href: "/admin/featured-studies",
+            label: "Studies",
+            href: "/admin/studies",
             icon: <StarIcon className="mr-2 h-4 w-4" />,
             permission: AdminPermission.MANAGE_STUDIES,
           },

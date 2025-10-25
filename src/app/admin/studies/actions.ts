@@ -386,7 +386,7 @@ export async function toggleFeaturedStatus(analyst: Analyst): Promise<ServerActi
     };
   }
 
-  revalidatePath("/admin/featured-studies");
+  revalidatePath("/admin/studies");
   return {
     success: true,
     data: undefined,
@@ -412,7 +412,7 @@ export async function removeFeaturedStudy(id: number): Promise<ServerActionResul
   await prisma.featuredStudy.delete({
     where: { id },
   });
-  revalidatePath("/admin/featured-studies");
+  revalidatePath("/admin/studies");
   return {
     success: true,
     data: undefined,
@@ -465,7 +465,7 @@ export async function updateDisplayOrder(
     });
   });
 
-  revalidatePath("/admin/featured-studies");
+  revalidatePath("/admin/studies");
   return {
     success: true,
     data: undefined,
@@ -552,7 +552,7 @@ export async function updatePositionDirect(
     });
   }
 
-  revalidatePath("/admin/featured-studies");
+  revalidatePath("/admin/studies");
   return {
     success: true,
     data: undefined,
@@ -661,5 +661,5 @@ export async function determineKindAndGeneratePodcastAdminAction({
     );
   }
 
-  revalidatePath("/admin/featured-studies");
+  revalidatePath("/admin/studies");
 }

@@ -41,21 +41,21 @@ export default function AdminDashboard() {
         >
           <div className="flex items-center mb-2">
             <FileTextIcon className="h-5 w-5 mr-2" />
-            <h2 className="text-xl font-semibold">Analyst Reports</h2>
+            <h2 className="text-xl font-semibold">Reports</h2>
           </div>
-          <p className="text-sm text-muted-foreground">Manage generated analyst reports</p>
+          <p className="text-sm text-muted-foreground">Manage generated study reports</p>
         </Link>
 
         <Link
-          href="/admin/featured-studies"
+          href="/admin/studies"
           className="rounded-lg border bg-card p-4 shadow-sm hover:shadow-md transition-shadow"
         >
           <div className="flex items-center mb-2">
             <StarIcon className="h-5 w-5 mr-2" />
-            <h2 className="text-xl font-semibold">Featured Studies</h2>
+            <h2 className="text-xl font-semibold">Studies</h2>
           </div>
           <p className="text-sm text-muted-foreground">
-            Manage featured studies that appear on the homepage
+            View studies and manage featured studies that appear on the homepage
           </p>
         </Link>
 

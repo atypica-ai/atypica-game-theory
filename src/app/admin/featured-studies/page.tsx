@@ -1,26 +1,5 @@
-import { podcastScriptSystem } from "@/app/(podcast)/prompt/system";
-import { parseServerSearchParams } from "@/hooks/use-list-query-params.server";
-import { Locale } from "next-intl";
-import { getLocale } from "next-intl/server";
-import { FeaturedStudiesPageClient } from "./FeaturedStudiesPageClient";
+import { redirect } from "next/navigation";
 
-interface FeaturedStudiesPageProps {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-}
-
-export default async function FeaturedStudiesPage({ searchParams }: FeaturedStudiesPageProps) {
-  const params = await searchParams;
-  const initialSearchParams = parseServerSearchParams(params);
-  const locale = await getLocale();
-  const defaultPodcastPrompt = podcastScriptSystem({
-    locale: locale as Locale,
-    podcastKind: "deepDive",
-  });
-
-  return (
-    <FeaturedStudiesPageClient
-      initialSearchParams={initialSearchParams}
-      defaultPodcastPrompt={defaultPodcastPrompt}
-    />
-  );
+export default function AdminFeaturedStudiesPage() {
+  redirect("/admin/studies");
 }
