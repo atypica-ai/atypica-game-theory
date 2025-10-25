@@ -372,5 +372,28 @@
         }
       }
     }
+  },
+  "FeaturedPodcastsPage": {
+    "title": "AI Podcasts",
+    "loading": "Loading podcasts...",
+    "allPodcasts": "All Podcasts",
+    "allPodcastsDescription": "Browse and search through all your research podcasts",
+    "topPodcasts": "Top Podcasts",
+    "viewStudyProcess": "View Study Process",
+    "playPodcast": "Play Podcast",
+    "noPodcastsYet": "No Podcasts Yet",
+    "noPodcastsYetDescription": "Start a new study and generate your first podcast!",
+    "startNewStudy": "Start New Study",
+    "moreToDiscover": "More to Discover",
+    "moreToDiscoverDescription": "Explore different categories of research podcasts",
+    "business": "Business",
+    "businessDescription": "Market insights, strategy, and industry analysis",
+    "societyCulture": "Society & Culture",
+    "societyCultureDescription": "Social trends, cultural shifts, and human behavior",
+    "noBusinessPodcasts": "No business podcasts available yet.",
+    "noSocietyCulturePodcasts": "No society & culture podcasts available yet.",
+    "ctaTitle": "Ready to create your own podcast?",
+    "ctaDescription": "Start a new research and generate your first AI podcast in minutes.",
+    "createMyPodcast": "Create My Podcast"
   }
 }

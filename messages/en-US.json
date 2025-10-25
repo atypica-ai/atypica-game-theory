@@ -393,19 +393,6 @@
     "description": "Sorry, you do not have permission to access this page. Please confirm your access rights or contact the administrator.",
     "returnHome": "Return Home"
   },
-  "FeaturedPodcastsPage": {
-    "title": "AI Podcasts",
-    "description": "Browse your featured research podcasts",
-    "noPodcasts": "No Podcasts",
-    "noPodcastsDescription": "You haven't generated any podcasts yet. Start a new study and generate a podcast!",
-    "startNewStudy": "Start New Study",
-    "loadFailed": "Failed to load podcasts",
-    "playFailed": "Failed to play",
-    "untitledStudy": "Untitled Study",
-    "play": "Play",
-    "pause": "Pause",
-    "viewDetails": "View Details"
-  },
   "MyPodcastsPage": {
     "title": "My Podcasts",
     "subtitle": "Browse and listen to all your research podcasts",

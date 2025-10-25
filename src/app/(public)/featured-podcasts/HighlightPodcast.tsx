@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn } from "@/lib/utils";
 import { PlayIcon, SquareArrowOutUpLeftIcon } from "lucide-react";
-import { Locale } from "next-intl";
+import { Locale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { fetchFeaturedPodcasts } from "./actions";
 
@@ -19,6 +19,7 @@ export function HighlightPodcast({
   studyUserChat: FeaturedPodcastItem["studyUserChat"];
   locale: Locale;
 }) {
+  const t = useTranslations("FeaturedPodcastsPage");
   return (
     <section className="container mx-auto px-4 py-10 md:py-28">
       <div className="max-w-6xl mx-auto bg-card border border-border rounded-2xl p-6 sm:p-8 md:p-12 relative overflow-hidden shadow-lg">
@@ -51,7 +52,7 @@ export function HighlightPodcast({
               >
                 <Link href={`/study/${studyUserChat.token}/share`} target="_blank">
                   <SquareArrowOutUpLeftIcon className="size-3" />
-                  View Study Process
+                  {t("viewStudyProcess")}
                 </Link>
               </Button>
               {/*<CalendarDaysIcon className="w-4 h-4" />
@@ -73,7 +74,7 @@ export function HighlightPodcast({
           >
             <Link href={`/artifacts/podcast/${podcast.token}/share`} target="_blank">
               <PlayIcon className="size-4 sm:size-8 md:size-10" />
-              <span className="sm:hidden">Play Podcast</span>
+              <span className="sm:hidden">{t("playPodcast")}</span>
             </Link>
           </Button>
         </div>

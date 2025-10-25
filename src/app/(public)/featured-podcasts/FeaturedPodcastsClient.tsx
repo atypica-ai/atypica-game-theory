@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn } from "@/lib/utils";
 import { PlayIcon, SquareArrowOutUpLeftIcon, Volume2Icon } from "lucide-react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { fetchFeaturedPodcasts } from "./actions";
@@ -13,6 +13,7 @@ type FeaturedPodcastItem = ExtractServerActionData<typeof fetchFeaturedPodcasts>
 
 export function FeaturedPodcastsClient() {
   const locale = useLocale();
+  const t = useTranslations("FeaturedPodcastsPage");
   const [featuredPodcasts, setFeaturedPodcasts] = useState<FeaturedPodcastItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -69,7 +70,7 @@ export function FeaturedPodcastsClient() {
       <div className="min-h-[50dvh] bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading podcasts...</p>
+          <p className="text-muted-foreground">{t("loading")}</p>
         </div>
       </div>
     );
@@ -91,10 +92,10 @@ export function FeaturedPodcastsClient() {
       <section className="bg-zinc-50 dark:bg-zinc-800 px-4 py-20 md:py-28">
         <div className="text-center mb-12 md:mb-16">
           <h2 className="font-EuclidCircularA font-medium text-4xl md:text-5xl tracking-tight text-foreground mb-4">
-            All Podcasts
+            {t("allPodcasts")}
           </h2>
           <p className="max-w-3xl mx-auto text-lg text-zinc-600 dark:text-zinc-400">
-            Browse and search through all your research podcasts
+            {t("allPodcastsDescription")}
           </p>
         </div>
 
@@ -110,7 +111,7 @@ export function FeaturedPodcastsClient() {
                   : "text-muted-foreground hover:text-foreground",
               )}
             >
-              Top Podcasts
+              {t("topPodcasts")}
             </button>
             <button
               onClick={() => setPodcastFilter("all")}
@@ -121,7 +122,7 @@ export function FeaturedPodcastsClient() {
                   : "text-muted-foreground hover:text-foreground",
               )}
             >
-              All Podcasts
+              {t("allPodcasts")}
             </button>
           </div>
 
@@ -176,7 +177,7 @@ export function FeaturedPodcastsClient() {
                             target="_blank"
                           >
                             <SquareArrowOutUpLeftIcon className="size-3" />
-                            View Study Process
+                            {t("viewStudyProcess")}
                           </Link>
                         </Button>
 
@@ -186,7 +187,7 @@ export function FeaturedPodcastsClient() {
                             target="_blank"
                           >
                             <PlayIcon className="size-4" />
-                            Play Podcast
+                            {t("playPodcast")}
                           </Link>
                         </Button>
 
@@ -204,12 +205,12 @@ export function FeaturedPodcastsClient() {
           ) : (
             <div className="text-center py-12">
               <Volume2Icon className="w-16 h-16 text-muted-foreground bg-muted rounded-full p-4 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-foreground mb-2">No Podcasts Yet</h3>
+              <h3 className="text-lg font-semibold text-foreground mb-2">{t("noPodcastsYet")}</h3>
               <p className="text-muted-foreground mb-6">
-                Start a new study and generate your first podcast!
+                {t("noPodcastsYetDescription")}
               </p>
               <Button asChild>
-                <Link href="/newstudy">Start New Study</Link>
+                <Link href="/newstudy">{t("startNewStudy")}</Link>
               </Button>
             </div>
           )}
@@ -220,10 +221,10 @@ export function FeaturedPodcastsClient() {
       <section className="container mx-auto px-4 py-20 md:py-28">
         <div className="text-center mb-12 md:mb-16">
           <h2 className="font-EuclidCircularA font-medium text-4xl md:text-5xl tracking-tight text-foreground mb-4">
-            More to Discover
+            {t("moreToDiscover")}
           </h2>
           <p className="max-w-3xl mx-auto text-lg text-zinc-600 dark:text-zinc-400">
-            Explore different categories of research podcasts
+            {t("moreToDiscoverDescription")}
           </p>
         </div>
 
@@ -242,9 +243,9 @@ export function FeaturedPodcastsClient() {
                     <Volume2Icon className="w-8 h-8 text-primary" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-xl font-semibold text-foreground mb-2">Business</h3>
+                    <h3 className="text-xl font-semibold text-foreground mb-2">{t("business")}</h3>
                     <p className="text-muted-foreground">
-                      Market insights, strategy, and industry analysis
+                      {t("businessDescription")}
                     </p>
                   </div>
                 </div>
@@ -285,7 +286,7 @@ export function FeaturedPodcastsClient() {
                   </div>
                 ) : (
                   <p className="text-center text-sm text-muted-foreground py-4">
-                    No business podcasts available yet.
+                    {t("noBusinessPodcasts")}
                   </p>
                 )}
               </div>
@@ -305,10 +306,10 @@ export function FeaturedPodcastsClient() {
                   </div>
                   <div className="flex-1">
                     <h3 className="text-xl font-semibold text-foreground mb-2">
-                      Society & Culture
+                      {t("societyCulture")}
                     </h3>
                     <p className="text-muted-foreground">
-                      Social trends, cultural shifts, and human behavior
+                      {t("societyCultureDescription")}
                     </p>
                   </div>
                 </div>
@@ -349,7 +350,7 @@ export function FeaturedPodcastsClient() {
                   </div>
                 ) : (
                   <p className="text-center text-sm text-muted-foreground py-4">
-                    No society & culture podcasts available yet.
+                    {t("noSocietyCulturePodcasts")}
                   </p>
                 )}
               </div>
@@ -361,12 +362,12 @@ export function FeaturedPodcastsClient() {
       {/* CTA Section */}
       <section className="container mx-auto px-4 py-16 border-t border-border">
         <div className="max-w-3xl mx-auto text-center">
-          <h3 className="text-2xl md:text-3xl font-bold mb-4">Ready to create your own podcast?</h3>
+          <h3 className="text-2xl md:text-3xl font-bold mb-4">{t("ctaTitle")}</h3>
           <p className="text-muted-foreground mb-8">
-            Start a new research and generate your first AI podcast in minutes.
+            {t("ctaDescription")}
           </p>
           <Button asChild size="lg">
-            <Link href="/newstudy">Create My Podcast</Link>
+            <Link href="/newstudy">{t("createMyPodcast")}</Link>
           </Button>
         </div>
       </section>

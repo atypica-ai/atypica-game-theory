@@ -372,5 +372,28 @@
         }
       }
     }
+  },
+  "FeaturedPodcastsPage": {
+    "title": "AI 播客",
+    "loading": "正在加载播客...",
+    "allPodcasts": "全部播客",
+    "allPodcastsDescription": "浏览和搜索您所有的研究播客",
+    "topPodcasts": "热门播客",
+    "viewStudyProcess": "查看研究过程",
+    "playPodcast": "播放播客",
+    "noPodcastsYet": "暂无播客",
+    "noPodcastsYetDescription": "开始新的研究并生成您的第一个播客吧！",
+    "startNewStudy": "开始新研究",
+    "moreToDiscover": "更多精彩内容",
+    "moreToDiscoverDescription": "探索不同类别的研究播客",
+    "business": "商业",
+    "businessDescription": "市场洞察、战略和行业分析",
+    "societyCulture": "社会与文化",
+    "societyCultureDescription": "社会趋势、文化变迁和人类行为",
+    "noBusinessPodcasts": "暂无商业类播客。",
+    "noSocietyCulturePodcasts": "暂无社会与文化类播客。",
+    "ctaTitle": "准备好创建自己的播客了吗？",
+    "ctaDescription": "开始新的研究，几分钟内生成您的第一个 AI 播客。",
+    "createMyPodcast": "创建我的播客"
   }
 }
