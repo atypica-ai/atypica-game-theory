@@ -192,7 +192,7 @@ export function StudyNextSteps({
                 size="sm"
                 className={cn(
                   "justify-start gap-2 h-9 px-3 border border-border/50 hover:border-border hover:bg-accent/50",
-                  "w-full overflow-hidden",
+                  "max-w-full overflow-hidden",
                 )}
               >
                 <LightbulbIcon className="size-3.5 flex-shrink-0" />

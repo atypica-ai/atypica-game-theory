@@ -142,7 +142,11 @@ export function NewStudyInputBox({
   return (
     <form
       onSubmit={handleSubmit}
-      className={cn("relative border border-border bg-background transition-colors", className)}
+      className={cn(
+        "relative border border-border bg-background transition-colors",
+        "flex flex-col items-stretch gap-3",
+        className,
+      )}
     >
       {/* Study Type Selector */}
       <div className="h-12 p-2 border-b border-border flex items-center justify-between">
@@ -196,7 +200,22 @@ export function NewStudyInputBox({
         </Link>
       </div>
 
+      {/* Reference Chats Display */}
+      {referenceChatTitles.length > 0 && (
+        <div className="flex items-center gap-2 flex-wrap px-2">
+          {referenceChatTitles.map((chat) => (
+            <div
+              key={chat.token}
+              className="text-sm px-2 pl-1 bg-muted rounded-full max-w-3/4 sm:max-w-1/2 truncate font-medium"
+            >
+              @ {chat.title}
+            </div>
+          ))}
+        </div>
+      )}
+
       <Textarea
+        name="study-brief"
         value={input}
         onChange={(e) => {
           const value = e.target.value;
@@ -206,9 +225,7 @@ export function NewStudyInputBox({
         placeholder={studyType === "product-rnd" ? t("productRnDPlaceholder") : t("placeholder")}
         className={cn(
           "resize-none border-0 shadow-none bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/60",
-          "max-h-[calc(100vh-14rem)] w-full px-4",
-          uploadedFiles.length > 0 ? "mb-28" : "mb-18",
-          referenceChatTitles.length > 0 ? "mt-8" : "mt-4 ",
+          "flex-1 min-h-48 sm:min-h-40 max-h-80 w-full px-4 scrollbar-thin",
         )}
         enterKeyHint="enter"
         disabled={isLoading}
@@ -223,20 +240,6 @@ export function NewStudyInputBox({
         }}
       />
 
-      {/* Reference Chats Display */}
-      {referenceChatTitles.length > 0 && (
-        <div className="absolute top-14 left-3 right-3 flex items-center gap-2 flex-wrap">
-          {referenceChatTitles.map((chat) => (
-            <div
-              key={chat.token}
-              className="text-xs px-2 pl-1 bg-muted rounded-full max-w-1/2 truncate font-medium"
-            >
-              @ {chat.title}
-            </div>
-          ))}
-        </div>
-      )}
-
       {/* Partial transcript indicator */}
       {partialTranscript && (
         <div className="absolute bottom-20 left-4 right-4 p-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
@@ -249,63 +252,61 @@ export function NewStudyInputBox({
       )}
 
       {/* Bottom toolbar */}
-      <div className="absolute left-0 bottom-0 right-0">
-        {uploadedFiles.length > 0 && (
-          <div className="flex items-center px-3 overflow-hidden w-full">
-            <div className="flex-1 flex items-center gap-2 py-2 overflow-auto scrollbar-thin">
-              {uploadedFiles.map((file, index) => (
-                <FileAttachment
-                  key={index}
-                  attachment={{
-                    url: file.url,
-                    filename: file.name,
-                    mediaType: file.mimeType,
-                  }}
-                  onRemove={() => handleRemoveFile(index)}
-                />
-              ))}
-            </div>
-            <FileUploadStatus files={uploadedFiles} className="ml-2 shrink-0" />
+      {uploadedFiles.length > 0 && (
+        <div className="flex items-center px-3 overflow-hidden w-full">
+          <div className="flex-1 flex items-center gap-2 py-2 overflow-auto scrollbar-thin">
+            {uploadedFiles.map((file, index) => (
+              <FileAttachment
+                key={index}
+                attachment={{
+                  url: file.url,
+                  filename: file.name,
+                  mediaType: file.mimeType,
+                }}
+                onRemove={() => handleRemoveFile(index)}
+              />
+            ))}
           </div>
-        )}
-        <div className="flex items-center gap-2 p-3 border-t border-border">
-          <FileUploadButton
-            onFileUploadedAction={handleFileUploaded}
-            disabled={isLoading || isUploadDisabled()}
-            existingFiles={uploadedFiles}
-          />
-          <div className="ml-auto" />
-          <RecordButton
-            onTranscript={(text) => {
-              setInput((current) => (current ? `${current} ${text}` : text));
-              setPartialTranscript(""); // Clear partial transcript when final transcript is set
-            }}
-            onPartialTranscript={(text) => {
-              setPartialTranscript(text);
-            }}
-            language={locale}
-            disabled={isLoading}
-            className="h-9 w-9"
-          />
-          <div className="text-xs text-muted-foreground hidden sm:block">
-            {isMobile ? t("tapToSend") : t("enterToSend")}
-          </div>
-          <Button
-            type="submit"
-            variant="default"
-            disabled={isLoading || !input.trim()}
-            className="h-8 px-4"
-          >
-            {isLoading ? (
-              <RotateCwIcon className="size-4 animate-spin" />
-            ) : (
-              <>
-                <span className="text-xs">{t("sendLabel")}</span>
-                <ArrowRightIcon className="size-4" />
-              </>
-            )}
-          </Button>
+          <FileUploadStatus files={uploadedFiles} className="ml-2 shrink-0" />
         </div>
+      )}
+      <div className="flex items-center gap-2 p-3 border-t border-border">
+        <FileUploadButton
+          onFileUploadedAction={handleFileUploaded}
+          disabled={isLoading || isUploadDisabled()}
+          existingFiles={uploadedFiles}
+        />
+        <div className="ml-auto" />
+        <RecordButton
+          onTranscript={(text) => {
+            setInput((current) => (current ? `${current} ${text}` : text));
+            setPartialTranscript(""); // Clear partial transcript when final transcript is set
+          }}
+          onPartialTranscript={(text) => {
+            setPartialTranscript(text);
+          }}
+          language={locale}
+          disabled={isLoading}
+          className="h-9 w-9"
+        />
+        <div className="text-xs text-muted-foreground hidden sm:block">
+          {isMobile ? t("tapToSend") : t("enterToSend")}
+        </div>
+        <Button
+          type="submit"
+          variant="default"
+          disabled={isLoading || !input.trim()}
+          className="h-8 px-4"
+        >
+          {isLoading ? (
+            <RotateCwIcon className="size-4 animate-spin" />
+          ) : (
+            <>
+              <span className="text-xs">{t("sendLabel")}</span>
+              <ArrowRightIcon className="size-4" />
+            </>
+          )}
+        </Button>
       </div>
     </form>
   );
@@ -343,7 +344,7 @@ export function NewStudyButton({
       </DialogTrigger>
       <DialogContent
         className={cn(
-          "p-0 shadow-none border-none gap-0 rounded-sm",
+          "p-0 shadow-none border-none gap-0 rounded-sm max-h-[90dvh] flex flex-col overflow-y-auto scrollbar-thin",
           "[&_>button]:hidden", // hide close button
         )}
       >
@@ -351,7 +352,7 @@ export function NewStudyButton({
           <DialogTitle />
         </DialogHeader>
         <NewStudyInputBox
-          className="rounded-sm overflow-hidden"
+          className="rounded-sm"
           initialQuestion={initialQuestion}
           referenceUserChatTokens={referenceUserChatTokens}
         />

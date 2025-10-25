@@ -183,7 +183,6 @@ export function UserChatSession<UI_MESSAGE extends TMessageWithPlainTextTool>({
               className={cn(
                 "block min-h-24 max-lg:min-h-20 resize-none focus-visible:border-primary/20 transition-colors",
                 "px-4 pt-3 pb-11",
-                "text-[15px] placeholder:text-[15px]", // "text-sm placeholder:text-sm",
               )}
               enterKeyHint="enter"
               value={input}

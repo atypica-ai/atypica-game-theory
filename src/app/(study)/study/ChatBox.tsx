@@ -425,7 +425,6 @@ export function ChatBox() {
             className={cn(
               "block min-h-24 max-lg:min-h-20 resize-none focus-visible:border-primary/30 transition-colors rounded-lg",
               "px-4 pt-3 pb-11",
-              "text-[15px] md:text-[15px] placeholder:text-[15px]", // 15px 可以让页面不自动放大
             )}
             enterKeyHint="enter"
             placeholder={t("placeholder")}

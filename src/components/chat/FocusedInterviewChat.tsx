@@ -453,7 +453,6 @@ export function FocusedInterviewChat<
                     "flex w-full resize-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 outline-none",
                     "text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-500 dark:placeholder:text-zinc-400",
                     "py-1 pl-2 pr-1 max-h-32 text-base leading-relaxed overflow-hidden",
-                    "text-[15px] md:text-[15px] placeholder:text-[15px]", // 15px 可以让页面不自动放大
                   )}
                   onKeyDown={(e) => {
                     if (
