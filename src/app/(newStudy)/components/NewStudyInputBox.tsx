@@ -205,9 +205,10 @@ export function NewStudyInputBox({
         }}
         placeholder={studyType === "product-rnd" ? t("productRnDPlaceholder") : t("placeholder")}
         className={cn(
-          "min-h-48 resize-none border-0 bg-transparent px-4 focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/60 w-full",
-          uploadedFiles.length > 0 ? "pb-28" : "pb-18",
-          referenceChatTitles.length > 0 ? "pt-8" : "pt-4 ",
+          "resize-none border-0 shadow-none bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/60",
+          "max-h-[calc(100vh-14rem)] w-full px-4",
+          uploadedFiles.length > 0 ? "mb-28" : "mb-18",
+          referenceChatTitles.length > 0 ? "mt-8" : "mt-4 ",
         )}
         enterKeyHint="enter"
         disabled={isLoading}
