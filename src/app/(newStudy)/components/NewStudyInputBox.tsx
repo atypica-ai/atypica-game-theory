@@ -206,7 +206,7 @@ export function NewStudyInputBox({
           {referenceChatTitles.map((chat) => (
             <div
               key={chat.token}
-              className="text-sm px-2 pl-1 bg-muted rounded-full max-w-3/4 sm:max-w-1/2 truncate font-medium"
+              className="text-sm px-2 pl-1 bg-muted rounded-full max-w-3/4 truncate font-medium"
             >
               @ {chat.title}
             </div>
@@ -225,7 +225,7 @@ export function NewStudyInputBox({
         placeholder={studyType === "product-rnd" ? t("productRnDPlaceholder") : t("placeholder")}
         className={cn(
           "resize-none border-0 shadow-none bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/60",
-          "flex-1 min-h-48 sm:min-h-40 max-h-80 w-full px-4 scrollbar-thin",
+          "flex-1 min-h-48 sm:min-h-32 max-h-80 w-full px-4 scrollbar-thin",
         )}
         enterKeyHint="enter"
         disabled={isLoading}

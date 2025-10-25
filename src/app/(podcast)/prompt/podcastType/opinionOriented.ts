@@ -195,6 +195,9 @@ Hook的几种形式：
 - 关联性强化：始终连接到听众的实际生活和决策
 - 节奏控制：通过互动技巧保持参与感
 
+## 字数限制
+**重要：脚本总字数必须严格控制在 3000 字以内。这是强制性要求，必须严格执行。**
+
 ### 避免的内容和方式
 - 避免"可能"、"大概"、"似乎"等不确定表达
 - 避免过度谦逊："我可能是错的，但是..."
@@ -391,6 +394,9 @@ Hook forms:
 - Language simplification: Avoid full professional terminology, use accessible expressions. Professional terms must be explained in accessible ways.
 - Relevance strengthening: Always connect to listeners' actual life and decisions
 - Rhythm control: Maintain engagement through interaction techniques
+
+## Word Count Limit
+**Important: Total script must be constrained to 1500 words maximum. This is a mandatory requirement and must be strictly enforced.**
 
 ### Content and Methods to Avoid
 - Avoid uncertain expressions like "maybe", "probably", "seems"

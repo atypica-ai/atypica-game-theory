@@ -140,12 +140,12 @@ export function StudyNextSteps({
         </Button>
       </div>
 
-      <div className="flex flex-col items-start justify-start gap-2">
+      <div className="flex flex-col items-start justify-start gap-2 sm:flex-row sm:flex-wrap">
         {/* Podcast Button */}
         <Button
           variant="ghost"
           size="sm"
-          className="justify-start gap-2 h-9 px-3 border border-border/50 hover:border-border hover:bg-accent/50"
+          className="justify-start gap-2 h-9 border border-border/50 hover:border-border hover:bg-accent/50"
           onClick={handleGeneratePodcast}
           disabled={isGeneratingPodcast}
         >
@@ -154,7 +154,7 @@ export function StudyNextSteps({
           ) : (
             <MicIcon className="size-3.5" />
           )}
-          <span className="text-xs">
+          <span className="text-xs mr-1">
             {isGeneratingPodcast ? t("generating") : t("generatePodcast")}
           </span>
         </Button>
@@ -168,12 +168,12 @@ export function StudyNextSteps({
               disabled
             >
               <LightbulbIcon className="size-3.5 flex-shrink-0" />
-              <span className="text-sm">{t("generating")}</span>
+              <span className="text-xs">{t("generating")}</span>
             </Button>
             <Button
               variant="ghost"
               size="sm"
-              className="justify-start gap-2 h-9 px-3 border border-border/50 opacity-50"
+              className="justify-start gap-2 h-9 border border-border/50 opacity-50"
               disabled
             >
               <LightbulbIcon className="size-3.5 flex-shrink-0" />
@@ -191,18 +191,15 @@ export function StudyNextSteps({
                 variant="ghost"
                 size="sm"
                 className={cn(
-                  "justify-start gap-2 h-9 px-3 border border-border/50 hover:border-border hover:bg-accent/50",
+                  "justify-start gap-2 h-9 border border-border/50 hover:border-border hover:bg-accent/50",
                   "max-w-full overflow-hidden",
                 )}
               >
                 <LightbulbIcon className="size-3.5 flex-shrink-0" />
-                <Badge
-                  variant="secondary"
-                  className="h-4 px-1.5 text-[10px] font-normal flex-shrink-0"
-                >
+                <Badge variant="secondary" className="h-4 px-1.5 text-xs font-normal flex-shrink-0">
                   {t("newStudyBadge")}
                 </Badge>
-                <span className="text-xs truncate">{question.title}</span>
+                <span className="text-xs truncate mr-1">{question.title}</span>
               </Button>
             </NewStudyButton>
           ))

@@ -15,12 +15,12 @@ const recommendedQuestionsSchema = z.object({
         title: z
           .string()
           .describe(
-            "A title for the research question (at least 20 Chinese characters, or no more than 10 English words) / 研究问题的标题（不少于20个中文字，或不超过10个英文单词）",
+            "A concise title (10-20 Chinese characters, or 6-12 English words) / 简洁的标题（10-20个中文字，或6-12个英文单词）",
           ),
         brief: z
           .string()
           .describe(
-            "A detailed research question description / 详细的研究问题描述（这就是之前的 question 字段）",
+            "A concise question (MAX 200 Chinese characters, or MAX 100 English words) / 简洁的问题（最多200个中文字，或最多100个英文单词）",
           ),
       }),
     )
@@ -108,13 +108,13 @@ export async function generateRecommendedQuestions({
         ? `你是一个研究助手，帮助生成后续研究问题。根据提供的研究信息，建议2个相关且有趣的后续研究问题。
 
 每个研究问题需要包含：
-1. title: 一个简短的标题，不少于20个中文字
-2. brief: 详细的研究问题描述，用于实际开始新研究时使用`
+1. title: 简洁的标题（10-20个中文字），清晰表达研究主题
+2. brief: 详细的研究问题描述（最多200个中文字），清楚描述研究目标和具体需求`
         : `You are a research assistant helping generate follow-up research questions. Based on the study information provided, suggest 2 relevant and interesting follow-up research questions.
 
 Each research question should include:
-1. title: A short title, no more than 10 English words
-2. brief: A detailed research question description, used when starting the new study`;
+1. title: Concise title (6-12 English words) that clearly expresses the research topic
+2. brief: Detailed research question description (MAX 100 English words) describing research objectives and specific needs`;
 
     const userPrompt =
       locale === "zh-CN"

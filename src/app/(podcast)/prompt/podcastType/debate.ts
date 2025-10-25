@@ -183,6 +183,9 @@ Hook的几种形式：
   - 数据的解释
   - 总结和过渡
 
+## 字数限制
+**重要：脚本总字数必须严格控制在 3000 字以内。这是强制性要求，必须严格执行。**
+
 ## 输出格式
 """
 【凯】AI，也就是人工智能现在这么火，但它到底能不能像我们人一样进行那种，你懂的，勾心斗角式的策略思考？今天我们就来看一个由Atypical AI设计的特别有意思的博弈论测试，看看AI到底行不行。
@@ -381,6 +384,9 @@ On the other hand, alternate between high-appeal content and low-appeal content.
   - Logical analysis
   - Data explanation
   - Summary and transitions
+
+## Word Count Limit
+**Important: Total script must be constrained to 1500 words maximum. This is a mandatory requirement and must be strictly enforced.**
 
 ## Output Format
 Strictly follow this output format, with 【】 wrapping around speaker name at the beginning of each line, and no other text besides script content. Do not use bold or italic or other markdown formatting.
