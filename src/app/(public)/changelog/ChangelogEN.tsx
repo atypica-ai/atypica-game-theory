@@ -23,14 +23,84 @@ export const ChangelogEN: React.FC = () => {
                     needs, and creative ideation.
                   </p>
                 </li>
+              </ul>
+            </article>
+          </div>
+        </section>
+
+        {/* v10.x */}
+        <section>
+          <h2 className="text-2xl font-bold mb-8">
+            v10.x: Multimodal Research & Content Generation
+          </h2>
+          <div className="space-y-10">
+            <article>
+              <h3 className="font-semibold text-xl mb-4">
+                <code>v10.1.0</code> —{" "}
+                <em className="text-gray-600 dark:text-gray-400 font-normal">2025-10-25</em>
+              </h3>
+              <ul className="list-disc list-outside pl-6 space-y-4 text-gray-800 dark:text-gray-200">
                 <li>
-                  <h4 className="font-semibold text-lg">
-                    🎧 Beta Preview: Study-to-Podcast Generation
-                  </h4>
-                  <p className="text-gray-700 dark:text-gray-300 mt-1 pl-1">
-                    Automatically converts selected studies into podcasts so insights can be
-                    reviewed and shared quickly. Pro, Max, and Team subscribers can currently try
-                    the beta preview.
+                  <strong className="font-semibold text-gray-900 dark:text-gray-100">
+                    🎧 Full Launch: Study-to-Podcast Generation
+                  </strong>
+                  <p className="text-gray-700 dark:text-gray-300 mt-1">
+                    Research reports can now be converted into podcast audio with one click,
+                    supporting online listening and downloading. Multiple podcast styles available:
+                    deep dive analysis, opinion discussion, and debate format. Intelligent script
+                    generation with automatic host dialogue configuration. Email notifications sent
+                    when podcast generation is complete. Full functionality available to Pro, Max,
+                    and Team plan subscribers.
+                  </p>
+                </li>
+              </ul>
+            </article>
+            <article>
+              <h3 className="font-semibold text-xl mb-4">
+                <code>v10.0.0</code> —{" "}
+                <em className="text-gray-600 dark:text-gray-400 font-normal">2025-10-15</em>
+              </h3>
+              <ul className="list-disc list-outside pl-6 space-y-4 text-gray-800 dark:text-gray-200">
+                <li>
+                  <strong className="font-semibold text-gray-900 dark:text-gray-100">
+                    🎤 Major Upgrade: Interview System Enhancements
+                  </strong>
+                  <p className="text-gray-700 dark:text-gray-300 mt-1">
+                    Added multiple-choice question support for richer interview formats. Interview
+                    reports can be generated, shared, and downloaded as PDF. Share interview
+                    projects via invite links with configurable expiration. Set preferred form of
+                    address for interviewees. Multi-language interview support (Chinese and
+                    English). File attachment support in interview conversations.
+                  </p>
+                </li>
+                <li>
+                  <strong className="font-semibold text-gray-900 dark:text-gray-100">
+                    🧑‍💼 Enhanced: Persona System
+                  </strong>
+                  <p className="text-gray-700 dark:text-gray-300 mt-1">
+                    Personas can now be shared via public access links. Persona chat supports file
+                    uploads as conversation context. Improved search and filtering with tag and
+                    preview features.
+                  </p>
+                </li>
+                <li>
+                  <strong className="font-semibold text-gray-900 dark:text-gray-100">
+                    ✨ Improved: Research Workflow
+                  </strong>
+                  <p className="text-gray-700 dark:text-gray-300 mt-1">
+                    New AI-powered recommendations for research next steps. Continue deeper
+                    exploration based on existing research with reference context. Unified
+                    management interface for reports and podcasts for easier access and sharing.
+                  </p>
+                </li>
+                <li>
+                  <strong className="font-semibold text-gray-900 dark:text-gray-100">
+                    🚀 Performance & Stability
+                  </strong>
+                  <p className="text-gray-700 dark:text-gray-300 mt-1">
+                    AI engine upgraded for improved response speed and stability. Enhanced
+                    multi-model support optimizing cost and performance balance. System architecture
+                    optimizations for better overall user experience.
                   </p>
                 </li>
               </ul>

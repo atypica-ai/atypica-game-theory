@@ -6,8 +6,41 @@
 
 - **🧪 Alpha Testing: Product R&D Flow**
   - A new "Product R&D" research template focusing on market trends, user needs, and creative ideation.
-- **🎧 Beta Preview: Study-to-Podcast Generation**
-  - Automatically converts selected studies into podcasts so insights can be reviewed and shared quickly. Pro, Max, and Team subscribers can currently try the beta preview.
+
+---
+
+## v10.x: Multimodal Research & Content Generation
+
+### `v10.1.0` — _2025-10-25_
+
+- **🎧 Full Launch: Study-to-Podcast Generation**
+  - Research reports can now be converted into podcast audio with one click, supporting online listening and downloading.
+  - Multiple podcast styles available: deep dive analysis, opinion discussion, and debate format.
+  - Intelligent script generation with automatic host dialogue configuration.
+  - Email notifications sent when podcast generation is complete.
+  - Full functionality available to Pro, Max, and Team plan subscribers.
+
+### `v10.0.0` — _2025-10-15_
+
+- **🎤 Major Upgrade: Interview System Enhancements**
+  - Added multiple-choice question support for richer interview formats.
+  - Interview reports can be generated, shared, and downloaded as PDF.
+  - Share interview projects via invite links with configurable expiration.
+  - Set preferred form of address for interviewees.
+  - Multi-language interview support (Chinese and English).
+  - File attachment support in interview conversations.
+- **🧑‍💼 Enhanced: Persona System**
+  - Personas can now be shared via public access links.
+  - Persona chat supports file uploads as conversation context.
+  - Improved search and filtering with tag and preview features.
+- **✨ Improved: Research Workflow**
+  - New AI-powered recommendations for research next steps.
+  - Continue deeper exploration based on existing research with reference context.
+  - Unified management interface for reports and podcasts for easier access and sharing.
+- **🚀 Performance & Stability**
+  - AI engine upgraded for improved response speed and stability.
+  - Enhanced multi-model support optimizing cost and performance balance.
+  - System architecture optimizations for better overall user experience.
 
 ---
 

@@ -24,11 +24,73 @@ export const ChangelogZH: React.FC = () => {
                     全新的&quot;产品创新&quot;研究模板，专注于市场趋势、用户需求和创意生成。
                   </p>
                 </li>
+              </ul>
+            </article>
+          </div>
+        </section>
+
+        {/* v10.x */}
+        <section>
+          <h2 className="text-2xl font-bold mb-8">v10.x: 多模态研究与内容生成</h2>
+          <div className="space-y-10">
+            <article>
+              <h3 className="font-semibold text-xl mb-4">
+                <code>v10.1.0</code> —{" "}
+                <em className="text-gray-600 dark:text-gray-400 font-normal">2025-10-25</em>
+              </h3>
+              <ul className="list-disc list-outside pl-6 space-y-4 text-gray-800 dark:text-gray-200">
                 <li>
-                  <h4 className="font-semibold text-lg">🎧 Beta 测试中：研究播客自动生成</h4>
-                  <p className="text-gray-700 dark:text-gray-300 mt-1 pl-1">
-                    支持将特定研究自动转成播客，便于快速浏览和传播研究成果。目前由 Pro、Max 与 Team
-                    套餐用户 抢先体验。
+                  <strong className="font-semibold text-gray-900 dark:text-gray-100">
+                    🎧 正式上线: 研究播客自动生成
+                  </strong>
+                  <p className="text-gray-700 dark:text-gray-300 mt-1">
+                    研究报告可一键转换为播客音频，支持在线收听和下载。支持多种播客风格：深度解析、观点讨论、辩论式对话。智能生成播客脚本，自动配置主持人对话。播客生成完成后邮件通知。Pro、Max
+                    和 Team 套餐用户可使用完整功能。
+                  </p>
+                </li>
+              </ul>
+            </article>
+            <article>
+              <h3 className="font-semibold text-xl mb-4">
+                <code>v10.0.0</code> —{" "}
+                <em className="text-gray-600 dark:text-gray-400 font-normal">2025-10-15</em>
+              </h3>
+              <ul className="list-disc list-outside pl-6 space-y-4 text-gray-800 dark:text-gray-200">
+                <li>
+                  <strong className="font-semibold text-gray-900 dark:text-gray-100">
+                    🎤 重要升级: 访谈系统增强
+                  </strong>
+                  <p className="text-gray-700 dark:text-gray-300 mt-1">
+                    新增多选题支持，丰富访谈问题形式。访谈报告可生成、分享和下载
+                    PDF。支持邀请链接分享访谈项目，可设置链接过期时间。访谈可设置受访者称呼偏好。支持多语言访谈（中英文）。访谈聊天支持附件上传。
+                  </p>
+                </li>
+                <li>
+                  <strong className="font-semibold text-gray-900 dark:text-gray-100">
+                    🧑‍💼 功能增强: Persona 系统
+                  </strong>
+                  <p className="text-gray-700 dark:text-gray-300 mt-1">
+                    Persona
+                    可通过分享链接公开访问。Persona
+                    聊天支持上传文件作为对话上下文。搜索和筛选功能增强，支持标签和预览。
+                  </p>
+                </li>
+                <li>
+                  <strong className="font-semibold text-gray-900 dark:text-gray-100">
+                    ✨ 体验优化: 研究工作流
+                  </strong>
+                  <p className="text-gray-700 dark:text-gray-300 mt-1">
+                    新增 AI
+                    智能推荐研究下一步建议。可基于已有研究继续深入探索（参考上下文）。研究报告和播客统一管理，便于查找和分享。
+                  </p>
+                </li>
+                <li>
+                  <strong className="font-semibold text-gray-900 dark:text-gray-100">
+                    🚀 性能与稳定性
+                  </strong>
+                  <p className="text-gray-700 dark:text-gray-300 mt-1">
+                    AI
+                    引擎升级，提升响应速度和稳定性。增强多模型支持，优化成本和性能平衡。系统架构优化，提升整体用户体验。
                   </p>
                 </li>
               </ul>
@@ -36,7 +98,6 @@ export const ChangelogZH: React.FC = () => {
           </div>
         </section>
 
-        {/* v8.x */}
         {/* v9.x */}
         <section>
           <h2 className="text-2xl font-bold mb-8">v9.x: 引导式研究策略与透明度</h2>
