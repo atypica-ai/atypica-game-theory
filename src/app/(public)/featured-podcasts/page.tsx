@@ -2,7 +2,7 @@ import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
-import { PodcastsClient } from "./PodcastsClient";
+import { FeaturedPodcastsClient } from "./FeaturedPodcastsClient";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("FeaturedPodcastsPage");
@@ -12,7 +12,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 async function FeaturedPodcastsPage() {
-  return <PodcastsClient />;
+  return <FeaturedPodcastsClient />;
 }
 
 export default async function FeaturedPodcastsPageWithLoading() {
