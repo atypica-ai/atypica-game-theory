@@ -1,6 +1,4 @@
 "use client";
-
-import { fetchUserPodcasts, getPodcastPlaybackUrl } from "@/app/(podcast)/podcasts/actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { ExtractServerActionData } from "@/lib/serverAction";
@@ -18,8 +16,9 @@ import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { fetchMyPodcasts, getMyPodcastPlaybackUrl } from "./actions";
 
-type PodcastItem = ExtractServerActionData<typeof fetchUserPodcasts>[number];
+type PodcastItem = ExtractServerActionData<typeof fetchMyPodcasts>[number];
 
 // Placeholder podcasts for demo
 const placeholderPodcasts = [
@@ -125,18 +124,18 @@ export default function MyPodcastsClient() {
 
   const loadPodcasts = useCallback(async () => {
     try {
-      const result = await fetchUserPodcasts();
+      const result = await fetchMyPodcasts();
       if (!result.success) throw result;
       // Use real data if available, otherwise use placeholder data
-      setPodcasts(result.data.length > 0 ? result.data : (placeholderPodcasts as any));
+      setPodcasts(result.data.length > 0 ? result.data : (placeholderPodcasts as PodcastItem[]));
     } catch (error) {
       // On error, show placeholder data for demo
-      setPodcasts(placeholderPodcasts as any);
+      setPodcasts(placeholderPodcasts as PodcastItem[]);
       console.error("Load podcasts error:", error);
     } finally {
       setLoading(false);
     }
-  }, [t]);
+  }, []);
 
   useEffect(() => {
     loadPodcasts();
@@ -169,7 +168,7 @@ export default function MyPodcastsClient() {
         }
 
         // Get signed URL for the podcast
-        const result = await getPodcastPlaybackUrl({ podcastToken });
+        const result = await getMyPodcastPlaybackUrl({ podcastToken });
         if (!result.success || !result.data) {
           toast.error(t("playFailed"));
           return;
@@ -348,4 +347,3 @@ export default function MyPodcastsClient() {
     </div>
   );
 }
-

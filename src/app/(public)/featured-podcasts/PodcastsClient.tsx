@@ -1,33 +1,51 @@
 "use client";
-
-import { fetchUserPodcasts, getPodcastPlaybackUrl } from "@/app/(podcast)/podcasts/actions";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { ExtractServerActionData } from "@/lib/serverAction";
-import { 
-  ArrowRightIcon, 
+import {
   CalendarDaysIcon,
-  Loader2Icon, 
   MessageSquareIcon,
-  PauseIcon, 
-  PlayIcon, 
+  PlayIcon,
   SearchIcon,
   ShareIcon,
-  Volume2Icon 
+  Volume2Icon,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { fetchUserPodcasts, getPodcastPlaybackUrl } from "./actions";
 
 type PodcastItem = ExtractServerActionData<typeof fetchUserPodcasts>[number];
+
+// Extended type for display that includes placeholder fields
+type DisplayPodcast =
+  | PodcastItem
+  | {
+      id: string | number;
+      title?: string;
+      description?: string;
+      duration?: string;
+      category?: string;
+      hasAudio?: boolean;
+      replies?: number;
+      generatedAt?: Date | null;
+      token?: string;
+      analyst?: {
+        topic?: string;
+        studyUserChat?: {
+          title?: string;
+        } | null;
+      };
+    };
 
 // Placeholder data for demonstration
 const placeholderFeaturedPodcast = {
   id: "featured-1",
   title: "Test Podcast",
   subtitle: "Product Research Sample",
-  description: "This is a sample podcast demonstrating the AI-generated research audio feature. Real podcasts will appear here once you complete your studies.",
+  description:
+    "This is a sample podcast demonstrating the AI-generated research audio feature. Real podcasts will appear here once you complete your studies.",
   duration: "10 min",
   hasAudio: true,
   replies: 0,
@@ -38,7 +56,8 @@ const placeholderAllPodcasts = [
   {
     id: "all-1",
     title: "Understanding Gen Z Consumer Behavior",
-    description: "Deep dive into the purchasing patterns and preferences of Generation Z consumers.",
+    description:
+      "Deep dive into the purchasing patterns and preferences of Generation Z consumers.",
     duration: "28 min",
     category: "business",
     hasAudio: true,
@@ -46,9 +65,10 @@ const placeholderAllPodcasts = [
     generatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
   },
   {
-    id: "all-2", 
+    id: "all-2",
     title: "The Psychology of Brand Loyalty",
-    description: "Exploring what makes customers stick with brands and how to build lasting relationships.",
+    description:
+      "Exploring what makes customers stick with brands and how to build lasting relationships.",
     duration: "32 min",
     category: "business",
     hasAudio: true,
@@ -78,7 +98,8 @@ const placeholderAllPodcasts = [
   {
     id: "all-5",
     title: "E-commerce Conversion Strategies",
-    description: "Proven tactics to increase online store conversion rates and reduce cart abandonment.",
+    description:
+      "Proven tactics to increase online store conversion rates and reduce cart abandonment.",
     duration: "30 min",
     category: "business",
     hasAudio: true,
@@ -88,7 +109,8 @@ const placeholderAllPodcasts = [
   {
     id: "all-6",
     title: "Cultural Shifts in Post-Pandemic Era",
-    description: "Analyzing how the pandemic has permanently changed social behaviors and cultural norms.",
+    description:
+      "Analyzing how the pandemic has permanently changed social behaviors and cultural norms.",
     duration: "27 min",
     category: "society",
     hasAudio: true,
@@ -98,7 +120,8 @@ const placeholderAllPodcasts = [
   {
     id: "all-7",
     title: "Sustainable Business Practices",
-    description: "How companies are integrating sustainability into their core business strategies.",
+    description:
+      "How companies are integrating sustainability into their core business strategies.",
     duration: "29 min",
     category: "business",
     hasAudio: true,
@@ -118,7 +141,8 @@ const placeholderAllPodcasts = [
   {
     id: "all-9",
     title: "AI in Marketing Automation",
-    description: "How artificial intelligence is transforming marketing campaigns and customer engagement.",
+    description:
+      "How artificial intelligence is transforming marketing campaigns and customer engagement.",
     duration: "33 min",
     category: "business",
     hasAudio: true,
@@ -139,7 +163,7 @@ const placeholderAllPodcasts = [
 
 export function PodcastsClient() {
   const locale = useLocale();
-  const t = useTranslations("PodcastsPage");
+  const t = useTranslations("FeaturedPodcastsPage");
   const [podcasts, setPodcasts] = useState<PodcastItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [playingAudio, setPlayingAudio] = useState<string | null>(null);
@@ -148,7 +172,7 @@ export function PodcastsClient() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null); // For More to Discover
   const [podcastFilter, setPodcastFilter] = useState<"top" | "all">("top"); // Filter for Top vs All podcasts
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  
+
   const ITEMS_PER_PAGE = 5; // Show 5 podcasts per page for All Podcasts
 
   const loadPodcasts = useCallback(async () => {
@@ -232,27 +256,38 @@ export function PodcastsClient() {
   }, []);
 
   // Filter podcasts based on search query
-  const filteredPodcasts = podcasts.filter(podcast => 
-    podcast.analyst.topic.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (podcast.analyst.studyUserChat?.title?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false)
+  const filteredPodcasts = podcasts.filter(
+    (podcast) =>
+      podcast.analyst.topic.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (podcast.analyst.studyUserChat?.title?.toLowerCase().includes(searchQuery.toLowerCase()) ??
+        false),
   );
 
   // Use placeholder data for demo, or real data if available
   const allPodcastsToDisplay = podcasts.length > 0 ? filteredPodcasts : placeholderAllPodcasts;
-  
+
   // Apply Top/All filter
   const topPodcasts = [...allPodcastsToDisplay]
-    .sort((a: any, b: any) => (b.replies || 0) - (a.replies || 0))
+    .sort((a: DisplayPodcast, b: DisplayPodcast) => {
+      const aReplies = "replies" in a ? a.replies || 0 : 0;
+      const bReplies = "replies" in b ? b.replies || 0 : 0;
+      return bReplies - aReplies;
+    })
     .slice(0, 5);
   const filterAppliedPodcasts = podcastFilter === "top" ? topPodcasts : allPodcastsToDisplay;
-  
+
   // Filter by search query for placeholders
   const searchFilteredPodcasts = searchQuery
-    ? filterAppliedPodcasts.filter((p: any) =>
-        p.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.analyst?.topic?.toLowerCase().includes(searchQuery.toLowerCase())
-      )
+    ? filterAppliedPodcasts.filter((p: DisplayPodcast) => {
+        const title = "title" in p ? p.title : undefined;
+        const description = "description" in p ? p.description : undefined;
+        const topic = "analyst" in p ? p.analyst?.topic : undefined;
+        return (
+          title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          topic?.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+      })
     : filterAppliedPodcasts;
 
   // Get category filtered podcasts for More to Discover
@@ -295,7 +330,11 @@ export function PodcastsClient() {
             <div className="bg-card border border-border rounded-2xl p-8 md:p-12 relative overflow-hidden shadow-lg">
               {/* Share Button - Top Right */}
               <div className="absolute top-6 right-6 z-20">
-                <Button variant="outline" size="sm" className="h-7 text-xs rounded-full shadow-none">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs rounded-full shadow-none"
+                >
                   <ShareIcon className="size-3" />
                   <span className="max-sm:hidden">Share</span>
                 </Button>
@@ -313,7 +352,7 @@ export function PodcastsClient() {
                     <p className="text-lg text-muted-foreground mb-6 max-w-2xl">
                       {placeholderFeaturedPodcast.description}
                     </p>
-                    
+
                     {/* Metadata */}
                     <div className="flex items-center gap-4 mb-6 text-sm text-muted-foreground">
                       <div className="flex items-center gap-1">
@@ -345,7 +384,7 @@ export function PodcastsClient() {
                     <Button
                       size="icon"
                       className="h-20 w-20 md:h-24 md:w-24 rounded-full bg-foreground hover:bg-foreground/90 text-background shadow-lg"
-                      onClick={() => playAudio('featured')}
+                      onClick={() => playAudio("featured")}
                     >
                       <PlayIcon className="size-8 md:size-10 ml-1" />
                     </Button>
@@ -411,10 +450,10 @@ export function PodcastsClient() {
                   <Input
                     placeholder="Search podcasts..."
                     value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    setCurrentPage(1); // Reset to first page on search
-                  }}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      setCurrentPage(1); // Reset to first page on search
+                    }}
                     className="pl-10"
                   />
                 </div>
@@ -425,13 +464,27 @@ export function PodcastsClient() {
             {searchFilteredPodcasts.length > 0 ? (
               <>
                 <div className="grid grid-cols-1 gap-4">
-                  {currentPodcasts.map((podcast: any) => {
-                    const isPlaying = playingAudio === podcast.id;
-                    const podcastTitle = podcast.title || podcast.analyst?.topic || "Untitled";
-                    const podcastDescription = podcast.description || podcast.analyst?.studyUserChat?.title || "";
-                    const podcastDate = podcast.generatedAt || podcast.createdAt || new Date();
-                    const podcastReplies = podcast.replies || 0;
-                    const podcastDuration = podcast.duration || "N/A";
+                  {currentPodcasts.map((podcast: DisplayPodcast) => {
+                    const podcastId =
+                      typeof podcast.id === "string"
+                        ? podcast.id
+                        : ("token" in podcast && podcast.token) || String(podcast.id);
+                    const isPlaying = playingAudio === podcastId;
+                    const podcastTitle =
+                      ("title" in podcast && podcast.title) ||
+                      ("analyst" in podcast && podcast.analyst?.topic) ||
+                      "Untitled";
+                    const podcastDescription =
+                      ("description" in podcast && podcast.description) ||
+                      ("analyst" in podcast && podcast.analyst?.studyUserChat?.title) ||
+                      "";
+                    const podcastDate =
+                      ("generatedAt" in podcast && podcast.generatedAt) ||
+                      ("createdAt" in podcast && "createdAt" in podcast ? new Date() : undefined) ||
+                      new Date();
+                    const podcastReplies = "replies" in podcast ? podcast.replies || 0 : 0;
+                    const podcastDuration =
+                      "duration" in podcast ? podcast.duration || "N/A" : "N/A";
 
                     return (
                       <div
@@ -440,7 +493,11 @@ export function PodcastsClient() {
                       >
                         {/* Share Button - Top Right */}
                         <div className="absolute top-4 right-4 z-10">
-                          <Button variant="outline" size="sm" className="h-7 text-xs rounded-full shadow-none">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-7 text-xs rounded-full shadow-none"
+                          >
                             <ShareIcon className="size-3" />
                             <span className="max-sm:hidden">Share</span>
                           </Button>
@@ -460,7 +517,7 @@ export function PodcastsClient() {
                                 {podcastDescription}
                               </p>
                             )}
-                            
+
                             {/* Metadata */}
                             <div className="flex items-center gap-4 mb-4 text-xs text-muted-foreground">
                               <div className="flex items-center gap-1">
@@ -481,7 +538,7 @@ export function PodcastsClient() {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => playAudio(podcast.id || podcast.token)}
+                                onClick={() => playAudio(podcastId)}
                               >
                                 <PlayIcon className="h-4 w-4 mr-1.5" />
                                 {isPlaying ? "Playing..." : "Play Episode"}
@@ -507,26 +564,30 @@ export function PodcastsClient() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
                       disabled={currentPage === 1}
                     >
                       Previous
                     </Button>
-                    
+
                     <div className="flex items-center gap-1">
                       {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
                         // Show first page, last page, current page, and pages around current
-                        const showPage = 
-                          page === 1 || 
-                          page === totalPages || 
+                        const showPage =
+                          page === 1 ||
+                          page === totalPages ||
                           (page >= currentPage - 1 && page <= currentPage + 1);
-                        
-                        const showEllipsis = 
+
+                        const showEllipsis =
                           (page === 2 && currentPage > 3) ||
                           (page === totalPages - 1 && currentPage < totalPages - 2);
 
                         if (showEllipsis) {
-                          return <span key={page} className="px-2 text-muted-foreground">...</span>;
+                          return (
+                            <span key={page} className="px-2 text-muted-foreground">
+                              ...
+                            </span>
+                          );
                         }
 
                         if (!showPage) return null;
@@ -548,7 +609,7 @@ export function PodcastsClient() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                      onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
                       disabled={currentPage === totalPages}
                     >
                       Next
@@ -570,7 +631,9 @@ export function PodcastsClient() {
                   <Volume2Icon className="w-8 h-8 text-muted-foreground" />
                 </div>
                 <h3 className="text-lg font-semibold text-foreground mb-2">No Podcasts Yet</h3>
-                <p className="text-muted-foreground mb-6">Start a new study and generate your first podcast!</p>
+                <p className="text-muted-foreground mb-6">
+                  Start a new study and generate your first podcast!
+                </p>
                 <Button asChild>
                   <Link href="/newstudy">Start New Study</Link>
                 </Button>
@@ -596,7 +659,9 @@ export function PodcastsClient() {
             {/* Business Category */}
             <div className="bg-card border border-border rounded-2xl overflow-hidden">
               <button
-                onClick={() => setSelectedCategory(selectedCategory === "business" ? null : "business")}
+                onClick={() =>
+                  setSelectedCategory(selectedCategory === "business" ? null : "business")
+                }
                 className="w-full p-8 hover:bg-accent/50 transition-colors group text-left"
               >
                 <div className="flex items-center justify-between gap-6">
@@ -606,7 +671,9 @@ export function PodcastsClient() {
                     </div>
                     <div className="flex-1">
                       <h3 className="text-xl font-semibold text-foreground mb-2">Business</h3>
-                      <p className="text-muted-foreground">Market insights, strategy, and industry analysis</p>
+                      <p className="text-muted-foreground">
+                        Market insights, strategy, and industry analysis
+                      </p>
                     </div>
                   </div>
                   <div className="text-muted-foreground">
@@ -614,7 +681,7 @@ export function PodcastsClient() {
                   </div>
                 </div>
               </button>
-              
+
               {selectedCategory === "business" && (
                 <div className="border-t border-border p-6 bg-muted/20">
                   <div className="space-y-3">
@@ -627,14 +694,12 @@ export function PodcastsClient() {
                           <Volume2Icon className="w-5 h-5" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h4 className="font-medium text-foreground line-clamp-1">{podcast.title}</h4>
+                          <h4 className="font-medium text-foreground line-clamp-1">
+                            {podcast.title}
+                          </h4>
                           <p className="text-xs text-muted-foreground">{podcast.duration}</p>
                         </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => playAudio(podcast.id)}
-                        >
+                        <Button variant="outline" size="sm" onClick={() => playAudio(podcast.id)}>
                           <PlayIcon className="h-3.5 w-3.5" />
                         </Button>
                       </div>
@@ -647,7 +712,9 @@ export function PodcastsClient() {
             {/* Society & Culture Category */}
             <div className="bg-card border border-border rounded-2xl overflow-hidden">
               <button
-                onClick={() => setSelectedCategory(selectedCategory === "society" ? null : "society")}
+                onClick={() =>
+                  setSelectedCategory(selectedCategory === "society" ? null : "society")
+                }
                 className="w-full p-8 hover:bg-accent/50 transition-colors group text-left"
               >
                 <div className="flex items-center justify-between gap-6">
@@ -656,8 +723,12 @@ export function PodcastsClient() {
                       <Volume2Icon className="w-8 h-8 text-primary" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-xl font-semibold text-foreground mb-2">Society & Culture</h3>
-                      <p className="text-muted-foreground">Social trends, cultural shifts, and human behavior</p>
+                      <h3 className="text-xl font-semibold text-foreground mb-2">
+                        Society & Culture
+                      </h3>
+                      <p className="text-muted-foreground">
+                        Social trends, cultural shifts, and human behavior
+                      </p>
                     </div>
                   </div>
                   <div className="text-muted-foreground">
@@ -665,7 +736,7 @@ export function PodcastsClient() {
                   </div>
                 </div>
               </button>
-              
+
               {selectedCategory === "society" && (
                 <div className="border-t border-border p-6 bg-muted/20">
                   <div className="space-y-3">
@@ -678,14 +749,12 @@ export function PodcastsClient() {
                           <Volume2Icon className="w-5 h-5" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h4 className="font-medium text-foreground line-clamp-1">{podcast.title}</h4>
+                          <h4 className="font-medium text-foreground line-clamp-1">
+                            {podcast.title}
+                          </h4>
                           <p className="text-xs text-muted-foreground">{podcast.duration}</p>
                         </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => playAudio(podcast.id)}
-                        >
+                        <Button variant="outline" size="sm" onClick={() => playAudio(podcast.id)}>
                           <PlayIcon className="h-3.5 w-3.5" />
                         </Button>
                       </div>
@@ -702,8 +771,12 @@ export function PodcastsClient() {
       <section className="py-16 border-t border-border">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
-            <h3 className="text-2xl md:text-3xl font-bold mb-4">Ready to create your own podcast?</h3>
-            <p className="text-muted-foreground mb-8">Start a new research and generate your first AI podcast in minutes.</p>
+            <h3 className="text-2xl md:text-3xl font-bold mb-4">
+              Ready to create your own podcast?
+            </h3>
+            <p className="text-muted-foreground mb-8">
+              Start a new research and generate your first AI podcast in minutes.
+            </p>
             <Button asChild size="lg">
               <Link href="/newstudy">Create My Podcast</Link>
             </Button>

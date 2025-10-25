@@ -393,7 +393,7 @@
     "description": "Sorry, you do not have permission to access this page. Please confirm your access rights or contact the administrator.",
     "returnHome": "Return Home"
   },
-  "PodcastsPage": {
+  "FeaturedPodcastsPage": {
     "title": "AI Podcasts",
     "description": "Browse your featured research podcasts",
     "noPodcasts": "No Podcasts",

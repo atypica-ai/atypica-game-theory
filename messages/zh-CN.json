@@ -393,7 +393,7 @@
     "description": "很抱歉，您没有访问此页面的权限。请确认您的访问权限或联系管理员。",
     "returnHome": "返回首页"
   },
-  "PodcastsPage": {
+  "FeaturedPodcastsPage": {
     "title": "AI 播客",
     "description": "浏览您研究的播客精选内容",
     "noPodcasts": "暂无播客",

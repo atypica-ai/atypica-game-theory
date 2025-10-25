@@ -1,5 +1,4 @@
 "use server";
-
 import { podcastObjectUrlToHttpUrl } from "@/app/(podcast)/lib/utils";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
@@ -7,9 +6,9 @@ import { AnalystPodcast, AnalystPodcastExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 
 /**
- * Fetch all user's podcasts across all analysts
+ * Fetch all user's own podcasts across all analysts
  */
-export async function fetchUserPodcasts(): Promise<
+export async function fetchMyPodcasts(): Promise<
   ServerActionResult<
     (Pick<
       AnalystPodcast,
@@ -26,9 +25,7 @@ export async function fetchUserPodcasts(): Promise<
       analyst: {
         id: number;
         topic: string;
-        studyUserChatId: number | null;
         studyUserChat: {
-          token: string;
           title: string;
         } | null;
       };
@@ -39,7 +36,6 @@ export async function fetchUserPodcasts(): Promise<
     const podcasts = await prisma.analystPodcast.findMany({
       where: {
         analyst: { userId: user.id },
-        generatedAt: { not: null }, // Only show completed podcasts
       },
       select: {
         id: true,
@@ -55,10 +51,8 @@ export async function fetchUserPodcasts(): Promise<
           select: {
             id: true,
             topic: true,
-            studyUserChatId: true,
             studyUserChat: {
               select: {
-                token: true,
                 title: true,
               },
             },
@@ -79,9 +73,9 @@ export async function fetchUserPodcasts(): Promise<
 }
 
 /**
- * Get signed URL for podcast audio
+ * Get signed URL for user's own podcast audio
  */
-export async function getPodcastPlaybackUrl({
+export async function getMyPodcastPlaybackUrl({
   podcastToken,
 }: {
   podcastToken: string;
@@ -108,11 +102,10 @@ export async function getPodcastPlaybackUrl({
       };
     }
 
-    const signedUrl = await podcastObjectUrlToHttpUrl(podcast);
+    const result = await podcastObjectUrlToHttpUrl(podcast);
     return {
       success: true,
-      data: signedUrl,
+      data: result ? result.signedObjectUrl : null,
     };
   });
 }
-
