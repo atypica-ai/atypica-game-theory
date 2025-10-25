@@ -101,7 +101,13 @@ export async function fetchFeaturedPodcasts({
   // Group by analystId and take the latest one for each
   const podcastsByAnalyst = new Map<number, (typeof allPodcasts)[number]>();
   for (const podcast of allPodcasts) {
-    if (!podcastsByAnalyst.has(podcast.analystId)) {
+    const existing = podcastsByAnalyst.get(podcast.analystId);
+    if (!existing) {
+      podcastsByAnalyst.set(podcast.analystId, podcast);
+    } else if (
+      podcast.generatedAt &&
+      (!existing.generatedAt || podcast.generatedAt > existing.generatedAt)
+    ) {
       podcastsByAnalyst.set(podcast.analystId, podcast);
     }
   }
