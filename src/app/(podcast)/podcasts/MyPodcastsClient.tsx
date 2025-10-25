@@ -1,22 +1,23 @@
 "use client";
+import { getPodcastAudioSignedUrl } from "@/app/(podcast)/actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { ExtractServerActionData } from "@/lib/serverAction";
-import { formatDate } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 import {
   CalendarDaysIcon,
-  FileTextIcon,
   HeadphonesIcon,
   Loader2Icon,
   PauseIcon,
   PlayIcon,
+  SquareArrowOutUpRightIcon,
   Volume2Icon,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { fetchMyPodcasts, getMyPodcastPlaybackUrl } from "./actions";
+import { fetchMyPodcasts } from "./actions";
 
 type PodcastItem = ExtractServerActionData<typeof fetchMyPodcasts>[number];
 
@@ -74,7 +75,7 @@ export default function MyPodcastsClient() {
         }
 
         // Get signed URL for the podcast
-        const result = await getMyPodcastPlaybackUrl({ podcastToken });
+        const result = await getPodcastAudioSignedUrl({ podcastToken });
         if (!result.success || !result.data) {
           toast.error(t("playFailed"));
           return;
@@ -148,20 +149,23 @@ export default function MyPodcastsClient() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {podcasts.map((podcast) => {
               const isPlaying = playingPodcast === podcast.token;
-              const studyTitle = podcast.analyst.studyUserChat?.title || t("untitledStudy");
               const hasAudio = podcast.objectUrl && podcast.generatedAt;
 
               return (
                 <Card
                   key={podcast.id}
-                  className="transition-all duration-300 hover:shadow-md flex flex-col border border-zinc-200 dark:border-zinc-700 shadow-sm bg-gradient-to-br from-white to-zinc-50/50 dark:from-zinc-800 dark:to-zinc-700/50"
+                  className={cn(
+                    "transition-all duration-300 hover:shadow-md flex flex-col",
+                    "border border-zinc-200 dark:border-zinc-700 shadow-sm",
+                    "bg-gradient-to-br from-white to-zinc-50/50 dark:from-zinc-800 dark:to-zinc-700/50",
+                  )}
                 >
                   <CardHeader>
                     {/* Header with icon and meta info */}
-                    <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
                         {/* Podcast Icon - small like StudyCard avatar */}
-                        <div className="size-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center ring-2 ring-zinc-100 dark:ring-zinc-800 flex-shrink-0">
+                        <div className="size-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center flex-shrink-0">
                           <Volume2Icon className="w-5 h-5 text-white" />
                         </div>
                         <div className="flex flex-col gap-1">
@@ -170,11 +174,12 @@ export default function MyPodcastsClient() {
                             <span>{formatDate(podcast.createdAt, locale)}</span>
                           </div>
                           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                            <span>{hasAudio ? "Ready" : "Processing"}</span>
+                            <span>{hasAudio ? t("statusReady") : t("statusProcessing")}</span>
                             <div
-                              className={`w-2 h-2 rounded-full ${
-                                hasAudio ? "bg-green-400" : "bg-amber-400 animate-pulse"
-                              }`}
+                              className={cn(
+                                "w-2 h-2 rounded-full",
+                                hasAudio ? "bg-green-400" : "bg-amber-400 animate-pulse",
+                              )}
                             />
                           </div>
                         </div>
@@ -184,34 +189,55 @@ export default function MyPodcastsClient() {
                       {isPlaying && (
                         <div className="bg-primary text-primary-foreground px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
                           <div className="w-2 h-2 bg-current rounded-full animate-pulse" />
-                          Playing
+                          {t("playing")}
                         </div>
+                      )}
+                      {!isPlaying && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-6 text-xs rounded-full shadow-none"
+                          asChild
+                        >
+                          <Link href={`/artifacts/podcast/${podcast.token}/share`} target="_blank">
+                            <HeadphonesIcon className="size-3" />
+                            <span>{t("share")}</span>
+                          </Link>
+                        </Button>
                       )}
                     </div>
                   </CardHeader>
 
                   <CardContent className="flex-1 space-y-3">
                     {/* Title */}
-                    <h3 className="text-lg font-semibold line-clamp-2 leading-6 text-zinc-900 dark:text-zinc-100">
-                      {podcast.analyst.topic}
-                    </h3>
+                    <div className="flex items-start justify-between gap-2">
+                      <h3 className="text-lg font-semibold line-clamp-2 leading-6 text-zinc-900 dark:text-zinc-100">
+                        {podcast.analyst.studyUserChat.title}
+                      </h3>
+                      <Link
+                        href={`/study/${podcast.analyst.studyUserChat.token}/share`}
+                        target="_blank"
+                      >
+                        <SquareArrowOutUpRightIcon className="size-4 mt-1" />
+                      </Link>
+                    </div>
 
                     {/* Description */}
                     <p className="text-sm text-muted-foreground mb-4 line-clamp-3 leading-relaxed">
-                      {studyTitle}
+                      {podcast.analyst.topic}
                     </p>
 
                     {/* Stats section */}
-                    <div className="p-3 bg-zinc-50 dark:bg-zinc-700/50 rounded-lg flex items-center justify-start gap-4">
+                    {/*<div className="p-3 bg-zinc-50 dark:bg-zinc-700/50 rounded-lg flex items-center justify-start gap-4">
                       <div className="flex items-center gap-1.5 text-sm text-violet-600 dark:text-violet-400">
                         <HeadphonesIcon className="h-4 w-4" />
-                        <span className="font-medium">Podcast</span>
+                        <span className="font-medium">{t("podcastLabel")}</span>
                       </div>
                       <div className="flex items-center gap-1 text-xs text-muted-foreground">
                         <FileTextIcon className="h-3.5 w-3.5" />
                         <span>1 Report</span>
                       </div>
-                    </div>
+                    </div>*/}
                   </CardContent>
 
                   <CardFooter className="pt-0">
@@ -225,19 +251,19 @@ export default function MyPodcastsClient() {
                         {isPlaying ? (
                           <>
                             <PauseIcon className="h-4 w-4 mr-1.5" />
-                            Pause Podcast
+                            {t("pausePodcast")}
                           </>
                         ) : (
                           <>
                             <PlayIcon className="h-4 w-4 mr-1.5" />
-                            Play Podcast
+                            {t("playPodcast")}
                           </>
                         )}
                       </Button>
                     ) : (
                       <Button variant="outline" size="sm" className="w-full" disabled>
                         <Volume2Icon className="h-4 w-4 mr-1.5" />
-                        Generating Audio...
+                        {t("generatingAudio")}
                       </Button>
                     )}
                   </CardFooter>

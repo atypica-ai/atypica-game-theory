@@ -1,5 +1,4 @@
 "use server";
-import { podcastObjectUrlToHttpUrl } from "@/app/(podcast)/lib/utils";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { AnalystPodcast, AnalystPodcastExtra } from "@/prisma/client";
@@ -27,7 +26,8 @@ export async function fetchMyPodcasts(): Promise<
         topic: string;
         studyUserChat: {
           title: string;
-        } | null;
+          token: string;
+        };
       };
     })[]
   >
@@ -35,7 +35,10 @@ export async function fetchMyPodcasts(): Promise<
   return withAuth(async (user) => {
     const podcasts = await prisma.analystPodcast.findMany({
       where: {
-        analyst: { userId: user.id },
+        analyst: {
+          userId: user.id,
+          studyUserChatId: { not: null },
+        },
       },
       select: {
         id: true,
@@ -54,6 +57,7 @@ export async function fetchMyPodcasts(): Promise<
             studyUserChat: {
               select: {
                 title: true,
+                token: true,
               },
             },
           },
@@ -67,45 +71,14 @@ export async function fetchMyPodcasts(): Promise<
       data: podcasts.map((podcast) => ({
         ...podcast,
         extra: (podcast.extra || {}) as AnalystPodcastExtra,
+        analyst: {
+          ...podcast.analyst,
+          studyUserChat: {
+            title: podcast.analyst.studyUserChat?.title || "",
+            token: podcast.analyst.studyUserChat?.token || "",
+          },
+        },
       })),
-    };
-  });
-}
-
-/**
- * Get signed URL for user's own podcast audio
- */
-export async function getMyPodcastPlaybackUrl({
-  podcastToken,
-}: {
-  podcastToken: string;
-}): Promise<ServerActionResult<string | null>> {
-  return withAuth(async (user) => {
-    const podcast = await prisma.analystPodcast.findFirst({
-      where: {
-        token: podcastToken,
-        analyst: { userId: user.id },
-      },
-      select: {
-        id: true,
-        objectUrl: true,
-        extra: true,
-        generatedAt: true,
-      },
-    });
-
-    if (!podcast || !podcast.generatedAt || !podcast.objectUrl) {
-      return {
-        success: false,
-        code: "not_found",
-        message: "Podcast audio not found.",
-      };
-    }
-
-    const result = await podcastObjectUrlToHttpUrl(podcast);
-    return {
-      success: true,
-      data: result ? result.signedObjectUrl : null,
     };
   });
 }

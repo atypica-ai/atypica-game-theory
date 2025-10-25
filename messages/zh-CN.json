@@ -401,7 +401,15 @@
     "startNewStudy": "开始新研究",
     "loadFailed": "加载播客失败",
     "playFailed": "播放失败",
-    "untitledStudy": "未命名研究"
+    "untitledStudy": "未命名研究",
+    "statusReady": "就绪",
+    "statusProcessing": "处理中",
+    "share": "分享",
+    "playing": "播放中",
+    "podcastLabel": "播客",
+    "playPodcast": "播放播客",
+    "pausePodcast": "暂停播客",
+    "generatingAudio": "正在生成音频..."
   },
   "AICompliance": {
     "fullDisclaimer": "以上内容由人工智能生成",

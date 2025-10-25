@@ -146,9 +146,8 @@ export async function getPodcastAudioSignedUrl({
       data: null,
     };
   }
-
   const { signedObjectUrl, mimeType } = result;
-
+  // TODO:下面这个逻辑挪到 podcastObjectUrlToHttpUrl 里
   if (
     true || // 国内和海外都用 CDN
     (getDeployRegion() === "mainland" && !/amazonaws\.com\.cn/.test(signedObjectUrl))
