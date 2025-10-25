@@ -361,90 +361,6 @@ export async function fetchAnalystInterviewForPersona({
   };
 }
 
-export async function fetchAnalystReportByToken(
-  token: string,
-): Promise<
-  ServerActionResult<
-    Pick<
-      AnalystReport,
-      "id" | "token" | "analystId" | "coverSvg" | "generatedAt" | "createdAt" | "updatedAt"
-    > & { analyst: Analyst }
-  >
-> {
-  const report = await prisma.analystReport.findUnique({
-    where: { token },
-    select: {
-      id: true,
-      token: true,
-      analystId: true,
-      analyst: true,
-      coverSvg: true,
-      generatedAt: true,
-      createdAt: true,
-      updatedAt: true,
-    },
-  });
-  if (!report) {
-    return {
-      success: false,
-      code: "not_found",
-      message: "AnalystReport not found",
-    };
-  }
-  return {
-    success: true,
-    data: report,
-  };
-}
-
-export async function fetchAnalystReportsOfStudyUserChat({
-  studyUserChatToken,
-  includeOnePageHtml = false,
-}: {
-  studyUserChatToken: string;
-  includeOnePageHtml?: boolean;
-}): Promise<
-  ServerActionResult<
-    (Pick<
-      AnalystReport,
-      "id" | "token" | "analystId" | "coverSvg" | "generatedAt" | "createdAt" | "updatedAt"
-    > & { analyst: Analyst })[]
-  >
-> {
-  const studyUserChat = await prisma.userChat.findUnique({
-    where: { token: studyUserChatToken, kind: "study" },
-    include: { analyst: { select: { id: true } } },
-  });
-  if (!studyUserChat?.analyst) {
-    return {
-      success: true,
-      data: [],
-    };
-  }
-  const reports = await prisma.analystReport.findMany({
-    where: {
-      analystId: studyUserChat.analyst.id,
-      generatedAt: { not: null },
-    },
-    select: {
-      id: true,
-      token: true,
-      analystId: true,
-      analyst: true,
-      coverSvg: true,
-      generatedAt: true,
-      createdAt: true,
-      updatedAt: true,
-      onePageHtml: includeOnePageHtml,
-    },
-    orderBy: { createdAt: "desc" },
-  });
-  return {
-    success: true,
-    data: reports,
-  };
-}
-
 /**
  * 和 fetchAnalystInterviewForPersona 一样，这个方法是安全的，无法通过遍历 personaId 来获取所有 Persona
  */
@@ -574,31 +490,98 @@ export async function userStopBackgroundStudyAction(
   });
 }
 
+export async function fetchAnalystReportByToken(
+  token: string,
+): Promise<
+  ServerActionResult<
+    Pick<
+      AnalystReport,
+      "id" | "token" | "analystId" | "coverSvg" | "generatedAt" | "createdAt" | "updatedAt"
+    > & { analyst: Analyst }
+  >
+> {
+  const report = await prisma.analystReport.findUnique({
+    where: { token },
+    select: {
+      id: true,
+      token: true,
+      analystId: true,
+      analyst: true,
+      coverSvg: true,
+      generatedAt: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+  if (!report) {
+    return {
+      success: false,
+      code: "not_found",
+      message: "AnalystReport not found",
+    };
+  }
+  return {
+    success: true,
+    data: report,
+  };
+}
+
+export async function fetchAnalystReportsOfStudyUserChat({
+  studyUserChatToken,
+  includeOnePageHtml = false,
+}: {
+  studyUserChatToken: string;
+  includeOnePageHtml?: boolean;
+}): Promise<
+  ServerActionResult<
+    Pick<
+      AnalystReport,
+      "id" | "token" | "analystId" | "coverSvg" | "generatedAt" | "createdAt" | "updatedAt"
+    >[]
+  >
+> {
+  const reports = await prisma.analystReport.findMany({
+    where: {
+      analyst: {
+        studyUserChat: { token: studyUserChatToken, kind: "study" },
+      },
+      generatedAt: { not: null },
+    },
+    select: {
+      id: true,
+      token: true,
+      analystId: true,
+      coverSvg: true,
+      generatedAt: true,
+      createdAt: true,
+      updatedAt: true,
+      onePageHtml: includeOnePageHtml,
+    },
+    orderBy: { id: "desc" },
+  });
+  return {
+    success: true,
+    data: reports,
+  };
+}
+
 export async function fetchAnalystPodcastsOfStudyUserChat({
   studyUserChatToken,
 }: {
   studyUserChatToken: string;
 }): Promise<
   ServerActionResult<
-    (Pick<
+    Pick<
       AnalystPodcast,
       "id" | "token" | "analystId" | "script" | "generatedAt" | "createdAt" | "updatedAt"
-    > & { analyst: Analyst })[]
+    >[]
   >
 > {
-  const studyUserChat = await prisma.userChat.findUnique({
-    where: { token: studyUserChatToken, kind: "study" },
-    include: { analyst: { select: { id: true } } },
-  });
-  if (!studyUserChat?.analyst) {
-    return {
-      success: true,
-      data: [],
-    };
-  }
   const podcasts = await prisma.analystPodcast.findMany({
     where: {
-      analystId: studyUserChat.analyst.id,
+      analyst: {
+        studyUserChat: { token: studyUserChatToken, kind: "study" },
+      },
       // Include both generated and generating podcasts
       // generatedAt: { not: null },
     },
@@ -606,13 +589,12 @@ export async function fetchAnalystPodcastsOfStudyUserChat({
       id: true,
       token: true,
       analystId: true,
-      analyst: true,
       script: true,
       generatedAt: true,
       createdAt: true,
       updatedAt: true,
     },
-    orderBy: { createdAt: "desc" },
+    orderBy: { id: "desc" },
   });
   return {
     success: true,
@@ -625,19 +607,11 @@ export async function fetchAnalystReportsCountOfStudyUserChat({
 }: {
   studyUserChatToken: string;
 }): Promise<ServerActionResult<number>> {
-  const studyUserChat = await prisma.userChat.findUnique({
-    where: { token: studyUserChatToken, kind: "study" },
-    include: { analyst: { select: { id: true } } },
-  });
-  if (!studyUserChat?.analyst) {
-    return {
-      success: true,
-      data: 0,
-    };
-  }
   const count = await prisma.analystReport.count({
     where: {
-      analystId: studyUserChat.analyst.id,
+      analyst: {
+        studyUserChat: { token: studyUserChatToken, kind: "study" },
+      },
       generatedAt: { not: null },
     },
   });
@@ -652,19 +626,11 @@ export async function fetchAnalystPodcastsCountOfStudyUserChat({
 }: {
   studyUserChatToken: string;
 }): Promise<ServerActionResult<number>> {
-  const studyUserChat = await prisma.userChat.findUnique({
-    where: { token: studyUserChatToken, kind: "study" },
-    include: { analyst: { select: { id: true } } },
-  });
-  if (!studyUserChat?.analyst) {
-    return {
-      success: true,
-      data: 0,
-    };
-  }
   const count = await prisma.analystPodcast.count({
     where: {
-      analystId: studyUserChat.analyst.id,
+      analyst: {
+        studyUserChat: { token: studyUserChatToken, kind: "study" },
+      },
       // Include both generated and generating podcasts
       // generatedAt: { not: null },
     },

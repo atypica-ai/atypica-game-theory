@@ -170,6 +170,12 @@ export async function determineKindAndGeneratePodcast({
     .findUniqueOrThrow({ where: { id: podcast.id } })
     .then(({ extra, ...analyst }) => ({ ...analyst, extra: extra as AnalystPodcastExtra }));
 
+  await notifyPodcastReady({
+    analystId: analyst.id,
+    podcast: { token: podcast.token },
+    logger,
+  });
+
   return podcast;
 }
 
@@ -253,97 +259,92 @@ export async function evaluateAndGeneratePodcast({
 }): Promise<void> {
   const logger = rootLogger.child({ method: "evaluateAndGeneratePodcast", analystId, dryRun });
 
-  try {
-    const analyst = await prisma.analyst
-      .findUniqueOrThrow({ where: { id: analystId } })
-      .then(({ extra, ...analyst }) => ({ ...analyst, extra: extra as AnalystExtra }));
+  const analyst = await prisma.analyst
+    .findUniqueOrThrow({ where: { id: analystId } })
+    .then(({ extra, ...analyst }) => ({ ...analyst, extra: extra as AnalystExtra }));
 
-    // step 0: check if user has active subscription, podcast 功能还处于 preview 状态，暂时只给付费用户使用
-    const { activeSubscription } = await fetchActiveSubscription({
-      userId: analyst.userId,
-    });
-    if (!activeSubscription) {
-      logger.info("User does not have active subscription, skipping podcast generation");
-      return;
-    }
+  // step 0: check if user has active subscription, podcast 功能还处于 preview 状态，暂时只给付费用户使用
+  const { activeSubscription } = await fetchActiveSubscription({
+    userId: analyst.userId,
+  });
+  if (!activeSubscription) {
+    logger.info("User does not have active subscription, skipping podcast generation");
+    return;
+  }
 
-    if (!dryRun) {
-      await prisma.$executeRaw`
+  if (!dryRun) {
+    await prisma.$executeRaw`
         UPDATE "Analyst"
         SET "extra" = COALESCE("extra", '{}') || ${JSON.stringify({ podcastEvaluation: { processing: true } })}::jsonb,
             "updatedAt" = NOW()
         WHERE "id" = ${analyst.id}
       `;
-    }
+  }
 
-    // step 1: evaluate analyst for podcast
-    const { scores, shouldSelect } = await evaluateAnalystForPodcast(analyst, scoreThreshold);
+  // step 1: evaluate analyst for podcast
+  const { scores, shouldSelect } = await evaluateAnalystForPodcast(analyst, scoreThreshold);
 
-    if (!dryRun) {
-      await prisma.$executeRaw`
+  if (!dryRun) {
+    await prisma.$executeRaw`
         UPDATE "Analyst"
         SET "extra" = COALESCE("extra", '{}') || ${JSON.stringify({ podcastEvaluation: scores })}::jsonb,
             "updatedAt" = NOW()
         WHERE "id" = ${analyst.id}
       `;
-    }
-
-    if (!shouldSelect) {
-      logger.info("Analyst evaluateAnalystForPodcast below threshold, not generating podcast");
-      return;
-    }
-
-    logger.info("Analyst evaluateAnalystForPodcast passed threshold, generating podcast");
-
-    if (dryRun) {
-      // Dry run enabled, skipping podcast generation
-      return;
-    }
-
-    const statReport: StatReporter = async (dimension, value, extra) => {
-      logger.info({
-        msg: `[LIMITED FREE] statReport: ${dimension}=${value}`,
-        extra,
-      });
-    };
-    const abortController = new AbortController();
-
-    const podcast = await prisma.analystPodcast
-      .create({
-        data: {
-          analystId,
-          token: generateToken(),
-          instruction: "",
-          script: "",
-          extra: {
-            kindDetermination: {
-              kind: "deepDive",
-              reason: "Evaluation passed threshold",
-            },
-          } as AnalystPodcastExtra,
-        },
-      })
-      .then(({ extra, ...analyst }) => ({
-        ...analyst,
-        extra: extra as AnalystPodcastExtra,
-      }));
-
-    // step 2: generate podcast
-    await generatePodcast({
-      podcast,
-      abortSignal: abortController.signal,
-      statReport: statReport,
-    });
-
-    logger.info({ msg: "Podcast generated after evaluation", podcastId: podcast.id });
-
-    await notifyPodcastReady({
-      analystId: analyst.id,
-      podcast: { token: podcast.token },
-      logger,
-    });
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    logger.error({ msg: "evaluateAndGenerate failed", error: errorMessage });
   }
+
+  if (!shouldSelect) {
+    logger.info("Analyst evaluateAnalystForPodcast below threshold, not generating podcast");
+    return;
+  }
+
+  logger.info("Analyst evaluateAnalystForPodcast passed threshold, generating podcast");
+
+  if (dryRun) {
+    // Dry run enabled, skipping podcast generation
+    return;
+  }
+
+  const statReport: StatReporter = async (dimension, value, extra) => {
+    logger.info({
+      msg: `[LIMITED FREE] statReport: ${dimension}=${value}`,
+      extra,
+    });
+  };
+  const abortController = new AbortController();
+
+  const podcast = await prisma.analystPodcast
+    .create({
+      data: {
+        analystId,
+        token: generateToken(),
+        instruction: "",
+        script: "",
+        extra: {
+          kindDetermination: {
+            kind: "deepDive",
+            reason: "Evaluation passed threshold",
+          },
+        } as AnalystPodcastExtra,
+      },
+    })
+    .then(({ extra, ...analyst }) => ({
+      ...analyst,
+      extra: extra as AnalystPodcastExtra,
+    }));
+
+  // step 2: generate podcast
+  await generatePodcast({
+    podcast,
+    abortSignal: abortController.signal,
+    statReport: statReport,
+  });
+
+  logger.info({ msg: "Podcast generated after evaluation", podcastId: podcast.id });
+
+  await notifyPodcastReady({
+    analystId: analyst.id,
+    podcast: { token: podcast.token },
+    logger,
+  });
 }
