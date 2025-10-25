@@ -23,8 +23,7 @@ export async function fetchFeaturedPodcasts({
         token: string;
         script: string | null;
         objectUrl: string | null;
-        generatedAt: Date | null;
-        createdAt: Date;
+        generatedAt: Date;
         extra: AnalystPodcastExtra;
       };
       analyst: {
@@ -131,8 +130,7 @@ export async function fetchFeaturedPodcasts({
         token: p.token,
         script: p.script,
         objectUrl: p.objectUrl,
-        generatedAt: p.generatedAt,
-        createdAt: p.createdAt,
+        generatedAt: p.generatedAt!,
         extra: (p.extra || {}) as AnalystPodcastExtra,
       },
       analyst: {

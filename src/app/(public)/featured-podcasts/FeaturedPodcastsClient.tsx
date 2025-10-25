@@ -2,34 +2,21 @@
 import { Button } from "@/components/ui/button";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn } from "@/lib/utils";
-import {
-  CalendarDaysIcon,
-  MessageSquareIcon,
-  PlayIcon,
-  ShareIcon,
-  Volume2Icon,
-} from "lucide-react";
+import { PlayIcon, SquareArrowOutUpLeftIcon, Volume2Icon } from "lucide-react";
 import { useLocale } from "next-intl";
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { fetchFeaturedPodcasts } from "./actions";
 import { HighlightPodcast } from "./HighlightPodcast";
 
 type FeaturedPodcastItem = ExtractServerActionData<typeof fetchFeaturedPodcasts>[number];
 
-// Fixed placeholder values
-const PLACEHOLDER_DURATION = "25 min";
-const PLACEHOLDER_REPLIES = 0;
-
 export function FeaturedPodcastsClient() {
   const locale = useLocale();
   const [featuredPodcasts, setFeaturedPodcasts] = useState<FeaturedPodcastItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [podcastFilter, setPodcastFilter] = useState<"top" | "all">("top");
-
-  const ITEMS_PER_PAGE = 5;
 
   const loadFeaturedPodcasts = useCallback(async () => {
     try {
@@ -47,14 +34,6 @@ export function FeaturedPodcastsClient() {
   useEffect(() => {
     loadFeaturedPodcasts();
   }, [loadFeaturedPodcasts]);
-
-  const formatDate = (date: Date, locale: string) => {
-    return new Intl.DateTimeFormat(locale, {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    }).format(date);
-  };
 
   // Get podcast kind from extra
   const getPodcastKind = (featuredPodcast: FeaturedPodcastItem) => {
@@ -78,22 +57,16 @@ export function FeaturedPodcastsClient() {
   // Apply Top/All filter
   const displayPodcasts = podcastFilter === "top" ? featuredPodcasts.slice(0, 5) : featuredPodcasts;
 
-  // Pagination
-  const totalPages = Math.ceil(displayPodcasts.length / ITEMS_PER_PAGE);
-  const currentPodcasts = displayPodcasts.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE,
-  );
-
   // Highlight podcast (random)
-  const highlightPodcast =
-    featuredPodcasts.length > 0
+  const highlightPodcast = useMemo(() => {
+    return featuredPodcasts.length > 0
       ? featuredPodcasts[Math.floor(Math.random() * featuredPodcasts.length)]
       : null;
+  }, [featuredPodcasts]);
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-[50dvh] bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-muted-foreground">Loading podcasts...</p>
@@ -105,14 +78,14 @@ export function FeaturedPodcastsClient() {
   return (
     <div className="min-h-screen bg-background">
       {/* Highlight Section - Featured Podcast */}
-      <HighlightPodcast
-        podcast={highlightPodcast?.podcast || null}
-        analyst={highlightPodcast?.analyst || null}
-        studyUserChat={highlightPodcast?.studyUserChat || null}
-        locale={locale}
-        placeholderDuration={PLACEHOLDER_DURATION}
-        placeholderReplies={PLACEHOLDER_REPLIES}
-      />
+      {highlightPodcast && (
+        <HighlightPodcast
+          podcast={highlightPodcast.podcast}
+          analyst={highlightPodcast.analyst}
+          studyUserChat={highlightPodcast.studyUserChat}
+          locale={locale}
+        />
+      )}
 
       {/* All Podcasts Section */}
       <section className="bg-zinc-50 dark:bg-zinc-800 px-4 py-20 md:py-28">
@@ -127,12 +100,9 @@ export function FeaturedPodcastsClient() {
 
         <div className="max-w-4xl mx-auto">
           {/* Filter Tabs */}
-          <div className="inline-flex items-center gap-2 bg-muted p-1 rounded-lg mb-8 mx-auto">
+          <div className="flex items-center gap-2 bg-muted p-1 rounded-lg mb-8 w-fit mx-auto">
             <button
-              onClick={() => {
-                setPodcastFilter("top");
-                setCurrentPage(1);
-              }}
+              onClick={() => setPodcastFilter("top")}
               className={cn(
                 "px-6 py-2 text-sm font-medium rounded-md transition-colors",
                 podcastFilter === "top"
@@ -143,10 +113,7 @@ export function FeaturedPodcastsClient() {
               Top Podcasts
             </button>
             <button
-              onClick={() => {
-                setPodcastFilter("all");
-                setCurrentPage(1);
-              }}
+              onClick={() => setPodcastFilter("all")}
               className={cn(
                 "px-6 py-2 text-sm font-medium rounded-md transition-colors",
                 podcastFilter === "all"
@@ -160,139 +127,80 @@ export function FeaturedPodcastsClient() {
 
           {/* Podcast List */}
           {displayPodcasts.length > 0 ? (
-            <>
-              <div className="grid grid-cols-1 gap-4">
-                {currentPodcasts.map((featuredPodcast) => (
-                  <div
-                    key={featuredPodcast.podcast.token}
-                    className="bg-card border border-border rounded-xl p-6 hover:shadow-md transition-shadow group relative"
+            <div className="grid grid-cols-1 gap-4">
+              {displayPodcasts.map((featuredPodcast) => (
+                <div
+                  key={featuredPodcast.podcast.token}
+                  className={cn(
+                    "bg-card border border-border rounded-xl hover:shadow-md transition-shadow group relative",
+                    "p-4 sm:p-6",
+                  )}
+                >
+                  {/* Share Button - Top Right */}
+                  {/*<Button
+                    variant="outline"
+                    size="sm"
+                    className="absolute top-4 right-4 h-7 text-xs rounded-full shadow-none"
                   >
-                    {/* Share Button - Top Right */}
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="absolute top-4 right-4 h-7 text-xs rounded-full shadow-none"
+                    <ShareIcon className="size-3" />
+                    <span className="max-sm:hidden">Share</span>
+                  </Button>*/}
+
+                  <div className="flex items-start gap-4">
+                    <div
+                      className={cn(
+                        "size-8 sm:size-16 rounded-sm sm:rounded-xl",
+                        "bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center text-white font-bold text-xs shrink-0",
+                      )}
                     >
-                      <ShareIcon className="size-3" />
-                      <span className="max-sm:hidden">Share</span>
-                    </Button>
+                      <Volume2Icon className="size-4 sm:size-6" />
+                    </div>
 
-                    <div className="flex items-start gap-4">
-                      <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
-                        <Volume2Icon className="w-6 h-6" />
-                      </div>
+                    <div className="flex-1 min-w-0 sm:pr-8">
+                      <h3 className="font-semibold text-base sm:text-lg text-foreground mb-2 line-clamp-2 sm:line-clamp-1 group-hover:text-primary transition-colors">
+                        {featuredPodcast.studyUserChat.title}
+                      </h3>
+                      <p className="text-muted-foreground text-sm mb-4 line-clamp-3 sm:line-clamp-2">
+                        {featuredPodcast.analyst.topic}
+                      </p>
 
-                      <div className="flex-1 min-w-0 pr-16">
-                        <h3 className="font-semibold text-lg text-foreground mb-2 line-clamp-1 group-hover:text-primary transition-colors">
-                          {featuredPodcast.studyUserChat?.title || "Untitled Study"}
-                        </h3>
-                        <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
-                          {featuredPodcast.analyst.topic}
-                        </p>
+                      <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 text-xs shadow-none max-sm:hidden"
+                          asChild
+                        >
+                          <Link
+                            href={`/study/${featuredPodcast.studyUserChat.token}/share`}
+                            target="_blank"
+                          >
+                            <SquareArrowOutUpLeftIcon className="size-3" />
+                            View Study Process
+                          </Link>
+                        </Button>
 
-                        {/* Metadata */}
-                        <div className="flex items-center gap-4 mb-4 text-xs text-muted-foreground">
-                          <CalendarDaysIcon className="w-3.5 h-3.5" />
-                          <span>
-                            {formatDate(
-                              featuredPodcast.podcast.generatedAt ||
-                                featuredPodcast.podcast.createdAt,
-                              locale,
-                            )}
-                          </span>
-                          <MessageSquareIcon className="w-3.5 h-3.5" />
-                          <span>{PLACEHOLDER_REPLIES} replies</span>
-                          <span>{PLACEHOLDER_DURATION}</span>
-                        </div>
+                        <Button variant="default" asChild className="text-xs h-7 shadow-none">
+                          <Link
+                            href={`/artifacts/podcast/${featuredPodcast.podcast.token}/share`}
+                            target="_blank"
+                          >
+                            <PlayIcon className="size-4" />
+                            Play Podcast
+                          </Link>
+                        </Button>
 
-                        {/* Action Buttons */}
-                        <div className="flex items-center gap-2">
-                          <Button variant="outline" size="sm" asChild>
-                            <Link
-                              href={`/artifacts/podcast/${featuredPodcast.podcast.token}/share`}
-                              target="_blank"
-                            >
-                              <PlayIcon className="h-4 w-4 mr-1.5" />
-                              Play Podcast
-                            </Link>
-                          </Button>
-                          {featuredPodcast.studyUserChat && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"
-                              asChild
-                            >
-                              <Link href={`/study/${featuredPodcast.studyUserChat.token}/share`}>
-                                View Study
-                              </Link>
-                            </Button>
-                          )}
-                        </div>
+                        {/*<CalendarDaysIcon className="w-3.5 h-3.5" />
+                        <span>{formatDate(featuredPodcast.podcast.generatedAt, locale)}</span>*/}
+                        {/*<MessageSquareIcon className="w-3.5 h-3.5" />
+                        <span>{PLACEHOLDER_REPLIES} replies</span>
+                        <span>{PLACEHOLDER_DURATION}</span>*/}
                       </div>
                     </div>
                   </div>
-                ))}
-              </div>
-
-              {/* Pagination (only for All Podcasts) */}
-              {podcastFilter === "all" && totalPages > 1 && (
-                <div className="mt-8 flex items-center justify-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-                    disabled={currentPage === 1}
-                  >
-                    Previous
-                  </Button>
-
-                  <div className="flex items-center gap-1">
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-                      const showPage =
-                        page === 1 ||
-                        page === totalPages ||
-                        (page >= currentPage - 1 && page <= currentPage + 1);
-
-                      const showEllipsis =
-                        (page === 2 && currentPage > 3) ||
-                        (page === totalPages - 1 && currentPage < totalPages - 2);
-
-                      if (showEllipsis) {
-                        return (
-                          <span key={page} className="px-2 text-muted-foreground">
-                            ...
-                          </span>
-                        );
-                      }
-
-                      if (!showPage) return null;
-
-                      return (
-                        <Button
-                          key={page}
-                          variant={currentPage === page ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => setCurrentPage(page)}
-                          className="min-w-[2.5rem]"
-                        >
-                          {page}
-                        </Button>
-                      );
-                    })}
-                  </div>
-
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-                    disabled={currentPage === totalPages}
-                  >
-                    Next
-                  </Button>
                 </div>
-              )}
-            </>
+              ))}
+            </div>
           ) : (
             <div className="text-center py-12">
               <Volume2Icon className="w-16 h-16 text-muted-foreground bg-muted rounded-full p-4 mx-auto mb-4" />
@@ -360,9 +268,9 @@ export function FeaturedPodcastsClient() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <h4 className="font-medium text-foreground line-clamp-1">
-                            {featuredPodcast.studyUserChat?.title || "Untitled Study"}
+                            {featuredPodcast.studyUserChat.title}
                           </h4>
-                          <p className="text-xs text-muted-foreground">{PLACEHOLDER_DURATION}</p>
+                          {/*<p className="text-xs text-muted-foreground">{PLACEHOLDER_DURATION}</p>*/}
                         </div>
                         <Button variant="outline" size="sm" asChild>
                           <Link
@@ -424,9 +332,9 @@ export function FeaturedPodcastsClient() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <h4 className="font-medium text-foreground line-clamp-1">
-                            {featuredPodcast.studyUserChat?.title || "Untitled Study"}
+                            {featuredPodcast.studyUserChat.title}
                           </h4>
-                          <p className="text-xs text-muted-foreground">{PLACEHOLDER_DURATION}</p>
+                          {/*<p className="text-xs text-muted-foreground">{PLACEHOLDER_DURATION}</p>*/}
                         </div>
                         <Button variant="outline" size="sm" asChild>
                           <Link
