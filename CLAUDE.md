@@ -137,3 +137,452 @@ Built-in health check system available at `/api/health` with:
 - Optional Uptime Kuma integration
 
 Run health checks with: `npx tsx scripts/check-status.ts`
+
+## Code Conventions
+
+### Styling Conventions
+
+#### Tailwind CSS Setup
+
+- **Version**: Tailwind CSS v4 with PostCSS
+- **Utility Function**: Use `cn()` from `src/lib/utils.ts` for combining class names
+  ```typescript
+  import { cn } from "@/lib/utils";
+
+  <div className={cn("base-class", condition && "conditional-class")} />
+  ```
+
+#### Theme Configuration
+
+- **Color System**: Uses `oklch` color space for better color management
+- **CSS Variables**: Theme tokens defined in `src/app/globals.css` using `@theme` block
+- **Dark Mode**: Built-in dark mode support with separate color palettes
+- **Custom Variants**: Support for language-specific styles (e.g., `:lang(zh)`)
+
+#### Design Tokens
+
+```css
+/* Available theme tokens */
+--color-background
+--color-foreground
+--color-primary
+--color-secondary
+--color-accent
+--color-muted
+--color-destructive
+--radius-sm, --radius-md, --radius-lg
+```
+
+#### Best Practices
+
+1. **Class Name Composition**: Always use `cn()` utility for dynamic classes
+   ```typescript
+   <Button className={cn("w-full", isLoading && "opacity-50")} />
+   ```
+
+2. **Responsive Design**: Use Tailwind's responsive prefixes (sm:, md:, lg:, xl:)
+   ```typescript
+   <div className="flex flex-col md:flex-row lg:gap-4" />
+   ```
+
+3. **Theme-Aware Styling**: Leverage CSS variables for colors
+   ```typescript
+   <div className="bg-background text-foreground border-border" />
+   ```
+
+4. **Component Styling**: Use `class-variance-authority` for component variants
+   ```typescript
+   import { cva } from "class-variance-authority";
+
+   const buttonVariants = cva("base-classes", {
+     variants: {
+       variant: {
+         default: "bg-primary text-primary-foreground",
+         secondary: "bg-secondary text-secondary-foreground",
+       },
+       size: {
+         sm: "h-9 px-3",
+         lg: "h-11 px-8",
+       }
+     }
+   });
+   ```
+
+5. **Custom Fonts**: Project uses custom fonts (EuclidCircularA, IBMPlexMono) defined in globals.css
+
+### Server Actions Conventions
+
+#### File Structure
+
+- **Location**: Define server actions in `actions.ts` files within feature directories
+- **Naming**: Use descriptive function names (e.g., `signUp`, `createPersona`, `deleteSession`)
+- **Directive**: Always add `"use server"` at the top of the file
+
+```typescript
+"use server";
+
+import { auth } from "@/auth";
+import { prisma } from "@/prisma/client";
+
+export async function createItem(data: CreateItemInput) {
+  // Implementation
+}
+```
+
+#### Return Type Pattern
+
+- **Standard Type**: Use `ServerActionResult<T>` from `@/lib/serverAction`
+- **Success Response**:
+  ```typescript
+  return {
+    success: true,
+    data: { id: 1, name: "Item" },
+    pagination?: { page: 1, pageSize: 10, totalCount: 100, totalPages: 10 }
+  };
+  ```
+- **Error Response**:
+  ```typescript
+  return {
+    success: false,
+    message: "Error description",
+    code: "not_found" | "unauthorized" | "forbidden" | "internal_server_error"
+  };
+  ```
+
+#### Authorization Pattern
+
+```typescript
+import { withAuth } from "@/lib/request/withAuth";
+
+export const updateProfile = withAuth(
+  async ({ session, user }, profileData: ProfileData) => {
+    // session and user are automatically available
+    // Redirect to login if unauthorized
+  }
+);
+```
+
+#### Error Handling
+
+```typescript
+try {
+  const result = await prisma.item.create({ data });
+  return { success: true, data: result };
+} catch (error) {
+  console.error("Failed to create item:", error);
+  return {
+    success: false,
+    message: await getTranslations("errors.create_failed"),
+    code: "internal_server_error"
+  };
+}
+```
+
+#### Best Practices
+
+1. **Input Validation**: Always validate input before database operations
+2. **Internationalization**: Use translated error messages from `next-intl`
+3. **Type Safety**: Leverage TypeScript for input/output types
+4. **Database Operations**: Use Prisma for all database interactions
+5. **Logging**: Log errors with context for debugging
+
+### Next.js Pages Conventions
+
+#### Page Component Structure
+
+```typescript
+// src/app/(feature)/page.tsx
+import { Suspense } from "react";
+import { getTranslations } from "next-intl/server";
+
+export async function generateMetadata() {
+  const t = await getTranslations("metadata");
+  return {
+    title: t("title"),
+    description: t("description"),
+  };
+}
+
+export default async function Page() {
+  // Server-side data fetching
+  const data = await fetchData();
+
+  return (
+    <Suspense fallback={<Loading />}>
+      <PageContent data={data} />
+    </Suspense>
+  );
+}
+```
+
+#### Layout Patterns
+
+```typescript
+// src/app/(feature)/layout.tsx
+import { ReactNode } from "react";
+
+export default async function Layout({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  return (
+    <div className="layout-container">
+      <Sidebar />
+      <main>{children}</main>
+    </div>
+  );
+}
+```
+
+#### Route Organization
+
+- **Route Groups**: Use parentheses for logical grouping without affecting URL
+  - `(auth)` - Authentication pages
+  - `(public)` - Marketing pages
+  - `(study)` - Study-related features
+  - `(persona)` - Persona management
+  - `(interviewProject)` - Interview features
+
+#### Metadata Generation
+
+```typescript
+export async function generateMetadata({ params }): Promise<Metadata> {
+  const locale = await getLocale();
+  const t = await getTranslations("metadata");
+
+  return {
+    title: {
+      default: t("title"),
+      template: "%s | atypica.AI"
+    },
+    description: t("description"),
+    openGraph: {
+      title: t("title"),
+      description: t("description"),
+    }
+  };
+}
+```
+
+#### Server vs Client Components
+
+- **Default**: Use server components by default
+- **Client Components**: Mark with `"use client"` only when needed for:
+  - Event handlers (onClick, onChange)
+  - Browser APIs (localStorage, window)
+  - State management (useState, useReducer)
+  - Effects (useEffect)
+  - Context providers
+
+```typescript
+// Server Component (default)
+async function ServerPage() {
+  const data = await fetchData();
+  return <ClientComponent data={data} />;
+}
+
+// Client Component
+"use client";
+
+function ClientComponent({ data }) {
+  const [state, setState] = useState(data);
+  return <div onClick={() => setState(newData)}>{state}</div>;
+}
+```
+
+#### Data Fetching
+
+- **Server Components**: Fetch data directly in component
+- **Parallel Fetching**: Use Promise.all for multiple requests
+- **Streaming**: Use Suspense boundaries for progressive rendering
+
+```typescript
+async function Page() {
+  const [user, posts] = await Promise.all([
+    fetchUser(),
+    fetchPosts()
+  ]);
+
+  return (
+    <div>
+      <UserProfile user={user} />
+      <Suspense fallback={<PostsSkeleton />}>
+        <Posts posts={posts} />
+      </Suspense>
+    </div>
+  );
+}
+```
+
+### AI SDK (Vercel AI SDK) Conventions
+
+#### Provider Configuration
+
+```typescript
+// src/ai/provider.ts
+import { createOpenAI, createAnthropic } from "@ai-sdk/openai";
+
+// Configure multiple providers
+const openai = createOpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+  baseURL: process.env.OPENAI_BASE_URL,
+});
+
+// Dynamic model selection based on deployment region
+export function llm(modelName: LLMModelName) {
+  switch (modelName) {
+    case "claude-3-5-sonnet":
+      return bedrock("us.anthropic.claude-3-5-sonnet-20241022-v2:0");
+    case "gpt-4o":
+      return azureEastUS2("gpt-4o");
+    case "gemini-2.5-flash":
+      return google("gemini-2.0-flash-exp");
+    default:
+      return openai(modelName);
+  }
+}
+```
+
+#### Streaming Pattern
+
+```typescript
+// src/app/api/chat/route.ts
+import { streamText } from "ai";
+import { llm } from "@/ai/provider";
+
+export async function POST(req: Request) {
+  const { messages } = await req.json();
+
+  const result = streamText({
+    model: llm("gpt-4o"),
+    system: "You are a helpful assistant",
+    messages,
+    tools,
+
+    // Smooth streaming for better UX
+    experimental_transform: smoothStream({
+      delayInMs: 30,
+      chunking: /[\u4E00-\u9FFF]|\S+\s+/,  // Chinese characters or words
+    }),
+
+    // Track steps and persist
+    onStepFinish: async (step) => {
+      await saveStepToDB(step);
+      await trackTokenUsage(step);
+    },
+
+    onError: ({ error }) => {
+      console.error("AI stream error:", error);
+    },
+  });
+
+  return result.toUIMessageStreamResponse();
+}
+```
+
+#### Message Handling
+
+```typescript
+// src/ai/messageUtils.ts
+
+// Convert database messages to AI SDK format
+export async function convertDBMessagesToAIMessages(dbMessages) {
+  return await Promise.all(
+    dbMessages.map(async ({ messageId, role, parts, attachments }) => ({
+      id: messageId,
+      role,
+      parts: [
+        ...parts.map(convertToV5MessagePart),
+        ...await processAttachments(attachments)
+      ]
+    }))
+  );
+}
+
+// Flatten messages for tool call handling
+export function convertToFlattenModelMessages(messages, { tools }) {
+  const flattenMessages = messages.flatMap(message =>
+    message.parts.some(isToolUIPart)
+      ? splitMessageOnToolCalls(message)
+      : [message]
+  );
+
+  return convertToModelMessages(flattenMessages, { tools });
+}
+```
+
+#### Tool Definition Pattern
+
+```typescript
+// src/ai/tools/customTool.ts
+import { tool } from "ai";
+import { z } from "zod";
+
+export const customTool = tool({
+  description: "Tool description for the AI model",
+  parameters: z.object({
+    query: z.string().describe("The search query"),
+    limit: z.number().optional().describe("Number of results"),
+  }),
+  execute: async ({ query, limit = 10 }) => {
+    const results = await performSearch(query, limit);
+    return results;
+  },
+});
+
+// Usage in streamText
+const tools = {
+  custom_tool: customTool,
+  google_search: google.tools.googleSearch({
+    mode: "MODE_DYNAMIC",
+    dynamicThreshold: 0.3,
+  }),
+};
+```
+
+#### Token Usage Tracking
+
+```typescript
+onStepFinish: async (step) => {
+  const { tokens, extra } = calculateStepTokensUsage(step);
+
+  await statReport("tokens", tokens, {
+    reportedBy: "chat",
+    modelName: step.model,
+    userId: session.userId,
+    ...extra,
+  });
+}
+```
+
+#### Error Handling and Retries
+
+```typescript
+const result = await streamText({
+  model: llm("gpt-4o"),
+  maxRetries: 3,
+
+  onError: ({ error }) => {
+    // Log error for monitoring
+    logger.error("AI stream error", {
+      error: error.message,
+      userId,
+      modelName,
+    });
+  },
+});
+```
+
+#### Best Practices
+
+1. **Provider Selection**: Use `llm()` function for intelligent provider/model selection
+2. **Message Conversion**: Always convert DB messages using utility functions
+3. **Tool Handling**: Flatten messages with tool calls before sending to model
+4. **Streaming**: Use `smoothStream` for better Chinese character support
+5. **Persistence**: Save AI responses and tool calls to database in `onStepFinish`
+6. **Token Tracking**: Always track token usage for billing and analytics
+7. **Error Logging**: Comprehensive error logging with context
+8. **Type Safety**: Leverage Zod schemas for tool parameters
+9. **Step Control**: Use `stopWhen` for multi-step reasoning limits
+10. **File Attachments**: Process and include file attachments in messages
