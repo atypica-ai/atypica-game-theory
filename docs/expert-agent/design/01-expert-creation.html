@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>创建专家智能体 - Expert Agent System</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: oklch(0.985 0 0);
+      color: oklch(0.145 0 0);
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .header h1 {
+      font-size: 32px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: oklch(0.145 0 0);
+    }
+
+    .header p {
+      font-size: 16px;
+      color: oklch(0.556 0 0);
+    }
+
+    .progress-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 48px;
+      position: relative;
+    }
+
+    .progress-bar::before {
+      content: '';
+      position: absolute;
+      top: 20px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: oklch(0.922 0 0);
+      z-index: 0;
+    }
+
+    .progress-line {
+      position: absolute;
+      top: 20px;
+      left: 0;
+      height: 2px;
+      background: oklch(0.87 0.29 142.57);
+      z-index: 1;
+      transition: width 0.3s ease;
+    }
+
+    .progress-step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      z-index: 2;
+      flex: 1;
+    }
+
+    .progress-step-circle {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: oklch(1 0 0);
+      border: 2px solid oklch(0.922 0 0);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      margin-bottom: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .progress-step.active .progress-step-circle {
+      background: oklch(0.87 0.29 142.57);
+      border-color: oklch(0.87 0.29 142.57);
+      color: oklch(1 0 0);
+    }
+
+    .progress-step.completed .progress-step-circle {
+      background: oklch(0.87 0.29 142.57);
+      border-color: oklch(0.87 0.29 142.57);
+      color: oklch(1 0 0);
+    }
+
+    .progress-step-label {
+      font-size: 14px;
+      color: oklch(0.556 0 0);
+      text-align: center;
+    }
+
+    .progress-step.active .progress-step-label {
+      color: oklch(0.145 0 0);
+      font-weight: 500;
+    }
+
+    .card {
+      background: oklch(1 0 0);
+      border: 1px solid oklch(0.922 0 0);
+      border-radius: 12px;
+      padding: 32px;
+      margin-bottom: 24px;
+    }
+
+    .form-group {
+      margin-bottom: 24px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 8px;
+      color: oklch(0.145 0 0);
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid oklch(0.922 0 0);
+      border-radius: 8px;
+      font-size: 14px;
+      transition: all 0.2s;
+      background: oklch(1 0 0);
+      color: oklch(0.145 0 0);
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: oklch(0.87 0.29 142.57);
+      box-shadow: 0 0 0 3px oklch(0.87 0.29 142.57 / 0.1);
+    }
+
+    .form-textarea {
+      min-height: 120px;
+      resize: vertical;
+      font-family: inherit;
+    }
+
+    .form-select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 40px;
+    }
+
+    .upload-area {
+      border: 2px dashed oklch(0.922 0 0);
+      border-radius: 8px;
+      padding: 48px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: oklch(0.985 0 0);
+    }
+
+    .upload-area:hover {
+      border-color: oklch(0.87 0.29 142.57);
+      background: oklch(0.87 0.29 142.57 / 0.05);
+    }
+
+    .upload-area.drag-over {
+      border-color: oklch(0.87 0.29 142.57);
+      background: oklch(0.87 0.29 142.57 / 0.1);
+    }
+
+    .upload-icon {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 16px;
+      color: oklch(0.556 0 0);
+    }
+
+    .upload-text {
+      font-size: 14px;
+      color: oklch(0.145 0 0);
+      margin-bottom: 8px;
+    }
+
+    .upload-hint {
+      font-size: 12px;
+      color: oklch(0.556 0 0);
+    }
+
+    .file-list {
+      margin-top: 16px;
+    }
+
+    .file-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: oklch(0.985 0 0);
+      border: 1px solid oklch(0.922 0 0);
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+
+    .file-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .file-icon {
+      width: 32px;
+      height: 32px;
+      color: oklch(0.556 0 0);
+    }
+
+    .file-name {
+      font-size: 14px;
+      color: oklch(0.145 0 0);
+    }
+
+    .file-size {
+      font-size: 12px;
+      color: oklch(0.556 0 0);
+    }
+
+    .file-remove {
+      padding: 8px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: oklch(0.556 0 0);
+      transition: color 0.2s;
+    }
+
+    .file-remove:hover {
+      color: oklch(0.577 0.245 27.325);
+    }
+
+    .input-type-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid oklch(0.922 0 0);
+    }
+
+    .input-type-tab {
+      padding: 12px 20px;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      color: oklch(0.556 0 0);
+      transition: all 0.2s;
+    }
+
+    .input-type-tab:hover {
+      color: oklch(0.145 0 0);
+    }
+
+    .input-type-tab.active {
+      color: oklch(0.87 0.29 142.57);
+      border-bottom-color: oklch(0.87 0.29 142.57);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      margin-top: 32px;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-secondary {
+      background: oklch(0.97 0 0);
+      color: oklch(0.145 0 0);
+      border: 1px solid oklch(0.922 0 0);
+    }
+
+    .btn-secondary:hover {
+      background: oklch(0.95 0 0);
+    }
+
+    .btn-primary {
+      background: oklch(0.87 0.29 142.57);
+      color: oklch(1 0 0);
+    }
+
+    .btn-primary:hover {
+      background: oklch(0.82 0.29 142.57);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .hint-box {
+      padding: 16px;
+      background: oklch(0.87 0.29 142.57 / 0.1);
+      border-left: 3px solid oklch(0.87 0.29 142.57);
+      border-radius: 8px;
+      margin-bottom: 24px;
+    }
+
+    .hint-box-title {
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 8px;
+      color: oklch(0.145 0 0);
+    }
+
+    .hint-box-content {
+      font-size: 13px;
+      color: oklch(0.556 0 0);
+      line-height: 1.5;
+    }
+
+    .mic-button {
+      padding: 12px 24px;
+      background: oklch(0.97 0 0);
+      border: 1px solid oklch(0.922 0 0);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .mic-button:hover {
+      background: oklch(0.95 0 0);
+      border-color: oklch(0.87 0.29 142.57);
+    }
+
+    .mic-button.recording {
+      background: oklch(0.577 0.245 27.325 / 0.1);
+      border-color: oklch(0.577 0.245 27.325);
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>创建专家智能体</h1>
+      <p>通过多种方式输入专家知识，构建您的专属智能助手</p>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="progress-bar">
+      <div class="progress-line" style="width: 33%;"></div>
+      <div class="progress-step active">
+        <div class="progress-step-circle">1</div>
+        <div class="progress-step-label">基本信息</div>
+      </div>
+      <div class="progress-step">
+        <div class="progress-step-circle">2</div>
+        <div class="progress-step-label">导入知识</div>
+      </div>
+      <div class="progress-step">
+        <div class="progress-step-circle">3</div>
+        <div class="progress-step-label">补充访谈</div>
+      </div>
+      <div class="progress-step">
+        <div class="progress-step-circle">4</div>
+        <div class="progress-step-label">完成</div>
+      </div>
+    </div>
+
+    <!-- Hint Box -->
+    <div class="hint-box">
+      <div class="hint-box-title">💡 什么是专家智能体？</div>
+      <div class="hint-box-content">
+        专家智能体是基于您提供的知识和经验构建的 AI 助手。它可以回答问题、提供建议，并且会随着与您的交互不断学习和完善。
+        您可以将专家分享给团队或公开，让更多人受益。
+      </div>
+    </div>
+
+    <!-- Form -->
+    <div class="card">
+      <h2 style="margin-bottom: 24px; font-size: 20px;">步骤 1: 基本信息</h2>
+
+      <div class="form-group">
+        <label class="form-label" for="expert-name">专家名称 *</label>
+        <input
+          type="text"
+          id="expert-name"
+          class="form-input"
+          placeholder="例如：产品设计专家"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="expert-domain">专业领域 *</label>
+        <input
+          type="text"
+          id="expert-domain"
+          class="form-input"
+          placeholder="例如：产品设计、用户研究、交互设计"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="expert-locale">主要语言</label>
+        <select id="expert-locale" class="form-input form-select">
+          <option value="zh-CN">中文</option>
+          <option value="en">English</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="expert-description">专家简介（可选）</label>
+        <textarea
+          id="expert-description"
+          class="form-input form-textarea"
+          placeholder="简单描述这位专家的背景、专长和特点..."
+        ></textarea>
+      </div>
+    </div>
+
+    <!-- Knowledge Input -->
+    <div class="card">
+      <h2 style="margin-bottom: 24px; font-size: 20px;">步骤 2: 导入初始知识</h2>
+
+      <div class="input-type-tabs">
+        <button class="input-type-tab active" data-tab="text">
+          <span>📝 文本输入</span>
+        </button>
+        <button class="input-type-tab" data-tab="file">
+          <span>📄 文件上传</span>
+        </button>
+        <button class="input-type-tab" data-tab="voice">
+          <span>🎤 语音录入</span>
+        </button>
+      </div>
+
+      <!-- Text Input Tab -->
+      <div class="tab-content active" data-tab-content="text">
+        <div class="form-group">
+          <label class="form-label" for="knowledge-text">输入专家知识</label>
+          <textarea
+            id="knowledge-text"
+            class="form-input form-textarea"
+            style="min-height: 300px;"
+            placeholder="在这里输入专家的知识、经验、见解...
+
+您可以包括：
+- 专业知识和技能
+- 实践经验和案例
+- 独特见解和观点
+- 工作流程和方法论
+- 常见问题和解答
+
+支持 Markdown 格式。"
+          ></textarea>
+        </div>
+      </div>
+
+      <!-- File Upload Tab -->
+      <div class="tab-content" data-tab-content="file">
+        <div class="upload-area" id="upload-area">
+          <svg class="upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+          </svg>
+          <div class="upload-text">点击上传或拖拽文件到此处</div>
+          <div class="upload-hint">支持 PDF, Word, Markdown, TXT 等格式，单个文件最大 10MB</div>
+          <input type="file" id="file-input" style="display: none;" multiple
+            accept=".pdf,.doc,.docx,.md,.txt,.ppt,.pptx">
+        </div>
+
+        <div class="file-list" id="file-list">
+          <!-- File items will be added here -->
+        </div>
+      </div>
+
+      <!-- Voice Input Tab -->
+      <div class="tab-content" data-tab-content="voice">
+        <div style="text-align: center; padding: 40px 20px;">
+          <button class="mic-button" id="mic-button">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
+            </svg>
+            <span id="mic-status">点击开始录音</span>
+          </button>
+          <div style="margin-top: 16px; font-size: 14px; color: oklch(0.556 0 0);">
+            录音将自动转换为文字，您可以口述专家的知识和经验
+          </div>
+
+          <div id="voice-transcript" style="margin-top: 24px; padding: 16px; background: oklch(0.985 0 0);
+            border-radius: 8px; text-align: left; min-height: 120px; display: none;">
+            <div style="font-size: 12px; color: oklch(0.556 0 0); margin-bottom: 8px;">录音转写：</div>
+            <div id="transcript-text" style="font-size: 14px; color: oklch(0.145 0 0);"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="actions">
+      <button class="btn btn-secondary">
+        取消
+      </button>
+      <button class="btn btn-primary">
+        下一步：分析知识
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // Tab switching
+    document.querySelectorAll('.input-type-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        const targetTab = tab.dataset.tab;
+
+        // Update tab active state
+        document.querySelectorAll('.input-type-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+
+        // Update content active state
+        document.querySelectorAll('.tab-content').forEach(content => {
+          content.classList.remove('active');
+        });
+        document.querySelector(`[data-tab-content="${targetTab}"]`).classList.add('active');
+      });
+    });
+
+    // File upload
+    const uploadArea = document.getElementById('upload-area');
+    const fileInput = document.getElementById('file-input');
+    const fileList = document.getElementById('file-list');
+
+    uploadArea.addEventListener('click', () => fileInput.click());
+
+    uploadArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadArea.classList.add('drag-over');
+    });
+
+    uploadArea.addEventListener('dragleave', () => {
+      uploadArea.classList.remove('drag-over');
+    });
+
+    uploadArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadArea.classList.remove('drag-over');
+      handleFiles(e.dataTransfer.files);
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      handleFiles(e.target.files);
+    });
+
+    function handleFiles(files) {
+      Array.from(files).forEach(file => {
+        const fileItem = document.createElement('div');
+        fileItem.className = 'file-item';
+        fileItem.innerHTML = `
+          <div class="file-info">
+            <svg class="file-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+            </svg>
+            <div>
+              <div class="file-name">${file.name}</div>
+              <div class="file-size">${(file.size / 1024).toFixed(2)} KB</div>
+            </div>
+          </div>
+          <button class="file-remove">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        `;
+
+        fileItem.querySelector('.file-remove').addEventListener('click', () => {
+          fileItem.remove();
+        });
+
+        fileList.appendChild(fileItem);
+      });
+    }
+
+    // Voice recording
+    const micButton = document.getElementById('mic-button');
+    const micStatus = document.getElementById('mic-status');
+    const voiceTranscript = document.getElementById('voice-transcript');
+    const transcriptText = document.getElementById('transcript-text');
+    let isRecording = false;
+
+    micButton.addEventListener('click', () => {
+      isRecording = !isRecording;
+
+      if (isRecording) {
+        micButton.classList.add('recording');
+        micStatus.textContent = '录音中...点击停止';
+        voiceTranscript.style.display = 'block';
+        transcriptText.textContent = '正在识别语音...';
+
+        // Simulate voice recognition
+        setTimeout(() => {
+          transcriptText.textContent = '我是一名产品设计师，有十年的工作经验。专注于用户体验设计和产品策略...';
+        }, 2000);
+      } else {
+        micButton.classList.remove('recording');
+        micStatus.textContent = '点击开始录音';
+      }
+    });
+  </script>
+</body>
+</html>

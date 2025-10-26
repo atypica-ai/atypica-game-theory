@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>与专家对话 - Expert Agent System</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: oklch(0.985 0 0);
+      color: oklch(0.145 0 0);
+      line-height: 1.6;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .chat-layout {
+      display: grid;
+      grid-template-columns: 320px 1fr 300px;
+      height: 100vh;
+    }
+
+    /* Left Sidebar - Expert Info */
+    .expert-sidebar {
+      background: oklch(1 0 0);
+      border-right: 1px solid oklch(0.922 0 0);
+      padding: 24px;
+      overflow-y: auto;
+    }
+
+    .expert-header {
+      margin-bottom: 24px;
+    }
+
+    .expert-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, oklch(0.87 0.29 142.57), oklch(0.6 0.118 184.704));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      margin-bottom: 16px;
+    }
+
+    .expert-name {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .expert-domain {
+      font-size: 14px;
+      color: oklch(0.556 0 0);
+      margin-bottom: 12px;
+    }
+
+    .expert-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: oklch(0.87 0.29 142.57 / 0.1);
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      color: oklch(0.87 0.29 142.57);
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: oklch(0.87 0.29 142.57);
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .expert-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      padding: 16px;
+      background: oklch(0.985 0 0);
+      border-radius: 12px;
+      margin-bottom: 24px;
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 18px;
+      font-weight: 600;
+      color: oklch(0.145 0 0);
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: oklch(0.556 0 0);
+      margin-top: 4px;
+    }
+
+    .expert-capabilities {
+      margin-bottom: 24px;
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: oklch(0.145 0 0);
+    }
+
+    .capability-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .capability-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px;
+      background: oklch(0.985 0 0);
+      border-radius: 8px;
+      font-size: 13px;
+    }
+
+    .capability-icon {
+      width: 20px;
+      height: 20px;
+      color: oklch(0.87 0.29 142.57);
+      flex-shrink: 0;
+    }
+
+    .suggested-topics {
+      margin-bottom: 24px;
+    }
+
+    .topic-chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 8px 14px;
+      background: oklch(0.985 0 0);
+      border: 1px solid oklch(0.922 0 0);
+      border-radius: 8px;
+      font-size: 13px;
+      margin: 0 8px 8px 0;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .topic-chip:hover {
+      background: oklch(0.87 0.29 142.57 / 0.1);
+      border-color: oklch(0.87 0.29 142.57);
+      color: oklch(0.87 0.29 142.57);
+    }
+
+    /* Main Chat Area */
+    .chat-main {
+      display: flex;
+      flex-direction: column;
+      background: oklch(0.985 0 0);
+    }
+
+    .chat-header {
+      background: oklch(1 0 0);
+      border-bottom: 1px solid oklch(0.922 0 0);
+      padding: 20px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .chat-title {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .chat-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .icon-btn {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: oklch(0.97 0 0);
+      border: 1px solid oklch(0.922 0 0);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: oklch(0.556 0 0);
+    }
+
+    .icon-btn:hover {
+      background: oklch(0.95 0 0);
+      color: oklch(0.145 0 0);
+    }
+
+    .messages-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .message {
+      display: flex;
+      gap: 12px;
+      max-width: 85%;
+    }
+
+    .message.user {
+      margin-left: auto;
+      flex-direction: row-reverse;
+    }
+
+    .message-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .message.expert .message-avatar {
+      background: linear-gradient(135deg, oklch(0.87 0.29 142.57), oklch(0.6 0.118 184.704));
+    }
+
+    .message.user .message-avatar {
+      background: oklch(0.708 0 0);
+      color: oklch(1 0 0);
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .message-content {
+      flex: 1;
+    }
+
+    .message-bubble {
+      padding: 14px 18px;
+      border-radius: 12px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .message.expert .message-bubble {
+      background: oklch(1 0 0);
+      border: 1px solid oklch(0.922 0 0);
+      box-shadow: 0 1px 3px oklch(0 0 0 / 0.05);
+    }
+
+    .message.user .message-bubble {
+      background: oklch(0.87 0.29 142.57);
+      color: oklch(1 0 0);
+    }
+
+    .message-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 6px;
+      font-size: 11px;
+      color: oklch(0.556 0 0);
+    }
+
+    .message-time {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .message-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .message-action-btn {
+      padding: 4px 8px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: oklch(0.556 0 0);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      transition: color 0.2s;
+    }
+
+    .message-action-btn:hover {
+      color: oklch(0.145 0 0);
+    }
+
+    .tool-call {
+      margin-top: 12px;
+      padding: 12px;
+      background: oklch(0.985 0 0);
+      border: 1px solid oklch(0.922 0 0);
+      border-radius: 8px;
+      font-size: 13px;
+    }
+
+    .tool-call-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: oklch(0.6 0.118 184.704);
+    }
+
+    .tool-call-content {
+      color: oklch(0.556 0 0);
+      font-size: 12px;
+    }
+
+    .input-area {
+      background: oklch(1 0 0);
+      border-top: 1px solid oklch(0.922 0 0);
+      padding: 20px 24px;
+    }
+
+    .input-attachments {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .attachment-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: oklch(0.985 0 0);
+      border: 1px solid oklch(0.922 0 0);
+      border-radius: 6px;
+      font-size: 12px;
+    }
+
+    .attachment-remove {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: oklch(0.556 0 0);
+      padding: 0;
+      display: flex;
+      align-items: center;
+    }
+
+    .attachment-remove:hover {
+      color: oklch(0.577 0.245 27.325);
+    }
+
+    .input-wrapper {
+      display: flex;
+      gap: 12px;
+      align-items: end;
+    }
+
+    .input-tools {
+      display: flex;
+      gap: 6px;
+    }
+
+    .input-tool-btn {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: oklch(0.97 0 0);
+      border: 1px solid oklch(0.922 0 0);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: oklch(0.556 0 0);
+    }
+
+    .input-tool-btn:hover {
+      background: oklch(0.95 0 0);
+      color: oklch(0.145 0 0);
+    }
+
+    .input-tool-btn.recording {
+      background: oklch(0.577 0.245 27.325 / 0.1);
+      border-color: oklch(0.577 0.245 27.325);
+      color: oklch(0.577 0.245 27.325);
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    .input-field {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      background: oklch(0.985 0 0);
+      border: 1px solid oklch(0.922 0 0);
+      border-radius: 12px;
+      padding: 12px 16px;
+      transition: all 0.2s;
+    }
+
+    .input-field:focus-within {
+      border-color: oklch(0.87 0.29 142.57);
+      box-shadow: 0 0 0 3px oklch(0.87 0.29 142.57 / 0.1);
+    }
+
+    .input-field textarea {
+      flex: 1;
+      border: none;
+      background: none;
+      resize: none;
+      font-size: 14px;
+      font-family: inherit;
+      line-height: 1.5;
+      max-height: 120px;
+      color: oklch(0.145 0 0);
+    }
+
+    .input-field textarea:focus {
+      outline: none;
+    }
+
+    .input-field textarea::placeholder {
+      color: oklch(0.556 0 0);
+    }
+
+    .send-btn {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: oklch(0.87 0.29 142.57);
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: oklch(1 0 0);
+    }
+
+    .send-btn:hover {
+      background: oklch(0.82 0.29 142.57);
+    }
+
+    .send-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Right Sidebar - Context */
+    .context-sidebar {
+      background: oklch(1 0 0);
+      border-left: 1px solid oklch(0.922 0 0);
+      padding: 24px;
+      overflow-y: auto;
+    }
+
+    .context-section {
+      margin-bottom: 24px;
+    }
+
+    .context-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .context-icon {
+      width: 18px;
+      height: 18px;
+      color: oklch(0.87 0.29 142.57);
+    }
+
+    .context-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: oklch(0.145 0 0);
+    }
+
+    .memory-card {
+      padding: 12px;
+      background: oklch(0.985 0 0);
+      border: 1px solid oklch(0.922 0 0);
+      border-radius: 8px;
+      margin-bottom: 8px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .memory-card:hover {
+      border-color: oklch(0.87 0.29 142.57);
+    }
+
+    .memory-category {
+      font-size: 10px;
+      color: oklch(0.556 0 0);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+
+    .memory-text {
+      color: oklch(0.145 0 0);
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .typing-indicator {
+      display: flex;
+      gap: 4px;
+      padding: 12px 16px;
+    }
+
+    .typing-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: oklch(0.556 0 0);
+      animation: typing 1.4s infinite;
+    }
+
+    .typing-dot:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .typing-dot:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    @keyframes typing {
+      0%, 60%, 100% { transform: translateY(0); }
+      30% { transform: translateY(-10px); }
+    }
+
+    .welcome-message {
+      text-align: center;
+      padding: 60px 40px;
+      max-width: 600px;
+      margin: auto;
+    }
+
+    .welcome-icon {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 24px;
+      color: oklch(0.556 0 0);
+      opacity: 0.5;
+    }
+
+    .welcome-title {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: oklch(0.145 0 0);
+    }
+
+    .welcome-description {
+      font-size: 14px;
+      color: oklch(0.556 0 0);
+      line-height: 1.6;
+      margin-bottom: 32px;
+    }
+
+    .quick-questions {
+      display: grid;
+      gap: 12px;
+    }
+
+    .quick-question {
+      padding: 16px;
+      background: oklch(1 0 0);
+      border: 1px solid oklch(0.922 0 0);
+      border-radius: 12px;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 14px;
+    }
+
+    .quick-question:hover {
+      border-color: oklch(0.87 0.29 142.57);
+      box-shadow: 0 2px 8px oklch(0 0 0 / 0.05);
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-layout">
+    <!-- Left Sidebar - Expert Info -->
+    <aside class="expert-sidebar">
+      <div class="expert-header">
+        <div class="expert-avatar">🎨</div>
+        <div class="expert-name">产品设计专家</div>
+        <div class="expert-domain">产品设计 · 用户研究 · 交互设计</div>
+        <div class="expert-status">
+          <span class="status-dot"></span>
+          在线
+        </div>
+      </div>
+
+      <div class="expert-stats">
+        <div class="stat-item">
+          <div class="stat-value">127</div>
+          <div class="stat-label">记忆条目</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">85%</div>
+          <div class="stat-label">知识完整度</div>
+        </div>
+      </div>
+
+      <div class="expert-capabilities">
+        <div class="section-title">专家能力</div>
+        <div class="capability-list">
+          <div class="capability-item">
+            <svg class="capability-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+            </svg>
+            <span>提供设计建议和方案</span>
+          </div>
+          <div class="capability-item">
+            <svg class="capability-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+            <span>深度研究和分析</span>
+          </div>
+          <div class="capability-item">
+            <svg class="capability-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+            </svg>
+            <span>分享案例和经验</span>
+          </div>
+          <div class="capability-item">
+            <svg class="capability-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+            </svg>
+            <span>回答设计相关问题</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="suggested-topics">
+        <div class="section-title">推荐话题</div>
+        <div>
+          <span class="topic-chip">设计思维</span>
+          <span class="topic-chip">用户研究</span>
+          <span class="topic-chip">设计系统</span>
+          <span class="topic-chip">交互模式</span>
+          <span class="topic-chip">可用性测试</span>
+          <span class="topic-chip">信息架构</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Chat Area -->
+    <main class="chat-main">
+      <div class="chat-header">
+        <div class="chat-title">与专家对话</div>
+        <div class="chat-actions">
+          <button class="icon-btn" title="搜索对话">
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+          </button>
+          <button class="icon-btn" title="清空对话">
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+            </svg>
+          </button>
+          <button class="icon-btn" title="更多选项">
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="messages-container" id="messages">
+        <!-- Welcome Message -->
+        <div class="welcome-message">
+          <svg class="welcome-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+          </svg>
+          <div class="welcome-title">开始与专家对话</div>
+          <div class="welcome-description">
+            我是产品设计专家，专注于产品设计、用户研究和交互设计。<br>
+            您可以向我咨询任何相关问题，我会基于我的知识和经验为您提供专业建议。
+          </div>
+          <div class="quick-questions">
+            <div class="quick-question" onclick="askQuestion(this.innerText)">
+              如何进行有效的用户访谈？
+            </div>
+            <div class="quick-question" onclick="askQuestion(this.innerText)">
+              B端产品和C端产品设计有什么区别？
+            </div>
+            <div class="quick-question" onclick="askQuestion(this.innerText)">
+              如何构建一个设计系统？
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="input-area">
+        <div class="input-attachments" id="attachments" style="display: none;">
+          <!-- Attachments will be added here -->
+        </div>
+
+        <div class="input-wrapper">
+          <div class="input-tools">
+            <button class="input-tool-btn" title="上传文件" onclick="document.getElementById('file-upload').click()">
+              <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
+              </svg>
+            </button>
+            <input type="file" id="file-upload" style="display: none;" multiple>
+
+            <button class="input-tool-btn" id="voice-btn" title="语音输入">
+              <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
+              </svg>
+            </button>
+          </div>
+
+          <div class="input-field">
+            <textarea id="message-input" rows="1" placeholder="输入您的问题..." onkeydown="handleKeyPress(event)"></textarea>
+          </div>
+
+          <button class="send-btn" id="send-btn" onclick="sendMessage()">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <!-- Right Sidebar - Context -->
+    <aside class="context-sidebar">
+      <div class="context-section">
+        <div class="context-header">
+          <svg class="context-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+          </svg>
+          <span class="context-title">相关记忆</span>
+        </div>
+        <div id="relevant-memories">
+          <p style="font-size: 13px; color: oklch(0.556 0 0); text-align: center; padding: 20px;">
+            开始对话后，这里会显示相关的专家记忆
+          </p>
+        </div>
+      </div>
+
+      <div class="context-section">
+        <div class="context-header">
+          <svg class="context-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <span class="context-title">对话信息</span>
+        </div>
+        <div style="font-size: 13px; color: oklch(0.556 0 0);">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <span>消息数量</span>
+            <span id="message-count">0</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <span>工具调用</span>
+            <span id="tool-count">0</span>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span>开始时间</span>
+            <span id="start-time">--</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <script>
+    let messageCount = 0;
+    let toolCount = 0;
+    let isRecording = false;
+
+    function handleKeyPress(event) {
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        sendMessage();
+      }
+    }
+
+    function askQuestion(question) {
+      document.getElementById('message-input').value = question;
+      sendMessage();
+    }
+
+    function sendMessage() {
+      const input = document.getElementById('message-input');
+      const message = input.value.trim();
+
+      if (!message) return;
+
+      // Clear welcome message
+      const messagesContainer = document.getElementById('messages');
+      const welcome = messagesContainer.querySelector('.welcome-message');
+      if (welcome) {
+        welcome.remove();
+        document.getElementById('start-time').textContent = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+      }
+
+      // Add user message
+      addMessage('user', message);
+      input.value = '';
+      messageCount++;
+      document.getElementById('message-count').textContent = messageCount;
+
+      // Auto-resize textarea
+      input.style.height = 'auto';
+
+      // Simulate expert response
+      setTimeout(() => {
+        showTypingIndicator();
+
+        // Update relevant memories
+        updateRelevantMemories(message);
+
+        setTimeout(() => {
+          hideTypingIndicator();
+
+          const response = generateResponse(message);
+          addMessage('expert', response.text, response.toolCalls);
+          messageCount++;
+          document.getElementById('message-count').textContent = messageCount;
+
+          if (response.toolCalls && response.toolCalls.length > 0) {
+            toolCount += response.toolCalls.length;
+            document.getElementById('tool-count').textContent = toolCount;
+          }
+        }, 2000);
+      }, 500);
+    }
+
+    function addMessage(role, content, toolCalls = []) {
+      const messagesContainer = document.getElementById('messages');
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${role}`;
+
+      const avatar = role === 'expert' ? '🎨' : 'U';
+      const time = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+
+      let toolCallsHTML = '';
+      if (toolCalls && toolCalls.length > 0) {
+        toolCallsHTML = toolCalls.map(tool => `
+          <div class="tool-call">
+            <div class="tool-call-header">
+              <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              </svg>
+              ${tool.name}
+            </div>
+            <div class="tool-call-content">${tool.description}</div>
+          </div>
+        `).join('');
+      }
+
+      messageDiv.innerHTML = `
+        <div class="message-avatar">${avatar}</div>
+        <div class="message-content">
+          <div class="message-bubble">${content}${toolCallsHTML}</div>
+          <div class="message-meta">
+            <span class="message-time">
+              <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              ${time}
+            </span>
+            ${role === 'expert' ? `
+              <div class="message-actions">
+                <button class="message-action-btn">
+                  <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                  </svg>
+                  复制
+                </button>
+                <button class="message-action-btn">
+                  <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"></path>
+                  </svg>
+                  有用
+                </button>
+              </div>
+            ` : ''}
+          </div>
+        </div>
+      `;
+
+      messagesContainer.appendChild(messageDiv);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    function showTypingIndicator() {
+      const messagesContainer = document.getElementById('messages');
+      const indicator = document.createElement('div');
+      indicator.className = 'message expert';
+      indicator.id = 'typing-indicator';
+      indicator.innerHTML = `
+        <div class="message-avatar">🎨</div>
+        <div class="message-content">
+          <div class="message-bubble">
+            <div class="typing-indicator">
+              <div class="typing-dot"></div>
+              <div class="typing-dot"></div>
+              <div class="typing-dot"></div>
+            </div>
+          </div>
+        </div>
+      `;
+      messagesContainer.appendChild(indicator);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    function hideTypingIndicator() {
+      const indicator = document.getElementById('typing-indicator');
+      if (indicator) {
+        indicator.remove();
+      }
+    }
+
+    function generateResponse(question) {
+      const responses = {
+        '如何进行有效的用户访谈？': {
+          text: '进行有效的用户访谈需要注意以下几个关键点：\n\n1. **充分准备**：提前了解用户背景，制定访谈大纲，准备开放式问题\n\n2. **建立信任**：开场时说明访谈目的，强调没有对错之分，创造轻松的氛围\n\n3. **使用5W1H框架**：通过Why、What、When、Where、Who、How这六个维度全面了解用户\n\n4. **深度追问**：当用户提到有趣的点时，多问"为什么"来挖掘深层动机\n\n5. **观察非语言信息**：注意用户的表情、语气和肢体语言\n\n6. **避免引导性问题**：不要让自己的假设影响用户的真实反馈',
+          toolCalls: []
+        },
+        'B端产品和C端产品设计有什么区别？': {
+          text: '让我为您详细分析B端和C端产品设计的主要差异...',
+          toolCalls: [
+            {
+              name: 'Deep Research',
+              description: '搜索最新的B端和C端产品设计对比研究'
+            }
+          ]
+        },
+        '如何构建一个设计系统？': {
+          text: '构建设计系统是一个系统性工程，我建议分以下几个阶段：\n\n**第一阶段：调研和规划**\n- 审计现有设计资产\n- 确定设计原则和价值观\n- 组建跨职能团队\n\n**第二阶段：建立基础**\n- 定义设计语言（颜色、字体、间距等）\n- 创建基础组件库\n- 制定命名规范\n\n**第三阶段：扩展和完善**\n- 开发复杂组件和模式\n- 编写使用文档\n- 建立反馈机制\n\n**第四阶段：推广和维护**\n- 培训设计和开发团队\n- 持续迭代和优化\n- 建立治理机制',
+          toolCalls: []
+        },
+        'default': {
+          text: '这是一个很好的问题。基于我的专业知识，我认为...\n\n[这里会根据实际问题，结合专家的记忆文档生成相应的回答]\n\n您还想了解更多相关内容吗？',
+          toolCalls: []
+        }
+      };
+
+      return responses[question] || responses['default'];
+    }
+
+    function updateRelevantMemories(question) {
+      const memoriesContainer = document.getElementById('relevant-memories');
+
+      // Simulate relevant memories based on question
+      const memories = [
+        {
+          category: '用户研究',
+          text: '用户访谈的关键是提出开放式问题，让用户自由表达。常用的5W1H框架帮助全面理解用户行为和动机...'
+        },
+        {
+          category: '设计方法论',
+          text: '设计思维包含五个关键阶段：共情、定义、构思、原型和测试。这个迭代过程帮助团队深入理解用户需求...'
+        },
+        {
+          category: '交互设计',
+          text: '信息架构的核心是内容组织、导航设计和标签系统，需要基于用户的心智模型来构建...'
+        }
+      ];
+
+      memoriesContainer.innerHTML = memories.map(memory => `
+        <div class="memory-card">
+          <div class="memory-category">${memory.category}</div>
+          <div class="memory-text">${memory.text}</div>
+        </div>
+      `).join('');
+    }
+
+    // Voice recording
+    document.getElementById('voice-btn').addEventListener('click', function() {
+      isRecording = !isRecording;
+      this.classList.toggle('recording', isRecording);
+
+      if (isRecording) {
+        // Start recording
+        console.log('Recording started');
+      } else {
+        // Stop recording
+        console.log('Recording stopped');
+      }
+    });
+
+    // File upload
+    document.getElementById('file-upload').addEventListener('change', function(e) {
+      const files = e.target.files;
+      const attachmentsDiv = document.getElementById('attachments');
+
+      if (files.length > 0) {
+        attachmentsDiv.style.display = 'flex';
+
+        Array.from(files).forEach(file => {
+          const chip = document.createElement('div');
+          chip.className = 'attachment-chip';
+          chip.innerHTML = `
+            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            <span>${file.name}</span>
+            <button class="attachment-remove" onclick="this.parentElement.remove()">
+              <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          `;
+          attachmentsDiv.appendChild(chip);
+        });
+      }
+    });
+
+    // Auto-resize textarea
+    const textarea = document.getElementById('message-input');
+    textarea.addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = (this.scrollHeight) + 'px';
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>知识分析 - Expert Agent System</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: oklch(0.985 0 0);
+      color: oklch(0.145 0 0);
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .container {
+      max-width: 900px;
+      width: 100%;
+      padding: 40px 20px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: oklch(0.6 0.118 184.704 / 0.1);
+      color: oklch(0.6 0.118 184.704);
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 20px;
+    }
+
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid oklch(0.6 0.118 184.704 / 0.3);
+      border-top-color: oklch(0.6 0.118 184.704);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .header h1 {
+      font-size: 32px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: oklch(0.145 0 0);
+    }
+
+    .header p {
+      font-size: 16px;
+      color: oklch(0.556 0 0);
+    }
+
+    .analysis-card {
+      background: oklch(1 0 0);
+      border: 1px solid oklch(0.922 0 0);
+      border-radius: 16px;
+      padding: 40px;
+      margin-bottom: 24px;
+    }
+
+    .analysis-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 32px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid oklch(0.922 0 0);
+    }
+
+    .analysis-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 12px;
+      background: oklch(0.6 0.118 184.704 / 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: oklch(0.6 0.118 184.704);
+    }
+
+    .analysis-info h2 {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: oklch(0.145 0 0);
+    }
+
+    .analysis-info p {
+      font-size: 14px;
+      color: oklch(0.556 0 0);
+    }
+
+    .completeness-score {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      margin-bottom: 32px;
+      padding: 24px;
+      background: oklch(0.985 0 0);
+      border-radius: 12px;
+    }
+
+    .score-circle {
+      position: relative;
+      width: 120px;
+      height: 120px;
+      flex-shrink: 0;
+    }
+
+    .score-bg {
+      fill: none;
+      stroke: oklch(0.922 0 0);
+      stroke-width: 10;
+    }
+
+    .score-progress {
+      fill: none;
+      stroke: oklch(0.87 0.29 142.57);
+      stroke-width: 10;
+      stroke-linecap: round;
+      transform: rotate(-90deg);
+      transform-origin: 50% 50%;
+      transition: stroke-dashoffset 1s ease-in-out;
+    }
+
+    .score-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+
+    .score-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: oklch(0.87 0.29 142.57);
+    }
+
+    .score-label {
+      font-size: 12px;
+      color: oklch(0.556 0 0);
+    }
+
+    .score-details {
+      flex: 1;
+    }
+
+    .score-details h3 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: oklch(0.145 0 0);
+    }
+
+    .score-details p {
+      font-size: 14px;
+      color: oklch(0.556 0 0);
+      line-height: 1.6;
+    }
+
+    .dimensions-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .dimension-item {
+      padding: 16px;
+      background: oklch(0.985 0 0);
+      border: 1px solid oklch(0.922 0 0);
+      border-radius: 12px;
+    }
+
+    .dimension-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .dimension-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: oklch(0.145 0 0);
+    }
+
+    .dimension-score {
+      font-size: 14px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+
+    .dimension-score.high {
+      background: oklch(0.87 0.29 142.57 / 0.1);
+      color: oklch(0.87 0.29 142.57);
+    }
+
+    .dimension-score.medium {
+      background: oklch(0.769 0.188 70.08 / 0.1);
+      color: oklch(0.769 0.188 70.08);
+    }
+
+    .dimension-score.low {
+      background: oklch(0.577 0.245 27.325 / 0.1);
+      color: oklch(0.577 0.245 27.325);
+    }
+
+    .dimension-bar {
+      width: 100%;
+      height: 8px;
+      background: oklch(0.922 0 0);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+
+    .dimension-progress {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 1s ease-in-out;
+    }
+
+    .dimension-progress.high {
+      background: oklch(0.87 0.29 142.57);
+    }
+
+    .dimension-progress.medium {
+      background: oklch(0.769 0.188 70.08);
+    }
+
+    .dimension-progress.low {
+      background: oklch(0.577 0.245 27.325);
+    }
+
+    .dimension-description {
+      font-size: 12px;
+      color: oklch(0.556 0 0);
+      line-height: 1.5;
+    }
+
+    .suggestions {
+      margin-bottom: 32px;
+    }
+
+    .suggestions h3 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: oklch(0.145 0 0);
+    }
+
+    .suggestion-item {
+      display: flex;
+      gap: 12px;
+      padding: 16px;
+      background: oklch(0.769 0.188 70.08 / 0.05);
+      border-left: 3px solid oklch(0.769 0.188 70.08);
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+
+    .suggestion-icon {
+      width: 20px;
+      height: 20px;
+      color: oklch(0.769 0.188 70.08);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .suggestion-content {
+      flex: 1;
+    }
+
+    .suggestion-title {
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 4px;
+      color: oklch(0.145 0 0);
+    }
+
+    .suggestion-description {
+      font-size: 13px;
+      color: oklch(0.556 0 0);
+      line-height: 1.5;
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    .btn {
+      padding: 14px 32px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+
+    .btn-secondary {
+      background: oklch(0.97 0 0);
+      color: oklch(0.145 0 0);
+      border: 1px solid oklch(0.922 0 0);
+    }
+
+    .btn-secondary:hover {
+      background: oklch(0.95 0 0);
+    }
+
+    .btn-primary {
+      background: oklch(0.87 0.29 142.57);
+      color: oklch(1 0 0);
+    }
+
+    .btn-primary:hover {
+      background: oklch(0.82 0.29 142.57);
+    }
+
+    .progress-steps {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 32px;
+    }
+
+    .progress-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: oklch(0.922 0 0);
+      transition: all 0.3s;
+    }
+
+    .progress-dot.active {
+      background: oklch(0.6 0.118 184.704);
+      width: 24px;
+      border-radius: 4px;
+    }
+
+    .loading-state {
+      text-align: center;
+      padding: 80px 40px;
+    }
+
+    .loading-spinner {
+      width: 64px;
+      height: 64px;
+      border: 4px solid oklch(0.922 0 0);
+      border-top-color: oklch(0.6 0.118 184.704);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 24px;
+    }
+
+    .loading-text {
+      font-size: 18px;
+      font-weight: 500;
+      margin-bottom: 12px;
+      color: oklch(0.145 0 0);
+    }
+
+    .loading-description {
+      font-size: 14px;
+      color: oklch(0.556 0 0);
+    }
+
+    @media (max-width: 768px) {
+      .completeness-score {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .dimensions-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .actions {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Progress Steps -->
+    <div class="progress-steps">
+      <div class="progress-dot"></div>
+      <div class="progress-dot"></div>
+      <div class="progress-dot active"></div>
+      <div class="progress-dot"></div>
+    </div>
+
+    <div class="header">
+      <div class="status-badge">
+        <div class="spinner"></div>
+        <span>分析中...</span>
+      </div>
+      <h1>知识完整度分析</h1>
+      <p>AI 正在深入分析您提供的内容，评估知识的完整性</p>
+    </div>
+
+    <!-- Loading State (will be replaced by analysis results) -->
+    <div id="loading-state" class="analysis-card loading-state">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">正在分析您的专家知识...</div>
+      <div class="loading-description">
+        这可能需要几秒钟时间，请稍候
+      </div>
+    </div>
+
+    <!-- Analysis Results (hidden initially) -->
+    <div id="analysis-results" style="display: none;">
+      <div class="analysis-card">
+        <div class="analysis-header">
+          <div class="analysis-icon">
+            <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+            </svg>
+          </div>
+          <div class="analysis-info">
+            <h2>分析完成</h2>
+            <p>基于您提供的内容，我们生成了以下知识完整度报告</p>
+          </div>
+        </div>
+
+        <!-- Overall Completeness Score -->
+        <div class="completeness-score">
+          <div class="score-circle">
+            <svg width="120" height="120">
+              <circle class="score-bg" cx="60" cy="60" r="50" />
+              <circle
+                class="score-progress"
+                cx="60"
+                cy="60"
+                r="50"
+                stroke-dasharray="314"
+                stroke-dashoffset="94"
+                id="score-circle"
+              />
+            </svg>
+            <div class="score-text">
+              <div class="score-value" id="score-value">70%</div>
+              <div class="score-label">完整度</div>
+            </div>
+          </div>
+          <div class="score-details">
+            <h3>整体评估：良好</h3>
+            <p>
+              您的专家知识在多个维度上表现良好，已经具备基本的问答能力。
+              建议通过补充访谈进一步完善某些领域的深度，特别是实践案例和行业洞察方面。
+            </p>
+          </div>
+        </div>
+
+        <!-- Dimensions Breakdown -->
+        <div class="dimensions-grid">
+          <div class="dimension-item">
+            <div class="dimension-header">
+              <span class="dimension-name">🎯 核心专长</span>
+              <span class="dimension-score high">85%</span>
+            </div>
+            <div class="dimension-bar">
+              <div class="dimension-progress high" style="width: 85%"></div>
+            </div>
+            <div class="dimension-description">
+              专业领域知识丰富，核心概念清晰
+            </div>
+          </div>
+
+          <div class="dimension-item">
+            <div class="dimension-header">
+              <span class="dimension-name">💼 实践经验</span>
+              <span class="dimension-score medium">65%</span>
+            </div>
+            <div class="dimension-bar">
+              <div class="dimension-progress medium" style="width: 65%"></div>
+            </div>
+            <div class="dimension-description">
+              有一些案例，但缺少具体细节
+            </div>
+          </div>
+
+          <div class="dimension-item">
+            <div class="dimension-header">
+              <span class="dimension-name">🔧 方法论</span>
+              <span class="dimension-score high">80%</span>
+            </div>
+            <div class="dimension-bar">
+              <div class="dimension-progress high" style="width: 80%"></div>
+            </div>
+            <div class="dimension-description">
+              工作方法和流程描述清晰
+            </div>
+          </div>
+
+          <div class="dimension-item">
+            <div class="dimension-header">
+              <span class="dimension-name">📊 行业洞察</span>
+              <span class="dimension-score low">45%</span>
+            </div>
+            <div class="dimension-bar">
+              <div class="dimension-progress low" style="width: 45%"></div>
+            </div>
+            <div class="dimension-description">
+              对行业趋势的分析较少
+            </div>
+          </div>
+
+          <div class="dimension-item">
+            <div class="dimension-header">
+              <span class="dimension-name">🎓 学习资源</span>
+              <span class="dimension-score medium">60%</span>
+            </div>
+            <div class="dimension-bar">
+              <div class="dimension-progress medium" style="width: 60%"></div>
+            </div>
+            <div class="dimension-description">
+              推荐的学习材料和资源有限
+            </div>
+          </div>
+
+          <div class="dimension-item">
+            <div class="dimension-header">
+              <span class="dimension-name">💡 常见问题</span>
+              <span class="dimension-score high">75%</span>
+            </div>
+            <div class="dimension-bar">
+              <div class="dimension-progress high" style="width: 75%"></div>
+            </div>
+            <div class="dimension-description">
+              覆盖了大部分常见问题
+            </div>
+          </div>
+        </div>
+
+        <!-- Suggestions -->
+        <div class="suggestions">
+          <h3>改进建议</h3>
+
+          <div class="suggestion-item">
+            <svg class="suggestion-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <div class="suggestion-content">
+              <div class="suggestion-title">补充实践案例</div>
+              <div class="suggestion-description">
+                建议添加 3-5 个具体的项目案例，包括背景、挑战、解决方案和结果
+              </div>
+            </div>
+          </div>
+
+          <div class="suggestion-item">
+            <svg class="suggestion-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <div class="suggestion-content">
+              <div class="suggestion-title">深化行业洞察</div>
+              <div class="suggestion-description">
+                分享对行业趋势的看法、未来预测，以及对新技术的观点
+              </div>
+            </div>
+          </div>
+
+          <div class="suggestion-item">
+            <svg class="suggestion-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <div class="suggestion-content">
+              <div class="suggestion-title">扩充学习资源</div>
+              <div class="suggestion-description">
+                推荐书籍、课程、工具和社区，帮助他人学习和成长
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="actions">
+          <button class="btn btn-secondary" onclick="skipInterview()">
+            跳过访谈，直接完成
+          </button>
+          <button class="btn btn-primary" onclick="startInterview()">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+            </svg>
+            开始补充访谈 (推荐)
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Simulate analysis completion after 3 seconds
+    setTimeout(() => {
+      document.getElementById('loading-state').style.display = 'none';
+      document.getElementById('analysis-results').style.display = 'block';
+
+      // Animate score circle
+      animateScore(70);
+
+      // Animate dimension bars
+      setTimeout(() => {
+        document.querySelectorAll('.dimension-progress').forEach(bar => {
+          bar.style.transition = 'width 1s ease-in-out';
+        });
+      }, 500);
+    }, 3000);
+
+    function animateScore(targetScore) {
+      const circle = document.getElementById('score-circle');
+      const valueElement = document.getElementById('score-value');
+      const circumference = 314; // 2 * PI * 50
+      const offset = circumference - (targetScore / 100) * circumference;
+
+      let currentScore = 0;
+      const duration = 1500;
+      const steps = 60;
+      const increment = targetScore / steps;
+      const stepDuration = duration / steps;
+
+      const timer = setInterval(() => {
+        currentScore += increment;
+        if (currentScore >= targetScore) {
+          currentScore = targetScore;
+          clearInterval(timer);
+        }
+
+        valueElement.textContent = Math.round(currentScore) + '%';
+        const currentOffset = circumference - (currentScore / 100) * circumference;
+        circle.style.strokeDashoffset = currentOffset;
+      }, stepDuration);
+    }
+
+    function startInterview() {
+      // Navigate to interview page
+      window.location.href = '06-supplementary-interview.html';
+    }
+
+    function skipInterview() {
+      // Navigate to expert completion page
+      alert('跳过访谈，专家创建完成！');
+      // In real app: window.location.href = 'expert-dashboard.html';
+    }
+  </script>
+</body>
+</html>
