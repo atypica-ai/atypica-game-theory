@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { KnowledgeAnalysisSection } from "./KnowledgeAnalysisSection";
+import { MemoryDocumentEditor } from "./MemoryDocumentEditor";
 import { ProcessingStatusSection } from "./ProcessingStatusSection";
 import { SourcesSection } from "./SourcesSection";
 
@@ -186,21 +187,7 @@ export function SageDetailView({
 
               {/* Memory Document */}
               {sage.memoryDocument && (
-                <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-6">
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                        <Brain className="size-5" />
-                        {t("memoryDocument")}
-                      </h3>
-                    </div>
-                    <div className="prose prose-sm dark:prose-invert max-w-none">
-                      <pre className="whitespace-pre-wrap text-xs bg-zinc-50 dark:bg-zinc-800 p-4 rounded-md overflow-x-auto">
-                        {sage.memoryDocument}
-                      </pre>
-                    </div>
-                  </div>
-                </div>
+                <MemoryDocumentEditor sageId={sage.id} initialContent={sage.memoryDocument} />
               )}
 
               {/* Chats Section */}
