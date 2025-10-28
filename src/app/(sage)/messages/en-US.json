@@ -1,5 +1,28 @@
 {
   "Sage": {
+    "create": {
+      "title": "Add Knowledge Sources",
+      "description": "Upload documents, paste text, or add website links to build your expert's knowledge base",
+      "addAtLeastOneSource": "Please add at least one knowledge source",
+      "enterText": "Please enter text content",
+      "textAdded": "Text added",
+      "websiteNotImplemented": "Website links feature coming soon",
+      "cancel": "Cancel",
+      "next": "Next",
+      "back": "Back",
+      "expertInfo": "Expert Information",
+      "expertInfoDescription": "Give your expert a name and define their domain",
+      "expertName": "Expert Name",
+      "expertNamePlaceholder": "e.g., Product Design Expert",
+      "expertDomain": "Expert Domain",
+      "expertDomainPlaceholder": "e.g., User Experience Design",
+      "enterName": "Please enter expert name",
+      "enterDomain": "Please enter expert domain",
+      "creating": "Creating...",
+      "create": "Create Expert",
+      "createSuccess": "Expert created successfully",
+      "createFailed": "Creation failed, please try again"
+    },
     "homepage": {
       "title": "Build AI Expert Agents",
       "subtitle": "Import professional knowledge documents, AI automatically analyzes completeness and generates expert memory documents to create your domain expert.",

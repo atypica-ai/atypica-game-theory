@@ -1,0 +1,359 @@
+"use client";
+
+import { createSage } from "@/app/(sage)/actions";
+import type { CreateSageSourceInput } from "@/app/(sage)/types";
+import { FileUploadButton } from "@/components/chat/FileUploadButton";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
+import { Textarea } from "@/components/ui/textarea";
+import { useFileUploadManager } from "@/hooks/use-file-upload-manager";
+import { cn } from "@/lib/utils";
+import { FileText, Globe, Upload, X } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
+
+export function CreateSageForm() {
+  const t = useTranslations("Sage.create");
+  const router = useRouter();
+  const { uploadedFiles, handleFileUploaded, clearFiles } = useFileUploadManager();
+
+  const [sources, setSources] = useState<CreateSageSourceInput[]>([]);
+  const [isCreating, setIsCreating] = useState(false);
+
+  // Modal states
+  const [showTextModal, setShowTextModal] = useState(false);
+  const [showWebsiteModal, setShowWebsiteModal] = useState(false);
+  const [textContent, setTextContent] = useState("");
+  const [websiteUrl, setWebsiteUrl] = useState("");
+
+  // Sage metadata (will be filled after adding sources)
+  const [sageName, setSageName] = useState("");
+  const [sageDomain, setSageDomain] = useState("");
+  const [showMetadataStep, setShowMetadataStep] = useState(false);
+
+  // Handle file upload
+  const handleFilesUploaded = (files: typeof uploadedFiles) => {
+    const fileSources: CreateSageSourceInput[] = files.map((file) => ({
+      type: "file" as const,
+      content: {
+        objectUrl: file.objectUrl,
+        name: file.name,
+        mimeType: file.mimeType,
+        size: file.size,
+      },
+    }));
+    setSources((prev) => [...prev, ...fileSources]);
+  };
+
+  // Handle text source
+  const handleAddText = () => {
+    if (!textContent.trim()) {
+      toast.error(t("enterText"));
+      return;
+    }
+
+    setSources((prev) => [
+      ...prev,
+      {
+        type: "text",
+        content: { text: textContent },
+      },
+    ]);
+
+    setTextContent("");
+    setShowTextModal(false);
+    toast.success(t("textAdded"));
+  };
+
+  // Handle website source (not implemented yet)
+  const handleAddWebsite = () => {
+    toast.info(t("websiteNotImplemented"));
+    setShowWebsiteModal(false);
+  };
+
+  // Remove source
+  const handleRemoveSource = (index: number) => {
+    setSources((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // Get source display name
+  const getSourceDisplayName = (source: CreateSageSourceInput, index: number): string => {
+    if (source.type === "file") {
+      return source.content.name || `File ${index + 1}`;
+    } else if (source.type === "text") {
+      const text = source.content.text || "";
+      return text.substring(0, 50) + (text.length > 50 ? "..." : "");
+    } else if (source.type === "url") {
+      return source.content.url || `URL ${index + 1}`;
+    }
+    return `Source ${index + 1}`;
+  };
+
+  // Handle next step
+  const handleNext = () => {
+    if (sources.length === 0) {
+      toast.error(t("addAtLeastOneSource"));
+      return;
+    }
+    setShowMetadataStep(true);
+  };
+
+  // Handle create sage
+  const handleCreate = async () => {
+    if (!sageName.trim()) {
+      toast.error(t("enterName"));
+      return;
+    }
+    if (!sageDomain.trim()) {
+      toast.error(t("enterDomain"));
+      return;
+    }
+
+    setIsCreating(true);
+    try {
+      const result = await createSage({
+        name: sageName.trim(),
+        domain: sageDomain.trim(),
+        locale: "zh-CN", // TODO: Get from user locale
+        sources,
+      });
+
+      if (!result.success) throw result;
+
+      const { sage } = result.data;
+      toast.success(t("createSuccess"));
+      router.push(`/sage/${sage.token}`);
+    } catch (error) {
+      console.error("Error creating sage:", error);
+      toast.error(t("createFailed"));
+      setIsCreating(false);
+    }
+  };
+
+  if (showMetadataStep) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="w-full max-w-2xl bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-8">
+          <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">
+            {t("expertInfo")}
+          </h1>
+          <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-8">
+            {t("expertInfoDescription")}
+          </p>
+
+          <div className="space-y-6">
+            <div>
+              <Label htmlFor="name">{t("expertName")}</Label>
+              <Input
+                id="name"
+                value={sageName}
+                onChange={(e) => setSageName(e.target.value)}
+                placeholder={t("expertNamePlaceholder")}
+                className="mt-2"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="domain">{t("expertDomain")}</Label>
+              <Input
+                id="domain"
+                value={sageDomain}
+                onChange={(e) => setSageDomain(e.target.value)}
+                placeholder={t("expertDomainPlaceholder")}
+                className="mt-2"
+              />
+            </div>
+
+            <div className="flex gap-3 pt-4">
+              <Button variant="outline" onClick={() => setShowMetadataStep(false)}>
+                {t("back")}
+              </Button>
+              <Button onClick={handleCreate} disabled={isCreating} className="flex-1">
+                {isCreating ? t("creating") : t("create")}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center p-4">
+      <div className="w-full max-w-4xl bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-8">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">
+            {t("title")}
+          </h1>
+          <p className="text-zinc-600 dark:text-zinc-400">{t("description")}</p>
+        </div>
+
+        {/* Upload Area */}
+        <div className="border-2 border-dashed border-zinc-300 dark:border-zinc-700 rounded-lg p-12 mb-6 text-center bg-zinc-50 dark:bg-zinc-800/50">
+          <div className="flex justify-center mb-4">
+            <div className="size-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+              <Upload className="size-8 text-green-600 dark:text-green-400" />
+            </div>
+          </div>
+
+          <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
+            Upload sources
+          </h3>
+
+          <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-1">
+            Drag & drop or{" "}
+            <FileUploadButton
+              onFileUploaded={(file) => handleFilesUploaded([...uploadedFiles, file])}
+              onError={(error) => toast.error(error)}
+              render={({ onClick }) => (
+                <button onClick={onClick} className="text-green-600 hover:underline">
+                  choose file
+                </button>
+              )}
+            />{" "}
+            to upload
+          </p>
+
+          <p className="text-xs text-zinc-500 dark:text-zinc-500">
+            Supported file types: PDF, .txt, Markdown, Audio (e.g. mp3), .docx
+          </p>
+        </div>
+
+        {/* Source Type Buttons */}
+        <div className="grid grid-cols-2 gap-4 mb-6">
+          <button
+            onClick={() => setShowWebsiteModal(true)}
+            className="p-4 border border-zinc-200 dark:border-zinc-700 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors text-left"
+          >
+            <Globe className="size-5 mb-2 text-zinc-600 dark:text-zinc-400" />
+            <div className="font-medium text-zinc-900 dark:text-zinc-100">Website</div>
+            <div className="text-xs text-zinc-500 dark:text-zinc-500">添加网页 URL</div>
+          </button>
+
+          <button
+            onClick={() => setShowTextModal(true)}
+            className="p-4 border border-zinc-200 dark:border-zinc-700 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors text-left"
+          >
+            <FileText className="size-5 mb-2 text-zinc-600 dark:text-zinc-400" />
+            <div className="font-medium text-zinc-900 dark:text-zinc-100">Paste text</div>
+            <div className="text-xs text-zinc-500 dark:text-zinc-500">直接粘贴文本内容</div>
+          </button>
+        </div>
+
+        {/* Source List */}
+        {sources.length > 0 && (
+          <div className="mb-6 space-y-2">
+            {sources.map((source, index) => (
+              <div
+                key={index}
+                className="flex items-center justify-between p-3 border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900"
+              >
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  {source.type === "file" ? (
+                    <FileText className="size-4 text-zinc-500 flex-shrink-0" />
+                  ) : (
+                    <FileText className="size-4 text-zinc-500 flex-shrink-0" />
+                  )}
+                  <span className="text-sm text-zinc-700 dark:text-zinc-300 truncate">
+                    {getSourceDisplayName(source, index)}
+                  </span>
+                </div>
+                <button
+                  onClick={() => handleRemoveSource(index)}
+                  className="p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded"
+                >
+                  <X className="size-4 text-zinc-500" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Source Limit */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <FileText className="size-4 text-zinc-500" />
+              <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                Source limit
+              </span>
+            </div>
+            <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+              {sources.length} / 10
+            </span>
+          </div>
+          <Progress value={(sources.length / 10) * 100} className="h-2" />
+        </div>
+
+        {/* Actions */}
+        <div className="flex gap-3 justify-end">
+          <Button variant="outline" onClick={() => router.back()}>
+            {t("cancel")}
+          </Button>
+          <Button
+            onClick={handleNext}
+            disabled={sources.length === 0}
+            className={cn(
+              sources.length === 0 && "opacity-50 cursor-not-allowed"
+            )}
+          >
+            {t("next")}
+            <ArrowRight className="size-4 ml-2" />
+          </Button>
+        </div>
+
+        {/* Text Modal */}
+        <Dialog open={showTextModal} onOpenChange={setShowTextModal}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Paste text</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <Textarea
+                value={textContent}
+                onChange={(e) => setTextContent(e.target.value)}
+                placeholder="Paste your text content here..."
+                rows={10}
+                className="resize-none"
+              />
+              <div className="flex gap-2 justify-end">
+                <Button variant="outline" onClick={() => setShowTextModal(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleAddText}>Add</Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Website Modal */}
+        <Dialog open={showWebsiteModal} onOpenChange={setShowWebsiteModal}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add website</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <Input
+                value={websiteUrl}
+                onChange={(e) => setWebsiteUrl(e.target.value)}
+                placeholder="https://example.com"
+              />
+              <div className="flex gap-2 justify-end">
+                <Button variant="outline" onClick={() => setShowWebsiteModal(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleAddWebsite}>Add</Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </div>
+  );
+}
