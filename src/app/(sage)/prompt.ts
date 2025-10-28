@@ -370,7 +370,8 @@ export const sageKnowledgeAnalysisSystem = ({
 </整体评估>
 
 <输出格式>
-使用结构化的 JSON 格式输出评估结果。
+直接输出 JSON 对象，不要包装在其他字段或对象中。
+JSON 必须包含：overallScore, dimensions, knowledgeGaps, strengths, recommendations, shouldInterview
 </输出格式>`
     : `${promptSystemConfig({ locale })}
 You are a knowledge assessment expert, responsible for multi-dimensional analysis of an expert agent's knowledge completeness.
@@ -431,7 +432,8 @@ Synthesize across dimensions and provide:
 </Overall Assessment>
 
 <Output Format>
-Use structured JSON format for the assessment results.
+Output the JSON object directly without wrapping it in any other field or object.
+The JSON must include: overallScore, dimensions, knowledgeGaps, strengths, recommendations, shouldInterview
 </Output Format>`;
 
 // ===== Sage Chat System Prompt =====

@@ -211,14 +211,16 @@ export async function analyzeKnowledgeCompleteness({
     maxRetries: 3,
   });
 
+  const analysisData = result.object;
+
   // Add i18n keys to dimensions
-  const dimensionsWithKeys = result.object.dimensions.map((dim, index) => ({
+  const dimensionsWithKeys = analysisData.dimensions.map((dim, index) => ({
     ...dim,
     nameKey: dimensionNameKeys[index] || dim.name,
   }));
 
   return {
-    ...result.object,
+    ...analysisData,
     dimensions: dimensionsWithKeys,
   };
 }
