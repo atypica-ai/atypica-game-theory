@@ -232,11 +232,11 @@ export async function extractInterviewTranscript(userChatId: number): Promise<In
         part.state === "output-available"
       ) {
         if (part.type === `tool-${InterviewToolName.endInterview}`) {
-          title = part.output.title || null;
-          summary = part.output.interviewSummary || null;
+          title = part.input.title || null;
+          summary = part.input.interviewSummary || null;
           // Extract personalInfo from endInterview tool
-          if (part.output.personalInfo && Array.isArray(part.output.personalInfo)) {
-            personalInfo = part.output.personalInfo;
+          if (part.input.personalInfo && Array.isArray(part.input.personalInfo)) {
+            personalInfo = part.input.personalInfo;
           }
         }
         // Add form interactions to messages

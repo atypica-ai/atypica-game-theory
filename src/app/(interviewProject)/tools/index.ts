@@ -20,6 +20,7 @@ export const interviewSessionTools = ({ interviewSessionId }: { interviewSession
     toModelOutput: (result: PlainTextToolResult) => {
       return { type: "text", value: result.plainText };
     },
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     execute: async ({ title, interviewSummary, personalInfo }) => {
       const trimmedTitle = (title ?? "").slice(0, 200);
       const extraUpdate = personalInfo && personalInfo.length > 0 ? { personalInfo } : {};
@@ -38,9 +39,9 @@ export const interviewSessionTools = ({ interviewSessionId }: { interviewSession
         `,
       ]);
       return {
-        title,
-        interviewSummary,
-        personalInfo,
+        // title,
+        // interviewSummary,
+        // personalInfo,
         plainText: "",
       };
     },

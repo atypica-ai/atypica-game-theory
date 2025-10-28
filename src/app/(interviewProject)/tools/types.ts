@@ -26,9 +26,9 @@ export const interviewEndInterviewInputSchema = z.object({
 });
 
 export const interviewEndInterviewOutputSchema = z.object({
-  title: z.string(),
-  interviewSummary: z.string(),
-  personalInfo: z.array(z.object({ label: z.string(), text: z.string() })).optional(),
+  // title: z.string(),
+  // interviewSummary: z.string(),
+  // personalInfo: z.array(z.object({ label: z.string(), text: z.string() })).optional(),
   plainText: z.string(),
 });
 

@@ -26,6 +26,7 @@ function setBedrockCache(model: `claude-${string}`, coreMessages: ModelMessage[]
   const checkpoints = {
     ">=1": false,
     ">=8": false,
+    ">=16": false,
   };
   const cachedCoreMessages = coreMessages.map((message, index) => {
     const providerOptions = { bedrock: { cachePoint: { type: "default" } } };
@@ -35,6 +36,10 @@ function setBedrockCache(model: `claude-${string}`, coreMessages: ModelMessage[]
     }
     if (message.role === "assistant" && index >= 8 && !checkpoints[">=8"]) {
       checkpoints[">=8"] = true;
+      return { ...message, providerOptions };
+    }
+    if (message.role === "assistant" && index >= 16 && !checkpoints[">=16"]) {
+      checkpoints[">=16"] = true;
       return { ...message, providerOptions };
     }
     return { ...message };
@@ -133,22 +138,36 @@ export async function POST(req: Request) {
     userChatId,
     { tools },
   );
-  const coreMessages = setBedrockCache("claude-3-7-sonnet", _coreMessages);
+  const coreMessages = setBedrockCache("claude-4-sonnet", _coreMessages);
 
   const streamTextResult = streamText({
-    model: llm("claude-3-7-sonnet"),
+    model: llm("claude-sonnet-4"),
 
     providerOptions: defaultProviderOptions,
 
     system: systemPrompt,
     messages: coreMessages,
 
-    toolChoice:
-      coreMessages.length < 19
-        ? "auto"
-        : { type: "tool", toolName: InterviewToolName.endInterview },
+    prepareStep: async ({ messages }) => {
+      const assistantCount = messages.filter(({ role }) => role === "assistant").length;
+      if (assistantCount < 8) {
+        return {
+          toolChoice: "auto",
+          activeTools: [InterviewToolName.requestInteractionForm],
+        };
+      } else if (assistantCount < 15) {
+        return {
+          toolChoice: "auto",
+        };
+      } else {
+        return {
+          toolChoice: { type: "tool", toolName: InterviewToolName.endInterview },
+          activeTools: [InterviewToolName.endInterview],
+        };
+      }
+    },
 
-    tools,
+    tools: tools,
 
     stopWhen: stepCountIs(1),
 
