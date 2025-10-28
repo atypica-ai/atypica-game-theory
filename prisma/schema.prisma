@@ -76,6 +76,8 @@ model User {
   attachmentFiles   AttachmentFile[]
   personaImports    PersonaImport[]
   interviewProjects InterviewProject[]
+  sages             Sage[]
+  sageChats         SageChat[]
 
   // relations
   userPersonaChatRelations       UserPersonaChatRelation[]
@@ -241,6 +243,8 @@ enum UserChatKind {
   study
   interview
   interviewSession
+  sageChat
+  sageInterview
   misc
 }
 
@@ -266,6 +270,8 @@ model UserChat {
   personaImport           PersonaImport?
   userPersonaChatRelation UserPersonaChatRelation?
   interviewSession        InterviewSession?
+  sageChat                SageChat?
+  sageInterview           SageInterview?
 }
 
 enum MessageRole {
@@ -573,4 +579,96 @@ model InterviewReport {
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
+}
+
+// ===== Sage (Expert Agent) System =====
+
+model Sage {
+  id     Int    @id @default(autoincrement())
+  token  String @unique @db.VarChar(64)
+  userId Int
+  user   User   @relation(fields: [userId], references: [id])
+
+  name     String  @db.VarChar(255)
+  domain   String  @db.VarChar(255) // Professional domain (e.g., "Product Management", "AI Research")
+  expertise Json   @default("[]") // Array of expertise areas
+  locale   String  @db.VarChar(16) // Primary language
+
+  // Memory Document - Core knowledge base (like CLAUDE.md)
+  memoryDocument String @db.Text
+
+  // Vector embedding for sage matching and retrieval
+  embedding Unsupported("halfvec(1024)")?
+
+  // Configuration
+  isPublic   Boolean @default(false) // Whether this sage is publicly shared
+  allowTools Boolean @default(true) // Whether sage can use tools (deep research, search)
+
+  // Statistics
+  chatCount    Int       @default(0) // Number of chats with this sage
+  lastActiveAt DateTime? @db.Timestamptz(6) // Last time sage was used
+
+  // Import metadata
+  attachments Json @default("[]") // Initial source files/content
+  extra       Json @default("{}") // Additional metadata (processing status, etc.)
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  chats      SageChat[]
+  interviews SageInterview[]
+
+  @@index([embedding])
+  @@index([userId, domain])
+  @@index([isPublic, domain, locale])
+}
+
+model SageChat {
+  id         Int      @id @default(autoincrement())
+  sageId     Int
+  sage       Sage     @relation(fields: [sageId], references: [id], onDelete: Cascade)
+  userChatId Int      @unique
+  userChat   UserChat @relation(fields: [userChatId], references: [id])
+  userId     Int
+  user       User     @relation(fields: [userId], references: [id])
+
+  // Chat type: consultation, brainstorm, interview
+  chatType String @default("consultation") @db.VarChar(32)
+
+  // Statistics
+  messageCount Int @default(0)
+
+  // Additional metadata
+  extra Json @default("{}")
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  @@index([sageId])
+  @@index([userId])
+}
+
+model SageInterview {
+  id         Int      @id @default(autoincrement())
+  sageId     Int
+  sage       Sage     @relation(fields: [sageId], references: [id], onDelete: Cascade)
+  userChatId Int      @unique
+  userChat   UserChat @relation(fields: [userChatId], references: [id])
+
+  // Interview purpose and focus
+  purpose    String @db.Text // Purpose of this interview
+  focusAreas Json   @default("[]") // Array of focus areas
+
+  // Interview status
+  status   String @default("ongoing") @db.VarChar(32) // draft, ongoing, completed
+  progress Float  @default(0) // Completion progress 0-1
+
+  // Interview results
+  summary String? @db.Text // Summary after completion
+  extra   Json    @default("{}") // Findings, new memories count, etc.
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  @@index([sageId, status])
 }

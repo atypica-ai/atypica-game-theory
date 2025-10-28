@@ -146,6 +146,7 @@ Run health checks with: `npx tsx scripts/check-status.ts`
 
 - **Version**: Tailwind CSS v4 with PostCSS
 - **Utility Function**: Use `cn()` from `src/lib/utils.ts` for combining class names
+
   ```typescript
   import { cn } from "@/lib/utils";
 
@@ -176,21 +177,25 @@ Run health checks with: `npx tsx scripts/check-status.ts`
 #### Best Practices
 
 1. **Class Name Composition**: Always use `cn()` utility for dynamic classes
+
    ```typescript
    <Button className={cn("w-full", isLoading && "opacity-50")} />
    ```
 
 2. **Responsive Design**: Use Tailwind's responsive prefixes (sm:, md:, lg:, xl:)
+
    ```typescript
    <div className="flex flex-col md:flex-row lg:gap-4" />
    ```
 
 3. **Theme-Aware Styling**: Leverage CSS variables for colors
+
    ```typescript
    <div className="bg-background text-foreground border-border" />
    ```
 
 4. **Component Styling**: Use `class-variance-authority` for component variants
+
    ```typescript
    import { cva } from "class-variance-authority";
 
@@ -203,8 +208,8 @@ Run health checks with: `npx tsx scripts/check-status.ts`
        size: {
          sm: "h-9 px-3",
          lg: "h-11 px-8",
-       }
-     }
+       },
+     },
    });
    ```
 
@@ -245,7 +250,7 @@ export async function createItem(data: CreateItemInput) {
   return {
     success: false,
     message: "Error description",
-    code: "not_found" | "unauthorized" | "forbidden" | "internal_server_error"
+    code: "not_found" | "unauthorized" | "forbidden" | "internal_server_error",
   };
   ```
 
@@ -254,12 +259,10 @@ export async function createItem(data: CreateItemInput) {
 ```typescript
 import { withAuth } from "@/lib/request/withAuth";
 
-export const updateProfile = withAuth(
-  async ({ session, user }, profileData: ProfileData) => {
-    // session and user are automatically available
-    // Redirect to login if unauthorized
-  }
-);
+export const updateProfile = withAuth(async ({ session, user }, profileData: ProfileData) => {
+  // session and user are automatically available
+  // Redirect to login if unauthorized
+});
 ```
 
 #### Error Handling
@@ -273,7 +276,7 @@ try {
   return {
     success: false,
     message: await getTranslations("errors.create_failed"),
-    code: "internal_server_error"
+    code: "internal_server_error",
   };
 }
 ```
@@ -285,6 +288,45 @@ try {
 3. **Type Safety**: Leverage TypeScript for input/output types
 4. **Database Operations**: Use Prisma for all database interactions
 5. **Logging**: Log errors with context for debugging
+
+#### Prisma Imports
+
+**IMPORTANT**: The project uses custom Prisma paths. Always use the correct import paths:
+
+```typescript
+// ✅ Correct - Import prisma client instance
+import { prisma } from "@/prisma/prisma";
+
+// ✅ Correct - Import types from custom Prisma client
+import type { ChatMessageAttachment, Prisma } from "@/prisma/client";
+
+// ❌ Wrong - Don't import from @prisma/client
+import { ChatMessageAttachment } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
+```
+
+**Reason**: The project uses a custom Prisma output path (`src/prisma/client`) configured in `prisma/schema.prisma`. This ensures:
+
+- Type definitions match the custom client generation
+- Proper handling of extended Prisma features (vector extension, etc.)
+- Consistent imports across the codebase
+- Singleton prisma client instance with proper configuration
+
+**Common Import Patterns**:
+
+```typescript
+// Database operations - use prisma instance
+import { prisma } from "@/prisma/prisma";
+await prisma.user.findMany();
+
+// Type imports - use custom client types
+import type { User, Sage, ChatMessageAttachment } from "@/prisma/client";
+import type { Prisma } from "@/prisma/client";
+
+// Transaction type
+import type { Prisma } from "@/prisma/client";
+type PrismaTransaction = Prisma.TransactionClient;
+```
 
 ### Next.js Pages Conventions
 
@@ -354,13 +396,13 @@ export async function generateMetadata({ params }): Promise<Metadata> {
   return {
     title: {
       default: t("title"),
-      template: "%s | atypica.AI"
+      template: "%s | atypica.AI",
     },
     description: t("description"),
     openGraph: {
       title: t("title"),
       description: t("description"),
-    }
+    },
   };
 }
 ```
@@ -463,7 +505,7 @@ export async function POST(req: Request) {
     // Smooth streaming for better UX
     experimental_transform: smoothStream({
       delayInMs: 30,
-      chunking: /[\u4E00-\u9FFF]|\S+\s+/,  // Chinese characters or words
+      chunking: /[\u4E00-\u9FFF]|\S+\s+/, // Chinese characters or words
     }),
 
     // Track steps and persist
@@ -492,20 +534,15 @@ export async function convertDBMessagesToAIMessages(dbMessages) {
     dbMessages.map(async ({ messageId, role, parts, attachments }) => ({
       id: messageId,
       role,
-      parts: [
-        ...parts.map(convertToV5MessagePart),
-        ...await processAttachments(attachments)
-      ]
-    }))
+      parts: [...parts.map(convertToV5MessagePart), ...(await processAttachments(attachments))],
+    })),
   );
 }
 
 // Flatten messages for tool call handling
 export function convertToFlattenModelMessages(messages, { tools }) {
-  const flattenMessages = messages.flatMap(message =>
-    message.parts.some(isToolUIPart)
-      ? splitMessageOnToolCalls(message)
-      : [message]
+  const flattenMessages = messages.flatMap((message) =>
+    message.parts.some(isToolUIPart) ? splitMessageOnToolCalls(message) : [message],
   );
 
   return convertToModelMessages(flattenMessages, { tools });
@@ -553,7 +590,7 @@ onStepFinish: async (step) => {
     userId: session.userId,
     ...extra,
   });
-}
+};
 ```
 
 #### Error Handling and Retries
