@@ -31,7 +31,12 @@ async function SageDetailPage({
     forbidden();
   }
 
-  // Fetch sage's chats and interviews
+  // Fetch sage's sources, chats and interviews
+  const sources = await prisma.sageSource.findMany({
+    where: { sageId: sage.id },
+    orderBy: { createdAt: "asc" },
+  });
+
   const chats = await prisma.sageChat.findMany({
     where: { sageId: sage.id },
     include: {
@@ -62,7 +67,7 @@ async function SageDetailPage({
     orderBy: { createdAt: "desc" },
   });
 
-  return <SageDetailView sage={sage} chats={chats} interviews={interviews} />;
+  return <SageDetailView sage={sage} sources={sources} chats={chats} interviews={interviews} />;
 }
 
 export default async function SageDetailPageWithLoading({

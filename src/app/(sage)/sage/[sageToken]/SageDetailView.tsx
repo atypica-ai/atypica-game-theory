@@ -2,7 +2,7 @@
 import { analyzeSageKnowledge, createOrGetSageChat, createSupplementaryInterview } from "@/app/(sage)/actions";
 import type { SageExtra } from "@/app/(sage)/types";
 import { Button } from "@/components/ui/button";
-import type { ChatMessageAttachment, Sage, SageChat, SageInterview, User, UserChat } from "@/prisma/client";
+import type { ChatMessageAttachment, Sage, SageChat, SageInterview, SageSource, User, UserChat } from "@/prisma/client";
 import { ArrowRight, Brain, FileText, MessageCircle, RefreshCw, Target } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
@@ -11,9 +11,11 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { KnowledgeAnalysisSection } from "./KnowledgeAnalysisSection";
 import { ProcessingStatusSection } from "./ProcessingStatusSection";
+import { SourcesSection } from "./SourcesSection";
 
 export function SageDetailView({
   sage: initialSage,
+  sources,
   chats,
   interviews,
 }: {
@@ -23,6 +25,7 @@ export function SageDetailView({
     attachments: ChatMessageAttachment[];
     user: Pick<User, "id" | "name" | "email">;
   };
+  sources: SageSource[];
   chats: Array<
     SageChat & {
       userChat: Pick<UserChat, "id" | "token" | "title" | "createdAt">;
@@ -143,6 +146,9 @@ export function SageDetailView({
 
         {/* Main Content */}
         <div className="space-y-6">
+          {/* Sources */}
+          {sources.length > 0 && <SourcesSection sources={sources} />}
+
           {/* Processing Status */}
           {(isProcessing || hasError) && (
             <ProcessingStatusSection processing={processing} hasError={hasError} />

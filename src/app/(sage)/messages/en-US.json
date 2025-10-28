@@ -86,6 +86,17 @@
       "interviews": "interviews"
     },
     "detail": {
+      "knowledgeSources": "Knowledge Sources",
+      "completed": "Completed",
+      "failed": "Failed",
+      "sourceCompleted": "Completed",
+      "sourceProcessing": "Processing",
+      "sourceFailed": "Failed",
+      "sourcePending": "Pending",
+      "untitledSource": "Untitled Source",
+      "characters": "characters",
+      "error": "Error",
+      "processingInBackground": "Processing in background...",
       "chatWithSage": "Consult Expert",
       "knowledgeAnalysis": "Knowledge Analysis",
       "analyzeKnowledgeDescription": "Analyze expert's knowledge completeness and identify gaps",
