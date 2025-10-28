@@ -4,7 +4,7 @@ import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import type { ServerActionResult } from "@/lib/serverAction";
 import { createUserChat } from "@/lib/userChat/lib";
-import type { Sage, SageInterview, UserChat } from "@/prisma/client";
+import type { Sage, SageChat, SageInterview, UserChat } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
 import { getLocale } from "next-intl/server";
@@ -612,8 +612,7 @@ export async function completeSupplementaryInterview(
  */
 export async function createOrGetSageChat(sageId: number): Promise<
   ServerActionResult<{
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    sageChat: any;
+    sageChat: SageChat;
     userChat: UserChat;
   }>
 > {

@@ -1,13 +1,10 @@
 import "server-only";
 
-import { defaultProviderOptions, llm } from "@/ai/provider";
 import { StatReporter } from "@/ai/tools/types";
 import { s3SignedUrl } from "@/lib/attachments/s3";
 import { rootLogger } from "@/lib/logging";
 import { proxiedFetch } from "@/lib/proxy/fetch";
-import { getDeployRegion } from "@/lib/request/deployRegion";
-import { detectInputLanguage } from "@/lib/textUtils";
-import type { ChatMessageAttachment, SageSourceContent } from "@/prisma/client";
+import type { SageSourceContent } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import type { Locale } from "next-intl";
 import {
@@ -300,161 +297,6 @@ export async function processNewSage({
   }
 }
 
-/**
- * Parse attachments to extract text content
- * @deprecated - Not currently used, kept for future reference
- */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-async function parseAttachments(
-  attachments: ChatMessageAttachment[],
-  logger: typeof rootLogger,
-): Promise<string> {
-  const contentParts: string[] = [];
-
-  for (const attachment of attachments) {
-    try {
-      // if (attachment.type === "text") {
-      //   // Direct text input
-      //   contentParts.push(attachment.content);
-      // } else if (attachment.type === "url") {
-      //   // URL content - fetch and extract
-      //   contentParts.push(`[URL: ${attachment.name || attachment.content}]\n${attachment.content}`);
-      // } else if (attachment.type === "file") {
-      //   // File content - download and parse
-      //   const fileContent = await parseFileAttachment(attachment, logger);
-      //   contentParts.push(fileContent);
-      // }
-      // TODO: 要支持 text/url/file 三种类型，现在的 attachment 对象还不大够，ChatMessageAttachment 只是针对文件的，
-      // 需要引入一个新的数据类型，其实格式就行了，然后是给导入用的
-      const fileContent = await parseFileAttachment(attachment, logger);
-      contentParts.push(fileContent);
-    } catch (error) {
-      logger.error({
-        msg: "Failed to parse attachment",
-        attachmentType: attachment.mimeType,
-        error: (error as Error).message,
-      });
-      // Continue with other attachments
-    }
-  }
-
-  return contentParts.join("\n\n---\n\n");
-}
-
-/**
- * Parse file attachment to extract text content
- */
-async function parseFileAttachment(
-  attachment: ChatMessageAttachment,
-  logger: typeof rootLogger,
-): Promise<string> {
-  const { objectUrl, mimeType, name } = attachment;
-
-  // Get signed URL and download file from S3
-  const fileHttpUrl = await s3SignedUrl(objectUrl);
-  let response: Response;
-
-  // Use proxy for mainland deployment if needed
-  if (getDeployRegion() === "mainland" && !/amazonaws\.com\.cn/.test(fileHttpUrl)) {
-    response = await proxiedFetch(fileHttpUrl);
-  } else {
-    response = await fetch(fileHttpUrl);
-  }
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch file from S3: ${response.status} ${response.statusText}`);
-  }
-
-  // Handle different file types
-  if (mimeType?.startsWith("text/")) {
-    // Plain text files - read directly
-    return await response.text();
-  } else if (mimeType === "application/pdf" || mimeType?.includes("document")) {
-    // For PDF/document files, we need AI to extract content
-    const fileBuffer = await response.arrayBuffer();
-    const base64Content = Buffer.from(fileBuffer).toString("base64");
-    const dataUrl = `data:${mimeType};base64,${base64Content}`;
-
-    // Use AI to extract text from file
-    const extractedText = await extractTextFromFile(dataUrl, name || "file", mimeType, logger);
-    return extractedText;
-  } else {
-    throw new Error(`Unsupported file type: ${mimeType}`);
-  }
-}
-
-/**
- * Use AI to extract text from file (PDF, DOCX, etc.)
- */
-async function extractTextFromFile(
-  dataUrl: string,
-  fileName: string,
-  mimeType: string,
-  logger: typeof rootLogger,
-): Promise<string> {
-  const locale = await detectInputLanguage({ text: fileName });
-
-  let extractedText = "";
-
-  await new Promise(async (resolve, reject) => {
-    const { streamText } = await import("ai");
-
-    const response = streamText({
-      model: llm("gemini-2.5-flash"),
-      providerOptions: defaultProviderOptions,
-
-      system:
-        locale === "zh-CN"
-          ? `你是专业的文档解析助手。请提取文档中的所有文字内容，保持原有的结构和格式。
-注意：
-1. 保留所有重要信息
-2. 保持原文的段落结构
-3. 不要添加任何评论或说明
-4. 直接输出提取的内容`
-          : `You are a professional document parser. Please extract all text content from the document, maintaining the original structure and format.
-Note:
-1. Preserve all important information
-2. Maintain original paragraph structure
-3. Do not add any comments or explanations
-4. Output the extracted content directly`,
-
-      messages: [
-        {
-          role: "user",
-          content: [{ type: "file", filename: fileName, data: dataUrl, mediaType: mimeType }],
-        },
-      ],
-
-      onChunk: ({ chunk }) => {
-        if (chunk.type === "text-delta") {
-          extractedText += chunk.text;
-        }
-      },
-
-      onFinish: () => {
-        logger.info({
-          msg: "File text extraction completed",
-          fileName,
-          contentLength: extractedText.length,
-        });
-        resolve(null);
-      },
-
-      onError: ({ error }) => {
-        logger.error({
-          msg: "File text extraction failed",
-          fileName,
-          error: (error as Error).message,
-        });
-        reject(error);
-      },
-    });
-
-    response.consumeStream().catch((error: Error) => reject(error));
-  });
-
-  return extractedText;
-}
 
 /**
  * Update Memory Document from supplementary interview
@@ -622,20 +464,14 @@ async function processSource(
         break;
 
       case "file":
-        // Download and parse file
+        // Download and parse file using Jina API
         if ("objectUrl" in content && "name" in content && "mimeType" in content) {
-          const { objectUrl, name, mimeType } = content;
+          const { objectUrl, name } = content;
           const fileUrl = await s3SignedUrl(objectUrl);
 
-          logger.info({ msg: "Downloading file", name, mimeType });
+          logger.info({ msg: "Parsing file with Jina API", name });
 
-          const response = await proxiedFetch(fileUrl, {
-            region: getDeployRegion(),
-          });
-          const buffer = await response.arrayBuffer();
-
-          // Parse based on mime type
-          extractedText = await parseFileContent(buffer, mimeType, name);
+          extractedText = await parseWithJinaAPI(fileUrl);
           title = name || "File Source";
         } else {
           throw new Error("Invalid file source content");
@@ -643,8 +479,19 @@ async function processSource(
         break;
 
       case "url":
-        // TODO: Implement URL fetching and parsing
-        throw new Error("URL sources not yet implemented");
+        // Parse URL using Jina API
+        if ("url" in content) {
+          const { url } = content;
+
+          logger.info({ msg: "Parsing URL with Jina API", url });
+
+          extractedText = await parseWithJinaAPI(url);
+          // Extract title from first line or use URL
+          title = extractedText.substring(0, 100).split("\n")[0] || url;
+        } else {
+          throw new Error("Invalid URL source content");
+        }
+        break;
 
       default:
         throw new Error(`Unknown source type: ${source.type}`);
@@ -689,18 +536,29 @@ async function processSource(
 }
 
 /**
- * Parse file content based on MIME type
+ * Parse content (file or URL) using Jina API
  */
-async function parseFileContent(
-  buffer: ArrayBuffer,
-  mimeType: string,
-  filename: string,
-): Promise<string> {
-  const { readFileContentAsText } = await import("@/lib/attachments/parse");
-
-  return readFileContentAsText({
-    buffer,
-    mimeType,
-    filename,
+async function parseWithJinaAPI(url: string): Promise<string> {
+  const response = await proxiedFetch("https://r.jina.ai/", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${process.env.JINA_API_KEY}`,
+    },
+    body: JSON.stringify({ url }),
   });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    rootLogger.error({
+      msg: "Jina API failed to parse content",
+      url,
+      status: response.status,
+      error: errorText,
+    });
+    throw new Error(`Failed to parse content: ${response.statusText}`);
+  }
+
+  const text = await response.text();
+  return text;
 }

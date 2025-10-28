@@ -68,10 +68,32 @@ export function CreateSageForm() {
     toast.success(t("textAdded"));
   };
 
-  // Handle website source (not implemented yet)
+  // Handle website source
   const handleAddWebsite = () => {
-    toast.info(t("websiteNotImplemented"));
+    if (!websiteUrl.trim()) {
+      toast.error(t("enterWebsiteUrl"));
+      return;
+    }
+
+    // Simple URL validation
+    try {
+      new URL(websiteUrl);
+    } catch {
+      toast.error(t("invalidUrl"));
+      return;
+    }
+
+    setSources((prev) => [
+      ...prev,
+      {
+        type: "url",
+        content: { url: websiteUrl.trim() },
+      },
+    ]);
+
+    setWebsiteUrl("");
     setShowWebsiteModal(false);
+    toast.success(t("websiteAdded"));
   };
 
   // Remove source
@@ -252,6 +274,8 @@ export function CreateSageForm() {
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   {source.type === "file" ? (
                     <FileTextIcon className="size-4 text-zinc-500 flex-shrink-0" />
+                  ) : source.type === "url" ? (
+                    <GlobeIcon className="size-4 text-zinc-500 flex-shrink-0" />
                   ) : (
                     <FileTextIcon className="size-4 text-zinc-500 flex-shrink-0" />
                   )}

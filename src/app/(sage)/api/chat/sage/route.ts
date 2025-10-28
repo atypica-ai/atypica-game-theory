@@ -101,8 +101,7 @@ export async function POST(req: Request) {
   // Detect user input language, fallback to sage's locale
   const locale = await detectInputLanguage({
     text: newMessage.parts.map((part) => (part.type === "text" ? part.text : "")).join(""),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    fallbackLocale: sage.locale as any,
+    fallbackLocale: sage.locale as "zh-CN" | "en-US",
   });
 
   // Setup tools based on sage's allowTools setting

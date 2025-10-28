@@ -108,8 +108,7 @@ export async function POST(req: Request) {
     text: newMessage.parts
       .map((part) => (part.type === "text" ? part.text : ""))
       .join(""),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    fallbackLocale: sage.locale as any,
+    fallbackLocale: sage.locale as "zh-CN" | "en-US",
   });
 
   // Get interview plan from extra

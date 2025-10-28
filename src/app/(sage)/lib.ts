@@ -182,27 +182,16 @@ export async function analyzeKnowledgeCompleteness({
   memoryDocument: string;
   locale: Locale;
 }): Promise<KnowledgeAnalysisResult> {
-  // Add dimension name i18n keys based on locale
-  const dimensionNameKeys =
-    locale === "zh-CN"
-      ? [
-          "sage.analysis.dimensions.foundationalTheory",
-          "sage.analysis.dimensions.practicalExperience",
-          "sage.analysis.dimensions.industryInsights",
-          "sage.analysis.dimensions.problemSolving",
-          "sage.analysis.dimensions.toolsAndMethodologies",
-          "sage.analysis.dimensions.communicationSkills",
-          "sage.analysis.dimensions.continuousLearning",
-        ]
-      : [
-          "sage.analysis.dimensions.foundationalTheory",
-          "sage.analysis.dimensions.practicalExperience",
-          "sage.analysis.dimensions.industryInsights",
-          "sage.analysis.dimensions.problemSolving",
-          "sage.analysis.dimensions.toolsAndMethodologies",
-          "sage.analysis.dimensions.communicationSkills",
-          "sage.analysis.dimensions.continuousLearning",
-        ];
+  // Add dimension name i18n keys
+  const dimensionNameKeys = [
+    "sage.analysis.dimensions.foundationalTheory",
+    "sage.analysis.dimensions.practicalExperience",
+    "sage.analysis.dimensions.industryInsights",
+    "sage.analysis.dimensions.problemSolving",
+    "sage.analysis.dimensions.toolsAndMethodologies",
+    "sage.analysis.dimensions.communicationSkills",
+    "sage.analysis.dimensions.continuousLearning",
+  ];
 
   const result = await generateObject({
     model: llm("claude-sonnet-4"),
