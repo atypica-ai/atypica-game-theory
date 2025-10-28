@@ -1,6 +1,12 @@
+import { TMessageWithPlainTextTool } from "@/ai/tools/types";
 import { z } from "zod";
 
 // ===== Sage Types =====
+
+// Message type for sage chat (currently no special tools)
+export type TSageMessageWithTool = TMessageWithPlainTextTool;
+
+// ===== Sage Entity Types =====
 
 export interface SageExtra {
   processing?: {

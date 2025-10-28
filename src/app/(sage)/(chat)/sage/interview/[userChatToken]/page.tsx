@@ -1,6 +1,9 @@
 import authOptions from "@/app/(auth)/authOptions";
+import { convertDBMessagesToAIMessages } from "@/ai/messageUtils";
+import { TSageMessageWithTool } from "@/app/(sage)/types";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { prisma } from "@/prisma/prisma";
+import { UIMessage } from "ai";
 import { getServerSession } from "next-auth";
 import { forbidden, notFound } from "next/navigation";
 import { Suspense } from "react";
@@ -47,7 +50,23 @@ async function SageInterviewPage({
     notFound();
   }
 
-  return <SageInterviewClient userChatToken={userChatToken} sage={sage} interview={interview} />;
+  // Fetch existing chat messages
+  const dbMessages = await prisma.chatMessage.findMany({
+    where: { userChatId: userChat.id },
+    orderBy: { id: "asc" },
+  });
+  const messages: UIMessage[] = await convertDBMessagesToAIMessages(dbMessages, {
+    convertObjectUrl: "HttpUrl",
+  });
+
+  return (
+    <SageInterviewClient
+      userChatToken={userChatToken}
+      sage={sage}
+      interview={interview}
+      initialMessages={messages as TSageMessageWithTool[]}
+    />
+  );
 }
 
 export default async function SageInterviewPageWithLoading({

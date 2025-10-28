@@ -1,12 +1,20 @@
 "use client";
-import type { ChatMessageAttachment, Sage, User } from "@/prisma/client";
-import type { SageExtra } from "@/app/(sage)/types";
+import { ClientMessagePayload, prepareLastUIMessageForRequest } from "@/ai/messageUtilsClient";
+import { SageToolUIPartDisplay } from "@/app/(sage)/tools/ui";
+import { TSageMessageWithTool, SageExtra } from "@/app/(sage)/types";
 import { UserChatSession } from "@/components/chat/UserChatSession";
-import { useTranslations } from "next-intl";
+import HippyGhostAvatar from "@/components/HippyGhostAvatar";
+import { FitToViewport } from "@/components/layout/FitToViewport";
+import type { ChatMessageAttachment, Sage, User } from "@/prisma/client";
+import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport } from "ai";
+import { useSession } from "next-auth/react";
+import { useMemo, useRef } from "react";
 
 export function SageChatClient({
   userChatToken,
   sage,
+  initialMessages = [],
 }: {
   userChatToken: string;
   sage: Omit<Sage, "expertise" | "attachments" | "extra"> & {
@@ -15,17 +23,64 @@ export function SageChatClient({
     attachments: ChatMessageAttachment[];
     user: Pick<User, "id" | "name" | "email">;
   };
+  initialMessages?: TSageMessageWithTool[];
 }) {
-  const t = useTranslations("Sage.chat");
+  const { data: session } = useSession();
+
+  const extraRequestPayload = useMemo(() => ({ userChatToken: userChatToken }), [userChatToken]);
+
+  // Chat hooks
+  const useChatHelpers = useChat({
+    messages: initialMessages,
+    transport: new DefaultChatTransport({
+      api: "/api/chat/sage",
+      prepareSendMessagesRequest({ id, messages, body: extraBody }) {
+        const body: ClientMessagePayload = {
+          id,
+          message: prepareLastUIMessageForRequest(messages),
+          ...extraRequestPayload,
+        };
+        if (extraBody && "attachments" in extraBody) {
+          body["attachments"] = extraBody.attachments;
+        }
+        return { body };
+      },
+    }),
+    experimental_throttle: 300,
+  });
+
+  const useChatRef = useRef({
+    regenerate: useChatHelpers.regenerate,
+    setMessages: useChatHelpers.setMessages,
+    sendMessage: useChatHelpers.sendMessage,
+  });
 
   return (
-    <UserChatSession
-      userChatToken={userChatToken}
-      apiPath="/api/chat/sage"
-      chatTitle={sage.name}
-      chatSubtitle={sage.domain}
-      showFileUpload={false}
-      placeholder={t("placeholder")}
-    />
+    <FitToViewport className="flex flex-col overflow-hidden">
+      {/* Chat Header */}
+      <div className="w-full mt-2 px-3 py-3 max-w-4xl mx-auto">
+        <h1 className="font-medium text-sm text-center">{sage.name}</h1>
+        {sage.domain && (
+          <p className="text-xs text-muted-foreground text-center mt-1">{sage.domain}</p>
+        )}
+      </div>
+
+      {/* Centered Chat Area */}
+      <div className="flex-1 overflow-hidden w-full max-w-4xl mx-auto flex flex-col">
+        <UserChatSession
+          nickname={{ assistant: sage.name, user: session?.user?.email ?? "You" }}
+          avatar={{
+            assistant: <HippyGhostAvatar className="size-8" seed={sage.id} />,
+            user: session?.user ? (
+              <HippyGhostAvatar className="size-8" seed={session.user.id} />
+            ) : undefined,
+          }}
+          useChatHelpers={useChatHelpers}
+          useChatRef={useChatRef}
+          renderToolUIPart={(toolPart) => <SageToolUIPartDisplay toolUIPart={toolPart} />}
+          acceptAttachments={true}
+        />
+      </div>
+    </FitToViewport>
   );
 }

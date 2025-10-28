@@ -1,13 +1,23 @@
 "use client";
-import type { ChatMessageAttachment, SageInterview, User } from "@/prisma/client";
+import { ClientMessagePayload, prepareLastUIMessageForRequest } from "@/ai/messageUtilsClient";
+import { SageToolUIPartDisplay } from "@/app/(sage)/tools/ui";
+import { TSageMessageWithTool } from "@/app/(sage)/types";
 import { UserChatSession } from "@/components/chat/UserChatSession";
+import HippyGhostAvatar from "@/components/HippyGhostAvatar";
+import { FitToViewport } from "@/components/layout/FitToViewport";
+import type { ChatMessageAttachment, SageInterview, User } from "@/prisma/client";
+import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport } from "ai";
 import { MessageCircle, Target } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
+import { useMemo, useRef } from "react";
 
 export function SageInterviewClient({
   userChatToken,
   sage,
   interview,
+  initialMessages = [],
 }: {
   userChatToken: string;
   sage: {
@@ -23,11 +33,41 @@ export function SageInterviewClient({
       userId: number;
     };
   };
+  initialMessages?: TSageMessageWithTool[];
 }) {
   const t = useTranslations("Sage.interview");
+  const { data: session } = useSession();
+
+  const extraRequestPayload = useMemo(() => ({ userChatToken: userChatToken }), [userChatToken]);
+
+  // Chat hooks
+  const useChatHelpers = useChat({
+    messages: initialMessages,
+    transport: new DefaultChatTransport({
+      api: "/api/chat/sage-interview",
+      prepareSendMessagesRequest({ id, messages, body: extraBody }) {
+        const body: ClientMessagePayload = {
+          id,
+          message: prepareLastUIMessageForRequest(messages),
+          ...extraRequestPayload,
+        };
+        if (extraBody && "attachments" in extraBody) {
+          body["attachments"] = extraBody.attachments;
+        }
+        return { body };
+      },
+    }),
+    experimental_throttle: 300,
+  });
+
+  const useChatRef = useRef({
+    regenerate: useChatHelpers.regenerate,
+    setMessages: useChatHelpers.setMessages,
+    sendMessage: useChatHelpers.sendMessage,
+  });
 
   return (
-    <div className="flex flex-col h-screen">
+    <FitToViewport className="flex flex-col overflow-hidden">
       {/* Interview Info Bar */}
       <div className="border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4">
         <div className="container mx-auto max-w-4xl">
@@ -79,15 +119,21 @@ export function SageInterviewClient({
       </div>
 
       {/* Chat */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-hidden w-full max-w-4xl mx-auto flex flex-col">
         <UserChatSession
-          userChatToken={userChatToken}
-          apiPath="/api/chat/sage-interview"
-          showFileUpload={false}
-          placeholder={t("placeholder")}
-          hideHeader={true}
+          nickname={{ assistant: sage.name, user: session?.user?.email ?? "You" }}
+          avatar={{
+            assistant: <HippyGhostAvatar className="size-8" seed={sage.id} />,
+            user: session?.user ? (
+              <HippyGhostAvatar className="size-8" seed={session.user.id} />
+            ) : undefined,
+          }}
+          useChatHelpers={useChatHelpers}
+          useChatRef={useChatRef}
+          renderToolUIPart={(toolPart) => <SageToolUIPartDisplay toolUIPart={toolPart} />}
+          acceptAttachments={false}
         />
       </div>
-    </div>
+    </FitToViewport>
   );
 }
