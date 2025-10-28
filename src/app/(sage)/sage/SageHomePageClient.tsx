@@ -5,16 +5,16 @@ import { Button } from "@/components/ui/button";
 import { useFileUploadManager } from "@/hooks/use-file-upload-manager";
 import { cn } from "@/lib/utils";
 import {
-  ArrowRight,
-  BookOpen,
-  Brain,
-  FileText,
-  Lightbulb,
-  MessageCircle,
-  Network,
-  Target,
-  Upload,
-  Users,
+  ArrowRightIcon,
+  BookOpenIcon,
+  BrainIcon,
+  FileTextIcon,
+  LightbulbIcon,
+  MessageCircleIcon,
+  NetworkIcon,
+  TargetIcon,
+  UploadIcon,
+  UsersIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
@@ -56,11 +56,14 @@ export default function SageHomePageClient({ isUploadEnabled }: SageHomePageClie
         name: sageName.trim(),
         domain: sageDomain.trim(),
         locale: "zh-CN", // TODO: Get from user locale
-        attachments: uploadedFiles.map((file) => ({
-          objectUrl: file.objectUrl,
-          name: file.name,
-          mimeType: file.mimeType,
-          size: file.size,
+        sources: uploadedFiles.map((file) => ({
+          type: "file" as const,
+          content: {
+            objectUrl: file.objectUrl,
+            name: file.name,
+            mimeType: file.mimeType,
+            size: file.size,
+          },
         })),
       });
 
@@ -80,44 +83,44 @@ export default function SageHomePageClient({ isUploadEnabled }: SageHomePageClie
       id: "import",
       title: t("importKnowledge"),
       description: t("importDescription"),
-      icon: Upload,
+      icon: UploadIcon,
       details: [
-        { icon: FileText, text: t("multipleFormats") },
-        { icon: Target, text: t("aiProcessing") },
-        { icon: Brain, text: t("memoryDocument") },
+        { icon: FileTextIcon, text: t("multipleFormats") },
+        { icon: TargetIcon, text: t("aiProcessing") },
+        { icon: BrainIcon, text: t("memoryDocument") },
       ],
     },
     {
       id: "analysis",
       title: t("knowledgeAnalysis"),
       description: t("analysisDescription"),
-      icon: Target,
+      icon: TargetIcon,
       details: [
-        { icon: Lightbulb, text: t("gapDetection") },
-        { icon: Network, text: t("dimensionAnalysis") },
-        { icon: FileText, text: t("completenessScore") },
+        { icon: LightbulbIcon, text: t("gapDetection") },
+        { icon: NetworkIcon, text: t("dimensionAnalysis") },
+        { icon: FileTextIcon, text: t("completenessScore") },
       ],
     },
     {
       id: "interview",
       title: t("supplementaryInterview"),
       description: t("interviewDescription"),
-      icon: MessageCircle,
+      icon: MessageCircleIcon,
       details: [
-        { icon: MessageCircle, text: t("adaptiveQuestions") },
-        { icon: Target, text: t("fillGaps") },
-        { icon: Users, text: t("naturalConversation") },
+        { icon: MessageCircleIcon, text: t("adaptiveQuestions") },
+        { icon: TargetIcon, text: t("fillGaps") },
+        { icon: UsersIcon, text: t("naturalConversation") },
       ],
     },
     {
       id: "chat",
       title: t("chatWithSage"),
       description: t("chatDescription"),
-      icon: BookOpen,
+      icon: BookOpenIcon,
       details: [
-        { icon: MessageCircle, text: t("expertConsultation") },
-        { icon: Brain, text: t("contextAware") },
-        { icon: Users, text: t("domainSpecific") },
+        { icon: MessageCircleIcon, text: t("expertConsultation") },
+        { icon: BrainIcon, text: t("contextAware") },
+        { icon: UsersIcon, text: t("domainSpecific") },
       ],
     },
   ];
@@ -127,43 +130,43 @@ export default function SageHomePageClient({ isUploadEnabled }: SageHomePageClie
       id: "foundational",
       title: t("foundationalTheory"),
       description: t("foundationalDescription"),
-      icon: BookOpen,
+      icon: BookOpenIcon,
     },
     {
       id: "practical",
       title: t("practicalExperience"),
       description: t("practicalDescription"),
-      icon: Target,
+      icon: TargetIcon,
     },
     {
       id: "industry",
       title: t("industryInsights"),
       description: t("industryDescription"),
-      icon: Network,
+      icon: NetworkIcon,
     },
     {
       id: "problem",
       title: t("problemSolving"),
       description: t("problemDescription"),
-      icon: Lightbulb,
+      icon: LightbulbIcon,
     },
     {
       id: "tools",
       title: t("toolsMethodologies"),
       description: t("toolsDescription"),
-      icon: Brain,
+      icon: BrainIcon,
     },
     {
       id: "communication",
       title: t("communicationSkills"),
       description: t("communicationDescription"),
-      icon: MessageCircle,
+      icon: MessageCircleIcon,
     },
     {
       id: "learning",
       title: t("continuousLearning"),
       description: t("learningDescription"),
-      icon: Users,
+      icon: UsersIcon,
     },
   ];
 
@@ -203,7 +206,7 @@ export default function SageHomePageClient({ isUploadEnabled }: SageHomePageClie
                       <Button size="lg" variant="outline" asChild className="w-full h-12">
                         <Link href="/sages" prefetch={true}>
                           {t("viewMySages")}
-                          <ArrowRight className="h-4 w-4" />
+                          <ArrowRightIcon className="h-4 w-4" />
                         </Link>
                       </Button>
                     </>
@@ -212,7 +215,7 @@ export default function SageHomePageClient({ isUploadEnabled }: SageHomePageClie
                       <div className="p-4 bg-zinc-100 dark:bg-zinc-800 rounded-lg border space-y-3">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
-                            <FileText className="size-5 text-zinc-600 dark:text-zinc-400" />
+                            <FileTextIcon className="size-5 text-zinc-600 dark:text-zinc-400" />
                             <div>
                               <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
                                 {uploadedFiles.length} {t("filesSelected")}
@@ -256,13 +259,13 @@ export default function SageHomePageClient({ isUploadEnabled }: SageHomePageClie
                         className="w-full h-12"
                       >
                         {isCreating ? t("creating") : t("startCreation")}
-                        <ArrowRight className="h-4 w-4" />
+                        <ArrowRightIcon className="h-4 w-4" />
                       </Button>
 
                       <Button size="lg" variant="outline" asChild className="w-full h-12">
                         <Link href="/sages" prefetch={true}>
                           {t("viewMySages")}
-                          <ArrowRight className="h-4 w-4" />
+                          <ArrowRightIcon className="h-4 w-4" />
                         </Link>
                       </Button>
                     </div>
@@ -272,7 +275,7 @@ export default function SageHomePageClient({ isUploadEnabled }: SageHomePageClie
                 <Button size="lg" variant="outline" asChild className="w-full h-12">
                   <Link href="/sages">
                     {t("viewMySages")}
-                    <ArrowRight className="h-4 w-4" />
+                    <ArrowRightIcon className="h-4 w-4" />
                   </Link>
                 </Button>
               )}

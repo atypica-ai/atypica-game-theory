@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import type { ChatMessageAttachment, Sage, User, UserChat } from "@/prisma/client";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
-import { ArrowLeft, MessageCircle } from "lucide-react";
+import { ArrowLeftIcon, MessageCircleIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
@@ -109,7 +109,7 @@ export function PublicSageView({
               onClick={() => setShowChat(false)}
               className="gap-2"
             >
-              <ArrowLeft className="size-4" />
+              <ArrowLeftIcon className="size-4" />
               Back
             </Button>
             <div className="flex-1">
@@ -182,7 +182,7 @@ export function PublicSageView({
                 </Button>
               )}
               <Button onClick={handleStartChat} disabled={isCreatingChat}>
-                <MessageCircle className="size-4" />
+                <MessageCircleIcon className="size-4" />
                 {isAuthenticated ? t("chatWithSage") : tPublic("signInToChat")}
               </Button>
             </div>

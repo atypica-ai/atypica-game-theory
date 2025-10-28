@@ -2,16 +2,15 @@
 
 import { createSage } from "@/app/(sage)/actions";
 import type { CreateSageSourceInput } from "@/app/(sage)/types";
-import { FileUploadButton } from "@/components/chat/FileUploadButton";
+import { FileUploadButton, type FileUploadInfo } from "@/components/chat/FileUploadButton";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
-import { useFileUploadManager } from "@/hooks/use-file-upload-manager";
 import { cn } from "@/lib/utils";
-import { FileText, Globe, Upload, X } from "lucide-react";
+import { ArrowRightIcon, FileTextIcon, GlobeIcon, UploadIcon, XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -20,7 +19,6 @@ import { toast } from "sonner";
 export function CreateSageForm() {
   const t = useTranslations("Sage.create");
   const router = useRouter();
-  const { uploadedFiles, handleFileUploaded, clearFiles } = useFileUploadManager();
 
   const [sources, setSources] = useState<CreateSageSourceInput[]>([]);
   const [isCreating, setIsCreating] = useState(false);
@@ -37,8 +35,8 @@ export function CreateSageForm() {
   const [showMetadataStep, setShowMetadataStep] = useState(false);
 
   // Handle file upload
-  const handleFilesUploaded = (files: typeof uploadedFiles) => {
-    const fileSources: CreateSageSourceInput[] = files.map((file) => ({
+  const handleFileUploaded = (file: FileUploadInfo) => {
+    const fileSource: CreateSageSourceInput = {
       type: "file" as const,
       content: {
         objectUrl: file.objectUrl,
@@ -46,8 +44,8 @@ export function CreateSageForm() {
         mimeType: file.mimeType,
         size: file.size,
       },
-    }));
-    setSources((prev) => [...prev, ...fileSources]);
+    };
+    setSources((prev) => [...prev, fileSource]);
   };
 
   // Handle text source
@@ -198,7 +196,7 @@ export function CreateSageForm() {
         <div className="border-2 border-dashed border-zinc-300 dark:border-zinc-700 rounded-lg p-12 mb-6 text-center bg-zinc-50 dark:bg-zinc-800/50">
           <div className="flex justify-center mb-4">
             <div className="size-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-              <Upload className="size-8 text-green-600 dark:text-green-400" />
+              <UploadIcon className="size-8 text-green-600 dark:text-green-400" />
             </div>
           </div>
 
@@ -206,19 +204,16 @@ export function CreateSageForm() {
             Upload sources
           </h3>
 
-          <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-1">
-            Drag & drop or{" "}
+          <div className="text-sm text-zinc-600 dark:text-zinc-400 mb-1">
             <FileUploadButton
-              onFileUploaded={(file) => handleFilesUploaded([...uploadedFiles, file])}
-              onError={(error) => toast.error(error)}
-              render={({ onClick }) => (
-                <button onClick={onClick} className="text-green-600 hover:underline">
-                  choose file
-                </button>
-              )}
-            />{" "}
-            to upload
-          </p>
+              onFileUploadedAction={handleFileUploaded}
+              disabled={sources.length >= 10}
+              showLimitsCheck={true}
+              className="text-green-600 hover:underline"
+            >
+              Choose files to upload
+            </FileUploadButton>
+          </div>
 
           <p className="text-xs text-zinc-500 dark:text-zinc-500">
             Supported file types: PDF, .txt, Markdown, Audio (e.g. mp3), .docx
@@ -231,7 +226,7 @@ export function CreateSageForm() {
             onClick={() => setShowWebsiteModal(true)}
             className="p-4 border border-zinc-200 dark:border-zinc-700 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors text-left"
           >
-            <Globe className="size-5 mb-2 text-zinc-600 dark:text-zinc-400" />
+            <GlobeIcon className="size-5 mb-2 text-zinc-600 dark:text-zinc-400" />
             <div className="font-medium text-zinc-900 dark:text-zinc-100">Website</div>
             <div className="text-xs text-zinc-500 dark:text-zinc-500">添加网页 URL</div>
           </button>
@@ -240,7 +235,7 @@ export function CreateSageForm() {
             onClick={() => setShowTextModal(true)}
             className="p-4 border border-zinc-200 dark:border-zinc-700 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors text-left"
           >
-            <FileText className="size-5 mb-2 text-zinc-600 dark:text-zinc-400" />
+            <FileTextIcon className="size-5 mb-2 text-zinc-600 dark:text-zinc-400" />
             <div className="font-medium text-zinc-900 dark:text-zinc-100">Paste text</div>
             <div className="text-xs text-zinc-500 dark:text-zinc-500">直接粘贴文本内容</div>
           </button>
@@ -256,9 +251,9 @@ export function CreateSageForm() {
               >
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   {source.type === "file" ? (
-                    <FileText className="size-4 text-zinc-500 flex-shrink-0" />
+                    <FileTextIcon className="size-4 text-zinc-500 flex-shrink-0" />
                   ) : (
-                    <FileText className="size-4 text-zinc-500 flex-shrink-0" />
+                    <FileTextIcon className="size-4 text-zinc-500 flex-shrink-0" />
                   )}
                   <span className="text-sm text-zinc-700 dark:text-zinc-300 truncate">
                     {getSourceDisplayName(source, index)}
@@ -268,7 +263,7 @@ export function CreateSageForm() {
                   onClick={() => handleRemoveSource(index)}
                   className="p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded"
                 >
-                  <X className="size-4 text-zinc-500" />
+                  <XIcon className="size-4 text-zinc-500" />
                 </button>
               </div>
             ))}
@@ -279,7 +274,7 @@ export function CreateSageForm() {
         <div className="mb-6">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
-              <FileText className="size-4 text-zinc-500" />
+              <FileTextIcon className="size-4 text-zinc-500" />
               <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
                 Source limit
               </span>
@@ -304,7 +299,7 @@ export function CreateSageForm() {
             )}
           >
             {t("next")}
-            <ArrowRight className="size-4 ml-2" />
+            <ArrowRightIcon className="size-4 ml-2" />
           </Button>
         </div>
 

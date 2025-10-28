@@ -187,6 +187,25 @@ declare module "@/prisma/client" {
     };
   }>;
 
+  // ===== Sage (Expert Agent) Types =====
+
+  export type SageSourceContent =
+    | {
+        // Text source
+        text: string;
+      }
+    | {
+        // File source
+        objectUrl: string;
+        name: string;
+        mimeType: string;
+        size: number;
+      }
+    | {
+        // URL source
+        url: string;
+      };
+
   // Removed
   // export type ProductExtra = Partial<{
   //   stripePriceId: string;

@@ -3,7 +3,7 @@ import { analyzeSageKnowledge, createOrGetSageChat, createSupplementaryInterview
 import type { SageExtra } from "@/app/(sage)/types";
 import { Button } from "@/components/ui/button";
 import type { ChatMessageAttachment, Sage, SageChat, SageInterview, SageSource, User, UserChat } from "@/prisma/client";
-import { ArrowRight, Brain, FileText, MessageCircle, RefreshCw, Target } from "lucide-react";
+import { ArrowRightIcon, FileTextIcon, MessageCircleIcon, RefreshCwIcon, TargetIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -130,7 +130,7 @@ export function SageDetailView({
             <div className="flex items-center gap-2">
               {isReady && (
                 <Button onClick={handleStartChat} disabled={isCreatingChat}>
-                  <MessageCircle className="size-4" />
+                  <MessageCircleIcon className="size-4" />
                   {t("chatWithSage")}
                 </Button>
               )}
@@ -185,7 +185,7 @@ export function SageDetailView({
                       </p>
                     </div>
                     <Button onClick={handleAnalyzeKnowledge} disabled={isAnalyzing}>
-                      <Target className="size-4" />
+                      <TargetIcon className="size-4" />
                       {isAnalyzing ? t("analyzing") : t("startAnalysis")}
                     </Button>
                   </div>
@@ -202,7 +202,7 @@ export function SageDetailView({
                 <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-6">
                   <div className="space-y-4">
                     <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                      <MessageCircle className="size-5" />
+                      <MessageCircleIcon className="size-5" />
                       {t("consultations")}
                     </h3>
                     <div className="space-y-2">
@@ -214,12 +214,12 @@ export function SageDetailView({
                         >
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                              <FileText className="size-4 text-zinc-500" />
+                              <FileTextIcon className="size-4 text-zinc-500" />
                               <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
                                 {chat.userChat.title}
                               </span>
                             </div>
-                            <ArrowRight className="size-4 text-zinc-400" />
+                            <ArrowRightIcon className="size-4 text-zinc-400" />
                           </div>
                         </Link>
                       ))}
@@ -233,7 +233,7 @@ export function SageDetailView({
                 <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-6">
                   <div className="space-y-4">
                     <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                      <MessageCircle className="size-5" />
+                      <MessageCircleIcon className="size-5" />
                       {t("publicChats")}
                     </h3>
                     <div className="space-y-2">
@@ -246,7 +246,7 @@ export function SageDetailView({
                           <div className="flex items-center justify-between">
                             <div className="space-y-1">
                               <div className="flex items-center gap-3">
-                                <FileText className="size-4 text-zinc-500" />
+                                <FileTextIcon className="size-4 text-zinc-500" />
                                 <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
                                   {chat.userChat.title}
                                 </span>
@@ -255,7 +255,7 @@ export function SageDetailView({
                                 {t("user")}: {chat.user.name || chat.user.email}
                               </div>
                             </div>
-                            <ArrowRight className="size-4 text-zinc-400" />
+                            <ArrowRightIcon className="size-4 text-zinc-400" />
                           </div>
                         </Link>
                       ))}
@@ -269,7 +269,7 @@ export function SageDetailView({
                 <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-6">
                   <div className="space-y-4">
                     <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                      <RefreshCw className="size-5" />
+                      <RefreshCwIcon className="size-5" />
                       {t("supplementaryInterviews")}
                     </h3>
                     <div className="space-y-2">
@@ -282,7 +282,7 @@ export function SageDetailView({
                           <div className="flex items-center justify-between">
                             <div className="space-y-1">
                               <div className="flex items-center gap-3">
-                                <FileText className="size-4 text-zinc-500" />
+                                <FileTextIcon className="size-4 text-zinc-500" />
                                 <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
                                   {interview.userChat.title}
                                 </span>
@@ -291,7 +291,7 @@ export function SageDetailView({
                                 {t("progress")}: {Math.round(interview.progress * 100)}%
                               </div>
                             </div>
-                            <ArrowRight className="size-4 text-zinc-400" />
+                            <ArrowRightIcon className="size-4 text-zinc-400" />
                           </div>
                         </Link>
                       ))}

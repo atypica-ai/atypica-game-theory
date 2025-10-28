@@ -1,7 +1,7 @@
 "use client";
 
 import type { SageSource } from "@/prisma/client";
-import { CheckCircle2, FileText, Loader2, XCircle } from "lucide-react";
+import { CheckCircle2Icon, FileTextIcon, Loader2Icon, XCircleIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 export function SourcesSection({ sources }: { sources: SageSource[] }) {
@@ -14,13 +14,13 @@ export function SourcesSection({ sources }: { sources: SageSource[] }) {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "completed":
-        return <CheckCircle2 className="size-4 text-green-600 dark:text-green-400" />;
+        return <CheckCircle2Icon className="size-4 text-green-600 dark:text-green-400" />;
       case "processing":
-        return <Loader2 className="size-4 text-blue-600 dark:text-blue-400 animate-spin" />;
+        return <Loader2Icon className="size-4 text-blue-600 dark:text-blue-400 animate-spin" />;
       case "failed":
-        return <XCircle className="size-4 text-red-600 dark:text-red-400" />;
+        return <XCircleIcon className="size-4 text-red-600 dark:text-red-400" />;
       default:
-        return <Loader2 className="size-4 text-zinc-400 animate-spin" />;
+        return <Loader2Icon className="size-4 text-zinc-400 animate-spin" />;
     }
   };
 
@@ -76,7 +76,7 @@ export function SourcesSection({ sources }: { sources: SageSource[] }) {
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <FileText className="size-4 text-zinc-500 flex-shrink-0" />
+                <FileTextIcon className="size-4 text-zinc-500 flex-shrink-0" />
                 <span className="font-medium text-sm text-zinc-900 dark:text-zinc-100 truncate">
                   {source.title || t("untitledSource")}
                 </span>
@@ -106,7 +106,7 @@ export function SourcesSection({ sources }: { sources: SageSource[] }) {
 
       {processingCount > 0 && (
         <div className="mt-4 text-sm text-zinc-600 dark:text-zinc-400 flex items-center gap-2">
-          <Loader2 className="size-4 animate-spin" />
+          <Loader2Icon className="size-4 animate-spin" />
           {t("processingInBackground")}
         </div>
       )}

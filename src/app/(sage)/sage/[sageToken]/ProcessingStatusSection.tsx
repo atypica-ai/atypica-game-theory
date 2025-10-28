@@ -2,7 +2,7 @@
 import type { SageExtra } from "@/app/(sage)/types";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
-import { AlertCircle, CheckCircle, Loader2 } from "lucide-react";
+import { AlertCircleIcon, CheckCircleIcon, Loader2Icon } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 export function ProcessingStatusSection({
@@ -17,7 +17,7 @@ export function ProcessingStatusSection({
   if (hasError) {
     return (
       <Alert variant="destructive">
-        <AlertCircle className="h-4 w-4" />
+        <AlertCircleIcon className="h-4 w-4" />
         <AlertTitle>{t("processingError")}</AlertTitle>
         <AlertDescription>{processing?.error || t("unknownError")}</AlertDescription>
       </Alert>
@@ -46,9 +46,9 @@ export function ProcessingStatusSection({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             {isComplete ? (
-              <CheckCircle className="size-5 text-green-600 dark:text-green-400" />
+              <CheckCircleIcon className="size-5 text-green-600 dark:text-green-400" />
             ) : (
-              <Loader2 className="size-5 animate-spin text-zinc-600 dark:text-zinc-400" />
+              <Loader2Icon className="size-5 animate-spin text-zinc-600 dark:text-zinc-400" />
             )}
             <div>
               <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">

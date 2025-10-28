@@ -27,7 +27,7 @@ async function PublicSagePage({
   }
 
   // Check if sage is public (unless user is owner)
-  const isOwner = session?.user && sage.userId === session.user.id;
+  const isOwner = !!(session?.user && sage.userId === session.user.id);
   if (!sage.isPublic && !isOwner) {
     notFound();
   }

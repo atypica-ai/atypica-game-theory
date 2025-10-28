@@ -1,5 +1,6 @@
 import { createTextEmbedding } from "@/ai/embedding";
 import { llm } from "@/ai/provider";
+import { rootLogger } from "@/lib/logging";
 import { generateToken } from "@/lib/utils";
 import type { ChatMessageAttachment, Sage, User } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";

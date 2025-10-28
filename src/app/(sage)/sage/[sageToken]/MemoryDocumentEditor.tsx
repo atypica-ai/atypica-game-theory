@@ -3,7 +3,7 @@
 import { updateSage } from "@/app/(sage)/actions";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Brain, Save } from "lucide-react";
+import { BrainIcon, SaveIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -58,7 +58,7 @@ export function MemoryDocumentEditor({
     <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-          <Brain className="size-5" />
+          <BrainIcon className="size-5" />
           {t("memoryDocument")}
         </h3>
         <div className="flex gap-2">
@@ -68,7 +68,7 @@ export function MemoryDocumentEditor({
                 {t("cancel")}
               </Button>
               <Button size="sm" onClick={handleSave} disabled={isSaving || !hasChanges}>
-                <Save className="size-4" />
+                <SaveIcon className="size-4" />
                 {isSaving ? t("saving") : t("save")}
               </Button>
             </>

@@ -7,7 +7,7 @@ import { rootLogger } from "@/lib/logging";
 import { proxiedFetch } from "@/lib/proxy/fetch";
 import { getDeployRegion } from "@/lib/request/deployRegion";
 import { detectInputLanguage } from "@/lib/textUtils";
-import type { ChatMessageAttachment } from "@/prisma/client";
+import type { ChatMessageAttachment, SageSourceContent } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import type { Locale } from "next-intl";
 import {
@@ -302,7 +302,9 @@ export async function processNewSage({
 
 /**
  * Parse attachments to extract text content
+ * @deprecated - Not currently used, kept for future reference
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function parseAttachments(
   attachments: ChatMessageAttachment[],
   logger: typeof rootLogger,
@@ -603,33 +605,41 @@ async function processSource(
       data: { status: "processing" },
     });
 
-    const content = source.content as any;
+    const content = source.content as SageSourceContent;
     let extractedText: string;
     let title: string | null = null;
 
     switch (source.type) {
       case "text":
         // Text is already ready
-        extractedText = content.text || "";
-        // Generate title from first line or beginning of text
-        title = extractedText.substring(0, 100).split("\n")[0] || "Text Source";
+        if ("text" in content) {
+          extractedText = content.text || "";
+          // Generate title from first line or beginning of text
+          title = extractedText.substring(0, 100).split("\n")[0] || "Text Source";
+        } else {
+          throw new Error("Invalid text source content");
+        }
         break;
 
       case "file":
         // Download and parse file
-        const { objectUrl, name, mimeType } = content;
-        const fileUrl = await s3SignedUrl(objectUrl);
+        if ("objectUrl" in content && "name" in content && "mimeType" in content) {
+          const { objectUrl, name, mimeType } = content;
+          const fileUrl = await s3SignedUrl(objectUrl);
 
-        logger.info({ msg: "Downloading file", name, mimeType });
+          logger.info({ msg: "Downloading file", name, mimeType });
 
-        const response = await proxiedFetch(fileUrl, {
-          region: getDeployRegion(),
-        });
-        const buffer = await response.arrayBuffer();
+          const response = await proxiedFetch(fileUrl, {
+            region: getDeployRegion(),
+          });
+          const buffer = await response.arrayBuffer();
 
-        // Parse based on mime type
-        extractedText = await parseFileContent(buffer, mimeType, name);
-        title = name || "File Source";
+          // Parse based on mime type
+          extractedText = await parseFileContent(buffer, mimeType, name);
+          title = name || "File Source";
+        } else {
+          throw new Error("Invalid file source content");
+        }
         break;
 
       case "url":
