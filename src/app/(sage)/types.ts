@@ -73,20 +73,43 @@ export interface SageInterviewExtra {
   memoryDocumentUpdated?: boolean;
 }
 
+// ===== SageSource Types =====
+
+export type SageSourceType = "text" | "file" | "url";
+
+export interface SageSourceContent {
+  // For text type
+  text?: string;
+  // For file type
+  objectUrl?: string;
+  name?: string;
+  mimeType?: string;
+  size?: number;
+  // For url type
+  url?: string;
+}
+
 // ===== Zod Schemas for Input Validation =====
+
+export const createSageSourceSchema = z.object({
+  type: z.enum(["text", "file", "url"]),
+  content: z.object({
+    text: z.string().optional(),
+    objectUrl: z.string().optional(),
+    name: z.string().optional(),
+    mimeType: z.string().optional(),
+    size: z.number().optional(),
+    url: z.string().optional(),
+  }),
+});
+
+export type CreateSageSourceInput = z.infer<typeof createSageSourceSchema>;
 
 export const createSageInputSchema = z.object({
   name: z.string().min(1).max(255),
   domain: z.string().min(1).max(255),
   locale: z.string().min(2).max(16),
-  attachments: z.array(
-    z.object({
-      objectUrl: z.string(),
-      name: z.string(),
-      mimeType: z.string(),
-      size: z.number(),
-    })
-  ),
+  sources: z.array(createSageSourceSchema).min(1).max(10),
 });
 
 export type CreateSageInput = z.infer<typeof createSageInputSchema>;

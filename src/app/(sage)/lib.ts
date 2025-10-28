@@ -282,6 +282,7 @@ export async function updateSageKnowledgeAnalysis({
   const analysisData = {
     overallScore: analysis.overallScore,
     dimensions: analysis.dimensions,
+    knowledgeGaps: analysis.knowledgeGaps,
     analyzedAt: new Date().toISOString(),
   };
 

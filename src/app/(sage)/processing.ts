@@ -25,8 +25,8 @@ import { SAGE_PROCESSING_STEPS } from "./types";
 /**
  * Background processing for new sage creation
  * Steps:
- * 1. Parse attachments to extract content
- * 2. Process content and extract knowledge
+ * 1. Process each source (extract text from file/text/url)
+ * 2. Extract knowledge from all sources
  * 3. Build Memory Document
  * 4. Analyze knowledge completeness
  * 5. Generate embedding
@@ -55,21 +55,42 @@ export async function processNewSage({
       throw new Error(`Sage ${sageId} not found`);
     }
 
+    // Get all pending sources
+    const sources = await prisma.sageSource.findMany({
+      where: { sageId, status: "pending" },
+      orderBy: { createdAt: "asc" },
+    });
+
     logger.info({
       msg: "Starting sage processing",
       name: sage.name,
       domain: sage.domain,
-      attachmentsCount: sage.attachments.length,
+      sourcesCount: sources.length,
     });
 
-    // Step 1: Parse attachments to extract raw content
+    // Step 1: Process each source to extract text
     await updateSageProcessingStatus({
       sageId,
       step: SAGE_PROCESSING_STEPS.PARSE_CONTENT,
       progress: 0.1,
     });
 
-    const rawContent = await parseAttachments(sage.attachments, logger);
+    const allExtractedTexts: string[] = [];
+
+    for (let i = 0; i < sources.length; i++) {
+      const source = sources[i];
+      logger.info({ msg: `Processing source ${i + 1}/${sources.length}`, sourceId: source.id });
+
+      try {
+        const extractedText = await processSource(source.id, logger);
+        allExtractedTexts.push(extractedText);
+      } catch (error) {
+        logger.error({ msg: "Failed to process source", sourceId: source.id, error });
+        // Continue with other sources even if one fails
+      }
+    }
+
+    const rawContent = allExtractedTexts.join("\n\n---\n\n");
 
     logger.info({
       msg: "Attachments parsed",
@@ -557,4 +578,119 @@ export async function updateMemoryDocumentFromInterview({
     });
     throw error;
   }
+}
+
+/**
+ * Process a single source to extract text
+ * Handles text, file, and url types
+ */
+async function processSource(
+  sourceId: number,
+  logger: typeof rootLogger,
+): Promise<string> {
+  const source = await prisma.sageSource.findUnique({
+    where: { id: sourceId },
+  });
+
+  if (!source) {
+    throw new Error(`Source ${sourceId} not found`);
+  }
+
+  try {
+    // Mark as processing
+    await prisma.sageSource.update({
+      where: { id: sourceId },
+      data: { status: "processing" },
+    });
+
+    const content = source.content as any;
+    let extractedText: string;
+    let title: string | null = null;
+
+    switch (source.type) {
+      case "text":
+        // Text is already ready
+        extractedText = content.text || "";
+        // Generate title from first line or beginning of text
+        title = extractedText.substring(0, 100).split("\n")[0] || "Text Source";
+        break;
+
+      case "file":
+        // Download and parse file
+        const { objectUrl, name, mimeType } = content;
+        const fileUrl = await s3SignedUrl(objectUrl);
+
+        logger.info({ msg: "Downloading file", name, mimeType });
+
+        const response = await proxiedFetch(fileUrl, {
+          region: getDeployRegion(),
+        });
+        const buffer = await response.arrayBuffer();
+
+        // Parse based on mime type
+        extractedText = await parseFileContent(buffer, mimeType, name);
+        title = name || "File Source";
+        break;
+
+      case "url":
+        // TODO: Implement URL fetching and parsing
+        throw new Error("URL sources not yet implemented");
+
+      default:
+        throw new Error(`Unknown source type: ${source.type}`);
+    }
+
+    // Update source with extracted text and title
+    await prisma.sageSource.update({
+      where: { id: sourceId },
+      data: {
+        status: "completed",
+        extractedText,
+        title,
+      },
+    });
+
+    logger.info({
+      msg: "Source processed successfully",
+      sourceId,
+      title,
+      textLength: extractedText.length,
+    });
+
+    return extractedText;
+  } catch (error) {
+    // Mark source as failed
+    await prisma.sageSource.update({
+      where: { id: sourceId },
+      data: {
+        status: "failed",
+        error: (error as Error).message,
+      },
+    });
+
+    logger.error({
+      msg: "Failed to process source",
+      sourceId,
+      error: (error as Error).message,
+    });
+
+    throw error;
+  }
+}
+
+/**
+ * Parse file content based on MIME type
+ */
+async function parseFileContent(
+  buffer: ArrayBuffer,
+  mimeType: string,
+  filename: string,
+): Promise<string> {
+  const { readFileContentAsText } = await import("@/lib/attachments/parse");
+
+  return readFileContentAsText({
+    buffer,
+    mimeType,
+    filename,
+  });
 }

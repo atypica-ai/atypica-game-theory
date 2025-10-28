@@ -31,7 +31,7 @@ export async function createSage(
       // Get locale
       const locale = await getLocale();
 
-      // Create sage record
+      // Create sage record with sources
       const sage = await prisma.sage.create({
         data: {
           token: generateSageToken(),
@@ -41,7 +41,7 @@ export async function createSage(
           locale: validated.locale,
           expertise: [],
           memoryDocument: "", // Will be generated in background
-          attachments: validated.attachments,
+          attachments: [], // Deprecated, keeping for backward compatibility
           extra: {
             processing: {
               step: "pending",
@@ -49,10 +49,23 @@ export async function createSage(
               startedAt: new Date().toISOString(),
             },
           },
+          // Create sources
+          sources: {
+            create: validated.sources.map((source) => ({
+              type: source.type,
+              content: source.content,
+              status: "pending",
+            })),
+          },
         },
       });
 
-      rootLogger.info(`Created sage ${sage.id} for user ${user.id}`);
+      rootLogger.info({
+        msg: "Created sage with sources",
+        sageId: sage.id,
+        userId: user.id,
+        sourcesCount: validated.sources.length,
+      });
 
       // Create a UserChat for management/viewing
       const userChat = await createUserChat({
