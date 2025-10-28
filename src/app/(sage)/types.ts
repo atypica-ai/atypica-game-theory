@@ -81,11 +81,10 @@ export const createSageInputSchema = z.object({
   locale: z.string().min(2).max(16),
   attachments: z.array(
     z.object({
-      fileId: z.number().optional(),
-      type: z.enum(["file", "url", "text"]),
-      content: z.string(),
-      name: z.string().optional(),
-      mimeType: z.string().optional(),
+      objectUrl: z.string(),
+      name: z.string(),
+      mimeType: z.string(),
+      size: z.number(),
     })
   ),
 });

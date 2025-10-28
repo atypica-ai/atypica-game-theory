@@ -39,7 +39,8 @@ export function createEndInterviewTool({ interviewId }: { interviewId: number })
           },
         });
 
-        logger.info("Supplementary interview ended", {
+        logger.info({
+          msg: "Supplementary interview ended",
           summary,
           keyInsightsCount: keyInsights.length,
           satisfactionLevel,
@@ -50,7 +51,8 @@ export function createEndInterviewTool({ interviewId }: { interviewId: number })
           message: "Interview completed successfully. Thank you for your time!",
         };
       } catch (error) {
-        logger.error("Failed to end interview", {
+        logger.error({
+          msg: "Failed to end interview",
           error: (error as Error).message,
         });
         throw error;
@@ -88,7 +90,8 @@ export function createUpdateInterviewProgressTool({ interviewId }: { interviewId
           },
         });
 
-        logger.info("Interview progress updated", {
+        logger.info({
+          msg: "Interview progress updated",
           progress,
           currentFocus,
         });
@@ -98,7 +101,8 @@ export function createUpdateInterviewProgressTool({ interviewId }: { interviewId
           progress,
         };
       } catch (error) {
-        logger.error("Failed to update interview progress", {
+        logger.error({
+          msg: "Failed to update interview progress",
           error: (error as Error).message,
         });
         throw error;

@@ -287,7 +287,7 @@ try {
 2. **Internationalization**: Use translated error messages from `next-intl`
 3. **Type Safety**: Leverage TypeScript for input/output types
 4. **Database Operations**: Use Prisma for all database interactions
-5. **Logging**: Log errors with context for debugging
+5. **Logging**: Log errors with context for debugging (see Logger Conventions below)
 
 #### Prisma Imports
 
@@ -326,6 +326,58 @@ import type { Prisma } from "@/prisma/client";
 // Transaction type
 import type { Prisma } from "@/prisma/client";
 type PrismaTransaction = Prisma.TransactionClient;
+```
+
+### Logger Conventions
+
+The project uses [Pino](https://github.com/pinojs/pino) logger. **IMPORTANT**: Logger only accepts a single parameter.
+
+#### Correct Usage
+
+**Option 1: String only**
+```typescript
+logger.info("Operation completed");
+logger.error("Operation failed");
+```
+
+**Option 2: Object with `msg` field**
+```typescript
+logger.info({
+  msg: "Operation completed",
+  userId: 123,
+  duration: 456,
+});
+
+logger.error({
+  msg: "Operation failed",
+  error: error.message,
+  stack: error.stack,
+});
+```
+
+#### ❌ Incorrect Usage
+
+```typescript
+// WRONG: Two parameters
+logger.info("Message", { field1: value1 });
+
+// WRONG: Object without msg field (message won't show properly)
+logger.info({ field1: value1, field2: value2 });
+```
+
+#### Best Practices
+
+1. **Always include `msg` field**: When logging with context, always include the `msg` field first
+2. **Use structured logging**: Include relevant context fields for better debugging
+3. **Error logging**: Include both `error` message and `stack` trace when available
+4. **Child loggers**: Use `logger.child({ contextField: value })` for scoped logging
+
+```typescript
+// Create child logger with context
+const logger = rootLogger.child({ userId, sessionId });
+
+// All logs from this logger will include userId and sessionId
+logger.info({ msg: "User action performed", action: "login" });
 ```
 
 ### Next.js Pages Conventions

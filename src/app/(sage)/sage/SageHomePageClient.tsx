@@ -57,10 +57,10 @@ export default function SageHomePageClient({ isUploadEnabled }: SageHomePageClie
         domain: sageDomain.trim(),
         locale: "zh-CN", // TODO: Get from user locale
         attachments: uploadedFiles.map((file) => ({
-          type: "file",
-          content: file.objectUrl,
+          objectUrl: file.objectUrl,
           name: file.name,
           mimeType: file.mimeType,
+          size: file.size,
         })),
       });
 

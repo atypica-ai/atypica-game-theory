@@ -55,7 +55,8 @@ export async function processNewSage({
       throw new Error(`Sage ${sageId} not found`);
     }
 
-    logger.info("Starting sage processing", {
+    logger.info({
+      msg: "Starting sage processing",
       name: sage.name,
       domain: sage.domain,
       attachmentsCount: sage.attachments.length,
@@ -70,7 +71,8 @@ export async function processNewSage({
 
     const rawContent = await parseAttachments(sage.attachments, logger);
 
-    logger.info("Attachments parsed", {
+    logger.info({
+      msg: "Attachments parsed",
       contentLength: rawContent.length,
     });
 
@@ -90,9 +92,11 @@ export async function processNewSage({
       locale,
     });
 
-    logger.info("Content processed", {
+    logger.info({
+      msg: "Content processed",
       keyPointsCount: processedContent.keyPoints.length,
       suggestedCategories: processedContent.suggestedCategories.length,
+      extractedContentLength: processedContent.extractedContent.length,
     });
 
     // Track tokens for content processing
@@ -116,7 +120,8 @@ export async function processNewSage({
       locale,
     });
 
-    logger.info("Memories extracted", {
+    logger.info({
+      msg: "Memories extracted",
       memoriesCount: extractedMemories.memories.length,
       newCategories: extractedMemories.suggestedNewCategories.length,
     });
@@ -158,7 +163,8 @@ export async function processNewSage({
       locale,
     });
 
-    logger.info("Memory Document built", {
+    logger.info({
+      msg: "Memory Document built",
       documentLength: memoryDocument.length,
     });
 
@@ -194,7 +200,8 @@ export async function processNewSage({
       locale,
     });
 
-    logger.info("Knowledge analysis completed", {
+    logger.info({
+      msg: "Knowledge analysis completed",
       overallScore: analysis.overallScore,
       dimensionsCount: analysis.dimensions.length,
       knowledgeGapsCount: analysis.knowledgeGaps.length,
@@ -222,7 +229,8 @@ export async function processNewSage({
 
     const embedding = await generateSageEmbedding(memoryDocument);
 
-    logger.info("Embedding generated", {
+    logger.info({
+      msg: "Embedding generated",
       embeddingDimensions: embedding.length,
     });
 
@@ -250,11 +258,13 @@ export async function processNewSage({
       progress: 1,
     });
 
-    logger.info("Sage processing completed successfully", {
+    logger.info({
+      msg: "Sage processing completed successfully",
       overallScore: analysis.overallScore,
     });
   } catch (error) {
-    logger.error("Sage processing failed", {
+    logger.error({
+      msg: "Sage processing failed",
       error: (error as Error).message,
       stack: (error as Error).stack,
     });
@@ -296,7 +306,8 @@ async function parseAttachments(
       const fileContent = await parseFileAttachment(attachment, logger);
       contentParts.push(fileContent);
     } catch (error) {
-      logger.error("Failed to parse attachment", {
+      logger.error({
+        msg: "Failed to parse attachment",
         attachmentType: attachment.mimeType,
         error: (error as Error).message,
       });
@@ -316,10 +327,11 @@ async function parseFileAttachment(
 ): Promise<string> {
   const { objectUrl, mimeType, name } = attachment;
 
-  // Get signed URL and download file
+  // Get signed URL and download file from S3
   const fileHttpUrl = await s3SignedUrl(objectUrl);
   let response: Response;
 
+  // Use proxy for mainland deployment if needed
   if (getDeployRegion() === "mainland" && !/amazonaws\.com\.cn/.test(fileHttpUrl)) {
     response = await proxiedFetch(fileHttpUrl);
   } else {
@@ -327,12 +339,12 @@ async function parseFileAttachment(
   }
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch file: ${response.status} ${response.statusText}`);
+    throw new Error(`Failed to fetch file from S3: ${response.status} ${response.statusText}`);
   }
 
   // Handle different file types
   if (mimeType?.startsWith("text/")) {
-    // Plain text files
+    // Plain text files - read directly
     return await response.text();
   } else if (mimeType === "application/pdf" || mimeType?.includes("document")) {
     // For PDF/document files, we need AI to extract content
@@ -397,7 +409,8 @@ Note:
       },
 
       onFinish: () => {
-        logger.info("File text extraction completed", {
+        logger.info({
+          msg: "File text extraction completed",
           fileName,
           contentLength: extractedText.length,
         });
@@ -405,7 +418,8 @@ Note:
       },
 
       onError: ({ error }) => {
-        logger.error("File text extraction failed", {
+        logger.error({
+          msg: "File text extraction failed",
           fileName,
           error: (error as Error).message,
         });
@@ -457,7 +471,8 @@ export async function updateMemoryDocumentFromInterview({
       throw new Error(`Interview ${interviewId} not found`);
     }
 
-    logger.info("Updating Memory Document from interview", {
+    logger.info({
+      msg: "Updating Memory Document from interview",
       messagesCount: interview.userChat.messages.length,
       focusAreas: interview.focusAreas,
     });
@@ -479,7 +494,8 @@ export async function updateMemoryDocumentFromInterview({
       locale,
     });
 
-    logger.info("New knowledge extracted from interview", {
+    logger.info({
+      msg: "New knowledge extracted from interview",
       memoriesCount: newKnowledge.memories.length,
     });
 
@@ -530,11 +546,13 @@ export async function updateMemoryDocumentFromInterview({
       },
     });
 
-    logger.info("Memory Document updated successfully", {
+    logger.info({
+      msg: "Memory Document updated successfully",
       newMemoriesCount: newKnowledge.memories.length,
     });
   } catch (error) {
-    logger.error("Failed to update Memory Document from interview", {
+    logger.error({
+      msg: "Failed to update Memory Document from interview",
       error: (error as Error).message,
     });
     throw error;
