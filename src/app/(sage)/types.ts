@@ -1,5 +1,4 @@
 import { z } from "zod";
-import type { ChatMessageAttachment } from "@/prisma/client";
 
 // ===== Sage Types =====
 
@@ -14,6 +13,7 @@ export interface SageExtra {
   knowledgeAnalysis?: {
     overallScore?: number; // 0-100
     dimensions?: KnowledgeDimension[];
+    knowledgeGaps?: KnowledgeGap[];
     analyzedAt?: string; // ISO timestamp
   };
 }
@@ -45,11 +45,24 @@ export interface SageChatExtra {
 // ===== SageInterview Types =====
 
 export interface SageInterviewExtra {
+  interviewPlan?: {
+    purpose: string;
+    focusAreas: string[];
+    questions: Array<{
+      question: string;
+      purpose: string;
+      followUps: string[];
+    }>;
+  };
   findings?: {
     keyDiscoveries?: string[];
     insights?: string[];
     quotableExcerpts?: string[];
+    satisfactionLevel?: "excellent" | "good" | "fair";
   };
+  currentFocus?: string;
+  lastProgressUpdate?: string;
+  completedAt?: string;
   newMemoriesCount?: number;
   memoryDocumentUpdated?: boolean;
 }

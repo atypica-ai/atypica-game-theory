@@ -1,5 +1,5 @@
 import { Locale } from "next-intl";
-import { promptSystemConfig } from "./systemConfig";
+import { promptSystemConfig } from "@/ai/prompt/systemConfig";
 
 // ===== Content Processing System Prompt =====
 
