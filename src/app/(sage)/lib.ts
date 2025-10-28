@@ -438,3 +438,178 @@ Design a supplementary interview plan to help fill the above knowledge gaps. The
 
   return result.object;
 }
+
+/**
+ * Analyze conversation to detect knowledge gaps
+ * Called after sage responds to user question
+ */
+export async function analyzeConversationForGaps({
+  userMessage,
+  aiResponse,
+  sage,
+  locale,
+}: {
+  userMessage: string;
+  aiResponse: string;
+  sage: { name: string; domain: string };
+  locale: Locale;
+}): Promise<KnowledgeGap[]> {
+  const conversationGapSchema = z.object({
+    hasGap: z.boolean().describe("Whether a knowledge gap was detected"),
+    gaps: z
+      .array(
+        z.object({
+          area: z.string().describe("Knowledge area with gap"),
+          severity: z
+            .enum(["critical", "important", "nice-to-have"])
+            .describe("Severity of the gap"),
+          description: z.string().describe("What's missing or inadequate"),
+          impact: z.string().describe("Impact on expert's capability"),
+          suggestedQuestions: z
+            .array(z.string())
+            .describe("Questions to fill this gap")
+            .max(3),
+        })
+      )
+      .describe("List of detected knowledge gaps")
+      .optional(),
+  });
+
+  try {
+    const result = await generateObject({
+      model: llm("gemini-2.5-flash"), // Fast model for quick analysis
+      schema: conversationGapSchema,
+      system:
+        locale === "zh-CN"
+          ? `你是一个专业的知识完整度分析师。分析专家与用户的对话，识别专家回答中的知识空白。
+
+<Expert>
+Name: ${sage.name}
+Domain: ${sage.domain}
+</Expert>
+
+<Detection Criteria>
+知识空白的标志：
+1. 专家明确表示不知道或不确定
+2. 回答模糊、空泛，缺乏具体信息
+3. 回避问题，转移话题
+4. 回答明显不专业或错误
+5. 缺少实例、数据、经验支撑
+
+<Ignore>
+- 正常的合理边界（如"这不在我的专业范围"）
+- 需要更多上下文的追问（这是正常对话）
+- 专家给出了合理、专业的回答
+</Ignore>
+
+<Output>
+如果检测到知识空白，设置 hasGap=true 并列出gaps。
+如果回答质量正常，设置 hasGap=false。
+</Output>`
+          : `You are a professional knowledge completeness analyst. Analyze the conversation between the expert and user to identify knowledge gaps in the expert's response.
+
+<Expert>
+Name: ${sage.name}
+Domain: ${sage.domain}
+</Expert>
+
+<Detection Criteria>
+Signs of knowledge gaps:
+1. Expert explicitly states they don't know or are uncertain
+2. Vague, generic answers lacking specific information
+3. Avoiding the question, changing the subject
+4. Obviously unprofessional or incorrect answers
+5. Lack of examples, data, or experience to support claims
+
+<Ignore>
+- Normal reasonable boundaries (like "this is outside my expertise")
+- Asking for more context (normal conversation flow)
+- Expert provides reasonable, professional answers
+</Ignore>
+
+<Output>
+If knowledge gap detected, set hasGap=true and list gaps.
+If answer quality is normal, set hasGap=false.
+</Output>`,
+      prompt:
+        locale === "zh-CN"
+          ? `<User Question>
+${userMessage}
+</User Question>
+
+<Expert Response>
+${aiResponse}
+</Expert Response>
+
+请分析上述对话，判断专家回答中是否存在知识空白。`
+          : `<User Question>
+${userMessage}
+</User Question>
+
+<Expert Response>
+${aiResponse}
+</Expert Response>
+
+Analyze the above conversation and determine if there are knowledge gaps in the expert's response.`,
+      maxRetries: 2,
+    });
+
+    if (result.object.hasGap && result.object.gaps) {
+      return result.object.gaps;
+    }
+
+    return [];
+  } catch (error) {
+    rootLogger.error({
+      msg: "Failed to analyze conversation for gaps",
+      error: (error as Error).message,
+    });
+    // Return empty array on error - don't block the conversation
+    return [];
+  }
+}
+
+/**
+ * Append new knowledge gaps to sage's analysis
+ */
+export async function appendKnowledgeGaps({
+  sageId,
+  gaps,
+}: {
+  sageId: number;
+  gaps: KnowledgeGap[];
+}) {
+  if (gaps.length === 0) return;
+
+  const sage = await prisma.sage.findUnique({
+    where: { id: sageId },
+    select: { extra: true },
+  });
+
+  if (!sage) return;
+
+  const extra = sage.extra as SageExtra;
+  const currentGaps = extra.knowledgeAnalysis?.knowledgeGaps || [];
+
+  // Merge new gaps with existing ones (simple append for now)
+  const updatedGaps = [...currentGaps, ...gaps];
+
+  const gapsJson = JSON.stringify({ knowledgeGaps: updatedGaps });
+
+  await prisma.$executeRaw`
+    UPDATE "Sage"
+    SET "extra" = COALESCE("extra", '{}'::jsonb) || jsonb_build_object(
+      'knowledgeAnalysis',
+      COALESCE("extra"->'knowledgeAnalysis', '{}'::jsonb) || ${gapsJson}::jsonb
+    ),
+    "updatedAt" = NOW()
+    WHERE "id" = ${sageId}
+  `;
+
+  rootLogger.info({
+    msg: "Appended knowledge gaps from conversation",
+    sageId,
+    newGapsCount: gaps.length,
+    totalGapsCount: updatedGaps.length,
+  });
+}

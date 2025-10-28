@@ -14,7 +14,7 @@ import { prisma } from "@/prisma/prisma";
 import { generateId, smoothStream, stepCountIs, streamText } from "ai";
 import { getServerSession } from "next-auth";
 import { after, NextResponse } from "next/server";
-import { getSageByToken } from "../../../lib";
+import { analyzeConversationForGaps, appendKnowledgeGaps, getSageByToken } from "../../../lib";
 import { sageChatSystem } from "../../../prompt";
 
 export async function POST(req: Request) {
@@ -180,7 +180,45 @@ export async function POST(req: Request) {
     new Promise((resolve, reject) => {
       streamTextResult
         .consumeStream()
-        .then(() => {
+        .then(async () => {
+          // Analyze conversation for knowledge gaps
+          try {
+            const userMessage = newMessage.parts
+              .filter((part) => part.type === "text")
+              .map((part) => part.text)
+              .join("\n");
+
+            const aiMessage = streamingMessage.parts
+              ?.filter((part) => part.type === "text")
+              .map((part) => part.text)
+              .join("\n") || "";
+
+            if (userMessage && aiMessage) {
+              const gaps = await analyzeConversationForGaps({
+                userMessage,
+                aiResponse: aiMessage,
+                sage: { name: sage.name, domain: sage.domain },
+                locale,
+              });
+
+              if (gaps.length > 0) {
+                await appendKnowledgeGaps({
+                  sageId: sage.id,
+                  gaps,
+                });
+                chatLogger.info({
+                  msg: "Detected knowledge gaps from conversation",
+                  gapsCount: gaps.length,
+                });
+              }
+            }
+          } catch (error) {
+            chatLogger.error({
+              msg: "Failed to analyze conversation for gaps",
+              error: (error as Error).message,
+            });
+          }
+
           resolve(null);
         })
         .catch((error) => {
