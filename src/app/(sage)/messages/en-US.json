@@ -129,7 +129,9 @@
         "generateEmbedding": "Generating Embedding"
       },
       "memoryDocument": "Memory Document",
-      "consultations": "Consultation History",
+      "consultations": "My Consultations",
+      "publicChats": "User Consultations",
+      "user": "User",
       "supplementaryInterviews": "Supplementary Interviews",
       "progress": "Progress",
       "overallCompleteness": "Overall Completeness",
@@ -152,6 +154,11 @@
       "completed": "Completed",
       "ongoing": "Ongoing",
       "placeholder": "Answer interview questions..."
+    },
+    "public": {
+      "manage": "Manage",
+      "signInToChat": "Sign in to Chat",
+      "aboutExpert": "About this Expert"
     }
   }
 }

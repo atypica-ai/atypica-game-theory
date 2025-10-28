@@ -17,7 +17,8 @@ import { SourcesSection } from "./SourcesSection";
 export function SageDetailView({
   sage: initialSage,
   sources,
-  chats,
+  ownerChats,
+  publicChats,
   interviews,
 }: {
   sage: Omit<Sage, "expertise" | "attachments" | "extra"> & {
@@ -27,9 +28,15 @@ export function SageDetailView({
     user: Pick<User, "id" | "name" | "email">;
   };
   sources: SageSource[];
-  chats: Array<
+  ownerChats: Array<
     SageChat & {
       userChat: Pick<UserChat, "id" | "token" | "title" | "createdAt">;
+    }
+  >;
+  publicChats: Array<
+    SageChat & {
+      userChat: Pick<UserChat, "id" | "token" | "title" | "createdAt">;
+      user: Pick<User, "id" | "name" | "email">;
     }
   >;
   interviews: Array<
@@ -190,8 +197,8 @@ export function SageDetailView({
                 <MemoryDocumentEditor sageId={sage.id} initialContent={sage.memoryDocument} />
               )}
 
-              {/* Chats Section */}
-              {chats.length > 0 && (
+              {/* Owner's Chats Section */}
+              {ownerChats.length > 0 && (
                 <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-6">
                   <div className="space-y-4">
                     <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
@@ -199,7 +206,7 @@ export function SageDetailView({
                       {t("consultations")}
                     </h3>
                     <div className="space-y-2">
-                      {chats.map((chat) => (
+                      {ownerChats.map((chat) => (
                         <Link
                           key={chat.id}
                           href={`/sage/chat/${chat.userChat.token}`}
@@ -211,6 +218,42 @@ export function SageDetailView({
                               <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
                                 {chat.userChat.title}
                               </span>
+                            </div>
+                            <ArrowRight className="size-4 text-zinc-400" />
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Public User Chats Section */}
+              {publicChats.length > 0 && (
+                <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-6">
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                      <MessageCircle className="size-5" />
+                      {t("publicChats")}
+                    </h3>
+                    <div className="space-y-2">
+                      {publicChats.map((chat) => (
+                        <Link
+                          key={chat.id}
+                          href={`/sage/chat/${chat.userChat.token}`}
+                          className="block p-4 border border-zinc-200 dark:border-zinc-700 rounded-md hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-3">
+                                <FileText className="size-4 text-zinc-500" />
+                                <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                                  {chat.userChat.title}
+                                </span>
+                              </div>
+                              <div className="text-xs text-zinc-500 dark:text-zinc-500 pl-7">
+                                {t("user")}: {chat.user.name || chat.user.email}
+                              </div>
                             </div>
                             <ArrowRight className="size-4 text-zinc-400" />
                           </div>

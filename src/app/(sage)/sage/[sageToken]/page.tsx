@@ -37,8 +37,12 @@ async function SageDetailPage({
     orderBy: { createdAt: "asc" },
   });
 
-  const chats = await prisma.sageChat.findMany({
-    where: { sageId: sage.id },
+  // Fetch owner's own chats
+  const ownerChats = await prisma.sageChat.findMany({
+    where: {
+      sageId: sage.id,
+      userId: session.user.id,
+    },
     include: {
       userChat: {
         select: {
@@ -50,6 +54,33 @@ async function SageDetailPage({
       },
     },
     orderBy: { createdAt: "desc" },
+  });
+
+  // Fetch public user chats (from other users)
+  const publicChats = await prisma.sageChat.findMany({
+    where: {
+      sageId: sage.id,
+      userId: { not: session.user.id },
+    },
+    include: {
+      userChat: {
+        select: {
+          id: true,
+          token: true,
+          title: true,
+          createdAt: true,
+        },
+      },
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+    take: 20, // Limit to recent 20 public chats
   });
 
   const interviews = await prisma.sageInterview.findMany({
@@ -67,7 +98,15 @@ async function SageDetailPage({
     orderBy: { createdAt: "desc" },
   });
 
-  return <SageDetailView sage={sage} sources={sources} chats={chats} interviews={interviews} />;
+  return (
+    <SageDetailView
+      sage={sage}
+      sources={sources}
+      ownerChats={ownerChats}
+      publicChats={publicChats}
+      interviews={interviews}
+    />
+  );
 }
 
 export default async function SageDetailPageWithLoading({

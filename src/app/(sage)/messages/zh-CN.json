@@ -129,7 +129,9 @@
         "generateEmbedding": "生成向量"
       },
       "memoryDocument": "记忆文档",
-      "consultations": "历史咨询",
+      "consultations": "我的咨询",
+      "publicChats": "用户咨询",
+      "user": "用户",
       "supplementaryInterviews": "补充访谈",
       "progress": "进度",
       "overallCompleteness": "整体完整度",
@@ -152,6 +154,11 @@
       "completed": "已完成",
       "ongoing": "进行中",
       "placeholder": "回答访谈问题..."
+    },
+    "public": {
+      "manage": "管理",
+      "signInToChat": "登录后咨询",
+      "aboutExpert": "关于此专家"
     }
   }
 }
