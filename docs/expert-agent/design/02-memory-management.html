@@ -16,25 +16,22 @@
       background: oklch(0.985 0 0);
       color: oklch(0.145 0 0);
       line-height: 1.6;
+      height: 100vh;
+      overflow: hidden;
     }
 
     .layout {
-      display: flex;
-      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      height: 100vh;
     }
 
+    /* Sidebar */
     .sidebar {
-      width: 280px;
       background: oklch(1 0 0);
       border-right: 1px solid oklch(0.922 0 0);
       padding: 24px;
-      position: fixed;
-      height: 100vh;
       overflow-y: auto;
-    }
-
-    .sidebar-header {
-      margin-bottom: 24px;
     }
 
     .expert-avatar {
@@ -45,8 +42,8 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 28px;
-      margin-bottom: 12px;
+      font-size: 32px;
+      margin-bottom: 16px;
     }
 
     .expert-name {
@@ -58,16 +55,17 @@
     .expert-domain {
       font-size: 14px;
       color: oklch(0.556 0 0);
+      margin-bottom: 20px;
     }
 
-    .sidebar-stats {
+    .stats-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 12px;
-      margin: 20px 0;
       padding: 16px;
       background: oklch(0.985 0 0);
-      border-radius: 8px;
+      border-radius: 12px;
+      margin-bottom: 24px;
     }
 
     .stat-item {
@@ -77,61 +75,68 @@
     .stat-value {
       font-size: 20px;
       font-weight: 600;
-      color: oklch(0.87 0.29 142.57);
+      color: oklch(0.145 0 0);
     }
 
     .stat-label {
-      font-size: 12px;
+      font-size: 11px;
       color: oklch(0.556 0 0);
       margin-top: 4px;
     }
 
-    .sidebar-nav {
+    .nav-menu {
       list-style: none;
     }
 
     .nav-item {
-      padding: 12px 16px;
       margin-bottom: 4px;
-      border-radius: 8px;
-      cursor: pointer;
+    }
+
+    .nav-link {
       display: flex;
       align-items: center;
       gap: 12px;
-      transition: all 0.2s;
+      padding: 10px 12px;
+      border-radius: 8px;
+      text-decoration: none;
       color: oklch(0.556 0 0);
+      transition: all 0.2s;
+      font-size: 14px;
     }
 
-    .nav-item:hover {
+    .nav-link:hover {
       background: oklch(0.985 0 0);
       color: oklch(0.145 0 0);
     }
 
-    .nav-item.active {
+    .nav-link.active {
       background: oklch(0.87 0.29 142.57 / 0.1);
       color: oklch(0.87 0.29 142.57);
       font-weight: 500;
     }
 
-    .main-content {
-      flex: 1;
-      margin-left: 280px;
-      padding: 32px;
+    .nav-icon {
+      width: 18px;
+      height: 18px;
+    }
+
+    /* Main Content */
+    .main {
+      display: flex;
+      flex-direction: column;
     }
 
     .header {
-      margin-bottom: 32px;
-    }
-
-    .header-top {
+      background: oklch(1 0 0);
+      border-bottom: 1px solid oklch(0.922 0 0);
+      padding: 20px 32px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 16px;
     }
 
-    .header h1 {
-      font-size: 28px;
+    .header-title {
+      font-size: 20px;
       font-weight: 600;
     }
 
@@ -154,13 +159,13 @@
     }
 
     .btn-secondary {
-      background: oklch(1 0 0);
+      background: oklch(0.97 0 0);
       color: oklch(0.145 0 0);
       border: 1px solid oklch(0.922 0 0);
     }
 
     .btn-secondary:hover {
-      background: oklch(0.97 0 0);
+      background: oklch(0.95 0 0);
     }
 
     .btn-primary {
@@ -172,235 +177,22 @@
       background: oklch(0.82 0.29 142.57);
     }
 
-    .search-filter {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 24px;
-    }
-
-    .search-input {
-      flex: 1;
-      padding: 12px 16px 12px 44px;
-      border: 1px solid oklch(0.922 0 0);
-      border-radius: 8px;
-      font-size: 14px;
-      background: oklch(1 0 0);
-      position: relative;
-    }
-
-    .search-wrapper {
-      position: relative;
-      flex: 1;
-    }
-
-    .search-icon {
-      position: absolute;
-      left: 16px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: oklch(0.556 0 0);
-      pointer-events: none;
-    }
-
-    .filter-select {
-      padding: 12px 16px;
-      border: 1px solid oklch(0.922 0 0);
-      border-radius: 8px;
-      font-size: 14px;
-      background: oklch(1 0 0);
-      min-width: 160px;
-    }
-
-    .memory-document {
-      background: oklch(1 0 0);
-      border: 1px solid oklch(0.922 0 0);
-      border-radius: 12px;
-      padding: 32px;
-      margin-bottom: 24px;
-    }
-
-    .memory-document-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 24px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid oklch(0.922 0 0);
-    }
-
-    .memory-document-title {
-      font-size: 20px;
-      font-weight: 600;
-    }
-
-    .memory-document-meta {
-      font-size: 13px;
-      color: oklch(0.556 0 0);
-    }
-
-    .memory-document-content {
-      font-size: 14px;
-      line-height: 1.8;
-      color: oklch(0.145 0 0);
-    }
-
-    .memory-document-content h2 {
-      font-size: 18px;
-      font-weight: 600;
-      margin: 24px 0 12px;
-      color: oklch(0.145 0 0);
-    }
-
-    .memory-document-content h3 {
-      font-size: 16px;
-      font-weight: 600;
-      margin: 20px 0 10px;
-      color: oklch(0.145 0 0);
-    }
-
-    .memory-document-content ul {
-      padding-left: 24px;
-      margin: 12px 0;
-    }
-
-    .memory-document-content li {
-      margin: 8px 0;
-    }
-
-    .memory-document-content code {
-      background: oklch(0.985 0 0);
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-family: 'Courier New', monospace;
-      font-size: 13px;
-    }
-
-    .memory-entries {
-      display: grid;
-      gap: 16px;
-    }
-
-    .memory-entry {
-      background: oklch(1 0 0);
-      border: 1px solid oklch(0.922 0 0);
-      border-radius: 12px;
-      padding: 20px;
-      transition: all 0.2s;
-      cursor: pointer;
-    }
-
-    .memory-entry:hover {
-      border-color: oklch(0.87 0.29 142.57);
-      box-shadow: 0 4px 12px oklch(0 0 0 / 0.05);
-    }
-
-    .memory-entry-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: start;
-      margin-bottom: 12px;
-    }
-
-    .memory-entry-category {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 4px 12px;
-      background: oklch(0.87 0.29 142.57 / 0.1);
-      color: oklch(0.87 0.29 142.57);
-      border-radius: 6px;
-      font-size: 12px;
-      font-weight: 500;
-    }
-
-    .memory-entry-source {
-      font-size: 12px;
-      color: oklch(0.556 0 0);
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .memory-entry-content {
-      font-size: 14px;
-      color: oklch(0.145 0 0);
-      line-height: 1.6;
-      margin-bottom: 12px;
-      display: -webkit-box;
-      -webkit-line-clamp: 3;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-
-    .memory-entry-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding-top: 12px;
-      border-top: 1px solid oklch(0.922 0 0);
-    }
-
-    .memory-entry-tags {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
-
-    .tag {
-      padding: 3px 10px;
-      background: oklch(0.985 0 0);
-      border-radius: 4px;
-      font-size: 11px;
-      color: oklch(0.556 0 0);
-    }
-
-    .memory-entry-date {
-      font-size: 12px;
-      color: oklch(0.556 0 0);
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 80px 20px;
-    }
-
-    .empty-icon {
-      width: 64px;
-      height: 64px;
-      margin: 0 auto 16px;
-      color: oklch(0.556 0 0);
-      opacity: 0.5;
-    }
-
-    .empty-title {
-      font-size: 18px;
-      font-weight: 500;
-      margin-bottom: 8px;
-      color: oklch(0.145 0 0);
-    }
-
-    .empty-description {
-      font-size: 14px;
-      color: oklch(0.556 0 0);
-      margin-bottom: 24px;
-    }
-
+    /* Tabs */
     .tabs {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 24px;
+      background: oklch(1 0 0);
       border-bottom: 1px solid oklch(0.922 0 0);
+      padding: 0 32px;
+      display: flex;
+      gap: 32px;
     }
 
     .tab {
-      padding: 12px 20px;
-      background: none;
-      border: none;
-      border-bottom: 2px solid transparent;
-      cursor: pointer;
+      padding: 16px 0;
       font-size: 14px;
       font-weight: 500;
       color: oklch(0.556 0 0);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
       transition: all 0.2s;
     }
 
@@ -413,6 +205,13 @@
       border-bottom-color: oklch(0.87 0.29 142.57);
     }
 
+    /* Content Area */
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 32px;
+    }
+
     .tab-content {
       display: none;
     }
@@ -421,109 +220,310 @@
       display: block;
     }
 
-    .knowledge-gap-card {
-      background: oklch(0.769 0.188 70.08 / 0.1);
-      border: 1px solid oklch(0.769 0.188 70.08);
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 16px;
+    /* Memory Document Tab */
+    .document-editor {
+      max-width: 1200px;
+      margin: 0 auto;
     }
 
-    .gap-header {
+    .editor-toolbar {
       display: flex;
-      justify-content: space-between;
-      align-items: start;
+      gap: 8px;
+      margin-bottom: 16px;
+      padding: 12px;
+      background: oklch(1 0 0);
+      border: 1px solid oklch(0.922 0 0);
+      border-radius: 8px;
+    }
+
+    .toolbar-btn {
+      padding: 6px 12px;
+      background: none;
+      border: 1px solid oklch(0.922 0 0);
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+
+    .toolbar-btn:hover {
+      background: oklch(0.985 0 0);
+    }
+
+    .editor-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      height: calc(100vh - 320px);
+    }
+
+    .editor-pane {
+      background: oklch(1 0 0);
+      border: 1px solid oklch(0.922 0 0);
+      border-radius: 12px;
+      padding: 24px;
+      overflow-y: auto;
+    }
+
+    .editor-pane h3 {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: oklch(0.556 0 0);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .markdown-editor {
+      width: 100%;
+      height: calc(100% - 40px);
+      border: none;
+      resize: none;
+      font-family: 'Monaco', 'Menlo', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .markdown-editor:focus {
+      outline: none;
+    }
+
+    .markdown-preview {
+      font-size: 14px;
+      line-height: 1.8;
+    }
+
+    .markdown-preview h1 {
+      font-size: 24px;
+      font-weight: 700;
+      margin: 24px 0 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid oklch(0.922 0 0);
+    }
+
+    .markdown-preview h2 {
+      font-size: 20px;
+      font-weight: 600;
+      margin: 20px 0 12px;
+    }
+
+    .markdown-preview h3 {
+      font-size: 16px;
+      font-weight: 600;
+      margin: 16px 0 8px;
+    }
+
+    .markdown-preview p {
       margin-bottom: 12px;
     }
 
-    .gap-area {
-      font-size: 16px;
-      font-weight: 600;
-      color: oklch(0.145 0 0);
+    .markdown-preview ul, .markdown-preview ol {
+      margin-bottom: 12px;
+      padding-left: 24px;
     }
 
-    .gap-severity {
-      padding: 4px 12px;
-      border-radius: 6px;
+    .markdown-preview li {
+      margin-bottom: 4px;
+    }
+
+    .markdown-preview code {
+      background: oklch(0.985 0 0);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'Monaco', 'Menlo', monospace;
       font-size: 12px;
+    }
+
+    .markdown-preview hr {
+      border: none;
+      border-top: 1px solid oklch(0.922 0 0);
+      margin: 20px 0;
+    }
+
+    /* Knowledge Analysis Tab */
+    .analysis-section {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .completeness-card {
+      background: oklch(1 0 0);
+      border: 1px solid oklch(0.922 0 0);
+      border-radius: 16px;
+      padding: 32px;
+      margin-bottom: 24px;
+    }
+
+    .completeness-header {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      margin-bottom: 32px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid oklch(0.922 0 0);
+    }
+
+    .score-circle {
+      position: relative;
+      width: 100px;
+      height: 100px;
+    }
+
+    .score-value {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 28px;
+      font-weight: 700;
+      color: oklch(0.87 0.29 142.57);
+    }
+
+    .completeness-info h3 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .completeness-info p {
+      font-size: 14px;
+      color: oklch(0.556 0 0);
+      line-height: 1.6;
+    }
+
+    .dimensions-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .dimension-item {
+      padding: 16px;
+      background: oklch(0.985 0 0);
+      border: 1px solid oklch(0.922 0 0);
+      border-radius: 12px;
+    }
+
+    .dimension-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .dimension-name {
+      font-size: 13px;
       font-weight: 500;
     }
 
-    .gap-severity.high {
+    .dimension-score {
+      font-size: 13px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+
+    .dimension-score.high {
+      background: oklch(0.87 0.29 142.57 / 0.1);
+      color: oklch(0.87 0.29 142.57);
+    }
+
+    .dimension-score.medium {
+      background: oklch(0.769 0.188 70.08 / 0.1);
+      color: oklch(0.769 0.188 70.08);
+    }
+
+    .dimension-score.low {
       background: oklch(0.577 0.245 27.325 / 0.1);
       color: oklch(0.577 0.245 27.325);
     }
 
-    .gap-severity.medium {
-      background: oklch(0.769 0.188 70.08 / 0.2);
-      color: oklch(0.769 0.188 70.08);
+    .dimension-bar {
+      width: 100%;
+      height: 6px;
+      background: oklch(0.922 0 0);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 8px;
     }
 
-    .gap-evidence {
-      font-size: 14px;
+    .dimension-progress {
+      height: 100%;
+      border-radius: 3px;
+    }
+
+    .dimension-progress.high {
+      background: oklch(0.87 0.29 142.57);
+    }
+
+    .dimension-progress.medium {
+      background: oklch(0.769 0.188 70.08);
+    }
+
+    .dimension-progress.low {
+      background: oklch(0.577 0.245 27.325);
+    }
+
+    .dimension-description {
+      font-size: 12px;
       color: oklch(0.556 0 0);
-      margin-bottom: 12px;
-      font-style: italic;
     }
 
-    .gap-question {
-      font-size: 14px;
-      color: oklch(0.145 0 0);
-      padding: 12px;
-      background: oklch(1 0 0);
+    .suggestions-section h3 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+
+    .suggestion-item {
+      display: flex;
+      gap: 12px;
+      padding: 16px;
+      background: oklch(0.769 0.188 70.08 / 0.05);
+      border-left: 3px solid oklch(0.769 0.188 70.08);
       border-radius: 8px;
       margin-bottom: 12px;
     }
 
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: oklch(0 0 0 / 0.5);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
+    .suggestion-icon {
+      width: 20px;
+      height: 20px;
+      color: oklch(0.769 0.188 70.08);
+      flex-shrink: 0;
+      margin-top: 2px;
     }
 
-    .modal-overlay.active {
-      display: flex;
+    .suggestion-content {
+      flex: 1;
     }
 
-    .modal {
-      background: oklch(1 0 0);
-      border-radius: 16px;
-      padding: 32px;
-      max-width: 800px;
-      width: 90%;
-      max-height: 80vh;
-      overflow-y: auto;
+    .suggestion-title {
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 4px;
     }
 
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 24px;
-    }
-
-    .modal-title {
-      font-size: 24px;
-      font-weight: 600;
-    }
-
-    .modal-close {
-      background: none;
-      border: none;
-      cursor: pointer;
+    .suggestion-description {
+      font-size: 13px;
       color: oklch(0.556 0 0);
-      padding: 8px;
+      line-height: 1.5;
     }
 
-    .modal-close:hover {
-      color: oklch(0.145 0 0);
+    @media (max-width: 968px) {
+      .editor-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        display: none;
+      }
     }
   </style>
 </head>
@@ -531,396 +531,353 @@
   <div class="layout">
     <!-- Sidebar -->
     <aside class="sidebar">
-      <div class="sidebar-header">
-        <div class="expert-avatar">🎨</div>
-        <div class="expert-name">产品设计专家</div>
-        <div class="expert-domain">产品设计 · 用户研究</div>
-      </div>
+      <div class="expert-avatar">🎨</div>
+      <div class="expert-name">产品设计专家</div>
+      <div class="expert-domain">产品设计 · 用户研究</div>
 
-      <div class="sidebar-stats">
-        <div class="stat-item">
-          <div class="stat-value">127</div>
-          <div class="stat-label">记忆条目</div>
-        </div>
+      <div class="stats-grid">
         <div class="stat-item">
           <div class="stat-value">85%</div>
           <div class="stat-label">知识完整度</div>
         </div>
+        <div class="stat-item">
+          <div class="stat-value">234</div>
+          <div class="stat-label">对话次数</div>
+        </div>
       </div>
 
-      <ul class="sidebar-nav">
-        <li class="nav-item active">
-          <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-          </svg>
-          <span>记忆文档</span>
+      <ul class="nav-menu">
+        <li class="nav-item">
+          <a href="#" class="nav-link">
+            <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+            </svg>
+            <span>概览</span>
+          </a>
         </li>
         <li class="nav-item">
-          <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-          </svg>
-          <span>记忆条目</span>
+          <a href="#" class="nav-link active">
+            <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            <span>记忆文档</span>
+          </a>
         </li>
         <li class="nav-item">
-          <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-          </svg>
-          <span>知识空白</span>
+          <a href="#" class="nav-link">
+            <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+            </svg>
+            <span>对话</span>
+          </a>
         </li>
         <li class="nav-item">
-          <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
-          </svg>
-          <span>对话记录</span>
-        </li>
-        <li class="nav-item">
-          <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-          </svg>
-          <span>设置</span>
+          <a href="#" class="nav-link">
+            <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            </svg>
+            <span>设置</span>
+          </a>
         </li>
       </ul>
     </aside>
 
     <!-- Main Content -->
-    <main class="main-content">
-      <div class="header">
-        <div class="header-top">
-          <h1>记忆管理</h1>
-          <div class="header-actions">
-            <button class="btn btn-secondary">
-              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-              </svg>
-              导出记忆
-            </button>
-            <button class="btn btn-primary" id="add-memory-btn">
-              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-              </svg>
-              添加记忆
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Tabs -->
-      <div class="tabs">
-        <button class="tab active" data-tab="document">记忆文档</button>
-        <button class="tab" data-tab="entries">记忆条目</button>
-        <button class="tab" data-tab="gaps">知识空白</button>
-      </div>
-
-      <!-- Memory Document Tab -->
-      <div class="tab-content active" data-tab-content="document">
-        <div class="memory-document">
-          <div class="memory-document-header">
-            <div>
-              <div class="memory-document-title">Memory Document</div>
-              <div class="memory-document-meta">最后更新: 2024年1月20日</div>
-            </div>
-            <button class="btn btn-secondary">
-              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-              </svg>
-              编辑
-            </button>
-          </div>
-
-          <div class="memory-document-content">
-            <h2>Expert Profile</h2>
-            <ul>
-              <li><strong>Name:</strong> 产品设计专家</li>
-              <li><strong>Domain:</strong> 产品设计、用户研究、交互设计</li>
-              <li><strong>Expertise:</strong> B端产品设计、设计系统、用户体验研究</li>
-              <li><strong>Language:</strong> 中文</li>
-            </ul>
-
-            <h2>Core Knowledge</h2>
-
-            <h3>设计方法论</h3>
-            <ul>
-              <li><strong>设计思维 (Design Thinking):</strong> 强调以用户为中心，通过共情、定义、构思、原型和测试五个阶段来解决复杂问题</li>
-              <li><strong>双钻模型 (Double Diamond):</strong> 发现-定义-开发-交付，帮助团队在正确的时间做正确的事</li>
-              <li><strong>精益UX (Lean UX):</strong> 快速迭代、假设驱动、最小可行产品</li>
-            </ul>
-
-            <h3>用户研究</h3>
-            <ul>
-              <li><strong>定性研究:</strong> 用户访谈、可用性测试、焦点小组、田野调查</li>
-              <li><strong>定量研究:</strong> 问卷调查、A/B测试、数据分析、眼动追踪</li>
-              <li><strong>用户画像:</strong> 基于真实数据构建典型用户模型，包含人口统计、行为模式、目标和痛点</li>
-            </ul>
-
-            <h3>交互设计</h3>
-            <ul>
-              <li><strong>信息架构:</strong> 内容组织、导航设计、标签系统</li>
-              <li><strong>交互模式:</strong> 常见的交互设计模式和最佳实践</li>
-              <li><strong>微交互:</strong> 细节层面的反馈、动画和转场</li>
-            </ul>
-
-            <h2>Conversation Style</h2>
-            <ul>
-              <li>专业但易懂，避免过多专业术语</li>
-              <li>结构化思考，善于将复杂问题分解</li>
-              <li>数据驱动，注重验证和测试</li>
-              <li>关注实际落地，提供可操作的建议</li>
-            </ul>
-
-            <h2>Knowledge Boundaries</h2>
-            <ul>
-              <li>主要专长在B端产品设计，C端产品经验相对较少</li>
-              <li>对最新的AI设计工具了解有限</li>
-              <li>技术实现细节不是强项，更关注用户体验</li>
-            </ul>
-
-            <h2>Update History</h2>
-            <ul>
-              <li><code>2024-01-20</code> 添加了关于设计系统的深度知识</li>
-              <li><code>2024-01-15</code> 补充了用户研究方法论</li>
-              <li><code>2024-01-10</code> 初始创建</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <!-- Memory Entries Tab -->
-      <div class="tab-content" data-tab-content="entries">
-        <div class="search-filter">
-          <div class="search-wrapper">
-            <svg class="search-icon" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+    <main class="main">
+      <header class="header">
+        <h1 class="header-title">记忆管理</h1>
+        <div class="header-actions">
+          <button class="btn btn-secondary">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
             </svg>
-            <input type="text" class="search-input" placeholder="搜索记忆内容...">
-          </div>
-          <select class="filter-select">
-            <option value="">所有分类</option>
-            <option value="design-methodology">设计方法论</option>
-            <option value="user-research">用户研究</option>
-            <option value="interaction">交互设计</option>
-          </select>
-          <select class="filter-select">
-            <option value="">所有来源</option>
-            <option value="import">初始导入</option>
-            <option value="interview">访谈补充</option>
-            <option value="chat">对话记录</option>
-          </select>
+            历史版本
+          </button>
+          <button class="btn btn-primary" onclick="saveDocument()">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path>
+            </svg>
+            保存文档
+          </button>
         </div>
+      </header>
 
-        <div class="memory-entries">
-          <div class="memory-entry">
-            <div class="memory-entry-header">
-              <span class="memory-entry-category">
-                <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
-                  <circle cx="10" cy="10" r="5"></circle>
-                </svg>
-                设计方法论
-              </span>
-              <span class="memory-entry-source">
-                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-                </svg>
-                文件导入
-              </span>
-            </div>
-            <div class="memory-entry-content">
-              设计思维是一种以用户为中心的创新方法论，包含五个关键阶段：共情(Empathize)、定义(Define)、构思(Ideate)、原型(Prototype)和测试(Test)。这个迭代过程帮助团队深入理解用户需求，快速验证想法...
-            </div>
-            <div class="memory-entry-footer">
-              <div class="memory-entry-tags">
-                <span class="tag">设计思维</span>
-                <span class="tag">方法论</span>
-              </div>
-              <div class="memory-entry-date">2024-01-15</div>
-            </div>
-          </div>
-
-          <div class="memory-entry">
-            <div class="memory-entry-header">
-              <span class="memory-entry-category">
-                <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
-                  <circle cx="10" cy="10" r="5"></circle>
-                </svg>
-                用户研究
-              </span>
-              <span class="memory-entry-source">
-                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
-                </svg>
-                访谈补充
-              </span>
-            </div>
-            <div class="memory-entry-content">
-              用户访谈的关键是提出开放式问题，让用户自由表达。常用的5W1H框架：Why(为什么)、What(做什么)、When(何时)、Where(何处)、Who(谁)、How(如何)，帮助我们全面理解用户行为和动机...
-            </div>
-            <div class="memory-entry-footer">
-              <div class="memory-entry-tags">
-                <span class="tag">用户访谈</span>
-                <span class="tag">研究方法</span>
-              </div>
-              <div class="memory-entry-date">2024-01-18</div>
-            </div>
-          </div>
-
-          <div class="memory-entry">
-            <div class="memory-entry-header">
-              <span class="memory-entry-category">
-                <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
-                  <circle cx="10" cy="10" r="5"></circle>
-                </svg>
-                交互设计
-              </span>
-              <span class="memory-entry-source">
-                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
-                </svg>
-                手动添加
-              </span>
-            </div>
-            <div class="memory-entry-content">
-              微交互是产品体验的细节之处。一个好的微交互应该：1) 提供即时反馈，2) 符合用户预期，3) 不打断主流程，4) 增加愉悦感。例如，点赞动画、加载状态、错误提示等...
-            </div>
-            <div class="memory-entry-footer">
-              <div class="memory-entry-tags">
-                <span class="tag">微交互</span>
-                <span class="tag">动效</span>
-              </div>
-              <div class="memory-entry-date">2024-01-20</div>
-            </div>
-          </div>
-        </div>
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab('document')">Memory Document</div>
+        <div class="tab" onclick="switchTab('analysis')">知识分析</div>
       </div>
 
-      <!-- Knowledge Gaps Tab -->
-      <div class="tab-content" data-tab-content="gaps">
-        <div style="margin-bottom: 24px;">
-          <p style="color: oklch(0.556 0 0); font-size: 14px;">
-            系统分析了近期对话，发现以下知识空白。建议通过补充访谈来完善这些领域的知识。
-          </p>
+      <div class="content">
+        <!-- Memory Document Tab -->
+        <div class="tab-content active" id="tab-document">
+          <div class="document-editor">
+            <div class="editor-toolbar">
+              <button class="toolbar-btn">加粗</button>
+              <button class="toolbar-btn">斜体</button>
+              <button class="toolbar-btn">标题</button>
+              <button class="toolbar-btn">列表</button>
+              <button class="toolbar-btn">代码</button>
+              <button class="toolbar-btn">链接</button>
+            </div>
+
+            <div class="editor-container">
+              <div class="editor-pane">
+                <h3>编辑</h3>
+                <textarea class="markdown-editor" id="markdown-editor" oninput="updatePreview()">
+# Expert Profile
+
+- **Name**: 产品设计专家
+- **Domain**: 产品设计、用户研究、交互设计
+- **Expertise**: B端产品设计、设计系统、用户体验研究
+- **Language**: 中文
+
+# Core Knowledge
+
+## 设计方法论
+
+### Key Points
+
+- **用户中心设计**: 始终从用户需求出发，通过用户研究了解真实痛点
+- **设计思维**: 共情、定义、构思、原型、测试的迭代循环
+- **数据驱动**: 结合定性和定量数据指导设计决策
+
+### Insights
+
+设计不仅是视觉美学，更是解决问题的过程。好的设计应该是：
+1. **可用的** - 用户能轻松完成任务
+2. **易学的** - 新用户快速上手
+3. **高效的** - 提升用户操作效率
+4. **满意的** - 带来愉悦的使用体验
+
+### Experience
+
+在过去10年的产品设计工作中，我主导过20+个B端产品的设计工作，涵盖CRM、ERP、数据分析等领域。我发现B端产品设计的关键在于：
+- 理解复杂业务流程
+- 平衡功能完整性和易用性
+- 建立一致的设计规范
+
+## 用户研究
+
+### Key Points
+
+- **访谈技巧**: 使用开放式问题，5个为什么，情景化提问
+- **可用性测试**: 任务场景设计，观察用户行为，收集反馈
+- **用户画像**: 基于真实数据构建代表性用户模型
+
+### Insights
+
+用户研究最大的价值在于发现"用户说的"和"用户做的"之间的差距。要：
+- 观察实际行为，而不只是听用户说
+- 关注用户的困惑和犹豫
+- 挖掘未被满足的深层需求
+
+## 设计系统
+
+### Key Points
+
+- **组件库**: 可复用的UI组件，保证一致性
+- **设计令牌**: 颜色、字体、间距的标准化定义
+- **文档化**: 清晰的使用指南和最佳实践
+
+### Experience
+
+我曾主导构建了一个服务于5个产品线的设计系统，包含50+组件，覆盖80%的常见场景。关键经验：
+- 从实际项目中提炼组件
+- 建立设计与开发的协作流程
+- 持续迭代和优化
+
+# Conversation Style
+
+- **Tone**: 专业但友好，避免过度术语
+- **Approach**: 分析型，提供结构化的建议
+- **Signature phrases**:
+  - "让我们从用户角度思考..."
+  - "在我的实践中..."
+  - "这里有几个关键点..."
+
+# Knowledge Boundaries
+
+## Current Strengths
+- B端产品设计
+- 用户研究方法
+- 设计系统构建
+- 可用性评估
+
+## Known Limitations
+- 前端开发实现细节
+- 3D 和动效设计
+- 品牌设计和视觉识别系统
+
+## Learning Areas
+- AI 驱动的设计工具
+- 无障碍设计最佳实践
+- 设计度量和ROI评估
+                </textarea>
+              </div>
+
+              <div class="editor-pane">
+                <h3>预览</h3>
+                <div class="markdown-preview" id="markdown-preview"></div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div class="knowledge-gap-card">
-          <div class="gap-header">
-            <div class="gap-area">AI 辅助设计工具</div>
-            <span class="gap-severity high">高优先级</span>
-          </div>
-          <div class="gap-evidence">
-            "用户问：'你对Midjourney和Figma AI等工具有什么看法？'，但专家回答显示对这些工具了解有限。"
-          </div>
-          <div class="gap-question">
-            <strong>建议问题：</strong> 你如何看待AI工具对设计工作流的影响？你尝试过哪些AI设计工具？它们在实际项目中的应用场景是什么？
-          </div>
-          <button class="btn btn-primary">
-            开始补充访谈
-          </button>
-        </div>
+        <!-- Knowledge Analysis Tab -->
+        <div class="tab-content" id="tab-analysis">
+          <div class="analysis-section">
+            <div class="completeness-card">
+              <div class="completeness-header">
+                <div class="score-circle">
+                  <svg width="100" height="100">
+                    <circle cx="50" cy="50" r="40" fill="none" stroke="oklch(0.922 0 0)" stroke-width="8" />
+                    <circle cx="50" cy="50" r="40" fill="none" stroke="oklch(0.87 0.29 142.57)" stroke-width="8" stroke-dasharray="251" stroke-dashoffset="63" stroke-linecap="round" transform="rotate(-90 50 50)" />
+                  </svg>
+                  <div class="score-value">85%</div>
+                </div>
+                <div class="completeness-info">
+                  <h3>整体评估：优秀</h3>
+                  <p>您的专家知识在多个维度上表现优秀，已经具备专业的问答能力。建议通过补充访谈进一步完善实践案例和行业洞察方面。</p>
+                </div>
+              </div>
 
-        <div class="knowledge-gap-card">
-          <div class="gap-header">
-            <div class="gap-area">C端产品设计经验</div>
-            <span class="gap-severity medium">中优先级</span>
-          </div>
-          <div class="gap-evidence">
-            "用户咨询C端社交产品的设计建议时，专家的回答比较通用，缺少具体案例。"
-          </div>
-          <div class="gap-question">
-            <strong>建议问题：</strong> 你参与过哪些C端产品的设计？B端和C端产品设计的主要差异是什么？有什么成功或失败的案例可以分享？
-          </div>
-          <button class="btn btn-primary">
-            开始补充访谈
-          </button>
-        </div>
+              <div class="dimensions-grid">
+                <div class="dimension-item">
+                  <div class="dimension-header">
+                    <span class="dimension-name">🎯 基础理论</span>
+                    <span class="dimension-score high">90%</span>
+                  </div>
+                  <div class="dimension-bar">
+                    <div class="dimension-progress high" style="width: 90%"></div>
+                  </div>
+                  <div class="dimension-description">核心概念清晰，理论基础扎实</div>
+                </div>
 
-        <div class="knowledge-gap-card">
-          <div class="gap-header">
-            <div class="gap-area">无障碍设计 (Accessibility)</div>
-            <span class="gap-severity medium">中优先级</span>
+                <div class="dimension-item">
+                  <div class="dimension-header">
+                    <span class="dimension-name">💼 实践经验</span>
+                    <span class="dimension-score high">85%</span>
+                  </div>
+                  <div class="dimension-bar">
+                    <div class="dimension-progress high" style="width: 85%"></div>
+                  </div>
+                  <div class="dimension-description">有丰富的实践案例和经验</div>
+                </div>
+
+                <div class="dimension-item">
+                  <div class="dimension-header">
+                    <span class="dimension-name">📊 行业洞察</span>
+                    <span class="dimension-score medium">70%</span>
+                  </div>
+                  <div class="dimension-bar">
+                    <div class="dimension-progress medium" style="width: 70%"></div>
+                  </div>
+                  <div class="dimension-description">对行业趋势有一定理解</div>
+                </div>
+
+                <div class="dimension-item">
+                  <div class="dimension-header">
+                    <span class="dimension-name">🔧 工具方法论</span>
+                    <span class="dimension-score high">88%</span>
+                  </div>
+                  <div class="dimension-bar">
+                    <div class="dimension-progress high" style="width: 88%"></div>
+                  </div>
+                  <div class="dimension-description">工具和方法论掌握全面</div>
+                </div>
+              </div>
+
+              <div class="suggestions-section">
+                <h3>改进建议</h3>
+
+                <div class="suggestion-item">
+                  <svg class="suggestion-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  <div class="suggestion-content">
+                    <div class="suggestion-title">补充具体项目案例</div>
+                    <div class="suggestion-description">建议添加3-5个具体的项目案例，包括项目背景、挑战、解决方案和结果，让知识更加生动和可参考</div>
+                  </div>
+                </div>
+
+                <div class="suggestion-item">
+                  <svg class="suggestion-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  <div class="suggestion-content">
+                    <div class="suggestion-title">深化行业洞察</div>
+                    <div class="suggestion-description">分享对设计行业未来趋势的看法、新技术的观点、以及对年轻设计师的建议</div>
+                  </div>
+                </div>
+              </div>
+
+              <div style="text-align: center; margin-top: 32px;">
+                <button class="btn btn-primary">
+                  <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                  </svg>
+                  开始补充访谈
+                </button>
+              </div>
+            </div>
           </div>
-          <div class="gap-evidence">
-            "有用户问及无障碍设计的最佳实践，但当前记忆中这方面内容较少。"
-          </div>
-          <div class="gap-question">
-            <strong>建议问题：</strong> 你在项目中如何考虑无障碍设计？有哪些无障碍设计的原则和工具？能分享一些具体的实施经验吗？
-          </div>
-          <button class="btn btn-primary">
-            开始补充访谈
-          </button>
         </div>
       </div>
     </main>
   </div>
 
-  <!-- Add Memory Modal -->
-  <div class="modal-overlay" id="add-memory-modal">
-    <div class="modal">
-      <div class="modal-header">
-        <h2 class="modal-title">添加记忆</h2>
-        <button class="modal-close" onclick="document.getElementById('add-memory-modal').classList.remove('active')">
-          <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-          </svg>
-        </button>
-      </div>
-
-      <div style="margin-bottom: 20px;">
-        <label class="form-label">分类</label>
-        <select class="filter-select" style="width: 100%;">
-          <option value="design-methodology">设计方法论</option>
-          <option value="user-research">用户研究</option>
-          <option value="interaction">交互设计</option>
-          <option value="other">其他</option>
-        </select>
-      </div>
-
-      <div style="margin-bottom: 20px;">
-        <label class="form-label">记忆内容</label>
-        <textarea class="search-input" style="min-height: 200px; width: 100%; padding: 12px; font-family: inherit;" placeholder="输入要添加的知识或经验..."></textarea>
-      </div>
-
-      <div style="margin-bottom: 20px;">
-        <label class="form-label">标签（用逗号分隔）</label>
-        <input type="text" class="search-input" placeholder="例如：设计思维, 方法论, 实践">
-      </div>
-
-      <div style="display: flex; gap: 12px; justify-content: flex-end;">
-        <button class="btn btn-secondary" onclick="document.getElementById('add-memory-modal').classList.remove('active')">
-          取消
-        </button>
-        <button class="btn btn-primary">
-          添加记忆
-        </button>
-      </div>
-    </div>
-  </div>
-
   <script>
-    // Tab switching
-    document.querySelectorAll('.tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        const targetTab = tab.dataset.tab;
+    // Simple markdown preview
+    function updatePreview() {
+      const editor = document.getElementById('markdown-editor');
+      const preview = document.getElementById('markdown-preview');
 
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
+      let html = editor.value
+        // Headers
+        .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+        .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+        .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+        // Bold
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        // Italic
+        .replace(/\*(.+?)\*/g, '<em>$1</em>')
+        // Lists
+        .replace(/^- (.+)$/gm, '<li>$1</li>')
+        // Code
+        .replace(/`(.+?)`/g, '<code>$1</code>')
+        // Horizontal rule
+        .replace(/^---$/gm, '<hr>')
+        // Paragraphs
+        .replace(/^(?!<[hl]|<li)(.+)$/gm, '<p>$1</p>')
+        // Clean up
+        .replace(/<\/li>\n<li>/g, '</li><li>');
 
-        document.querySelectorAll('.tab-content').forEach(content => {
-          content.classList.remove('active');
-        });
-        document.querySelector(`[data-tab-content="${targetTab}"]`).classList.add('active');
+      preview.innerHTML = html;
+    }
+
+    function switchTab(tabName) {
+      // Update tab buttons
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.classList.remove('active');
       });
-    });
+      event.target.classList.add('active');
 
-    // Add memory button
-    document.getElementById('add-memory-btn').addEventListener('click', () => {
-      document.getElementById('add-memory-modal').classList.add('active');
-    });
+      // Update tab content
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active');
+      });
+      document.getElementById('tab-' + tabName).classList.add('active');
+    }
 
-    // Click outside modal to close
-    document.getElementById('add-memory-modal').addEventListener('click', (e) => {
-      if (e.target.id === 'add-memory-modal') {
-        e.target.classList.remove('active');
-      }
-    });
+    function saveDocument() {
+      const content = document.getElementById('markdown-editor').value;
+      console.log('Saving document:', content);
+      alert('Memory Document 已保存！');
+    }
+
+    // Initialize preview
+    updatePreview();
   </script>
 </body>
 </html>

@@ -310,9 +310,6 @@ export const memoryDocumentBuilderSystem = ({
 - Current strengths: [擅长的领域]
 - Known limitations: [专家不知道的内容]
 - Learning areas: [需要扩展的主题]
-
-# Update History
-- [日期]: [更新内容]
 </记忆文档结构>
 
 <文档设计原则>
@@ -385,9 +382,6 @@ The Memory Document should follow this structure (in Markdown format):
 - Current strengths: [Areas of expertise]
 - Known limitations: [What the expert doesn't know]
 - Learning areas: [Topics to expand on]
-
-# Update History
-- [Date]: [What was updated]
 </Memory Document Structure>
 
 <Document Design Principles>
@@ -1653,7 +1647,6 @@ export const documentUpdateSystem = ({
    - 保持各章节长度适中
 
 4. **元信息更新**
-   - 更新 Update History
    - 更新知识边界（如果适用）
    - 调整对话风格（如果有变化）
 
@@ -1713,7 +1706,6 @@ Integrate the provided new memory entries into the existing Memory Document whil
    - Keep chapter lengths moderate
 
 4. **Metadata Updates**
-   - Update Update History
    - Update Knowledge Boundaries (if applicable)
    - Adjust Conversation Style (if changed)
 

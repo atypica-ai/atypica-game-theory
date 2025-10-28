@@ -61,17 +61,7 @@
 
 # Knowledge Boundaries
 [当前知识的边界和限制]
-
-# Update History
-[记忆更新的历史记录]
 ```
-
-#### Memory Entry (记忆条目)
-
-- 单条记忆的原子单位
-- 包含时间戳、来源、内容、嵌入向量
-- 支持分类和标签
-- 可以被检索和引用
 
 ### 1.2 数据库设计
 
@@ -86,10 +76,8 @@ model Expert {
   locale          String   @db.VarChar(16)
 
   // Memory Document - 核心记忆文档 (类似 CLAUDE.md)
+  // 这是专家的唯一记忆存储，包含所有知识
   memoryDocument  String   @db.Text
-
-  // 系统提示词 (从 memoryDocument 生成)
-  systemPrompt    String   @db.Text
 
   // 向量嵌入 (用于专家匹配和检索)
   embedding       Unsupported("halfvec(1024)")?
@@ -104,53 +92,18 @@ model Expert {
 
   // 统计
   chatCount       Int      @default(0)
-  memoryCount     Int      @default(0)
   lastActiveAt    DateTime?
 
   createdAt       DateTime @default(now()) @db.Timestamptz(6)
   updatedAt       DateTime @updatedAt @db.Timestamptz(6)
 
   // 关系
-  memories        ExpertMemory[]
   chats           ExpertChat[]
   interviews      ExpertInterview[]
 
   @@index([embedding])
   @@index([domain, locale])
   @@index([isPublic])
-}
-
-// 记忆条目
-model ExpertMemory {
-  id              Int      @id @default(autoincrement())
-  expertId        Int
-  expert          Expert   @relation(fields: [expertId], references: [id], onDelete: Cascade)
-
-  // 记忆内容
-  content         String   @db.Text
-  contentType     String   @db.VarChar(32)  // text, file, voice, interview
-
-  // 分类和标签
-  category        String?  @db.VarChar(64)  // 主题分类
-  tags            Json     @default("[]")
-
-  // 来源
-  source          String   @db.VarChar(64)  // import, interview, chat, manual
-  sourceId        String?  @db.VarChar(128) // 来源记录 ID
-
-  // 向量嵌入
-  embedding       Unsupported("halfvec(1024)")?
-
-  // 元数据
-  metadata        Json     @default("{}")
-
-  createdAt       DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt       DateTime @updatedAt @db.Timestamptz(6)
-
-  @@index([expertId])
-  @@index([embedding])
-  @@index([category])
-  @@index([source])
 }
 
 // 专家访谈 (类似 PersonaImport 的 follow-up interview)
@@ -251,26 +204,25 @@ export const createExpert = withAuth(
       }
     });
 
-    // 2. 处理初始内容并创建记忆条目
-    for (const item of data.initialContent) {
-      await processInitialContent(expert.id, item);
-    }
+    // 2. 处理初始内容并生成 Memory Document
+    const initialContent = data.initialContent.map(item => item.content).join("\n\n");
 
-    // 3. 分析记忆并生成 Memory Document
-    const memoryDocument = await buildMemoryDocument(expert.id);
+    const memoryDocument = await buildMemoryDocument({
+      name: expert.name,
+      domain: expert.domain,
+      expertise: expert.expertise,
+      initialContent,
+      locale: expert.locale,
+    });
 
-    // 4. 从 Memory Document 生成系统提示词
-    const systemPrompt = await generateSystemPrompt(memoryDocument);
-
-    // 5. 生成向量嵌入
+    // 3. 生成向量嵌入
     const embedding = await generateEmbedding(memoryDocument);
 
-    // 6. 更新专家
+    // 4. 更新专家
     await prisma.expert.update({
       where: { id: expert.id },
       data: {
         memoryDocument,
-        systemPrompt,
         embedding,
       }
     });
@@ -290,15 +242,14 @@ export const createSupplementaryInterview = withAuth(
   async ({ user }, expertId: number) => {
     const expert = await prisma.expert.findUnique({
       where: { id: expertId },
-      include: { memories: true }
     });
 
     if (!expert) {
       return { success: false, message: "Expert not found" };
     }
 
-    // 1. 分析知识空白
-    const knowledgeGaps = await analyzeKnowledgeGaps(expert);
+    // 1. 分析 Memory Document 的知识空白
+    const knowledgeGaps = await analyzeKnowledgeGaps(expert.memoryDocument);
 
     // 2. 生成补充问题
     const followUpQuestions = await generateFollowUpQuestions(
@@ -341,148 +292,109 @@ export const createSupplementaryInterview = withAuth(
 // src/app/(expert)/memory/builder.ts
 
 /**
- * 从记忆条目构建 Memory Document
- * 类似于将多个代码文件整合成一个 CLAUDE.md
+ * 从原始内容构建 Memory Document
+ * 类似于将代码和文档整合成一个 CLAUDE.md
  */
-export async function buildMemoryDocument(expertId: number): Promise<string> {
-  const expert = await prisma.expert.findUnique({
-    where: { id: expertId },
-    include: {
-      memories: {
-        orderBy: { createdAt: "asc" }
-      }
-    }
-  });
-
-  if (!expert) throw new Error("Expert not found");
-
-  // 1. 按主题聚类记忆
-  const categorizedMemories = await categorizeMemories(expert.memories);
-
-  // 2. 使用 AI 生成结构化记忆文档
-  const memoryDocument = await generateMemoryDocument({
-    expert,
-    categorizedMemories,
-    locale: expert.locale,
-  });
-
-  return memoryDocument;
-}
-
-/**
- * 使用 AI 将分散的记忆条目整合成结构化文档
- */
-async function generateMemoryDocument(data: {
-  expert: Expert;
-  categorizedMemories: Map<string, ExpertMemory[]>;
+export async function buildMemoryDocument(params: {
+  name: string;
+  domain: string;
+  expertise: string[];
+  initialContent: string;
   locale: string;
 }): Promise<string> {
-  const { expert, categorizedMemories, locale } = data;
+  const { name, domain, expertise, initialContent, locale } = params;
 
+  // 使用 AI 分析原始内容并生成结构化的 Memory Document
   const result = await generateText({
     model: llm("claude-3-5-sonnet"),
-    system: `You are a knowledge architect. Your task is to organize scattered memory entries into a well-structured Memory Document that defines an expert's identity and knowledge.
+    system: `You are a knowledge architect. Your task is to transform raw content into a well-structured Memory Document (like CLAUDE.md) that defines an expert's identity and knowledge.
 
 The Memory Document should follow this structure:
 1. Expert Profile (name, domain, expertise, language)
 2. Core Knowledge (organized by topics)
 3. Conversation Style
 4. Knowledge Boundaries
-5. Update History
 
 Make the document clear, comprehensive, and easy for an AI to use as system context.`,
     prompt: `Create a Memory Document for this expert:
 
-Name: ${expert.name}
-Domain: ${expert.domain}
+Name: ${name}
+Domain: ${domain}
+Expertise: ${expertise.join(", ")}
 Locale: ${locale}
 
-Memory Entries (${categorizedMemories.size} categories):
-${Array.from(categorizedMemories.entries()).map(([category, memories]) => `
-## ${category}
-${memories.map(m => `- ${m.content}`).join("\n")}
-`).join("\n")}
+Initial Content:
+${initialContent}
 
 Generate a well-structured Memory Document in markdown format.`,
   });
 
   return result.text;
 }
-```
-
-#### 记忆检索和使用
-
-```typescript
-// src/app/(expert)/memory/retrieval.ts
 
 /**
- * 根据查询检索相关记忆
+ * 更新 Memory Document（增量更新）
+ * 类似于编辑 CLAUDE.md 文件
  */
-export async function retrieveRelevantMemories(
-  expertId: number,
-  query: string,
-  options: {
-    limit?: number;
-    categories?: string[];
-  } = {}
-): Promise<ExpertMemory[]> {
-  const { limit = 10, categories } = options;
+export async function updateMemoryDocument(params: {
+  currentDocument: string;
+  newKnowledge: string;
+  updateReason: string;
+  locale: string;
+}): Promise<string> {
+  const { currentDocument, newKnowledge, updateReason, locale } = params;
 
-  // 1. 生成查询向量
-  const queryEmbedding = await generateEmbedding(query);
+  const result = await generateText({
+    model: llm("claude-3-5-sonnet"),
+    system: `You are maintaining a Memory Document (like CLAUDE.md). Integrate new knowledge while preserving the existing structure and style.`,
+    prompt: `Current Memory Document:
+${currentDocument}
 
-  // 2. 向量相似度搜索
-  const memories = await prisma.$queryRaw<ExpertMemory[]>`
-    SELECT
-      id, expert_id, content, category, tags, source,
-      metadata, created_at, updated_at,
-      1 - (embedding <=> ${queryEmbedding}::halfvec) as similarity
-    FROM expert_memory
-    WHERE expert_id = ${expertId}
-      ${categories ? Prisma.sql`AND category = ANY(${categories})` : Prisma.empty}
-    ORDER BY embedding <=> ${queryEmbedding}::halfvec
-    LIMIT ${limit}
-  `;
+New Knowledge to Integrate:
+${newKnowledge}
 
-  return memories;
-}
+Update Reason: ${updateReason}
 
-/**
- * 增强专家对话上下文
- * 在对话时注入相关记忆
- */
-export async function enhanceExpertContext(
-  expertId: number,
-  conversationHistory: Message[],
-  currentQuery: string
-): Promise<string> {
-  // 1. 获取专家基础信息
-  const expert = await prisma.expert.findUnique({
-    where: { id: expertId }
+Please update the Memory Document by:
+1. Integrating the new knowledge into appropriate sections
+2. Maintaining consistency in style and terminology
+3. Updating Knowledge Boundaries if needed
+
+Output the complete updated Memory Document.`,
   });
 
-  if (!expert) throw new Error("Expert not found");
+  return result.text;
+}
+```
 
-  // 2. 检索相关记忆
-  const relevantMemories = await retrieveRelevantMemories(
-    expertId,
-    currentQuery,
-    { limit: 5 }
-  );
+#### 记忆文档使用
 
-  // 3. 构建增强上下文
-  const enhancedContext = `
-# Memory Document
-${expert.memoryDocument}
+```typescript
+// src/app/(expert)/chat/system-prompt.ts
 
-# Relevant Memories for Current Query
-${relevantMemories.map((m, i) => `
-## Relevant Memory ${i + 1} (${m.category})
-${m.content}
-`).join("\n")}
-`;
+/**
+ * 构建专家对话的系统提示词
+ * 使用 Memory Document 作为完整上下文（类似 Claude Code 使用 CLAUDE.md）
+ */
+export function buildExpertSystemPrompt(expert: Expert): string {
+  return `${expert.memoryDocument}
 
-  return enhancedContext;
+---
+
+You are ${expert.name}, an expert in ${expert.domain}.
+
+The Memory Document above is your core knowledge base. It defines your identity, expertise, and knowledge boundaries. Use it to:
+- Answer questions based on your documented knowledge
+- Maintain consistency with your expertise and style
+- Acknowledge your knowledge boundaries honestly
+- Provide valuable insights and practical advice
+
+${expert.allowTools ? `You have access to tools like deep research and search. Use them when:
+- Questions require current information beyond your knowledge
+- Complex problems need thorough analysis
+- Additional context would improve your answer` : ""}
+
+Remember: The Memory Document is your source of truth. Stay true to it while being helpful and insightful.`;
 }
 ```
 
@@ -503,11 +415,11 @@ export async function POST(req: Request) {
     return new Response("Expert not found", { status: 404 });
   }
 
-  // 2. 获取当前用户查询
-  const currentQuery = messages[messages.length - 1].content;
+  // 2. 构建系统提示词（使用 Memory Document）
+  const systemPrompt = buildExpertSystemPrompt(expert);
 
-  // 3. 增强上下文 (Memory Document + 相关记忆)
-  const enhancedContext = await enhanceExpertContext(
+  // 3. 流式响应
+  const result = streamText({
     expertId,
     messages,
     currentQuery
@@ -665,64 +577,126 @@ Identify:
 
 ## 三、用户体验设计
 
-### 3.1 专家创建流程
+### 3.1 专家创建流程（简化智能化）
 
 ```
-1. 创建专家
-   ├─ 输入基本信息 (名称、领域、语言)
-   └─ 上传初始内容
-      ├─ 文本输入
-      ├─ 文件上传 (PDF, Word, Markdown, etc.)
-      └─ 语音录入
-
-2. 初始分析
-   ├─ AI 分析内容
-   ├─ 提取关键知识点
-   └─ 生成 Memory Document v1
-
-3. 补充访谈 (可选)
-   ├─ AI 分析知识完整度
-   ├─ 生成补充问题
-   └─ 用户回答 → 更新记忆
-
-4. 完成
-   ├─ 预览专家人设
-   ├─ 测试对话
-   └─ 发布/分享
+用户操作：
+┌─────────────────────────────────────┐
+│ 1. 添加知识源                        │
+│    ├─ 上传文件 (PDF, txt, md, etc.) │
+│    ├─ 添加网站链接                   │
+│    └─ 粘贴文本内容                   │
+│    限制：最多 10 个源                │
+└─────────────────────────────────────┘
+           ↓ 点击"下一步"
+┌─────────────────────────────────────┐
+│ AI 自动处理（后台）                  │
+│    ├─ 提取和清洗内容                │
+│    ├─ 分析知识结构                  │
+│    └─ 生成 Memory Document          │
+└─────────────────────────────────────┘
+           ↓ 自动跳转
+┌─────────────────────────────────────┐
+│ 2. 记忆管理界面                      │
+│    Tab 1: Memory Document           │
+│       ├─ 查看生成的文档              │
+│       └─ 可直接编辑调整              │
+│    Tab 2: 知识分析                  │
+│       ├─ 7 维度完整度评分           │
+│       ├─ 改进建议                   │
+│       └─ 智能推荐是否需要补充访谈    │
+└─────────────────────────────────────┘
+           ↓ (可选)
+┌─────────────────────────────────────┐
+│ 3. 补充访谈                          │
+│    ├─ AI 生成针对性问题              │
+│    ├─ 用户回答（文本/语音）          │
+│    └─ AI 更新 Memory Document       │
+└─────────────────────────────────────┘
+           ↓ 返回步骤 2
+     查看更新后的状态
 ```
 
-### 3.2 记忆管理界面
+**智能化体现**：
+- 用户只需上传源，AI 自动完成分析和文档生成
+- 智能评估知识完整度，主动发现空白
+- 根据评分自动推荐是否需要补充访谈
+- 整个流程简洁流畅，最少 2 步即可完成
+
+### 3.2 记忆管理界面（核心管理中枢）
 
 ```
-专家详情页
-├─ Memory Document 查看/编辑
-├─ 记忆条目列表
-│  ├─ 按主题分类
-│  ├─ 按来源筛选
-│  └─ 搜索功能
-├─ 知识图谱可视化 (未来)
-└─ 更新建议
-   ├─ 待补充的问题
-   └─ 一键开启访谈
+记忆管理界面（专家详情页）
+├─ 左侧栏：专家信息
+│  ├─ 头像和名称
+│  ├─ 领域
+│  ├─ 知识完整度统计
+│  └─ 对话次数统计
+│
+├─ Tab 1: Memory Document
+│  ├─ 左栏：Markdown 编辑器
+│  │  ├─ 工具栏（加粗、斜体、标题等）
+│  │  └─ 编辑区域
+│  └─ 右栏：实时预览
+│     └─ 渲染的 Markdown 内容
+│
+└─ Tab 2: 知识分析
+   ├─ 整体评分
+   │  ├─ 圆形进度条（如 85%）
+   │  └─ 整体评估说明
+   ├─ 7 维度详细评分
+   │  ├─ 基础理论 (90%)
+   │  ├─ 实践经验 (85%)
+   │  ├─ 行业洞察 (70%) ← 低分高亮
+   │  ├─ 问题解决 (88%)
+   │  ├─ 工具方法论 (88%)
+   │  ├─ 沟通表达 (90%)
+   │  └─ 持续学习 (75%)
+   ├─ 改进建议卡片
+   │  └─ 具体的改进方向和建议
+   └─ 行动按钮
+      └─ "开始补充访谈" (评分低时高亮显示)
 ```
 
-### 3.3 对话界面
+**使用场景**：
+- 创建后首次进入：查看 AI 生成的结果
+- 日常管理：随时查看和编辑 Memory Document
+- 持续优化：查看知识分析，触发补充访谈
+
+### 3.3 对话界面（实际使用）
 
 ```
-专家对话页
-├─ 专家信息卡片
-│  ├─ 名称和领域
-│  ├─ 知识覆盖度
-│  └─ 最近更新时间
-├─ 对话区域
-│  ├─ 支持文本输入
-│  ├─ 支持语音输入
-│  ├─ 支持文件上传
-│  └─ 工具调用展示
-└─ 侧边栏
-   ├─ 相关记忆展示
-   └─ 知识来源引用
+专家对话界面
+├─ 左侧栏：专家信息
+│  ├─ 头像和名称
+│  ├─ 领域和专长
+│  ├─ 知识完整度
+│  └─ 快速操作菜单
+│
+├─ 中间：对话区域
+│  ├─ 欢迎消息
+│  ├─ 快速问题建议
+│  ├─ 消息列表
+│  │  ├─ 用户消息（右侧）
+│  │  └─ 专家回复（左侧）
+│  ├─ 工具调用展示
+│  │  └─ Deep Research 卡片
+│  └─ 输入框
+│     ├─ 文本输入
+│     ├─ 语音按钮
+│     └─ 文件附件
+│
+└─ 右侧栏：上下文信息
+   ├─ 相关记忆
+   │  └─ 本次对话使用的记忆片段
+   └─ 工具使用记录
+      └─ 调用的工具和结果
 ```
+
+**交互亮点**：
+- 实时显示 AI 使用的记忆和工具
+- 透明化 AI 的思考过程
+- 多模态输入支持
 
 ---
 
@@ -736,13 +710,13 @@ Identify:
 - ✅ 数据库 Schema 设计
 - ✅ 专家创建和初始导入
 - ✅ Memory Document 生成
-- ✅ 记忆条目管理 (CRUD)
+- ✅ Memory Document 查看/编辑
 - ✅ 基础对话功能
 
 **技术要点**:
 - 复用 Persona Import 的文件处理逻辑
-- 实现 Memory Document 构建器
-- 实现向量嵌入和相似度搜索
+- 实现 Memory Document 构建器（使用 AI 从原始内容生成）
+- 实现 Markdown 编辑器集成
 
 **估计工期**: 2 周
 
@@ -754,12 +728,12 @@ Identify:
 - ✅ 知识空白分析
 - ✅ 补充问题生成
 - ✅ 访谈流程实现
-- ✅ 记忆自动更新
+- ✅ Memory Document 自动更新
 
 **技术要点**:
 - 复用 Follow-up Interview 逻辑
-- 实现知识完整度评估
-- 实现对话分析和记忆提取
+- 实现知识完整度评估（7维度分析）
+- 实现对话分析和 Memory Document 增量更新
 
 **估计工期**: 1.5 周
 
@@ -823,9 +797,9 @@ Identify:
 
 1. **人类可读**: 使用 Markdown 格式，人类可以直接阅读和编辑
 2. **AI 友好**: 结构化组织，方便 AI 理解和使用
-3. **版本控制**: 记录更新历史，支持回溯
-4. **模块化**: 按主题组织，便于局部更新
-5. **元数据丰富**: 包含知识边界、更新时间等元信息
+3. **模块化**: 按主题组织，便于局部更新
+4. **元数据丰富**: 包含知识边界等元信息
+5. **版本控制**: 通过数据库的 updatedAt 字段记录更新时间
 
 ### 5.2 向量嵌入策略
 
@@ -856,9 +830,9 @@ async function generateEmbedding(text: string): Promise<number[]> {
 ### 5.3 性能优化
 
 1. **Memory Document 缓存**: 在内存中缓存常用专家的 Memory Document
-2. **向量检索优化**: 使用 pgvector 的索引加速相似度搜索
-3. **批量嵌入生成**: 批量处理多个记忆条目的嵌入生成
-4. **增量更新**: 只更新变化的部分，不重新生成整个文档
+2. **向量检索优化**: 使用 pgvector 的索引加速专家匹配和相似专家推荐
+3. **增量更新**: Memory Document 增量更新，避免重新生成整个文档
+4. **智能压缩**: 对过长的 Memory Document 进行智能压缩和结构优化
 
 ### 5.4 安全和隐私
 
@@ -967,7 +941,7 @@ async function migratePersonaToExpert(personaId: number) {
 
 ## 九、总结
 
-专家智能体系统以**记忆管理为核心**,通过结构化的 Memory Document 定义专家身份,通过持续的交互和访谈完善专家知识,通过向量检索和工具集成增强专家能力。
+专家智能体系统以**记忆管理为核心**，通过结构化的 Memory Document（类似 CLAUDE.md）定义专家身份，通过持续的交互和访谈完善专家知识，通过工具集成（Deep Research）增强专家能力。
 
 **核心优势**:
 - 简化的记忆管理模型 (类似 CLAUDE.md)
