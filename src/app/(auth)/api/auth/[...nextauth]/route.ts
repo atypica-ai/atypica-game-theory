@@ -20,7 +20,7 @@ async function handler(req: NextRequest, context: any) {
   ]);
   const headersList = await headers();
   const referer = headersList.get("referer");
-  authLogger.info({
+  authLogger.debug({
     method: req.method,
     pathname: req.nextUrl.pathname,
     referer,
