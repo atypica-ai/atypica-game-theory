@@ -1,6 +1,6 @@
 "use client";
-import type { Sage } from "@/prisma/client";
 import { Button } from "@/components/ui/button";
+import type { Sage } from "@/prisma/client";
 import { Brain, MessageCircle, Plus, RefreshCw } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
@@ -22,7 +22,7 @@ export function SagesListClient({
             <p className="text-zinc-600 dark:text-zinc-400 mt-1">{t("subtitle")}</p>
           </div>
           <Button asChild>
-            <Link href="/sage">
+            <Link href="/sage/create">
               <Plus className="size-4" />
               {t("createNew")}
             </Link>
@@ -36,9 +36,11 @@ export function SagesListClient({
             <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
               {t("noSages")}
             </h3>
-            <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-6">{t("noSagesDescription")}</p>
+            <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-6">
+              {t("noSagesDescription")}
+            </p>
             <Button asChild>
-              <Link href="/sage">
+              <Link href="/sage/create">
                 <Plus className="size-4" />
                 {t("createFirstSage")}
               </Link>

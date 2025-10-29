@@ -2,21 +2,21 @@ import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
-import SageHomePageClient from "./SageHomePageClient";
+import { CreateSageForm } from "./CreateSageForm";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("Sage.create");
   return { title: t("title") };
 }
 
-async function SageHomePage() {
-  return <SageHomePageClient isUploadEnabled={false} />;
+async function SageCreatePage() {
+  return <CreateSageForm />;
 }
 
-export default async function SageHomePageWithLoading() {
+export default async function SageCreatePageWithLoading() {
   return (
     <Suspense fallback={<PageLoadingFallback />}>
-      <SageHomePage />
+      <SageCreatePage />
     </Suspense>
   );
 }

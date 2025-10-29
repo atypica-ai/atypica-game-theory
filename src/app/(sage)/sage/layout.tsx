@@ -1,9 +1,15 @@
-import { ReactNode } from "react";
+import { DefaultLayout } from "@/components/layout/DefaultLayout";
+import { FitToViewport } from "@/components/layout/FitToViewport";
+import { ReactElement } from "react";
 
 export default async function SageLayout({
   children,
 }: {
-  children: ReactNode;
+  children: ReactElement<React.ComponentProps<typeof FitToViewport>>;
 }) {
-  return children;
+  return (
+    <DefaultLayout header={true} fitToViewport={true}>
+      {children}
+    </DefaultLayout>
+  );
 }

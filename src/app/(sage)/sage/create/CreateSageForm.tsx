@@ -3,6 +3,7 @@
 import { createSage } from "@/app/(sage)/actions";
 import type { CreateSageSourceInput } from "@/app/(sage)/types";
 import { FileUploadButton, type FileUploadInfo } from "@/components/chat/FileUploadButton";
+import { FitToViewport } from "@/components/layout/FitToViewport";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -204,13 +205,11 @@ export function CreateSageForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <FitToViewport className="flex flex-col items-center justify-start p-4">
       <div className="w-full max-w-4xl bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">
-            {t("title")}
-          </h1>
+          <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">{t("title")}</h1>
           <p className="text-zinc-600 dark:text-zinc-400">{t("description")}</p>
         </div>
 
@@ -318,9 +317,7 @@ export function CreateSageForm() {
           <Button
             onClick={handleNext}
             disabled={sources.length === 0}
-            className={cn(
-              sources.length === 0 && "opacity-50 cursor-not-allowed"
-            )}
+            className={cn(sources.length === 0 && "opacity-50 cursor-not-allowed")}
           >
             {t("next")}
             <ArrowRightIcon className="size-4 ml-2" />
@@ -373,6 +370,6 @@ export function CreateSageForm() {
           </DialogContent>
         </Dialog>
       </div>
-    </div>
+    </FitToViewport>
   );
 }

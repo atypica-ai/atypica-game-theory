@@ -1,6 +1,7 @@
 "use client";
 import { createSage } from "@/app/(sage)/actions";
 import { FileUploadButton } from "@/components/chat/FileUploadButton";
+import { FitToViewport } from "@/components/layout/FitToViewport";
 import { Button } from "@/components/ui/button";
 import { useFileUploadManager } from "@/hooks/use-file-upload-manager";
 import { cn } from "@/lib/utils";
@@ -171,7 +172,7 @@ export default function SageHomePageClient({ isUploadEnabled }: SageHomePageClie
   ];
 
   return (
-    <div className="bg-white dark:bg-zinc-950">
+    <FitToViewport className="bg-white dark:bg-zinc-950">
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-24 md:py-32">
         <div className="max-w-4xl mx-auto text-center space-y-8">
@@ -296,7 +297,7 @@ export default function SageHomePageClient({ isUploadEnabled }: SageHomePageClie
                   className={cn(
                     "p-6 md:p-10 border-zinc-200 dark:border-zinc-800",
                     index % 2 === 0 && "md:border-r",
-                    index < 2 && "border-b"
+                    index < 2 && "border-b",
                   )}
                 >
                   <div className="space-y-4">
@@ -369,6 +370,6 @@ export default function SageHomePageClient({ isUploadEnabled }: SageHomePageClie
           </div>
         </div>
       </section>
-    </div>
+    </FitToViewport>
   );
 }
