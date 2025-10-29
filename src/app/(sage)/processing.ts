@@ -18,95 +18,83 @@ import {
   processInitialContent,
   resolveSageKnowledgeGaps,
   updateSageKnowledgeAnalysis,
-  updateSageProcessingStatus,
 } from "./lib";
-import { SAGE_PROCESSING_STEPS } from "./types";
 
 /**
- * Background processing for new sage creation
- * Steps:
- * 1. Process each source (extract text from file/text/url)
- * 2. Extract knowledge from all sources
- * 3. Build Memory Document
- * 4. Analyze knowledge completeness
- * 5. Generate embedding
+ * Process all pending sources for a sage
+ * Just extracts text from files/urls/text sources
  */
-export async function processNewSage({
+export async function processSourcesOnly(sageId: number): Promise<void> {
+  const logger = rootLogger.child({ sageId });
+
+  try {
+    const sage = await getSageById(sageId);
+    if (!sage) {
+      throw new Error(`Sage ${sageId} not found`);
+    }
+
+    // Get all pending sources
+    const pendingSources = await prisma.sageSource.findMany({
+      where: { sageId, status: "pending" },
+      orderBy: { createdAt: "asc" },
+    });
+
+    logger.info({
+      msg: "Processing sources",
+      pendingCount: pendingSources.length,
+    });
+
+    for (let i = 0; i < pendingSources.length; i++) {
+      const source = pendingSources[i];
+      logger.info({
+        msg: `Processing source ${i + 1}/${pendingSources.length}`,
+        sourceId: source.id,
+      });
+
+      try {
+        await processSource(source.id, logger);
+      } catch (error) {
+        logger.error({ msg: "Failed to process source", sourceId: source.id, error });
+        // Continue with other sources even if one fails
+      }
+    }
+
+    logger.info({ msg: "Source processing completed" });
+  } catch (error) {
+    logger.error({
+      msg: "Source processing failed",
+      error: (error as Error).message,
+    });
+    throw error;
+  }
+}
+
+/**
+ * Extract knowledge and build memory document from completed sources
+ */
+export async function extractKnowledgeOnly({
   sageId,
   locale,
-  stopAfterStep,
 }: {
   sageId: number;
   locale: Locale;
-  stopAfterStep?: string; // Stop after this step (e.g., "parse_content")
 }): Promise<void> {
   const logger = rootLogger.child({ sageId });
   const statReport: StatReporter = (async (dimension, value, extra) => {
     rootLogger.info({
       msg: `[LIMITED FREE] statReport: ${dimension}=${value}`,
       extra,
-      note: "processNewSage is currently free - tokens not deducted",
+      note: "extractKnowledgeOnly is currently free - tokens not deducted",
     });
   }) as StatReporter;
 
   try {
-    // Get sage data
     const sage = await getSageById(sageId);
-
     if (!sage) {
       throw new Error(`Sage ${sageId} not found`);
     }
 
-    // Get current processing status to determine where to resume
-    const currentStep = sage.extra?.processing?.step;
-
-    logger.info({
-      msg: "Starting/Resuming sage processing",
-      name: sage.name,
-      domain: sage.domain,
-      currentStep,
-    });
-
-    // Step 1: Process each source to extract text
-    // Skip if we're already past this step
-    if (!currentStep || currentStep === SAGE_PROCESSING_STEPS.PARSE_CONTENT) {
-      await updateSageProcessingStatus({
-        sageId,
-        step: SAGE_PROCESSING_STEPS.PARSE_CONTENT,
-        progress: 0.1,
-      });
-
-      // Get all pending sources
-      const pendingSources = await prisma.sageSource.findMany({
-        where: { sageId, status: "pending" },
-        orderBy: { createdAt: "asc" },
-      });
-
-      logger.info({
-        msg: "Processing sources",
-        pendingCount: pendingSources.length,
-      });
-
-      for (let i = 0; i < pendingSources.length; i++) {
-        const source = pendingSources[i];
-        logger.info({ msg: `Processing source ${i + 1}/${pendingSources.length}`, sourceId: source.id });
-
-        try {
-          await processSource(source.id, logger);
-        } catch (error) {
-          logger.error({ msg: "Failed to process source", sourceId: source.id, error });
-          // Continue with other sources even if one fails
-        }
-      }
-    }
-
-    // Check if we should stop after parse_content
-    if (stopAfterStep === SAGE_PROCESSING_STEPS.PARSE_CONTENT) {
-      logger.info({ msg: "Stopping after parse_content as requested" });
-      return;
-    }
-
-    // Get all completed sources for next steps
+    // Get all completed sources
     const completedSources = await prisma.sageSource.findMany({
       where: { sageId, status: "completed" },
       orderBy: { createdAt: "asc" },
@@ -122,204 +110,172 @@ export async function processNewSage({
     const rawContent = allExtractedTexts.join("\n\n---\n\n");
 
     logger.info({
-      msg: "Sources ready for processing",
+      msg: "Extracting knowledge from sources",
       contentLength: rawContent.length,
-      completedSourcesCount: completedSources.length,
+      sourcesCount: completedSources.length,
     });
 
-    // Step 2: Process content and extract knowledge
-    // Check if memory document already exists (indicates we're past this step)
-    const needsExtraction = !sage.memoryDocument ||
-      currentStep === SAGE_PROCESSING_STEPS.PARSE_CONTENT ||
-      currentStep === SAGE_PROCESSING_STEPS.EXTRACT_KNOWLEDGE;
-
-    let allCategories: string[] = sage.expertise;
-
-    if (needsExtraction) {
-      await updateSageProcessingStatus({
-        sageId,
-        step: SAGE_PROCESSING_STEPS.EXTRACT_KNOWLEDGE,
-        progress: 0.3,
-      });
-
-      const processedContent = await processInitialContent({
-        sage: {
-          name: sage.name,
-          domain: sage.domain,
-        },
-        rawContent,
-        locale,
-      });
-
-      logger.info({
-        msg: "Content processed",
-        keyPointsCount: processedContent.keyPoints.length,
-        suggestedCategories: processedContent.suggestedCategories.length,
-        extractedContentLength: processedContent.extractedContent.length,
-      });
-
-      // Track tokens for content processing
-      if (statReport) {
-        await statReport("tokens", 0, {
-          reportedBy: "process content",
-          modelName: "gemini-2.5-flash",
-          userId: sage.userId,
-        });
-      }
-
-      // Update expertise with suggested categories
-      allCategories = processedContent.suggestedCategories;
-      await prisma.sage.update({
-        where: { id: sageId },
-        data: { expertise: allCategories },
-      });
-
-      // Step 3: Build Memory Document
-      await updateSageProcessingStatus({
-        sageId,
-        step: SAGE_PROCESSING_STEPS.BUILD_MEMORY_DOCUMENT,
-        progress: 0.5,
-      });
-
-      const memoryDocument = await buildMemoryDocument({
-        sage: {
-          name: sage.name,
-          domain: sage.domain,
-          expertise: allCategories,
-          locale: sage.locale,
-        },
-        content: processedContent.extractedContent,
-        locale,
-      });
-
-      logger.info({
-        msg: "Memory Document built",
-        documentLength: memoryDocument.length,
-      });
-
-      // Track tokens for memory document building
-      if (statReport) {
-        await statReport("tokens", 0, {
-          reportedBy: "build memory document",
-          modelName: "claude-sonnet-4-5",
-          userId: sage.userId,
-        });
-      }
-
-      // Save Memory Document as first version
-      await createSageMemoryDocument({
-        sageId,
-        content: memoryDocument,
-        source: "initial",
-        changeNotes: "Initial memory document from sources",
-      });
-    }
-
-    // Re-fetch sage to get latest memoryDocument
-    const updatedSage = await getSageById(sageId);
-    if (!updatedSage?.memoryDocument) {
-      throw new Error("Memory document not available after extraction step");
-    }
-
-    // Check if we should stop after build_memory_document
-    if (stopAfterStep === SAGE_PROCESSING_STEPS.BUILD_MEMORY_DOCUMENT) {
-      logger.info({ msg: "Stopping after build_memory_document as requested" });
-      return;
-    }
-
-    // Step 4: Analyze knowledge completeness
-    // Check if analysis already exists
-    const needsAnalysis = !updatedSage.extra?.knowledgeAnalysis?.overallScore ||
-      currentStep === SAGE_PROCESSING_STEPS.PARSE_CONTENT ||
-      currentStep === SAGE_PROCESSING_STEPS.EXTRACT_KNOWLEDGE ||
-      currentStep === SAGE_PROCESSING_STEPS.BUILD_MEMORY_DOCUMENT ||
-      currentStep === SAGE_PROCESSING_STEPS.ANALYZE_COMPLETENESS;
-
-    if (needsAnalysis) {
-      await updateSageProcessingStatus({
-        sageId,
-        step: SAGE_PROCESSING_STEPS.ANALYZE_COMPLETENESS,
-        progress: 0.7,
-      });
-
-      const analysis = await analyzeKnowledgeCompleteness({
-        sage: {
-          name: updatedSage.name,
-          domain: updatedSage.domain,
-          expertise: allCategories,
-        },
-        memoryDocument: updatedSage.memoryDocument,
-        locale,
-      });
-
-      logger.info({
-        msg: "Knowledge analysis completed",
-        overallScore: analysis.overallScore,
-        dimensionsCount: analysis.dimensions.length,
-        knowledgeGapsCount: analysis.knowledgeGaps.length,
-        shouldInterview: analysis.shouldInterview,
-      });
-
-      // Track tokens for knowledge analysis
-      if (statReport) {
-        await statReport("tokens", 0, {
-          reportedBy: "analyze knowledge",
-          modelName: "claude-sonnet-4",
-          userId: updatedSage.userId,
-        });
-      }
-
-      // Save analysis
-      await updateSageKnowledgeAnalysis({ sageId, analysis });
-
-      // Create knowledge gaps in database (only if they don't exist yet)
-      const existingGaps = await prisma.sageKnowledgeGap.count({
-        where: { sageId, sourceType: "analysis" },
-      });
-
-      if (existingGaps === 0 && analysis.knowledgeGaps.length > 0) {
-        await createSageKnowledgeGaps(
-          analysis.knowledgeGaps.map((gap) => ({
-            sageId,
-            area: gap.area,
-            description: gap.description,
-            severity: gap.severity,
-            impact: gap.impact,
-            sourceType: "analysis",
-            sourceDescription: "Initial knowledge analysis",
-          }))
-        );
-      }
-    }
-
-    // Mark processing complete
-    await updateSageProcessingStatus({
-      sageId,
-      step: SAGE_PROCESSING_STEPS.ANALYZE_COMPLETENESS,
-      progress: 1,
+    // Process content and extract knowledge
+    const processedContent = await processInitialContent({
+      sage: {
+        name: sage.name,
+        domain: sage.domain,
+      },
+      rawContent,
+      locale,
     });
 
     logger.info({
-      msg: "Sage processing completed successfully",
-      overallScore: updatedSage.extra?.knowledgeAnalysis?.overallScore,
+      msg: "Content processed",
+      keyPointsCount: processedContent.keyPoints.length,
+      suggestedCategories: processedContent.suggestedCategories.length,
     });
+
+    if (statReport) {
+      await statReport("tokens", 0, {
+        reportedBy: "extract knowledge",
+        modelName: "gemini-2.5-flash",
+        userId: sage.userId,
+      });
+    }
+
+    // Update expertise with suggested categories
+    const allCategories = processedContent.suggestedCategories;
+    await prisma.sage.update({
+      where: { id: sageId },
+      data: { expertise: allCategories },
+    });
+
+    // Build Memory Document
+    const memoryDocument = await buildMemoryDocument({
+      sage: {
+        name: sage.name,
+        domain: sage.domain,
+        expertise: allCategories,
+        locale: sage.locale,
+      },
+      content: processedContent.extractedContent,
+      locale,
+    });
+
+    logger.info({
+      msg: "Memory Document built",
+      documentLength: memoryDocument.length,
+    });
+
+    if (statReport) {
+      await statReport("tokens", 0, {
+        reportedBy: "build memory document",
+        modelName: "claude-sonnet-4-5",
+        userId: sage.userId,
+      });
+    }
+
+    // Save Memory Document as first version
+    await createSageMemoryDocument({
+      sageId,
+      content: memoryDocument,
+      source: "initial",
+      changeNotes: "Initial memory document from sources",
+    });
+
+    logger.info({ msg: "Knowledge extraction completed successfully" });
   } catch (error) {
     logger.error({
-      msg: "Sage processing failed",
+      msg: "Knowledge extraction failed",
       error: (error as Error).message,
-      stack: (error as Error).stack,
     });
-
-    await updateSageProcessingStatus({
-      sageId,
-      error: (error as Error).message,
-      progress: 0,
-    });
-
     throw error;
   }
 }
 
+/**
+ * Analyze sage knowledge completeness
+ */
+export async function analyzeKnowledgeOnly({
+  sageId,
+  locale,
+}: {
+  sageId: number;
+  locale: Locale;
+}): Promise<void> {
+  const logger = rootLogger.child({ sageId });
+  const statReport: StatReporter = (async (dimension, value, extra) => {
+    rootLogger.info({
+      msg: `[LIMITED FREE] statReport: ${dimension}=${value}`,
+      extra,
+      note: "analyzeKnowledgeOnly is currently free - tokens not deducted",
+    });
+  }) as StatReporter;
+
+  try {
+    const sage = await getSageById(sageId);
+    if (!sage) {
+      throw new Error(`Sage ${sageId} not found`);
+    }
+
+    if (!sage.memoryDocument) {
+      throw new Error("Memory document not available");
+    }
+
+    logger.info({ msg: "Analyzing knowledge completeness" });
+
+    const analysis = await analyzeKnowledgeCompleteness({
+      sage: {
+        name: sage.name,
+        domain: sage.domain,
+        expertise: sage.expertise,
+      },
+      memoryDocument: sage.memoryDocument,
+      locale,
+    });
+
+    logger.info({
+      msg: "Knowledge analysis completed",
+      overallScore: analysis.overallScore,
+      dimensionsCount: analysis.dimensions.length,
+      knowledgeGapsCount: analysis.knowledgeGaps.length,
+    });
+
+    if (statReport) {
+      await statReport("tokens", 0, {
+        reportedBy: "analyze knowledge",
+        modelName: "claude-sonnet-4",
+        userId: sage.userId,
+      });
+    }
+
+    // Save analysis
+    await updateSageKnowledgeAnalysis({ sageId, analysis });
+
+    // Create knowledge gaps in database
+    const existingGaps = await prisma.sageKnowledgeGap.count({
+      where: { sageId, sourceType: "analysis" },
+    });
+
+    if (existingGaps === 0 && analysis.knowledgeGaps.length > 0) {
+      await createSageKnowledgeGaps(
+        analysis.knowledgeGaps.map((gap) => ({
+          sageId,
+          area: gap.area,
+          description: gap.description,
+          severity: gap.severity,
+          impact: gap.impact,
+          sourceType: "analysis",
+          sourceDescription: "Initial knowledge analysis",
+        })),
+      );
+    }
+
+    logger.info({ msg: "Analysis completed successfully" });
+  } catch (error) {
+    logger.error({
+      msg: "Analysis failed",
+      error: (error as Error).message,
+    });
+    throw error;
+  }
+}
 
 /**
  * Update Memory Document from supplementary interview
@@ -418,8 +374,10 @@ export async function updateMemoryDocumentFromInterview({
       const gapAreaLower = gap.area.toLowerCase();
 
       // Check if gap area is discussed in transcript
-      if (transcriptLower.includes(gapAreaLower) ||
-          transcriptLower.includes(gap.description.toLowerCase())) {
+      if (
+        transcriptLower.includes(gapAreaLower) ||
+        transcriptLower.includes(gap.description.toLowerCase())
+      ) {
         resolvedGapIds.push(gap.id);
       }
     }

@@ -10,7 +10,11 @@ import { waitUntil } from "@vercel/functions";
 import { getLocale } from "next-intl/server";
 import { revalidatePath } from "next/cache";
 import { generateSageToken, getSageById, getSageByToken } from "./lib";
-import { processNewSage } from "./processing";
+import {
+  processSourcesOnly,
+  extractKnowledgeOnly,
+  analyzeKnowledgeOnly,
+} from "./processing";
 import type { CreateSageInput, UpdateSageInput } from "./types";
 import { createSageInputSchema, updateSageInputSchema } from "./types";
 
@@ -27,9 +31,6 @@ export async function createSage(
     try {
       // Validate input
       const validated = createSageInputSchema.parse(input);
-
-      // Get locale
-      const locale = await getLocale();
 
       // Create sage record with sources
       const sage = await prisma.sage.create({
@@ -74,14 +75,7 @@ export async function createSage(
         title: `Sage: ${validated.name}`,
       });
 
-      // Trigger background processing (only parse sources initially)
-      waitUntil(
-        processNewSage({
-          sageId: sage.id,
-          locale,
-          stopAfterStep: "parse_content",
-        }),
-      );
+      // No automatic processing - user must trigger manually
 
       return {
         success: true,
@@ -194,84 +188,6 @@ export async function updateSage(
 }
 
 /**
- * Retry failed sage processing
- */
-export async function retrySageProcessing(
-  sageId: number,
-): Promise<ServerActionResult<void>> {
-  return withAuth(async (user) => {
-    try {
-      // Check ownership
-      const sage = await getSageById(sageId);
-
-      if (!sage) {
-        return {
-          success: false,
-          message: "Sage not found",
-          code: "not_found",
-        };
-      }
-
-      if (sage.userId !== user.id) {
-        return {
-          success: false,
-          message: "Unauthorized",
-          code: "unauthorized",
-        };
-      }
-
-      // Check if there's an error in processing
-      if (!sage.extra?.processing?.error) {
-        return {
-          success: false,
-          message: "No processing error found",
-          code: "forbidden",
-        };
-      }
-
-      const locale = await getLocale();
-
-      // Clear the error and trigger retry using raw SQL
-      const updatedExtra = {
-        ...sage.extra,
-        processing: {
-          ...sage.extra.processing,
-          error: undefined,
-        },
-      };
-
-      await prisma.$executeRaw`
-        UPDATE "Sage"
-        SET "extra" = ${JSON.stringify(updatedExtra)}::jsonb,
-            "updatedAt" = NOW()
-        WHERE "id" = ${sageId}
-      `;
-
-      rootLogger.info({
-        msg: "Retrying sage processing",
-        sageId,
-        userId: user.id,
-      });
-
-      // Trigger background processing
-      waitUntil(processNewSage({ sageId, locale }));
-
-      return {
-        success: true,
-        data: undefined,
-      };
-    } catch (error) {
-      rootLogger.error("Failed to retry sage processing:", error);
-      return {
-        success: false,
-        message: "Failed to retry processing",
-        code: "internal_server_error",
-      };
-    }
-  });
-}
-
-/**
  * Delete a sage
  */
 export async function deleteSage(sageId: number): Promise<ServerActionResult<void>> {
@@ -362,60 +278,46 @@ export async function listMySages(): Promise<
 // ===== Knowledge Analysis =====
 
 /**
- * Trigger knowledge analysis for a sage
- * Analyzes Memory Document and identifies gaps
+ * Analyze sage knowledge completeness
  */
 export async function analyzeSageKnowledge(
   sageId: number,
-): Promise<ServerActionResult<{ analysisId: string }>> {
+): Promise<ServerActionResult<void>> {
   return withAuth(async (user) => {
-    try {
-      // Check ownership
-      const sage = await getSageById(sageId);
+    const sage = await getSageById(sageId);
 
-      if (!sage) {
-        return {
-          success: false,
-          message: "Sage not found",
-          code: "not_found",
-        };
-      }
-
-      if (sage.userId !== user.id) {
-        return {
-          success: false,
-          message: "Unauthorized",
-          code: "unauthorized",
-        };
-      }
-
-      if (!sage.memoryDocument) {
-        return {
-          success: false,
-          message: "Memory document not ready",
-          code: "forbidden",
-        };
-      }
-
-      const locale = await getLocale();
-
-      // Trigger background processing (will resume from where it left off)
-      waitUntil(processNewSage({ sageId, locale }));
-
-      revalidatePath(`/sage/${sage.token}`);
-
-      return {
-        success: true,
-        data: { analysisId: `analysis_${Date.now()}` },
-      };
-    } catch (error) {
-      rootLogger.error("Failed to trigger knowledge analysis:", error);
+    if (!sage) {
       return {
         success: false,
-        message: "Failed to trigger knowledge analysis",
-        code: "internal_server_error",
+        message: "Sage not found",
+        code: "not_found",
       };
     }
+
+    if (sage.userId !== user.id) {
+      return {
+        success: false,
+        message: "Unauthorized",
+        code: "unauthorized",
+      };
+    }
+
+    if (!sage.memoryDocument) {
+      return {
+        success: false,
+        message: "Memory document not ready",
+        code: "forbidden",
+      };
+    }
+
+    const locale = await getLocale();
+
+    // Trigger background analysis only
+    waitUntil(analyzeKnowledgeOnly({ sageId, locale }));
+
+    revalidatePath(`/sage/${sage.token}`);
+
+    return { success: true, data: undefined };
   });
 }
 
@@ -741,8 +643,41 @@ export async function createOrGetSageChat(sageId: number): Promise<
 }
 
 /**
- * Manually trigger knowledge extraction (Step 2-3)
- * Only processes extract_knowledge and build_memory_document
+ * Process all pending sources for a sage
+ */
+export async function processSageSources(
+  sageId: number,
+): Promise<ServerActionResult<void>> {
+  return withAuth(async (user) => {
+    const sage = await getSageById(sageId);
+
+    if (!sage) {
+      return {
+        success: false,
+        message: "Sage not found",
+        code: "not_found",
+      };
+    }
+
+    if (sage.userId !== user.id) {
+      return {
+        success: false,
+        message: "Not authorized",
+        code: "forbidden",
+      };
+    }
+
+    // Trigger background processing of sources only
+    waitUntil(processSourcesOnly(sageId));
+
+    revalidatePath(`/sage/${sage.token}`);
+
+    return { success: true, data: undefined };
+  });
+}
+
+/**
+ * Extract knowledge and build memory document from completed sources
  */
 export async function extractSageKnowledge(
   sageId: number,
@@ -768,8 +703,8 @@ export async function extractSageKnowledge(
 
     const locale = await getLocale();
 
-    // Trigger background processing (will resume from where it left off)
-    waitUntil(processNewSage({ sageId, locale }));
+    // Trigger background knowledge extraction
+    waitUntil(extractKnowledgeOnly({ sageId, locale }));
 
     revalidatePath(`/sage/${sage.token}`);
 

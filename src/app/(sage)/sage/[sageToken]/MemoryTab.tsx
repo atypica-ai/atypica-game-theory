@@ -21,13 +21,12 @@ export function MemoryTab({ sage }: { sage: SageWithExtra }) {
   const [isExtracting, setIsExtracting] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
-  const processing = sage.extra?.processing;
   const hasMemoryDocument = !!sage.memoryDocument;
   const hasAnalysis = !!sage.extra?.knowledgeAnalysis?.overallScore;
 
-  // Check if all sources are completed
-  const canExtract = processing?.step === "parse_content" && processing?.progress === 1;
-  const canAnalyze = hasMemoryDocument && !hasAnalysis;
+  // Simple conditions: no complex state checking
+  const canExtract = !hasMemoryDocument; // Can extract if no memory document yet
+  const canAnalyze = hasMemoryDocument && !hasAnalysis; // Can analyze if has memory but no analysis
 
   const handleExtractKnowledge = useCallback(async () => {
     setIsExtracting(true);
