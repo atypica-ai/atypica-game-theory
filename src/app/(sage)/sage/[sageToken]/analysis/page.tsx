@@ -1,10 +1,10 @@
 import authOptions from "@/app/(auth)/authOptions";
 import { getServerSession } from "next-auth";
 import { forbidden, notFound } from "next/navigation";
-import { getSageByToken } from "../../lib";
-import { MemoryTab } from "./MemoryTab";
+import { getSageByToken } from "../../../lib";
+import { AnalysisTab } from "./AnalysisTab";
 
-export default async function SageMemoryPage({
+export default async function SageAnalysisPage({
   params,
 }: {
   params: Promise<{ sageToken: string }>;
@@ -27,5 +27,5 @@ export default async function SageMemoryPage({
     forbidden();
   }
 
-  return <MemoryTab sage={sage} />;
+  return <AnalysisTab sage={sage} />;
 }

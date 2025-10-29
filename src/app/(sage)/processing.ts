@@ -34,9 +34,11 @@ import { SAGE_PROCESSING_STEPS } from "./types";
 export async function processNewSage({
   sageId,
   locale,
+  stopAfterStep,
 }: {
   sageId: number;
   locale: Locale;
+  stopAfterStep?: string; // Stop after this step (e.g., "parse_content")
 }): Promise<void> {
   const logger = rootLogger.child({ sageId });
   const statReport: StatReporter = (async (dimension, value, extra) => {
@@ -96,6 +98,12 @@ export async function processNewSage({
           // Continue with other sources even if one fails
         }
       }
+    }
+
+    // Check if we should stop after parse_content
+    if (stopAfterStep === SAGE_PROCESSING_STEPS.PARSE_CONTENT) {
+      logger.info({ msg: "Stopping after parse_content as requested" });
+      return;
     }
 
     // Get all completed sources for next steps
@@ -211,6 +219,12 @@ export async function processNewSage({
     const updatedSage = await getSageById(sageId);
     if (!updatedSage?.memoryDocument) {
       throw new Error("Memory document not available after extraction step");
+    }
+
+    // Check if we should stop after build_memory_document
+    if (stopAfterStep === SAGE_PROCESSING_STEPS.BUILD_MEMORY_DOCUMENT) {
+      logger.info({ msg: "Stopping after build_memory_document as requested" });
+      return;
     }
 
     // Step 4: Analyze knowledge completeness

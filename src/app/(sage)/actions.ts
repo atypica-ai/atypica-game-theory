@@ -74,8 +74,14 @@ export async function createSage(
         title: `Sage: ${validated.name}`,
       });
 
-      // Trigger background processing
-      waitUntil(processNewSage({ sageId: sage.id, locale }));
+      // Trigger background processing (only parse sources initially)
+      waitUntil(
+        processNewSage({
+          sageId: sage.id,
+          locale,
+          stopAfterStep: "parse_content",
+        }),
+      );
 
       return {
         success: true,
@@ -391,42 +397,16 @@ export async function analyzeSageKnowledge(
         };
       }
 
-      // Trigger analysis in background
-      const analysisId = `analysis_${Date.now()}`;
-
       const locale = await getLocale();
 
-      waitUntil(
-        (async () => {
-          const { analyzeKnowledgeCompleteness, updateSageKnowledgeAnalysis } = await import(
-            "./lib"
-          );
+      // Trigger background processing (will resume from where it left off)
+      waitUntil(processNewSage({ sageId, locale }));
 
-          try {
-            const analysis = await analyzeKnowledgeCompleteness({
-              sage: {
-                name: sage.name,
-                domain: sage.domain,
-                expertise: sage.expertise,
-              },
-              memoryDocument: sage.memoryDocument,
-              locale,
-            });
-
-            await updateSageKnowledgeAnalysis({ sageId, analysis });
-
-            rootLogger.info(
-              `Completed knowledge analysis for sage ${sageId}, score: ${analysis.overallScore}`,
-            );
-          } catch (error) {
-            rootLogger.error(`Failed to analyze knowledge for sage ${sageId}:`, error);
-          }
-        })(),
-      );
+      revalidatePath(`/sage/${sage.token}`);
 
       return {
         success: true,
-        data: { analysisId },
+        data: { analysisId: `analysis_${Date.now()}` },
       };
     } catch (error) {
       rootLogger.error("Failed to trigger knowledge analysis:", error);
@@ -759,3 +739,41 @@ export async function createOrGetSageChat(sageId: number): Promise<
     }
   });
 }
+
+/**
+ * Manually trigger knowledge extraction (Step 2-3)
+ * Only processes extract_knowledge and build_memory_document
+ */
+export async function extractSageKnowledge(
+  sageId: number,
+): Promise<ServerActionResult<void>> {
+  return withAuth(async (user) => {
+    const sage = await getSageById(sageId);
+
+    if (!sage) {
+      return {
+        success: false,
+        message: "Sage not found",
+        code: "not_found",
+      };
+    }
+
+    if (sage.userId !== user.id) {
+      return {
+        success: false,
+        message: "Not authorized",
+        code: "forbidden",
+      };
+    }
+
+    const locale = await getLocale();
+
+    // Trigger background processing (will resume from where it left off)
+    waitUntil(processNewSage({ sageId, locale }));
+
+    revalidatePath(`/sage/${sage.token}`);
+
+    return { success: true, data: undefined };
+  });
+}
+
