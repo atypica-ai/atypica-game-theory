@@ -6,15 +6,39 @@ import { useTranslations } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { AlertTriangleIcon, CheckCircle2Icon, InfoIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { AlertTriangleIcon, CheckCircle2Icon, InfoIcon, PlusIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState, useCallback } from "react";
+import { toast } from "sonner";
+import { createSupplementaryInterview } from "../../../actions";
 
 type SageWithExtra = Omit<Sage, "extra"> & { extra: SageExtra };
 
-export function GapsTab({ gaps }: { sage: SageWithExtra; gaps: SageKnowledgeGap[] }) {
+export function GapsTab({ sage, gaps }: { sage: SageWithExtra; gaps: SageKnowledgeGap[] }) {
   const t = useTranslations("Sage.detail");
+  const router = useRouter();
+  const [isCreating, setIsCreating] = useState(false);
 
   const pendingGaps = gaps.filter((g) => g.status === "pending");
   const resolvedGaps = gaps.filter((g) => g.status === "resolved");
+
+  const handleCreateInterview = useCallback(async () => {
+    setIsCreating(true);
+    try {
+      const result = await createSupplementaryInterview(sage.id);
+      if (!result.success) throw result;
+
+      const { userChat } = result.data;
+      toast.success("Interview created successfully");
+      router.push(`/sage/interview/${userChat.token}`);
+    } catch (error) {
+      console.error("Failed to create interview:", error);
+      toast.error("Failed to create interview");
+    } finally {
+      setIsCreating(false);
+    }
+  }, [sage.id, router]);
 
   const getSeverityIcon = (severity: string) => {
     switch (severity) {
@@ -45,11 +69,19 @@ export function GapsTab({ gaps }: { sage: SageWithExtra; gaps: SageKnowledgeGap[
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold">{t("knowledgeGaps")}</h1>
-        <p className="text-muted-foreground mt-1">
-          {pendingGaps.length} {t("pending")}, {resolvedGaps.length} {t("resolved")}
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold">{t("knowledgeGaps")}</h1>
+          <p className="text-muted-foreground mt-1">
+            {pendingGaps.length} {t("pending")}, {resolvedGaps.length} {t("resolved")}
+          </p>
+        </div>
+        {pendingGaps.length > 0 && (
+          <Button onClick={handleCreateInterview} disabled={isCreating}>
+            <PlusIcon className="mr-2 h-4 w-4" />
+            Create Supplementary Interview
+          </Button>
+        )}
       </div>
 
       <Separator />

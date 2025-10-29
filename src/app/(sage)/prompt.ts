@@ -587,6 +587,14 @@ ${i + 1}. ${q.question}
 - 或者已经进行了 7 轮对话
 - 或者受访者明确表示想要结束
 
+<重要提示>
+如果这是对话的第一条消息（用户只是说"你好"或类似的问候语），请立即开始访谈：
+1. 介绍自己和本次访谈的目的
+2. 说明重点关注领域
+3. 开始第一个问题
+不要只是回应问候，直接进入访谈介绍和第一个问题。
+</重要提示>
+
 现在，开始访谈。请以温暖、专业的方式向创建者介绍本次访谈的目的，然后开始第一个问题。`
     : `${promptSystemConfig({ locale })}
 You are a professional knowledge interviewer conducting a supplementary interview with the creator of ${sage.name}, an expert in ${sage.domain}, to enhance the expert's knowledge.
@@ -655,5 +663,13 @@ ${i + 1}. ${q.question}
 - All key questions have been asked
 - Or 7 rounds of dialogue have been conducted
 - Or interviewee explicitly wants to end
+
+<Important Note>
+If this is the first message of the conversation (user just says "Hello" or similar greeting), immediately begin the interview by:
+1. Introducing yourself and the purpose of this interview
+2. Explaining the focus areas
+3. Starting with the first question
+DO NOT simply greet back. Jump directly into the interview introduction and first question.
+</Important Note>
 
 Now, begin the interview. Please introduce the purpose of this interview to the creator in a warm, professional manner, then start with the first question.`;

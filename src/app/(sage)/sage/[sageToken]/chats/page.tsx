@@ -30,24 +30,26 @@ export default async function SageChatsPage({
     forbidden();
   }
 
-  // Fetch all chats associated with this sage
-  const chats = await prisma.userChat.findMany({
+  // Fetch all chats associated with this sage through SageChat table
+  const sageChats = await prisma.sageChat.findMany({
     where: {
+      sageId: sage.id,
       userId: session.user.id,
-      kind: "sageSession",
-      extra: {
-        path: ["sageId"],
-        equals: sage.id,
+    },
+    include: {
+      userChat: {
+        include: {
+          messages: {
+            take: 1,
+            orderBy: { id: "desc" },
+          },
+        },
       },
     },
     orderBy: { updatedAt: "desc" },
-    include: {
-      messages: {
-        take: 1,
-        orderBy: { id: "desc" },
-      },
-    },
   });
+
+  const chats = sageChats.map((sc) => sc.userChat);
 
   return <ChatsTab sage={sage} chats={chats} />;
 }
