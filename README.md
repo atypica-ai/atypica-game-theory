@@ -142,8 +142,9 @@ brew install git make gcc
 3. 编译安装 pgvector
 
 ```bash
-git clone --branch v0.5.1 https://github.com/pgvector/pgvector.git
+git clone --branch v0.8.1 https://github.com/pgvector/pgvector.git
 cd pgvector
+# 如果有问题就设置，如果设置了有问题就不设置
 export PG_CONFIG=/opt/homebrew/bin/pg_config  # Apple Silicon
 # export PG_CONFIG=/usr/local/bin/pg_config   # Intel Mac
 make
