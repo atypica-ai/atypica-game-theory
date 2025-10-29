@@ -618,6 +618,8 @@ model Sage {
   chats      SageChat[]
   interviews SageInterview[]
   sources    SageSource[]
+  knowledgeGaps KnowledgeGap[]
+  memoryDocumentVersions MemoryDocumentVersion[]
 
   @@index([embedding])
   @@index([userId, domain])
@@ -694,5 +696,61 @@ model SageInterview {
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
+  resolvedGaps KnowledgeGap[] @relation("InterviewResolvedGaps")
+
   @@index([sageId, status])
+}
+
+model KnowledgeGap {
+  id     Int    @id @default(autoincrement())
+  sageId Int
+  sage   Sage   @relation(fields: [sageId], references: [id], onDelete: Cascade)
+
+  // Gap content
+  area        String @db.VarChar(255) // Knowledge area with gap
+  description String @db.Text // What's missing
+  severity    String @db.VarChar(32) // "critical" | "important" | "nice-to-have"
+  impact      String @db.Text // Impact on expert's capability
+
+  // Source tracking
+  sourceType        String  @db.VarChar(64) // "analysis" | "conversation" | "system_suggestion"
+  sourceDescription String  @db.Text // e.g., "User asked about X" or "Initial analysis"
+  sourceReference   String? @db.Text // Optional reference (e.g., userChatId, messageId)
+
+  // Status
+  status String @default("pending") @db.VarChar(32) // "pending" | "resolved" | "deleted"
+
+  // Resolution tracking
+  resolvedAt        DateTime?      @db.Timestamptz(6)
+  resolvedBy        String?        @db.VarChar(64) // "interview" | "manual"
+  resolvedByInterviewId Int?
+  resolvedByInterview   SageInterview? @relation("InterviewResolvedGaps", fields: [resolvedByInterviewId], references: [id])
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  @@index([sageId, status])
+  @@index([sageId, createdAt])
+}
+
+model MemoryDocumentVersion {
+  id      Int @id @default(autoincrement())
+  sageId  Int
+  sage    Sage @relation(fields: [sageId], references: [id], onDelete: Cascade)
+
+  // Version control
+  version Int // Version number, auto-increment per sage
+
+  // Content
+  content String @db.Text // Memory document content
+
+  // Metadata
+  source        String  @db.VarChar(64) // "initial" | "interview" | "manual"
+  sourceReference String? @db.Text // Optional reference (e.g., interviewId)
+  changeNotes   String? @db.Text // Description of changes
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+
+  @@unique([sageId, version])
+  @@index([sageId, version(sort: Desc)]) // Optimize for getting latest version
 }

@@ -14,7 +14,7 @@ import { prisma } from "@/prisma/prisma";
 import { generateId, smoothStream, stepCountIs, streamText } from "ai";
 import { getServerSession } from "next-auth";
 import { after, NextResponse } from "next/server";
-import { analyzeConversationForGaps, appendKnowledgeGaps, getSageByToken } from "../../../lib";
+import { analyzeConversationForGaps, createKnowledgeGaps, getSageByToken } from "../../../lib";
 import { sageChatSystem } from "../../../prompt";
 
 export async function POST(req: Request) {
@@ -201,10 +201,19 @@ export async function POST(req: Request) {
               });
 
               if (gaps.length > 0) {
-                await appendKnowledgeGaps({
-                  sageId: sage.id,
-                  gaps,
-                });
+                // Create knowledge gap records with conversation source
+                await createKnowledgeGaps(
+                  gaps.map((gap) => ({
+                    sageId: sage.id,
+                    area: gap.area,
+                    description: gap.description,
+                    severity: gap.severity,
+                    impact: gap.impact,
+                    sourceType: "conversation",
+                    sourceDescription: `User asked: "${userMessage.substring(0, 100)}${userMessage.length > 100 ? "..." : ""}"`,
+                    sourceReference: String(userChat.id),
+                  }))
+                );
                 chatLogger.info({
                   msg: "Detected knowledge gaps from conversation",
                   gapsCount: gaps.length,

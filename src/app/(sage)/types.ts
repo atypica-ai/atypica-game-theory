@@ -33,12 +33,36 @@ export interface KnowledgeDimension {
   improvementSuggestions: string[];
 }
 
-export interface KnowledgeGap {
+// KnowledgeGap from AI analysis (temporary, for creating DB records)
+export interface KnowledgeGapFromAnalysis {
   area: string;
   severity: "critical" | "important" | "nice-to-have";
   description: string;
   impact: string;
   suggestedQuestions: string[];
+}
+
+// Database KnowledgeGap types
+export type KnowledgeGapSourceType = "analysis" | "conversation" | "system_suggestion";
+export type KnowledgeGapStatus = "pending" | "resolved" | "deleted";
+export type KnowledgeGapSeverity = "critical" | "important" | "nice-to-have";
+
+export interface CreateKnowledgeGapInput {
+  sageId: number;
+  area: string;
+  description: string;
+  severity: KnowledgeGapSeverity;
+  impact: string;
+  sourceType: KnowledgeGapSourceType;
+  sourceDescription: string;
+  sourceReference?: string;
+}
+
+export interface UpdateKnowledgeGapStatusInput {
+  gapId: number;
+  status: KnowledgeGapStatus;
+  resolvedBy?: "interview" | "manual";
+  resolvedByInterviewId?: number;
 }
 
 // ===== SageChat Types =====
@@ -190,7 +214,7 @@ export interface ExtractedMemory {
 export interface KnowledgeAnalysisResult {
   overallScore: number;
   dimensions: KnowledgeDimension[];
-  knowledgeGaps: KnowledgeGap[];
+  knowledgeGaps: KnowledgeGapFromAnalysis[];
   strengths: string[];
   recommendations: string[];
   shouldInterview: boolean;
@@ -217,6 +241,18 @@ export interface InterviewPlan {
     closingMessage: string;
   };
   estimatedDuration: string;
+}
+
+// ===== Memory Document Version Types =====
+
+export type MemoryDocumentVersionSource = "initial" | "interview" | "manual";
+
+export interface CreateMemoryDocumentVersionInput {
+  sageId: number;
+  content: string;
+  source: MemoryDocumentVersionSource;
+  sourceReference?: string;
+  changeNotes?: string;
 }
 
 // ===== Helper Type Guards =====

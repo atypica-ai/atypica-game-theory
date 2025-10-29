@@ -10,10 +10,14 @@ import type { Locale } from "next-intl";
 import {
   analyzeKnowledgeCompleteness,
   buildMemoryDocument,
+  createKnowledgeGaps,
+  createMemoryDocumentVersion,
   extractMemories,
   generateSageEmbedding,
+  getPendingKnowledgeGaps,
   getSageById,
   processInitialContent,
+  resolveKnowledgeGaps,
   updateSageKnowledgeAnalysis,
   updateSageProcessingStatus,
 } from "./lib";
@@ -195,10 +199,12 @@ export async function processNewSage({
       });
     }
 
-    // Save Memory Document
-    await prisma.sage.update({
-      where: { id: sageId },
-      data: { memoryDocument },
+    // Save Memory Document as first version
+    await createMemoryDocumentVersion({
+      sageId,
+      content: memoryDocument,
+      source: "initial",
+      changeNotes: "Initial memory document from sources",
     });
 
     // Step 4: Analyze knowledge completeness
@@ -237,6 +243,21 @@ export async function processNewSage({
 
     // Save analysis
     await updateSageKnowledgeAnalysis({ sageId, analysis });
+
+    // Create knowledge gaps in database
+    if (analysis.knowledgeGaps.length > 0) {
+      await createKnowledgeGaps(
+        analysis.knowledgeGaps.map((gap) => ({
+          sageId,
+          area: gap.area,
+          description: gap.description,
+          severity: gap.severity,
+          impact: gap.impact,
+          sourceType: "analysis",
+          sourceDescription: "Initial knowledge analysis",
+        }))
+      );
+    }
 
     // Step 5: Generate embedding
     await updateSageProcessingStatus({
@@ -376,12 +397,13 @@ export async function updateMemoryDocumentFromInterview({
       locale,
     });
 
-    // Update sage with new Memory Document
-    await prisma.sage.update({
-      where: { id: sageId },
-      data: {
-        memoryDocument: updatedMemoryDocument,
-      },
+    // Save as new version
+    await createMemoryDocumentVersion({
+      sageId,
+      content: updatedMemoryDocument,
+      source: "interview",
+      sourceReference: String(interviewId),
+      changeNotes: `Updated from interview: ${interview.purpose}`,
     });
 
     // Regenerate embedding
@@ -392,6 +414,32 @@ export async function updateMemoryDocumentFromInterview({
           "updatedAt" = NOW()
       WHERE "id" = ${sageId}
     `;
+
+    // Analyze which gaps were resolved by this interview
+    const pendingGaps = await getPendingKnowledgeGaps(sageId);
+    const resolvedGapIds: number[] = [];
+
+    // Simple heuristic: if the interview discusses the gap area, mark as resolved
+    for (const gap of pendingGaps) {
+      const transcriptLower = interviewTranscript.toLowerCase();
+      const gapAreaLower = gap.area.toLowerCase();
+
+      // Check if gap area is discussed in transcript
+      if (transcriptLower.includes(gapAreaLower) ||
+          transcriptLower.includes(gap.description.toLowerCase())) {
+        resolvedGapIds.push(gap.id);
+      }
+    }
+
+    // Resolve gaps automatically
+    if (resolvedGapIds.length > 0) {
+      await resolveKnowledgeGaps(resolvedGapIds, "interview", interviewId);
+
+      logger.info({
+        msg: "Auto-resolved knowledge gaps from interview",
+        resolvedCount: resolvedGapIds.length,
+      });
+    }
 
     // Update interview extra with findings
     await prisma.sageInterview.update({
