@@ -165,7 +165,7 @@ export function KnowledgeAnalysisSection({
                       {t("suggestedQuestions")}:
                     </p>
                     <ul className="text-xs text-zinc-600 dark:text-zinc-400 list-disc list-inside space-y-1">
-                      {gap.suggestedQuestions.map((question, idx) => (
+                      {gap.suggestedQuestions.map((question: string, idx: number) => (
                         <li key={idx}>{question}</li>
                       ))}
                     </ul>

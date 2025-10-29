@@ -188,6 +188,84 @@ export async function updateSage(
 }
 
 /**
+ * Retry failed sage processing
+ */
+export async function retrySageProcessing(
+  sageId: number,
+): Promise<ServerActionResult<void>> {
+  return withAuth(async (user) => {
+    try {
+      // Check ownership
+      const sage = await getSageById(sageId);
+
+      if (!sage) {
+        return {
+          success: false,
+          message: "Sage not found",
+          code: "not_found",
+        };
+      }
+
+      if (sage.userId !== user.id) {
+        return {
+          success: false,
+          message: "Unauthorized",
+          code: "unauthorized",
+        };
+      }
+
+      // Check if there's an error in processing
+      if (!sage.extra?.processing?.error) {
+        return {
+          success: false,
+          message: "No processing error found",
+          code: "forbidden",
+        };
+      }
+
+      const locale = await getLocale();
+
+      // Clear the error and trigger retry using raw SQL
+      const updatedExtra = {
+        ...sage.extra,
+        processing: {
+          ...sage.extra.processing,
+          error: undefined,
+        },
+      };
+
+      await prisma.$executeRaw`
+        UPDATE "Sage"
+        SET "extra" = ${JSON.stringify(updatedExtra)}::jsonb,
+            "updatedAt" = NOW()
+        WHERE "id" = ${sageId}
+      `;
+
+      rootLogger.info({
+        msg: "Retrying sage processing",
+        sageId,
+        userId: user.id,
+      });
+
+      // Trigger background processing
+      waitUntil(processNewSage({ sageId, locale }));
+
+      return {
+        success: true,
+        data: undefined,
+      };
+    } catch (error) {
+      rootLogger.error("Failed to retry sage processing:", error);
+      return {
+        success: false,
+        message: "Failed to retry processing",
+        code: "internal_server_error",
+      };
+    }
+  });
+}
+
+/**
  * Delete a sage
  */
 export async function deleteSage(sageId: number): Promise<ServerActionResult<void>> {

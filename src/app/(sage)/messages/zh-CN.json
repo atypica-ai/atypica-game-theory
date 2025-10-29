@@ -122,6 +122,9 @@
       "processingComplete": "处理完成",
       "processingError": "处理出错",
       "unknownError": "未知错误",
+      "retryProcessing": "重新处理",
+      "retryStarted": "已开始重新处理",
+      "retryFailed": "重试失败，请稍后再试",
       "step": {
         "pending": "等待处理",
         "parseContent": "解析内容",

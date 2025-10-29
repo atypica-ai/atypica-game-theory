@@ -19,7 +19,7 @@ export interface SageExtra {
   knowledgeAnalysis?: {
     overallScore?: number; // 0-100
     dimensions?: KnowledgeDimension[];
-    knowledgeGaps?: KnowledgeGap[];
+    knowledgeGaps?: KnowledgeGapFromAnalysis[];
     analyzedAt?: string; // ISO timestamp
   };
 }

@@ -1,5 +1,5 @@
 "use client";
-import { analyzeSageKnowledge, createOrGetSageChat, createSupplementaryInterview } from "@/app/(sage)/actions";
+import { analyzeSageKnowledge, createOrGetSageChat, createSupplementaryInterview, retrySageProcessing } from "@/app/(sage)/actions";
 import type { SageExtra } from "@/app/(sage)/types";
 import { Button } from "@/components/ui/button";
 import type { ChatMessageAttachment, Sage, SageChat, SageInterview, SageSource, User, UserChat } from "@/prisma/client";
@@ -51,6 +51,7 @@ export function SageDetailView({
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isCreatingInterview, setIsCreatingInterview] = useState(false);
   const [isCreatingChat, setIsCreatingChat] = useState(false);
+  const [isRetrying, setIsRetrying] = useState(false);
 
   const extra = sage.extra;
   const processing = extra?.processing;
@@ -117,6 +118,21 @@ export function SageDetailView({
     }
   }, [sage.id, t, router]);
 
+  const handleRetryProcessing = useCallback(async () => {
+    setIsRetrying(true);
+    try {
+      const result = await retrySageProcessing(sage.id);
+      if (!result.success) throw result;
+      toast.success(t("retryStarted"));
+      setTimeout(() => router.refresh(), 1000);
+    } catch (error) {
+      console.log("Error retrying processing:", error);
+      toast.error(t("retryFailed"));
+    } finally {
+      setIsRetrying(false);
+    }
+  }, [sage.id, t, router]);
+
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
       <div className="container mx-auto px-4 py-8 max-w-6xl">
@@ -159,7 +175,12 @@ export function SageDetailView({
 
           {/* Processing Status */}
           {(isProcessing || hasError) && (
-            <ProcessingStatusSection processing={processing} hasError={hasError} />
+            <ProcessingStatusSection
+              processing={processing}
+              hasError={hasError}
+              onRetry={hasError ? handleRetryProcessing : undefined}
+              isRetrying={isRetrying}
+            />
           )}
 
           {/* Knowledge Analysis */}

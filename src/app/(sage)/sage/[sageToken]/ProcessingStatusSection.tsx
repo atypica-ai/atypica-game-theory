@@ -1,16 +1,21 @@
 "use client";
 import type { SageExtra } from "@/app/(sage)/types";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { AlertCircleIcon, CheckCircleIcon, Loader2Icon } from "lucide-react";
+import { AlertCircleIcon, CheckCircleIcon, Loader2Icon, RefreshCwIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 export function ProcessingStatusSection({
   processing,
   hasError,
+  onRetry,
+  isRetrying,
 }: {
   processing?: SageExtra["processing"];
   hasError: boolean;
+  onRetry?: () => void;
+  isRetrying?: boolean;
 }) {
   const t = useTranslations("Sage.detail");
 
@@ -18,8 +23,24 @@ export function ProcessingStatusSection({
     return (
       <Alert variant="destructive">
         <AlertCircleIcon className="h-4 w-4" />
-        <AlertTitle>{t("processingError")}</AlertTitle>
-        <AlertDescription>{processing?.error || t("unknownError")}</AlertDescription>
+        <div className="flex-1">
+          <AlertTitle>{t("processingError")}</AlertTitle>
+          <AlertDescription className="mt-2">
+            {processing?.error || t("unknownError")}
+          </AlertDescription>
+        </div>
+        {onRetry && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onRetry}
+            disabled={isRetrying}
+            className="ml-auto"
+          >
+            <RefreshCwIcon className={`size-4 ${isRetrying ? "animate-spin" : ""}`} />
+            {t("retryProcessing")}
+          </Button>
+        )}
       </Alert>
     );
   }

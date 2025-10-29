@@ -122,6 +122,9 @@
       "processingComplete": "Processing Complete",
       "processingError": "Processing Error",
       "unknownError": "Unknown Error",
+      "retryProcessing": "Retry Processing",
+      "retryStarted": "Processing retry started",
+      "retryFailed": "Retry failed, please try again later",
       "step": {
         "pending": "Pending",
         "parseContent": "Parsing Content",
