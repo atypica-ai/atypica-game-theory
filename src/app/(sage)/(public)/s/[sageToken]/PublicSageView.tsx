@@ -1,5 +1,6 @@
 "use client";
 
+import { ClientMessagePayload, prepareLastUIMessageForRequest } from "@/ai/messageUtilsClient";
 import { createOrGetSageChat } from "@/app/(sage)/actions";
 import { SageToolUIPartDisplay } from "@/app/(sage)/tools/ui";
 import type { SageExtra, TSageMessageWithTool } from "@/app/(sage)/types";
@@ -15,9 +16,8 @@ import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
-import { ClientMessagePayload, prepareLastUIMessageForRequest } from "@/ai/messageUtilsClient";
 
 export function PublicSageView({
   sage,
@@ -47,10 +47,9 @@ export function PublicSageView({
   const [isCreatingChat, setIsCreatingChat] = useState(false);
   const [showChat, setShowChat] = useState(!!initialUserChat);
 
-  const extraRequestPayload = useMemo(
-    () => ({ userChatToken: userChat?.token ?? "" }),
-    [userChat?.token]
-  );
+  // Use ref to avoid closure issues when userChat updates
+  const userChatRef = useRef(userChat);
+  userChatRef.current = userChat;
 
   // Chat hooks
   const useChatHelpers = useChat({
@@ -61,7 +60,7 @@ export function PublicSageView({
         const body: ClientMessagePayload = {
           id,
           message: prepareLastUIMessageForRequest(messages),
-          ...extraRequestPayload,
+          userChatToken: userChatRef.current?.token ?? "",
         };
         if (extraBody && "attachments" in extraBody) {
           body["attachments"] = extraBody.attachments;
@@ -105,20 +104,13 @@ export function PublicSageView({
         {/* Chat Header */}
         <div className="w-full mt-2 px-3 py-3 max-w-4xl mx-auto border-b">
           <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowChat(false)}
-              className="gap-2"
-            >
+            <Button variant="ghost" size="sm" onClick={() => setShowChat(false)} className="gap-2">
               <ArrowLeftIcon className="size-4" />
               Back
             </Button>
             <div className="flex-1">
               <h1 className="font-medium text-sm">{sage.name}</h1>
-              {sage.domain && (
-                <p className="text-xs text-muted-foreground">{sage.domain}</p>
-              )}
+              {sage.domain && <p className="text-xs text-muted-foreground">{sage.domain}</p>}
             </div>
           </div>
         </div>
@@ -178,9 +170,7 @@ export function PublicSageView({
             <div className="flex flex-col gap-2">
               {isOwner && (
                 <Button variant="outline" size="sm" asChild>
-                  <Link href={`/sage/${sage.token}`}>
-                    {tPublic("manage")}
-                  </Link>
+                  <Link href={`/sage/${sage.token}`}>{tPublic("manage")}</Link>
                 </Button>
               )}
               <Button onClick={handleStartChat} disabled={isCreatingChat}>
