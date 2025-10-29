@@ -61,13 +61,15 @@ export async function POST(req: Request) {
     }
   }
 
-  const sage = await getSageByToken(userChat.sageChat.sage.token);
-  if (!sage) {
+  const result = await getSageByToken(userChat.sageChat.sage.token);
+  if (!result) {
     return NextResponse.json({ error: "Sage not found" }, { status: 404 });
   }
 
+  const { sage, memoryDocument } = result;
+
   // Check if Memory Document is ready
-  if (!sage.memoryDocument) {
+  if (!memoryDocument) {
     return NextResponse.json(
       { error: "Sage is still being processed. Please try again later." },
       { status: 503 },
@@ -132,7 +134,7 @@ export async function POST(req: Request) {
         domain: sage.domain,
         allowTools: sage.allowTools,
       },
-      memoryDocument: sage.memoryDocument,
+      memoryDocument,
       locale,
     }),
     messages: coreMessages,

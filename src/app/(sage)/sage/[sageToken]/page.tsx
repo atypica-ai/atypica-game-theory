@@ -16,16 +16,18 @@ export default async function SageMemoryPage({
     forbidden();
   }
 
-  const sage = await getSageByToken(token);
+  const result = await getSageByToken(token);
 
-  if (!sage) {
+  if (!result) {
     notFound();
   }
+
+  const { sage, memoryDocument } = result;
 
   // Check ownership
   if (sage.userId !== session.user.id) {
     forbidden();
   }
 
-  return <MemoryTab sage={sage} />;
+  return <MemoryTab sage={sage} memoryDocument={memoryDocument} />;
 }

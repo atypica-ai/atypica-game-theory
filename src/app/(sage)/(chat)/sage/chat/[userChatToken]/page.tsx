@@ -46,10 +46,12 @@ async function SageChatPage({
     }
   }
 
-  const sage = await getSageByToken(userChat.sageChat.sage.token);
-  if (!sage) {
+  const result = await getSageByToken(userChat.sageChat.sage.token);
+  if (!result) {
     notFound();
   }
+
+  const { sage } = result;
 
   // Fetch existing chat messages
   const dbMessages = await prisma.chatMessage.findMany({

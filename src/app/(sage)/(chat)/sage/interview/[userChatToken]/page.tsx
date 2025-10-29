@@ -45,10 +45,12 @@ async function SageInterviewPage({
     forbidden();
   }
 
-  const sage = await getSageById(interview.sageId);
-  if (!sage) {
+  const result = await getSageById(interview.sageId);
+  if (!result) {
     notFound();
   }
+
+  const { sage } = result;
 
   // Fetch existing chat messages
   const dbMessages = await prisma.chatMessage.findMany({

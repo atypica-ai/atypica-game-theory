@@ -20,11 +20,13 @@ async function PublicSagePage({
   const sageToken = (await params).sageToken;
   const session = await getServerSession(authOptions);
 
-  const sage = await getSageByToken(sageToken);
+  const result = await getSageByToken(sageToken);
 
-  if (!sage) {
+  if (!result) {
     notFound();
   }
+
+  const { sage, memoryDocument } = result;
 
   // Check if sage is public (unless user is owner)
   const isOwner = !!(session?.user && sage.userId === session.user.id);
@@ -33,7 +35,7 @@ async function PublicSagePage({
   }
 
   // Check if Memory Document is ready
-  if (!sage.memoryDocument) {
+  if (!memoryDocument) {
     notFound();
   }
 
@@ -70,6 +72,7 @@ async function PublicSagePage({
   return (
     <PublicSageView
       sage={sage}
+      memoryDocument={memoryDocument}
       isOwner={isOwner}
       userChat={userChat}
       initialMessages={messages as TSageMessageWithTool[]}

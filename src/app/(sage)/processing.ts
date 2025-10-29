@@ -15,7 +15,6 @@ import {
   extractMemories,
   getPendingSageKnowledgeGaps,
   getSageById,
-  processInitialContent,
   resolveSageKnowledgeGaps,
   updateSageKnowledgeAnalysis,
 } from "./lib";
@@ -28,8 +27,8 @@ export async function processSourcesOnly(sageId: number): Promise<void> {
   const logger = rootLogger.child({ sageId });
 
   try {
-    const sage = await getSageById(sageId);
-    if (!sage) {
+    const result = await getSageById(sageId);
+    if (!result) {
       throw new Error(`Sage ${sageId} not found`);
     }
 
@@ -89,10 +88,12 @@ export async function extractKnowledgeOnly({
   }) as StatReporter;
 
   try {
-    const sage = await getSageById(sageId);
-    if (!sage) {
+    const result = await getSageById(sageId);
+    if (!result) {
       throw new Error(`Sage ${sageId} not found`);
     }
+
+    const { sage } = result;
 
     // Get all completed sources
     const completedSources = await prisma.sageSource.findMany({
@@ -115,8 +116,9 @@ export async function extractKnowledgeOnly({
       sourcesCount: completedSources.length,
     });
 
-    // Process content and extract knowledge
-    const processedContent = await processInitialContent({
+    // Step 1: Generate suggested categories
+    const { generateSuggestedCategories } = await import("./lib");
+    const suggestedCategories = await generateSuggestedCategories({
       sage: {
         name: sage.name,
         domain: sage.domain,
@@ -126,36 +128,42 @@ export async function extractKnowledgeOnly({
     });
 
     logger.info({
-      msg: "Content processed",
-      keyPointsCount: processedContent.keyPoints.length,
-      suggestedCategories: processedContent.suggestedCategories.length,
+      msg: "Generated categories",
+      categoriesCount: suggestedCategories.length,
+      categories: suggestedCategories,
     });
 
     if (statReport) {
       await statReport("tokens", 0, {
-        reportedBy: "extract knowledge",
+        reportedBy: "generate categories",
         modelName: "gemini-2.5-flash",
         userId: sage.userId,
       });
     }
 
     // Update expertise with suggested categories
-    const allCategories = processedContent.suggestedCategories;
     await prisma.sage.update({
       where: { id: sageId },
-      data: { expertise: allCategories },
+      data: { expertise: suggestedCategories },
     });
 
-    // Build Memory Document
+    // Step 2: Build Memory Document (internal two-step streaming)
     const memoryDocument = await buildMemoryDocument({
       sage: {
         name: sage.name,
         domain: sage.domain,
-        expertise: allCategories,
+        expertise: suggestedCategories,
         locale: sage.locale,
       },
-      content: processedContent.extractedContent,
+      content: rawContent,
       locale,
+      onProgress: (stage, progress) => {
+        logger.info({
+          msg: "Memory document progress",
+          stage,
+          progress,
+        });
+      },
     });
 
     logger.info({
@@ -166,7 +174,7 @@ export async function extractKnowledgeOnly({
     if (statReport) {
       await statReport("tokens", 0, {
         reportedBy: "build memory document",
-        modelName: "claude-sonnet-4-5",
+        modelName: "gemini-2.5-flash + claude-sonnet-4-5",
         userId: sage.userId,
       });
     }
@@ -209,12 +217,14 @@ export async function analyzeKnowledgeOnly({
   }) as StatReporter;
 
   try {
-    const sage = await getSageById(sageId);
-    if (!sage) {
+    const result = await getSageById(sageId);
+    if (!result) {
       throw new Error(`Sage ${sageId} not found`);
     }
 
-    if (!sage.memoryDocument) {
+    const { sage, memoryDocument } = result;
+
+    if (!memoryDocument) {
       throw new Error("Memory document not available");
     }
 
@@ -226,7 +236,7 @@ export async function analyzeKnowledgeOnly({
         domain: sage.domain,
         expertise: sage.expertise,
       },
-      memoryDocument: sage.memoryDocument,
+      memoryDocument,
       locale,
     });
 
@@ -293,10 +303,12 @@ export async function updateMemoryDocumentFromInterview({
 
   try {
     // Get sage and interview data
-    const sage = await getSageById(sageId);
-    if (!sage) {
+    const result = await getSageById(sageId);
+    if (!result) {
       throw new Error(`Sage ${sageId} not found`);
     }
+
+    const { sage, memoryDocument } = result;
 
     const interview = await prisma.sageInterview.findUnique({
       where: { id: interviewId },
@@ -351,7 +363,7 @@ export async function updateMemoryDocumentFromInterview({
         expertise: sage.expertise,
         locale: sage.locale,
       },
-      content: `${sage.memoryDocument}\n\n# New Knowledge from Interview\n\n${interviewTranscript}`,
+      content: `${memoryDocument}\n\n# New Knowledge from Interview\n\n${interviewTranscript}`,
       locale,
     });
 

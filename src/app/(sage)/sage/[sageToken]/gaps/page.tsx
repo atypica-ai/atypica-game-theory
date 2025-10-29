@@ -17,11 +17,13 @@ export default async function SageGapsPage({
     forbidden();
   }
 
-  const sage = await getSageByToken(token);
+  const result = await getSageByToken(token);
 
-  if (!sage) {
+  if (!result) {
     notFound();
   }
+
+  const { sage } = result;
 
   // Check ownership
   if (sage.userId !== session.user.id) {

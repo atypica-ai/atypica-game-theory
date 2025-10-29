@@ -21,6 +21,7 @@ import { ClientMessagePayload, prepareLastUIMessageForRequest } from "@/ai/messa
 
 export function PublicSageView({
   sage,
+  memoryDocument,
   isOwner,
   userChat: initialUserChat,
   initialMessages = [],
@@ -32,6 +33,7 @@ export function PublicSageView({
     attachments: ChatMessageAttachment[];
     user: Pick<User, "id" | "name" | "email">;
   };
+  memoryDocument: string | null;
   isOwner: boolean;
   userChat: UserChat | null;
   initialMessages?: TSageMessageWithTool[];
@@ -190,15 +192,15 @@ export function PublicSageView({
         </div>
 
         {/* Memory Document Preview */}
-        {sage.memoryDocument && (
+        {memoryDocument && (
           <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-6">
             <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-4">
               {tPublic("aboutExpert")}
             </h3>
             <div className="prose prose-sm dark:prose-invert max-w-none">
               <pre className="whitespace-pre-wrap text-xs bg-zinc-50 dark:bg-zinc-800 p-4 rounded-md overflow-x-auto max-h-96 overflow-y-auto">
-                {sage.memoryDocument.substring(0, 2000)}
-                {sage.memoryDocument.length > 2000 && "\n\n..."}
+                {memoryDocument.substring(0, 2000)}
+                {memoryDocument.length > 2000 && "\n\n..."}
               </pre>
             </div>
           </div>

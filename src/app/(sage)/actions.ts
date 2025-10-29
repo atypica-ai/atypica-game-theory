@@ -277,15 +277,17 @@ export async function analyzeSageKnowledge(
   sageId: number,
 ): Promise<ServerActionResult<void>> {
   return withAuth(async (user) => {
-    const sage = await getSageById(sageId);
+    const result = await getSageById(sageId);
 
-    if (!sage) {
+    if (!result) {
       return {
         success: false,
         message: "Sage not found",
         code: "not_found",
       };
     }
+
+    const { sage, memoryDocument } = result;
 
     if (sage.userId !== user.id) {
       return {
@@ -295,7 +297,7 @@ export async function analyzeSageKnowledge(
       };
     }
 
-    if (!sage.memoryDocument) {
+    if (!memoryDocument) {
       return {
         success: false,
         message: "Memory document not ready",
@@ -328,15 +330,17 @@ export async function createSupplementaryInterview(sageId: number): Promise<
   return withAuth(async (user) => {
     try {
       // Check ownership
-      const sage = await getSageById(sageId);
+      const result = await getSageById(sageId);
 
-      if (!sage) {
+      if (!result) {
         return {
           success: false,
           message: "Sage not found",
           code: "not_found",
         };
       }
+
+      const { sage } = result;
 
       if (sage.userId !== user.id) {
         return {
@@ -562,15 +566,17 @@ export async function createOrGetSageChat(sageId: number): Promise<
   return withAuth(async (user) => {
     try {
       // Check if sage exists and is accessible
-      const sage = await getSageById(sageId);
+      const result = await getSageById(sageId);
 
-      if (!sage) {
+      if (!result) {
         return {
           success: false,
           message: "Sage not found",
           code: "not_found",
         };
       }
+
+      const { sage } = result;
 
       // Check if user can access (owner or public)
       if (!sage.isPublic && sage.userId !== user.id) {
@@ -642,15 +648,17 @@ export async function processSageSources(
   sageId: number,
 ): Promise<ServerActionResult<void>> {
   return withAuth(async (user) => {
-    const sage = await getSageById(sageId);
+    const result = await getSageById(sageId);
 
-    if (!sage) {
+    if (!result) {
       return {
         success: false,
         message: "Sage not found",
         code: "not_found",
       };
     }
+
+    const { sage } = result;
 
     if (sage.userId !== user.id) {
       return {
@@ -676,15 +684,17 @@ export async function extractSageKnowledge(
   sageId: number,
 ): Promise<ServerActionResult<void>> {
   return withAuth(async (user) => {
-    const sage = await getSageById(sageId);
+    const result = await getSageById(sageId);
 
-    if (!sage) {
+    if (!result) {
       return {
         success: false,
         message: "Sage not found",
         code: "not_found",
       };
     }
+
+    const { sage } = result;
 
     if (sage.userId !== user.id) {
       return {

@@ -73,10 +73,12 @@ export async function POST(req: Request) {
     );
   }
 
-  const sage = await getSageById(interview.sageId);
-  if (!sage) {
+  const result = await getSageById(interview.sageId);
+  if (!result) {
     return NextResponse.json({ error: "Sage not found" }, { status: 404 });
   }
+
+  const { sage } = result;
 
   const chatLogger = rootLogger.child({
     userChatId: userChat.id,

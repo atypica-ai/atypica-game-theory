@@ -15,13 +15,13 @@ import { Markdown } from "@/components/markdown";
 
 type SageWithExtra = Omit<Sage, "extra"> & { extra: SageExtra };
 
-export function MemoryTab({ sage }: { sage: SageWithExtra }) {
+export function MemoryTab({ sage, memoryDocument }: { sage: SageWithExtra; memoryDocument: string | null }) {
   const t = useTranslations("Sage.detail");
   const router = useRouter();
   const [isExtracting, setIsExtracting] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
-  const hasMemoryDocument = !!sage.memoryDocument;
+  const hasMemoryDocument = !!memoryDocument;
   const hasAnalysis = !!sage.extra?.knowledgeAnalysis?.overallScore;
 
   // Simple conditions: no complex state checking
@@ -132,7 +132,7 @@ export function MemoryTab({ sage }: { sage: SageWithExtra }) {
           <CardTitle>{t("memoryDocument")}</CardTitle>
           <CardDescription>
             {hasMemoryDocument ? (
-              `${sage.memoryDocument.length} characters`
+              `${memoryDocument.length} characters`
             ) : (
               "No memory document yet. Extract knowledge from sources first."
             )}
@@ -141,7 +141,7 @@ export function MemoryTab({ sage }: { sage: SageWithExtra }) {
         {hasMemoryDocument && (
           <CardContent>
             <div className="prose prose-sm max-w-none dark:prose-invert">
-              <Markdown>{sage.memoryDocument}</Markdown>
+              <Markdown>{memoryDocument}</Markdown>
             </div>
           </CardContent>
         )}

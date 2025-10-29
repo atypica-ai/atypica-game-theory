@@ -3,11 +3,10 @@ import { rootLogger } from "@/lib/logging";
 import { generateToken } from "@/lib/utils";
 import type { ChatMessageAttachment, Sage, User } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
-import { generateObject, generateText } from "ai";
+import { generateObject, streamText } from "ai";
 import { Locale } from "next-intl";
 import { z } from "zod";
 import {
-  sageContentProcessingSystem,
   sageKnowledgeAnalysisSystem,
   sageMemoryDocumentBuilderSystem,
   sageMemoryExtractionSystem,
@@ -17,18 +16,10 @@ import { SAGE_PROCESSING_STEPS } from "./types";
 
 // ===== Content Processing Schemas =====
 
-const contentProcessingSchema = z.object({
-  extractedContent: z.string().describe("Processed and cleaned text content"),
-  suggestedCategories: z
+const suggestedCategoriesSchema = z.object({
+  categories: z
     .array(z.string())
-    .describe("Suggested topic categories for organizing the knowledge"),
-  keyPoints: z.array(z.string()).describe("Key knowledge points identified in the content"),
-  contentQuality: z.object({
-    completeness: z.number().min(0).max(1).describe("Content completeness score (0-1)"),
-    clarity: z.number().min(0).max(1).describe("Content clarity score (0-1)"),
-    depth: z.number().min(0).max(1).describe("Content depth score (0-1)"),
-  }),
-  ambiguousAreas: z.array(z.string()).optional().describe("Areas that need clarification"),
+    .describe("Suggested topic categories for organizing the knowledge (3-10 categories)"),
 });
 
 const memoryExtractionSchema = z.object({
@@ -81,9 +72,9 @@ export function generateSageToken(): string {
 // ===== Content Processing =====
 
 /**
- * Process raw content (text/file) to extract structured knowledge
+ * Generate suggested categories for organizing knowledge
  */
-export async function processInitialContent({
+export async function generateSuggestedCategories({
   sage,
   rawContent,
   locale,
@@ -91,16 +82,29 @@ export async function processInitialContent({
   sage: { name: string; domain: string };
   rawContent: string;
   locale: Locale;
-}): Promise<z.infer<typeof contentProcessingSchema>> {
+}): Promise<string[]> {
   const result = await generateObject({
     model: llm("gemini-2.5-flash"),
-    schema: contentProcessingSchema,
-    system: sageContentProcessingSystem({ sage, locale }),
+    schema: suggestedCategoriesSchema,
+    system:
+      locale === "zh-CN"
+        ? `你是一个知识分类专家。根据专家 ${sage.name} 在 ${sage.domain} 领域的原始内容，提取3-10个核心主题分类。
+
+分类要求：
+- 准确反映专家的核心专长领域
+- 分类粒度适中，不要过于宽泛或细致
+- 使用简洁的术语（2-6个字）`
+        : `You are a knowledge categorization expert. Based on the raw content from expert ${sage.name} in ${sage.domain}, extract 3-10 core topic categories.
+
+Requirements:
+- Accurately reflect the expert's core areas of expertise
+- Categories should be moderately granular, not too broad or too specific
+- Use concise terms (2-6 words)`,
     prompt: rawContent,
     maxRetries: 3,
   });
 
-  return result.object;
+  return result.object.categories;
 }
 
 /**
@@ -132,12 +136,15 @@ export async function extractMemories({
 }
 
 /**
- * Build Memory Document from extracted memories
+ * Build Memory Document from raw content (two-step process with streaming)
+ * Step 1: Clean and extract content with Gemini (large context)
+ * Step 2: Build structured document with Claude
  */
 export async function buildMemoryDocument({
   sage,
   content,
   locale,
+  onProgress,
 }: {
   sage: {
     name: string;
@@ -147,26 +154,100 @@ export async function buildMemoryDocument({
   };
   content: string;
   locale: Locale;
+  onProgress?: (stage: "cleaning" | "building", progress: number) => void;
 }): Promise<string> {
-  const result = await generateText({
-    model: llm("claude-sonnet-4-5"),
-    system: sageMemoryDocumentBuilderSystem({ sage, locale }),
-    prompt:
-      locale === "zh-CN"
-        ? `请根据以下内容构建记忆文档：
+  const logger = rootLogger.child({ sageId: sage.name });
+
+  // Step 1: Clean and extract content with Gemini
+  logger.info({ msg: "Step 1: Cleaning content with Gemini" });
+
+  const cleaningPrompt =
+    locale === "zh-CN"
+      ? `请清洗和整理以下原始内容，提取关键信息：
 
 ${content}
 
-生成完整的记忆文档。`
-        : `Build a Memory Document based on the following content:
+要求：
+- 移除无关内容和噪音
+- 保留所有有价值的知识点
+- 整理成清晰的文本格式
+- 保持原有的逻辑结构
+
+只输出清洗后的内容，不要添加额外说明。`
+      : `Clean and organize the following raw content, extract key information:
 
 ${content}
 
-Generate the complete Memory Document.`,
+Requirements:
+- Remove irrelevant content and noise
+- Retain all valuable knowledge points
+- Organize into clear text format
+- Maintain original logical structure
+
+Output only the cleaned content without additional explanations.`;
+
+  const cleaningResult = streamText({
+    model: llm("gemini-2.5-flash"),
+    prompt: cleaningPrompt,
     maxRetries: 3,
+    onChunk: ({ chunk }) => {
+      if (chunk.type === "text-delta" && onProgress) {
+        // Report progress during cleaning (we don't know exact progress, so just report activity)
+        onProgress("cleaning", 0.5);
+      }
+    },
   });
 
-  return result.text;
+  let extractedContent = "";
+  for await (const chunk of cleaningResult.textStream) {
+    extractedContent += chunk;
+  }
+
+  logger.info({
+    msg: "Step 1 completed",
+    extractedLength: extractedContent.length,
+  });
+
+  // Step 2: Build structured Memory Document with Claude
+  logger.info({ msg: "Step 2: Building Memory Document with Claude" });
+
+  const buildingPrompt =
+    locale === "zh-CN"
+      ? `请根据以下清洗后的内容，构建结构化的记忆文档：
+
+${extractedContent}
+
+生成完整的、结构化的记忆文档。`
+      : `Build a structured Memory Document based on the following cleaned content:
+
+${extractedContent}
+
+Generate a complete, structured Memory Document.`;
+
+  const buildingResult = streamText({
+    model: llm("claude-sonnet-4-5"),
+    system: sageMemoryDocumentBuilderSystem({ sage, locale }),
+    prompt: buildingPrompt,
+    maxRetries: 3,
+    onChunk: ({ chunk }) => {
+      if (chunk.type === "text-delta" && onProgress) {
+        // Report progress during building
+        onProgress("building", 0.5);
+      }
+    },
+  });
+
+  let memoryDocument = "";
+  for await (const chunk of buildingResult.textStream) {
+    memoryDocument += chunk;
+  }
+
+  logger.info({
+    msg: "Step 2 completed",
+    documentLength: memoryDocument.length,
+  });
+
+  return memoryDocument;
 }
 
 /**
@@ -278,16 +359,17 @@ export async function updateSageKnowledgeAnalysis({
 
 /**
  * Get sage by token with type-safe extra field casting
+ * Returns sage object and memoryDocument separately
  */
-export async function getSageByToken(token: string): Promise<
-  | (Omit<Sage, "expertise" | "attachments" | "extra"> & {
-      extra: SageExtra;
-      expertise: string[];
-      attachments: ChatMessageAttachment[];
-      user: Pick<User, "id" | "name" | "email">;
-    })
-  | null
-> {
+export async function getSageByToken(token: string): Promise<{
+  sage: Omit<Sage, "expertise" | "attachments" | "extra"> & {
+    extra: SageExtra;
+    expertise: string[];
+    attachments: ChatMessageAttachment[];
+    user: Pick<User, "id" | "name" | "email">;
+  };
+  memoryDocument: string | null;
+} | null> {
   const sage = await prisma.sage.findUnique({
     where: { token },
     include: {
@@ -308,20 +390,32 @@ export async function getSageByToken(token: string): Promise<
 
   if (!sage) return null;
 
+  const { memoryDocuments, ...sageData } = sage;
+
   return {
-    ...sage,
-    expertise: sage.expertise as string[],
-    attachments: sage.attachments as ChatMessageAttachment[],
-    extra: sage.extra as SageExtra,
-    // Get memory document from latest version
-    memoryDocument: sage.memoryDocuments[0]?.content ?? sage.memoryDocument,
+    sage: {
+      ...sageData,
+      expertise: sageData.expertise as string[],
+      attachments: sageData.attachments as ChatMessageAttachment[],
+      extra: sageData.extra as SageExtra,
+    },
+    memoryDocument: memoryDocuments[0]?.content ?? null,
   };
 }
 
 /**
  * Get sage by ID with type-safe extra field casting
+ * Returns sage object and memoryDocument separately
  */
-export async function getSageById(id: number) {
+export async function getSageById(id: number): Promise<{
+  sage: Omit<Sage, "expertise" | "attachments" | "extra"> & {
+    extra: SageExtra;
+    expertise: string[];
+    attachments: ChatMessageAttachment[];
+    user: Pick<User, "id" | "name" | "email">;
+  };
+  memoryDocument: string | null;
+} | null> {
   const sage = await prisma.sage.findUnique({
     where: { id },
     include: {
@@ -342,13 +436,16 @@ export async function getSageById(id: number) {
 
   if (!sage) return null;
 
+  const { memoryDocuments, ...sageData } = sage;
+
   return {
-    ...sage,
-    expertise: sage.expertise as string[],
-    attachments: sage.attachments as ChatMessageAttachment[],
-    extra: sage.extra as SageExtra,
-    // Get memory document from latest version
-    memoryDocument: sage.memoryDocuments[0]?.content ?? sage.memoryDocument,
+    sage: {
+      ...sageData,
+      expertise: sageData.expertise as string[],
+      attachments: sageData.attachments as ChatMessageAttachment[],
+      extra: sageData.extra as SageExtra,
+    },
+    memoryDocument: memoryDocuments[0]?.content ?? null,
   };
 }
 
@@ -453,12 +550,14 @@ export async function analyzeConversationForGaps({
   aiResponse: string;
   sage: { name: string; domain: string };
   locale: Locale;
-}): Promise<Array<{
-  area: string;
-  severity: "critical" | "important" | "nice-to-have";
-  description: string;
-  impact: string;
-}>> {
+}): Promise<
+  Array<{
+    area: string;
+    severity: "critical" | "important" | "nice-to-have";
+    description: string;
+    impact: string;
+  }>
+> {
   const conversationGapSchema = z.object({
     hasGap: z.boolean().describe("Whether a knowledge gap was detected"),
     gaps: z
@@ -470,11 +569,8 @@ export async function analyzeConversationForGaps({
             .describe("Severity of the gap"),
           description: z.string().describe("What's missing or inadequate"),
           impact: z.string().describe("Impact on expert's capability"),
-          suggestedQuestions: z
-            .array(z.string())
-            .describe("Questions to fill this gap")
-            .max(3),
-        })
+          suggestedQuestions: z.array(z.string()).describe("Questions to fill this gap").max(3),
+        }),
       )
       .describe("List of detected knowledge gaps")
       .optional(),
@@ -574,7 +670,6 @@ Analyze the above conversation and determine if there are knowledge gaps in the 
   }
 }
 
-
 /**
  * Create sage knowledge gaps in database
  */
@@ -588,7 +683,7 @@ export async function createSageKnowledgeGaps(
     sourceType: "analysis" | "conversation" | "system_suggestion";
     sourceDescription: string;
     sourceReference?: string;
-  }>
+  }>,
 ) {
   if (gaps.length === 0) return [];
 
@@ -626,7 +721,7 @@ export async function getPendingSageKnowledgeGaps(sageId: number) {
 export async function resolveSageKnowledgeGaps(
   gapIds: number[],
   resolvedBy: "interview" | "manual",
-  interviewId?: number
+  interviewId?: number,
 ) {
   if (gapIds.length === 0) return;
 
