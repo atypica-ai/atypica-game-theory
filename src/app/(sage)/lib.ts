@@ -125,7 +125,9 @@ export async function extractMemories({
   suggestedNewCategories: string[];
 }> {
   const result = await generateObject({
-    model: llm("claude-sonnet-4"),
+    // model: llm("claude-sonnet-4"),
+    // claude 生成 json 总是会出错
+    model: llm("gpt-5-mini"),
     schema: memoryExtractionSchema,
     system: sageMemoryExtractionSystem({ sage, existingCategories, locale }),
     prompt: content,
@@ -144,7 +146,6 @@ export async function buildMemoryDocument({
   sage,
   content,
   locale,
-  onProgress,
 }: {
   sage: {
     name: string;
@@ -154,7 +155,6 @@ export async function buildMemoryDocument({
   };
   content: string;
   locale: Locale;
-  onProgress?: (stage: "cleaning" | "building", progress: number) => void;
 }): Promise<string> {
   const logger = rootLogger.child({ sageId: sage.name });
 
@@ -191,9 +191,10 @@ Output only the cleaned content without additional explanations.`;
     prompt: cleaningPrompt,
     maxRetries: 3,
     onChunk: ({ chunk }) => {
-      if (chunk.type === "text-delta" && onProgress) {
+      if (chunk.type === "text-delta") {
         // Report progress during cleaning (we don't know exact progress, so just report activity)
-        onProgress("cleaning", 0.5);
+        // onProgress("cleaning", 0.5);
+        logger.info({ msg: "buildMemoryDocument", stage: "cleaning" });
       }
     },
   });
@@ -230,9 +231,9 @@ Generate a complete, structured Memory Document.`;
     prompt: buildingPrompt,
     maxRetries: 3,
     onChunk: ({ chunk }) => {
-      if (chunk.type === "text-delta" && onProgress) {
+      if (chunk.type === "text-delta") {
         // Report progress during building
-        onProgress("building", 0.5);
+        logger.info({ msg: "buildMemoryDocument", stage: "building" });
       }
     },
   });

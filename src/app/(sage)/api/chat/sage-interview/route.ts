@@ -11,12 +11,12 @@ import authOptions from "@/app/(auth)/authOptions";
 import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage } from "@/lib/textUtils";
 import { prisma } from "@/prisma/prisma";
-import { generateId, smoothStream, stepCountIs, streamText } from "ai";
+import { generateId, smoothStream, streamText } from "ai";
 import { getServerSession } from "next-auth";
 import { after, NextResponse } from "next/server";
 import { getSageById } from "../../../lib";
 import { sageInterviewConversationSystem } from "../../../prompt";
-import { SageInterviewToolName, sageInterviewTools } from "../../../tools";
+import { sageInterviewTools } from "../../../tools";
 import type { SageInterviewExtra } from "../../../types";
 
 export async function POST(req: Request) {
@@ -130,9 +130,6 @@ export async function POST(req: Request) {
 
   const mergedAbortSignal = AbortSignal.any([req.signal]);
 
-  // Count assistant messages to determine if we should end
-  const assistantCount = coreMessages.filter(({ role }) => role === "assistant").length;
-
   const streamTextResult = streamText({
     model: llm("claude-sonnet-4"),
     providerOptions: defaultProviderOptions,
@@ -148,29 +145,6 @@ export async function POST(req: Request) {
     messages: coreMessages,
 
     tools,
-
-    // Control tool usage based on conversation progress
-    prepareStep: async () => {
-      if (assistantCount < 5) {
-        // Early stage - just ask questions
-        return {
-          toolChoice: "auto",
-          activeTools: [SageInterviewToolName.updateProgress],
-        };
-      } else if (assistantCount < 7) {
-        // Mid stage - allow all tools
-        return {
-          toolChoice: "auto",
-        };
-      } else {
-        // Late stage - should consider ending
-        return {
-          toolChoice: "auto",
-        };
-      }
-    },
-
-    stopWhen: stepCountIs(1),
 
     experimental_transform: smoothStream({
       delayInMs: 30,

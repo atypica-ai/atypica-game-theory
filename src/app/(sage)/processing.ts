@@ -157,13 +157,6 @@ export async function extractKnowledgeOnly({
       },
       content: rawContent,
       locale,
-      onProgress: (stage, progress) => {
-        logger.info({
-          msg: "Memory document progress",
-          stage,
-          progress,
-        });
-      },
     });
 
     logger.info({
@@ -439,10 +432,7 @@ export async function updateMemoryDocumentFromInterview({
  * Process a single source to extract text
  * Handles text, file, and url types
  */
-async function processSource(
-  sourceId: number,
-  logger: typeof rootLogger,
-): Promise<string> {
+async function processSource(sourceId: number, logger: typeof rootLogger): Promise<string> {
   const source = await prisma.sageSource.findUnique({
     where: { id: sourceId },
   });
