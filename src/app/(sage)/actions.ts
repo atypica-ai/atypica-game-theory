@@ -474,8 +474,8 @@ export async function createSupplementaryInterview(sageId: number): Promise<
       const locale = await getLocale();
 
       // Get pending knowledge gaps from database
-      const { getPendingKnowledgeGaps, generateInterviewPlan } = await import("./lib");
-      const pendingGaps = await getPendingKnowledgeGaps(sageId);
+      const { getPendingSageKnowledgeGaps, generateInterviewPlan } = await import("./lib");
+      const pendingGaps = await getPendingSageKnowledgeGaps(sageId);
 
       if (pendingGaps.length === 0) {
         return {
@@ -508,7 +508,7 @@ export async function createSupplementaryInterview(sageId: number): Promise<
       // Create UserChat for interview
       const userChat = await createUserChat({
         userId: user.id,
-        kind: "sageInterview",
+        kind: "sageSession",
         title: `Interview: ${sage.name}`,
       });
 
@@ -730,7 +730,7 @@ export async function createOrGetSageChat(sageId: number): Promise<
       // Create new chat
       const userChat = await createUserChat({
         userId: user.id,
-        kind: "sageChat",
+        kind: "sageSession",
         title: `Chat with ${sage.name}`,
       });
 

@@ -56,7 +56,6 @@ export function ProcessingStatusSection({
     extract_knowledge: t("step.extractKnowledge"),
     build_memory_document: t("step.buildMemoryDocument"),
     analyze_completeness: t("step.analyzeCompleteness"),
-    generate_embedding: t("step.generateEmbedding"),
   };
 
   const isComplete = progress >= 1;

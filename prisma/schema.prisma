@@ -243,8 +243,7 @@ enum UserChatKind {
   study
   interview
   interviewSession
-  sageChat
-  sageInterview
+  sageSession
   misc
 }
 
@@ -589,16 +588,13 @@ model Sage {
   userId Int
   user   User   @relation(fields: [userId], references: [id])
 
-  name     String  @db.VarChar(255)
-  domain   String  @db.VarChar(255) // Professional domain (e.g., "Product Management", "AI Research")
+  name      String @db.VarChar(255)
+  domain    String @db.VarChar(255) // Professional domain (e.g., "Product Management", "AI Research")
   expertise Json   @default("[]") // Array of expertise areas
-  locale   String  @db.VarChar(16) // Primary language
+  locale    String @db.VarChar(16) // Primary language
 
   // Memory Document - Core knowledge base (like CLAUDE.md)
   memoryDocument String @db.Text
-
-  // Vector embedding for sage matching and retrieval
-  embedding Unsupported("halfvec(1024)")?
 
   // Configuration
   isPublic   Boolean @default(false) // Whether this sage is publicly shared
@@ -615,21 +611,20 @@ model Sage {
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
-  chats      SageChat[]
-  interviews SageInterview[]
-  sources    SageSource[]
-  knowledgeGaps KnowledgeGap[]
-  memoryDocumentVersions MemoryDocumentVersion[]
+  chats           SageChat[]
+  interviews      SageInterview[]
+  sources         SageSource[]
+  knowledgeGaps   SageKnowledgeGap[]
+  memoryDocuments SageMemoryDocument[]
 
-  @@index([embedding])
   @@index([userId, domain])
   @@index([isPublic, domain, locale])
 }
 
 model SageSource {
-  id     Int    @id @default(autoincrement())
+  id     Int  @id @default(autoincrement())
   sageId Int
-  sage   Sage   @relation(fields: [sageId], references: [id], onDelete: Cascade)
+  sage   Sage @relation(fields: [sageId], references: [id], onDelete: Cascade)
 
   // Source type
   type String @db.VarChar(32) // "text" | "file" | "url"
@@ -638,10 +633,10 @@ model SageSource {
   content Json // {text} or {objectUrl, name, mimeType, size} or {url}
 
   // Processing result
-  status String @default("pending") @db.VarChar(32) // "pending" | "processing" | "completed" | "failed"
-  title  String? @db.VarChar(255) // AI-generated title summarizing the source
+  status        String  @default("pending") @db.VarChar(32) // "pending" | "processing" | "completed" | "failed"
+  title         String? @db.VarChar(255) // AI-generated title summarizing the source
   extractedText String? @db.Text // Plain text extracted from source
-  error  String? @db.Text // Error message if failed
+  error         String? @db.Text // Error message if failed
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
@@ -696,15 +691,15 @@ model SageInterview {
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
-  resolvedGaps KnowledgeGap[] @relation("InterviewResolvedGaps")
+  resolvedGaps SageKnowledgeGap[] @relation("InterviewResolvedGaps")
 
   @@index([sageId, status])
 }
 
-model KnowledgeGap {
-  id     Int    @id @default(autoincrement())
+model SageKnowledgeGap {
+  id     Int  @id @default(autoincrement())
   sageId Int
-  sage   Sage   @relation(fields: [sageId], references: [id], onDelete: Cascade)
+  sage   Sage @relation(fields: [sageId], references: [id], onDelete: Cascade)
 
   // Gap content
   area        String @db.VarChar(255) // Knowledge area with gap
@@ -721,8 +716,8 @@ model KnowledgeGap {
   status String @default("pending") @db.VarChar(32) // "pending" | "resolved" | "deleted"
 
   // Resolution tracking
-  resolvedAt        DateTime?      @db.Timestamptz(6)
-  resolvedBy        String?        @db.VarChar(64) // "interview" | "manual"
+  resolvedAt            DateTime?      @db.Timestamptz(6)
+  resolvedBy            String?        @db.VarChar(64) // "interview" | "manual"
   resolvedByInterviewId Int?
   resolvedByInterview   SageInterview? @relation("InterviewResolvedGaps", fields: [resolvedByInterviewId], references: [id])
 
@@ -733,10 +728,10 @@ model KnowledgeGap {
   @@index([sageId, createdAt])
 }
 
-model MemoryDocumentVersion {
-  id      Int @id @default(autoincrement())
-  sageId  Int
-  sage    Sage @relation(fields: [sageId], references: [id], onDelete: Cascade)
+model SageMemoryDocument {
+  id     Int  @id @default(autoincrement())
+  sageId Int
+  sage   Sage @relation(fields: [sageId], references: [id], onDelete: Cascade)
 
   // Version control
   version Int // Version number, auto-increment per sage
@@ -745,9 +740,9 @@ model MemoryDocumentVersion {
   content String @db.Text // Memory document content
 
   // Metadata
-  source        String  @db.VarChar(64) // "initial" | "interview" | "manual"
+  source          String  @db.VarChar(64) // "initial" | "interview" | "manual"
   sourceReference String? @db.Text // Optional reference (e.g., interviewId)
-  changeNotes   String? @db.Text // Description of changes
+  changeNotes     String? @db.Text // Description of changes
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
 

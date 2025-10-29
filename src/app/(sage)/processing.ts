@@ -10,14 +10,13 @@ import type { Locale } from "next-intl";
 import {
   analyzeKnowledgeCompleteness,
   buildMemoryDocument,
-  createKnowledgeGaps,
-  createMemoryDocumentVersion,
+  createSageKnowledgeGaps,
+  createSageMemoryDocument,
   extractMemories,
-  generateSageEmbedding,
-  getPendingKnowledgeGaps,
+  getPendingSageKnowledgeGaps,
   getSageById,
   processInitialContent,
-  resolveKnowledgeGaps,
+  resolveSageKnowledgeGaps,
   updateSageKnowledgeAnalysis,
   updateSageProcessingStatus,
 } from "./lib";
@@ -200,7 +199,7 @@ export async function processNewSage({
       }
 
       // Save Memory Document as first version
-      await createMemoryDocumentVersion({
+      await createSageMemoryDocument({
         sageId,
         content: memoryDocument,
         source: "initial",
@@ -260,12 +259,12 @@ export async function processNewSage({
       await updateSageKnowledgeAnalysis({ sageId, analysis });
 
       // Create knowledge gaps in database (only if they don't exist yet)
-      const existingGaps = await prisma.knowledgeGap.count({
+      const existingGaps = await prisma.sageKnowledgeGap.count({
         where: { sageId, sourceType: "analysis" },
       });
 
       if (existingGaps === 0 && analysis.knowledgeGaps.length > 0) {
-        await createKnowledgeGaps(
+        await createSageKnowledgeGaps(
           analysis.knowledgeGaps.map((gap) => ({
             sageId,
             area: gap.area,
@@ -279,52 +278,10 @@ export async function processNewSage({
       }
     }
 
-    // Step 5: Generate embedding
-    // Check if embedding already exists by querying the database
-    const sageWithEmbedding = await prisma.$queryRaw<Array<{ embedding: unknown }>>`
-      SELECT embedding FROM "Sage" WHERE id = ${sageId}
-    `;
-    const hasEmbedding = sageWithEmbedding[0]?.embedding !== null;
-
-    const needsEmbedding = !hasEmbedding ||
-      currentStep !== SAGE_PROCESSING_STEPS.GENERATE_EMBEDDING;
-
-    if (needsEmbedding) {
-      await updateSageProcessingStatus({
-        sageId,
-        step: SAGE_PROCESSING_STEPS.GENERATE_EMBEDDING,
-        progress: 0.9,
-      });
-
-      const embedding = await generateSageEmbedding(updatedSage.memoryDocument);
-
-      logger.info({
-        msg: "Embedding generated",
-        embeddingDimensions: embedding.length,
-      });
-
-      // Track tokens for embedding
-      if (statReport) {
-        await statReport("tokens", 0, {
-          reportedBy: "generate embedding",
-          modelName: "jina-embeddings-v3",
-          userId: updatedSage.userId,
-        });
-      }
-
-      // Save embedding
-      await prisma.$executeRaw`
-        UPDATE "Sage"
-        SET "embedding" = ${embedding}::halfvec(1024),
-            "updatedAt" = NOW()
-        WHERE "id" = ${sageId}
-      `;
-    }
-
     // Mark processing complete
     await updateSageProcessingStatus({
       sageId,
-      step: SAGE_PROCESSING_STEPS.GENERATE_EMBEDDING,
+      step: SAGE_PROCESSING_STEPS.ANALYZE_COMPLETENESS,
       progress: 1,
     });
 
@@ -429,7 +386,7 @@ export async function updateMemoryDocumentFromInterview({
     });
 
     // Save as new version
-    await createMemoryDocumentVersion({
+    await createSageMemoryDocument({
       sageId,
       content: updatedMemoryDocument,
       source: "interview",
@@ -437,17 +394,8 @@ export async function updateMemoryDocumentFromInterview({
       changeNotes: `Updated from interview: ${interview.purpose}`,
     });
 
-    // Regenerate embedding
-    const embedding = await generateSageEmbedding(updatedMemoryDocument);
-    await prisma.$executeRaw`
-      UPDATE "Sage"
-      SET "embedding" = ${embedding}::halfvec(1024),
-          "updatedAt" = NOW()
-      WHERE "id" = ${sageId}
-    `;
-
     // Analyze which gaps were resolved by this interview
-    const pendingGaps = await getPendingKnowledgeGaps(sageId);
+    const pendingGaps = await getPendingSageKnowledgeGaps(sageId);
     const resolvedGapIds: number[] = [];
 
     // Simple heuristic: if the interview discusses the gap area, mark as resolved
@@ -464,7 +412,7 @@ export async function updateMemoryDocumentFromInterview({
 
     // Resolve gaps automatically
     if (resolvedGapIds.length > 0) {
-      await resolveKnowledgeGaps(resolvedGapIds, "interview", interviewId);
+      await resolveSageKnowledgeGaps(resolvedGapIds, "interview", interviewId);
 
       logger.info({
         msg: "Auto-resolved knowledge gaps from interview",

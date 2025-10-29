@@ -1,4 +1,3 @@
-import { createTextEmbedding } from "@/ai/embedding";
 import { llm } from "@/ai/provider";
 import { rootLogger } from "@/lib/logging";
 import { generateToken } from "@/lib/utils";
@@ -216,15 +215,6 @@ export async function analyzeKnowledgeCompleteness({
 }
 
 /**
- * Generate vector embedding for Memory Document
- */
-export async function generateSageEmbedding(memoryDocument: string): Promise<number[]> {
-  const embedding = await createTextEmbedding(memoryDocument, "retrieval.passage");
-
-  return embedding;
-}
-
-/**
  * Update sage's processing status in extra field
  */
 export async function updateSageProcessingStatus({
@@ -244,7 +234,7 @@ export async function updateSageProcessingStatus({
   if (progress !== undefined) updateData.progress = progress;
   if (error !== undefined) updateData.error = error;
 
-  if (step === SAGE_PROCESSING_STEPS.GENERATE_EMBEDDING && !error) {
+  if (step === SAGE_PROCESSING_STEPS.ANALYZE_COMPLETENESS && progress === 1 && !error) {
     updateData.completedAt = new Date().toISOString();
   }
 
@@ -572,9 +562,9 @@ Analyze the above conversation and determine if there are knowledge gaps in the 
 
 
 /**
- * Create knowledge gaps in database
+ * Create sage knowledge gaps in database
  */
-export async function createKnowledgeGaps(
+export async function createSageKnowledgeGaps(
   gaps: Array<{
     sageId: number;
     area: string;
@@ -588,12 +578,12 @@ export async function createKnowledgeGaps(
 ) {
   if (gaps.length === 0) return [];
 
-  const created = await prisma.knowledgeGap.createMany({
+  const created = await prisma.sageKnowledgeGap.createMany({
     data: gaps,
   });
 
   rootLogger.info({
-    msg: "Created knowledge gaps",
+    msg: "Created sage knowledge gaps",
     count: created.count,
   });
 
@@ -601,10 +591,10 @@ export async function createKnowledgeGaps(
 }
 
 /**
- * Get pending knowledge gaps for a sage
+ * Get pending sage knowledge gaps
  */
-export async function getPendingKnowledgeGaps(sageId: number) {
-  return prisma.knowledgeGap.findMany({
+export async function getPendingSageKnowledgeGaps(sageId: number) {
+  return prisma.sageKnowledgeGap.findMany({
     where: {
       sageId,
       status: "pending",
@@ -617,16 +607,16 @@ export async function getPendingKnowledgeGaps(sageId: number) {
 }
 
 /**
- * Resolve knowledge gaps
+ * Resolve sage knowledge gaps
  */
-export async function resolveKnowledgeGaps(
+export async function resolveSageKnowledgeGaps(
   gapIds: number[],
   resolvedBy: "interview" | "manual",
   interviewId?: number
 ) {
   if (gapIds.length === 0) return;
 
-  await prisma.knowledgeGap.updateMany({
+  await prisma.sageKnowledgeGap.updateMany({
     where: {
       id: { in: gapIds },
     },
@@ -639,7 +629,7 @@ export async function resolveKnowledgeGaps(
   });
 
   rootLogger.info({
-    msg: "Resolved knowledge gaps",
+    msg: "Resolved sage knowledge gaps",
     gapIds,
     resolvedBy,
     interviewId,
@@ -647,12 +637,12 @@ export async function resolveKnowledgeGaps(
 }
 
 /**
- * Delete knowledge gaps
+ * Delete sage knowledge gaps
  */
-export async function deleteKnowledgeGaps(gapIds: number[]) {
+export async function deleteSageKnowledgeGaps(gapIds: number[]) {
   if (gapIds.length === 0) return;
 
-  await prisma.knowledgeGap.updateMany({
+  await prisma.sageKnowledgeGap.updateMany({
     where: {
       id: { in: gapIds },
     },
@@ -662,15 +652,15 @@ export async function deleteKnowledgeGaps(gapIds: number[]) {
   });
 
   rootLogger.info({
-    msg: "Deleted knowledge gaps",
+    msg: "Deleted sage knowledge gaps",
     gapIds,
   });
 }
 
 /**
- * Create a new memory document version with optimistic locking
+ * Create a new sage memory document version with optimistic locking
  */
-export async function createMemoryDocumentVersion({
+export async function createSageMemoryDocument({
   sageId,
   content,
   source,
@@ -684,7 +674,7 @@ export async function createMemoryDocumentVersion({
   changeNotes?: string;
 }) {
   // Get the latest version number
-  const latestVersion = await prisma.memoryDocumentVersion.findFirst({
+  const latestVersion = await prisma.sageMemoryDocument.findFirst({
     where: { sageId },
     orderBy: { version: "desc" },
     select: { version: true },
@@ -693,7 +683,7 @@ export async function createMemoryDocumentVersion({
   const newVersion = (latestVersion?.version ?? 0) + 1;
 
   // Create new version
-  const version = await prisma.memoryDocumentVersion.create({
+  const version = await prisma.sageMemoryDocument.create({
     data: {
       sageId,
       version: newVersion,
@@ -711,7 +701,7 @@ export async function createMemoryDocumentVersion({
   });
 
   // Clean up old versions (keep only latest 20)
-  const allVersions = await prisma.memoryDocumentVersion.findMany({
+  const allVersions = await prisma.sageMemoryDocument.findMany({
     where: { sageId },
     orderBy: { version: "desc" },
     select: { id: true },
@@ -719,7 +709,7 @@ export async function createMemoryDocumentVersion({
   });
 
   if (allVersions.length > 0) {
-    await prisma.memoryDocumentVersion.deleteMany({
+    await prisma.sageMemoryDocument.deleteMany({
       where: {
         id: { in: allVersions.map((v) => v.id) },
       },
@@ -733,7 +723,7 @@ export async function createMemoryDocumentVersion({
   }
 
   rootLogger.info({
-    msg: "Created memory document version",
+    msg: "Created sage memory document version",
     sageId,
     version: newVersion,
     source,
@@ -743,20 +733,20 @@ export async function createMemoryDocumentVersion({
 }
 
 /**
- * Get latest memory document version
+ * Get latest sage memory document version
  */
-export async function getLatestMemoryDocumentVersion(sageId: number) {
-  return prisma.memoryDocumentVersion.findFirst({
+export async function getLatestSageMemoryDocument(sageId: number) {
+  return prisma.sageMemoryDocument.findFirst({
     where: { sageId },
     orderBy: { version: "desc" },
   });
 }
 
 /**
- * Get memory document version history
+ * Get sage memory document version history
  */
-export async function getMemoryDocumentVersionHistory(sageId: number, limit = 20) {
-  return prisma.memoryDocumentVersion.findMany({
+export async function getSageMemoryDocumentHistory(sageId: number, limit = 20) {
+  return prisma.sageMemoryDocument.findMany({
     where: { sageId },
     orderBy: { version: "desc" },
     take: limit,

@@ -130,8 +130,7 @@
         "parseContent": "Parsing Content",
         "extractKnowledge": "Extracting Knowledge",
         "buildMemoryDocument": "Building Memory Document",
-        "analyzeCompleteness": "Analyzing Completeness",
-        "generateEmbedding": "Generating Embedding"
+        "analyzeCompleteness": "Analyzing Completeness"
       },
       "memoryDocument": "Memory Document",
       "consultations": "My Consultations",

@@ -14,7 +14,7 @@ import { prisma } from "@/prisma/prisma";
 import { generateId, smoothStream, stepCountIs, streamText } from "ai";
 import { getServerSession } from "next-auth";
 import { after, NextResponse } from "next/server";
-import { analyzeConversationForGaps, createKnowledgeGaps, getSageByToken } from "../../../lib";
+import { analyzeConversationForGaps, createSageKnowledgeGaps, getSageByToken } from "../../../lib";
 import { sageChatSystem } from "../../../prompt";
 
 export async function POST(req: Request) {
@@ -202,7 +202,7 @@ export async function POST(req: Request) {
 
               if (gaps.length > 0) {
                 // Create knowledge gap records with conversation source
-                await createKnowledgeGaps(
+                await createSageKnowledgeGaps(
                   gaps.map((gap) => ({
                     sageId: sage.id,
                     area: gap.area,

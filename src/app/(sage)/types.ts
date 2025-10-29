@@ -165,7 +165,6 @@ export const SAGE_PROCESSING_STEPS = {
   EXTRACT_KNOWLEDGE: "extract_knowledge",
   BUILD_MEMORY_DOCUMENT: "build_memory_document",
   ANALYZE_COMPLETENESS: "analyze_completeness",
-  GENERATE_EMBEDDING: "generate_embedding",
 } as const;
 
 export type SageProcessingStep =

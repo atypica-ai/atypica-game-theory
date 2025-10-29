@@ -1,13 +1,5 @@
 -- AlterEnum
--- This migration adds more than one value to an enum.
--- With PostgreSQL versions 11 and earlier, this is not possible
--- in a single migration. This can be worked around by creating
--- multiple migrations, each migration adding only one value to
--- the enum.
-
-
-ALTER TYPE "UserChatKind" ADD VALUE 'sageChat';
-ALTER TYPE "UserChatKind" ADD VALUE 'sageInterview';
+ALTER TYPE "UserChatKind" ADD VALUE 'sageSession';
 
 -- CreateTable
 CREATE TABLE "Sage" (
@@ -19,7 +11,6 @@ CREATE TABLE "Sage" (
     "expertise" JSONB NOT NULL DEFAULT '[]',
     "locale" VARCHAR(16) NOT NULL,
     "memoryDocument" TEXT NOT NULL,
-    "embedding" halfvec(1024),
     "isPublic" BOOLEAN NOT NULL DEFAULT false,
     "allowTools" BOOLEAN NOT NULL DEFAULT true,
     "chatCount" INTEGER NOT NULL DEFAULT 0,
@@ -30,6 +21,22 @@ CREATE TABLE "Sage" (
     "updatedAt" TIMESTAMPTZ(6) NOT NULL,
 
     CONSTRAINT "Sage_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "SageSource" (
+    "id" SERIAL NOT NULL,
+    "sageId" INTEGER NOT NULL,
+    "type" VARCHAR(32) NOT NULL,
+    "content" JSONB NOT NULL,
+    "status" VARCHAR(32) NOT NULL DEFAULT 'pending',
+    "title" VARCHAR(255),
+    "extractedText" TEXT,
+    "error" TEXT,
+    "createdAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ(6) NOT NULL,
+
+    CONSTRAINT "SageSource_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -64,17 +71,52 @@ CREATE TABLE "SageInterview" (
     CONSTRAINT "SageInterview_pkey" PRIMARY KEY ("id")
 );
 
--- CreateIndex
-CREATE UNIQUE INDEX "Sage_token_key" ON "Sage"("token");
+-- CreateTable
+CREATE TABLE "SageKnowledgeGap" (
+    "id" SERIAL NOT NULL,
+    "sageId" INTEGER NOT NULL,
+    "area" VARCHAR(255) NOT NULL,
+    "description" TEXT NOT NULL,
+    "severity" VARCHAR(32) NOT NULL,
+    "impact" TEXT NOT NULL,
+    "sourceType" VARCHAR(64) NOT NULL,
+    "sourceDescription" TEXT NOT NULL,
+    "sourceReference" TEXT,
+    "status" VARCHAR(32) NOT NULL DEFAULT 'pending',
+    "resolvedAt" TIMESTAMPTZ(6),
+    "resolvedBy" VARCHAR(64),
+    "resolvedByInterviewId" INTEGER,
+    "createdAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ(6) NOT NULL,
+
+    CONSTRAINT "SageKnowledgeGap_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "SageMemoryDocument" (
+    "id" SERIAL NOT NULL,
+    "sageId" INTEGER NOT NULL,
+    "version" INTEGER NOT NULL,
+    "content" TEXT NOT NULL,
+    "source" VARCHAR(64) NOT NULL,
+    "sourceReference" TEXT,
+    "changeNotes" TEXT,
+    "createdAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "SageMemoryDocument_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateIndex
-CREATE INDEX "Sage_embedding_idx" ON "Sage"("embedding");
+CREATE UNIQUE INDEX "Sage_token_key" ON "Sage"("token");
 
 -- CreateIndex
 CREATE INDEX "Sage_userId_domain_idx" ON "Sage"("userId", "domain");
 
 -- CreateIndex
 CREATE INDEX "Sage_isPublic_domain_locale_idx" ON "Sage"("isPublic", "domain", "locale");
+
+-- CreateIndex
+CREATE INDEX "SageSource_sageId_status_idx" ON "SageSource"("sageId", "status");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "SageChat_userChatId_key" ON "SageChat"("userChatId");
@@ -91,8 +133,23 @@ CREATE UNIQUE INDEX "SageInterview_userChatId_key" ON "SageInterview"("userChatI
 -- CreateIndex
 CREATE INDEX "SageInterview_sageId_status_idx" ON "SageInterview"("sageId", "status");
 
+-- CreateIndex
+CREATE INDEX "SageKnowledgeGap_sageId_status_idx" ON "SageKnowledgeGap"("sageId", "status");
+
+-- CreateIndex
+CREATE INDEX "SageKnowledgeGap_sageId_createdAt_idx" ON "SageKnowledgeGap"("sageId", "createdAt");
+
+-- CreateIndex
+CREATE INDEX "SageMemoryDocument_sageId_version_idx" ON "SageMemoryDocument"("sageId", "version" DESC);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "SageMemoryDocument_sageId_version_key" ON "SageMemoryDocument"("sageId", "version");
+
 -- AddForeignKey
 ALTER TABLE "Sage" ADD CONSTRAINT "Sage_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "SageSource" ADD CONSTRAINT "SageSource_sageId_fkey" FOREIGN KEY ("sageId") REFERENCES "Sage"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "SageChat" ADD CONSTRAINT "SageChat_sageId_fkey" FOREIGN KEY ("sageId") REFERENCES "Sage"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -108,3 +165,12 @@ ALTER TABLE "SageInterview" ADD CONSTRAINT "SageInterview_sageId_fkey" FOREIGN K
 
 -- AddForeignKey
 ALTER TABLE "SageInterview" ADD CONSTRAINT "SageInterview_userChatId_fkey" FOREIGN KEY ("userChatId") REFERENCES "UserChat"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "SageKnowledgeGap" ADD CONSTRAINT "SageKnowledgeGap_sageId_fkey" FOREIGN KEY ("sageId") REFERENCES "Sage"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "SageKnowledgeGap" ADD CONSTRAINT "SageKnowledgeGap_resolvedByInterviewId_fkey" FOREIGN KEY ("resolvedByInterviewId") REFERENCES "SageInterview"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "SageMemoryDocument" ADD CONSTRAINT "SageMemoryDocument_sageId_fkey" FOREIGN KEY ("sageId") REFERENCES "Sage"("id") ON DELETE CASCADE ON UPDATE CASCADE;

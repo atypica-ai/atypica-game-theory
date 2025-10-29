@@ -130,8 +130,7 @@
         "parseContent": "解析内容",
         "extractKnowledge": "提取知识",
         "buildMemoryDocument": "构建记忆文档",
-        "analyzeCompleteness": "分析完整性",
-        "generateEmbedding": "生成向量"
+        "analyzeCompleteness": "分析完整性"
       },
       "memoryDocument": "记忆文档",
       "consultations": "我的咨询",
