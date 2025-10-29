@@ -593,9 +593,6 @@ model Sage {
   expertise Json   @default("[]") // Array of expertise areas
   locale    String @db.VarChar(16) // Primary language
 
-  // Memory Document - Core knowledge base (like CLAUDE.md)
-  memoryDocument String @db.Text
-
   // Configuration
   isPublic   Boolean @default(false) // Whether this sage is publicly shared
   allowTools Boolean @default(true) // Whether sage can use tools (deep research, search)

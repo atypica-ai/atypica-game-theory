@@ -298,6 +298,11 @@ export async function getSageByToken(token: string): Promise<
           email: true,
         },
       },
+      memoryDocuments: {
+        orderBy: { version: "desc" },
+        take: 1,
+        select: { content: true },
+      },
     },
   });
 
@@ -308,6 +313,8 @@ export async function getSageByToken(token: string): Promise<
     expertise: sage.expertise as string[],
     attachments: sage.attachments as ChatMessageAttachment[],
     extra: sage.extra as SageExtra,
+    // Get memory document from latest version
+    memoryDocument: sage.memoryDocuments[0]?.content ?? sage.memoryDocument,
   };
 }
 
@@ -325,6 +332,11 @@ export async function getSageById(id: number) {
           email: true,
         },
       },
+      memoryDocuments: {
+        orderBy: { version: "desc" },
+        take: 1,
+        select: { content: true },
+      },
     },
   });
 
@@ -335,6 +347,8 @@ export async function getSageById(id: number) {
     expertise: sage.expertise as string[],
     attachments: sage.attachments as ChatMessageAttachment[],
     extra: sage.extra as SageExtra,
+    // Get memory document from latest version
+    memoryDocument: sage.memoryDocuments[0]?.content ?? sage.memoryDocument,
   };
 }
 
@@ -694,12 +708,6 @@ export async function createSageMemoryDocument({
     },
   });
 
-  // Update Sage's memoryDocument field to point to latest content
-  await prisma.sage.update({
-    where: { id: sageId },
-    data: { memoryDocument: content },
-  });
-
   // Clean up old versions (keep only latest 20)
   const allVersions = await prisma.sageMemoryDocument.findMany({
     where: { sageId },
@@ -740,6 +748,15 @@ export async function getLatestSageMemoryDocument(sageId: number) {
     where: { sageId },
     orderBy: { version: "desc" },
   });
+}
+
+/**
+ * Get latest sage memory document content (convenience function)
+ * Returns null if no memory document exists
+ */
+export async function getSageMemoryDocumentContent(sageId: number): Promise<string | null> {
+  const latest = await getLatestSageMemoryDocument(sageId);
+  return latest?.content ?? null;
 }
 
 /**

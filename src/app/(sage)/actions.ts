@@ -41,15 +41,8 @@ export async function createSage(
           domain: validated.domain,
           locale: validated.locale,
           expertise: [],
-          memoryDocument: "", // Will be generated in background
           attachments: [], // Deprecated, keeping for backward compatibility
-          extra: {
-            processing: {
-              step: "pending",
-              progress: 0,
-              startedAt: new Date().toISOString(),
-            },
-          },
+          extra: {},
           // Create sources
           sources: {
             create: validated.sources.map((source) => ({

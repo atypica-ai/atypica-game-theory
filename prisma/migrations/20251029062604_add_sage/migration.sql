@@ -10,7 +10,6 @@ CREATE TABLE "Sage" (
     "domain" VARCHAR(255) NOT NULL,
     "expertise" JSONB NOT NULL DEFAULT '[]',
     "locale" VARCHAR(16) NOT NULL,
-    "memoryDocument" TEXT NOT NULL,
     "isPublic" BOOLEAN NOT NULL DEFAULT false,
     "allowTools" BOOLEAN NOT NULL DEFAULT true,
     "chatCount" INTEGER NOT NULL DEFAULT 0,
