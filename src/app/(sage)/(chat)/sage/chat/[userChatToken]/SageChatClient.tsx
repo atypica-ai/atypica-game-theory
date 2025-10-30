@@ -9,7 +9,7 @@ import type { Sage, User } from "@/prisma/client";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { useSession } from "next-auth/react";
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 
 export function SageChatClient({
   userChatToken,
@@ -25,7 +25,7 @@ export function SageChatClient({
   initialMessages?: TSageMessageWithTool[];
 }) {
   const { data: session } = useSession();
-
+  const requestSentRef = useRef(false);
   const extraRequestPayload = useMemo(() => ({ userChatToken: userChatToken }), [userChatToken]);
 
   // Chat hooks
@@ -53,6 +53,18 @@ export function SageChatClient({
     setMessages: useChatHelpers.setMessages,
     sendMessage: useChatHelpers.sendMessage,
   });
+
+  // Auto-start interview if no messages
+  useEffect(() => {
+    if (requestSentRef.current) return;
+    requestSentRef.current = true;
+    if (initialMessages.length === 0) {
+      // If no initial message, start the conversation with AI
+      useChatRef.current.sendMessage({ text: "[READY]" });
+    } else if (initialMessages[initialMessages.length - 1]?.role === "user") {
+      useChatRef.current.regenerate();
+    }
+  }, [initialMessages]);
 
   return (
     <FitToViewport className="flex flex-col overflow-hidden">
