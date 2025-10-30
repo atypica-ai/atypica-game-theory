@@ -12,6 +12,7 @@ import {
   UserIcon,
   UsersIcon,
   VideoIcon,
+  Volume2Icon,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
@@ -69,6 +70,17 @@ export default function AdminDashboard() {
           <p className="text-sm text-muted-foreground">
             View studies and manage featured studies that appear on the homepage
           </p>
+        </Link>
+
+        <Link
+          href="/admin/podcast-audio-test"
+          className="rounded-lg border bg-card p-4 shadow-sm hover:shadow-md transition-shadow"
+        >
+          <div className="flex items-center mb-2">
+            <Volume2Icon className="h-5 w-5 mr-2" />
+            <h2 className="text-xl font-semibold">Podcast Audio Test</h2>
+          </div>
+          <p className="text-sm text-muted-foreground">Test podcast audio generation</p>
         </Link>
 
         <Link
