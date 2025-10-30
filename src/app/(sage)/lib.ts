@@ -7,11 +7,11 @@ import { generateObject, streamText } from "ai";
 import { Locale } from "next-intl";
 import { z } from "zod";
 import {
-  sageKnowledgeAnalysisSystem,
+  sageKnowledgeGapsOnlySystem,
   sageMemoryDocumentBuilderSystem,
   sageMemoryExtractionSystem,
 } from "./prompt";
-import type { ExtractedMemory, KnowledgeAnalysisResult, SageExtra } from "./types";
+import type { ExtractedMemory, SageExtra } from "./types";
 import { SAGE_PROCESSING_STEPS } from "./types";
 
 // ===== Content Processing Schemas =====
@@ -37,18 +37,7 @@ const memoryExtractionSchema = z.object({
     .describe("New categories discovered that don't fit existing ones"),
 });
 
-const knowledgeAnalysisSchema = z.object({
-  overallScore: z.number().min(0).max(100).describe("Overall knowledge completeness score"),
-  dimensions: z.array(
-    z.object({
-      name: z.string().describe("Dimension name"),
-      nameKey: z.string().optional().describe("i18n key for dimension name"),
-      score: z.number().min(0).max(100).describe("Score for this dimension"),
-      level: z.enum(["high", "medium", "low"]).describe("Level assessment"),
-      assessment: z.string().describe("Detailed assessment explanation"),
-      improvementSuggestions: z.array(z.string()).describe("Specific suggestions for improvement"),
-    }),
-  ),
+const knowledgeGapsSchema = z.object({
   knowledgeGaps: z.array(
     z.object({
       area: z.string().describe("Knowledge area with gaps"),
@@ -58,9 +47,6 @@ const knowledgeAnalysisSchema = z.object({
       suggestedQuestions: z.array(z.string()).describe("Questions to fill this gap"),
     }),
   ),
-  strengths: z.array(z.string()).describe("What the expert knows well"),
-  recommendations: z.array(z.string()).describe("Overall recommendations"),
-  shouldInterview: z.boolean().describe("Whether supplementary interview is recommended"),
 });
 
 // ===== Token Generation =====
@@ -252,9 +238,9 @@ Generate a complete, structured Memory Document.`;
 }
 
 /**
- * Analyze knowledge completeness of a Memory Document
+ * Analyze knowledge gaps from Memory Document
  */
-export async function analyzeKnowledgeCompleteness({
+export async function analyzeKnowledgeGaps({
   sage,
   memoryDocument,
   locale,
@@ -262,38 +248,24 @@ export async function analyzeKnowledgeCompleteness({
   sage: { name: string; domain: string; expertise: string[] };
   memoryDocument: string;
   locale: Locale;
-}): Promise<KnowledgeAnalysisResult> {
-  // Add dimension name i18n keys
-  const dimensionNameKeys = [
-    "sage.analysis.dimensions.foundationalTheory",
-    "sage.analysis.dimensions.practicalExperience",
-    "sage.analysis.dimensions.industryInsights",
-    "sage.analysis.dimensions.problemSolving",
-    "sage.analysis.dimensions.toolsAndMethodologies",
-    "sage.analysis.dimensions.communicationSkills",
-    "sage.analysis.dimensions.continuousLearning",
-  ];
-
+}): Promise<
+  Array<{
+    area: string;
+    severity: "critical" | "important" | "nice-to-have";
+    description: string;
+    impact: string;
+    suggestedQuestions: string[];
+  }>
+> {
   const result = await generateObject({
     model: llm("claude-sonnet-4"),
-    schema: knowledgeAnalysisSchema,
-    system: sageKnowledgeAnalysisSystem({ sage, locale }),
+    schema: knowledgeGapsSchema,
+    system: sageKnowledgeGapsOnlySystem({ sage, locale }),
     prompt: memoryDocument,
     maxRetries: 3,
   });
 
-  const analysisData = result.object;
-
-  // Add i18n keys to dimensions
-  const dimensionsWithKeys = analysisData.dimensions.map((dim, index) => ({
-    ...dim,
-    nameKey: dimensionNameKeys[index] || dim.name,
-  }));
-
-  return {
-    ...analysisData,
-    dimensions: dimensionsWithKeys,
-  };
+  return result.object.knowledgeGaps;
 }
 
 /**
@@ -331,32 +303,6 @@ export async function updateSageProcessingStatus({
   `;
 }
 
-/**
- * Update sage's knowledge analysis in extra field
- */
-export async function updateSageKnowledgeAnalysis({
-  sageId,
-  analysis,
-}: {
-  sageId: number;
-  analysis: KnowledgeAnalysisResult;
-}) {
-  const analysisData = {
-    overallScore: analysis.overallScore,
-    dimensions: analysis.dimensions,
-    knowledgeGaps: analysis.knowledgeGaps,
-    analyzedAt: new Date().toISOString(),
-  };
-
-  await prisma.$executeRaw`
-    UPDATE "Sage"
-    SET "extra" = COALESCE("extra", '{}'::jsonb) || jsonb_build_object(
-      'knowledgeAnalysis', ${JSON.stringify(analysisData)}::jsonb
-    ),
-    "updatedAt" = NOW()
-    WHERE "id" = ${sageId}
-  `;
-}
 
 /**
  * Get sage by token with type-safe extra field casting

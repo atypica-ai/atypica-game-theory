@@ -8,7 +8,7 @@ import type { SageSourceContent } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import type { Locale } from "next-intl";
 import {
-  analyzeKnowledgeCompleteness,
+  analyzeKnowledgeGaps,
   buildMemoryDocument,
   createSageKnowledgeGaps,
   createSageMemoryDocument,
@@ -16,7 +16,6 @@ import {
   getPendingSageKnowledgeGaps,
   getSageById,
   resolveSageKnowledgeGaps,
-  updateSageKnowledgeAnalysis,
 } from "./lib";
 
 /**
@@ -221,9 +220,9 @@ export async function analyzeKnowledgeOnly({
       throw new Error("Memory document not available");
     }
 
-    logger.info({ msg: "Analyzing knowledge completeness" });
+    logger.info({ msg: "Analyzing knowledge gaps" });
 
-    const analysis = await analyzeKnowledgeCompleteness({
+    const knowledgeGaps = await analyzeKnowledgeGaps({
       sage: {
         name: sage.name,
         domain: sage.domain,
@@ -234,31 +233,26 @@ export async function analyzeKnowledgeOnly({
     });
 
     logger.info({
-      msg: "Knowledge analysis completed",
-      overallScore: analysis.overallScore,
-      dimensionsCount: analysis.dimensions.length,
-      knowledgeGapsCount: analysis.knowledgeGaps.length,
+      msg: "Knowledge gaps analysis completed",
+      knowledgeGapsCount: knowledgeGaps.length,
     });
 
     if (statReport) {
       await statReport("tokens", 0, {
-        reportedBy: "analyze knowledge",
+        reportedBy: "analyze knowledge gaps",
         modelName: "claude-sonnet-4",
         userId: sage.userId,
       });
     }
-
-    // Save analysis
-    await updateSageKnowledgeAnalysis({ sageId, analysis });
 
     // Create knowledge gaps in database
     const existingGaps = await prisma.sageKnowledgeGap.count({
       where: { sageId, sourceType: "analysis" },
     });
 
-    if (existingGaps === 0 && analysis.knowledgeGaps.length > 0) {
+    if (existingGaps === 0 && knowledgeGaps.length > 0) {
       await createSageKnowledgeGaps(
-        analysis.knowledgeGaps.map((gap) => ({
+        knowledgeGaps.map((gap) => ({
           sageId,
           area: gap.area,
           description: gap.description,
@@ -270,7 +264,7 @@ export async function analyzeKnowledgeOnly({
       );
     }
 
-    logger.info({ msg: "Analysis completed successfully" });
+    logger.info({ msg: "Knowledge gaps analysis completed successfully" });
   } catch (error) {
     logger.error({
       msg: "Analysis failed",

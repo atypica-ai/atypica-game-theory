@@ -20,11 +20,9 @@ export function MemoryTab({ sage, memoryDocument }: { sage: SageWithExtra; memor
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const hasMemoryDocument = !!memoryDocument;
-  const hasAnalysis = !!sage.extra?.knowledgeAnalysis?.overallScore;
 
-  // Simple conditions: no complex state checking
-  const canExtract = !hasMemoryDocument; // Can extract if no memory document yet
-  const canAnalyze = hasMemoryDocument && !hasAnalysis; // Can analyze if has memory but no analysis
+  // Simple condition: can extract if no memory document yet
+  const canExtract = !hasMemoryDocument;
 
   const handleExtractKnowledge = useCallback(async () => {
     setIsExtracting(true);
@@ -80,7 +78,7 @@ export function MemoryTab({ sage, memoryDocument }: { sage: SageWithExtra; memor
           </Button>
           <Button
             onClick={handleAnalyze}
-            disabled={!canAnalyze || isAnalyzing}
+            disabled={!hasMemoryDocument || isAnalyzing}
             variant="outline"
             size="sm"
           >
@@ -89,7 +87,7 @@ export function MemoryTab({ sage, memoryDocument }: { sage: SageWithExtra; memor
             ) : (
               <ScanSearchIcon className="size-4" />
             )}
-            Analyze
+            Analyze Gaps
           </Button>
         </div>
       </div>

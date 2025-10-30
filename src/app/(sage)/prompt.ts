@@ -240,9 +240,9 @@ Generate a complete Memory Document based on the provided knowledge content. The
 Output the complete Memory Document in Markdown format directly, without additional explanations.
 </Output Requirements>`;
 
-// ===== Knowledge Analysis System Prompt =====
+// ===== Knowledge Gaps Analysis System Prompt =====
 
-export const sageKnowledgeAnalysisSystem = ({
+export const sageKnowledgeGapsOnlySystem = ({
   sage,
   locale,
 }: {
@@ -255,7 +255,7 @@ export const sageKnowledgeAnalysisSystem = ({
 }) =>
   locale === "zh-CN"
     ? `${promptSystemConfig({ locale })}
-你是知识评估专家，负责对专家智能体的知识完整性进行多维度分析。
+你是知识空白识别专家，负责分析专家记忆文档，识别知识体系中的空白和不足。
 
 <专家信息>
 名称: ${sage.name}
@@ -263,61 +263,38 @@ export const sageKnowledgeAnalysisSystem = ({
 声称的专长: ${sage.expertise.join(", ")}
 </专家信息>
 
-<评估维度>
-请从以下7个维度评估专家知识的完整性：
+<任务>
+仔细阅读专家的记忆文档，识别知识体系中的空白和不足之处。
+</任务>
 
-1. **基础理论知识** (0-100分)
-   - 该领域的核心概念和原理
-   - 基础理论的深度和广度
+<识别标准>
+关注以下方面的知识空白：
 
-2. **实践经验** (0-100分)
-   - 实际案例和经验
-   - 可操作的实践指南
+1. **核心概念缺失**: 该领域必须掌握但文档中缺少的核心概念
+2. **实践经验不足**: 缺少具体案例、实战经验或可操作的指导
+3. **深度不够**: 知识点提及但缺乏深入解释和细节
+4. **范围狭窄**: 专长领域内应该覆盖但没有涉及的子主题
+5. **过时内容**: 缺少最新发展、新技术或新方法论
+6. **边界模糊**: 知识边界不清晰，不确定擅长和不擅长的部分
 
-3. **行业洞察** (0-100分)
-   - 对行业趋势的理解
-   - 前沿动态的掌握
+<严重程度评估>
+- **critical（关键）**: 缺失会严重影响专家的核心能力和可信度
+- **important（重要）**: 缺失会限制专家在某些场景的有效性
+- **nice-to-have（锦上添花）**: 补充后可以提升专家的全面性，但非必需
 
-4. **问题解决能力** (0-100分)
-   - 常见问题的解决方案
-   - 疑难问题的处理经验
-
-5. **工具和方法论** (0-100分)
-   - 专业工具的使用
-   - 方法论和最佳实践
-
-6. **沟通表达** (0-100分)
-   - 解释复杂概念的能力
-   - 适应不同受众的表达
-
-7. **持续学习** (0-100分)
-   - 知识更新的及时性
-   - 学习新知识的开放性
-</评估维度>
-
-<知识空白识别>
-对于每个维度的不足，请识别：
-1. 具体缺失的知识点
-2. 缺失的严重程度（critical/important/nice-to-have）
-3. 对专家整体能力的影响
-4. 建议的补充问题（用于后续访谈）
-</知识空白识别>
-
-<整体评估>
-综合各维度，给出：
-1. 总体完整性得分（0-100）
-2. 专家的主要优势领域
-3. 最需要改进的领域
-4. 具体的改进建议
-5. 是否建议进行补充访谈
-</整体评估>
+<输出要求>
+识别 3-8 个最重要的知识空白，对每个空白：
+1. 明确指出缺失的知识领域
+2. 评估严重程度
+3. 描述具体缺少什么内容
+4. 说明这个空白对专家能力的影响
+5. 提供 2-4 个具体问题，用于在补充访谈中获取这些知识
 
 <输出格式>
-直接输出 JSON 对象，不要包装在其他字段或对象中。
-JSON 必须包含：overallScore, dimensions, knowledgeGaps, strengths, recommendations, shouldInterview
+直接输出 JSON 对象：{ "knowledgeGaps": [...] }
 </输出格式>`
     : `${promptSystemConfig({ locale })}
-You are a knowledge assessment expert, responsible for multi-dimensional analysis of an expert agent's knowledge completeness.
+You are a knowledge gap identification expert, responsible for analyzing expert memory documents to identify gaps and deficiencies in the knowledge system.
 
 <Expert Information>
 Name: ${sage.name}
@@ -325,58 +302,35 @@ Domain: ${sage.domain}
 Claimed Expertise: ${sage.expertise.join(", ")}
 </Expert Information>
 
-<Assessment Dimensions>
-Evaluate the expert's knowledge completeness across the following 7 dimensions:
+<Task>
+Carefully read the expert's memory document and identify gaps and deficiencies in the knowledge system.
+</Task>
 
-1. **Foundational Theory** (0-100 points)
-   - Core concepts and principles of the field
-   - Depth and breadth of foundational theory
+<Identification Criteria>
+Focus on knowledge gaps in the following areas:
 
-2. **Practical Experience** (0-100 points)
-   - Real-world cases and experience
-   - Actionable practical guidance
+1. **Missing Core Concepts**: Essential concepts in the field that are missing from the document
+2. **Insufficient Practical Experience**: Lack of specific cases, hands-on experience, or actionable guidance
+3. **Insufficient Depth**: Knowledge points mentioned but lacking in-depth explanation and details
+4. **Narrow Scope**: Sub-topics within the expertise area that should be covered but aren't
+5. **Outdated Content**: Missing latest developments, new technologies, or new methodologies
+6. **Unclear Boundaries**: Knowledge boundaries are unclear, uncertain about strengths and weaknesses
 
-3. **Industry Insights** (0-100 points)
-   - Understanding of industry trends
-   - Grasp of cutting-edge developments
+<Severity Assessment>
+- **critical**: Missing knowledge would severely impact the expert's core capabilities and credibility
+- **important**: Missing knowledge would limit the expert's effectiveness in certain scenarios
+- **nice-to-have**: Would enhance the expert's comprehensiveness if added, but not essential
 
-4. **Problem-Solving Capability** (0-100 points)
-   - Solutions to common problems
-   - Experience handling difficult issues
-
-5. **Tools and Methodologies** (0-100 points)
-   - Professional tool usage
-   - Methodologies and best practices
-
-6. **Communication Skills** (0-100 points)
-   - Ability to explain complex concepts
-   - Adaptation to different audiences
-
-7. **Continuous Learning** (0-100 points)
-   - Timeliness of knowledge updates
-   - Openness to learning new knowledge
-</Assessment Dimensions>
-
-<Knowledge Gap Identification>
-For each dimension's shortcomings, identify:
-1. Specific missing knowledge points
-2. Severity of the gap (critical/important/nice-to-have)
-3. Impact on the expert's overall capability
-4. Suggested supplementary questions (for future interviews)
-</Knowledge Gap Identification>
-
-<Overall Assessment>
-Synthesize across dimensions and provide:
-1. Overall completeness score (0-100)
-2. Expert's main areas of strength
-3. Areas most in need of improvement
-4. Specific improvement recommendations
-5. Whether supplementary interviews are recommended
-</Overall Assessment>
+<Output Requirements>
+Identify 3-8 of the most important knowledge gaps. For each gap:
+1. Clearly state the missing knowledge area
+2. Assess severity
+3. Describe specifically what content is missing
+4. Explain the impact of this gap on the expert's capabilities
+5. Provide 2-4 specific questions to obtain this knowledge in supplementary interviews
 
 <Output Format>
-Output the JSON object directly without wrapping it in any other field or object.
-The JSON must include: overallScore, dimensions, knowledgeGaps, strengths, recommendations, shouldInterview
+Output JSON object directly: { "knowledgeGaps": [...] }
 </Output Format>`;
 
 // ===== Sage Chat System Prompt =====

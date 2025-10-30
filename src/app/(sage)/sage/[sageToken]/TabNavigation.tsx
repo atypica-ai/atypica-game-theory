@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
-import { BookOpenIcon, BarChart3Icon, MessageSquareIcon, AlertTriangleIcon } from "lucide-react";
+import { BookOpenIcon, MessageSquareIcon, AlertTriangleIcon } from "lucide-react";
 
 export function TabNavigation({ sageToken }: { sageToken: string }) {
   const t = useTranslations("Sage.detail");
@@ -16,11 +16,6 @@ export function TabNavigation({ sageToken }: { sageToken: string }) {
       href: `/sage/${sageToken}`,
       icon: BookOpenIcon,
       exact: true,
-    },
-    {
-      name: t("analysis"),
-      href: `/sage/${sageToken}/analysis`,
-      icon: BarChart3Icon,
     },
     {
       name: t("chats"),

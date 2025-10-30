@@ -16,21 +16,6 @@ export interface SageExtra {
     startedAt?: string; // ISO timestamp
     completedAt?: string; // ISO timestamp
   };
-  knowledgeAnalysis?: {
-    overallScore?: number; // 0-100
-    dimensions?: KnowledgeDimension[];
-    knowledgeGaps?: KnowledgeGapFromAnalysis[];
-    analyzedAt?: string; // ISO timestamp
-  };
-}
-
-export interface KnowledgeDimension {
-  name: string;
-  nameKey?: string; // i18n key
-  score: number; // 0-100
-  level: "high" | "medium" | "low";
-  assessment: string;
-  improvementSuggestions: string[];
 }
 
 // KnowledgeGap from AI analysis (temporary, for creating DB records)
@@ -208,16 +193,6 @@ export interface ExtractedMemory {
   keyTakeaway: string;
 }
 
-// ===== Knowledge Analysis Result =====
-
-export interface KnowledgeAnalysisResult {
-  overallScore: number;
-  dimensions: KnowledgeDimension[];
-  knowledgeGaps: KnowledgeGapFromAnalysis[];
-  strengths: string[];
-  recommendations: string[];
-  shouldInterview: boolean;
-}
 
 // ===== Interview Plan =====
 
