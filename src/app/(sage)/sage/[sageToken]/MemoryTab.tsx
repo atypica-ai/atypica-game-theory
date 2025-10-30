@@ -5,8 +5,9 @@ import type { SageExtra } from "@/app/(sage)/types";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import type { Sage } from "@/prisma/client";
-import { Loader2Icon, ScanSearchIcon, SparklesIcon } from "lucide-react";
+import { ExternalLinkIcon, Loader2Icon, ScanSearchIcon, SparklesIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
@@ -98,6 +99,12 @@ export function MemoryTab({
               <ScanSearchIcon className="size-4" />
             )}
             Analyze Gaps
+          </Button>
+          <Button variant="outline" size="sm" asChild>
+            <Link href={`/sage/profile/${sage.token}`} target="_blank">
+              <ExternalLinkIcon className="size-4" />
+              View Public Profile
+            </Link>
           </Button>
         </div>
       </div>

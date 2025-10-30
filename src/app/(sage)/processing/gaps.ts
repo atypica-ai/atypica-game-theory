@@ -3,10 +3,14 @@ import "server-only";
 import { llm } from "@/ai/provider";
 import { StatReporter } from "@/ai/tools/types";
 import { createSageKnowledgeGaps } from "@/app/(sage)/lib";
-import { conversationGapAnalysisSystem, sageKnowledgeGapsOnlySystem } from "@/app/(sage)/prompt/gaps";
-import { SageExtra, SageKnowledgeGapSeverity } from "@/app/(sage)/types";
+import {
+  conversationGapAnalysisSystem,
+  sageKnowledgeGapsOnlySystem,
+} from "@/app/(sage)/prompt/gaps";
+import { SageExtra, SageKnowledgeGapSeverity, SageKnowledgeGapSource } from "@/app/(sage)/types";
 import { rootLogger } from "@/lib/logging";
 import { prisma } from "@/prisma/prisma";
+import { OpenAIResponsesProviderOptions } from "@ai-sdk/openai";
 import { generateObject } from "ai";
 import type { Locale } from "next-intl";
 import { Logger } from "pino";
@@ -82,10 +86,7 @@ export async function analyzeKnowledgeOnly({
           description: gap.description,
           severity: gap.severity,
           impact: gap.impact,
-          source: {
-            type: "analysis",
-            description: "Initial knowledge analysis",
-          },
+          source: { type: "analysis" } satisfies SageKnowledgeGapSource,
         })),
       );
     }
@@ -139,7 +140,14 @@ export async function analyzeKnowledgeGaps({
   logger.info({ msg: "Analyzing knowledge gaps" });
 
   const result = await generateObject({
-    model: llm("claude-sonnet-4-5"),
+    // model: llm("claude-sonnet-4-5"), // generateObject 经常遇到 schema 不匹配问题
+    model: llm("gpt-5"),
+    providerOptions: {
+      openai: {
+        reasoningSummary: "auto",
+        reasoningEffort: "minimal",
+      } satisfies OpenAIResponsesProviderOptions,
+    },
     schema: knowledgeGapsSchema,
     system: sageKnowledgeGapsOnlySystem({ sage, locale }),
     prompt: memoryDocument.content,

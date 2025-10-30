@@ -110,14 +110,14 @@ export async function getSageById(id: number): Promise<{
  * Create sage knowledge gaps in database
  */
 export async function createSageKnowledgeGaps(
-  gaps: Array<{
+  gaps: {
     sageId: number;
     area: string;
     description: string;
     severity: SageKnowledgeGapSeverity;
     impact: string;
     source: SageKnowledgeGapSource;
-  }>,
+  }[],
 ) {
   if (gaps.length === 0) return [];
 

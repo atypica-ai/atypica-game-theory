@@ -97,7 +97,7 @@ export function GapsTab({
         </div>
         {pendingGaps.length > 0 && (
           <Button onClick={handleCreateInterview} disabled={isCreating} size="sm">
-            <PlusIcon className="mr-2 h-4 w-4" />
+            <PlusIcon className="h-4 w-4" />
             Create Supplementary Interview
           </Button>
         )}
@@ -126,12 +126,12 @@ export function GapsTab({
                   className={`border-l-2 pl-3 py-2.5 space-y-3 ${getSeverityColor(gap.severity)}`}
                 >
                   {/* User Question Quote - if from conversation */}
-                  {gap.source.type === "conversation" && gap.source.description && (
+                  {gap.source.type === "conversation" && gap.source.quote && (
                     <div className="flex items-start justify-between gap-2 pb-2 border-b border-border/40">
                       <div className="flex-1">
                         <div className="text-xs text-muted-foreground mb-1">💬 User asked:</div>
                         <div className="text-sm italic text-foreground/90">
-                          &ldquo;{gap.source.description}&rdquo;
+                          &ldquo;{gap.source.quote}&rdquo;
                         </div>
                       </div>
                       <Link href={`/sage/chat/view/${gap.source.userChatToken}`} target="_blank">

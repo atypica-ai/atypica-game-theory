@@ -54,17 +54,14 @@ export enum SageKnowledgeGapSeverity {
 export type SageKnowledgeGapExtra = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 export type SageKnowledgeGapSource = Partial<
-  {
-    description: string;
-  } & (
-    | {
-        type: "analysis" | "system_suggestion";
-      }
-    | {
-        type: "conversation";
-        userChatToken: string; // SageChat's chat token
-      }
-  )
+  | {
+      type: "analysis" | "system_suggestion";
+    }
+  | {
+      type: "conversation";
+      userChatToken: string; // SageChat's chat token
+      quote: string;
+    }
 >;
 
 export type SageKnowledgeGapResolvedBy = Partial<

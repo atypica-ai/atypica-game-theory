@@ -12,6 +12,7 @@ import authOptions from "@/app/(auth)/authOptions";
 import { createSageKnowledgeGaps, getSageByToken } from "@/app/(sage)/lib";
 import { analyzeConversationForGaps } from "@/app/(sage)/processing/gaps";
 import { sageChatSystem } from "@/app/(sage)/prompt/chat";
+import { SageKnowledgeGapSource } from "@/app/(sage)/types";
 import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage, truncateForTitle } from "@/lib/textUtils";
 import { prisma } from "@/prisma/prisma";
@@ -215,8 +216,8 @@ export async function POST(req: Request) {
                     source: {
                       type: "conversation",
                       userChatToken: userChat.token,
-                      description: `User asked: "${truncateForTitle(userMessage, { maxDisplayWidth: 100, suffix: "..." })}"`,
-                    },
+                      quote: `${truncateForTitle(userMessage, { maxDisplayWidth: 100, suffix: "..." })}`,
+                    } satisfies SageKnowledgeGapSource,
                   })),
                 );
                 chatLogger.info({
