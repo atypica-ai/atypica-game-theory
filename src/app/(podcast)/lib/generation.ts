@@ -5,7 +5,6 @@ import { StatReporter } from "@/ai/tools/types";
 import { podcastScriptPrologue, podcastScriptSystem } from "@/app/(podcast)/prompt";
 import { VALID_LOCALES } from "@/i18n/routing";
 import { fileUrlToDataUrl } from "@/lib/attachments/actions";
-import { uploadToS3 } from "@/lib/attachments/s3";
 import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage } from "@/lib/textUtils";
 import {
@@ -339,12 +338,9 @@ async function generatePodcastScript({
 
 // Pure podcast audio generation function (no auth, renamed from backgroundGeneratePodcastAudioImpl)
 export async function generatePodcastAudio({
-  // podcastId,
   podcastToken,
   script,
   locale,
-  // abortSignal,
-  // statReport,  // TODO 目前暂时免费，不消耗 token
   logger,
 }: {
   podcastId: number;
@@ -364,7 +360,7 @@ export async function generatePodcastAudio({
     // Create Volcano TTS client
     const volcanoClient = createVolcanoClient(logger);
 
-    // Generate audio
+    // Generate audio - now returns S3 objectUrl and mimeType directly
     const result = await volcanoClient.generatePodcastAudio({
       script: script,
       podcastToken,
@@ -372,76 +368,21 @@ export async function generatePodcastAudio({
       logger,
     });
 
-    if (!result.audioUrl) {
-      throw new Error("No audio URL returned from Volcano TTS");
+    if (!result.objectUrl) {
+      throw new Error(result.error || "Failed to generate podcast audio - no object URL returned");
     }
-
-    logger.info("Audio generated successfully, downloading from Volcano");
-
-    // Download audio from Volcano URL with size limit
-    const audioResponse = await fetch(result.audioUrl);
-    if (!audioResponse.ok) {
-      throw new Error(`Failed to download audio: ${audioResponse.statusText}`);
-    }
-
-    // Check content length if available
-    const contentLength = audioResponse.headers.get("content-length");
-    if (contentLength && parseInt(contentLength) > 10 * 1024 * 1024) {
-      throw new Error(`Audio file too large: ${contentLength} bytes (max 10MB)`);
-    }
-
-    // Stream download with size checking
-    const maxSize = 10 * 1024 * 1024; // 10MB
-    let downloadedSize = 0;
-    const chunks: Uint8Array[] = [];
-
-    const reader = audioResponse.body?.getReader();
-    if (!reader) {
-      throw new Error("Failed to get audio response reader");
-    }
-
-    try {
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        downloadedSize += value.length;
-        if (downloadedSize > maxSize) {
-          throw new Error(`Audio file too large: ${downloadedSize} bytes (max 10MB)`);
-        }
-
-        chunks.push(value);
-      }
-    } finally {
-      reader.releaseLock();
-    }
-
-    // Combine chunks into single buffer
-    const audioBuffer = new Uint8Array(downloadedSize);
-    let offset = 0;
-    for (const chunk of chunks) {
-      audioBuffer.set(chunk, offset);
-      offset += chunk.length;
-    }
-
-    logger.info({ msg: "Audio downloaded, uploading to S3", size: audioBuffer.byteLength });
-
-    // Upload to S3 using standardized function
-    const mimeType = "audio/mpeg";
-    const keySuffix = `podcasts/${podcastToken}.mp3` as const;
-    const { objectUrl } = await uploadToS3({
-      keySuffix,
-      fileBody: audioBuffer,
-      mimeType,
-    });
 
     logger.info({
       msg: "Podcast audio generation completed successfully",
-      finalUrl: "[REDACTED]",
+      objectUrl: "[REDACTED]",
+      mimeType: result.mimeType,
       duration: result.duration,
     });
 
-    return { objectUrl, mimeType };
+    return {
+      objectUrl: result.objectUrl,
+      mimeType: result.mimeType,
+    };
   } catch (error) {
     logger.error({
       msg: "Podcast audio generation failed",
