@@ -96,9 +96,11 @@ export async function s3SignedUrl(
 export async function s3UploadCredentials({
   fileType,
   fileName,
+  acl,
 }: {
   fileType: string;
   fileName: string;
+  acl?: "public-read";
 }): Promise<S3UploadCredentials> {
   const fileExtension = fileName.split(".").pop() || "";
   const key = `atypica/${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 15)}.${fileExtension}`;
@@ -121,6 +123,7 @@ export async function s3UploadCredentials({
     Bucket: s3Bucket,
     Key: key,
     ContentType: fileType,
+    ...(acl && { ACL: acl }),
   });
 
   const putObjectUrl = await getSignedUrl(s3Client, putObjectCommand, {

@@ -46,13 +46,15 @@ export async function recordAttachmentFile({
 export async function getS3UploadCredentials({
   fileType,
   fileName,
+  acl,
 }: {
   fileType: string;
   fileName: string;
+  acl?: "public-read";
 }): Promise<ServerActionResult<S3UploadCredentials>> {
   return withAuth(async () => {
     try {
-      const result = await s3UploadCredentials({ fileType, fileName });
+      const result = await s3UploadCredentials({ fileType, fileName, acl });
       return {
         success: true,
         data: result,
