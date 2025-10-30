@@ -34,12 +34,7 @@
       "reSelectFiles": "Reselect Files",
       "namePlaceholder": "Expert Name (e.g., Product Design Expert)",
       "domainPlaceholder": "Professional Domain (e.g., User Experience Design)",
-      "enterName": "Please enter expert name",
-      "enterDomain": "Please enter professional domain",
-      "creating": "Creating...",
       "startCreation": "Start Creation",
-      "createFailed": "Creation failed, please try again",
-      "uploadFileFirst": "Please upload files first",
       "importKnowledge": "Knowledge Import",
       "importDescription": "Upload documents and extract structured knowledge via AI",
       "multipleFormats": "Support PDF, text and multiple formats",
@@ -146,7 +141,6 @@
         "buildMemoryDocument": "Building Memory Document",
         "analyzeCompleteness": "Analyzing Completeness"
       },
-      "memoryDocument": "Memory Document",
       "consultations": "My Consultations",
       "publicChats": "User Consultations",
       "user": "User",
@@ -193,7 +187,6 @@
     "interview": {
       "title": "Supplementary Interview",
       "purpose": "Fill knowledge gaps",
-      "progress": "Progress",
       "completed": "Completed",
       "ongoing": "Ongoing",
       "placeholder": "Answer interview questions..."

@@ -34,12 +34,7 @@
       "reSelectFiles": "重新选择",
       "namePlaceholder": "专家名称（例如：产品设计专家）",
       "domainPlaceholder": "专业领域（例如：用户体验设计）",
-      "enterName": "请输入专家名称",
-      "enterDomain": "请输入专业领域",
-      "creating": "创建中...",
       "startCreation": "开始创建",
-      "createFailed": "创建失败，请重试",
-      "uploadFileFirst": "请先上传文件",
       "importKnowledge": "知识导入",
       "importDescription": "上传文档并通过 AI 提取结构化知识",
       "multipleFormats": "支持 PDF、文本等多种格式",
@@ -146,7 +141,6 @@
         "buildMemoryDocument": "构建记忆文档",
         "analyzeCompleteness": "分析完整性"
       },
-      "memoryDocument": "记忆文档",
       "consultations": "我的咨询",
       "publicChats": "用户咨询",
       "user": "用户",
@@ -193,7 +187,6 @@
     "interview": {
       "title": "补充访谈",
       "purpose": "填补知识空白",
-      "progress": "进度",
       "completed": "已完成",
       "ongoing": "进行中",
       "placeholder": "回答访谈问题..."
