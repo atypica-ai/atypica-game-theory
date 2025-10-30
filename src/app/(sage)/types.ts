@@ -6,6 +6,60 @@ import { z } from "zod";
 // Message type for sage chat (currently no special tools)
 export type TSageMessageWithTool = TMessageWithPlainTextTool;
 
+// ===== Enums for Database Fields =====
+
+// SageSource enums
+export enum SageSourceType {
+  TEXT = "text",
+  FILE = "file",
+  URL = "url",
+}
+
+export enum SageSourceStatus {
+  PENDING = "pending",
+  PROCESSING = "processing",
+  COMPLETED = "completed",
+  FAILED = "failed",
+}
+
+// SageKnowledgeGap enums
+export enum KnowledgeGapSourceType {
+  ANALYSIS = "analysis",
+  CONVERSATION = "conversation",
+  SYSTEM_SUGGESTION = "system_suggestion",
+}
+
+export enum KnowledgeGapStatus {
+  PENDING = "pending",
+  RESOLVED = "resolved",
+  DELETED = "deleted",
+}
+
+export enum KnowledgeGapSeverity {
+  CRITICAL = "critical",
+  IMPORTANT = "important",
+  NICE_TO_HAVE = "nice-to-have",
+}
+
+export enum KnowledgeGapResolvedBy {
+  INTERVIEW = "interview",
+  MANUAL = "manual",
+}
+
+// SageMemoryDocument enums
+export enum MemoryDocumentVersionSource {
+  INITIAL = "initial",
+  INTERVIEW = "interview",
+  MANUAL = "manual",
+}
+
+// SageInterview enums
+export enum SageInterviewStatus {
+  DRAFT = "draft",
+  ONGOING = "ongoing",
+  COMPLETED = "completed",
+}
+
 // ===== Sage Entity Types =====
 
 export interface SageExtra {
@@ -21,40 +75,10 @@ export interface SageExtra {
 // KnowledgeGap from AI analysis (temporary, for creating DB records)
 export interface KnowledgeGapFromAnalysis {
   area: string;
-  severity: "critical" | "important" | "nice-to-have";
+  severity: KnowledgeGapSeverity;
   description: string;
   impact: string;
   suggestedQuestions: string[];
-}
-
-// Database KnowledgeGap types
-export type KnowledgeGapSourceType = "analysis" | "conversation" | "system_suggestion";
-export type KnowledgeGapStatus = "pending" | "resolved" | "deleted";
-export type KnowledgeGapSeverity = "critical" | "important" | "nice-to-have";
-
-export interface CreateKnowledgeGapInput {
-  sageId: number;
-  area: string;
-  description: string;
-  severity: KnowledgeGapSeverity;
-  impact: string;
-  sourceType: KnowledgeGapSourceType;
-  sourceDescription: string;
-  sourceReference?: string;
-}
-
-export interface UpdateKnowledgeGapStatusInput {
-  gapId: number;
-  status: KnowledgeGapStatus;
-  resolvedBy?: "interview" | "manual";
-  resolvedByInterviewId?: number;
-}
-
-// ===== SageChat Types =====
-
-export interface SageChatExtra {
-  // Additional metadata for sage chats
-  [key: string]: unknown;
 }
 
 // ===== SageInterview Types =====
@@ -82,35 +106,51 @@ export interface SageInterviewExtra {
   memoryDocumentUpdated?: boolean;
 }
 
-// ===== SageSource Types =====
+// ===== SageSource Content Types (Union based on type field) =====
 
-export type SageSourceType = "text" | "file" | "url";
-
-export interface SageSourceContent {
-  // For text type
-  text?: string;
-  // For file type
-  objectUrl?: string;
-  name?: string;
-  mimeType?: string;
-  size?: number;
-  // For url type
-  url?: string;
-}
+// Content stored in JSON field (without type, type is a separate DB field)
+export type SageSourceContent =
+  | {
+      // For type: TEXT
+      text: string;
+    }
+  | {
+      // For type: FILE
+      objectUrl: string;
+      name: string;
+      mimeType: string;
+      size: number;
+    }
+  | {
+      // For type: URL
+      url: string;
+    };
 
 // ===== Zod Schemas for Input Validation =====
 
-export const createSageSourceSchema = z.object({
-  type: z.enum(["text", "file", "url"]),
-  content: z.object({
-    text: z.string().optional(),
-    objectUrl: z.string().optional(),
-    name: z.string().optional(),
-    mimeType: z.string().optional(),
-    size: z.number().optional(),
-    url: z.string().optional(),
+export const createSageSourceSchema = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal(SageSourceType.TEXT),
+    content: z.object({
+      text: z.string().min(1),
+    }),
   }),
-});
+  z.object({
+    type: z.literal(SageSourceType.FILE),
+    content: z.object({
+      objectUrl: z.string().min(1),
+      name: z.string().min(1),
+      mimeType: z.string().min(1),
+      size: z.number().positive(),
+    }),
+  }),
+  z.object({
+    type: z.literal(SageSourceType.URL),
+    content: z.object({
+      url: z.url(),
+    }),
+  }),
+]);
 
 export type CreateSageSourceInput = z.infer<typeof createSageSourceSchema>;
 
@@ -133,56 +173,6 @@ export const updateSageInputSchema = z.object({
 
 export type UpdateSageInput = z.infer<typeof updateSageInputSchema>;
 
-export const createSageInterviewInputSchema = z.object({
-  sageId: z.number(),
-  purpose: z.string().optional(),
-  focusAreas: z.array(z.string()).optional(),
-});
-
-export type CreateSageInterviewInput = z.infer<
-  typeof createSageInterviewInputSchema
->;
-
-// ===== Processing Step Definitions =====
-
-export const SAGE_PROCESSING_STEPS = {
-  PARSE_CONTENT: "parse_content",
-  EXTRACT_KNOWLEDGE: "extract_knowledge",
-  BUILD_MEMORY_DOCUMENT: "build_memory_document",
-  ANALYZE_COMPLETENESS: "analyze_completeness",
-} as const;
-
-export type SageProcessingStep =
-  (typeof SAGE_PROCESSING_STEPS)[keyof typeof SAGE_PROCESSING_STEPS];
-
-// ===== Memory Document Structure =====
-
-export interface MemoryDocumentStructure {
-  profile: {
-    name: string;
-    domain: string;
-    expertise: string[];
-    language: string;
-  };
-  coreKnowledge: {
-    [topicName: string]: {
-      keyPoints: string[];
-      insights: string[];
-      experience: string[];
-    };
-  };
-  conversationStyle: {
-    tone: string;
-    approach: string;
-    signaturePhrases: string[];
-  };
-  knowledgeBoundaries: {
-    strengths: string[];
-    limitations: string[];
-    learningAreas: string[];
-  };
-}
-
 // ===== Extracted Memory Entry =====
 
 export interface ExtractedMemory {
@@ -192,7 +182,6 @@ export interface ExtractedMemory {
   importance: "high" | "medium" | "low";
   keyTakeaway: string;
 }
-
 
 // ===== Interview Plan =====
 
@@ -215,28 +204,4 @@ export interface InterviewPlan {
     closingMessage: string;
   };
   estimatedDuration: string;
-}
-
-// ===== Memory Document Version Types =====
-
-export type MemoryDocumentVersionSource = "initial" | "interview" | "manual";
-
-export interface CreateMemoryDocumentVersionInput {
-  sageId: number;
-  content: string;
-  source: MemoryDocumentVersionSource;
-  sourceReference?: string;
-  changeNotes?: string;
-}
-
-// ===== Helper Type Guards =====
-
-export function isSageExtra(value: unknown): value is SageExtra {
-  return typeof value === "object" && value !== null;
-}
-
-export function isSageInterviewExtra(
-  value: unknown
-): value is SageInterviewExtra {
-  return typeof value === "object" && value !== null;
 }

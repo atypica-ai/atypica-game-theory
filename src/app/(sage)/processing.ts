@@ -4,7 +4,6 @@ import { StatReporter } from "@/ai/tools/types";
 import { s3SignedUrl } from "@/lib/attachments/s3";
 import { rootLogger } from "@/lib/logging";
 import { proxiedFetch } from "@/lib/proxy/fetch";
-import type { SageSourceContent } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import type { Locale } from "next-intl";
 import {
@@ -17,6 +16,12 @@ import {
   getSageById,
   resolveSageKnowledgeGaps,
 } from "./lib";
+import {
+  KnowledgeGapResolvedBy,
+  KnowledgeGapSourceType,
+  MemoryDocumentVersionSource,
+  SageSourceContent,
+} from "./types";
 
 /**
  * Process all pending sources for a sage
@@ -175,7 +180,7 @@ export async function extractKnowledgeOnly({
     await createSageMemoryDocument({
       sageId,
       content: memoryDocument,
-      source: "initial",
+      source: MemoryDocumentVersionSource.INITIAL,
       changeNotes: "Initial memory document from sources",
     });
 
@@ -247,7 +252,7 @@ export async function analyzeKnowledgeOnly({
 
     // Create knowledge gaps in database
     const existingGaps = await prisma.sageKnowledgeGap.count({
-      where: { sageId, sourceType: "analysis" },
+      where: { sageId, sourceType: KnowledgeGapSourceType.ANALYSIS },
     });
 
     if (existingGaps === 0 && knowledgeGaps.length > 0) {
@@ -258,7 +263,7 @@ export async function analyzeKnowledgeOnly({
           description: gap.description,
           severity: gap.severity,
           impact: gap.impact,
-          sourceType: "analysis",
+          sourceType: KnowledgeGapSourceType.ANALYSIS,
           sourceDescription: "Initial knowledge analysis",
         })),
       );
@@ -358,7 +363,7 @@ export async function updateMemoryDocumentFromInterview({
     await createSageMemoryDocument({
       sageId,
       content: updatedMemoryDocument,
-      source: "interview",
+      source: MemoryDocumentVersionSource.INTERVIEW,
       sourceReference: String(interviewId),
       changeNotes: `Updated from interview: ${interview.purpose}`,
     });
@@ -383,7 +388,7 @@ export async function updateMemoryDocumentFromInterview({
 
     // Resolve gaps automatically
     if (resolvedGapIds.length > 0) {
-      await resolveSageKnowledgeGaps(resolvedGapIds, "interview", interviewId);
+      await resolveSageKnowledgeGaps(resolvedGapIds, KnowledgeGapResolvedBy.INTERVIEW, interviewId);
 
       logger.info({
         msg: "Auto-resolved knowledge gaps from interview",

@@ -16,6 +16,7 @@ import { getServerSession } from "next-auth";
 import { after, NextResponse } from "next/server";
 import { analyzeConversationForGaps, createSageKnowledgeGaps, getSageByToken } from "../../../lib";
 import { sageChatSystem } from "../../../prompt";
+import { KnowledgeGapSourceType } from "../../../types";
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
@@ -211,9 +212,9 @@ export async function POST(req: Request) {
                     description: gap.description,
                     severity: gap.severity,
                     impact: gap.impact,
-                    sourceType: "conversation",
+                    sourceType: KnowledgeGapSourceType.CONVERSATION,
                     sourceDescription: `User asked: "${userMessage.substring(0, 100)}${userMessage.length > 100 ? "..." : ""}"`,
-                    sourceReference: String(userChat.id),
+                    sourceReference: userChat.token,
                   }))
                 );
                 chatLogger.info({

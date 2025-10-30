@@ -1,5 +1,6 @@
 "use client";
 import { createSage } from "@/app/(sage)/actions";
+import { SageSourceType } from "@/app/(sage)/types";
 import { FileUploadButton } from "@/components/chat/FileUploadButton";
 import { FitToViewport } from "@/components/layout/FitToViewport";
 import { Button } from "@/components/ui/button";
@@ -58,7 +59,7 @@ export default function SageHomePageClient({ isUploadEnabled }: SageHomePageClie
         domain: sageDomain.trim(),
         locale: "zh-CN", // TODO: Get from user locale
         sources: uploadedFiles.map((file) => ({
-          type: "file" as const,
+          type: SageSourceType.FILE,
           content: {
             objectUrl: file.objectUrl,
             name: file.name,

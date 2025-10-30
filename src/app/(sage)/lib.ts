@@ -12,7 +12,7 @@ import {
   sageMemoryExtractionSystem,
 } from "./prompt";
 import type { ExtractedMemory, SageExtra } from "./types";
-import { SAGE_PROCESSING_STEPS } from "./types";
+import { KnowledgeGapResolvedBy, KnowledgeGapSeverity, KnowledgeGapStatus } from "./types";
 
 // ===== Content Processing Schemas =====
 
@@ -41,7 +41,7 @@ const knowledgeGapsSchema = z.object({
   knowledgeGaps: z.array(
     z.object({
       area: z.string().describe("Knowledge area with gaps"),
-      severity: z.enum(["critical", "important", "nice-to-have"]).describe("Severity of the gap"),
+      severity: z.nativeEnum(KnowledgeGapSeverity).describe("Severity of the gap"),
       description: z.string().describe("What's missing"),
       impact: z.string().describe("Impact on expert's capability"),
       suggestedQuestions: z.array(z.string()).describe("Questions to fill this gap"),
@@ -267,42 +267,6 @@ export async function analyzeKnowledgeGaps({
 
   return result.object.knowledgeGaps;
 }
-
-/**
- * Update sage's processing status in extra field
- */
-export async function updateSageProcessingStatus({
-  sageId,
-  step,
-  progress,
-  error,
-}: {
-  sageId: number;
-  step?: string;
-  progress?: number;
-  error?: string;
-}) {
-  const updateData: Partial<SageExtra["processing"]> = {};
-
-  if (step !== undefined) updateData.step = step;
-  if (progress !== undefined) updateData.progress = progress;
-  if (error !== undefined) updateData.error = error;
-
-  if (step === SAGE_PROCESSING_STEPS.ANALYZE_COMPLETENESS && progress === 1 && !error) {
-    updateData.completedAt = new Date().toISOString();
-  }
-
-  // Use raw SQL to safely update nested JSON field
-  await prisma.$executeRaw`
-    UPDATE "Sage"
-    SET "extra" = COALESCE("extra", '{}'::jsonb) || jsonb_build_object(
-      'processing', COALESCE("extra"->'processing', '{}'::jsonb) || ${JSON.stringify(updateData)}::jsonb
-    ),
-    "updatedAt" = NOW()
-    WHERE "id" = ${sageId}
-  `;
-}
-
 
 /**
  * Get sage by token with type-safe extra field casting
@@ -653,7 +617,7 @@ export async function getPendingSageKnowledgeGaps(sageId: number) {
   return prisma.sageKnowledgeGap.findMany({
     where: {
       sageId,
-      status: "pending",
+      status: KnowledgeGapStatus.PENDING,
     },
     orderBy: [
       { severity: "desc" }, // critical first
@@ -667,7 +631,7 @@ export async function getPendingSageKnowledgeGaps(sageId: number) {
  */
 export async function resolveSageKnowledgeGaps(
   gapIds: number[],
-  resolvedBy: "interview" | "manual",
+  resolvedBy: KnowledgeGapResolvedBy,
   interviewId?: number,
 ) {
   if (gapIds.length === 0) return;
@@ -677,7 +641,7 @@ export async function resolveSageKnowledgeGaps(
       id: { in: gapIds },
     },
     data: {
-      status: "resolved",
+      status: KnowledgeGapStatus.RESOLVED,
       resolvedAt: new Date(),
       resolvedBy,
       resolvedByInterviewId: interviewId,
@@ -703,7 +667,7 @@ export async function deleteSageKnowledgeGaps(gapIds: number[]) {
       id: { in: gapIds },
     },
     data: {
-      status: "deleted",
+      status: KnowledgeGapStatus.DELETED,
     },
   });
 

@@ -109,7 +109,7 @@ export function GapsTab({ sage, gaps }: { sage: SageWithExtra; gaps: SageKnowled
           <div className="space-y-3">
             {pendingGaps.map((gap) => {
               const isFromConversation = gap.sourceType === "conversation";
-              const chatId = gap.sourceReference ? parseInt(gap.sourceReference) : null;
+              const chatToken = gap.sourceReference;
 
               return (
                 <div
@@ -127,8 +127,8 @@ export function GapsTab({ sage, gaps }: { sage: SageWithExtra; gaps: SageKnowled
                           &ldquo;{gap.sourceDescription}&rdquo;
                         </div>
                       </div>
-                      {chatId && (
-                        <Link href={`/c/${chatId}`} target="_blank">
+                      {chatToken && (
+                        <Link href={`/c/${chatToken}`} target="_blank">
                           <ExternalLinkIcon className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground transition-colors flex-shrink-0" />
                         </Link>
                       )}

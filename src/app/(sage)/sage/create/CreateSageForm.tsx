@@ -2,6 +2,7 @@
 
 import { createSage } from "@/app/(sage)/actions";
 import type { CreateSageSourceInput } from "@/app/(sage)/types";
+import { SageSourceType } from "@/app/(sage)/types";
 import { FileUploadButton, type FileUploadInfo } from "@/components/chat/FileUploadButton";
 import { FitToViewport } from "@/components/layout/FitToViewport";
 import { Button } from "@/components/ui/button";
@@ -38,7 +39,7 @@ export function CreateSageForm() {
   // Handle file upload
   const handleFileUploaded = (file: FileUploadInfo) => {
     const fileSource: CreateSageSourceInput = {
-      type: "file" as const,
+      type: SageSourceType.FILE,
       content: {
         objectUrl: file.objectUrl,
         name: file.name,
@@ -59,7 +60,7 @@ export function CreateSageForm() {
     setSources((prev) => [
       ...prev,
       {
-        type: "text",
+        type: SageSourceType.TEXT,
         content: { text: textContent },
       },
     ]);
@@ -87,7 +88,7 @@ export function CreateSageForm() {
     setSources((prev) => [
       ...prev,
       {
-        type: "url",
+        type: SageSourceType.URL,
         content: { url: websiteUrl.trim() },
       },
     ]);
@@ -104,12 +105,12 @@ export function CreateSageForm() {
 
   // Get source display name
   const getSourceDisplayName = (source: CreateSageSourceInput, index: number): string => {
-    if (source.type === "file") {
+    if (source.type === SageSourceType.FILE) {
       return source.content.name || `File ${index + 1}`;
-    } else if (source.type === "text") {
+    } else if (source.type === SageSourceType.TEXT) {
       const text = source.content.text || "";
       return text.substring(0, 50) + (text.length > 50 ? "..." : "");
-    } else if (source.type === "url") {
+    } else if (source.type === SageSourceType.URL) {
       return source.content.url || `URL ${index + 1}`;
     }
     return `Source ${index + 1}`;
