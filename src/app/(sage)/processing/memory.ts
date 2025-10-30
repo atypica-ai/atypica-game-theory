@@ -236,7 +236,7 @@ Output only the cleaned content without additional explanations.`;
     onChunk: ({ chunk }) => {
       if (chunk.type === "text-delta") {
         extractedContent += chunk.text;
-        logger.info({
+        logger.debug({
           msg: "buildMemoryDocument onChunk",
           stage: "cleaning",
           extractedContentLength: extractedContent.length,
@@ -283,14 +283,14 @@ Generate a complete, structured Memory Document.`;
 
   let memoryDocument = "";
   const buildingResponse = streamText({
-    model: llm("claude-haiku-4-5"),
+    model: llm("claude-sonnet-4-5"),
     system: sageMemoryDocumentBuilderSystem({ sage, locale }),
     prompt: buildingPrompt,
     maxRetries: 3,
     onChunk: ({ chunk }) => {
       if (chunk.type === "text-delta") {
-        memoryDocument += chunk;
-        logger.info({
+        memoryDocument += chunk.text;
+        logger.debug({
           msg: "buildMemoryDocument",
           stage: "building",
           memoryDocumentLength: memoryDocument.length,

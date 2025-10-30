@@ -5,7 +5,6 @@ import type { ServerActionResult } from "@/lib/serverAction";
 import { createUserChat } from "@/lib/userChat/lib";
 import { generateToken } from "@/lib/utils";
 import type { Sage, SageChat, SageInterview, UserChat } from "@/prisma/client";
-import { InputJsonObject } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
 import { getLocale } from "next-intl/server";
@@ -42,8 +41,7 @@ export async function createSage(
           // Create sources
           sources: {
             create: validated.sources.map((source) => ({
-              content: source as unknown as InputJsonObject,
-              status: "pending",
+              content: source,
               title: "",
               extractedText: "",
             })),

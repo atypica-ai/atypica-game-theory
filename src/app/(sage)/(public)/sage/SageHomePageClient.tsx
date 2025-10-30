@@ -1,7 +1,9 @@
 "use client";
 import { FitToViewport } from "@/components/layout/FitToViewport";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
+  ArrowRightIcon,
   BookOpenIcon,
   BrainIcon,
   FileTextIcon,
@@ -13,6 +15,7 @@ import {
   UsersIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import Link from "next/link";
 
 export default function SageHomePageClient() {
   const t = useTranslations("Sage.homepage");
@@ -128,8 +131,24 @@ export default function SageHomePageClient() {
         </div>
       </section>
 
+      {/* Upload and Creation Form */}
+      <div className="flex flex-col items-center gap-4 max-w-md mx-auto my-4 ">
+        <Button size="lg" asChild className="w-full h-12">
+          <Link href="/sage/create" prefetch={true}>
+            {t("startCreation")}
+            <ArrowRightIcon className="h-4 w-4" />
+          </Link>
+        </Button>
+        <Button size="lg" variant="outline" asChild className="w-full h-12">
+          <Link href="/sages" prefetch={true}>
+            {t("viewMySages")}
+            <ArrowRightIcon className="h-4 w-4" />
+          </Link>
+        </Button>
+      </div>
+
       {/* Features Section */}
-      <section className="border-t border-zinc-200 dark:border-zinc-800">
+      <section>
         <div className="container mx-auto px-4 py-20 md:py-24">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-0 border border-zinc-200 dark:border-zinc-800">
             {features.map((feature, index) => {

@@ -139,7 +139,7 @@ export async function analyzeKnowledgeGaps({
   logger.info({ msg: "Analyzing knowledge gaps" });
 
   const result = await generateObject({
-    model: llm("claude-haiku-4-5"),
+    model: llm("claude-sonnet-4-5"),
     schema: knowledgeGapsSchema,
     system: sageKnowledgeGapsOnlySystem({ sage, locale }),
     prompt: memoryDocument.content,
