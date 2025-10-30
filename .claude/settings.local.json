@@ -7,14 +7,15 @@
       "Bash(cat:*)",
       "Bash(git diff:*)",
       "Bash(git show:*)",
-      "Bash(gh api:*)",
+      "Bash(git log:*)",
+      "Bash(git grep:*)",
       "Bash(ls:*)",
       "Bash(find:*)",
       "Bash(grep:*)",
+      "Bash(head:*)",
+      "Bash(gh api:*)",
       "Bash(gh pr diff:*)",
-      "Bash(gh pr view:*)",
-      "Bash(git log:*)",
-      "Bash(git grep:*)"
+      "Bash(gh pr view:*)"
     ],
     "deny": [],
     "ask": []

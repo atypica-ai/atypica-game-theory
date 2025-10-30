@@ -657,27 +657,6 @@ export async function resolveSageKnowledgeGaps(
 }
 
 /**
- * Delete sage knowledge gaps
- */
-export async function deleteSageKnowledgeGaps(gapIds: number[]) {
-  if (gapIds.length === 0) return;
-
-  await prisma.sageKnowledgeGap.updateMany({
-    where: {
-      id: { in: gapIds },
-    },
-    data: {
-      status: KnowledgeGapStatus.DELETED,
-    },
-  });
-
-  rootLogger.info({
-    msg: "Deleted sage knowledge gaps",
-    gapIds,
-  });
-}
-
-/**
  * Create a new sage memory document version with optimistic locking
  */
 export async function createSageMemoryDocument({
@@ -746,32 +725,3 @@ export async function createSageMemoryDocument({
   return version;
 }
 
-/**
- * Get latest sage memory document version
- */
-export async function getLatestSageMemoryDocument(sageId: number) {
-  return prisma.sageMemoryDocument.findFirst({
-    where: { sageId },
-    orderBy: { version: "desc" },
-  });
-}
-
-/**
- * Get latest sage memory document content (convenience function)
- * Returns null if no memory document exists
- */
-export async function getSageMemoryDocumentContent(sageId: number): Promise<string | null> {
-  const latest = await getLatestSageMemoryDocument(sageId);
-  return latest?.content ?? null;
-}
-
-/**
- * Get sage memory document version history
- */
-export async function getSageMemoryDocumentHistory(sageId: number, limit = 20) {
-  return prisma.sageMemoryDocument.findMany({
-    where: { sageId },
-    orderBy: { version: "desc" },
-    take: limit,
-  });
-}

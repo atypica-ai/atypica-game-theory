@@ -72,15 +72,6 @@ export interface SageExtra {
   };
 }
 
-// KnowledgeGap from AI analysis (temporary, for creating DB records)
-export interface KnowledgeGapFromAnalysis {
-  area: string;
-  severity: KnowledgeGapSeverity;
-  description: string;
-  impact: string;
-  suggestedQuestions: string[];
-}
-
 // ===== SageInterview Types =====
 
 export interface SageInterviewExtra {
@@ -183,25 +174,3 @@ export interface ExtractedMemory {
   keyTakeaway: string;
 }
 
-// ===== Interview Plan =====
-
-export interface InterviewQuestion {
-  question: string;
-  type: "background" | "knowledge" | "case" | "reflective" | "future";
-  purpose: string;
-  followUps: string[];
-  expectedInsights: string[];
-  priority: "high" | "medium" | "low";
-}
-
-export interface InterviewPlan {
-  interviewPurpose: string;
-  focusAreas: string[];
-  questions: InterviewQuestion[];
-  interviewGuidance: {
-    openingMessage: string;
-    probingTechniques: string[];
-    closingMessage: string;
-  };
-  estimatedDuration: string;
-}
