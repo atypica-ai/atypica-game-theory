@@ -7,6 +7,7 @@ import { generateToken } from "@/lib/utils";
 import type { Sage, SageChat, SageInterview, UserChat } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
+import { generateId } from "ai";
 import { getLocale } from "next-intl/server";
 import { revalidatePath } from "next/cache";
 import { getPendingSageKnowledgeGaps, getSageById } from "./lib";
@@ -37,6 +38,7 @@ export async function createSage(
           domain: validated.domain,
           locale: validated.locale, // TODO 需要自动识别
           expertise: [],
+          bio: "",
           extra: {},
           // Create sources
           sources: {
@@ -346,6 +348,81 @@ export async function createOrGetSageChat(sageId: number): Promise<
 }
 
 /**
+ * Create a new sage chat session (always creates a new one, doesn't reuse existing)
+ */
+export async function createNewSageChat(
+  sageId: number,
+  initialUserMessage?: string,
+): Promise<
+  ServerActionResult<{
+    sageChat: SageChat;
+    userChat: UserChat;
+  }>
+> {
+  return withAuth(async (user) => {
+    try {
+      // Check if sage exists and is accessible
+      const result = await getSageById(sageId);
+
+      if (!result) {
+        return {
+          success: false,
+          message: "Sage not found",
+          code: "not_found",
+        };
+      }
+
+      const { sage } = result;
+
+      // Always create new chat
+      const userChat = await createUserChat({
+        userId: user.id,
+        kind: "sageSession",
+        title: `Chat with ${sage.name}`,
+      });
+
+      const sageChat = await prisma.sageChat.create({
+        data: {
+          sageId,
+          userChatId: userChat.id,
+          userId: user.id,
+        },
+      });
+
+      // Create initial user message if provided
+      if (initialUserMessage) {
+        await prisma.chatMessage.create({
+          data: {
+            userChatId: userChat.id,
+            role: "user",
+            messageId: generateId(),
+            content: initialUserMessage,
+            parts: [{ type: "text", text: initialUserMessage }],
+          },
+        });
+      }
+
+      rootLogger.info({
+        msg: `Created new sage chat ${sageChat.id} for user ${user.id} with sage ${sageId}`,
+        hasInitialMessage: !!initialUserMessage,
+      });
+
+      return {
+        success: true,
+        data: { sageChat, userChat },
+      };
+    } catch (error) {
+      rootLogger.error("Failed to create new sage chat:", error);
+      return {
+        success: false,
+        message: "Failed to create chat",
+        code: "internal_server_error",
+      };
+    }
+  });
+}
+
+/**
  * Process all pending sources for a sage
  */
 export async function processSageSources(sageId: number): Promise<ServerActionResult<void>> {
@@ -410,6 +487,48 @@ export async function extractSageKnowledge(sageId: number): Promise<ServerAction
     waitUntil(extractKnowledgeOnly({ sageId, locale }));
 
     revalidatePath(`/sage/${sage.token}`);
+
+    return { success: true, data: undefined };
+  });
+}
+
+/**
+ * Update sage avatar
+ */
+export async function updateSageAvatar(
+  sageId: number,
+  avatarUrl: string,
+): Promise<ServerActionResult<void>> {
+  return withAuth(async (user) => {
+    const result = await getSageById(sageId);
+
+    if (!result) {
+      return {
+        success: false,
+        message: "Sage not found",
+        code: "not_found",
+      };
+    }
+
+    const { sage } = result;
+
+    if (sage.userId !== user.id) {
+      return {
+        success: false,
+        message: "Not authorized",
+        code: "forbidden",
+      };
+    }
+
+    await prisma.sage.update({
+      where: { id: sageId },
+      data: {
+        avatar: { url: avatarUrl },
+      },
+    });
+
+    revalidatePath(`/sage/${sage.token}`);
+    revalidatePath(`/sage/profile/${sage.token}`);
 
     return { success: true, data: undefined };
   });

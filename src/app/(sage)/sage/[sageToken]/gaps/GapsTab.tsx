@@ -72,7 +72,7 @@ export function GapsTab({
     }
   };
 
-  const getSeverityColor = (severity: string) => {
+  const getSeverityColor = (severity: SageKnowledgeGapSeverity) => {
     switch (severity) {
       case "critical":
         return "bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20";
@@ -131,7 +131,7 @@ export function GapsTab({
                       <div className="flex-1">
                         <div className="text-xs text-muted-foreground mb-1">💬 User asked:</div>
                         <div className="text-sm italic text-foreground/90">
-                          &ldquo;{gap.description}&rdquo;
+                          &ldquo;{gap.source.description}&rdquo;
                         </div>
                       </div>
                       <Link href={`/sage/chat/view/${gap.source.userChatToken}`} target="_blank">

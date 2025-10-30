@@ -8,11 +8,15 @@ import {
   getPendingSageKnowledgeGaps,
   resolveSageKnowledgeGaps,
 } from "@/app/(sage)/lib";
-import { sageMemoryDocumentBuilderSystem } from "@/app/(sage)/prompt";
+import {
+  sageMemoryDocumentBuilderSystem,
+  sageProfileGenerationSystem,
+} from "@/app/(sage)/prompt/memory";
 import { SageExtra } from "@/app/(sage)/types";
 import { rootLogger } from "@/lib/logging";
 import { Sage } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
+import { mergeExtra } from "@/prisma/utils";
 import { generateObject, streamText } from "ai";
 import type { Locale } from "next-intl";
 import { Logger } from "pino";
@@ -68,35 +72,48 @@ export async function extractKnowledgeOnly({
       sourcesCount: completedSources.length,
     });
 
-    // Step 1: Generate suggested categories
-    const suggestedCategories = await generateSuggestedCategories({
-      sage,
-      sageSources: completedSources,
-      locale,
-      statReport,
-      logger,
-    });
-
-    // Update expertise with suggested categories
-    await prisma.sage.update({
-      where: { id: sageId },
-      data: { expertise: suggestedCategories },
-    });
-
-    // Step 2: Build Memory Document (internal two-step streaming)
-
     const allExtractedTexts = completedSources
       .map((s) => s.extractedText)
       .filter((text): text is string => !!text);
     const rawContent = allExtractedTexts.join("\n\n---\n\n");
 
-    const memoryDocument = await buildMemoryDocument({
-      sage,
-      rawContent,
-      locale,
-      statReport,
-      logger,
-    });
+    // Step 1 & 2: Generate profile and build memory document in parallel
+    const [, memoryDocument] = await Promise.all([
+      generateSageProfile({
+        sage,
+        rawContent,
+        locale,
+        statReport,
+        logger,
+      }).then(async (result) => {
+        // Update sage immediately after profile generation
+        await prisma.sage.update({
+          where: { id: sageId },
+          data: {
+            expertise: result.categories,
+            bio: result.bio,
+          },
+        });
+
+        // Update SageExtra with recommended questions
+        await mergeExtra({
+          tableName: "Sage",
+          id: sageId,
+          extra: {
+            recommendedQuestions: result.recommendedQuestions,
+          } satisfies SageExtra,
+        });
+
+        return result;
+      }),
+      buildMemoryDocument({
+        sage,
+        rawContent,
+        locale,
+        statReport,
+        logger,
+      }),
+    ]);
 
     // Save Memory Document as first version
     await createSageMemoryDocument({
@@ -119,50 +136,41 @@ export async function extractKnowledgeOnly({
   }
 }
 
-const suggestedCategoriesSchema = z.object({
+const sageProfileSchema = z.object({
   categories: z
     .array(z.string())
     .describe("Suggested topic categories for organizing the knowledge (3-10 categories)"),
+  bio: z.string().describe("2-3 sentence professional bio for the expert"),
+  recommendedQuestions: z
+    .array(z.string())
+    .length(4)
+    .describe("Exactly 4 recommended questions for users to ask the expert"),
 });
 
 /**
- * Generate suggested categories for organizing knowledge
+ * Generate sage profile including categories, bio, and recommended questions
  */
-async function generateSuggestedCategories({
+async function generateSageProfile({
   sage,
-  sageSources,
+  rawContent,
   locale,
   statReport,
   logger,
 }: {
   sage: Pick<Sage, "name" | "domain" | "userId">;
-  sageSources: { extractedText: string }[];
+  rawContent: string;
   locale: Locale;
   statReport: StatReporter;
   logger: Logger;
-}): Promise<string[]> {
-  const allExtractedTexts = sageSources
-    .map((s) => s.extractedText)
-    .filter((text): text is string => !!text);
-  const rawContent = allExtractedTexts.join("\n\n---\n\n");
-
+}): Promise<{
+  categories: string[];
+  bio: string;
+  recommendedQuestions: string[];
+}> {
   const result = await generateObject({
     model: llm("gemini-2.5-flash"),
-    schema: suggestedCategoriesSchema,
-    system:
-      locale === "zh-CN"
-        ? `你是一个知识分类专家。根据专家 ${sage.name} 在 ${sage.domain} 领域的原始内容，提取3-10个核心主题分类。
-
-分类要求：
-- 准确反映专家的核心专长领域
-- 分类粒度适中，不要过于宽泛或细致
-- 使用简洁的术语（2-6个字）`
-        : `You are a knowledge categorization expert. Based on the raw content from expert ${sage.name} in ${sage.domain}, extract 3-10 core topic categories.
-
-Requirements:
-- Accurately reflect the expert's core areas of expertise
-- Categories should be moderately granular, not too broad or too specific
-- Use concise terms (2-6 words)`,
+    schema: sageProfileSchema,
+    system: sageProfileGenerationSystem({ sage, locale }),
     prompt: rawContent,
     maxRetries: 3,
   });
@@ -170,16 +178,17 @@ Requirements:
   if (result.usage.totalTokens) {
     const totalTokens = result.usage.totalTokens;
     await statReport("tokens", totalTokens, {
-      reportedBy: "generate categories",
+      reportedBy: "generate sage profile",
     });
   }
 
   logger.info({
-    msg: "Generated categories from sage sources",
+    msg: "Generated sage profile",
     categoriesCount: result.object.categories.length,
+    recommendedQuestionsCount: result.object.recommendedQuestions.length,
   });
 
-  return result.object.categories;
+  return result.object;
 }
 
 /**

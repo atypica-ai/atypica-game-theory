@@ -588,10 +588,12 @@ model Sage {
   userId    Int
   user      User   @relation(fields: [userId], references: [id])
   name      String @db.VarChar(255)
-  domain    String @db.VarChar(255) // Professional domain (e.g., "Product Management", "AI Research")
-  expertise Json   @default("[]") // Array of expertise areas
-  locale    String @db.VarChar(16) // Primary language
-  extra     Json   @default("{}") // Additional metadata (processing status, etc.)
+  domain    String @db.VarChar(255)
+  expertise Json   @default("[]")
+  avatar    Json   @default("{}")
+  bio       String @db.Text
+  locale    String @db.VarChar(16)
+  extra     Json   @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)

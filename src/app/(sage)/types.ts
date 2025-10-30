@@ -8,8 +8,13 @@ export type TSageMessageWithTool = TMessageWithPlainTextTool;
  * Sage
  */
 
+export type SageAvatar = Partial<{
+  url: string;
+}>;
+
 export type SageExtra = Partial<{
   error: string; // Error message if processing failed
+  recommendedQuestions: string[]; // Recommended questions for users to ask the sage
   // 暂时没用
   processing:
     | {

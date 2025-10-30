@@ -10,8 +10,12 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
+import { AvatarUpload } from "./AvatarUpload";
 
-type SageWithExtra = Omit<Sage, "extra"> & { extra: SageExtra };
+type SageWithExtra = Omit<Sage, "extra" | "avatar"> & {
+  extra: SageExtra;
+  avatar: { url?: string };
+};
 
 export function MemoryTab({
   sage,
@@ -100,10 +104,24 @@ export function MemoryTab({
 
       <Separator />
 
+      {/* Avatar Upload */}
+      <div className="space-y-3">
+        <h2 className="text-sm font-medium text-foreground">Avatar</h2>
+        <AvatarUpload sageId={sage.id} sageName={sage.name} currentAvatar={sage.avatar} />
+      </div>
+
+      <Separator />
+
       {/* Basic Info */}
       <div className="space-y-3">
         <h2 className="text-sm font-medium text-foreground">Basic Information</h2>
         <div className="space-y-2 text-sm">
+          {sage.bio && (
+            <div>
+              <div className="text-xs text-muted-foreground">Bio</div>
+              <p className="text-sm mt-1">{sage.bio}</p>
+            </div>
+          )}
           <div>
             <div className="text-xs text-muted-foreground">Expertise</div>
             <div className="flex flex-wrap gap-1.5 mt-1">

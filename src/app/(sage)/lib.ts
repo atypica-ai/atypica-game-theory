@@ -4,6 +4,7 @@ import { rootLogger } from "@/lib/logging";
 import type { Sage, User } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import type {
+  SageAvatar,
   SageExtra,
   SageKnowledgeGapResolvedBy,
   SageKnowledgeGapSeverity,
@@ -16,9 +17,10 @@ import type {
  * Returns sage object and memoryDocument separately
  */
 export async function getSageByToken(token: string): Promise<{
-  sage: Omit<Sage, "expertise" | "extra"> & {
+  sage: Omit<Sage, "expertise" | "extra" | "avatar"> & {
     extra: SageExtra;
     expertise: string[];
+    avatar: SageAvatar;
     user: Pick<User, "id" | "name" | "email">;
   };
   memoryDocument: string | null;
@@ -50,6 +52,7 @@ export async function getSageByToken(token: string): Promise<{
       ...sageData,
       expertise: sageData.expertise as string[],
       extra: sageData.extra as SageExtra,
+      avatar: sageData.avatar as SageAvatar,
     },
     memoryDocument: memoryDocuments[0]?.content ?? null,
   };
@@ -62,9 +65,10 @@ export async function getSageByToken(token: string): Promise<{
  * FIXIT: 没必要搞这么个方法
  */
 export async function getSageById(id: number): Promise<{
-  sage: Omit<Sage, "expertise" | "extra"> & {
+  sage: Omit<Sage, "expertise" | "extra" | "avatar"> & {
     extra: SageExtra;
     expertise: string[];
+    avatar: SageAvatar;
     user: Pick<User, "id" | "name" | "email">;
   };
   memoryDocument: string | null;
@@ -96,6 +100,7 @@ export async function getSageById(id: number): Promise<{
       ...sageData,
       expertise: sageData.expertise as string[],
       extra: sageData.extra as SageExtra,
+      avatar: sageData.avatar as SageAvatar,
     },
     memoryDocument: memoryDocuments[0]?.content ?? null,
   };

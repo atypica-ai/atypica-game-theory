@@ -9,6 +9,8 @@ CREATE TABLE "Sage" (
     "name" VARCHAR(255) NOT NULL,
     "domain" VARCHAR(255) NOT NULL,
     "expertise" JSONB NOT NULL DEFAULT '[]',
+    "avatar" JSONB NOT NULL DEFAULT '{}',
+    "bio" TEXT NOT NULL,
     "locale" VARCHAR(16) NOT NULL,
     "extra" JSONB NOT NULL DEFAULT '{}',
     "createdAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
