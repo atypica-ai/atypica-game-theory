@@ -170,10 +170,11 @@ export class VolcanoTTSClient {
         for (const chunk of textChunks) {
           const nlpTextObject: PodcastNLPText = {
             speaker,
-            text: chunk,
+            text: chunk+"......", 
           };
+          this.logger?.info({ msg: "Adding NLP text object", nlpTextObject });
           nlpTexts.push(nlpTextObject);
-        }
+          }
 
         currentSpeakerIndex++;
       }
@@ -273,8 +274,7 @@ export class VolcanoTTSClient {
   }
 
   /**
-   * Generate podcast audio from script and upload to S3
-   * Combines Volcano TTS generation, audio chunk collection, concatenation, and S3 upload
+   * Generate podcast audio from script
    */
   async generatePodcastAudio(options: PodcastGenerationOptions): Promise<PodcastGenerationResult> {
     const { script, podcastToken, locale = "zh-CN", logger } = options;
@@ -302,6 +302,7 @@ export class VolcanoTTSClient {
         try {
           // Parse script to NLP texts
           const nlpTexts = this.parseScriptToNLPTexts(script, locale);
+          // this.logger?.info({ msg: "Parsed script to NLP texts", nlpTexts });
 
           if (nlpTexts.length === 0) {
             throw new Error("No dialogue content found in script");
@@ -320,10 +321,13 @@ export class VolcanoTTSClient {
             ws!.on("error", reject);
           });
 
+          // this.logger?.info('WebSocket connection established');
+
           // Start connection protocol
           try {
             await StartConnection(ws);
             await WaitForEvent(ws, MsgType.FullServerResponse, EventType.ConnectionStarted);
+            // this.logger?.info('Connection started');
           } catch (error) {
             this.logger?.error({
               msg: "Connection protocol failed",
@@ -362,6 +366,7 @@ export class VolcanoTTSClient {
             const sessionPayload = new TextEncoder().encode(JSON.stringify(reqParams));
             await StartSession(ws, sessionPayload, sessionId);
             await WaitForEvent(ws, MsgType.FullServerResponse, EventType.SessionStarted);
+            // this.logger?.info('Session started', { nlpTextsCount: reqParams.nlp_texts.length });
 
             // Finish session to start processing
             await FinishSession(ws, sessionId);
@@ -374,200 +379,117 @@ export class VolcanoTTSClient {
             throw error;
           }
 
-          // Collect audio chunks following the official demo pattern
-          // Arrays to collect audio chunks per round and overall
+          // Process events
+          let duration: number | undefined;
+          let currentRound = 0;
+          let totalRounds = 0;
           const podcastAudio: Uint8Array[] = [];
           let audio: Uint8Array[] = [];
-          let currentRound = 0;
-          let duration: number | undefined;
-          let isPodcastRoundEnd = true;
-          let lastRoundID = -1;
-          let serverAudioUrl: string | undefined;
 
-          // Process events
           while (true) {
             const msg = await ReceiveMessage(ws);
 
-            // Handle error messages first
-            if (msg.type === MsgType.Error) {
-              const errorMsg = new TextDecoder().decode(msg.payload);
-              this.logger?.error({ msg: "Received error message from server", error: errorMsg });
-              throw new Error(`Server error: ${errorMsg}`);
+            // Handle different message types
+            switch (msg.type) {
+              // Audio data chunks
+              case MsgType.AudioOnlyServer:
+                if (msg.event === EventType.PodcastRoundResponse) {
+                  audio.push(msg.payload);
+                  this.logger?.info({
+                    msg: `Received audio chunk`,
+                    size: msg.payload.length,
+                    round: currentRound,
+                  });
+                }
+                break;
+
+              // Error messages
+              case MsgType.Error:
+                const errorMsg = new TextDecoder().decode(msg.payload);
+                this.logger?.error({ msg: "Received error message from server", error: errorMsg });
+                throw new Error(`Server error: ${errorMsg}`);
+
+              // Metadata events
+              case MsgType.FullServerResponse:
+                if (msg.event === EventType.PodcastRoundStart) {
+                  const startData = JSON.parse(new TextDecoder().decode(msg.payload));
+                  currentRound = startData.round_id;
+                  totalRounds = Math.max(totalRounds, currentRound);
+                  this.logger?.info({
+                    msg: `Podcast round ${currentRound} started`,
+                    speaker: startData.speaker,
+                  });
+                } else if (msg.event === EventType.PodcastRoundEnd) {
+                  const endData = JSON.parse(new TextDecoder().decode(msg.payload));
+                  if (endData.is_error) {
+                    throw new Error(`Podcast round error: ${endData.error_msg}`);
+                  }
+                  if (endData.audio_duration) {
+                    duration = (duration || 0) + endData.audio_duration;
+                  }
+
+                  // Concatenate audio chunks from this round
+                  if (audio.length > 0) {
+                    podcastAudio.push(...audio);
+                    this.logger?.info({
+                      msg: `Podcast round ${currentRound} completed`,
+                      duration: endData.audio_duration,
+                      audioChunks: audio.length,
+                    });
+                    audio = [];
+                  }
+                } else if (msg.event === EventType.PodcastEnd) {
+                  const podcastData = JSON.parse(new TextDecoder().decode(msg.payload));
+                  this.logger?.info({
+                    msg: "Podcast generation completed",
+                    totalDuration: duration,
+                    totalAudioChunks: podcastAudio.length,
+                  });
+                } else if (msg.event === EventType.UsageResponse) {
+                  const usageData = JSON.parse(new TextDecoder().decode(msg.payload));
+                  this.logger?.info({ msg: "Usage info received", usageData });
+                }
+                break;
             }
 
-            switch (msg.event) {
-              // Audio data chunks - collect them as per official demo
-              case EventType.PodcastRoundResponse:
-                if (msg.type === MsgType.AudioOnlyServer) {
-                  audio.push(msg.payload);
-                  this.logger?.debug({
-                    msg: "Received audio chunk",
-                    size: msg.payload.length,
-                  });
-                }
-                break;
+            // Check for session finished - OUTSIDE the switch, after all message types are processed
+            if (msg.event === EventType.SessionFinished) {
+              this.logger?.info("Session finished");
 
-              case EventType.PodcastRoundStart:
-                const startData = JSON.parse(new TextDecoder().decode(msg.payload));
-                currentRound = startData.round_id;
-                isPodcastRoundEnd = false;
-                this.logger?.debug({
-                  msg: "Podcast round started",
-                  round: currentRound,
-                  speaker: startData.speaker,
-                });
-                break;
+              // Clean up connection
+              await FinishConnection(ws);
+              await WaitForEvent(ws, MsgType.FullServerResponse, EventType.ConnectionFinished);
 
-              case EventType.PodcastRoundEnd:
-                const endData = JSON.parse(new TextDecoder().decode(msg.payload));
-                if (endData.is_error) {
-                  this.logger?.warn({
-                    msg: "Podcast round ended with error",
-                    round: currentRound,
-                    error: endData.error_msg,
-                  });
-                  break;
-                }
+              // Concatenate all audio chunks
+              if (podcastAudio.length === 0) {
+                throw new Error("No audio data received from Volcano TTS");
+              }
 
-                // Concatenate round audio chunks following official demo pattern
-                if (audio.length > 0) {
-                  podcastAudio.push(...audio);
-                  const roundSize = audio.reduce((sum, chunk) => sum + chunk.length, 0);
-                  this.logger?.info({
-                    msg: "Round audio collected",
-                    round: currentRound,
-                    size: roundSize,
-                  });
-                  audio = [];
-                }
+              const finalAudioBuffer = Buffer.concat(podcastAudio);
+              this.logger?.info({
+                msg: "Audio chunks concatenated",
+                totalSize: finalAudioBuffer.byteLength,
+              });
 
-                if (endData.audio_duration) {
-                  duration = (duration || 0) + endData.audio_duration;
-                }
+              // Upload to S3
+              const mimeType = "audio/mpeg";
+              const keySuffix = `podcasts/${podcastToken}.mp3` as const;
+              const { objectUrl } = await uploadToS3({
+                keySuffix,
+                fileBody: finalAudioBuffer,
+                mimeType,
+              });
 
-                isPodcastRoundEnd = true;
-                lastRoundID = currentRound;
-                break;
+              this.logger?.info({
+                msg: "Podcast audio uploaded to S3",
+                duration,
+              });
 
-              case EventType.PodcastEnd:
-                const podcastData = JSON.parse(new TextDecoder().decode(msg.payload));
-                serverAudioUrl = podcastData.meta_info?.audio_url;
-                this.logger?.info({
-                  msg: "Podcast generation completed from server",
-                  hasAudioUrl: !!serverAudioUrl,
-                  totalDuration: duration,
-                });
-                break;
-
-              case EventType.SessionFinished:
-                this.logger?.info("Session finished");
-
-                // Clean up connection
-                await FinishConnection(ws);
-                await WaitForEvent(ws, MsgType.FullServerResponse, EventType.ConnectionFinished);
-
-                // Now handle audio upload to S3
-                let audioBuffer: Uint8Array;
-
-                if (podcastAudio.length > 0) {
-                  // Use collected chunks if available
-                  audioBuffer = new Uint8Array(
-                    podcastAudio.reduce((sum, chunk) => sum + chunk.length, 0)
-                  );
-                  let offset = 0;
-                  for (const chunk of podcastAudio) {
-                    audioBuffer.set(chunk, offset);
-                    offset += chunk.length;
-                  }
-                  this.logger?.info({
-                    msg: "Audio concatenated from collected chunks",
-                    totalSize: audioBuffer.byteLength,
-                  });
-                } else if (serverAudioUrl) {
-                  // Fallback: download from server URL
-                  this.logger?.info({
-                    msg: "Downloading audio from server URL",
-                    url: "[REDACTED]",
-                  });
-
-                  const audioResponse = await fetch(serverAudioUrl);
-                  if (!audioResponse.ok) {
-                    throw new Error(`Failed to download audio: ${audioResponse.statusText}`);
-                  }
-
-                  // Check content length
-                  const contentLength = audioResponse.headers.get("content-length");
-                  if (contentLength && parseInt(contentLength) > 10 * 1024 * 1024) {
-                    throw new Error(`Audio file too large: ${contentLength} bytes (max 10MB)`);
-                  }
-
-                  // Download with streaming
-                  const maxSize = 10 * 1024 * 1024;
-                  let downloadedSize = 0;
-                  const chunks: Uint8Array[] = [];
-
-                  const reader = audioResponse.body?.getReader();
-                  if (!reader) {
-                    throw new Error("Failed to get audio response reader");
-                  }
-
-                  try {
-                    while (true) {
-                      const { done, value } = await reader.read();
-                      if (done) break;
-
-                      downloadedSize += value.length;
-                      if (downloadedSize > maxSize) {
-                        throw new Error(`Audio file too large: ${downloadedSize} bytes (max 10MB)`);
-                      }
-
-                      chunks.push(value);
-                    }
-                  } finally {
-                    reader.releaseLock();
-                  }
-
-                  audioBuffer = new Uint8Array(downloadedSize);
-                  let offset = 0;
-                  for (const chunk of chunks) {
-                    audioBuffer.set(chunk, offset);
-                    offset += chunk.length;
-                  }
-                } else {
-                  throw new Error("No audio data available (no collected chunks and no server URL)");
-                }
-
-                // Upload to S3
-                const mimeType = "audio/mpeg";
-                const keySuffix = `podcasts/${podcastToken}.mp3` as const;
-
-                this.logger?.info({
-                  msg: "Uploading audio to S3",
-                  size: audioBuffer.byteLength,
-                  keySuffix,
-                });
-
-                const { objectUrl } = await uploadToS3({
-                  keySuffix,
-                  fileBody: audioBuffer,
-                  mimeType,
-                });
-
-                this.logger?.info({
-                  msg: "Podcast generation and upload completed successfully",
-                  objectUrl: "[REDACTED]",
-                  mimeType,
-                  duration,
-                });
-
-                return {
-                  objectUrl,
-                  mimeType,
-                  duration,
-                };
-
-              default:
-              // Ignore unknown events
+              return {
+                objectUrl,
+                mimeType,
+                duration,
+              };
             }
           }
         } catch (error) {
@@ -581,6 +503,7 @@ export class VolcanoTTSClient {
             try {
               ws.close();
             } catch {
+              // Ignore close errors
               // Ignore close errors
             }
             ws = null;

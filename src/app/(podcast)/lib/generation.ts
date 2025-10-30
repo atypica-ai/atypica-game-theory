@@ -338,9 +338,12 @@ async function generatePodcastScript({
 
 // Pure podcast audio generation function (no auth, renamed from backgroundGeneratePodcastAudioImpl)
 export async function generatePodcastAudio({
+  // podcastId,
   podcastToken,
   script,
   locale,
+  // abortSignal,
+  // statReport,  // TODO 目前暂时免费，不消耗 token
   logger,
 }: {
   podcastId: number;
@@ -360,7 +363,7 @@ export async function generatePodcastAudio({
     // Create Volcano TTS client
     const volcanoClient = createVolcanoClient(logger);
 
-    // Generate audio - now returns S3 objectUrl and mimeType directly
+    // Generate audio - now includes chunk collection, concatenation, and S3 upload
     const result = await volcanoClient.generatePodcastAudio({
       script: script,
       podcastToken,
@@ -368,21 +371,12 @@ export async function generatePodcastAudio({
       logger,
     });
 
-    if (!result.objectUrl) {
-      throw new Error(result.error || "Failed to generate podcast audio - no object URL returned");
-    }
-
     logger.info({
       msg: "Podcast audio generation completed successfully",
-      objectUrl: "[REDACTED]",
-      mimeType: result.mimeType,
       duration: result.duration,
     });
 
-    return {
-      objectUrl: result.objectUrl,
-      mimeType: result.mimeType,
-    };
+    return { objectUrl: result.objectUrl, mimeType: result.mimeType };
   } catch (error) {
     logger.error({
       msg: "Podcast audio generation failed",
