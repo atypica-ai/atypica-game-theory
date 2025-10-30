@@ -92,6 +92,16 @@
       "analysis": "分析结果",
       "chats": "用户聊天记录",
       "gaps": "知识空白",
+      "metadata": {
+        "memoryTitle": "专家记忆",
+        "memoryDescription": "查看和管理专家的知识记忆文档",
+        "gapsTitle": "知识空白",
+        "gapsDescription": "查看和填补专家的知识空白",
+        "analysisTitle": "分析结果",
+        "analysisDescription": "查看专家的知识完整性分析",
+        "chatsTitle": "聊天记录",
+        "chatsDescription": "查看用户与专家的对话历史"
+      },
       "knowledgeSources": "知识源",
       "completed": "已完成",
       "failed": "失败",

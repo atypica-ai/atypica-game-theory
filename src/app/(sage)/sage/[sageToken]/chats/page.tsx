@@ -1,9 +1,34 @@
 import authOptions from "@/app/(auth)/authOptions";
+import { generatePageMetadata } from "@/lib/request/metadata";
 import { prisma } from "@/prisma/prisma";
+import type { Metadata } from "next";
 import { getServerSession } from "next-auth";
+import { getLocale, getTranslations } from "next-intl/server";
 import { forbidden, notFound } from "next/navigation";
 import { getSageByToken } from "../../../lib";
 import { ChatsTab } from "./ChatsTab";
+
+export const dynamic = "force-dynamic";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ sageToken: string }>;
+}): Promise<Metadata> {
+  const locale = await getLocale();
+  const t = await getTranslations("Sage.detail.metadata");
+  const { sageToken } = await params;
+  const result = await getSageByToken(sageToken);
+  if (!result) {
+    return {};
+  }
+  const { sage } = result;
+  return generatePageMetadata({
+    title: `${sage.name} - ${t("chatsTitle")}`,
+    description: t("chatsDescription"),
+    locale,
+  });
+}
 
 export default async function SageChatsPage({
   params,

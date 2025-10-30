@@ -92,6 +92,16 @@
       "analysis": "Analysis",
       "chats": "Chats",
       "gaps": "Gaps",
+      "metadata": {
+        "memoryTitle": "Memory",
+        "memoryDescription": "View and manage expert's knowledge memory document",
+        "gapsTitle": "Knowledge Gaps",
+        "gapsDescription": "View and fill expert's knowledge gaps",
+        "analysisTitle": "Analysis",
+        "analysisDescription": "View expert's knowledge completeness analysis",
+        "chatsTitle": "Chat History",
+        "chatsDescription": "View conversation history between users and expert"
+      },
       "knowledgeSources": "Knowledge Sources",
       "completed": "Completed",
       "failed": "Failed",
