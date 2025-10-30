@@ -583,27 +583,15 @@ model InterviewReport {
 // ===== Sage (Expert Agent) System =====
 
 model Sage {
-  id     Int    @id @default(autoincrement())
-  token  String @unique @db.VarChar(64)
-  userId Int
-  user   User   @relation(fields: [userId], references: [id])
-
+  id        Int    @id @default(autoincrement())
+  token     String @unique @db.VarChar(64)
+  userId    Int
+  user      User   @relation(fields: [userId], references: [id])
   name      String @db.VarChar(255)
   domain    String @db.VarChar(255) // Professional domain (e.g., "Product Management", "AI Research")
   expertise Json   @default("[]") // Array of expertise areas
   locale    String @db.VarChar(16) // Primary language
-
-  // Configuration
-  isPublic   Boolean @default(false) // Whether this sage is publicly shared
-  allowTools Boolean @default(true) // Whether sage can use tools (deep research, search)
-
-  // Statistics
-  chatCount    Int       @default(0) // Number of chats with this sage
-  lastActiveAt DateTime? @db.Timestamptz(6) // Last time sage was used
-
-  // Import metadata
-  attachments Json @default("[]") // Initial source files/content
-  extra       Json @default("{}") // Additional metadata (processing status, etc.)
+  extra     Json   @default("{}") // Additional metadata (processing status, etc.)
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
@@ -613,57 +601,33 @@ model Sage {
   sources         SageSource[]
   knowledgeGaps   SageKnowledgeGap[]
   memoryDocuments SageMemoryDocument[]
-
-  @@index([userId, domain])
-  @@index([isPublic, domain, locale])
 }
 
 model SageSource {
-  id     Int  @id @default(autoincrement())
-  sageId Int
-  sage   Sage @relation(fields: [sageId], references: [id], onDelete: Cascade)
-
-  // Source type
-  type String @db.VarChar(32) // "text" | "file" | "url"
-
-  // Original input
-  content Json // {text} or {objectUrl, name, mimeType, size} or {url}
-
-  // Processing result
-  status        String  @default("pending") @db.VarChar(32) // "pending" | "processing" | "completed" | "failed"
-  title         String? @db.VarChar(255) // AI-generated title summarizing the source
-  extractedText String? @db.Text // Plain text extracted from source
-  error         String? @db.Text // Error message if failed
+  id            Int    @id @default(autoincrement())
+  sageId        Int
+  sage          Sage   @relation(fields: [sageId], references: [id], onDelete: Cascade)
+  content       Json // { type:"text", text } or { type:"file", objectUrl, name, mimeType, size } or { type:"url", url }
+  title         String @db.VarChar(255)
+  extractedText String @db.Text
+  extra         Json   @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
-
-  @@index([sageId, status])
 }
 
 model SageChat {
   id         Int      @id @default(autoincrement())
   sageId     Int
   sage       Sage     @relation(fields: [sageId], references: [id], onDelete: Cascade)
-  userChatId Int      @unique
-  userChat   UserChat @relation(fields: [userChatId], references: [id])
   userId     Int
   user       User     @relation(fields: [userId], references: [id])
-
-  // Chat type: consultation, brainstorm, interview
-  chatType String @default("consultation") @db.VarChar(32)
-
-  // Statistics
-  messageCount Int @default(0)
-
-  // Additional metadata
-  extra Json @default("{}")
+  userChatId Int      @unique
+  userChat   UserChat @relation(fields: [userChatId], references: [id])
+  extra      Json     @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
-
-  @@index([sageId])
-  @@index([userId])
 }
 
 model SageInterview {
@@ -672,76 +636,40 @@ model SageInterview {
   sage       Sage     @relation(fields: [sageId], references: [id], onDelete: Cascade)
   userChatId Int      @unique
   userChat   UserChat @relation(fields: [userChatId], references: [id])
-
-  // Interview purpose and focus
-  purpose    String @db.Text // Purpose of this interview
-  focusAreas Json   @default("[]") // Array of focus areas
-
-  // Interview status
-  status   String @default("ongoing") @db.VarChar(32) // draft, ongoing, completed
-  progress Float  @default(0) // Completion progress 0-1
-
-  // Interview results
-  summary String? @db.Text // Summary after completion
-  extra   Json    @default("{}") // Findings, new memories count, etc.
+  extra      Json     @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
-
-  resolvedGaps SageKnowledgeGap[] @relation("InterviewResolvedGaps")
-
-  @@index([sageId, status])
 }
 
 model SageKnowledgeGap {
-  id     Int  @id @default(autoincrement())
-  sageId Int
-  sage   Sage @relation(fields: [sageId], references: [id], onDelete: Cascade)
-
-  // Gap content
-  area        String @db.VarChar(255) // Knowledge area with gap
-  description String @db.Text // What's missing
-  severity    String @db.VarChar(32) // "critical" | "important" | "nice-to-have"
-  impact      String @db.Text // Impact on expert's capability
-
-  // Source tracking
-  sourceType        String  @db.VarChar(64) // "analysis" | "conversation" | "system_suggestion"
-  sourceDescription String  @db.Text // e.g., "User asked about X" or "Initial analysis"
-  sourceReference   String? @db.Text // Optional reference (e.g., userChatId, messageId)
-
-  // Status
-  status String @default("pending") @db.VarChar(32) // "pending" | "resolved" | "deleted"
-
-  // Resolution tracking
-  resolvedAt            DateTime?      @db.Timestamptz(6)
-  resolvedBy            String?        @db.VarChar(64) // "interview" | "manual"
-  resolvedByInterviewId Int?
-  resolvedByInterview   SageInterview? @relation("InterviewResolvedGaps", fields: [resolvedByInterviewId], references: [id])
+  id          Int       @id @default(autoincrement())
+  sageId      Int
+  sage        Sage      @relation(fields: [sageId], references: [id], onDelete: Cascade)
+  area        String    @db.VarChar(255)
+  description String    @db.Text
+  severity    String    @db.VarChar(32)
+  impact      String    @db.Text
+  source      Json      @default("{}")
+  resolvedBy  Json      @default("{}")
+  resolvedAt  DateTime? @db.Timestamptz(6)
+  extra       Json      @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
-
-  @@index([sageId, status])
-  @@index([sageId, createdAt])
 }
 
 model SageMemoryDocument {
-  id     Int  @id @default(autoincrement())
-  sageId Int
-  sage   Sage @relation(fields: [sageId], references: [id], onDelete: Cascade)
-
-  // Version control
-  version Int // Version number, auto-increment per sage
-
-  // Content
-  content String @db.Text // Memory document content
-
-  // Metadata
-  source          String  @db.VarChar(64) // "initial" | "interview" | "manual"
-  sourceReference String? @db.Text // Optional reference (e.g., interviewId)
-  changeNotes     String? @db.Text // Description of changes
+  id          Int    @id @default(autoincrement())
+  sageId      Int
+  sage        Sage   @relation(fields: [sageId], references: [id], onDelete: Cascade)
+  version     Int
+  content     String @db.Text
+  changeNotes String @db.Text
+  extra       Json   @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
   @@unique([sageId, version])
   @@index([sageId, version(sort: Desc)]) // Optimize for getting latest version
