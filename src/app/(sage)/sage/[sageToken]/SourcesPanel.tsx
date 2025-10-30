@@ -3,21 +3,21 @@
 import type { Sage, SageSource } from "@/prisma/client";
 import type { SageExtra } from "../../types";
 import { useTranslations } from "next-intl";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
 import {
   CheckCircle2Icon,
   CircleXIcon,
   ClockIcon,
   Loader2Icon,
   PlayIcon,
+  ExternalLinkIcon,
 } from "lucide-react";
 import { useCallback, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { processSageSources } from "../../actions";
+import { proxiedObjectCdnUrl } from "@/app/(system)/cdn/lib";
 
 type SageWithExtra = Omit<Sage, "extra"> & { extra: SageExtra };
 
@@ -100,7 +100,7 @@ export function SourcesPanel({
       <Separator />
 
       {/* Sources List */}
-      <div className="space-y-3">
+      <div className="space-y-1">
         {sources.map((source) => (
           <SourceItem key={source.id} source={source} t={t} />
         ))}
@@ -136,49 +136,68 @@ function SourceItem({
     }
   };
 
-  const getStatusText = () => {
-    switch (source.status) {
-      case "completed":
-        return t("sourceCompleted");
-      case "processing":
-        return t("sourceProcessing");
-      case "failed":
-        return t("sourceFailed");
-      default:
-        return t("sourcePending");
+  const getSecondaryInfo = () => {
+    if (source.type === "url") {
+      const content = source.content as { url?: string };
+      return content.url || "";
+    } else if (source.type === "file") {
+      const content = source.content as { name?: string };
+      return content.name || "";
+    } else if (source.type === "text") {
+      return source.extractedText
+        ? `${source.extractedText.length} ${t("characters")}`
+        : "";
+    }
+    return "";
+  };
+
+  const handleClick = () => {
+    if (source.type === "url") {
+      const content = source.content as { url?: string };
+      if (content.url) {
+        window.open(content.url, "_blank");
+      }
+    } else if (source.type === "file") {
+      const content = source.content as {
+        objectUrl?: string;
+        mimeType?: string;
+      };
+      if (content.objectUrl && content.mimeType) {
+        window.open(
+          proxiedObjectCdnUrl({
+            objectUrl: content.objectUrl,
+            mimeType: content.mimeType,
+          }),
+          "_blank",
+        );
+      }
     }
   };
 
+  const isClickable = source.type === "url" || source.type === "file";
+
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <div className="flex items-start gap-3">
-          {getStatusIcon()}
-          <div className="flex-1 min-w-0">
-            <CardTitle className="text-sm truncate">
-              {source.title || t("untitledSource")}
-            </CardTitle>
-            <div className="flex items-center gap-2 mt-1">
-              <Badge variant="outline" className="text-xs">
-                {source.type}
-              </Badge>
-              <span className="text-xs text-muted-foreground">{getStatusText()}</span>
-            </div>
-          </div>
+    <div
+      className={`flex items-start gap-2 py-2 ${
+        isClickable ? "cursor-pointer hover:bg-accent/30 rounded px-2 -mx-2 transition-colors" : ""
+      }`}
+      onClick={isClickable ? handleClick : undefined}
+    >
+      {getStatusIcon()}
+      <div className="flex-1 min-w-0">
+        <div className="text-sm text-foreground truncate flex items-center gap-1">
+          {source.title || t("untitledSource")}
+          {isClickable && <ExternalLinkIcon className="h-3 w-3 text-muted-foreground" />}
         </div>
-      </CardHeader>
-      {source.extractedText && (
-        <CardContent className="pt-0">
-          <div className="text-xs text-muted-foreground">
-            {source.extractedText.length} {t("characters")}
+        {getSecondaryInfo() && (
+          <div className="text-xs text-muted-foreground/60 truncate mt-0.5">
+            {getSecondaryInfo()}
           </div>
-        </CardContent>
-      )}
-      {source.error && (
-        <CardContent className="pt-0">
-          <div className="text-xs text-red-600">{source.error}</div>
-        </CardContent>
-      )}
-    </Card>
+        )}
+        {source.error && (
+          <div className="text-xs text-red-600 mt-1 line-clamp-2">{source.error}</div>
+        )}
+      </div>
+    </div>
   );
 }

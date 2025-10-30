@@ -6,12 +6,10 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Loader2Icon, SparklesIcon, ScanSearchIcon } from "lucide-react";
 import { toast } from "sonner";
 import { extractSageKnowledge, analyzeSageKnowledge } from "../../actions";
-import { Markdown } from "@/components/markdown";
 
 type SageWithExtra = Omit<Sage, "extra"> & { extra: SageExtra };
 
@@ -63,14 +61,15 @@ export function MemoryTab({ sage, memoryDocument }: { sage: SageWithExtra; memor
       {/* Header with Actions */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">{sage.name}</h1>
-          <p className="text-muted-foreground">{sage.domain}</p>
+          <h1 className="text-xl font-semibold">{sage.name}</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">{sage.domain}</p>
         </div>
         <div className="flex gap-2">
           <Button
             onClick={handleExtractKnowledge}
             disabled={!canExtract || isExtracting}
             variant="default"
+            size="sm"
           >
             {isExtracting ? (
               <Loader2Icon className="size-4 animate-spin" />
@@ -83,6 +82,7 @@ export function MemoryTab({ sage, memoryDocument }: { sage: SageWithExtra; memor
             onClick={handleAnalyze}
             disabled={!canAnalyze || isAnalyzing}
             variant="outline"
+            size="sm"
           >
             {isAnalyzing ? (
               <Loader2Icon className="size-4 animate-spin" />
@@ -97,18 +97,16 @@ export function MemoryTab({ sage, memoryDocument }: { sage: SageWithExtra; memor
       <Separator />
 
       {/* Basic Info */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Basic Information</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      <div className="space-y-3">
+        <h2 className="text-sm font-medium text-foreground">Basic Information</h2>
+        <div className="space-y-2 text-sm">
           <div>
-            <div className="text-sm font-medium text-muted-foreground">Expertise</div>
-            <div className="flex flex-wrap gap-2 mt-1">
+            <div className="text-xs text-muted-foreground">Expertise</div>
+            <div className="flex flex-wrap gap-1.5 mt-1">
               {(Array.isArray(sage.expertise) ? sage.expertise : []).map((exp, idx) => (
                 <span
                   key={idx}
-                  className="px-2 py-1 bg-secondary text-secondary-foreground rounded text-sm"
+                  className="px-2 py-0.5 bg-secondary text-secondary-foreground rounded text-xs"
                 >
                   {String(exp)}
                 </span>
@@ -116,36 +114,38 @@ export function MemoryTab({ sage, memoryDocument }: { sage: SageWithExtra; memor
             </div>
           </div>
           <div>
-            <div className="text-sm font-medium text-muted-foreground">Locale</div>
-            <div className="mt-1">{sage.locale}</div>
+            <span className="text-xs text-muted-foreground">Locale:</span>{" "}
+            <span>{sage.locale}</span>
           </div>
           <div>
-            <div className="text-sm font-medium text-muted-foreground">Public</div>
-            <div className="mt-1">{sage.isPublic ? "Yes" : "No"}</div>
+            <span className="text-xs text-muted-foreground">Public:</span>{" "}
+            <span>{sage.isPublic ? "Yes" : "No"}</span>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
+
+      <Separator />
 
       {/* Memory Document */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("memoryDocument")}</CardTitle>
-          <CardDescription>
-            {hasMemoryDocument ? (
-              `${memoryDocument.length} characters`
-            ) : (
-              "No memory document yet. Extract knowledge from sources first."
-            )}
-          </CardDescription>
-        </CardHeader>
-        {hasMemoryDocument && (
-          <CardContent>
-            <div className="prose prose-sm max-w-none dark:prose-invert">
-              <Markdown>{memoryDocument}</Markdown>
-            </div>
-          </CardContent>
+      <div className="space-y-2">
+        <div className="flex items-baseline justify-between">
+          <h2 className="text-sm font-medium text-foreground">{t("memoryDocument")}</h2>
+          {hasMemoryDocument && (
+            <span className="text-xs text-muted-foreground">
+              {memoryDocument.length} characters
+            </span>
+          )}
+        </div>
+        {hasMemoryDocument ? (
+          <pre className="text-xs text-foreground/90 whitespace-pre-wrap font-mono leading-relaxed">
+            {memoryDocument}
+          </pre>
+        ) : (
+          <p className="text-xs text-muted-foreground">
+            No memory document yet. Extract knowledge from sources first.
+          </p>
         )}
-      </Card>
+      </div>
     </div>
   );
 }

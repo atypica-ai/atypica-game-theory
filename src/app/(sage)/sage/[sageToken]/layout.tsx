@@ -1,4 +1,5 @@
 import authOptions from "@/app/(auth)/authOptions";
+import { FitToViewport } from "@/components/layout/FitToViewport";
 import { prisma } from "@/prisma/prisma";
 import { getServerSession } from "next-auth";
 import { forbidden, notFound } from "next/navigation";
@@ -41,7 +42,7 @@ export default async function SageDetailLayout({
   });
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] overflow-hidden">
+    <FitToViewport className="flex overflow-hidden">
       {/* Left Panel - Sources */}
       <div className="w-1/3 border-r border-border overflow-y-auto">
         <SourcesPanel sage={sage} sources={sources} />
@@ -50,10 +51,8 @@ export default async function SageDetailLayout({
       {/* Right Panel - Tab Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         <TabNavigation sageToken={sage.token} />
-        <div className="flex-1 overflow-y-auto">
-          {children}
-        </div>
+        <div className="flex-1 overflow-y-auto">{children}</div>
       </div>
-    </div>
+    </FitToViewport>
   );
 }
