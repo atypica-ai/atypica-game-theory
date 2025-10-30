@@ -151,7 +151,7 @@ export function CreateSageForm() {
       toast.error(t("createFailed"));
       setIsCreating(false);
     }
-  }, [router, toast, sageName, sageDomain, sources, locale, t, toast]);
+  }, [router, sageName, sageDomain, sources, locale, t]);
 
   if (showMetadataStep) {
     return (

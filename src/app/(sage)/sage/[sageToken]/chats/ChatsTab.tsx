@@ -45,7 +45,7 @@ export function ChatsTab({ chats }: { sage: SageWithExtra; chats: ChatWithLastMe
             return (
               <Link
                 key={chat.id}
-                href={`/c/${chat.id}`}
+                href={`/sage/chat/view/${chat.token}`}
                 className="block py-2 px-3 rounded hover:bg-accent/50 transition-colors"
               >
                 <div className="flex items-start justify-between gap-2">
