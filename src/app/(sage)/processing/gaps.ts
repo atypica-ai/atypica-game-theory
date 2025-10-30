@@ -3,6 +3,7 @@ import "server-only";
 import { llm } from "@/ai/provider";
 import { StatReporter } from "@/ai/tools/types";
 import { createSageKnowledgeGaps } from "@/app/(sage)/lib";
+import { conversationGapAnalysisSystem, sageKnowledgeGapsOnlySystem } from "@/app/(sage)/prompt/gaps";
 import { SageExtra, SageKnowledgeGapSeverity } from "@/app/(sage)/types";
 import { rootLogger } from "@/lib/logging";
 import { prisma } from "@/prisma/prisma";
@@ -10,7 +11,6 @@ import { generateObject } from "ai";
 import type { Locale } from "next-intl";
 import { Logger } from "pino";
 import z from "zod";
-import { sageKnowledgeGapsOnlySystem } from "../prompt";
 
 /**
  * Analyze sage knowledge completeness
@@ -207,58 +207,7 @@ export async function analyzeConversationForGaps({
   const result = await generateObject({
     model: llm("gemini-2.5-flash"), // Fast model for quick analysis
     schema: conversationGapSchema,
-    system:
-      locale === "zh-CN"
-        ? `你是一个专业的知识完整度分析师。分析专家与用户的对话，识别专家回答中的知识空白。
-
-<Expert>
-Name: ${sage.name}
-Domain: ${sage.domain}
-</Expert>
-
-<Detection Criteria>
-知识空白的标志：
-1. 专家明确表示不知道或不确定
-2. 回答模糊、空泛，缺乏具体信息
-3. 回避问题，转移话题
-4. 回答明显不专业或错误
-5. 缺少实例、数据、经验支撑
-
-<Ignore>
-- 正常的合理边界（如"这不在我的专业范围"）
-- 需要更多上下文的追问（这是正常对话）
-- 专家给出了合理、专业的回答
-</Ignore>
-
-<Output>
-如果检测到知识空白，设置 hasGap=true 并列出gaps。
-如果回答质量正常，设置 hasGap=false。
-</Output>`
-        : `You are a professional knowledge completeness analyst. Analyze the conversation between the expert and user to identify knowledge gaps in the expert's response.
-
-<Expert>
-Name: ${sage.name}
-Domain: ${sage.domain}
-</Expert>
-
-<Detection Criteria>
-Signs of knowledge gaps:
-1. Expert explicitly states they don't know or are uncertain
-2. Vague, generic answers lacking specific information
-3. Avoiding the question, changing the subject
-4. Obviously unprofessional or incorrect answers
-5. Lack of examples, data, or experience to support claims
-
-<Ignore>
-- Normal reasonable boundaries (like "this is outside my expertise")
-- Asking for more context (normal conversation flow)
-- Expert provides reasonable, professional answers
-</Ignore>
-
-<Output>
-If knowledge gap detected, set hasGap=true and list gaps.
-If answer quality is normal, set hasGap=false.
-</Output>`,
+    system: conversationGapAnalysisSystem({ sage, locale }),
     prompt:
       locale === "zh-CN"
         ? `<User Question>

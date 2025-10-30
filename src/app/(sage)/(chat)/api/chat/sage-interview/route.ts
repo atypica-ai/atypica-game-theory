@@ -8,7 +8,7 @@ import { defaultProviderOptions, llm } from "@/ai/provider";
 import { initGenericUserChatStatReporter } from "@/ai/tools/stats";
 import { calculateStepTokensUsage } from "@/ai/usage";
 import authOptions from "@/app/(auth)/authOptions";
-import { sageInterviewConversationSystem } from "@/app/(sage)/prompt";
+import { sageInterviewConversationSystem } from "@/app/(sage)/prompt/chat";
 import { sageInterviewTools } from "@/app/(sage)/tools";
 import type { SageExtra, SageInterviewExtra } from "@/app/(sage)/types";
 import { rootLogger } from "@/lib/logging";

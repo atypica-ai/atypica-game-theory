@@ -11,7 +11,7 @@ import { calculateStepTokensUsage } from "@/ai/usage";
 import authOptions from "@/app/(auth)/authOptions";
 import { createSageKnowledgeGaps, getSageByToken } from "@/app/(sage)/lib";
 import { analyzeConversationForGaps } from "@/app/(sage)/processing/gaps";
-import { sageChatSystem } from "@/app/(sage)/prompt";
+import { sageChatSystem } from "@/app/(sage)/prompt/chat";
 import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage, truncateForTitle } from "@/lib/textUtils";
 import { prisma } from "@/prisma/prisma";
