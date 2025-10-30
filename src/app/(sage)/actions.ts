@@ -1,22 +1,22 @@
 "use server";
-
 import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import type { ServerActionResult } from "@/lib/serverAction";
 import { createUserChat } from "@/lib/userChat/lib";
+import { generateToken } from "@/lib/utils";
 import type { Sage, SageChat, SageInterview, UserChat } from "@/prisma/client";
+import { InputJsonObject } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
 import { getLocale } from "next-intl/server";
 import { revalidatePath } from "next/cache";
-import { generateSageToken, getSageById, getSageByToken } from "./lib";
-import {
-  processSourcesOnly,
-  extractKnowledgeOnly,
-  analyzeKnowledgeOnly,
-} from "./processing";
-import type { CreateSageInput, UpdateSageInput } from "./types";
-import { createSageInputSchema, updateSageInputSchema } from "./types";
+import { getPendingSageKnowledgeGaps, getSageById } from "./lib";
+import { generateInterviewPlan } from "./processing/followup";
+import { analyzeKnowledgeOnly } from "./processing/gaps";
+import { extractKnowledgeOnly } from "./processing/memory";
+import { processSourcesOnly } from "./processing/sources";
+import type { CreateSageInput, SageInterviewExtra } from "./types";
+import { createSageInputSchema } from "./types";
 
 // ===== Sage Creation and Management =====
 
@@ -29,26 +29,23 @@ export async function createSage(
 ): Promise<ServerActionResult<{ sage: Sage; userChat: UserChat }>> {
   return withAuth(async (user) => {
     try {
-      // Validate input
       const validated = createSageInputSchema.parse(input);
-
-      // Create sage record with sources
       const sage = await prisma.sage.create({
         data: {
-          token: generateSageToken(),
+          token: generateToken(),
           userId: user.id,
           name: validated.name,
           domain: validated.domain,
-          locale: validated.locale,
+          locale: validated.locale, // TODO 需要自动识别
           expertise: [],
-          attachments: [], // Deprecated, keeping for backward compatibility
           extra: {},
           // Create sources
           sources: {
             create: validated.sources.map((source) => ({
-              type: source.type,
-              content: source.content,
+              content: source as unknown as InputJsonObject,
               status: "pending",
+              title: "",
+              extractedText: "",
             })),
           },
         },
@@ -79,153 +76,6 @@ export async function createSage(
       return {
         success: false,
         message: "Failed to create sage",
-        code: "internal_server_error",
-      };
-    }
-  });
-}
-
-/**
- * Get sage by token (public or owner access)
- */
-export async function fetchSage(token: string): Promise<
-  ServerActionResult<
-    Awaited<ReturnType<typeof getSageByToken>> // TODO: 最好是直接定义出来
-  >
-> {
-  try {
-    const sage = await getSageByToken(token);
-
-    if (!sage) {
-      return {
-        success: false,
-        message: "Sage not found",
-        code: "not_found",
-      };
-    }
-
-    // TODO: Check if sage is public or user is owner
-    // For now, allow all access
-
-    return {
-      success: true,
-      data: sage,
-    };
-  } catch (error) {
-    rootLogger.error("Failed to fetch sage:", error);
-    return {
-      success: false,
-      message: "Failed to fetch sage",
-      code: "internal_server_error",
-    };
-  }
-}
-
-/**
- * Update sage basic information
- */
-export async function updateSage(
-  sageId: number,
-  input: UpdateSageInput,
-): Promise<ServerActionResult<Sage>> {
-  return withAuth(async (user) => {
-    try {
-      // Validate input
-      const validated = updateSageInputSchema.parse(input);
-
-      // Check ownership
-      const existing = await prisma.sage.findUnique({
-        where: { id: sageId },
-        select: { userId: true },
-      });
-
-      if (!existing) {
-        return {
-          success: false,
-          message: "Sage not found",
-          code: "not_found",
-        };
-      }
-
-      if (existing.userId !== user.id) {
-        return {
-          success: false,
-          message: "Unauthorized",
-          code: "unauthorized",
-        };
-      }
-
-      // Update sage
-      const sage = await prisma.sage.update({
-        where: { id: sageId },
-        data: validated,
-      });
-
-      rootLogger.info(`Updated sage ${sageId} by user ${user.id}`);
-
-      revalidatePath(`/sage/${sage.token}`);
-
-      return {
-        success: true,
-        data: sage,
-      };
-    } catch (error) {
-      rootLogger.error("Failed to update sage:", error);
-      return {
-        success: false,
-        message: "Failed to update sage",
-        code: "internal_server_error",
-      };
-    }
-  });
-}
-
-/**
- * Delete a sage
- */
-export async function deleteSage(sageId: number): Promise<ServerActionResult<void>> {
-  return withAuth(async (user) => {
-    try {
-      // Check ownership
-      const existing = await prisma.sage.findUnique({
-        where: { id: sageId },
-        select: { userId: true, token: true },
-      });
-
-      if (!existing) {
-        return {
-          success: false,
-          message: "Sage not found",
-          code: "not_found",
-        };
-      }
-
-      if (existing.userId !== user.id) {
-        return {
-          success: false,
-          message: "Unauthorized",
-          code: "unauthorized",
-        };
-      }
-
-      // Delete sage (cascades to chats and interviews)
-      await prisma.sage.delete({
-        where: { id: sageId },
-      });
-
-      rootLogger.info(`Deleted sage ${sageId} by user ${user.id}`);
-
-      revalidatePath("/sages");
-
-      return {
-        success: true,
-        data: undefined,
-      };
-    } catch (error) {
-      rootLogger.error("Failed to delete sage:", error);
-      return {
-        success: false,
-        message: "Failed to delete sage",
         code: "internal_server_error",
       };
     }
@@ -273,9 +123,7 @@ export async function listMySages(): Promise<
 /**
  * Analyze sage knowledge completeness
  */
-export async function analyzeSageKnowledge(
-  sageId: number,
-): Promise<ServerActionResult<void>> {
+export async function analyzeSageKnowledge(sageId: number): Promise<ServerActionResult<void>> {
   return withAuth(async (user) => {
     const result = await getSageById(sageId);
 
@@ -353,7 +201,6 @@ export async function createSupplementaryInterview(sageId: number): Promise<
       const locale = await getLocale();
 
       // Get pending knowledge gaps from database
-      const { getPendingSageKnowledgeGaps, generateInterviewPlan } = await import("./lib");
       const pendingGaps = await getPendingSageKnowledgeGaps(sageId);
 
       if (pendingGaps.length === 0) {
@@ -367,7 +214,7 @@ export async function createSupplementaryInterview(sageId: number): Promise<
       // Convert to format expected by generateInterviewPlan
       const fullKnowledgeGaps = pendingGaps.map((gap) => ({
         area: gap.area,
-        severity: gap.severity as "critical" | "important" | "nice-to-have",
+        severity: gap.severity,
         description: gap.description,
         impact: gap.impact,
         suggestedQuestions: [], // Will be generated by AI
@@ -396,11 +243,11 @@ export async function createSupplementaryInterview(sageId: number): Promise<
         data: {
           sageId,
           userChatId: userChat.id,
-          purpose: interviewPlan.purpose,
-          focusAreas: interviewPlan.focusAreas,
-          status: "ongoing",
-          progress: 0,
-          extra: { interviewPlan },
+          extra: {
+            startsAt: Date.now(),
+            ongoing: true,
+            interviewPlan,
+          } as SageInterviewExtra,
         },
       });
 
@@ -415,137 +262,6 @@ export async function createSupplementaryInterview(sageId: number): Promise<
       return {
         success: false,
         message: "Failed to create supplementary interview",
-        code: "internal_server_error",
-      };
-    }
-  });
-}
-
-/**
- * Get interview by userChatId
- */
-export async function fetchSageInterview(
-  userChatId: number,
-): Promise<ServerActionResult<SageInterview & { sage: Sage }>> {
-  try {
-    const interview = await prisma.sageInterview.findUnique({
-      where: { userChatId },
-      include: {
-        sage: true,
-      },
-    });
-
-    if (!interview) {
-      return {
-        success: false,
-        message: "Interview not found",
-        code: "not_found",
-      };
-    }
-
-    return {
-      success: true,
-      data: interview,
-    };
-  } catch (error) {
-    rootLogger.error("Failed to fetch interview:", error);
-    return {
-      success: false,
-      message: "Failed to fetch interview",
-      code: "internal_server_error",
-    };
-  }
-}
-
-/**
- * Complete a supplementary interview
- * Triggers Memory Document update
- */
-export async function completeSupplementaryInterview(
-  interviewId: number,
-  summary: string,
-): Promise<ServerActionResult<void>> {
-  return withAuth(async (user) => {
-    try {
-      // Get interview with sage
-      const interview = await prisma.sageInterview.findUnique({
-        where: { id: interviewId },
-        include: {
-          sage: {
-            select: { id: true, userId: true },
-          },
-        },
-      });
-
-      if (!interview) {
-        return {
-          success: false,
-          message: "Interview not found",
-          code: "not_found",
-        };
-      }
-
-      if (interview.sage.userId !== user.id) {
-        return {
-          success: false,
-          message: "Unauthorized",
-          code: "unauthorized",
-        };
-      }
-
-      // Update interview status
-      await prisma.sageInterview.update({
-        where: { id: interviewId },
-        data: {
-          status: "completed",
-          progress: 1,
-          summary,
-          extra: {
-            completedAt: new Date().toISOString(),
-          },
-        },
-      });
-
-      rootLogger.info(
-        `Completed supplementary interview ${interviewId} for sage ${interview.sageId}`,
-      );
-
-      // Trigger Memory Document update in background
-      waitUntil(
-        (async () => {
-          try {
-            const locale = await getLocale();
-            const { updateMemoryDocumentFromInterview } = await import("./processing");
-
-            await updateMemoryDocumentFromInterview({
-              sageId: interview.sageId,
-              interviewId,
-              locale,
-            });
-
-            rootLogger.info(
-              `Updated Memory Document for sage ${interview.sageId} from interview ${interviewId}`,
-            );
-          } catch (error) {
-            rootLogger.error(
-              `Failed to update Memory Document from interview ${interviewId}:`,
-              error,
-            );
-          }
-        })(),
-      );
-
-      revalidatePath(`/sage/${interview.sage.id}`);
-
-      return {
-        success: true,
-        data: undefined,
-      };
-    } catch (error) {
-      rootLogger.error("Failed to complete interview:", error);
-      return {
-        success: false,
-        message: "Failed to complete interview",
         code: "internal_server_error",
       };
     }
@@ -577,15 +293,6 @@ export async function createOrGetSageChat(sageId: number): Promise<
       }
 
       const { sage } = result;
-
-      // Check if user can access (owner or public)
-      if (!sage.isPublic && sage.userId !== user.id) {
-        return {
-          success: false,
-          message: "Unauthorized",
-          code: "unauthorized",
-        };
-      }
 
       // Check if chat already exists
       const existingChat = await prisma.sageChat.findFirst({
@@ -620,7 +327,6 @@ export async function createOrGetSageChat(sageId: number): Promise<
           sageId,
           userChatId: userChat.id,
           userId: user.id,
-          chatType: "consultation",
         },
       });
 
@@ -644,9 +350,7 @@ export async function createOrGetSageChat(sageId: number): Promise<
 /**
  * Process all pending sources for a sage
  */
-export async function processSageSources(
-  sageId: number,
-): Promise<ServerActionResult<void>> {
+export async function processSageSources(sageId: number): Promise<ServerActionResult<void>> {
   return withAuth(async (user) => {
     const result = await getSageById(sageId);
 
@@ -680,9 +384,7 @@ export async function processSageSources(
 /**
  * Extract knowledge and build memory document from completed sources
  */
-export async function extractSageKnowledge(
-  sageId: number,
-): Promise<ServerActionResult<void>> {
+export async function extractSageKnowledge(sageId: number): Promise<ServerActionResult<void>> {
   return withAuth(async (user) => {
     const result = await getSageById(sageId);
 
@@ -714,4 +416,3 @@ export async function extractSageKnowledge(
     return { success: true, data: undefined };
   });
 }
-

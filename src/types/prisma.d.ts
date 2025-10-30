@@ -187,8 +187,6 @@ declare module "@/prisma/client" {
     };
   }>;
 
-  // ===== Sage (Expert Agent) Types =====
-
   // Removed
   // export type ProductExtra = Partial<{
   //   stripePriceId: string;
