@@ -1,5 +1,6 @@
-import authOptions from "@/app/(auth)/authOptions";
 import { convertDBMessagesToAIMessages } from "@/ai/messageUtils";
+import authOptions from "@/app/(auth)/authOptions";
+import { getSageByToken } from "@/app/(sage)/lib";
 import { TSageMessageWithTool } from "@/app/(sage)/types";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { prisma } from "@/prisma/prisma";
@@ -7,7 +8,6 @@ import { UIMessage } from "ai";
 import { getServerSession } from "next-auth";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { getSageByToken } from "../../../lib";
 import { PublicSageView } from "./PublicSageView";
 
 async function PublicSagePage({

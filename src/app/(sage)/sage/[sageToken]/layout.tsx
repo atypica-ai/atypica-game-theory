@@ -1,10 +1,10 @@
 import authOptions from "@/app/(auth)/authOptions";
+import { getSageByToken } from "@/app/(sage)/lib";
 import { FitToViewport } from "@/components/layout/FitToViewport";
 import { prisma } from "@/prisma/prisma";
 import { getServerSession } from "next-auth";
 import { forbidden, notFound } from "next/navigation";
 import { ReactNode } from "react";
-import { getSageByToken } from "../../lib";
 import { SourcesPanel } from "./SourcesPanel";
 import { TabNavigation } from "./TabNavigation";
 

@@ -1,33 +1,27 @@
 "use client";
 
-import type { Sage, SageSource } from "@/prisma/client";
-import type { SageExtra } from "../../types";
-import { useTranslations } from "next-intl";
+import { processSageSources } from "@/app/(sage)/actions";
+import type { SageExtra } from "@/app/(sage)/types";
+import { proxiedObjectCdnUrl } from "@/app/(system)/cdn/lib";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import type { Sage, SageSource } from "@/prisma/client";
 import {
   CheckCircle2Icon,
   CircleXIcon,
   ClockIcon,
+  ExternalLinkIcon,
   Loader2Icon,
   PlayIcon,
-  ExternalLinkIcon,
 } from "lucide-react";
-import { useCallback, useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { processSageSources } from "../../actions";
-import { proxiedObjectCdnUrl } from "@/app/(system)/cdn/lib";
 
 type SageWithExtra = Omit<Sage, "extra"> & { extra: SageExtra };
 
-export function SourcesPanel({
-  sage,
-  sources,
-}: {
-  sage: SageWithExtra;
-  sources: SageSource[];
-}) {
+export function SourcesPanel({ sage, sources }: { sage: SageWithExtra; sources: SageSource[] }) {
   const t = useTranslations("Sage.detail");
   const router = useRouter();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -144,9 +138,7 @@ function SourceItem({
       const content = source.content as { name?: string };
       return content.name || "";
     } else if (source.type === "text") {
-      return source.extractedText
-        ? `${source.extractedText.length} ${t("characters")}`
-        : "";
+      return source.extractedText ? `${source.extractedText.length} ${t("characters")}` : "";
     }
     return "";
   };

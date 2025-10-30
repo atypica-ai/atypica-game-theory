@@ -1,12 +1,12 @@
 "use client";
 
-import type { Sage, UserChat, ChatMessage } from "@/prisma/client";
-import type { SageExtra } from "../../../types";
+import type { SageExtra } from "@/app/(sage)/types";
+import { Separator } from "@/components/ui/separator";
+import type { ChatMessage, Sage, UserChat } from "@/prisma/client";
+import { formatDistanceToNow } from "date-fns";
+import { ExternalLinkIcon, MessageSquareIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { Separator } from "@/components/ui/separator";
-import { MessageSquareIcon, ExternalLinkIcon } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
 
 type SageWithExtra = Omit<Sage, "extra"> & { extra: SageExtra };
 type ChatWithLastMessage = UserChat & { messages: ChatMessage[] };
@@ -31,16 +31,15 @@ export function ChatsTab({ chats }: { sage: SageWithExtra; chats: ChatWithLastMe
         <div className="py-12 text-center">
           <MessageSquareIcon className="mx-auto h-10 w-10 text-muted-foreground/50 mb-3" />
           <p className="text-sm text-muted-foreground">{t("noChatsYet")}</p>
-          <p className="text-xs text-muted-foreground mt-1">
-            {t("startChatWithSage")}
-          </p>
+          <p className="text-xs text-muted-foreground mt-1">{t("startChatWithSage")}</p>
         </div>
       ) : (
         <div className="space-y-2">
           {chats.map((chat) => {
             const lastMessage = chat.messages[0];
             const lastMessagePreview = lastMessage
-              ? lastMessage.content.substring(0, 80) + (lastMessage.content.length > 80 ? "..." : "")
+              ? lastMessage.content.substring(0, 80) +
+                (lastMessage.content.length > 80 ? "..." : "")
               : t("noMessages");
 
             return (

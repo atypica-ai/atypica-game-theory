@@ -1,16 +1,17 @@
-import { tool } from "ai";
-import { z } from "zod";
-import { prisma } from "@/prisma/prisma";
 import { rootLogger } from "@/lib/logging";
+import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
+import { tool } from "ai";
 import { getLocale } from "next-intl/server";
+import { z } from "zod";
 
 /**
  * Tool for ending a supplementary interview
  */
-export function createEndInterviewTool({ interviewId }: { interviewId: number }) {
-  return tool({
-    description: "End the supplementary interview when all questions have been answered sufficiently.",
+const endInterviewTool = ({ interviewId }: { interviewId: number }) =>
+  tool({
+    description:
+      "End the supplementary interview when all questions have been answered sufficiently.",
     inputSchema: z.object({
       summary: z.string().describe("A brief summary of key findings from this interview"),
       keyInsights: z
@@ -97,7 +98,6 @@ export function createEndInterviewTool({ interviewId }: { interviewId: number })
       }
     },
   });
-}
 
 export enum SageInterviewToolName {
   endInterview = "endInterview",
@@ -105,6 +105,6 @@ export enum SageInterviewToolName {
 
 export function sageInterviewTools({ interviewId }: { interviewId: number }) {
   return {
-    [SageInterviewToolName.endInterview]: createEndInterviewTool({ interviewId }),
+    [SageInterviewToolName.endInterview]: endInterviewTool({ interviewId }),
   };
 }

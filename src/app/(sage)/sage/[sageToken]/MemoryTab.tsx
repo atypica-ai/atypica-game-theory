@@ -1,19 +1,25 @@
 "use client";
 
+import { analyzeSageKnowledge, extractSageKnowledge } from "@/app/(sage)/actions";
+import type { SageExtra } from "@/app/(sage)/types";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import type { Sage } from "@/prisma/client";
-import type { SageExtra } from "../../types";
+import { Loader2Icon, ScanSearchIcon, SparklesIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { Loader2Icon, SparklesIcon, ScanSearchIcon } from "lucide-react";
 import { toast } from "sonner";
-import { extractSageKnowledge, analyzeSageKnowledge } from "../../actions";
 
 type SageWithExtra = Omit<Sage, "extra"> & { extra: SageExtra };
 
-export function MemoryTab({ sage, memoryDocument }: { sage: SageWithExtra; memoryDocument: string | null }) {
+export function MemoryTab({
+  sage,
+  memoryDocument,
+}: {
+  sage: SageWithExtra;
+  memoryDocument: string | null;
+}) {
   const t = useTranslations("Sage.detail");
   const router = useRouter();
   const [isExtracting, setIsExtracting] = useState(false);

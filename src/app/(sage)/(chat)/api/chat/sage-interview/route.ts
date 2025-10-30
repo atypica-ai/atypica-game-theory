@@ -8,16 +8,16 @@ import { defaultProviderOptions, llm } from "@/ai/provider";
 import { initGenericUserChatStatReporter } from "@/ai/tools/stats";
 import { calculateStepTokensUsage } from "@/ai/usage";
 import authOptions from "@/app/(auth)/authOptions";
+import { getSageById } from "@/app/(sage)/lib";
+import { sageInterviewConversationSystem } from "@/app/(sage)/prompt";
+import { sageInterviewTools } from "@/app/(sage)/tools";
+import type { SageInterviewExtra } from "@/app/(sage)/types";
 import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage } from "@/lib/textUtils";
 import { prisma } from "@/prisma/prisma";
 import { generateId, smoothStream, streamText } from "ai";
 import { getServerSession } from "next-auth";
 import { after, NextResponse } from "next/server";
-import { getSageById } from "../../../lib";
-import { sageInterviewConversationSystem } from "../../../prompt";
-import { sageInterviewTools } from "../../../tools";
-import type { SageInterviewExtra } from "../../../types";
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
@@ -32,11 +32,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error }, { status: 400 });
   }
 
-  const {
-    message: newMessage,
-    userChatToken,
-    attachments: newAttachments,
-  } = parseResult.data;
+  const { message: newMessage, userChatToken, attachments: newAttachments } = parseResult.data;
 
   if (!userChatToken || !newMessage) {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
@@ -67,10 +63,7 @@ export async function POST(req: Request) {
 
   // Check if interview is completed
   if (interview.status === "completed") {
-    return NextResponse.json(
-      { error: "Interview has been completed" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Interview has been completed" }, { status: 400 });
   }
 
   const result = await getSageById(interview.sageId);
@@ -107,9 +100,7 @@ export async function POST(req: Request) {
 
   // Detect user input language, fallback to sage's locale
   const locale = await detectInputLanguage({
-    text: newMessage.parts
-      .map((part) => (part.type === "text" ? part.text : ""))
-      .join(""),
+    text: newMessage.parts.map((part) => (part.type === "text" ? part.text : "")).join(""),
     fallbackLocale: sage.locale as "zh-CN" | "en-US",
   });
 

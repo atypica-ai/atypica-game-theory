@@ -1,22 +1,22 @@
 "use client";
 
-import type { Sage, SageKnowledgeGap } from "@/prisma/client";
-import type { SageExtra } from "../../../types";
-import { useTranslations } from "next-intl";
-import { Separator } from "@/components/ui/separator";
+import { createSupplementaryInterview } from "@/app/(sage)/actions";
+import type { SageExtra } from "@/app/(sage)/types";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import type { Sage, SageKnowledgeGap } from "@/prisma/client";
 import {
   AlertTriangleIcon,
   CheckCircle2Icon,
+  ExternalLinkIcon,
   InfoIcon,
   PlusIcon,
-  ExternalLinkIcon,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useState, useCallback } from "react";
-import { toast } from "sonner";
-import { createSupplementaryInterview } from "../../../actions";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useCallback, useState } from "react";
+import { toast } from "sonner";
 
 type SageWithExtra = Omit<Sage, "extra"> & { extra: SageExtra };
 
@@ -96,9 +96,7 @@ export function GapsTab({ sage, gaps }: { sage: SageWithExtra; gaps: SageKnowled
         <div className="py-12 text-center">
           <CheckCircle2Icon className="mx-auto h-10 w-10 text-green-600 mb-3" />
           <p className="text-sm font-medium">{t("noKnowledgeGaps")}</p>
-          <p className="text-xs text-muted-foreground mt-1">
-            {t("noKnowledgeGapsDescription")}
-          </p>
+          <p className="text-xs text-muted-foreground mt-1">{t("noKnowledgeGapsDescription")}</p>
         </div>
       )}
 
@@ -120,9 +118,7 @@ export function GapsTab({ sage, gaps }: { sage: SageWithExtra; gaps: SageKnowled
                   {isFromConversation && gap.sourceDescription && (
                     <div className="flex items-start justify-between gap-2 pb-2 border-b border-border/40">
                       <div className="flex-1">
-                        <div className="text-xs text-muted-foreground mb-1">
-                          💬 User asked:
-                        </div>
+                        <div className="text-xs text-muted-foreground mb-1">💬 User asked:</div>
                         <div className="text-sm italic text-foreground/90">
                           &ldquo;{gap.sourceDescription}&rdquo;
                         </div>
@@ -175,9 +171,7 @@ export function GapsTab({ sage, gaps }: { sage: SageWithExtra; gaps: SageKnowled
                     <div className="text-xs px-1.5 py-0.5 rounded bg-muted inline-block">
                       {gap.resolvedBy || "resolved"}
                     </div>
-                    <div className="text-xs text-muted-foreground mt-1">
-                      {gap.description}
-                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">{gap.description}</div>
                   </div>
                 </div>
               </div>

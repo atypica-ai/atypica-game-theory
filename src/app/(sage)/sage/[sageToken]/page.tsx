@@ -1,10 +1,10 @@
 import authOptions from "@/app/(auth)/authOptions";
+import { getSageByToken } from "@/app/(sage)/lib";
 import { generatePageMetadata } from "@/lib/request/metadata";
 import type { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { getLocale, getTranslations } from "next-intl/server";
 import { forbidden, notFound } from "next/navigation";
-import { getSageByToken } from "../../lib";
 import { MemoryTab } from "./MemoryTab";
 
 export const dynamic = "force-dynamic";

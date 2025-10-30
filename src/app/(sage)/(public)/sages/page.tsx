@@ -1,10 +1,10 @@
 import authOptions from "@/app/(auth)/authOptions";
+import { listMySages } from "@/app/(sage)/actions";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { getServerSession } from "next-auth";
 import { getTranslations } from "next-intl/server";
 import { forbidden } from "next/navigation";
 import { Suspense } from "react";
-import { listMySages } from "../actions";
 import { SagesListClient } from "./SagesListClient";
 
 export async function generateMetadata() {

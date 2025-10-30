@@ -8,15 +8,19 @@ import { defaultProviderOptions, llm } from "@/ai/provider";
 import { initGenericUserChatStatReporter } from "@/ai/tools/stats";
 import { calculateStepTokensUsage } from "@/ai/usage";
 import authOptions from "@/app/(auth)/authOptions";
+import {
+  analyzeConversationForGaps,
+  createSageKnowledgeGaps,
+  getSageByToken,
+} from "@/app/(sage)/lib";
+import { sageChatSystem } from "@/app/(sage)/prompt";
+import { KnowledgeGapSourceType } from "@/app/(sage)/types";
 import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage } from "@/lib/textUtils";
 import { prisma } from "@/prisma/prisma";
 import { generateId, smoothStream, stepCountIs, streamText } from "ai";
 import { getServerSession } from "next-auth";
 import { after, NextResponse } from "next/server";
-import { analyzeConversationForGaps, createSageKnowledgeGaps, getSageByToken } from "../../../lib";
-import { sageChatSystem } from "../../../prompt";
-import { KnowledgeGapSourceType } from "../../../types";
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
@@ -190,10 +194,11 @@ export async function POST(req: Request) {
               .map((part) => part.text)
               .join("\n");
 
-            const aiMessage = streamingMessage.parts
-              ?.filter((part) => part.type === "text")
-              .map((part) => part.text)
-              .join("\n") || "";
+            const aiMessage =
+              streamingMessage.parts
+                ?.filter((part) => part.type === "text")
+                .map((part) => part.text)
+                .join("\n") || "";
 
             if (userMessage && aiMessage) {
               const gaps = await analyzeConversationForGaps({
@@ -215,7 +220,7 @@ export async function POST(req: Request) {
                     sourceType: KnowledgeGapSourceType.CONVERSATION,
                     sourceDescription: `User asked: "${userMessage.substring(0, 100)}${userMessage.length > 100 ? "..." : ""}"`,
                     sourceReference: userChat.token,
-                  }))
+                  })),
                 );
                 chatLogger.info({
                   msg: "Detected knowledge gaps from conversation",

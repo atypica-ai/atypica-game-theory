@@ -1,11 +1,11 @@
 import authOptions from "@/app/(auth)/authOptions";
+import { getSageByToken } from "@/app/(sage)/lib";
 import { generatePageMetadata } from "@/lib/request/metadata";
 import { prisma } from "@/prisma/prisma";
 import type { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { getLocale, getTranslations } from "next-intl/server";
 import { forbidden, notFound } from "next/navigation";
-import { getSageByToken } from "../../../lib";
 import { ChatsTab } from "./ChatsTab";
 
 export const dynamic = "force-dynamic";
