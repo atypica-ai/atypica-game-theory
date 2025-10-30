@@ -1,14 +1,14 @@
 "use client";
 import { ClientMessagePayload, prepareLastUIMessageForRequest } from "@/ai/messageUtilsClient";
 import { SageToolUIPartDisplay } from "@/app/(sage)/tools/ui";
-import { TSageMessageWithTool } from "@/app/(sage)/types";
+import { SageInterviewExtra, TSageMessageWithTool } from "@/app/(sage)/types";
 import { UserChatSession } from "@/components/chat/UserChatSession";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { FitToViewport } from "@/components/layout/FitToViewport";
-import type { ChatMessageAttachment, SageInterview, User } from "@/prisma/client";
+import type { SageInterview } from "@/prisma/client";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
-import { MessageCircle, Target } from "lucide-react";
+import { MessageCircle } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useRef } from "react";
@@ -25,13 +25,10 @@ export function SageInterviewClient({
     name: string;
     domain: string;
     expertise: string[];
-    attachments: ChatMessageAttachment[];
-    user: Pick<User, "id" | "name" | "email">;
+    // user: Pick<User, "id" | "name" | "email">;
   };
-  interview: SageInterview & {
-    sage: {
-      userId: number;
-    };
+  interview: Omit<SageInterview, "extra"> & {
+    extra: SageInterviewExtra;
   };
   initialMessages?: TSageMessageWithTool[];
 }) {
@@ -92,33 +89,27 @@ export function SageInterviewClient({
                   {t("title")}: {sage.name}
                 </h2>
                 <p className="text-xs text-zinc-600 dark:text-zinc-400">
-                  {interview.purpose || t("purpose")}
+                  {interview.extra.interviewPlan?.purpose || t("purpose")}
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-4 text-sm">
-              <div className="flex items-center gap-2">
-                <Target className="size-4 text-zinc-500" />
-                <span className="text-zinc-600 dark:text-zinc-400">
-                  {t("progress")}: {Math.round(interview.progress * 100)}%
-                </span>
-              </div>
               <span
                 className={
-                  interview.status === "completed"
-                    ? "px-2 py-1 text-xs font-medium rounded bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
-                    : "px-2 py-1 text-xs font-medium rounded bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
+                  interview.extra.ongoing
+                    ? "px-2 py-1 text-xs font-medium rounded bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
+                    : "px-2 py-1 text-xs font-medium rounded bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
                 }
               >
-                {interview.status === "completed" ? t("completed") : t("ongoing")}
+                {interview.extra.ongoing ? t("ongoing") : t("completed")}
               </span>
             </div>
           </div>
 
           {/* Focus Areas */}
-          {interview.focusAreas && (interview.focusAreas as string[]).length > 0 && (
+          {interview.extra.interviewPlan?.focusAreas?.length && (
             <div className="mt-3 flex flex-wrap gap-2">
-              {(interview.focusAreas as string[]).map((area, index) => (
+              {interview.extra.interviewPlan.focusAreas.map((area, index) => (
                 <span
                   key={index}
                   className="px-2 py-1 text-xs bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 rounded"

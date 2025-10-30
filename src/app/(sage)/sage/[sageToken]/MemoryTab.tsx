@@ -121,10 +121,6 @@ export function MemoryTab({
             <span className="text-xs text-muted-foreground">Locale:</span>{" "}
             <span>{sage.locale}</span>
           </div>
-          <div>
-            <span className="text-xs text-muted-foreground">Public:</span>{" "}
-            <span>{sage.isPublic ? "Yes" : "No"}</span>
-          </div>
         </div>
       </div>
 

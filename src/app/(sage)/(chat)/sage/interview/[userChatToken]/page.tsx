@@ -1,8 +1,8 @@
 import { convertDBMessagesToAIMessages } from "@/ai/messageUtils";
 import authOptions from "@/app/(auth)/authOptions";
-import { getSageById } from "@/app/(sage)/lib";
-import { TSageMessageWithTool } from "@/app/(sage)/types";
+import { SageExtra, SageInterviewExtra, TSageMessageWithTool } from "@/app/(sage)/types";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
+import { Sage, SageInterview } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { UIMessage } from "ai";
 import { getServerSession } from "next-auth";
@@ -38,19 +38,18 @@ async function SageInterviewPage({
     notFound();
   }
 
-  const interview = userChat.sageInterview;
+  const { sage, ...interview } = userChat.sageInterview as Omit<SageInterview, "extra"> & {
+    extra: SageInterviewExtra;
+    sage: Omit<Sage, "expertise" | "extra"> & {
+      expertise: string[];
+      extra: SageExtra;
+    };
+  };
 
   // Check ownership
-  if (interview.sage.userId !== session.user.id) {
+  if (sage.userId !== session.user.id) {
     forbidden();
   }
-
-  const result = await getSageById(interview.sageId);
-  if (!result) {
-    notFound();
-  }
-
-  const { sage } = result;
 
   // Fetch existing chat messages
   const dbMessages = await prisma.chatMessage.findMany({

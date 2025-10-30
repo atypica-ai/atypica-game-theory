@@ -1,5 +1,6 @@
 import authOptions from "@/app/(auth)/authOptions";
 import { getSageByToken } from "@/app/(sage)/lib";
+import { SageSourceContent, SageSourceExtra } from "@/app/(sage)/types";
 import { FitToViewport } from "@/components/layout/FitToViewport";
 import { prisma } from "@/prisma/prisma";
 import { getServerSession } from "next-auth";
@@ -36,10 +37,16 @@ export default async function SageDetailLayout({
   }
 
   // Fetch sage's sources
-  const sources = await prisma.sageSource.findMany({
-    where: { sageId: sage.id },
-    orderBy: { createdAt: "asc" },
-  });
+  const sources = (
+    await prisma.sageSource.findMany({
+      where: { sageId: sage.id },
+      orderBy: { createdAt: "asc" },
+    })
+  ).map(({ content, extra, ...source }) => ({
+    ...source,
+    content: content as SageSourceContent,
+    extra: extra as SageSourceExtra,
+  }));
 
   return (
     <FitToViewport className="flex overflow-hidden">

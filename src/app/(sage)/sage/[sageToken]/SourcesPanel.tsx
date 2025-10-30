@@ -1,10 +1,11 @@
 "use client";
 
 import { processSageSources } from "@/app/(sage)/actions";
-import type { SageExtra } from "@/app/(sage)/types";
+import type { SageExtra, SageSourceContent, SageSourceExtra } from "@/app/(sage)/types";
 import { proxiedObjectCdnUrl } from "@/app/(system)/cdn/lib";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 import type { Sage, SageSource } from "@/prisma/client";
 import {
   CheckCircle2Icon,
@@ -19,17 +20,26 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
-type SageWithExtra = Omit<Sage, "extra"> & { extra: SageExtra };
-
-export function SourcesPanel({ sage, sources }: { sage: SageWithExtra; sources: SageSource[] }) {
+export function SourcesPanel({
+  sage,
+  sources,
+}: {
+  sage: Omit<Sage, "extra"> & { extra: SageExtra };
+  sources: (Omit<SageSource, "content" | "extra"> & {
+    content: SageSourceContent;
+    extra: SageSourceExtra;
+  })[];
+}) {
   const t = useTranslations("Sage.detail");
   const router = useRouter();
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const pendingSources = sources.filter((s) => s.status === "pending");
-  const processingSources = sources.filter((s) => s.status === "processing");
-  const completedSources = sources.filter((s) => s.status === "completed");
-  const failedSources = sources.filter((s) => s.status === "failed");
+  const pendingSources = sources.filter(
+    (s) => !s.extractedText && !s.extra.processing && !s.extra.error,
+  );
+  const processingSources = sources.filter((s) => s.extra.processing);
+  const completedSources = sources.filter((s) => !!s.extractedText);
+  const failedSources = sources.filter((s) => !!s.extra.error);
 
   const hasProcessing = processingSources.length > 0;
   const hasPending = pendingSources.length > 0;
@@ -96,7 +106,7 @@ export function SourcesPanel({ sage, sources }: { sage: SageWithExtra; sources: 
       {/* Sources List */}
       <div className="space-y-1">
         {sources.map((source) => (
-          <SourceItem key={source.id} source={source} t={t} />
+          <SourceItem key={source.id} source={source} />
         ))}
       </div>
 
@@ -111,14 +121,23 @@ export function SourcesPanel({ sage, sources }: { sage: SageWithExtra; sources: 
 
 function SourceItem({
   source,
-  t,
 }: {
-  source: SageSource;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  t: any;
+  source: Omit<SageSource, "content" | "extra"> & {
+    content: SageSourceContent;
+    extra: SageSourceExtra;
+  };
 }) {
+  const t = useTranslations("Sage.detail");
+
   const getStatusIcon = () => {
-    switch (source.status) {
+    const status = source.extractedText
+      ? "completed"
+      : source.extra.processing
+        ? "processing"
+        : source.extra.error
+          ? "failed"
+          : "pending";
+    switch (status) {
       case "completed":
         return <CheckCircle2Icon className="h-4 w-4 text-green-600" />;
       case "processing":
@@ -131,48 +150,38 @@ function SourceItem({
   };
 
   const getSecondaryInfo = () => {
-    if (source.type === "url") {
-      const content = source.content as { url?: string };
-      return content.url || "";
-    } else if (source.type === "file") {
-      const content = source.content as { name?: string };
-      return content.name || "";
-    } else if (source.type === "text") {
+    if (source.content.type === "url") {
+      return source.content.url || "";
+    } else if (source.content.type === "file") {
+      return source.content.name || "";
+    } else if (source.content.type === "text") {
       return source.extractedText ? `${source.extractedText.length} ${t("characters")}` : "";
     }
     return "";
   };
 
-  const handleClick = () => {
-    if (source.type === "url") {
-      const content = source.content as { url?: string };
-      if (content.url) {
-        window.open(content.url, "_blank");
-      }
-    } else if (source.type === "file") {
-      const content = source.content as {
-        objectUrl?: string;
-        mimeType?: string;
-      };
-      if (content.objectUrl && content.mimeType) {
-        window.open(
-          proxiedObjectCdnUrl({
-            objectUrl: content.objectUrl,
-            mimeType: content.mimeType,
-          }),
-          "_blank",
-        );
-      }
+  const handleClick = useCallback(() => {
+    if (source.content.type === "url") {
+      window.open(source.content.url, "_blank");
+    } else if (source.content.type === "file") {
+      window.open(
+        proxiedObjectCdnUrl({
+          objectUrl: source.content.objectUrl,
+          mimeType: source.content.mimeType,
+        }),
+        "_blank",
+      );
     }
-  };
+  }, [source]);
 
-  const isClickable = source.type === "url" || source.type === "file";
+  const isClickable = source.content.type === "url" || source.content.type === "file";
 
   return (
     <div
-      className={`flex items-start gap-2 py-2 ${
-        isClickable ? "cursor-pointer hover:bg-accent/30 rounded px-2 -mx-2 transition-colors" : ""
-      }`}
+      className={cn(
+        "flex items-start gap-2 py-2",
+        isClickable ? "cursor-pointer hover:bg-accent/30 rounded px-2 -mx-2 transition-colors" : "",
+      )}
       onClick={isClickable ? handleClick : undefined}
     >
       {getStatusIcon()}
@@ -186,8 +195,8 @@ function SourceItem({
             {getSecondaryInfo()}
           </div>
         )}
-        {source.error && (
-          <div className="text-xs text-red-600 mt-1 line-clamp-2">{source.error}</div>
+        {source.extra.error && (
+          <div className="text-xs text-red-600 mt-1 line-clamp-2">{source.extra.error}</div>
         )}
       </div>
     </div>

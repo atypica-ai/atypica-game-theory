@@ -1,13 +1,7 @@
 "use client";
-import { createSage } from "@/app/(sage)/actions";
-import { SageSourceType } from "@/app/(sage)/types";
-import { FileUploadButton } from "@/components/chat/FileUploadButton";
 import { FitToViewport } from "@/components/layout/FitToViewport";
-import { Button } from "@/components/ui/button";
-import { useFileUploadManager } from "@/hooks/use-file-upload-manager";
 import { cn } from "@/lib/utils";
 import {
-  ArrowRightIcon,
   BookOpenIcon,
   BrainIcon,
   FileTextIcon,
@@ -19,66 +13,9 @@ import {
   UsersIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { toast } from "sonner";
 
-interface SageHomePageClientProps {
-  isUploadEnabled: boolean;
-}
-
-export default function SageHomePageClient({ isUploadEnabled }: SageHomePageClientProps) {
+export default function SageHomePageClient() {
   const t = useTranslations("Sage.homepage");
-  const router = useRouter();
-  const { uploadedFiles, handleFileUploaded, clearFiles } = useFileUploadManager();
-  const [isCreating, setIsCreating] = useState(false);
-  const [sageName, setSageName] = useState("");
-  const [sageDomain, setSageDomain] = useState("");
-
-  const handleStartCreation = async () => {
-    if (uploadedFiles.length === 0) {
-      toast.error(t("uploadFileFirst"));
-      return;
-    }
-
-    if (!sageName.trim()) {
-      toast.error(t("enterName"));
-      return;
-    }
-
-    if (!sageDomain.trim()) {
-      toast.error(t("enterDomain"));
-      return;
-    }
-
-    setIsCreating(true);
-    try {
-      const result = await createSage({
-        name: sageName.trim(),
-        domain: sageDomain.trim(),
-        locale: "zh-CN", // TODO: Get from user locale
-        sources: uploadedFiles.map((file) => ({
-          type: SageSourceType.FILE,
-          content: {
-            objectUrl: file.objectUrl,
-            name: file.name,
-            mimeType: file.mimeType,
-            size: file.size,
-          },
-        })),
-      });
-
-      if (!result.success) throw result;
-
-      const { sage } = result.data;
-      router.push(`/sage/${sage.token}`);
-    } catch (error) {
-      console.log("Error creating sage:", error);
-      toast.error(t("createFailed"));
-      setIsCreating(false);
-    }
-  };
 
   const features = [
     {
@@ -188,101 +125,6 @@ export default function SageHomePageClient({ isUploadEnabled }: SageHomePageClie
           <p className="max-w-2xl mx-auto text-lg text-zinc-600 dark:text-zinc-400 leading-relaxed">
             {t("subtitle")}
           </p>
-
-          {/* Upload and Creation Form */}
-          <div className="pt-4">
-            <div className="flex flex-col items-center gap-4 max-w-md mx-auto">
-              {isUploadEnabled ? (
-                <>
-                  {uploadedFiles.length === 0 ? (
-                    <>
-                      <FileUploadButton
-                        onFileUploadedAction={handleFileUploaded}
-                        existingFiles={uploadedFiles}
-                        showLimitsCheck={true}
-                        disabled={isCreating}
-                        className="w-full h-12 text-sm"
-                      >
-                        {t("uploadFiles")}
-                      </FileUploadButton>
-                      <Button size="lg" variant="outline" asChild className="w-full h-12">
-                        <Link href="/sages" prefetch={true}>
-                          {t("viewMySages")}
-                          <ArrowRightIcon className="h-4 w-4" />
-                        </Link>
-                      </Button>
-                    </>
-                  ) : (
-                    <div className="w-full space-y-4">
-                      <div className="p-4 bg-zinc-100 dark:bg-zinc-800 rounded-lg border space-y-3">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <FileTextIcon className="size-5 text-zinc-600 dark:text-zinc-400" />
-                            <div>
-                              <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                                {uploadedFiles.length} {t("filesSelected")}
-                              </span>
-                            </div>
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={clearFiles}
-                            disabled={isCreating}
-                          >
-                            {t("reSelectFiles")}
-                          </Button>
-                        </div>
-
-                        <div className="space-y-2">
-                          <input
-                            type="text"
-                            placeholder={t("namePlaceholder")}
-                            value={sageName}
-                            onChange={(e) => setSageName(e.target.value)}
-                            disabled={isCreating}
-                            className="w-full px-3 py-2 text-sm border border-zinc-200 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-500 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-100"
-                          />
-                          <input
-                            type="text"
-                            placeholder={t("domainPlaceholder")}
-                            value={sageDomain}
-                            onChange={(e) => setSageDomain(e.target.value)}
-                            disabled={isCreating}
-                            className="w-full px-3 py-2 text-sm border border-zinc-200 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-500 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-100"
-                          />
-                        </div>
-                      </div>
-
-                      <Button
-                        onClick={handleStartCreation}
-                        disabled={isCreating || !sageName.trim() || !sageDomain.trim()}
-                        size="lg"
-                        className="w-full h-12"
-                      >
-                        {isCreating ? t("creating") : t("startCreation")}
-                        <ArrowRightIcon className="h-4 w-4" />
-                      </Button>
-
-                      <Button size="lg" variant="outline" asChild className="w-full h-12">
-                        <Link href="/sages" prefetch={true}>
-                          {t("viewMySages")}
-                          <ArrowRightIcon className="h-4 w-4" />
-                        </Link>
-                      </Button>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <Button size="lg" variant="outline" asChild className="w-full h-12">
-                  <Link href="/sages">
-                    {t("viewMySages")}
-                    <ArrowRightIcon className="h-4 w-4" />
-                  </Link>
-                </Button>
-              )}
-            </div>
-          </div>
         </div>
       </section>
 

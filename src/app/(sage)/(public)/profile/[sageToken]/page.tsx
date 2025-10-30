@@ -28,11 +28,10 @@ async function PublicSagePage({
 
   const { sage, memoryDocument } = result;
 
-  // Check if sage is public (unless user is owner)
   const isOwner = !!(session?.user && sage.userId === session.user.id);
-  if (!sage.isPublic && !isOwner) {
-    notFound();
-  }
+  // if (!isOwner) {
+  //   notFound();
+  // }
 
   // Check if Memory Document is ready
   if (!memoryDocument) {

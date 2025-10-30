@@ -1,8 +1,6 @@
 "use client";
-
 import { createSage } from "@/app/(sage)/actions";
-import type { CreateSageSourceInput } from "@/app/(sage)/types";
-import { SageSourceType } from "@/app/(sage)/types";
+import { SageSourceContent, SageSourceType } from "@/app/(sage)/types";
 import { FileUploadButton, type FileUploadInfo } from "@/components/chat/FileUploadButton";
 import { FitToViewport } from "@/components/layout/FitToViewport";
 import { Button } from "@/components/ui/button";
@@ -11,18 +9,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
+import { truncateForTitle } from "@/lib/textUtils";
 import { cn } from "@/lib/utils";
 import { ArrowRightIcon, FileTextIcon, GlobeIcon, UploadIcon, XIcon } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
 export function CreateSageForm() {
   const t = useTranslations("Sage.create");
   const router = useRouter();
+  const locale = useLocale();
 
-  const [sources, setSources] = useState<CreateSageSourceInput[]>([]);
+  const [sources, setSources] = useState<SageSourceContent[]>([]);
   const [isCreating, setIsCreating] = useState(false);
 
   // Modal states
@@ -38,14 +38,12 @@ export function CreateSageForm() {
 
   // Handle file upload
   const handleFileUploaded = (file: FileUploadInfo) => {
-    const fileSource: CreateSageSourceInput = {
+    const fileSource: SageSourceContent = {
       type: SageSourceType.FILE,
-      content: {
-        objectUrl: file.objectUrl,
-        name: file.name,
-        mimeType: file.mimeType,
-        size: file.size,
-      },
+      objectUrl: file.objectUrl,
+      name: file.name,
+      mimeType: file.mimeType,
+      size: file.size,
     };
     setSources((prev) => [...prev, fileSource]);
   };
@@ -56,15 +54,13 @@ export function CreateSageForm() {
       toast.error(t("enterText"));
       return;
     }
-
     setSources((prev) => [
       ...prev,
       {
         type: SageSourceType.TEXT,
-        content: { text: textContent },
+        text: textContent,
       },
     ]);
-
     setTextContent("");
     setShowTextModal(false);
     toast.success(t("textAdded"));
@@ -89,7 +85,7 @@ export function CreateSageForm() {
       ...prev,
       {
         type: SageSourceType.URL,
-        content: { url: websiteUrl.trim() },
+        url: websiteUrl.trim(),
       },
     ]);
 
@@ -104,14 +100,17 @@ export function CreateSageForm() {
   };
 
   // Get source display name
-  const getSourceDisplayName = (source: CreateSageSourceInput, index: number): string => {
+  const getSourceDisplayName = (source: SageSourceContent, index: number): string => {
     if (source.type === SageSourceType.FILE) {
-      return source.content.name || `File ${index + 1}`;
+      return source.name || `File ${index + 1}`;
     } else if (source.type === SageSourceType.TEXT) {
-      const text = source.content.text || "";
-      return text.substring(0, 50) + (text.length > 50 ? "..." : "");
+      const text = source.text || "";
+      return truncateForTitle(text, {
+        maxDisplayWidth: 50,
+        suffix: "...",
+      });
     } else if (source.type === SageSourceType.URL) {
-      return source.content.url || `URL ${index + 1}`;
+      return source.url || `URL ${index + 1}`;
     }
     return `Source ${index + 1}`;
   };
@@ -126,7 +125,7 @@ export function CreateSageForm() {
   };
 
   // Handle create sage
-  const handleCreate = async () => {
+  const handleCreate = useCallback(async () => {
     if (!sageName.trim()) {
       toast.error(t("enterName"));
       return;
@@ -135,18 +134,15 @@ export function CreateSageForm() {
       toast.error(t("enterDomain"));
       return;
     }
-
     setIsCreating(true);
     try {
       const result = await createSage({
         name: sageName.trim(),
         domain: sageDomain.trim(),
-        locale: "zh-CN", // TODO: Get from user locale
+        locale,
         sources,
       });
-
       if (!result.success) throw result;
-
       const { sage } = result.data;
       toast.success(t("createSuccess"));
       router.push(`/sage/${sage.token}`);
@@ -155,11 +151,11 @@ export function CreateSageForm() {
       toast.error(t("createFailed"));
       setIsCreating(false);
     }
-  };
+  }, [router, toast, sageName, sageDomain, sources, locale, t, toast]);
 
   if (showMetadataStep) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4">
+      <FitToViewport className="flex items-center justify-center p-4">
         <div className="w-full max-w-2xl bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-8">
           <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">
             {t("expertInfo")}
@@ -201,7 +197,7 @@ export function CreateSageForm() {
             </div>
           </div>
         </div>
-      </div>
+      </FitToViewport>
     );
   }
 

@@ -1,5 +1,5 @@
-import { Locale } from "next-intl";
 import { promptSystemConfig } from "@/ai/prompt/systemConfig";
+import { Locale } from "next-intl";
 
 // ===== Memory Extraction System Prompt =====
 
@@ -343,7 +343,6 @@ export const sageChatSystem = ({
   sage: {
     name: string;
     domain: string;
-    allowTools: boolean;
   };
   memoryDocument: string;
   locale: Locale;
@@ -377,21 +376,17 @@ ${memoryDocument}
 3. **诚实面对边界**
    - 明确说明你的知识边界
    - 不要编造不在记忆中的信息
-   - 当遇到不熟悉的话题时，诚实承认${sage.allowTools ? "并考虑使用工具搜索最新信息" : ""}
+   - 当遇到不熟悉的话题时，诚实承认并考虑使用工具搜索最新信息
 
 4. **提供价值**
    - 给出深入、有洞察的回答
    - 提供可操作的建议
    - 分享实践经验和具体案例
 
-${
-  sage.allowTools
-    ? `5. **善用工具**
-   - 当需要最新信息时，使用 google_search
-   - 当遇到复杂问题需要深度分析时，使用 reasoningThinking
-   - 工具应该是增强你能力的手段，而不是替代你的专业知识`
-    : ""
-}
+5. **善用工具**
+- 当需要最新信息时，使用 google_search
+- 当遇到复杂问题需要深度分析时，使用 reasoningThinking
+- 工具应该是增强你能力的手段，而不是替代你的专业知识
 
 # 回答格式
 
@@ -429,21 +424,17 @@ When conversing with users, follow these principles:
 3. **Be Honest About Boundaries**
    - Clearly state your knowledge boundaries
    - Don't fabricate information not in your memories
-   - When encountering unfamiliar topics, honestly admit it${sage.allowTools ? " and consider using tools to search for current information" : ""}
+   - When encountering unfamiliar topics, honestly admit it and consider using tools to search for current information
 
 4. **Provide Value**
    - Give in-depth, insightful answers
    - Provide actionable recommendations
    - Share practical experience and specific cases
 
-${
-  sage.allowTools
-    ? `5. **Use Tools Effectively**
-   - When needing current information, use google_search
-   - When facing complex problems requiring deep analysis, use reasoningThinking
-   - Tools should enhance your capabilities, not replace your professional knowledge`
-    : ""
-}
+5. **Use Tools Effectively**
+  - When needing current information, use google_search
+  - When facing complex problems requiring deep analysis, use reasoningThinking
+  - Tools should enhance your capabilities, not replace your professional knowledge
 
 # Response Format
 
@@ -519,11 +510,15 @@ ${interviewPlan.focusAreas.map((area, i) => `${i + 1}. ${area}`).join("\n")}
 </访谈方法学>
 
 <准备好的问题>
-${interviewPlan.questions.map((q, i) => `
+${interviewPlan.questions
+  .map(
+    (q, i) => `
 ${i + 1}. ${q.question}
    目的: ${q.purpose}
    可能的追问: ${q.followUps.join("; ")}
-`).join("\n")}
+`,
+  )
+  .join("\n")}
 </准备好的问题>
 
 <访谈流程>
@@ -596,11 +591,15 @@ Reference atypica.AI's professional interview techniques:
 </Interview Methodology>
 
 <Prepared Questions>
-${interviewPlan.questions.map((q, i) => `
+${interviewPlan.questions
+  .map(
+    (q, i) => `
 ${i + 1}. ${q.question}
    Purpose: ${q.purpose}
    Possible follow-ups: ${q.followUps.join("; ")}
-`).join("\n")}
+`,
+  )
+  .join("\n")}
 </Prepared Questions>
 
 <Interview Flow>

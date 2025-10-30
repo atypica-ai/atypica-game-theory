@@ -10,7 +10,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 async function SageHomePage() {
-  return <SageHomePageClient isUploadEnabled={false} />;
+  return <SageHomePageClient />;
 }
 
 export default async function SageHomePageWithLoading() {

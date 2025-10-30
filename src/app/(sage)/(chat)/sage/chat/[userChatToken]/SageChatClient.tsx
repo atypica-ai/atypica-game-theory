@@ -1,11 +1,11 @@
 "use client";
 import { ClientMessagePayload, prepareLastUIMessageForRequest } from "@/ai/messageUtilsClient";
 import { SageToolUIPartDisplay } from "@/app/(sage)/tools/ui";
-import { TSageMessageWithTool, SageExtra } from "@/app/(sage)/types";
+import { SageExtra, TSageMessageWithTool } from "@/app/(sage)/types";
 import { UserChatSession } from "@/components/chat/UserChatSession";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { FitToViewport } from "@/components/layout/FitToViewport";
-import type { ChatMessageAttachment, Sage, User } from "@/prisma/client";
+import type { Sage, User } from "@/prisma/client";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { useSession } from "next-auth/react";
@@ -17,10 +17,9 @@ export function SageChatClient({
   initialMessages = [],
 }: {
   userChatToken: string;
-  sage: Omit<Sage, "expertise" | "attachments" | "extra"> & {
+  sage: Omit<Sage, "expertise" | "extra"> & {
     extra: SageExtra;
     expertise: string[];
-    attachments: ChatMessageAttachment[];
     user: Pick<User, "id" | "name" | "email">;
   };
   initialMessages?: TSageMessageWithTool[];

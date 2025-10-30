@@ -1,5 +1,11 @@
 import authOptions from "@/app/(auth)/authOptions";
 import { getSageByToken } from "@/app/(sage)/lib";
+import {
+  SageKnowledgeGapExtra,
+  SageKnowledgeGapResolvedBy,
+  SageKnowledgeGapSeverity,
+  SageKnowledgeGapSource,
+} from "@/app/(sage)/types";
 import { generatePageMetadata } from "@/lib/request/metadata";
 import { prisma } from "@/prisma/prisma";
 import type { Metadata } from "next";
@@ -52,10 +58,18 @@ export default async function SageGapsPage({ params }: { params: Promise<{ sageT
   }
 
   // Fetch knowledge gaps for this sage
-  const gaps = await prisma.sageKnowledgeGap.findMany({
-    where: { sageId: sage.id },
-    orderBy: [{ status: "asc" }, { severity: "asc" }, { createdAt: "desc" }],
-  });
+  const gaps = (
+    await prisma.sageKnowledgeGap.findMany({
+      where: { sageId: sage.id },
+      orderBy: [{ resolvedAt: "desc" }, { severity: "asc" }, { createdAt: "desc" }],
+    })
+  ).map(({ severity, extra, source, resolvedBy, ...gap }) => ({
+    ...gap,
+    severity: severity as SageKnowledgeGapSeverity,
+    extra: extra as SageKnowledgeGapExtra,
+    source: source as SageKnowledgeGapSource,
+    resolvedBy: resolvedBy as SageKnowledgeGapResolvedBy,
+  }));
 
   return <GapsTab sage={sage} gaps={gaps} />;
 }

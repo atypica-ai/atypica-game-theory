@@ -1,9 +1,12 @@
 import { rootLogger } from "@/lib/logging";
 import { prisma } from "@/prisma/prisma";
+import { mergeExtra } from "@/prisma/utils";
 import { waitUntil } from "@vercel/functions";
 import { tool } from "ai";
 import { getLocale } from "next-intl/server";
 import { z } from "zod";
+import { updateMemoryDocumentFromInterview } from "./processing/memory";
+import { SageInterviewExtra } from "./types";
 
 /**
  * Tool for ending a supplementary interview
@@ -14,14 +17,8 @@ const endInterviewTool = ({ interviewId }: { interviewId: number }) =>
       "End the supplementary interview when all questions have been answered sufficiently.",
     inputSchema: z.object({
       summary: z.string().describe("A brief summary of key findings from this interview"),
-      keyInsights: z
-        .array(z.string())
-        .describe("3-5 key insights or discoveries from the interview"),
-      satisfactionLevel: z
-        .enum(["excellent", "good", "fair"])
-        .describe("How well the interview achieved its goals"),
     }),
-    execute: async ({ summary, keyInsights, satisfactionLevel }) => {
+    execute: async ({ summary }) => {
       const logger = rootLogger.child({ interviewId });
 
       try {
@@ -35,36 +32,23 @@ const endInterviewTool = ({ interviewId }: { interviewId: number }) =>
           throw new Error(`Interview ${interviewId} not found`);
         }
 
-        // Update interview status
-        await prisma.sageInterview.update({
-          where: { id: interviewId },
-          data: {
-            status: "completed",
-            progress: 1,
+        await mergeExtra({
+          tableName: "SageInterview",
+          id: interviewId,
+          extra: {
+            ongoing: false,
             summary,
-            extra: {
-              findings: {
-                keyDiscoveries: keyInsights,
-                satisfactionLevel,
-              },
-              completedAt: new Date().toISOString(),
-            },
-          },
+            completedAt: Date.now(),
+          } satisfies SageInterviewExtra,
         });
 
-        logger.info({
-          msg: "Supplementary interview ended",
-          summary,
-          keyInsightsCount: keyInsights.length,
-          satisfactionLevel,
-        });
+        logger.info({ msg: "Supplementary interview ended" });
 
         // Trigger Memory Document update and gap resolution in background
         waitUntil(
           (async () => {
             try {
               const locale = await getLocale();
-              const { updateMemoryDocumentFromInterview } = await import("./processing");
 
               await updateMemoryDocumentFromInterview({
                 sageId: interview.sageId,

@@ -8,12 +8,12 @@ import { defaultProviderOptions, llm } from "@/ai/provider";
 import { initGenericUserChatStatReporter } from "@/ai/tools/stats";
 import { calculateStepTokensUsage } from "@/ai/usage";
 import authOptions from "@/app/(auth)/authOptions";
-import { getSageById } from "@/app/(sage)/lib";
 import { sageInterviewConversationSystem } from "@/app/(sage)/prompt";
 import { sageInterviewTools } from "@/app/(sage)/tools";
-import type { SageInterviewExtra } from "@/app/(sage)/types";
+import type { SageExtra, SageInterviewExtra } from "@/app/(sage)/types";
 import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage } from "@/lib/textUtils";
+import { Sage, SageInterview } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { generateId, smoothStream, streamText } from "ai";
 import { getServerSession } from "next-auth";
@@ -54,24 +54,27 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Interview session not found" }, { status: 404 });
   }
 
-  const interview = userChat.sageInterview;
+  const { sage, ...interview } = userChat.sageInterview as Omit<
+    SageInterview & {
+      sage: Omit<Sage, "expertise" | "extra"> & {
+        expertise: string[];
+        extra: SageExtra;
+      };
+    },
+    "extra"
+  > & {
+    extra: SageInterviewExtra;
+  };
 
   // Check ownership
-  if (interview.sage.userId !== session.user.id) {
+  if (sage.userId !== session.user.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
 
   // Check if interview is completed
-  if (interview.status === "completed") {
+  if (!interview.extra.ongoing) {
     return NextResponse.json({ error: "Interview has been completed" }, { status: 400 });
   }
-
-  const result = await getSageById(interview.sageId);
-  if (!result) {
-    return NextResponse.json({ error: "Sage not found" }, { status: 404 });
-  }
-
-  const { sage } = result;
 
   const chatLogger = rootLogger.child({
     userChatId: userChat.id,
@@ -105,12 +108,11 @@ export async function POST(req: Request) {
   });
 
   // Get interview plan from extra
-  const interviewExtra = interview.extra as SageInterviewExtra;
-  const interviewPlan = interviewExtra.interviewPlan || {
-    purpose: interview.purpose,
-    focusAreas: interview.focusAreas as string[],
-    questions: [],
-  };
+  const interviewPlan = interview.extra.interviewPlan;
+
+  if (!interviewPlan) {
+    throw new Error("Interview plan not prepared");
+  }
 
   // Setup tools
   const tools = sageInterviewTools({ interviewId: interview.id });

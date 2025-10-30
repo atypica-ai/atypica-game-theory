@@ -8,7 +8,7 @@ import { UserChatSession } from "@/components/chat/UserChatSession";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { FitToViewport } from "@/components/layout/FitToViewport";
 import { Button } from "@/components/ui/button";
-import type { ChatMessageAttachment, Sage, User, UserChat } from "@/prisma/client";
+import type { Sage, User, UserChat } from "@/prisma/client";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { ArrowLeftIcon, MessageCircleIcon } from "lucide-react";
@@ -27,10 +27,9 @@ export function PublicSageView({
   initialMessages = [],
   isAuthenticated,
 }: {
-  sage: Omit<Sage, "expertise" | "attachments" | "extra"> & {
+  sage: Omit<Sage, "expertise" | "extra"> & {
     extra: SageExtra;
     expertise: string[];
-    attachments: ChatMessageAttachment[];
     user: Pick<User, "id" | "name" | "email">;
   };
   memoryDocument: string | null;

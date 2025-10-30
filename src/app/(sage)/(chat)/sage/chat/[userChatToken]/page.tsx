@@ -24,7 +24,10 @@ async function SageChatPage({
   }
 
   const userChat = await prisma.userChat.findUnique({
-    where: { token: userChatToken },
+    where: {
+      token: userChatToken,
+      userId: session.user.id, // ensure user owns the chat
+    },
     include: {
       sageChat: {
         include: {
@@ -36,14 +39,6 @@ async function SageChatPage({
 
   if (!userChat || !userChat.sageChat) {
     notFound();
-  }
-
-  // Check access permission
-  if (userChat.userId !== session.user.id) {
-    const sage = userChat.sageChat.sage;
-    if (!sage.isPublic) {
-      forbidden();
-    }
   }
 
   const result = await getSageByToken(userChat.sageChat.sage.token);

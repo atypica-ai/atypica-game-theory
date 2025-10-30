@@ -6,17 +6,14 @@ import {
 import { clientMessagePayloadSchema } from "@/ai/messageUtilsClient";
 import { defaultProviderOptions, llm } from "@/ai/provider";
 import { initGenericUserChatStatReporter } from "@/ai/tools/stats";
+import { StatReporter } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
 import authOptions from "@/app/(auth)/authOptions";
-import {
-  analyzeConversationForGaps,
-  createSageKnowledgeGaps,
-  getSageByToken,
-} from "@/app/(sage)/lib";
+import { createSageKnowledgeGaps, getSageByToken } from "@/app/(sage)/lib";
+import { analyzeConversationForGaps } from "@/app/(sage)/processing/gaps";
 import { sageChatSystem } from "@/app/(sage)/prompt";
-import { KnowledgeGapSourceType } from "@/app/(sage)/types";
 import { rootLogger } from "@/lib/logging";
-import { detectInputLanguage } from "@/lib/textUtils";
+import { detectInputLanguage, truncateForTitle } from "@/lib/textUtils";
 import { prisma } from "@/prisma/prisma";
 import { generateId, smoothStream, stepCountIs, streamText } from "ai";
 import { getServerSession } from "next-auth";
@@ -43,7 +40,10 @@ export async function POST(req: Request) {
 
   // Get UserChat
   const userChat = await prisma.userChat.findUnique({
-    where: { token: userChatToken },
+    where: {
+      token: userChatToken,
+      userId: session.user.id, // ensure user owns the chat
+    },
     include: {
       sageChat: {
         include: {
@@ -55,15 +55,6 @@ export async function POST(req: Request) {
 
   if (!userChat || !userChat.sageChat) {
     return NextResponse.json({ error: "Chat session not found" }, { status: 404 });
-  }
-
-  // Check access permission
-  if (userChat.userId !== session.user.id) {
-    const sage = userChat.sageChat.sage;
-    // Check if sage is public
-    if (!sage.isPublic) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
-    }
   }
 
   const result = await getSageByToken(userChat.sageChat.sage.token);
@@ -111,17 +102,14 @@ export async function POST(req: Request) {
     fallbackLocale: sage.locale as "zh-CN" | "en-US",
   });
 
-  // Setup tools based on sage's allowTools setting
-  const tools = sage.allowTools
-    ? {
-        // TODO: 这个回头再实现，暂时不搞这么复杂
-        // google_search: google.tools.googleSearch({
-        //   mode: "MODE_DYNAMIC",
-        //   dynamicThreshold: 0.3,
-        // }),
-        // [ToolName.reasoningThinking]: reasoningThinkingTool(),
-      }
-    : {};
+  const tools = {
+    // TODO: 这个回头再实现，暂时不搞这么复杂
+    // google_search: google.tools.googleSearch({
+    //   mode: "MODE_DYNAMIC",
+    //   dynamicThreshold: 0.3,
+    // }),
+    // [ToolName.reasoningThinking]: reasoningThinkingTool(),
+  };
 
   const { coreMessages, streamingMessage } = await prepareMessagesForStreaming(userChat.id, {
     tools,
@@ -137,7 +125,6 @@ export async function POST(req: Request) {
       sage: {
         name: sage.name,
         domain: sage.domain,
-        allowTools: sage.allowTools,
       },
       memoryDocument,
       locale,
@@ -206,6 +193,14 @@ export async function POST(req: Request) {
                 aiResponse: aiMessage,
                 sage: { name: sage.name, domain: sage.domain },
                 locale,
+                statReport: (async (dimension, value, extra) => {
+                  rootLogger.info({
+                    msg: `[LIMITED FREE] statReport: ${dimension}=${value}`,
+                    extra,
+                    note: "analyzeConversationForGaps is currently free - tokens not deducted",
+                  });
+                }) as StatReporter,
+                logger: chatLogger,
               });
 
               if (gaps.length > 0) {
@@ -217,9 +212,11 @@ export async function POST(req: Request) {
                     description: gap.description,
                     severity: gap.severity,
                     impact: gap.impact,
-                    sourceType: KnowledgeGapSourceType.CONVERSATION,
-                    sourceDescription: `User asked: "${userMessage.substring(0, 100)}${userMessage.length > 100 ? "..." : ""}"`,
-                    sourceReference: userChat.token,
+                    source: {
+                      type: "conversation",
+                      userChatToken: userChat.token,
+                      description: `User asked: "${truncateForTitle(userMessage, { maxDisplayWidth: 100, suffix: "..." })}"`,
+                    },
                   })),
                 );
                 chatLogger.info({
@@ -242,23 +239,6 @@ export async function POST(req: Request) {
         });
     }),
   );
-
-  // Update chat count and last active time
-  await prisma.sage.update({
-    where: { id: sage.id },
-    data: {
-      chatCount: { increment: 1 },
-      lastActiveAt: new Date(),
-    },
-  });
-
-  // Update message count
-  await prisma.sageChat.update({
-    where: { id: userChat.sageChat.id },
-    data: {
-      messageCount: { increment: 1 },
-    },
-  });
 
   return streamTextResult.toUIMessageStreamResponse({
     generateMessageId: () => streamingMessage.id,

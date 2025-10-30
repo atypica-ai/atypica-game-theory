@@ -1,7 +1,13 @@
 "use client";
 
 import { createSupplementaryInterview } from "@/app/(sage)/actions";
-import type { SageExtra } from "@/app/(sage)/types";
+import type {
+  SageExtra,
+  SageKnowledgeGapExtra,
+  SageKnowledgeGapResolvedBy,
+  SageKnowledgeGapSeverity,
+  SageKnowledgeGapSource,
+} from "@/app/(sage)/types";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import type { Sage, SageKnowledgeGap } from "@/prisma/client";
@@ -18,22 +24,30 @@ import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
-type SageWithExtra = Omit<Sage, "extra"> & { extra: SageExtra };
-
-export function GapsTab({ sage, gaps }: { sage: SageWithExtra; gaps: SageKnowledgeGap[] }) {
+export function GapsTab({
+  sage,
+  gaps,
+}: {
+  sage: Omit<Sage, "extra"> & { extra: SageExtra };
+  gaps: (Omit<SageKnowledgeGap, "severity" | "extra" | "source" | "resolvedBy"> & {
+    severity: SageKnowledgeGapSeverity;
+    extra: SageKnowledgeGapExtra;
+    source: SageKnowledgeGapSource;
+    resolvedBy: SageKnowledgeGapResolvedBy;
+  })[];
+}) {
   const t = useTranslations("Sage.detail");
   const router = useRouter();
   const [isCreating, setIsCreating] = useState(false);
 
-  const pendingGaps = gaps.filter((g) => g.status === "pending");
-  const resolvedGaps = gaps.filter((g) => g.status === "resolved");
+  const pendingGaps = gaps.filter((g) => !g.resolvedAt);
+  const resolvedGaps = gaps.filter((g) => !!g.resolvedAt);
 
   const handleCreateInterview = useCallback(async () => {
     setIsCreating(true);
     try {
       const result = await createSupplementaryInterview(sage.id);
       if (!result.success) throw result;
-
       const { userChat } = result.data;
       toast.success("Interview created successfully");
       router.push(`/sage/interview/${userChat.token}`);
@@ -45,7 +59,7 @@ export function GapsTab({ sage, gaps }: { sage: SageWithExtra; gaps: SageKnowled
     }
   }, [sage.id, router]);
 
-  const getSeverityIcon = (severity: string) => {
+  const getSeverityIcon = (severity: SageKnowledgeGapSeverity) => {
     switch (severity) {
       case "critical":
         return <AlertTriangleIcon className="h-4 w-4 text-red-600" />;
@@ -106,28 +120,23 @@ export function GapsTab({ sage, gaps }: { sage: SageWithExtra; gaps: SageKnowled
           <h2 className="text-sm font-medium">{t("pendingGaps")}</h2>
           <div className="space-y-3">
             {pendingGaps.map((gap) => {
-              const isFromConversation = gap.sourceType === "conversation";
-              const chatToken = gap.sourceReference;
-
               return (
                 <div
                   key={gap.id}
                   className={`border-l-2 pl-3 py-2.5 space-y-3 ${getSeverityColor(gap.severity)}`}
                 >
                   {/* User Question Quote - if from conversation */}
-                  {isFromConversation && gap.sourceDescription && (
+                  {gap.source.type === "conversation" && gap.source.description && (
                     <div className="flex items-start justify-between gap-2 pb-2 border-b border-border/40">
                       <div className="flex-1">
                         <div className="text-xs text-muted-foreground mb-1">💬 User asked:</div>
                         <div className="text-sm italic text-foreground/90">
-                          &ldquo;{gap.sourceDescription}&rdquo;
+                          &ldquo;{gap.description}&rdquo;
                         </div>
                       </div>
-                      {chatToken && (
-                        <Link href={`/c/${chatToken}`} target="_blank">
-                          <ExternalLinkIcon className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground transition-colors flex-shrink-0" />
-                        </Link>
-                      )}
+                      <Link href={`/sage/chat/view/${gap.source.userChatToken}`} target="_blank">
+                        <ExternalLinkIcon className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground transition-colors flex-shrink-0" />
+                      </Link>
                     </div>
                   )}
 
@@ -141,7 +150,7 @@ export function GapsTab({ sage, gaps }: { sage: SageWithExtra; gaps: SageKnowled
                           {gap.severity}
                         </span>
                         <span className="text-xs px-1.5 py-0.5 rounded bg-muted">
-                          {gap.sourceType}
+                          {gap.source.type}
                         </span>
                       </div>
                       <div className="text-xs text-foreground/80">{gap.description}</div>
@@ -169,7 +178,7 @@ export function GapsTab({ sage, gaps }: { sage: SageWithExtra; gaps: SageKnowled
                   <div className="flex-1 min-w-0 space-y-1">
                     <div className="text-sm font-medium line-through">{gap.area}</div>
                     <div className="text-xs px-1.5 py-0.5 rounded bg-muted inline-block">
-                      {gap.resolvedBy || "resolved"}
+                      {gap.resolvedBy.type || "resolved"}
                     </div>
                     <div className="text-xs text-muted-foreground mt-1">{gap.description}</div>
                   </div>
