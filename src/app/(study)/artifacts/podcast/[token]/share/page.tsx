@@ -42,13 +42,13 @@ async function PodcastSharePage({ podcastToken }: { podcastToken: string }) {
   if (!result.success) {
     notFound();
   }
-  const { podcast, analyst, studyUserChat } = result.data;
+  const { analyst, studyUserChat, report } = result.data;
   return (
     <PodcastSharePageClient
       podcastToken={podcastToken}
-      podcast={podcast}
       analyst={analyst}
       studyUserChat={studyUserChat}
+      report={report}
     />
   );
 }

@@ -63,10 +63,35 @@ export async function GET(req: Request) {
     }
   }
 
+  // Handle Range requests for audio/video seeking
+  const rangeHeader = req.headers.get("range");
+
+  if (rangeHeader) {
+    // Parse range header (e.g., "bytes=0-1023")
+    const parts = rangeHeader.replace(/bytes=/, "").split("-");
+    const start = parseInt(parts[0], 10);
+    const end = parts[1] ? parseInt(parts[1], 10) : buffer.byteLength - 1;
+    const chunkSize = end - start + 1;
+    const chunk = buffer.subarray(start, end + 1);
+
+    return new Response(chunk, {
+      status: 206, // Partial Content
+      headers: {
+        "Content-Type": contentType,
+        "Content-Length": chunkSize.toString(),
+        "Content-Range": `bytes ${start}-${end}/${buffer.byteLength}`,
+        "Accept-Ranges": "bytes",
+        "Cache-Control": "public, max-age=31536000, immutable",
+      },
+    });
+  }
+
   return new Response(buffer, {
     headers: {
       "Content-Type": contentType,
       "Content-Length": buffer.byteLength.toString(),
+      "Accept-Ranges": "bytes",
+      "Cache-Control": "public, max-age=31536000, immutable",
     },
   });
 }

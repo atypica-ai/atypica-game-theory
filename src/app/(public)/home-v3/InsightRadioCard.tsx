@@ -59,48 +59,48 @@ export function InsightRadioCard() {
       <div
         className={cn(
           "hidden md:block",
-          "fixed bottom-6 right-6 w-80 z-50",
+          "fixed bottom-6 left-6 w-80 z-50",
           "bg-background/95 backdrop-blur-xl border border-border rounded-2xl shadow-2xl",
           "p-5 space-y-4",
         )}
       >
-      {/* Header */}
-      <div className="flex items-center gap-2">
-        <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
-          <Volume2Icon className="w-4 h-4 text-white" />
+        {/* Header */}
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
+            <Volume2Icon className="w-4 h-4 text-white" />
+          </div>
+          <h3 className="text-sm font-semibold text-foreground">{t("title")}</h3>
         </div>
-        <h3 className="text-sm font-semibold text-foreground">{t("title")}</h3>
-      </div>
 
-      {/* Podcast Info */}
-      <div className="space-y-2">
-        <Link
-          href={`/artifacts/podcast/${podcast.podcast.token}/share`}
-          target="_blank"
-          className="block"
-        >
-          <h4 className="text-sm font-medium text-foreground line-clamp-2 hover:text-primary transition-colors">
-            {podcast.studyUserChat.title}
-          </h4>
-        </Link>
-        <p className="text-xs text-muted-foreground line-clamp-2">{podcast.analyst.topic}</p>
-      </div>
+        {/* Podcast Info */}
+        <div className="space-y-2">
+          <Link
+            href={`/artifacts/podcast/${podcast.podcast.token}/share`}
+            target="_blank"
+            className="block"
+          >
+            <h4 className="text-sm font-medium text-foreground line-clamp-2 hover:text-primary transition-colors">
+              {podcast.studyUserChat.title}
+            </h4>
+          </Link>
+          <p className="text-xs text-muted-foreground line-clamp-2">{podcast.analyst.topic}</p>
+        </div>
 
-      {/* Actions */}
-      <div className="flex items-center gap-2">
-        <Button size="sm" className="flex-1 h-8 text-xs rounded-full" asChild>
-          <Link href={`/artifacts/podcast/${podcast.podcast.token}/share`} target="_blank">
-            <Volume2Icon className="w-3 h-3" />
-            {t("listen")}
-          </Link>
-        </Button>
-        <Button variant="outline" size="sm" className="h-8 text-xs rounded-full px-3" asChild>
-          <Link href="/featured-podcasts" prefetch={true}>
-            {t("viewAll")}
-            <ChevronRightIcon className="w-3 h-3" />
-          </Link>
-        </Button>
-      </div>
+        {/* Actions */}
+        <div className="flex items-center gap-2">
+          <Button size="sm" className="flex-1 h-8 text-xs rounded-full" asChild>
+            <Link href={`/artifacts/podcast/${podcast.podcast.token}/share`} target="_blank">
+              <Volume2Icon className="w-3 h-3" />
+              {t("listen")}
+            </Link>
+          </Button>
+          <Button variant="outline" size="sm" className="h-8 text-xs rounded-full px-3" asChild>
+            <Link href="/featured-podcasts" prefetch={true}>
+              {t("viewAll")}
+              <ChevronRightIcon className="w-3 h-3" />
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {/* Mobile: Fixed card at bottom */}
