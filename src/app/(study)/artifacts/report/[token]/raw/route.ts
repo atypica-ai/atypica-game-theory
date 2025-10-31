@@ -14,6 +14,17 @@ function injectImgTag(html: string, reportToken: string) {
   return html;
 }
 
+/**
+ * Clean up markdown code blocks that AI models (especially Gemini) often add around HTML content
+ */
+function cleanHtmlFromMarkdown(html: string): string {
+  return html
+    .trim()
+    .replace(/^```html\s*/i, "")
+    .replace(/\s*```\s*$/i, "")
+    .trim();
+}
+
 export async function GET(request: Request, { params }: { params: Promise<{ token: string }> }) {
   const reportToken = (await params).token;
   const analystReport = await prisma.analystReport.findUniqueOrThrow({
@@ -69,7 +80,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ toke
   }
 
   // Regular non-streaming response
-  const onePageHtml = analystReport.onePageHtml;
+  const onePageHtml = cleanHtmlFromMarkdown(analystReport.onePageHtml);
 
   if (isRegenerateImages) {
     // 超级管理员可以触发 regenerateImages

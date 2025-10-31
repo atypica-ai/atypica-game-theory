@@ -30,6 +30,17 @@ import {
   type GenerateReportResult,
 } from "./types";
 
+/**
+ * Clean up markdown code blocks that AI models (especially Gemini) often add around HTML content
+ */
+function cleanHtmlFromMarkdown(html: string): string {
+  return html
+    .trim()
+    .replace(/^```html\s*/i, "")
+    .replace(/\s*```\s*$/i, "")
+    .trim();
+}
+
 export const generateReportTool = ({
   studyUserChatId,
   locale,
@@ -227,7 +238,7 @@ export async function generateReport({
         try {
           const report = await prisma.analystReport.update({
             where: { id: reportId },
-            data: { onePageHtml },
+            data: { onePageHtml: cleanHtmlFromMarkdown(onePageHtml) },
           });
           await triggerImagegenInReport(onePageHtml, report.token);
           logger.info("HTML persisted successfully");
