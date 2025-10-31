@@ -59,15 +59,15 @@ export function SourcesPanel({
     try {
       const result = await processSageSources(sage.id);
       if (!result.success) throw result;
-      toast.success("Started processing sources");
+      toast.success(t("processingStarted"));
       setTimeout(() => router.refresh(), 1000);
     } catch (error) {
       console.log("Error processing sources:", error);
-      toast.error("Failed to process sources");
+      toast.error(t("processingFailed"));
     } finally {
       setIsProcessing(false);
     }
-  }, [sage.id, router]);
+  }, [sage.id, router, t]);
 
   return (
     <div className="p-6 space-y-6">
@@ -90,12 +90,12 @@ export function SourcesPanel({
           {hasProcessing ? (
             <>
               <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
-              Processing...
+              {t("processingButton")}
             </>
           ) : (
             <>
               <PlayIcon className="mr-2 h-4 w-4" />
-              Process Sources ({pendingSources.length})
+              {t("processSourcesButton")} ({pendingSources.length})
             </>
           )}
         </Button>
@@ -112,7 +112,7 @@ export function SourcesPanel({
 
       {failedSources.length > 0 && (
         <div className="text-sm text-muted-foreground">
-          {failedSources.length} source(s) failed to process
+          {failedSources.length} {t("sourcesFailedCount")}
         </div>
       )}
     </div>

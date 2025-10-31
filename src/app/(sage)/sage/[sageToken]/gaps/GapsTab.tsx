@@ -49,15 +49,15 @@ export function GapsTab({
       const result = await createSupplementaryInterview(sage.id);
       if (!result.success) throw result;
       const { userChat } = result.data;
-      toast.success("Interview created successfully");
+      toast.success(t("interviewCreated"));
       router.push(`/sage/interview/${userChat.token}`);
     } catch (error) {
       console.error("Failed to create interview:", error);
-      toast.error("Failed to create interview");
+      toast.error(t("createInterviewFailed"));
     } finally {
       setIsCreating(false);
     }
-  }, [sage.id, router]);
+  }, [sage.id, router, t]);
 
   const getSeverityIcon = (severity: SageKnowledgeGapSeverity) => {
     switch (severity) {
@@ -98,7 +98,7 @@ export function GapsTab({
         {pendingGaps.length > 0 && (
           <Button onClick={handleCreateInterview} disabled={isCreating} size="sm">
             <PlusIcon className="h-4 w-4" />
-            Create Supplementary Interview
+            {t("createSupplementaryInterview")}
           </Button>
         )}
       </div>

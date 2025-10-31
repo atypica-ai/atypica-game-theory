@@ -40,15 +40,15 @@ export function MemoryTab({
     try {
       const result = await extractSageKnowledge(sage.id);
       if (!result.success) throw result;
-      toast.success("Knowledge extraction started");
+      toast.success(t("extractionStarted"));
       setTimeout(() => router.refresh(), 1000);
     } catch (error) {
       console.log("Error extracting knowledge:", error);
-      toast.error("Failed to extract knowledge");
+      toast.error(t("extractionFailed"));
     } finally {
       setIsExtracting(false);
     }
-  }, [sage.id, router]);
+  }, [sage.id, router, t]);
 
   const handleAnalyze = useCallback(async () => {
     setIsAnalyzing(true);
@@ -85,7 +85,7 @@ export function MemoryTab({
             ) : (
               <SparklesIcon className="size-4" />
             )}
-            Extract Knowledge
+            {t("extractKnowledgeButton")}
           </Button>
           <Button
             onClick={handleAnalyze}
@@ -98,12 +98,12 @@ export function MemoryTab({
             ) : (
               <ScanSearchIcon className="size-4" />
             )}
-            Analyze Gaps
+            {t("analyzeGapsButton")}
           </Button>
           <Button variant="outline" size="sm" asChild>
             <Link href={`/sage/profile/${sage.token}`} target="_blank">
               <ExternalLinkIcon className="size-4" />
-              View Public Profile
+              {t("viewPublicProfile")}
             </Link>
           </Button>
         </div>
@@ -113,7 +113,7 @@ export function MemoryTab({
 
       {/* Avatar Upload */}
       <div className="space-y-3">
-        <h2 className="text-sm font-medium text-foreground">Avatar</h2>
+        <h2 className="text-sm font-medium text-foreground">{t("avatar")}</h2>
         <AvatarUpload sageId={sage.id} sageName={sage.name} currentAvatar={sage.avatar} />
       </div>
 
@@ -121,16 +121,16 @@ export function MemoryTab({
 
       {/* Basic Info */}
       <div className="space-y-3">
-        <h2 className="text-sm font-medium text-foreground">Basic Information</h2>
+        <h2 className="text-sm font-medium text-foreground">{t("basicInformation")}</h2>
         <div className="space-y-2 text-sm">
           {sage.bio && (
             <div>
-              <div className="text-xs text-muted-foreground">Bio</div>
+              <div className="text-xs text-muted-foreground">{t("bio")}</div>
               <p className="text-sm mt-1">{sage.bio}</p>
             </div>
           )}
           <div>
-            <div className="text-xs text-muted-foreground">Expertise</div>
+            <div className="text-xs text-muted-foreground">{t("expertise")}</div>
             <div className="flex flex-wrap gap-1.5 mt-1">
               {(Array.isArray(sage.expertise) ? sage.expertise : []).map((exp, idx) => (
                 <span
@@ -143,7 +143,7 @@ export function MemoryTab({
             </div>
           </div>
           <div>
-            <span className="text-xs text-muted-foreground">Locale:</span>{" "}
+            <span className="text-xs text-muted-foreground">{t("locale")}:</span>{" "}
             <span>{sage.locale}</span>
           </div>
         </div>
@@ -157,7 +157,7 @@ export function MemoryTab({
           <h2 className="text-sm font-medium text-foreground">{t("memoryDocument")}</h2>
           {hasMemoryDocument && (
             <span className="text-xs text-muted-foreground">
-              {memoryDocument.length} characters
+              {memoryDocument.length} {t("characters")}
             </span>
           )}
         </div>
@@ -166,9 +166,7 @@ export function MemoryTab({
             {memoryDocument}
           </pre>
         ) : (
-          <p className="text-xs text-muted-foreground">
-            No memory document yet. Extract knowledge from sources first.
-          </p>
+          <p className="text-xs text-muted-foreground">{t("noMemoryDocumentYet")}</p>
         )}
       </div>
     </div>

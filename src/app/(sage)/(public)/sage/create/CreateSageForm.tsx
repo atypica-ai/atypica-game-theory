@@ -325,21 +325,21 @@ export function CreateSageForm() {
         <Dialog open={showTextModal} onOpenChange={setShowTextModal}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Paste text</DialogTitle>
+              <DialogTitle>{t("pasteTextTitle")}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <Textarea
                 value={textContent}
                 onChange={(e) => setTextContent(e.target.value)}
-                placeholder="Paste your text content here..."
+                placeholder={t("textPlaceholder")}
                 rows={10}
                 className="resize-none"
               />
               <div className="flex gap-2 justify-end">
                 <Button variant="outline" onClick={() => setShowTextModal(false)}>
-                  Cancel
+                  {t("cancel")}
                 </Button>
-                <Button onClick={handleAddText}>Add</Button>
+                <Button onClick={handleAddText}>{t("addButton")}</Button>
               </div>
             </div>
           </DialogContent>
@@ -349,7 +349,7 @@ export function CreateSageForm() {
         <Dialog open={showWebsiteModal} onOpenChange={setShowWebsiteModal}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Add website</DialogTitle>
+              <DialogTitle>{t("addWebsiteTitle")}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <Input
@@ -359,9 +359,9 @@ export function CreateSageForm() {
               />
               <div className="flex gap-2 justify-end">
                 <Button variant="outline" onClick={() => setShowWebsiteModal(false)}>
-                  Cancel
+                  {t("cancel")}
                 </Button>
-                <Button onClick={handleAddWebsite}>Add</Button>
+                <Button onClick={handleAddWebsite}>{t("addButton")}</Button>
               </div>
             </div>
           </DialogContent>
