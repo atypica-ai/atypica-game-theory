@@ -6,8 +6,105 @@ import { Locale } from "next-intl";
 import { getLocale } from "next-intl/server";
 
 /**
+ * Pick a random featured podcast
+ * Single query: get all podcasts from featured studies, then pick random
+ */
+export async function pickRandomFeaturedPodcast({
+  locale,
+}: {
+  locale?: Locale;
+} = {}): Promise<
+  ServerActionResult<{
+    podcast: {
+      token: string;
+      script: string | null;
+      objectUrl: string | null;
+      generatedAt: Date;
+      extra: AnalystPodcastExtra;
+    };
+    analyst: {
+      id: number;
+      topic: string;
+    };
+    studyUserChat: {
+      token: string;
+      title: string;
+    };
+  } | null>
+> {
+  locale = locale || (await getLocale());
+
+  // Single query: get all podcasts from featured studies with the locale
+  const podcasts = await prisma.analystPodcast.findMany({
+    where: {
+      generatedAt: { not: null },
+      analyst: {
+        locale,
+        studyUserChat: { isNot: null },
+        featuredStudy: { isNot: null }, // Must be in featured studies
+      },
+    },
+    select: {
+      token: true,
+      script: true,
+      objectUrl: true,
+      generatedAt: true,
+      extra: true,
+      analyst: {
+        select: {
+          id: true,
+          topic: true,
+          studyUserChat: {
+            select: {
+              token: true,
+              title: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (podcasts.length === 0) {
+    return {
+      success: true,
+      data: null,
+    };
+  }
+
+  // Pick a random podcast in memory (dataset is small)
+  const randomIndex = Math.floor(Math.random() * podcasts.length);
+  const podcast = podcasts[randomIndex];
+
+  if (!podcast.analyst.studyUserChat) {
+    return {
+      success: true,
+      data: null,
+    };
+  }
+
+  return {
+    success: true,
+    data: {
+      podcast: {
+        token: podcast.token,
+        script: podcast.script,
+        objectUrl: podcast.objectUrl,
+        generatedAt: podcast.generatedAt!,
+        extra: (podcast.extra || {}) as AnalystPodcastExtra,
+      },
+      analyst: {
+        id: podcast.analyst.id,
+        topic: podcast.analyst.topic,
+      },
+      studyUserChat: podcast.analyst.studyUserChat,
+    },
+  };
+}
+
+/**
  * Fetch featured podcasts from featured studies
- * For each featured study analyst, get the latest generated podcast
+ * Single query with proper filtering
  */
 export async function fetchFeaturedPodcasts({
   locale,
@@ -39,37 +136,14 @@ export async function fetchFeaturedPodcasts({
 > {
   locale = locale || (await getLocale());
 
-  // Get featured studies for the locale
-  const featuredStudies = await prisma.featuredStudy.findMany({
-    where: {
-      analyst: { locale },
-    },
-    select: {
-      analystId: true,
-    },
-    orderBy: {
-      // displayOrder: "asc",
-      id: "desc",
-    },
-    take: limit,
-  });
-
-  if (featuredStudies.length === 0) {
-    return {
-      success: true,
-      data: [],
-    };
-  }
-
-  const analystIds = featuredStudies.map((s) => s.analystId);
-
-  // Fetch all podcasts for these analysts in one query
+  // Single query: get podcasts with featured studies, group by analyst
   const allPodcasts = await prisma.analystPodcast.findMany({
     where: {
-      analystId: { in: analystIds },
       generatedAt: { not: null },
       analyst: {
+        locale,
         studyUserChat: { isNot: null },
+        featuredStudy: { isNot: null }, // Must be in featured studies
       },
     },
     select: {
@@ -79,8 +153,6 @@ export async function fetchFeaturedPodcasts({
       script: true,
       objectUrl: true,
       generatedAt: true,
-      createdAt: true,
-      updatedAt: true,
       extra: true,
       analyst: {
         select: {
@@ -92,10 +164,17 @@ export async function fetchFeaturedPodcasts({
               title: true,
             },
           },
+          featuredStudy: {
+            select: {
+              id: true,
+            },
+          },
         },
       },
     },
-    // orderBy: { generatedAt: "desc" },
+    orderBy: {
+      generatedAt: "desc",
+    },
   });
 
   // Group by analystId and take the latest one for each
@@ -112,21 +191,16 @@ export async function fetchFeaturedPodcasts({
     }
   }
 
-  // Get podcasts in the order of featured studies
-  type ValidPodcast = NonNullable<(typeof allPodcasts)[number]> & {
-    analyst: {
-      id: number;
-      topic: string;
-      studyUserChat: {
-        token: string;
-        title: string;
-      };
-    };
-  };
-
-  const validPodcasts = analystIds
-    .map((id) => podcastsByAnalyst.get(id))
-    .filter((p): p is ValidPodcast => p !== undefined && p.analyst.studyUserChat !== null);
+  // Convert to array and sort by featured study order
+  const validPodcasts = Array.from(podcastsByAnalyst.values())
+    .filter((p) => p.analyst.studyUserChat !== null && p.analyst.featuredStudy !== null)
+    .sort((a, b) => {
+      // Sort by featured study id (desc)
+      const aId = a.analyst.featuredStudy?.id || 0;
+      const bId = b.analyst.featuredStudy?.id || 0;
+      return bId - aId;
+    })
+    .slice(0, limit);
 
   return {
     success: true,
@@ -143,7 +217,7 @@ export async function fetchFeaturedPodcasts({
         id: p.analyst.id,
         topic: p.analyst.topic,
       },
-      studyUserChat: p.analyst.studyUserChat,
+      studyUserChat: p.analyst.studyUserChat!,
     })),
   };
 }

@@ -213,7 +213,12 @@
       "subtitle": "Atypica automatically builds personas, conducts interviews, and analyzes patterns to reveal the emotional and cognitive factors behind human choices.",
       "startStudyButton": "Start Your Study",
       "trustIndicator": "Trusted by individuals from leading organizations",
-      "loadingVideo": "Loading Video..."
+      "loadingVideo": "Loading Video...",
+      "insightRadio": {
+        "title": "Latest Insight Radio",
+        "viewAll": "View All",
+        "listen": "Listen"
+      }
     },
     "StatsSection": {
       "title": "AI Persona Research at Scale",

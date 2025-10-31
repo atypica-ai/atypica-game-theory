@@ -210,10 +210,15 @@
     "HeroSection": {
       "title": "商业研究多智能体",
       "titleHighlight": "",
-      "subtitle": "Atypica 模拟消费者决策，全自动访谈和分析，并产出报告。",
+      "subtitle": "Atypica 模拟消费者决策，全自动访谈和分析,并产出报告。",
       "startStudyButton": "开始您的研究",
       "trustIndicator": "受到各大机构用户信赖",
-      "loadingVideo": "视频加载中..."
+      "loadingVideo": "视频加载中...",
+      "insightRadio": {
+        "title": "最新 Insight 播客",
+        "viewAll": "查看全部",
+        "listen": "收听"
+      }
     },
     "StatsSection": {
       "title": "大规模AI用户画像研究",
