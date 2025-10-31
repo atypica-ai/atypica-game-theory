@@ -16,7 +16,10 @@ import {
   StartSession,
   VolcanoHeaders,
   WaitForEvent,
-} from "./protocols";
+} from "@/app/(podcast)/lib/volcano/protocols";
+import { SilenceBuffer } from "@/app/(podcast)/lib/volcano/silenceCache";
+
+
 
 const VOLCANO_ENDPOINT = "wss://openspeech.bytedance.com/api/v3/sami/podcasttts";
 
@@ -170,7 +173,7 @@ export class VolcanoTTSClient {
         for (const chunk of textChunks) {
           const nlpTextObject: PodcastNLPText = {
             speaker,
-            text: chunk+"......", 
+            text: chunk, 
           };
           this.logger?.info({ msg: "Adding NLP text object", nlpTextObject });
           nlpTexts.push(nlpTextObject);
@@ -278,7 +281,7 @@ export class VolcanoTTSClient {
    */
   async generatePodcastAudio(options: PodcastGenerationOptions): Promise<PodcastGenerationResult> {
     const { script, podcastToken, locale = "zh-CN", logger } = options;
-
+    const SILENCE = await SilenceBuffer.get();
     if (logger) {
       this.logger = logger;
     }
@@ -384,7 +387,6 @@ export class VolcanoTTSClient {
           let currentRound = 0;
           let totalRounds = 0;
           const podcastAudio: Uint8Array[] = [];
-          let audio: Uint8Array[] = [];
 
           while (true) {
             const msg = await ReceiveMessage(ws);
@@ -394,7 +396,7 @@ export class VolcanoTTSClient {
               // Audio data chunks
               case MsgType.AudioOnlyServer:
                 if (msg.event === EventType.PodcastRoundResponse) {
-                  audio.push(msg.payload);
+                  podcastAudio.push(msg.payload);
                   this.logger?.info({
                     msg: `Received audio chunk`,
                     size: msg.payload.length,
@@ -419,7 +421,12 @@ export class VolcanoTTSClient {
                     msg: `Podcast round ${currentRound} started`,
                     speaker: startData.speaker,
                   });
-                } else if (msg.event === EventType.PodcastRoundEnd) {
+
+                  if (podcastAudio.length > 0) {
+                    podcastAudio.push(SILENCE);
+                    this.logger?.info("Silence pushed"); //debug
+                  }
+                } else if (msg.event === EventType.PodcastRoundEnd) { // This event often got missed
                   const endData = JSON.parse(new TextDecoder().decode(msg.payload));
                   if (endData.is_error) {
                     throw new Error(`Podcast round error: ${endData.error_msg}`);
@@ -428,16 +435,11 @@ export class VolcanoTTSClient {
                     duration = (duration || 0) + endData.audio_duration;
                   }
 
-                  // Concatenate audio chunks from this round
-                  if (audio.length > 0) {
-                    podcastAudio.push(...audio);
-                    this.logger?.info({
-                      msg: `Podcast round ${currentRound} completed`,
-                      duration: endData.audio_duration,
-                      audioChunks: audio.length,
-                    });
-                    audio = [];
-                  }
+                  this.logger?.info({
+                    msg: `Podcast round ${currentRound} completed`,
+                    duration: endData.audio_duration,
+                    audioChunks: podcastAudio.length,
+                  });
                 } else if (msg.event === EventType.PodcastEnd) {
                   const podcastData = JSON.parse(new TextDecoder().decode(msg.payload));
                   this.logger?.info({
