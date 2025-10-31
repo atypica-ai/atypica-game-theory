@@ -34,7 +34,12 @@ export default function GlobalHeader({
           <div className="md:hidden mt-1">
             <GlobalHeaderMenusMobile />
           </div>
-          <Link prefetch={true} href="/" className={cn("block h-4 w-24 mb-0.5 relative")}>
+          <Link
+            prefetch={true}
+            href="/"
+            className={cn("block h-4 w-24 mb-0.5 relative")}
+            title="logo"
+          >
             <div className="font-EuclidCircularA font-medium tracking-tight text-xl leading-none">
               atypica.AI
             </div>
@@ -113,6 +118,9 @@ const GlobalHeaderMenusMobile = () => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="center" className="min-w-36">
+        <DropdownMenuItem asChild>
+          <MenuLink href="/">{t("home")}</MenuLink>
+        </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <MenuLink href="/featured-studies">{t("useCases")}</MenuLink>
         </DropdownMenuItem>

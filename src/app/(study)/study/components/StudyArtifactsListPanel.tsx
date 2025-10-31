@@ -2,7 +2,6 @@ import { ToolName } from "@/ai/tools/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { truncateForTitle } from "@/lib/textUtils";
 import { formatDistanceToNow } from "@/lib/utils";
@@ -41,7 +40,7 @@ function ArtifactsCountBadge() {
   return (
     <Badge
       variant="default"
-      className="absolute -top-2 -right-2 size-5 flex items-center justify-center text-xs font-bold font-mono rounded-full p-0 scale-75"
+      className="absolute -top-2 -left-2 size-5 flex items-center justify-center text-xs font-bold font-mono rounded-full p-0 scale-75"
     >
       {totalCount}
     </Badge>
@@ -63,7 +62,6 @@ export default function StudyArtifactsListPanel({
   const tArtifacts = useTranslations("StudyPage.ArtifactsListPanel");
 
   const [isOpen, setIsOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"reports" | "podcasts">("reports");
 
   const {
     artifacts: {
@@ -73,6 +71,7 @@ export default function StudyArtifactsListPanel({
       isLoadingReports,
       isLoadingPodcasts,
       podcastCount,
+      reportCount,
     },
   } = useStudyContext();
 
@@ -86,14 +85,13 @@ export default function StudyArtifactsListPanel({
     }
   }, [isOpen, refreshArtifacts]);
 
-  // Auto-open panel and switch to podcasts tab when new podcast is detected
+  // Auto-open panel when new podcast is detected
   useEffect(() => {
     const prevCount = prevPodcastCountRef.current;
     const currentCount = podcastCount;
     // Check if podcast count increased (new podcast added)
     if (prevCount !== null && currentCount !== null && currentCount > prevCount) {
       setIsOpen(true);
-      setActiveTab("podcasts");
     }
     // Update ref for next comparison
     prevPodcastCountRef.current = currentCount;
@@ -106,8 +104,11 @@ export default function StudyArtifactsListPanel({
           <TooltipTrigger>
             <PopoverTrigger asChild>
               {children || (
-                <div className="p-1 cursor-pointer rounded hover:bg-muted relative mr-1">
-                  <SparklesIcon className="size-5" />
+                <div className="p-1 cursor-pointer rounded flex items-center gap-2 relative">
+                  <SparklesIcon className="shrink-0 size-5" />
+                  <span className="text-xs max-sm:hidden whitespace-nowrap">
+                    {tArtifacts("title")}
+                  </span>
                   <ArtifactsCountBadge />
                 </div>
               )}
@@ -117,75 +118,34 @@ export default function StudyArtifactsListPanel({
         </Tooltip>
       </TooltipProvider>
       <PopoverContent className="w-80 p-0 dark:bg-zinc-800" align="center">
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "reports" | "podcasts")}>
-          <div className="flex items-center gap-2 p-3 border-b border-border/50">
-            <SparklesIcon className="size-4 text-muted-foreground" />
-            <div className="text-sm font-medium">{tArtifacts("title")}</div>
-          </div>
-          <TabsList className="w-full grid grid-cols-2 rounded-none border-b">
-            <TabsTrigger value="reports" className="gap-1.5">
-              <FileType2Icon className="size-3.5" />
-              <span>{tReports("title")}</span>
-              {reports.length > 0 && (
-                <Badge variant="secondary" className="ml-1 h-4 px-1 text-[10px]">
-                  {reports.length}
+        {/*
+        <div className="flex items-center gap-2 p-3 border-b border-border/50">
+          <SparklesIcon className="size-4 text-muted-foreground" />
+          <div className="text-sm font-medium">{tArtifacts("title")}</div>
+        </div>
+        */}
+        <div className="max-h-[20rem] overflow-y-auto scrollbar-thin">
+          {/* Podcasts Section */}
+          <div className="border-b border-border/50">
+            <div className="px-3 py-2 flex items-center gap-2 bg-muted/30">
+              <MicIcon className="size-3.5 text-muted-foreground" />
+              <span className="text-sm font-medium">{tPodcasts("title")}</span>
+              {(podcastCount ?? podcasts.length) > 0 && (
+                <Badge variant="secondary" className="ml-auto h-4 px-1.5 text-[10px]">
+                  {podcastCount ?? podcasts.length}
                 </Badge>
               )}
-            </TabsTrigger>
-            <TabsTrigger value="podcasts" className="gap-1.5">
-              <MicIcon className="size-3.5" />
-              <span>{tPodcasts("title")}</span>
-              {podcasts.length > 0 && (
-                <Badge variant="secondary" className="ml-1 h-4 px-1 text-[10px]">
-                  {podcasts.length}
-                </Badge>
-              )}
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="reports" className="m-0">
-            {isLoadingReports ? (
-              <div className="p-6 flex justify-center">
-                <Loader2Icon className="size-6 animate-spin text-muted-foreground" />
-              </div>
-            ) : reports.length === 0 ? (
-              <div className="p-6 text-center text-sm text-muted-foreground">
-                {tReports("noReportsYet")}
-              </div>
-            ) : (
-              <div className="p-3 grid grid-cols-2 gap-3 max-h-[400px] overflow-y-auto scrollbar-thin">
-                {reports.map((report) => (
-                  <AnalystReportShareButton
-                    reportToken={report.token}
-                    key={report.id}
-                    download={download}
-                  >
-                    <div>
-                      <div
-                        className="block w-full aspect-[2/1] cursor-pointer border border-input rounded-md overflow-hidden transition-all hover:border-primary/50 hover:shadow-sm bg-accent/10 [&>svg]:w-full [&>svg]:h-full"
-                        dangerouslySetInnerHTML={{ __html: report.coverSvg }}
-                      ></div>
-                      <div className="mt-1 ml-1 font-mono text-xs text-muted-foreground">
-                        {formatDistanceToNow(report.createdAt)}
-                      </div>
-                    </div>
-                  </AnalystReportShareButton>
-                ))}
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="podcasts" className="m-0">
+            </div>
             {isLoadingPodcasts ? (
               <div className="p-6 flex justify-center">
                 <Loader2Icon className="size-6 animate-spin text-muted-foreground" />
               </div>
             ) : podcasts.length === 0 ? (
-              <div className="p-6 text-center text-sm text-muted-foreground">
+              <div className="p-4 text-center text-sm text-muted-foreground">
                 {tPodcasts("noPodcastsYet")}
               </div>
             ) : (
-              <div className="p-3 grid grid-cols-1 gap-3 max-h-[400px] overflow-y-auto scrollbar-thin">
+              <div className="p-3 grid grid-cols-1 gap-3">
                 {podcasts.map((podcast) => {
                   const isGenerating = !podcast.generatedAt;
                   return (
@@ -232,8 +192,50 @@ export default function StudyArtifactsListPanel({
                 })}
               </div>
             )}
-          </TabsContent>
-        </Tabs>
+          </div>
+
+          {/* Reports Section */}
+          <div>
+            <div className="px-3 py-2 flex items-center gap-2 bg-muted/30">
+              <FileType2Icon className="size-3.5 text-muted-foreground" />
+              <span className="text-sm font-medium">{tReports("title")}</span>
+              {(reportCount ?? reports.length) > 0 && (
+                <Badge variant="secondary" className="ml-auto h-4 px-1.5 text-[10px]">
+                  {reportCount ?? reports.length}
+                </Badge>
+              )}
+            </div>
+            {isLoadingReports ? (
+              <div className="p-6 flex justify-center">
+                <Loader2Icon className="size-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : reports.length === 0 ? (
+              <div className="p-4 text-center text-sm text-muted-foreground">
+                {tReports("noReportsYet")}
+              </div>
+            ) : (
+              <div className="p-3 grid grid-cols-2 gap-3">
+                {reports.map((report) => (
+                  <AnalystReportShareButton
+                    reportToken={report.token}
+                    key={report.id}
+                    download={download}
+                  >
+                    <div>
+                      <div
+                        className="block w-full aspect-[2/1] cursor-pointer border border-input rounded-md overflow-hidden transition-all hover:border-primary/50 hover:shadow-sm bg-accent/10 [&>svg]:w-full [&>svg]:h-full"
+                        dangerouslySetInnerHTML={{ __html: report.coverSvg }}
+                      ></div>
+                      <div className="mt-1 ml-1 font-mono text-xs text-muted-foreground">
+                        {formatDistanceToNow(report.createdAt)}
+                      </div>
+                    </div>
+                  </AnalystReportShareButton>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
       </PopoverContent>
     </Popover>
   );
