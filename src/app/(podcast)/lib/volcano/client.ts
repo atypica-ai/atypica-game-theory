@@ -397,11 +397,11 @@ export class VolcanoTTSClient {
               case MsgType.AudioOnlyServer:
                 if (msg.event === EventType.PodcastRoundResponse) {
                   podcastAudio.push(msg.payload);
-                  this.logger?.info({
-                    msg: `Received audio chunk`,
-                    size: msg.payload.length,
-                    round: currentRound,
-                  });
+                  // this.logger?.info({
+                  //   msg: `Received audio chunk`,
+                  //   size: msg.payload.length,
+                  //   round: currentRound,
+                  // });
                 }
                 break;
 
