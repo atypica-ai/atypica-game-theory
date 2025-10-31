@@ -1,5 +1,6 @@
 {
   "Sage": {
+    "platformName": "Expert Agent Platform",
     "create": {
       "title": "Add Knowledge Sources",
       "description": "Upload documents, paste text, or add website links to build your expert's knowledge base",
@@ -28,6 +29,14 @@
       "pasteTextTitle": "Paste text",
       "addButton": "Add",
       "addWebsiteTitle": "Add website",
+      "uploadSources": "Upload sources",
+      "chooseFilesToUpload": "Choose files to upload",
+      "supportedFileTypes": "Supported file types: PDF, .txt, Markdown, Audio (e.g. mp3), .docx",
+      "websiteButton": "Website",
+      "addWebsiteUrl": "Add website URL",
+      "pasteTextButton": "Paste text",
+      "pasteTextDirectly": "Paste text content directly",
+      "sourceLimit": "Source limit",
       "comingSoonTitle": "Coming Soon",
       "comingSoonDescription": "This feature is currently in beta and only available to selected users. Stay tuned for the official launch!",
       "backToHome": "← Back to Home"
@@ -204,7 +213,16 @@
       "dimensionsDescription": "Detailed breakdown of knowledge areas",
       "improvementSuggestions": "Improvement Suggestions",
       "analysisMetadata": "Analysis Metadata",
-      "analyzedAt": "Analyzed at"
+      "analyzedAt": "Analyzed at",
+      "avatarUpload": {
+        "selectImageFile": "Please select an image file",
+        "imageSizeLimit": "Image size must be less than 5MB",
+        "avatarUpdated": "Avatar updated successfully",
+        "uploadFailed": "Failed to upload avatar",
+        "uploading": "Uploading...",
+        "uploadAvatar": "Upload Avatar",
+        "fileSizeHint": "Max 5MB, JPG/PNG/WebP"
+      }
     },
     "chat": {
       "placeholder": "Ask the expert..."

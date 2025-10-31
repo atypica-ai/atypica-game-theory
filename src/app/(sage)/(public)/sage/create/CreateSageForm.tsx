@@ -219,7 +219,7 @@ export function CreateSageForm() {
           </div>
 
           <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
-            Upload sources
+            {t("uploadSources")}
           </h3>
 
           <div className="text-sm text-zinc-600 dark:text-zinc-400 mb-1">
@@ -229,12 +229,12 @@ export function CreateSageForm() {
               showLimitsCheck={true}
               className="text-green-600 hover:underline"
             >
-              Choose files to upload
+              {t("chooseFilesToUpload")}
             </FileUploadButton>
           </div>
 
           <p className="text-xs text-zinc-500 dark:text-zinc-500">
-            Supported file types: PDF, .txt, Markdown, Audio (e.g. mp3), .docx
+            {t("supportedFileTypes")}
           </p>
         </div>
 
@@ -245,8 +245,8 @@ export function CreateSageForm() {
             className="p-4 border border-zinc-200 dark:border-zinc-700 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors text-left"
           >
             <GlobeIcon className="size-5 mb-2 text-zinc-600 dark:text-zinc-400" />
-            <div className="font-medium text-zinc-900 dark:text-zinc-100">Website</div>
-            <div className="text-xs text-zinc-500 dark:text-zinc-500">添加网页 URL</div>
+            <div className="font-medium text-zinc-900 dark:text-zinc-100">{t("websiteButton")}</div>
+            <div className="text-xs text-zinc-500 dark:text-zinc-500">{t("addWebsiteUrl")}</div>
           </button>
 
           <button
@@ -254,8 +254,8 @@ export function CreateSageForm() {
             className="p-4 border border-zinc-200 dark:border-zinc-700 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors text-left"
           >
             <FileTextIcon className="size-5 mb-2 text-zinc-600 dark:text-zinc-400" />
-            <div className="font-medium text-zinc-900 dark:text-zinc-100">Paste text</div>
-            <div className="text-xs text-zinc-500 dark:text-zinc-500">直接粘贴文本内容</div>
+            <div className="font-medium text-zinc-900 dark:text-zinc-100">{t("pasteTextButton")}</div>
+            <div className="text-xs text-zinc-500 dark:text-zinc-500">{t("pasteTextDirectly")}</div>
           </button>
         </div>
 
@@ -296,7 +296,7 @@ export function CreateSageForm() {
             <div className="flex items-center gap-2">
               <FileTextIcon className="size-4 text-zinc-500" />
               <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                Source limit
+                {t("sourceLimit")}
               </span>
             </div>
             <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">

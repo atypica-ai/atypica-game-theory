@@ -6,6 +6,7 @@ import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Button } from "@/components/ui/button";
 import { getS3UploadCredentials } from "@/lib/attachments/actions";
 import { ImageIcon, Loader2Icon, UploadIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCallback, useRef, useState } from "react";
@@ -20,6 +21,7 @@ export function AvatarUpload({
   sageName: string;
   currentAvatar: SageAvatar;
 }) {
+  const t = useTranslations("Sage.detail.avatarUpload");
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -31,13 +33,13 @@ export function AvatarUpload({
 
       // Validate file type
       if (!file.type.startsWith("image/")) {
-        toast.error("Please select an image file");
+        toast.error(t("selectImageFile"));
         return;
       }
 
       // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        toast.error("Image size must be less than 5MB");
+        toast.error(t("imageSizeLimit"));
         return;
       }
 
@@ -75,11 +77,11 @@ export function AvatarUpload({
           throw new Error(updateResult.message);
         }
 
-        toast.success("Avatar updated successfully");
+        toast.success(t("avatarUpdated"));
         router.refresh();
       } catch (error) {
         console.error("Error uploading avatar:", error);
-        toast.error(error instanceof Error ? error.message : "Failed to upload avatar");
+        toast.error(error instanceof Error ? error.message : t("uploadFailed"));
       } finally {
         setIsUploading(false);
         // Reset input
@@ -88,7 +90,7 @@ export function AvatarUpload({
         }
       }
     },
-    [sageId, router],
+    [sageId, router, t],
   );
 
   return (
@@ -118,17 +120,17 @@ export function AvatarUpload({
           {isUploading ? (
             <>
               <Loader2Icon className="size-4 animate-spin" />
-              Uploading...
+              {t("uploading")}
             </>
           ) : (
             <>
               <UploadIcon className="size-4" />
-              Upload Avatar
+              {t("uploadAvatar")}
             </>
           )}
         </Button>
         <p className="text-xs text-muted-foreground">
-          <ImageIcon className="size-3 inline" /> Max 5MB, JPG/PNG/WebP
+          <ImageIcon className="size-3 inline" /> {t("fileSizeHint")}
         </p>
       </div>
     </div>
