@@ -1,8 +1,9 @@
 import authOptions from "@/app/(auth)/authOptions";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
+import { generatePageMetadata } from "@/lib/request/metadata";
 import { Metadata } from "next";
 import { getServerSession, Session } from "next-auth";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
@@ -10,7 +11,11 @@ import { CreateSageForm } from "./CreateSageForm";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("Sage.create");
-  return { title: t("title") };
+  const locale = await getLocale();
+  return generatePageMetadata({
+    title: t("title"),
+    locale,
+  });
 }
 
 async function SageCreatePage({ sessionUser }: { sessionUser: NonNullable<Session["user"]> }) {

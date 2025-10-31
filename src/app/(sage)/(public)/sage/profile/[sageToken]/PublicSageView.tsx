@@ -4,6 +4,7 @@ import { createNewSageChat } from "@/app/(sage)/actions";
 import type { SageExtra } from "@/app/(sage)/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Button } from "@/components/ui/button";
+import { proxiedImageLoader } from "@/lib/utils";
 import type { Sage, User } from "@/prisma/client";
 import { Edit2Icon, MessageCircleIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -67,7 +68,13 @@ export function PublicSageView({
             <div className="flex items-center gap-4">
               <div className="relative size-24 rounded-full overflow-hidden bg-zinc-100 dark:bg-zinc-800 flex-shrink-0">
                 {sage.avatar.url ? (
-                  <Image src={sage.avatar.url} alt={sage.name} fill className="object-cover" />
+                  <Image
+                    loader={proxiedImageLoader}
+                    src={sage.avatar.url}
+                    alt={sage.name}
+                    fill
+                    className="object-cover"
+                  />
                 ) : (
                   <HippyGhostAvatar className="size-24" seed={sage.id} />
                 )}

@@ -2,18 +2,21 @@ import { convertDBMessagesToAIMessages } from "@/ai/messageUtils";
 import { fetchInterviewSessionDetails } from "@/app/(interviewProject)/actions";
 import { TInterviewMessageWithTool } from "@/app/(interviewProject)/types";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
+import { generatePageMetadata } from "@/lib/request/metadata";
 import { throwServerActionError } from "@/lib/serverAction";
 import { prisma } from "@/prisma/prisma";
 import { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 import { InterviewSessionViewer } from "./InterviewSessionViewer";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("InterviewProject.sessionViewer");
-  return {
+  const locale = await getLocale();
+  return generatePageMetadata({
     title: t("sessionTitle"),
-  };
+    locale,
+  });
 }
 
 async function SessionPage({ params }: { params: Promise<{ userChatToken: string }> }) {

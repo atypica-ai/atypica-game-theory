@@ -3,20 +3,23 @@ import authOptions from "@/app/(auth)/authOptions";
 import { fetchInterviewSessionChat } from "@/app/(interviewProject)/actions";
 import { TInterviewMessageWithTool } from "@/app/(interviewProject)/types";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
+import { generatePageMetadata } from "@/lib/request/metadata";
 import { throwServerActionError } from "@/lib/serverAction";
 import { prisma } from "@/prisma/prisma";
 import { Metadata } from "next";
 import { getServerSession } from "next-auth";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { InterviewSessionChatClient } from "./InterviewSessionChatClient";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("InterviewProject.sessionChat");
-  return {
+  const locale = await getLocale();
+  return generatePageMetadata({
     title: t("interviewDetails"),
-  };
+    locale,
+  });
 }
 
 async function InterviewSessionChatPage({ userChatToken }: { userChatToken: string }) {

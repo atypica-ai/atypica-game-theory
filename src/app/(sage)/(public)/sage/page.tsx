@@ -1,12 +1,17 @@
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
+import { generatePageMetadata } from "@/lib/request/metadata";
 import { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 import SageHomePageClient from "./SageHomePageClient";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("Sage.create");
-  return { title: t("title") };
+  const locale = await getLocale();
+  return generatePageMetadata({
+    title: t("title"),
+    locale,
+  });
 }
 
 async function SageHomePage() {

@@ -1,12 +1,15 @@
+import { generatePageMetadata } from "@/lib/request/metadata";
 import { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import MyPodcastsClient from "./MyPodcastsClient";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("MyPodcastsPage");
-  return {
+  const locale = await getLocale();
+  return generatePageMetadata({
     title: t("title"),
-  };
+    locale,
+  });
 }
 
 export default async function MyPodcastsPage() {

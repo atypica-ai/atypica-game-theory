@@ -1,9 +1,11 @@
 import authOptions from "@/app/(auth)/authOptions";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
+import { generatePageMetadata } from "@/lib/request/metadata";
 import { InterviewProjectExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { Metadata } from "next";
 import { getServerSession } from "next-auth";
+import { getLocale } from "next-intl/server";
 import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
 import { ProjectDetails } from "./ProjectDetails";
@@ -14,9 +16,11 @@ export async function generateMetadata({
   params: Promise<{ projectToken: string }>;
 }): Promise<Metadata> {
   const { projectToken } = await params;
-  return {
+  const locale = await getLocale();
+  return generatePageMetadata({
     title: `Interview Project #${projectToken}`,
-  };
+    locale,
+  });
 }
 
 async function ProjectPage({ params }: { params: Promise<{ projectToken: string }> }) {
