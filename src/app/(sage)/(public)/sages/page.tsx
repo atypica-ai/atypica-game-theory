@@ -3,7 +3,7 @@ import { listMySages } from "@/app/(sage)/actions";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { getServerSession } from "next-auth";
 import { getTranslations } from "next-intl/server";
-import { forbidden } from "next/navigation";
+import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { SagesListClient } from "./SagesListClient";
 
@@ -13,11 +13,6 @@ export async function generateMetadata() {
 }
 
 async function SagesListPage() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) {
-    forbidden();
-  }
-
   const result = await listMySages();
   const sages = result.success ? result.data : [];
 
@@ -25,6 +20,11 @@ async function SagesListPage() {
 }
 
 export default async function SagesListPageWithLoading() {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) {
+    redirect(`/auth/signin?callbackUrl=/sages`);
+  }
+
   return (
     <Suspense fallback={<PageLoadingFallback />}>
       <SagesListPage />

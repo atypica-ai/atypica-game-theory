@@ -5,30 +5,22 @@ import { TSageMessageWithTool } from "@/app/(sage)/types";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { prisma } from "@/prisma/prisma";
 import { UIMessage } from "ai";
-import { getServerSession } from "next-auth";
+import { getServerSession, Session } from "next-auth";
 import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
 import { SageChatClient } from "./SageChatClient";
 
 async function SageChatPage({
-  params,
+  userChatToken,
+  sessionUser,
 }: {
-  params: Promise<{
-    userChatToken: string;
-  }>;
+  userChatToken: string;
+  sessionUser: NonNullable<Session["user"]>;
 }) {
-  const userChatToken = (await params).userChatToken;
-  const session = await getServerSession(authOptions);
-
-  if (!session?.user) {
-    const callbackUrl = `/sage/chat/${userChatToken}`;
-    redirect(`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`);
-  }
-
   const userChat = await prisma.userChat.findUnique({
     where: {
       token: userChatToken,
-      userId: session.user.id, // ensure user owns the chat
+      userId: sessionUser.id, // ensure user owns the chat
     },
     include: {
       sageChat: {
@@ -73,9 +65,16 @@ export default async function SageChatPageWithLoading({
 }: {
   params: Promise<{ userChatToken: string }>;
 }) {
+  const userChatToken = (await params).userChatToken;
+  const session = await getServerSession(authOptions);
+  if (!session?.user) {
+    const callbackUrl = `/sage/chat/${userChatToken}`;
+    redirect(`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`);
+  }
+
   return (
     <Suspense fallback={<PageLoadingFallback />}>
-      <SageChatPage params={params} />
+      <SageChatPage userChatToken={userChatToken} sessionUser={session.user} />
     </Suspense>
   );
 }

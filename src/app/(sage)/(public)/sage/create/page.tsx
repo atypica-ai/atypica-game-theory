@@ -1,7 +1,7 @@
 import authOptions from "@/app/(auth)/authOptions";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { Metadata } from "next";
-import { getServerSession } from "next-auth";
+import { getServerSession, Session } from "next-auth";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -13,17 +13,9 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("title") };
 }
 
-async function SageCreatePage() {
-  // Check Tezign email access
-  const session = await getServerSession(authOptions);
-
-  if (!session?.user) {
-    const callbackUrl = `/sage/create`;
-    redirect(`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`);
-  }
-
+async function SageCreatePage({ sessionUser }: { sessionUser: NonNullable<Session["user"]> }) {
   // Only allow @tezign.com users
-  if (!session.user.email?.endsWith("@tezign.com")) {
+  if (!sessionUser.email?.endsWith("@tezign.com")) {
     // Show coming soon message for non-Tezign users
     const t = await getTranslations("Sage.create");
     return (
@@ -46,9 +38,16 @@ async function SageCreatePage() {
 }
 
 export default async function SageCreatePageWithLoading() {
+  // Check Tezign email access
+  const session = await getServerSession(authOptions);
+  if (!session?.user) {
+    const callbackUrl = `/sage/create`;
+    redirect(`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`);
+  }
+
   return (
     <Suspense fallback={<PageLoadingFallback />}>
-      <SageCreatePage />
+      <SageCreatePage sessionUser={session.user} />
     </Suspense>
   );
 }
