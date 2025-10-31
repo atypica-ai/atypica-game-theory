@@ -1,8 +1,10 @@
 "use client";
 import { getPodcastAudioSignedUrl } from "@/app/(podcast)/actions";
+import { fetchPodcastByToken } from "@/app/(study)/artifacts/podcast/actions";
 import GlobalHeader from "@/components/layout/GlobalHeader";
 import { Button } from "@/components/ui/button";
 import UserMenu from "@/components/UserMenu";
+import { ExtractServerActionData } from "@/lib/serverAction";
 import { Analyst, UserChat } from "@/prisma/client";
 import { DownloadIcon, Share2 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -48,15 +50,7 @@ export default function PodcastSharePageClient({
   podcastToken: string;
   analyst: Pick<Analyst, "id" | "topic">;
   studyUserChat: Pick<UserChat, "token" | "title">;
-  report?: {
-    id: number;
-    token: string;
-    generatedAt: Date | null;
-    extra: {
-      coverObjectUrl?: string | null;
-      [key: string]: unknown;
-    };
-  };
+  report?: ExtractServerActionData<typeof fetchPodcastByToken>["report"];
 }) {
   const t = useTranslations("PodcastSharePage");
   const pathname = usePathname();
@@ -92,7 +86,7 @@ export default function PodcastSharePageClient({
       {/* Main Content */}
       <div className="flex-1 overflow-hidden">
         {report ? (
-          <ReportImage reportToken={report.token} reportExtra={report.extra} />
+          <ReportImage report={report} />
         ) : (
           <h1 className="text-xl sm:text-xl md:text-2xl font-medium text-zinc-900 dark:text-zinc-50 leading-tight line-clamp-3 text-center">
             {studyUserChat.title}

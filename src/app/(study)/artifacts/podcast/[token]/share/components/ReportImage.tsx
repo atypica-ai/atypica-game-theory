@@ -1,16 +1,17 @@
 "use client";
+import { AnalystReportExtra } from "@/prisma/client";
 import { Loader2Icon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-interface ReportImageProps {
-  reportToken: string;
-  reportExtra?: {
-    coverObjectUrl?: string | null;
-    [key: string]: unknown;
+export function ReportImage({
+  report: { token: reportToken, onePageHtml },
+}: {
+  report: {
+    token: string;
+    onePageHtml?: string;
+    extra?: AnalystReportExtra;
   };
-}
-
-export function ReportImage({ reportToken }: ReportImageProps) {
+}) {
   const [isLoading, setIsLoading] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
   const [ratio, setRatio] = useState(100);
@@ -19,6 +20,12 @@ export function ReportImage({ reportToken }: ReportImageProps) {
   const reportUrl = useMemo(() => {
     return `/artifacts/report/${reportToken}/raw`;
   }, [reportToken]);
+
+  const reportHtml = useMemo(() => {
+    return onePageHtml
+      ? onePageHtml + '<div style="width: 100%; height: 30rem;"></div>'
+      : undefined;
+  }, [onePageHtml]);
 
   const updateDimensions = useCallback(() => {
     const containerWidth = containerRef.current?.clientWidth;
@@ -77,11 +84,12 @@ export function ReportImage({ reportToken }: ReportImageProps) {
       )}
 
       <iframe
-        src={reportUrl}
+        srcDoc={reportHtml ? reportHtml : undefined}
+        src={!reportHtml ? reportUrl : undefined}
         className="border-none"
         style={{
           width: ratio < 100 ? "800px" : "100%",
-          height: iframeHeight ?? "600px",
+          height: iframeHeight ?? "100%",
           transform: ratio < 100 ? `scale(${ratio / 100})` : undefined,
           transformOrigin: "top left",
         }}
