@@ -1,7 +1,7 @@
 "use client";
 import { ClientMessagePayload, prepareLastUIMessageForRequest } from "@/ai/messageUtilsClient";
 import { SageToolUIPartDisplay } from "@/app/(sage)/tools/ui";
-import { SageExtra, TSageMessageWithTool } from "@/app/(sage)/types";
+import { SageAvatar, SageExtra, TSageMessageWithTool } from "@/app/(sage)/types";
 import { UserChatSession } from "@/components/chat/UserChatSession";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { FitToViewport } from "@/components/layout/FitToViewport";
@@ -9,6 +9,7 @@ import type { Sage, User } from "@/prisma/client";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { useSession } from "next-auth/react";
+import Image from "next/image";
 import { useEffect, useMemo, useRef } from "react";
 
 export function SageChatClient({
@@ -17,9 +18,10 @@ export function SageChatClient({
   initialMessages = [],
 }: {
   userChatToken: string;
-  sage: Omit<Sage, "expertise" | "extra"> & {
+  sage: Omit<Sage, "expertise" | "extra" | "avatar"> & {
     extra: SageExtra;
     expertise: string[];
+    avatar: SageAvatar;
     user: Pick<User, "id" | "name" | "email">;
   };
   initialMessages?: TSageMessageWithTool[];
@@ -81,7 +83,19 @@ export function SageChatClient({
         <UserChatSession
           nickname={{ assistant: sage.name, user: session?.user?.email ?? "You" }}
           avatar={{
-            assistant: <HippyGhostAvatar className="size-8" seed={sage.id} />,
+            assistant: sage.avatar.url ? (
+              <div className="relative size-8 rounded-sm overflow-hidden">
+                <Image
+                  src={sage.avatar.url}
+                  alt={sage.name}
+                  fill
+                  sizes="100%"
+                  className="object-cover"
+                />
+              </div>
+            ) : (
+              <HippyGhostAvatar className="size-8" seed={sage.id} />
+            ),
             user: session?.user ? (
               <HippyGhostAvatar className="size-8" seed={session.user.id} />
             ) : undefined,

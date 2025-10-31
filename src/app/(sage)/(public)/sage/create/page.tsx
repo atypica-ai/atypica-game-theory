@@ -18,7 +18,8 @@ async function SageCreatePage() {
   const session = await getServerSession(authOptions);
 
   if (!session?.user) {
-    redirect("/auth/signin");
+    const callbackUrl = `/sage/create`;
+    redirect(`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`);
   }
 
   // Only allow @tezign.com users

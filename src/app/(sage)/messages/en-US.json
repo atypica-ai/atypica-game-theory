@@ -237,7 +237,11 @@
     "public": {
       "manage": "Manage",
       "signInToChat": "Sign in to Chat",
-      "aboutExpert": "About this Expert"
+      "aboutExpert": "About this Expert",
+      "introduction": "Introduction",
+      "noIntroduction": "No introduction available yet.",
+      "chatWithMeAbout": "chat with me about ...",
+      "askMeAnything": "Ask me anything"
     }
   }
 }

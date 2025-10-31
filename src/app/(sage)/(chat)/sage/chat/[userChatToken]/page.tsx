@@ -6,7 +6,7 @@ import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { prisma } from "@/prisma/prisma";
 import { UIMessage } from "ai";
 import { getServerSession } from "next-auth";
-import { forbidden, notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
 import { SageChatClient } from "./SageChatClient";
 
@@ -19,8 +19,10 @@ async function SageChatPage({
 }) {
   const userChatToken = (await params).userChatToken;
   const session = await getServerSession(authOptions);
+
   if (!session?.user) {
-    forbidden();
+    const callbackUrl = `/sage/chat/${userChatToken}`;
+    redirect(`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`);
   }
 
   const userChat = await prisma.userChat.findUnique({

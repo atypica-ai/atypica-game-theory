@@ -55,19 +55,17 @@ export function SagesListClient({
                 className="block bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-6 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors"
               >
                 <div className="space-y-4">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-zinc-100 dark:bg-zinc-800">
-                        <Brain className="size-5 text-zinc-600 dark:text-zinc-400" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100 truncate">
-                          {sage.name}
-                        </h3>
-                        <p className="text-sm text-zinc-600 dark:text-zinc-400 truncate">
-                          {sage.domain}
-                        </p>
-                      </div>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="p-2 rounded-lg bg-zinc-100 dark:bg-zinc-800">
+                      <Brain className="size-5 text-zinc-600 dark:text-zinc-400" />
+                    </div>
+                    <div className="flex-1 min-w-0 overflow-hidden">
+                      <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100 truncate">
+                        {sage.name}
+                      </h3>
+                      <p className="text-sm text-zinc-600 dark:text-zinc-400 truncate">
+                        {sage.domain}
+                      </p>
                     </div>
                   </div>
 

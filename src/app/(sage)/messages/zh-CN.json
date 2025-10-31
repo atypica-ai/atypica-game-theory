@@ -237,7 +237,11 @@
     "public": {
       "manage": "管理",
       "signInToChat": "登录后咨询",
-      "aboutExpert": "关于此专家"
+      "aboutExpert": "关于此专家",
+      "introduction": "个人简介",
+      "noIntroduction": "暂无简介。",
+      "chatWithMeAbout": "和我聊聊这些话题 ...",
+      "askMeAnything": "问我任何问题"
     }
   }
 }
