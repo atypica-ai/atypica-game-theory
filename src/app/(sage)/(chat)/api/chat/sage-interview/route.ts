@@ -5,7 +5,7 @@ import {
 } from "@/ai/messageUtils";
 import { clientMessagePayloadSchema } from "@/ai/messageUtilsClient";
 import { defaultProviderOptions, llm } from "@/ai/provider";
-import { initGenericUserChatStatReporter } from "@/ai/tools/stats";
+import { StatReporter } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
 import authOptions from "@/app/(auth)/authOptions";
 import { sageInterviewConversationSystem } from "@/app/(sage)/prompt/chat";
@@ -85,11 +85,18 @@ export async function POST(req: Request) {
   });
 
   // Initialize stats reporter (use sage creator's account)
-  const { statReport } = initGenericUserChatStatReporter({
-    userId: sage.userId,
-    userChatId: userChat.id,
-    logger: chatLogger,
-  });
+  // const { statReport } = initGenericUserChatStatReporter({
+  //   userId: sage.userId,
+  //   userChatId: userChat.id,
+  //   logger: chatLogger,
+  // });
+  const statReport: StatReporter = (async (dimension, value, extra) => {
+    rootLogger.info({
+      msg: `[LIMITED FREE] statReport: ${dimension}=${value}`,
+      extra,
+      note: "sage interview is currently free - tokens not deducted",
+    });
+  }) satisfies StatReporter;
 
   // Save the latest user message to database
   await persistentAIMessageToDB({

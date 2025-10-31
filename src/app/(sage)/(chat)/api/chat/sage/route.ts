@@ -5,8 +5,8 @@ import {
 } from "@/ai/messageUtils";
 import { clientMessagePayloadSchema } from "@/ai/messageUtilsClient";
 import { defaultProviderOptions, llm } from "@/ai/provider";
-import { initGenericUserChatStatReporter } from "@/ai/tools/stats";
-import { StatReporter } from "@/ai/tools/types";
+import { reasoningThinkingTool } from "@/ai/tools/tools";
+import { StatReporter, ToolName } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
 import authOptions from "@/app/(auth)/authOptions";
 import { createSageKnowledgeGaps, getSageByToken } from "@/app/(sage)/lib";
@@ -16,6 +16,7 @@ import { SageKnowledgeGapSource } from "@/app/(sage)/types";
 import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage, truncateForTitle } from "@/lib/textUtils";
 import { prisma } from "@/prisma/prisma";
+import { google } from "@ai-sdk/google";
 import { generateId, smoothStream, stepCountIs, streamText } from "ai";
 import { getServerSession } from "next-auth";
 import { after, NextResponse } from "next/server";
@@ -81,11 +82,18 @@ export async function POST(req: Request) {
   });
 
   // Initialize stats reporter
-  const { statReport } = initGenericUserChatStatReporter({
-    userId: session.user.id,
-    userChatId: userChat.id,
-    logger: chatLogger,
-  });
+  // const { statReport } = initGenericUserChatStatReporter({
+  //   userId: session.user.id,
+  //   userChatId: userChat.id,
+  //   logger: chatLogger,
+  // });
+  const statReport: StatReporter = (async (dimension, value, extra) => {
+    rootLogger.info({
+      msg: `[LIMITED FREE] statReport: ${dimension}=${value}`,
+      extra,
+      note: "sage chat is currently free - tokens not deducted",
+    });
+  }) satisfies StatReporter;
 
   // Save the latest user message to database
   await persistentAIMessageToDB({
@@ -103,23 +111,29 @@ export async function POST(req: Request) {
     fallbackLocale: sage.locale as "zh-CN" | "en-US",
   });
 
+  const mergedAbortSignal = AbortSignal.any([req.signal]);
+
   const tools = {
     // TODO: 这个回头再实现，暂时不搞这么复杂
-    // google_search: google.tools.googleSearch({
-    //   mode: "MODE_DYNAMIC",
-    //   dynamicThreshold: 0.3,
-    // }),
-    // [ToolName.reasoningThinking]: reasoningThinkingTool(),
+    google_search: google.tools.googleSearch({
+      mode: "MODE_DYNAMIC",
+      dynamicThreshold: 0.3,
+    }),
+    [ToolName.reasoningThinking]: reasoningThinkingTool({
+      locale,
+      abortSignal: mergedAbortSignal,
+      statReport,
+      logger: chatLogger,
+    }),
   };
 
   const { coreMessages, streamingMessage } = await prepareMessagesForStreaming(userChat.id, {
     tools,
   });
 
-  const mergedAbortSignal = AbortSignal.any([req.signal]);
-
   const streamTextResult = streamText({
-    model: llm("claude-sonnet-4"),
+    // model: llm("claude-sonnet-4"),
+    model: llm("gemini-2.5-flash"),
     providerOptions: defaultProviderOptions,
 
     system: sageChatSystem({
