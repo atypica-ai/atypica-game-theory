@@ -63,7 +63,10 @@ export function ReportImage({ reportToken }: ReportImageProps) {
   }, []);
 
   return (
-    <div className="w-full relative bg-zinc-100 dark:bg-zinc-800 rounded-lg overflow-hidden" ref={containerRef} style={{ minHeight: "600px" }}>
+    <div
+      className="h-full w-full relative bg-zinc-100 dark:bg-zinc-800 rounded-lg overflow-hidden"
+      ref={containerRef}
+    >
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-background">
           <div className="flex flex-col items-center gap-4">

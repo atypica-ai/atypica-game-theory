@@ -90,38 +90,18 @@ export default function PodcastSharePageClient({
       <SharePageHeader copyShareLink={copyShareLink} onDownload={handleDownload} />
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-y-auto pb-32 sm:pb-20">
+      <div className="flex-1 overflow-hidden">
         {report ? (
-          <>
-            {/* Title above report */}
-            <section className="container mx-auto px-4 sm:px-4 py-6 sm:py-4 md:py-6">
-              <div className="max-w-4xl mx-auto">
-                <h1 className="text-xl sm:text-xl md:text-2xl font-medium text-zinc-900 dark:text-zinc-50 leading-tight line-clamp-3 text-center">
-                  {studyUserChat.title}
-                </h1>
-              </div>
-            </section>
-
-            {/* Report Image Section */}
-            <section className="container mx-auto px-4 sm:px-4 py-6 sm:py-4">
-              <div className="max-w-6xl mx-auto">
-                <ReportImage reportToken={report.token} reportExtra={report.extra} />
-              </div>
-            </section>
-          </>
+          <ReportImage reportToken={report.token} reportExtra={report.extra} />
         ) : (
-          <section className="container mx-auto px-4 sm:px-4 py-8 sm:py-8 md:py-12">
-            <div className="max-w-4xl mx-auto">
-              <h1 className="text-xl sm:text-xl md:text-2xl font-medium text-zinc-900 dark:text-zinc-50 leading-tight line-clamp-3 text-center">
-                {studyUserChat.title}
-              </h1>
-            </div>
-          </section>
+          <h1 className="text-xl sm:text-xl md:text-2xl font-medium text-zinc-900 dark:text-zinc-50 leading-tight line-clamp-3 text-center">
+            {studyUserChat.title}
+          </h1>
         )}
       </div>
 
       {/* Sticky Player with links */}
-      <div className="fixed bottom-0 left-0 right-0">
+      <div className="shrink-0 absolute bottom-0 left-0 w-full">
         <StickyPlayer
           podcastToken={podcastToken}
           title={studyUserChat.title}

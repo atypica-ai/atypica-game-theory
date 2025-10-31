@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Slider } from "@/components/ui/slider";
 import { Loader2Icon, Pause, Play, RotateCcw, RotateCw, Volume2, VolumeX } from "lucide-react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -22,6 +23,7 @@ export function StickyPlayer({
   studyReplayUrl?: string;
   moreInsightRadioUrl?: string;
 }) {
+  const t = useTranslations("PodcastSharePage");
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -188,7 +190,7 @@ export function StickyPlayer({
       {audioUrl && <audio ref={audioRef} src={audioUrl} preload="metadata" />}
 
       {/* Sticky Player */}
-      <div className="fixed bottom-0 left-0 right-0 bg-background text-foreground border-t border-border shadow-lg">
+      <div className="bg-background/80 backdrop-blur-sm text-foreground border-t border-muted">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 sm:py-5">
           {/* Title */}
           <div className="mb-4">
@@ -202,16 +204,18 @@ export function StickyPlayer({
                   <Link
                     href={studyReplayUrl}
                     className="text-xs text-muted-foreground hover:text-foreground transition-colors underline"
+                    target="_blank"
                   >
-                    查看研究
+                    {t("viewStudy")}
                   </Link>
                 )}
                 {moreInsightRadioUrl && (
                   <Link
                     href={moreInsightRadioUrl}
                     className="text-xs text-muted-foreground hover:text-foreground transition-colors underline"
+                    target="_blank"
                   >
-                    更多 Insight Radio
+                    {t("moreInsightRadioShort")}
                   </Link>
                 )}
               </div>
@@ -249,7 +253,7 @@ export function StickyPlayer({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="center" side="top">
-                  {[0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3].map((rate) => (
+                  {[0.5, 0.75, 1, 1.5, 2].map((rate) => (
                     <DropdownMenuItem
                       key={rate}
                       onClick={() => handlePlaybackRateChange(rate)}
@@ -263,17 +267,17 @@ export function StickyPlayer({
             </div>
 
             {/* Rewind 15s */}
-            <div className="flex flex-col items-center gap-1">
+            <div className="relative size-8 flex items-center justify-center">
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={skipBackward}
                 disabled={isLoading || !audioUrl}
-                className="h-11 w-11 sm:h-12 sm:w-12 rounded-full"
+                className="size-full rounded-full absolute left-0 top-0"
               >
-                <RotateCcw className="h-5 w-5 sm:h-6 sm:w-6" />
+                <RotateCcw className="size-full rotate-45" />
               </Button>
-              <span className="text-xs text-muted-foreground">15</span>
+              <span className="text-xs font-bold">15</span>
             </div>
 
             {/* Play/Pause */}
@@ -281,7 +285,7 @@ export function StickyPlayer({
               size="icon"
               onClick={togglePlayPause}
               disabled={isLoading || !audioUrl}
-              className="h-14 w-14 sm:h-16 sm:w-16 rounded-full bg-primary hover:bg-primary/90"
+              className="h-14 w-14 sm:h-16 sm:w-16 rounded-full"
             >
               {isLoading ? (
                 <Loader2Icon className="h-6 w-6 sm:h-7 sm:w-7 animate-spin" />
@@ -293,21 +297,21 @@ export function StickyPlayer({
             </Button>
 
             {/* Fast Forward 30s */}
-            <div className="flex flex-col items-center gap-1">
+            <div className="relative size-8 flex items-center justify-center">
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={skipForward}
                 disabled={isLoading || !audioUrl}
-                className="h-11 w-11 sm:h-12 sm:w-12 rounded-full"
+                className="size-full rounded-full absolute left-0 top-0"
               >
-                <RotateCw className="h-5 w-5 sm:h-6 sm:w-6" />
+                <RotateCw className="size-full -rotate-45" />
               </Button>
-              <span className="text-xs text-muted-foreground">30</span>
+              <span className="text-xs font-bold">30</span>
             </div>
 
             {/* Mute/Volume - Hidden on small screens */}
-            <div className="hidden sm:flex flex-col items-center gap-1">
+            <div className="flex flex-col items-center gap-1">
               <Button
                 variant="ghost"
                 size="icon"
