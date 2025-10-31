@@ -127,7 +127,7 @@
       "marketResearch": "AI 研究",
       "personaImport": "AI 人设",
       "interviewProject": "AI 访谈",
-      "podcast": "AI 播客",
+      "insightRadio": "Insight 播客",
       "useCases": "案例",
       "pricing": "价格"
     },
@@ -136,6 +136,7 @@
       "copyright": "© {year} BMRLab. 保留所有权利。",
       "product": "产品",
       "personaSimulation": "AI 人设模拟",
+      "insightRadio": "Insight 播客",
       "pricing": "价格",
       "company": "公司",
       "about": "关于 atypica.AI",

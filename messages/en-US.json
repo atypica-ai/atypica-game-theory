@@ -127,7 +127,7 @@
       "marketResearch": "AI Research",
       "personaImport": "AI Persona",
       "interviewProject": "AI Interview",
-      "podcast": "AI Podcast",
+      "insightRadio": "Insight Radio",
       "useCases": "Use cases",
       "pricing": "Pricing"
     },
@@ -136,6 +136,7 @@
       "copyright": "© {year} BMRLab. All rights reserved.",
       "product": "Product",
       "personaSimulation": "AI Persona Simulation",
+      "insightRadio": "Insight Radio",
       "pricing": "Pricing",
       "company": "Company",
       "about": "About atypica.AI",

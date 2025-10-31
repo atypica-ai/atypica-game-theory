@@ -110,6 +110,12 @@ export default function GlobalFooter({ className }: { className?: string }) {
               {t("personaSimulation")}
             </Link>
             <Link
+              href="/featured-podcasts"
+              className="block text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {t("insightRadio")}
+            </Link>
+            <Link
               href="/deck/about"
               className="block text-muted-foreground hover:text-foreground transition-colors"
             >
