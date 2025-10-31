@@ -23,7 +23,10 @@
       "creating": "Creating...",
       "create": "Create Expert",
       "createSuccess": "Expert created successfully",
-      "createFailed": "Creation failed, please try again"
+      "createFailed": "Creation failed, please try again",
+      "comingSoonTitle": "Coming Soon",
+      "comingSoonDescription": "This feature is currently in beta and only available to selected users. Stay tuned for the official launch!",
+      "backToHome": "← Back to Home"
     },
     "homepage": {
       "title": "Build AI Expert Agents",

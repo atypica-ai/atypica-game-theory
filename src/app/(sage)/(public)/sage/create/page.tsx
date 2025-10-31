@@ -1,6 +1,10 @@
+import authOptions from "@/app/(auth)/authOptions";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { Metadata } from "next";
+import { getServerSession } from "next-auth";
 import { getTranslations } from "next-intl/server";
+import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { CreateSageForm } from "./CreateSageForm";
 
@@ -10,6 +14,33 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 async function SageCreatePage() {
+  // Check Tezign email access
+  const session = await getServerSession(authOptions);
+
+  if (!session?.user) {
+    redirect("/auth/signin");
+  }
+
+  // Only allow @tezign.com users
+  if (!session.user.email?.endsWith("@tezign.com")) {
+    // Show coming soon message for non-Tezign users
+    const t = await getTranslations("Sage.create");
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="max-w-md mx-auto p-8 text-center space-y-4">
+          <div className="text-6xl mb-4">🚀</div>
+          <h1 className="text-2xl font-bold">{t("comingSoonTitle")}</h1>
+          <p className="text-muted-foreground">{t("comingSoonDescription")}</p>
+          <div className="pt-4">
+            <Link href="/sage" className="text-sm text-primary hover:underline">
+              {t("backToHome")}
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return <CreateSageForm />;
 }
 

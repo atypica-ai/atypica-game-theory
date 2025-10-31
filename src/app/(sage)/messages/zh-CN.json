@@ -23,7 +23,10 @@
       "creating": "创建中...",
       "create": "创建专家",
       "createSuccess": "专家创建成功",
-      "createFailed": "创建失败，请重试"
+      "createFailed": "创建失败，请重试",
+      "comingSoonTitle": "功能即将上线",
+      "comingSoonDescription": "该功能目前处于内测阶段，仅对部分用户开放。敬请期待正式上线！",
+      "backToHome": "← 返回首页"
     },
     "homepage": {
       "title": "构建AI专家智能体",
