@@ -14,31 +14,35 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 function SharePageHeader({
-  studyReplayUrl,
   copyShareLink,
   onDownload,
 }: {
-  studyReplayUrl: string;
   copyShareLink: () => void;
   onDownload?: () => void;
 }) {
   const t = useTranslations("PodcastSharePage");
   return (
     <GlobalHeader className="h-12">
-      <div className="flex items-center gap-2 sm:gap-4">
-        <Button variant="outline" size="sm" className="h-8 gap-1" asChild>
-          <Link href={studyReplayUrl}>
-            <Play size={14} />
-            <span className="max-sm:text-xs max-sm:tracking-tighter">{t("viewReplay")}</span>
-          </Link>
-        </Button>
-        <Button variant="outline" size="sm" className="h-8 gap-1" onClick={copyShareLink}>
-          <Share2 size={14} />
+      <div className="flex items-center gap-1.5 sm:gap-3">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 w-8 sm:w-auto sm:gap-1.5 p-0 sm:px-3"
+          onClick={copyShareLink}
+          title={t("copyLink")}
+        >
+          <Share2 size={16} />
           <span className="hidden sm:inline">{t("copyLink")}</span>
         </Button>
         {onDownload && (
-          <Button variant="outline" size="sm" className="h-8 gap-1" onClick={onDownload}>
-            <DownloadIcon size={14} />
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 w-8 sm:w-auto sm:gap-1.5 p-0 sm:px-3"
+            onClick={onDownload}
+            title={t("download")}
+          >
+            <DownloadIcon size={16} />
             <span className="hidden sm:inline">{t("download")}</span>
           </Button>
         )}
@@ -268,11 +272,7 @@ export default function PodcastSharePageClient({
 
   return (
     <div className="h-dvh flex flex-col items-stretch justify-start bg-muted/20">
-      <SharePageHeader
-        studyReplayUrl={`/study/${studyUserChat.token}/share?replay=1`}
-        copyShareLink={copyShareLink}
-        onDownload={handleDownload}
-      />
+      <SharePageHeader copyShareLink={copyShareLink} onDownload={handleDownload} />
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-y-auto">
@@ -311,12 +311,28 @@ export default function PodcastSharePageClient({
         )}
       </div>
 
-      <footer className="py-2 px-4 text-center text-xs text-muted-foreground border-t border-border">
-        {t("attribution", {
-          topic: truncateForTitle(analyst.topic, { maxDisplayWidth: 30, suffix: "..." }),
-        })}{" "}
-        {tCompliance("shortDisclaimer")}
-        {tCompliance("period")}
+      <footer className="py-4 px-4 border-t border-border">
+        <div className="max-w-4xl mx-auto space-y-2">
+          {/* Research link */}
+          <div className="text-center text-xs text-muted-foreground">
+            <Link
+              href={`/study/${studyUserChat.token}/share?replay=1`}
+              className="text-primary hover:underline"
+            >
+              {truncateForTitle(analyst.topic, { maxDisplayWidth: 40, suffix: "..." })}
+            </Link>
+          </div>
+          {/* More Insight Radio Link */}
+          <div className="text-center text-sm">
+            <Link href="/featured-podcasts" className="text-primary hover:underline font-medium">
+              {t("moreInsightRadio")} →
+            </Link>
+          </div>
+          {/* AI disclaimer */}
+          <div className="text-center text-xs text-muted-foreground/60">
+            {tCompliance("shortDisclaimer")}
+          </div>
+        </div>
       </footer>
     </div>
   );

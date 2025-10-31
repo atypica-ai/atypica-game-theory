@@ -167,11 +167,10 @@
     "linkCopied": "Link copied!"
   },
   "PodcastSharePage": {
-    "attribution": "Podcast from research \"{topic}\".",
-    "viewReplay": "Replay Study",
     "copyLink": "Copy Link",
     "linkCopied": "Link copied!",
     "download": "Download",
-    "transcript": "Transcript"
+    "transcript": "Transcript",
+    "moreInsightRadio": "More Insight Radio"
   }
 }
