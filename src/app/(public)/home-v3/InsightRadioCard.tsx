@@ -32,7 +32,6 @@ export function InsightRadioCard() {
   useEffect(() => {
     pickRandomFeaturedPodcast()
       .then((result) => {
-        console.log("Podcast fetch result:", result);
         if (result.success && result.data) {
           setPodcast(result.data);
         }
@@ -49,7 +48,6 @@ export function InsightRadioCard() {
   }
 
   if (!podcast) {
-    console.log("No podcast available");
     return null;
   }
 
