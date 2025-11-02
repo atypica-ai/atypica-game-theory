@@ -13,7 +13,6 @@ import { rootLogger } from "@/lib/logging";
 import { getDeployRegion } from "@/lib/request/deployRegion";
 import { SubscriptionPlan } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
-import { waitUntil } from "@vercel/functions";
 import { createPaymentRecord, getStripePriceIdForUser, requirePersonalUser } from "./utils";
 
 function generateOrderNo() {
@@ -211,10 +210,8 @@ export async function createProToMaxInvoice({ userId }: { userId: number }) {
   await resetUserMonthlyTokens({ userId });
 
   // track user
-  waitUntil(
-    trackUserServerSide({
-      userId,
-      traitTypes: ["revenue"],
-    }).catch(() => {}),
-  );
+  trackUserServerSide({
+    userId,
+    traitTypes: ["revenue"],
+  }).catch(() => {});
 }

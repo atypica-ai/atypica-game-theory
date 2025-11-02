@@ -3,6 +3,7 @@ import authOptions from "@/app/(auth)/authOptions";
 import { upsertUserProfile } from "@/app/(auth)/lib";
 import { UserProfileExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
+import { mergeExtra } from "@/prisma/utils";
 import { waitUntil } from "@vercel/functions";
 import { getServerSession } from "next-auth";
 import { rootLogger } from "../logging";
@@ -28,16 +29,23 @@ export async function trackUserAction() {
       // 12个小时只上报一次，其他时候在对应行为发生以后主动触发
       if (!lastTrack || lastTrack < Date.now() - 1000 * 60 * 60 * 12) {
         rootLogger.info(`trackUser ${user.id}`);
-        await trackUserServerSide({
+        trackUserServerSide({
           user,
           userProfile,
           traitTypes: "all",
-        }).catch(() => {});
-        await prisma.$executeRaw`
-          UPDATE "UserProfile"
-          SET extra = jsonb_set(COALESCE(extra, '{}'::jsonb), '{lastTrack}', to_jsonb(${Date.now()}::bigint))
-          WHERE "userId" = ${user.id}
-        `;
+        });
+        // await prisma.$executeRaw`
+        //   UPDATE "UserProfile"
+        //   SET extra = jsonb_set(COALESCE(extra, '{}'::jsonb), '{lastTrack}', to_jsonb(${Date.now()}::bigint))
+        //   WHERE "userId" = ${user.id}
+        // `;
+        await mergeExtra({
+          tableName: "UserProfile",
+          extra: {
+            lastTrack: Date.now(),
+          },
+          id: userProfile.id,
+        });
       }
     })(session.user.id),
   );

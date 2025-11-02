@@ -239,10 +239,13 @@ export async function deleteUserAccount(userId: number): Promise<ServerActionRes
   }
 
   try {
-    await prisma.tokensAccount.delete({
+    await prisma.tokensAccount.deleteMany({
       where: { userId },
     });
     await prisma.tokensLog.deleteMany({
+      where: { userId },
+    });
+    await prisma.userProfile.deleteMany({
       where: { userId },
     });
     await prisma.user.delete({

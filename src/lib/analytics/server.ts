@@ -16,6 +16,7 @@ import {
   UserTraits as UserTraitsSegment,
 } from "@segment/analytics-node";
 import { ExtraContext as ExtraContextSegment } from "@segment/analytics-node/dist/types/app/types";
+import { waitUntil } from "@vercel/functions";
 import { getLocale } from "next-intl/server";
 import { getRequestClientIp, getRequestGeo, getRequestUserAgent } from "../request/headers";
 import { segmentAnalyticsWriteKey } from "./config";
@@ -65,17 +66,6 @@ type UserTraits = UserTraitsSegment &
 
 type UserTraitType = "profile" | "clientInfo" | "stats" | "revenue";
 
-export async function trackUserServerSide(args: {
-  user: Pick<User, "id" | "name" | "email" | "createdAt"> & {};
-  userProfile: Pick<UserProfile, "extra" | "onboarding">;
-  traitTypes: UserTraitType[] | "all";
-}): Promise<void>;
-
-export async function trackUserServerSide(args: {
-  userId: number;
-  traitTypes: UserTraitType[] | "all";
-}): Promise<void>;
-
 /**
  * Trait Types
  * - profile: 在 user 和 userProfile 上的信息
@@ -83,7 +73,7 @@ export async function trackUserServerSide(args: {
  * - stats: 用量统计，包括 tokens 消耗
  * - revenue: 收入统计，包括支付和订阅
  */
-export async function trackUserServerSide({
+async function _trackUserServerSide({
   user,
   userProfile,
   userId,
@@ -247,4 +237,33 @@ export async function trackUserServerSide({
   } catch (error) {
     rootLogger.error(`Failed to send identify user request: ${(error as Error).message}`);
   }
+}
+
+export async function trackUserServerSide(args: {
+  user: Pick<User, "id" | "name" | "email" | "createdAt"> & {};
+  userProfile: Pick<UserProfile, "extra" | "onboarding">;
+  traitTypes: UserTraitType[] | "all";
+}): Promise<void>;
+
+export async function trackUserServerSide(args: {
+  userId: number;
+  traitTypes: UserTraitType[] | "all";
+}): Promise<void>;
+
+export async function trackUserServerSide(args: {
+  user?: Pick<User, "id" | "name" | "email" | "createdAt">;
+  userProfile?: Pick<UserProfile, "extra" | "onboarding">;
+  userId?: number;
+  traitTypes: UserTraitType[] | "all";
+}) {
+  waitUntil(
+    _trackUserServerSide(args).catch((error) => {
+      rootLogger.error({
+        msg: `Failed to track user`,
+        stack: (error as Error).stack,
+        error: (error as Error).message,
+        user: args.user?.id || args.userId,
+      });
+    }),
+  );
 }

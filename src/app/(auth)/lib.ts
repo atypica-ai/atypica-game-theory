@@ -1,10 +1,12 @@
 import "server-only";
 
+import { trackUserServerSide } from "@/lib/analytics/server";
 import { getRefererFromCookieStore, getUtmFromCookieStore } from "@/lib/analytics/utm";
 import { rootLogger } from "@/lib/logging";
 import { getRequestClientIp, getRequestGeo, getRequestUserAgent } from "@/lib/request/headers";
-import { DeprecatedUserExtra, Team, User, UserLastLogin, UserProfileExtra } from "@/prisma/client";
+import { DeprecatedUserExtra, Team, User, UserLastLogin } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
+import { mergeExtra } from "@/prisma/utils";
 import { waitUntil } from "@vercel/functions";
 import { hash } from "bcryptjs";
 
@@ -72,21 +74,35 @@ export function recordAcquisition({ userId }: { userId: number }) {
         ]);
         // 如果有 acquisition 数据，更新到数据库
         if (utmParams || refererParams) {
-          const extra = {
-            ...(userProfile.extra as UserProfileExtra),
-            acquisition: {
-              ...(utmParams ? { utm: utmParams } : {}),
-              ...(refererParams ? { referer: refererParams } : {}),
+          // const extra = {
+          //   ...(userProfile.extra as UserProfileExtra),
+          //   acquisition: {
+          //     ...(utmParams ? { utm: utmParams } : {}),
+          //     ...(refererParams ? { referer: refererParams } : {}),
+          //   },
+          // };
+          // await prisma.userProfile.update({
+          //   where: { userId },
+          //   data: { extra },
+          // });
+          await mergeExtra({
+            tableName: "UserProfile",
+            extra: {
+              acquisition: {
+                ...(utmParams ? { utm: utmParams } : {}),
+                ...(refererParams ? { referer: refererParams } : {}),
+              },
             },
-          };
-          await prisma.userProfile.update({
-            where: { userId },
-            data: { extra },
+            id: userProfile.id,
           });
         }
       } catch (error) {
         authLogger.error(`Error recording acquisition: ${(error as Error).message}`);
       }
+      trackUserServerSide({
+        userId: userId,
+        traitTypes: ["profile", "clientInfo"],
+      });
     })(),
   );
 }
@@ -189,6 +205,8 @@ export async function createPersonalUser({
 
   recordLastLogin({ userId: user.id, provider: "email-password" });
   recordAcquisition({ userId: user.id });
+  // ⚠️ 因为要等到 acquisition 信息完整以后才能 track, trackUserServerSide 在 recordAcquisition 里进行
+  // trackUserServerSide({});
 
   return { ...user, email } as Omit<User, "email"> & { email: string };
 }

@@ -5,7 +5,6 @@ import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { UserOnboardingData } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
-import { waitUntil } from "@vercel/functions";
 
 export async function saveOnboardingData(
   data: UserOnboardingData,
@@ -26,13 +25,11 @@ export async function saveOnboardingData(
       },
     });
 
-    waitUntil(
-      trackUserServerSide({
-        user,
-        userProfile,
-        traitTypes: ["profile", "clientInfo"],
-      }).catch(() => {}),
-    );
+    trackUserServerSide({
+      user,
+      userProfile,
+      traitTypes: ["profile", "clientInfo"],
+    });
 
     return {
       success: true,
