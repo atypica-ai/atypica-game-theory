@@ -1,5 +1,5 @@
-"use server";
-import authOptions from "@/app/(auth)/authOptions";
+import "server-only";
+
 import { upsertUserProfile } from "@/app/(auth)/lib";
 import { rootLogger } from "@/lib/logging";
 import { proxiedFetch } from "@/lib/proxy/fetch";
@@ -12,8 +12,6 @@ import {
 } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { Analytics as AnalyticsServer } from "@segment/analytics-node";
-import { waitUntil } from "@vercel/functions";
-import { getServerSession } from "next-auth";
 import { segmentAnalyticsWriteKey } from "./config";
 
 // 用一个模块级变量存储 analytics 实例
@@ -28,10 +26,12 @@ async function loadSegmentAnalytics(): Promise<AnalyticsServer | null> {
     }
     return analyticsInstance;
   } catch (error) {
-    console.error("Failed to load Segment Analytics:", error);
+    rootLogger.error(`Failed to load Segment Analytics: ${(error as Error).message}`);
     throw error;
   }
 }
+
+type UserTraitType = "profile" | "stats" | "revenue";
 
 type UserTraits = Partial<{
   name: string;
@@ -42,8 +42,9 @@ type UserTraits = Partial<{
   studies: number;
   interviews: number;
   personas: number;
-  payments: number;
+  tokensConsumed: number;
   // revenue
+  payments: number;
   plan: SubscriptionPlan | null;
   planEndsAt: Date | null;
   // acquisition
@@ -57,90 +58,108 @@ type UserTraits = Partial<{
   }>;
 }>;
 
-async function _trackUser({ user, userProfile }: { user: User; userProfile: UserProfile }) {
-  // prepare
-  const analytics = await loadSegmentAnalytics();
-  const now = new Date();
-  const activeSubscription = await prisma.subscription.findFirst({
-    where: { userId: user.id, startsAt: { lte: now }, endsAt: { gt: now } },
-    orderBy: { endsAt: "desc" },
-  });
-  const [studies, interviews, personas, payments] = await Promise.all([
-    prisma.analyst.count({ where: { userId: user.id } }),
-    prisma.interviewProject.count({ where: { userId: user.id } }),
-    prisma.personaImport.count({ where: { userId: user.id } }),
-    prisma.paymentRecord.count({ where: { userId: user.id, status: "succeeded" } }),
-  ]);
-
-  // 提取 acquisition 数据
-  const profileExtra = userProfile.extra as UserProfileExtra;
-  const acquisitionData = profileExtra?.acquisition;
-  const acquisition: UserTraits["acquisition"] = {};
-  if (acquisitionData?.utm) {
-    if (acquisitionData.utm.utm_source) acquisition.utm_source = acquisitionData.utm.utm_source;
-    if (acquisitionData.utm.utm_medium) acquisition.utm_medium = acquisitionData.utm.utm_medium;
-    if (acquisitionData.utm.utm_campaign)
-      acquisition.utm_campaign = acquisitionData.utm.utm_campaign;
-    if (acquisitionData.utm.utm_term) acquisition.utm_term = acquisitionData.utm.utm_term;
-    if (acquisitionData.utm.utm_content) acquisition.utm_content = acquisitionData.utm.utm_content;
-  }
-  if (acquisitionData?.referer?.hostname) {
-    acquisition.referer = acquisitionData.referer.hostname;
-  }
-
-  const traits: UserTraits = {
-    name: user.name || "",
-    email: user.email || "",
-    createdAt: user.createdAt,
-    onboarding: userProfile.onboarding as UserOnboardingData,
-    // stats
-    studies,
-    interviews,
-    personas,
-    payments,
-    // revenue
-    ...(activeSubscription
-      ? {
-          plan: activeSubscription.plan,
-          planEndsAt: activeSubscription.endsAt,
-        }
-      : { plan: null, planEndsAt: null }),
-    // acquisition
-    ...(Object.keys(acquisition).length > 0 ? { acquisition } : {}),
+export async function trackUserServerSide({
+  user,
+  traitTypes,
+}: {
+  user: Pick<User, "id" | "name" | "email" | "createdAt"> & {
+    profile?: Pick<UserProfile, "extra" | "onboarding">;
   };
-  analytics?.identify({
+  traitTypes: UserTraitType[] | "all";
+}) {
+  if (traitTypes === "all") {
+    traitTypes = ["profile", "stats", "revenue"];
+  }
+
+  const traitTypesToUse: Record<UserTraitType, boolean> = traitTypes.reduce(
+    (acc, type) => ({ ...acc, [type]: true }),
+    {
+      profile: false,
+      stats: false,
+      revenue: false,
+    },
+  );
+
+  // prepare
+  const analytics = await loadSegmentAnalytics().catch(() => null);
+  if (!analytics) return;
+
+  let traits: UserTraits = {};
+
+  if (traitTypesToUse["revenue"]) {
+    const now = new Date();
+    const [activeSubscription, payments] = await Promise.all([
+      prisma.subscription.findFirst({
+        where: { userId: user.id, startsAt: { lte: now }, endsAt: { gt: now } },
+        orderBy: { endsAt: "desc" },
+      }),
+      prisma.paymentRecord.count({
+        where: { userId: user.id, status: "succeeded" },
+      }),
+    ]);
+    // merge traits
+    traits = {
+      ...traits,
+      payments,
+      plan: activeSubscription?.plan ?? null,
+      planEndsAt: activeSubscription?.endsAt ?? null,
+    };
+  }
+
+  if (traitTypesToUse["stats"]) {
+    const [studies, interviews, personas, tokensConsumed] = await Promise.all([
+      prisma.analyst.count({ where: { userId: user.id } }),
+      prisma.interviewProject.count({ where: { userId: user.id } }),
+      prisma.personaImport.count({ where: { userId: user.id } }),
+      prisma.tokensLog
+        .aggregate({
+          where: { userId: user.id, verb: "consume" },
+          _sum: { value: true },
+        })
+        .then((result) => -(result._sum.value ?? 0)),
+    ]);
+    // merge traits
+    traits = {
+      ...traits,
+      studies,
+      interviews,
+      personas,
+      tokensConsumed,
+    };
+  }
+
+  if (traitTypesToUse["profile"]) {
+    const userProfile = user.profile ?? (await upsertUserProfile({ userId: user.id }));
+    // 提取 acquisition 数据
+    const profileExtra = userProfile.extra as UserProfileExtra;
+    const acquisitionData = profileExtra?.acquisition;
+    const acquisition: UserTraits["acquisition"] = {};
+    if (acquisitionData?.utm) {
+      if (acquisitionData.utm.utm_source) acquisition.utm_source = acquisitionData.utm.utm_source;
+      if (acquisitionData.utm.utm_medium) acquisition.utm_medium = acquisitionData.utm.utm_medium;
+      if (acquisitionData.utm.utm_campaign)
+        acquisition.utm_campaign = acquisitionData.utm.utm_campaign;
+      if (acquisitionData.utm.utm_term) acquisition.utm_term = acquisitionData.utm.utm_term;
+      if (acquisitionData.utm.utm_content)
+        acquisition.utm_content = acquisitionData.utm.utm_content;
+    }
+    if (acquisitionData?.referer?.hostname) {
+      acquisition.referer = acquisitionData.referer.hostname;
+    }
+    // merge traits
+    traits = {
+      ...traits,
+      name: user.name || "",
+      email: user.email || "",
+      createdAt: user.createdAt,
+      onboarding: userProfile.onboarding as UserOnboardingData,
+      // acquisition
+      ...(Object.keys(acquisition).length > 0 ? { acquisition } : {}),
+    };
+  }
+
+  analytics.identify({
     userId: user.id.toString(),
     traits,
   });
-}
-
-export async function trackUser() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) {
-    return;
-  }
-  if (session.userType !== "Personal") {
-    // 只上报 Personal user
-    return;
-  }
-  waitUntil(
-    (async (userId: number) => {
-      const userProfile = await upsertUserProfile({ userId });
-      const user = await prisma.user.findUniqueOrThrow({
-        where: { id: userId },
-        // include: { profile: true },
-      });
-      const lastTrack = (userProfile.extra as UserProfileExtra)?.lastTrack;
-      // 10分钟只上报一次
-      if (!lastTrack || lastTrack < Date.now() - 1000 * 60 * 10) {
-        rootLogger.info(`trackUser ${user.id}`);
-        await _trackUser({ user, userProfile });
-        await prisma.$executeRaw`
-          UPDATE "UserProfile"
-          SET extra = jsonb_set(COALESCE(extra, '{}'::jsonb), '{lastTrack}', to_jsonb(${Date.now()}::bigint))
-          WHERE "userId" = ${user.id}
-        `;
-      }
-    })(session.user.id),
-  );
 }

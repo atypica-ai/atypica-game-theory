@@ -5,8 +5,8 @@ import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { cn } from "../utils";
+import { trackUserAction } from "./actions";
 import { calcIntercomUserHash, segmentAnalyticsWriteKey } from "./config";
-import { trackUser } from "./server";
 
 // 用一个模块级变量存储 analytics 实例
 let analyticsInstance: AnalyticsBrowser | null = null;
@@ -67,7 +67,7 @@ export function SegmentAnalytics() {
           { integrations: { Intercom: { user_hash: calcIntercomUserHash(userId) } } },
         );
         // 后端 track 上报完整信息
-        trackUser();
+        trackUserAction();
       }
     };
     if (status === "authenticated" && !isSegmentLoaded) {
