@@ -65,6 +65,17 @@ type UserTraits = UserTraitsSegment &
 
 type UserTraitType = "profile" | "clientInfo" | "stats" | "revenue";
 
+export async function trackUserServerSide(args: {
+  user: Pick<User, "id" | "name" | "email" | "createdAt"> & {};
+  userProfile: Pick<UserProfile, "extra" | "onboarding">;
+  traitTypes: UserTraitType[] | "all";
+}): Promise<void>;
+
+export async function trackUserServerSide(args: {
+  userId: number;
+  traitTypes: UserTraitType[] | "all";
+}): Promise<void>;
+
 /**
  * Trait Types
  * - profile: 在 user 和 userProfile 上的信息
@@ -74,13 +85,22 @@ type UserTraitType = "profile" | "clientInfo" | "stats" | "revenue";
  */
 export async function trackUserServerSide({
   user,
+  userProfile,
+  userId,
   traitTypes,
 }: {
-  user: Pick<User, "id" | "name" | "email" | "createdAt"> & {
-    profile?: Pick<UserProfile, "extra" | "onboarding">;
-  };
+  user?: Pick<User, "id" | "name" | "email" | "createdAt">;
+  userProfile?: Pick<UserProfile, "extra" | "onboarding">;
+  userId?: number;
   traitTypes: UserTraitType[] | "all";
 }) {
+  if (!userId) {
+    if (!user) {
+      throw new Error("userId or user must be provided");
+    }
+    userId = user.id;
+  }
+
   if (traitTypes === "all") {
     traitTypes = ["profile", "clientInfo", "stats", "revenue"];
   }
@@ -107,11 +127,11 @@ export async function trackUserServerSide({
       const now = new Date();
       const [activeSubscription, payments] = await Promise.all([
         prisma.subscription.findFirst({
-          where: { userId: user.id, startsAt: { lte: now }, endsAt: { gt: now } },
+          where: { userId: userId, startsAt: { lte: now }, endsAt: { gt: now } },
           orderBy: { endsAt: "desc" },
         }),
         prisma.paymentRecord.count({
-          where: { userId: user.id, status: "succeeded" },
+          where: { userId: userId, status: "succeeded" },
         }),
       ]);
       // merge traits
@@ -130,12 +150,12 @@ export async function trackUserServerSide({
   if (traitTypesToUse["stats"]) {
     try {
       const [studies, interviews, personas, tokensConsumed] = await Promise.all([
-        prisma.analyst.count({ where: { userId: user.id } }),
-        prisma.interviewProject.count({ where: { userId: user.id } }),
-        prisma.personaImport.count({ where: { userId: user.id } }),
+        prisma.analyst.count({ where: { userId: userId } }),
+        prisma.interviewProject.count({ where: { userId: userId } }),
+        prisma.personaImport.count({ where: { userId: userId } }),
         prisma.tokensLog
           .aggregate({
-            where: { userId: user.id, verb: "consume" },
+            where: { userId: userId, verb: "consume" },
             _sum: { value: true },
           })
           .then((result) => -(result._sum.value ?? 0)),
@@ -178,7 +198,15 @@ export async function trackUserServerSide({
 
   if (traitTypesToUse["profile"]) {
     try {
-      const userProfile = user.profile ?? (await upsertUserProfile({ userId: user.id }));
+      if (!user) {
+        user = await prisma.user.findUniqueOrThrow({
+          where: { id: userId },
+          select: { id: true, name: true, email: true, createdAt: true },
+        });
+      }
+      if (!userProfile) {
+        userProfile = await upsertUserProfile({ userId: user.id });
+      }
       // 提取 acquisition 数据
       const profileExtra = userProfile.extra as UserProfileExtra;
       const acquisitionData = profileExtra?.acquisition;
@@ -210,9 +238,13 @@ export async function trackUserServerSide({
     }
   }
 
-  analytics.identify({
-    userId: user.id.toString(),
-    traits,
-    context,
-  });
+  try {
+    analytics.identify({
+      userId: userId.toString(),
+      traits,
+      context,
+    });
+  } catch (error) {
+    rootLogger.error(`Failed to send identify user request: ${(error as Error).message}`);
+  }
 }

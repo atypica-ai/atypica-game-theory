@@ -1,6 +1,8 @@
 import { resetTeamMonthlyTokens, resetUserMonthlyTokens } from "@/app/payment/monthlyTokens";
+import { trackUserServerSide } from "@/lib/analytics/server";
 import { rootLogger } from "@/lib/logging";
 import { prisma } from "@/prisma/prisma";
+import { waitUntil } from "@vercel/functions";
 import { NextRequest, NextResponse } from "next/server";
 
 // 只允许集群内部访问的内部API
@@ -67,6 +69,8 @@ export async function POST(request: NextRequest) {
           await resetTeamMonthlyTokens({ teamId });
         } else if (userId) {
           await resetUserMonthlyTokens({ userId });
+          // track user
+          waitUntil(trackUserServerSide({ userId, traitTypes: ["revenue"] }).catch(() => {}));
         }
         successCount++;
         logger.debug(`Successfully reset monthly tokens, user=${userId} team=${teamId}`);

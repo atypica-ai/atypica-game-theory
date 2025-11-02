@@ -3,8 +3,10 @@ import "server-only";
 import { ProductName } from "@/app/payment/data";
 import { resetTeamMonthlyTokens, resetUserMonthlyTokens } from "@/app/payment/monthlyTokens";
 import { recharge1MTokens } from "@/app/payment/permanentTokens";
+import { trackUserServerSide } from "@/lib/analytics/server";
 import { PaymentRecord, SubscriptionPlan } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
+import { waitUntil } from "@vercel/functions";
 import Stripe from "stripe";
 import { retrieveStripeSubscriptionDetails } from "./utils";
 
@@ -61,6 +63,8 @@ export async function handleTeamSubscriptionPaymentSuccess({
 
   // Reset team monthly tokens
   await resetTeamMonthlyTokens({ teamId });
+
+  // team user 暂时不 track
 }
 
 export async function handleUserSubscriptionPaymentSuccess({
@@ -117,6 +121,13 @@ export async function handleUserSubscriptionPaymentSuccess({
     // reset monthly tokens
     await resetUserMonthlyTokens({ userId });
   }
+  // track user
+  waitUntil(
+    trackUserServerSide({
+      userId,
+      traitTypes: ["revenue"],
+    }).catch(() => {}),
+  );
 }
 
 export async function handleRechargePaymentSuccess({
@@ -133,4 +144,11 @@ export async function handleRechargePaymentSuccess({
   } else {
     throw new Error(`Invalid product name ${productName} received in handleRechargePaymentSuccess`);
   }
+  // track user
+  waitUntil(
+    trackUserServerSide({
+      userId,
+      traitTypes: ["revenue"],
+    }).catch(() => {}),
+  );
 }

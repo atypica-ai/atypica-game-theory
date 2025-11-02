@@ -25,16 +25,14 @@ export async function trackUserAction() {
         // include: { profile: true },
       });
       const lastTrack = (userProfile.extra as UserProfileExtra)?.lastTrack;
-      // 60分钟只上报一次
-      if (!lastTrack || lastTrack < Date.now() - 1000 * 60 * 60) {
+      // 12个小时只上报一次，其他时候在对应行为发生以后主动触发
+      if (!lastTrack || lastTrack < Date.now() - 1000 * 60 * 60 * 12) {
         rootLogger.info(`trackUser ${user.id}`);
         await trackUserServerSide({
-          user: {
-            ...user,
-            profile: userProfile,
-          },
+          user,
+          userProfile,
           traitTypes: "all",
-        });
+        }).catch(() => {});
         await prisma.$executeRaw`
           UPDATE "UserProfile"
           SET extra = jsonb_set(COALESCE(extra, '{}'::jsonb), '{lastTrack}', to_jsonb(${Date.now()}::bigint))
