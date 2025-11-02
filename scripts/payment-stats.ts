@@ -1,7 +1,7 @@
 /**
- * 11月注意
- * 团队版的订单现在没有统计，因为没有 email
- * 这个人的的8月和9月的订单分别是 ATP5511755600969896, ATP5511755600969896-1 都是团队版的
+ * 注意
+ *
+ * ATP8291761052784856, ATP0591758826509871, ATP1081759826505964 三个订单没日期很奇怪，状态是 succeeded, 人工修复了数据
  *
  * 退款订单 ATP1021753148031772-1, 需要标记
  */
@@ -13,7 +13,7 @@ import { loadEnvConfig } from "@next/env";
 import Stripe from "stripe";
 import "./mock-server-only";
 
-const dateBefore = new Date("2025-10-01T00:00:00+08:00"); // 注意，导出的 excel 文件里，days 的公式也需要改一下时间为本月 1 号
+const dateBefore = new Date("2025-11-01T00:00:00+08:00"); // 注意，导出的 excel 文件里，days 的公式也需要改一下时间为本月 1 号
 const pad12 = (n: number) => n.toLocaleString().padStart(12, " ");
 const fdate = (d: Date) =>
   new Intl.DateTimeFormat("zh-CN", {
@@ -37,12 +37,12 @@ async function main() {
     },
   });
   console.log(
-    `Order,StripePaymentId,StripeCharge,PaymentMethod,Currency,Amount,Receibed,Used,Payable,Plan,Date,Email`,
+    `Order,InvoiceID,StripeCharge,PaymentMethod,Currency,Amount,Receibed,Used,Payable,Plan,Date,Email`,
   );
   for (const user of users) {
     const tokensLogs = await prisma.tokensLog.findMany({
       where: {
-        userId: user.id,
+        ...(user.teamIdAsMember ? { teamId: user.teamIdAsMember } : { userId: user.id }),
         createdAt: {
           lt: dateBefore,
         },
@@ -66,7 +66,7 @@ async function main() {
         const used = Math.min(0, Math.max(payable, -log.value));
         payable = payable - used;
         console.log(
-          `${paymentRecord.orderNo},${(invoice as any)?.payment_intent ?? ""},${(invoice as any)?.charge ?? ""},${paymentRecord.paymentMethod},${paymentRecord.currency},${paymentRecord.amount},${log.value},${used},${payable},Pro,${paymentRecord.paidAt ? fdate(paymentRecord.paidAt) : ""},${user.email}`,
+          `${paymentRecord.orderNo},${(invoice as any)?.id ?? ""},${(invoice as any)?.charge ?? ""},${paymentRecord.paymentMethod},${paymentRecord.currency},${paymentRecord.amount},${log.value},${used},${payable},Pro,${paymentRecord.paidAt ? fdate(paymentRecord.paidAt) : ""},${user.email}`,
         );
       } else if (log.resourceType === TokensLogResourceType.Subscription) {
         const subscription = await prisma.subscription.findUniqueOrThrow({
@@ -81,7 +81,7 @@ async function main() {
           const used = Math.min(0, Math.max(payable, -log.value));
           payable = payable - used;
           console.log(
-            `${paymentRecord.orderNo},${(invoice as any)?.payment_intent ?? ""},${(invoice as any)?.charge ?? ""},${paymentRecord.paymentMethod},${paymentRecord.currency},${paymentRecord.amount},${log.value},${used},${payable},Pro,${paymentRecord.paidAt ? fdate(paymentRecord.paidAt) : ""},${user.email}`,
+            `${paymentRecord.orderNo},${(invoice as any)?.id ?? ""},${(invoice as any)?.charge ?? ""},${paymentRecord.paymentMethod},${paymentRecord.currency},${paymentRecord.amount},${log.value},${used},${payable},Pro,${paymentRecord.paidAt ? fdate(paymentRecord.paidAt) : ""},${user.email}`,
           );
         } else {
           // 一般是人工添加的 subscription 可以跳过
@@ -109,7 +109,7 @@ async function main() {
       const used = Math.min(0, Math.max(payable, -log.value));
       payable = payable - used;
       console.log(
-        `${paymentRecord.orderNo},${(invoice as any)?.payment_intent ?? ""},${(invoice as any)?.charge ?? ""},${paymentRecord.paymentMethod},${paymentRecord.currency},${paymentRecord.amount},${log.value},${used},${payable},Recharge,${paymentRecord.paidAt ? fdate(paymentRecord.paidAt) : ""},${user.email}`,
+        `${paymentRecord.orderNo},${(invoice as any)?.id ?? ""},${(invoice as any)?.charge ?? ""},${paymentRecord.paymentMethod},${paymentRecord.currency},${paymentRecord.amount},${log.value},${used},${payable},Recharge,${paymentRecord.paidAt ? fdate(paymentRecord.paidAt) : ""},${user.email}`,
       );
     }
   }

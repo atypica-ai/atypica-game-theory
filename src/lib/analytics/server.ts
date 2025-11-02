@@ -171,9 +171,6 @@ async function _trackUserServerSide({
         getRequestGeo().catch(() => undefined),
         getLocale().catch(() => undefined),
       ]);
-      traits = {
-        ...traits,
-      };
       context = {
         ...context,
         ...(clientIp ? { ip: clientIp } : {}),
@@ -216,8 +213,8 @@ async function _trackUserServerSide({
       // merge traits
       traits = {
         ...traits,
-        name: user.name || "",
-        email: user.email || "",
+        name: user.name || undefined,
+        email: user.email || undefined,
         createdAt: user.createdAt,
         onboarding: userProfile.onboarding as UserOnboardingData,
         // acquisition
