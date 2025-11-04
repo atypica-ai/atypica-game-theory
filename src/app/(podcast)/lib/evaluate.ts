@@ -22,47 +22,50 @@ import { notifyPodcastReady } from "./notify";
 const PODCAST_KIND_DETERMINATION_SYSTEM = `
 You are an expert podcast producer. Your task is to determine the best podcast format for a research topic based on its content and nature.
 
+**Default preference**: Choose opinionOriented whenever the research has any actionable insights or practical implications. Only choose deepDive when the research is purely exploratory without clear recommendations.
+
 ## Available Podcast Formats
 
-### 1. deepDive (深度探讨)
-**Format**: Two hosts (Guy & Ira) presenting from a third-party perspective
-**Best for**: Research that benefits from objective, comprehensive exploration
-**Characteristics**:
-- Complex topics requiring step-by-step breakdown and explanation
-- Research with rich findings, multiple insights, and interesting process
-- Content where logic, methodology, and research journey are as valuable as conclusions
-- Studies where the research process itself tells a compelling story
-- Topics where audience needs to understand "how we got here" not just "what to do"
-- Default choice for most research content
-
-### 2. opinionOriented (观点导向)
+### 1. opinionOriented (观点导向) - PREFERRED FORMAT
 **Format**: Solo host (the researcher) presenting with strong conviction
-**Best for**: Research with clear, actionable recommendations that require persuasion
+**Best for**: Most research with insights, findings, or implications
 **Characteristics**:
-- Research with definitive conclusions and specific, actionable recommendations
-- Topics where the researcher has a firm stance and wants to convince listeners to take action
+- Research with conclusions and practical implications
+- Topics where the researcher has findings that can guide decisions or actions
 - Content that challenges common practices, misconceptions, or conventional wisdom
-- Studies where the "what to do" is significantly more valuable than the "how we know"
-- Situations where listeners need clear guidance and confidence to make decisions or change behavior
-- The researcher acts as an advisor, not just an information presenter
+- Studies where findings have value for decision-making or behavior change
+- Research that reveals what works, what doesn't, or what to consider
+- The researcher acts as a guide sharing valuable insights
+- **Default choice for most research with any actionable takeaways**
+
+### 2. deepDive (深度探讨) - ONLY FOR PURELY EXPLORATORY CONTENT
+**Format**: Two hosts (Guy & Ira) presenting from a third-party perspective
+**Best for**: Purely exploratory research without clear conclusions
+**Characteristics**:
+- Research still in early stages with no definitive findings
+- Purely theoretical or methodological discussions
+- Content where the research process is the only story to tell
+- Studies with no practical implications or recommendations yet
+- **Only choose this when there are truly no actionable insights**
 
 ## Decision Guidelines
 
-**Choose opinionOriented when**:
-- The research has a single, clear, actionable recommendation
-- The goal is to change listener behavior or convince them of a specific approach
-- The researcher has strong convictions and wants to persuade
-- The content is more prescriptive ("you should do X") than descriptive
+**Choose opinionOriented (PREFERRED) when**:
+- The research has ANY findings, insights, or recommendations
+- There are practical implications or learnings from the research
+- The study reveals patterns, trends, or useful information
+- The researcher has a perspective or interpretation of findings
+- The content can help listeners understand or make decisions
+- **When in doubt, choose opinionOriented as the default**
 
-**Choose deepDive when**:
-- The research explores multiple aspects or reveals interesting insights
-- The goal is to educate and inform rather than persuade
-- The research process or methodology is interesting and valuable to share
-- The content is rich with discoveries but not necessarily a single call-to-action
-- When in doubt, choose deepDive as the default
+**Choose deepDive (ONLY WHEN NECESSARY) when**:
+- The research is purely exploratory with no findings yet
+- The content is entirely theoretical with no practical application
+- There are literally no insights or recommendations to share
+- The study is incomplete with no conclusions
 
 ## Output Requirement
-You must choose either "deepDive" or "opinionOriented". Provide clear, specific reasoning for your choice based on the research content, conclusions, and the value it provides to listeners.
+You must choose either "deepDive" or "opinionOriented". Strongly prefer opinionOriented unless the research is purely exploratory. Provide clear, specific reasoning for your choice based on the research content, conclusions, and the value it provides to listeners.
 `;
 
 async function determinePodcastKind(
