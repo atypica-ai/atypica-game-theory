@@ -25,7 +25,7 @@ export function AnalystReportShareButton({
   children?: React.ReactNode;
   download?: boolean;
 }) {
-  const publicReportUrl = `/artifacts/report/${reportToken}/share`;
+  const publicReportUrl = `/artifacts/report/${reportToken}/share?utm_source=report&utm_medium=share`;
   const t = useTranslations("StudyPage.AnalystReportShareButton");
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();

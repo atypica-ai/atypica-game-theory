@@ -6,7 +6,6 @@ import { truncateForTitle } from "@/lib/textUtils";
 import { Loader2Icon, Play, Share2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -41,15 +40,14 @@ function SharePageHeader({
 export default function ReportSharePageClient({
   reportToken,
   studyReplayUrl,
-  analystTopic,
+  studyTitle,
 }: {
   reportToken: string;
   studyReplayUrl: string;
-  analystTopic: string;
+  studyTitle: string;
 }) {
   const t = useTranslations("ReportSharePage");
   const tCompliance = useTranslations("AICompliance");
-  const pathname = usePathname();
   const [isLoading, setIsLoading] = useState(true);
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -75,11 +73,16 @@ export default function ReportSharePageClient({
   }, []);
 
   const copyShareLink = useCallback(() => {
-    const url = window.location.origin + pathname;
-    navigator.clipboard.writeText(url).then(() => {
+    const url = new URL(window.location.origin + window.location.pathname);
+    const currentParams = new URLSearchParams(window.location.search);
+    const utmSource = currentParams.get("utm_source") || "report";
+    const utmMedium = currentParams.get("utm_medium") || "share";
+    url.searchParams.set("utm_source", utmSource);
+    url.searchParams.set("utm_medium", utmMedium);
+    navigator.clipboard.writeText(url.toString()).then(() => {
       toast.success(t("linkCopied"));
     });
-  }, [pathname, t]);
+  }, [t]);
 
   const handleIframeLoad = useCallback(() => {
     setIsLoading(false);
@@ -138,7 +141,7 @@ export default function ReportSharePageClient({
 
       <footer className="py-2 px-4 text-center text-xs text-muted-foreground border-t border-border">
         {t("attribution", {
-          topic: truncateForTitle(analystTopic, { maxDisplayWidth: 30, suffix: "..." }),
+          topic: truncateForTitle(studyTitle, { maxDisplayWidth: 60, suffix: "..." }),
         })}{" "}
         {tCompliance("shortDisclaimer")}
         {tCompliance("period")}

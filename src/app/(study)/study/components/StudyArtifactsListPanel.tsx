@@ -176,7 +176,7 @@ export default function StudyArtifactsListPanel({
                         ) : (
                           <Button asChild size="sm" variant="outline">
                             <Link
-                              href={`/artifacts/podcast/${podcast.token}/share`}
+                              href={`/artifacts/podcast/${podcast.token}/share?utm_source=podcast&utm_medium=share`}
                               target="_blank"
                             >
                               <PlayIcon className="h-4 w-4" />

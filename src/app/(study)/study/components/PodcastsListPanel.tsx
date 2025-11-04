@@ -159,7 +159,10 @@ export default function PodcastsListPanel({
                       <Loader2Icon className="h-4 w-4 animate-spin text-muted-foreground" />
                     ) : (
                       <Button asChild size="sm" variant="outline">
-                        <Link href={`/artifacts/podcast/${podcast.token}/share`} target="_blank">
+                        <Link
+                          href={`/artifacts/podcast/${podcast.token}/share?utm_source=podcast&utm_medium=share`}
+                          target="_blank"
+                        >
                           <PlayIcon className="h-4 w-4" />
                         </Link>
                       </Button>

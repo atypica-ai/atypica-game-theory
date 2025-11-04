@@ -68,8 +68,13 @@ export default function PodcastSharePageClient({
   }, [podcastToken]);
 
   const copyShareLink = useCallback(() => {
-    const url = window.location.origin + pathname;
-    navigator.clipboard.writeText(url).then(() => {
+    const url = new URL(window.location.origin + pathname);
+    const currentParams = new URLSearchParams(window.location.search);
+    const utmSource = currentParams.get("utm_source") || "podcast";
+    const utmMedium = currentParams.get("utm_medium") || "share";
+    url.searchParams.set("utm_source", utmSource);
+    url.searchParams.set("utm_medium", utmMedium);
+    navigator.clipboard.writeText(url.toString()).then(() => {
       toast.success(t("linkCopied"));
     });
   }, [pathname, t]);

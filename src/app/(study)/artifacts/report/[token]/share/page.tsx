@@ -52,7 +52,12 @@ async function ReportSharePage({ reportToken }: { reportToken: string }) {
     select: {
       analyst: {
         select: {
-          studyUserChat: { select: { token: true } },
+          studyUserChat: {
+            select: {
+              token: true,
+              title: true,
+            },
+          },
           topic: true,
         },
       },
@@ -64,7 +69,7 @@ async function ReportSharePage({ reportToken }: { reportToken: string }) {
   return (
     <ReportSharePageClient
       reportToken={reportToken}
-      analystTopic={report.analyst.topic}
+      studyTitle={report.analyst.studyUserChat.title}
       studyReplayUrl={studyReplayUrl}
     />
   );
