@@ -17,11 +17,13 @@ export function StickyPlayer({
   title,
   studyReplayUrl,
   moreInsightRadioUrl,
+  autoPlay = false,
 }: {
   podcastToken: string;
   title: string;
   studyReplayUrl?: string;
   moreInsightRadioUrl?: string;
+  autoPlay?: boolean;
 }) {
   const t = useTranslations("PodcastSharePage");
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -35,6 +37,7 @@ export function StickyPlayer({
   const [playbackRate, setPlaybackRate] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
   const [previousVolume, setPreviousVolume] = useState(50);
+  const autoPlayAttemptedRef = useRef(false);
 
   // Load audio URL
   useEffect(() => {
@@ -61,6 +64,19 @@ export function StickyPlayer({
 
     const handleLoadedMetadata = () => {
       setDuration(audio.duration);
+      // Auto-play when metadata is loaded
+      if (autoPlay && !autoPlayAttemptedRef.current) {
+        autoPlayAttemptedRef.current = true;
+        audio
+          .play()
+          .then(() => {
+            setIsPlaying(true);
+          })
+          .catch(() => {
+            // Silently fail - browser autoplay policy blocked it
+            // We'll try again on first user interaction
+          });
+      }
     };
 
     const handleTimeUpdate = () => {
@@ -80,7 +96,37 @@ export function StickyPlayer({
       audio.removeEventListener("timeupdate", handleTimeUpdate);
       audio.removeEventListener("ended", handleEnded);
     };
-  }, [audioUrl]);
+  }, [audioUrl, autoPlay]);
+
+  // Try to play on first user interaction if autoplay was blocked
+  useEffect(() => {
+    if (!autoPlay || isPlaying) return;
+
+    const tryPlayOnInteraction = () => {
+      const audio = audioRef.current;
+      if (!audio || isPlaying || !audioUrl) return;
+
+      audio
+        .play()
+        .then(() => {
+          setIsPlaying(true);
+        })
+        .catch(() => {
+          // Still blocked, wait for explicit user action
+        });
+    };
+
+    // Listen for various user interactions
+    document.addEventListener("click", tryPlayOnInteraction, { once: true });
+    document.addEventListener("touchstart", tryPlayOnInteraction, { once: true });
+    document.addEventListener("keydown", tryPlayOnInteraction, { once: true });
+
+    return () => {
+      document.removeEventListener("click", tryPlayOnInteraction);
+      document.removeEventListener("touchstart", tryPlayOnInteraction);
+      document.removeEventListener("keydown", tryPlayOnInteraction);
+    };
+  }, [autoPlay, isPlaying, audioUrl]);
 
   const togglePlayPause = useCallback(() => {
     const audio = audioRef.current;
@@ -268,16 +314,16 @@ export function StickyPlayer({
 
             {/* Rewind 15s */}
             <div className="relative size-8 flex items-center justify-center">
+              <span className="text-xs font-bold">15</span>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={skipBackward}
                 disabled={isLoading || !audioUrl}
-                className="size-full rounded-full absolute left-0 top-0"
+                className="size-full rounded-full absolute left-0 top-0 bg-transparent hover:bg-transparent"
               >
                 <RotateCcw className="size-full rotate-45" />
               </Button>
-              <span className="text-xs font-bold">15</span>
             </div>
 
             {/* Play/Pause */}
@@ -298,16 +344,16 @@ export function StickyPlayer({
 
             {/* Fast Forward 30s */}
             <div className="relative size-8 flex items-center justify-center">
+              <span className="text-xs font-bold">30</span>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={skipForward}
                 disabled={isLoading || !audioUrl}
-                className="size-full rounded-full absolute left-0 top-0"
+                className="size-full rounded-full absolute left-0 top-0 bg-transparent hover:bg-transparent"
               >
                 <RotateCw className="size-full -rotate-45" />
               </Button>
-              <span className="text-xs font-bold">30</span>
             </div>
 
             {/* Mute/Volume - Hidden on small screens */}

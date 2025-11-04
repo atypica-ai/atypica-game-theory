@@ -1,17 +1,16 @@
 "use client";
 import { getPodcastAudioSignedUrl } from "@/app/(podcast)/actions";
-import { fetchPodcastByToken } from "@/app/(study)/artifacts/podcast/actions";
 import GlobalHeader from "@/components/layout/GlobalHeader";
 import { Button } from "@/components/ui/button";
 import UserMenu from "@/components/UserMenu";
-import { ExtractServerActionData } from "@/lib/serverAction";
+import { proxiedImageLoader } from "@/lib/utils";
 import { Analyst, UserChat } from "@/prisma/client";
 import { DownloadIcon, Share2 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { ReportImage } from "./components/ReportImage";
 import { StickyPlayer } from "./components/StickyPlayer";
 
 function SharePageHeader({
@@ -45,12 +44,14 @@ function SharePageHeader({
 export default function PodcastSharePageClient({
   podcastToken,
   studyUserChat,
-  report,
+  script,
+  coverImageUrl,
 }: {
   podcastToken: string;
   analyst: Pick<Analyst, "id" | "topic">;
   studyUserChat: Pick<UserChat, "token" | "title">;
-  report?: ExtractServerActionData<typeof fetchPodcastByToken>["report"];
+  script?: string;
+  coverImageUrl?: string;
 }) {
   const t = useTranslations("PodcastSharePage");
   const pathname = usePathname();
@@ -89,14 +90,38 @@ export default function PodcastSharePageClient({
       <SharePageHeader copyShareLink={copyShareLink} onDownload={handleDownload} />
 
       {/* Main Content */}
-      <div className="flex-1 overflow-hidden">
-        {report ? (
-          <ReportImage report={report} />
-        ) : (
-          <h1 className="text-xl sm:text-xl md:text-2xl font-medium text-zinc-900 dark:text-zinc-50 leading-tight line-clamp-3 text-center">
-            {studyUserChat.title}
-          </h1>
-        )}
+      <div className="flex-1 overflow-y-auto scrollbar-thin pb-64">
+        <div className="max-w-4xl mx-auto px-4 py-6 sm:py-12 space-y-6">
+          {/* Report Cover Image */}
+          {coverImageUrl && (
+            <div className="relative w-full max-w-lg mx-auto aspect-[16/9] bg-muted rounded-lg overflow-hidden">
+              <Image
+                src={coverImageUrl}
+                alt="Report Cover"
+                fill
+                sizes="100%"
+                className="object-cover"
+                loader={proxiedImageLoader}
+              />
+            </div>
+          )}
+
+          {/* Podcast Script */}
+          {script && (
+            <div className="prose prose-sm sm:prose-base dark:prose-invert max-w-none">
+              <div className="whitespace-pre-wrap text-foreground leading-relaxed text-sm">
+                {script}
+              </div>
+            </div>
+          )}
+
+          {/* Fallback: Show title if no content */}
+          {!script && !coverImageUrl && (
+            <h1 className="text-xl sm:text-xl md:text-2xl font-medium text-zinc-900 dark:text-zinc-50 leading-tight text-center">
+              {studyUserChat.title}
+            </h1>
+          )}
+        </div>
       </div>
 
       {/* Sticky Player with links */}
@@ -106,6 +131,7 @@ export default function PodcastSharePageClient({
           title={studyUserChat.title}
           studyReplayUrl={`/study/${studyUserChat.token}/share?replay=1`}
           moreInsightRadioUrl="/featured-podcasts"
+          autoPlay={true}
         />
       </div>
     </div>

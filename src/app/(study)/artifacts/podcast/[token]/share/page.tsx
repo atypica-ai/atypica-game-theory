@@ -67,13 +67,24 @@ async function PodcastSharePage({ podcastToken }: { podcastToken: string }) {
   if (!result.success) {
     notFound();
   }
-  const { analyst, studyUserChat, report } = result.data;
+  const { podcast, analyst, studyUserChat, report } = result.data;
+
+  // Get cover image URL if report exists
+  let coverImageUrl: string | undefined;
+  if (report) {
+    const coverResult = await reportCoverObjectUrlToHttpUrl(report);
+    if (coverResult) {
+      coverImageUrl = coverResult.signedCoverObjectUrl;
+    }
+  }
+
   return (
     <PodcastSharePageClient
       podcastToken={podcastToken}
       analyst={analyst}
       studyUserChat={studyUserChat}
-      report={report}
+      script={podcast.script}
+      coverImageUrl={coverImageUrl}
     />
   );
 }
