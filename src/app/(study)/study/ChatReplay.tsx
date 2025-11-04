@@ -3,6 +3,7 @@ import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Button } from "@/components/ui/button";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
 import { cn } from "@/lib/utils";
+import { isToolOrDynamicToolUIPart } from "ai";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
@@ -36,8 +37,7 @@ export function ChatReplay() {
       }
       for (let j = message.parts.length - 1; j >= 0; j--) {
         const part = message.parts[j];
-        // dynamic-tool 的格式不兼容，目前暂时也没这种类型的 tool，可以忽略
-        if (part.type !== "dynamic-tool" && part.type.startsWith("tool-") && "toolCallId" in part) {
+        if (isToolOrDynamicToolUIPart(part)) {
           setLastToolInvocation(part);
           return;
         }

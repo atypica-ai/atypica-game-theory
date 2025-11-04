@@ -17,7 +17,7 @@ import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
 import { cn } from "@/lib/utils";
 import { UserChatExtra } from "@/prisma/client";
 import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport, UIMessage } from "ai";
+import { DefaultChatTransport, getToolName, isToolOrDynamicToolUIPart, isToolUIPart, UIMessage } from "ai";
 import { ArrowRightIcon, PlayIcon, PlusIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
@@ -245,8 +245,7 @@ export function ChatBox() {
       const message = messages[i];
       for (let j = message.parts.length - 1; j >= 0; j--) {
         const part = message.parts[j];
-        // dynamic-tool 的格式不兼容，目前暂时也没这种类型的 tool，可以忽略
-        if (part.type !== "dynamic-tool" && part.type.startsWith("tool-") && "toolCallId" in part) {
+        if (isToolOrDynamicToolUIPart(part)) {
           setLastToolInvocation(part);
           return;
         }
@@ -264,12 +263,10 @@ export function ChatBox() {
     if (lastMessage?.parts?.length) {
       const lastPart = lastMessage.parts[lastMessage.parts.length - 1];
       if (
-        lastPart.type.startsWith("tool-") &&
-        "toolCallId" in lastPart &&
+        isToolUIPart(lastPart) &&
         lastPart.state !== "output-available" &&
         [ToolName.thanks, ToolName.requestInteraction].includes(
-          // dirty method to get toolName, see https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#tool-part-type-changes-uimessage
-          lastPart.type.slice(5) as ToolName,
+          getToolName(lastPart) as ToolName,
         )
       ) {
         waitForUser = true;

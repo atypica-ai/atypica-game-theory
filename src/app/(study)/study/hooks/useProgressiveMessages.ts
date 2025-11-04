@@ -1,5 +1,5 @@
 import { ToolName } from "@/ai/tools/types";
-import { UIMessage } from "ai";
+import { getToolName, isToolUIPart, UIMessage } from "ai";
 import { useEffect, useMemo, useState } from "react";
 
 export const consoleStreamWaitTime = (name?: ToolName) => {
@@ -97,8 +97,8 @@ export function useProgressiveMessages<T extends UIMessage>({
         waitTime = fixedWaitTime;
       } else if (parts) {
         const part = parts[partIndex];
-        if (part?.type?.startsWith("tool-") && "toolCallId" in part) {
-          const toolName = part.type.slice(5) as ToolName;
+        if (part && isToolUIPart(part)) {
+          const toolName = getToolName(part) as ToolName;
           waitTime = consoleStreamWaitTime(toolName);
         }
       }

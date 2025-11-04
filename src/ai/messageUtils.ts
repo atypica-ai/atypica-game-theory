@@ -11,6 +11,7 @@ import {
   DynamicToolUIPart,
   generateId,
   getToolName,
+  isToolOrDynamicToolUIPart,
   isToolUIPart,
   ModelMessage,
   StepResult,
@@ -517,7 +518,7 @@ export function convertToFlattenModelMessages(
   for (const { parts, role, metadata } of messages) {
     lastMessage = { role, metadata, parts: [] };
     for (const part of parts) {
-      if (!isToolUIPart(part)) {
+      if (!isToolOrDynamicToolUIPart(part)) {
         lastMessage.parts.push(part);
       } else {
         flattenMessages.push(lastMessage);
@@ -540,7 +541,7 @@ function fixChatMessages(messages: UIMessage[]): UIMessage[] {
     }
     // 给 pending 的 tool 都标记下
     let parts = message.parts.map((part) => {
-      if (!part.type.startsWith("tool-") || !("toolCallId" in part)) {
+      if (!isToolOrDynamicToolUIPart(part)) {
         return part;
       }
       if (part.state === "output-available" || part.state === "output-error") {

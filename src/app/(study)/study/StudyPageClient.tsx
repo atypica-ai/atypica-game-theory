@@ -8,7 +8,7 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
 import { cn } from "@/lib/utils";
 import { UserChat } from "@/prisma/client";
-import { UIMessage } from "ai";
+import { getToolOrDynamicToolName, UIMessage } from "ai";
 import { EyeIcon, EyeOffIcon, ScanIcon, XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { ChatBox } from "./ChatBox";
@@ -111,7 +111,7 @@ const Agent = () => {
       >
         <span className="text-xs font-bold">
           {lastToolInvocation
-            ? ">_ exec " + lastToolInvocation.type.slice(5) // dirty wa to extract tool name
+            ? ">_ exec " + getToolOrDynamicToolName(lastToolInvocation)
             : ""}
         </span>
         <span className="ml-auto mr-1 text-xs font-bold">{t("viewConsole")}</span>

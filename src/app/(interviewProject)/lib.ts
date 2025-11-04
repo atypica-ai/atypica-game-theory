@@ -5,6 +5,7 @@ import { decryptText, encryptText } from "@/lib/cipher";
 import { truncateForTitle } from "@/lib/textUtils";
 import { InterviewProjectExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
+import { isToolUIPart } from "ai";
 import { InterviewToolName } from "./tools/types";
 import { InterviewSharePayload, TInterviewMessageWithTool } from "./types";
 
@@ -226,11 +227,7 @@ export async function extractInterviewTranscript(userChatId: number): Promise<In
       }
 
       // Extract tool invocation results
-      if (
-        part.type.startsWith("tool-") &&
-        "toolCallId" in part &&
-        part.state === "output-available"
-      ) {
+      if (isToolUIPart(part) && part.state === "output-available") {
         if (part.type === `tool-${InterviewToolName.endInterview}`) {
           title = part.input.title || null;
           summary = part.input.interviewSummary || null;
