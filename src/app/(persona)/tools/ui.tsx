@@ -1,15 +1,11 @@
 import { TPersonaMessageWithTool } from "@/app/(persona)/types";
-import { getToolName, isToolUIPart } from "ai";
+import { getToolName } from "ai";
 
 export const PersonaToolUIPartDisplay = ({
   toolUIPart,
 }: {
   toolUIPart: TPersonaMessageWithTool["parts"][number];
 }) => {
-  if (!isToolUIPart(toolUIPart)) {
-    return null;
-  }
-
   switch (toolUIPart.type) {
     case "tool-endInterview":
       // return <RequestInteractionMessage toolInvocation={toolUIPart} />;

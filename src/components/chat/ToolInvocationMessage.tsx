@@ -1,7 +1,7 @@
 import { PlainTextUITools } from "@/ai/tools/types";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
-import { ToolUIPart } from "ai";
+import { DynamicToolUIPart, getToolOrDynamicToolName, ToolUIPart } from "ai";
 import { ChevronRight, LoaderIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import ToolArgsTable, { ExpandableText } from "./ToolArgsTable";
@@ -10,7 +10,7 @@ import ToolResultTable from "./ToolResultTable";
 export const ToolInvocationMessage = ({
   toolInvocation,
 }: {
-  toolInvocation: ToolUIPart<PlainTextUITools>; // 返回 plainText 字段的 tool 都可以使用
+  toolInvocation: DynamicToolUIPart | ToolUIPart<PlainTextUITools>; // 返回 plainText 字段的 tool 都可以使用
 }) => {
   const [prevState, setPrevState] = useState(toolInvocation.state);
   const [open, setOpen] = useState(toolInvocation.state !== "output-available");
@@ -23,7 +23,7 @@ export const ToolInvocationMessage = ({
   }, [toolInvocation.state, prevState]);
 
   // dirty way to extract tool name from type
-  const toolName = toolInvocation.type.slice(5);
+  const toolName = getToolOrDynamicToolName(toolInvocation);
 
   return (
     <Collapsible
@@ -47,7 +47,13 @@ export const ToolInvocationMessage = ({
             <ToolResultTable toolInvocation={toolInvocation} />
             <div className="ml-1 mt-2 mb-1 text-primary not-dark:font-bold">&gt;_ message</div>
             <div className="text-xs p-1 not-dark:text-muted-foreground">
-              <ExpandableText text={toolInvocation.output.plainText ?? ""} />
+              <ExpandableText
+                text={
+                  toolInvocation.type === "dynamic-tool"
+                    ? JSON.stringify(toolInvocation.output)
+                    : (toolInvocation.output.plainText ?? "")
+                }
+              />
             </div>
           </>
         ) : (

@@ -1,6 +1,7 @@
 import { TMessageWithPlainTextTool } from "@/ai/tools/types";
 import { Markdown } from "@/components/markdown";
 import { cn } from "@/lib/utils";
+import { isToolUIPart } from "ai";
 import { motion } from "framer-motion";
 import { BotIcon, CpuIcon, UserIcon } from "lucide-react";
 import React, { PropsWithChildren, ReactNode, useMemo } from "react";
@@ -69,9 +70,13 @@ export const ChatMessage = <UI_MESSAGE extends TMessageWithPlainTextTool>({
             // } else if (part.type === "source") {
             //   return <PlainText key={i}>{JSON.stringify(part.source)}</PlainText>;
           } else if (part.type === "dynamic-tool") {
-            // 为下面的 else if 条件分支排除 dynamic tool
-            return <PlainText key={i}>{part.toolName}</PlainText>;
-          } else if (part.type.startsWith("tool-") && "toolCallId" in part) {
+            // 通过 MCP 添加的 Tools 会是 dynamic-tools
+            return (
+              <React.Fragment key={i}>
+                <ToolInvocationMessage toolInvocation={part} />
+              </React.Fragment>
+            );
+          } else if (isToolUIPart(part)) {
             return (
               <React.Fragment key={i}>
                 <ToolInvocationMessage toolInvocation={part} />

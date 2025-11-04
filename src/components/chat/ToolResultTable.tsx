@@ -1,12 +1,12 @@
 import { PlainTextUITools } from "@/ai/tools/types";
-import { ToolUIPart } from "ai";
+import { DynamicToolUIPart, ToolUIPart } from "ai";
 import { ExpandableText } from "./ToolArgsTable";
 
 export default function ToolResultTable({
   toolInvocation,
 }: {
   toolInvocation: Omit<
-    Extract<ToolUIPart<PlainTextUITools>, { state: "output-available" }>,
+    Extract<DynamicToolUIPart | ToolUIPart<PlainTextUITools>, { state: "output-available" }>,
     "type"
   >;
 }) {

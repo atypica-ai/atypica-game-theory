@@ -1,7 +1,7 @@
 "use client";
 import { StudyUITools, TStudyMessageWithTool } from "@/ai/tools/types";
 import { UserChat } from "@/prisma/client";
-import { ToolUIPart } from "ai";
+import { DynamicToolUIPart, ToolUIPart } from "ai";
 import { createContext, ReactNode, useCallback, useContext, useState } from "react";
 import { ArtifactsState, useArtifacts } from "./useArtifacts";
 
@@ -16,7 +16,7 @@ type TStudyUserChat = Omit<UserChat, "kind"> & {
 //   state: ToolUIPart["state"];
 // };
 
-type TLastToolInvocation = ToolUIPart<StudyUITools>;
+type TLastToolInvocation = DynamicToolUIPart | ToolUIPart<StudyUITools>;
 
 interface StudyContextType {
   studyUserChat: TStudyUserChat;

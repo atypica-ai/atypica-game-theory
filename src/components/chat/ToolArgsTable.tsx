@@ -1,5 +1,5 @@
 import { PlainTextUITools } from "@/ai/tools/types";
-import { ToolUIPart } from "ai";
+import { DynamicToolUIPart, ToolUIPart } from "ai";
 import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
 
@@ -28,7 +28,7 @@ export function ExpandableText({ text }: { text: string }) {
 export default function ToolArgsTable({
   toolInvocation,
 }: {
-  toolInvocation: Omit<ToolUIPart<PlainTextUITools>, "type">;
+  toolInvocation: Omit<DynamicToolUIPart | ToolUIPart<PlainTextUITools>, "type">;
 }) {
   const mask = (value: string) => {
     return value; // 方便排查，最近先不 mask 了

@@ -1,6 +1,6 @@
 import { RequestInteractionFormToolMessage } from "@/app/(interviewProject)/components/RequestInteractionFormToolMessage";
 import { TInterviewMessageWithTool } from "@/app/(interviewProject)/types";
-import { getToolName, isToolUIPart } from "ai";
+import { getToolName } from "ai";
 import { InterviewToolName } from "./types";
 
 export const InterviewToolUIPartDisplay = ({
@@ -8,10 +8,6 @@ export const InterviewToolUIPartDisplay = ({
 }: {
   toolUIPart: TInterviewMessageWithTool["parts"][number];
 }) => {
-  if (!isToolUIPart(toolUIPart)) {
-    return null;
-  }
-
   switch (toolUIPart.type) {
     case `tool-${InterviewToolName.requestInteractionForm}`:
       return <RequestInteractionFormToolMessage toolInvocation={toolUIPart} />;

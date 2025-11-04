@@ -8,7 +8,9 @@ import { InputJsonValue, ITXClientDenyList } from "@/prisma/client/runtime/libra
 import { prisma } from "@/prisma/prisma";
 import {
   convertToModelMessages,
+  DynamicToolUIPart,
   generateId,
+  getToolName,
   isToolUIPart,
   ModelMessage,
   StepResult,
@@ -89,16 +91,27 @@ export function appendStepToStreamingMessage<T extends ToolSet>(
   // 不管是哪个 step，都有可能有 toolCalls，所以要放在外面。
   // 另外，text part 要放在 toolCalls part 的前面，规则是这样的，先文本再执行。
   for (const toolCall of step.toolCalls) {
-    let toolPart: ToolUIPart = {
-      type: `tool-${toolCall.toolName}`,
-      state: "input-available",
-      input: toolCall.input,
-      toolCallId: toolCall.toolCallId,
-    };
+    let toolPart: ToolUIPart | DynamicToolUIPart;
+    if (toolCall.dynamic) {
+      toolPart = {
+        type: "dynamic-tool",
+        toolName: toolCall.toolName,
+        state: "input-available",
+        input: toolCall.input,
+        toolCallId: toolCall.toolCallId,
+      };
+    } else {
+      toolPart = {
+        type: `tool-${toolCall.toolName}`,
+        state: "input-available",
+        input: toolCall.input,
+        toolCallId: toolCall.toolCallId,
+      };
+    }
     const toolResult = step.toolResults.find((r) => r.toolCallId === toolCall.toolCallId);
     if (toolResult) {
       toolPart = {
-        type: `tool-${toolResult.toolName}`,
+        ...toolPart,
         state: "output-available",
         input: toolResult.input,
         toolCallId: toolCall.toolCallId,
@@ -129,7 +142,9 @@ export function appendChunkToStreamingMessage<T extends ToolSet>(
     // see https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#tool-input-streaming
     // streamingMessage.content += "";
     streamingMessage.parts.push({
-      type: `tool-${chunk.toolName}`,
+      ...(chunk.dynamic
+        ? { type: "dynamic-tool", toolName: chunk.toolName }
+        : { type: `tool-${chunk.toolName}` }),
       toolCallId: chunk.toolCallId,
       input: chunk.input,
       state: "input-available",
@@ -142,7 +157,9 @@ export function appendChunkToStreamingMessage<T extends ToolSet>(
     );
     if (index !== -1) {
       streamingMessage.parts[index] = {
-        type: `tool-${chunk.toolName}`,
+        ...(chunk.dynamic
+          ? { type: "dynamic-tool", toolName: chunk.toolName }
+          : { type: `tool-${chunk.toolName}` }),
         toolCallId: chunk.toolCallId,
         input: chunk.input,
         state: "output-available",
@@ -156,7 +173,9 @@ export function appendChunkToStreamingMessage<T extends ToolSet>(
     );
     if (index !== -1) {
       streamingMessage.parts[index] = {
-        type: `tool-${chunk.toolName}`,
+        ...(chunk.dynamic
+          ? { type: "dynamic-tool", toolName: chunk.toolName }
+          : { type: `tool-${chunk.toolName}` }),
         toolCallId: chunk.toolCallId,
         input: chunk.input,
         state: "output-error",
@@ -381,12 +400,8 @@ function _calculateToolUseCount(dbMessages: ChatMessage[]) {
       const count = { ..._count };
       ((message.parts ?? []) as ChatMessagePart[]).forEach((_part) => {
         const part = convertToV5MessagePart(_part);
-        if (
-          part.type.startsWith("tool-") &&
-          "toolCallId" in part &&
-          part.state === "output-available"
-        ) {
-          const toolName = part.type.slice(5) as ToolName;
+        if (isToolUIPart(part) && part.state === "output-available") {
+          const toolName = getToolName(part) as ToolName;
           count[toolName] = (count[toolName] || 0) + 1;
         }
         // if (_part.type === "tool-invocation") {

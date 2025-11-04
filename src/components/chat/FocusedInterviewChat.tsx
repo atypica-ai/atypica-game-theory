@@ -10,7 +10,7 @@ import { useDevice } from "@/hooks/use-device";
 import { useDocumentVisibility } from "@/hooks/use-document-visibility";
 import { cn } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
-import { getToolName, isToolUIPart } from "ai";
+import { getToolOrDynamicToolName, isToolOrDynamicToolUIPart } from "ai";
 import { AnimatePresence, motion } from "framer-motion";
 import { CheckIcon, Ear, Keyboard, Loader2Icon, Send, XIcon } from "lucide-react";
 import { Locale, useTranslations } from "next-intl";
@@ -353,13 +353,13 @@ export function FocusedInterviewChat<
                     );
                   }
 
-                  if (isToolUIPart(part)) {
+                  if (isToolOrDynamicToolUIPart(part)) {
                     return (
                       <div
                         key={index}
                         className="my-4 text-sm text-center text-muted-foreground/50 font-normal font-mono"
                       >
-                        {t("toolCalling")} {getToolName(part)}
+                        {t("toolCalling")} {getToolOrDynamicToolName(part)}
                         {part.state === "output-available" ? (
                           <CheckIcon className="size-3 inline-block ml-2 text-green-500" />
                         ) : null}

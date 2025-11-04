@@ -6,7 +6,13 @@ import ToolResultTable from "@/components/chat/ToolResultTable";
 import { Markdown } from "@/components/markdown";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
-import { ToolUIPart } from "ai";
+import {
+  DynamicToolUIPart,
+  getToolOrDynamicToolName,
+  isToolOrDynamicToolUIPart,
+  isToolUIPart,
+  ToolUIPart,
+} from "ai";
 import { motion } from "framer-motion";
 import { BotIcon, ChevronRight, EyeIcon, LoaderIcon, XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -27,7 +33,7 @@ const ToolInvocationMessage = <UI_MESSAGE extends TStudyMessageWithTool>({
   renderToolUIPart,
   isLastToolPart,
 }: {
-  toolInvocation: ToolUIPart<StudyUITools>;
+  toolInvocation: DynamicToolUIPart | ToolUIPart<StudyUITools>;
   renderToolUIPart: (toolPart: UI_MESSAGE["parts"][number]) => ReactNode;
   isLastToolPart?: boolean;
 }) => {
@@ -67,7 +73,7 @@ const ToolInvocationMessage = <UI_MESSAGE extends TStudyMessageWithTool>({
         <CollapsibleTrigger className="w-full flex items-center justify-between gap-2 hover:opacity-90 group">
           <ChevronRight className="h-3 w-3 transition-transform group-data-[state=open]:rotate-90 text-primary" />
           <div className="ml-1 my-2 font-bold text-xs text-primary truncate">
-            exec {toolInvocation.type.slice(5) /* dirty way to extract toolName */}
+            exec {getToolOrDynamicToolName(toolInvocation)}
           </div>
           <div
             className="shrink-0 text-foreground/70 ml-auto mr-2 p-2 hover:bg-zinc-100 hover:dark:bg-zinc-900 rounded-md flex items-center gap-2 cursor-pointer"
@@ -90,7 +96,13 @@ const ToolInvocationMessage = <UI_MESSAGE extends TStudyMessageWithTool>({
               <ToolResultTable toolInvocation={toolInvocation} />
               <div className="ml-1 mt-2 mb-1 text-primary not-dark:font-bold">&gt;_ message</div>
               <div className="text-xs p-1 not-dark:text-muted-foreground">
-                <ExpandableText text={toolInvocation.output.plainText ?? ""} />
+                <ExpandableText
+                  text={
+                    toolInvocation.type === "dynamic-tool"
+                      ? JSON.stringify(toolInvocation.output)
+                      : (toolInvocation.output.plainText ?? "")
+                  }
+                />
               </div>
             </>
           ) : (
@@ -201,9 +213,7 @@ export const SingleMessage = <UI_MESSAGE extends TStudyMessageWithTool>({
     //       ) && !(part.type === "text" && part.text.includes("免费研究额度已经用完")),
     //   );
     // }
-    const lastToolPartIndex = parts.findLastIndex(
-      (part) => part.type.startsWith("tool-") && "toolCallId" in part,
-    );
+    const lastToolPartIndex = parts.findLastIndex((part) => isToolOrDynamicToolUIPart(part));
     return (
       <div className="flex flex-col gap-4">
         {parts.map((part, i) => {
@@ -214,9 +224,17 @@ export const SingleMessage = <UI_MESSAGE extends TStudyMessageWithTool>({
             // } else if (part.type === "source") {
             //   return <PlainText key={i}>{JSON.stringify(part.source)}</PlainText>;
           } else if (part.type === "dynamic-tool") {
-            // 为下面的 else if 条件分支排除 dynamic tool
-            return <PlainText key={i}>{part.toolName}</PlainText>;
-          } else if (part.type.startsWith("tool-") && "toolCallId" in part) {
+            // 通过 MCP 添加的 Tools 会是 dynamic-tools
+            return (
+              <ToolInvocationMessage
+                key={i}
+                toolInvocation={part}
+                isLastToolPart={isLastMessage && i === lastToolPartIndex}
+                // addToolResult={addToolResult}
+                renderToolUIPart={renderToolUIPart}
+              />
+            );
+          } else if (isToolUIPart(part)) {
             return (
               <ToolInvocationMessage
                 key={i}
