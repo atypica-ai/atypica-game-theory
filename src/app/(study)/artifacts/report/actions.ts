@@ -1,8 +1,11 @@
 "use server";
 import { generateReportPDF } from "@/app/(study)/artifacts/lib/pdf";
+import { s3SignedUrl } from "@/lib/attachments/s3";
 import { withAuth } from "@/lib/request/withAuth";
-import { AnalystReportExtra } from "@/prisma/client";
+import { AnalystReport, AnalystReportExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
+import { mergeExtra } from "@/prisma/utils";
+import { waitUntil } from "@vercel/functions";
 import { forbidden } from "next/navigation";
 
 export async function generateReportPDFAction(reportToken: string): Promise<{
@@ -61,4 +64,45 @@ export async function generateReportPDFAction(reportToken: string): Promise<{
       pdfUrl,
     };
   });
+}
+
+export async function reportCoverObjectUrlToHttpUrl(
+  analystReport: Pick<AnalystReport, "id" | "extra">,
+): Promise<{
+  signedCoverObjectUrl: string;
+} | null> {
+  const extra = analystReport.extra as AnalystReportExtra | null;
+
+  if (!extra || !extra.coverObjectUrl) {
+    return null;
+  }
+
+  let signedCoverObjectUrl: string;
+
+  if (
+    extra.s3SignedCoverObjectUrl &&
+    extra.s3SignedCoverObjectUrlExpiresAt &&
+    extra.s3SignedCoverObjectUrlExpiresAt > Date.now() + 60 * 60 * 1000
+  ) {
+    // s3SignedUrl exists and expires in the next hour
+    signedCoverObjectUrl = extra.s3SignedCoverObjectUrl;
+  } else {
+    const signingDate = new Date();
+    const expiresIn = 7 * 24 * 3600; // in seconds
+    signedCoverObjectUrl = await s3SignedUrl(extra.coverObjectUrl, { signingDate, expiresIn });
+    waitUntil(
+      mergeExtra({
+        tableName: "AnalystReport",
+        id: analystReport.id,
+        extra: {
+          s3SignedCoverObjectUrl: signedCoverObjectUrl,
+          s3SignedCoverObjectUrlExpiresAt: signingDate.valueOf() + expiresIn * 1000,
+        },
+      }),
+    );
+  }
+
+  return {
+    signedCoverObjectUrl,
+  };
 }

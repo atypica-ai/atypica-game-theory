@@ -1,8 +1,8 @@
 "use server";
+import { reportCoverObjectUrlToHttpUrl } from "@/app/(study)/artifacts/report/actions";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
 import { GoogleAnalyticsReporter, PageViewsReport } from "@/lib/analytics/google/reporter";
-import { s3SignedUrl } from "@/lib/attachments/s3";
 import { ServerActionResult } from "@/lib/serverAction";
 import { Analyst, AnalystReport, User, UserChat } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
@@ -99,10 +99,10 @@ export async function fetchTopPageViewsAction(
         let coverUrl: string | undefined;
 
         if (report.extra && typeof report.extra === "object" && "coverObjectUrl" in report.extra) {
-          const coverObjectUrl = report.extra.coverObjectUrl as string;
-          if (coverObjectUrl) {
+          const result = await reportCoverObjectUrlToHttpUrl(report);
+          if (result) {
             try {
-              coverUrl = await s3SignedUrl(coverObjectUrl);
+              coverUrl = result.signedCoverObjectUrl;
             } catch (error) {
               console.error(`Failed to generate signed URL for report ${report.id}:`, error);
             }

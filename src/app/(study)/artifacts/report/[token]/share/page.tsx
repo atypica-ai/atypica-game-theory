@@ -1,15 +1,59 @@
+import { reportCoverObjectUrlToHttpUrl } from "@/app/(study)/artifacts/report/actions";
+import { proxiedImageCdnUrl } from "@/app/(system)/cdn/lib";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { generatePageMetadata } from "@/lib/request/metadata";
 import { truncateForTitle } from "@/lib/textUtils";
 import { prisma } from "@/prisma/prisma";
 import { Metadata } from "next";
 import { getLocale } from "next-intl/server";
+import { unstable_cache } from "next/cache";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import ReportSharePageClient from "./ReportSharePageClient";
 
-// generateMetadata 需要访问数据库
 export const dynamic = "force-dynamic";
+
+/**
+ * 缓存的报告数据查询函数
+ *
+ * unstable_cache 原理：
+ * - 函数参数会自动成为缓存key的一部分
+ * - 实际缓存key: ["analyst-report-share", reportToken]
+ * - 不同的 reportToken 有独立的缓存项
+ * - 缓存时间: 1小时
+ *
+ * 缓存清除：
+ * 在需要清除缓存时使用: revalidateTag("analyst-report-share")
+ */
+const getCachedReportData = unstable_cache(
+  async (reportToken: string) => {
+    const report = await prisma.analystReport.findUnique({
+      where: { token: reportToken },
+      select: {
+        id: true,
+        analyst: {
+          select: {
+            brief: true,
+            topic: true,
+            studyUserChat: {
+              select: {
+                token: true,
+                title: true,
+              },
+            },
+          },
+        },
+        extra: true,
+      },
+    });
+    return report;
+  },
+  ["analyst-report-share"], // 基础key + reportToken参数 = 完整缓存key
+  {
+    tags: ["analyst-report-share"], // 用于批量清除缓存
+    revalidate: 3600, // 1小时缓存
+  },
+);
 
 export async function generateMetadata({
   params,
@@ -18,21 +62,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const locale = await getLocale();
   const { token: reportToken } = await params;
-  const report = await prisma.analystReport.findUnique({
-    where: { token: reportToken },
-    select: {
-      analyst: {
-        select: {
-          brief: true,
-          topic: true,
-          studyUserChat: { select: { title: true } },
-        },
-      },
-    },
-  });
+
+  const report = await getCachedReportData(reportToken);
+
   if (!report) {
     return {};
   }
+
   const title =
     "📝 " +
     truncateForTitle(report.analyst.studyUserChat?.title || report.analyst.brief, {
@@ -43,28 +79,25 @@ export async function generateMetadata({
     maxDisplayWidth: 300,
     suffix: "...",
   }).replace(/[\n\r]/g, " ");
-  return generatePageMetadata({ title, description, locale });
+
+  let image: string | undefined;
+  const result = await reportCoverObjectUrlToHttpUrl(report);
+  if (result) {
+    // 国内和国外都用 CDN，用同一个 CDN
+    image = proxiedImageCdnUrl({
+      src: result.signedCoverObjectUrl,
+    });
+  }
+
+  return generatePageMetadata({ title, description, locale, image });
 }
 
 async function ReportSharePage({ reportToken }: { reportToken: string }) {
-  const report = await prisma.analystReport.findUnique({
-    where: { token: reportToken },
-    select: {
-      analyst: {
-        select: {
-          studyUserChat: {
-            select: {
-              token: true,
-              title: true,
-            },
-          },
-          topic: true,
-        },
-      },
-    },
-  });
+  // 使用同一个缓存查询 - 会命中缓存，不会重复数据库请求
+  const report = await getCachedReportData(reportToken);
   if (!report) notFound();
   if (!report.analyst?.studyUserChat?.token) notFound();
+
   const studyReplayUrl = `/study/${report.analyst.studyUserChat.token}/share?replay=1`;
   return (
     <ReportSharePageClient

@@ -13,7 +13,7 @@ const POSTER_IMAGE = (() => {
     }
     return `${s3Config.origin}${homePageVideoPoster}`;
   } catch {
-    return null;
+    return undefined;
   }
 })();
 
@@ -42,10 +42,12 @@ If "physics" models the "objective world," then "language models" model the "sub
 export function generatePageMetadata({
   title,
   description,
+  image,
   locale,
 }: {
   title?: string;
   description?: string;
+  image?: string;
   locale: Locale;
 }): Pick<Metadata, "openGraph" | "twitter"> & {
   title: string;
@@ -57,6 +59,8 @@ export function generatePageMetadata({
   description = description || defaultDescription;
   title = title || defaultTitle;
 
+  image = image || POSTER_IMAGE;
+
   return {
     title,
     description,
@@ -65,10 +69,10 @@ export function generatePageMetadata({
       description,
       type: "website",
       locale,
-      images: POSTER_IMAGE
+      images: image
         ? [
             {
-              url: POSTER_IMAGE,
+              url: image,
               width: 1200,
               height: 630,
               alt: title,
@@ -81,7 +85,7 @@ export function generatePageMetadata({
       card: "summary_large_image",
       title,
       description,
-      images: POSTER_IMAGE ? [POSTER_IMAGE] : [],
+      images: image ? [image] : [],
       creator: "@BMRLab",
       site: "@atypica_AI",
     },

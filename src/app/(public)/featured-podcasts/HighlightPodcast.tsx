@@ -22,7 +22,7 @@ export function HighlightPodcast({
   const t = useTranslations("FeaturedPodcastsPage");
   return (
     <section className="container mx-auto px-4 py-10 md:py-28">
-      <div className="max-w-6xl mx-auto bg-card border border-border rounded-2xl p-6 sm:p-8 md:p-12 relative overflow-hidden shadow-lg">
+      <div className="max-w-6xl mx-auto bg-card border border-border rounded-2xl p-8 sm:p-8 md:p-12 relative overflow-hidden shadow-lg">
         {/* Share Button - Top Right */}
         {/*<Button
           variant="outline"
@@ -35,12 +35,10 @@ export function HighlightPodcast({
 
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-8">
           <div className="flex-1">
-            <h1 className="font-EuclidCircularA font-medium text-2xl md:text-4xl tracking-tight mb-4 line-clamp-2 sm:line-clamp-1">
+            <h1 className="font-EuclidCircularA font-medium text-2xl md:text-3xl tracking-tight mb-4 line-clamp-2 sm:line-clamp-1">
               {studyUserChat.title}
             </h1>
-            <h2 className="text-base md:text-lg text-muted-foreground line-clamp-4 sm:mb-6">
-              {analyst.topic}
-            </h2>
+            <h2 className="text-muted-foreground line-clamp-4 sm:mb-6">{analyst.topic}</h2>
 
             {/* Metadata */}
             <div className="flex items-center gap-4 text-sm text-muted-foreground">

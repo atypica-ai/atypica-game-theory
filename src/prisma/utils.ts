@@ -5,7 +5,7 @@ export async function mergeExtra({
   extra,
   id,
 }: {
-  tableName: "User" | "Sage" | "SageSource" | "SageInterview" | "UserProfile";
+  tableName: "User" | "Sage" | "SageSource" | "SageInterview" | "UserProfile" | "AnalystReport";
   extra: Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
   id: number;
 }) {

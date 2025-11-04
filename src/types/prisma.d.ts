@@ -54,7 +54,11 @@ declare module "@/prisma/client" {
 
   export type AnalystReportExtra = Partial<{
     coverObjectUrl: string;
+    s3SignedCoverObjectUrl: string;
+    s3SignedCoverObjectUrlExpiresAt: number; // timestamp millis
     pdfObjectUrl: string;
+    s3SignedPdfObjectUrl: string;
+    s3SignedPdfObjectUrlExpiresAt: number; // timestamp millis
   }>;
 
   export type UserChatExtra = Partial<{

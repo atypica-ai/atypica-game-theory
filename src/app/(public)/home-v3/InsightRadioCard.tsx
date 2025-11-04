@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ChevronRightIcon, Volume2Icon } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { pickRandomFeaturedPodcast } from "../featured-podcasts/actions";
@@ -28,9 +28,10 @@ export function InsightRadioCard() {
   const t = useTranslations("HomePageV3.HeroSection.insightRadio");
   const [podcast, setPodcast] = useState<FeaturedPodcast | null>(null);
   const [loading, setLoading] = useState(true);
+  const locale = useLocale();
 
   useEffect(() => {
-    pickRandomFeaturedPodcast()
+    pickRandomFeaturedPodcast({ locale })
       .then((result) => {
         if (result.success && result.data) {
           setPodcast(result.data);
@@ -41,7 +42,7 @@ export function InsightRadioCard() {
         console.error("Failed to fetch podcast:", error);
         setLoading(false);
       });
-  }, []);
+  }, [locale]);
 
   if (loading) {
     return null;

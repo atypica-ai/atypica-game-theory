@@ -206,9 +206,7 @@ export function FeaturedPodcastsClient() {
             <div className="text-center py-12">
               <Volume2Icon className="w-16 h-16 text-muted-foreground bg-muted rounded-full p-4 mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-foreground mb-2">{t("noPodcastsYet")}</h3>
-              <p className="text-muted-foreground mb-6">
-                {t("noPodcastsYetDescription")}
-              </p>
+              <p className="text-muted-foreground mb-6">{t("noPodcastsYetDescription")}</p>
               <Button asChild>
                 <Link href="/newstudy">{t("startNewStudy")}</Link>
               </Button>
@@ -244,9 +242,7 @@ export function FeaturedPodcastsClient() {
                   </div>
                   <div className="flex-1">
                     <h3 className="text-xl font-semibold text-foreground mb-2">{t("business")}</h3>
-                    <p className="text-muted-foreground">
-                      {t("businessDescription")}
-                    </p>
+                    <p className="text-muted-foreground">{t("businessDescription")}</p>
                   </div>
                 </div>
                 <div className="text-muted-foreground">
@@ -308,9 +304,7 @@ export function FeaturedPodcastsClient() {
                     <h3 className="text-xl font-semibold text-foreground mb-2">
                       {t("societyCulture")}
                     </h3>
-                    <p className="text-muted-foreground">
-                      {t("societyCultureDescription")}
-                    </p>
+                    <p className="text-muted-foreground">{t("societyCultureDescription")}</p>
                   </div>
                 </div>
                 <div className="text-muted-foreground">
@@ -363,9 +357,7 @@ export function FeaturedPodcastsClient() {
       <section className="container mx-auto px-4 py-16 border-t border-border">
         <div className="max-w-3xl mx-auto text-center">
           <h3 className="text-2xl md:text-3xl font-bold mb-4">{t("ctaTitle")}</h3>
-          <p className="text-muted-foreground mb-8">
-            {t("ctaDescription")}
-          </p>
+          <p className="text-muted-foreground mb-8">{t("ctaDescription")}</p>
           <Button asChild size="lg">
             <Link href="/newstudy">{t("createMyPodcast")}</Link>
           </Button>

@@ -4,8 +4,8 @@ import { StatReporter } from "@/ai/tools/types";
 import { determineKindAndGeneratePodcast } from "@/app/(podcast)/lib/evaluate";
 import { generatePodcast } from "@/app/(podcast)/lib/generation";
 import { PodcastKind } from "@/app/(podcast)/types";
+import { reportCoverObjectUrlToHttpUrl } from "@/app/(study)/artifacts/report/actions";
 import { checkAdminAuth } from "@/app/admin/actions";
-import { s3SignedUrl } from "@/lib/attachments/s3";
 import { rootLogger } from "@/lib/logging";
 import { ServerActionResult } from "@/lib/serverAction";
 import { generateChatTitle } from "@/lib/userChat/lib";
@@ -141,6 +141,7 @@ export async function fetchPublicFeaturedStudies({
     distinct: ["analystId"],
     orderBy: [{ analystId: "desc" }, { createdAt: "desc" }],
     select: {
+      id: true,
       analystId: true,
       token: true,
       extra: true,
@@ -152,10 +153,10 @@ export async function fetchPublicFeaturedStudies({
       latestReports.map(async (report) => {
         const { analystId, token, extra } = report;
         if (extra && typeof extra === "object" && "coverObjectUrl" in extra) {
-          const coverObjectUrl = extra.coverObjectUrl as string;
-          if (coverObjectUrl) {
+          const result = await reportCoverObjectUrlToHttpUrl(report);
+          if (result) {
             try {
-              const coverUrl = await s3SignedUrl(coverObjectUrl);
+              const coverUrl = result.signedCoverObjectUrl;
               return [analystId, { token, coverUrl }] as [number, TReportInfo];
             } catch {}
           }

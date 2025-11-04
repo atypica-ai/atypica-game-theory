@@ -1,11 +1,13 @@
 "use server";
-import { s3SignedUrl, uploadToS3 } from "@/lib/attachments/s3";
+import { reportCoverObjectUrlToHttpUrl } from "@/app/(study)/artifacts/report/actions";
+import { uploadToS3 } from "@/lib/attachments/s3";
 import { getRequestOrigin } from "@/lib/request/headers";
 import { AnalystReportExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { createHash } from "node:crypto";
 
 export async function generateReportScreenshot(report: {
+  id: number;
   token: string;
   analyst: {
     userId: number;
@@ -18,9 +20,9 @@ export async function generateReportScreenshot(report: {
   // screenshotBlob: Blob;
   coverUrl: string;
 }> {
-  const coverObjectUrl = report.extra?.coverObjectUrl;
-  if (coverObjectUrl) {
-    const coverUrl = await s3SignedUrl(coverObjectUrl);
+  const result = await reportCoverObjectUrlToHttpUrl(report);
+  if (result) {
+    const coverUrl = result.signedCoverObjectUrl;
     return {
       coverUrl,
     };
