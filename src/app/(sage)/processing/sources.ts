@@ -1,9 +1,8 @@
 import "server-only";
 
+import { parsePDFToText, parseURLToText } from "@/ai/reader";
 import { SageSourceContent, SageSourceExtra } from "@/app/(sage)/types";
-import { s3SignedUrl } from "@/lib/attachments/s3";
 import { rootLogger } from "@/lib/logging";
-import { proxiedFetch } from "@/lib/proxy/fetch";
 import { SageSource } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { mergeExtra } from "@/prisma/utils";
@@ -84,16 +83,17 @@ async function processSingleSource(
         title = extractedText.substring(0, 100).split("\n")[0] || "Text Source";
         break;
       case "file":
-        const { objectUrl, name } = source.content;
-        const fileUrl = await s3SignedUrl(objectUrl);
-        logger.info({ msg: "Parsing file with Jina API", name });
-        extractedText = await parseWithJinaAPI(fileUrl);
+        const { objectUrl, name, mimeType } = source.content;
+        if (mimeType === "application/pdf") {
+          extractedText = await parsePDFToText({ name, objectUrl, mimeType });
+        } else {
+          throw new Error(`Unsupported file type: ${mimeType}`);
+        }
         title = name || "File Source";
         break;
       case "url":
         const { url } = source.content;
-        logger.info({ msg: "Parsing URL with Jina API", url });
-        extractedText = await parseWithJinaAPI(url);
+        extractedText = await parseURLToText({ url });
         // Extract title from first line or use URL
         title = extractedText.substring(0, 100).split("\n")[0] || url;
         break;
@@ -143,32 +143,4 @@ async function processSingleSource(
 
     throw error;
   }
-}
-
-/**
- * Parse content (file or URL) using Jina API
- */
-async function parseWithJinaAPI(url: string): Promise<string> {
-  const response = await proxiedFetch("https://r.jina.ai/", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${process.env.JINA_API_KEY}`,
-    },
-    body: JSON.stringify({ url }),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    rootLogger.error({
-      msg: "Jina API failed to parse content",
-      url,
-      status: response.status,
-      error: errorText,
-    });
-    throw new Error(`Failed to parse content: ${response.statusText}`);
-  }
-
-  const text = await response.text();
-  return text;
 }
