@@ -1,6 +1,7 @@
 import "server-only";
 
 import { defaultProviderOptions, llm } from "@/ai/provider";
+import { parsePDFToText } from "@/ai/reader";
 import { initPersonaImportStatReporter } from "@/ai/tools/stats";
 import { savePersonaTool } from "@/ai/tools/tools";
 import { ToolName } from "@/ai/tools/types";
@@ -12,6 +13,7 @@ import { getDeployRegion } from "@/lib/request/deployRegion";
 import { detectInputLanguage } from "@/lib/textUtils";
 import { ChatMessageAttachment, PersonaImport, PersonaImportExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
+import { OpenAIResponsesProviderOptions } from "@ai-sdk/openai";
 import { ModelMessage, UserModelMessage, generateObject, stepCountIs, streamText } from "ai";
 import { getLocale } from "next-intl/server";
 import { z } from "zod/v3";
@@ -143,7 +145,31 @@ async function attachmentToDataUrl(attachment: ChatMessageAttachment) {
   return dataUrl;
 }
 
+/**
+ * 解析 PDF 不消耗 Tokens
+ */
 async function attachmentToContext(
+  personaImport: Omit<PersonaImport, "attachments"> & {
+    attachments: ChatMessageAttachment[];
+  },
+): Promise<string> {
+  const attachment = personaImport.attachments[0];
+  if (!attachment) {
+    throw new Error("No attachment found");
+  }
+  const { name, objectUrl, mimeType } = attachment;
+  if (mimeType !== "application/pdf") {
+    throw new Error("Unsupported attachment type");
+  }
+  const parsedContext = await parsePDFToText({ name, objectUrl, mimeType });
+
+  return parsedContext;
+}
+
+/**
+ * 这个方法不用了，直接使用 jina 来转换成文本，也不对文本进行预处理，直接使用原文
+ */
+async function attachmentToContextWithLLM(
   personaImport: Omit<PersonaImport, "attachments"> & {
     attachments: ChatMessageAttachment[];
   },
@@ -234,7 +260,10 @@ async function attachmentToContext(
       onFinish: async (result) => {
         logger.info("attachmentToContext completed");
         resolve(null);
-        parsedContext = result.text;
+        if (result.text) {
+          // 使用 createOpenAI 而不是 createOpenAICompatible 时, 这种情况 text 是空的, 应该是个 bug
+          parsedContext = result.text;
+        }
       },
 
       onError: ({ error }) => {
@@ -401,7 +430,18 @@ async function analyzeInterviewCompleteness(
 
   try {
     const result = await generateObject({
-      model: llm("gemini-2.5-pro"),
+      // model: llm("gemini-2.5-pro"),
+      model: llm("gpt-5"),
+      experimental_repairText: async (options) => {
+        console.log(options);
+        return options.text;
+      },
+      providerOptions: {
+        openai: {
+          reasoningSummary: "auto",
+          reasoningEffort: "minimal",
+        } satisfies OpenAIResponsesProviderOptions,
+      },
       system: personaAnalysisPrompt({ locale }),
       schema: analysisSchema,
       messages: messages,
