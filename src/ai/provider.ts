@@ -10,12 +10,18 @@ import { createVertex } from "@ai-sdk/google-vertex";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { createXai } from "@ai-sdk/xai";
 
-const openai = createOpenAICompatible({
+const openAICompatible = createOpenAICompatible({
   name: "litellm",
   apiKey: process.env.OPENAI_API_KEY,
   baseURL: process.env.OPENAI_BASE_URL!,
   includeUsage: true,
+  supportsStructuredOutputs: true,
 });
+
+// const openAI = createOpenAI({
+//   apiKey: process.env.OPENAI_API_KEY,
+//   baseURL: process.env.OPENAI_BASE_URL!,
+// });
 
 const siliconflow = createOpenAICompatible({
   name: "siliconflow",
@@ -137,6 +143,7 @@ export type LLMModelName =
   | "qwen3-235b-a22b";
 
 export function llm(modelName: LLMModelName) {
+  const openai = openAICompatible;
   const deployRegion = getDeployRegion();
   if (deployRegion === "mainland") {
     switch (modelName) {
