@@ -182,7 +182,13 @@
       "invalidToken": "分享链接无效或已过期",
       "selectLanguage": "选择语言",
       "languageDescription": "选择您在访谈中的首选语言",
-      "confirm": "确认"
+      "confirm": "确认",
+      "welcomeTitle": "欢迎参加本次访谈",
+      "welcomeSubtitleLine1": "欢迎！您将看到一些广告并被要求提供详细反馈。",
+      "welcomeSubtitleLine2": "请在回答中保持具体和诚实 - 没有对错之分。",
+      "microphoneLabel": "麦克风",
+      "privacyAgreementLabel": "我同意隐私政策并同意参与本次研究",
+      "privacyCheckboxRequired": "您必须同意隐私政策才能继续"
     },
     "sessionChat": {
       "interviewDetails": "访谈会话聊天",
