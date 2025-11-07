@@ -216,6 +216,7 @@ export const fetchFeaturedPodcasts = unstable_cache(
   },
   ["featured-podcasts"],
   {
+    tags: ["featured-podcasts"],
     revalidate: 600, // 10分钟缓存
   },
 );

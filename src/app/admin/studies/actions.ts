@@ -17,7 +17,7 @@ import { waitUntil } from "@vercel/functions";
 import { UIMessage } from "ai";
 import { Locale } from "next-intl";
 import { getLocale } from "next-intl/server";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { after } from "next/server";
 import { AdminPermission } from "../types";
 
@@ -388,6 +388,7 @@ export async function toggleFeaturedStatus(analyst: Analyst): Promise<ServerActi
   }
 
   revalidatePath("/admin/studies");
+  revalidateTag("featured-studies");
   return {
     success: true,
     data: undefined,

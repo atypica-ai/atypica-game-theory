@@ -159,7 +159,8 @@ export function FeaturedPodcastsClient() {
 
                     <div className="flex-1 min-w-0 sm:pr-8">
                       <h3 className="font-semibold text-base sm:text-lg text-foreground mb-2 line-clamp-2 sm:line-clamp-1 group-hover:text-primary transition-colors">
-                        {featuredPodcast.studyUserChat.title}
+                        {featuredPodcast.podcast.extra.metadata?.title ||
+                          featuredPodcast.studyUserChat.title}
                       </h3>
                       <p className="text-muted-foreground text-sm mb-4 line-clamp-3 sm:line-clamp-2">
                         {featuredPodcast.analyst.topic}

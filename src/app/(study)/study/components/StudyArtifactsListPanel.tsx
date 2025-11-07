@@ -162,7 +162,7 @@ export default function StudyArtifactsListPanel({
                             </div>
                           ) : podcast.script ? (
                             <div className="line-clamp-2">
-                              {truncateForTitle(podcast.script, {
+                              {truncateForTitle(podcast.extra.metadata?.title || podcast.script, {
                                 maxDisplayWidth: 60,
                                 suffix: "...",
                               })}

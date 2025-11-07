@@ -36,7 +36,7 @@ export function HighlightPodcast({
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-8">
           <div className="flex-1">
             <h1 className="font-EuclidCircularA font-medium text-2xl md:text-3xl tracking-tight mb-4 line-clamp-2 sm:line-clamp-1">
-              {studyUserChat.title}
+              {podcast.extra.metadata?.title || studyUserChat.title}
             </h1>
             <h2 className="text-muted-foreground line-clamp-4 sm:mb-6">{analyst.topic}</h2>
 

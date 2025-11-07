@@ -147,7 +147,7 @@ export default function PodcastsListPanel({
                       {isGenerating ? (
                         <span className="text-muted-foreground italic">{t("generating")}</span>
                       ) : podcast.script ? (
-                        truncateForTitle(podcast.script, {
+                        truncateForTitle(podcast.extra.metadata?.title || podcast.script, {
                           maxDisplayWidth: 60,
                           suffix: "...",
                         })

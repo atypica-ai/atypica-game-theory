@@ -14,6 +14,7 @@ import { createUserChat } from "@/lib/userChat/lib";
 import {
   Analyst,
   AnalystPodcast,
+  AnalystPodcastExtra,
   AnalystReport,
   ChatMessageAttachment,
   Persona,
@@ -571,10 +572,12 @@ export async function fetchAnalystPodcastsOfStudyUserChat({
   studyUserChatToken: string;
 }): Promise<
   ServerActionResult<
-    Pick<
+    (Pick<
       AnalystPodcast,
       "id" | "token" | "analystId" | "script" | "generatedAt" | "createdAt" | "updatedAt"
-    >[]
+    > & {
+      extra: AnalystPodcastExtra;
+    })[]
   >
 > {
   const podcasts = await prisma.analystPodcast.findMany({
@@ -593,12 +596,16 @@ export async function fetchAnalystPodcastsOfStudyUserChat({
       generatedAt: true,
       createdAt: true,
       updatedAt: true,
+      extra: true,
     },
     orderBy: { id: "desc" },
   });
   return {
     success: true,
-    data: podcasts,
+    data: podcasts.map(({ extra, ...podcast }) => ({
+      ...podcast,
+      extra: extra as AnalystPodcastExtra,
+    })),
   };
 }
 

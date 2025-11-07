@@ -5,6 +5,7 @@ import {
   CreditCardIcon,
   DatabaseIcon,
   FileTextIcon,
+  HeadphonesIcon,
   MessageCircleIcon,
   MonitorPlayIcon,
   StarIcon,
@@ -44,6 +45,17 @@ export default function AdminDashboard() {
             <h2 className="text-xl font-semibold">Reports</h2>
           </div>
           <p className="text-sm text-muted-foreground">Manage generated study reports</p>
+        </Link>
+
+        <Link
+          href="/admin/analyst-reports"
+          className="rounded-lg border bg-card p-4 shadow-sm hover:shadow-md transition-shadow"
+        >
+          <div className="flex items-center mb-2">
+            <HeadphonesIcon className="h-5 w-5 mr-2" />
+            <h2 className="text-xl font-semibold">Podcasts</h2>
+          </div>
+          <p className="text-sm text-muted-foreground">Manage generated study podcasts</p>
         </Link>
 
         <Link
