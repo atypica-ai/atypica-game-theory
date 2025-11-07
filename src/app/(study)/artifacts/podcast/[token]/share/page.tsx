@@ -38,10 +38,14 @@ export async function generateMetadata({
     return {};
   }
 
-  const { analyst, studyUserChat, report } = result.data;
+  const { podcast, analyst, studyUserChat, report } = result.data;
 
   const title =
-    "🎙️ " + truncateForTitle(studyUserChat.title, { maxDisplayWidth: 100, suffix: "..." });
+    "🎙️ " +
+    truncateForTitle(podcast.extra.metadata?.title || studyUserChat.title, {
+      maxDisplayWidth: 100,
+      suffix: "...",
+    });
 
   const description = truncateForTitle(analyst.topic, {
     maxDisplayWidth: 300,
@@ -78,11 +82,14 @@ async function PodcastSharePage({ podcastToken }: { podcastToken: string }) {
     }
   }
 
+  const title = podcast.extra.metadata?.title || studyUserChat.title;
+
   return (
     <PodcastSharePageClient
       podcastToken={podcastToken}
       analyst={analyst}
-      studyUserChat={studyUserChat}
+      title={title}
+      studyUserChatToken={studyUserChat.token}
       script={podcast.script}
       coverImageUrl={coverImageUrl}
     />

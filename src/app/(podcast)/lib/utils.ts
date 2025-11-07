@@ -18,7 +18,7 @@ export async function podcastObjectUrlToHttpUrl(
 
   const { id, objectUrl } = podcast;
   const extra = (podcast.extra || {}) as AnalystPodcastExtra;
-  const mimeType = extra.mimeType ?? "audio/mpeg";
+  const mimeType = extra.metadata?.mimeType ?? "audio/mpeg";
   let signedObjectUrl: string;
 
   if (

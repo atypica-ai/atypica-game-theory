@@ -151,6 +151,11 @@ declare module "@/prisma/client" {
   }>;
 
   export type AnalystPodcastExtra = Partial<{
+    metadata: {
+      title?: string;
+      mimeType?: string; // 默认是 audio/mpeg，但是还是保存下来
+    };
+
     // Podcast kind determination by LLM with reasoning
     kindDetermination: {
       kind: "deepDive" | "opinionOriented" | "debate";
@@ -158,7 +163,6 @@ declare module "@/prisma/client" {
       systemPrompt?: string; // 覆盖 systemPrompt
     };
 
-    mimeType: string; // 默认是 audio/mpeg，但是还是保存下来
     // S3 签名URL缓存（音频文件）
     s3SignedUrl: string;
     s3SignedUrlExpiresAt: number; // timestamp millis

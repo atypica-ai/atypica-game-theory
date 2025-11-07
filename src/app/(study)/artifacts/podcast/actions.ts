@@ -1,11 +1,19 @@
 "use server";
 import { ServerActionResult } from "@/lib/serverAction";
-import { Analyst, AnalystPodcast, AnalystReportExtra, UserChat } from "@/prisma/client";
+import {
+  Analyst,
+  AnalystPodcast,
+  AnalystPodcastExtra,
+  AnalystReportExtra,
+  UserChat,
+} from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 
 export async function fetchPodcastByToken(podcastToken: string): Promise<
   ServerActionResult<{
-    podcast: Pick<AnalystPodcast, "id" | "token" | "script" | "objectUrl" | "generatedAt">;
+    podcast: Pick<AnalystPodcast, "id" | "token" | "script" | "objectUrl" | "generatedAt"> & {
+      extra: AnalystPodcastExtra;
+    };
     analyst: Pick<Analyst, "id" | "topic">;
     studyUserChat: Pick<UserChat, "token" | "title">;
     report?: {
@@ -36,6 +44,7 @@ export async function fetchPodcastByToken(podcastToken: string): Promise<
               },
             },
           },
+          extra: true,
         },
       }),
       new Promise<null>((resolve) => setTimeout(() => resolve(null), 3000)),
@@ -93,6 +102,7 @@ export async function fetchPodcastByToken(podcastToken: string): Promise<
           script: podcast.script,
           objectUrl: podcast.objectUrl,
           generatedAt: podcast.generatedAt,
+          extra: podcast.extra as AnalystPodcastExtra,
         },
         analyst: {
           id: podcast.analyst.id,

@@ -4,7 +4,7 @@ import GlobalHeader from "@/components/layout/GlobalHeader";
 import { Button } from "@/components/ui/button";
 import UserMenu from "@/components/UserMenu";
 import { proxiedImageLoader } from "@/lib/utils";
-import { Analyst, UserChat } from "@/prisma/client";
+import { Analyst } from "@/prisma/client";
 import { DownloadIcon, Share2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
@@ -43,13 +43,16 @@ function SharePageHeader({
 
 export default function PodcastSharePageClient({
   podcastToken,
-  studyUserChat,
+  analyst,
+  title,
+  studyUserChatToken,
   script,
   coverImageUrl,
 }: {
   podcastToken: string;
   analyst: Pick<Analyst, "id" | "topic">;
-  studyUserChat: Pick<UserChat, "token" | "title">;
+  title: string;
+  studyUserChatToken: string;
   script?: string;
   coverImageUrl?: string;
 }) {
@@ -118,7 +121,7 @@ export default function PodcastSharePageClient({
           {/* Fallback: Show title if no content */}
           {!script && !coverImageUrl && (
             <h1 className="text-xl sm:text-xl md:text-2xl font-medium text-zinc-900 dark:text-zinc-50 leading-tight text-center">
-              {studyUserChat.title}
+              {title}
             </h1>
           )}
         </div>
@@ -128,8 +131,8 @@ export default function PodcastSharePageClient({
       <div className="shrink-0 absolute bottom-0 left-0 w-full">
         <StickyPlayer
           podcastToken={podcastToken}
-          title={studyUserChat.title}
-          studyReplayUrl={`/study/${studyUserChat.token}/share?replay=1`}
+          title={title}
+          studyReplayUrl={`/study/${studyUserChatToken}/share?replay=1`}
           moreInsightRadioUrl="/featured-podcasts"
           autoPlay={true}
         />

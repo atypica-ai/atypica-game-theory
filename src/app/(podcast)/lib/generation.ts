@@ -15,6 +15,7 @@ import {
   ChatMessageAttachment,
 } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
+import { mergeExtra } from "@/prisma/utils";
 import { FilePart, FinishReason, ModelMessage, stepCountIs, streamText } from "ai";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
@@ -122,15 +123,16 @@ export async function generatePodcast({
       where: { id: podcast.id },
       data: { objectUrl, generatedAt: new Date() },
     });
-    await prisma.$executeRaw`
-      UPDATE "AnalystPodcast"
-      SET "extra" = COALESCE("extra", '{}') || ${JSON.stringify({
+    await mergeExtra({
+      tableName: "AnalystPodcast",
+      id: podcast.id,
+      extra: {
         processing: false,
-        mimeType,
-      })}::jsonb,
-          "updatedAt" = NOW()
-      WHERE "id" = ${podcast.id}
-    `;
+        metadata: {
+          mimeType,
+        },
+      } satisfies AnalystPodcastExtra,
+    });
 
     podcast = await prisma.analystPodcast
       .findUniqueOrThrow({ where: { id: podcast.id } })
