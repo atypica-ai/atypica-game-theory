@@ -1,4 +1,4 @@
-import { RequestInteractionFormToolMessage } from "@/app/(interviewProject)/components/RequestInteractionFormToolMessage";
+import { RequestInteractionFormToolMessage } from "@/app/(interviewProject)/components/RequestInteractionForm";
 import { TInterviewMessageWithTool } from "@/app/(interviewProject)/types";
 import { getToolName } from "ai";
 import { InterviewToolName } from "./types";

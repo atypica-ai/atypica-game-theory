@@ -162,6 +162,19 @@ export function FocusedInterviewChat<
     setPartialTranscript(text);
   }, []);
 
+  const lastAssistantMessage = useMemo(() => {
+    return messages.findLast((m) => m.role === "assistant");
+  }, [messages]);
+
+  // Auto show and focus input after AI streaming ends
+  useEffect(() => {
+    if (status === "ready" && lastAssistantMessage) {
+      // Auto show text input when AI finishes response
+      setShowTextInput(true);
+      // Focus will be handled by the next effect
+    }
+  }, [status, lastAssistantMessage]);
+
   // Auto focus input after AI streaming ends
   useEffect(() => {
     if (status === "ready" && textareaRef.current && showTextInput) {
@@ -179,10 +192,6 @@ export function FocusedInterviewChat<
       }, 300);
     }
   }, [showTextInput]);
-
-  const lastAssistantMessage = useMemo(() => {
-    return messages.findLast((m) => m.role === "assistant");
-  }, [messages]);
 
   // streaming 显示的时候，样式变化体验不好，字在乱跳，先固定样式 text-base sm:text-lg
   // const messageDisplayStyle = useMemo(() => {

@@ -1,7 +1,8 @@
 "use client";
 import { ClientMessagePayload, prepareLastUIMessageForRequest } from "@/ai/messageUtilsClient";
-import { fetchInterviewSessionChat } from "@/app/(interviewProject)/actions";
-import { RequestInteractionFormToolMessage } from "@/app/(interviewProject)/components/RequestInteractionFormToolMessage";
+import { fetchInterviewSessionChat, updateInterviewSessionLanguage } from "@/app/(interviewProject)/actions";
+import { LanguageSwitcher } from "@/app/(interviewProject)/components/LanguageSwitcher";
+import { RequestInteractionFormToolMessage } from "@/app/(interviewProject)/components/RequestInteractionForm";
 import { InterviewToolName } from "@/app/(interviewProject)/tools/types";
 import { TInterviewMessageWithTool } from "@/app/(interviewProject)/types";
 import { FocusedInterviewChat } from "@/components/chat/FocusedInterviewChat";
@@ -24,7 +25,8 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { Info, Shield, UsersIcon } from "lucide-react";
 import { Locale, useLocale, useTranslations } from "next-intl";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 
 export function InterviewSessionChatClient({
   project,
@@ -38,15 +40,51 @@ export function InterviewSessionChatClient({
 }) {
   const _locale = useLocale();
 
-  const locale = useMemo(() => {
+  const [currentLocale, setCurrentLocale] = useState<Locale>(() => {
     return preferredLanguage && VALID_LOCALES.includes(preferredLanguage as Locale)
       ? (preferredLanguage as Locale)
       : _locale;
-  }, [_locale, preferredLanguage]);
+  });
+
+  const locale = currentLocale;
 
   const t = useTranslations("InterviewProject.sessionChat");
   const tDetails = useTranslations("InterviewProject.projectDetails");
   const tSessionViewer = useTranslations("InterviewProject.sessionViewer");
+
+  // Handle language change
+  const handleLanguageChange = useCallback(
+    async (newLocale: Locale) => {
+      try {
+        // Update server-side language preference
+        const result = await updateInterviewSessionLanguage({
+          userChatToken,
+          preferredLanguage: newLocale,
+        });
+
+        if (!result.success) {
+          toast.error("Failed to update language preference");
+          return;
+        }
+
+        // Update local state
+        setCurrentLocale(newLocale);
+
+        // Clear messages to trigger form regeneration
+        // Keep only system messages or clear all to start fresh
+        useChatRef.current.setMessages([]);
+
+        // Re-send [READY] message to get new form in new language
+        setTimeout(() => {
+          useChatRef.current.sendMessage({ text: "[READY]" });
+        }, 100);
+      } catch (error) {
+        console.error("Failed to change language:", error);
+        toast.error("Failed to change language");
+      }
+    },
+    [userChatToken],
+  );
 
   const extraRequestPayload = useMemo(() => ({ userChatToken: userChatToken }), [userChatToken]);
 
@@ -197,7 +235,15 @@ export function InterviewSessionChatClient({
 
   if (useChatHelpers.status === "ready" && requestInteractionToolInvocation) {
     return (
-      <FitToViewport className="flex flex-col items-center justify-start h-full p-4 sm:p-8">
+      <FitToViewport className="flex flex-col items-center justify-center h-full p-4 sm:p-8 relative">
+        {/* Language Switcher in top-right corner */}
+        <div className="absolute top-4 right-4 z-10">
+          <LanguageSwitcher
+            currentLocale={locale}
+            onLanguageChange={handleLanguageChange}
+            disabled={useChatHelpers.status === "streaming" || useChatHelpers.status === "submitted"}
+          />
+        </div>
         <RequestInteractionFormToolMessage
           toolInvocation={requestInteractionToolInvocation}
           addToolResult={addToolResult}

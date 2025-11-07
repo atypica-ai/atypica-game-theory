@@ -17,9 +17,9 @@ import { throwServerActionError } from "@/lib/serverAction";
 import { detectInputLanguage } from "@/lib/textUtils";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
-import { generateId, ModelMessage, smoothStream, stepCountIs, streamText } from "ai";
+import { ModelMessage, smoothStream, stepCountIs, streamText } from "ai";
 import { Locale } from "next-intl";
-import { after, NextResponse } from "next/server";
+import { after } from "next/server";
 
 function setBedrockCache(model: `claude-${string}`, coreMessages: ModelMessage[]) {
   if (!model) return coreMessages; // 这句话没意义，只是为了用一下 model
@@ -105,16 +105,31 @@ export async function POST(req: Request) {
   });
 
   // 动态检测用户输入的语言
-  const locale = await detectInputLanguage({
-    text: newMessage.parts // 所有 text parts 的文本合在一起检测
-      .map((part) => (part.type === "text" ? part.text : ""))
-      .join(""),
-    fallbackLocale:
-      sessionExtra.preferredLanguage &&
-      VALID_LOCALES.includes(sessionExtra.preferredLanguage as Locale)
+  // Special handling for [READY] message: use preferredLanguage directly
+  const userMessageText = newMessage.parts
+    .filter((part) => part.type === "text")
+    .map((part) => (part.type === "text" ? part.text : ""))
+    .join("")
+    .trim();
+
+  const locale =
+    userMessageText === "[READY]"
+      ? // For [READY], always use preferredLanguage (don't detect from the text)
+        sessionExtra.preferredLanguage &&
+        VALID_LOCALES.includes(sessionExtra.preferredLanguage as Locale)
         ? (sessionExtra.preferredLanguage as Locale)
-        : undefined,
-  });
+        : "en-US"
+      : // For normal messages, detect language
+        await detectInputLanguage({
+          text: newMessage.parts
+            .map((part) => (part.type === "text" ? part.text : ""))
+            .join(""),
+          fallbackLocale:
+            sessionExtra.preferredLanguage &&
+            VALID_LOCALES.includes(sessionExtra.preferredLanguage as Locale)
+              ? (sessionExtra.preferredLanguage as Locale)
+              : undefined,
+        });
 
   // Generate system prompt based on interview context
   const systemPrompt = interviewAgentSystemPrompt({

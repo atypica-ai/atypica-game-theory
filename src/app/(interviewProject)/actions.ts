@@ -83,25 +83,39 @@ export async function fetchUserInterviewProjects(): Promise<
 export async function createInterviewProject(
   input: CreateInterviewProjectInput,
 ): Promise<ServerActionResult<InterviewProject>> {
-  const { brief, questionTypePreference } = createInterviewProjectSchema.parse(input);
+  const { brief, presetQuestions, questionTypePreference } = createInterviewProjectSchema.parse(input);
   const token = generateToken();
   return withAuth(async (user) => {
     const userId = user.id;
+
+    // Parse preset questions into array
+    const questions = presetQuestions
+      ? presetQuestions
+          .split("\n")
+          .map((q) => q.trim())
+          .filter((q) => q.length > 0)
+          .map((text) => ({ text }))
+      : [];
+
     const project = await prisma.interviewProject.create({
       data: {
         brief,
         userId,
         token,
-        extra: questionTypePreference ? { questionTypePreference } : {},
+        extra: {
+          questionTypePreference,
+          questions,
+        },
       },
     });
 
+    // TODO: 暂时注释掉问题优化功能
     // Start question optimization in background
-    waitUntil(
-      processInterviewQuestionOptimization(project.id).catch((error) => {
-        rootLogger.error({ msg: "Question optimization failed:", error: (error as Error).message });
-      }),
-    );
+    // waitUntil(
+    //   processInterviewQuestionOptimization(project.id).catch((error) => {
+    //     rootLogger.error({ msg: "Question optimization failed:", error: (error as Error).message });
+    //   }),
+    // );
 
     return {
       success: true,
@@ -194,6 +208,124 @@ export async function optimizeInterviewQuestions(
     return {
       success: true,
       data: undefined,
+    };
+  });
+}
+
+/**
+ * Update a specific question in the project
+ */
+export async function updateInterviewQuestion(
+  projectId: number,
+  questionIndex: number,
+  questionData: {
+    text: string;
+    imageUrl?: string;
+    imageObjectUrl?: string;
+    imageFileName?: string;
+    imageFileSize?: number;
+    questionType?: "open" | "single-choice" | "multiple-choice";
+  },
+): Promise<ServerActionResult<InterviewProject>> {
+  return withAuth(async (user) => {
+    const project = await prisma.interviewProject.findUnique({
+      where: { id: projectId, userId: user.id },
+    });
+
+    if (!project) {
+      return {
+        success: false,
+        code: "not_found",
+        message: "Interview project not found",
+      };
+    }
+
+    const extra = (project.extra || {}) as InterviewProjectExtra;
+    const questions = extra.questions || [];
+
+    if (questionIndex < 0 || questionIndex >= questions.length) {
+      return {
+        success: false,
+        code: "not_found",
+        message: "Question index out of range",
+      };
+    }
+
+    // Update the question at the specified index
+    questions[questionIndex] = questionData;
+
+    // Update the project with the modified questions array
+    const updatedProject = await prisma.interviewProject.update({
+      where: { id: projectId },
+      data: {
+        extra: {
+          ...extra,
+          questions,
+        },
+      },
+    });
+
+    return {
+      success: true,
+      data: {
+        ...updatedProject,
+        extra: updatedProject.extra as InterviewProjectExtra,
+      },
+    };
+  });
+}
+
+/**
+ * Delete a specific question from the project
+ */
+export async function deleteInterviewQuestion(
+  projectId: number,
+  questionIndex: number,
+): Promise<ServerActionResult<InterviewProject>> {
+  return withAuth(async (user) => {
+    const project = await prisma.interviewProject.findUnique({
+      where: { id: projectId, userId: user.id },
+    });
+
+    if (!project) {
+      return {
+        success: false,
+        code: "not_found",
+        message: "Interview project not found",
+      };
+    }
+
+    const extra = (project.extra || {}) as InterviewProjectExtra;
+    const questions = extra.questions || [];
+
+    if (questionIndex < 0 || questionIndex >= questions.length) {
+      return {
+        success: false,
+        code: "not_found",
+        message: "Question index out of range",
+      };
+    }
+
+    // Remove the question at the specified index
+    questions.splice(questionIndex, 1);
+
+    // Update the project with the modified questions array
+    const updatedProject = await prisma.interviewProject.update({
+      where: { id: projectId },
+      data: {
+        extra: {
+          ...extra,
+          questions,
+        },
+      },
+    });
+
+    return {
+      success: true,
+      data: {
+        ...updatedProject,
+        extra: updatedProject.extra as InterviewProjectExtra,
+      },
     };
   });
 }
@@ -557,26 +689,23 @@ export async function createHumanInterviewSession({
     });
 
     if (existingSession?.userChat) {
-      if (
-        (existingSession.extra as InterviewSessionExtra)?.preferredLanguage !== preferredLanguage
-      ) {
-        await prisma.interviewSession.update({
-          where: { id: existingSession.id },
+      const existingLang = (existingSession.extra as InterviewSessionExtra)?.preferredLanguage;
+
+      // If language changed, create a new session to start fresh with the new language
+      // This ensures the form and all messages are in the correct language
+      if (existingLang && existingLang !== preferredLanguage) {
+        // Don't return here - continue to create new session
+        // This gives users a clean slate when switching languages
+      } else {
+        // Same language - return existing session
+        return {
+          success: true,
           data: {
-            extra: {
-              ...(existingSession.extra as InterviewSessionExtra),
-              preferredLanguage,
-            },
+            sessionId: existingSession.id,
+            chatToken: existingSession.userChat.token,
           },
-        });
+        };
       }
-      return {
-        success: true,
-        data: {
-          sessionId: existingSession.id,
-          chatToken: existingSession.userChat.token,
-        },
-      };
     }
 
     const userChat = await createUserChat({
@@ -995,4 +1124,58 @@ export async function generateInterviewReport(
       },
     };
   });
+}
+
+/**
+ * Update interview session language preference
+ * This will update the preferredLanguage in the session extra field
+ */
+export async function updateInterviewSessionLanguage({
+  userChatToken,
+  preferredLanguage,
+}: {
+  userChatToken: string;
+  preferredLanguage: Locale;
+}): Promise<ServerActionResult<{ success: boolean }>> {
+  try {
+    // First, fetch the session to verify access
+    const sessionResult = await fetchInterviewSessionChat({ userChatToken });
+    if (!sessionResult.success) {
+      return {
+        success: false,
+        message: "Session not found or access denied",
+        code: "not_found",
+      };
+    }
+
+    const { interviewSessionId, extra: sessionExtra } = sessionResult.data;
+
+    // Update the session's preferredLanguage
+    await prisma.interviewSession.update({
+      where: { id: interviewSessionId },
+      data: {
+        extra: {
+          ...sessionExtra,
+          preferredLanguage,
+        },
+      },
+    });
+
+    return {
+      success: true,
+      data: { success: true },
+    };
+  } catch (error) {
+    rootLogger.error({
+      msg: "Failed to update interview session language",
+      error: error instanceof Error ? error.message : String(error),
+      userChatToken,
+      preferredLanguage,
+    });
+    return {
+      success: false,
+      message: "Failed to update language preference",
+      code: "internal_server_error",
+    };
+  }
 }

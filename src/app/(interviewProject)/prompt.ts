@@ -501,7 +501,11 @@ ${
 - 在 prologue 中说明为什么要问这个问题
 - 使用 type: "choice" 创建选择题字段，提供 2-4 个选项
 - 选项应该清晰、互斥，并考虑包含"其他"或"以上都不是"选项
-- 可以在一个表单中组合多个相关的选择题
+- **单选题**：默认行为，multipleChoice 设为 false 或不设置，选项互斥（例如：性别、年龄段、职业）
+- **多选题**：设置 multipleChoice: true，允许用户选择多个选项
+  - 适用场景：种族/民族、兴趣爱好、使用过的品牌、购买渠道、遇到的问题类型等
+  - 示例：{ id: "ethnicity", label: "您的种族背景是？", type: "choice", multipleChoice: true, options: [...] }
+- **重要：一次只展示一个选择题**，不要在一个表单中组合多个选择题，以确保用户逐题回答
 `
     : ""
 }
@@ -542,14 +546,16 @@ ${
 
 ## 真人访谈特殊要求
 **在开始正式访谈前，必须先收集基本信息**：
-- 在问候和说明来意后，**立即使用 requestInteractionForm 工具收集基本信息**
-- **必须收集的字段**：
-  1. 姓名（text类型，label: "您的姓名"）
-  2. 称谓（text类型，label: "您希望我怎么称呼您？", placeholder: "例如：张先生、李女士、王老师、小陈、Alex等"）
-  3. 职业（text类型，label: "您的职业"）
-- 根据研究简介可补充1-2个相关的基本信息问题
-- 注意：这里只收集客观信息，不是访谈问题！
-- 收集完基本信息后，**严格使用受访者填写的称谓来称呼他们**（如果未填写称谓，则使用姓名），并自然地开始访谈对话`
+- 在接收到 [READY] 消息后，**立即使用 requestInteractionForm 工具收集基本信息**，不要输出任何文字
+- **必须收集的字段（固定5个，不要添加或删除）**：
+  1. 姓名（text类型，id: "name"）
+  2. 性别（choice类型，id: "gender"，选项：["女性", "男性", "其他", "不愿透露"]）
+  3. 职业（text类型，id: "occupation"）
+  4. 所在地（text类型，id: "location"）
+  5. 年龄段（choice类型，id: "ageRange"，选项：["18-25", "26-35", "36-45", "46+"]）
+- **重要**：prologue 使用"请先填写以下基本信息，以便我们更好地进行访谈"
+- **不要添加任何其他字段**，严格按照上述5个字段
+- 收集完基本信息后，用温暖友好的语气问候受访者，称呼其姓名，并自然地开始访谈对话`
 }
 `
     : `
@@ -601,12 +607,16 @@ ${
 - Maintain interview rhythm, avoiding too many consecutive questions of the same type`
 }
 
-**Using requestInteractionForm tool for multiple-choice questions**:
-- When collecting multiple-choice answers, use the requestInteractionForm tool
+**Using requestInteractionForm tool for choice questions**:
+- When collecting choice answers, use the requestInteractionForm tool
 - Explain in the prologue why you're asking this question
 - Use type: "choice" to create choice fields with 2-4 options
 - Options should be clear, mutually exclusive, and consider including "Other" or "None of the above"
-- You can combine multiple related choice questions in one form
+- **Single-choice**: Default behavior, set multipleChoice to false or leave unset, options are mutually exclusive (e.g., gender, age range, occupation)
+- **Multiple-choice**: Set multipleChoice: true, allows users to select multiple options
+  - Use cases: ethnicity/race, hobbies, brands used, purchase channels, types of problems encountered, etc.
+  - Example: { id: "ethnicity", label: "What is your ethnicity?", type: "choice", multipleChoice: true, options: [...] }
+- **Important: Present only one choice question at a time**, do not combine multiple choice questions in one form to ensure users answer each question individually
 `
     : ""
 }
@@ -647,13 +657,15 @@ ${
 
 ## Real Person Interview Special Requirements
 **Before starting the formal interview, you must first collect basic information**:
-- After greeting and explaining your purpose, **immediately use the requestInteractionForm tool to collect basic information**
-- **Required fields**:
-  1. Name (text type, label: "Your name")
-  2. Preferred form of address (text type, label: "How would you like to be addressed?", placeholder: "e.g., Mr. Smith, Ms. Johnson, Dr. Lee, Sarah, Alex, etc.")
-  3. Occupation (text type, label: "Your occupation")
-- You may add 1-2 additional basic information questions relevant to the research brief
-- Note: only collect objective information here, not interview questions!
-- After collecting basic information, **strictly use the form of address provided by the interviewee** (if not provided, use their name), and naturally begin the interview conversation`
+- After receiving the [READY] message, **immediately use the requestInteractionForm tool to collect basic information**, without outputting any text
+- **Required fields (exactly 5, do not add or remove)**:
+  1. Name (text type, id: "name")
+  2. Gender (choice type, id: "gender", options: ["Female", "Male", "Other", "Prefer not to say"])
+  3. Occupation (text type, id: "occupation")
+  4. Location (text type, id: "location")
+  5. Age Range (choice type, id: "ageRange", options: ["18-25", "26-35", "36-45", "46+"])
+- **Important**: Use "Please fill in the following basic information to help us conduct the interview better" for prologue
+- **Do not add any other fields**, strictly follow the above 5 fields
+- After collecting basic information, warmly greet the interviewee, address them by name, and naturally begin the interview conversation`
 }
 `;

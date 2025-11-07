@@ -50,6 +50,12 @@ export const requestInteractionFormInputSchema = z.object({
           .array(z.string())
           .optional()
           .describe("Available options for choice fields (2-4 options)"),
+        multipleChoice: z
+          .boolean()
+          .optional()
+          .describe(
+            "For choice fields: true if multiple options can be selected, false or undefined for single choice",
+          ),
       }),
     )
     .min(1)

@@ -1,7 +1,9 @@
 "use client";
 import {
   createPersonaInterviewSession,
+  deleteInterviewQuestion,
   optimizeInterviewQuestions,
+  updateInterviewQuestion,
 } from "@/app/(interviewProject)/actions";
 import { EditProjectDialog } from "@/app/(interviewProject)/components/EditProjectDialog";
 import { SelectPersonaDialog } from "@/components/SelectPersonaDialog";
@@ -16,15 +18,18 @@ import {
   ChevronUpIcon,
   EditIcon,
   InfoIcon,
+  ListIcon,
   Loader2Icon,
   MessageSquareIcon,
   Share2Icon,
   SparklesIcon,
+  TrashIcon,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { EditQuestionDialog, QuestionData } from "./EditQuestionDialog";
 import { InterviewReportsSection } from "./InterviewReportsSection";
 import { InterviewSessionsSection } from "./InterviewSessionsSection";
 import { InviteDialog } from "./InviteDialog";
@@ -53,6 +58,9 @@ export function ProjectDetails({
   const [briefExpanded, setBriefExpanded] = useState(false);
   const [, setCreatingPersonaSessions] = useState(false);
   const [optimizing, setOptimizing] = useState(false);
+  const [editingQuestion, setEditingQuestion] = useState<QuestionData | null>(null);
+  const [editingQuestionIndex, setEditingQuestionIndex] = useState<number | undefined>();
+  const [questionEditDialogOpen, setQuestionEditDialogOpen] = useState(false);
 
   // Polling mechanism - refresh every 10 seconds during processing
   useEffect(() => {
@@ -102,6 +110,48 @@ export function ProjectDetails({
     // Refresh the page to show updated data
     router.refresh();
   }, [router]);
+
+  const handleEditQuestion = useCallback((index: number, question: QuestionData) => {
+    setEditingQuestionIndex(index);
+    setEditingQuestion(question);
+    setQuestionEditDialogOpen(true);
+  }, []);
+
+  const handleSaveQuestion = useCallback(
+    async (questionData: QuestionData) => {
+      if (editingQuestionIndex === undefined) return;
+
+      try {
+        const result = await updateInterviewQuestion(project.id, editingQuestionIndex, questionData);
+        if (!result.success) {
+          toast.error(result.message || t("questionUpdateFailed"));
+          return;
+        }
+        toast.success(t("questionUpdated"));
+        router.refresh();
+      } catch (error) {
+        toast.error((error as Error).message || t("questionUpdateFailed"));
+      }
+    },
+    [editingQuestionIndex, project.id, router, t],
+  );
+
+  const handleDeleteQuestion = useCallback(
+    async (index: number) => {
+      try {
+        const result = await deleteInterviewQuestion(project.id, index);
+        if (!result.success) {
+          toast.error(result.message || t("questionDeleteFailed"));
+          return;
+        }
+        toast.success(t("questionDeleted"));
+        router.refresh();
+      } catch (error) {
+        toast.error((error as Error).message || t("questionDeleteFailed"));
+      }
+    },
+    [project.id, router, t],
+  );
 
   // Check if brief text is long (roughly estimate if it would exceed 10 lines)
   const isBriefLong = project.brief.length > 600 || project.brief.split("\n").length > 10;
@@ -211,58 +261,53 @@ export function ProjectDetails({
         </CardContent>
       </Card>
 
-      {/* Optimized Questions */}
-      {(project.extra?.processing || project.extra?.optimizedQuestions) && (
+      {/* Question List */}
+      {project.extra?.questions && project.extra.questions.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <div className="flex items-center">
-                <SparklesIcon className="h-5 w-5 mr-2" />
-                {t("optimizedQuestions")}
-              </div>
-              {project.extra?.optimizationReason && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                        <InfoIcon className="h-4 w-4 text-muted-foreground" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="left" className="max-w-md">
-                      <p className="text-sm whitespace-pre-wrap">
-                        {project.extra.optimizationReason}
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
+            <CardTitle className="flex items-center">
+              <ListIcon className="h-5 w-5 mr-2" />
+              {t("questionList")}
             </CardTitle>
-            <p className="text-sm text-muted-foreground mt-1">
-              {t("optimizedQuestionsDescription")}
-            </p>
+            <p className="text-sm text-muted-foreground mt-1">{t("questionListDescription")}</p>
           </CardHeader>
           <CardContent>
-            {project.extra?.processing ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="text-center">
-                  <Loader2Icon className="h-8 w-8 animate-spin mx-auto mb-2 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground">{t("optimizing")}</p>
-                </div>
-              </div>
-            ) : project.extra?.optimizedQuestions && project.extra.optimizedQuestions.length > 0 ? (
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  {project.extra.optimizedQuestions.map((question, index) => (
-                    <div key={index} className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
-                      <div className="bg-primary/20 rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <span className="text-xs font-medium text-primary">{index + 1}</span>
-                      </div>
-                      <p className="text-sm leading-relaxed">{question}</p>
+            <div className="space-y-2">
+              {project.extra.questions.map((question, index) => (
+                <div
+                  key={index}
+                  className="flex items-start justify-between gap-3 p-3 bg-muted/50 rounded-lg hover:bg-muted/70 transition-colors"
+                >
+                  <div className="flex items-start gap-3 flex-1 min-w-0">
+                    <div className="bg-primary/20 rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <span className="text-xs font-medium text-primary">{index + 1}</span>
                     </div>
-                  ))}
+                    <p className="text-sm leading-relaxed break-words">{question.text}</p>
+                  </div>
+                  {!readOnly && (
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEditQuestion(index, question)}
+                        className="h-8 px-2"
+                      >
+                        <EditIcon className="h-3 w-3 mr-1" />
+                        {t("edit")}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteQuestion(index)}
+                        className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                      >
+                        <TrashIcon className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  )}
                 </div>
-              </div>
-            ) : null}
+              ))}
+            </div>
           </CardContent>
         </Card>
       )}
@@ -302,6 +347,16 @@ export function ProjectDetails({
           projectId={project.id}
           initialBrief={project.brief}
           initialQuestionTypePreference={project.extra?.questionTypePreference}
+        />
+      )}
+
+      {!readOnly && (
+        <EditQuestionDialog
+          open={questionEditDialogOpen}
+          onOpenChange={setQuestionEditDialogOpen}
+          question={editingQuestion || undefined}
+          questionIndex={editingQuestionIndex}
+          onSave={handleSaveQuestion}
         />
       )}
     </div>

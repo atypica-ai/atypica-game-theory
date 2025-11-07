@@ -1,6 +1,5 @@
 "use client";
 import { fetchUserInterviewProjects } from "@/app/(interviewProject)/actions";
-import { EditProjectDialog } from "@/app/(interviewProject)/components/EditProjectDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,19 +24,16 @@ import {
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export function InterviewProjectsClient({ isCreateEnabled }: { isCreateEnabled: boolean }) {
   const locale = useLocale();
-  const router = useRouter();
   const t = useTranslations("InterviewProject.projectsList");
   const [projects, setProjects] = useState<
     ExtractServerActionData<typeof fetchUserInterviewProjects>
   >([]);
   const [loading, setLoading] = useState(true);
-  const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
   const loadProjects = useCallback(async () => {
     try {
@@ -51,13 +47,6 @@ export function InterviewProjectsClient({ isCreateEnabled }: { isCreateEnabled: 
     }
   }, [t]);
 
-  const handleProjectCreated = useCallback(
-    (project: { token: string }) => {
-      // Navigate to project details page immediately after creation
-      router.push(`/interview/project/${project.token}`);
-    },
-    [router],
-  );
 
   useEffect(() => {
     loadProjects();
@@ -78,14 +67,11 @@ export function InterviewProjectsClient({ isCreateEnabled }: { isCreateEnabled: 
           {t("createFirstProject")}
         </div>
         {isCreateEnabled ? (
-          <Button
-            variant="secondary"
-            onClick={() => setCreateDialogOpen(true)}
-            className="w-full"
-            size="sm"
-          >
-            <PlusIcon className="size-3" />
-            {t("newProject")}
+          <Button variant="secondary" className="w-full" size="sm" asChild>
+            <Link href="/interview/projects/new">
+              <PlusIcon className="size-3" />
+              {t("newProject")}
+            </Link>
           </Button>
         ) : (
           <Button variant="secondary" className="w-full" size="sm" asChild>
@@ -187,13 +173,6 @@ export function InterviewProjectsClient({ isCreateEnabled }: { isCreateEnabled: 
             <NewProjectCard />
           </div>
         )}
-
-        <EditProjectDialog
-          open={createDialogOpen}
-          onOpenChange={setCreateDialogOpen}
-          onProjectCreated={handleProjectCreated}
-          mode="create"
-        />
       </div>
     </div>
   );
