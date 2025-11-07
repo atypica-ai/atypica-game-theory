@@ -43,7 +43,7 @@ function SharePageHeader({
 
 export default function PodcastSharePageClient({
   podcastToken,
-  analyst,
+  // analyst,
   title,
   studyUserChatToken,
   script,

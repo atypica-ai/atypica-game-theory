@@ -169,6 +169,7 @@ async function attachmentToContext(
 /**
  * 这个方法不用了，直接使用 jina 来转换成文本，也不对文本进行预处理，直接使用原文
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function attachmentToContextWithLLM(
   personaImport: Omit<PersonaImport, "attachments"> & {
     attachments: ChatMessageAttachment[];

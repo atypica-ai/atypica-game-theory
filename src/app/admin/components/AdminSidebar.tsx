@@ -12,6 +12,7 @@ import {
   DatabaseIcon,
   EyeIcon,
   FileTextIcon,
+  HeadphonesIcon,
   MonitorPlayIcon,
   StarIcon,
   UserIcon,
@@ -85,6 +86,12 @@ export default function AdminSidebar({ adminRole, permissions = [] }: AdminSideb
             label: "Reports",
             href: "/admin/analyst-reports",
             icon: <FileTextIcon className="mr-2 h-4 w-4" />,
+            permission: AdminPermission.MANAGE_STUDIES,
+          },
+          {
+            label: "Podcasts",
+            href: "/admin/analyst-podcasts",
+            icon: <HeadphonesIcon className="mr-2 h-4 w-4" />,
             permission: AdminPermission.MANAGE_STUDIES,
           },
           {
