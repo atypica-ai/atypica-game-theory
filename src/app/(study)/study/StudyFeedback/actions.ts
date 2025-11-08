@@ -4,6 +4,7 @@ import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { UserChatExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
+import { mergeExtra } from "@/prisma/utils";
 
 export async function fetchStudyFeedback(
   studyUserChatId: number,
@@ -59,22 +60,12 @@ export async function submitStudyFeedback(
       submittedAt: new Date().toISOString(),
     };
 
-    // 使用 || 操作符安全地更新 extra 字段，避免覆盖其他值
-    await prisma.$executeRaw`
-      UPDATE "UserChat"
-      SET "extra" = COALESCE("extra", '{}') || ${JSON.stringify(feedbackData)}::jsonb
-      WHERE "id" = ${userChat.id}
-    `;
-
-    // await prisma.userChat.update({
-    //   where: { id: studyUserChatId },
-    //   data: {
-    //     extra: {
-    //       ...((userChat.extra as UserChatExtra) || {}),
-    //       feedback: feedbackData,
-    //     },
-    //   },
-    // });
+    // 使用 mergeExtra 安全地更新 extra 字段，避免覆盖其他值
+    await mergeExtra({
+      tableName: "UserChat",
+      extra: { feedback: feedbackData },
+      id: userChat.id,
+    });
 
     const logger = rootLogger.child({ studyUserChatId, studyUserChatToken: userChat.token });
     logger.info("Study feedback submitted", { feedback: feedbackData });
