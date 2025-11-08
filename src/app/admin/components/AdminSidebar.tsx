@@ -18,7 +18,6 @@ import {
   UserIcon,
   UsersIcon,
   VideoIcon,
-  Volume2Icon,
   X,
 } from "lucide-react";
 
@@ -181,12 +180,6 @@ export default function AdminSidebar({ adminRole, permissions = [] }: AdminSideb
             href: "/admin/maintenance",
             icon: <AlertTriangleIcon className="mr-2 h-4 w-4" />,
             role: "SUPER_ADMIN",
-          },
-          {
-            label: "Podcast Audio",
-            href: "/admin/podcast-audio-test",
-            icon: <Volume2Icon className="mr-2 h-4 w-4" />,
-            permission: AdminPermission.MANAGE_STUDIES,
           },
         ],
       },
