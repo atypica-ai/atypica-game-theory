@@ -16,7 +16,10 @@ export const dynamic = "force-dynamic";
 const getCachedPodcastData = unstable_cache(
   async function (podcastToken: string) {
     const result = await fetchPodcastByToken(podcastToken);
-    return result;
+    if (!result.success) {
+      notFound();
+    }
+    return result.data;
   },
   ["analyst-podcast-share"], // 基础key + podcastToken参数 = 完整缓存key
   {
@@ -33,12 +36,7 @@ export async function generateMetadata({
   const locale = await getLocale();
   const { token: podcastToken } = await params;
 
-  const result = await getCachedPodcastData(podcastToken);
-  if (!result.success) {
-    return {};
-  }
-
-  const { podcast, analyst, studyUserChat, report } = result.data;
+  const { podcast, analyst, studyUserChat, report } = await getCachedPodcastData(podcastToken);
 
   const title =
     "🎙️ " +
@@ -67,11 +65,7 @@ export async function generateMetadata({
 }
 
 async function PodcastSharePage({ podcastToken }: { podcastToken: string }) {
-  const result = await getCachedPodcastData(podcastToken);
-  if (!result.success) {
-    notFound();
-  }
-  const { podcast, analyst, studyUserChat, report } = result.data;
+  const { podcast, analyst, studyUserChat, report } = await getCachedPodcastData(podcastToken);
 
   // Get cover image URL if report exists
   let coverImageUrl: string | undefined;

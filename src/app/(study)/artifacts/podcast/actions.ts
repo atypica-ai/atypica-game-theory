@@ -25,60 +25,41 @@ export async function fetchPodcastByToken(podcastToken: string): Promise<
     };
   }>
 > {
-  try {
-    const podcast = await Promise.race([
-      prisma.analystPodcast.findUnique({
-        where: { token: podcastToken },
-        select: {
-          id: true,
-          token: true,
-          script: true,
-          objectUrl: true,
-          generatedAt: true,
-          analyst: {
-            select: {
-              id: true,
-              topic: true,
-              studyUserChat: {
-                select: { token: true, title: true },
-              },
-            },
-          },
-          extra: true,
-        },
-      }),
-      new Promise<null>((resolve) => setTimeout(() => resolve(null), 3000)),
-    ]);
+  const podcast = await prisma.analystPodcast.findUnique({
+    where: { token: podcastToken },
+    select: {
+      id: true,
+      token: true,
+      script: true,
+      objectUrl: true,
+      generatedAt: true,
+      extra: true,
+      analystId: true,
+    },
+  });
 
-    if (!podcast) {
-      return {
-        success: false,
-        code: "internal_server_error",
-        message: "Podcast fetch timeout",
-      };
-    }
+  if (!podcast) {
+    return {
+      success: false,
+      code: "internal_server_error",
+      message: "Podcast fetch timeout",
+    };
+  }
 
-    if (!podcast.generatedAt) {
-      return {
-        success: false,
-        code: "not_found",
-        message: "Podcast not found or not yet generated.",
-      };
-    }
+  if (!podcast.generatedAt) {
+    return {
+      success: false,
+      code: "not_found",
+      message: "Podcast not found or not yet generated.",
+    };
+  }
 
-    if (!podcast.analyst?.studyUserChat?.token) {
-      return {
-        success: false,
-        code: "not_found",
-        message: "Study not found.",
-      };
-    }
-
-    // Fetch the latest report for this analyst
-    const latestReport = await Promise.race([
+  // Fetch the latest report for this analyst
+  const [latestReport, analyst] = await Promise.all([
+    Promise.race([
       prisma.analystReport.findFirst({
         where: {
-          analystId: podcast.analyst.id,
+          analystId: podcast.analystId,
           generatedAt: { not: null },
         },
         orderBy: { generatedAt: "desc" },
@@ -86,47 +67,61 @@ export async function fetchPodcastByToken(podcastToken: string): Promise<
           id: true,
           token: true,
           generatedAt: true,
-          // onePageHtml: true,
           extra: true,
         },
       }),
       new Promise<null>((resolve) => setTimeout(() => resolve(null), 2000)),
-    ]);
-
-    return {
-      success: true,
-      data: {
-        podcast: {
-          id: podcast.id,
-          token: podcast.token,
-          script: podcast.script,
-          objectUrl: podcast.objectUrl,
-          generatedAt: podcast.generatedAt,
-          extra: podcast.extra as AnalystPodcastExtra,
-        },
-        analyst: {
-          id: podcast.analyst.id,
-          topic: podcast.analyst.topic,
-        },
-        studyUserChat: {
-          token: podcast.analyst.studyUserChat.token,
-          title: podcast.analyst.studyUserChat.title,
-        },
-        report: latestReport
-          ? {
-              id: latestReport.id,
-              token: latestReport.token,
-              generatedAt: latestReport.generatedAt,
-              // onePageHtml: latestReport.onePageHtml,
-              extra: latestReport.extra as AnalystReportExtra,
-            }
-          : undefined,
+    ]),
+    prisma.analyst.findUnique({
+      where: {
+        id: podcast.analystId,
       },
-    };
-  } catch (error) {
+      select: {
+        id: true,
+        topic: true,
+        studyUserChat: {
+          select: { token: true, title: true },
+        },
+      },
+    }),
+  ]);
+
+  if (!analyst?.studyUserChat?.token) {
     return {
       success: false,
-      message: error instanceof Error ? error.message : String(error),
+      code: "not_found",
+      message: "Study not found.",
     };
   }
+
+  return {
+    success: true,
+    data: {
+      podcast: {
+        id: podcast.id,
+        token: podcast.token,
+        script: podcast.script,
+        objectUrl: podcast.objectUrl,
+        generatedAt: podcast.generatedAt,
+        extra: podcast.extra as AnalystPodcastExtra,
+      },
+      analyst: {
+        id: analyst.id,
+        topic: analyst.topic,
+      },
+      studyUserChat: {
+        token: analyst.studyUserChat.token,
+        title: analyst.studyUserChat.title,
+      },
+      report: latestReport
+        ? {
+            id: latestReport.id,
+            token: latestReport.token,
+            generatedAt: latestReport.generatedAt,
+            // onePageHtml: latestReport.onePageHtml,
+            extra: latestReport.extra as AnalystReportExtra,
+          }
+        : undefined,
+    },
+  };
 }
