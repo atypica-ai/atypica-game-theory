@@ -20,7 +20,6 @@ import { FilePart, FinishReason, ModelMessage, stepCountIs, streamText } from "a
 import { Locale } from "next-intl";
 import { Logger } from "pino";
 import { createVolcanoClient } from "./volcano/client";
-import { SilenceBuffer } from "./volcano/silenceCache";
 
 /**
  * Main podcast generation function that handles both script and audio generation
@@ -365,7 +364,7 @@ export async function generatePodcastAudio({
     // Create Volcano TTS client
     const volcanoClient = createVolcanoClient(logger);
 
-    // Step 1: Fetch audio chunks from Volcano TTS API
+    // Step 1: Fetch audio from Volcano TTS API (with silence already inserted between rounds)
     const result = await volcanoClient.fetchAudioChunks({
       script: script,
       podcastToken,
@@ -374,38 +373,20 @@ export async function generatePodcastAudio({
     });
 
     logger.info({
-      msg: "Received audio chunks from Volcano TTS",
-      chunkCount: result.audioChunks.length,
+      msg: "Received audio from Volcano TTS",
+      bufferSize: result.audioBuffer.byteLength,
       duration: result.duration,
     });
 
-    // Step 2: Insert silence between rounds for better listening experience
-    const SILENCE = await SilenceBuffer.get();
-    const chunksWithSilence: Uint8Array[] = [];
-
-    for (let i = 0; i < result.audioChunks.length; i++) {
-      chunksWithSilence.push(result.audioChunks[i]);
-      // Add silence between chunks (but not after the last one)
-      if (i < result.audioChunks.length - 1) {
-        chunksWithSilence.push(SILENCE);
-      }
-    }
+    // Step 2: Get the final audio buffer (already concatenated by the client)
+    const finalAudioBuffer = result.audioBuffer;
 
     logger.info({
-      msg: "Silence inserted between audio rounds",
-      originalChunks: result.audioChunks.length,
-      finalChunks: chunksWithSilence.length,
-    });
-
-    // Step 3: Concatenate all chunks into final audio buffer
-    const finalAudioBuffer = Buffer.concat(chunksWithSilence);
-
-    logger.info({
-      msg: "Audio chunks concatenated",
+      msg: "Audio buffer prepared",
       totalSize: finalAudioBuffer.byteLength,
     });
 
-    // Step 4: Validate audio size (business rule: max 10MB)
+    // Step 3: Validate audio size (business rule: max 10MB)
     const maxSize = 10 * 1024 * 1024; // 10MB
     if (finalAudioBuffer.byteLength > maxSize) {
       throw new Error(
@@ -413,7 +394,7 @@ export async function generatePodcastAudio({
       );
     }
 
-    // Step 5: Upload to S3
+    // Step 4: Upload to S3
     const mimeType = "audio/mpeg";
     const keySuffix = `podcasts/${podcastToken}.mp3` as const;
     const { objectUrl } = await uploadToS3({

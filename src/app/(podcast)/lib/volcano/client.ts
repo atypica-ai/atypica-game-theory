@@ -16,6 +16,7 @@ import {
   VolcanoHeaders,
   WaitForEvent,
 } from "./protocols";
+import { SilenceBuffer } from "./silenceCache";
 
 const VOLCANO_ENDPOINT = "wss://openspeech.bytedance.com/api/v3/sami/podcasttts";
 
@@ -33,7 +34,7 @@ export interface PodcastGenerationOptions {
 }
 
 export interface PodcastGenerationResult {
-  audioChunks: Uint8Array[];
+  audioBuffer: Buffer;
   duration?: number;
   error?: string;
 }
@@ -273,8 +274,8 @@ export class VolcanoTTSClient {
 
   /**
    * Fetch podcast audio chunks from Volcano TTS API
-   * Returns raw audio chunks without any post-processing
-   * Does NOT perform concatenation, silence insertion, or S3 upload - that's the caller's responsibility
+   * Returns concatenated audio with silence inserted between rounds
+   * Does NOT perform S3 upload - that's the caller's responsibility
    */
   async fetchAudioChunks(options: PodcastGenerationOptions): Promise<PodcastGenerationResult> {
     const { script, podcastToken, locale = "zh-CN", logger } = options;
@@ -416,6 +417,16 @@ export class VolcanoTTSClient {
                     msg: `Podcast round ${currentRound} started`,
                     speaker: startData.speaker,
                   });
+
+                  // Insert silence before this round (but not before the first round)
+                  if (audioChunks.length > 0) {
+                    const SILENCE = await SilenceBuffer.get();
+                    audioChunks.push(SILENCE);
+                    this.logger?.info({
+                      msg: "Silence inserted before round",
+                      round: currentRound,
+                    });
+                  }
                 } else if (msg.event === EventType.PodcastRoundEnd) {
                   const endData = JSON.parse(new TextDecoder().decode(msg.payload));
                   if (endData.is_error) {
@@ -446,7 +457,7 @@ export class VolcanoTTSClient {
             // Check for session finished - OUTSIDE the switch, after all message types are processed
             if (msg.event === EventType.SessionFinished) {
               this.logger?.info({
-                msg: "Session finished, returning audio chunks to caller",
+                msg: "Session finished, concatenating audio chunks",
                 totalChunks: audioChunks.length,
               });
 
@@ -459,8 +470,17 @@ export class VolcanoTTSClient {
                 throw new Error("No audio data received from Volcano TTS");
               }
 
+              // Concatenate all chunks into single buffer
+              const finalAudioBuffer = Buffer.concat(audioChunks);
+
+              this.logger?.info({
+                msg: "Audio chunks concatenated",
+                totalSize: finalAudioBuffer.byteLength,
+              });
+
+              // Return single concatenated buffer
               return {
-                audioChunks,
+                audioBuffer: finalAudioBuffer,
                 duration,
               };
             }
