@@ -16,7 +16,8 @@ import {
 } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { mergeExtra } from "@/prisma/utils";
-import { FilePart, FinishReason, ModelMessage, stepCountIs, streamText } from "ai";
+import { OpenAIResponsesProviderOptions } from "@ai-sdk/openai";
+import { FilePart, FinishReason, generateText, ModelMessage, stepCountIs, streamText } from "ai";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
 import { createVolcanoClient } from "./volcano/client";
@@ -106,17 +107,26 @@ export async function generatePodcast({
       .findUniqueOrThrow({ where: { id: podcast.id } })
       .then(({ extra, ...podcast }) => ({ ...podcast, extra: extra as AnalystPodcastExtra }));
 
-    // Step 3: Generate audio
-    logger.info("Starting audio generation");
-    const { objectUrl, mimeType } = await generatePodcastAudio({
-      podcastId: podcast.id,
-      podcastToken: podcast.token,
-      script: script,
-      locale: locale,
-      abortSignal: abortSignal,
-      statReport: statReport,
-      logger: logger,
-    });
+    // Step 3: Generate audio and title in parallel
+    logger.info("Starting audio and metadata title generation in parallel");
+    const [{ objectUrl, mimeType }, title] = await Promise.all([
+      generatePodcastAudio({
+        podcastId: podcast.id,
+        podcastToken: podcast.token,
+        script: script,
+        locale: locale,
+        abortSignal: abortSignal,
+        statReport: statReport,
+        logger: logger,
+      }),
+      generatePodcastMetadataTitle({
+        script: script,
+        locale: locale,
+        abortSignal: abortSignal,
+        statReport: statReport,
+        logger: logger,
+      }),
+    ]);
 
     // Step 4: Mark as completely finished with generatedAt
     await prisma.analystPodcast.update({
@@ -129,6 +139,7 @@ export async function generatePodcast({
       extra: {
         processing: false,
         metadata: {
+          title,
           mimeType,
         },
       } satisfies AnalystPodcastExtra,
@@ -335,6 +346,57 @@ async function generatePodcastScript({
 
   logger.info("Podcast script generation completed successfully");
   return script;
+}
+
+// Generate podcast title from script
+export async function generatePodcastMetadataTitle({
+  script,
+  locale,
+  abortSignal,
+  statReport,
+  logger,
+}: {
+  script: string;
+  locale: Locale;
+  abortSignal: AbortSignal;
+  statReport: StatReporter;
+  logger: Logger;
+}): Promise<string> {
+  logger.info({ msg: "Starting podcast title generation" });
+
+  const systemPrompt =
+    locale === "zh-CN"
+      ? "根据播客脚本生成一个吸引眼球的标题。要求简洁（60字以内）、吸引人、抓住核心观点。直接返回标题文本，不要加引号。"
+      : "Generate a catchy title based on the podcast script. Keep it concise (under 60 chars), engaging, and capture the key insight. Return the title text only, no quotes.";
+
+  const { text, usage } = await generateText({
+    model: llm("gpt-5-mini"),
+    providerOptions: {
+      openai: {
+        reasoningSummary: "auto",
+        reasoningEffort: "minimal",
+      } satisfies OpenAIResponsesProviderOptions,
+    },
+    system: systemPrompt,
+    prompt: script,
+    abortSignal: abortSignal,
+  });
+
+  const title = text.trim();
+
+  // Track token usage
+  const totalTokens =
+    (usage.outputTokens ?? 0) * 3 + (usage.inputTokens ?? 0) || (usage.totalTokens ?? 0);
+  if (totalTokens > 0) {
+    await statReport("tokens", totalTokens, {
+      reportedBy: "generatePodcastMetadataTitle",
+      part: "title",
+      usage,
+    });
+  }
+
+  logger.info({ msg: "Podcast title generation completed", title });
+  return title;
 }
 
 // Pure podcast audio generation function (no auth, renamed from backgroundGeneratePodcastAudioImpl)

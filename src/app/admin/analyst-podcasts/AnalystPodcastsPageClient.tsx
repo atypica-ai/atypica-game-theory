@@ -14,6 +14,7 @@ import {
   ExternalLinkIcon,
   PencilIcon,
   SearchIcon,
+  SparklesIcon,
   XIcon,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -23,7 +24,7 @@ import { useRouter } from "next/navigation";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 
 import { PaginationInfo } from "../types";
-import { fetchAnalystPodcastsAction, updatePodcastTitleAction } from "./actions";
+import { fetchAnalystPodcastsAction, generatePodcastTitleAction, updatePodcastTitleAction } from "./actions";
 
 type AnalystPodcastWithAnalyst = ExtractServerActionData<typeof fetchAnalystPodcastsAction>[number];
 
@@ -54,6 +55,7 @@ export function AnalystPodcastsPageClient({ initialSearchParams }: AnalystPodcas
   const [editingTitleId, setEditingTitleId] = useState<number | null>(null);
   const [editingTitleValue, setEditingTitleValue] = useState("");
   const [savingTitle, setSavingTitle] = useState(false);
+  const [generatingTitleId, setGeneratingTitleId] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Use search params hook for URL synchronization
@@ -161,6 +163,40 @@ export function AnalystPodcastsPageClient({ initialSearchParams }: AnalystPodcas
       setError((err as Error).message);
     } finally {
       setSavingTitle(false);
+    }
+  };
+
+  const generateTitle = async (podcastId: number) => {
+    setGeneratingTitleId(podcastId);
+    try {
+      const result = await generatePodcastTitleAction(podcastId);
+      if (result.success) {
+        // Update local state with generated title
+        setAnalystPodcasts((prev) =>
+          prev.map((podcast) => {
+            if (podcast.id === podcastId) {
+              const extra = (podcast.extra || {}) as AnalystPodcastExtra;
+              return {
+                ...podcast,
+                extra: {
+                  ...extra,
+                  metadata: {
+                    ...extra.metadata,
+                    title: result.data,
+                  },
+                } as AnalystPodcastExtra,
+              };
+            }
+            return podcast;
+          }),
+        );
+      } else {
+        setError(result.message);
+      }
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setGeneratingTitleId(null);
     }
   };
 
@@ -278,14 +314,34 @@ export function AnalystPodcastsPageClient({ initialSearchParams }: AnalystPodcas
                           </Button>
                         </div>
                       ) : (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-7 w-7 p-0 flex-shrink-0"
-                          onClick={() => startEditingTitle(podcast.id, podcastTitle)}
-                        >
-                          <PencilIcon className="h-3 w-3" />
-                        </Button>
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-7 w-7 p-0"
+                                  onClick={() => generateTitle(podcast.id)}
+                                  disabled={generatingTitleId === podcast.id || !podcast.script}
+                                >
+                                  <SparklesIcon className="h-3 w-3" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent className="bg-popover text-popover-foreground border rounded px-2 py-1 text-xs">
+                                Generate title with AI
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 w-7 p-0"
+                            onClick={() => startEditingTitle(podcast.id, podcastTitle)}
+                          >
+                            <PencilIcon className="h-3 w-3" />
+                          </Button>
+                        </div>
                       )}
                     </CardTitle>
                   </CardHeader>

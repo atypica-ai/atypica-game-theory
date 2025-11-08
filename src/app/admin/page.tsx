@@ -48,7 +48,7 @@ export default function AdminDashboard() {
         </Link>
 
         <Link
-          href="/admin/analyst-reports"
+          href="/admin/analyst-podcasts"
           className="rounded-lg border bg-card p-4 shadow-sm hover:shadow-md transition-shadow"
         >
           <div className="flex items-center mb-2">

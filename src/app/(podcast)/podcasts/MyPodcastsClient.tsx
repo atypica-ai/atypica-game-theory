@@ -212,7 +212,7 @@ export default function MyPodcastsClient() {
                     {/* Title */}
                     <div className="flex items-start justify-between gap-2">
                       <h3 className="text-lg font-semibold line-clamp-2 leading-6 text-zinc-900 dark:text-zinc-100">
-                        {podcast.analyst.studyUserChat.title}
+                        {podcast.extra.metadata?.title || podcast.analyst.studyUserChat.title}
                       </h3>
                       <Link
                         href={`/study/${podcast.analyst.studyUserChat.token}/share`}
