@@ -183,7 +183,7 @@ export function StudyNextSteps({
         </Button>
       </div>
 
-      <div className="flex flex-col items-start justify-start gap-2 sm:flex-row sm:flex-wrap">
+      <div className="flex flex-col items-start justify-start gap-2">
         {/* Podcast Button */}
         <Button
           variant="ghost"
@@ -234,15 +234,19 @@ export function StudyNextSteps({
                 variant="ghost"
                 size="sm"
                 className={cn(
-                  "justify-start gap-2 h-9 border border-border/50 hover:border-border hover:bg-accent/50",
+                  "border border-border/50 hover:border-border hover:bg-accent/50",
                   "max-w-full overflow-hidden",
+                  "h-auto min-h-9 py-1 block whitespace-break-spaces text-left space-x-2",
                 )}
               >
-                <LightbulbIcon className="size-3.5 flex-shrink-0" />
-                <Badge variant="secondary" className="h-4 px-1.5 text-xs font-normal flex-shrink-0">
+                <LightbulbIcon className="size-3.5 flex-shrink-0 inline" />
+                <Badge
+                  variant="secondary"
+                  className="h-4 px-1.5 text-xs font-normal flex-shrink-0 inline"
+                >
                   {t("newStudyBadge")}
                 </Badge>
-                <span className="text-xs truncate mr-1">{question.title}</span>
+                <span className="text-xs inline">{question.title}</span>
               </Button>
             </NewStudyButton>
           ))

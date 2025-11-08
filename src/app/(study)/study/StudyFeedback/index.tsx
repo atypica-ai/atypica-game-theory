@@ -100,7 +100,7 @@ export function StudyFeedback({
   }
 
   return (
-    <div className={cn("flex items-center gap-1 px-2 py-1 border rounded-sm", className)}>
+    <div className={cn("flex items-center flex-wrap gap-1 px-2 py-1 border rounded-sm", className)}>
       <div className="text-xs text-muted-foreground">{t("title")}</div>
       <div className="flex items-center gap-2">
         <Button
