@@ -19,8 +19,19 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { VALID_LOCALES } from "@/i18n/routing";
 import { ExtractServerActionData } from "@/lib/serverAction";
+import { rootLogger } from "@/lib/logging";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { Info, Shield, UsersIcon } from "lucide-react";
@@ -46,45 +57,82 @@ export function InterviewSessionChatClient({
       : _locale;
   });
 
+  const [isChangingLanguage, setIsChangingLanguage] = useState(false);
+  const [showLanguageConfirmDialog, setShowLanguageConfirmDialog] = useState(false);
+  const [pendingLocale, setPendingLocale] = useState<Locale | null>(null);
+
   const locale = currentLocale;
 
   const t = useTranslations("InterviewProject.sessionChat");
   const tDetails = useTranslations("InterviewProject.projectDetails");
   const tSessionViewer = useTranslations("InterviewProject.sessionViewer");
+  const tLanguage = useTranslations("InterviewProject.languageSwitcher");
 
-  // Handle language change
+  // Handle language change initiation
   const handleLanguageChange = useCallback(
-    async (newLocale: Locale) => {
-      try {
-        // Update server-side language preference
-        const result = await updateInterviewSessionLanguage({
-          userChatToken,
-          preferredLanguage: newLocale,
-        });
-
-        if (!result.success) {
-          toast.error("Failed to update language preference");
-          return;
-        }
-
-        // Update local state
-        setCurrentLocale(newLocale);
-
-        // Clear messages to trigger form regeneration
-        // Keep only system messages or clear all to start fresh
-        useChatRef.current.setMessages([]);
-
-        // Re-send [READY] message to get new form in new language
-        setTimeout(() => {
-          useChatRef.current.sendMessage({ text: "[READY]" });
-        }, 100);
-      } catch (error) {
-        console.error("Failed to change language:", error);
-        toast.error("Failed to change language");
+    (newLocale: Locale) => {
+      // Prevent duplicate calls
+      if (isChangingLanguage || newLocale === currentLocale) {
+        return;
       }
+
+      // Store the pending locale and show confirmation dialog
+      setPendingLocale(newLocale);
+      setShowLanguageConfirmDialog(true);
     },
-    [userChatToken],
+    [isChangingLanguage, currentLocale],
   );
+
+  // Actual language change after confirmation
+  const confirmLanguageChange = useCallback(async () => {
+    if (!pendingLocale || isChangingLanguage) return;
+
+    setIsChangingLanguage(true);
+    setShowLanguageConfirmDialog(false);
+
+    try {
+      // Update server-side language preference
+      const result = await updateInterviewSessionLanguage({
+        userChatToken,
+        preferredLanguage: pendingLocale,
+      });
+
+      if (!result.success) {
+        toast.error(tLanguage("updateFailed"));
+        return;
+      }
+
+      // Update local state
+      setCurrentLocale(pendingLocale);
+
+      // Clear messages to trigger form regeneration
+      useChatRef.current.setMessages([]);
+
+      // Re-send [READY] message to get new form in new language
+      // Use requestAnimationFrame for more reliable timing
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+      useChatRef.current.sendMessage({ text: "[READY]" });
+
+      toast.success(tLanguage("updated"));
+    } catch (error) {
+      rootLogger.error({
+        msg: "Failed to change interview language",
+        error: error instanceof Error ? error.message : String(error),
+        userChatToken,
+        newLocale: pendingLocale,
+      });
+      toast.error(tLanguage("updateFailed"));
+    } finally {
+      setIsChangingLanguage(false);
+      setPendingLocale(null);
+    }
+  }, [pendingLocale, isChangingLanguage, userChatToken, tLanguage]);
+
+  // Cancel language change
+  const cancelLanguageChange = useCallback(() => {
+    setShowLanguageConfirmDialog(false);
+    setPendingLocale(null);
+  }, []);
 
   const extraRequestPayload = useMemo(() => ({ userChatToken: userChatToken }), [userChatToken]);
 
@@ -235,20 +283,40 @@ export function InterviewSessionChatClient({
 
   if (useChatHelpers.status === "ready" && requestInteractionToolInvocation) {
     return (
-      <FitToViewport className="flex flex-col items-center justify-center h-full p-4 sm:p-8 relative">
-        {/* Language Switcher in top-right corner */}
-        <div className="absolute top-4 right-4 z-10">
-          <LanguageSwitcher
-            currentLocale={locale}
-            onLanguageChange={handleLanguageChange}
-            disabled={useChatHelpers.status === "streaming" || useChatHelpers.status === "submitted"}
+      <>
+        <FitToViewport className="flex flex-col items-center justify-center h-full p-4 sm:p-8 relative">
+          {/* Language Switcher in top-right corner */}
+          <div className="absolute top-4 right-4 z-10">
+            <LanguageSwitcher
+              currentLocale={locale}
+              onLanguageChange={handleLanguageChange}
+              disabled={isChangingLanguage}
+            />
+          </div>
+          <RequestInteractionFormToolMessage
+            toolInvocation={requestInteractionToolInvocation}
+            addToolResult={addToolResult}
           />
-        </div>
-        <RequestInteractionFormToolMessage
-          toolInvocation={requestInteractionToolInvocation}
-          addToolResult={addToolResult}
-        />
-      </FitToViewport>
+        </FitToViewport>
+
+        {/* Language Change Confirmation Dialog */}
+        <AlertDialog open={showLanguageConfirmDialog} onOpenChange={setShowLanguageConfirmDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{tLanguage("title")}</AlertDialogTitle>
+              <AlertDialogDescription>{tLanguage("description")}</AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={cancelLanguageChange}>
+                {tLanguage("cancel")}
+              </AlertDialogCancel>
+              <AlertDialogAction onClick={confirmLanguageChange}>
+                {tLanguage("confirm")}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </>
     );
   }
 

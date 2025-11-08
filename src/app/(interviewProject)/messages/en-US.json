@@ -320,8 +320,12 @@
       "defaultFileName": "Interview Transcript"
     },
     "languageSwitcher": {
-      "title": "Select Language",
-      "description": "Switching language will regenerate the form, and your current input will be cleared"
+      "title": "Change Language",
+      "description": "Switching language will regenerate the form, and your current input will be cleared. Do you want to continue?",
+      "confirm": "Continue",
+      "cancel": "Cancel",
+      "updated": "Language changed successfully",
+      "updateFailed": "Failed to change language"
     },
     "editQuestion": {
       "title": "Edit Question",

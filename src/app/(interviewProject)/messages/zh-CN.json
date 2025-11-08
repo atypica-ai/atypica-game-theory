@@ -320,8 +320,12 @@
       "defaultFileName": "访谈笔录"
     },
     "languageSwitcher": {
-      "title": "选择语言",
-      "description": "切换语言将重新生成表单，当前填写的内容将被清除"
+      "title": "切换语言",
+      "description": "切换语言将重新生成表单，您当前填写的内容将被清空。是否继续？",
+      "confirm": "继续",
+      "cancel": "取消",
+      "updated": "语言切换成功",
+      "updateFailed": "语言切换失败"
     },
     "editQuestion": {
       "title": "编辑问题",

@@ -130,6 +130,11 @@ declare module "@/prisma/client" {
     optimizationReason: string;
     lastOptimizedAt: number;
     questionTypePreference: "open-ended" | "multiple-choice" | "mixed"; // 问题类型偏好
+    questions: Array<{
+      text: string;
+      image?: ChatMessageAttachment; // 使用标准的 attachment 结构
+      questionType?: "open" | "single-choice" | "multiple-choice";
+    }>; // 问题列表
     permanentShareToken: string; // 永久链接令牌，用于验证永久链接
   }>;
 

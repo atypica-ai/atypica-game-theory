@@ -13,7 +13,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { clientUploadFileToS3 } from "@/lib/attachments/client";
+import { proxiedObjectCdnUrl } from "@/app/(system)/cdn/lib";
 import { cn } from "@/lib/utils";
+import { ChatMessageAttachment } from "@/prisma/client";
 import { ImageIcon, Loader2Icon, UploadIcon, XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
@@ -21,10 +23,7 @@ import { toast } from "sonner";
 
 export interface QuestionData {
   text: string;
-  imageUrl?: string;
-  imageObjectUrl?: string;
-  imageFileName?: string;
-  imageFileSize?: number;
+  image?: ChatMessageAttachment;
   questionType?: "open" | "single-choice" | "multiple-choice";
 }
 
@@ -46,10 +45,7 @@ export function EditQuestionDialog({
   const t = useTranslations("InterviewProject.editQuestion");
 
   const [text, setText] = useState("");
-  const [imageUrl, setImageUrl] = useState<string | undefined>();
-  const [imageObjectUrl, setImageObjectUrl] = useState<string | undefined>();
-  const [imageFileName, setImageFileName] = useState<string | undefined>();
-  const [imageFileSize, setImageFileSize] = useState<number | undefined>();
+  const [image, setImage] = useState<ChatMessageAttachment | undefined>();
   const [questionType, setQuestionType] = useState<"open" | "single-choice" | "multiple-choice">(
     "open",
   );
@@ -59,17 +55,11 @@ export function EditQuestionDialog({
   useEffect(() => {
     if (question) {
       setText(question.text);
-      setImageUrl(question.imageUrl);
-      setImageObjectUrl(question.imageObjectUrl);
-      setImageFileName(question.imageFileName);
-      setImageFileSize(question.imageFileSize);
+      setImage(question.image);
       setQuestionType(question.questionType || "open");
     } else {
       setText("");
-      setImageUrl(undefined);
-      setImageObjectUrl(undefined);
-      setImageFileName(undefined);
-      setImageFileSize(undefined);
+      setImage(undefined);
       setQuestionType("open");
     }
   }, [question]);
@@ -92,12 +82,15 @@ export function EditQuestionDialog({
     setUploadingImage(true);
 
     try {
-      const { getObjectUrl, objectUrl } = await clientUploadFileToS3(file);
+      const { objectUrl } = await clientUploadFileToS3(file);
 
-      setImageUrl(getObjectUrl);
-      setImageObjectUrl(objectUrl);
-      setImageFileName(file.name);
-      setImageFileSize(file.size);
+      // Save as ChatMessageAttachment format
+      setImage({
+        objectUrl,
+        name: file.name,
+        mimeType: file.type,
+        size: file.size,
+      });
 
       toast.success(t("imageUploaded"));
     } catch (error) {
@@ -109,10 +102,7 @@ export function EditQuestionDialog({
   };
 
   const handleDeleteImage = () => {
-    setImageUrl(undefined);
-    setImageObjectUrl(undefined);
-    setImageFileName(undefined);
-    setImageFileSize(undefined);
+    setImage(undefined);
   };
 
   const handleSave = useCallback(() => {
@@ -123,15 +113,12 @@ export function EditQuestionDialog({
 
     onSave({
       text: text.trim(),
-      imageUrl,
-      imageObjectUrl,
-      imageFileName,
-      imageFileSize,
+      image,
       questionType,
     });
 
     onOpenChange(false);
-  }, [text, imageUrl, imageObjectUrl, imageFileName, imageFileSize, questionType, onSave, onOpenChange, t]);
+  }, [text, image, questionType, onSave, onOpenChange, t]);
 
   const formatFileSize = (bytes: number) => {
     if (bytes < 1024) return bytes + " B";
@@ -170,7 +157,7 @@ export function EditQuestionDialog({
               {t("questionImage")} ({t("optional")})
             </Label>
 
-            {!imageUrl ? (
+            {!image ? (
               <div className="border-2 border-dashed rounded-lg p-6 text-center">
                 <input
                   type="file"
@@ -208,20 +195,35 @@ export function EditQuestionDialog({
               <div className="border rounded-lg p-3 space-y-3">
                 <div className="flex items-center gap-3">
                   <div className="relative w-16 h-16 rounded overflow-hidden bg-muted flex-shrink-0">
-                    <img src={imageUrl} alt="Question" className="w-full h-full object-cover" />
+                    <img
+                      src={proxiedObjectCdnUrl({
+                        name: image.name,
+                        objectUrl: image.objectUrl,
+                        mimeType: image.mimeType,
+                      })}
+                      alt="Question"
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{imageFileName}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {imageFileSize && formatFileSize(imageFileSize)}
-                    </p>
+                    <p className="text-sm font-medium truncate">{image.name}</p>
+                    <p className="text-xs text-muted-foreground">{formatFileSize(image.size)}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => window.open(imageUrl, "_blank")}
+                    onClick={() =>
+                      window.open(
+                        proxiedObjectCdnUrl({
+                          name: image.name,
+                          objectUrl: image.objectUrl,
+                          mimeType: image.mimeType,
+                        }),
+                        "_blank",
+                      )
+                    }
                     className="gap-1 flex-1"
                   >
                     <ImageIcon className="h-3 w-3" />
@@ -244,7 +246,12 @@ export function EditQuestionDialog({
           {/* Question Type */}
           <div className="space-y-2">
             <Label className="text-sm font-medium">{t("questionType")}</Label>
-            <RadioGroup value={questionType} onValueChange={(value) => setQuestionType(value as any)}>
+            <RadioGroup
+              value={questionType}
+              onValueChange={(value) =>
+                setQuestionType(value as "open" | "single-choice" | "multiple-choice")
+              }
+            >
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="open" id="type-open" />
                 <Label htmlFor="type-open" className="font-normal">

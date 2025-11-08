@@ -2,6 +2,30 @@ import { UIDataTypes, UIMessage } from "ai";
 import { z } from "zod/v3";
 import { TInterviewUITools } from "./tools/types";
 
+// Question schema
+export const questionSchema = z.object({
+  text: z.string().min(1).max(1000),
+  image: z
+    .object({
+      objectUrl: z.string(),
+      name: z.string().max(255),
+      mimeType: z.string(),
+      size: z.number().positive().max(10 * 1024 * 1024), // 10MB max
+    })
+    .optional(),
+  questionType: z.enum(["open", "single-choice", "multiple-choice"]).optional(),
+});
+
+export type Question = z.infer<typeof questionSchema>;
+
+// InterviewProjectExtra schema
+export const interviewProjectExtraSchema = z.object({
+  questions: z.array(questionSchema).optional(),
+  questionTypePreference: z.enum(["open-ended", "multiple-choice", "mixed"]).optional(),
+});
+
+export type InterviewProjectExtra = z.infer<typeof interviewProjectExtraSchema>;
+
 // Create Interview Project schema
 export const createInterviewProjectSchema = z.object({
   brief: z

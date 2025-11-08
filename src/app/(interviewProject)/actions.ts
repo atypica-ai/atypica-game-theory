@@ -26,7 +26,10 @@ import {
   createInterviewProjectSchema,
   UpdateInterviewProjectInput,
   updateInterviewProjectSchema,
+  questionSchema,
+  interviewProjectExtraSchema,
 } from "./types";
+import { z } from "zod/v3";
 
 /**
  * Fetch user's interview projects
@@ -218,16 +221,19 @@ export async function optimizeInterviewQuestions(
 export async function updateInterviewQuestion(
   projectId: number,
   questionIndex: number,
-  questionData: {
-    text: string;
-    imageUrl?: string;
-    imageObjectUrl?: string;
-    imageFileName?: string;
-    imageFileSize?: number;
-    questionType?: "open" | "single-choice" | "multiple-choice";
-  },
+  questionData: z.infer<typeof questionSchema>,
 ): Promise<ServerActionResult<InterviewProject>> {
   return withAuth(async (user) => {
+    // Validate input data
+    const validationResult = questionSchema.safeParse(questionData);
+    if (!validationResult.success) {
+      return {
+        success: false,
+        code: "internal_server_error",
+        message: "Invalid question data: " + validationResult.error.message,
+      };
+    }
+
     const project = await prisma.interviewProject.findUnique({
       where: { id: projectId, userId: user.id },
     });
@@ -240,7 +246,22 @@ export async function updateInterviewQuestion(
       };
     }
 
-    const extra = (project.extra || {}) as InterviewProjectExtra;
+    // Validate and parse extra field
+    const extraParseResult = interviewProjectExtraSchema.safeParse(project.extra || {});
+    if (!extraParseResult.success) {
+      rootLogger.error({
+        msg: "Invalid project extra data structure",
+        projectId,
+        error: extraParseResult.error.message,
+      });
+      return {
+        success: false,
+        code: "internal_server_error",
+        message: "Invalid project data structure",
+      };
+    }
+
+    const extra = extraParseResult.data;
     const questions = extra.questions || [];
 
     if (questionIndex < 0 || questionIndex >= questions.length) {
@@ -252,7 +273,7 @@ export async function updateInterviewQuestion(
     }
 
     // Update the question at the specified index
-    questions[questionIndex] = questionData;
+    questions[questionIndex] = validationResult.data;
 
     // Update the project with the modified questions array
     const updatedProject = await prisma.interviewProject.update({
@@ -295,7 +316,22 @@ export async function deleteInterviewQuestion(
       };
     }
 
-    const extra = (project.extra || {}) as InterviewProjectExtra;
+    // Validate and parse extra field
+    const extraParseResult = interviewProjectExtraSchema.safeParse(project.extra || {});
+    if (!extraParseResult.success) {
+      rootLogger.error({
+        msg: "Invalid project extra data structure",
+        projectId,
+        error: extraParseResult.error.message,
+      });
+      return {
+        success: false,
+        code: "internal_server_error",
+        message: "Invalid project data structure",
+      };
+    }
+
+    const extra = extraParseResult.data;
     const questions = extra.questions || [];
 
     if (questionIndex < 0 || questionIndex >= questions.length) {
@@ -691,21 +727,27 @@ export async function createHumanInterviewSession({
     if (existingSession?.userChat) {
       const existingLang = (existingSession.extra as InterviewSessionExtra)?.preferredLanguage;
 
-      // If language changed, create a new session to start fresh with the new language
-      // This ensures the form and all messages are in the correct language
-      if (existingLang && existingLang !== preferredLanguage) {
-        // Don't return here - continue to create new session
-        // This gives users a clean slate when switching languages
-      } else {
-        // Same language - return existing session
-        return {
-          success: true,
+      // Update language preference if changed
+      if (existingLang !== preferredLanguage) {
+        await prisma.interviewSession.update({
+          where: { id: existingSession.id },
           data: {
-            sessionId: existingSession.id,
-            chatToken: existingSession.userChat.token,
+            extra: {
+              ...(existingSession.extra as InterviewSessionExtra),
+              preferredLanguage,
+            },
           },
-        };
+        });
       }
+
+      // Always return existing session to avoid duplication
+      return {
+        success: true,
+        data: {
+          sessionId: existingSession.id,
+          chatToken: existingSession.userChat.token,
+        },
+      };
     }
 
     const userChat = await createUserChat({
