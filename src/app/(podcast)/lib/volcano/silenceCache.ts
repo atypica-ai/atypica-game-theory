@@ -1,11 +1,28 @@
-import fs from 'fs';
-import path from 'path';
-
+/**
+ * Singleton class for loading and caching a silence audio buffer
+ *
+ * This provides a pre-encoded MP3 silence buffer that can be inserted between
+ * podcast audio rounds to improve the listening experience.
+ *
+ * Technical details:
+ * - Format: MP3 (audio/mpeg)
+ * - Sample Rate: 24000 Hz
+ * - Duration: ~0.5 seconds
+ * - Size: ~9 KB (9216 bytes)
+ * - Encoding: LAME 3.100
+ *
+ * The silence is embedded as a base64 string to avoid filesystem dependencies
+ * and ensure consistent behavior across different deployment environments.
+ */
 export class SilenceBuffer {
   private static instance: Buffer | null = null;
   private static isLoading = false;
   private static loadPromise: Promise<Buffer> | null = null;
 
+  /**
+   * Get the cached silence buffer, loading it if necessary
+   * Thread-safe: multiple concurrent calls will wait for the same load operation
+   */
   static async get(): Promise<Buffer> {
     // Return immediately if already loaded
     if (this.instance) {

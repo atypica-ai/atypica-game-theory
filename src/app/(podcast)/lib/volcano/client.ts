@@ -1,6 +1,5 @@
 import "server-only";
 
-import { uploadToS3 } from "@/lib/attachments/s3";
 import { Logger } from "pino";
 import { v4 as uuidv4 } from "uuid";
 import WebSocket from "ws";
@@ -16,10 +15,7 @@ import {
   StartSession,
   VolcanoHeaders,
   WaitForEvent,
-} from "@/app/(podcast)/lib/volcano/protocols";
-import { SilenceBuffer } from "@/app/(podcast)/lib/volcano/silenceCache";
-
-
+} from "./protocols";
 
 const VOLCANO_ENDPOINT = "wss://openspeech.bytedance.com/api/v3/sami/podcasttts";
 
@@ -37,8 +33,7 @@ export interface PodcastGenerationOptions {
 }
 
 export interface PodcastGenerationResult {
-  objectUrl: string;
-  mimeType: string;
+  audioChunks: Uint8Array[];
   duration?: number;
   error?: string;
 }
@@ -112,7 +107,9 @@ export class VolcanoTTSClient {
     return Math.min(hostCount, 2) as 1 | 2;
   }
 
-  // elsewhere in the class, define the function:
+  /**
+   * Clean a single line of podcast script by removing markdown and stage directions
+   */
   private cleanPodcastScriptLine(line: string): string | null {
     const trimmed = line.trim();
     if (trimmed.startsWith("#")) {
@@ -171,13 +168,11 @@ export class VolcanoTTSClient {
 
         // Add each chunk as a separate NLP text with the same speaker
         for (const chunk of textChunks) {
-          const nlpTextObject: PodcastNLPText = {
+          nlpTexts.push({
             speaker,
-            text: chunk, 
-          };
-          this.logger?.info({ msg: "Adding NLP text object", nlpTextObject });
-          nlpTexts.push(nlpTextObject);
-          }
+            text: chunk,
+          });
+        }
 
         currentSpeakerIndex++;
       }
@@ -277,11 +272,12 @@ export class VolcanoTTSClient {
   }
 
   /**
-   * Generate podcast audio from script
+   * Fetch podcast audio chunks from Volcano TTS API
+   * Returns raw audio chunks without any post-processing
+   * Does NOT perform concatenation, silence insertion, or S3 upload - that's the caller's responsibility
    */
-  async generatePodcastAudio(options: PodcastGenerationOptions): Promise<PodcastGenerationResult> {
+  async fetchAudioChunks(options: PodcastGenerationOptions): Promise<PodcastGenerationResult> {
     const { script, podcastToken, locale = "zh-CN", logger } = options;
-    const SILENCE = await SilenceBuffer.get();
     if (logger) {
       this.logger = logger;
     }
@@ -386,7 +382,7 @@ export class VolcanoTTSClient {
           let duration: number | undefined;
           let currentRound = 0;
           let totalRounds = 0;
-          const podcastAudio: Uint8Array[] = [];
+          const audioChunks: Uint8Array[] = [];
 
           while (true) {
             const msg = await ReceiveMessage(ws);
@@ -396,12 +392,11 @@ export class VolcanoTTSClient {
               // Audio data chunks
               case MsgType.AudioOnlyServer:
                 if (msg.event === EventType.PodcastRoundResponse) {
-                  podcastAudio.push(msg.payload);
-                  // this.logger?.info({
-                  //   msg: `Received audio chunk`,
-                  //   size: msg.payload.length,
-                  //   round: currentRound,
-                  // });
+                  if (!msg.payload || msg.payload.length === 0) {
+                    this.logger?.error({ msg: "Received empty audio payload" });
+                    break;
+                  }
+                  audioChunks.push(msg.payload);
                 }
                 break;
 
@@ -421,12 +416,7 @@ export class VolcanoTTSClient {
                     msg: `Podcast round ${currentRound} started`,
                     speaker: startData.speaker,
                   });
-
-                  if (podcastAudio.length > 0) {
-                    podcastAudio.push(SILENCE);
-                    this.logger?.info("Silence pushed"); //debug
-                  }
-                } else if (msg.event === EventType.PodcastRoundEnd) { // This event often got missed
+                } else if (msg.event === EventType.PodcastRoundEnd) {
                   const endData = JSON.parse(new TextDecoder().decode(msg.payload));
                   if (endData.is_error) {
                     throw new Error(`Podcast round error: ${endData.error_msg}`);
@@ -438,14 +428,13 @@ export class VolcanoTTSClient {
                   this.logger?.info({
                     msg: `Podcast round ${currentRound} completed`,
                     duration: endData.audio_duration,
-                    audioChunks: podcastAudio.length,
+                    audioChunks: audioChunks.length,
                   });
                 } else if (msg.event === EventType.PodcastEnd) {
-                  const podcastData = JSON.parse(new TextDecoder().decode(msg.payload));
                   this.logger?.info({
                     msg: "Podcast generation completed",
                     totalDuration: duration,
-                    totalAudioChunks: podcastAudio.length,
+                    totalAudioChunks: audioChunks.length,
                   });
                 } else if (msg.event === EventType.UsageResponse) {
                   const usageData = JSON.parse(new TextDecoder().decode(msg.payload));
@@ -456,40 +445,22 @@ export class VolcanoTTSClient {
 
             // Check for session finished - OUTSIDE the switch, after all message types are processed
             if (msg.event === EventType.SessionFinished) {
-              this.logger?.info("Session finished");
+              this.logger?.info({
+                msg: "Session finished, returning audio chunks to caller",
+                totalChunks: audioChunks.length,
+              });
 
               // Clean up connection
               await FinishConnection(ws);
               await WaitForEvent(ws, MsgType.FullServerResponse, EventType.ConnectionFinished);
 
-              // Concatenate all audio chunks
-              if (podcastAudio.length === 0) {
+              // Validate we received audio data
+              if (audioChunks.length === 0) {
                 throw new Error("No audio data received from Volcano TTS");
               }
 
-              const finalAudioBuffer = Buffer.concat(podcastAudio);
-              this.logger?.info({
-                msg: "Audio chunks concatenated",
-                totalSize: finalAudioBuffer.byteLength,
-              });
-
-              // Upload to S3
-              const mimeType = "audio/mpeg";
-              const keySuffix = `podcasts/${podcastToken}.mp3` as const;
-              const { objectUrl } = await uploadToS3({
-                keySuffix,
-                fileBody: finalAudioBuffer,
-                mimeType,
-              });
-
-              this.logger?.info({
-                msg: "Podcast audio uploaded to S3",
-                duration,
-              });
-
               return {
-                objectUrl,
-                mimeType,
+                audioChunks,
                 duration,
               };
             }

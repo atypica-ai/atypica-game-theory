@@ -5,6 +5,7 @@ import { StatReporter } from "@/ai/tools/types";
 import { podcastScriptPrologue, podcastScriptSystem } from "@/app/(podcast)/prompt";
 import { VALID_LOCALES } from "@/i18n/routing";
 import { fileUrlToDataUrl } from "@/lib/attachments/actions";
+import { uploadToS3 } from "@/lib/attachments/s3";
 import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage } from "@/lib/textUtils";
 import {
@@ -19,6 +20,7 @@ import { FilePart, FinishReason, ModelMessage, stepCountIs, streamText } from "a
 import { Locale } from "next-intl";
 import { Logger } from "pino";
 import { createVolcanoClient } from "./volcano/client";
+import { SilenceBuffer } from "./volcano/silenceCache";
 
 /**
  * Main podcast generation function that handles both script and audio generation
@@ -358,13 +360,13 @@ export async function generatePodcastAudio({
   mimeType: string;
 }> {
   try {
-    logger.info("Starting podcast audio generation");
+    logger.info({ msg: "Starting podcast audio generation" });
 
     // Create Volcano TTS client
     const volcanoClient = createVolcanoClient(logger);
 
-    // Generate audio - now includes chunk collection, concatenation, and S3 upload
-    const result = await volcanoClient.generatePodcastAudio({
+    // Step 1: Fetch audio chunks from Volcano TTS API
+    const result = await volcanoClient.fetchAudioChunks({
       script: script,
       podcastToken,
       locale,
@@ -372,15 +374,66 @@ export async function generatePodcastAudio({
     });
 
     logger.info({
-      msg: "Podcast audio generation completed successfully",
+      msg: "Received audio chunks from Volcano TTS",
+      chunkCount: result.audioChunks.length,
       duration: result.duration,
     });
 
-    return { objectUrl: result.objectUrl, mimeType: result.mimeType };
+    // Step 2: Insert silence between rounds for better listening experience
+    const SILENCE = await SilenceBuffer.get();
+    const chunksWithSilence: Uint8Array[] = [];
+
+    for (let i = 0; i < result.audioChunks.length; i++) {
+      chunksWithSilence.push(result.audioChunks[i]);
+      // Add silence between chunks (but not after the last one)
+      if (i < result.audioChunks.length - 1) {
+        chunksWithSilence.push(SILENCE);
+      }
+    }
+
+    logger.info({
+      msg: "Silence inserted between audio rounds",
+      originalChunks: result.audioChunks.length,
+      finalChunks: chunksWithSilence.length,
+    });
+
+    // Step 3: Concatenate all chunks into final audio buffer
+    const finalAudioBuffer = Buffer.concat(chunksWithSilence);
+
+    logger.info({
+      msg: "Audio chunks concatenated",
+      totalSize: finalAudioBuffer.byteLength,
+    });
+
+    // Step 4: Validate audio size (business rule: max 10MB)
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (finalAudioBuffer.byteLength > maxSize) {
+      throw new Error(
+        `Audio file too large: ${finalAudioBuffer.byteLength} bytes (max ${maxSize} bytes)`,
+      );
+    }
+
+    // Step 5: Upload to S3
+    const mimeType = "audio/mpeg";
+    const keySuffix = `podcasts/${podcastToken}.mp3` as const;
+    const { objectUrl } = await uploadToS3({
+      keySuffix,
+      fileBody: finalAudioBuffer,
+      mimeType,
+    });
+
+    logger.info({
+      msg: "Podcast audio generation completed successfully",
+      duration: result.duration,
+      finalSize: finalAudioBuffer.byteLength,
+    });
+
+    return { objectUrl, mimeType };
   } catch (error) {
     logger.error({
       msg: "Podcast audio generation failed",
       error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
     });
 
     throw error;
