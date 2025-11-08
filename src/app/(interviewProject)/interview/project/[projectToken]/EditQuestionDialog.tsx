@@ -17,6 +17,7 @@ import { proxiedObjectCdnUrl } from "@/app/(system)/cdn/lib";
 import { cn } from "@/lib/utils";
 import { ChatMessageAttachment } from "@/prisma/client";
 import { ImageIcon, Loader2Icon, UploadIcon, XIcon } from "lucide-react";
+import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -195,13 +196,15 @@ export function EditQuestionDialog({
               <div className="border rounded-lg p-3 space-y-3">
                 <div className="flex items-center gap-3">
                   <div className="relative w-16 h-16 rounded overflow-hidden bg-muted flex-shrink-0">
-                    <img
+                    <Image
                       src={proxiedObjectCdnUrl({
                         name: image.name,
                         objectUrl: image.objectUrl,
                         mimeType: image.mimeType,
                       })}
                       alt="Question"
+                      width={64}
+                      height={64}
                       className="w-full h-full object-cover"
                     />
                   </div>

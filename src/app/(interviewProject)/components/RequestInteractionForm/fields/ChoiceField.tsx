@@ -5,7 +5,7 @@ import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import type { ChoiceFieldProps, FieldValue } from "../types";
+import type { ChoiceFieldProps } from "../types";
 import { MULTIPLE_CHOICE_STYLE } from "../config";
 
 export const ChoiceField: FC<ChoiceFieldProps> = ({
@@ -47,7 +47,7 @@ export const ChoiceField: FC<ChoiceFieldProps> = ({
 
   // All choice options use outline variant
   // Selected state is shown by black background (custom class) + checkmark
-  const getButtonVariant = () => "outline";
+  const getButtonVariant = (): "outline" => "outline";
 
   const handleSubmit = () => {
     if (hasSelection) {
@@ -83,6 +83,7 @@ export const ChoiceField: FC<ChoiceFieldProps> = ({
             <Button
               variant={getButtonVariant()}
               key={index}
+              data-selected={isSelected}
               onClick={
                 isCompleted
                   ? undefined
@@ -96,7 +97,8 @@ export const ChoiceField: FC<ChoiceFieldProps> = ({
               }
               className={cn(
                 "flex items-center justify-between",
-                isSelected && "!bg-black !text-white hover:!bg-black/90",
+                "data-[selected=true]:bg-black data-[selected=true]:text-white data-[selected=true]:border-black",
+                "data-[selected=true]:hover:bg-black/90",
               )}
             >
               {option}

@@ -1,7 +1,8 @@
+import type { InterviewToolName, TInterviewUITools } from "@/app/(interviewProject)/tools/types";
+import { ToolUIPart } from "ai";
 import { useCallback, useMemo, useState } from "react";
-import type { FormResponses, FieldValue } from "./types";
-import type { RequestInteractionFormToolInput } from "@/app/(interviewProject)/tools/types";
 import { REQUIRED_FIELD_IDS, SINGLE_CHOICE_FIELD_IDS } from "./config";
+import type { FieldValue, FormResponses } from "./types";
 
 export function useFormState() {
   const [formResponses, setFormResponses] = useState<FormResponses>({});
@@ -52,7 +53,7 @@ export function useFormState() {
 }
 
 export function useFormValidation(
-  toolInvocation: { state: string; input?: RequestInteractionFormToolInput | null | unknown },
+  toolInvocation: ToolUIPart<Pick<TInterviewUITools, InterviewToolName.requestInteractionForm>>,
   formResponses: FormResponses,
 ) {
   return useMemo(() => {
@@ -85,10 +86,11 @@ export function useFormValidation(
   }, [toolInvocation.state, toolInvocation.input, formResponses]);
 }
 
-export function useFormType(toolInvocation: { input?: RequestInteractionFormToolInput | null | unknown }) {
+export function useFormType(
+  toolInvocation: ToolUIPart<Pick<TInterviewUITools, InterviewToolName.requestInteractionForm>>,
+) {
   return useMemo(() => {
-    const input = toolInvocation.input as RequestInteractionFormToolInput | null | undefined;
-    const fieldIds = input?.fields?.map((f) => f?.id) || [];
+    const fieldIds = toolInvocation.input?.fields?.map((f) => f?.id) || [];
     // Basic info form has these specific field IDs
     return fieldIds.includes("name") && fieldIds.includes("gender");
   }, [toolInvocation.input]);
@@ -96,10 +98,10 @@ export function useFormType(toolInvocation: { input?: RequestInteractionFormTool
 
 export function useChoiceFieldsCount(
   isBasicInfoForm: boolean,
-  toolInvocation: { input?: RequestInteractionFormToolInput | null | unknown },
+  toolInvocation: ToolUIPart<Pick<TInterviewUITools, InterviewToolName.requestInteractionForm>>,
 ) {
   return useMemo(() => {
-    if (isBasicInfoForm || !toolInvocation.input?.fields) return 0;
+    if (isBasicInfoForm || toolInvocation.state !== "input-available") return 0;
     return toolInvocation.input.fields.filter((f) => f.type === "choice").length;
-  }, [isBasicInfoForm, toolInvocation.input]);
+  }, [isBasicInfoForm, toolInvocation.state, toolInvocation.input]);
 }

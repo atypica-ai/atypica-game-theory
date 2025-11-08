@@ -1,15 +1,14 @@
-import { FC, useCallback } from "react";
+import type { RequestInteractionFormToolInput } from "@/app/(interviewProject)/tools/types";
+import { InterviewToolName, TInterviewUITools } from "@/app/(interviewProject)/tools/types";
+import { Button } from "@/components/ui/button";
 import { ToolUIPart } from "ai";
 import { Check } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { FC, useCallback } from "react";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { InterviewToolName, TInterviewUITools } from "@/app/(interviewProject)/tools/types";
-import type { RequestInteractionFormToolInput } from "@/app/(interviewProject)/tools/types";
-import { TextField, BooleanField, ChoiceField } from "./fields";
-import { useFormState, useFormValidation, useFormType, useChoiceFieldsCount } from "./hooks";
-import { SINGLE_CHOICE_FIELD_IDS, REQUIRED_FIELD_IDS } from "./config";
+import { REQUIRED_FIELD_IDS, SINGLE_CHOICE_FIELD_IDS } from "./config";
+import { BooleanField, ChoiceField, TextField } from "./fields";
+import { useChoiceFieldsCount, useFormState, useFormType, useFormValidation } from "./hooks";
 
 interface RequestInteractionFormToolMessageProps {
   toolInvocation: ToolUIPart<Pick<TInterviewUITools, InterviewToolName.requestInteractionForm>>;
@@ -39,16 +38,18 @@ export const RequestInteractionFormToolMessage: FC<RequestInteractionFormToolMes
   const t = useTranslations("InterviewProject.requestInteractionForm");
 
   // Form state management
-  const { formResponses, updateFieldValue, toggleChoiceOption, selectSingleChoice, setBooleanValue } =
-    useFormState();
+  const {
+    formResponses,
+    updateFieldValue,
+    toggleChoiceOption,
+    selectSingleChoice,
+    setBooleanValue,
+  } = useFormState();
 
   // Form validation and type detection
-  const isFormValid = useFormValidation(
-    { state: toolInvocation.state, input: toolInvocation.input },
-    formResponses,
-  );
-  const isBasicInfoForm = useFormType({ input: toolInvocation.input });
-  const choiceFieldsCount = useChoiceFieldsCount(isBasicInfoForm, { input: toolInvocation.input });
+  const isFormValid = useFormValidation(toolInvocation, formResponses);
+  const isBasicInfoForm = useFormType(toolInvocation);
+  const choiceFieldsCount = useChoiceFieldsCount(isBasicInfoForm, toolInvocation);
 
   const submitForm = useCallback(() => {
     if (toolInvocation.state === "input-available" && addToolResult) {
@@ -69,7 +70,14 @@ export const RequestInteractionFormToolMessage: FC<RequestInteractionFormToolMes
         },
       });
     }
-  }, [toolInvocation.state, toolInvocation.toolCallId, addToolResult, formResponses, isFormValid, t]);
+  }, [
+    toolInvocation.state,
+    toolInvocation.toolCallId,
+    addToolResult,
+    formResponses,
+    isFormValid,
+    t,
+  ]);
 
   const isFormCompleted = toolInvocation.state === "output-available";
   const resultData =

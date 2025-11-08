@@ -9,7 +9,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { VALID_LOCALES } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
 import { Check, Languages } from "lucide-react";
 import { Locale, useTranslations } from "next-intl";

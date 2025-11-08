@@ -17,9 +17,9 @@ import { throwServerActionError } from "@/lib/serverAction";
 import { detectInputLanguage } from "@/lib/textUtils";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
-import { ModelMessage, smoothStream, stepCountIs, streamText } from "ai";
+import { generateId, ModelMessage, smoothStream, stepCountIs, streamText } from "ai";
 import { Locale } from "next-intl";
-import { after } from "next/server";
+import { after, NextResponse } from "next/server";
 
 function setBedrockCache(model: `claude-${string}`, coreMessages: ModelMessage[]) {
   if (!model) return coreMessages; // 这句话没意义，只是为了用一下 model

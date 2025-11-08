@@ -9,7 +9,6 @@ import { EditProjectDialog } from "@/app/(interviewProject)/components/EditProje
 import { SelectPersonaDialog } from "@/components/SelectPersonaDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { formatDate } from "@/lib/utils";
 import { InterviewProjectExtra } from "@/prisma/client";
 import {
@@ -17,9 +16,7 @@ import {
   ChevronDownIcon,
   ChevronUpIcon,
   EditIcon,
-  InfoIcon,
   ListIcon,
-  Loader2Icon,
   MessageSquareIcon,
   Share2Icon,
   SparklesIcon,
@@ -354,7 +351,7 @@ export function ProjectDetails({
         <EditQuestionDialog
           open={questionEditDialogOpen}
           onOpenChange={setQuestionEditDialogOpen}
-          question={editingQuestion || undefined}
+          question={editingQuestion || null}
           questionIndex={editingQuestionIndex}
           onSave={handleSaveQuestion}
         />
