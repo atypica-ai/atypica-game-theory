@@ -15,9 +15,11 @@ export function getObjectCdnOrigin(): string {
 }
 
 export function proxiedObjectCdnUrl({
+  name,
   objectUrl,
   mimeType,
 }: {
+  name: string;
   objectUrl: string;
   mimeType: string;
 }) {
@@ -26,7 +28,7 @@ export function proxiedObjectCdnUrl({
   // if (!objectCdnOrigin) {
   //   throw new Error("OBJECT_CDN_ORIGIN environment variable is not set");
   // }
-  const cdnUrl = `${objectCdnOrigin}/cdn/proxy-object?objectUrl=${encodeURIComponent(objectUrl)}&mimeType=${mimeType}`;
+  const cdnUrl = `${objectCdnOrigin}/cdn/proxy-object${name ? `/${name}` : ""}?objectUrl=${encodeURIComponent(objectUrl)}&mimeType=${mimeType}`;
   // if (mimeType === "application/pdf") {
   //   cdnUrl += +"&parse=true";
   // }

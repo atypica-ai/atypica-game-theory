@@ -3,6 +3,9 @@
 import { proxiedFetch } from "@/lib/proxy/fetch";
 import { NextResponse } from "next/server";
 
+/**
+ * @description 参数里有一个 fileName, 这个文件名没有用到，只是在 url 上面显示，这样用来直接通过 url 下载的时候有文件名
+ */
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const url = searchParams.get("url");

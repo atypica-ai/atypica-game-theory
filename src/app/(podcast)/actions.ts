@@ -147,6 +147,12 @@ export async function getPodcastAudioSignedUrl({
     };
   }
   const { signedObjectUrl, mimeType } = result;
+  let fileName = signedObjectUrl.split("?")[0].split("/").pop() as string;
+  const podcastTitle = (podcast.extra as AnalystPodcastExtra).metadata?.title;
+  if (podcastTitle) {
+    fileName = podcastTitle + "." + fileName.split(".").pop();
+  }
+
   // TODO:下面这个逻辑挪到 podcastObjectUrlToHttpUrl 里
   if (
     true || // 国内和海外都用 CDN
@@ -155,6 +161,7 @@ export async function getPodcastAudioSignedUrl({
     return {
       success: true,
       data: proxiedObjectCdnUrl({
+        name: fileName,
         objectUrl: signedObjectUrl,
         mimeType,
       }),

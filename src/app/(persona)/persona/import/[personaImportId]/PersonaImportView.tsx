@@ -87,6 +87,7 @@ export function PersonaImportView({
       // Use the existing attachment API endpoint
       window.open(
         proxiedObjectCdnUrl({
+          name: attachment.name,
           objectUrl: attachment.objectUrl,
           mimeType: attachment.mimeType,
         }),

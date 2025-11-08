@@ -8,8 +8,12 @@ import path from "node:path";
 /**
  * @todo 现在有了一个 AttachmentFile 表，所以可以把签名缓存在那里
  * @todo 不一定要服务端下载内容，可以支持加一个参数是否能 redirect，如果是，直接 302 到签名后的 url
+ * @description 参数里有一个 fileName, 这个文件名没有用到，只是在 url 上面显示，这样用来直接通过 url 下载的时候有文件名
  */
-export async function GET(req: Request) {
+export async function GET(
+  req: Request,
+  params: Promise<{ fileName?: string }>, // eslint-disable-line @typescript-eslint/no-unused-vars
+) {
   const requestUrl = new URL(req.url);
   const objectUrl = requestUrl.searchParams.get("objectUrl") as string | null;
   const mimeType = requestUrl.searchParams.get("mimeType") as string | null;
@@ -63,9 +67,11 @@ export async function GET(req: Request) {
     }
   }
 
+  // const downloadFileName =
+  //   (await params).fileName ?? (objectUrl.split("?")[0].split("/").pop() as string);
+
   // Handle Range requests for audio/video seeking
   const rangeHeader = req.headers.get("range");
-
   if (rangeHeader) {
     // Parse range header (e.g., "bytes=0-1023")
     const parts = rangeHeader.replace(/bytes=/, "").split("-");
@@ -77,6 +83,7 @@ export async function GET(req: Request) {
     return new Response(chunk, {
       status: 206, // Partial Content
       headers: {
+        // "Content-Disposition": `attachment; filename="${downloadFileName}"`,
         "Content-Type": contentType,
         "Content-Length": chunkSize.toString(),
         "Content-Range": `bytes ${start}-${end}/${buffer.byteLength}`,
@@ -88,6 +95,7 @@ export async function GET(req: Request) {
 
   return new Response(buffer, {
     headers: {
+      // "Content-Disposition": `attachment; filename="${downloadFileName}"`,
       "Content-Type": contentType,
       "Content-Length": buffer.byteLength.toString(),
       "Accept-Ranges": "bytes",

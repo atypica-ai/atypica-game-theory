@@ -58,6 +58,7 @@ export function PersonaImportDialog({
     if (attachment?.objectUrl && attachment?.mimeType) {
       window.open(
         proxiedObjectCdnUrl({
+          name: attachment.name,
           objectUrl: attachment.objectUrl,
           mimeType: attachment.mimeType,
         }),

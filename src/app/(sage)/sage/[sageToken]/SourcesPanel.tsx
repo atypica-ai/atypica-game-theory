@@ -166,6 +166,7 @@ function SourceItem({
     } else if (source.content.type === "file") {
       window.open(
         proxiedObjectCdnUrl({
+          name: source.content.name,
           objectUrl: source.content.objectUrl,
           mimeType: source.content.mimeType,
         }),
