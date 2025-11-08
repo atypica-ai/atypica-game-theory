@@ -120,6 +120,49 @@ export function StudyNextSteps({
     setShowRegenerateDialog(false);
   }, []);
 
+  // Show loading state while checking availability
+  if (isLoading) {
+    return (
+      <div className={cn("w-full", className)}>
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-1.5">
+            <div className="size-1 rounded-full bg-primary" />
+            <span className="text-xs text-muted-foreground font-medium">{t("title")}</span>
+          </div>
+        </div>
+        <div className="flex flex-col items-start justify-start gap-2 sm:flex-row sm:flex-wrap">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="justify-start gap-2 h-9 px-3 border border-border/50 opacity-50"
+            disabled
+          >
+            <MicIcon className="size-3.5" />
+            <span className="text-xs mr-1">{t("generatePodcast")}</span>
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="justify-start gap-2 h-9 px-3 border border-border/50 opacity-50"
+            disabled
+          >
+            <LightbulbIcon className="size-3.5 flex-shrink-0" />
+            <span className="text-xs">{t("generating")}</span>
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="justify-start gap-2 h-9 border border-border/50 opacity-50"
+            disabled
+          >
+            <LightbulbIcon className="size-3.5 flex-shrink-0" />
+            <span className="text-xs">{t("generating")}</span>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return isStudyAvailableForNextSteps ? (
     <div className={cn("w-full", className)}>
       <div className="flex items-center justify-between mb-3">

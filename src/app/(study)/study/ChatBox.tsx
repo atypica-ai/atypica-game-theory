@@ -17,7 +17,13 @@ import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
 import { cn } from "@/lib/utils";
 import { UserChatExtra } from "@/prisma/client";
 import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport, getToolName, isToolOrDynamicToolUIPart, isToolUIPart, UIMessage } from "ai";
+import {
+  DefaultChatTransport,
+  getToolName,
+  isToolOrDynamicToolUIPart,
+  isToolUIPart,
+  UIMessage,
+} from "ai";
 import { ArrowRightIcon, PlayIcon, PlusIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
@@ -265,9 +271,7 @@ export function ChatBox() {
       if (
         isToolUIPart(lastPart) &&
         lastPart.state !== "output-available" &&
-        [ToolName.thanks, ToolName.requestInteraction].includes(
-          getToolName(lastPart) as ToolName,
-        )
+        [ToolName.thanks, ToolName.requestInteraction].includes(getToolName(lastPart) as ToolName)
       ) {
         waitForUser = true;
       }

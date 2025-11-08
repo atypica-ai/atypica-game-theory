@@ -72,7 +72,31 @@ export function StudyFeedback({
   };
 
   if (isLoading) {
-    return null; // or a subtle loading state
+    return (
+      <div className={cn("flex items-center gap-1 px-2 py-1 border rounded-sm", className)}>
+        <div className="text-xs text-muted-foreground">{t("title")}</div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-5 px-1 has-[>svg]:px-1 rounded-sm text-xs opacity-50"
+            disabled
+          >
+            <ThumbsUpIcon className="size-3" />
+            {t("useful")}
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-5 px-1 has-[>svg]:px-1 rounded-sm text-xs opacity-50"
+            disabled
+          >
+            <ThumbsDownIcon className="size-3" />
+            {t("notUseful")}
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   return (
