@@ -5,7 +5,7 @@ import { ChevronRightIcon, Volume2Icon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { pickRandomFeaturedPodcast } from "../featured-podcasts/actions";
+import { pickRandomFeaturedPodcast } from "../insight-radio/actions";
 
 type FeaturedPodcast = {
   podcast: {
@@ -94,7 +94,7 @@ export function InsightRadioCard() {
             </Link>
           </Button>
           <Button variant="outline" size="sm" className="h-8 text-xs rounded-full px-3" asChild>
-            <Link href="/featured-podcasts" prefetch={true}>
+            <Link href="/insight-radio" prefetch={true}>
               {t("viewAll")}
               <ChevronRightIcon className="w-3 h-3" />
             </Link>
@@ -140,7 +140,7 @@ export function InsightRadioCard() {
               </Link>
             </Button>
             <Button variant="ghost" size="sm" className="h-9 w-9 rounded-full p-0" asChild>
-              <Link href="/featured-podcasts" prefetch={true}>
+              <Link href="/insight-radio" prefetch={true}>
                 <ChevronRightIcon className="w-4 h-4" />
               </Link>
             </Button>

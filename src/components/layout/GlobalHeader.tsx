@@ -98,7 +98,7 @@ const GlobalHeaderMenusDesktop = () => {
       <MenuLink href="/persona">{t("personaImport")}</MenuLink>
       <MenuLink href="/interview">{t("interviewProject")}</MenuLink>
       <MenuLink href="/pricing">{t("pricing")}</MenuLink>
-      <MenuLink href="/featured-podcasts">{t("insightRadio")}</MenuLink>
+      <MenuLink href="/insight-radio">{t("insightRadio")}</MenuLink>
     </div>
   );
 };
@@ -137,7 +137,7 @@ const GlobalHeaderMenusMobile = () => {
           <MenuLink href="/pricing">{t("pricing")}</MenuLink>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <MenuLink href="/featured-podcasts">{t("insightRadio")}</MenuLink>
+          <MenuLink href="/insight-radio">{t("insightRadio")}</MenuLink>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

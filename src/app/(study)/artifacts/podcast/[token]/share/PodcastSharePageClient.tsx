@@ -133,7 +133,7 @@ export default function PodcastSharePageClient({
           podcastToken={podcastToken}
           title={title}
           studyReplayUrl={`/study/${studyUserChatToken}/share?replay=1`}
-          moreInsightRadioUrl="/featured-podcasts"
+          moreInsightRadioUrl="/insight-radio"
           autoPlay={true}
         />
       </div>
