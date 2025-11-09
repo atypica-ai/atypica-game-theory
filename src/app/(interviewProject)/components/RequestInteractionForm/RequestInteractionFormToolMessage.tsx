@@ -1,7 +1,10 @@
-import type { RequestInteractionFormToolInput } from "@/app/(interviewProject)/tools/types";
+import type {
+  RequestInteractionFormToolInput,
+  TAddInterviewUIToolResult,
+} from "@/app/(interviewProject)/tools/types";
 import { InterviewToolName, TInterviewUITools } from "@/app/(interviewProject)/tools/types";
 import { Button } from "@/components/ui/button";
-import { ToolUIPart } from "ai";
+import { DeepPartial, ToolUIPart } from "ai";
 import { Check } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { FC, useCallback } from "react";
@@ -12,23 +15,25 @@ import { useChoiceFieldsCount, useFormState, useFormType, useFormValidation } fr
 
 interface RequestInteractionFormToolMessageProps {
   toolInvocation: ToolUIPart<Pick<TInterviewUITools, InterviewToolName.requestInteractionForm>>;
-  addToolResult?: <TOOL extends keyof TInterviewUITools>(
-    params:
-      | {
-          state?: "output-available";
-          tool: TOOL;
-          toolCallId: string;
-          output: TInterviewUITools[TOOL]["output"];
-          errorText?: never;
-        }
-      | {
-          state: "output-error";
-          tool: TOOL;
-          toolCallId: string;
-          output?: never;
-          errorText: string;
-        },
-  ) => Promise<void>;
+  addToolResult?: TAddInterviewUIToolResult;
+  // <TOOL extends keyof TInterviewUITools>(
+  //   params:
+  //     | {
+  //         state?: "output-available";
+  //         tool: TOOL;
+  //         toolCallId: string;
+  //         output: TInterviewUITools[TOOL]["output"];
+  //         errorText?: never;
+  //       }
+  //     | {
+  //         state: "output-error";
+  //         tool: TOOL;
+  //         toolCallId: string;
+  //         output?: never;
+  //         errorText: string;
+  //       },
+  // )
+  // => Promise<void>;
 }
 
 export const RequestInteractionFormToolMessage: FC<RequestInteractionFormToolMessageProps> = ({
@@ -83,7 +88,12 @@ export const RequestInteractionFormToolMessage: FC<RequestInteractionFormToolMes
   const resultData =
     toolInvocation.state === "output-available" ? toolInvocation.output.formResponses : undefined;
 
-  const renderField = (field: RequestInteractionFormToolInput["fields"][number]) => {
+  const renderField = (
+    field?: DeepPartial<RequestInteractionFormToolInput["fields"][number]>, // 支持 streaming 中的表单部分渲染
+  ) => {
+    if (!field?.id || !field.type) {
+      return null;
+    }
     const fieldValue = isFormCompleted ? resultData?.[field.id] : formResponses[field.id];
     const isRequired = REQUIRED_FIELD_IDS.has(field.id);
 
@@ -148,13 +158,14 @@ export const RequestInteractionFormToolMessage: FC<RequestInteractionFormToolMes
     <div className="max-w-2xl mx-auto">
       <div className="mb-6">
         <div className="text-lg sm:text-xl font-bold leading-tight text-center">
-          {toolInvocation.input?.prologue || t("defaultPrologue")}
+          {toolInvocation.input?.prologue}
         </div>
       </div>
 
       <div className="space-y-6">
-        {toolInvocation.state === "input-available" && (
-          <div className="space-y-6">{toolInvocation.input.fields.map(renderField)}</div>
+        {(toolInvocation.state === "input-available" ||
+          toolInvocation.state === "input-streaming") && (
+          <div className="space-y-6">{toolInvocation.input?.fields?.map(renderField)}</div>
         )}
 
         {/* Show submit button for basic info form */}

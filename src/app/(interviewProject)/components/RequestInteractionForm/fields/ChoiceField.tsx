@@ -1,12 +1,12 @@
-import { FC } from "react";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { Check } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { FC } from "react";
 import { toast } from "sonner";
-import type { ChoiceFieldProps } from "../types";
 import { MULTIPLE_CHOICE_STYLE } from "../config";
+import type { ChoiceFieldProps } from "../types";
 
 export const ChoiceField: FC<ChoiceFieldProps> = ({
   field,
@@ -45,10 +45,6 @@ export const ChoiceField: FC<ChoiceFieldProps> = ({
     return MULTIPLE_CHOICE_STYLE === "A" ? "grid-cols-1" : "grid-cols-2";
   })();
 
-  // All choice options use outline variant
-  // Selected state is shown by black background (custom class) + checkmark
-  const getButtonVariant = (): "outline" => "outline";
-
   const handleSubmit = () => {
     if (hasSelection) {
       onSubmit();
@@ -58,9 +54,9 @@ export const ChoiceField: FC<ChoiceFieldProps> = ({
   };
 
   return (
-    <div key={field.id} className="space-y-3">
+    <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <label className="block text-sm font-medium text-zinc-900 dark:text-zinc-300">
+        <label className="block text-sm font-medium">
           {field.label}
           {isRequired && !isCompleted && <span className="text-red-500 ml-1">*</span>}
         </label>
@@ -75,19 +71,20 @@ export const ChoiceField: FC<ChoiceFieldProps> = ({
         {field.options?.map((option, index) => {
           const isSelected = isSingleChoice
             ? fieldValue === option
-            : Array.isArray(fieldValue)
+            : Array.isArray(fieldValue) && option
               ? fieldValue.includes(option)
               : fieldValue === option;
 
           return (
             <Button
-              variant={getButtonVariant()}
+              variant="outline"
               key={index}
               data-selected={isSelected}
               onClick={
                 isCompleted
                   ? undefined
                   : () => {
+                      if (!field.id || !option) return;
                       if (isSingleChoice) {
                         onSelectSingle(field.id, option);
                       } else {
@@ -97,12 +94,14 @@ export const ChoiceField: FC<ChoiceFieldProps> = ({
               }
               className={cn(
                 "flex items-center justify-between",
-                "data-[selected=true]:bg-black data-[selected=true]:text-white data-[selected=true]:border-black",
-                "data-[selected=true]:hover:bg-black/90",
+                "data-[selected=true]:bg-primary dark:data-[selected=true]:bg-primary",
+                "data-[selected=true]:text-primary-foreground dark:data-[selected=true]:text-primary-foreground",
+                "bg-transparent dark:bg-transparent data-[selected=true]:border-transparent",
+                "data-[selected=true]:hover:bg-primary/90 dark:data-[selected=true]:hover:bg-primary/90",
               )}
             >
               {option}
-              {isSelected && <Check className="h-4 w-4" />}
+              {isSelected && <Check className="size-4" />}
             </Button>
           );
         })}

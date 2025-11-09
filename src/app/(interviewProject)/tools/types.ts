@@ -123,3 +123,25 @@ export type TInterviewUITools = {
     output: z.infer<typeof requestInteractionFormOutputSchema>;
   };
 };
+
+export type TAddInterviewUIToolResult = <TOOL extends keyof TInterviewUITools>({
+  state,
+  tool,
+  toolCallId,
+  output,
+  errorText,
+}:
+  | {
+      state?: "output-available";
+      tool: TOOL;
+      toolCallId: string;
+      output: TInterviewUITools[TOOL]["output"];
+      errorText?: never;
+    }
+  | {
+      state: "output-error";
+      tool: TOOL;
+      toolCallId: string;
+      output?: never;
+      errorText: string;
+    }) => Promise<void>;

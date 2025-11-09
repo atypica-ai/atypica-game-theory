@@ -1,11 +1,12 @@
 import type { RequestInteractionFormToolInput } from "@/app/(interviewProject)/tools/types";
+import { DeepPartial } from "ai";
 
 export type FieldValue = string | string[] | boolean | undefined;
 
 export type FormResponses = Record<string, FieldValue>;
 
 export interface FieldProps {
-  field: RequestInteractionFormToolInput["fields"][number];
+  field: DeepPartial<RequestInteractionFormToolInput["fields"][number]>; // 支持 streaming 中的表单部分渲染
   fieldValue: FieldValue;
   isCompleted: boolean;
   isRequired: boolean;
@@ -13,7 +14,7 @@ export interface FieldProps {
 }
 
 export interface ChoiceFieldProps {
-  field: RequestInteractionFormToolInput["fields"][number];
+  field: DeepPartial<RequestInteractionFormToolInput["fields"][number]>; // 支持 streaming 中的表单部分渲染
   fieldValue: FieldValue;
   isCompleted: boolean;
   isRequired: boolean;

@@ -261,7 +261,6 @@
       "loadingSessions": "Loading sessions..."
     },
     "requestInteractionForm": {
-      "defaultPrologue": "Please fill in the following information to continue the interview",
       "basicInfoPrologue": "Please fill in the following basic information to help us conduct the interview better",
       "nameLabel": "Your Name",
       "genderLabel": "Your Gender",

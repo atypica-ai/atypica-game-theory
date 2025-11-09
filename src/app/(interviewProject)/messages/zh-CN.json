@@ -261,7 +261,6 @@
       "loadingSessions": "加载会话中..."
     },
     "requestInteractionForm": {
-      "defaultPrologue": "请填写以下信息以继续访谈",
       "basicInfoPrologue": "请先填写以下基本信息，以便我们更好地进行访谈",
       "nameLabel": "您的姓名",
       "genderLabel": "您的性别",
