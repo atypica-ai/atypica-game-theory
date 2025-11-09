@@ -1,8 +1,8 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
+import { Shield } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { FC } from "react";
-import { Shield } from "lucide-react";
 
 interface PrivacyAgreementProps {
   checked: boolean;
@@ -22,7 +22,7 @@ export const PrivacyAgreement: FC<PrivacyAgreementProps> = ({
   const t = useTranslations("InterviewProject.shareInvite");
 
   return (
-    <div className={cn("rounded-lg border border-primary/20 bg-primary/10 p-4", className)}>
+    <div className={cn("rounded-lg border border-border p-4", className)}>
       <label className="group flex cursor-pointer items-start gap-3">
         <Checkbox checked={checked} onCheckedChange={onCheckedChange} className="mt-1" />
         <div className="flex-1">

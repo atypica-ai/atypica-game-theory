@@ -1,12 +1,25 @@
 "use client";
 import { ClientMessagePayload, prepareLastUIMessageForRequest } from "@/ai/messageUtilsClient";
-import { fetchInterviewSessionChat, updateInterviewSessionLanguage } from "@/app/(interviewProject)/actions";
+import {
+  fetchInterviewSessionChat,
+  updateInterviewSessionLanguage,
+} from "@/app/(interviewProject)/actions";
 import { LanguageSwitcher } from "@/app/(interviewProject)/components/LanguageSwitcher";
-import { RequestInteractionFormToolMessage } from "@/app/(interviewProject)/components/RequestInteractionForm";
 import { InterviewToolName } from "@/app/(interviewProject)/tools/types";
+import { InterviewToolUIPartDisplay } from "@/app/(interviewProject)/tools/ui";
 import { TInterviewMessageWithTool } from "@/app/(interviewProject)/types";
 import { FocusedInterviewChat } from "@/components/chat/FocusedInterviewChat";
 import { FitToViewport } from "@/components/layout/FitToViewport";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,19 +32,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { VALID_LOCALES } from "@/i18n/routing";
-import { ExtractServerActionData } from "@/lib/serverAction";
 import { rootLogger } from "@/lib/logging";
+import { ExtractServerActionData } from "@/lib/serverAction";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { Info, Shield, UsersIcon } from "lucide-react";
@@ -167,12 +170,6 @@ export function InterviewSessionChatClient({
   );
 
   const { messages } = useChatHelpers;
-  const requestInteractionToolInvocation = useMemo(() => {
-    const lastPart = messages.at(-1)?.parts?.at(-1);
-    if (lastPart?.type === `tool-${InterviewToolName.requestInteractionForm}`) {
-      return lastPart;
-    }
-  }, [messages]);
 
   // Determine planning state based on messages content
   const interviewState = useMemo(() => {
@@ -281,47 +278,6 @@ export function InterviewSessionChatClient({
     </Dialog>
   );
 
-  if (useChatHelpers.status === "ready" && requestInteractionToolInvocation) {
-    return (
-      <>
-        <FitToViewport className="flex flex-col items-center justify-center h-full relative">
-          {/* Language Switcher in top-right corner */}
-          <div className="absolute top-4 right-4 z-10">
-            <LanguageSwitcher
-              currentLocale={locale}
-              onLanguageChange={handleLanguageChange}
-              disabled={isChangingLanguage}
-            />
-          </div>
-          <div className="max-h-full overflow-y-scroll scrollbar-thin p-4 sm:p-8">
-            <RequestInteractionFormToolMessage
-              toolInvocation={requestInteractionToolInvocation}
-              addToolResult={addToolResult}
-            />
-          </div>
-        </FitToViewport>
-
-        {/* Language Change Confirmation Dialog */}
-        <AlertDialog open={showLanguageConfirmDialog} onOpenChange={setShowLanguageConfirmDialog}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>{tLanguage("title")}</AlertDialogTitle>
-              <AlertDialogDescription>{tLanguage("description")}</AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel onClick={cancelLanguageChange}>
-                {tLanguage("cancel")}
-              </AlertDialogCancel>
-              <AlertDialogAction onClick={confirmLanguageChange}>
-                {tLanguage("confirm")}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </>
-    );
-  }
-
   if (interviewState === "summary") {
     return (
       <FitToViewport className="flex flex-col items-center justify-center h-full p-8 text-center">
@@ -353,10 +309,41 @@ export function InterviewSessionChatClient({
         locale={locale}
         useChatHelpers={useChatHelpers}
         useChatRef={useChatRef}
+        renderToolUIPart={(toolUIPart) => (
+          <InterviewToolUIPartDisplay toolUIPart={toolUIPart} addToolResult={addToolResult} />
+        )}
         showTimer={false} // Interviews don't need timer pressure
-        topRightButton={<ProjectInfoButton />}
+        topRightButton={
+          <>
+            {useChatHelpers.status === "ready" && (
+              <LanguageSwitcher
+                currentLocale={locale}
+                onLanguageChange={handleLanguageChange}
+                disabled={isChangingLanguage}
+              />
+            )}
+            <ProjectInfoButton />
+          </>
+        }
         className="h-full"
       />
+
+      <AlertDialog open={showLanguageConfirmDialog} onOpenChange={setShowLanguageConfirmDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{tLanguage("title")}</AlertDialogTitle>
+            <AlertDialogDescription>{tLanguage("description")}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={cancelLanguageChange}>
+              {tLanguage("cancel")}
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={confirmLanguageChange}>
+              {tLanguage("confirm")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </FitToViewport>
   );
 }

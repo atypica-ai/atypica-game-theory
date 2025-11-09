@@ -1,5 +1,3 @@
-"use client";
-
 import { TMessageWithPlainTextTool } from "@/ai/tools/types";
 import { correctSpeechText } from "@/app/api/transcribe/actions";
 import { RecordButton } from "@/components/chat/RecordButton";
@@ -10,11 +8,11 @@ import { useDevice } from "@/hooks/use-device";
 import { useDocumentVisibility } from "@/hooks/use-document-visibility";
 import { cn } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
-import { getToolOrDynamicToolName, isToolOrDynamicToolUIPart } from "ai";
+import { getToolOrDynamicToolName, isToolOrDynamicToolUIPart, isToolUIPart } from "ai";
 import { AnimatePresence, motion } from "framer-motion";
 import { CheckIcon, Ear, Keyboard, Loader2Icon, Send, XIcon } from "lucide-react";
 import { Locale, useTranslations } from "next-intl";
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 const DEFAULT_TIME_LEFT = 300; // seconds
 
@@ -51,6 +49,7 @@ export function FocusedInterviewChat<
   locale,
   useChatHelpers: { messages, status, stop },
   useChatRef,
+  renderToolUIPart,
   showTimer = true,
   topRightButton,
   className = "",
@@ -60,6 +59,7 @@ export function FocusedInterviewChat<
   useChatRef: React.RefObject<
     Pick<ReturnType<typeof useChat<UI_MESSAGE>>, "regenerate" | "setMessages" | "sendMessage">
   >;
+  renderToolUIPart?: (toolPart: UI_MESSAGE["parts"][number]) => ReactNode;
   showTimer?: boolean;
   topRightButton?: React.ReactNode;
   className?: string;
@@ -166,6 +166,16 @@ export function FocusedInterviewChat<
     return messages.findLast((m) => m.role === "assistant");
   }, [messages]);
 
+  const userTextInputDisabled = useMemo(() => {
+    const lastPart = lastAssistantMessage?.parts?.at(-1);
+    return (
+      status === "streaming" ||
+      status === "submitted" ||
+      isProcessingTranscript ||
+      (lastPart && isToolOrDynamicToolUIPart(lastPart))
+    );
+  }, [status, isProcessingTranscript, lastAssistantMessage]);
+
   // Auto show and focus input after AI streaming ends
   useEffect(() => {
     if (status === "ready" && lastAssistantMessage) {
@@ -183,15 +193,6 @@ export function FocusedInterviewChat<
       }, 100);
     }
   }, [status, showTextInput]);
-
-  // Auto focus input when text input is shown
-  useEffect(() => {
-    if (showTextInput && textareaRef.current) {
-      setTimeout(() => {
-        textareaRef.current?.focus();
-      }, 300);
-    }
-  }, [showTextInput]);
 
   // streaming 显示的时候，样式变化体验不好，字在乱跳，先固定样式 text-base sm:text-lg
   // const messageDisplayStyle = useMemo(() => {
@@ -336,7 +337,6 @@ export function FocusedInterviewChat<
               className={cn(
                 "font-EuclidCircularA font-medium text-zinc-900 dark:text-zinc-100 leading-relaxed",
                 "min-h-full flex flex-col items-center justify-center max-w-4xl w-full mx-auto",
-                "text-base sm:text-lg text-center",
               )}
             >
               {(lastAssistantMessage.parts ?? [])
@@ -344,7 +344,12 @@ export function FocusedInterviewChat<
                 .map((part, index) => {
                   if (part.type === "text" && part.text.trim()) {
                     return (
-                      <TypewriterText key={index} id={lastAssistantMessage.id} text={part.text} />
+                      <TypewriterText
+                        className="text-center text-base sm:text-lg"
+                        key={index}
+                        id={lastAssistantMessage.id}
+                        text={part.text}
+                      />
                     );
                   }
 
@@ -362,8 +367,11 @@ export function FocusedInterviewChat<
                     );
                   }
 
-                  if (isToolOrDynamicToolUIPart(part)) {
-                    return (
+                  if (isToolUIPart(part)) {
+                    return renderToolUIPart ? (
+                      // 恢复默认的
+                      <div key={index}>{renderToolUIPart(part)}</div>
+                    ) : (
                       <div
                         key={index}
                         className="my-4 text-sm text-center text-muted-foreground/50 font-normal font-mono"
@@ -416,7 +424,7 @@ export function FocusedInterviewChat<
             onTranscript={handleTranscriptInternal}
             onPartialTranscript={handlePartialTranscriptInternal}
             language={locale}
-            disabled={status === "streaming" || status === "submitted" || isProcessingTranscript}
+            disabled={userTextInputDisabled}
           />
 
           {/* Text Input Toggle Button */}
@@ -429,7 +437,7 @@ export function FocusedInterviewChat<
                 : "bg-zinc-100 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-600"
             }`}
             onClick={() => setShowTextInput(!showTextInput)}
-            disabled={status === "streaming" || status === "submitted" || isProcessingTranscript}
+            disabled={userTextInputDisabled}
           >
             <Keyboard className="h-5 w-5" />
           </Button>
@@ -437,7 +445,7 @@ export function FocusedInterviewChat<
 
         {/* Text Input Area - Only shown when toggled */}
         <AnimatePresence>
-          {showTextInput && (
+          {showTextInput && !userTextInputDisabled && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
@@ -455,9 +463,7 @@ export function FocusedInterviewChat<
                   onInput={(e) => setInput(e.currentTarget.value)}
                   placeholder={t("shareThoughts")}
                   rows={1}
-                  disabled={
-                    status === "streaming" || status === "submitted" || isProcessingTranscript
-                  }
+                  disabled={userTextInputDisabled}
                   className={cn(
                     "flex w-full resize-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 outline-none",
                     "text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-500 dark:placeholder:text-zinc-400",
@@ -481,12 +487,7 @@ export function FocusedInterviewChat<
                   type="submit"
                   variant="ghost"
                   size="icon"
-                  disabled={
-                    status === "streaming" ||
-                    status === "submitted" ||
-                    isProcessingTranscript ||
-                    !input.trim()
-                  }
+                  disabled={userTextInputDisabled || !input.trim()}
                 >
                   {status === "submitted" ? (
                     <Loader2Icon className="size-4 animate-spin" />

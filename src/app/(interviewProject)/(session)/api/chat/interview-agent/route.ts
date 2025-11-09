@@ -121,9 +121,7 @@ export async function POST(req: Request) {
         : "en-US"
       : // For normal messages, detect language
         await detectInputLanguage({
-          text: newMessage.parts
-            .map((part) => (part.type === "text" ? part.text : ""))
-            .join(""),
+          text: newMessage.parts.map((part) => (part.type === "text" ? part.text : "")).join(""),
           fallbackLocale:
             sessionExtra.preferredLanguage &&
             VALID_LOCALES.includes(sessionExtra.preferredLanguage as Locale)
