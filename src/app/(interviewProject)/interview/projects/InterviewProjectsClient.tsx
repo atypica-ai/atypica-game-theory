@@ -146,11 +146,10 @@ export function InterviewProjectsClient({ isCreateEnabled }: { isCreateEnabled: 
                             {t("optimizing")}
                           </Badge>
                         );
-                      } else if (extra?.optimizedQuestions && extra.optimizedQuestions.length > 0) {
+                      } else if (extra?.questions && extra.questions.length > 0) {
                         return (
                           <Badge variant="outline" className="text-xs">
-                            <SparklesIcon className="h-3 w-3 mr-1" />
-                            {t("optimized")}
+                            {extra.questions.length} Questions
                           </Badge>
                         );
                       }

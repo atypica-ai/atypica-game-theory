@@ -433,14 +433,14 @@ Please directly output complete HTML code, starting with <!DOCTYPE html>, withou
 
 export const interviewAgentSystemPrompt = ({
   brief,
-  optimizedQuestions,
+  questions,
   questionTypePreference,
   isPersonaInterview,
   personaName,
   locale,
 }: {
   brief: string;
-  optimizedQuestions?: string[];
+  questions?: string[];
   questionTypePreference?: "open-ended" | "multiple-choice" | "mixed";
   isPersonaInterview: boolean;
   personaName?: string;
@@ -453,12 +453,12 @@ export const interviewAgentSystemPrompt = ({
 ${brief}
 
 ${
-  optimizedQuestions && optimizedQuestions.length > 0
+  questions && questions.length > 0
     ? `
-## 优化后的访谈问题参考
-以下是基于研究简介优化后的问题，你可以参考这些问题进行访谈，但不要机械地按顺序提问：
+## 访谈问题参考
+以下是基于研究简介的问题，你可以参考这些问题进行访谈，但不要机械地按顺序提问：
 
-${optimizedQuestions.map((q, i) => `${i + 1}. ${q}`).join("\n")}
+${questions.map((q, i) => `${i + 1}. ${q}`).join("\n")}
 
 重要提醒：
 - 这些问题仅作参考，你应该根据对话流程自然地融入相关问题
@@ -564,12 +564,12 @@ You are conducting a research interview based on the following brief:
 ${brief}
 
 ${
-  optimizedQuestions && optimizedQuestions.length > 0
+  questions && questions.length > 0
     ? `
-## Optimized Interview Questions Reference
-Below are optimized questions based on the research brief. You can reference these questions during the interview, but don't ask them mechanically in order:
+## Interview Questions Reference
+Below are questions based on the research brief. You can reference these questions during the interview, but don't ask them mechanically in order:
 
-${optimizedQuestions.map((q, i) => `${i + 1}. ${q}`).join("\n")}
+${questions.map((q, i) => `${i + 1}. ${q}`).join("\n")}
 
 Important Reminders:
 - These questions are for reference only; you should naturally integrate relevant questions based on the conversation flow

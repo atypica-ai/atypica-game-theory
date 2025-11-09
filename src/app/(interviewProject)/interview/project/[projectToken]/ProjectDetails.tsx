@@ -204,7 +204,11 @@ export function ProjectDetails({
                   variant="outline"
                   size="sm"
                   onClick={handleReoptimizeQuestions}
-                  disabled={optimizing || project.extra?.processing}
+                  disabled={
+                    optimizing ||
+                    project.extra?.processing ||
+                    (project.extra?.questions && project.extra.questions.length > 0)
+                  }
                 >
                   <SparklesIcon className="h-3 w-3 mr-1" />
                   {t("reoptimizeQuestions")}
@@ -340,7 +344,6 @@ export function ProjectDetails({
           open={editDialogOpen}
           onOpenChange={setEditDialogOpen}
           onProjectUpdated={handleProjectUpdated}
-          mode="edit"
           projectId={project.id}
           initialBrief={project.brief}
           initialQuestionTypePreference={project.extra?.questionTypePreference}

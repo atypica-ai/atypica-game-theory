@@ -59,10 +59,10 @@ export const interviewSessionTools = ({ interviewSessionId }: { interviewSession
 
 export const questionOptimizationTools = ({ projectId }: { projectId: number }) => ({
   updateQuestions: tool({
-    description: "Save the optimized interview questions and optimization reasoning to the project",
+    description: "Save the interview questions to the project",
     inputSchema: updateQuestionsInputSchema,
     outputSchema: updateQuestionsOutputSchema,
-    execute: async ({ optimizedQuestions, reason }) => {
+    execute: async ({ optimizedQuestions }) => {
       try {
         // Verify project exists
         const project = await prisma.interviewProject.findUnique({
@@ -73,14 +73,15 @@ export const questionOptimizationTools = ({ projectId }: { projectId: number }) 
           throw new Error(`InterviewProject ${projectId} not found`);
         }
 
+        // Convert string array to questions array format
+        const questions = optimizedQuestions.map((text) => ({ text }));
+
         // Use raw SQL to update extra field with JSON operators
         // This safely merges new fields into existing extra without race conditions
         await prisma.$executeRaw`
           UPDATE "InterviewProject"
           SET "extra" = COALESCE("extra", '{}') || ${JSON.stringify({
-            optimizedQuestions,
-            optimizationReason: reason,
-            lastOptimizedAt: Date.now(),
+            questions,
           })}::jsonb,
               "updatedAt" = NOW()
           WHERE "id" = ${projectId}
@@ -88,7 +89,7 @@ export const questionOptimizationTools = ({ projectId }: { projectId: number }) 
 
         return {
           success: true,
-          message: `Successfully saved ${optimizedQuestions.length} optimized questions with reasoning`,
+          message: `Successfully saved ${questions.length} questions`,
         };
       } catch (error) {
         throw error;

@@ -17,19 +17,12 @@ import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
 import { Locale } from "next-intl";
 import { notFound } from "next/navigation";
+import { z } from "zod/v3";
 import { runAutoPersonaInterview } from "./(session)/api/chat/interview-agent/auto-persona";
 import { generateInterviewReportContent } from "./artifacts/generateReport";
 import { generateInterviewShareToken, validateInterviewShareToken } from "./lib";
 import { processInterviewQuestionOptimization } from "./processing";
-import {
-  CreateInterviewProjectInput,
-  createInterviewProjectSchema,
-  UpdateInterviewProjectInput,
-  updateInterviewProjectSchema,
-  questionSchema,
-  interviewProjectExtraSchema,
-} from "./types";
-import { z } from "zod/v3";
+import { interviewProjectQuestionsSchema, questionSchema } from "./tools/types";
 
 /**
  * Fetch user's interview projects
@@ -83,10 +76,25 @@ export async function fetchUserInterviewProjects(): Promise<
 /**
  * Create a new interview project
  */
+const createInterviewProjectSchema = z.object({
+  brief: z
+    .string()
+    .min(10, "Brief must be at least 10 characters")
+    .max(5000, "Brief must be less than 5000 characters"),
+  presetQuestions: z.string().optional(),
+  questionTypePreference: z
+    .enum(["open-ended", "multiple-choice", "mixed"])
+    .optional()
+    .default("open-ended"),
+});
+
+export type CreateInterviewProjectInput = z.infer<typeof createInterviewProjectSchema>;
+
 export async function createInterviewProject(
   input: CreateInterviewProjectInput,
 ): Promise<ServerActionResult<InterviewProject>> {
-  const { brief, presetQuestions, questionTypePreference } = createInterviewProjectSchema.parse(input);
+  const { brief, presetQuestions, questionTypePreference } =
+    createInterviewProjectSchema.parse(input);
   const token = generateToken();
   return withAuth(async (user) => {
     const userId = user.id;
@@ -112,13 +120,17 @@ export async function createInterviewProject(
       },
     });
 
-    // TODO: 暂时注释掉问题优化功能
-    // Start question optimization in background
-    // waitUntil(
-    //   processInterviewQuestionOptimization(project.id).catch((error) => {
-    //     rootLogger.error({ msg: "Question optimization failed:", error: (error as Error).message });
-    //   }),
-    // );
+    // Auto-generate questions if no preset questions provided
+    if (!presetQuestions) {
+      waitUntil(
+        processInterviewQuestionOptimization(project.id).catch((error) => {
+          rootLogger.error({
+            msg: "Question optimization failed:",
+            error: (error as Error).message,
+          });
+        }),
+      );
+    }
 
     return {
       success: true,
@@ -133,6 +145,16 @@ export async function createInterviewProject(
 /**
  * Update interview project brief
  */
+const updateInterviewProjectSchema = z.object({
+  brief: z
+    .string()
+    .min(10, "Brief must be at least 10 characters")
+    .max(5000, "Brief must be less than 5000 characters"),
+  questionTypePreference: z.enum(["open-ended", "multiple-choice", "mixed"]).optional(),
+});
+
+export type UpdateInterviewProjectInput = z.infer<typeof updateInterviewProjectSchema>;
+
 export async function updateInterviewProject(
   projectId: number,
   input: UpdateInterviewProjectInput,
@@ -165,13 +187,6 @@ export async function updateInterviewProject(
       where: { id: projectId },
     });
 
-    // Start question optimization in background after brief update
-    waitUntil(
-      processInterviewQuestionOptimization(projectId).catch((error) => {
-        rootLogger.error({ msg: "Question optimization failed:", error: (error as Error).message });
-      }),
-    );
-
     return {
       success: true,
       data: {
@@ -184,6 +199,7 @@ export async function updateInterviewProject(
 
 /**
  * Manually trigger question optimization
+ * Only allowed when questions array is empty
  */
 export async function optimizeInterviewQuestions(
   projectId: number,
@@ -198,6 +214,18 @@ export async function optimizeInterviewQuestions(
         success: false,
         code: "not_found",
         message: "Interview project not found",
+      };
+    }
+
+    // Check if questions array is empty
+    const extra = (project.extra as InterviewProjectExtra) || {};
+    const questions = extra.questions || [];
+
+    if (questions.length > 0) {
+      return {
+        success: false,
+        code: "forbidden",
+        message: "Cannot optimize questions when questions already exist",
       };
     }
 
@@ -247,7 +275,7 @@ export async function updateInterviewQuestion(
     }
 
     // Validate and parse extra field
-    const extraParseResult = interviewProjectExtraSchema.safeParse(project.extra || {});
+    const extraParseResult = interviewProjectQuestionsSchema.safeParse(project.extra || {});
     if (!extraParseResult.success) {
       rootLogger.error({
         msg: "Invalid project extra data structure",
@@ -317,7 +345,7 @@ export async function deleteInterviewQuestion(
     }
 
     // Validate and parse extra field
-    const extraParseResult = interviewProjectExtraSchema.safeParse(project.extra || {});
+    const extraParseResult = interviewProjectQuestionsSchema.safeParse(project.extra || {});
     if (!extraParseResult.success) {
       rootLogger.error({
         msg: "Invalid project extra data structure",

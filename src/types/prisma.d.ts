@@ -126,9 +126,6 @@ declare module "@/prisma/client" {
   export type InterviewProjectExtra = Partial<{
     error: string;
     processing: boolean;
-    optimizedQuestions: string[];
-    optimizationReason: string;
-    lastOptimizedAt: number;
     questionTypePreference: "open-ended" | "multiple-choice" | "mixed"; // 问题类型偏好
     questions: Array<{
       text: string;

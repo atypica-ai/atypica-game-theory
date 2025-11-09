@@ -1,5 +1,30 @@
 import z from "zod/v3";
 
+// Question schema
+export const questionSchema = z.object({
+  text: z.string().min(1).max(1000),
+  image: z
+    .object({
+      objectUrl: z.string(),
+      name: z.string().max(255),
+      mimeType: z.string(),
+      size: z
+        .number()
+        .positive()
+        .max(10 * 1024 * 1024), // 10MB max
+    })
+    .optional(),
+  questionType: z.enum(["open", "single-choice", "multiple-choice"]).optional(),
+});
+
+export type Question = z.infer<typeof questionSchema>;
+
+// InterviewProjectExtra schema
+export const interviewProjectQuestionsSchema = z.object({
+  questions: z.array(questionSchema).optional(),
+  questionTypePreference: z.enum(["open-ended", "multiple-choice", "mixed"]).optional(),
+});
+
 // endInterview tool schemas
 export const interviewEndInterviewInputSchema = z.object({
   title: z
@@ -75,12 +100,7 @@ export type RequestInteractionFormToolResult = z.infer<typeof requestInteraction
 
 // updateQuestions tool schemas
 export const updateQuestionsInputSchema = z.object({
-  optimizedQuestions: z.array(z.string()).describe("Array of optimized interview questions"),
-  reason: z
-    .string()
-    .describe(
-      "Explanation of why and how the questions were optimized, what changes were made and the reasoning behind them",
-    ),
+  optimizedQuestions: z.array(z.string()).describe("Array of interview questions"),
 });
 
 export const updateQuestionsOutputSchema = z.object({
