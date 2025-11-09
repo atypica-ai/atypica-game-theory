@@ -102,7 +102,7 @@ export function ProjectDetails({
     } finally {
       setOptimizing(false);
     }
-  }, [project.id, t]);
+  }, [project.id]);
 
   const handleProjectUpdated = useCallback(() => {
     // Refresh the page to show updated data

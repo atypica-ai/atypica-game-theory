@@ -46,7 +46,7 @@ const CustomTextarea = React.forwardRef<HTMLTextAreaElement, CustomTextareaProps
 CustomTextarea.displayName = "CustomTextarea";
 
 export function FocusedInterviewChat<
-  T extends TMessageWithPlainTextTool = TMessageWithPlainTextTool,
+  UI_MESSAGE extends TMessageWithPlainTextTool = TMessageWithPlainTextTool,
 >({
   locale,
   useChatHelpers: { messages, status, stop },
@@ -56,9 +56,9 @@ export function FocusedInterviewChat<
   className = "",
 }: {
   locale: Locale;
-  useChatHelpers: Pick<ReturnType<typeof useChat<T>>, "messages" | "status" | "stop">;
+  useChatHelpers: Pick<ReturnType<typeof useChat<UI_MESSAGE>>, "messages" | "status" | "stop">;
   useChatRef: React.RefObject<
-    Pick<ReturnType<typeof useChat<T>>, "regenerate" | "setMessages" | "sendMessage">
+    Pick<ReturnType<typeof useChat<UI_MESSAGE>>, "regenerate" | "setMessages" | "sendMessage">
   >;
   showTimer?: boolean;
   topRightButton?: React.ReactNode;

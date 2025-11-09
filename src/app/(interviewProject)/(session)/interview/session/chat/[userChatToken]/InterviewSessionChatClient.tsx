@@ -284,7 +284,7 @@ export function InterviewSessionChatClient({
   if (useChatHelpers.status === "ready" && requestInteractionToolInvocation) {
     return (
       <>
-        <FitToViewport className="flex flex-col items-center justify-center h-full p-4 sm:p-8 relative">
+        <FitToViewport className="flex flex-col items-center justify-center h-full relative">
           {/* Language Switcher in top-right corner */}
           <div className="absolute top-4 right-4 z-10">
             <LanguageSwitcher
@@ -293,10 +293,12 @@ export function InterviewSessionChatClient({
               disabled={isChangingLanguage}
             />
           </div>
-          <RequestInteractionFormToolMessage
-            toolInvocation={requestInteractionToolInvocation}
-            addToolResult={addToolResult}
-          />
+          <div className="max-h-full overflow-y-scroll scrollbar-thin p-4 sm:p-8">
+            <RequestInteractionFormToolMessage
+              toolInvocation={requestInteractionToolInvocation}
+              addToolResult={addToolResult}
+            />
+          </div>
         </FitToViewport>
 
         {/* Language Change Confirmation Dialog */}
