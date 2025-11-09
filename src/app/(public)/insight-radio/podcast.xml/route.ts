@@ -1,5 +1,5 @@
 import { podcastObjectUrlToHttpUrl } from "@/app/(podcast)/lib/utils";
-import { getRequestOrigin } from "@/lib/request/headers";
+import { truncateByDisplayWidth } from "@/lib/textUtils";
 import { fetchFeaturedPodcasts } from "../actions";
 
 export const dynamic = "force-dynamic";
@@ -12,7 +12,8 @@ export const dynamic = "force-dynamic";
  * - locale: "en-US" or "zh-CN" (default: "en-US")
  */
 export async function GET(request: Request) {
-  const baseUrl = await getRequestOrigin();
+  // const baseUrl = await getRequestOrigin();
+  const baseUrl = "https://atypica.ai";
 
   // Parse locale from query parameter
   const url = new URL(request.url);
@@ -71,7 +72,7 @@ export async function GET(request: Request) {
       <itunes:name>atypica.AI</itunes:name>
       <itunes:email>hi@atypica.ai</itunes:email>
     </itunes:owner>
-    <itunes:image href="${baseUrl}/_public/hippyghost-square-dark-circle.png"/>
+    <itunes:image href="https://bmrlab-prod.s3.us-east-1.amazonaws.com/atypica/public/atypica-insight-radio-podcast-cover.png"/>
     <itunes:category text="Business">
       <itunes:category text="Management"/>
     </itunes:category>
@@ -82,28 +83,24 @@ export async function GET(request: Request) {
       .map((item, index) => {
         const title =
           item.podcast.extra?.metadata?.title || item.studyUserChat.title || "Untitled Episode";
-        const description = item.analyst.topic || "AI-powered research insights";
+        const description = item.podcast.script || "AI-powered research insights";
         const pubDate = new Date(item.podcast.generatedAt).toUTCString();
         const audioUrl = item.s3SignedObjectUrl!;
         const episodeUrl = `${baseUrl}/artifacts/podcast/${item.podcast.token}/share?utm_source=podcast&utm_medium=feed`;
-        const guid = `${baseUrl}/podcast/${item.podcast.token}`;
-
+        const guid = item.podcast.token;
         // Determine episode type based on kindDetermination
         const kind = item.podcast.extra?.kindDetermination?.kind;
         const episodeType = kind === "debate" ? "full" : "full"; // All episodes are full episodes
-
         return `
     <item>
       <title>${escapeXml(title)}</title>
-      <description>${escapeXml(description)}</description>
+      <description><![CDATA[${formatSummary(description, episodeUrl)}]]></description>
       <link>${escapeXml(episodeUrl)}</link>
-      <guid isPermaLink="true">${escapeXml(guid)}</guid>
+      <guid isPermaLink="false">${escapeXml(guid)}</guid>
       <pubDate>${pubDate}</pubDate>
-
       <enclosure url="${escapeXml(audioUrl)}" type="${item.mimeType}"/>
-
       <itunes:title>${escapeXml(title)}</itunes:title>
-      <itunes:summary>${escapeXml(description)}</itunes:summary>
+      <itunes:summary><![CDATA[${formatSummary(description, episodeUrl)}]]></itunes:summary>
       <itunes:episodeType>${episodeType}</itunes:episodeType>
       <itunes:episode>${validPodcasts.length - index}</itunes:episode>
       <itunes:explicit>false</itunes:explicit>
@@ -131,4 +128,32 @@ function escapeXml(unsafe: string): string {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&apos;");
+}
+
+/**
+ * Format description with line breaks for CDATA
+ * Converts newlines to <br> tags and escapes CDATA end markers
+ */
+function formatDescriptionWithBreaks(text: string): string {
+  return text
+    .replace(/\]\]>/g, "]]]]><![CDATA[>") // Escape CDATA end marker if present
+    .replace(/\n/g, "<br>"); // Convert newlines to <br> tags
+}
+
+/**
+ * Format summary with character limit and promotional text
+ */
+function formatSummary(text: string, episodeUrl: string): string {
+  // Truncate to 1000 display width (considers Chinese characters as 2 width)
+  const truncated = truncateByDisplayWidth(text, 1000, "");
+  const wasTruncated = truncated.length < text.length;
+
+  // Apply formatting (line breaks)
+  const formatted = formatDescriptionWithBreaks(truncated);
+
+  // Add ellipsis if truncated
+  const withEllipsis = wasTruncated ? `${formatted}...` : formatted;
+
+  // Add promotional text
+  return `${withEllipsis}<br><br>🔗 <a href="${episodeUrl}">Discover the complete story and deeper insights</a>`;
 }
