@@ -6,6 +6,7 @@ import {
   updateInterviewQuestion,
 } from "@/app/(interviewProject)/actions";
 import { EditProjectDialog } from "@/app/(interviewProject)/components/EditProjectDialog";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { SelectPersonaDialog } from "@/components/SelectPersonaDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,10 +18,11 @@ import {
   ChevronUpIcon,
   EditIcon,
   ListIcon,
+  Loader2Icon,
   MessageSquareIcon,
-  Share2Icon,
   SparklesIcon,
   TrashIcon,
+  User2Icon,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
@@ -89,15 +91,14 @@ export function ProjectDetails({
     [project.id, t],
   );
 
-  const handleReoptimizeQuestions = useCallback(async () => {
+  const handleGenerateQuestions = useCallback(async () => {
     setOptimizing(true);
     try {
       const result = await optimizeInterviewQuestions(project.id);
       if (!result.success) throw result;
-      toast.success(t("reoptimizeQuestions"));
       window.location.reload();
     } catch (error) {
-      toast.error((error as Error).message || "优化问题失败");
+      toast.error((error as Error).message);
     } finally {
       setOptimizing(false);
     }
@@ -119,7 +120,11 @@ export function ProjectDetails({
       if (editingQuestionIndex === undefined) return;
 
       try {
-        const result = await updateInterviewQuestion(project.id, editingQuestionIndex, questionData);
+        const result = await updateInterviewQuestion(
+          project.id,
+          editingQuestionIndex,
+          questionData,
+        );
         if (!result.success) {
           toast.error(result.message || t("questionUpdateFailed"));
           return;
@@ -174,11 +179,11 @@ export function ProjectDetails({
         {!readOnly ? (
           <div className="flex items-center gap-4 flex-wrap">
             <Button variant="outline" onClick={() => setInviteDialogOpen(true)}>
-              <Share2Icon className="h-4 w-4" />
+              <User2Icon className="size-4" />
               {t("interviewHuman")}
             </Button>
             <Button variant="outline" onClick={() => setPersonaDialogOpen(true)}>
-              <BotIcon className="h-4 w-4" />
+              <BotIcon className="size-4" />
               {t("interviewAI")}
             </Button>
           </div>
@@ -197,21 +202,8 @@ export function ProjectDetails({
               <>
                 <div className="ml-auto" />
                 <Button variant="ghost" size="sm" onClick={() => setEditDialogOpen(true)}>
-                  <EditIcon className="h-3 w-3 mr-1" />
+                  <EditIcon className="size-4" />
                   {t("editProject")}
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleReoptimizeQuestions}
-                  disabled={
-                    optimizing ||
-                    project.extra?.processing ||
-                    (project.extra?.questions && project.extra.questions.length > 0)
-                  }
-                >
-                  <SparklesIcon className="h-3 w-3 mr-1" />
-                  {t("reoptimizeQuestions")}
                 </Button>
               </>
             )}
@@ -263,16 +255,40 @@ export function ProjectDetails({
       </Card>
 
       {/* Question List */}
-      {project.extra?.questions && project.extra.questions.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <ListIcon className="h-5 w-5 mr-2" />
-              {t("questionList")}
-            </CardTitle>
-            <p className="text-sm text-muted-foreground mt-1">{t("questionListDescription")}</p>
-          </CardHeader>
-          <CardContent>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <ListIcon className="h-5 w-5 mr-2" />
+            {t("questionList")}
+          </CardTitle>
+          <p className="text-sm text-muted-foreground mt-1">{t("questionListDescription")}</p>
+        </CardHeader>
+        <CardContent>
+          {project.extra?.processing ? (
+            // Generating state
+            <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+              <Loader2Icon className="h-8 w-8 animate-spin mb-4" />
+              <p className="text-sm">{t("optimizing")}</p>
+            </div>
+          ) : !project.extra?.questions || project.extra.questions.length === 0 ? (
+            // Empty state
+            <div className="flex flex-col items-center justify-center py-12">
+              <ListIcon className="h-8 w-8 mb-4 opacity-50 text-muted-foreground" />
+              <p className="text-sm mb-4 text-muted-foreground">{t("noQuestions")}</p>
+              {!readOnly && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleGenerateQuestions}
+                  disabled={optimizing}
+                >
+                  <SparklesIcon className="size-4" />
+                  {t("generateQuestions")}
+                </Button>
+              )}
+            </div>
+          ) : (
+            // Questions list
             <div className="space-y-2">
               {project.extra.questions.map((question, index) => (
                 <div
@@ -296,22 +312,27 @@ export function ProjectDetails({
                         <EditIcon className="h-3 w-3 mr-1" />
                         {t("edit")}
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeleteQuestion(index)}
-                        className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                      <ConfirmDialog
+                        title={`${t("delete")}?`}
+                        description={question.text}
+                        onConfirm={() => handleDeleteQuestion(index)}
                       >
-                        <TrashIcon className="h-3 w-3" />
-                      </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                        >
+                          <TrashIcon className="h-3 w-3" />
+                        </Button>
+                      </ConfirmDialog>
                     </div>
                   )}
                 </div>
               ))}
             </div>
-          </CardContent>
-        </Card>
-      )}
+          )}
+        </CardContent>
+      </Card>
 
       {/* Statistics */}
       <ProjectStatsSection projectToken={project.token} readOnly={readOnly} />

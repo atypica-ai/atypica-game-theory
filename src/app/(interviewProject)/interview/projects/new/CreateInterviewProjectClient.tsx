@@ -32,11 +32,6 @@ export function CreateInterviewProjectClient() {
       return;
     }
 
-    if (!presetQuestions.trim()) {
-      toast.error(t("questionsRequired"));
-      return;
-    }
-
     setIsSubmitting(true);
 
     try {
@@ -52,7 +47,7 @@ export function CreateInterviewProjectClient() {
       }
 
       toast.success(t("createSuccess"));
-      router.push(`/interview/project/${result.data.token}`);
+      router.replace(`/interview/project/${result.data.token}`);
     } catch (error) {
       console.error("Failed to create project:", error);
       toast.error(t("createFailed"));
@@ -69,7 +64,7 @@ export function CreateInterviewProjectClient() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => router.push("/interview/projects")}
+            onClick={() => router.replace("/interview/projects")}
             className="gap-2"
           >
             <ArrowLeftIcon className="h-4 w-4" />
@@ -136,7 +131,9 @@ export function CreateInterviewProjectClient() {
             <CardContent>
               <RadioGroup
                 value={questionTypePreference}
-                onValueChange={(value) => setQuestionTypePreference(value as QuestionTypePreference)}
+                onValueChange={(value) =>
+                  setQuestionTypePreference(value as QuestionTypePreference)
+                }
               >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="open-ended" id="type-open" />
@@ -162,7 +159,7 @@ export function CreateInterviewProjectClient() {
 
           {/* Action Buttons */}
           <div className="flex items-center justify-end gap-4 pt-4 border-t">
-            <Button variant="outline" onClick={() => router.push("/interview/projects")}>
+            <Button variant="outline" onClick={() => router.replace("/interview/projects")}>
               {t("cancel")}
             </Button>
             <Button onClick={handleSubmit} disabled={isSubmitting} className="min-w-32">

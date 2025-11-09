@@ -95,10 +95,11 @@ export const interviewQuestionRefinementPrompt = ({ locale }: { locale?: Locale 
 - 是否完全避免了"为什么"类问题？
 
 **重要：确保问题数量充足且有深度**
-- 不要害怕生成较多问题，宁可多不可少
-- 每个主题至少要有4-6个不同角度的问题
+- 生成的问题数量应该在 8-15 个之间，不要超过 15 个
+- 每个主题至少要有3-5个不同角度的问题
 - 优化后的问题总数应该比原始问题更多，因为我们在拆分和深化
 - 重点是通过更多细分问题来获得更深入的洞察
+- **严格限制：最多生成 15 个问题**
 
 请严格按照以上原则提取并优化问题，然后使用 updateQuestions 工具保存优化后的问题数组。
 `
@@ -193,10 +194,11 @@ Please output the optimized questions in the following format:
 - Are all "why" questions completely avoided?
 
 **Important: Ensure Sufficient and In-depth Questions**
-- Don't hesitate to generate more questions; better more than fewer
-- Each topic should have at least 4-6 questions from different angles
+- Generate 8-15 questions in total, do not exceed 15 questions
+- Each topic should have at least 3-5 questions from different angles
 - The total number of optimized questions should exceed the original questions, as we are decomposing and deepening
 - Focus on gaining deeper insights through more granular questions
+- **Strict limit: Maximum 15 questions**
 
 Please strictly follow the above principles to extract and optimize questions, then use the updateQuestions tool to save the array of optimized questions.
 `;
