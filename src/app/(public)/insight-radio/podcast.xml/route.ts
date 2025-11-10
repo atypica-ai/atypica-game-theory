@@ -48,6 +48,10 @@ export async function GET(request: Request) {
 
   // Filter out podcasts without valid URLs
   const validPodcasts = podcastsWithUrls.filter((p) => p.s3SignedObjectUrl);
+  // Sort podcasts by generatedAt in descending order (newest first)
+  validPodcasts.sort(
+    (a, b) => new Date(b.podcast.generatedAt).getTime() - new Date(a.podcast.generatedAt).getTime(),
+  );
 
   // Set language code for RSS feed
   const languageCode = locale === "zh-CN" ? "zh" : "en";
@@ -96,7 +100,7 @@ export async function GET(request: Request) {
       <title>${escapeXml(title)}</title>
       <description><![CDATA[${formatSummary(description, episodeUrl)}]]></description>
       <link>${escapeXml(episodeUrl)}</link>
-      <guid isPermaLink="false">${escapeXml(guid)}</guid>
+      <guid isPermaLink="false">${guid}</guid>
       <pubDate>${pubDate}</pubDate>
       <enclosure url="${escapeXml(audioUrl)}" type="${item.mimeType}"/>
       <itunes:title>${escapeXml(title)}</itunes:title>
@@ -117,6 +121,18 @@ export async function GET(request: Request) {
     },
   });
 }
+
+/*
+// remove podcast 的例子
+<item>
+  <title>${escapeXml(title)}</title>
+  <description>AI-powered research insights</description>
+  <link>${escapeXml(episodeUrl)}</link>
+  <guid isPermaLink="true">${escapeXml(`${baseUrl}/podcast/${item.podcast.token}`)}</guid>
+  <pubDate>${pubDate}</pubDate>
+  <itunes:block>yes</itunes:block>
+</item>
+*/
 
 /**
  * Escape XML special characters
