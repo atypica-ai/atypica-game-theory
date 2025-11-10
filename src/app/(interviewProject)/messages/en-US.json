@@ -282,6 +282,8 @@
       "submitForm": "Submit Form",
       "formSubmitted": "Form submitted",
       "ok": "OK",
+      "continue": "Continue",
+      "back": "Back",
       "selectAtLeastOne": "Please select at least one option"
     },
     "transcriptDialog": {

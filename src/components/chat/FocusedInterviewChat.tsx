@@ -1,3 +1,4 @@
+import { isSystemMessage } from "@/ai/messageUtilsClient";
 import { TMessageWithPlainTextTool } from "@/ai/tools/types";
 import { correctSpeechText } from "@/app/api/transcribe/actions";
 import { RecordButton } from "@/components/chat/RecordButton";
@@ -74,7 +75,7 @@ const LastAssistantMessagePart = <
   if (lastPart1.type === "dynamic-tool") {
     return (
       <>
-        {lastPart2?.type === "text" && (
+        {lastPart2?.type === "text" && !isSystemMessage(lastPart2.text) && (
           <TypewriterText
             className="text-center text-sm text-muted-foreground font-normal mb-6"
             id={`${lastAssistantMessage.id}-${lastPart1.toolCallId}`}
@@ -94,7 +95,7 @@ const LastAssistantMessagePart = <
   if (isToolUIPart(lastPart1)) {
     return (
       <>
-        {lastPart2?.type === "text" && (
+        {lastPart2?.type === "text" && !isSystemMessage(lastPart2.text) && (
           <TypewriterText
             className="text-center text-sm text-muted-foreground font-normal mb-6"
             id={`${lastAssistantMessage.id}-${lastPart1.toolCallId}`}
@@ -102,7 +103,7 @@ const LastAssistantMessagePart = <
           />
         )}
         {renderToolUIPart ? (
-          <div>{renderToolUIPart(lastPart1)}</div>
+          renderToolUIPart(lastPart1)
         ) : (
           <div className="my-4 text-sm text-center text-muted-foreground/50 font-normal font-mono">
             {t("toolCalling")} {getToolOrDynamicToolName(lastPart1)}

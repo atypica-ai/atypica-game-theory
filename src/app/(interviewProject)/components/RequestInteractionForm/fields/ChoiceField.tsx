@@ -4,7 +4,6 @@ import { cn } from "@/lib/utils";
 import { Check } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { FC } from "react";
-import { toast } from "sonner";
 import { MULTIPLE_CHOICE_STYLE } from "../config";
 import type { ChoiceFieldProps } from "../types";
 
@@ -17,17 +16,8 @@ export const ChoiceField: FC<ChoiceFieldProps> = ({
   isSingleChoice,
   onSelectSingle,
   onToggleMultiple,
-  onSubmit,
-  choiceFieldsCount,
 }) => {
   const t = useTranslations("InterviewProject.requestInteractionForm");
-
-  const isInterviewQuestion = !isBasicInfoForm;
-
-  // For multi-choice questions, check if at least one option is selected
-  const hasSelection = isSingleChoice
-    ? !!fieldValue
-    : Array.isArray(fieldValue) && fieldValue.length > 0;
 
   // Determine grid layout
   const gridLayout = (() => {
@@ -44,14 +34,6 @@ export const ChoiceField: FC<ChoiceFieldProps> = ({
     // Style B: 2 columns (grid, original prototype design)
     return MULTIPLE_CHOICE_STYLE === "A" ? "grid-cols-1" : "grid-cols-2";
   })();
-
-  const handleSubmit = () => {
-    if (hasSelection) {
-      onSubmit();
-    } else {
-      toast.error(t("selectAtLeastOne"));
-    }
-  };
 
   return (
     <div className="space-y-3">
@@ -107,19 +89,6 @@ export const ChoiceField: FC<ChoiceFieldProps> = ({
         })}
       </div>
 
-      {/* For interview questions with single choice field, show OK button below options */}
-      {/* If multiple choice fields exist, show unified OK button at bottom instead */}
-      {isInterviewQuestion && !isCompleted && choiceFieldsCount === 1 && (
-        <div className="flex justify-end pt-2">
-          <Button
-            onClick={handleSubmit}
-            disabled={!hasSelection}
-            className="min-w-24 bg-primary hover:bg-primary/90 text-primary-foreground disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {t("ok")}
-          </Button>
-        </div>
-      )}
     </div>
   );
 };

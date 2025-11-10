@@ -282,6 +282,8 @@
       "submitForm": "提交表单",
       "formSubmitted": "表单已提交",
       "ok": "确定",
+      "continue": "继续",
+      "back": "返回",
       "selectAtLeastOne": "请至少选择一个选项"
     },
     "transcriptDialog": {

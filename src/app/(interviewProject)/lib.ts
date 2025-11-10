@@ -186,7 +186,7 @@ export type InterviewTranscript = {
     | {
         type: "form";
         formData: {
-          prologue: string;
+          // prologue: string;
           fields: Array<{ label: string; value: string | number }>;
         };
       }
@@ -249,7 +249,7 @@ export async function extractInterviewTranscript(userChatId: number): Promise<In
             transcriptMessages.push({
               type: "form",
               formData: {
-                prologue: part.input.prologue || "",
+                // prologue: part.input.prologue || "",
                 fields,
               },
             });

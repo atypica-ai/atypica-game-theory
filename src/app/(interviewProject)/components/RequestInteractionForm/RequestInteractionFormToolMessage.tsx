@@ -8,11 +8,11 @@ import { Button } from "@/components/ui/button";
 import { DeepPartial, ToolUIPart } from "ai";
 import { Check } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { FC, useCallback } from "react";
+import { FC, useCallback, useState } from "react";
 import { toast } from "sonner";
 import { REQUIRED_FIELD_IDS, SINGLE_CHOICE_FIELD_IDS } from "./config";
 import { BooleanField, ChoiceField, TextField } from "./fields";
-import { useChoiceFieldsCount, useFormState, useFormType, useFormValidation } from "./hooks";
+import { useFormState, useFormType, useFormValidation } from "./hooks";
 
 interface RequestInteractionFormToolMessageProps {
   toolInvocation: ToolUIPart<Pick<TInterviewUITools, InterviewToolName.requestInteractionForm>>;
@@ -43,6 +43,9 @@ export const RequestInteractionFormToolMessage: FC<RequestInteractionFormToolMes
 }) => {
   const t = useTranslations("InterviewProject.requestInteractionForm");
 
+  // Track current field index for step-by-step display
+  const [currentFieldIndex, setCurrentFieldIndex] = useState(0);
+
   // Form state management
   const {
     formResponses,
@@ -55,7 +58,57 @@ export const RequestInteractionFormToolMessage: FC<RequestInteractionFormToolMes
   // Form validation and type detection
   const isFormValid = useFormValidation(toolInvocation, formResponses);
   const isBasicInfoForm = useFormType(toolInvocation);
-  const choiceFieldsCount = useChoiceFieldsCount(isBasicInfoForm, toolInvocation);
+  // const choiceFieldsCount = useChoiceFieldsCount(isBasicInfoForm, toolInvocation);
+
+  // Check if current field is valid
+  const isCurrentFieldValid = useCallback(() => {
+    const fields = toolInvocation.input?.fields;
+    if (!fields || currentFieldIndex >= fields.length) return false;
+
+    const currentField = fields[currentFieldIndex];
+    if (!currentField?.id) return false;
+
+    const isRequired = REQUIRED_FIELD_IDS.has(currentField.id);
+    const fieldValue = formResponses[currentField.id];
+
+    // If field is required, check if it has a value
+    if (isRequired) {
+      if (currentField.type === "choice") {
+        // For choice fields, check if at least one option is selected
+        if (typeof fieldValue === "string") {
+          return fieldValue.length > 0;
+        }
+        if (Array.isArray(fieldValue)) {
+          return fieldValue.length > 0;
+        }
+        return false;
+      }
+      return fieldValue !== undefined && fieldValue !== "";
+    }
+
+    // Optional fields are always valid
+    return true;
+  }, [toolInvocation.input?.fields, currentFieldIndex, formResponses]);
+
+  // Handle continue to next field
+  const handleContinue = useCallback(() => {
+    if (!isCurrentFieldValid()) {
+      toast.error(t("requiredFieldsError"));
+      return;
+    }
+
+    const fields = toolInvocation.input?.fields;
+    if (fields && currentFieldIndex < fields.length - 1) {
+      setCurrentFieldIndex(currentFieldIndex + 1);
+    }
+  }, [isCurrentFieldValid, currentFieldIndex, toolInvocation.input?.fields, t]);
+
+  // Handle go back to previous field
+  const handleBack = useCallback(() => {
+    if (currentFieldIndex > 0) {
+      setCurrentFieldIndex(currentFieldIndex - 1);
+    }
+  }, [currentFieldIndex]);
 
   const submitForm = useCallback(() => {
     if (toolInvocation.state === "input-available" && addToolResult) {
@@ -93,7 +146,7 @@ export const RequestInteractionFormToolMessage: FC<RequestInteractionFormToolMes
     field?: DeepPartial<RequestInteractionFormToolInput["fields"][number]>, // 支持 streaming 中的表单部分渲染
   ) => {
     if (!field?.id || !field.type) {
-      return <LoadingPulse />;
+      return null;
     }
     const fieldValue = isFormCompleted ? resultData?.[field.id] : formResponses[field.id];
     const isRequired = REQUIRED_FIELD_IDS.has(field.id);
@@ -132,8 +185,6 @@ export const RequestInteractionFormToolMessage: FC<RequestInteractionFormToolMes
             isSingleChoice={isSingleChoice}
             onSelectSingle={selectSingleChoice}
             onToggleMultiple={toggleChoiceOption}
-            onSubmit={submitForm}
-            choiceFieldsCount={choiceFieldsCount}
           />
         );
       }
@@ -151,12 +202,17 @@ export const RequestInteractionFormToolMessage: FC<RequestInteractionFormToolMes
         );
 
       default:
-        return <LoadingPulse />;
+        return null;
     }
   };
 
+  const fields = toolInvocation.input?.fields;
+  const totalFields = fields?.length ?? 0;
+  const isLastField = currentFieldIndex === totalFields - 1;
+  const currentField = fields?.[currentFieldIndex];
+
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="w-full max-w-sm mx-auto">
       {/*
       <div className="mb-6">
         <div className="text-lg sm:text-xl font-bold leading-tight text-center">
@@ -168,36 +224,56 @@ export const RequestInteractionFormToolMessage: FC<RequestInteractionFormToolMes
       <div className="space-y-6">
         {(toolInvocation.state === "input-available" ||
           toolInvocation.state === "input-streaming") &&
-        toolInvocation.input?.fields?.length ? (
-          <div className="space-y-6">{toolInvocation.input.fields.map(renderField)}</div>
+        currentField ? (
+          <div className="space-y-6">
+            {/* Show field progress indicator */}
+            {totalFields > 1 && (
+              <div className="text-sm text-center text-muted-foreground mb-4">
+                {currentFieldIndex + 1} / {totalFields}
+              </div>
+            )}
+
+            {/* Render only current field */}
+            {renderField(currentField)}
+          </div>
         ) : (
-          <LoadingPulse />
+          <div className="flex items-center justify-center">
+            <LoadingPulse />
+          </div>
         )}
 
-        {/* Show submit button for basic info form */}
-        {!isFormCompleted && isBasicInfoForm && (
-          <div className="flex justify-end pt-4 border-t">
-            <Button onClick={submitForm} disabled={!isFormValid}>
-              {t("submitForm")}
+        {/* Show Continue button for non-last fields */}
+        {!isFormCompleted && !isLastField && currentField && (
+          <div className="flex justify-between pt-4 border-t">
+            {currentFieldIndex > 0 && (
+              <Button variant="outline" onClick={handleBack} className="min-w-24">
+                {t("back")}
+              </Button>
+            )}
+            <Button
+              onClick={handleContinue}
+              disabled={!isCurrentFieldValid()}
+              className="min-w-24 ml-auto"
+            >
+              {t("continue")}
             </Button>
           </div>
         )}
 
-        {/* Show unified OK button for interview questions with multiple choice fields */}
-        {!isFormCompleted && !isBasicInfoForm && choiceFieldsCount > 1 && (
-          <div className="flex justify-end pt-4 border-t">
+        {/* Show Submit button for last field or single field forms */}
+        {!isFormCompleted && isLastField && currentField && (
+          <div className="flex justify-between pt-4 border-t">
+            {currentFieldIndex > 0 && (
+              <Button variant="outline" onClick={handleBack} className="min-w-24">
+                {t("back")}
+              </Button>
+            )}
             <Button
-              onClick={() => {
-                if (isFormValid) {
-                  submitForm();
-                } else {
-                  toast.error(t("requiredFieldsError"));
-                }
-              }}
-              disabled={!isFormValid}
-              className="min-w-24 bg-primary hover:bg-primary/90 text-primary-foreground disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={submitForm}
+              disabled={!isCurrentFieldValid() || !isFormValid}
+              className="min-w-24 ml-auto"
             >
-              {t("ok")}
+              {t("submitForm")}
             </Button>
           </div>
         )}

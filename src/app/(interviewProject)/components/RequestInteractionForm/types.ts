@@ -22,6 +22,6 @@ export interface ChoiceFieldProps {
   isSingleChoice: boolean;
   onSelectSingle: (fieldId: string, option: string) => void;
   onToggleMultiple: (fieldId: string, option: string) => void;
-  onSubmit: () => void;
-  choiceFieldsCount: number;
+  onSubmit?: () => void;
+  choiceFieldsCount?: number;
 }

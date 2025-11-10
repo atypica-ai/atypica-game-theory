@@ -159,11 +159,13 @@ async function InterviewTranscriptPage({
                   key={index}
                   className="my-6 p-4 bg-muted/30 border border-border rounded-lg space-y-3"
                 >
-                  {message.formData.prologue && (
-                    <p className="text-sm text-foreground/70 italic mb-3">
-                      {message.formData.prologue}
-                    </p>
-                  )}
+                  {
+                    // message.formData.prologue && (
+                    //   <p className="text-sm text-foreground/70 italic mb-3">
+                    //     {message.formData.prologue}
+                    //   </p>
+                    // )
+                  }
                   <div className="space-y-2">
                     {message.formData.fields.map((field, fieldIndex) => (
                       <div key={fieldIndex} className="text-sm">
