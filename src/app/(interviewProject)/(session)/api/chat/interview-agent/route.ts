@@ -182,7 +182,7 @@ export async function POST(req: Request) {
 
     tools: tools,
 
-    stopWhen: stepCountIs(1),
+    stopWhen: stepCountIs(3),
 
     experimental_transform: smoothStream({
       delayInMs: 30,

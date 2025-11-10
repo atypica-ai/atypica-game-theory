@@ -1,7 +1,6 @@
 import { TMessageWithPlainTextTool } from "@/ai/tools/types";
 import { correctSpeechText } from "@/app/api/transcribe/actions";
 import { RecordButton } from "@/components/chat/RecordButton";
-import { TypewriterText } from "@/components/chat/TypewriterText";
 import { LoadingPulse } from "@/components/LoadingPulse";
 import { Button } from "@/components/ui/button";
 import { useDevice } from "@/hooks/use-device";
@@ -13,6 +12,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { CheckIcon, Ear, Keyboard, Loader2Icon, Send, XIcon } from "lucide-react";
 import { Locale, useTranslations } from "next-intl";
 import React, { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { TypewriterText } from "./TypewriterText";
 
 const DEFAULT_TIME_LEFT = 300; // seconds
 
@@ -42,6 +42,81 @@ const CustomTextarea = React.forwardRef<HTMLTextAreaElement, CustomTextareaProps
 );
 
 CustomTextarea.displayName = "CustomTextarea";
+
+const LastAssistantMessagePart = <
+  UI_MESSAGE extends TMessageWithPlainTextTool = TMessageWithPlainTextTool,
+>({
+  renderToolUIPart,
+  lastAssistantMessage,
+}: {
+  renderToolUIPart?: (toolPart: UI_MESSAGE["parts"][number]) => ReactNode;
+  lastAssistantMessage: UI_MESSAGE;
+}) => {
+  const t = useTranslations("Components.FocusedInterviewChat");
+
+  const lastPart2 = lastAssistantMessage.parts?.at(-2);
+  const lastPart1 = lastAssistantMessage.parts?.at(-1);
+
+  if (!lastPart1) {
+    return null;
+  }
+
+  if (lastPart1.type === "text" && lastPart1.text.trim()) {
+    return (
+      <TypewriterText
+        className="text-center text-base sm:text-lg"
+        id={lastAssistantMessage.id}
+        text={lastPart1.text}
+      />
+    );
+  }
+
+  if (lastPart1.type === "dynamic-tool") {
+    return (
+      <>
+        {lastPart2?.type === "text" && (
+          <TypewriterText
+            className="text-center text-sm text-muted-foreground font-normal mb-6"
+            id={`${lastAssistantMessage.id}-${lastPart1.toolCallId}`}
+            text={lastPart2.text}
+          />
+        )}
+        <div className="my-4 text-sm text-center text-muted-foreground/50 font-normal font-mono">
+          {t("toolCalling")} {lastPart1.toolName}
+          {lastPart1.state === "output-available" ? (
+            <CheckIcon className="size-3 inline-block ml-2 text-green-500" />
+          ) : null}
+        </div>
+      </>
+    );
+  }
+
+  if (isToolUIPart(lastPart1)) {
+    return (
+      <>
+        {lastPart2?.type === "text" && (
+          <TypewriterText
+            className="text-center text-sm text-muted-foreground font-normal mb-6"
+            id={`${lastAssistantMessage.id}-${lastPart1.toolCallId}`}
+            text={lastPart2.text}
+          />
+        )}
+        {renderToolUIPart ? (
+          <div>{renderToolUIPart(lastPart1)}</div>
+        ) : (
+          <div className="my-4 text-sm text-center text-muted-foreground/50 font-normal font-mono">
+            {t("toolCalling")} {getToolOrDynamicToolName(lastPart1)}
+            {lastPart1.state === "output-available" ? (
+              <CheckIcon className="size-3 inline-block ml-2 text-green-500" />
+            ) : null}
+          </div>
+        )}
+      </>
+    );
+  }
+
+  return null;
+};
 
 export function FocusedInterviewChat<
   UI_MESSAGE extends TMessageWithPlainTextTool = TMessageWithPlainTextTool,
@@ -194,22 +269,6 @@ export function FocusedInterviewChat<
     }
   }, [status, showTextInput]);
 
-  // streaming 显示的时候，样式变化体验不好，字在乱跳，先固定样式 text-base sm:text-lg
-  // const messageDisplayStyle = useMemo(() => {
-  //   const textContent = lastAssistantMessage?.parts
-  //     ?.map((part) => (part.type === "text" ? part.text : ""))
-  //     .join("\n");
-  //   const displayWidth = textContent ? getDisplayWidth(textContent) : 0;
-  //   const threshold = isMobile ? 40 : 120;
-  //   return cn({
-  //     "text-xl sm:text-2xl": displayWidth < 60,
-  //     "text-lg sm:text-xl": displayWidth >= 60 && displayWidth < 120,
-  //     "text-base sm:text-lg": displayWidth >= 120,
-  //     "text-center": displayWidth <= threshold,
-  //     "text-left": displayWidth > threshold,
-  //   });
-  // }, [lastAssistantMessage?.parts, isMobile]);
-
   // When a new assistant message is being generated, clear the last user message
   useEffect(() => {
     if (status === "streaming") {
@@ -339,54 +398,10 @@ export function FocusedInterviewChat<
                 "min-h-full flex flex-col items-center justify-center max-w-4xl w-full mx-auto",
               )}
             >
-              {(lastAssistantMessage.parts ?? [])
-                .slice(-1) // 只显示最后一个 part
-                .map((part, index) => {
-                  if (part.type === "text" && part.text.trim()) {
-                    return (
-                      <TypewriterText
-                        className="text-center text-base sm:text-lg"
-                        key={index}
-                        id={lastAssistantMessage.id}
-                        text={part.text}
-                      />
-                    );
-                  }
-
-                  if (part.type === "dynamic-tool") {
-                    return (
-                      <div
-                        key={index}
-                        className="my-4 text-sm text-center text-muted-foreground/50 font-normal font-mono"
-                      >
-                        {t("toolCalling")} {part.toolName}
-                        {part.state === "output-available" ? (
-                          <CheckIcon className="size-3 inline-block ml-2 text-green-500" />
-                        ) : null}
-                      </div>
-                    );
-                  }
-
-                  if (isToolUIPart(part)) {
-                    return renderToolUIPart ? (
-                      // 恢复默认的
-                      <div key={index}>{renderToolUIPart(part)}</div>
-                    ) : (
-                      <div
-                        key={index}
-                        className="my-4 text-sm text-center text-muted-foreground/50 font-normal font-mono"
-                      >
-                        {t("toolCalling")} {getToolOrDynamicToolName(part)}
-                        {part.state === "output-available" ? (
-                          <CheckIcon className="size-3 inline-block ml-2 text-green-500" />
-                        ) : null}
-                      </div>
-                    );
-                  }
-
-                  return null;
-                })}
-
+              <LastAssistantMessagePart
+                lastAssistantMessage={lastAssistantMessage}
+                renderToolUIPart={renderToolUIPart}
+              />
               {
                 // 先不显示了，这个会导致文本上下跳一下，从显示到不显示
                 // status === "streaming" ? (
