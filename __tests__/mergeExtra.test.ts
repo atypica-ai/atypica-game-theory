@@ -1,8 +1,9 @@
 import { prisma } from "@/prisma/prisma";
 import { mergeExtra } from "@/prisma/utils";
-import { beforeAll, describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 
-import "../scripts/mock-server-only";
+// import "../scripts/mock-server-only";
+vi.mock("server-only", () => ({}));
 
 describe("mergeExtra", () => {
   beforeAll(async () => {
