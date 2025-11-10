@@ -3,6 +3,7 @@ import type {
   TAddInterviewUIToolResult,
 } from "@/app/(interviewProject)/tools/types";
 import { InterviewToolName, TInterviewUITools } from "@/app/(interviewProject)/tools/types";
+import { LoadingPulse } from "@/components/LoadingPulse";
 import { Button } from "@/components/ui/button";
 import { DeepPartial, ToolUIPart } from "ai";
 import { Check } from "lucide-react";
@@ -92,7 +93,7 @@ export const RequestInteractionFormToolMessage: FC<RequestInteractionFormToolMes
     field?: DeepPartial<RequestInteractionFormToolInput["fields"][number]>, // 支持 streaming 中的表单部分渲染
   ) => {
     if (!field?.id || !field.type) {
-      return null;
+      return <LoadingPulse />;
     }
     const fieldValue = isFormCompleted ? resultData?.[field.id] : formResponses[field.id];
     const isRequired = REQUIRED_FIELD_IDS.has(field.id);
@@ -150,22 +151,27 @@ export const RequestInteractionFormToolMessage: FC<RequestInteractionFormToolMes
         );
 
       default:
-        return null;
+        return <LoadingPulse />;
     }
   };
 
   return (
     <div className="max-w-2xl mx-auto">
+      {/*
       <div className="mb-6">
         <div className="text-lg sm:text-xl font-bold leading-tight text-center">
           {toolInvocation.input?.prologue}
         </div>
       </div>
+      */}
 
       <div className="space-y-6">
         {(toolInvocation.state === "input-available" ||
-          toolInvocation.state === "input-streaming") && (
-          <div className="space-y-6">{toolInvocation.input?.fields?.map(renderField)}</div>
+          toolInvocation.state === "input-streaming") &&
+        toolInvocation.input?.fields?.length ? (
+          <div className="space-y-6">{toolInvocation.input.fields.map(renderField)}</div>
+        ) : (
+          <LoadingPulse />
         )}
 
         {/* Show submit button for basic info form */}

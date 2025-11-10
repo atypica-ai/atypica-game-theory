@@ -59,11 +59,11 @@ export const interviewEndInterviewOutputSchema = z.object({
 
 // requestInteractionForm tool schemas
 export const requestInteractionFormInputSchema = z.object({
-  prologue: z
-    .string()
-    .describe(
-      "Introductory text explaining why the user needs to fill out this form and what purpose it serves",
-    ),
+  // prologue: z
+  //   .string()
+  //   .describe(
+  //     "Introductory text explaining why the user needs to fill out this form and what purpose it serves",
+  //   ),
   fields: z
     .array(
       z.object({
