@@ -186,9 +186,14 @@ pnpm admintool make-admin email@example.com
 # 为指定用户创建团队
 pnpm admintool create-team owner@example.com "Team Name"
 
+# 列出用户拥有的所有团队
+pnpm admintool list-teams owner@example.com
+
 # 为个人用户手动添加订阅（仅支持 pro 和 max 计划）
-# 参数：<email> <pro|max> <start-date> <months>
-pnpm admintool add-subscription user@example.com pro 2024-01-30 3
+pnpm admintool add-subscription --email user@example.com --plan pro --start 2024-01-30 --months 3
+
+# 为团队手动添加订阅
+pnpm admintool add-team-subscription --teamId 123 --seats 5 --start 2024-01-30 --months 3
 ```
 
 脚本位置：`scripts/admintool.ts`

@@ -1,9 +1,9 @@
 import "server-only";
 
 import { rootLogger } from "@/lib/logging";
-import { SubscriptionPlan } from "@/prisma/client";
+import { SubscriptionExtra, SubscriptionPlan } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
-import { resetUserMonthlyTokens } from "./monthlyTokens";
+import { resetTeamMonthlyTokens, resetUserMonthlyTokens } from "./monthlyTokens";
 
 const logger = rootLogger.child({ api: "manual-subscription" });
 
@@ -198,6 +198,136 @@ export async function manuallyAddSubscription({
     msg: `Successfully added ${months} month(s) of ${plan} subscription for user ${userId}`,
     userId,
     plan,
+    months,
+    startsAt: startsAt.toISOString(),
+    endsAt: finalEndsAt.toISOString(),
+  });
+}
+
+/**
+ * Manually add team subscription (admin tool use only)
+ * Creates consecutive monthly subscription records for a team
+ *
+ * Note: This function creates subscriptions without associating a userId.
+ * Unlike payment-based subscriptions that require a team identity user,
+ * admin-created subscriptions only need to be associated with the team.
+ *
+ * @param teamId - Team ID
+ * @param seats - Number of seats for the subscription
+ * @param startsAt - Start date of the first subscription
+ * @param months - Number of months to add (each month creates one subscription record)
+ */
+export async function manuallyAddTeamSubscription({
+  teamId,
+  seats,
+  startsAt,
+  months,
+}: {
+  teamId: number;
+  seats: number;
+  startsAt: Date;
+  months: number;
+}): Promise<void> {
+  // Validate months parameter
+  if (months < 1 || !Number.isInteger(months)) {
+    throw new Error(`Invalid months parameter: ${months}. Must be a positive integer.`);
+  }
+
+  // Validate seats parameter
+  if (seats < 1 || !Number.isInteger(seats)) {
+    throw new Error(`Invalid seats parameter: ${seats}. Must be a positive integer.`);
+  }
+
+  // Check if team exists
+  const team = await prisma.team.findUnique({
+    where: { id: teamId },
+    include: { ownerUser: true },
+  });
+
+  if (!team) {
+    throw new Error(`Team with ID ${teamId} not found`);
+  }
+
+  // Generate subscription periods
+  const subscriptionPeriods = generateSubscriptionPeriods(startsAt, months);
+  const finalEndsAt = subscriptionPeriods[subscriptionPeriods.length - 1].endsAt;
+
+  // Check for existing subscriptions that would overlap with the new subscriptions
+  const overlappingSubscriptions = await prisma.subscription.findMany({
+    where: {
+      teamId,
+      OR: [
+        {
+          // Existing subscription starts within the new range
+          startsAt: {
+            gte: startsAt,
+            lt: finalEndsAt,
+          },
+        },
+        {
+          // Existing subscription ends within the new range
+          endsAt: {
+            gt: startsAt,
+            lte: finalEndsAt,
+          },
+        },
+        {
+          // Existing subscription completely covers the new range
+          AND: [{ startsAt: { lte: startsAt } }, { endsAt: { gte: finalEndsAt } }],
+        },
+      ],
+    },
+  });
+
+  if (overlappingSubscriptions.length > 0) {
+    throw new Error(
+      `Team ${teamId} already has ${overlappingSubscriptions.length} subscription(s) that overlap with the requested time range [${startsAt.toISOString()} - ${finalEndsAt.toISOString()}]`,
+    );
+  }
+
+  // Create subscription records (one per month)
+  const subscriptions = [];
+  for (const period of subscriptionPeriods) {
+    const subscription = await prisma.subscription.create({
+      data: {
+        // No userId for admin-created team subscriptions.
+        // If userId were to be set, it should be a team user (with teamIdAsMember),
+        // NOT a personal user (team.ownerUserId).
+        teamId,
+        plan: SubscriptionPlan.team,
+        startsAt: period.startsAt,
+        endsAt: period.endsAt,
+        extra: { seats } satisfies SubscriptionExtra,
+        // No paymentRecordId or stripeSubscriptionId for manual subscriptions
+      },
+    });
+
+    subscriptions.push(subscription);
+    logger.info({
+      msg: `Created team subscription ${subscription.id} for team ${teamId}`,
+      subscriptionId: subscription.id,
+      teamId,
+      seats,
+      startsAt: period.startsAt.toISOString(),
+      endsAt: period.endsAt.toISOString(),
+    });
+  }
+
+  // If the first subscription is active now, reset monthly tokens immediately
+  const now = new Date();
+  const firstSubscription = subscriptions[0];
+  if (firstSubscription.startsAt <= now && firstSubscription.endsAt > now) {
+    logger.info({
+      msg: `First subscription is active, resetting monthly tokens for team ${teamId}`,
+      teamId,
+    });
+    await resetTeamMonthlyTokens({ teamId });
+  }
+
+  logger.info({
+    msg: `Successfully added ${months} month(s) of team subscription with ${seats} seats for team ${teamId}`,
+    teamId,
+    seats,
     months,
     startsAt: startsAt.toISOString(),
     endsAt: finalEndsAt.toISOString(),
