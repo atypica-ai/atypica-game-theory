@@ -1,5 +1,7 @@
 "use client";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -22,13 +24,13 @@ import {
 import { createParamConfig, useListQueryParams } from "@/hooks/use-list-query-params";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDate, formatTokensNumber } from "@/lib/utils";
-import { CoinsIcon, PlusIcon, SearchIcon, UsersIcon } from "lucide-react";
+import { CoinsIcon, PlusIcon, SearchIcon, TrashIcon, UsersIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { PaginationInfo } from "../types";
-import { addTokensToTeam, fetchTeams, updateTeamSeats } from "./actions";
+import { addTokensToTeam, deleteTeam, fetchTeams, updateTeamSeats, updateTeamUnlimitedSeats } from "./actions";
 
 type Team = ExtractServerActionData<typeof fetchTeams>[number];
 
@@ -62,6 +64,7 @@ export function TeamsPageClient({ initialSearchParams }: TeamsPageClientProps) {
   // State for seats dialog
   const [seatsToUpdate, setSeatsToUpdate] = useState<number | null>(null);
   const [isSeatsDialogOpen, setIsSeatsDialogOpen] = useState(false);
+  const [unlimitedSeats, setUnlimitedSeats] = useState(false);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
@@ -127,6 +130,16 @@ export function TeamsPageClient({ initialSearchParams }: TeamsPageClientProps) {
     if (!selectedTeam || seatsToUpdate === null) return;
     setIsSubmitting(true);
     setError("");
+
+    // Update unlimited seats flag first
+    const unlimitedResult = await updateTeamUnlimitedSeats(selectedTeam.id, unlimitedSeats);
+    if (!unlimitedResult.success) {
+      setError(unlimitedResult.message);
+      setIsSubmitting(false);
+      return;
+    }
+
+    // Update seats number
     const result = await updateTeamSeats(selectedTeam.id, seatsToUpdate);
     if (!result.success) {
       setError(result.message);
@@ -135,6 +148,16 @@ export function TeamsPageClient({ initialSearchParams }: TeamsPageClientProps) {
       fetchData(); // Refresh the list
     }
     setIsSubmitting(false);
+  };
+
+  const handleDeleteTeam = async (teamId: number) => {
+    setError("");
+    const result = await deleteTeam(teamId);
+    if (!result.success) {
+      setError(result.message);
+    } else {
+      fetchData(); // Refresh the list
+    }
   };
 
   const openTokensDialog = (team: Team) => {
@@ -147,6 +170,8 @@ export function TeamsPageClient({ initialSearchParams }: TeamsPageClientProps) {
   const openSeatsDialog = (team: Team) => {
     setSelectedTeam(team);
     setSeatsToUpdate(team.seats);
+    const teamExtra = team.extra as { unlimitedSeats?: boolean } | null;
+    setUnlimitedSeats(teamExtra?.unlimitedSeats === true);
     setError("");
     setIsSeatsDialogOpen(true);
   };
@@ -200,15 +225,18 @@ export function TeamsPageClient({ initialSearchParams }: TeamsPageClientProps) {
               <TableHead>Owner</TableHead>
               <TableHead className="text-right">Members / Seats</TableHead>
               <TableHead>⚙️</TableHead>
+              <TableHead className="text-right">Subscriptions</TableHead>
+              <TableHead className="text-right">Payments</TableHead>
               <TableHead className="text-right">Tokens</TableHead>
               <TableHead>⚙️</TableHead>
               <TableHead>Created At</TableHead>
+              <TableHead>⚙️</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {teams.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center text-sm">
+                <TableCell colSpan={11} className="text-center text-sm">
                   No teams found
                 </TableCell>
               </TableRow>
@@ -234,6 +262,12 @@ export function TeamsPageClient({ initialSearchParams }: TeamsPageClientProps) {
                       <PlusIcon className="size-3" />
                       <UsersIcon className="size-3" />
                     </Button>
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap text-sm text-right">
+                    {team._count.subscriptions}
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap text-sm text-right">
+                    {team._count.paymentRecords}
                   </TableCell>
                   <TableCell className="whitespace-nowrap text-sm text-right">
                     {formatTokensNumber(
@@ -263,6 +297,22 @@ export function TeamsPageClient({ initialSearchParams }: TeamsPageClientProps) {
                   </TableCell>
                   <TableCell className="whitespace-nowrap text-xs">
                     <div>{formatDate(team.createdAt, locale)}</div>
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap text-sm">
+                    <ConfirmDialog
+                      title="Delete Team"
+                      description={`Are you sure you want to delete team "${team.name}"? This action cannot be undone. Team must have no subscriptions, payments, or token logs to be deleted.`}
+                      onConfirm={() => handleDeleteTeam(team.id)}
+                    >
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-6 gap-0 px-1.5 text-xs text-red-500 hover:text-red-500"
+                        title="Delete team"
+                      >
+                        <TrashIcon className="size-3" />
+                      </Button>
+                    </ConfirmDialog>
                   </TableCell>
                 </TableRow>
               ))
@@ -371,6 +421,9 @@ export function TeamsPageClient({ initialSearchParams }: TeamsPageClientProps) {
           )}
 
           <div className="grid gap-4 py-4">
+            <div className="rounded-lg bg-yellow-50 p-3 text-sm text-yellow-800">
+              ⚠️ Note: Seats will be overridden by active subscription at monthly token reset. You can enable unlimited seats to bypass the seat limit when adding members.
+            </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label className="text-right">Members</Label>
               <div className="col-span-3 text-sm">
@@ -391,7 +444,24 @@ export function TeamsPageClient({ initialSearchParams }: TeamsPageClientProps) {
                     setSeatsToUpdate(e.target.value ? parseInt(e.target.value) : null)
                   }
                   className="font-mono"
+                  disabled={unlimitedSeats}
                 />
+              </div>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label className="text-right">Unlimited</Label>
+              <div className="col-span-3 flex items-center gap-2">
+                <Checkbox
+                  id="admin-unlimited-seats-checkbox"
+                  checked={unlimitedSeats}
+                  onCheckedChange={(checked) => setUnlimitedSeats(checked === true)}
+                />
+                <label
+                  htmlFor="admin-unlimited-seats-checkbox"
+                  className="text-sm text-muted-foreground"
+                >
+                  Allow unlimited seats (no seat limit when adding members)
+                </label>
               </div>
             </div>
           </div>

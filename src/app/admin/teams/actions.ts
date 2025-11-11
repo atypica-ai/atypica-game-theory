@@ -2,8 +2,10 @@
 
 import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
+import { rootLogger } from "@/lib/logging";
 import { ServerActionResult } from "@/lib/serverAction";
 import { Team, User } from "@/prisma/client";
+import { mergeExtra } from "@/prisma/utils";
 import { prisma } from "@/prisma/prisma";
 import { revalidatePath } from "next/cache";
 
@@ -13,10 +15,10 @@ export async function fetchTeams(
   searchQuery?: string,
 ): Promise<
   ServerActionResult<
-    (Pick<Team, "id" | "name" | "createdAt" | "seats"> & {
+    (Pick<Team, "id" | "name" | "createdAt" | "seats" | "extra"> & {
       ownerUser: Pick<User, "id" | "email">;
       tokensAccount: { permanentBalance: number; monthlyBalance: number } | null;
-      _count: { members: number };
+      _count: { members: number; subscriptions: number; paymentRecords: number };
     })[]
   >
 > {
@@ -41,6 +43,7 @@ export async function fetchTeams(
         name: true,
         createdAt: true,
         seats: true,
+        extra: true,
         ownerUser: {
           select: {
             id: true,
@@ -54,16 +57,37 @@ export async function fetchTeams(
           },
         },
         _count: {
-          select: { members: true },
+          select: { members: true, subscriptions: true },
         },
       },
     }),
     prisma.team.count({ where }),
   ]);
 
+  // Get payment records count for each team (through team members)
+  const teamsWithPaymentCount = await Promise.all(
+    teams.map(async (team) => {
+      const paymentRecordsCount = await prisma.paymentRecord.count({
+        where: {
+          status: "succeeded",
+          user: {
+            teamIdAsMember: team.id,
+          },
+        },
+      });
+      return {
+        ...team,
+        _count: {
+          ...team._count,
+          paymentRecords: paymentRecordsCount,
+        },
+      };
+    }),
+  );
+
   return {
     success: true,
-    data: teams,
+    data: teamsWithPaymentCount,
     pagination: {
       page,
       pageSize,
@@ -173,4 +197,144 @@ export async function updateTeamSeats(
     success: true,
     data: undefined,
   };
+}
+
+export async function updateTeamUnlimitedSeats(
+  teamId: number,
+  unlimitedSeats: boolean,
+): Promise<ServerActionResult<void>> {
+  await checkAdminAuth([AdminPermission.MANAGE_USERS]);
+
+  const team = await prisma.team.findUnique({
+    where: { id: teamId },
+  });
+
+  if (!team) {
+    return {
+      success: false,
+      message: "Team not found",
+    };
+  }
+
+  await mergeExtra({
+    tableName: "Team",
+    id: teamId,
+    extra: { unlimitedSeats },
+  });
+
+  revalidatePath("/admin/teams");
+
+  return {
+    success: true,
+    data: undefined,
+  };
+}
+
+export async function deleteTeam(teamId: number): Promise<ServerActionResult<void>> {
+  await checkAdminAuth([AdminPermission.MANAGE_USERS]);
+
+  const team = await prisma.team.findUnique({
+    where: { id: teamId },
+    include: {
+      _count: {
+        select: {
+          subscriptions: true,
+        },
+      },
+    },
+  });
+
+  if (!team) {
+    return {
+      success: false,
+      message: "Team not found",
+    };
+  }
+
+  // Check if team has any subscriptions
+  if (team._count.subscriptions > 0) {
+    return {
+      success: false,
+      message: "Cannot delete team with existing subscriptions",
+    };
+  }
+
+  // Check if team has any payment records (through team members)
+  const paymentRecordsCount = await prisma.paymentRecord.count({
+    where: {
+      user: {
+        teamIdAsMember: teamId,
+      },
+    },
+  });
+
+  if (paymentRecordsCount > 0) {
+    return {
+      success: false,
+      message: "Cannot delete team with existing payment records",
+    };
+  }
+
+  // Check if team has any tokens logs
+  const tokensLogsCount = await prisma.tokensLog.count({
+    where: {
+      teamId: teamId,
+    },
+  });
+
+  if (tokensLogsCount > 0) {
+    return {
+      success: false,
+      message: "Cannot delete team with existing tokens logs",
+    };
+  }
+
+  try {
+    await prisma.$transaction(async (tx) => {
+      // Delete team member users' profiles
+      await tx.userProfile.deleteMany({
+        where: {
+          user: {
+            teamIdAsMember: teamId,
+          },
+        },
+      });
+
+      // Delete team member users
+      await tx.user.deleteMany({
+        where: {
+          teamIdAsMember: teamId,
+        },
+      });
+
+      // Delete tokens account
+      await tx.tokensAccount.deleteMany({
+        where: {
+          teamId: teamId,
+        },
+      });
+
+      // Delete team
+      await tx.team.delete({
+        where: { id: teamId },
+      });
+    });
+
+    revalidatePath("/admin/teams");
+
+    return {
+      success: true,
+      data: undefined,
+    };
+  } catch (error) {
+    rootLogger.error({
+      msg: "Failed to delete team",
+      error: (error as Error).message,
+      teamId,
+    });
+    return {
+      success: false,
+      message: "Failed to delete team",
+    };
+  }
 }

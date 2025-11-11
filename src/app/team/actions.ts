@@ -4,7 +4,7 @@ import { fetchActiveSubscription } from "@/app/account/lib";
 import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
-import { Subscription, Team, User } from "@/prisma/client";
+import { Subscription, Team, TeamExtra, User } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { getTranslations } from "next-intl/server";
 import { createTeam } from "./lib";
@@ -108,6 +108,10 @@ export async function addTeamMemberAction(data: {
 
       const team = ownershipCheck.team;
 
+      // Check if team has unlimited seats flag
+      const teamExtra = team.extra as TeamExtra | null;
+      const hasUnlimitedSeats = teamExtra?.unlimitedSeats === true;
+
       // 检查活跃成员数量（只统计有 personalUserId 的成员）
       const activeMembersCount = await prisma.user.count({
         where: {
@@ -116,7 +120,8 @@ export async function addTeamMemberAction(data: {
         },
       });
 
-      if (activeMembersCount >= team.seats) {
+      // Only check seat limit if team doesn't have unlimited seats
+      if (!hasUnlimitedSeats && activeMembersCount >= team.seats) {
         return {
           success: false,
           message: t("addMember.seatsFull"),
