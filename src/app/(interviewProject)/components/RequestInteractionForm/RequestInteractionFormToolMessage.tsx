@@ -3,10 +3,12 @@ import type {
   TAddInterviewUIToolResult,
 } from "@/app/(interviewProject)/tools/types";
 import { InterviewToolName, TInterviewUITools } from "@/app/(interviewProject)/tools/types";
+import { proxiedObjectCdnUrl } from "@/app/(system)/cdn/lib";
 import { LoadingPulse } from "@/components/LoadingPulse";
 import { Button } from "@/components/ui/button";
 import { DeepPartial, ToolUIPart } from "ai";
 import { Check } from "lucide-react";
+import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { FC, useCallback, useState } from "react";
 import { toast } from "sonner";
@@ -232,6 +234,26 @@ export const RequestInteractionFormToolMessage: FC<RequestInteractionFormToolMes
                 {currentFieldIndex + 1} / {totalFields}
               </div>
             )}
+
+            {/* Display image if provided */}
+            {toolInvocation.input?.image &&
+              toolInvocation.input.image.objectUrl &&
+              toolInvocation.input.image.name &&
+              toolInvocation.input.image.mimeType && (
+                <div className="rounded-lg overflow-hidden border">
+                  <Image
+                    src={proxiedObjectCdnUrl({
+                      name: toolInvocation.input.image.name,
+                      objectUrl: toolInvocation.input.image.objectUrl,
+                      mimeType: toolInvocation.input.image.mimeType,
+                    })}
+                    alt={toolInvocation.input.image.name}
+                    width={400}
+                    height={300}
+                    className="w-full h-auto object-cover"
+                  />
+                </div>
+              )}
 
             {/* Render only current field */}
             {renderField(currentField)}

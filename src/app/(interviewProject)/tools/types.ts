@@ -69,6 +69,18 @@ export const requestInteractionFormInputSchema = z.object({
   //   .describe(
   //     "Introductory text explaining why the user needs to fill out this form and what purpose it serves",
   //   ),
+  image: z
+    .object({
+      objectUrl: z.string(),
+      name: z.string().max(255),
+      mimeType: z.string(),
+      size: z
+        .number()
+        .positive()
+        .max(10 * 1024 * 1024), // 10MB max
+    })
+    .optional()
+    .describe("Optional image to display with the form"),
   fields: z
     .array(
       z.object({
