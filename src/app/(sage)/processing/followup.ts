@@ -43,7 +43,10 @@ export async function generateInterviewPlan({
     model: llm("claude-sonnet-4"),
     schema: interviewPlanSchema,
     system: interviewPlanSystem({ sage, knowledgeGaps, locale }),
-    prompt: locale === "zh-CN" ? "请生成补充访谈计划。" : "Please generate the supplementary interview plan.",
+    prompt:
+      locale === "zh-CN"
+        ? "请生成补充访谈计划。"
+        : "Please generate the supplementary interview plan.",
     maxRetries: 3,
   });
 

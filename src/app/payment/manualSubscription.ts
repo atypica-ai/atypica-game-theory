@@ -30,11 +30,7 @@ function addMonthsPreservingDay(baseDate: Date, originalDay: number, monthsToAdd
   result.setMonth(result.getMonth() + monthsToAdd);
 
   // Get last day of target month
-  const lastDayOfTargetMonth = new Date(
-    result.getFullYear(),
-    result.getMonth() + 1,
-    0,
-  ).getDate();
+  const lastDayOfTargetMonth = new Date(result.getFullYear(), result.getMonth() + 1, 0).getDate();
 
   // Use original day if possible, otherwise use month end
   result.setDate(Math.min(originalDay, lastDayOfTargetMonth));

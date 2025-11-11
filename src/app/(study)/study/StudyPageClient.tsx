@@ -110,9 +110,7 @@ const Agent = () => {
         onClick={() => setConsoleOpen(!consoleOpen)}
       >
         <span className="text-xs font-bold">
-          {lastToolInvocation
-            ? ">_ exec " + getToolOrDynamicToolName(lastToolInvocation)
-            : ""}
+          {lastToolInvocation ? ">_ exec " + getToolOrDynamicToolName(lastToolInvocation) : ""}
         </span>
         <span className="ml-auto mr-1 text-xs font-bold">{t("viewConsole")}</span>
         <ScanIcon className="size-3" />

@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Subscription, SubscriptionPlan, UserType } from "@/prisma/client";
 import { CheckIcon, CoinsIcon, GiftIcon } from "lucide-react";
-import { useTranslations, useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 interface MaxPlanCardProps {
   productPrices: any;

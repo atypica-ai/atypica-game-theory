@@ -1,10 +1,10 @@
 "use client";
 
+import { cn } from "@/lib/utils";
+import { AlertTriangleIcon, BookOpenIcon, MessageSquareIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useTranslations } from "next-intl";
-import { cn } from "@/lib/utils";
-import { BookOpenIcon, MessageSquareIcon, AlertTriangleIcon } from "lucide-react";
 
 export function TabNavigation({ sageToken }: { sageToken: string }) {
   const t = useTranslations("Sage.detail");
@@ -29,7 +29,7 @@ export function TabNavigation({ sageToken }: { sageToken: string }) {
     },
   ];
 
-  const isActive = (tab: typeof tabs[0]) => {
+  const isActive = (tab: (typeof tabs)[0]) => {
     if (tab.exact) {
       return pathname === tab.href;
     }
@@ -51,7 +51,7 @@ export function TabNavigation({ sageToken }: { sageToken: string }) {
                 "flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors",
                 active
                   ? "border-primary text-foreground"
-                  : "border-transparent text-muted-foreground hover:text-foreground hover:border-muted"
+                  : "border-transparent text-muted-foreground hover:text-foreground hover:border-muted",
               )}
             >
               <Icon className="h-4 w-4" />

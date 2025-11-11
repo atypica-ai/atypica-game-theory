@@ -30,7 +30,13 @@ import { useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { PaginationInfo } from "../types";
-import { addTokensToTeam, deleteTeam, fetchTeams, updateTeamSeats, updateTeamUnlimitedSeats } from "./actions";
+import {
+  addTokensToTeam,
+  deleteTeam,
+  fetchTeams,
+  updateTeamSeats,
+  updateTeamUnlimitedSeats,
+} from "./actions";
 
 type Team = ExtractServerActionData<typeof fetchTeams>[number];
 
@@ -422,7 +428,8 @@ export function TeamsPageClient({ initialSearchParams }: TeamsPageClientProps) {
 
           <div className="grid gap-4 py-4">
             <div className="rounded-lg bg-yellow-50 p-3 text-sm text-yellow-800">
-              ⚠️ Note: Seats will be overridden by active subscription at monthly token reset. You can enable unlimited seats to bypass the seat limit when adding members.
+              ⚠️ Note: Seats will be overridden by active subscription at monthly token reset. You
+              can enable unlimited seats to bypass the seat limit when adding members.
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label className="text-right">Members</Label>

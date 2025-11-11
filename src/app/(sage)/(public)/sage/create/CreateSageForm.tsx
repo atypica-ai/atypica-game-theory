@@ -233,9 +233,7 @@ export function CreateSageForm() {
             </FileUploadButton>
           </div>
 
-          <p className="text-xs text-zinc-500 dark:text-zinc-500">
-            {t("supportedFileTypes")}
-          </p>
+          <p className="text-xs text-zinc-500 dark:text-zinc-500">{t("supportedFileTypes")}</p>
         </div>
 
         {/* Source Type Buttons */}
@@ -254,7 +252,9 @@ export function CreateSageForm() {
             className="p-4 border border-zinc-200 dark:border-zinc-700 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors text-left"
           >
             <FileTextIcon className="size-5 mb-2 text-zinc-600 dark:text-zinc-400" />
-            <div className="font-medium text-zinc-900 dark:text-zinc-100">{t("pasteTextButton")}</div>
+            <div className="font-medium text-zinc-900 dark:text-zinc-100">
+              {t("pasteTextButton")}
+            </div>
             <div className="text-xs text-zinc-500 dark:text-zinc-500">{t("pasteTextDirectly")}</div>
           </button>
         </div>

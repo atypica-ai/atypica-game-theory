@@ -335,12 +335,14 @@ The project uses [Pino](https://github.com/pinojs/pino) logger. **IMPORTANT**: L
 #### Correct Usage
 
 **Option 1: String only**
+
 ```typescript
 logger.info("Operation completed");
 logger.error("Operation failed");
 ```
 
 **Option 2: Object with `msg` field**
+
 ```typescript
 logger.info({
   msg: "Operation completed",

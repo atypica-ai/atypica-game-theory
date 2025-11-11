@@ -1,9 +1,9 @@
+import { TeamCreateButton } from "@/app/team/components/TeamCreateButton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { TeamCreateButton } from "@/app/team/components/TeamCreateButton";
 import { UserType } from "@/prisma/client";
 import { CheckIcon, CoinsIcon } from "lucide-react";
-import { useTranslations, useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 interface TeamPlanCardProps {
   productPrices: any;

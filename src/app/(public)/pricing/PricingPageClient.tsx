@@ -1,17 +1,17 @@
 "use client";
+import { TProductPrices } from "@/app/payment/actions";
 import { AddTokensDialog } from "@/app/payment/components/AddTokensDialog";
 import { SubscriptionDialog } from "@/app/payment/components/SubscriptionDialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Subscription, SubscriptionPlan, UserType } from "@/prisma/client";
 import { InfoIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useState } from "react";
-import { TProductPrices } from "@/app/payment/actions";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { FreePlanCard } from "./FreePlanCard";
-import { ProPlanCard } from "./ProPlanCard";
-import { MaxPlanCard } from "./MaxPlanCard";
-import { TeamPlanCard } from "./TeamPlanCard";
 import { EnterprisePlanCard } from "./EnterprisePlanCard";
+import { FreePlanCard } from "./FreePlanCard";
+import { MaxPlanCard } from "./MaxPlanCard";
+import { ProPlanCard } from "./ProPlanCard";
+import { TeamPlanCard } from "./TeamPlanCard";
 import { createHelloUserChatAction } from "./actions";
 
 export default function PricingPageClient({

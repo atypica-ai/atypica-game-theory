@@ -24,7 +24,11 @@ import { useRouter } from "next/navigation";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 
 import { PaginationInfo } from "../types";
-import { fetchAnalystPodcastsAction, generatePodcastTitleAction, updatePodcastTitleAction } from "./actions";
+import {
+  fetchAnalystPodcastsAction,
+  generatePodcastTitleAction,
+  updatePodcastTitleAction,
+} from "./actions";
 
 type AnalystPodcastWithAnalyst = ExtractServerActionData<typeof fetchAnalystPodcastsAction>[number];
 

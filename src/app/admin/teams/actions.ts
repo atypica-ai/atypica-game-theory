@@ -5,8 +5,8 @@ import { AdminPermission } from "@/app/admin/types";
 import { rootLogger } from "@/lib/logging";
 import { ServerActionResult } from "@/lib/serverAction";
 import { Team, User } from "@/prisma/client";
-import { mergeExtra } from "@/prisma/utils";
 import { prisma } from "@/prisma/prisma";
+import { mergeExtra } from "@/prisma/utils";
 import { revalidatePath } from "next/cache";
 
 export async function fetchTeams(

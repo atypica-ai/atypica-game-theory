@@ -31,13 +31,7 @@ async function PublicSagePage({
     notFound();
   }
 
-  return (
-    <PublicSageView
-      sage={sage}
-      isOwner={isOwner}
-      isAuthenticated={!!session?.user}
-    />
-  );
+  return <PublicSageView sage={sage} isOwner={isOwner} isAuthenticated={!!session?.user} />;
 }
 
 export default async function PublicSagePageWithLoading({

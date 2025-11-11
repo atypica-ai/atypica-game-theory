@@ -70,8 +70,7 @@ export const ChangelogZH: React.FC = () => {
                     🧑‍💼 功能增强: Persona 系统
                   </strong>
                   <p className="text-gray-700 dark:text-gray-300 mt-1">
-                    Persona
-                    可通过分享链接公开访问。Persona
+                    Persona 可通过分享链接公开访问。Persona
                     聊天支持上传文件作为对话上下文。搜索和筛选功能增强，支持标签和预览。
                   </p>
                 </li>
