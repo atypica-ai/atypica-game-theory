@@ -239,17 +239,19 @@ export async function deleteUserAccount(userId: number): Promise<ServerActionRes
   }
 
   try {
-    await prisma.tokensAccount.deleteMany({
-      where: { userId },
-    });
-    await prisma.tokensLog.deleteMany({
-      where: { userId },
-    });
-    await prisma.userProfile.deleteMany({
-      where: { userId },
-    });
-    await prisma.user.delete({
-      where: { id: userId },
+    await prisma.$transaction(async (tx) => {
+      await tx.tokensAccount.deleteMany({
+        where: { userId },
+      });
+      await tx.tokensLog.deleteMany({
+        where: { userId },
+      });
+      await tx.userProfile.deleteMany({
+        where: { userId },
+      });
+      await tx.user.delete({
+        where: { id: userId },
+      });
     });
     revalidatePath("/admin/users");
     return {
