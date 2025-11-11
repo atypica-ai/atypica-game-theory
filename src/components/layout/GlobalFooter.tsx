@@ -12,9 +12,9 @@ export default function GlobalFooter({ className }: { className?: string }) {
         className,
       )}
     >
-      <div className="container max-w-6xl mx-auto max-md:space-y-8 md:flex md:items-start md:justify-start gap-8 mb-8">
+      <div className="container max-w-6xl mx-auto gap-12 flex flex-col md:flex-row md:items-start md:justify-start">
         {/* Brand Column */}
-        <div className="space-y-4">
+        <section className="space-y-4">
           <div className="font-EuclidCircularA font-bold text-lg leading-none">atypica.AI</div>
           <p className="text-sm text-muted-foreground max-w-md">{t("tagline")}</p>
           <p className="text-xs text-muted-foreground">
@@ -85,100 +85,104 @@ export default function GlobalFooter({ className }: { className?: string }) {
             <div className="w-2 h-2 bg-green-500 rounded-full"></div>
             <span>{t("status")}</span>
           </Link>
-        </div>
+        </section>
 
-        {/* Product Column */}
-        <div className="md:ml-auto md:mr-20 space-y-4">
-          <h4 className="text-sm font-medium text-foreground">{t("product")}</h4>
-          <div className="space-y-3 text-sm">
-            <Link
-              href="/about"
-              className="block text-muted-foreground hover:text-foreground transition-colors"
-            >
-              {t("about")}
-            </Link>
-            {/*<Link
+        {/* Columns */}
+        <section className="md:ml-auto flex items-start justify-start gap-12 sm:gap-20 sm:mr-20 xl:mr-0">
+          {/* Product Column */}
+          <div className="space-y-4">
+            <h4 className="text-sm font-medium text-foreground">{t("product")}</h4>
+            <div className="space-y-3 text-sm">
+              <Link
+                href="/about"
+                className="block text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {t("about")}
+              </Link>
+              {/*<Link
                 href="/pricing"
                 className="block text-muted-foreground hover:text-foreground transition-colors"
               >
                 {t("pricing")}
               </Link>*/}
-            <Link
-              href="/persona-simulation"
-              className="block text-muted-foreground hover:text-foreground transition-colors"
-            >
-              {t("personaSimulation")}
-            </Link>
-            <Link
-              href="/insight-radio"
-              className="block text-muted-foreground hover:text-foreground transition-colors"
-            >
-              {t("insightRadio")}
-            </Link>
-            <Link
-              href="/deck/about"
-              className="block text-muted-foreground hover:text-foreground transition-colors"
-            >
-              {t("overview")}
-            </Link>
-            <Link
-              href="/changelog"
-              className="block text-muted-foreground hover:text-foreground transition-colors"
-            >
-              {t("changelog")}
-            </Link>
-            <Link
-              href="/glossary"
-              className="block text-muted-foreground hover:text-foreground transition-colors"
-            >
-              {t("glossary")}
-            </Link>
+              <Link
+                href="/persona-simulation"
+                className="block text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {t("personaSimulation")}
+              </Link>
+              <Link
+                href="/insight-radio"
+                className="block text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {t("insightRadio")}
+              </Link>
+              <Link
+                href="/deck/about"
+                className="block text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {t("overview")}
+              </Link>
+              <Link
+                href="/changelog"
+                className="block text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {t("changelog")}
+              </Link>
+              <Link
+                href="/glossary"
+                className="block text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {t("glossary")}
+              </Link>
+            </div>
           </div>
-        </div>
 
-        {/* Company Column */}
-        <div className="space-y-4">
-          <h4 className="text-sm font-medium text-foreground">{t("company")}</h4>
-          <div className="space-y-3 text-sm">
-            {/* <Link
+          {/* Company Column */}
+          <div className="space-y-4">
+            <h4 className="text-sm font-medium text-foreground">{t("company")}</h4>
+            <div className="space-y-3 text-sm">
+              {/* <Link
                 href="/status"
                 className="block text-muted-foreground hover:text-foreground transition-colors"
               >
                 Status
               </Link> */}
-            <Link
-              href="https://blog.atypica.ai/"
-              target="_blank"
-              className="block text-muted-foreground hover:text-foreground transition-colors"
-            >
-              {t("blog")}
-            </Link>
-            <Link
-              href="/join-us"
-              className="block text-muted-foreground hover:text-foreground transition-colors"
-            >
-              {t("joinUs")}
-            </Link>
-            <Link
-              href="/deck/pitch"
-              className="block text-muted-foreground hover:text-foreground transition-colors"
-            >
-              {t("deck")}
-            </Link>
-            <Link
-              href="/terms"
-              className="block text-muted-foreground hover:text-foreground transition-colors"
-            >
-              {t("terms")}
-            </Link>
-            <Link
-              href="/privacy"
-              className="block text-muted-foreground hover:text-foreground transition-colors"
-            >
-              {t("privacy")}
-            </Link>
+              <Link
+                href="https://blog.atypica.ai/"
+                target="_blank"
+                className="block text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {t("blog")}
+              </Link>
+              <Link
+                href="/join-us"
+                className="block text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {t("joinUs")}
+              </Link>
+              <Link
+                href="/deck/pitch"
+                className="block text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {t("deck")}
+              </Link>
+              <Link
+                href="/terms"
+                className="block text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {t("terms")}
+              </Link>
+              <Link
+                href="/privacy"
+                className="block text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {t("privacy")}
+              </Link>
+            </div>
           </div>
-        </div>
+        </section>
+        {/* end Columns */}
       </div>
     </footer>
   );
