@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/table";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDate } from "@/lib/utils";
-import { Team, User } from "@/prisma/client";
+import { Team, TeamExtra, User } from "@/prisma/client";
 import { CreditCardIcon, TrashIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
@@ -40,6 +40,8 @@ export function TeamDetailPageClient({ team }: { team: Team }) {
   const t = useTranslations("Team.ManageDetailPage");
   const tActions = useTranslations("Team.Actions");
   const locale = useLocale();
+  const teamExtra = team.extra as TeamExtra | null;
+  const hasUnlimitedSeats = teamExtra?.unlimitedSeats === true;
   const [members, setMembers] = useState<Array<User & { personalUser: User | null }>>([]);
   const [teamSubscription, setTeamSubscription] = useState<ExtractServerActionData<
     typeof getTeamSubscriptionAction
@@ -206,10 +208,15 @@ export function TeamDetailPageClient({ team }: { team: Team }) {
                     disabled={isAddingMember}
                   />
                 </div>
-                <Button type="submit" disabled={isAddingMember || activeMembersCount >= team.seats}>
+                <Button
+                  type="submit"
+                  disabled={
+                    isAddingMember || (!hasUnlimitedSeats && activeMembersCount >= team.seats)
+                  }
+                >
                   {isAddingMember ? t("addingButton") : t("addButton")}
                 </Button>
-                {activeMembersCount >= team.seats && (
+                {!hasUnlimitedSeats && activeMembersCount >= team.seats && (
                   <p className="text-sm text-muted-foreground">{t("seatsFull")}</p>
                 )}
               </form>

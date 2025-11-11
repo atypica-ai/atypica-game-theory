@@ -56,8 +56,14 @@ export async function fetchTeams(
             monthlyBalance: true,
           },
         },
+        members: {
+          where: {
+            personalUserId: { not: null },
+          },
+          select: { id: true },
+        },
         _count: {
-          select: { members: true, subscriptions: true },
+          select: { subscriptions: true },
         },
       },
     }),
@@ -75,10 +81,12 @@ export async function fetchTeams(
           },
         },
       });
+      const { members, ...teamWithoutMembers } = team;
       return {
-        ...team,
+        ...teamWithoutMembers,
         _count: {
           ...team._count,
+          members: members.length, // Count of active members (personalUserId not null)
           paymentRecords: paymentRecordsCount,
         },
       };
@@ -163,11 +171,6 @@ export async function updateTeamSeats(
 
   const team = await prisma.team.findUnique({
     where: { id: teamId },
-    include: {
-      _count: {
-        select: { members: true },
-      },
-    },
   });
 
   if (!team) {
@@ -177,10 +180,18 @@ export async function updateTeamSeats(
     };
   }
 
-  if (seats < team._count.members) {
+  // Count only active members (not deleted)
+  const activeMembersCount = await prisma.user.count({
+    where: {
+      teamIdAsMember: teamId,
+      personalUserId: { not: null },
+    },
+  });
+
+  if (seats < activeMembersCount) {
     return {
       success: false,
-      message: `New seats count cannot be less than the current number of members (${team._count.members}).`,
+      message: `New seats count cannot be less than the current number of active members (${activeMembersCount}).`,
     };
   }
 
