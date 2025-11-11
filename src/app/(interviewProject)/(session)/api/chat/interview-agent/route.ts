@@ -132,8 +132,7 @@ export async function POST(req: Request) {
   // Generate system prompt based on interview context
   const systemPrompt = interviewAgentSystemPrompt({
     brief: project.brief,
-    questions: project.extra?.questions?.map((q) => q.text),
-    questionTypePreference: project.extra?.questionTypePreference,
+    questions: project.extra?.questions,
     isPersonaInterview: false,
     locale,
   });
