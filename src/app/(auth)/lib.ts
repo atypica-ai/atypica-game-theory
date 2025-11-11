@@ -218,17 +218,25 @@ export async function createTeamMemberUser({
   personalUser: Pick<User, "id" | "name">;
   teamAsMember: Pick<Team, "id">;
 }) {
-  const teamUser = await prisma.user.create({
-    data: {
-      name: personalUser.name,
-      email: null,
-      password: "", // 没有密码
-      teamIdAsMember: teamAsMember.id,
-      personalUserId: personalUser.id,
-    },
-  });
+  const teamUser = await prisma.$transaction(async (tx) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password: _, ...teamUser } = await tx.user.create({
+      data: {
+        name: personalUser.name,
+        email: null,
+        password: "", // 没有密码
+        teamIdAsMember: teamAsMember.id,
+        personalUserId: personalUser.id,
+      },
+    });
 
-  // ⚠️ team user 没有 userProfile，而是关联 personalUser 的 userProfile
+    // ⚠️ team user 还是创建 userProfile 好，单独记录登录信息等
+    await tx.userProfile.create({
+      data: { userId: teamUser.id },
+    });
+
+    return teamUser;
+  });
 
   // ⚠️ team user 没有 tokensAccount，而是关联 team 的 tokensAccount
   // await prisma.tokensAccount.create({
