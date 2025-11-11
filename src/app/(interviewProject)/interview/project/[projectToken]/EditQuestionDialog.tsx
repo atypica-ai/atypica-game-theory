@@ -10,13 +10,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { clientUploadFileToS3 } from "@/lib/attachments/client";
 import { cn } from "@/lib/utils";
 import { ChatMessageAttachment } from "@/prisma/client";
-import { ImageIcon, Loader2Icon, UploadIcon, XIcon } from "lucide-react";
+import { ImageIcon, Loader2Icon, PlusIcon, UploadIcon, XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
@@ -26,6 +27,7 @@ export interface QuestionData {
   text: string;
   image?: ChatMessageAttachment;
   questionType?: "open" | "single-choice" | "multiple-choice";
+  options?: string[];
 }
 
 interface EditQuestionDialogProps {
@@ -50,6 +52,7 @@ export function EditQuestionDialog({
   const [questionType, setQuestionType] = useState<"open" | "single-choice" | "multiple-choice">(
     "open",
   );
+  const [options, setOptions] = useState<string[]>(["", ""]);
   const [uploadingImage, setUploadingImage] = useState(false);
 
   // Initialize form when question changes
@@ -58,10 +61,12 @@ export function EditQuestionDialog({
       setText(question.text);
       setImage(question.image);
       setQuestionType(question.questionType || "open");
+      setOptions(question.options || ["", ""]);
     } else {
       setText("");
       setImage(undefined);
       setQuestionType("open");
+      setOptions(["", ""]);
     }
   }, [question]);
 
@@ -112,14 +117,37 @@ export function EditQuestionDialog({
       return;
     }
 
-    onSave({
-      text: text.trim(),
-      image,
-      questionType,
-    });
+    // Validate options for choice questions
+    if (questionType === "single-choice" || questionType === "multiple-choice") {
+      const validOptions = options.filter((opt) => opt.trim().length > 0);
+
+      if (validOptions.length < 2) {
+        toast.error(t("atLeastTwoOptions"));
+        return;
+      }
+
+      if (validOptions.length > 4) {
+        toast.error(t("atMostFourOptions"));
+        return;
+      }
+
+      onSave({
+        text: text.trim(),
+        image,
+        questionType,
+        options: validOptions,
+      });
+    } else {
+      // Open question - don't save options
+      onSave({
+        text: text.trim(),
+        image,
+        questionType,
+      });
+    }
 
     onOpenChange(false);
-  }, [text, image, questionType, onSave, onOpenChange, t]);
+  }, [text, image, questionType, options, onSave, onOpenChange, t]);
 
   const formatFileSize = (bytes: number) => {
     if (bytes < 1024) return bytes + " B";
@@ -275,6 +303,59 @@ export function EditQuestionDialog({
               </div>
             </RadioGroup>
           </div>
+
+          {/* Options - Only show for choice questions */}
+          {(questionType === "single-choice" || questionType === "multiple-choice") && (
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">
+                {t("options")} <span className="text-red-500">*</span>
+              </Label>
+
+              {/* Options List */}
+              <div className="space-y-2">
+                {options.map((option, index) => (
+                  <div key={index} className="flex gap-2">
+                    <Input
+                      value={option}
+                      onChange={(e) => {
+                        const newOptions = [...options];
+                        newOptions[index] = e.target.value;
+                        setOptions(newOptions);
+                      }}
+                      placeholder={t("optionPlaceholder", { number: index + 1 })}
+                      className="flex-1"
+                    />
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => {
+                        setOptions(options.filter((_, i) => i !== index));
+                      }}
+                      disabled={options.length <= 2}
+                      title={t("deleteOption")}
+                    >
+                      <XIcon className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+
+              {/* Add Option Button */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setOptions([...options, ""])}
+                disabled={options.length >= 4}
+                className="w-full"
+              >
+                <PlusIcon className="h-4 w-4 mr-2" />
+                {t("addOption")}
+              </Button>
+
+              {/* Hint Text */}
+              <p className="text-xs text-muted-foreground">{t("optionsHint")}</p>
+            </div>
+          )}
         </div>
 
         <DialogFooter>

@@ -15,6 +15,11 @@ export const questionSchema = z.object({
     })
     .optional(),
   questionType: z.enum(["open", "single-choice", "multiple-choice"]).optional(),
+  options: z
+    .array(z.string())
+    .min(2, "Choice questions must have at least 2 options")
+    .max(4, "Choice questions can have at most 4 options")
+    .optional(),
 });
 
 export type Question = z.infer<typeof questionSchema>;
