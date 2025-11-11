@@ -4,7 +4,7 @@ import { ProductName } from "@/app/payment/data";
 import { resetTeamMonthlyTokens, resetUserMonthlyTokens } from "@/app/payment/monthlyTokens";
 import { recharge1MTokens } from "@/app/payment/permanentTokens";
 import { trackUserServerSide } from "@/lib/analytics/server";
-import { PaymentRecord, SubscriptionPlan } from "@/prisma/client";
+import { PaymentRecord, SubscriptionExtra, SubscriptionPlan } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import Stripe from "stripe";
 import { retrieveStripeSubscriptionDetails } from "./utils";
@@ -36,18 +36,14 @@ export async function handleTeamSubscriptionPaymentSuccess({
     );
   }
   const teamId = teamUser.teamIdAsMember;
-  // Update team seats
-  await prisma.team.update({
-    where: { id: teamId },
-    data: { seats: quantity },
-  });
 
   const { stripeSubscriptionId, planStartsAt, planEndsAt } =
     await retrieveStripeSubscriptionDetails({
       invoice: invoiceData,
     });
 
-  // Create team subscription record
+  // Create team subscription record with seats in extra
+  // Note: team.seats will be updated when subscription becomes active (in resetTeamMonthlyTokens)
   await prisma.subscription.create({
     data: {
       userId,
@@ -57,6 +53,7 @@ export async function handleTeamSubscriptionPaymentSuccess({
       endsAt: planEndsAt,
       paymentRecordId: paymentRecord.id,
       stripeSubscriptionId,
+      extra: { seats: quantity } satisfies SubscriptionExtra,
     },
   });
 

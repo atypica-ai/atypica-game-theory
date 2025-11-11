@@ -197,6 +197,10 @@ declare module "@/prisma/client" {
     };
   }>;
 
+  export type SubscriptionExtra = Partial<{
+    seats: number;
+  }>;
+
   // Removed
   // export type ProductExtra = Partial<{
   //   stripePriceId: string;

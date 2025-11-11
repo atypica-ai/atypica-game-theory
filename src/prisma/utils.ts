@@ -13,7 +13,8 @@ export async function mergeExtra({
     | "UserProfile"
     | "AnalystReport"
     | "AnalystPodcast"
-    | "UserChat";
+    | "UserChat"
+    | "Subscription";
   extra: Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
   id: number;
 }) {
