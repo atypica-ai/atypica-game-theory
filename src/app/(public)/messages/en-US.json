@@ -112,6 +112,10 @@
   "PricingPage": {
     "title": "Pricing",
     "subtitle": "Choose the plan that works best for you",
+    "tabs": {
+      "individual": "Individual",
+      "teamEnterprise": "Team & Enterprise"
+    },
     "monthly": "Monthly",
     "freeTitle": "Free",
     "freeSubtitle": "Perfect for first-time users",

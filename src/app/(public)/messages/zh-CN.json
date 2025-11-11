@@ -112,6 +112,10 @@
   "PricingPage": {
     "title": "价格",
     "subtitle": "选择最适合您的方案",
+    "tabs": {
+      "individual": "个人",
+      "teamEnterprise": "团队 & 企业"
+    },
     "monthly": "每月",
     "freeTitle": "免费版",
     "freeSubtitle": "欢迎试用Atypica",
