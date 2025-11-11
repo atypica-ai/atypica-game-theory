@@ -201,6 +201,10 @@ declare module "@/prisma/client" {
     seats: number;
   }>;
 
+  export type TeamExtra = Partial<{
+    unlimitedSeats: boolean;
+  }>;
+
   // Removed
   // export type ProductExtra = Partial<{
   //   stripePriceId: string;

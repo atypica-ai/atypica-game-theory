@@ -14,7 +14,8 @@ export async function mergeExtra({
     | "AnalystReport"
     | "AnalystPodcast"
     | "UserChat"
-    | "Subscription";
+    | "Subscription"
+    | "Team";
   extra: Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
   id: number;
 }) {
