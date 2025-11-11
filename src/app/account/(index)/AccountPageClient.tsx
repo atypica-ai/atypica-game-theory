@@ -188,7 +188,7 @@ export function AccountPageClient({
               </div>
             </CardContent>
             <CardFooter className="flex flex-col sm:flex-row gap-4">
-              {activeSubscription && (
+              {activeSubscription && activeSubscription.stripeSubscriptionId && (
                 <Button
                   variant="outline"
                   className="flex-1"
@@ -236,7 +236,7 @@ export function AccountPageClient({
                 <></>
               ) : (
                 // 非 stripeSubscription，直接显示续费/升级按钮
-                <Button className="w-full mt-4" asChild>
+                <Button className="flex-1" asChild>
                   <Link href="/pricing">
                     {activeSubscription
                       ? t("subscriptionSection.renew")

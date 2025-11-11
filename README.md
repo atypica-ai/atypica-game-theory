@@ -182,6 +182,13 @@ pnpm admintool create-user email@example.com password123
 
 # 将现有用户设为超级管理员
 pnpm admintool make-admin email@example.com
+
+# 为指定用户创建团队
+pnpm admintool create-team owner@example.com "Team Name"
+
+# 为个人用户手动添加订阅（仅支持 pro 和 max 计划）
+# 参数：<email> <pro|max> <start-date> <months>
+pnpm admintool add-subscription user@example.com pro 2024-01-30 3
 ```
 
 脚本位置：`scripts/admintool.ts`
