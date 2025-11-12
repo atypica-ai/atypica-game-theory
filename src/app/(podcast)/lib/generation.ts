@@ -21,6 +21,7 @@ import { FilePart, FinishReason, generateText, ModelMessage, stepCountIs, stream
 import { Locale } from "next-intl";
 import { Logger } from "pino";
 import { createVolcanoClient } from "./volcano/client";
+import { parseBuffer } from "music-metadata";
 
 /**
  * Main podcast generation function that handles both script and audio generation
@@ -107,9 +108,9 @@ export async function generatePodcast({
       .findUniqueOrThrow({ where: { id: podcast.id } })
       .then(({ extra, ...podcast }) => ({ ...podcast, extra: extra as AnalystPodcastExtra }));
 
-    // Step 3: Generate audio and title in parallel
-    logger.info("Starting audio and metadata title generation in parallel");
-    const [{ objectUrl, mimeType }, title] = await Promise.all([
+    // Step 3: Generate audio, title, and show notes in parallel
+    logger.info("Starting audio and metadata generation in parallel");
+    const [{ objectUrl, mimeType, duration, fileSize }, title, showNotes] = await Promise.all([
       generatePodcastAudio({
         podcastId: podcast.id,
         podcastToken: podcast.token,
@@ -120,6 +121,13 @@ export async function generatePodcast({
         logger: logger,
       }),
       generatePodcastMetadataTitle({
+        script: script,
+        locale: locale,
+        abortSignal: abortSignal,
+        statReport: statReport,
+        logger: logger,
+      }),
+      generatePodcastShowNotes({
         script: script,
         locale: locale,
         abortSignal: abortSignal,
@@ -141,6 +149,9 @@ export async function generatePodcast({
         metadata: {
           title,
           mimeType,
+          duration,
+          size: fileSize,
+          showNotes,
         },
       } satisfies AnalystPodcastExtra,
     });
@@ -399,6 +410,80 @@ export async function generatePodcastMetadataTitle({
   return title;
 }
 
+export async function generatePodcastShowNotes({
+  script,
+  locale,
+  abortSignal,
+  statReport,
+  logger,
+}: {
+  script: string;
+  locale: Locale;
+  abortSignal: AbortSignal;
+  statReport: StatReporter;
+  logger: Logger;
+}): Promise<string> {
+  logger.info({ msg: "Starting podcast show notes generation" });
+
+  const systemPrompt =
+    locale === "zh-CN"
+      ? `根据播客脚本生成节目说明（Show Notes）。包括以下内容：
+
+1. 简短摘要（2-3句话）
+2. 本期重点话题（3-5个要点）
+3. 关键洞察或结论
+
+格式要求：
+- 使用 Markdown 格式
+- 清晰的段落结构
+- 突出关键信息
+- 500字以内
+
+直接返回节目说明内容，不要加额外解释。`
+      : `Generate Show Notes based on the podcast script. Include:
+
+1. Brief summary (2-3 sentences)
+2. Key topics covered (3-5 bullet points)
+3. Main insights or conclusions
+
+Format requirements:
+- Use Markdown format
+- Clear paragraph structure
+- Highlight key information
+- Under 500 words
+
+Return the show notes content directly, no additional explanation.`;
+
+  const { text, usage } = await generateText({
+    model: llm("gpt-5-mini"),
+    providerOptions: {
+      openai: {
+        reasoningSummary: "auto",
+        reasoningEffort: "minimal",
+      } satisfies OpenAIResponsesProviderOptions,
+    },
+    system: systemPrompt,
+    prompt: script,
+    abortSignal: abortSignal,
+  });
+
+  const showNotes = text.trim();
+
+  // Track token usage
+  const totalTokens =
+    (usage.outputTokens ?? 0) * 3 + (usage.inputTokens ?? 0) || (usage.totalTokens ?? 0);
+  if (totalTokens > 0) {
+    await statReport("tokens", totalTokens, {
+      reportedBy: "generatePodcastShowNotes",
+      part: "showNotes",
+      usage,
+    });
+  }
+
+  logger.info({ msg: "Podcast show notes generation completed", length: showNotes.length });
+  return showNotes;
+}
+
 // Pure podcast audio generation function (no auth, renamed from backgroundGeneratePodcastAudioImpl)
 export async function generatePodcastAudio({
   // podcastId,
@@ -419,6 +504,8 @@ export async function generatePodcastAudio({
 }): Promise<{
   objectUrl: string;
   mimeType: string;
+  duration?: number;
+  fileSize: number;
 }> {
   try {
     logger.info({ msg: "Starting podcast audio generation" });
@@ -438,6 +525,7 @@ export async function generatePodcastAudio({
       msg: "Received audio from Volcano TTS",
       bufferSize: result.audioBuffer.byteLength,
       duration: result.duration,
+      mimeType: result.mimeType,
     });
 
     // Step 2: Get the final audio buffer (already concatenated by the client)
@@ -456,22 +544,52 @@ export async function generatePodcastAudio({
       );
     }
 
-    // Step 4: Upload to S3
-    const mimeType = "audio/mpeg";
+    // Step 4: Parse audio buffer to get accurate duration
+    let duration: number | undefined;
+    try {
+      logger.info({ msg: "Parsing audio metadata from buffer" });
+      const metadata = await parseBuffer(Buffer.from(finalAudioBuffer), {
+        mimeType: result.mimeType,
+      });
+
+      duration = metadata.format.duration
+        ? Number(metadata.format.duration.toFixed(3))
+        : undefined;
+
+      logger.info({
+        msg: "Audio metadata parsed successfully",
+        duration,
+        codec: metadata.format.codec,
+      });
+    } catch (error) {
+      logger.warn({
+        msg: "Failed to parse audio metadata, using Volcano TTS duration as fallback",
+        error: error instanceof Error ? error.message : String(error),
+      });
+      // Use Volcano TTS duration as fallback
+      duration = result.duration ? Number(result.duration.toFixed(3)) : undefined;
+    }
+
+    // Step 5: Upload to S3
     const keySuffix = `podcasts/${podcastToken}.mp3` as const;
     const { objectUrl } = await uploadToS3({
       keySuffix,
       fileBody: finalAudioBuffer,
-      mimeType,
+      mimeType: result.mimeType,
     });
 
     logger.info({
       msg: "Podcast audio generation completed successfully",
-      duration: result.duration,
+      duration,
       finalSize: finalAudioBuffer.byteLength,
     });
 
-    return { objectUrl, mimeType };
+    return {
+      objectUrl,
+      mimeType: result.mimeType,
+      duration,
+      fileSize: finalAudioBuffer.byteLength,
+    };
   } catch (error) {
     logger.error({
       msg: "Podcast audio generation failed",

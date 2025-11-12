@@ -55,6 +55,13 @@ export async function GET(request: Request) {
 
   // Set language code for RSS feed
   const languageCode = locale === "zh-CN" ? "zh" : "en";
+  const title = "Atypica Insight Radio";
+  const description =
+    locale === "zh-CN"
+      ? `在信息爆炸的时代，Atypica.AI 让商业研究不仅能“看”，还能“听”。我们把传统的市场和商业调研，变成一场充满洞察力的音频之旅——随时随地，轻松获得新观点。每一期节目都带来鲜活的案例、趋势与视角，帮助你听见消费者，读懂市场。想让你的研究和观点也被世界听见？快来 Atypica.AI，一键生成属于你的研究与播客。`
+      : "In an age of information overload, atypica.AI makes research reports something you can not only read, but listen to. We turn traditional market research into an insightful audio journey you can enjoy anytime and anywhere. Each episode brings fresh ideas and perspectives to help you hear the consumers, and understand the market. 💡 And if you'd like, you can also create your own research reports and podcasts with atypica.AI. We can't wait to hear your voice too.";
+  const author = "atypica.AI";
+  const email = "hi@atypica.ai";
 
   // Generate RSS XML
   const rss = `<?xml version="1.0" encoding="UTF-8"?>
@@ -63,18 +70,18 @@ export async function GET(request: Request) {
      xmlns:content="http://purl.org/rss/1.0/modules/content/"
      xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Atypica Insight Radio</title>
-    <description>In an age of information overload, atypica.AI makes research reports something you can not only read, but listen to. We turn traditional market research into an insightful audio journey you can enjoy anytime and anywhere. Each episode brings fresh ideas and perspectives to help you hear the consumers, and understand the market. 💡 And if you'd like, you can also create your own research reports and podcasts with atypica.AI. We can't wait to hear your voice too.</description>
+    <title>${title}</title>
+    <description>${description}</description>
     <language>${languageCode}</language>
     <link>${baseUrl}/insight-radio</link>
     <atom:link href="${baseUrl}/insight-radio/podcast.xml" rel="self" type="application/rss+xml"/>
 
-    <itunes:author>atypica.AI</itunes:author>
-    <itunes:summary>In an age of information overload, atypica.AI makes research reports something you can not only read, but listen to. We turn traditional market research into an insightful audio journey you can enjoy anytime and anywhere. Each episode brings fresh ideas and perspectives to help you hear the consumers, and understand the market. 💡 And if you’d like, you can also create your own research reports and podcasts with atypica.AI. We can’t wait to hear your voice too.</itunes:summary>
+    <itunes:author>${author}</itunes:author>
+    <itunes:summary>${description}</itunes:summary>
     <itunes:type>episodic</itunes:type>
     <itunes:owner>
-      <itunes:name>atypica.AI</itunes:name>
-      <itunes:email>hi@atypica.ai</itunes:email>
+      <itunes:name>${author}</itunes:name>
+      <itunes:email>${email}</itunes:email>
     </itunes:owner>
     <itunes:image href="https://bmrlab-prod.s3.us-east-1.amazonaws.com/atypica/public/atypica-insight-radio-podcast-cover.png"/>
     <itunes:category text="Business">
@@ -87,7 +94,11 @@ export async function GET(request: Request) {
       .map((item, index) => {
         const title =
           item.podcast.extra?.metadata?.title || item.studyUserChat.title || "Untitled Episode";
-        const description = item.podcast.script || "AI-powered research insights";
+        // Use showNotes if available, otherwise fallback to truncated script
+        const showNotes = item.podcast.extra?.metadata?.showNotes;
+        const description = showNotes
+          ? showNotes
+          : item.podcast.script || "AI-powered research insights";
         const pubDate = new Date(item.podcast.generatedAt).toUTCString();
         const audioUrl = item.s3SignedObjectUrl!;
         const episodeUrl = `${baseUrl}/artifacts/podcast/${item.podcast.token}/share?utm_source=podcast&utm_medium=feed`;
@@ -95,18 +106,25 @@ export async function GET(request: Request) {
         // Determine episode type based on kindDetermination
         const kind = item.podcast.extra?.kindDetermination?.kind;
         const episodeType = kind === "debate" ? "full" : "full"; // All episodes are full episodes
+        // Extract audio metadata
+        const duration = item.podcast.extra?.metadata?.duration; // in seconds
+        const fileSize = item.podcast.extra?.metadata?.size; // in bytes
+        // Format description (add link, don't truncate if using showNotes)
+        const formattedDescription = showNotes
+          ? formatShowNotes(description, episodeUrl, locale)
+          : formatSummary(description, episodeUrl, locale);
         return `
     <item>
       <title>${escapeXml(title)}</title>
-      <description><![CDATA[${formatSummary(description, episodeUrl)}]]></description>
+      <description><![CDATA[${formattedDescription}]]></description>
       <link>${escapeXml(episodeUrl)}</link>
       <guid isPermaLink="false">${guid}</guid>
       <pubDate>${pubDate}</pubDate>
-      <enclosure url="${escapeXml(audioUrl)}" type="${item.mimeType}"/>
+      <enclosure url="${escapeXml(audioUrl)}" type="${item.mimeType}"${fileSize ? ` length="${fileSize}"` : ""}/>
       <itunes:title>${escapeXml(title)}</itunes:title>
-      <itunes:summary><![CDATA[${formatSummary(description, episodeUrl)}]]></itunes:summary>
+      <itunes:summary><![CDATA[${formattedDescription}]]></itunes:summary>
       <itunes:episodeType>${episodeType}</itunes:episodeType>
-      <itunes:episode>${validPodcasts.length - index}</itunes:episode>
+      <itunes:episode>${validPodcasts.length - index}</itunes:episode>${duration ? `\n      <itunes:duration>${formatDuration(duration)}</itunes:duration>` : ""}
       <itunes:explicit>false</itunes:explicit>
     </item>`;
       })
@@ -159,7 +177,7 @@ function formatDescriptionWithBreaks(text: string): string {
 /**
  * Format summary with character limit and promotional text
  */
-function formatSummary(text: string, episodeUrl: string): string {
+function formatSummary(text: string, episodeUrl: string, locale: string): string {
   // Truncate to 1000 display width (considers Chinese characters as 2 width)
   const truncated = truncateByDisplayWidth(text, 1000, "");
   const wasTruncated = truncated.length < text.length;
@@ -171,5 +189,41 @@ function formatSummary(text: string, episodeUrl: string): string {
   const withEllipsis = wasTruncated ? `${formatted}...` : formatted;
 
   // Add promotional text
-  return `${withEllipsis}<br><br>🔗 <a href="${episodeUrl}">Discover the complete story and deeper insights</a>`;
+  const linkText =
+    locale === "zh-CN"
+      ? "查看完整研究，探索更深入的洞察"
+      : "View the full research and explore deeper insights";
+  return `${withEllipsis}<br><br>🔗 <a href="${episodeUrl}">${linkText}</a>`;
+}
+
+/**
+ * Format show notes without truncation (show notes are pre-formatted)
+ */
+function formatShowNotes(showNotes: string, episodeUrl: string, locale: string): string {
+  // Apply formatting (line breaks)
+  const formatted = formatDescriptionWithBreaks(showNotes);
+
+  // Add promotional text
+  const linkText =
+    locale === "zh-CN"
+      ? "查看完整研究，探索更深入的洞察"
+      : "View the full research and explore deeper insights";
+  return `${formatted}<br><br>🔗 <a href="${episodeUrl}">${linkText}</a>`;
+}
+
+/**
+ * Format duration in seconds to HH:MM:SS format for iTunes
+ * @param seconds Duration in seconds
+ * @returns Formatted duration string (HH:MM:SS or MM:SS)
+ */
+function formatDuration(seconds: number): string {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = Math.floor(seconds % 60);
+
+  if (hours > 0) {
+    return `${hours}:${minutes.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+  } else {
+    return `${minutes}:${secs.toString().padStart(2, "0")}`;
+  }
 }

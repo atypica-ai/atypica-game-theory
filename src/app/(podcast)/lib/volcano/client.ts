@@ -36,6 +36,7 @@ export interface PodcastGenerationOptions {
 export interface PodcastGenerationResult {
   audioBuffer: Buffer;
   duration?: number;
+  mimeType: string;
   error?: string;
 }
 
@@ -482,6 +483,7 @@ export class VolcanoTTSClient {
               return {
                 audioBuffer: finalAudioBuffer,
                 duration,
+                mimeType: "audio/mpeg", // Volcano TTS returns MP3 format
               };
             }
           }

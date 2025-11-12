@@ -156,6 +156,9 @@ declare module "@/prisma/client" {
     metadata: {
       title?: string;
       mimeType?: string; // 默认是 audio/mpeg，但是还是保存下来
+      duration?: number; // 音频时长，单位：秒
+      size?: number; // 文件大小，单位：字节
+      showNotes?: string; // 播客节目说明
     };
 
     // Podcast kind determination by LLM with reasoning
