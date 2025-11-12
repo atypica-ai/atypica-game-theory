@@ -149,6 +149,12 @@ export default function GlobalFooter({ className }: { className?: string }) {
                 Status
               </Link> */}
               <Link
+                href="/enterprise"
+                className="block text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {t("forEnterprise")}
+              </Link>
+              <Link
                 href="https://blog.atypica.ai/"
                 target="_blank"
                 className="block text-muted-foreground hover:text-foreground transition-colors"

@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckIcon, CoinsIcon, HeadphonesIcon, LucideIcon, SparklesIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
+import Link from "next/link";
 
 interface EnterprisePlanCardProps {
   onContactSales: () => void;
@@ -29,9 +30,15 @@ export function EnterprisePlanCard({ onContactSales }: EnterprisePlanCardProps) 
         </div>
       </CardHeader>
       <CardContent className="flex-grow space-y-4">
-        <Button className="w-full mb-6" onClick={onContactSales}>
+        <Button className="w-full mb-2" onClick={onContactSales}>
           {t("contactSales")}
         </Button>
+        <Link
+          href="/enterprise"
+          className="block text-center text-sm text-primary hover:underline mb-4"
+        >
+          {t("learnMore")}
+        </Link>
         <div className="text-sm text-muted-foreground bg-muted/50 rounded p-3 mb-2">
           {t("additionalTokenPurchaseInfo")}
         </div>
