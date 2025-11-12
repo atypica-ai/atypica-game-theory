@@ -1,14 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckIcon, CoinsIcon, HeadphonesIcon, SparklesIcon } from "lucide-react";
+import { CheckIcon, CoinsIcon, HeadphonesIcon, LucideIcon, SparklesIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 
 interface EnterprisePlanCardProps {
-  productPrices?: any;
   onContactSales: () => void;
 }
 
-export function EnterprisePlanCard({ productPrices, onContactSales }: EnterprisePlanCardProps) {
+export function EnterprisePlanCard({ onContactSales }: EnterprisePlanCardProps) {
   const locale = useLocale();
   const t = useTranslations("PricingPage");
 
@@ -60,7 +59,7 @@ function FeatureItem({ text }: { text: string }) {
   );
 }
 
-function ServiceItem({ icon: Icon, text }: { icon: any; text: string }) {
+function ServiceItem({ icon: Icon, text }: { icon: LucideIcon; text: string }) {
   return (
     <div className="flex items-start text-sm">
       <Icon className="size-4 text-primary mr-2 mt-0.5" />

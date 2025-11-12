@@ -1,3 +1,4 @@
+import { TProductPrices } from "@/app/payment/actions";
 import { TeamCreateButton } from "@/app/team/components/TeamCreateButton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,7 +7,7 @@ import { CheckIcon, CoinsIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 
 interface TeamPlanCardProps {
-  productPrices: any;
+  productPrices: TProductPrices;
   userType: UserType;
 }
 

@@ -1,3 +1,4 @@
+import { TProductPrices } from "@/app/payment/actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Subscription, SubscriptionPlan, UserType } from "@/prisma/client";
@@ -5,7 +6,7 @@ import { CheckIcon, CoinsIcon, GiftIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 
 interface MaxPlanCardProps {
-  productPrices: any;
+  productPrices: TProductPrices;
   activeSubscription: Subscription | null;
   userType: UserType;
   onUpgrade: () => void;
