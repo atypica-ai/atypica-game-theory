@@ -1,26 +1,54 @@
 import z from "zod/v3";
 
-// Question schema
-export const questionSchema = z.object({
-  text: z.string().min(1).max(1000),
-  image: z
-    .object({
-      objectUrl: z.string(),
-      name: z.string().max(255),
-      mimeType: z.string(),
-      size: z
-        .number()
-        .positive()
-        .max(10 * 1024 * 1024), // 10MB max
-    })
-    .optional(),
-  questionType: z.enum(["open", "single-choice", "multiple-choice"]).optional(),
-  options: z
-    .array(z.string())
-    .min(2, "Choice questions must have at least 2 options")
-    .max(4, "Choice questions can have at most 4 options")
-    .optional(),
+// Image attachment schema (reusable)
+const imageAttachmentSchema = z.object({
+  objectUrl: z.string(),
+  name: z.string().max(255),
+  mimeType: z.string(),
+  size: z
+    .number()
+    .positive()
+    .max(10 * 1024 * 1024), // 10MB max
 });
+
+// Question schema with strict validation
+// Users create questions via UI. questionType is optional (defaults to "open" in frontend)
+// but when specified as choice type, options are required
+export const questionSchema = z
+  .object({
+    text: z.string().min(1, "Question text is required").max(1000, "Question text is too long"),
+    image: imageAttachmentSchema.optional(),
+    questionType: z.enum(["open", "single-choice", "multiple-choice"]).optional(),
+    options: z
+      .array(z.string().min(1, "Option cannot be empty"))
+      .min(2, "Choice questions must have at least 2 options")
+      .max(4, "Choice questions can have at most 4 options")
+      .optional(),
+  })
+  .superRefine((data, ctx) => {
+    // If questionType is not specified, treat as "open" question (default behavior)
+    const type = data.questionType ?? "open";
+
+    // Choice questions MUST have options
+    if (type === "single-choice" || type === "multiple-choice") {
+      if (!data.options || data.options.length < 2) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Choice questions must have at least 2 options",
+          path: ["options"],
+        });
+      }
+    }
+
+    // Open questions should NOT have options
+    if (type === "open" && data.options && data.options.length > 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Open questions should not have options",
+        path: ["options"],
+      });
+    }
+  });
 
 export type Question = z.infer<typeof questionSchema>;
 
@@ -69,18 +97,7 @@ export const requestInteractionFormInputSchema = z.object({
   //   .describe(
   //     "Introductory text explaining why the user needs to fill out this form and what purpose it serves",
   //   ),
-  image: z
-    .object({
-      objectUrl: z.string(),
-      name: z.string().max(255),
-      mimeType: z.string(),
-      size: z
-        .number()
-        .positive()
-        .max(10 * 1024 * 1024), // 10MB max
-    })
-    .optional()
-    .describe("Optional image to display with the form"),
+  image: imageAttachmentSchema.optional().describe("Optional image to display with the form"),
   fields: z
     .array(
       z.object({

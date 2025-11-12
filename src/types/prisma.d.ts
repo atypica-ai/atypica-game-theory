@@ -138,6 +138,7 @@ declare module "@/prisma/client" {
       text: string;
       image?: ChatMessageAttachment; // 使用标准的 attachment 结构
       questionType?: "open" | "single-choice" | "multiple-choice";
+      options?: string[]; // 选择题的选项（2-4个）
     }>; // 问题列表
     permanentShareToken: string; // 永久链接令牌，用于验证永久链接
   }>;
