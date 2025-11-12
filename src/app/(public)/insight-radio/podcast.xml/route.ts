@@ -113,6 +113,7 @@ export async function GET(request: Request) {
         const formattedDescription = showNotes
           ? formatShowNotes(description, episodeUrl, locale)
           : formatSummary(description, episodeUrl, locale);
+        const coverImageUrl = `${baseUrl}/artifacts/podcast/${item.podcast.token}/cover.png`;
         return `
     <item>
       <title>${escapeXml(title)}</title>
@@ -125,6 +126,7 @@ export async function GET(request: Request) {
       <itunes:summary><![CDATA[${formattedDescription}]]></itunes:summary>
       <itunes:episodeType>${episodeType}</itunes:episodeType>
       <itunes:episode>${validPodcasts.length - index}</itunes:episode>${duration ? `\n      <itunes:duration>${formatDuration(duration)}</itunes:duration>` : ""}
+      <itunes:image href="${escapeXml(coverImageUrl)}"/>
       <itunes:explicit>false</itunes:explicit>
     </item>`;
       })

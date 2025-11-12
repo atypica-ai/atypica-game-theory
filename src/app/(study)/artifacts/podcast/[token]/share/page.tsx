@@ -1,7 +1,6 @@
 import { fetchPodcastByToken } from "@/app/(study)/artifacts/podcast/actions";
-import { reportCoverObjectUrlToHttpUrl } from "@/app/(study)/artifacts/report/actions";
-import { proxiedImageCdnUrl } from "@/app/(system)/cdn/lib";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
+import { getRequestOrigin } from "@/lib/request/headers";
 import { generatePageMetadata } from "@/lib/request/metadata";
 import { truncateForTitle } from "@/lib/textUtils";
 import { Metadata } from "next";
@@ -51,14 +50,9 @@ export async function generateMetadata({
   }).replace(/[\n\r]/g, " ");
 
   let image: string | undefined;
-  if (report) {
-    const result = await reportCoverObjectUrlToHttpUrl(report);
-    if (result) {
-      // 国内和国外都用 CDN，用同一个 CDN
-      image = proxiedImageCdnUrl({
-        src: result.signedCoverObjectUrl,
-      });
-    }
+  if (report?.coverSvg) {
+    const origin = await getRequestOrigin();
+    image = `${origin}/artifacts/podcast/${podcastToken}/cover.png`;
   }
 
   return generatePageMetadata({ title, description, locale, image });
@@ -66,15 +60,6 @@ export async function generateMetadata({
 
 async function PodcastSharePage({ podcastToken }: { podcastToken: string }) {
   const { podcast, analyst, studyUserChat, report } = await getCachedPodcastData(podcastToken);
-
-  // Get cover image URL if report exists
-  let coverImageUrl: string | undefined;
-  if (report) {
-    const coverResult = await reportCoverObjectUrlToHttpUrl(report);
-    if (coverResult) {
-      coverImageUrl = coverResult.signedCoverObjectUrl;
-    }
-  }
 
   const title = podcast.extra.metadata?.title || studyUserChat.title;
 
@@ -85,7 +70,8 @@ async function PodcastSharePage({ podcastToken }: { podcastToken: string }) {
       title={title}
       studyUserChatToken={studyUserChat.token}
       script={podcast.script}
-      coverImageUrl={coverImageUrl}
+      coverSvg={report?.coverSvg}
+      reportToken={report?.token}
     />
   );
 }
