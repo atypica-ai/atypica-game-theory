@@ -37,7 +37,9 @@ export function TokensHistory({ initialSearchParams }: TokensHistoryProps) {
   const { data: session } = useSession();
   const t = useTranslations("AccountPage");
   const locale = useLocale();
-  const [tokensHistory, setTokensHistory] = useState<(TokensLog & { consumedBy?: string })[]>([]);
+  const [tokensHistory, setTokensHistory] = useState<
+    (TokensLog & { consumedBy?: string; noCharge?: boolean })[]
+  >([]);
   const [historyIsLoading, setHistoryIsLoading] = useState(true);
 
   // Use query params hook for URL synchronization
@@ -231,6 +233,13 @@ export function TokensHistory({ initialSearchParams }: TokensHistoryProps) {
                       "text-red-500": item.value < 0,
                     })}
                   >
+                    {item.noCharge ? (
+                      <span className="text-xs mr-2 text-muted-foreground">
+                        {t("tokensHistorySection.noCharge")}
+                      </span>
+                    ) : (
+                      ""
+                    )}
                     {item.value > 0 ? "+" : item.value < 0 ? "-" : ""}
                     {(item.value < 0 ? -item.value : item.value).toLocaleString()}
                   </TableCell>

@@ -38,6 +38,7 @@
       "type": "类型",
       "amount": "数量",
       "consumedBy": "成员",
+      "noCharge": "不计费",
       "date": "日期",
       "noRecords": "暂无Token记录",
       "loadMore": "加载更多",

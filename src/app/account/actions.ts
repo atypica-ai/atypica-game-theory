@@ -14,7 +14,7 @@ import { fetchActiveSubscription } from "./lib";
 export async function fetchTokensHistory(
   page: number = 1,
   pageSize: number = 10,
-): Promise<ServerActionResult<TokensLog[]>> {
+): Promise<ServerActionResult<(TokensLog & { noCharge: boolean })[]>> {
   return withAuth(async (user) => {
     const userId = user.id;
     const skip = (page - 1) * pageSize;
@@ -36,12 +36,13 @@ export async function fetchTokensHistory(
         //   createdAt: _min.createdAt!,
         //   updatedAt: _min.updatedAt!,
         // }));
-        const result = await prisma.$queryRaw<Array<TokensLog>>`
+        const result = await prisma.$queryRaw<Array<TokensLog & { noCharge: boolean }>>`
         SELECT
           "userId",
           "resourceType",
           "resourceId",
           "verb",
+          MAX("extra" ->> 'noCharge') as "noCharge",
           SUM("value") as "value",
           MIN("id") as "id",
           MIN("createdAt") as "createdAt",
@@ -115,7 +116,7 @@ export async function fetchTokensHistory(
 export async function fetchTokensHistoryAsTeamOwner(
   page: number = 1,
   pageSize: number = 10,
-): Promise<ServerActionResult<(TokensLog & { consumedBy: string })[]>> {
+): Promise<ServerActionResult<(TokensLog & { consumedBy: string; noCharge: boolean })[]>> {
   return withAuth(async (user) => {
     // const userId = user.id;
     const skip = (page - 1) * pageSize;
@@ -144,13 +145,16 @@ export async function fetchTokensHistoryAsTeamOwner(
     // 需要 join user 以获取 user.name，但是过滤直接用 teamId，有些 log 没有 userid，所以要用 leftjoin
     const [tokensLogs, totalCount] = await Promise.all([
       (async () => {
-        const result = await prisma.$queryRaw<Array<TokensLog & { consumedBy: string }>>`
+        const result = await prisma.$queryRaw<
+          Array<TokensLog & { consumedBy: string; noCharge: boolean }>
+        >`
         SELECT
           "TokensLog"."userId" as "userId",
           MIN("User"."name") as "consumedBy",
           "resourceType",
           "resourceId",
           "verb",
+          MAX("extra" ->> 'noCharge') as "noCharge",
           SUM("value") as "value",
           MIN("TokensLog"."id") as "id",
           MIN("TokensLog"."createdAt") as "createdAt",

@@ -38,6 +38,7 @@
       "type": "Type",
       "amount": "Amount",
       "consumedBy": "Consumed By",
+      "noCharge": "No Charge",
       "date": "Date",
       "noRecords": "No tokens records",
       "loadMore": "Load More",
