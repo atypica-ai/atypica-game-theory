@@ -20,7 +20,7 @@ export async function fetchPodcastByToken(podcastToken: string): Promise<
       id: number;
       token: string;
       generatedAt: Date | null;
-      // onePageHtml: string;
+      coverSvg: string;
       extra: AnalystReportExtra;
     };
   }>
@@ -67,6 +67,7 @@ export async function fetchPodcastByToken(podcastToken: string): Promise<
           id: true,
           token: true,
           generatedAt: true,
+          coverSvg: true,
           extra: true,
         },
       }),
@@ -118,7 +119,7 @@ export async function fetchPodcastByToken(podcastToken: string): Promise<
             id: latestReport.id,
             token: latestReport.token,
             generatedAt: latestReport.generatedAt,
-            // onePageHtml: latestReport.onePageHtml,
+            coverSvg: latestReport.coverSvg,
             extra: latestReport.extra as AnalystReportExtra,
           }
         : undefined,

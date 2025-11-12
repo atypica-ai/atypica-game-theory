@@ -3,11 +3,10 @@ import { getPodcastAudioSignedUrl } from "@/app/(podcast)/actions";
 import GlobalHeader from "@/components/layout/GlobalHeader";
 import { Button } from "@/components/ui/button";
 import UserMenu from "@/components/UserMenu";
-import { proxiedImageLoader } from "@/lib/utils";
 import { Analyst } from "@/prisma/client";
 import { DownloadIcon, Share2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import Image from "next/image";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -47,14 +46,16 @@ export default function PodcastSharePageClient({
   title,
   studyUserChatToken,
   script,
-  coverImageUrl,
+  coverSvg,
+  reportToken,
 }: {
   podcastToken: string;
   analyst: Pick<Analyst, "id" | "topic">;
   title: string;
   studyUserChatToken: string;
   script?: string;
-  coverImageUrl?: string;
+  coverSvg?: string;
+  reportToken?: string;
 }) {
   const t = useTranslations("PodcastSharePage");
   const pathname = usePathname();
@@ -95,17 +96,21 @@ export default function PodcastSharePageClient({
       {/* Main Content */}
       <div className="flex-1 overflow-y-auto scrollbar-thin pb-64">
         <div className="max-w-4xl mx-auto px-4 py-6 sm:py-12 space-y-6">
-          {/* Report Cover Image */}
-          {coverImageUrl && (
-            <div className="relative w-full max-w-lg mx-auto aspect-[16/9] bg-muted rounded-lg overflow-hidden">
-              <Image
-                src={coverImageUrl}
-                alt="Report Cover"
-                fill
-                sizes="100%"
-                className="object-cover"
-                loader={proxiedImageLoader}
-              />
+          {/* Report Cover SVG */}
+          {coverSvg && reportToken && (
+            <Link
+              href={`/artifacts/report/${reportToken}/share`}
+              target="_blank"
+              className="block w-full max-w-lg mx-auto"
+            >
+              <div className="w-full aspect-[2/1] bg-muted rounded-lg overflow-hidden [&>svg]:w-full [&>svg]:h-full transition-all hover:border hover:border-primary/50 hover:shadow-sm cursor-pointer">
+                <div dangerouslySetInnerHTML={{ __html: coverSvg }} />
+              </div>
+            </Link>
+          )}
+          {coverSvg && !reportToken && (
+            <div className="w-full max-w-lg mx-auto aspect-[2/1] bg-muted rounded-lg overflow-hidden [&>svg]:w-full [&>svg]:h-full">
+              <div dangerouslySetInnerHTML={{ __html: coverSvg }} />
             </div>
           )}
 
@@ -119,7 +124,7 @@ export default function PodcastSharePageClient({
           )}
 
           {/* Fallback: Show title if no content */}
-          {!script && !coverImageUrl && (
+          {!script && !coverSvg && (
             <h1 className="text-xl sm:text-xl md:text-2xl font-medium text-zinc-900 dark:text-zinc-50 leading-tight text-center">
               {title}
             </h1>
