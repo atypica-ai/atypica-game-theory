@@ -399,7 +399,9 @@ model PaymentLine {
 enum SubscriptionPlan {
   pro
   max
+  super
   team
+  superteam
 }
 
 model Subscription {
