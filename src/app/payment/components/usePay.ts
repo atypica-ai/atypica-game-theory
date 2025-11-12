@@ -115,7 +115,9 @@ export function usePay() {
         | ProductName.TOKENS1M
         | ProductName.PRO1MONTH
         | ProductName.MAX1MONTH
-        | ProductName.TEAMSEAT1MONTH;
+        | ProductName.SUPER1MONTH
+        | ProductName.TEAMSEAT1MONTH
+        | ProductName.SUPERTEAMSEAT1MONTH;
       quantity?: string;
     }) => {
       if (!session?.user) {

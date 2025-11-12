@@ -168,18 +168,10 @@
       "viewPricing": "查看价格",
       "pay": "立即支付",
       "cancel": "取消",
-      "refreshPage": "刷新页面",
-      "goToAccount": "查看账户",
-      "paymentSuccess": "支付成功！",
-      "tokenPackage": "体验版",
+      "tokenPackage": "购买Token",
       "oneMillionTokens": "100万Token",
       "oneMillionTokensBonus": "限时优惠：充值100万再送100万",
-      "scanQrCode": "请使用支付应用扫描二维码",
-      "processing": "处理中...",
-      "alipay": "支付宝",
-      "wechatPay": "微信支付",
-      "creditCard": "信用卡",
-      "redirectToStripe": "您将被重定向至安全支付页面"
+      "processing": "处理中..."
     },
     "TeamSubscriptionDialog": {
       "title": "购买团队席位",
@@ -187,9 +179,6 @@
       "viewPricing": "查看价格",
       "subscribe": "立即订阅",
       "cancel": "取消",
-      "refreshPage": "刷新页面",
-      "goToTeam": "返回团队",
-      "paymentSuccess": "订阅成功！",
       "teamSubscriptionFeatures": "团队版功能：500万Token/席位/月，3个席位起订",
       "seatsLabel": "席位数量",
       "minimumSeats": "最少3个席位",
@@ -200,10 +189,7 @@
         "title": "订阅说明",
         "description": "团队订阅按月自动续费，您可以随时在Stripe后台取消订阅。"
       },
-      "processing": "处理中...",
-      "alipay": "支付宝",
-      "creditCard": "信用卡",
-      "redirectToStripe": "您将被重定向至安全支付页面"
+      "processing": "处理中..."
     },
     "SubscriptionDialog": {
       "proTitle": "订阅Pro版",
@@ -227,12 +213,7 @@
       "superMonthlyTokens": "无限Token",
       "proGift": "限时优惠：每月额外赠送100万Token",
       "maxGift": "限时优惠：每月额外赠送300万Token",
-      "scanQrCode": "请使用支付应用扫描二维码",
       "processing": "处理中...",
-      "alipay": "支付宝",
-      "wechatPay": "微信支付",
-      "creditCard": "信用卡",
-      "redirectToStripe": "您将被重定向至安全支付页面",
       "upgradeNotice": {
         "title": "Pro套餐升级",
         "description": "您当前已订阅Pro套餐。当您升级时，Pro套餐中未使用的tokens将抵扣Max套餐的费用，新的Max套餐将立即生效。"

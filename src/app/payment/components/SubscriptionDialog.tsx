@@ -1,9 +1,5 @@
 import { upgradeFromProToMaxAction } from "@/app/payment/(stripe)/actions";
-import {
-  fetchProductPricesAction,
-  retrieveLatestPaid,
-  TProductPrices,
-} from "@/app/payment/actions";
+import { fetchProductPricesAction, TProductPrices } from "@/app/payment/actions";
 import { ProductName } from "@/app/payment/data";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,9 +10,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getDeployRegion } from "@/lib/request/deployRegion";
-import { cn } from "@/lib/utils";
 import { Subscription, SubscriptionPlan } from "@/prisma/client";
 import {
   CalendarIcon,
@@ -27,8 +20,7 @@ import {
   LoaderCircle,
   StarIcon,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
-import Image from "next/image";
+import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { PaymentProvider, usePay } from "./usePay";
@@ -44,27 +36,19 @@ export const SubscriptionDialog = ({
   plan,
   open,
   onOpenChange,
-  onSuccess,
+  // onSuccess,
   activeSubscription,
 }: SubscriptionDialogProps & { plan?: SubscriptionPlan }) => {
   if (open && !plan) {
     throw new Error("SubscriptionDialog requires a plan");
   }
   const t = useTranslations("Components.SubscriptionDialog");
-  const [paymentProvider, setPaymentProvider] = useState<PaymentProvider>(
-    getDeployRegion() === "mainland" ? PaymentProvider.StripeCNY : PaymentProvider.Stripe,
-  );
+  const locale = useLocale();
   const [paymentSuccess, setPaymentSuccess] = useState<boolean>(false);
   const [productPrices, setProductPrices] = useState<TProductPrices | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
-  const {
-    createPaymentLink,
-    clearPaymentLink,
-    paymentScanQR,
-    loading: usePayLoading,
-    error: usePayError,
-  } = usePay();
+  const { createPaymentLink, loading: usePayLoading, error: usePayError } = usePay();
 
   useEffect(() => {
     setError(usePayError);
@@ -74,62 +58,25 @@ export const SubscriptionDialog = ({
     setLoading(usePayLoading);
   }, [usePayLoading]);
 
-  // Poll for payment success
-  useEffect(() => {
-    if (!open || !paymentScanQR || paymentSuccess) return;
-    let timeoutId: NodeJS.Timeout;
-    const pollInterval = 2000; // 2 seconds
-    let pollCount = 0;
-    const maxPolls = 300; // Stop polling after 10 minutes (300 * 2 seconds)
-    const poll = async () => {
-      try {
-        const latestPaymentRecord = await retrieveLatestPaid(paymentScanQR.createdAt);
-        if (latestPaymentRecord) {
-          setPaymentSuccess(true);
-          if (onSuccess) onSuccess();
-          return;
-        }
-      } catch (err) {
-        console.error("Error polling for payment status:", err);
-      }
-      pollCount++;
-      if (pollCount < maxPolls) {
-        timeoutId = setTimeout(poll, pollInterval);
-      }
-    };
-    // Start polling
-    timeoutId = setTimeout(poll, pollInterval);
-    return () => {
-      if (timeoutId) clearTimeout(timeoutId);
-    };
-  }, [open, paymentScanQR, paymentSuccess, onSuccess]);
-
   useEffect(() => {
     fetchProductPricesAction().then(setProductPrices);
   }, []);
 
+  const currency = locale === "zh-CN" ? "CNY" : "USD";
   const price = useMemo(() => {
     if (!productPrices) return "-";
-    if (paymentProvider === PaymentProvider.Pingxx && plan === SubscriptionPlan.pro) {
-      return `¥${productPrices["PRO1MONTH"]["CNY"]}`;
+    const sign = currency === "CNY" ? "¥" : "$";
+    switch (plan) {
+      case SubscriptionPlan.pro:
+        return `${sign}${productPrices["PRO1MONTH"][currency]}`;
+      case SubscriptionPlan.max:
+        return `${sign}${productPrices["MAX1MONTH"][currency]}`;
+      case SubscriptionPlan.super:
+        return `${sign}${productPrices["SUPER1MONTH"][currency]}`;
+      default:
+        return "-";
     }
-    if (paymentProvider === PaymentProvider.Pingxx && plan === SubscriptionPlan.max) {
-      return `¥${productPrices["MAX1MONTH"]["CNY"]}`;
-    }
-    if (paymentProvider === PaymentProvider.StripeCNY && plan === SubscriptionPlan.pro) {
-      return `¥${productPrices["PRO1MONTH"]["CNY"]}`;
-    }
-    if (paymentProvider === PaymentProvider.StripeCNY && plan === SubscriptionPlan.max) {
-      return `¥${productPrices["MAX1MONTH"]["CNY"]}`;
-    }
-    if (paymentProvider === PaymentProvider.Stripe && plan === SubscriptionPlan.pro) {
-      return `$${productPrices["PRO1MONTH"]["USD"]}`;
-    }
-    if (paymentProvider === PaymentProvider.Stripe && plan === SubscriptionPlan.max) {
-      return `$${productPrices["MAX1MONTH"]["USD"]}`;
-    }
-    return "-";
-  }, [paymentProvider, plan, productPrices]);
+  }, [plan, productPrices, currency]);
 
   const isUpgradeFromPro = useMemo(() => {
     return activeSubscription?.plan === SubscriptionPlan.pro && plan === SubscriptionPlan.max;
@@ -141,7 +88,7 @@ export const SubscriptionDialog = ({
       productName,
     }: {
       paymentProvider: PaymentProvider;
-      productName: ProductName.MAX1MONTH | ProductName.PRO1MONTH;
+      productName: ProductName.MAX1MONTH | ProductName.PRO1MONTH | ProductName.SUPER1MONTH;
     }) => {
       if (isUpgradeFromPro) {
         setLoading(true);
@@ -172,7 +119,13 @@ export const SubscriptionDialog = ({
       >
         <DialogHeader>
           <DialogTitle>
-            {plan === "pro" ? t("proTitle") : plan === "max" ? t("maxTitle") : "-"}
+            {plan === "pro"
+              ? t("proTitle")
+              : plan === "max"
+                ? t("maxTitle")
+                : plan === "super"
+                  ? t("superTitle")
+                  : "-"}
           </DialogTitle>
           <DialogDescription>{t("description")}</DialogDescription>
         </DialogHeader>
@@ -221,7 +174,9 @@ export const SubscriptionDialog = ({
                       ? t("proSubscription")
                       : plan === "max"
                         ? t("maxSubscription")
-                        : "-"}
+                        : plan === "super"
+                          ? t("superSubscription")
+                          : "-"}
                   </div>
                   <div className="mt-2 text-xs text-muted-foreground flex items-center gap-1">
                     <CalendarIcon className="size-3" />
@@ -234,15 +189,19 @@ export const SubscriptionDialog = ({
                         ? t("proMonthlyTokens")
                         : plan === "max"
                           ? t("maxMonthlyTokens")
-                          : "-"}
+                          : plan === "super"
+                            ? t("superMonthlyTokens")
+                            : "-"}
                     </span>
                   </div>
-                  <div className="mt-1 text-xs text-muted-foreground flex items-center gap-1">
-                    <GiftIcon className="size-3" />
-                    <span className="flex-1">
-                      {plan === "pro" ? t("proGift") : plan === "max" ? t("maxGift") : "-"}
-                    </span>
-                  </div>
+                  {plan !== "super" && (
+                    <div className="mt-1 text-xs text-muted-foreground flex items-center gap-1">
+                      <GiftIcon className="size-3" />
+                      <span className="flex-1">
+                        {plan === "pro" ? t("proGift") : plan === "max" ? t("maxGift") : "-"}
+                      </span>
+                    </div>
+                  )}
                 </div>
                 <div>
                   <span className="text-xl font-bold">{price}</span>
@@ -250,98 +209,6 @@ export const SubscriptionDialog = ({
                 </div>
               </div>
             </div>
-
-            <Tabs
-              value={paymentProvider}
-              onValueChange={(value) => setPaymentProvider(value as PaymentProvider)}
-            >
-              <TabsList className="grid grid-cols-2 mb-4 w-full">
-                {/* <TabsTrigger
-                  value={PaymentProvider.Pingxx}
-                  disabled={loading}
-                  onClick={() => clearPaymentLink()} // 切换 tab 需要清空带支付的二维码
-                >
-                  <div className="size-5 mr-1 rounded-lg overflow-hidden relative">
-                    <Image
-                      src="/_public/icon-alipay.png"
-                      alt="alipay"
-                      fill
-                      className="object-contain h-5 mr-2"
-                    />
-                  </div>
-                  <span className="max-sm:hidden">{t("alipay")}</span>
-                  <div className="ml-2 size-5 mr-1 rounded-lg overflow-hidden relative">
-                    <Image
-                      src="/_public/icon-wechat.png"
-                      alt="wechat pay"
-                      fill
-                      className="object-contain h-5 mr-2"
-                    />
-                  </div>
-                  <span className="max-sm:hidden">{t("wechatPay")}</span>
-                </TabsTrigger> */}
-                <TabsTrigger
-                  value={PaymentProvider.StripeCNY}
-                  disabled={loading}
-                  onClick={() => clearPaymentLink()} // 切换 tab 需要清空带支付的二维码
-                >
-                  <div className="size-5 mr-1 rounded-lg overflow-hidden relative">
-                    <Image
-                      src="/_public/icon-alipay.png"
-                      alt="alipay"
-                      fill
-                      className="object-contain h-5 mr-2"
-                    />
-                  </div>
-                  <span className="max-sm:hidden">{t("alipay")}</span>
-                </TabsTrigger>
-                <TabsTrigger
-                  value={PaymentProvider.Stripe}
-                  disabled={loading}
-                  onClick={() => clearPaymentLink()} // 切换 tab 需要清空带支付的二维码
-                >
-                  <div className="size-5 mr-1 rounded-lg overflow-hidden relative">
-                    <Image
-                      src="/_public/icon-stripe.png"
-                      alt="stripe"
-                      fill
-                      className="object-contain h-5 mr-2"
-                    />
-                  </div>
-                  <span className="max-sm:hidden">{t("creditCard")}</span>
-                </TabsTrigger>
-              </TabsList>
-
-              {/* <TabsContent value={PaymentProvider.Pingxx} className="flex justify-center">
-                {paymentScanQR && !loading ? (
-                  <div className="flex flex-col items-center">
-                    <div className="text-sm mb-2 text-center">{t("scanQrCode")}</div>
-                    <div className="p-2 bg-white rounded-lg">
-                      <QRCodeSVG
-                        value={paymentScanQR.url}
-                        size={200}
-                        bgColor="#FFFFFF"
-                        fgColor="#000000"
-                        level="H"
-                        marginSize={0}
-                      />
-                    </div>
-                  </div>
-                ) : null}
-              </TabsContent> */}
-
-              <TabsContent value={PaymentProvider.StripeCNY} className="flex justify-center">
-                <div className="text-center text-sm text-muted-foreground">
-                  {t("redirectToStripe")}
-                </div>
-              </TabsContent>
-
-              <TabsContent value={PaymentProvider.Stripe} className="flex justify-center">
-                <div className="text-center text-sm text-muted-foreground">
-                  {t("redirectToStripe")}
-                </div>
-              </TabsContent>
-            </Tabs>
 
             {error && <div className="text-red-500 text-sm text-center mb-4">{error}</div>}
 
@@ -366,16 +233,19 @@ export const SubscriptionDialog = ({
                       ? ProductName.PRO1MONTH
                       : plan === "max"
                         ? ProductName.MAX1MONTH
-                        : null;
+                        : plan === "super"
+                          ? ProductName.SUPER1MONTH
+                          : null;
                   if (!productName) {
                     throw new Error("Invalid plan");
                   }
-                  upgradeOrCreatePaymentLink({ paymentProvider, productName });
+                  upgradeOrCreatePaymentLink({
+                    paymentProvider:
+                      currency === "CNY" ? PaymentProvider.StripeCNY : PaymentProvider.Stripe,
+                    productName,
+                  });
                 }}
                 disabled={loading}
-                className={cn(
-                  paymentScanQR && paymentProvider === PaymentProvider.Pingxx ? "hidden" : "",
-                )}
               >
                 {loading ? (
                   <>

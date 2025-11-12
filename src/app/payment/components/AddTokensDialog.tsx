@@ -1,8 +1,4 @@
-import {
-  fetchProductPricesAction,
-  retrieveLatestPaid,
-  TProductPrices,
-} from "@/app/payment/actions";
+import { fetchProductPricesAction, TProductPrices } from "@/app/payment/actions";
 import { ProductName } from "@/app/payment/data";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,12 +9,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getDeployRegion } from "@/lib/request/deployRegion";
-import { cn } from "@/lib/utils";
 import { CoinsIcon, CreditCardIcon, GiftIcon, LoaderCircle } from "lucide-react";
-import { useTranslations } from "next-intl";
-import Image from "next/image";
+import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { PaymentProvider, usePay } from "./usePay";
@@ -29,63 +21,27 @@ interface AddTokensDialogProps {
   onSuccess?: () => void;
 }
 
-export const AddTokensDialog = ({ open, onOpenChange, onSuccess }: AddTokensDialogProps) => {
+export const AddTokensDialog = ({
+  open,
+  onOpenChange,
+  // onSuccess
+}: AddTokensDialogProps) => {
   const t = useTranslations("Components.AddTokensDialog");
-  const [paymentProvider, setPaymentProvider] = useState<PaymentProvider>(
-    getDeployRegion() === "mainland" ? PaymentProvider.StripeCNY : PaymentProvider.Stripe,
-  );
-  const [paymentSuccess, setPaymentSuccess] = useState<boolean>(false);
+  const locale = useLocale();
   const [productPrices, setProductPrices] = useState<TProductPrices | null>(null);
 
-  const { createPaymentLink, clearPaymentLink, paymentScanQR, loading, error } = usePay();
-
-  // Poll for payment success
-  useEffect(() => {
-    if (!open || !paymentScanQR || paymentSuccess) return;
-    let timeoutId: NodeJS.Timeout;
-    const pollInterval = 2000; // 2 seconds
-    let pollCount = 0;
-    const maxPolls = 300; // Stop polling after 10 minutes (300 * 2 seconds)
-    const poll = async () => {
-      try {
-        const latestPaymentRecord = await retrieveLatestPaid(paymentScanQR.createdAt);
-        if (latestPaymentRecord) {
-          setPaymentSuccess(true);
-          if (onSuccess) onSuccess();
-          return;
-        }
-      } catch (err) {
-        console.error("Error polling for payment status:", err);
-      }
-      pollCount++;
-      if (pollCount < maxPolls) {
-        timeoutId = setTimeout(poll, pollInterval);
-      }
-    };
-    // Start polling
-    timeoutId = setTimeout(poll, pollInterval);
-    return () => {
-      if (timeoutId) clearTimeout(timeoutId);
-    };
-  }, [open, paymentScanQR, paymentSuccess, onSuccess]);
+  const { createPaymentLink, loading, error } = usePay();
 
   useEffect(() => {
     fetchProductPricesAction().then(setProductPrices);
   }, []);
 
+  const currency = locale === "zh-CN" ? "CNY" : "USD";
   const price = useMemo(() => {
     if (!productPrices) return "-";
-    if (paymentProvider === PaymentProvider.Pingxx) {
-      return `¥${productPrices["TOKENS1M"]["CNY"]}`;
-    }
-    if (paymentProvider === PaymentProvider.StripeCNY) {
-      return `¥${productPrices["TOKENS1M"]["CNY"]}`;
-    }
-    if (paymentProvider === PaymentProvider.Stripe) {
-      return `$${productPrices["TOKENS1M"]["USD"]}`;
-    }
-    return "-";
-  }, [paymentProvider, productPrices]);
+    const sign = currency === "CNY" ? "¥" : "$";
+    return `${sign}${productPrices["TOKENS1M"][currency]}`;
+  }, [productPrices, currency]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -100,177 +56,59 @@ export const AddTokensDialog = ({ open, onOpenChange, onSuccess }: AddTokensDial
           <DialogDescription>{t("description")}</DialogDescription>
         </DialogHeader>
 
-        {paymentSuccess ? (
-          <>
-            <div className="text-green-500 font-semibold text-xl text-center my-6">
-              {t("paymentSuccess")}
-            </div>
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => {
-                  onOpenChange(false);
-                  window.location.reload();
-                }}
-              >
-                {t("refreshPage")}
-              </Button>
-              <Button type="button" disabled={loading} asChild>
-                <Link href="/account">{t("goToAccount")}</Link>
-              </Button>
-            </DialogFooter>
-          </>
-        ) : (
-          <>
-            <div className="p-4 border rounded-lg mb-4 bg-secondary/30">
-              <div className="flex justify-between items-center">
-                <div>
-                  <div className="font-semibold">{t("tokenPackage")}</div>
-                  <div className="mt-1 text-xs text-muted-foreground flex items-center gap-1">
-                    <CoinsIcon className="size-3" />
-                    <span className="flex-1">{t("oneMillionTokens")}</span>
-                  </div>
-                  <div className="mt-1 text-xs text-muted-foreground flex items-center gap-1">
-                    <GiftIcon className="size-3" />
-                    <span className="flex-1">{t("oneMillionTokensBonus")}</span>
-                  </div>
-                </div>
-                <div className="text-xl font-bold">{price}</div>
+        <div className="p-4 border rounded-lg mb-4 bg-secondary/30">
+          <div className="flex justify-between items-center">
+            <div>
+              <div className="font-semibold">{t("tokenPackage")}</div>
+              <div className="mt-1 text-xs text-muted-foreground flex items-center gap-1">
+                <CoinsIcon className="size-3" />
+                <span className="flex-1">{t("oneMillionTokens")}</span>
+              </div>
+              <div className="mt-1 text-xs text-muted-foreground flex items-center gap-1">
+                <GiftIcon className="size-3" />
+                <span className="flex-1">{t("oneMillionTokensBonus")}</span>
               </div>
             </div>
+            <div className="text-xl font-bold">{price}</div>
+          </div>
+        </div>
 
-            <Tabs
-              value={paymentProvider}
-              onValueChange={(value) => setPaymentProvider(value as PaymentProvider)}
-            >
-              <TabsList className="grid grid-cols-2 mb-4 w-full">
-                {/* <TabsTrigger
-                  value={PaymentProvider.Pingxx}
-                  disabled={loading}
-                  onClick={() => clearPaymentLink()} // 切换 tab 需要清空带支付的二维码
-                >
-                  <div className="size-5 mr-1 rounded-lg overflow-hidden relative">
-                    <Image
-                      src="/_public/icon-alipay.png"
-                      alt="alipay"
-                      fill
-                      className="object-contain h-5 mr-2"
-                    />
-                  </div>
-                  <span className="max-sm:hidden">{t("alipay")}</span>
-                  <div className="ml-2 size-5 mr-1 rounded-lg overflow-hidden relative">
-                    <Image
-                      src="/_public/icon-wechat.png"
-                      alt="wechat pay"
-                      fill
-                      className="object-contain h-5 mr-2"
-                    />
-                  </div>
-                  <span className="max-sm:hidden">{t("wechatPay")}</span>
-                </TabsTrigger> */}
-                <TabsTrigger
-                  value={PaymentProvider.StripeCNY}
-                  disabled={loading}
-                  onClick={() => clearPaymentLink()} // 切换 tab 需要清空带支付的二维码
-                >
-                  <div className="size-5 mr-1 rounded-lg overflow-hidden relative">
-                    <Image
-                      src="/_public/icon-alipay.png"
-                      alt="alipay"
-                      fill
-                      className="object-contain h-5 mr-2"
-                    />
-                  </div>
-                  <span className="max-sm:hidden">{t("alipay")}</span>
-                </TabsTrigger>
-                <TabsTrigger
-                  value={PaymentProvider.Stripe}
-                  disabled={loading}
-                  onClick={() => clearPaymentLink()} // 切换 tab 需要清空带支付的二维码
-                >
-                  <div className="size-5 mr-1 rounded-lg overflow-hidden relative">
-                    <Image
-                      src="/_public/icon-stripe.png"
-                      alt="stripe"
-                      fill
-                      className="object-contain h-5 mr-2"
-                    />
-                  </div>
-                  <span className="max-sm:hidden">{t("creditCard")}</span>
-                </TabsTrigger>
-              </TabsList>
+        {error && <div className="text-red-500 text-sm text-center mb-4">{error}</div>}
 
-              {/* <TabsContent value={PaymentProvider.Pingxx} className="flex justify-center">
-                {paymentScanQR && !loading ? (
-                  <div className="flex flex-col items-center">
-                    <div className="text-sm mb-2 text-center">{t("scanQrCode")}</div>
-                    <div className="p-2 bg-white rounded-lg">
-                      <QRCodeSVG
-                        value={paymentScanQR.url}
-                        size={200}
-                        bgColor="#FFFFFF"
-                        fgColor="#000000"
-                        level="H"
-                        marginSize={0}
-                      />
-                    </div>
-                  </div>
-                ) : null}
-              </TabsContent> */}
-
-              <TabsContent value={PaymentProvider.StripeCNY} className="flex justify-center">
-                <div className="text-center text-sm text-muted-foreground">
-                  {t("redirectToStripe")}
-                </div>
-              </TabsContent>
-              <TabsContent value={PaymentProvider.Stripe} className="flex justify-center">
-                <div className="text-center text-sm text-muted-foreground">
-                  {t("redirectToStripe")}
-                </div>
-              </TabsContent>
-            </Tabs>
-
-            {error && <div className="text-red-500 text-sm text-center mb-4">{error}</div>}
-
-            <DialogFooter className="flex-row justify-end items-center">
-              <Link href="/pricing" className="text-sm flex items-center gap-2 mr-auto">
-                <CreditCardIcon className="size-5" />
-                {t("viewPricing")}
-              </Link>
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => onOpenChange(false)}
-                disabled={loading}
-              >
-                {t("cancel")}
-              </Button>
-              <Button
-                type="button"
-                onClick={() =>
-                  createPaymentLink({
-                    paymentProvider: paymentProvider,
-                    productName: ProductName.TOKENS1M,
-                  })
-                }
-                disabled={loading}
-                className={cn(
-                  paymentScanQR && paymentProvider === PaymentProvider.Pingxx ? "hidden" : "",
-                )}
-              >
-                {loading ? (
-                  <>
-                    <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
-                    {t("processing")}
-                  </>
-                ) : (
-                  t("pay")
-                )}
-              </Button>
-            </DialogFooter>
-          </>
-        )}
+        <DialogFooter className="flex-row justify-end items-center">
+          <Link href="/pricing" className="text-sm flex items-center gap-2 mr-auto">
+            <CreditCardIcon className="size-5" />
+            {t("viewPricing")}
+          </Link>
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => onOpenChange(false)}
+            disabled={loading}
+          >
+            {t("cancel")}
+          </Button>
+          <Button
+            type="button"
+            onClick={() =>
+              createPaymentLink({
+                paymentProvider:
+                  currency === "CNY" ? PaymentProvider.StripeCNY : PaymentProvider.Stripe,
+                productName: ProductName.TOKENS1M,
+              })
+            }
+            disabled={loading}
+          >
+            {loading ? (
+              <>
+                <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                {t("processing")}
+              </>
+            ) : (
+              t("pay")
+            )}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

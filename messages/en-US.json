@@ -168,18 +168,10 @@
       "viewPricing": "View pricing",
       "pay": "Pay Now",
       "cancel": "Cancel",
-      "refreshPage": "Refresh Page",
-      "goToAccount": "View Account",
-      "paymentSuccess": "Payment Successful!",
-      "tokenPackage": "Basic Plan",
+      "tokenPackage": "Purchase Tokens",
       "oneMillionTokens": "1M Tokens",
       "oneMillionTokensBonus": "Limited Offer: +1M bonus tokens per purchase",
-      "scanQrCode": "Scan the QR code with your payment app",
-      "processing": "Processing...",
-      "alipay": "Alipay",
-      "wechatPay": "WeChat Pay",
-      "creditCard": "Credit Card",
-      "redirectToStripe": "You'll be redirected to our secure payment page"
+      "processing": "Processing..."
     },
     "TeamSubscriptionDialog": {
       "title": "Purchase Team Seats",
@@ -187,9 +179,6 @@
       "viewPricing": "View pricing",
       "subscribe": "Subscribe Now",
       "cancel": "Cancel",
-      "refreshPage": "Refresh Page",
-      "goToTeam": "Back to Team",
-      "paymentSuccess": "Subscription Successful!",
       "teamSubscriptionFeatures": "Team plan features: 5M tokens/seat/month, minimum 3 seats",
       "seatsLabel": "Number of seats",
       "minimumSeats": "Minimum 3 seats",
@@ -200,10 +189,7 @@
         "title": "Subscription Notice",
         "description": "Team subscription will auto-renew monthly. You can cancel anytime in your Stripe dashboard."
       },
-      "processing": "Processing...",
-      "alipay": "Alipay",
-      "creditCard": "Credit Card",
-      "redirectToStripe": "You'll be redirected to our secure payment page"
+      "processing": "Processing..."
     },
     "SubscriptionDialog": {
       "proTitle": "Subscribe to Pro Plan",
@@ -227,12 +213,7 @@
       "superMonthlyTokens": "Unlimited tokens",
       "proGift": "Limited Offer: +1M bonus tokens per month",
       "maxGift": "Limited Offer: +3M bonus tokens per month",
-      "scanQrCode": "Scan the QR code with your payment app",
       "processing": "Processing...",
-      "alipay": "Alipay",
-      "wechatPay": "WeChat Pay",
-      "creditCard": "Credit Card",
-      "redirectToStripe": "You'll be redirected to our secure payment page",
       "upgradeNotice": {
         "title": "Pro Plan Upgrade",
         "description": "You are currently subscribed to the Pro plan. When you upgrade, any unused tokens from your Pro plan will be credited towards the cost of the Max plan, and your new Max plan will start immediately."
