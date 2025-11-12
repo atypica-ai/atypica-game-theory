@@ -58,6 +58,9 @@ export function TeamPlanCard({ productPrices, userType }: TeamPlanCardProps) {
             {t("createTeam")}
           </Button>
         </TeamCreateButton>
+        <div className="text-sm text-muted-foreground bg-muted/50 rounded p-3 mb-2">
+          {t("additionalTokenPurchaseInfo")}
+        </div>
         <FeatureItem text={t("features.allMaxFeatures")} />
         <FeatureItem text={t("features.interviews.unlimited")} />
         <FeatureItem text={t("features.personas.humanPersonaImports")} />

@@ -54,9 +54,13 @@ export default function PricingPageClient({
       </div>
 
       <Tabs defaultValue="individual" className="max-w-7xl mx-auto">
-        <TabsList className="mx-auto mb-8">
-          <TabsTrigger value="individual">{t("tabs.individual")}</TabsTrigger>
-          <TabsTrigger value="team">{t("tabs.teamEnterprise")}</TabsTrigger>
+        <TabsList className="mx-auto mb-8 h-12">
+          <TabsTrigger value="individual" className="cursor-pointer px-8">
+            {t("tabs.individual")}
+          </TabsTrigger>
+          <TabsTrigger value="team" className="cursor-pointer px-4 tracking-tighter">
+            {t("tabs.teamEnterprise")}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="individual">
@@ -80,7 +84,7 @@ export default function PricingPageClient({
         </TabsContent>
 
         <TabsContent value="team">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
             <TeamPlanCard productPrices={productPrices} userType={userType} />
             <EnterprisePlanCard onContactSales={sayHelloToSales} />
           </div>

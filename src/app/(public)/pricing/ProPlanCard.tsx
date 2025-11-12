@@ -64,7 +64,9 @@ export function ProPlanCard({
             {t("upgradeToPro")}
           </Button>
         )}
-        <FeatureItem text={t("features.tokenPurchase.available")} />
+        <div className="text-sm text-muted-foreground bg-muted/50 rounded p-3 mb-2">
+          {t("features.tokenPurchase.available")}
+        </div>
         <FeatureItem text={t("features.multiModal")} />
         <FeatureItem text={t("features.socialPlatforms.multiple")} />
         <FeatureItem text={t("features.personas.unlimited")} />

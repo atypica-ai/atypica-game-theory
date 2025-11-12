@@ -37,7 +37,9 @@ export function FreePlanCard({ activeSubscription }: FreePlanCardProps) {
             <Link href="/auth/signup">{t("getStarted")}</Link>
           </Button>
         )}
-        <FeatureItem text={t("features.tokenPurchase.notAvailable")} />
+        <div className="text-sm text-muted-foreground bg-muted/50 rounded p-3 mb-2">
+          {t("features.tokenPurchase.notAvailable")}
+        </div>
         <FeatureItem text={t("features.socialPlatforms.single")} />
         <FeatureItem text={t("features.personas.limited")} />
         <FeatureItem text={t("features.analysisModel.standard")} />

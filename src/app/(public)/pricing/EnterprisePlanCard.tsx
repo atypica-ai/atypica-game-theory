@@ -1,14 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
-import { CheckIcon } from "lucide-react";
+import { CheckIcon, CoinsIcon, HeadphonesIcon, SparklesIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 
 interface EnterprisePlanCardProps {
+  productPrices?: any;
   onContactSales: () => void;
 }
 
-export function EnterprisePlanCard({ onContactSales }: EnterprisePlanCardProps) {
+export function EnterprisePlanCard({ productPrices, onContactSales }: EnterprisePlanCardProps) {
   const locale = useLocale();
   const t = useTranslations("PricingPage");
 
@@ -17,38 +17,53 @@ export function EnterprisePlanCard({ onContactSales }: EnterprisePlanCardProps) 
       <CardHeader>
         <CardTitle className="text-2xl">{t("enterpriseTitle")}</CardTitle>
         <CardDescription className="h-12">{t("enterpriseSubtitle")}</CardDescription>
+        <div className="mt-4 h-30">
+          <div>
+            <span className="text-3xl font-bold">{locale === "zh-CN" ? "¥15000" : "$2000"}</span>
+            <span className="text-lg">/{t("month")}</span>
+          </div>
+          <div className="mt-1 text-sm font-medium">{t("enterpriseUnlimitedSeats")}</div>
+          <div className="mt-1 flex items-start">
+            <CoinsIcon className="size-4 mt-1 mr-2 shrink-0" />
+            <span className="leading-5">{t("enterpriseMonthlyTokens")}</span>
+          </div>
+        </div>
       </CardHeader>
       <CardContent className="flex-grow space-y-4">
-        <Button className="w-full mb-6" variant="outline" onClick={onContactSales}>
+        <Button className="w-full mb-6" onClick={onContactSales}>
           {t("contactSales")}
         </Button>
-        <h3 className="font-medium mb-3">{t("features.enterprise.AdvancedAnalysisTools")}:</h3>
-        <FeatureItem text={t("features.multiModal")} />
-        <FeatureItem text={t("features.analysisModel.superior")} />
-        <FeatureItem text={t("features.customReports")} />
-        <FeatureItem text={t("features.reports.followUp")} />
-        <FeatureItem text={t("features.reports.deepDive")} />
-        <h3 className="font-medium mb-3 mt-6">{t("features.enterprise.DataIntegration")}:</h3>
-        <FeatureItem
-          text={t("features.socialPlatforms.multiple")}
-          className={cn(locale === "en-US" && "tracking-tighter")}
-        />
-        <FeatureItem text={t("features.enterpriseData")} />
-        <FeatureItem text={t("features.customPersonas")} />
-        <h3 className="font-medium mb-3 mt-6">
-          {t("features.enterprise.SecurityAndCollaboration")}:
-        </h3>
-        <FeatureItem text={t("features.collaboration")} />
-        <FeatureItem text={t("features.security")} />
+        <div className="text-sm text-muted-foreground bg-muted/50 rounded p-3 mb-2">
+          {t("additionalTokenPurchaseInfo")}
+        </div>
+        <FeatureItem text={t("features.enterprise.aiResearch")} />
+        <FeatureItem text={t("features.enterprise.aiInterview")} />
+        <FeatureItem text={t("features.enterprise.aiPersona")} />
+        <FeatureItem text={t("features.enterprise.aiPanel")} />
+        <FeatureItem text={t("features.enterprise.aiProductRnD")} />
+        <FeatureItem text={t("features.enterprise.enterpriseReportTemplates")} />
+        <FeatureItem text={t("features.enterprise.enterpriseKnowledgeBase")} />
+        <FeatureItem text={t("features.enterprise.apiInterface")} />
+        <ServiceItem icon={HeadphonesIcon} text={t("features.enterprise.customerSuccessServices")} />
+        <ServiceItem icon={SparklesIcon} text={t("features.enterprise.enterpriseAdvancedServices")} />
       </CardContent>
     </Card>
   );
 }
 
-function FeatureItem({ text, className }: { text: string; className?: string }) {
+function FeatureItem({ text }: { text: string }) {
   return (
-    <div className={cn("flex items-start text-sm", className)}>
+    <div className="flex items-start text-sm">
       <CheckIcon className="size-4 text-primary mr-2 mt-0.5" />
+      <span className="flex-1">{text}</span>
+    </div>
+  );
+}
+
+function ServiceItem({ icon: Icon, text }: { icon: any; text: string }) {
+  return (
+    <div className="flex items-start text-sm">
+      <Icon className="size-4 text-primary mr-2 mt-0.5" />
       <span className="flex-1">{text}</span>
     </div>
   );

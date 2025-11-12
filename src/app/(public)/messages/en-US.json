@@ -141,7 +141,9 @@
     "maxMonthlyTokens": "5M tokens (30-day validity)",
     "teamMonthlyTokens": "5M tokens per seat (30-day validity, shared across team)",
     "enterpriseTitle": "Enterprise",
-    "enterpriseSubtitle": "Coming mid-May",
+    "enterpriseSubtitle": "Complete User Research System",
+    "enterpriseMonthlyTokens": "50M tokens per month (30-day validity, shared across enterprise)",
+    "enterpriseUnlimitedSeats": "Unlimited seats",
     "getStarted": "Get Started Free",
     "chooseBasic": "Buy Tokens",
     "upgradeToPro": "Upgrade to Pro",
@@ -150,6 +152,7 @@
     "createTeam": "Create a Team",
     "contactSales": "Contact Sales",
     "purchaseAdditionalTokens": "Purchase Additional Tokens",
+    "additionalTokenPurchaseInfo": "Add-on: $16 per 1M tokens (permanent validity)",
     "averageStudyToken": "A typical research study uses approximately 400K tokens. Complex analyses may require additional tokens.",
     "features": {
       "socialPlatforms": {
@@ -176,17 +179,20 @@
         "proGift": "Limited Offer: +1M bonus tokens per month",
         "maxGift": "Limited Offer: +3M bonus tokens per month"
       },
-      "enterprise": {
-        "AdvancedAnalysisTools": "Advanced Analysis Tools",
-        "DataIntegration": "Data Integration",
-        "SecurityAndCollaboration": "Security and Collaboration"
-      },
       "multiModal": "Multi-modal input analysis and insights (text, images, etc.)",
-      "customReports": "Customized enterprise report structures",
-      "enterpriseData": "Integration with proprietary enterprise data",
-      "customPersonas": "Custom enterprise AI Personas",
-      "collaboration": "Team collaboration features (share, collaborate)",
-      "security": "Data security controls (specified visibility, expiration dates)",
+      "enterprise": {
+        "aiResearch": "AI Research - Intelligent User Insight System",
+        "aiInterview": "AI Interview - Intelligent User Interview System",
+        "aiPersona": "AI Persona - Intelligent User Profile Construction",
+        "aiPanel": "AI Panel - Intelligent User Groups",
+        "aiProductRnD": "AI Product R&D - AI Product Innovation",
+        "enterpriseReportTemplates": "Enterprise Report Templates",
+        "enterpriseKnowledgeBase": "Enterprise Knowledge Base",
+        "apiInterface": "API Interface",
+        "customerSuccessServices": "Customer Success Services - Including technical support, monthly training, regular system maintenance",
+        "enterpriseAdvancedServices": "Enterprise Advanced Services - Report template customization, AI Persona customization, AI Panel customization",
+        "additionalTokenPurchase": "Add-on: $16 per 1M tokens (permanent validity)"
+      },
       "tokenPurchase": {
         "available": "Purchase additional tokens anytime ($16 per 1M + 1M bonus)",
         "notAvailable": "Cannot purchase additional tokens"

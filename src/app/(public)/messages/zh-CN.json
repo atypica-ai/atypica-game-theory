@@ -141,7 +141,9 @@
     "maxMonthlyTokens": "每月500万Token（有效期30天）",
     "teamMonthlyTokens": "每席位每月500万Token（有效期30天，团队共享）",
     "enterpriseTitle": "企业版",
-    "enterpriseSubtitle": "5月中旬上线",
+    "enterpriseSubtitle": "完整的用户研究系统",
+    "enterpriseMonthlyTokens": "每月5000万Token（有效期30天，企业共享）",
+    "enterpriseUnlimitedSeats": "不限席位",
     "getStarted": "免费开始使用",
     "chooseBasic": "购买Token",
     "upgradeToPro": "升级到Pro版",
@@ -150,6 +152,7 @@
     "createTeam": "创建团队",
     "contactSales": "联系销售",
     "purchaseAdditionalTokens": "购买额外Token",
+    "additionalTokenPurchaseInfo": "增购：¥100购买100万Token（永久有效）",
     "averageStudyToken": "每次研究平均40万个Token，复杂问题或者追问会消耗更多",
     "features": {
       "socialPlatforms": {
@@ -176,17 +179,20 @@
         "proGift": "限时优惠：每月额外赠送100万Token",
         "maxGift": "限时优惠：每月额外赠送300万Token"
       },
-      "enterprise": {
-        "AdvancedAnalysisTools": "调用工具能力",
-        "DataIntegration": "调用数据能力",
-        "SecurityAndCollaboration": "权限安全管理"
-      },
       "multiModal": "支持多模态输入分析、洞察（文字、图片、等）",
-      "customReports": "定制企业报告结构",
-      "enterpriseData": "接入企业私有数据",
-      "customPersonas": "定制企业私有Persona",
-      "collaboration": "团队协作功能（分享、协作）",
-      "security": "数据安全功能（指定可见、有效期）",
+      "enterprise": {
+        "aiResearch": "AI Research - 智能用户洞察系统",
+        "aiInterview": "AI Interview - 智能用户访谈系统",
+        "aiPersona": "AI Persona - 智能用户画像构建",
+        "aiPanel": "AI Panel - 智能用户小组",
+        "aiProductRnD": "AI Product R&D - AI产品创新",
+        "enterpriseReportTemplates": "企业报告模板",
+        "enterpriseKnowledgeBase": "企业知识库",
+        "apiInterface": "API接口",
+        "customerSuccessServices": "客户成功服务 - 包含技术支持、月度培训、定期系统维护",
+        "enterpriseAdvancedServices": "企业高级服务 - 报告模板定制、AI Persona 定制、AI Panel 定制",
+        "additionalTokenPurchase": "增购：¥100购买100万Token（永久有效）"
+      },
       "tokenPurchase": {
         "available": "可随时购买更多Token（¥100每100万 + 100万赠送）",
         "notAvailable": "无法增购Token"
