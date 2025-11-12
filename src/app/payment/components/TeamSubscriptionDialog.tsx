@@ -11,11 +11,12 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Team } from "@/prisma/client";
+import { SubscriptionPlan, Team } from "@/prisma/client";
 import {
   CalendarIcon,
   CoinsIcon,
   CreditCardIcon,
+  Infinity,
   InfoIcon,
   LoaderCircle,
   UsersIcon,
@@ -33,12 +34,16 @@ interface TeamSubscriptionDialogProps {
 }
 
 export const TeamSubscriptionDialog = ({
+  plan,
   open,
   onOpenChange,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onSuccess,
   team,
-}: TeamSubscriptionDialogProps) => {
+}: TeamSubscriptionDialogProps & { plan: SubscriptionPlan | null }) => {
+  if (open && !plan) {
+    throw new Error("TeamSubscriptionDialog requires a plan");
+  }
   const t = useTranslations("Components.TeamSubscriptionDialog");
   const locale = useLocale();
   const [quantity, setQuantity] = useState<number>(Math.max(3, team.seats));
@@ -52,17 +57,30 @@ export const TeamSubscriptionDialog = ({
 
   const currency = locale === "zh-CN" ? "CNY" : "USD";
 
+  const productName = useMemo(() => {
+    switch (plan) {
+      case SubscriptionPlan.team:
+        return ProductName.TEAMSEAT1MONTH;
+      case SubscriptionPlan.superteam:
+        return ProductName.SUPERTEAMSEAT1MONTH;
+      default:
+        return ProductName.TEAMSEAT1MONTH;
+    }
+  }, [plan]);
+
+  const isUnlimited = plan === SubscriptionPlan.superteam;
+
   const unitPrice = useMemo(() => {
     if (!productPrices) return "-";
     const sign = currency === "CNY" ? "¥" : "$";
-    return `${sign}${productPrices["TEAMSEAT1MONTH"][currency]}`;
-  }, [currency, productPrices]);
+    return `${sign}${productPrices[productName][currency]}`;
+  }, [currency, productPrices, productName]);
 
   const totalPrice = useMemo(() => {
     if (!productPrices) return "-";
     const sign = currency === "CNY" ? "¥" : "$";
-    return `${sign}${(productPrices["TEAMSEAT1MONTH"][currency] * quantity).toLocaleString()}`;
-  }, [currency, quantity, productPrices]);
+    return `${sign}${(productPrices[productName][currency] * quantity).toLocaleString()}`;
+  }, [currency, quantity, productPrices, productName]);
 
   // const submitForStripePayment = useCallback(
   //   ({ teamId, quantity, currency }: { teamId: number; quantity: number; currency: string }) => {
@@ -140,7 +158,9 @@ export const TeamSubscriptionDialog = ({
             <UsersIcon className="size-4 text-primary" />
             {team.name}
           </div>
-          <div className="mt-2 text-xs text-muted-foreground">{t("teamSubscriptionFeatures")}</div>
+          <div className="mt-2 text-xs text-muted-foreground">
+            {isUnlimited ? t("superteamSubscriptionFeatures") : t("teamSubscriptionFeatures")}
+          </div>
         </div>
 
         {/* Seat selection */}
@@ -171,8 +191,17 @@ export const TeamSubscriptionDialog = ({
               <span>{t("monthlyBilling")}</span>
             </div>
             <div className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-              <CoinsIcon className="size-3" />
-              <span>{t("tokensPerSeat")}</span>
+              {isUnlimited ? (
+                <>
+                  <Infinity className="size-3 text-primary" />
+                  <span className="font-semibold text-primary">{t("unlimitedTokens")}</span>
+                </>
+              ) : (
+                <>
+                  <CoinsIcon className="size-3" />
+                  <span>{t("tokensPerSeat")}</span>
+                </>
+              )}
             </div>
           </div>
 
@@ -191,7 +220,7 @@ export const TeamSubscriptionDialog = ({
         {error && <div className="text-red-500 text-sm text-center mb-4">{error}</div>}
 
         <DialogFooter className="flex-row justify-end items-center">
-          <Link href="/pricing" className="text-sm flex items-center gap-2 mr-auto">
+          <Link href="/pricing#organization" className="text-sm flex items-center gap-2 mr-auto">
             <CreditCardIcon className="size-5" />
             {t("viewPricing")}
           </Link>
@@ -209,7 +238,7 @@ export const TeamSubscriptionDialog = ({
               createPaymentLink({
                 paymentProvider:
                   currency === "CNY" ? PaymentProvider.StripeCNY : PaymentProvider.Stripe,
-                productName: ProductName.TEAMSEAT1MONTH,
+                productName: productName,
                 quantity: quantity.toString(),
               });
             }}

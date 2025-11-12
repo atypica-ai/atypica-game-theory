@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/table";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDate } from "@/lib/utils";
-import { Team, TeamExtra, User } from "@/prisma/client";
+import { SubscriptionPlan, Team, TeamExtra, User } from "@/prisma/client";
 import { CreditCardIcon, TrashIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
@@ -50,7 +50,9 @@ export function TeamDetailPageClient({ team }: { team: Team }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isAddingMember, setIsAddingMember] = useState(false);
   const [removingMemberId, setRemovingMemberId] = useState<number | null>(null);
-  const [isSubscriptionDialogOpen, setIsSubscriptionDialogOpen] = useState(false);
+  const [subscriptionDialogPlan, setSubscriptionDialogPlan] = useState<SubscriptionPlan | null>(
+    null,
+  );
 
   // 加载团队信息和成员
   const loadTeamData = useCallback(async () => {
@@ -175,16 +177,26 @@ export function TeamDetailPageClient({ team }: { team: Team }) {
               </div>
             )}
 
-            <div className="pt-4 border-t">
-              <Button
-                onClick={() => setIsSubscriptionDialogOpen(true)}
-                className="w-full"
-                variant="outline"
-              >
-                <CreditCardIcon className="w-4 h-4 mr-2" />
-                {teamSubscription ? t("manageSubscription") : t("purchaseSeats")}
-              </Button>
-            </div>
+            {!teamSubscription && (
+              <div className="pt-4 border-t space-y-2">
+                <Button
+                  onClick={() => setSubscriptionDialogPlan(SubscriptionPlan.team)}
+                  className="w-full"
+                  variant="outline"
+                >
+                  <CreditCardIcon className="w-4 h-4" />
+                  {t("purchaseTeam")}
+                </Button>
+                <Button
+                  onClick={() => setSubscriptionDialogPlan(SubscriptionPlan.superteam)}
+                  className="w-full"
+                  variant="outline"
+                >
+                  <CreditCardIcon className="w-4 h-4" />
+                  {t("purchaseSuperTeam")}
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -336,11 +348,12 @@ export function TeamDetailPageClient({ team }: { team: Team }) {
 
       {/* Team Subscription Dialog */}
       <TeamSubscriptionDialog
-        open={isSubscriptionDialogOpen}
-        onOpenChange={setIsSubscriptionDialogOpen}
+        plan={subscriptionDialogPlan}
+        open={subscriptionDialogPlan !== null}
+        onOpenChange={(open) => !open && setSubscriptionDialogPlan(null)}
         team={team}
         onSuccess={() => {
-          setIsSubscriptionDialogOpen(false);
+          setSubscriptionDialogPlan(null);
           loadTeamData();
         }}
       />

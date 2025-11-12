@@ -34,6 +34,8 @@
       "subscriptionStatus": "订阅状态",
       "subscriptionEnd": "订阅到期",
       "purchaseSeats": "购买席位",
+      "purchaseTeam": "购买团队版",
+      "purchaseSuperTeam": "购买Super团队版",
       "manageSubscription": "管理订阅",
       "addMemberTitle": "添加成员",
       "memberEmailLabel": "成员邮箱",

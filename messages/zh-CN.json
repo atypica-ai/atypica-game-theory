@@ -180,11 +180,13 @@
       "subscribe": "立即订阅",
       "cancel": "取消",
       "teamSubscriptionFeatures": "团队版功能：500万Token/席位/月，3个席位起订",
+      "superteamSubscriptionFeatures": "Super团队版功能：无限Token，3个席位起订",
       "seatsLabel": "席位数量",
       "minimumSeats": "最少3个席位",
       "seats": "席位",
       "monthlyBilling": "月度计费",
       "tokensPerSeat": "每席位 500万 Token/月",
+      "unlimitedTokens": "无限Token",
       "notice": {
         "title": "订阅说明",
         "description": "团队订阅按月自动续费，您可以随时在Stripe后台取消订阅。"

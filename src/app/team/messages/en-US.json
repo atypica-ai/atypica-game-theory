@@ -34,6 +34,8 @@
       "subscriptionStatus": "Subscription Status",
       "subscriptionEnd": "Subscription Ends",
       "purchaseSeats": "Purchase Seats",
+      "purchaseTeam": "Purchase Team",
+      "purchaseSuperTeam": "Purchase SuperTeam",
       "manageSubscription": "Manage Subscription",
       "addMemberTitle": "Add Member",
       "memberEmailLabel": "Member Email",

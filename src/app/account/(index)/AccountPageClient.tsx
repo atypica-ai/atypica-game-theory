@@ -136,9 +136,13 @@ export function AccountPageClient({
                       ? t("subscriptionSection.proPlan")
                       : activeSubscription?.plan === "max"
                         ? t("subscriptionSection.maxPlan")
-                        : activeSubscription?.plan === "team"
-                          ? t("subscriptionSection.teamPlan")
-                          : t("subscriptionSection.notSubscribed")}
+                        : activeSubscription?.plan === "super"
+                          ? t("subscriptionSection.superPlan")
+                          : activeSubscription?.plan === "team"
+                            ? t("subscriptionSection.teamPlan")
+                            : activeSubscription?.plan === "superteam"
+                              ? t("subscriptionSection.superteamPlan")
+                              : t("subscriptionSection.notSubscribed")}
                   </div>
                 </div>
 

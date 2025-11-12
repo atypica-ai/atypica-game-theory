@@ -309,7 +309,7 @@ export async function createTeamSubscriptionStripeSession({
     project: "atypica",
     deployRegion: getDeployRegion(),
     orderNo,
-    productName: ProductName.TEAMSEAT1MONTH,
+    productName,
   };
   // const priceData: Stripe.Checkout.SessionCreateParams.LineItem.PriceData = {
   //   product_data: {

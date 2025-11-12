@@ -180,11 +180,13 @@
       "subscribe": "Subscribe Now",
       "cancel": "Cancel",
       "teamSubscriptionFeatures": "Team plan features: 5M tokens/seat/month, minimum 3 seats",
+      "superteamSubscriptionFeatures": "SuperTeam plan features: Unlimited tokens, minimum 3 seats",
       "seatsLabel": "Number of seats",
       "minimumSeats": "Minimum 3 seats",
       "seats": "seats",
       "monthlyBilling": "Monthly billing",
       "tokensPerSeat": "5M tokens/seat/month",
+      "unlimitedTokens": "Unlimited tokens",
       "notice": {
         "title": "Subscription Notice",
         "description": "Team subscription will auto-renew monthly. You can cancel anytime in your Stripe dashboard."

@@ -64,13 +64,14 @@ async function cycleNewPaymentRecord(
   await prisma.paymentLine.createMany({
     data: invoiceData.lines.data
       .map((line) => {
-        const productName = line.metadata.productName;
+        // 对于续费，line.metadata 可能为空，使用 metadata.productName（从 subscription metadata 传递过来）
+        const productName = line.metadata?.productName || metadata.productName;
         const paymentLine = initial.paymentLines.find((p) => p.productName === productName);
         return paymentLine
           ? {
               paymentRecordId: paymentRecord.id,
               productId: paymentLine.productId,
-              productName: line.metadata.productName,
+              productName: productName,
               quantity: line.quantity ?? paymentLine.quantity,
               price: line.amount / 100,
               currency: (line.currency === "cny" ? "CNY" : "USD") as "CNY" | "USD",
