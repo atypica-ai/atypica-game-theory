@@ -1,10 +1,12 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import {
   BrainCircuitIcon,
   BuildingIcon,
+  ChevronRightIcon,
   CodeIcon,
   HeadphonesIcon,
   LightbulbIcon,
@@ -32,269 +34,316 @@ export function EnterpriseEN() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="px-4 py-16 md:py-24 bg-gradient-to-b from-primary/5 to-background">
-        <div className="max-w-7xl mx-auto text-center">
+      <section className="py-20 md:py-32">
+        <div className="container mx-auto px-4 text-center">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
             <BuildingIcon className="size-4" />
             Enterprise Solution
           </div>
-          <h1 className="text-4xl md:text-6xl font-bold mb-6">
-            Complete AI-Powered User Research Platform
+          <h1
+            className={cn(
+              "font-EuclidCircularA max-w-5xl mx-auto mb-6",
+              "font-medium tracking-tight text-4xl md:text-6xl",
+            )}
+          >
+            Scale Your Research <br />
+            <span className="italic font-InstrumentSerif tracking-normal">
+              with AI-Powered Insights
+            </span>
           </h1>
-          <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
-            For businesses operating at scale. Get the most comprehensive AI research solution with unlimited seats,
-            50M monthly tokens, and dedicated support.
+          <p className="max-w-3xl mx-auto text-lg text-zinc-600 dark:text-zinc-400 mb-12">
+            Built for businesses operating at scale. Get unlimited seats, 50M monthly tokens, <br />
+            and dedicated support to transform how your organization understands users.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" onClick={sayHelloToSales}>
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
+            <Button size="lg" className="rounded-full h-12" onClick={sayHelloToSales}>
               Contact Sales
+              <ChevronRightIcon className="h-4 w-4" />
             </Button>
-            <Button size="lg" variant="outline" onClick={() => (window.location.href = "/pricing#organization")}>
+            <Button
+              size="lg"
+              variant="outline"
+              className="rounded-full h-12"
+              onClick={() => (window.location.href = "/pricing#organization")}
+            >
               View Pricing
             </Button>
           </div>
+
+          {/* Stats */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+            <div className="text-center">
+              <div className="text-3xl md:text-4xl font-bold mb-2">50M</div>
+              <div className="text-sm text-muted-foreground">Tokens per month</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl md:text-4xl font-bold mb-2">∞</div>
+              <div className="text-sm text-muted-foreground">Unlimited seats</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl md:text-4xl font-bold mb-2">8h</div>
+              <div className="text-sm text-muted-foreground">Support response</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl md:text-4xl font-bold mb-2">API</div>
+              <div className="text-sm text-muted-foreground">Full integration</div>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Products Section */}
-      <section className="px-4 py-16 md:py-24">
-        <div className="max-w-7xl mx-auto">
+      {/* Core Products */}
+      <section className="py-20 md:py-28 bg-muted/30">
+        <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Core Products</h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Comprehensive AI-powered research tools to understand your users at scale
+            <p className="text-sm font-semibold text-primary tracking-widest uppercase mb-4">
+              Core Platform
+            </p>
+            <h2 className="font-EuclidCircularA font-medium text-4xl md:text-5xl tracking-tight mb-4">
+              Complete Research Suite
+            </h2>
+            <p className="max-w-2xl mx-auto text-lg text-muted-foreground">
+              Five integrated products to understand users at scale
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            {/* AI Research */}
-            <ProductCard
-              icon={BrainCircuitIcon}
-              title="AI Research - Intelligent User Insight System"
-              features={[
-                {
-                  title: "Research Process Automation",
-                  description:
-                    "Automate complete strategic research processes from problem definition to insight output, with visual tracking of research progress and workflow management",
-                },
-                {
-                  title: "Research Methodology",
-                  description:
-                    "Enterprise edition equipped with advanced research models, providing deeper analytical frameworks and more rigorous reasoning logic",
-                },
-                {
-                  title: "Executive Summary & Report",
-                  description:
-                    "Automatically generate structured, visualized professional strategic research reports",
-                },
-              ]}
-            />
-
-            {/* AI Interview */}
-            <ProductCard
-              icon={MessageSquareIcon}
-              title="AI Interview - Intelligent User Interview System"
-              features={[
-                {
-                  title: "Intelligent Interview Execution",
-                  description:
-                    "AI automatically generates interview questions or users set interview questions, conducting professional interviews with real users and AI personas",
-                },
-                {
-                  title: "Interview Record Management",
-                  description: "Automatically record, organize, and archive all interview content",
-                },
-                {
-                  title: "Insight Extraction and Analysis",
-                  description:
-                    "Automatically extract key insights, pain points, and needs from interview content",
-                },
-              ]}
-            />
-
-            {/* AI Persona */}
-            <ProductCard
-              icon={UsersIcon}
-              title="AI Persona - Intelligent User Profile Construction"
-              features={[
-                {
-                  title: "Multi-dimensional Profile Generation",
-                  description:
-                    "Build multi-dimensional user profiles based on 7 dimensions including demographics, psychological characteristics, and behavioral patterns",
-                },
-                {
-                  title: "Dynamic Profile Updates",
-                  description:
-                    "Updates and optimization of user profiles based on continuously collected interviewee feedback",
-                },
-                {
-                  title: "Profile Visualization",
-                  description: "Display user profile characteristics and attributes in an intuitive manner",
-                },
-                {
-                  title: "Interactive Profile Dialogue",
-                  description:
-                    "Support real-time dialogue with AI-simulated user profiles to deeply explore their cognition, attitudes, and decision-making logic",
-                },
-              ]}
-            />
-
-            {/* AI Panel */}
-            <ProductCard
-              icon={UsersIcon}
-              title="AI Panel - Intelligent User Groups"
-              features={[
-                {
-                  title: "Enterprise Research Groups",
-                  description:
-                    "Flexibly assemble user groups from the public AI Persona library based on customer needs",
-                },
-                {
-                  title: "Public Research Groups",
-                  description:
-                    "Pre-set user groups with common profiles by Atypica, ready to use out of the box",
-                },
-              ]}
-            />
-          </div>
-
-          {/* AI Product R&D - Full width */}
-          <Card className="not-dark:border-muted/40">
-            <CardHeader>
-              <div className="flex items-start gap-4">
-                <div className="p-3 rounded-lg bg-primary/10 text-primary">
-                  <LightbulbIcon className="size-6" />
+          <div className="max-w-6xl mx-auto space-y-6">
+            {/* AI Research - Featured */}
+            <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-2xl p-8 md:p-12">
+              <div className="flex flex-col md:flex-row gap-8">
+                <div className="shrink-0">
+                  <div className="p-4 rounded-xl bg-white/20">
+                    <BrainCircuitIcon className="size-8" />
+                  </div>
                 </div>
                 <div className="flex-1">
-                  <CardTitle className="text-xl mb-2">AI Product R&D - AI Product Innovation</CardTitle>
-                  <CardDescription>
-                    Develop entirely new products from 0 to 1, identify market opportunities, design product concepts
-                  </CardDescription>
+                  <h3 className="text-2xl font-bold mb-4">
+                    AI Research - Intelligent User Insight System
+                  </h3>
+                  <div className="grid md:grid-cols-3 gap-6">
+                    <div>
+                      <div className="font-semibold mb-2">Research Process Automation</div>
+                      <div className="text-sm opacity-90">
+                        Automate strategic research from problem definition to insight output, with
+                        visual tracking
+                      </div>
+                    </div>
+                    <div>
+                      <div className="font-semibold mb-2">Advanced Methodology</div>
+                      <div className="text-sm opacity-90">
+                        Enterprise models providing deeper analytical frameworks and rigorous
+                        reasoning
+                      </div>
+                    </div>
+                    <div>
+                      <div className="font-semibold mb-2">Executive Reports</div>
+                      <div className="text-sm opacity-90">
+                        Automatically generate structured, visualized professional strategic reports
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </CardHeader>
-          </Card>
+            </div>
+
+            {/* Other Products Grid */}
+            <div className="grid md:grid-cols-2 gap-6">
+              <ProductCard
+                icon={MessageSquareIcon}
+                title="AI Interview"
+                subtitle="Intelligent User Interview System"
+                features={[
+                  "AI-generated professional interviews with users and personas",
+                  "Automatic recording and organization",
+                  "Insight extraction and analysis",
+                ]}
+              />
+
+              <ProductCard
+                icon={UsersIcon}
+                title="AI Persona"
+                subtitle="Intelligent User Profile Construction"
+                features={[
+                  "Multi-dimensional profiles across 7 dimensions",
+                  "Dynamic updates from feedback",
+                  "Interactive dialogue with AI personas",
+                ]}
+              />
+
+              <ProductCard
+                icon={UsersIcon}
+                title="AI Panel"
+                subtitle="Intelligent User Groups"
+                features={[
+                  "Flexible enterprise research groups",
+                  "Pre-configured common user groups",
+                  "Custom panel assembly",
+                ]}
+              />
+
+              <ProductCard
+                icon={LightbulbIcon}
+                title="AI Product R&D"
+                subtitle="AI Product Innovation"
+                features={[
+                  "0-to-1 product development",
+                  "Market opportunity identification",
+                  "Product concept design",
+                ]}
+              />
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Enterprise Advanced Features */}
-      <section className="px-4 py-16 md:py-24 bg-muted/30">
-        <div className="max-w-7xl mx-auto">
+      {/* Enterprise Features */}
+      <section className="py-20 md:py-28">
+        <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Enterprise Advanced Features</h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Additional capabilities designed specifically for enterprise needs
+            <p className="text-sm font-semibold text-primary tracking-widest uppercase mb-4">
+              Enterprise Capabilities
+            </p>
+            <h2 className="font-EuclidCircularA font-medium text-4xl md:text-5xl tracking-tight mb-4">
+              Built for Your Organization
+            </h2>
+            <p className="max-w-2xl mx-auto text-lg text-muted-foreground">
+              Additional features designed specifically for enterprise needs
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Report Templates */}
-            <FeatureCard
+          <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-6">
+            <EnterpriseFeatureCard
               icon={SparklesIcon}
-              title="Enterprise Report Templates"
-              description="Support enterprise users to customize AI Research report templates, including Logo, format, etc."
+              title="Report Templates"
+              description="Customize AI Research report templates with your brand, logo, and format"
+              color="purple"
             />
 
-            {/* Knowledge Base */}
-            <FeatureCard
+            <EnterpriseFeatureCard
               icon={BrainCircuitIcon}
-              title="Enterprise Knowledge Base"
-              description="Support enterprise users to upload corporate background materials, product information, market data, strategic documents, and other background knowledge for research"
+              title="Knowledge Base"
+              description="Upload corporate materials, product info, market data for context-aware research"
+              color="blue"
             />
 
-            {/* API Interface */}
-            <FeatureCard
+            <EnterpriseFeatureCard
               icon={CodeIcon}
-              title="API Interface"
-              description="Integrate AI Research capabilities directly into your own systems and workflows through our comprehensive API, enabling automated research processes and seamless data integration"
+              title="API Integration"
+              description="Integrate AI Research into your systems and workflows for automated processes"
+              color="yellow"
             />
           </div>
         </div>
       </section>
 
-      {/* Services Section */}
-      <section className="px-4 py-16 md:py-24">
-        <div className="max-w-7xl mx-auto">
+      {/* Enterprise Services */}
+      <section className="py-20 md:py-28 bg-muted/30">
+        <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Enterprise Services</h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Dedicated support and customization services for enterprise success
+            <p className="text-sm font-semibold text-primary tracking-widest uppercase mb-4">
+              Dedicated Support
+            </p>
+            <h2 className="font-EuclidCircularA font-medium text-4xl md:text-5xl tracking-tight mb-4">
+              Enterprise Services
+            </h2>
+            <p className="max-w-2xl mx-auto text-lg text-muted-foreground">
+              Professional support and customization for your success
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Customer Success Services */}
-            <ServiceCard
-              icon={HeadphonesIcon}
-              title="Customer Success Services"
-              description="Including technical support, monthly training, regular system maintenance"
-              items={[
-                {
-                  title: "Technical Support",
-                  details: [
-                    "Response time: 8 hours per working day",
-                    "Support channels: Email, WeChat, Phone",
-                    "Support content: Function usage consultation and troubleshooting, technical issue investigation and resolution",
-                  ],
-                },
-                {
-                  title: "Training Services",
-                  details: [
-                    "Training frequency: 1 hour dedicated training per month",
-                    "Training format: Online video conference/offline training (Shanghai)",
-                    "Training content: New feature introduction and usage guidance, advanced features and tips sharing, industry best practice cases",
-                  ],
-                },
-                {
-                  title: "System Maintenance",
-                  details: [
-                    "Update frequency: Regular monthly updates",
-                    "Maintenance content: Feature optimization and bug fixes, performance improvements and experience enhancements, new feature releases and upgrades, security patches and stability maintenance",
-                  ],
-                },
-              ]}
-            />
+          <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-6">
+            {/* Customer Success */}
+            <div className="bg-white dark:bg-zinc-900 rounded-2xl p-8">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-3 rounded-xl bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400">
+                  <HeadphonesIcon className="size-6" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold">Customer Success Services</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Technical support, training, and maintenance
+                  </p>
+                </div>
+              </div>
 
-            {/* Enterprise Advanced Services */}
-            <ServiceCard
-              icon={SparklesIcon}
-              title="Enterprise Advanced Services"
-              description="Report template customization, AI Persona customization, AI Panel customization"
-              items={[
-                {
-                  title: "Enterprise AI Research Report Template Customization",
-                  details: [
-                    "Customize dedicated report template services based on enterprise requirements",
-                  ],
-                },
-                {
-                  title: "Customized AI Persona",
-                  details: [
-                    "Customize enterprise user profile services based on enterprise needs",
-                  ],
-                },
-                {
-                  title: "Customized AI Panel",
-                  details: [
-                    "Customize dedicated user profile Panels based on specific enterprise needs, with each user group having no less than 50 people",
-                  ],
-                },
-              ]}
-            />
+              <div className="space-y-4">
+                <ServiceDetail
+                  title="Technical Support"
+                  items={[
+                    "8-hour response time per working day",
+                    "Email, WeChat, and phone support",
+                    "Function consultation and troubleshooting",
+                  ]}
+                />
+                <ServiceDetail
+                  title="Training Services"
+                  items={[
+                    "1 hour dedicated training per month",
+                    "Online/offline formats available",
+                    "Feature guidance and best practices",
+                  ]}
+                />
+                <ServiceDetail
+                  title="System Maintenance"
+                  items={[
+                    "Regular monthly updates",
+                    "Performance improvements",
+                    "Security patches and stability",
+                  ]}
+                />
+              </div>
+            </div>
+
+            {/* Advanced Services */}
+            <div className="bg-white dark:bg-zinc-900 rounded-2xl p-8">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-3 rounded-xl bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400">
+                  <SparklesIcon className="size-6" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold">Enterprise Advanced Services</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Custom solutions for your organization
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <ServiceDetail
+                  title="Report Template Customization"
+                  items={["Dedicated report templates based on your requirements"]}
+                />
+                <ServiceDetail
+                  title="Custom AI Personas"
+                  items={["Enterprise user profile services tailored to your needs"]}
+                />
+                <ServiceDetail
+                  title="Custom AI Panels"
+                  items={["Dedicated user groups with 50+ personas per panel"]}
+                />
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="px-4 py-16 md:py-24 bg-gradient-to-b from-primary/5 to-background">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to Transform Your Research?</h2>
-          <p className="text-lg text-muted-foreground mb-8">
-            Contact our sales team to learn how atypica.AI Enterprise can help your organization
-          </p>
-          <Button size="lg" onClick={sayHelloToSales}>
-            Contact Sales
-          </Button>
+      <section className="py-20 md:py-32">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto text-center bg-gradient-to-br from-primary/10 to-primary/5 rounded-3xl p-12 md:p-16">
+            <h2 className="font-EuclidCircularA font-medium text-3xl md:text-5xl mb-6">
+              Ready to Transform Your Research?
+            </h2>
+            <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
+              Contact our sales team to learn how atypica.AI Enterprise can help your organization
+              understand users at scale
+            </p>
+            <Button size="lg" className="rounded-full h-12" onClick={sayHelloToSales}>
+              Contact Sales
+              <ChevronRightIcon className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </section>
     </div>
@@ -305,11 +354,13 @@ export function EnterpriseEN() {
 function ProductCard({
   icon: Icon,
   title,
+  subtitle,
   features,
 }: {
   icon: LucideIcon;
   title: string;
-  features: { title: string; description: string }[];
+  subtitle: string;
+  features: string[];
 }) {
   return (
     <Card className="not-dark:border-muted/40">
@@ -319,15 +370,16 @@ function ProductCard({
             <Icon className="size-6" />
           </div>
           <div className="flex-1">
-            <CardTitle className="text-xl mb-4">{title}</CardTitle>
-            <div className="space-y-3">
+            <CardTitle className="text-xl mb-1">{title}</CardTitle>
+            <CardDescription className="mb-4">{subtitle}</CardDescription>
+            <ul className="space-y-2">
               {features.map((feature, index) => (
-                <div key={index} className="text-sm">
-                  <div className="font-semibold mb-1">{feature.title}</div>
-                  <div className="text-muted-foreground">{feature.description}</div>
-                </div>
+                <li key={index} className="flex items-start gap-2 text-sm">
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 shrink-0" />
+                  <span className="text-muted-foreground">{feature}</span>
+                </li>
               ))}
-            </div>
+            </ul>
           </div>
         </div>
       </CardHeader>
@@ -335,70 +387,47 @@ function ProductCard({
   );
 }
 
-// Feature Card Component
-function FeatureCard({
+// Enterprise Feature Card Component
+function EnterpriseFeatureCard({
   icon: Icon,
   title,
   description,
+  color,
 }: {
   icon: LucideIcon;
   title: string;
   description: string;
+  color: "purple" | "blue" | "yellow";
 }) {
+  const colorClasses = {
+    purple: "bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400",
+    blue: "bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400",
+    yellow: "bg-yellow-100 dark:bg-yellow-900 text-yellow-600 dark:text-yellow-400",
+  };
+
   return (
-    <Card className="not-dark:border-muted/40">
-      <CardHeader>
-        <div className="p-3 rounded-lg bg-primary/10 text-primary w-fit mb-3">
-          <Icon className="size-6" />
-        </div>
-        <CardTitle className="text-xl mb-2">{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
-      </CardHeader>
-    </Card>
+    <div className="bg-white dark:bg-zinc-900 rounded-2xl p-8">
+      <div className={cn("p-3 rounded-xl w-fit mb-4", colorClasses[color])}>
+        <Icon className="size-6" />
+      </div>
+      <h3 className="text-xl font-semibold mb-2">{title}</h3>
+      <p className="text-sm text-muted-foreground">{description}</p>
+    </div>
   );
 }
 
-// Service Card Component
-function ServiceCard({
-  icon: Icon,
-  title,
-  description,
-  items,
-}: {
-  icon: LucideIcon;
-  title: string;
-  description: string;
-  items: { title: string; details: string[] }[];
-}) {
+// Service Detail Component
+function ServiceDetail({ title, items }: { title: string; items: string[] }) {
   return (
-    <Card className="not-dark:border-muted/40">
-      <CardHeader>
-        <div className="flex items-center gap-3 mb-2">
-          <div className="p-3 rounded-lg bg-primary/10 text-primary">
-            <Icon className="size-6" />
-          </div>
-          <div>
-            <CardTitle className="text-xl">{title}</CardTitle>
-            <CardDescription className="mt-1">{description}</CardDescription>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {items.map((item, index) => (
-            <div key={index} className="border-l-2 border-primary/20 pl-4">
-              <h4 className="font-semibold mb-2">{item.title}</h4>
-              <ul className="space-y-1">
-                {item.details.map((detail, detailIndex) => (
-                  <li key={detailIndex} className="text-sm text-muted-foreground">
-                    {detail}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+    <div className="border-l-2 border-primary/20 pl-4">
+      <h4 className="font-semibold mb-2 text-sm">{title}</h4>
+      <ul className="space-y-1">
+        {items.map((item, index) => (
+          <li key={index} className="text-sm text-muted-foreground">
+            {item}
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }

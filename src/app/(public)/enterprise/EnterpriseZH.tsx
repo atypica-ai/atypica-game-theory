@@ -1,10 +1,12 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import {
   BrainCircuitIcon,
   BuildingIcon,
+  ChevronRightIcon,
   CodeIcon,
   HeadphonesIcon,
   LightbulbIcon,
@@ -32,247 +34,281 @@ export function EnterpriseZH() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="px-4 py-16 md:py-24 bg-gradient-to-b from-primary/5 to-background">
-        <div className="max-w-7xl mx-auto text-center">
+      <section className="py-20 md:py-32">
+        <div className="container mx-auto px-4 text-center">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
             <BuildingIcon className="size-4" />
             企业级解决方案
           </div>
-          <h1 className="text-4xl md:text-6xl font-bold mb-6">完整的 AI 用户研究平台</h1>
-          <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
-            适用于规模化运营的企业。获得最全面的 AI 研究解决方案，不限席位，每月 5000 万 Token，以及专属支持服务。
+          <h1
+            className={cn(
+              "font-EuclidCircularA max-w-5xl mx-auto mb-6",
+              "font-medium tracking-tight text-4xl md:text-6xl zh:tracking-wide",
+            )}
+          >
+            规模化研究 <br />
+            <span className="italic font-InstrumentSerif tracking-normal">AI 驱动的洞察</span>
+          </h1>
+          <p className="max-w-3xl mx-auto text-lg text-zinc-600 dark:text-zinc-400 mb-12">
+            专为规模化运营的企业打造。不限席位，每月 5000 万 Token，
+            <br />
+            专属支持服务， 改变您的组织理解用户的方式。
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" onClick={sayHelloToSales}>
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
+            <Button size="lg" className="rounded-full h-12" onClick={sayHelloToSales}>
               联系销售
+              <ChevronRightIcon className="h-4 w-4" />
             </Button>
-            <Button size="lg" variant="outline" onClick={() => (window.location.href = "/pricing#organization")}>
+            <Button
+              size="lg"
+              variant="outline"
+              className="rounded-full h-12"
+              onClick={() => (window.location.href = "/pricing#organization")}
+            >
               查看价格
             </Button>
           </div>
+
+          {/* Stats */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+            <div className="text-center">
+              <div className="text-3xl md:text-4xl font-bold mb-2">5000万</div>
+              <div className="text-sm text-muted-foreground">每月 Token</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl md:text-4xl font-bold mb-2">∞</div>
+              <div className="text-sm text-muted-foreground">不限席位</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl md:text-4xl font-bold mb-2">8小时</div>
+              <div className="text-sm text-muted-foreground">支持响应</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl md:text-4xl font-bold mb-2">API</div>
+              <div className="text-sm text-muted-foreground">完整集成</div>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Products Section */}
-      <section className="px-4 py-16 md:py-24">
-        <div className="max-w-7xl mx-auto">
+      {/* Core Products */}
+      <section className="py-20 md:py-28 bg-muted/30">
+        <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">核心产品</h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              全面的 AI 驱动研究工具，大规模理解您的用户
+            <p className="text-sm font-semibold text-primary tracking-widest uppercase mb-4">
+              核心平台
+            </p>
+            <h2 className="font-EuclidCircularA font-medium text-4xl md:text-5xl tracking-tight mb-4 zh:tracking-wide">
+              完整研究套件
+            </h2>
+            <p className="max-w-2xl mx-auto text-lg text-muted-foreground">
+              五大集成产品，大规模理解用户
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            {/* AI Research */}
-            <ProductCard
-              icon={BrainCircuitIcon}
-              title="AI Research - 智能用户洞察系统"
-              features={[
-                {
-                  title: "研究流程自动化",
-                  description:
-                    "自动化完整的战略研究流程，从问题定义到洞察输出，可视化追踪研究进度和工作流管理",
-                },
-                {
-                  title: "研究方法论",
-                  description: "企业版配备高级研究模型，提供更深入的分析框架和更严谨的推理逻辑",
-                },
-                {
-                  title: "执行摘要与报告",
-                  description: "自动生成结构化、可视化的专业战略研究报告",
-                },
-              ]}
-            />
-
-            {/* AI Interview */}
-            <ProductCard
-              icon={MessageSquareIcon}
-              title="AI Interview - 智能用户访谈系统"
-              features={[
-                {
-                  title: "智能访谈执行",
-                  description: "AI 自动生成访谈问题或用户设置访谈问题，与真实用户和 AI 人设进行专业访谈",
-                },
-                {
-                  title: "访谈记录管理",
-                  description: "自动记录、整理和归档所有访谈内容",
-                },
-                {
-                  title: "洞察提取与分析",
-                  description: "从访谈内容中自动提取关键洞察、痛点和需求",
-                },
-              ]}
-            />
-
-            {/* AI Persona */}
-            <ProductCard
-              icon={UsersIcon}
-              title="AI Persona - 智能用户画像构建"
-              features={[
-                {
-                  title: "多维度画像生成",
-                  description: "基于人口统计、心理特征和行为模式等 7 个维度构建多维度用户画像",
-                },
-                {
-                  title: "动态画像更新",
-                  description: "基于持续收集的受访者反馈更新和优化用户画像",
-                },
-                {
-                  title: "画像可视化",
-                  description: "以直观的方式展示用户画像特征和属性",
-                },
-                {
-                  title: "交互式画像对话",
-                  description: "支持与 AI 模拟的用户画像进行实时对话，深入探索其认知、态度和决策逻辑",
-                },
-              ]}
-            />
-
-            {/* AI Panel */}
-            <ProductCard
-              icon={UsersIcon}
-              title="AI Panel - 智能用户小组"
-              features={[
-                {
-                  title: "企业研究小组",
-                  description: "根据客户需求，从公共 AI Persona 库中灵活组建用户小组",
-                },
-                {
-                  title: "公共研究小组",
-                  description: "Atypica 预设的常见画像用户小组，开箱即用",
-                },
-              ]}
-            />
-          </div>
-
-          {/* AI Product R&D - Full width */}
-          <Card className="not-dark:border-muted/40">
-            <CardHeader>
-              <div className="flex items-start gap-4">
-                <div className="p-3 rounded-lg bg-primary/10 text-primary">
-                  <LightbulbIcon className="size-6" />
+          <div className="max-w-6xl mx-auto space-y-6">
+            {/* AI Research - Featured */}
+            <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-2xl p-8 md:p-12">
+              <div className="flex flex-col md:flex-row gap-8">
+                <div className="shrink-0">
+                  <div className="p-4 rounded-xl bg-white/20">
+                    <BrainCircuitIcon className="size-8" />
+                  </div>
                 </div>
                 <div className="flex-1">
-                  <CardTitle className="text-xl mb-2">AI Product R&D - AI 产品创新</CardTitle>
-                  <CardDescription>从 0 到 1 开发全新产品，识别市场机会，设计产品概念</CardDescription>
+                  <h3 className="text-2xl font-bold mb-4">AI Research - 智能用户洞察系统</h3>
+                  <div className="grid md:grid-cols-3 gap-6">
+                    <div>
+                      <div className="font-semibold mb-2">研究流程自动化</div>
+                      <div className="text-sm opacity-90">
+                        从问题定义到洞察输出的自动化战略研究，可视化追踪进度
+                      </div>
+                    </div>
+                    <div>
+                      <div className="font-semibold mb-2">高级研究方法论</div>
+                      <div className="text-sm opacity-90">
+                        企业级模型提供更深入的分析框架和严谨的推理逻辑
+                      </div>
+                    </div>
+                    <div>
+                      <div className="font-semibold mb-2">执行报告</div>
+                      <div className="text-sm opacity-90">
+                        自动生成结构化、可视化的专业战略研究报告
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </CardHeader>
-          </Card>
+            </div>
+
+            {/* Other Products Grid */}
+            <div className="grid md:grid-cols-2 gap-6">
+              <ProductCard
+                icon={MessageSquareIcon}
+                title="AI Interview"
+                subtitle="智能用户访谈系统"
+                features={[
+                  "AI 生成的专业访谈，支持真实用户和 AI 人设",
+                  "自动记录和整理",
+                  "洞察提取与分析",
+                ]}
+              />
+
+              <ProductCard
+                icon={UsersIcon}
+                title="AI Persona"
+                subtitle="智能用户画像构建"
+                features={[
+                  "基于 7 个维度的多维度画像",
+                  "基于反馈的动态更新",
+                  "与 AI 人设的交互式对话",
+                ]}
+              />
+
+              <ProductCard
+                icon={UsersIcon}
+                title="AI Panel"
+                subtitle="智能用户小组"
+                features={["灵活的企业研究小组", "预配置的通用用户小组", "自定义小组组建"]}
+              />
+
+              <ProductCard
+                icon={LightbulbIcon}
+                title="AI Product R&D"
+                subtitle="AI 产品创新"
+                features={["从 0 到 1 的产品开发", "市场机会识别", "产品概念设计"]}
+              />
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Enterprise Advanced Features */}
-      <section className="px-4 py-16 md:py-24 bg-muted/30">
-        <div className="max-w-7xl mx-auto">
+      {/* Enterprise Features */}
+      <section className="py-20 md:py-28">
+        <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">企业高级功能</h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">专为企业需求设计的额外功能</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Report Templates */}
-            <FeatureCard
-              icon={SparklesIcon}
-              title="企业报告模板"
-              description="支持企业用户自定义 AI Research 报告模板，包括 Logo、格式等"
-            />
-
-            {/* Knowledge Base */}
-            <FeatureCard
-              icon={BrainCircuitIcon}
-              title="企业知识库"
-              description="支持企业用户上传企业背景资料、产品信息、市场数据、战略文件等背景知识用于研究"
-            />
-
-            {/* API Interface */}
-            <FeatureCard
-              icon={CodeIcon}
-              title="API 接口"
-              description="通过我们全面的 API 将 AI Research 功能直接集成到您自己的系统和工作流程中，实现自动化研究流程和无缝数据集成"
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* Services Section */}
-      <section className="px-4 py-16 md:py-24">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">企业服务</h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              专属支持和定制服务，助力企业成功
+            <p className="text-sm font-semibold text-primary tracking-widest uppercase mb-4">
+              企业能力
+            </p>
+            <h2 className="font-EuclidCircularA font-medium text-4xl md:text-5xl tracking-tight mb-4 zh:tracking-wide">
+              为您的组织而构建
+            </h2>
+            <p className="max-w-2xl mx-auto text-lg text-muted-foreground">
+              专为企业需求设计的额外功能
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Customer Success Services */}
-            <ServiceCard
-              icon={HeadphonesIcon}
-              title="客户成功服务"
-              description="包含技术支持、月度培训、定期系统维护"
-              items={[
-                {
-                  title: "技术支持",
-                  details: [
-                    "响应时间：每个工作日 8 小时",
-                    "支持渠道：邮件、微信、电话",
-                    "支持内容：功能使用咨询和故障排除、技术问题调查和解决",
-                  ],
-                },
-                {
-                  title: "培训服务",
-                  details: [
-                    "培训频率：每月 1 小时专属培训",
-                    "培训形式：在线视频会议/线下培训（上海）",
-                    "培训内容：新功能介绍和使用指导、高级功能和技巧分享、行业最佳实践案例",
-                  ],
-                },
-                {
-                  title: "系统维护",
-                  details: [
-                    "更新频率：定期每月更新",
-                    "维护内容：功能优化和错误修复、性能改进和体验增强、新功能发布和升级、安全补丁和稳定性维护",
-                  ],
-                },
-              ]}
+          <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-6">
+            <EnterpriseFeatureCard
+              icon={SparklesIcon}
+              title="报告模板"
+              description="使用您的品牌、Logo 和格式自定义 AI Research 报告模板"
+              color="purple"
             />
 
-            {/* Enterprise Advanced Services */}
-            <ServiceCard
-              icon={SparklesIcon}
-              title="企业高级服务"
-              description="报告模板定制、AI Persona 定制、AI Panel 定制"
-              items={[
-                {
-                  title: "企业 AI Research 报告模板定制",
-                  details: ["根据企业需求定制专属报告模板服务"],
-                },
-                {
-                  title: "定制化 AI Persona",
-                  details: ["根据企业需求定制企业用户画像服务"],
-                },
-                {
-                  title: "定制化 AI Panel",
-                  details: ["根据企业具体需求定制专属用户画像 Panels，每个用户小组不少于 50 人"],
-                },
-              ]}
+            <EnterpriseFeatureCard
+              icon={BrainCircuitIcon}
+              title="知识库"
+              description="上传企业资料、产品信息、市场数据，实现上下文感知研究"
+              color="blue"
             />
+
+            <EnterpriseFeatureCard
+              icon={CodeIcon}
+              title="API 集成"
+              description="将 AI Research 集成到您的系统和工作流程中，实现自动化流程"
+              color="yellow"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* Enterprise Services */}
+      <section className="py-20 md:py-28 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <p className="text-sm font-semibold text-primary tracking-widest uppercase mb-4">
+              专属支持
+            </p>
+            <h2 className="font-EuclidCircularA font-medium text-4xl md:text-5xl tracking-tight mb-4 zh:tracking-wide">
+              企业服务
+            </h2>
+            <p className="max-w-2xl mx-auto text-lg text-muted-foreground">
+              专业支持和定制服务，助力您的成功
+            </p>
+          </div>
+
+          <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-6">
+            {/* Customer Success */}
+            <div className="bg-white dark:bg-zinc-900 rounded-2xl p-8">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-3 rounded-xl bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400">
+                  <HeadphonesIcon className="size-6" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold">客户成功服务</h3>
+                  <p className="text-sm text-muted-foreground">技术支持、培训和维护</p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <ServiceDetail
+                  title="技术支持"
+                  items={[
+                    "每个工作日 8 小时响应时间",
+                    "邮件、微信和电话支持",
+                    "功能咨询和故障排除",
+                  ]}
+                />
+                <ServiceDetail
+                  title="培训服务"
+                  items={["每月 1 小时专属培训", "在线/线下培训可选", "功能指导和最佳实践"]}
+                />
+                <ServiceDetail
+                  title="系统维护"
+                  items={["定期每月更新", "性能改进", "安全补丁和稳定性"]}
+                />
+              </div>
+            </div>
+
+            {/* Advanced Services */}
+            <div className="bg-white dark:bg-zinc-900 rounded-2xl p-8">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-3 rounded-xl bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400">
+                  <SparklesIcon className="size-6" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold">企业高级服务</h3>
+                  <p className="text-sm text-muted-foreground">为您的组织定制解决方案</p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <ServiceDetail title="报告模板定制" items={["根据您的需求定制专属报告模板"]} />
+                <ServiceDetail title="定制 AI 人设" items={["根据您的需求定制企业用户画像服务"]} />
+                <ServiceDetail title="定制 AI 小组" items={["每个小组 50+ 人设的专属用户小组"]} />
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="px-4 py-16 md:py-24 bg-gradient-to-b from-primary/5 to-background">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">准备好转型您的研究了吗？</h2>
-          <p className="text-lg text-muted-foreground mb-8">
-            联系我们的销售团队，了解 atypica.AI 企业版如何帮助您的组织
-          </p>
-          <Button size="lg" onClick={sayHelloToSales}>
-            联系销售
-          </Button>
+      <section className="py-20 md:py-32">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto text-center bg-gradient-to-br from-primary/10 to-primary/5 rounded-3xl p-12 md:p-16">
+            <h2 className="font-EuclidCircularA font-medium text-3xl md:text-5xl mb-6 zh:tracking-wide">
+              准备好转型您的研究了吗？
+            </h2>
+            <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
+              联系我们的销售团队，了解 atypica.AI 企业版如何帮助您的组织大规模理解用户
+            </p>
+            <Button size="lg" className="rounded-full h-12" onClick={sayHelloToSales}>
+              联系销售
+              <ChevronRightIcon className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </section>
     </div>
@@ -283,11 +319,13 @@ export function EnterpriseZH() {
 function ProductCard({
   icon: Icon,
   title,
+  subtitle,
   features,
 }: {
   icon: LucideIcon;
   title: string;
-  features: { title: string; description: string }[];
+  subtitle: string;
+  features: string[];
 }) {
   return (
     <Card className="not-dark:border-muted/40">
@@ -297,15 +335,16 @@ function ProductCard({
             <Icon className="size-6" />
           </div>
           <div className="flex-1">
-            <CardTitle className="text-xl mb-4">{title}</CardTitle>
-            <div className="space-y-3">
+            <CardTitle className="text-xl mb-1">{title}</CardTitle>
+            <CardDescription className="mb-4">{subtitle}</CardDescription>
+            <ul className="space-y-2">
               {features.map((feature, index) => (
-                <div key={index} className="text-sm">
-                  <div className="font-semibold mb-1">{feature.title}</div>
-                  <div className="text-muted-foreground">{feature.description}</div>
-                </div>
+                <li key={index} className="flex items-start gap-2 text-sm">
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 shrink-0" />
+                  <span className="text-muted-foreground">{feature}</span>
+                </li>
               ))}
-            </div>
+            </ul>
           </div>
         </div>
       </CardHeader>
@@ -313,70 +352,47 @@ function ProductCard({
   );
 }
 
-// Feature Card Component
-function FeatureCard({
+// Enterprise Feature Card Component
+function EnterpriseFeatureCard({
   icon: Icon,
   title,
   description,
+  color,
 }: {
   icon: LucideIcon;
   title: string;
   description: string;
+  color: "purple" | "blue" | "yellow";
 }) {
+  const colorClasses = {
+    purple: "bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400",
+    blue: "bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400",
+    yellow: "bg-yellow-100 dark:bg-yellow-900 text-yellow-600 dark:text-yellow-400",
+  };
+
   return (
-    <Card className="not-dark:border-muted/40">
-      <CardHeader>
-        <div className="p-3 rounded-lg bg-primary/10 text-primary w-fit mb-3">
-          <Icon className="size-6" />
-        </div>
-        <CardTitle className="text-xl mb-2">{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
-      </CardHeader>
-    </Card>
+    <div className="bg-white dark:bg-zinc-900 rounded-2xl p-8">
+      <div className={cn("p-3 rounded-xl w-fit mb-4", colorClasses[color])}>
+        <Icon className="size-6" />
+      </div>
+      <h3 className="text-xl font-semibold mb-2">{title}</h3>
+      <p className="text-sm text-muted-foreground">{description}</p>
+    </div>
   );
 }
 
-// Service Card Component
-function ServiceCard({
-  icon: Icon,
-  title,
-  description,
-  items,
-}: {
-  icon: LucideIcon;
-  title: string;
-  description: string;
-  items: { title: string; details: string[] }[];
-}) {
+// Service Detail Component
+function ServiceDetail({ title, items }: { title: string; items: string[] }) {
   return (
-    <Card className="not-dark:border-muted/40">
-      <CardHeader>
-        <div className="flex items-center gap-3 mb-2">
-          <div className="p-3 rounded-lg bg-primary/10 text-primary">
-            <Icon className="size-6" />
-          </div>
-          <div>
-            <CardTitle className="text-xl">{title}</CardTitle>
-            <CardDescription className="mt-1">{description}</CardDescription>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {items.map((item, index) => (
-            <div key={index} className="border-l-2 border-primary/20 pl-4">
-              <h4 className="font-semibold mb-2">{item.title}</h4>
-              <ul className="space-y-1">
-                {item.details.map((detail, detailIndex) => (
-                  <li key={detailIndex} className="text-sm text-muted-foreground">
-                    {detail}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+    <div className="border-l-2 border-primary/20 pl-4">
+      <h4 className="font-semibold mb-2 text-sm">{title}</h4>
+      <ul className="space-y-1">
+        {items.map((item, index) => (
+          <li key={index} className="text-sm text-muted-foreground">
+            {item}
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
