@@ -2,6 +2,7 @@
 import { TProductPrices } from "@/app/payment/actions";
 import { AddTokensDialog } from "@/app/payment/components/AddTokensDialog";
 import { SubscriptionDialog } from "@/app/payment/components/SubscriptionDialog";
+import { LoadingPulse } from "@/components/LoadingPulse";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Subscription, SubscriptionPlan, UserType } from "@/prisma/client";
 import { InfoIcon } from "lucide-react";
@@ -30,13 +31,15 @@ export default function PricingPageClient({
   const [isSubscriptionDialogOpen, setIsSubscriptionDialogOpen] = useState<{
     plan: SubscriptionPlan;
   } | null>(null);
-  const [activeTab, setActiveTab] = useState<string>("individual");
+  const [activeTab, setActiveTab] = useState<string | null>(null);
 
   // Read hash on mount
   useEffect(() => {
     const hash = window.location.hash.slice(1);
     if (hash === "organization" || hash === "individual") {
       setActiveTab(hash);
+    } else {
+      setActiveTab("individual");
     }
   }, []);
 
@@ -61,7 +64,7 @@ export default function PricingPageClient({
     window.location.href = `/agents/hello/${chat.id}`;
   }, [locale]);
 
-  return (
+  return activeTab ? (
     <div className="px-4 py-16">
       <div className="text-center mb-8">
         <h1 className="text-4xl md:text-5xl font-bold mb-4">{t("title")}</h1>
@@ -120,6 +123,10 @@ export default function PricingPageClient({
         }}
         activeSubscription={activeSubscription}
       />
+    </div>
+  ) : (
+    <div className="flex items-center justify-center p-20">
+      <LoadingPulse />
     </div>
   );
 }
