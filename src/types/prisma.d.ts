@@ -150,7 +150,6 @@ declare module "@/prisma/client" {
     pdfObjectUrl: string; // PDF文件的S3对象URL
     preferredLanguage: string; // 用户偏好的访谈语言
     personalInfo: Array<{ label: string; text: string }>; // 个人信息字段（灵活结构）
-    currentQuestionIndex: number; // 当前问题索引（用于占位符机制）
   }>;
 
   export type InterviewReportExtra = Partial<{

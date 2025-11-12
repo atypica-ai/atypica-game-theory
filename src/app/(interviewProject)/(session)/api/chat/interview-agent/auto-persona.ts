@@ -137,7 +137,7 @@ export async function runAutoPersonaInterview({
 
   const interviewerSystemPrompt = interviewAgentSystemPrompt({
     brief: project.brief,
-    questions: project.extra?.questions,
+    questions: project.extra?.questions?.map((q) => q.text),
     isPersonaInterview: true,
     personaName: persona.name,
     locale,
