@@ -2,48 +2,47 @@ import { TProductPrices } from "@/app/payment/actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Subscription, SubscriptionPlan, UserType } from "@/prisma/client";
-import { CheckIcon, CoinsIcon, GiftIcon } from "lucide-react";
+import { CheckIcon, Infinity } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 
-interface ProPlanCardProps {
+interface SuperPlanCardProps {
   productPrices: TProductPrices;
   activeSubscription: Subscription | null;
   userType: UserType;
   onUpgrade: () => void;
-  onPurchaseTokens: () => void;
 }
 
-export function ProPlanCard({
+export function SuperPlanCard({
   productPrices,
   activeSubscription,
   userType,
   onUpgrade,
-  onPurchaseTokens,
-}: ProPlanCardProps) {
+}: SuperPlanCardProps) {
   const locale = useLocale();
   const t = useTranslations("PricingPage");
 
   return (
-    <Card className="flex flex-col not-dark:border-muted/40">
+    <Card className="flex flex-col not-dark:border-primary/40 border-2 relative">
+      <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+        <span className="bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full">
+          UNLIMITED
+        </span>
+      </div>
       <CardHeader>
-        <CardTitle className="text-2xl">{t("proTitle")}</CardTitle>
-        <CardDescription className="h-12">{t("proSubtitle")}</CardDescription>
+        <CardTitle className="text-2xl">{t("superTitle")}</CardTitle>
+        <CardDescription className="h-12">{t("superSubtitle")}</CardDescription>
         <div className="mt-4 h-30">
           <div>
             <span className="text-3xl font-bold">
               {locale === "zh-CN"
-                ? `¥${productPrices["PRO1MONTH"]["CNY"]}`
-                : `$${productPrices["PRO1MONTH"]["USD"]}`}
+                ? `¥${productPrices["SUPER1MONTH"]["CNY"]}`
+                : `$${productPrices["SUPER1MONTH"]["USD"]}`}
             </span>
             <span className="text-lg">/{t("month")}</span>
           </div>
           <div className="mt-1 flex items-center">
-            <CoinsIcon className="size-4 mr-2" />
-            <span>{t("proMonthlyTokens")}</span>
-          </div>
-          <div className="mt-2 flex items-start text-sm">
-            <GiftIcon className="size-4 text-primary mr-2 mt-0.5" />
-            <span className="flex-1 font-semibold">{t("features.tokens.proGift")}</span>
+            <Infinity className="size-4 mr-2 text-primary" />
+            <span className="font-semibold">{t("superMonthlyTokens")}</span>
           </div>
         </div>
       </CardHeader>
@@ -52,37 +51,36 @@ export function ProPlanCard({
           <Button className="w-full mb-6 text-xs" disabled>
             {t("switchToPersonalUserToContinue")}
           </Button>
+        ) : activeSubscription?.plan === SubscriptionPlan.super ? (
+          <Button className="w-full mb-6" disabled variant="secondary">
+            Current Plan
+          </Button>
         ) : !activeSubscription ? (
           <Button className="w-full mb-6" onClick={onUpgrade}>
-            {t("upgradeToPro")}
+            {t("upgradeToSuper")}
           </Button>
         ) : activeSubscription.plan === SubscriptionPlan.pro ? (
-          <Button className="w-full mb-6" onClick={onPurchaseTokens}>
-            {t("purchaseAdditionalTokens")}
+          <Button className="w-full mb-6 text-xs" disabled>
+            {t("cannotSwitchFromProToSuper")}
           </Button>
         ) : activeSubscription.plan === SubscriptionPlan.max ? (
           <Button className="w-full mb-6 text-xs" disabled>
-            {t("cannotSwitchFromMaxToPro")}
-          </Button>
-        ) : activeSubscription.plan === SubscriptionPlan.super ? (
-          <Button className="w-full mb-6 text-xs" disabled>
-            {t("cannotSwitchFromSuperToPro")}
+            {t("cannotSwitchFromMaxToSuper")}
           </Button>
         ) : (
-          <Button className="w-full mb-6 text-xs" disabled>
-            {t("upgradeToPro")}
+          <Button className="w-full mb-6" disabled>
+            {t("upgradeToSuper")}
           </Button>
         )}
-        <div className="text-sm text-muted-foreground bg-muted/50 rounded p-3 mb-2">
-          {t("features.tokenPurchase.available")}
-        </div>
         <FeatureItem text={t("features.multiModal")} />
         <FeatureItem text={t("features.socialPlatforms.multiple")} />
-        <FeatureItem text={t("features.personas.unlimited")} />
-        <FeatureItem text={t("features.analysisModel.enhanced")} />
-        <FeatureItem text={t("features.personaImport.basic")} />
-        <FeatureItem text={t("features.interviewProject.basic")} />
+        <FeatureItem text={t("features.personas.curated")} />
+        <FeatureItem text={t("features.analysisModel.superior")} />
+        <FeatureItem text={t("features.reports.followUp")} />
+        <FeatureItem text={t("features.personaImport.full")} />
+        <FeatureItem text={t("features.interviewProject.full")} />
         <FeatureItemWithPreview text={t("features.podcastPreview")} />
+        <FeatureItemWithPreview text={t("features.productRnDPreview")} />
       </CardContent>
     </Card>
   );

@@ -12,6 +12,8 @@ import { EnterprisePlanCard } from "./EnterprisePlanCard";
 import { FreePlanCard } from "./FreePlanCard";
 import { MaxPlanCard } from "./MaxPlanCard";
 import { ProPlanCard } from "./ProPlanCard";
+import { SuperPlanCard } from "./SuperPlanCard";
+import { SuperTeamPlanCard } from "./SuperTeamPlanCard";
 import { TeamPlanCard } from "./TeamPlanCard";
 import { createHelloUserChatAction } from "./actions";
 
@@ -36,7 +38,7 @@ export default function PricingPageClient({
   // Read hash on mount
   useEffect(() => {
     const hash = window.location.hash.slice(1);
-    if (hash === "organization" || hash === "individual") {
+    if (hash === "organization" || hash === "individual" || hash === "unlimited") {
       setActiveTab(hash);
     } else {
       setActiveTab("individual");
@@ -79,6 +81,9 @@ export default function PricingPageClient({
           <TabsTrigger value="organization" className="cursor-pointer px-4 tracking-tighter">
             {t("tabs.teamEnterprise")}
           </TabsTrigger>
+          <TabsTrigger value="unlimited" className="cursor-pointer px-8">
+            {t("tabs.unlimited")}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="individual">
@@ -98,6 +103,18 @@ export default function PricingPageClient({
               onUpgrade={() => setIsSubscriptionDialogOpen({ plan: SubscriptionPlan.max })}
               onPurchaseTokens={() => setIsTokensDialogOpen(true)}
             />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="unlimited">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+            <SuperPlanCard
+              productPrices={productPrices}
+              activeSubscription={activeSubscription}
+              userType={userType}
+              onUpgrade={() => setIsSubscriptionDialogOpen({ plan: SubscriptionPlan.super })}
+            />
+            <SuperTeamPlanCard productPrices={productPrices} userType={userType} />
           </div>
         </TabsContent>
 

@@ -21,7 +21,12 @@ export async function retrieveLatestPaid(createdAtFrom: Date) {
 }
 
 export type TProductPrices = Record<
-  ProductName.TOKENS1M | ProductName.PRO1MONTH | ProductName.MAX1MONTH | ProductName.TEAMSEAT1MONTH,
+  | ProductName.TOKENS1M
+  | ProductName.PRO1MONTH
+  | ProductName.MAX1MONTH
+  | ProductName.SUPER1MONTH
+  | ProductName.TEAMSEAT1MONTH
+  | ProductName.SUPERTEAMSEAT1MONTH,
   Record<Currency, number>
 >;
 
@@ -30,7 +35,9 @@ export async function fetchProductPricesAction() {
     [ProductName.TOKENS1M]: { USD: -1, CNY: -1 },
     [ProductName.PRO1MONTH]: { USD: -1, CNY: -1 },
     [ProductName.MAX1MONTH]: { USD: -1, CNY: -1 },
+    [ProductName.SUPER1MONTH]: { USD: -1, CNY: -1 },
     [ProductName.TEAMSEAT1MONTH]: { USD: -1, CNY: -1 },
+    [ProductName.SUPERTEAMSEAT1MONTH]: { USD: -1, CNY: -1 },
   };
   const products = await prisma.product.findMany();
   products.forEach((product) => {
@@ -38,15 +45,21 @@ export async function fetchProductPricesAction() {
       | ProductName.TOKENS1M
       | ProductName.PRO1MONTH
       | ProductName.MAX1MONTH
-      | ProductName.TEAMSEAT1MONTH;
+      | ProductName.SUPER1MONTH
+      | ProductName.TEAMSEAT1MONTH
+      | ProductName.SUPERTEAMSEAT1MONTH;
     if (product.name == "TOKENS1M") {
       productName = ProductName.TOKENS1M;
     } else if (product.name == "PRO1MONTH") {
       productName = ProductName.PRO1MONTH;
     } else if (product.name == "MAX1MONTH") {
       productName = ProductName.MAX1MONTH;
+    } else if (product.name == "SUPER1MONTH") {
+      productName = ProductName.SUPER1MONTH;
     } else if (product.name == "TEAMSEAT1MONTH") {
       productName = ProductName.TEAMSEAT1MONTH;
+    } else if (product.name == "SUPERTEAMSEAT1MONTH") {
+      productName = ProductName.SUPERTEAMSEAT1MONTH;
     } else {
       return;
     }

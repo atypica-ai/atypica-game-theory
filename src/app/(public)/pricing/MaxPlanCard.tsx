@@ -60,8 +60,12 @@ export function MaxPlanCard({
           <Button className="w-full mb-6" onClick={onPurchaseTokens}>
             {t("purchaseAdditionalTokens")}
           </Button>
+        ) : activeSubscription.plan === SubscriptionPlan.super ? (
+          <Button className="w-full mb-6 text-xs" disabled>
+            {t("cannotSwitchFromSuperToMax")}
+          </Button>
         ) : (
-          <Button className="w-full mb-6" disabled>
+          <Button className="w-full mb-6 text-xs" disabled>
             {t("upgradeToMax")}
           </Button>
         )}
