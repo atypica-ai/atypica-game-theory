@@ -2,7 +2,12 @@ import "server-only";
 
 import { fetchActiveSubscription } from "@/app/account/lib";
 import { rootLogger } from "@/lib/logging";
-import { SubscriptionExtra, SubscriptionPlan, TokensLogVerb } from "@/prisma/client";
+import {
+  SubscriptionExtra,
+  SubscriptionPlan,
+  TokensAccountExtra,
+  TokensLogVerb,
+} from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { TokensLogResourceType } from "@/tokens/types";
 
@@ -96,49 +101,65 @@ export async function resetUserMonthlyTokens({ userId }: { userId: number }) {
 
   let rechargeAmount;
   let giftAmount;
+  let unlimitedTokens;
   if (activeSubscription.plan === SubscriptionPlan.pro) {
     rechargeAmount = PRO_MONTHLY_TOKENS; // 2_000_000
     giftAmount = PRO_MONTHLY_GIFT; // 1_000_000
+    unlimitedTokens = false;
   } else if (activeSubscription.plan === SubscriptionPlan.max) {
     rechargeAmount = MAX_MONTHLY_TOKENS; // 5_000_000
     giftAmount = MAX_MONTHLY_GIFT; // 3_000_000
+    unlimitedTokens = false;
+  } else if (activeSubscription.plan === SubscriptionPlan.super) {
+    rechargeAmount = 0;
+    giftAmount = 0;
+    unlimitedTokens = true;
   } else {
     logger.error(`User ${userId} has unknown subscription plan: ${activeSubscription.plan}`);
     return;
   }
 
   logger.info(
-    `User ${userId} allocating monthly tokens: plan=${activeSubscription.plan}, recharge=${rechargeAmount}, gift=${giftAmount}`,
+    `User ${userId} allocating monthly tokens: plan=${activeSubscription.plan}, recharge=${rechargeAmount}, gift=${giftAmount}, unlimitedTokens=${unlimitedTokens}`,
   );
 
   await prisma.$transaction(async (tx) => {
-    await tx.tokensLog.create({
-      data: {
-        userId: userId,
-        verb: TokensLogVerb.subscription,
-        resourceType: TokensLogResourceType.Subscription,
-        resourceId: activeSubscription.id,
-        value: rechargeAmount,
-      },
-    });
-    await tx.tokensLog.create({
-      data: {
-        userId: userId,
-        verb: TokensLogVerb.gift,
-        resourceType: TokensLogResourceType.Subscription,
-        resourceId: activeSubscription.id,
-        value: giftAmount,
-      },
-    });
+    if (!unlimitedTokens) {
+      await tx.tokensLog.create({
+        data: {
+          userId: userId,
+          verb: TokensLogVerb.subscription,
+          resourceType: TokensLogResourceType.Subscription,
+          resourceId: activeSubscription.id,
+          value: rechargeAmount,
+        },
+      });
+      await tx.tokensLog.create({
+        data: {
+          userId: userId,
+          verb: TokensLogVerb.gift,
+          resourceType: TokensLogResourceType.Subscription,
+          resourceId: activeSubscription.id,
+          value: giftAmount,
+        },
+      });
+    }
     // 注意！这里也是 balance.increment，如果之前研究过程中把 monthlyBalance 扣减到负数了，这里余额不满
+    const extra = tokensAccount.extra as TokensAccountExtra;
     tokensAccount = await tx.tokensAccount.update({
       where: { userId },
       data: {
-        monthlyBalance: {
-          increment: rechargeAmount + giftAmount,
-        },
+        monthlyBalance: unlimitedTokens
+          ? undefined
+          : {
+              increment: rechargeAmount + giftAmount,
+            },
         monthlyResetAt: activeSubscription.endsAt,
         activeSubscriptionId: activeSubscription.id,
+        extra: {
+          ...extra,
+          unlimitedTokens,
+        } satisfies TokensAccountExtra,
       },
     });
   });
@@ -220,6 +241,7 @@ export async function resetTeamMonthlyTokens({ teamId }: { teamId: number }) {
   }
 
   let seats: number;
+  let unlimitedTokens: boolean;
   if (activeSubscription.plan === SubscriptionPlan.team) {
     // Get seats from subscription.extra
     const subscriptionExtra = activeSubscription.extra as SubscriptionExtra;
@@ -227,6 +249,15 @@ export async function resetTeamMonthlyTokens({ teamId }: { teamId: number }) {
       throw new Error(`Seats not found in subscription ${activeSubscription.id} extra`);
     }
     seats = subscriptionExtra.seats;
+    unlimitedTokens = false;
+  } else if (activeSubscription.plan === SubscriptionPlan.superteam) {
+    // Get seats from subscription.extra
+    const subscriptionExtra = activeSubscription.extra as SubscriptionExtra;
+    if (!subscriptionExtra.seats) {
+      throw new Error(`Seats not found in subscription ${activeSubscription.id} extra`);
+    }
+    seats = subscriptionExtra.seats;
+    unlimitedTokens = true;
   } else {
     logger.error(`Team ${teamId} has unknown subscription plan: ${activeSubscription.plan}`);
     return;
@@ -238,31 +269,40 @@ export async function resetTeamMonthlyTokens({ teamId }: { teamId: number }) {
     data: { seats },
   });
 
-  const rechargeAmount = TEAM_MONTHLY_TOKENS_PER_SEAT * seats;
+  const rechargeAmount = unlimitedTokens ? 0 : TEAM_MONTHLY_TOKENS_PER_SEAT * seats;
   logger.info(
-    `Team ${teamId} allocating monthly tokens: seats=${seats}, recharge=${rechargeAmount}`,
+    `Team ${teamId} allocating monthly tokens: seats=${seats}, recharge=${rechargeAmount}, unlimitedTokens=${unlimitedTokens}`,
   );
 
   await prisma.$transaction(async (tx) => {
-    await tx.tokensLog.create({
-      data: {
-        // userId: activeSubscription.userId, // 不要用 responsibleUser.id，直接使用 activeSubscription.userId，确保 userTokensLog 记录在付款人上
-        teamId: teamId,
-        verb: TokensLogVerb.subscription,
-        resourceType: TokensLogResourceType.Subscription,
-        resourceId: activeSubscription.id,
-        value: rechargeAmount,
-      },
-    });
+    if (!unlimitedTokens) {
+      await tx.tokensLog.create({
+        data: {
+          // userId: activeSubscription.userId, // 不要用 responsibleUser.id，直接使用 activeSubscription.userId，确保 userTokensLog 记录在付款人上
+          teamId: teamId,
+          verb: TokensLogVerb.subscription,
+          resourceType: TokensLogResourceType.Subscription,
+          resourceId: activeSubscription.id,
+          value: rechargeAmount,
+        },
+      });
+    }
     // 注意！这里也是 balance.increment，如果之前研究过程中把 monthlyBalance 扣减到负数了，这里余额不满
+    const extra = tokensAccount.extra as TokensAccountExtra;
     tokensAccount = await tx.tokensAccount.update({
       where: { teamId },
       data: {
-        monthlyBalance: {
-          increment: rechargeAmount,
-        },
+        monthlyBalance: unlimitedTokens
+          ? undefined
+          : {
+              increment: rechargeAmount,
+            },
         monthlyResetAt: activeSubscription.endsAt,
         activeSubscriptionId: activeSubscription.id,
+        extra: {
+          ...extra,
+          unlimitedTokens,
+        } satisfies TokensAccountExtra,
       },
     });
   });

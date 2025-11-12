@@ -1,7 +1,11 @@
 import "server-only";
 
-import { AgentStatisticsExtra, TokensLogVerb } from "@/prisma/client";
-import { InputJsonValue } from "@/prisma/client/runtime/library";
+import {
+  AgentStatisticsExtra,
+  TokensAccountExtra,
+  TokensLogExtra,
+  TokensLogVerb,
+} from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { Logger } from "pino";
 import { TokensLogResourceType } from "./types";
@@ -30,6 +34,14 @@ export async function consumeUserTokens({
       // ⚠️ 团队积分扣减，余额记录在 team 上，日志同时记录在 user 和 team 上
       const teamId = user.teamIdAsMember;
       await prisma.$transaction(async (tx) => {
+        const tokensAccount = await tx.tokensAccount.findUniqueOrThrow({
+          where: { teamId },
+        });
+        // 检查是否为无限 tokens 团队（虽然当前 super 是个人套餐，但保持逻辑完整性）
+        const accountExtra = tokensAccount.extra as TokensAccountExtra;
+        const unlimitedTokens = accountExtra.unlimitedTokens === true;
+
+        // 创建 tokensLog 记录（用于统计），在 extra 中标记是否不扣减余额
         await tx.tokensLog.create({
           data: {
             userId: userId,
@@ -38,28 +50,40 @@ export async function consumeUserTokens({
             resourceType,
             resourceId,
             value: -tokens,
-            extra: extra as InputJsonValue,
+            extra: {
+              ...extra,
+              noCharge: unlimitedTokens,
+            } satisfies TokensLogExtra,
           },
         });
-        const tokensAccount = await tx.tokensAccount.findUniqueOrThrow({
-          where: { teamId },
-        });
-        // 优先扣除 monthlyBalance，并且不拆分，balance 可以是负数
-        if (tokensAccount.monthlyBalance > 0) {
-          await tx.tokensAccount.update({
-            where: { teamId },
-            data: { monthlyBalance: { decrement: tokens } },
-          });
-        } else {
-          await tx.tokensAccount.update({
-            where: { teamId },
-            data: { permanentBalance: { decrement: tokens } },
-          });
+
+        // 如果不是无限 tokens，才扣减余额
+        if (!unlimitedTokens) {
+          // 优先扣除 monthlyBalance，并且不拆分，balance 可以是负数
+          if (tokensAccount.monthlyBalance > 0) {
+            await tx.tokensAccount.update({
+              where: { teamId },
+              data: { monthlyBalance: { decrement: tokens } },
+            });
+          } else {
+            await tx.tokensAccount.update({
+              where: { teamId },
+              data: { permanentBalance: { decrement: tokens } },
+            });
+          }
         }
       });
       logger.info({ msg: "User tokens consumed successfully", userId, teamId, tokens });
     } else {
       await prisma.$transaction(async (tx) => {
+        const tokensAccount = await tx.tokensAccount.findUniqueOrThrow({
+          where: { userId },
+        });
+        // 检查是否为无限 tokens 用户
+        const accountExtra = tokensAccount.extra as TokensAccountExtra;
+        const unlimitedTokens = accountExtra.unlimitedTokens === true;
+
+        // 创建 tokensLog 记录（用于统计），在 extra 中标记是否不扣减余额
         await tx.tokensLog.create({
           data: {
             userId: userId,
@@ -67,23 +91,27 @@ export async function consumeUserTokens({
             resourceType,
             resourceId,
             value: -tokens,
-            extra: extra as InputJsonValue,
+            extra: {
+              ...extra,
+              noCharge: unlimitedTokens,
+            } satisfies TokensLogExtra,
           },
         });
-        const tokensAccount = await tx.tokensAccount.findUniqueOrThrow({
-          where: { userId },
-        });
-        // 优先扣除 monthlyBalance，并且不拆分，balance 可以是负数
-        if (tokensAccount.monthlyBalance > 0) {
-          await tx.tokensAccount.update({
-            where: { userId },
-            data: { monthlyBalance: { decrement: tokens } },
-          });
-        } else {
-          await tx.tokensAccount.update({
-            where: { userId },
-            data: { permanentBalance: { decrement: tokens } },
-          });
+
+        // 如果不是无限 tokens，才扣减余额
+        if (!unlimitedTokens) {
+          // 优先扣除 monthlyBalance，并且不拆分，balance 可以是负数
+          if (tokensAccount.monthlyBalance > 0) {
+            await tx.tokensAccount.update({
+              where: { userId },
+              data: { monthlyBalance: { decrement: tokens } },
+            });
+          } else {
+            await tx.tokensAccount.update({
+              where: { userId },
+              data: { permanentBalance: { decrement: tokens } },
+            });
+          }
         }
       });
       logger.info({ msg: "User tokens consumed successfully", userId, tokens });

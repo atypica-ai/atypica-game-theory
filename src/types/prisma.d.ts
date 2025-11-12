@@ -201,6 +201,16 @@ declare module "@/prisma/client" {
     seats: number;
   }>;
 
+  export type TokensAccountExtra = Partial<{
+    unlimitedTokens: boolean;
+  }>;
+
+  export type TokensLogExtra = Partial<
+    AgentStatisticsExtra & {
+      noCharge: boolean;
+    }
+  >;
+
   export type TeamExtra = Partial<{
     unlimitedSeats: boolean;
   }>;

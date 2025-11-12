@@ -152,7 +152,7 @@ export async function POST(req: Request) {
         }
       }
       try {
-        if (metadata.productName === ProductName.TEAMSEAT1MONTH) {
+        if (metadata.productName === ProductName.TEAMSEAT1MONTH || metadata.productName === ProductName.SUPERTEAMSEAT1MONTH) {
           await handleTeamSubscriptionPaymentSuccess({
             paymentRecord,
             productName: metadata.productName,
@@ -160,7 +160,8 @@ export async function POST(req: Request) {
           });
         } else if (
           metadata.productName === ProductName.PRO1MONTH ||
-          metadata.productName === ProductName.MAX1MONTH
+          metadata.productName === ProductName.MAX1MONTH ||
+          metadata.productName === ProductName.SUPER1MONTH
         ) {
           await handleUserSubscriptionPaymentSuccess({
             paymentRecord,

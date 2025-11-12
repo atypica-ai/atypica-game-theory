@@ -22,7 +22,7 @@ export async function createSubscriptionStripeSession({
   successUrl,
 }: {
   userId: number;
-  productName: ProductName.PRO1MONTH | ProductName.MAX1MONTH;
+  productName: ProductName.PRO1MONTH | ProductName.MAX1MONTH | ProductName.SUPER1MONTH;
   currency: Currency;
   successUrl: string;
 }) {
@@ -32,11 +32,14 @@ export async function createSubscriptionStripeSession({
     monthlyBalance: currentMonthlyBalance,
   } = await requirePersonalUser(userId);
 
-  // let upgradeFrom: ProductName | null = null;
   const { activeSubscription } = await fetchActiveSubscription({ userId });
-  // 升级现在是一个单独的方法，这里凡是有 subscription 存在的都不继续
+
+  // Plan switching is not supported. Users must wait for current subscription to expire.
+  // Note: Pro → Max upgrade is handled by upgradeFromProToMaxAction, not this function.
   if (activeSubscription) {
-    throw new Error("This action is only available to users without an active subscription");
+    throw new Error(
+      `Cannot switch subscription plans. You have an active ${activeSubscription.plan} subscription. Please wait until it expires or contact support.`,
+    );
   }
   // if (productName === ProductName.PRO1MONTH) {
   //   // 如果当前有套餐，不能继续 PRO 会员购买
@@ -125,7 +128,8 @@ export async function createSubscriptionStripeSession({
     automatic_tax: { enabled: true },
     client_reference_id: orderNo,
     currency: currency,
-    payment_method_types: currency === "CNY" ? ["card", "alipay"] : ["card"],
+    payment_method_types:
+      currency === "CNY" && amountInCents * quantity <= 800 * 100 ? ["card", "alipay"] : ["card"],
     metadata,
     mode: "subscription",
     subscription_data: { metadata },
@@ -218,7 +222,8 @@ export async function createPaymentStripeSession({
     automatic_tax: { enabled: true },
     client_reference_id: orderNo,
     currency: currency,
-    payment_method_types: currency === "CNY" ? ["card", "alipay"] : ["card"],
+    payment_method_types:
+      currency === "CNY" && amountInCents * quantity <= 800 * 100 ? ["card", "alipay"] : ["card"],
     metadata,
     mode: "payment",
     invoice_creation: {
@@ -265,7 +270,7 @@ export async function createTeamSubscriptionStripeSession({
   successUrl,
 }: {
   userId: number;
-  productName: ProductName.TEAMSEAT1MONTH;
+  productName: ProductName.TEAMSEAT1MONTH | ProductName.SUPERTEAMSEAT1MONTH;
   quantity: number;
   currency: Currency;
   successUrl: string;
@@ -278,9 +283,12 @@ export async function createTeamSubscriptionStripeSession({
   const { email: personalUserEmail, team, teamUser } = await requireTeamlUser(userId);
   // team user 会取 team subscription
   const { activeSubscription: activeTeamSubscription } = await fetchActiveSubscription({ userId });
-  // 如果当前有套餐，不能继续 PRO 会员购买
+
+  // Team plan switching is not supported. Teams must wait for current subscription to expire.
   if (activeTeamSubscription) {
-    throw new Error("Team subscription is only available to teams without an active subscription");
+    throw new Error(
+      `Cannot switch team subscription plans. Your team has an active ${activeTeamSubscription.plan} subscription. Please wait until it expires or contact support.`,
+    );
   }
 
   const orderNo = generateOrderNo();
@@ -328,7 +336,8 @@ export async function createTeamSubscriptionStripeSession({
     automatic_tax: { enabled: true },
     client_reference_id: orderNo,
     currency: currency,
-    payment_method_types: currency === "CNY" ? ["card", "alipay"] : ["card"],
+    payment_method_types:
+      currency === "CNY" && amountInCents * quantity <= 800 * 100 ? ["card", "alipay"] : ["card"],
     metadata,
     mode: "subscription",
     subscription_data: { metadata },

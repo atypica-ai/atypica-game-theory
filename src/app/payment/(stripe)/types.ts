@@ -7,7 +7,9 @@ export const stripeSessionCreatePayloadSchema = z
       ProductName.TOKENS1M,
       ProductName.PRO1MONTH,
       ProductName.MAX1MONTH,
+      ProductName.SUPER1MONTH,
       ProductName.TEAMSEAT1MONTH,
+      ProductName.SUPERTEAMSEAT1MONTH,
     ]),
     currency: z.enum(["USD", "CNY"]),
     successUrl: z.string().regex(/^https?:\/\/.+$/),
@@ -20,14 +22,14 @@ export const stripeSessionCreatePayloadSchema = z
   })
   .refine(
     (data) => {
-      if (data.productName === ProductName.TEAMSEAT1MONTH) {
+      if (data.productName === ProductName.TEAMSEAT1MONTH || data.productName === ProductName.SUPERTEAMSEAT1MONTH) {
         return data.quantity !== undefined;
       } else {
         return data.quantity === undefined;
       }
     },
     {
-      message: "quantity is required when productName is TEAMSEAT1MONTH",
+      message: "quantity is required when productName is TEAMSEAT1MONTH or SUPERTEAMSEAT1MONTH",
       path: ["quantity"],
     },
   );

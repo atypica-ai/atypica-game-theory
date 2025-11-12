@@ -26,11 +26,18 @@ export async function POST(req: Request) {
     }
     const { productName, ...params } = parseResult.data;
     let sessionResponse: { sessionUrl: string };
-    if (productName === ProductName.PRO1MONTH || productName === ProductName.MAX1MONTH) {
+    if (
+      productName === ProductName.PRO1MONTH ||
+      productName === ProductName.MAX1MONTH ||
+      productName === ProductName.SUPER1MONTH
+    ) {
       sessionResponse = await createSubscriptionStripeSession({ ...params, userId, productName });
     } else if (productName === ProductName.TOKENS1M) {
       sessionResponse = await createPaymentStripeSession({ ...params, userId, productName });
-    } else if (productName === ProductName.TEAMSEAT1MONTH) {
+    } else if (
+      productName === ProductName.TEAMSEAT1MONTH ||
+      productName === ProductName.SUPERTEAMSEAT1MONTH
+    ) {
       const quantity = params.quantity!; // 前面校验过了，不会有问题
       sessionResponse = await createTeamSubscriptionStripeSession({
         ...params,

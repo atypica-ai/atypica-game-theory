@@ -11,11 +11,11 @@ import { retrieveStripeSubscriptionDetails } from "./utils";
 
 export async function handleTeamSubscriptionPaymentSuccess({
   paymentRecord,
-  // productName,
+  productName,
   invoiceData,
 }: {
   paymentRecord: PaymentRecord;
-  productName: ProductName.TEAMSEAT1MONTH;
+  productName: ProductName.TEAMSEAT1MONTH | ProductName.SUPERTEAMSEAT1MONTH;
   invoiceData: Stripe.Invoice;
 }) {
   const paymentLine = await prisma.paymentLine.findFirstOrThrow({
@@ -44,11 +44,15 @@ export async function handleTeamSubscriptionPaymentSuccess({
 
   // Create team subscription record with seats in extra
   // Note: team.seats will be updated when subscription becomes active (in resetTeamMonthlyTokens)
+  const plan = productName === ProductName.SUPERTEAMSEAT1MONTH
+    ? SubscriptionPlan.superteam
+    : SubscriptionPlan.team;
+
   await prisma.subscription.create({
     data: {
       userId,
       teamId,
-      plan: SubscriptionPlan.team,
+      plan,
       startsAt: planStartsAt,
       endsAt: planEndsAt,
       paymentRecordId: paymentRecord.id,
@@ -115,6 +119,23 @@ export async function handleUserSubscriptionPaymentSuccess({
       },
     });
     // reset monthly tokens
+    await resetUserMonthlyTokens({ userId });
+  } else if (productName === ProductName.SUPER1MONTH) {
+    const { stripeSubscriptionId, planStartsAt, planEndsAt } =
+      await retrieveStripeSubscriptionDetails({
+        invoice: invoiceData,
+      });
+    await prisma.subscription.create({
+      data: {
+        userId,
+        plan: SubscriptionPlan.super,
+        startsAt: planStartsAt,
+        endsAt: planEndsAt,
+        paymentRecordId: paymentRecord.id,
+        stripeSubscriptionId,
+      },
+    });
+    // reset monthly tokens (will set unlimitedTokens flag in extra)
     await resetUserMonthlyTokens({ userId });
   }
   // track user
