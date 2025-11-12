@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Subscription, SubscriptionPlan, UserType } from "@/prisma/client";
 import { InfoIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { EnterprisePlanCard } from "./EnterprisePlanCard";
 import { FreePlanCard } from "./FreePlanCard";
 import { MaxPlanCard } from "./MaxPlanCard";
@@ -30,6 +30,21 @@ export default function PricingPageClient({
   const [isSubscriptionDialogOpen, setIsSubscriptionDialogOpen] = useState<{
     plan: SubscriptionPlan;
   } | null>(null);
+  const [activeTab, setActiveTab] = useState<string>("individual");
+
+  // Read hash on mount
+  useEffect(() => {
+    const hash = window.location.hash.slice(1);
+    if (hash === "organization" || hash === "individual") {
+      setActiveTab(hash);
+    }
+  }, []);
+
+  // Update hash when tab changes
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    window.history.pushState(null, "", `#${value}`);
+  };
 
   const sayHelloToSales = useCallback(async () => {
     const result = await createHelloUserChatAction({
@@ -53,12 +68,12 @@ export default function PricingPageClient({
         <p className="text-xl text-muted-foreground">{t("subtitle")}</p>
       </div>
 
-      <Tabs defaultValue="individual" className="max-w-7xl mx-auto">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="max-w-7xl mx-auto">
         <TabsList className="mx-auto mb-8 h-12">
           <TabsTrigger value="individual" className="cursor-pointer px-8">
             {t("tabs.individual")}
           </TabsTrigger>
-          <TabsTrigger value="team" className="cursor-pointer px-4 tracking-tighter">
+          <TabsTrigger value="organization" className="cursor-pointer px-4 tracking-tighter">
             {t("tabs.teamEnterprise")}
           </TabsTrigger>
         </TabsList>
@@ -83,7 +98,7 @@ export default function PricingPageClient({
           </div>
         </TabsContent>
 
-        <TabsContent value="team">
+        <TabsContent value="organization">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
             <TeamPlanCard productPrices={productPrices} userType={userType} />
             <EnterprisePlanCard onContactSales={sayHelloToSales} />
