@@ -1,6 +1,6 @@
 "use server";
 import { ServerActionResult } from "@/lib/serverAction";
-import { AnalystPodcastExtra } from "@/prisma/client";
+import { AnalystPodcastExtra, AnalystReportExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { Locale } from "next-intl";
 import { unstable_cache } from "next/cache";
@@ -126,6 +126,10 @@ export const fetchFeaturedPodcasts = unstable_cache(
           token: string;
           title: string;
         };
+        report: {
+          id: number;
+          extra: AnalystReportExtra;
+        } | null;
       }[]
     >
   > {
@@ -161,6 +165,16 @@ export const fetchFeaturedPodcasts = unstable_cache(
               select: {
                 id: true,
               },
+            },
+            reports: {
+              select: {
+                id: true,
+                extra: true,
+              },
+              orderBy: {
+                generatedAt: "desc",
+              },
+              take: 1,
             },
           },
         },
@@ -211,6 +225,10 @@ export const fetchFeaturedPodcasts = unstable_cache(
           topic: p.analyst.topic,
         },
         studyUserChat: p.analyst.studyUserChat!,
+        report: (p.analyst.reports?.[0] || null) as {
+          id: number;
+          extra: AnalystReportExtra;
+        } | null,
       })),
     };
   },

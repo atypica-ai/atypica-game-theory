@@ -1,6 +1,7 @@
 import { fetchPodcastByToken } from "@/app/(study)/artifacts/podcast/actions";
+import { reportCoverObjectUrlToHttpUrl } from "@/app/(study)/artifacts/report/actions";
+import { proxiedImageCdnUrl } from "@/app/(system)/cdn/lib";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
-import { getRequestOrigin } from "@/lib/request/headers";
 import { generatePageMetadata } from "@/lib/request/metadata";
 import { truncateForTitle } from "@/lib/textUtils";
 import { Metadata } from "next";
@@ -50,9 +51,13 @@ export async function generateMetadata({
   }).replace(/[\n\r]/g, " ");
 
   let image: string | undefined;
-  if (report?.coverSvg) {
-    const origin = await getRequestOrigin();
-    image = `${origin}/artifacts/podcast/${podcastToken}/cover.png`;
+  if (report) {
+    const result = await reportCoverObjectUrlToHttpUrl(report);
+    if (result) {
+      image = proxiedImageCdnUrl({
+        src: result.signedCoverObjectUrl,
+      });
+    }
   }
 
   return generatePageMetadata({ title, description, locale, image });

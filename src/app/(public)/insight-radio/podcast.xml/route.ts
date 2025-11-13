@@ -1,4 +1,6 @@
 import { podcastObjectUrlToHttpUrl } from "@/app/(podcast)/lib/utils";
+import { reportCoverObjectUrlToHttpUrl } from "@/app/(study)/artifacts/report/actions";
+import { proxiedImageCdnUrl } from "@/app/(system)/cdn/lib";
 import { truncateByDisplayWidth } from "@/lib/textUtils";
 import { fetchFeaturedPodcasts } from "../actions";
 
@@ -38,10 +40,22 @@ export async function GET(request: Request) {
         extra: item.podcast.extra,
       });
 
+      // Get cover image URL from report
+      let coverImageUrl: string | undefined;
+      if (item.report) {
+        const coverResult = await reportCoverObjectUrlToHttpUrl(item.report);
+        if (coverResult) {
+          coverImageUrl = proxiedImageCdnUrl({
+            src: coverResult.signedCoverObjectUrl,
+          });
+        }
+      }
+
       return {
         ...item,
         s3SignedObjectUrl: urlResult?.signedObjectUrl || null,
         mimeType: urlResult?.mimeType || "audio/mpeg",
+        coverImageUrl,
       };
     }),
   );
@@ -113,7 +127,8 @@ export async function GET(request: Request) {
         const formattedDescription = showNotes
           ? formatShowNotes(description, episodeUrl, locale)
           : formatSummary(description, episodeUrl, locale);
-        const coverImageUrl = `${baseUrl}/artifacts/podcast/${item.podcast.token}/cover.png`;
+        // Use report cover image URL (if available)
+        const coverImageUrl = item.coverImageUrl;
         return `
     <item>
       <title>${escapeXml(title)}</title>
@@ -125,8 +140,7 @@ export async function GET(request: Request) {
       <itunes:title>${escapeXml(title)}</itunes:title>
       <itunes:summary><![CDATA[${formattedDescription}]]></itunes:summary>
       <itunes:episodeType>${episodeType}</itunes:episodeType>
-      <itunes:episode>${validPodcasts.length - index}</itunes:episode>${duration ? `\n      <itunes:duration>${formatDuration(duration)}</itunes:duration>` : ""}
-      <itunes:image href="${escapeXml(coverImageUrl)}"/>
+      <itunes:episode>${validPodcasts.length - index}</itunes:episode>${duration ? `\n      <itunes:duration>${formatDuration(duration)}</itunes:duration>` : ""}${coverImageUrl ? `\n      <itunes:image href="${escapeXml(coverImageUrl)}"/>` : ""}
       <itunes:explicit>false</itunes:explicit>
     </item>`;
       })
