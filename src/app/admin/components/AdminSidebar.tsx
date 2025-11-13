@@ -12,10 +12,9 @@ import {
   DatabaseIcon,
   EyeIcon,
   FileTextIcon,
-  FlaskConicalIcon,
   HeadphonesIcon,
+  MessageCircleIcon,
   MonitorPlayIcon,
-  SettingsIcon,
   StarIcon,
   UserIcon,
   UsersIcon,
@@ -86,20 +85,14 @@ export default function AdminSidebar({ adminRole, permissions = [] }: AdminSideb
         items: [
           {
             label: "Reports",
-            href: "/admin/analyst-reports",
+            href: "/admin/studies/reports",
             icon: <FileTextIcon className="mr-2 h-4 w-4" />,
             permission: AdminPermission.MANAGE_STUDIES,
           },
           {
             label: "Podcasts",
-            href: "/admin/analyst-podcasts",
+            href: "/admin/studies/podcasts",
             icon: <HeadphonesIcon className="mr-2 h-4 w-4" />,
-            permission: AdminPermission.MANAGE_STUDIES,
-          },
-          {
-            label: "Podcast Test",
-            href: "/admin/podcast-test",
-            icon: <FlaskConicalIcon className="mr-2 h-4 w-4" />,
             permission: AdminPermission.MANAGE_STUDIES,
           },
           {
@@ -144,17 +137,11 @@ export default function AdminSidebar({ adminRole, permissions = [] }: AdminSideb
             permission: AdminPermission.MANAGE_PAYMENTS,
           },
           {
-            label: "Team Configs",
-            href: "/admin/team-configs",
-            icon: <SettingsIcon className="mr-2 h-4 w-4" />,
-            permission: AdminPermission.MANAGE_USERS,
+            label: "Enterprise Leads",
+            href: "/admin/payments/enterprise-leads",
+            icon: <MessageCircleIcon className="mr-2 h-4 w-4" />,
+            permission: AdminPermission.VIEW_ENTERPRISE_LEADS,
           },
-          // {
-          //   label: "Enterprise Leads",
-          //   href: "/admin/enterprise-leads",
-          //   icon: <MessageCircleIcon className="mr-2 h-4 w-4" />,
-          //   permission: AdminPermission.VIEW_ENTERPRISE_LEADS,
-          // },
         ],
       },
       {
@@ -168,7 +155,7 @@ export default function AdminSidebar({ adminRole, permissions = [] }: AdminSideb
           },
           {
             label: "Page Views",
-            href: "/admin/pageviews",
+            href: "/admin/statistics/pageviews",
             icon: <EyeIcon className="mr-2 h-4 w-4" />,
             permission: AdminPermission.VIEW_STATISTICS,
           },
@@ -179,13 +166,13 @@ export default function AdminSidebar({ adminRole, permissions = [] }: AdminSideb
         items: [
           {
             label: "Token Consumption",
-            href: "/admin/token-consumption",
+            href: "/admin/studies/token-consumption",
             icon: <MonitorPlayIcon className="mr-2 h-4 w-4" />,
             permission: AdminPermission.VIEW_TOKEN_CONSUMPTION,
           },
           {
             label: "Issue Studies",
-            href: "/admin/issue-studies",
+            href: "/admin/studies/issues",
             icon: <AlertTriangleIcon className="mr-2 h-4 w-4" />,
             role: "SUPER_ADMIN",
           },

@@ -1,5 +1,6 @@
 "use client";
 import { ToolName, TStudyMessageWithTool } from "@/ai/tools/types";
+import { PaginationInfo } from "@/app/admin/types";
 import { ChatMessage } from "@/components/chat/ChatMessage";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -11,7 +12,6 @@ import { useSession } from "next-auth/react";
 import { useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { PaginationInfo } from "../types";
 import { fetchEnterpriseLeads } from "./actions";
 
 type EnterpriseLead = ExtractServerActionData<typeof fetchEnterpriseLeads>[number];
@@ -61,7 +61,7 @@ export function EnterpriseLeadsPageClient({
 
   useEffect(() => {
     if (status === "unauthenticated") {
-      router.push("/auth/signin?callbackUrl=/admin/enterprise-leads");
+      router.push("/auth/signin?callbackUrl=/admin/payments/enterprise-leads");
     } else if (status === "authenticated") {
       fetchData();
     }
@@ -92,23 +92,19 @@ export function EnterpriseLeadsPageClient({
 
   const extractContactInfo = (messages: TStudyMessageWithTool[]) => {
     let contactInfo:
-      | {
+      | Partial<{
           name: string;
           company: string;
           title: string;
           contact: string;
-        }
+        }>
       | undefined;
 
     // Look for thanks tool information in message parts
     for (const message of messages) {
       if (message.parts) {
         for (const part of message.parts) {
-          if (
-            part.type === `tool-${ToolName.thanks}` &&
-            "toolCallId" in part &&
-            part.state === "input-available"
-          ) {
+          if (part.type === `tool-${ToolName.thanks}` && "toolCallId" in part && part.input) {
             contactInfo = part.input;
           }
         }

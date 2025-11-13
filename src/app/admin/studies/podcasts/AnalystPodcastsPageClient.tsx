@@ -1,4 +1,5 @@
 "use client";
+import { PaginationInfo } from "@/app/admin/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -12,6 +13,7 @@ import {
   ChevronDown,
   ChevronUp,
   ExternalLinkIcon,
+  FlaskConicalIcon,
   PencilIcon,
   SearchIcon,
   SparklesIcon,
@@ -22,8 +24,6 @@ import { useLocale } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
-
-import { PaginationInfo } from "../types";
 import {
   fetchAnalystPodcastsAction,
   generatePodcastTitleAction,
@@ -86,7 +86,7 @@ export function AnalystPodcastsPageClient({ initialSearchParams }: AnalystPodcas
 
   useEffect(() => {
     if (status === "unauthenticated") {
-      router.push("/auth/signin?callbackUrl=/admin/analyst-podcasts");
+      router.push("/auth/signin?callbackUrl=/admin/studies/podcasts");
     } else if (status === "authenticated") {
       fetchData();
     }
@@ -210,7 +210,15 @@ export function AnalystPodcastsPageClient({ initialSearchParams }: AnalystPodcas
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-bold">Analyst Podcasts Management</h1>
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Analyst Podcasts Management</h1>
+        <Button asChild variant="outline" size="sm">
+          <Link href="/admin/studies/podcasts/test" className="flex items-center gap-2">
+            <FlaskConicalIcon className="h-4 w-4" />
+            Podcast Test
+          </Link>
+        </Button>
+      </div>
 
       {error && <div className="mb-4 rounded-lg bg-red-50 p-4 text-red-500">{error}</div>}
 

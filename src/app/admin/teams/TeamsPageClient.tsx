@@ -1,4 +1,5 @@
 "use client";
+import { PaginationInfo } from "@/app/admin/types";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -24,12 +25,12 @@ import {
 import { createParamConfig, useListQueryParams } from "@/hooks/use-list-query-params";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDate, formatTokensNumber } from "@/lib/utils";
-import { CoinsIcon, PlusIcon, SearchIcon, TrashIcon, UsersIcon } from "lucide-react";
+import { CoinsIcon, PlusIcon, SearchIcon, SettingsIcon, TrashIcon, UsersIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useLocale } from "next-intl";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
-import { PaginationInfo } from "../types";
 import {
   addTokensToTeam,
   deleteTeam,
@@ -188,7 +189,15 @@ export function TeamsPageClient({ initialSearchParams }: TeamsPageClientProps) {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-bold">Teams Management</h1>
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Teams Management</h1>
+        <Button asChild variant="outline" size="sm">
+          <Link href="/admin/teams/configs" className="flex items-center gap-2">
+            <SettingsIcon className="h-4 w-4" />
+            Team Configs
+          </Link>
+        </Button>
+      </div>
       {error && !isSeatsDialogOpen && !isTokensDialogOpen && (
         <div className="mb-4 rounded-lg bg-red-50 p-4 text-red-500">{error}</div>
       )}

@@ -86,7 +86,7 @@ export default function PageViewsPage() {
 
   useEffect(() => {
     if (status === "unauthenticated") {
-      router.push("/auth/signin?callbackUrl=/admin/pageviews");
+      router.push("/auth/signin?callbackUrl=/admin/statistics/pageviews");
     } else if (status === "authenticated") {
       fetchData();
     }

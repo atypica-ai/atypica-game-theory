@@ -1,4 +1,5 @@
 "use client";
+import { PaginationInfo } from "@/app/admin/types";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -20,7 +21,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
-import { PaginationInfo } from "../types";
 import { adminGenerateScreenshotAction, fetchAnalystReportsAction } from "./actions";
 
 type AnalystReportWithAnalyst = ExtractServerActionData<typeof fetchAnalystReportsAction>[number];
@@ -78,7 +78,7 @@ export function AnalystReportsPageClient({ initialSearchParams }: AnalystReports
 
   useEffect(() => {
     if (status === "unauthenticated") {
-      router.push("/auth/signin?callbackUrl=/admin/analyst-reports");
+      router.push("/auth/signin?callbackUrl=/admin/studies/reports");
     } else if (status === "authenticated") {
       fetchData();
     }

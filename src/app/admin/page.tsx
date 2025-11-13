@@ -37,7 +37,18 @@ export default function AdminDashboard() {
       <h1 className="mb-6 text-2xl font-bold">Admin Dashboard</h1>
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         <Link
-          href="/admin/analyst-reports"
+          href="/admin/studies"
+          className="rounded-lg border bg-card p-4 shadow-sm hover:shadow-md transition-shadow"
+        >
+          <div className="flex items-center mb-2">
+            <StarIcon className="h-5 w-5 mr-2" />
+            <h2 className="text-xl font-semibold">Featured Studies</h2>
+          </div>
+          <p className="text-sm text-muted-foreground">Manage featured studies that appear on the homepage</p>
+        </Link>
+
+        <Link
+          href="/admin/studies/reports"
           className="rounded-lg border bg-card p-4 shadow-sm hover:shadow-md transition-shadow"
         >
           <div className="flex items-center mb-2">
@@ -48,7 +59,7 @@ export default function AdminDashboard() {
         </Link>
 
         <Link
-          href="/admin/analyst-podcasts"
+          href="/admin/studies/podcasts"
           className="rounded-lg border bg-card p-4 shadow-sm hover:shadow-md transition-shadow"
         >
           <div className="flex items-center mb-2">
@@ -59,20 +70,7 @@ export default function AdminDashboard() {
         </Link>
 
         <Link
-          href="/admin/studies"
-          className="rounded-lg border bg-card p-4 shadow-sm hover:shadow-md transition-shadow"
-        >
-          <div className="flex items-center mb-2">
-            <StarIcon className="h-5 w-5 mr-2" />
-            <h2 className="text-xl font-semibold">Studies</h2>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            View studies and manage featured studies that appear on the homepage
-          </p>
-        </Link>
-
-        <Link
-          href="/admin/token-consumption"
+          href="/admin/studies/token-consumption"
           className="rounded-lg border bg-card p-4 shadow-sm hover:shadow-md transition-shadow"
         >
           <div className="flex items-center mb-2">
@@ -127,7 +125,7 @@ export default function AdminDashboard() {
         </Link>
 
         <Link
-          href="/admin/enterprise-leads"
+          href="/admin/payments/enterprise-leads"
           className="rounded-lg border bg-card p-4 shadow-sm hover:shadow-md transition-shadow"
         >
           <div className="flex items-center mb-2">
@@ -160,7 +158,7 @@ export default function AdminDashboard() {
         </Link>
 
         <Link
-          href="/admin/issue-studies"
+          href="/admin/studies/issues"
           className="rounded-lg border bg-card p-4 shadow-sm hover:shadow-md transition-shadow"
         >
           <div className="flex items-center mb-2">

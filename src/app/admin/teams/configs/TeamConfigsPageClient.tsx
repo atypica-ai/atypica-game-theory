@@ -92,7 +92,7 @@ export function TeamConfigsPageClient() {
 
   useEffect(() => {
     if (status === "unauthenticated") {
-      router.push("/auth/signin?callbackUrl=/admin/team-configs");
+      router.push("/auth/signin?callbackUrl=/admin/teams/configs");
     } else if (status === "authenticated") {
       fetchData();
     }

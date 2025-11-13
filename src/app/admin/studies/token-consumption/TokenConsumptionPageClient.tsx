@@ -1,4 +1,5 @@
 "use client";
+import { PaginationInfo } from "@/app/admin/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Pagination } from "@/components/ui/pagination";
@@ -18,7 +19,6 @@ import { useLocale } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { FormEvent, useCallback, useEffect, useRef, useState } from "react";
-import { PaginationInfo } from "../types";
 import { ChatTokenConsumptionData, fetchTokenConsumption } from "./actions";
 
 export const SearchParamsConfig = {
@@ -85,7 +85,7 @@ export function TokenConsumptionPageClient({
     if (status === "authenticated") {
       fetchData();
     } else if (status === "unauthenticated") {
-      router.push("/auth/signin?callbackUrl=/admin/token-consumption");
+      router.push("/auth/signin?callbackUrl=/admin/studies/token-consumption");
     }
   }, [status, fetchData, router]);
 

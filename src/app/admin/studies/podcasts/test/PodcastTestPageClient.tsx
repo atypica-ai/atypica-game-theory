@@ -145,7 +145,7 @@ export function PodcastTestPageClient() {
                   </Button>
                   <Button asChild variant="outline" size="sm">
                     <Link
-                      href={`/admin/analyst-podcasts?search=${result.token}`}
+                      href={`/admin/studies/podcasts?search=${result.token}`}
                       className="flex items-center gap-2"
                     >
                       <ExternalLink className="h-4 w-4" />

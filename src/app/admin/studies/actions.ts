@@ -6,6 +6,7 @@ import { generatePodcast } from "@/app/(podcast)/lib/generation";
 import { PodcastKind } from "@/app/(podcast)/types";
 import { reportCoverObjectUrlToHttpUrl } from "@/app/(study)/artifacts/report/actions";
 import { checkAdminAuth } from "@/app/admin/actions";
+import { AdminPermission } from "@/app/admin/types";
 import { rootLogger } from "@/lib/logging";
 import { ServerActionResult } from "@/lib/serverAction";
 import { generateChatTitle } from "@/lib/userChat/lib";
@@ -19,7 +20,6 @@ import { Locale } from "next-intl";
 import { getLocale } from "next-intl/server";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { after } from "next/server";
-import { AdminPermission } from "../types";
 
 type TFeaturedStudyResult = Pick<FeaturedStudy, "id" | "displayOrder"> & {
   analyst: Pick<Analyst, "id" | "role" | "topic" | "studySummary" | "kind">;

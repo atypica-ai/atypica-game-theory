@@ -1,4 +1,5 @@
 "use client";
+import { AdminPermission, PaginationInfo } from "@/app/admin/types";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import {
@@ -38,7 +39,6 @@ import { useSession } from "next-auth/react";
 import { useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
-import { AdminPermission, PaginationInfo } from "../types";
 import {
   addTokensToUser,
   deleteUserAccount,

@@ -234,7 +234,7 @@ export async function retryStudy(studyUserChatId: number): Promise<ServerActionR
       logger: rootLogger.child({ studyUserChatId, studyUserChatToken: studyUserChat.token }),
     });
 
-    revalidatePath("/admin/issue-studies");
+    revalidatePath("/admin/studies/issues");
 
     return {
       success: true,

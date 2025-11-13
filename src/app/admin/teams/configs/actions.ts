@@ -132,7 +132,7 @@ export async function upsertTeamConfig(
 
   try {
     await setTeamConfig(teamId, key, value);
-    revalidatePath("/admin/team-configs");
+    revalidatePath("/admin/teams/configs");
 
     // Revalidate cache for this team config
     revalidateTag(`team-config-${teamId}`);
@@ -182,7 +182,7 @@ export async function removeTeamConfig(
 
   try {
     await deleteTeamConfig(teamId, key);
-    revalidatePath("/admin/team-configs");
+    revalidatePath("/admin/teams/configs");
 
     // Revalidate cache for this team config
     revalidateTag(`team-config-${teamId}`);

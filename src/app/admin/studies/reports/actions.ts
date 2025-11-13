@@ -146,7 +146,7 @@ export async function adminGenerateScreenshotAction(
 
   try {
     const { coverUrl } = await generateReportScreenshot(report);
-    revalidatePath("/admin/analyst-reports");
+    revalidatePath("/admin/studies/reports");
     return {
       success: true,
       data: coverUrl,
