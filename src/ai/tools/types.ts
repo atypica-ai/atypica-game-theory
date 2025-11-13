@@ -4,6 +4,7 @@ import { Locale } from "next-intl";
 import { Logger } from "pino";
 import { AudienceCallResult, AudienceCallToolInput } from "./experts/audienceCall/types";
 import { BuildPersonaToolInput, BuildPersonaToolResult } from "./experts/buildPersona/types";
+import { CreateSubAgentResult, CreateSubAgentToolInput } from "./experts/createSubAgent/types";
 import { InterviewChatResult, InterviewChatToolInput } from "./experts/interviewChat/types";
 import { PlanStudyResult, PlanStudyToolInput } from "./experts/planStudy/types";
 import { ReasoningThinkingResult, ReasoningThinkingToolInput } from "./experts/reasoning/types";
@@ -64,6 +65,8 @@ export enum ToolName {
   buildPersona = "buildPersona",
   scoutSocialTrends = "scoutSocialTrends",
   audienceCall = "audienceCall",
+  biDataAnalysis = "biDataAnalysis",
+  createSubAgent = "createSubAgent",
 
   saveAnalyst = "saveAnalyst",
   saveAnalystStudySummary = "saveAnalystStudySummary",
@@ -116,6 +119,10 @@ export type StudyUITools = {
     output: ScoutSocialTrendsResult;
   };
   [ToolName.audienceCall]: { input: AudienceCallToolInput; output: AudienceCallResult };
+  [ToolName.createSubAgent]: {
+    input: CreateSubAgentToolInput;
+    output: CreateSubAgentResult;
+  };
   [ToolName.saveAnalyst]: { input: SaveAnalystToolInput; output: SaveAnalystToolResult };
   [ToolName.saveAnalystStudySummary]: {
     input: GenericInputType;

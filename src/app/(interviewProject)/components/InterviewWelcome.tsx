@@ -44,8 +44,7 @@ export const InterviewWelcome: FC<InterviewWelcomeProps> = ({
 
   // 使用 i18n 默认值（如果未提供自定义标题/副标题）
   const displayTitle = title || t("welcomeTitle");
-  const displaySubtitle =
-    subtitle || `${t("welcomeSubtitleLine1")} ${t("welcomeSubtitleLine2")}`;
+  const displaySubtitle = subtitle || `${t("welcomeSubtitleLine1")} ${t("welcomeSubtitleLine2")}`;
 
   return (
     <motion.div
@@ -73,12 +72,7 @@ export const InterviewWelcome: FC<InterviewWelcomeProps> = ({
 
         {/* 开始按钮 - 与隐私框同宽 */}
         <div className="flex flex-col gap-3">
-          <Button
-            onClick={onStartInterview}
-            disabled={disabled}
-            size="lg"
-            className="w-full"
-          >
+          <Button onClick={onStartInterview} disabled={disabled} size="lg" className="w-full">
             {t("startInterview")}
           </Button>
         </div>

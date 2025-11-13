@@ -47,7 +47,6 @@ export function InterviewProjectsClient({ isCreateEnabled }: { isCreateEnabled: 
     }
   }, [t]);
 
-
   useEffect(() => {
     loadProjects();
   }, [loadProjects]);

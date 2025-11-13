@@ -89,7 +89,11 @@ export async function POST(req: Request) {
   });
 
   const reqSignal = req.signal;
-
+  // Extract teamId from session (null for personal users)
+  const user = await prisma.user.findUniqueOrThrow({
+    where: { id: userId },
+  });
+  const teamId = user.teamIdAsMember;
   const params = {
     locale,
     userChat: {
@@ -97,6 +101,7 @@ export async function POST(req: Request) {
       extra: userChat.extra as UserChatExtra,
     },
     userId,
+    teamId,
     reqSignal,
     logger,
   };

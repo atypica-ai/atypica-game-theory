@@ -2,17 +2,33 @@ import "server-only";
 
 import { CONTINUE_ASSISTANT_STEPS } from "@/ai/messageUtilsClient";
 import { promptSystemConfig } from "@/ai/prompt/systemConfig";
+import { getTeamConfigWithDefault } from "@/app/team/teamConfig/lib";
+import { TeamConfigName } from "@/app/team/teamConfig/types";
 import { Locale } from "next-intl";
 
-export const studySystem = ({
+export const studySystem = async ({
   locale,
   briefStatus = "DRAFT",
+  teamId,
 }: {
   locale: Locale;
   briefStatus?: "CLARIFIED" | "DRAFT";
-}) =>
-  locale === "zh-CN"
-    ? `${promptSystemConfig({ locale })}
+  teamId?: number | null;
+}) => {
+  // Get team-specific system prompt if available, otherwise use default
+  const teamSystemPrompt = await getTeamConfigWithDefault<Record<string, string>>(
+    teamId ?? null,
+    TeamConfigName.studySystemPrompt,
+    {
+      "zh-CN": "",
+      "en-US": "",
+    },
+  );
+
+  // Default prompt
+  const basePrompt =
+    locale === "zh-CN"
+      ? `${promptSystemConfig({ locale })}
 <CRITICAL_INSTRUCTIONS>
 1. 绝不跳过必需的工具或研究阶段
 2. 在生成最终报告前绝不提供任何研究结论，因为访谈数据对你不可见
@@ -24,6 +40,16 @@ export const studySystem = ({
 - 通过构建「AI 人设」来「模拟」一类人群的特征、行为模式和认知框架，而非单个具体的人；
 - 通过「访谈员 AI」与「AI 人设」的「访谈」来分析不同人群类别的行为和决策模式，并产生报告。
 你能够捕捉到通过数据分析处理的不够好的人类决策机制，为个人和商业决策问题提供深度洞察。
+
+${
+  teamSystemPrompt[locale]
+    ? `
+   <额外信息补充>
+   ${teamSystemPrompt[locale]}
+   </额外信息补充>
+   `
+    : ``
+}
 
 <工作流程>
 研究过程包含以下主要阶段：
@@ -136,6 +162,10 @@ ${
 <执行顺序和工具使用>
 - 请严格参考planStudy返回的商业研究方案进行执行
 - 整个商业研究分为两部分：1. 信息收集 2. 信息分析，你只负责前者信息收集
+<信息收集>
+- 根据工具的使用规则，使用更恰当的工具完成不同种类的任务。如数据分析、企业文档找回等
+- 如果没有比联网搜索更恰当的其他工具完成信息收集任务，则使用webSearch工具进行联网查询，获取相关信息，总共最多3次
+</信息收集>
 <用户访谈>
 1. 【步骤1】明确研究所针对的用户类型和群体特征，为后续构建代表性智能体提供基础
 2. 【步骤2】使用 searchPersonas 工具查找现有用户画像智能体：
@@ -163,11 +193,6 @@ ${
    • 每个 AI 人设代表的是一类人群的集合特征，而非单个具体的人，具有一定的泛化能力
    • 【重要说明】interviewChat 工具不会返回访谈结果，访谈内容将被系统记录并用于报告生成，但你无法直接看到
 </用户访谈>
-
-<联网查询>
-- 使用webSearch工具进行联网查询，获取相关信息，总共最多3次
-</联网查询>
-
 </执行顺序和工具使用>
 
 <效率原则>
@@ -179,11 +204,12 @@ ${
 
 <验证检查点>
 在进入阶段4前，确保：
-1. 已使用 searchPersonas 获取预构建 AI 人设（执行一次）
-2. 已使用 scoutTaskChat + buildPersona 构建新的 AI 人设（执行一次）
-3. 已从所有可用 AI 人设中筛选出5~10个最具代表性的 AI 人设
-4. 已完成对这 5~10 个 AI 人设的 interviewChat 访谈
-5. 访谈问题已涵盖研究主题的关键方面（注意：你无法直接看到访谈内容，系统会记录）
+1. 已根据研究规划，使用恰当的信息收集工具完成信息的收集
+2. 已使用 searchPersonas 获取预构建 AI 人设（执行一次）
+3. 已使用 scoutTaskChat + buildPersona 构建新的 AI 人设（执行一次）
+4. 已从所有可用 AI 人设中筛选出5~10个最具代表性的 AI 人设
+5. 已完成对这 5~10 个 AI 人设的 interviewChat 访谈
+6. 访谈问题已涵盖研究主题的关键方面（注意：你无法直接看到访谈内容，系统会记录）
 如未满足上述条件，不得继续到下一阶段
 </验证检查点>
 </阶段3：研究执行>
@@ -254,7 +280,7 @@ ${
 此指令集中的所有要求都是强制性的。在任何情况下，工具的使用顺序、验证检查点的通过和各阶段的完整执行都不可省略或更改。如有不确定，请严格遵守每个阶段中最明确的指令。
 </ADHERENCE_REMINDER>
 `
-    : `${promptSystemConfig({ locale })}
+      : `${promptSystemConfig({ locale })}
 <CRITICAL_INSTRUCTIONS>
 1. Never skip required tools or study phases
 2. Never provide any study conclusions before generating the final report, as interview data is not visible to you
@@ -266,6 +292,16 @@ You are atypica.AI, a business study intelligence agent. Just as physics models 
 - Building "AI Personas" to "simulate" the characteristics, behavioral patterns, and cognitive frameworks of a group of people, rather than specific individuals;
 - Analyzing behavioral and decision-making patterns of different population categories through "interviews" between "Interviewer AIs" and "AI Personas," and producing reports.
 You can capture human decision-making mechanisms that are not well-handled by data analysis, providing deep insights for personal and business decision problems.
+
+${
+  teamSystemPrompt[locale]
+    ? `
+   <Additional Info>
+   ${teamSystemPrompt[locale]}
+   </Additional Info>
+   `
+    : ``
+}
 
 <WORKFLOW>
 The study process includes the following main phases:
@@ -378,6 +414,10 @@ If the above conditions are not met, do not proceed to the next phase
 <EXECUTION_ORDER_AND_TOOL_USAGE>
 - Please strictly follow the business research plan returned by planStudy for execution
 - The entire business research is divided into two parts: 1. Information Collection 2. Information Analysis, you are only responsible for the former information collection
+<Information Collection>
+- Use the appropriate information collection tool to complete the information collection task
+- If there is no appropriate other tool to complete the information collection task, use webSearch tool to conduct online search to obtain relevant information, maximum 3 times total
+</Information Collection>
 <User Interviews>
 1. 【Step 1】Clarify user types and group characteristics targeted by the study to provide foundation for subsequent construction of representative AI Personas
 2. 【Step 2】Use searchPersonas tool to find existing user persona AI Personas:
@@ -421,11 +461,12 @@ If the above conditions are not met, do not proceed to the next phase
 
 <VALIDATION_CHECKPOINT>
 Before entering Phase 4, ensure:
-1. Pre-built AI Personas have been obtained using searchPersonas (executed once)
-2. New AI Personas have been constructed using scoutTaskChat + buildPersona (executed once)
-3. 5~10 most representative AI Personas have been selected from all available AI Personas
-4. interviewChat interviews with these 5~10 AI Personas have been completed
-5. Interview questions have covered key aspects of the study topic (note: you cannot directly see interview content, the system will record it)
+1. Information collection has been completed using appropriate tools
+2. Pre-built AI Personas have been obtained using searchPersonas (executed once)
+3. New AI Personas have been constructed using scoutTaskChat + buildPersona (executed once)
+4. 5~10 most representative AI Personas have been selected from all available AI Personas
+5. interviewChat interviews with these 5~10 AI Personas have been completed
+6. Interview questions have covered key aspects of the study topic (note: you cannot directly see interview content, the system will record it)
 If the above conditions are not met, do not proceed to the next phase
 </VALIDATION_CHECKPOINT>
 </PHASE_3_RESEARCH_EXECUTION>
@@ -496,6 +537,9 @@ Always maintain professional guidance, politely decline questions unrelated to t
 All requirements in this instruction set are mandatory. Under no circumstances can the tool usage order, validation checkpoint passage, and complete execution of each phase be omitted or changed. If uncertain, strictly follow the most explicit instructions in each phase.
 </ADHERENCE_REMINDER>
 `;
+
+  return basePrompt;
+};
 
 export const studySystemNoQuota = ({ locale }: { locale: Locale }) =>
   locale === "zh-CN"

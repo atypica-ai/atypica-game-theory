@@ -153,7 +153,10 @@ export async function POST(req: Request) {
         }
       }
       try {
-        if (metadata.productName === ProductName.TEAMSEAT1MONTH || metadata.productName === ProductName.SUPERTEAMSEAT1MONTH) {
+        if (
+          metadata.productName === ProductName.TEAMSEAT1MONTH ||
+          metadata.productName === ProductName.SUPERTEAMSEAT1MONTH
+        ) {
           await handleTeamSubscriptionPaymentSuccess({
             paymentRecord,
             productName: metadata.productName,

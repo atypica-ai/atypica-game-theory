@@ -18,10 +18,10 @@ import { prisma } from "@/prisma/prisma";
 import { mergeExtra } from "@/prisma/utils";
 import { OpenAIResponsesProviderOptions } from "@ai-sdk/openai";
 import { FilePart, FinishReason, generateText, ModelMessage, stepCountIs, streamText } from "ai";
+import { parseBuffer } from "music-metadata";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
 import { createVolcanoClient } from "./volcano/client";
-import { parseBuffer } from "music-metadata";
 
 /**
  * Main podcast generation function that handles both script and audio generation
@@ -552,9 +552,7 @@ export async function generatePodcastAudio({
         mimeType: result.mimeType,
       });
 
-      duration = metadata.format.duration
-        ? Number(metadata.format.duration.toFixed(3))
-        : undefined;
+      duration = metadata.format.duration ? Number(metadata.format.duration.toFixed(3)) : undefined;
 
       logger.info({
         msg: "Audio metadata parsed successfully",

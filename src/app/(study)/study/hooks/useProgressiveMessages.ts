@@ -6,6 +6,7 @@ export const consoleStreamWaitTime = (name?: ToolName) => {
   const vals = {
     [ToolName.interviewChat]: 15 * 1000,
     [ToolName.scoutTaskChat]: 30 * 1000,
+    [ToolName.createSubAgent]: 20 * 1000,
   } as Record<ToolName, number>;
   return name && vals[name] ? vals[name] : 1000;
 };

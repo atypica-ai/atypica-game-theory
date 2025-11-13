@@ -22,7 +22,10 @@ export const stripeSessionCreatePayloadSchema = z
   })
   .refine(
     (data) => {
-      if (data.productName === ProductName.TEAMSEAT1MONTH || data.productName === ProductName.SUPERTEAMSEAT1MONTH) {
+      if (
+        data.productName === ProductName.TEAMSEAT1MONTH ||
+        data.productName === ProductName.SUPERTEAMSEAT1MONTH
+      ) {
         return data.quantity !== undefined;
       } else {
         return data.quantity === undefined;

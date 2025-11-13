@@ -49,7 +49,7 @@ export const createBackgroundToken = async ({
   const backgroundToken = new Date().valueOf().toString();
   try {
     await prisma.userChat.update({
-      where: { id: scoutUserChatId, kind: "scout" },
+      where: { id: scoutUserChatId, OR: [{ kind: "scout" }, { kind: "misc" }] },
       data: { backgroundToken },
     });
   } catch (error) {

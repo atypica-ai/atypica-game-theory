@@ -14,6 +14,7 @@ import {
   FileTextIcon,
   HeadphonesIcon,
   MonitorPlayIcon,
+  SettingsIcon,
   StarIcon,
   UserIcon,
   UsersIcon,
@@ -134,6 +135,12 @@ export default function AdminSidebar({ adminRole, permissions = [] }: AdminSideb
             href: "/admin/payments",
             icon: <CreditCardIcon className="mr-2 h-4 w-4" />,
             permission: AdminPermission.MANAGE_PAYMENTS,
+          },
+          {
+            label: "Team Configs",
+            href: "/admin/team-configs",
+            icon: <SettingsIcon className="mr-2 h-4 w-4" />,
+            permission: AdminPermission.MANAGE_USERS,
           },
           // {
           //   label: "Enterprise Leads",

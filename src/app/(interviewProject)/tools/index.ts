@@ -59,7 +59,8 @@ export const interviewSessionTools = ({ interviewSessionId }: { interviewSession
 
 export const questionOptimizationTools = ({ projectId }: { projectId: number }) => ({
   updateQuestions: tool({
-    description: "Save the interview questions to the project. IMPORTANT: Do not save more than 15 questions. The optimal range is 8-15 questions.",
+    description:
+      "Save the interview questions to the project. IMPORTANT: Do not save more than 15 questions. The optimal range is 8-15 questions.",
     inputSchema: updateQuestionsInputSchema,
     outputSchema: updateQuestionsOutputSchema,
     execute: async ({ optimizedQuestions }) => {

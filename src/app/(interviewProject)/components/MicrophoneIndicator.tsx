@@ -1,7 +1,7 @@
+import { cn } from "@/lib/utils";
 import { Mic } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { FC } from "react";
-import { cn } from "@/lib/utils";
 
 interface MicrophoneIndicatorProps {
   className?: string;

@@ -44,9 +44,10 @@ export async function handleTeamSubscriptionPaymentSuccess({
 
   // Create team subscription record with seats in extra
   // Note: team.seats will be updated when subscription becomes active (in resetTeamMonthlyTokens)
-  const plan = productName === ProductName.SUPERTEAMSEAT1MONTH
-    ? SubscriptionPlan.superteam
-    : SubscriptionPlan.team;
+  const plan =
+    productName === ProductName.SUPERTEAMSEAT1MONTH
+      ? SubscriptionPlan.superteam
+      : SubscriptionPlan.team;
 
   await prisma.subscription.create({
     data: {

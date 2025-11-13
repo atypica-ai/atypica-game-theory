@@ -2,6 +2,7 @@ import { ToolName } from "@/ai/tools/types";
 import { ToolInvocationMessage } from "@/components/chat/ToolInvocationMessage";
 import { useMemo } from "react";
 import { BuildPersonaConsole } from "./console/BuildPersonaConsole";
+import { CreateSubAgentConsole } from "./console/CreateSubAgentConsole";
 import { GenerateReportConsole } from "./console/GenerateReportConsole";
 import { InterviewChatConsole } from "./console/InterviewChatConsole";
 import { ReasoningThinkingConsole } from "./console/ReasoningThinkingConsole";
@@ -33,6 +34,8 @@ export function ToolConsole() {
       return <SearchPersonasConsole toolInvocation={activeTool} />;
     case `tool-${ToolName.webSearch}`:
       return <WebSearchConsole toolInvocation={activeTool} />;
+    case `tool-${ToolName.createSubAgent}`:
+      return <CreateSubAgentConsole toolInvocation={activeTool} />;
     default:
       return activeTool ? <ToolInvocationMessage toolInvocation={activeTool} /> : null;
   }

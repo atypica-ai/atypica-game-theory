@@ -229,6 +229,7 @@ export async function retryStudy(studyUserChatId: number): Promise<ServerActionR
         extra: studyUserChat.extra as UserChatExtra,
       },
       userId: studyUserChat.userId,
+      teamId: studyUserChat.user.teamIdAsMember ?? null,
       reqSignal: null,
       logger: rootLogger.child({ studyUserChatId, studyUserChatToken: studyUserChat.token }),
     });

@@ -2,6 +2,7 @@ import "server-only";
 
 export { audienceCallTool } from "./experts/audienceCall";
 export { buildPersonaTool } from "./experts/buildPersona";
+export { createSubAgentTool } from "./experts/createSubAgent";
 export { interviewChatTool } from "./experts/interviewChat";
 export { planStudyTool } from "./experts/planStudy";
 export { reasoningThinkingTool } from "./experts/reasoning";

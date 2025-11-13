@@ -88,7 +88,6 @@ export const ChoiceField: FC<ChoiceFieldProps> = ({
           );
         })}
       </div>
-
     </div>
   );
 };

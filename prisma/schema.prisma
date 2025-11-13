@@ -24,6 +24,19 @@ datasource db {
   shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
+model TeamConfig {
+  id     Int    @id @default(autoincrement())
+  teamId Int
+  team   Team   @relation("TeamConfig", fields: [teamId], references: [id], onDelete: Cascade)
+  key    String @db.VarChar(255)
+  value  Json   @default("{}")
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  @@unique([teamId, key])
+}
+
 model Team {
   id          Int    @id @default(autoincrement())
   name        String @db.VarChar(255)
@@ -39,6 +52,7 @@ model Team {
   tokensAccount TokensAccount?
   tokensLogs    TokensLog[]
   subscriptions Subscription[]
+  teamConfigs   TeamConfig[]   @relation("TeamConfig")
 }
 
 model User {

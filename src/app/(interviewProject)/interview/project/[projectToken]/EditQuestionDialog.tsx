@@ -1,24 +1,24 @@
 "use client";
 
+import { proxiedObjectCdnUrl } from "@/app/(system)/cdn/lib";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Textarea } from "@/components/ui/textarea";
 import { clientUploadFileToS3 } from "@/lib/attachments/client";
-import { proxiedObjectCdnUrl } from "@/app/(system)/cdn/lib";
 import { cn } from "@/lib/utils";
 import { ChatMessageAttachment } from "@/prisma/client";
 import { ImageIcon, Loader2Icon, UploadIcon, XIcon } from "lucide-react";
-import Image from "next/image";
 import { useTranslations } from "next-intl";
+import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 

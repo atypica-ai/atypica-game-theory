@@ -5,9 +5,11 @@ import {
 } from "@/ai/messageUtils";
 import { studySystem } from "@/ai/prompt";
 import { defaultProviderOptions, llm } from "@/ai/provider";
+import { getMcpClientManager } from "@/ai/tools/mcp/client";
 import { initStudyStatReporter } from "@/ai/tools/stats";
 import {
   buildPersonaTool,
+  createSubAgentTool,
   generateReportTool,
   handleToolCallError,
   interviewChatTool,
@@ -42,6 +44,7 @@ const MAX_STEPS_EACH_ROUND = 15;
 export async function studyAgentRequest({
   userChat: { id: studyUserChatId, extra: userChatExtra },
   userId,
+  teamId,
   // reqSignal,
   logger,
   locale,
@@ -51,6 +54,7 @@ export async function studyAgentRequest({
     extra: UserChatExtra;
   };
   userId: number;
+  teamId: number | null;
   reqSignal: AbortSignal | null;
   logger: Logger;
   locale: Locale;
@@ -76,9 +80,14 @@ export async function studyAgentRequest({
     logger,
   ); // 5s debounce
 
+  // Tools
   const toolAbortController = new AbortController();
   const studyAbortController = new AbortController();
 
+  // Load MCP clients (team-specific from DB, empty for personal users)
+  const manager = getMcpClientManager();
+  const clients = teamId ? await manager.getClientsForTeam(teamId) : []; // Personal users have no MCP clients
+  logger.info({ msg: "Loaded mcp clients", clients, teamId });
   const agentToolArgs: AgentToolConfigArgs = {
     locale,
     abortSignal: toolAbortController.signal,
@@ -97,6 +106,15 @@ export async function studyAgentRequest({
     [ToolName.saveAnalystStudySummary]: saveAnalystStudySummaryTool({ studyUserChatId }),
     [ToolName.generateReport]: generateReportTool({ studyUserChatId, ...agentToolArgs }),
     [ToolName.planStudy]: planStudyTool({ studyUserChatId, ...agentToolArgs }),
+    ...(clients.length > 0
+      ? {
+          [ToolName.createSubAgent]: createSubAgentTool({
+            userId,
+            clients: clients,
+            ...agentToolArgs,
+          }),
+        }
+      : {}),
     [ToolName.toolCallError]: toolCallError,
   };
   const { coreMessages, streamingMessage, toolUseCount } = await prepareMessagesForStreaming(
@@ -169,9 +187,10 @@ export async function studyAgentRequest({
   }
 
   const { clearBackgroundToken, backgroundToken } = await raceForUserChat(studyUserChatId);
-  const system = studySystem({
+  const system = await studySystem({
     locale,
     briefStatus,
+    teamId,
     // 为了 prompt cache 生效，需要一个固定的 system prompt，之前放在 system prompt 里面的 tokensStat, toolUseStat 现在去掉了
   });
   let streamStartTime = Date.now();
@@ -260,6 +279,7 @@ export async function studyAgentRequest({
     },
 
     onFinish: async ({ usage, providerMetadata }) => {
+      // MCP clients are shared and preloaded, no need to close them here
       const cache = providerMetadata?.bedrock?.usage;
       logger.info({ msg: "studyAgentRequest streamText onFinish", usage, cache });
       await clearBackgroundToken();

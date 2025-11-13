@@ -5,6 +5,7 @@ import {
   ScoutTaskChatResultMessage,
   WebSearchResultMessage,
 } from "@/ai/tools/experts/ToolMessage";
+import { CreateSubAgentResultMessage } from "@/ai/tools/experts/ToolMessage/CreateSubAgentResultMessage";
 import { InterviewChatResultMessage } from "@/ai/tools/experts/ToolMessage/InterviewChatResultMessage";
 import { PlanStudyToolResultMessage } from "@/ai/tools/experts/ToolMessage/PlanStudyToolResultMessage";
 import { ScoutSocialTrendsResultMessage } from "@/ai/tools/experts/ToolMessage/ScoutSocialTrendsResultMessage";
@@ -66,6 +67,8 @@ export const StudyToolUIPartDisplay = ({
       return <ScoutSocialTrendsResultMessage toolInvocation={toolUIPart} />;
     case `tool-${ToolName.audienceCall}`:
       return <ReasoningThinkingResultMessage toolInvocation={toolUIPart} />;
+    case `tool-${ToolName.createSubAgent}`:
+      return <CreateSubAgentResultMessage toolInvocation={toolUIPart} />;
     case `tool-${ToolName.buildPersona}`:
       return <BuildPersonaResultMessage toolInvocation={toolUIPart} />;
     case `tool-${ToolName.searchPersonas}`:

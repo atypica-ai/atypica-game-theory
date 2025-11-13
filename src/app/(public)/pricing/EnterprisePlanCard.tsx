@@ -50,8 +50,14 @@ export function EnterprisePlanCard({ onContactSales }: EnterprisePlanCardProps) 
         <FeatureItem text={t("features.enterprise.enterpriseReportTemplates")} />
         <FeatureItem text={t("features.enterprise.enterpriseKnowledgeBase")} />
         <FeatureItem text={t("features.enterprise.apiInterface")} />
-        <ServiceItem icon={HeadphonesIcon} text={t("features.enterprise.customerSuccessServices")} />
-        <ServiceItem icon={SparklesIcon} text={t("features.enterprise.enterpriseAdvancedServices")} />
+        <ServiceItem
+          icon={HeadphonesIcon}
+          text={t("features.enterprise.customerSuccessServices")}
+        />
+        <ServiceItem
+          icon={SparklesIcon}
+          text={t("features.enterprise.enterpriseAdvancedServices")}
+        />
       </CardContent>
     </Card>
   );
