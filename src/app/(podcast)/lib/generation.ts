@@ -348,6 +348,9 @@ async function generatePodcastScript({
 
   const { finishReason } = await streamTextPromise;
 
+  // Add advertisement at the end of the script
+  const advertisement = `${locale === "zh-CN" ? "想了解更多有趣的研究，请关注 “Atypica AI”。" : "Want to learn more about interesting research? Checkout \"Atypica AI\"."}`;
+  script += "\n\n" + advertisement;
   // Save final script immediately
   await throttleSaveScript(podcast.id, script, { immediate: true });
 
@@ -427,32 +430,74 @@ export async function generatePodcastShowNotes({
 
   const systemPrompt =
     locale === "zh-CN"
-      ? `根据播客脚本生成节目说明（Show Notes）。包括以下内容：
+      ? `根据播客脚本，从普通听众的角度，撰写节目说明（Show Notes）。目的是1. 让听众快速了解播客内容，抓住听众的兴趣；2. 让播客更容易被搜索到。
+包括以下内容：
+1. 简短的Hook（2-3句话）：
+- 【目的】一个好的Hook是成功抓住听众的关键。提前简单的抛出Takeaway可以调动用户听下去的兴趣。通过高吸引力的方式，提出本次研究解决的问题是什么。
+- 这个内容对用户应该有很强的吸引力
+- 建立"这与我有关"的连接
+- 创造"必须听完"的紧迫感
+- 避免模糊的形容词（"有意思"、"疯狂"等）
+- Hook的几种形式例子：
+  - 反常识冲击型：用离谱的现象来调动听众的八卦魂或者强烈好奇心
+  - 利益相关型：用贴近生活和工作的利益相关信息，让听众觉得可以获得有益的takeaway
+  - 其他的请带入用户角度创造
 
-1. 简短摘要（2-3句话）
-2. 本期重点话题（3-5个要点）
-3. 关键洞察或结论
+2. 听众的takeaway（3-5个要点）：
+- 【目的】抓住听众的兴趣；让播客更容易被搜索到
+- 要求包括所有脚本中提及的热点
 
 格式要求：
-- 使用 Markdown 格式
+格式如以下例子
+"""
+在北京房价动辄千万的当下，一位90后单亲妈妈做了个"离谱"的决定：不买学区房，直接带女儿住进东二环的五星级酒店上学。周一入住，周五退房，孩子上学像度假。这个看似烧钱的选择，竟然比买房省了几百万？当传统的"学区房信仰"开始松动，她的计算逻辑是否颠覆了我们对教育投资的认知？
+
+🎯 **你将收获的关键洞察**
+- 💰 颠覆性的教育成本计算：从机会成本到隐性福利，解码住酒店vs买学区房的真实账本，重新审视"房子=教育"的传统逻辑
+- 🏠 "学区房神话"的理性祛魅：生育率下降、政策调整背景下，为什么顶级学区房不再"稳赚不赔"？普通家长如何避免踩坑？
+..
+"""
 - 清晰的段落结构
+- 搭配少量Emoji
 - 突出关键信息
-- 500字以内
+- 350字以内
 
 直接返回节目说明内容，不要加额外解释。`
-      : `Generate Show Notes based on the podcast script. Include:
+      : `Based on the podcast script, write show notes from the perspective of ordinary listeners. The purpose is to: 1. Help listeners quickly understand the podcast content and capture their interest; 2. Make the podcast more discoverable through search.
 
-1. Brief summary (2-3 sentences)
-2. Key topics covered (3-5 bullet points)
-3. Main insights or conclusions
+Include the following content:
+
+1. Short Hook (2-3 sentences):
+- **Purpose**: A good hook is key to successfully capturing listeners. Briefly presenting takeaways upfront can stimulate users' interest to keep listening. Present what problem this research solves in a highly attractive way.
+- This content should be highly attractive to users
+- Establish a "this relates to me" connection
+- Create "must listen to the end" urgency
+- Avoid vague adjectives ("interesting," "crazy," etc.)
+- Examples of hooks:
+  - Counter-intuitive impact type: Use outrageous phenomena to trigger listeners' curiosity or strong inquisitiveness
+  - Stakeholder interest type: Use life and work-related information to make listeners feel they can gain beneficial takeaways
+  - Others: Create from the user's perspective
+
+2. Listener takeaways (3-5 key points):
+- **Purpose**: Capture listeners' interest; make the podcast more searchable
+- Must include all hot topics mentioned in the script
 
 Format requirements:
-- Use Markdown format
-- Clear paragraph structure
-- Highlight key information
-- Under 500 words
+Format as the following example:
+"""
+In today's Beijing where housing prices easily reach tens of millions, a 90s single mother made an "outrageous" decision: instead of buying a school district house, she moved directly into a five-star hotel in the East Second Ring Road with her daughter for schooling. Check in Monday, check out Friday - going to school like going on vacation. This seemingly money-burning choice actually saved millions compared to buying a house? As traditional "school district housing faith" begins to waver, does her calculation logic overturn our understanding of education investment?
 
-Return the show notes content directly, no additional explanation.`;
+🎯 **Key Insights You'll Gain**
+- 💰 Disruptive education cost calculation: From opportunity costs to hidden benefits, decode the real ledger of hotel living vs. buying school district housing, re-examine the traditional logic of "house = education"
+- 🏠 Rational demystification of "school district housing myth": Against the backdrop of declining birth rates and policy adjustments, why are top school district properties no longer "guaranteed profit"? How can ordinary parents avoid pitfalls?
+..
+"""
+- Clear paragraph structure
+- Use minimal emojis
+- Highlight key information
+- Within 350 words
+
+Return the show notes content directly without additional explanations.`;
 
   const { text, usage } = await generateText({
     model: llm("gpt-5-mini"),

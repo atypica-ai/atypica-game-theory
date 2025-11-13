@@ -12,6 +12,7 @@ import {
   DatabaseIcon,
   EyeIcon,
   FileTextIcon,
+  FlaskConicalIcon,
   HeadphonesIcon,
   MonitorPlayIcon,
   SettingsIcon,
@@ -93,6 +94,12 @@ export default function AdminSidebar({ adminRole, permissions = [] }: AdminSideb
             label: "Podcasts",
             href: "/admin/analyst-podcasts",
             icon: <HeadphonesIcon className="mr-2 h-4 w-4" />,
+            permission: AdminPermission.MANAGE_STUDIES,
+          },
+          {
+            label: "Podcast Test",
+            href: "/admin/podcast-test",
+            icon: <FlaskConicalIcon className="mr-2 h-4 w-4" />,
             permission: AdminPermission.MANAGE_STUDIES,
           },
           {
