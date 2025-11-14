@@ -336,7 +336,7 @@
       "optionPlaceholder": "Option {number}",
       "addOption": "Add Option",
       "deleteOption": "Delete Option",
-      "optionsHint": "At least 2 options required, maximum 4",
+      "optionsHint": "At least 2 options required, maximum 15",
       "cancel": "Cancel",
       "save": "Save",
       "questionTextRequired": "Please enter question content",

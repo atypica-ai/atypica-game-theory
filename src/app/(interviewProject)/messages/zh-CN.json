@@ -336,7 +336,7 @@
       "optionPlaceholder": "选项 {number}",
       "addOption": "添加选项",
       "deleteOption": "删除选项",
-      "optionsHint": "至少需要 2 个选项，最多 4 个",
+      "optionsHint": "至少需要 2 个选项，最多 15 个",
       "cancel": "取消",
       "save": "保存",
       "questionTextRequired": "请输入问题内容",
