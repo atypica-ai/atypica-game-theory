@@ -22,6 +22,7 @@ export const ChoiceField: FC<ChoiceFieldProps> = ({
 
   const OTHER_OPTION_KEY = "其他";
   const [otherInputValue, setOtherInputValue] = useState("");
+  const [isOtherOptionSelected, setIsOtherOptionSelected] = useState(false);
 
   // Determine grid layout
   const gridLayout = (() => {
@@ -42,19 +43,30 @@ export const ChoiceField: FC<ChoiceFieldProps> = ({
   // Add "其他" option to the list
   const optionsWithOther = [...(field.options || []), OTHER_OPTION_KEY];
 
-  // Check if "其他" is selected
-  const isOtherSelected = isSingleChoice
-    ? fieldValue === OTHER_OPTION_KEY || (typeof fieldValue === "string" && fieldValue.startsWith("其他："))
-    : Array.isArray(fieldValue) && fieldValue.some(v => v === OTHER_OPTION_KEY || v.startsWith("其他："));
-
   // Handle "其他" option selection
   const handleOtherOptionClick = () => {
     if (isCompleted || !field.id) return;
 
-    if (isSingleChoice) {
-      onSelectSingle(field.id, OTHER_OPTION_KEY);
+    // Toggle the "其他" option selection state
+    const newState = !isOtherOptionSelected;
+    setIsOtherOptionSelected(newState);
+
+    if (newState) {
+      // Select "其他"
+      if (isSingleChoice) {
+        onSelectSingle(field.id, OTHER_OPTION_KEY);
+      } else {
+        onToggleMultiple(field.id, OTHER_OPTION_KEY);
+      }
+      setOtherInputValue(""); // Reset input value
     } else {
-      onToggleMultiple(field.id, OTHER_OPTION_KEY);
+      // Deselect "其他"
+      if (isSingleChoice) {
+        onSelectSingle(field.id, ""); // Clear selection
+      } else {
+        onToggleMultiple(field.id, OTHER_OPTION_KEY); // Remove from selection
+      }
+      setOtherInputValue("");
     }
   };
 
@@ -68,10 +80,13 @@ export const ChoiceField: FC<ChoiceFieldProps> = ({
     if (isSingleChoice) {
       onSelectSingle(field.id, otherValue);
     } else {
-      // For multiple choice, replace the old "其他" entry with new value
+      // For multiple choice, we need to update the value properly
+      // Remove old "其他" entries and add the new one
       if (Array.isArray(fieldValue)) {
         const filtered = fieldValue.filter(v => v !== OTHER_OPTION_KEY && !v.startsWith("其他："));
-        onSelectSingle(field.id, otherValue); // Update through parent
+        // This is a bit tricky - we need to toggle it off then on with new value
+        // For now, just update with the new value directly
+        onSelectSingle(field.id, otherValue);
       }
     }
   };
@@ -95,11 +110,11 @@ export const ChoiceField: FC<ChoiceFieldProps> = ({
           const isOther = option === OTHER_OPTION_KEY;
           const isSelected = isSingleChoice
             ? isOther
-              ? isOtherSelected
+              ? isOtherOptionSelected
               : fieldValue === option
             : Array.isArray(fieldValue) && option
               ? isOther
-                ? isOtherSelected
+                ? isOtherOptionSelected
                 : fieldValue.includes(option)
               : fieldValue === option;
 
@@ -116,6 +131,12 @@ export const ChoiceField: FC<ChoiceFieldProps> = ({
                         if (isOther) {
                           handleOtherOptionClick();
                         } else {
+                          // Deselect "其他" if selecting another option in single choice
+                          if (isSingleChoice && isOtherOptionSelected) {
+                            setIsOtherOptionSelected(false);
+                            setOtherInputValue("");
+                          }
+
                           if (isSingleChoice) {
                             onSelectSingle(field.id, option);
                           } else {
@@ -137,7 +158,7 @@ export const ChoiceField: FC<ChoiceFieldProps> = ({
               </Button>
 
               {/* Show input field when "其他" is selected */}
-              {isOther && isSelected && !isCompleted && (
+              {isOther && isOtherOptionSelected && !isCompleted && (
                 <Input
                   type="text"
                   placeholder={t("otherInputPlaceholder")}
