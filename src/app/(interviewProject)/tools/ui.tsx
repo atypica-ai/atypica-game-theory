@@ -1,4 +1,5 @@
 import { RequestInteractionFormToolMessage } from "@/app/(interviewProject)/components/RequestInteractionForm";
+import { SelectQuestionToolMessage } from "@/app/(interviewProject)/components/SelectQuestionToolMessage";
 import { TInterviewMessageWithTool } from "@/app/(interviewProject)/types";
 import { getToolName } from "ai";
 import { InterviewToolName, TAddInterviewUIToolResult } from "./types";
@@ -14,6 +15,13 @@ export const InterviewToolUIPartDisplay = ({
     case `tool-${InterviewToolName.requestInteractionForm}`:
       return (
         <RequestInteractionFormToolMessage
+          toolInvocation={toolUIPart}
+          addToolResult={addToolResult}
+        />
+      );
+    case `tool-${InterviewToolName.selectQuestion}`:
+      return (
+        <SelectQuestionToolMessage
           toolInvocation={toolUIPart}
           addToolResult={addToolResult}
         />

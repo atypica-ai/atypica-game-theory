@@ -135,9 +135,11 @@ export async function runAutoPersonaInterview({
     logger,
   });
 
+  // Use questions from session snapshot (with fallback to project for backward compatibility)
+  const questions = currentSession.extra.questions || project.extra?.questions;
   const interviewerSystemPrompt = interviewAgentSystemPrompt({
     brief: project.brief,
-    questions: project.extra?.questions?.map((q) => q.text),
+    questions,
     isPersonaInterview: true,
     personaName: persona.name,
     locale,
@@ -351,12 +353,13 @@ async function generateInterviewerResponse({
   statReport: StatReporter;
   logger: Logger;
 }) {
-  // persona 访谈只使用 endInterview
-  const { endInterview } = interviewSessionTools({
+  // persona 访谈使用 endInterview 和 selectQuestion
+  const { endInterview, selectQuestion } = interviewSessionTools({
     interviewSessionId,
   });
   const tools = {
     endInterview,
+    selectQuestion,
   };
   const promise = new Promise<Omit<UIMessage, "role">>((resolve, reject) => {
     const streamTextPromise = streamText({

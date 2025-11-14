@@ -130,22 +130,25 @@ export async function POST(req: Request) {
         });
 
   // Generate system prompt based on interview context
+  // Use questions from session snapshot (with fallback to project for backward compatibility)
+  const questions = sessionExtra.questions || project.extra?.questions;
   const systemPrompt = interviewAgentSystemPrompt({
     brief: project.brief,
-    questions: project.extra?.questions?.map((q) => q.text),
+    questions,
     questionTypePreference: project.extra?.questionTypePreference,
     isPersonaInterview: false,
     locale,
   });
 
   const mergedAbortSignal = AbortSignal.any([req.signal]);
-  const { endInterview, requestInteractionForm } = interviewSessionTools({
+  const { endInterview, requestInteractionForm, selectQuestion } = interviewSessionTools({
     interviewSessionId,
   });
 
   const tools = {
     endInterview,
     requestInteractionForm,
+    selectQuestion,
   };
   const { coreMessages: _coreMessages, streamingMessage } = await prepareMessagesForStreaming(
     userChatId,

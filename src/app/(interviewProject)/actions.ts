@@ -22,7 +22,58 @@ import { runAutoPersonaInterview } from "./(session)/api/chat/interview-agent/au
 import { generateInterviewReportContent } from "./artifacts/generateReport";
 import { generateInterviewShareToken, validateInterviewShareToken } from "./lib";
 import { processInterviewQuestionOptimization } from "./processing";
-import { interviewProjectQuestionsSchema, questionSchema } from "./tools/types";
+import { interviewProjectQuestionsSchema, questionSchema, Question } from "./tools/types";
+
+/**
+ * Generate form fields from a question for use in selectQuestion tool
+ * This ensures consistent form structure with requestInteractionForm
+ */
+function generateFormFieldsForQuestion(question: Question, questionIndex: number) {
+  const { text, questionType = "open", options } = question;
+
+  // Open-ended questions: single text field
+  if (questionType === "open") {
+    return [
+      {
+        id: `answer`,
+        label: text,
+        type: "text" as const,
+      },
+    ];
+  }
+
+  // Single-choice or multiple-choice questions
+  if ((questionType === "single-choice" || questionType === "multiple-choice") && options) {
+    return [
+      {
+        id: `answer`,
+        label: text,
+        type: "choice" as const,
+        options,
+        multipleChoice: questionType === "multiple-choice",
+      },
+    ];
+  }
+
+  // Fallback: treat as open-ended
+  return [
+    {
+      id: `answer`,
+      label: text,
+      type: "text" as const,
+    },
+  ];
+}
+
+/**
+ * Create a snapshot of questions with pre-generated form fields
+ */
+function createQuestionsSnapshot(questions: Question[]) {
+  return questions.map((q, index) => ({
+    ...q,
+    formFields: generateFormFieldsForQuestion(q, index),
+  }));
+}
 
 /**
  * Fetch user's interview projects
@@ -686,11 +737,20 @@ export async function createPersonaInterviewSession({
       title: "Persona Interview Session",
     });
 
+    // Create questions snapshot with pre-generated form fields
+    const projectExtra = (project.extra as InterviewProjectExtra) || {};
+    const projectQuestions = projectExtra.questions || [];
+    const questionsSnapshot = createQuestionsSnapshot(projectQuestions);
+
     const session = await prisma.interviewSession.create({
       data: {
         projectId: project.id,
         intervieweePersonaId: persona.id,
         userChatId: userChat.id,
+        extra: {
+          questions: questionsSnapshot,
+          selectedQuestionIndexes: [],
+        } as InterviewSessionExtra,
       },
     });
 
@@ -778,18 +838,32 @@ export async function createHumanInterviewSession({
       };
     }
 
+    // Fetch project to get questions for snapshot
+    const project = await prisma.interviewProject.findUniqueOrThrow({
+      where: { id: projectId },
+    });
+
     const userChat = await createUserChat({
       userId: user.id,
       kind: "interviewSession",
       title: "Interview Session",
     });
 
+    // Create questions snapshot with pre-generated form fields
+    const projectExtra = (project.extra as InterviewProjectExtra) || {};
+    const projectQuestions = projectExtra.questions || [];
+    const questionsSnapshot = createQuestionsSnapshot(projectQuestions);
+
     const session = await prisma.interviewSession.create({
       data: {
         projectId,
         intervieweeUserId: user.id,
         userChatId: userChat.id,
-        extra: { preferredLanguage } as InterviewSessionExtra,
+        extra: {
+          preferredLanguage,
+          questions: questionsSnapshot,
+          selectedQuestionIndexes: [],
+        } as InterviewSessionExtra,
       },
     });
 

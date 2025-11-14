@@ -442,7 +442,11 @@ export const interviewAgentSystemPrompt = ({
   locale,
 }: {
   brief: string;
-  questions?: string[];
+  questions?: Array<{
+    text: string;
+    questionType?: "open" | "single-choice" | "multiple-choice";
+    options?: string[];
+  }>;
   questionTypePreference?: "open-ended" | "multiple-choice" | "mixed";
   isPersonaInterview: boolean;
   personaName?: string;
@@ -457,16 +461,34 @@ ${brief}
 ${
   questions && questions.length > 0
     ? `
-## 访谈问题参考
-以下是基于研究简介的问题，你可以参考这些问题进行访谈，但不要机械地按顺序提问：
+## 预设访谈问题列表
+本次访谈有 ${questions.length} 个预设问题：
 
-${questions.map((q, i) => `${i + 1}. ${q}`).join("\n")}
+${questions
+  .map((q, i) => {
+    const index = i + 1;
+    const type =
+      q.questionType === "single-choice"
+        ? "单选题"
+        : q.questionType === "multiple-choice"
+          ? "多选题"
+          : "开放题";
+    const optionsText = q.options ? `\n   选项：${q.options.join(", ")}` : "";
+    return `${index}. [${type}] ${q.text}${optionsText}`;
+  })
+  .join("\n")}
 
-重要提醒：
-- 这些问题仅作参考，你应该根据对话流程自然地融入相关问题
-- 不要一次性列出所有问题，要根据受访者的回答灵活调整
-- 保持对话的自然性，避免让访谈变成问卷调查
-- 善于将这些问题拆分成更小的、更容易回答的问题
+**使用 selectQuestion 工具提问**：
+- 工具调用格式：selectQuestion({ questionIndex: 1 })（使用 1-based 索引）
+- 每个问题只能选择一次，重复选择会报错
+- 可以根据对话流程灵活选择提问顺序，不必按编号顺序
+- 工具会自动展示预生成的表单，等待用户回答
+- 用户提交答案后，你会收到包含问题和答案的 tool output
+
+**重要提醒**：
+- 使用 selectQuestion 工具时，不要在同一轮对话中输出额外的文字
+- 只调用工具即可，让工具自动展示问题表单
+- 等待用户回答后，再根据答案进行自然的追问或继续下一个问题
 `
     : ""
 }
@@ -568,16 +590,34 @@ ${brief}
 ${
   questions && questions.length > 0
     ? `
-## Interview Questions Reference
-Below are questions based on the research brief. You can reference these questions during the interview, but don't ask them mechanically in order:
+## Pre-defined Interview Questions
+This interview has ${questions.length} pre-defined questions:
 
-${questions.map((q, i) => `${i + 1}. ${q}`).join("\n")}
+${questions
+  .map((q, i) => {
+    const index = i + 1;
+    const type =
+      q.questionType === "single-choice"
+        ? "single-choice"
+        : q.questionType === "multiple-choice"
+          ? "multiple-choice"
+          : "open";
+    const optionsText = q.options ? `\n   Options: ${q.options.join(", ")}` : "";
+    return `${index}. [${type}] ${q.text}${optionsText}`;
+  })
+  .join("\n")}
 
-Important Reminders:
-- These questions are for reference only; you should naturally integrate relevant questions based on the conversation flow
-- Don't list all questions at once; flexibly adjust based on the interviewee's responses
-- Maintain conversational naturalness; avoid turning the interview into a survey
-- Be skilled at breaking these questions into smaller, easier-to-answer segments
+**Using the selectQuestion tool**:
+- Tool call format: selectQuestion({ questionIndex: 1 }) (using 1-based indexing)
+- Each question can only be selected once; duplicate selection will cause an error
+- You can flexibly choose the question order based on conversation flow, not necessarily in numerical order
+- The tool will automatically display a pre-generated form and wait for the user's answer
+- After the user submits an answer, you will receive tool output containing the question and answer
+
+**Important Reminders**:
+- When using the selectQuestion tool, do not output additional text in the same conversation turn
+- Just call the tool, and let it automatically display the question form
+- After receiving the user's answer, naturally follow up or continue to the next question
 `
     : ""
 }

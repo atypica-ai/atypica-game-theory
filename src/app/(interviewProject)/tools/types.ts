@@ -142,9 +142,40 @@ export const updateQuestionsOutputSchema = z.object({
   message: z.string(),
 });
 
+// selectQuestion tool schemas
+export const selectQuestionInputSchema = z.object({
+  questionIndex: z
+    .number()
+    .int()
+    .positive()
+    .describe(
+      "The 1-based index of the question to select (e.g., 1 for the first question, 2 for the second)",
+    ),
+});
+
+export const selectQuestionOutputSchema = z.object({
+  questionIndex: z.number(),
+  questionText: z.string(),
+  questionType: z.enum(["open", "single-choice", "multiple-choice"]),
+  options: z.array(z.string()).optional(),
+  image: imageAttachmentSchema.optional(),
+  formFields: z
+    .array(
+      z.object({
+        id: z.string(),
+        label: z.string(),
+        type: z.enum(["text", "choice", "boolean"]),
+        options: z.array(z.string()).optional(),
+        multipleChoice: z.boolean().optional(),
+      }),
+    )
+    .optional(),
+});
+
 export enum InterviewToolName {
   endInterview = "endInterview",
   requestInteractionForm = "requestInteractionForm",
+  selectQuestion = "selectQuestion",
 }
 
 export type TInterviewUITools = {
@@ -155,6 +186,10 @@ export type TInterviewUITools = {
   [InterviewToolName.requestInteractionForm]: {
     input: z.infer<typeof requestInteractionFormInputSchema>;
     output: z.infer<typeof requestInteractionFormOutputSchema>;
+  };
+  [InterviewToolName.selectQuestion]: {
+    input: z.infer<typeof selectQuestionInputSchema>;
+    output: z.infer<typeof selectQuestionOutputSchema>;
   };
 };
 

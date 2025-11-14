@@ -150,6 +150,21 @@ declare module "@/prisma/client" {
     pdfObjectUrl: string; // PDF文件的S3对象URL
     preferredLanguage: string; // 用户偏好的访谈语言
     personalInfo: Array<{ label: string; text: string }>; // 个人信息字段（灵活结构）
+    questions: Array<{
+      text: string;
+      image?: ChatMessageAttachment; // 问题图片
+      questionType?: "open" | "single-choice" | "multiple-choice";
+      options?: string[]; // 选择题的选项
+      formFields?: Array<{
+        // 预生成的表单字段，格式与 requestInteractionForm 一致
+        id: string;
+        label: string;
+        type: "text" | "choice" | "boolean";
+        options?: string[];
+        multipleChoice?: boolean;
+      }>;
+    }>; // 问题列表快照（创建 Session 时从 Project 复制）
+    selectedQuestionIndexes: number[]; // 已使用的问题 index（1-based）
   }>;
 
   export type InterviewReportExtra = Partial<{
