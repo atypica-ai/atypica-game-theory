@@ -162,7 +162,11 @@ export const SelectQuestionToolMessage: FC<SelectQuestionToolMessageProps> = ({
       {image && (
         <div className="relative aspect-video w-full overflow-hidden rounded-md">
           <Image
-            src={proxiedObjectCdnUrl(image.objectUrl)}
+            src={proxiedObjectCdnUrl({
+              name: image.name,
+              objectUrl: image.objectUrl,
+              mimeType: image.mimeType,
+            })}
             alt={questionText}
             fill
             className="object-cover"
