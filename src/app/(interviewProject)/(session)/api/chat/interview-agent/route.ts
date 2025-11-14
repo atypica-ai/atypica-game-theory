@@ -132,6 +132,16 @@ export async function POST(req: Request) {
   // Generate system prompt based on interview context
   // Use questions from session snapshot (with fallback to project for backward compatibility)
   const questions = sessionExtra.questions || project.extra?.questions;
+
+  // Debug: Log questions to verify data
+  chatLogger.info({
+    msg: "Interview questions data",
+    hasSessionQuestions: !!sessionExtra.questions,
+    hasProjectQuestions: !!project.extra?.questions,
+    questionsCount: questions?.length || 0,
+    firstQuestion: questions?.[0],
+  });
+
   const systemPrompt = interviewAgentSystemPrompt({
     brief: project.brief,
     questions,

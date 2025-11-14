@@ -36,6 +36,13 @@ export const SelectQuestionToolMessage: FC<SelectQuestionToolMessageProps> = ({
   const image = result?.image;
   const formFields = result?.formFields || [];
 
+  // Debug: Log to console
+  console.log("SelectQuestionToolMessage rendered", {
+    toolInvocation,
+    result,
+    formFields,
+  });
+
   // Check if form has been submitted
   const isCompleted = toolInvocation.state === "output-available";
 
@@ -192,7 +199,7 @@ export const SelectQuestionToolMessage: FC<SelectQuestionToolMessageProps> = ({
         {isCompleted && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Check className="h-4 w-4 text-green-600" />
-            <span>{t("completed")}</span>
+            <span>已完成</span>
           </div>
         )}
       </div>

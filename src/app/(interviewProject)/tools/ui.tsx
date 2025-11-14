@@ -11,6 +11,14 @@ export const InterviewToolUIPartDisplay = ({
   toolUIPart: TInterviewMessageWithTool["parts"][number];
   addToolResult?: TAddInterviewUIToolResult;
 }) => {
+  // Debug: Log tool part type
+  console.log("InterviewToolUIPartDisplay", {
+    type: toolUIPart.type,
+    toolCallId: toolUIPart.toolCallId,
+    state: toolUIPart.state,
+    timestamp: new Date().toISOString(),
+  });
+
   switch (toolUIPart.type) {
     case `tool-${InterviewToolName.requestInteractionForm}`:
       return (
