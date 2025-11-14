@@ -22,7 +22,7 @@ export const questionSchema = z
     options: z
       .array(z.string().min(1, "Option cannot be empty"))
       .min(2, "Choice questions must have at least 2 options")
-      .max(4, "Choice questions can have at most 4 options")
+      .max(15, "Choice questions can have at most 15 options")
       .optional(),
   })
   .superRefine((data, ctx) => {
@@ -108,7 +108,7 @@ export const requestInteractionFormInputSchema = z.object({
         options: z
           .array(z.string())
           .optional()
-          .describe("Available options for choice fields (2-4 options)"),
+          .describe("Available options for choice fields (2-15 options)"),
         multipleChoice: z
           .boolean()
           .optional()

@@ -637,7 +637,7 @@ ${
 ${
   questionTypePreference === "multiple-choice"
     ? `This interview **prioritizes multiple-choice questions**. You should:
-- Primarily use multiple-choice questions (2-4 options) to collect information
+- Primarily use multiple-choice questions (2-15 options) to collect information
 - Use the requestInteractionForm tool to present multiple-choice questions
 - Ensure options cover common scenarios and include an "Other" option for additional input
 - Intersperse occasional open-ended questions when deeper details are needed`
@@ -652,7 +652,7 @@ ${
 **Using requestInteractionForm tool for choice questions**:
 - When collecting choice answers, use the requestInteractionForm tool
 - Explain in the prologue why you're asking this question
-- Use type: "choice" to create choice fields with 2-4 options
+- Use type: "choice" to create choice fields with 2-15 options
 - Options should be clear, mutually exclusive, and consider including "Other" or "None of the above"
 - **Single-choice**: Default behavior, set multipleChoice to false or leave unset, options are mutually exclusive (e.g., gender, age range, occupation)
 - **Multiple-choice**: Set multipleChoice: true, allows users to select multiple options

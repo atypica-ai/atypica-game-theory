@@ -341,7 +341,7 @@
       "save": "Save",
       "questionTextRequired": "Please enter question content",
       "atLeastTwoOptions": "Choice questions must have at least 2 options",
-      "atMostFourOptions": "Choice questions can have at most 4 options",
+      "atMostFourOptions": "Choice questions can have at most 15 options",
       "invalidImageType": "Unsupported image format. Please upload JPG, PNG, WebP or GIF",
       "imageTooLarge": "Image size exceeds limit (max 10MB)",
       "imageUploaded": "Image uploaded successfully",
